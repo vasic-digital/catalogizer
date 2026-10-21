@@ -45,12 +45,13 @@ Optional:
 ### Initial Setup
 
 ```bash
-# Clone the repository with submodules
-git clone --recursive https://github.com/your-org/Catalogizer.git
+# Clone the repository, then initialise submodules WITHOUT a recursive update through `constitution/`
+# (llmctl and claude_toolkit vendor a constitution of their own; see docs/GOVERNANCE.md)
+git clone https://github.com/your-org/Catalogizer.git
 cd Catalogizer
-
-# If you already cloned without --recursive
-git submodule init && git submodule update --recursive
+git submodule status | awk '$2 != "constitution" {print $2}' | xargs -r git submodule update --init --recursive --
+git submodule update --init constitution
+git -C constitution submodule update --init submodules/llmctl submodules/claude_toolkit submodules/open_design   # only those you need
 ```
 
 ### Running the Full Stack Locally
@@ -706,8 +707,9 @@ const collections = await client.collections.list();
 ### Working with Submodules
 
 ```bash
-# Initialize all submodules after cloning
-git submodule init && git submodule update --recursive
+# Initialize submodules after cloning (never `--recursive` through `constitution/`; see docs/GOVERNANCE.md, section 5)
+git submodule status | awk '$2 != "constitution" {print $2}' | xargs -r git submodule update --init --recursive --
+git submodule update --init constitution
 
 # Add a new submodule
 ./scripts/setup-submodule.sh ModuleName [--create-repos] [--go|--ts|--kotlin]

@@ -262,11 +262,14 @@ Run `install_upstreams` inside any submodule to configure its remotes;
 ## 11. Working with Submodules
 
 ```bash
-# After clone
-git submodule update --init --recursive
+# After clone: do NOT run `git submodule update --init --recursive` from the root. It descends through `constitution/`
+# into engines that vendor a constitution of their own (see section 15). Use this instead:
+git submodule status | awk '$2 != "constitution" {print $2}' | xargs -r git submodule update --init --recursive --
+git submodule update --init constitution            # one level only
+git -C constitution submodule update --init submodules/llmctl submodules/claude_toolkit submodules/open_design   # only those you need
 
-# Sync to latest tracked branches
-git submodule update --remote --recursive
+# Sync to latest tracked branches (same rule: name the paths, skip `constitution`)
+git submodule status | awk '$2 != "constitution" {print $2}' | xargs -r git submodule update --remote --recursive --
 
 # Add a new submodule
 ./scripts/setup-submodule.sh NewModule --create-repos --go
@@ -345,3 +348,23 @@ when deciding what CI must run after changing a submodule. Summary:
 - `Database` → migration test + all backend tests
 - `HelixQA` → full HelixQA run against all platforms
 - `Filesystem` → protocol matrix (Local / SMB / FTP / NFS / WebDAV)
+
+## 15. Constitution Hub Engines
+
+> Added 2026-10-21. Sections 1 to 14 predate it and describe the 41 submodules of the 2026-04-21 refresh. A read-only count on
+> 2026-10-21 (`git submodule status`) lists 44 top-level submodules, `constitution` among them.
+
+The `constitution` submodule is a hub: it carries reusable engines under `constitution/submodules/`. They are not consumed through
+Go `replace` directives or `package.json` `file:` links; they are developer and QA tooling, never part of a product artifact. The
+Spec Kit constitution binds three of them (section "Constitution Hub Engines"; summary and open items in
+[GOVERNANCE.md](GOVERNANCE.md)):
+
+| Engine | Origin | Gitlink at constitution `4bcb512` | In canon `helix-deps.yaml` |
+|---|---|---|---|
+| `llmctl` | `vasic-digital/llmctl` | `5354354b` (56 commits past `v3.2.2`) | yes, `v3.2.2`, `recursive_init: false` |
+| `claude_toolkit` | `vasic-digital/claude_toolkit` | `223c7025` (`v1.30.5`) | no |
+| `open_design` | `nexu-io/open-design` (third-party) | `3b0df90f30` (0.25.1) | no |
+
+`llmctl` and `claude_toolkit` each vendor a constitution of their own, so a recursive update through `constitution/` is unsafe and
+canon's own gate `CM-LLMCTL-SUBMODULE-NONRECURSIVE` currently fails at this pin. Initialise one level only (section 11 above shows the
+safe form).

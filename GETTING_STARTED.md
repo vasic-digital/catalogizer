@@ -125,8 +125,10 @@ mkdir -p reports/{security,coverage,tests,ci,sbom}
 mkdir -p build
 mkdir -p temp
 
-# 4. Update submodules
-git submodule update --init --recursive
+# 4. Update submodules (never `--recursive` through `constitution/`: llmctl and claude_toolkit vendor a constitution of their own;
+#    see docs/GOVERNANCE.md, section 5)
+git submodule status | awk '$2 != "constitution" {print $2}' | xargs -r git submodule update --init --recursive --
+git submodule update --init constitution
 
 # 5. Install pre-commit
 pip3 install --user pre-commit

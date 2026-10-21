@@ -33,6 +33,7 @@ Catalogizer is a comprehensive media collection management system that automatic
 | Document | Purpose |
 |---|---|
 | 📄 **[Environment Variables Reference](docs/ENV_VARIABLES.md)** | Complete `.env` guide — every API key, token, provider registration URL, and configuration flag with 🔴/🟠/🟡/🟢/⚫ tier markers. **Start here to set up credentials.** |
+| 🏛️ **[Governance and the Constitution](docs/GOVERNANCE.md)** | How the Spec Kit constitution (`.specify/memory/constitution.md`, v2.4.0) follows the Helix canon, the pinned canon commit, the binding of the vendored engines `llmctl`, `claude_toolkit` and `open_design`, and safe submodule initialisation |
 | 📐 **[CONSTITUTION.md](CONSTITUTION.md)** | Non-negotiable rules — Article V (100% test coverage), Article VI (Open-Points Closure Brief), **Article VII (Full-QA Master Cycle)** |
 | 🎯 **[Open-Points Closure Brief](docs/OPEN_POINTS_CLOSURE.md)** | Canonical operator-action checklist — every credential, hardware item, and infra task still outstanding |
 | 🗺️ **[OCU Program Roadmap](HelixQA/docs/nexus/ocu-roadmap.md)** | OpenClaw Ultimate phases P0–P7 status, contract versions, latency budgets, risks |
@@ -55,6 +56,7 @@ Catalogizer is a comprehensive media collection management system that automatic
 
 - [Architecture Overview](#architecture-overview)
 - [Modular Architecture (Submodules)](#modular-architecture-submodules)
+- [Governance and the Constitution](#governance-and-the-constitution)
 - [Installation & Setup](#installation--setup)
 - [Configuration](#configuration)
 - [SMB Resilience & Offline Handling](#smb-resilience--offline-handling)
@@ -158,9 +160,16 @@ All generic, reusable functionality has been extracted into independent modules 
 | WebSocket-Client-TS | `@vasic-digital/websocket-client` | Generic WebSocket client with React hooks |
 | UI-Components-React | `@vasic-digital/ui-components` | Reusable React UI component library |
 
-To initialize submodules after cloning:
+To initialize submodules after cloning, use the safe sequence in [Governance and the Constitution](#governance-and-the-constitution)
+(do not run `git submodule update --recursive` through `constitution/`):
+
 ```bash
-git submodule init && git submodule update --recursive
+# every top-level submodule except the constitution, with its own nested submodules
+git submodule status | awk '$2 != "constitution" {print $2}' | xargs -r git submodule update --init --recursive --
+# the constitution itself, ONE level only (never --recursive: llmctl and claude_toolkit vendor a constitution of their own)
+git submodule update --init constitution
+# only the constitution hub engines you need, one level each
+git -C constitution submodule update --init submodules/llmctl submodules/claude_toolkit submodules/open_design
 ```
     - Analysis results and statistics
 
@@ -175,6 +184,37 @@ Catalogizer supports multiple file system protocols for maximum flexibility:
 - **Local Filesystem**: Direct access to local storage
 
 Each protocol is abstracted through a common interface, allowing seamless switching and future protocol additions.
+
+## 🏛️ Governance and the Constitution
+
+Catalogizer is governed by three nested layers; a lower layer may tighten a higher one and never weakens it:
+
+1. **Helix canon** — `constitution/Constitution.md` (a git submodule): the universal rules and the source of truth.
+2. **Spec Kit constitution** — [`.specify/memory/constitution.md`](.specify/memory/constitution.md) (version 2.4.0) with its binding
+   appendix [`constitution-appendix.md`](.specify/memory/constitution-appendix.md), pinned to a canon commit and checked against it by
+   `scripts/governance/`. It states the principles, the project overrides, the known conflicts and the hub-engine binding.
+3. **Project and module rules** — [`CONSTITUTION.md`](CONSTITUTION.md), `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`.
+
+The canon is also a hub of reusable engines. Three are bound for this project (details, rules and open items in
+[docs/GOVERNANCE.md](docs/GOVERNANCE.md)):
+
+| Engine (`constitution/submodules/…`) | What it is | Origin |
+|---|---|---|
+| `llmctl` | Local LLM orchestration and the model validation gate (§11.4.277) | `vasic-digital/llmctl` |
+| `claude_toolkit` | Many Claude Code / Kimi Code accounts, provider aliases, OpenCode sync (§11.4.196, §11.4.198) | `vasic-digital/claude_toolkit` |
+| `open_design` | The OpenDesign design workspace, the UI design system of §11.4.162 | `nexu-io/open-design` (third-party, Apache-2.0) |
+
+They are tooling: used by reference, never copied or forked, and never shipped inside a Catalogizer artifact. Initialise submodules
+like this, **never with `--recursive` through the constitution**:
+
+```bash
+# every top-level submodule except the constitution, with its own nested submodules
+git submodule status | awk '$2 != "constitution" {print $2}' | xargs -r git submodule update --init --recursive --
+# the constitution itself, ONE level only (never --recursive: llmctl and claude_toolkit vendor a constitution of their own)
+git submodule update --init constitution
+# only the constitution hub engines you need, one level each
+git -C constitution submodule update --init submodules/llmctl submodules/claude_toolkit submodules/open_design
+```
 
 ## 🛠️ Installation & Setup
 

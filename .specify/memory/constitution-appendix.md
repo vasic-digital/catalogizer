@@ -2,12 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Revision | 5 (canon pin move 1c89813a -> 94b8836, the v70+1 tip: NEW digests of §11.4.277 and §11.4.278; clause (E) added to the §11.4.230 and §11.4.235 digests; the §11.4.141 context-budget extension, the §11.4.54 and §11.4.248 per-project ticket-key extension; every Source citation re-derived from the now-synchronised `groups/*.md`; the "index and groups lag" notes retired because both are fresh at this pin) |
+| Revision | 6 (canon pin move 94b8836 -> 4bcb512, helixconstitution-v70-6: canon text, index and groups unchanged, so Parts 1 and 2 are unchanged; NEW Part 3, the operative digest of the Constitution Hub Engines section of the constitution file, binding `llmctl`, `claude_toolkit` and `open_design`) |
 | Created | 2026-10-02 |
-| Last modified | 2026-10-20T16:45:53Z |
+| Last modified | 2026-10-21T13:57:15Z |
 | Status | active, BINDING |
 | Binds | Part of the Catalogizer Constitution (`.specify/memory/constitution.md`) |
-| Canon pin | `constitution` at `94b8836731939dccbd537e6671db184e9f658ba5`; `Constitution.md` sha256 `1667ded1962940faf651a45b261b62e75d831410e805bb6102f9e809f8119d56` |
+| Canon pin | `constitution` at `4bcb51236115b0592583f5a2f8fa7e33e1a328c3`; `Constitution.md` sha256 `1667ded1962940faf651a45b261b62e75d831410e805bb6102f9e809f8119d56` |
 | Generated from | `constitution/groups/*.md` and `constitution_index.yaml` (288 ids; the index records the sha256 of the pinned `Constitution.md` and lists §11.4.276 to §11.4.278, so it is fresh at this pin; all 285 canon block-starts were measured byte-identical to their `groups/*.md` block, so the digests are written from the groups; 285 digests = 285 canon block-starts) plus the project and module `CLAUDE.md`, `AGENTS.md`, `GEMINI.md` and `CONSTITUTION.md` files |
 
 ## How this appendix binds
@@ -17,10 +17,10 @@ Part 1 states the operative rules of every Helix anchor (every MUST clause, lett
 name, no-escape-hatch flag and honest boundary) so that Spec Kit commands, which read only
 `.specify/memory`, see the full rule set. Part 2 states every project and module rule. Where a
 digest is shorter than the canon text, the canon in `constitution/Constitution.md` and
-`groups/*.md` governs, and a digest MUST NOT be read as weakening it. Digests were written by
+`groups/*.md` governs, and a digest MUST NOT be read as weakening it. Part 3 states the binding of the hub engines (`llmctl`, `claude_toolkit`, `open_design`) that the constitution file's section "Constitution Hub Engines" sets; it is project-local, tightens canon and never weakens it, and it is not an anchor digest (it has no `§` heading, so the comparison below does not count it). Digests were written by
 reading each canon block in full and were checked by a deterministic comparison (every `CM-*`
 gate name and every `--flag` in canon appears in the matching digest) and by independent review.
-Result at the pinned canon (`94b8836`, measured on 2026-10-20 by the tracked tool `scripts/governance/appendix_token_check.py`;
+Result at the pinned canon (`4bcb512`; its `Constitution.md` is byte-identical to the one at `94b8836`, and the tool was re-run on 2026-10-21 with the same result as on 2026-10-20; measured by the tracked tool `scripts/governance/appendix_token_check.py`;
 the run's summary lines are in the commit message of the pin move, and the earlier `pin-fix2-*` evidence under
 `specs/001-full-project-audit-remediation/evidence/wp07` belongs to the `a71b1767` pin):
 285 digests, each present once (one per canon block-start; the §11.4.184(I) digest continues §11.4.184); 285 canon
@@ -5042,3 +5042,108 @@ EVERY build of EVERY component (source compile, artifact/package/installer/conta
 - Android/AndroidTV docs stated versions 1.1.0/vc2 and 2.3.0/vc7; build files say 2.4.0 (vc6 and vc8). FIXED in both CLAUDE.md files on 2026-10-02. All Tauri modules are 2.4.0.
 - Android+ATV gradle.properties set `org.gradle.java.version=17` and comment "Use Java 17 for compilation" although android compile target is 21 and docs call JDK 21 the system default.
 - AGENTS.md root "Force-push requires explicit authorization" conflicts with canon §11.4.113 (absolute ban); canon wins. FIXED in the root `AGENTS.md` on 2026-10-02.
+
+## Part 3: Constitution hub engine digests (project-local; not an anchor digest)
+
+This part is the operative register of the constitution file's section "Constitution Hub Engines". It is project-local: no canon
+block-start corresponds to it, which is why its headings carry no `§`. It tightens canon and never weakens it. It carries somewhat more detail than the constitution file's section; where the two differ, the stricter reading applies. Where canon is silent
+about an engine, the gap is recorded in Known Conflicts items 25 to 29 of the constitution file, and nothing here claims that canon
+binds the engine by name.
+
+### HE-0 Measured identity of the engines (2026-10-21, `constitution` at `4bcb51236115b0592583f5a2f8fa7e33e1a328c3`)
+- `git diff --stat 94b8836 4bcb512` inside `constitution`: `.gitignore`, `.gitmodules`, `submodules/claude_toolkit` (new),
+  `submodules/llmctl` (moved) and `submodules/open_design` (new). Nothing else changed: `Constitution.md` (sha256
+  `1667ded19629...`), `constitution_index.yaml`, `groups/`, `scripts/` and `helix-deps.yaml` are byte-identical to the previous pin.
+- `llmctl`: `git@github.com:vasic-digital/llmctl.git`, gitlink `5354354b1a9872de4a81a57056075eeb51814556`, 56 commits past tag `v3.2.2`
+  (`git rev-list --count v3.2.2..HEAD`), `VERSION` file 3.2.2, 454 MB. Canon's `helix-deps.yaml` names `v3.2.2`
+  (`5c3dea57fb35215cdaa4b7412da438e7a8d96d86`) with `recursive_init: false`.
+- `claude_toolkit`: `git@github.com:vasic-digital/claude_toolkit.git`, gitlink `223c7025d250138082b56aaddf6e38ae033c172e`, exactly tag
+  `v1.30.5`, 407 MB; not in canon's `helix-deps.yaml`.
+- `open_design`: `git@github.com:nexu-io/open-design.git` (third-party), gitlink `3b0df90f305c8279e748c292accf336d02b924ef`,
+  `package.json` 0.25.1, licence Apache-2.0, no nested submodules, 326 MB; not in canon's `helix-deps.yaml`.
+
+### HE-1 Consume by reference; never copy or fork
+MUST use an engine from `constitution/submodules/<name>`. MUST NOT keep a copy, a fork, a second vendored instance or a hand-written
+equivalent in Catalogizer. A change to an engine MUST be an upstream change followed by a constitution pin bump (§11.4.26), never a local patch. For `open_design` this is reference use only: §11.4.162 says OpenDesign is consumed as a project dependency, never vendored or forked, so the
+vendored checkout is not the consumption path (Known Conflicts item 26). NEVER wire an engine's scripts onto a shared or global PATH from a Catalogizer script (§11.4.177). Composes §11.4.28,
+§11.4.74, §11.4.177, §11.4.251, §11.4.26.
+
+### HE-2 Initialise one level only
+The init command, run from the repository root, MUST be `git -C constitution submodule update --init submodules/<name>` without `--recursive`, for all three engines.
+`llmctl`: canon's rule (§11.4.277(B), `recursive_init: false`, gate `CM-LLMCTL-SUBMODULE-NONRECURSIVE`). `claude_toolkit`: the same
+rule applied by this layer, because it vendors a constitution (`constitution` at `e44f22fc`). `open_design`: the same rule so that no
+command differs. `git submodule update --init --recursive` without path arguments, or with a path through `constitution/`, MUST NOT be run until
+canon's cycle gate passes at the pinned commit (it FAILs at `4bcb512`, Known Conflicts item 25). Nothing is de-initialised by this
+layer (§9.2). Composes §11.4.277(B), §11.4.28(C), §11.4.31, §11.4.113.
+
+### HE-3 Tooling, never product
+MUST NOT import, link, copy or ship an engine in `catalog-api`, `catalog-web`, `catalogizer-desktop`, `installer-wizard`,
+`catalogizer-android`, `catalogizer-androidtv`, the Website or any release image. MUST NOT mount an engine into a build container
+unless the build needs it. Measured 2026-10-21: no Go, TypeScript, JSON, Kotlin, Gradle or shell file outside `constitution/` and
+`specs/` names a path under `constitution/submodules/{llmctl,claude_toolkit,open_design}`. Composes §11.4.161, §11.4.173, §11.4.28,
+§11.4.246.
+
+### HE-4 Own-org versus third-party
+`llmctl` and `claude_toolkit` follow the own-org rules, except the third-party repositories nested under them (llmctl: `llama.cpp`, `colibri`, `superspec`; claude_toolkit: `go`, `superspec`), which are third-party under §11.4.79(6). `open_design` is third-party: exclusion class `vendored-third-party` of the
+coverage floor (§11.4.224(E)); outside own-org code review; excluded from the code index (§11.4.79, third-party row), while the own-org engines are to be included in it (Known
+Conflicts item 29); each engine's identity, licence and pinned commit MUST be recorded as a dependency-existence row (§11.4.270). Rows for all three are OWED (OPEN); until the `open_design` row is VERIFIED, binding it is not an adoption (§11.4.270(C)). Composes §11.4.224, §11.4.79, §11.4.270, §11.4.28(C).
+
+### HE-5a llmctl at Catalogizer
+MUST acquire, start, validate and stop models only through llmctl (§11.4.277(B)). Decision-bearing use MUST run with
+`LLMCTL_VALIDATE_STRICT=1` and pass `llmctl require-validated <profile>`; anything else is `not_validated` (§11.4.277(A),
+§11.4.278(D)). The host-safety limits of §11.4.277(E) MUST NOT be loosened and `Restart=always` is FORBIDDEN. A wrong answer is a
+defect of the model or the runtime to investigate (§11.4.102), never to retry until green (§11.4.277(D)). The vision step is
+`scripts/llmctl/llmctl_vision_ensure.sh`; the binary it resolves is Known Conflicts item 21(c); the host state is item 21(b). Composes
+§11.4.277, §11.4.278, §11.4.102, §11.4.115, §11.4.200.
+
+### HE-5b claude_toolkit at Catalogizer
+MUST create, list, roll back and export aliases only with the toolkit's own commands (`claude-add-account`, `claude-remove-account`,
+`claude-list-accounts`, `claude-unify`, `claude-rollback`, `claude-providers`, `claude-sync-state`, `claude-bootstrap`,
+`claude-export-docs`, `claude-opencode-sync`, and the `kimi-*` family), never by hand-editing an account directory or the shared store.
+The native-first priority of §11.4.196 and the multi-alias default of §11.4.198 MUST run on the toolkit's aliases; this layer adds no
+second alias mechanism (§11.4.74). Secrets (API keys, OAuth tokens, the toolkit's keys file) MUST stay outside the repository and
+MUST NEVER be committed, printed or logged (§11.4.10). The `<model>` field of a provider alias in the §11.4.182 label is read from the
+toolkit's provider registry (`CMA_PROVIDER_MODEL`, read by canon's `scripts/multitrack/track_branch_label.sh`), so a label is only as
+current as the host's toolkit state and a mismatch MUST be reported (§11.4.182(3)). The toolkit's `scripts/install.sh` is a host
+operator action; no Catalogizer script, hook or pipeline MAY run it or edit a shared PATH (§11.4.177). Composes §11.4.182, §11.4.187,
+§11.4.196, §11.4.198, §11.4.10, §11.4.177, §11.4.74.
+
+### HE-5c open_design at Catalogizer
+It is the OpenDesign that §11.4.162 names as the UI design system for `catalog-web`, `catalogizer-desktop`, `installer-wizard`, `catalogizer-android`,
+`catalogizer-androidtv` and the Website, with §11.4.190 and §11.4.216 to §11.4.223 applying. §11.4.162 requires consumption as a project dependency, never vendored, so the vendored checkout is reference material and an optional authoring tool, not the consumption path. Canon's manifest names `design-toolkit` (`vasic-digital/design-toolkit`, gitlink `4ddc964`) for the token and brand role; its relation to `open_design` is Known Conflicts item 26. The project's hand-authored token modules
+(`catalog-web/src/styles/tokens.ts`, `catalogizer-desktop/src/styles/tokens.css`) stay the single token source until the 2026-06-25
+consumability verdict (`docs/design/OPENDESIGN_CONSUMABILITY_VERDICT.md`) is re-verified against the vendored checkout (§11.4.99; Known
+Conflicts item 28). The vendored checkout is reference material and an optional authoring tool. Running its application, its `od` daemon
+or its MCP server MUST be a host action under rootless discipline (§11.4.161) and only after reading `PRIVACY.md` (vendor statement,
+UNVERIFIED here: product analytics on by default with an opt-out; "safety and reliability telemetry" not switchable off in builds
+configured with a telemetry destination; forks and development builds without destination credentials send neither). Design data
+(screens, brand assets) MUST NOT leave the host except by owner decision (§11.4.10, §11.4.66). A design MUST NOT be accepted on the tool's
+say-so: host-rendered pixel proof (§11.4.170), exported-document validation (§11.4.168) and provenance markers (§11.4.223) still apply.
+Composes §11.4.162, §11.4.190, §11.4.216, §11.4.217, §11.4.218, §11.4.219, §11.4.220, §11.4.221, §11.4.222, §11.4.223, §11.4.170,
+§11.4.168, §11.4.99, §11.4.161.
+
+### HE-6 The pin is the version
+The version of an engine MUST be the gitlink that the constitution pointer records. A host-installed copy (the `llmctl` on PATH, the
+toolkit's installed aliases, an installed OpenDesign application) is a separate artefact. When a verdict depends on an engine, the
+evidence MUST record which copy ran and its identity (commit or version); a difference from the pin MUST be reported as a difference
+and never silently resolved (§11.4.200, §11.4.6).
+
+### HE-7 What this layer does not do
+It MUST NOT change a canon file, constitution submodule content or an engine. Canon gaps are recorded in Known Conflicts items 25 to 29
+with a proposed canon change, to be made in the constitution repository through its own workflow (§11.4.26). It MUST NOT claim that
+canon binds `claude_toolkit` or `open_design` by name.
+
+### HE-8 Adopting this for another project
+A project that vendors the constitution gets the engines at the pin automatically. To bind them it MUST copy HE-1 to HE-7 into its own
+Spec Kit layer, list the engines it consumes in its own §11.4.31 manifest, and use the init command of HE-2. A binding that holds in
+canon itself (manifest entries, a clause naming each engine, a cycle gate for every engine that vendors a constitution) is a canon
+change, proposed in Known Conflicts item 26.
+
+### HE-9 Read-only verification commands (no network, no writes)
+- Pin and identity: `git -C constitution rev-parse HEAD`; `git -C constitution submodule status -- submodules/llmctl submodules/claude_toolkit submodules/open_design`.
+- Drift of the hub since the previous pin: `git -C constitution diff --stat 94b8836 HEAD`.
+- llmctl age: `git -C constitution/submodules/llmctl rev-list --count v3.2.2..HEAD`.
+- Cycle gate: `bash constitution/scripts/gates/cm_llmctl_submodule_nonrecursive.sh --root "$PWD/constitution"` (exit 1 at `4bcb512`).
+- Initialisation state of an engine's nested submodules: `git -C constitution/submodules/<name> submodule status` (a leading `-` means not initialised).
+- Derived regions of the two governance files: `python3 -I scripts/governance/regen_speckit_catalogue.py check --index constitution/constitution_index.yaml --canon-md constitution/Constitution.md --commit "$(git -C constitution rev-parse HEAD)" --constitution-file .specify/memory/constitution.md --appendix-file .specify/memory/constitution-appendix.md`.
+- Appendix against canon: `python3 -I scripts/governance/appendix_token_check.py --canon constitution/Constitution.md --appendix .specify/memory/constitution-appendix.md --allow scripts/governance/appendix_token_allow.tsv --floor scripts/governance/appendix_wording_floor.tsv --phrases scripts/governance/appendix_required_phrases.tsv`.

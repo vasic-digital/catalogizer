@@ -49,6 +49,7 @@ This is a `vasic-digital` / `HelixDevelopment` submodule for HelixPlay.
 - **Decoupling:** Reusable components live in public `vasic-digital` submodules.
 - **Tests:** 100% coverage across all ten types. Only Unit may use mocks.
 - **R-18 Operational Integrity:** No command may suspend/hibernate/lock/terminate/crash the host.
+- **Hub engines:** `constitution/submodules/{llmctl,claude_toolkit,open_design}` are constitution hub engines: consumed by reference, initialised one level only (never `--recursive` through `constitution/`), never shipped in a product artifact. Rules: `.specify/memory/constitution.md` (section "Constitution Hub Engines") and `docs/GOVERNANCE.md`.
 
 ## Git topology
 `origin` fetch=GitHub, push=GitFlic and five further hosts (six push URLs). Eight remotes are configured in total.

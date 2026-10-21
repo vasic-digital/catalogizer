@@ -92,6 +92,14 @@ Comprehensive documentation for the Catalogizer multi-platform media collection 
 |----------|-------------|
 | [Freemium Security Setup](FREEMIUM_SECURITY_SETUP.md) | Security configuration for freemium deployments |
 
+## Governance
+
+| Document | Description |
+|----------|-------------|
+| [Governance and the Constitution](GOVERNANCE.md) | The governance layers, the pinned canon commit, how to move the pin, the binding of the vendored engines `llmctl`, `claude_toolkit` and `open_design`, and safe submodule initialisation |
+| [Spec Kit constitution](../.specify/memory/constitution.md) | Catalogizer's governance layer (version 2.4.0) |
+| [Constitution appendix](../.specify/memory/constitution-appendix.md) | The operative digest of every canon anchor, the project rules and the hub-engine register |
+
 ## Project Status and Tracking
 
 | Document | Description |
