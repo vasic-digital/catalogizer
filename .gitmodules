@@ -130,3 +130,84 @@
 [submodule "constitution"]
 	path = constitution
 	url = git@github.com:HelixDevelopment/HelixConstitution.git
+[submodule "scrcpy"]
+	path = submodules/scrcpy
+	url = git@github.com:Genymobile/scrcpy.git
+[submodule "allure2"]
+	path = submodules/allure2
+	url = git@github.com:allure-framework/allure2.git
+[submodule "leakcanary"]
+	path = submodules/leakcanary
+	url = git@github.com:square/leakcanary.git
+[submodule "docker_android"]
+	path = submodules/docker_android
+	url = git@github.com:budtmo/docker-android.git
+[submodule "appium"]
+	path = submodules/appium
+	url = git@github.com:appium/appium.git
+[submodule "midscene"]
+	path = submodules/midscene
+	url = git@github.com:web-infra-dev/midscene.git
+[submodule "skyvern"]
+	path = submodules/skyvern
+	url = git@github.com:Skyvern-AI/skyvern.git
+[submodule "anthropic_quickstarts"]
+	path = submodules/anthropic_quickstarts
+	url = git@github.com:anthropics/anthropic-quickstarts.git
+[submodule "ui_tars_desktop"]
+	path = submodules/ui_tars_desktop
+	url = git@github.com:bytedance/UI-TARS-desktop.git
+[submodule "mem0"]
+	path = submodules/mem0
+	url = git@github.com:mem0ai/mem0.git
+[submodule "moondream"]
+	path = submodules/moondream
+	url = git@github.com:vikhyat/moondream.git
+[submodule "ui_tars"]
+	path = submodules/ui_tars
+	url = git@github.com:bytedance/UI-TARS.git
+[submodule "perfetto"]
+	path = submodules/perfetto
+	url = git@github.com:google/perfetto.git
+[submodule "chroma"]
+	path = submodules/chroma
+	url = git@github.com:chroma-core/chroma.git
+[submodule "shortest"]
+	path = submodules/shortest
+	url = git@github.com:antiwork/shortest.git
+[submodule "marker"]
+	path = submodules/marker
+	url = git@github.com:VikParuchuri/marker.git
+[submodule "kiwi_tcms"]
+	path = submodules/kiwi_tcms
+	url = git@github.com:kiwitcms/Kiwi.git
+[submodule "testdriverai"]
+	path = submodules/testdriverai
+	url = git@github.com:testdriverai/testdriverai.git
+[submodule "stagehand"]
+	path = submodules/stagehand
+	url = git@github.com:browserbase/stagehand.git
+[submodule "unstructured"]
+	path = submodules/unstructured
+	url = git@github.com:Unstructured-IO/unstructured.git
+[submodule "redroid"]
+	path = submodules/redroid
+	url = git@github.com:remote-android/redroid-doc.git
+[submodule "signoz"]
+	path = submodules/signoz
+	url = git@github.com:SigNoz/signoz.git
+[submodule "docling"]
+	path = submodules/docling
+	url = git@github.com:DS4SD/docling.git
+[submodule "llama_index"]
+	path = submodules/llama_index
+	url = git@github.com:run-llama/llama_index.git
+[submodule "appcrawler"]
+	path = submodules/appcrawler
+	url = git@github.com:nicetester/AppCrawler.git
+[submodule "rest_demo"]
+	path = submodules/rest_demo
+	url = git@github.com:nicehash/rest-clients-demo.git
+[submodule "browser_use"]
+	path = submodules/browser_use
+	url = git@github.com:browser-use/browser-use.git

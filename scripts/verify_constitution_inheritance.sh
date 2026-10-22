@@ -67,7 +67,7 @@ ok() {
 if [[ -d "${CONST_DIR}" ]]; then
     ok INV1 "constitution/ exists"
 else
-    fail INV1 "constitution/ is MISSING at ${CONST_DIR} — run \`git submodule update --init --recursive\` to materialise the constitution submodule"
+    fail INV1 "constitution/ is MISSING at ${CONST_DIR} — run \`git submodule update --init constitution\` (one level only, never --recursive through it; see docs/GOVERNANCE.md section 5) to materialise the constitution submodule"
 fi
 
 # --- INV2: Constitution.md exists AND contains the verified §11.4 anchor ------

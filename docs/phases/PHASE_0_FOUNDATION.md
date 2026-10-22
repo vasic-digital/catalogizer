@@ -611,7 +611,7 @@ steps:
     commands:
       - echo "Setting up environment..."
       - mkdir -p reports/{security,coverage,tests}
-      - git submodule update --init --recursive
+      - scripts/safe_submodule_init.sh   # never --recursive through constitution/
 
   # ==========================================
   # PHASE 2: Go Backend Validation
@@ -770,7 +770,7 @@ echo ""
 echo "PHASE 1: Setup & Dependencies"
 echo "==================================================================="
 
-run_step "submodule-init" "git submodule update --init --recursive"
+run_step "submodule-init" "scripts/safe_submodule_init.sh"
 
 # ==========================================
 # PHASE 2: Go Backend Validation

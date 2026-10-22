@@ -24,7 +24,12 @@ own_orgs:
     - vasic-digital
     - HelixDevelopment
 
-submodule_class_overrides: {}
+# Gitlinks whose URL carries no github/gitlab organisation (the renderer fails closed on them). The Go toolchain
+# mirror nested in claude_toolkit is upstream third-party source. Own-org engines (llmctl, claude_toolkit, containers)
+# need no override: their vasic-digital URLs classify them own; open_design (nexu-io), superspec (WangX0111) and the
+# flat tool repos under submodules/ classify third_party by URL.
+submodule_class_overrides:
+  constitution/submodules/claude_toolkit/submodules/go: third_party
 
 baseline_excludes:
   build_outputs: ["/out/", "/dist/", "/target/", ".compressed/"]

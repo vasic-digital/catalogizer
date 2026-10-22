@@ -72,8 +72,8 @@ D) .env
 
 **Q7.** What command initializes git submodules after cloning the repository?
 
-A) `git clone --recursive`
-B) `git submodule init && git submodule update --recursive`
+A) `git clone --depth 1`
+B) `scripts/safe_submodule_init.sh`
 C) `git modules install`
 D) `git pull --submodules`
 
@@ -670,7 +670,7 @@ D) WAL mode requires PostgreSQL
 | Q4  | C | SQLite is the default development database; PostgreSQL is for production |
 | Q5  | C | The project uses Podman exclusively, never Docker |
 | Q6  | B | The backend writes `.service-port` so the frontend knows which port to proxy to |
-| Q7  | B | `git submodule init && git submodule update --recursive` initializes all submodules |
+| Q7  | B | `scripts/safe_submodule_init.sh` initializes all submodules |
 | Q8  | C | Five protocols: SMB/CIFS, FTP/FTPS, NFS, WebDAV, local filesystem |
 | Q9  | C | UnifiedClient in filesystem/interface.go abstracts all protocol implementations |
 | Q10 | C | WebSocket provides real-time event delivery to connected clients |

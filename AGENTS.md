@@ -50,6 +50,7 @@ This is a `vasic-digital` / `HelixDevelopment` submodule for HelixPlay.
 - **Tests:** 100% coverage across all ten types. Only Unit may use mocks.
 - **R-18 Operational Integrity:** No command may suspend/hibernate/lock/terminate/crash the host.
 - **Hub engines:** `constitution/submodules/{llmctl,claude_toolkit,open_design}` are constitution hub engines: consumed by reference, initialised one level only (never `--recursive` through `constitution/`), never shipped in a product artifact. Rules: `.specify/memory/constitution.md` (section "Constitution Hub Engines") and `docs/GOVERNANCE.md`.
+- **Submodule-dependency manifest (§11.4.31).** The root project's own-org dependencies are declared in the repository-root `helix-deps.yaml` (flat own-org submodules + constitution hub engines, layout `hub`); third-party tool submodules are deliberately not listed there (see `docs/dependency_existence_register.md`). Every own-org submodule must ship its own `helix-deps.yaml`; `scripts/verify_helix_deps_manifests.sh` (guide: `docs/scripts/verify_helix_deps_manifests.md`) verifies this across the root, `submodules/*` and `constitution/submodules/*`.
 
 ## Git topology
 `origin` fetch=GitHub, push=GitFlic and five further hosts (six push URLs). Eight remotes are configured in total.

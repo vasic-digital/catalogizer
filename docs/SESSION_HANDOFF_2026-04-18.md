@@ -204,7 +204,7 @@ These were caught by reviewers across P0–P7 and left as NICE_TO_HAVE or deferr
 ### 4.1 Verify current state after `git pull`
 ```bash
 cd /run/media/milosvasic/DATA4TB/Projects/Catalogizer
-git pull --recurse-submodules
+git pull --recurse-submodules   # historical (2026-04-18): do not run through constitution/; use scripts/safe_submodule_init.sh
 cd HelixQA && GOTOOLCHAIN=local go test -mod=vendor -race ./pkg/nexus/... -count=1 -timeout 300s
 cd ../catalog-api && GOMAXPROCS=3 go test -count=1 -race ./internal/services/... -timeout 120s
 cd ../Containers && GOTOOLCHAIN=local go test -count=1 -race ./... -timeout 300s

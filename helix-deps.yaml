@@ -1,0 +1,349 @@
+# helix-deps.yaml - Catalogizer root project Submodule-Dependency Manifest
+# Per HelixConstitution 11.4.31 (Submodule-Dependency-Manifest Mandate).
+#
+# This is the ROOT project manifest. It declares every own-org
+# (vasic-digital/*, HelixDevelopment/*) dependency the root project uses:
+#   1. the flat own-org submodules recorded in .gitmodules (layout: grouped,
+#      i.e. <root>/submodules/<name>/), refs = the gitlinks STAGED in the root
+#      index (`git ls-files -s`), re-synced on 2026-10-22 after the own-org
+#      submodule bumps of this change (short shas, no upstream tags relied on);
+#      enforced by constitution/scripts/gates/cm_helix_deps_ref_matches_gitlink.sh;
+#   2. the constitution hub engines the project binds (layout: hub, i.e.
+#      <root>/constitution/submodules/<name>/, resolved through the
+#      constitution hub per 11.4.28(C); they are NOT root-level submodules and
+#      are NOT added to .gitmodules of the root). Their refs = the gitlinks
+#      recorded inside constitution at its pinned commit 5f8503b
+#      (`git -C constitution ls-tree 5f8503b submodules/`); the ref gate reports
+#      them BLIND because they have no root .gitmodules entry (by design).
+#
+# NOT listed here (by design):
+#   - the constitution submodule itself (HelixConstitution): it is the hub and
+#     is inherited by reference (CLAUDE.md / @constitution/CLAUDE.md);
+#   - third-party tool submodules (Genymobile/scrcpy, appium, skyvern, chroma,
+#     ... and WangX0111/superspec): they are not own-org dependencies. Their
+#     existence verdicts live in docs/dependency_existence_register.md
+#     (11.4.270) and docs/dependency_existence_register.tsv.
+#
+# Validation: scripts/verify_helix_deps_manifests.sh (walks the root,
+# submodules/* and constitution/submodules/*; own-org repos MUST ship a
+# well-formed helix-deps.yaml; third-party repos are SKIP(third_party)).
+# Companion guide: docs/scripts/verify_helix_deps_manifests.md
+# All ssh_urls were verified reachable with `git ls-remote` on 2026-10-21.
+
+schema_version: 1
+
+deps:
+  # --- flat own-org submodules (layout: grouped = <root>/submodules/<name>/) ---
+  - name: assets
+    ssh_url: git@github.com:vasic-digital/Assets.git
+    ref: 1f55db0              # pinned sha = gitlink recorded for submodules/assets
+    why: "Go asset/resource management module (digital.vasic.assets)"
+    layout: grouped
+
+  - name: auth
+    ssh_url: git@github.com:vasic-digital/Auth.git
+    ref: 0ae1f5d              # pinned sha = gitlink recorded for submodules/auth
+    why: "JWT, API-key, OAuth2 and token primitives (digital.vasic.auth) used by the catalog-api"
+    layout: grouped
+
+  - name: auth_context_react
+    ssh_url: git@github.com:vasic-digital/Auth-Context-React.git
+    ref: 5579c44              # pinned sha = gitlink recorded for submodules/auth_context_react
+    why: "React auth context/provider consumed by catalog-web"
+    layout: grouped
+
+  - name: cache
+    ssh_url: git@github.com:vasic-digital/Cache.git
+    ref: 6a9a3e5              # pinned sha = gitlink recorded for submodules/cache
+    why: "In-memory/Redis cache primitives (digital.vasic.cache)"
+    layout: grouped
+
+  - name: catalogizer_api_client_ts
+    ssh_url: git@github.com:vasic-digital/Catalogizer-API-Client-TS.git
+    ref: a0cd057              # pinned sha = gitlink recorded for submodules/catalogizer_api_client_ts
+    why: "TypeScript API client for the catalog-api, shared by web and desktop clients"
+    layout: grouped
+
+  - name: challenges
+    ssh_url: git@github.com:vasic-digital/Challenges.git
+    ref: 8a352b9              # pinned sha = gitlink recorded for submodules/challenges
+    why: "Challenges framework: end-to-end challenge scripts and anti-bluff recording (11.4.27)"
+    layout: grouped
+
+  - name: collection_manager_react
+    ssh_url: git@github.com:vasic-digital/Collection-Manager-React.git
+    ref: 38650be              # pinned sha = gitlink recorded for submodules/collection_manager_react
+    why: "React collection-manager UI component library for catalog-web"
+    layout: grouped
+
+  - name: concurrency
+    ssh_url: git@github.com:vasic-digital/Concurrency.git
+    ref: 32b7efa              # pinned sha = gitlink recorded for submodules/concurrency
+    why: "Concurrency primitives (worker pools, semaphores) for the Go services"
+    layout: grouped
+
+  - name: config
+    ssh_url: git@github.com:vasic-digital/Config.git
+    ref: 8d3f1e0              # pinned sha = gitlink recorded for submodules/config
+    why: "Configuration loading module (digital.vasic.config)"
+    layout: grouped
+
+  - name: containers
+    ssh_url: git@github.com:vasic-digital/Containers.git
+    ref: 4a8f04e              # pinned sha = gitlink recorded for submodules/containers
+    why: "Rootless container orchestration layer (11.4.76 / 11.4.161 / 11.4.173 containerized build)"
+    layout: grouped
+
+  - name: dashboard_analytics_react
+    ssh_url: git@github.com:vasic-digital/Dashboard-Analytics-React.git
+    ref: 96903a6              # pinned sha = gitlink recorded for submodules/dashboard_analytics_react
+    why: "React dashboard/analytics components for catalog-web"
+    layout: grouped
+
+  - name: database
+    ssh_url: git@github.com:vasic-digital/Database.git
+    ref: 8adb19c              # pinned sha = gitlink recorded for submodules/database
+    why: "Database access layer (digital.vasic.database) for the catalog-api"
+    layout: grouped
+
+  - name: discovery
+    ssh_url: git@github.com:vasic-digital/Discovery.git
+    ref: 0e491a3              # pinned sha = gitlink recorded for submodules/discovery
+    why: "Network/service discovery module for storage and SMB/NFS source detection"
+    layout: grouped
+
+  - name: doc_processor
+    ssh_url: git@github.com:HelixDevelopment/DocProcessor.git
+    ref: 5692e52              # pinned sha = gitlink recorded for submodules/doc_processor
+    why: "HelixDevelopment DocProcessor: document ingestion/parsing used by the catalog pipeline"
+    layout: grouped
+
+  - name: entities
+    ssh_url: git@github.com:vasic-digital/Entities.git
+    ref: 4448756              # pinned sha = gitlink recorded for submodules/entities
+    why: "Shared entity/domain model module (digital.vasic.entities)"
+    layout: grouped
+
+  - name: event_bus
+    ssh_url: git@github.com:vasic-digital/EventBus.git
+    ref: 4613a5a              # pinned sha = gitlink recorded for submodules/event_bus
+    why: "In-process event bus (digital.vasic.eventbus)"
+    layout: grouped
+
+  - name: filesystem
+    ssh_url: git@github.com:vasic-digital/Filesystem.git
+    ref: 28bcaa3              # pinned sha = gitlink recorded for submodules/filesystem
+    why: "Filesystem abstraction (local/SMB/NFS/FTP) module"
+    layout: grouped
+
+  - name: helix_memory
+    ssh_url: git@github.com:HelixDevelopment/HelixMemory.git
+    ref: 979d7c8              # pinned sha = gitlink recorded for submodules/helix_memory
+    why: "HelixMemory: agent/LLM memory module used by the QA and LLM stack"
+    layout: grouped
+
+  - name: helix_qa
+    ssh_url: git@github.com:HelixDevelopment/HelixQA.git
+    ref: ad8b12b              # pinned sha = gitlink recorded for submodules/helix_qa
+    why: "HelixQA: autonomous QA orchestration, test banks and Vision-driven UI QA (11.4.27 / 11.4.278)"
+    layout: grouped
+
+  - name: lazy
+    ssh_url: git@github.com:vasic-digital/Lazy.git
+    ref: 71bc650              # pinned sha = gitlink recorded for submodules/lazy
+    why: "Lazy-initialisation primitives (digital.vasic.lazy)"
+    layout: grouped
+
+  - name: llm_orchestrator
+    ssh_url: git@github.com:HelixDevelopment/LLMOrchestrator.git
+    ref: 55d2dde              # pinned sha = gitlink recorded for submodules/llm_orchestrator
+    why: "HelixDevelopment LLMOrchestrator: multi-provider LLM routing for HelixQA"
+    layout: grouped
+
+  - name: llm_provider
+    ssh_url: git@github.com:HelixDevelopment/LLMProvider.git
+    ref: e05ec64              # pinned sha = gitlink recorded for submodules/llm_provider
+    why: "HelixDevelopment LLMProvider: LLM provider adapters"
+    layout: grouped
+
+  - name: media
+    ssh_url: git@github.com:vasic-digital/Media.git
+    ref: ff11546              # pinned sha = gitlink recorded for submodules/media
+    why: "Media detection/metadata module (digital.vasic.media)"
+    layout: grouped
+
+  - name: media_browser_react
+    ssh_url: git@github.com:vasic-digital/Media-Browser-React.git
+    ref: aa6585a              # pinned sha = gitlink recorded for submodules/media_browser_react
+    why: "React media-browser components for catalog-web"
+    layout: grouped
+
+  - name: media_player_react
+    ssh_url: git@github.com:vasic-digital/Media-Player-React.git
+    ref: 5cf2e88              # pinned sha = gitlink recorded for submodules/media_player_react
+    why: "React media-player components for catalog-web"
+    layout: grouped
+
+  - name: media_types_ts
+    ssh_url: git@github.com:vasic-digital/Media-Types-TS.git
+    ref: c1f1cd9              # pinned sha = gitlink recorded for submodules/media_types_ts
+    why: "Shared TypeScript media type definitions"
+    layout: grouped
+
+  - name: memory
+    ssh_url: git@github.com:vasic-digital/Memory.git
+    ref: 58520a1              # pinned sha = gitlink recorded for submodules/memory
+    why: "Memory-management primitives (digital.vasic.memory)"
+    layout: grouped
+
+  - name: middleware
+    ssh_url: git@github.com:vasic-digital/Middleware.git
+    ref: 9bcac12              # pinned sha = gitlink recorded for submodules/middleware
+    why: "HTTP middleware module (digital.vasic.middleware)"
+    layout: grouped
+
+  - name: observability
+    ssh_url: git@github.com:vasic-digital/Observability.git
+    ref: bd3a5be              # pinned sha = gitlink recorded for submodules/observability
+    why: "Metrics/tracing/logging module (digital.vasic.observability)"
+    layout: grouped
+
+  - name: rate_limiter
+    ssh_url: git@github.com:vasic-digital/RateLimiter.git
+    ref: 6463e51              # pinned sha = gitlink recorded for submodules/rate_limiter
+    why: "Rate limiting module (digital.vasic.ratelimiter)"
+    layout: grouped
+
+  - name: recovery
+    ssh_url: git@github.com:vasic-digital/Recovery.git
+    ref: 30961a1              # pinned sha = gitlink recorded for submodules/recovery
+    why: "Panic/recovery and circuit-breaker primitives"
+    layout: grouped
+
+  - name: replay_buffer
+    ssh_url: git@github.com:vasic-digital/ReplayBuffer.git
+    ref: 74db907              # pinned sha = gitlink recorded for submodules/replay_buffer
+    why: "ReplayBuffer: frame/event replay buffering for the QA recording stack"
+    layout: grouped
+
+  - name: screen_diff
+    ssh_url: git@github.com:vasic-digital/ScreenDiff.git
+    ref: 97571d2              # pinned sha = gitlink recorded for submodules/screen_diff
+    why: "ScreenDiff: screenshot diffing for visual QA"
+    layout: grouped
+
+  - name: security
+    ssh_url: git@github.com:vasic-digital/Security.git
+    ref: 79151f2              # pinned sha = gitlink recorded for submodules/security
+    why: "Security primitives (hashing, validation, sanitising) module"
+    layout: grouped
+
+  - name: storage
+    ssh_url: git@github.com:vasic-digital/Storage.git
+    ref: e498c63              # pinned sha = gitlink recorded for submodules/storage
+    why: "Storage backend module (digital.vasic.storage)"
+    layout: grouped
+
+  - name: streaming
+    ssh_url: git@github.com:vasic-digital/Streaming.git
+    ref: ec4e115              # pinned sha = gitlink recorded for submodules/streaming
+    why: "Media streaming module (digital.vasic.streaming)"
+    layout: grouped
+
+  - name: training_collector
+    ssh_url: git@github.com:vasic-digital/TrainingCollector.git
+    ref: 65f3260              # pinned sha = gitlink recorded for submodules/training_collector
+    why: "TrainingCollector: QA/Vision training-data collection"
+    layout: grouped
+
+  - name: ui_components_react
+    ssh_url: git@github.com:vasic-digital/UI-Components-React.git
+    ref: d91f9ec              # pinned sha = gitlink recorded for submodules/ui_components_react
+    why: "Shared React UI component library for catalog-web"
+    layout: grouped
+
+  - name: vision_engine
+    ssh_url: git@github.com:HelixDevelopment/VisionEngine.git
+    ref: ce16f92              # pinned sha = gitlink recorded for submodules/vision_engine
+    why: "HelixDevelopment VisionEngine: Vision/OCR screen reading for HelixQA (11.4.160 / 11.4.278)"
+    layout: grouped
+
+  - name: visual_regression
+    ssh_url: git@github.com:vasic-digital/VisualRegression.git
+    ref: 27f75eb              # pinned sha = gitlink recorded for submodules/visual_regression
+    why: "VisualRegression: visual regression comparison for UI QA (11.4.162 / 11.4.170)"
+    layout: grouped
+
+  - name: watcher
+    ssh_url: git@github.com:vasic-digital/Watcher.git
+    ref: 4560d74              # pinned sha = gitlink recorded for submodules/watcher
+    why: "Filesystem/source watcher module (digital.vasic.watcher)"
+    layout: grouped
+
+  - name: websocket_client_ts
+    ssh_url: git@github.com:vasic-digital/WebSocket-Client-TS.git
+    ref: 1d92461              # pinned sha = gitlink recorded for submodules/websocket_client_ts
+    why: "TypeScript WebSocket client shared by web and desktop clients"
+    layout: grouped
+
+  # --- constitution hub engines (layout: hub = <root>/constitution/submodules/<name>/) ---
+  # Convention copied from constitution/helix-deps.yaml: hub engines are depth-1
+  # entries under the hub (11.4.28(C) carve-out); `recursive_init: false` marks
+  # engines that MUST NOT be initialised with --recursive (use
+  # scripts/safe_submodule_init.sh). At canon 5f8503b NEITHER llmctl nor
+  # claude_toolkit nests an own-org repository any more; both nest third-party
+  # repositories only (llmctl: llama.cpp + colibri; claude_toolkit: the Go
+  # toolchain under submodules/go), which are never initialised recursively,
+  # and llmctl is additionally a depth-1 hub entry by contract (11.4.277(B)).
+  - name: llmctl
+    ssh_url: git@github.com:vasic-digital/llmctl.git
+    ref: f42bad6              # pinned sha = gitlink of constitution/submodules/llmctl at constitution's recorded pin
+    why: "11.4.277 llmctl model validation gate and host-safe model units; the vendored model manager (validate / require-validated) for HelixQA Vision (11.4.278)"
+    layout: hub
+    recursive_init: false    # NEVER --recursive (11.4.277(B) depth-1 hub entry); f42bad6 nests only third-party llama.cpp + colibri; CM-LLMCTL-SUBMODULE-NONRECURSIVE PASSes
+
+  - name: claude_toolkit
+    ssh_url: git@github.com:vasic-digital/claude_toolkit.git
+    ref: 1f6dad3              # pinned sha = gitlink of constitution/submodules/claude_toolkit at constitution's recorded pin (5f8503b)
+    why: "constitution hub engine: multi-alias / provider toolkit (11.4.196 / 11.4.198 native-first orchestration); never shipped in a product artifact. At 1f6dad3 it nests no own-org repository, resolves its own-org deps flat via scripts/resolve_deps.sh and ships its own helix-deps.yaml"
+    layout: hub
+    recursive_init: false    # NEVER --recursive: 1f6dad3 nests only the third-party Go toolchain (submodules/go, go.googlesource.com); CM-HUB-ENGINE-NO-OWNORG-NESTING and CM-HELIX-DEPS-MANIFEST-PRESENT PASS
+
+  - name: continuum
+    ssh_url: git@github.com:vasic-digital/continuum.git
+    ref: 4639347              # pinned sha = gitlink of constitution/submodules/continuum at constitution's recorded pin
+    why: "11.4.207 instant multi-stream resume engine (content-addressed snapshot), used for session resumption defaults"
+    layout: hub
+
+  - name: anti_bluff
+    ssh_url: git@github.com:vasic-digital/anti_bluff.git
+    ref: d060d08              # pinned sha = gitlink of constitution/submodules/anti_bluff at constitution's recorded pin
+    why: "shared anti-bluff verification primitives (ab_pass_with_evidence / ab_skip_with_reason) sourced by challenge scripts"
+    layout: hub
+
+  - name: docs_chain
+    ssh_url: git@github.com:vasic-digital/docs_chain.git
+    ref: 8e0abe0              # pinned sha = gitlink of constitution/submodules/docs_chain at constitution's recorded pin
+    why: "11.4.106 mechanical documentation-and-database dependency-propagation engine (docs/DB sync at commit/build seams)"
+    layout: hub
+
+  - name: design-toolkit
+    ssh_url: git@github.com:vasic-digital/design-toolkit.git
+    ref: 4ddc964              # pinned sha = gitlink of constitution/submodules/design-toolkit at constitution's recorded pin
+    why: "11.4.162 / 11.4.216-218 OpenDesign design-token and brand-contract engine for the catalog-web and desktop UIs"
+    layout: hub
+
+  # Third-party REFERENCE hub checkout (11.4.162): not an own-org dependency.
+  - name: open_design
+    ssh_url: git@github.com:nexu-io/open-design.git
+    ref: 3b0df90              # pinned sha = gitlink of constitution/submodules/open_design
+    why: "11.4.162 OpenDesign upstream, ONE pinned REFERENCE checkout for design-system work; consumed as a dependency, never forked"
+    layout: hub
+    third_party: true
+    licence: Apache-2.0
+
+transitive_handling:
+  recursive: true
+  conflict_resolution: operator-required
+
+language_specific_subtree: false

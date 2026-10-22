@@ -23,7 +23,7 @@ This guide covers how to set up a development environment, follow the project's 
 ```bash
 git clone <repository-url>
 cd Catalogizer
-git submodule init && git submodule update --recursive
+scripts/safe_submodule_init.sh   # never `--recursive` through constitution/ (see docs/GOVERNANCE.md)
 ```
 
 ### Start the Backend
@@ -144,7 +144,8 @@ TypeScript packages use `file:../` references in `package.json`:
 
 ```bash
 # Update all submodules to latest
-git submodule update --remote --recursive
+# CAUTION: --remote moves third-party pins to upstream tips without review; inspect the gitlink diff before committing
+git submodule status | awk '$2 != "constitution" {print $2}' | xargs -r git submodule update --remote --recursive --
 
 # Commit changes in a submodule
 cd Challenges

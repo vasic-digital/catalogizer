@@ -56,7 +56,7 @@ GATE="${PROJECT_ROOT}/scripts/verify_constitution_inheritance.sh"
 
 if [[ ! -f "${HELPER}" ]]; then
     echo "FAIL: constitution-side meta-test helper not found at ${HELPER}" >&2
-    echo "      Run \`git submodule update --init --recursive\` first." >&2
+    echo "      Run \`scripts/safe_submodule_init.sh\` first (never \`--recursive\` through constitution/; see docs/GOVERNANCE.md section 5)." >&2
     exit 2
 fi
 if [[ ! -f "${GATE}" ]]; then

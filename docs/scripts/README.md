@@ -27,6 +27,7 @@ One guide per script (constitution 11.4.18). Every page of this directory is lis
 | [scope_drift_check.md](scope_drift_check.md) | `scripts/audit/scope_drift_check.sh` | |
 | [lumenignore_skeleton.md](lumenignore_skeleton.md) | `scripts/audit/lumenignore_skeleton.py` | |
 | [verify_repos.md](verify_repos.md) | `scripts/repo/verify_repos.sh` | |
+| [verify_helix_deps_manifests.md](verify_helix_deps_manifests.md) | `scripts/verify_helix_deps_manifests.sh` | 11.4.31 helix-deps.yaml verifier; thin wrapper delegating to `constitution/scripts/deps_manifest/verify_helix_deps_manifests.sh`, canonical exit codes 0/1/2/64 (test: `scripts/tests/test_verify_helix_deps_manifests.sh`) |
 | [locked.md](locked.md) | `scripts/register/locked.sh` | T064 single-writer wrapper of the register |
 | [backup_db.md](backup_db.md) | `scripts/register/backup_db.sh` | T064a pre-op backup (online backup, never `cp -al`) |
 | [register_dump.md](register_dump.md) | `scripts/register/dump.sh` | T066 deterministic dump and the commit procedure |

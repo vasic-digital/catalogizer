@@ -62,11 +62,12 @@
 
 **[Visual: Terminal with commands]**
 
-**Narrator**: Setting up your development environment is straightforward. First, clone the repository with the `--recursive` flag to include all submodules:
+**Narrator**: Setting up your development environment is straightforward. First, clone the repository, then run the safe submodule initialiser (never a blanket `--recursive`, because a recursive update through the constitution folder cycles):
 
 ```bash
-git clone --recursive https://github.com/anomalyco/catalogizer.git
+git clone https://github.com/anomalyco/catalogizer.git
 cd catalogizer
+./scripts/safe_submodule_init.sh   # never --recursive through constitution/
 ./scripts/install.sh --mode=development
 ```
 
@@ -115,8 +116,9 @@ cd catalog-web && npm run dev
 
 ### Cloning and Setup
 ```bash
-git clone --recursive https://github.com/anomalyco/catalogizer.git
+git clone https://github.com/anomalyco/catalogizer.git
 cd catalogizer
+./scripts/safe_submodule_init.sh   # never --recursive through constitution/
 ./scripts/install.sh --mode=development
 ```
 

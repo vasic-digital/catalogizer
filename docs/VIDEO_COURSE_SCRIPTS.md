@@ -3292,9 +3292,10 @@ cd Catalogizer
 
 Initialize all 41 submodules:
 ```bash
-git submodule init
-git submodule update --recursive
+scripts/safe_submodule_init.sh
 ```
+
+(Never run `git submodule update --recursive` through `constitution/`; the script wraps the safe sequence from docs/GOVERNANCE.md.)
 
 This downloads all Go modules, TypeScript libraries,
 and supporting tools. It may take a few minutes on

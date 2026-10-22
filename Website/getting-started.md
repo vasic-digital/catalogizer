@@ -19,7 +19,7 @@ Choose one of the following setups:
 ```bash
 git clone <repository-url>
 cd Catalogizer
-git submodule init && git submodule update --recursive
+scripts/safe_submodule_init.sh   # never `git submodule update --recursive` through constitution/ (see docs/GOVERNANCE.md)
 ```
 
 ## Step 2: Start the Backend

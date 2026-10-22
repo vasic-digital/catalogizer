@@ -21,7 +21,7 @@ This document contains practical exercises for each of the 6 core modules in the
    ```bash
    git clone <repository-url> Catalogizer
    cd Catalogizer
-   git submodule init && git submodule update --recursive
+   scripts/safe_submodule_init.sh   # never --recursive through constitution/
    ```
 
 2. Set up the backend. Navigate to the catalog-api directory and create a `.env` file:
@@ -505,7 +505,7 @@ console.log(`Total media items: ${media.length}`);
 
    ```bash
    cd Catalogizer
-   git submodule init && git submodule update --recursive
+   scripts/safe_submodule_init.sh   # never --recursive through constitution/
    ```
 
 2. Start the backend in development mode:

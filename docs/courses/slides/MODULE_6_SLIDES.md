@@ -97,7 +97,7 @@
 **Title**: Working with Git Submodules
 
 **Bullet Points**:
-- Initialize after cloning: `git submodule init && git submodule update --recursive`
+- Initialize after cloning: `scripts/safe_submodule_init.sh` (never `--recursive` through `constitution/`)
 - Submodules appear in root: Auth/, Cache/, Database/, Filesystem/, EventBus/, etc.
 - Each submodule has its own repo, tests, and documentation
 - Create new submodules: `./scripts/setup-submodule.sh ModuleName [--create-repos] [--go|--ts|--kotlin]`
@@ -193,11 +193,11 @@
 **Title**: Day-to-Day Submodule Operations
 
 **Bullet Points**:
-- **Initialize**: `git submodule init && git submodule update --recursive`
+- **Initialize**: `scripts/safe_submodule_init.sh` (never `--recursive` through `constitution/`)
 - **Create new**: `./scripts/setup-submodule.sh ModuleName [--create-repos] [--go|--ts|--kotlin]`
 - **Commit changes**: `cd SubmoduleName && commit "message"`
 - **Install upstreams**: `cd SubmoduleName && install_upstreams`
-- **Update all**: `git submodule update --recursive --remote`
+- **Update all**: `git submodule status | awk '$2 != "constitution" {print $2}' | xargs -r git submodule update --remote --recursive --` (caution: this moves third-party pins to upstream tips unreviewed)
 
 **Speaker Notes**: The workflow is straightforward. Make changes in the submodule directory, commit and push from within that directory. The parent repo sees the submodule reference update and includes it in its next commit.
 

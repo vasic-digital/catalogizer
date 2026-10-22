@@ -215,7 +215,7 @@ An important note for Podman users: always use fully qualified image names like 
 
 If you prefer running Catalogizer without containers, or need to set up a development environment for contributing, let us walk through the manual installation.
 
-Start by cloning the repository. After cloning, initialize the submodules with git submodule init followed by git submodule update --recursive. This pulls in all the reusable modules: Auth, Cache, Database, Filesystem, and the rest.
+Start by cloning the repository. After cloning, initialize the submodules with the scripts/safe_submodule_init.sh helper, which never recurses through the constitution hub. This pulls in all the reusable modules: Auth, Cache, Database, Filesystem, and the rest.
 
 Navigate to the catalog-api directory. Run go mod tidy to install all Go dependencies. This will pull in the Gin framework, database bindings, WebSocket libraries, and all other backend dependencies.
 
@@ -236,7 +236,7 @@ SMB resilience configuration includes SMB_RETRY_ATTEMPTS (default 5), SMB_RETRY_
 ### On-Screen Actions
 
 - [00:00] Open terminal and clone the repository
-- [00:30] Initialize submodules: `git submodule init && git submodule update --recursive`
+- [00:30] Initialize submodules: `scripts/safe_submodule_init.sh`
 - [01:00] Show the submodule directories appearing
 - [01:30] `cd catalog-api && go mod tidy`
 - [02:30] Create and edit the .env file with database, JWT, and API key configuration
@@ -258,7 +258,7 @@ SMB resilience configuration includes SMB_RETRY_ATTEMPTS (default 5), SMB_RETRY_
 
 ### Key Points
 
-- Clone and initialize submodules: `git submodule init && git submodule update --recursive`
+- Clone and initialize submodules: `scripts/safe_submodule_init.sh`
 - Backend: `go mod tidy` -> configure .env -> `go run main.go` (port 8080)
 - Frontend: `npm install` -> configure .env.local -> `npm run dev` (port 5173)
 - SQLite is the default database for development -- no additional setup required
@@ -278,7 +278,7 @@ SMB resilience configuration includes SMB_RETRY_ATTEMPTS (default 5), SMB_RETRY_
 ### Quiz Questions
 
 1. **Q**: What command initializes all submodules after cloning?
-   **A**: `git submodule init && git submodule update --recursive`
+   **A**: `scripts/safe_submodule_init.sh`
 
 2. **Q**: What is the default database type for development?
    **A**: SQLite -- no additional setup required, the database file is created automatically.

@@ -60,6 +60,8 @@ cd /run/media/milosvasic/DATA4TB/Projects/Catalogizer
 git submodule update --remote --recursive
 ```
 
+> Note (2026-10-21): this recursive form is historical. Do not run it through `constitution/` (its hub engines can cycle); use `scripts/safe_submodule_init.sh`. `--remote` also moves third-party pins to upstream tips unreviewed.
+
 Run: `git status --porcelain`
 Expected: Shows modified submodules with new commits
 

@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Revision | 10 (canon pin move 94b8836 -> 4bcb512, helixconstitution-v70-6: canon text, index, groups, scripts and `helix-deps.yaml` byte-identical to `94b8836` (`git diff --stat 94b8836 4bcb512` lists only `.gitignore`, `.gitmodules` and three gitlinks); NEW section "Constitution Hub Engines" binding `llmctl`, `claude_toolkit` and `open_design`; NEW appendix Part 3; Known Conflicts item 21 parts (c) and (d) corrected, items 25 to 29 added; version 2.4.0) |
+| Revision | 11 (single-source flat layout, version 2.5.0: no nested submodule chains; canon pin moved `4bcb512` -> `a3d80ce` (canon branch `feat/hub-engines-single-source` merged and pushed to canon `main`) and then to the canon follow-up `5f8503b` (claude_toolkit pin `1f6dad3`); engines at the new pin: llmctl `f42bad6` (cleaned, nests only third-party repositories), helix_qa `ad8b12b` (root gitlink), claude_toolkit `1f6dad3` (cleaned: nests only the third-party Go toolchain, ships `helix-deps.yaml`; `CM-HUB-ENGINE-NO-OWNORG-NESTING` and `CM-HELIX-DEPS-MANIFEST-PRESENT` PASS); index scope re-rendered and drift-free (item 29 RESOLVED); HE-1 to HE-3 rewritten for the flat layout, `scripts/safe_submodule_init.sh` is the single safe init entry; Known Conflicts items 21(d), 25, 26, 27 and 29 updated (27 and 29 RESOLVED) and items 30 to 32 added; previous revision text follows) 10 (canon pin move 94b8836 -> 4bcb512, helixconstitution-v70-6: canon text, index, groups, scripts and `helix-deps.yaml` byte-identical to `94b8836` (`git diff --stat 94b8836 4bcb512` lists only `.gitignore`, `.gitmodules` and three gitlinks); NEW section "Constitution Hub Engines" binding `llmctl`, `claude_toolkit` and `open_design`; NEW appendix Part 3; Known Conflicts item 21 parts (c) and (d) corrected, items 25 to 29 added; version 2.4.0) |
 | Created | 2026-10-02 |
-| Last modified | 2026-10-21T13:57:15Z |
+| Last modified | 2026-10-22T00:30:00Z |
 | Status | active, BINDING; the canon pin move to `4bcb512` and the hub-engine binding were requested by the owner in the 2026-10-21 session ("Extend and update properly and in depth the SpecKit constitution to be linked and follow the constitution Submodule as our main source of truth ... We have added llmctl, claude_toolkit, open_design as Submodules! Make sure they are fully incorporated"); no request-history record was verified; INDEPENDENT REVIEW: round 1 by an Opus subagent dispatched through the Agent tool (effort not settable there, recorded as unverified) returned NO-GO with 2 blocking, 5 important, 5 minor and 4 nit findings, all fixed in this change except the nits N1 to N4 (N2 and N4 cosmetic, N1 and N3 pre-existing); round 2 returned NO-GO with 0 blocking, 1 important (item 29 misstated the Lumen-scope drift counts and cause), 1 minor and 2 nit findings, all fixed; the last fix is a factual correction of one item and was re-measured by the author (8 missing, 42 extra, 25 TSV rows) and not re-reviewed; the project's own WP-07 pin-move checkpoints (T084 G-PIN review record, T081a owner ratification record, `specs/001-full-project-audit-remediation/tasks.md`) are OPEN and are not created by this change |
 | Binds | the Catalogizer Spec Kit layer, together with `.specify/memory/constitution-appendix.md` |
 
@@ -45,8 +45,8 @@ Where a digest here or in the appendix is shorter than canon, canon governs. Rea
 on it: `grep -n '§11\.4\.<N> —' constitution/Constitution.md`.
 
 **Pinned sources (written by `scripts/governance/regen_speckit_catalogue.py`):** `constitution` at commit
-`4bcb51236115b0592583f5a2f8fa7e33e1a328c3`; `Constitution.md` sha256
-`1667ded1962940faf651a45b261b62e75d831410e805bb6102f9e809f8119d56`, identical to the hash
+`5f8503b4f4f0f051b583d447a240c2a2a7ac253a`; `Constitution.md` sha256
+`1c75391f7a52bc6bfa8eaec3e1cfff16bf4478df70968046aed9adc6fe18a58e`, identical to the hash
 recorded in `constitution_index.yaml`, so the catalogue below is current for this pin.
 
 ## Core Principles
@@ -372,9 +372,9 @@ investigate before fixing (§11.4.102, Principle III); never remove seemingly de
 | MCP and plugins | `mcp/media-validator-mcp.json`, `mcp/scheduled-work-mcp.json`; plugins `helix`, `scheduled-work` |
 | Script families | `scripts/`: gates, hooks, multitrack, codegraph, lumen, sonarqube, gitleaks, trivy, zap, hawkscan, translation, workable-items, doc_integrity, fastcycle, reporting, token_efficiency, validation, skill_activation and more |
 | Progressive disclosure | `progressive/`: a deterministic splitter, a lean core, a slim catalog, one file per clause, a local MCP server (search, load, list, verify) and validators; canon's own `progressive/REPORT.md` records open items (no baseline tag, no independent review, no fresh-clone sign-off). This layer does not depend on it |
-| Vendored model manager | `submodules/llmctl`: gitlink `5354354b` (an unreleased auto-commit, 56 commits past tag `v3.2.2`), while canon's `helix-deps.yaml` still names `v3.2.2` (`5c3dea57`); a depth-1 hub entry that MUST NOT be initialised recursively (§11.4.277(B), `recursive_init: false`); canon's own cycle gate FAILs at this pin; see Hub Engines and Known Conflicts items 21 and 25 |
-| Vendored account and alias toolkit | `submodules/claude_toolkit`: gitlink `223c7025` (tag `v1.30.5`), not listed in canon's `helix-deps.yaml` and not named by any clause as a submodule; see Hub Engines and Known Conflicts items 26 and 27 |
-| Vendored design workspace | `submodules/open_design`: gitlink `3b0df90f30` (`package.json` 0.25.1, Apache-2.0), a THIRD-PARTY repository (`nexu-io/open-design`), not listed in canon's `helix-deps.yaml`; named by URL in §11.4.162; see Hub Engines and Known Conflicts items 26 and 28 |
+| Vendored model manager | `submodules/llmctl`: gitlink `f42bad68` at canon `5f8503b` (unchanged since `a3d80ce`; `git describe`: `helixconstitution-v70-68-gf42bad6`; `VERSION` file 3.2.2), named by canon's `helix-deps.yaml` as ref `f42bad6`; a depth-1 hub entry that MUST NOT be initialised recursively (§11.4.277(B), `recursive_init: false`); it nests only the third-party `llama.cpp` and `colibri`, and canon's cycle gate `CM-LLMCTL-SUBMODULE-NONRECURSIVE` PASSes at this pin; see Hub Engines and Known Conflicts items 21 and 25 |
+| Vendored account and alias toolkit | `submodules/claude_toolkit`: gitlink `1f6dad3b` at canon `5f8503b` (`git describe`: `v1.30.5-14-g1f6dad3`, no tag points at it; remote `main` tip per `git ls-remote` 2026-10-22), listed in canon's `helix-deps.yaml` (ref `1f6dad3`, `recursive_init: false`); nests only the third-party Go toolchain (`submodules/go`), resolves its own-org dependencies flat through `scripts/resolve_deps.sh` and ships a tracked `helix-deps.yaml`, so `CM-HUB-ENGINE-NO-OWNORG-NESTING` and `CM-HELIX-DEPS-MANIFEST-PRESENT` PASS for it (measured 2026-10-22); see Hub Engines and Known Conflicts items 26 and 27 |
+| Vendored design workspace | `submodules/open_design`: gitlink `3b0df90f30` (`package.json` 0.25.1, Apache-2.0), a THIRD-PARTY repository (`nexu-io/open-design`), listed in canon's `helix-deps.yaml` at `5f8503b` as `third_party` (ref `3b0df90`, Apache-2.0); named by URL in §11.4.162; see Hub Engines and Known Conflicts items 26 and 28 |
 | Pull hook | `scripts/post_update_hook.sh`, run after every constitution pull (§11.4.26, §11.4.32, §11.4.164) |
 | Multi-upstream | `install_upstreams.sh`, `Upstreams/` |
 | Path discovery | `find_constitution.sh` |
@@ -385,40 +385,40 @@ The canon is a hub (`constitution/helix-deps.yaml`, the §11.4.28(C) depth-1 car
 engines as submodules under `constitution/submodules/`. Because Catalogizer vendors the constitution, every engine arrives at
 the constitution's pin and nowhere else. Three engines were added or moved after the 2.3.0 pin and are bound by this section:
 `llmctl`, `claude_toolkit` and `open_design`. The section is written so that any project that vendors the constitution can adopt
-it unchanged; only the surface names in HE-5 are local. It tightens canon and never weakens it, and it does not claim that canon
+it unchanged; only the surface names in HE-5 are local. **Owner mandate (2026-10-21): ONE source of truth and no nested submodule chains; main submodules live in `<root>/submodules` or `<root>/constitution/submodules`.** Canon was amended on the branch `feat/hub-engines-single-source` of the constitution repository, merged and pushed to canon `main` as `a3d80ce`; its follow-up `5f8503b` (claude_toolkit pin `1f6dad3`, flat) is this layer's pin from this change on. The amendments are: §11.4.162 (the hub may carry ONE pinned reference checkout of `open_design`; consumption stays a dependency and is never forked; `design-toolkit` carries the token, brand and catalogue mechanisms), a §11.4.28(C) extension (an engine MUST NOT nest `constitution`, the hub, other engines or flat-provided repositories; one documented resolver; third-party nested repositories are allowed), §11.4.278(L) (Vision model identity and at least two validated tiers; deferral OWED-GATE-143 `CM-VISION-MODEL-IDENTITY-RECORDED`) and the implemented gate `CM-HUB-ENGINE-NO-OWNORG-NESTING` (`scripts/gates/cm_hub_engine_no_ownorg_nesting.sh` with a mutation test). The hub now vendors `containers` (`vasic-digital/Containers` at `919ad1e`) and `superspec` (`WangX0111/superspec` at `c20ac6c`, third-party) flat, and its `helix-deps.yaml` gains `claude_toolkit`, `open_design` (`third_party`, Apache-2.0), `containers` and `superspec`. The measured table below describes the pinned `5f8503b`. It tightens canon and never weakens it, and it does not claim that canon
 binds an engine by name where it does not (Known Conflicts items 25 to 29 record each gap).
 
-Measured on 2026-10-21 at `constitution` `4bcb512` (`git diff --stat 94b8836 4bcb512`: only `.gitignore`, `.gitmodules` and these
-three gitlinks changed; `Constitution.md`, `constitution_index.yaml`, the groups, the scripts and `helix-deps.yaml` are byte-identical
-to the previous pin):
+Measured on 2026-10-22 at `constitution` `5f8503b` (`git diff --stat 4bcb512 a3d80ce -- submodules/ .gitmodules helix-deps.yaml`:
+`.gitmodules`, `helix-deps.yaml`, `submodules/containers` (new), `submodules/llmctl` (moved) and `submodules/superspec` (new);
+`git diff --stat a3d80ce 5f8503b -- submodules/`: `submodules/claude_toolkit` only (`223c702` -> `1f6dad3`); the `open_design`
+gitlink is unchanged from `4bcb512`; working-tree sizes measured with `du -sh` on 2026-10-22 at this pin):
 
 | Engine | Origin | Role | Gitlink at this pin | In canon `helix-deps.yaml` | Canon text that names it | Working tree |
 |--------|--------|------|---------------------|----------------------------|--------------------------|--------------|
-| `llmctl` | `vasic-digital/llmctl` (own-org) | Local LLM orchestration: hardware probe, model plan, verified download, engines llama.cpp / colibri / onnx as systemd user units, the validation gate | `5354354b`, 56 commits past tag `v3.2.2` (`VERSION` file: 3.2.2) | Yes: ref `v3.2.2` (`5c3dea57`), `recursive_init: false` | §11.4.277 (validation gate), §11.4.278 (vision step) | 454 MB |
-| `claude_toolkit` | `vasic-digital/claude_toolkit` (own-org) | Many Claude Code and Kimi Code accounts over one shared store; any LLM API key as a provider alias; OpenCode sync | `223c7025`, tag `v1.30.5` | No | The mechanism is named "claude-toolkit" in §11.4.177, §11.4.182 and §11.4.198; the action registry has the shortcut `CTOOLKIT` / `CLAUDE_TOOLKIT`; no clause names the submodule | 407 MB |
-| `open_design` | `nexu-io/open-design` (THIRD-PARTY, Apache-2.0) | The OpenDesign design-agent workspace: skills, design systems, design templates, plugins, the `od` CLI and daemon, an MCP server, a desktop and web app | `3b0df90f30`, `package.json` 0.25.1 | No | §11.4.162 names it by URL as the mandatory UI design system; §11.4.216 to §11.4.223 build on it | 326 MB |
+| `llmctl` | `vasic-digital/llmctl` (own-org) | Local LLM orchestration: hardware probe, model plan, verified download, engines llama.cpp / colibri / onnx as systemd user units, the validation gate | `f42bad68` (`helixconstitution-v70-68-gf42bad6`; `VERSION` file: 3.2.2) | Yes: ref `f42bad6`, `recursive_init: false` | §11.4.277 (validation gate), §11.4.278 (vision step) | 301 MB |
+| `claude_toolkit` | `vasic-digital/claude_toolkit` (own-org) | Many Claude Code and Kimi Code accounts over one shared store; any LLM API key as a provider alias; OpenCode sync | `1f6dad3b` (`v1.30.5-14-g1f6dad3`) | Yes: ref `1f6dad3`, `recursive_init: false` | The mechanism is named "claude-toolkit" in §11.4.177, §11.4.182 and §11.4.198; the action registry has the shortcut `CTOOLKIT` / `CLAUDE_TOOLKIT`; no clause names the submodule | 222 MB |
+| `open_design` | `nexu-io/open-design` (THIRD-PARTY, Apache-2.0) | The OpenDesign design-agent workspace: skills, design systems, design templates, plugins, the `od` CLI and daemon, an MCP server, a desktop and web app | `3b0df90f30`, `package.json` 0.25.1 | Yes: ref `3b0df90`, `third_party: true` | §11.4.162 names it by URL as the mandatory UI design system; §11.4.216 to §11.4.223 build on it | 326 MB |
+
+At `5f8503b` the hub also vendors `containers` (`919ad1e`) and `superspec` (`c20ac6c`, third-party) flat; they are not engines bound by this section and are not in the table above. `claude_toolkit` was recorded at `223c702` (tag `v1.30.5`) inside canon `a3d80ce`, where it nested own-org repositories (`LLMsVerifier`, `containers`, `challenges`, `claude-code-router`, `HelixConstitution`) and had no `helix-deps.yaml` (both gates RED; history). The canon follow-up `5f8503b` pins `1f6dad3` (the pushed flatten, remote `main` tip per `git ls-remote` 2026-10-22): `claude_toolkit` now nests only the third-party Go toolchain (`submodules/go`, `go.googlesource.com`), resolves `HelixConstitution`, `containers`, `challenges`, `LLMsVerifier` and `claude-code-router` flat through its `scripts/resolve_deps.sh`, and ships a tracked `helix-deps.yaml`. Measured 2026-10-22 at this pin: `cm_hub_engine_no_ownorg_nesting.sh` prints "submodules/claude_toolkit@1f6dad3 nests only third-party repositories" and PASS; canon's `cm_helix_deps_manifest_present.sh --root constitution` prints `VERDICT: PASS (pass=11 fail=0 blind=0 skip_third_party=17 known=0)`; this project's `scripts/verify_helix_deps_manifests.sh` prints `VERDICT: PASS (pass=54 fail=0 blind=0 skip_third_party=45 known=0)` (Known Conflicts item 27, RESOLVED).
 
 **HE-1 Consume by reference; never copy or fork.** An engine is used from `constitution/submodules/<name>`. A copy, a fork, a
 second vendored instance or a hand-written equivalent inside Catalogizer is forbidden (§11.4.28, §11.4.74, §11.4.177, §11.4.251). A
 change to an engine is an upstream change followed by a constitution pin bump (§11.4.26), never a local patch. For `open_design` this is reference use only: §11.4.162 says OpenDesign is "consumed as a project dependency (npm
-package or equivalent ...), never vendored or forked", so the vendored checkout is not the consumption path (Known Conflicts item 26).
+package or equivalent ...), never vendored or forked", so the vendored checkout is not the consumption path (Known Conflicts item 26). Engines carry their dependencies through ONE documented resolver (environment override, then the parent hub, then `<root>`, then a sibling; a host fallback only by an explicit opt-in variable, no default literal) and never nest `constitution`, `containers`, `superspec` or `challenges` of their own (flat layout; Known Conflicts item 25). Third-party nested repositories are allowed.
 
-**HE-2 Initialise one level only.** The command, run from the repository root, is `git -C constitution submodule update --init submodules/<name>` without `--recursive`, for all three engines. For `llmctl` this is canon's rule (§11.4.277(B), `recursive_init: false`). For `claude_toolkit`
-this layer applies the same rule, because it too vendors a constitution of its own (a mutual reference with the same hazard, Known
-Conflicts item 27). `open_design` has no nested submodules, and gets the same rule so that no command differs. Catalogizer needs none
-of the engines' nested submodules. `git submodule update --init --recursive` without path arguments, or with a path through `constitution/`, is not permitted until canon's cycle gate passes (Known Conflicts item 25).
+**HE-2 Initialise through the single safe entry.** The safe entry is `scripts/safe_submodule_init.sh` (tests: `scripts/tests/test_safe_submodule_init.sh`); `scripts/quick-start-phase0.sh`, `scripts/build-test-release.sh` and `scripts/container-build.sh` now call it (FIXED in this change: the former `--recursive` run at `scripts/quick-start-phase0.sh:237`, Known Conflicts item 21(d)). It initialises the top-level submodules, the constitution one level only, and only the hub engines asked for, one level each; the manual equivalent for an engine is `git -C constitution submodule update --init submodules/<name>` without `--recursive`. For `llmctl` this is canon's rule (§11.4.277(B), `recursive_init: false`); it is applied to `claude_toolkit` and `open_design` so that no command differs. After the engine cleanup (flat layout) a recursive update no longer descends into a constitution cycle, but unqualified `git submodule update --init --recursive` through `constitution/` stays unsupported here; use the safe entry. Upgrade leftovers: after an engine drops a gitlink, git leaves a real populated directory behind; the safe entry detects and warns, and remediation is manual only (no automated moving or deleting, §9.2).
 
 **HE-3 Tooling, never product.** The engines are developer, QA and host tooling. They MUST NOT be imported by, linked into, copied
 into or shipped with any Catalogizer artifact: `catalog-api`, `catalog-web`, `catalogizer-desktop`, `installer-wizard`, the Android
 and Android TV apps, the Website and the release images. Measured 2026-10-21: no Go, TypeScript, JSON, Kotlin, Gradle or shell file
 outside `constitution/` and `specs/` names a path under `constitution/submodules/{llmctl,claude_toolkit,open_design}`. Builds stay in
-rootless containers (§11.4.161, §11.4.173), which MUST NOT mount an engine unless the build needs it.
+rootless containers (§11.4.161, §11.4.173), which MUST NOT mount an engine unless the build needs it. The 27 nested tool repositories that `helix_qa` used to carry are de-registered there (manifest `docs/flat-tools-manifest.tsv` in `helix_qa`) and are registered in THIS project as flat submodules at `submodules/<snake_name>/` (27 gitlinks, registered: allure2, anthropic_quickstarts, appcrawler, appium, browser_use, chroma, docker_android, docling, kiwi_tcms, leakcanary, llama_index, marker, mem0, midscene, moondream, perfetto, redroid, rest_demo, scrcpy, shortest, signoz, skyvern, stagehand, testdriverai, ui_tars, ui_tars_desktop, unstructured); `helix_qa` resolves them through `HELIXQA_TOOLS_DIR`, then a flat sibling, then the legacy path, and its sync script is read-only (no fetch, no pull).
 
 **HE-4 Own-org versus third-party.** `llmctl` and `claude_toolkit` are own-org and follow the own-org rules, except the third-party repositories nested under them (llmctl:
-`llama.cpp`, `colibri`, `superspec`; claude_toolkit: `go`, `superspec`), which are third-party under §11.4.79(6). `open_design` is
+`llama.cpp`, `colibri`; claude_toolkit: `go`; `superspec` is vendored flat by the hub), which are third-party under §11.4.79(6). `open_design` is
 third-party: it belongs to the exclusion class `vendored-third-party` of the coverage floor (§11.4.224(E)), is outside own-org code
-review, and is excluded from the code index (§11.4.79, the third-party row); the own-org engines are to be included in it (Known
-Conflicts item 29). Each engine's identity, licence and pinned commit belong in a dependency-existence row (§11.4.270). Rows for all three are OWED (OPEN),
+review, and is excluded from the code index (§11.4.79, the third-party row); the own-org engines are included in it (Known
+Conflicts item 29, RESOLVED). Each engine's identity, licence and pinned commit belong in a dependency-existence row (§11.4.270). Rows for all three are OWED (OPEN),
 not yet written; until the `open_design` row is VERIFIED, binding it here is not an adoption (§11.4.270(C)).
 
 **HE-5 Per-engine rules.**
@@ -458,7 +458,7 @@ the constitution repository through its own workflow (§11.4.26).
 
 **HE-8 Adopting this for another project.** A project that vendors the constitution gets the engines at the pin automatically. To
 bind them it copies HE-1 to HE-7 into its own Spec Kit layer, lists the engines it consumes in its own §11.4.31 manifest, and uses the
-init command of HE-2. A binding that holds in canon itself (manifest entries, a clause naming each engine, a cycle gate for every
+safe init entry of HE-2 (`scripts/safe_submodule_init.sh`). A binding that holds in canon itself (manifest entries, a clause naming each engine, a cycle gate for every
 engine that vendors a constitution) is a canon change, proposed in Known Conflicts item 26.
 
 ## Project and Module Overrides
@@ -1077,7 +1077,7 @@ commit time, corrected 2026-10-20), 15 DECIDED (operator), 16 DECIDED (operator)
 decision: the canon Sonnet fallback), 18 RESOLVED (the upstream index and groups lag, fixed in canon
 at or before `1c89813a`; history kept), 19 OPEN (§11.4.235(E) binding and version scheme), 20 OPEN
 (§11.4.230(E) consumer data), 21 OPEN (§11.4.277 and §11.4.278 adoption; mixed), 22 OPEN (§11.4.141
-extension: no declared always-loaded budget), 23 NOTE (a label collision inside canon's §11.4.141), 24 NOTE (the ticket-id key `CAT` is now canon-sanctioned), 25 OPEN (canon's llmctl cycle gate FAILs at this pin), 26 OPEN (canon names only llmctl as a vendored engine), 27 OPEN (claude_toolkit vendors a constitution; no gate), 28 OPEN (OpenDesign: vendored checkout versus the 2026-06-25 verdict), 29 OPEN (the code-index scope data does not cover the engines and fails closed on the claude_toolkit chain). Statuses: FIXED in this change
+extension: no declared always-loaded budget), 23 NOTE (a label collision inside canon's §11.4.141), 24 NOTE (the ticket-id key `CAT` is now canon-sanctioned), 25 RESOLVED (canon's llmctl cycle gate FAILed at `4bcb512`), 26 FIXED in canon except the spelling (OPEN), 27 RESOLVED (claude_toolkit nesting, at `5f8503b`), 28 OPEN (OpenDesign: vendored checkout versus the 2026-06-25 verdict), 29 RESOLVED (code-index scope data re-rendered; drift check passes at `5f8503b`). Statuses: FIXED in this change
 (main-repo files only), DECIDED (an autonomous reversible default under §11.4.101 where no
 "operator" is named, otherwise a decision the operator gave), OPEN (an operator decision or a
 follow-up), NOTE (informational).
@@ -1295,16 +1295,16 @@ follow-up), NOTE (informational).
     §11.4.277(B) requires models to be acquired and run only through the vendored llmctl and any change to be a pin bump,
     never a local fork; whether the 56 later commits change the gate semantics the clause describes is UNKNOWN (the clause
     describes `v3.2.2` only). OPEN owner decision: point the project at the vendored copy, bump the canon pin, or record the
-    divergence (HE-6 requires the evidence to say which copy ran).
+    divergence (HE-6 requires the evidence to say which copy ran). Update 2026-10-22: at the pin `a3d80ce` (unchanged at `5f8503b`) the vendored copy is
+    `f42bad6`, a descendant of `5354354` (`git merge-base --is-ancestor`); the PATH-copy comparison above was not re-run (UNKNOWN).
     (d) Non-recursive hub entry: canon requires `constitution/submodules/llmctl` to be initialised without `--recursive`
     (`recursive_init: false`), and `scripts/quick-start-phase0.sh` line 237 runs `git submodule update --init --recursive` from
     the repository root, which descends into every nested submodule, llmctl's own `constitution` included. On 2026-10-20
     llmctl's nested submodules were NOT initialised. On 2026-10-21 they ARE (measured: `git -C constitution/submodules/llmctl
     submodule status` lists `constitution`, `submodules/colibri`, `submodules/containers`, `submodules/llama.cpp` and
     `submodules/superspec` with no `-` prefix), so something initialised them after the earlier measurement. The cycle itself is
-    not yet realised (item 25). Two more files advise the same command in their messages:
-    `scripts/verify_constitution_inheritance.sh:70` and `scripts/meta_test_constitution_inheritance.sh:59`. OPEN: audit these
-    three before they are run.
+    not yet realised (item 25). FIXED in this change: `scripts/quick-start-phase0.sh` (and `scripts/build-test-release.sh`, `scripts/container-build.sh`) now call `scripts/safe_submodule_init.sh`, and the message sites were updated. Two more files advised the same command in their messages:
+    `scripts/verify_constitution_inheritance.sh:70` and `scripts/meta_test_constitution_inheritance.sh:59`. Their messages are corrected in this change; the audit is closed.
 22. **§11.4.141 extension: no declared always-loaded budget (found 2026-10-20; OPEN).** Canon's
     extension requires each consumer to declare a byte ceiling per always-loaded agent file in a
     checked-in config, enforced by a script that FAILS on a violation, a missing file or
@@ -1334,56 +1334,33 @@ follow-up), NOTE (informational).
     this change). The wording of the canon extension is PENDING independent review and owner sight
     in canon.
 
-25. **`CM-LLMCTL-SUBMODULE-NONRECURSIVE` FAILs at the new pin: llmctl's `constitution` pin re-enters the hub (found
-    2026-10-21; OPEN, canon-owned).** Canon's gate `scripts/gates/cm_llmctl_submodule_nonrecursive.sh`, run read-only on 2026-10-21
-    against `constitution` at `4bcb512`, exits 1: "llmctl->constitution pin 8a60462 contains entry named llmctl at:
-    submodules/llmctl — a recursive init would re-enter this constitution (refuse the pin bump)". The `recursive_init: false` marker
-    is present, and the `containers` pin `4a8f04e` does not re-enter. Cause, measured: the hub's gitlink for llmctl moved from
-    `5c3dea57` (`v3.2.2`) to `5354354b`, an "Auto-commit" whose only difference from `18b6728` is llmctl's own `constitution`
-    gitlink, moved from `4091798` (a commit with no llmctl) to `8a60462` (the hub at `v70-3`, which already carries
-    `submodules/llmctl` at `18b6728` and `submodules/open_design`). Canon's own `helix-deps.yaml` header says such a bump MUST be
-    refused. The chain is finite today only because its oldest link predates llmctl (measured: hub `4bcb512` -> llmctl `5354354b` ->
-    hub `8a60462` -> llmctl `18b6728` -> hub `4091798`, which has no llmctl), so a recursive init would nest two extra hub copies,
-    and every further pin bump lengthens it. It is not realised in this checkout:
-    `constitution/submodules/llmctl/constitution/submodules/llmctl` is an empty directory. The exposure in this repository is
-    `scripts/quick-start-phase0.sh:237` (item 21(d)). This layer changes nothing in canon (§11.4.26). DECIDED interim (reversible,
-    §11.4.101): no `--recursive` update of `constitution` or of `constitution/submodules/llmctl` until the canon gate passes.
-    **OPEN, owner of the constitution repository:** restore llmctl's `constitution` pin to a commit without llmctl (for example
-    `4091798`), or revert the hub gitlink to `18b6728` or `5c3dea57`, and stop the auto-commit tooling from bumping a nested pin
-    that the gate refuses.
-26. **Canon names `llmctl` as a vendored engine, but not `claude_toolkit` or `open_design` (found 2026-10-21; OPEN, canon-owned).**
-    The hub's `.gitmodules` gained `submodules/claude_toolkit` (`vasic-digital/claude_toolkit`) and `submodules/open_design`
-    (`nexu-io/open-design`, a third-party repository) between `94b8836` and `4bcb512`. Measured at `4bcb512`: neither appears in
-    canon's `helix-deps.yaml` (§11.4.31 requires every own-org depth-1 dependency to be listed there, which applies to `claude_toolkit`; `open_design` is third-party and §11.4.31 does not cover it; the file's verification recipe
-    lists seven submodules in its `git submodule update --init` line and omits both of these and llmctl); `Constitution.md`,
-    `CLAUDE.md` and `AGENTS.md` contain no occurrence of `claude_toolkit` or `open_design`; the mechanism is named "claude-toolkit"
-    (hyphen) in §11.4.177, §11.4.182 and §11.4.198; canon's action registry has the shortcut `CTOOLKIT` / `CLAUDE_TOOLKIT` with the
-    URL `git@github.com:vasic-digital/claude-toolkit.git` (hyphen, where `.gitmodules` says `claude_toolkit.git`; whether one
-    redirects to the other is UNCONFIRMED, not tested); and OpenDesign is named by its URL in §11.4.162. No clause says these two
-    are vendored, which pin binds, how to initialise them, or how a third-party engine is treated inside the hub (the §11.4.28(C)
-    carve-out speaks of own-org dependencies). Canon is also inconsistent with itself on OpenDesign: §11.4.162 says OpenDesign is "consumed as a project dependency (npm package or
-    equivalent ...), never vendored or forked", yet the hub now vendors it; and the hub's manifest header and its `design-toolkit` entry
-    (`vasic-digital/design-toolkit`, ref `4ddc964`; initialised here at `v0.2.2-14-g4ddc964`) name that engine as "the §11.4.162 OpenDesign UI
-    design-system engine", carrying the token source (§11.4.216), brand contract (§11.4.217) and library catalogue (§11.4.218), a role no
-    text of this layer mentioned before 2.4.0. Until canon says so, the binding for this project is the section "Constitution Hub Engines" and Part 3 of the appendix. **Proposed canon change (for the constitution repository, §11.4.26; not made here):** (1)
-    `helix-deps.yaml` entries for both, with `recursive_init: false` for `claude_toolkit` and a `third_party: true` marker plus the
-    licence for `open_design`; (2) generalise `CM-LLMCTL-SUBMODULE-NONRECURSIVE` to every hub engine that vendors a constitution; (3)
-    one clause naming the three engines, the init rule and the own-org versus third-party split; (4) add the three to the
-    verification recipe; (5) settle the `claude-toolkit` / `claude_toolkit` spelling; (6) reconcile §11.4.162 ("never vendored") with the vendored `open_design`,
-    and state `design-toolkit`'s relation to it.
-27. **`claude_toolkit` vendors a constitution too: a second mutual reference, with no gate (found 2026-10-21; OPEN).** Its
-    `.gitmodules` lists `constitution` (`git@github.com:HelixDevelopment/HelixConstitution.git`), `containers`, `challenges`,
-    `LLMsVerifier`, `claude-code-router`, `superspec` and `submodules/go` (the Go source tree). Its recorded `constitution` pin is
-    `e44f22fc` (`helixconstitution-v68-358-ge44f22f`), which contains neither `claude_toolkit` nor `llmctl` (measured), so the loop is
-    finite and nothing re-enters today; but nothing checks it, and canon's cycle gate covers llmctl only. In this checkout all of the
-    toolkit's nested submodules are initialised, `submodules/go` included, so the three engines occupy 454 MB, 407 MB and 326 MB
-    (`du -sh`, 2026-10-21). Canon's `helix-deps.yaml` header claims "zero HTTPS URLs across recursive chain"; the toolkit's
-    `submodules/go` URL is `https://go.googlesource.com/go`, so that claim does not cover the toolkit's chain. The new canon `.gitignore` line `docs/research/decisions_models` hides 158 MB in this checkout (`git check-ignore` confirms):
-    `01_claude_toolkit` (19 MB; it holds a `claude_toolkit` directory and a zip) and `02_constitution` (139 MB), so an untracked copy of the
-    toolkit sits inside the hub checkout; HE-1 governs Catalogizer's own tree and the HE-3 measurement excluded `constitution/`, so neither
-    covers it, and it is not touched here. DECIDED interim: HE-2 (no `--recursive`) applies to the toolkit; nothing is de-initialised, because de-initialising removes working trees (§9.2)
-    and is not needed to avoid harm. **OPEN, owner:** decide whether to de-initialise the toolkit's nested submodules in this
-    checkout, and take the gate of item 26 to canon.
+25. **Canon's cycle gate `CM-LLMCTL-SUBMODULE-NONRECURSIVE` FAILed at the pinned `4bcb512`: llmctl's `constitution` pin re-entered the hub
+    (found 2026-10-21; RESOLVED at canon pin `a3d80ce`).** At `4bcb512` the gate exited 1 ("llmctl->constitution pin 8a60462 contains
+    entry named llmctl"). The cause was llmctl nesting its own `constitution` (and `containers`, `superspec`). The llmctl cleanup removes
+    those nested constitution/containers/superspec(/challenges) dependencies: llmctl now has a resolver (environment override, parent
+    hub, `<root>`, sibling; the host fallback only by explicit opt-in variable, no default literal) and untracked, gitignored links
+    created by `scripts/link_deps.sh` (`make deps`). It landed upstream as `f42bad6` (llmctl `main` tip, `git ls-remote` 2026-10-22) and canon `a3d80ce` pins it (unchanged at `5f8503b`). **Resolved, verified
+    with the gates at the new pin** (2026-10-22): `cm_llmctl_submodule_nonrecursive.sh` prints "llmctl pins no own-org submodule; no
+    cycle exists" and PASS; canon's `scripts/gates/cm_hub_engine_no_ownorg_nesting.sh` prints "submodules/llmctl@f42bad6 nests only
+    third-party repositories" (that gate as a whole FAILed at `a3d80ce` on `claude_toolkit`, item 27; it PASSes at `5f8503b`). Upgrade leftover to expect: git leaves
+    real populated directories after a gitlink removal; `scripts/safe_submodule_init.sh` warns about them ("WARN leftover: ...", exit status unchanged; tested in `scripts/tests/test_safe_submodule_init.sh`), manual remediation only. DECIDED interim
+    (reversible): no `--recursive` update through `constitution/`; use `scripts/safe_submodule_init.sh`.
+26. **Canon gaps about `claude_toolkit`, `open_design` and the engine layout: FIXED in the canon branch `feat/hub-engines-single-source`
+    (merged into canon `main` as `a3d80ce`; this layer now pins its follow-up `5f8503b`), except the spelling (found 2026-10-21; spelling OPEN).** At the pinned
+    `4bcb512` neither `claude_toolkit` nor `open_design` was in canon's `helix-deps.yaml`, no clause named them, and §11.4.162 said
+    OpenDesign is consumed as a dependency and "never vendored" while the hub vendors it. The canon branch fixes this: `helix-deps.yaml`
+    gains `claude_toolkit`, `open_design` (`third_party`, Apache-2.0), `containers` and `superspec`; §11.4.162 now lets the hub carry ONE
+    pinned reference checkout of `open_design` (consumption stays a dependency, never forked) and gives the token, brand and catalogue
+    mechanisms to `design-toolkit`; a §11.4.28(C) extension forbids an engine nesting `constitution`, the hub, other engines or
+    flat-provided repositories; §11.4.278(L) adds the Vision model identity and two validated tiers (deferral OWED-GATE-143
+    `CM-VISION-MODEL-IDENTITY-RECORDED`); the gate `CM-HUB-ENGINE-NO-OWNORG-NESTING` is implemented with a mutation test; the hub vendors
+    `containers` (`vasic-digital/Containers`, `919ad1e`) and `superspec` (`WangX0111/superspec`, `c20ac6c`, third-party) flat. Still
+    open in canon: the spelling `claude-toolkit` (hyphen, in §11.4.177, §11.4.182, §11.4.198 and the `CTOOLKIT` registry URL) versus
+    `claude_toolkit` (`.gitmodules`); whether one URL redirects to the other is UNCONFIRMED. The section "Constitution Hub Engines" and
+    Part 3 of the appendix remain the operative binding for this project.
+27. **`claude_toolkit` nesting (found 2026-10-21; RESOLVED at canon pin `5f8503b`).**
+    At canon `a3d80ce` `claude_toolkit` was recorded at `223c702` (tag `v1.30.5`); it nested own-org repositories (`LLMsVerifier`, `containers`, `challenges`, `claude-code-router`, `HelixConstitution`) and had no `helix-deps.yaml`, so canon's `CM-HUB-ENGINE-NO-OWNORG-NESTING` and `CM-HELIX-DEPS-MANIFEST-PRESENT` were RED for it (measured 2026-10-22 at `a3d80ce`: "FAIL — submodules/claude_toolkit@223c702 declares own-org/hub nested submodule(s)" and "FAIL constitution/submodules/claude_toolkit ... helix-deps.yaml missing"; history). The flatten was pushed upstream (`1f6dad3`, remote `main` tip on 2026-10-22) and the canon follow-up `5f8503b` pins it. **Resolved, verified with the gates at the new pin** (2026-10-22): the nesting gate prints "submodules/claude_toolkit@1f6dad3 nests only third-party repositories" and PASS; `CM-HELIX-DEPS-MANIFEST-PRESENT` PASSes for canon (pass 11 / fail 0 / blind 0 / skip_third_party 17) and for this project (pass 54 / fail 0 / blind 0 / skip_third_party 45); `git -C constitution/submodules/claude_toolkit status --short` is clean and its only nested submodule is the third-party `submodules/go`, which stays initialised on this host and is never initialised recursively (`recursive_init: false`). The nested own-org working trees that earlier pins initialised are no longer on disk in this checkout (measured 2026-10-22: `constitution/submodules/claude_toolkit/` holds no `constitution/` and `submodules/` holds only `go`). The ignored `docs/research/decisions_models` copy (158 MB) in the hub checkout was not re-measured (UNKNOWN).
+
 28. **OpenDesign: the vendored checkout versus the 2026-06-25 consumability verdict (found 2026-10-21; OPEN).** The project's recorded
     verdict (`docs/design/OPENDESIGN_CONSUMABILITY_VERDICT.md`, 2026-06-25) is "NOT-CLEANLY-CONSUMABLE -> token-module fallback":
     `nexu-io/open-design` is an application with a CLI and an MCP server, not a token package, so the token modules
@@ -1395,20 +1372,35 @@ follow-up), NOTE (informational).
     `catalogizer-desktop/src/styles/tokens.css` exists; `catalog-web/src/styles/` holds `tokens.ts` and no `tokens.css`; `design/opendesign/DESIGN.md` and `design/opendesign/tokens.css` are planned in task T393 (`specs/001-full-project-audit-remediation/tasks.md`,
     OPEN). DECIDED interim: the hand-authored tokens stay the single token source, and the vendored checkout is reference material
     (HE-5). **OPEN:** re-run the consumability check against the vendored checkout and record the verdict; do the T393 work; read the
-    vendor `PRIVACY.md` before anyone runs the application (HE-5).
-29. **Code-index scope data does not cover the new engines, and the scope renderer fails closed on the `claude_toolkit` chain (found
-    2026-10-21; OPEN).** Canon §11.4.79 requires own-org submodules (`llmctl` and `claude_toolkit` belong to `vasic-digital`) to be
-    included in the code index, third-party ones (`open_design`, and whatever nested under an engine is not own-org) to be excluded, and
-    the scope to be rendered from the submodule graph. The project's freshness check `scripts/audit/scope_drift_check.sh` (it writes only
-    its `--out` report), run on 2026-10-21 at HEAD `aac1b8be` with the report under `/tmp`, exits 1 with `scope_render_check` rc 3,
-    `scope_to_lumen_json_check` rc 1 and `lumenignore_fresh` rc 1. The renderer says: "FAIL-CLOSED: unclassifiable gitlink(s) — add
-    submodule_class_overrides: constitution/submodules/claude_toolkit/submodules/go (url='https://go.googlesource.com/go')": the
-    toolkit's nested Go source tree is initialised in this checkout (item 27) and the scope data has no class for it. The same check
-    reports 8 `missing` and 42 `extra` allow entries for the Lumen scope: the committed `config/index/lumen_scope.json` already uses `constitution/...` paths (those entries are the `extra` ones), while its derivation input `specs/001-full-project-audit-remediation/audit/submodules.tsv` still lists `submodules/constitution/...` (25 rows; the `missing` ones), the constitution having moved to `constitution/` in commit `772dd4c3`; this is not caused by the engines. None of `llmctl`, `claude_toolkit` or `open_design` appears in the scope data (`config/index/scope.yaml`,
-    `config/index/lumen_scope.json`). Nothing is changed here: index configuration is rendered only by its tools and is not governance
-    text. **OPEN:** refresh the submodules TSV, classify that `go` gitlink and the engines in `config/index/scope.yaml`, re-render with
-    `constitution/scripts/codegraph/scope_render.py` and `scope_drift_check.sh --regen`, and re-prove the scope (§11.4.79 scope proof)
-    before the index is called ready.
+    vendor `PRIVACY.md` before anyone runs the application (HE-5). Update 2026-10-21: the verdict re-check is being done in a separate work stream; this item stays OPEN until its result is recorded in `docs/design/OPENDESIGN_CONSUMABILITY_VERDICT.md` (revision 2, if present; the file in this checkout is revision 1 of 2026-06-25).
+29. **Code-index scope data and the engines (found 2026-10-21; RESOLVED 2026-10-22 at canon pin `5f8503b`).** Canon §11.4.79 requires
+    own-org submodules (`llmctl` and `claude_toolkit` belong to `vasic-digital`) to be included in the code index, third-party ones
+    (`open_design`, and whatever nested under an engine is not own-org) to be excluded, and the scope to be rendered from the submodule
+    graph. History: on 2026-10-21 `scripts/audit/scope_drift_check.sh` exited 1 (`scope_render_check` rc 3 on the unclassified
+    `claude_toolkit/submodules/go` gitlink, `scope_to_lumen_json_check` rc 1 with 8 `missing` and 42 `extra` allow entries from the
+    stale `submodules/constitution/...` TSV rows), and on 2026-10-22 at `a3d80ce` it still exited 1 ("allowed root
+    'constitution/submodules/claude_toolkit/constitution' is absent from the tracked listing"; `SCOPE_RENDER` drift `config_differs`).
+    Since then `config/index/scope.yaml` classifies the `go` gitlink (`submodule_class_overrides`) and, after the pin moved to
+    `5f8503b`, the scope was re-rendered with the project's own deterministic chain from DATA only (no hand edit): the submodules TSV by
+    `scripts/audit/derive_scope.sh` (160 -> 104 rows: the rows of the nested `claude_toolkit/constitution`, `claude_toolkit/submodules/*`
+    and `llmctl/constitution`, `llmctl/submodules/{containers,superspec}` chains removed, nothing added), `config/index/lumen_scope.json`
+    by `scripts/audit/scope_to_lumen_json.py`, `codegraph.json` and the `.gitignore` block by
+    `constitution/scripts/codegraph/scope_render.py --write`, and `.lumenignore` by `scope_drift_check.sh --regen`. Measured 2026-10-22:
+    `scope_drift_check.sh` exits 0 with `scope_render_check` rc 0, `scope_to_lumen_json_check` rc 0 and `lumenignore_fresh` rc 0; the
+    fresh-clone proof D13 of `scripts/audit/tests/test_scope_drift_check.sh` clones HEAD and therefore fails until this change is
+    committed (it still sees canon `4bcb512` there), and the same render from a clone of the staged index tree equals the committed
+    `.lumenignore`. Still owed before the index is called ready: the §11.4.79 scope proof on a re-run index (not done here).
+30. **`containers` drift: the hub vendors it at `919ad1e`, this project's root `submodules/containers` pins `4a8f04e` (found 2026-10-21;
+    OPEN).** Two different pins of one own-org repository exist (§11.4.28, one source of truth). The product-side pin bump is deferred
+    until after the constitution work (owner instruction 2026-10-21). **OPEN, owner:** bump `submodules/containers` (the canon pin moved to `5f8503b`
+    in this change; the bump is still deferred) and re-run the build and test gates.
+31. **Host credential exposure incident, 2026-10-21 (OPEN, owner action).** A reviewer subagent printed four host token variables into
+    session output. Names only (no values are recorded anywhere): `GITVERSE_TOKEN`, `GITHUB_MODELS_API_KEY`, `GITLAB_TOKEN`,
+    `GITFLIC_TOKEN`. Rotation is recommended (§11.4.10); the session output is treated as exposed. **OPEN:** the owner rotates the four
+    credentials.
+32. **Owner typed macOS host credentials in chat, 2026-10-21 (OPEN, owner action).** For the hosts `mistborn.local` and `amber.local`.
+    No value is recorded anywhere in this repository. **OPEN:** move them to a gitignored `.env` (mode 0600) or to SSH keys, and rotate
+    them (§11.4.10).
 
 ## Governance
 
@@ -1438,4 +1430,4 @@ between a module rule and canon is recorded under Known Conflicts.
 **Owed items.** The items marked OPEN in Known Conflicts are open, and the DECIDED defaults (those not marked as operator decisions) may be
 replaced by the operator.
 
-**Version**: 2.4.0 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-21
+**Version**: 2.5.0 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-21

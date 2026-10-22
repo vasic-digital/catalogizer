@@ -33,7 +33,7 @@ Catalogizer is a comprehensive media collection management system that automatic
 | Document | Purpose |
 |---|---|
 | 📄 **[Environment Variables Reference](docs/ENV_VARIABLES.md)** | Complete `.env` guide — every API key, token, provider registration URL, and configuration flag with 🔴/🟠/🟡/🟢/⚫ tier markers. **Start here to set up credentials.** |
-| 🏛️ **[Governance and the Constitution](docs/GOVERNANCE.md)** | How the Spec Kit constitution (`.specify/memory/constitution.md`, v2.4.0) follows the Helix canon, the pinned canon commit, the binding of the vendored engines `llmctl`, `claude_toolkit` and `open_design`, and safe submodule initialisation |
+| 🏛️ **[Governance and the Constitution](docs/GOVERNANCE.md)** | How the Spec Kit constitution (`.specify/memory/constitution.md`, v2.5.0) follows the Helix canon, the pinned canon commit, the binding of the vendored engines `llmctl`, `claude_toolkit` and `open_design`, and safe submodule initialisation |
 | 📐 **[CONSTITUTION.md](CONSTITUTION.md)** | Non-negotiable rules — Article V (100% test coverage), Article VI (Open-Points Closure Brief), **Article VII (Full-QA Master Cycle)** |
 | 🎯 **[Open-Points Closure Brief](docs/OPEN_POINTS_CLOSURE.md)** | Canonical operator-action checklist — every credential, hardware item, and infra task still outstanding |
 | 🗺️ **[OCU Program Roadmap](HelixQA/docs/nexus/ocu-roadmap.md)** | OpenClaw Ultimate phases P0–P7 status, contract versions, latency budgets, risks |
@@ -166,7 +166,7 @@ To initialize submodules after cloning, use the safe sequence in [Governance and
 ```bash
 # every top-level submodule except the constitution, with its own nested submodules
 git submodule status | awk '$2 != "constitution" {print $2}' | xargs -r git submodule update --init --recursive --
-# the constitution itself, ONE level only (never --recursive: llmctl and claude_toolkit vendor a constitution of their own)
+# the constitution itself, ONE level only (never --recursive: llmctl and claude_toolkit nest third-party repositories that are never initialised recursively)
 git submodule update --init constitution
 # only the constitution hub engines you need, one level each
 git -C constitution submodule update --init submodules/llmctl submodules/claude_toolkit submodules/open_design
@@ -210,11 +210,13 @@ like this, **never with `--recursive` through the constitution**:
 ```bash
 # every top-level submodule except the constitution, with its own nested submodules
 git submodule status | awk '$2 != "constitution" {print $2}' | xargs -r git submodule update --init --recursive --
-# the constitution itself, ONE level only (never --recursive: llmctl and claude_toolkit vendor a constitution of their own)
+# the constitution itself, ONE level only (never --recursive: llmctl and claude_toolkit nest third-party repositories that are never initialised recursively)
 git submodule update --init constitution
 # only the constitution hub engines you need, one level each
 git -C constitution submodule update --init submodules/llmctl submodules/claude_toolkit submodules/open_design
 ```
+
+**Submodule-dependency manifest.** The root [`helix-deps.yaml`](helix-deps.yaml) (constitution §11.4.31) declares every own-org dependency; verify all manifests with `scripts/verify_helix_deps_manifests.sh` (guide: [docs/scripts/verify_helix_deps_manifests.md](docs/scripts/verify_helix_deps_manifests.md)). Third-party tool submodules are tracked in [docs/dependency_existence_register.md](docs/dependency_existence_register.md), not in the manifest.
 
 ## 🛠️ Installation & Setup
 

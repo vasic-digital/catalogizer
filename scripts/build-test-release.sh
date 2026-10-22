@@ -57,7 +57,7 @@ log_step "Initializing git submodules..."
 if [ -f "$PROJECT_DIR/.gitmodules" ]; then
     cd "$PROJECT_DIR"
     git submodule init 2>/dev/null || true
-    git submodule update --recursive 2>/dev/null || log_warn "Some submodules may not be available"
+    bash "$PROJECT_DIR/scripts/safe_submodule_init.sh" 2>/dev/null || log_warn "Some submodules may not be available"
     log_info "Git submodules initialized"
 fi
 

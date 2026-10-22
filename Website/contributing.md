@@ -29,7 +29,7 @@ All git access uses SSH. Never use HTTPS URLs.
 ```bash
 git clone git@github.com:vasic-digital/Catalogizer.git
 cd Catalogizer
-git submodule update --init --recursive
+scripts/safe_submodule_init.sh   # never `--recursive` through constitution/ (see docs/GOVERNANCE.md)
 ```
 
 The project contains 41 git submodules. The initial clone pulls all of them recursively.
@@ -57,7 +57,8 @@ TypeScript modules use `file:../` references in `catalog-web/package.json`:
 
 ```bash
 # Sync all submodules to their latest tracked branches
-git submodule update --remote --recursive
+# CAUTION: --remote moves third-party pins to upstream tips without review; inspect the gitlink diff before committing
+git submodule status | awk '$2 != "constitution" {print $2}' | xargs -r git submodule update --remote --recursive --
 
 # Commit changes within a submodule
 cd Challenges

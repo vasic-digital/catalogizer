@@ -25,7 +25,7 @@ Git is required for both options.
 ```bash
 git clone git@github.com:vasic-digital/Catalogizer.git
 cd Catalogizer
-git submodule update --init --recursive
+scripts/safe_submodule_init.sh   # never `--recursive` through constitution/ (see docs/GOVERNANCE.md)
 ```
 
 ---

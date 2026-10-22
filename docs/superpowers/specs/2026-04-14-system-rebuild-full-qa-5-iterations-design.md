@@ -50,7 +50,7 @@ Perform a clean rebuild of the entire Catalogizer ecosystem with latest submodul
 ## 3. Pipeline Design (Approach 1: Comprehensive Sequential)
 
 ### Phase 1: Submodule Analysis & Integration
-1. **Fetch latest submodules:** `git submodule update --remote --recursive`
+1. **Fetch latest submodules:** `git submodule update --remote --recursive` (historical; do not run it through `constitution/`, use `scripts/safe_submodule_init.sh`; `--remote` moves third-party pins unreviewed)
 2. **Change analysis:** Diff each of 41 submodules for breaking changes
 3. **Integration verification:**
    - Go modules: Update `catalog-api/go.mod` replace directives

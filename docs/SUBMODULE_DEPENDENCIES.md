@@ -263,12 +263,14 @@ Run `install_upstreams` inside any submodule to configure its remotes;
 
 ```bash
 # After clone: do NOT run `git submodule update --init --recursive` from the root. It descends through `constitution/`
-# into engines that vendor a constitution of their own (see section 15). Use this instead:
+# into the hub engines, whose third-party nests (llama.cpp, colibri, the Go toolchain) are never initialised recursively
+# (see section 15). Use this instead:
 git submodule status | awk '$2 != "constitution" {print $2}' | xargs -r git submodule update --init --recursive --
 git submodule update --init constitution            # one level only
 git -C constitution submodule update --init submodules/llmctl submodules/claude_toolkit submodules/open_design   # only those you need
 
 # Sync to latest tracked branches (same rule: name the paths, skip `constitution`)
+# CAUTION: --remote moves third-party pins to upstream tips without review; inspect the gitlink diff before committing
 git submodule status | awk '$2 != "constitution" {print $2}' | xargs -r git submodule update --remote --recursive --
 
 # Add a new submodule
@@ -359,12 +361,25 @@ Go `replace` directives or `package.json` `file:` links; they are developer and 
 Spec Kit constitution binds three of them (section "Constitution Hub Engines"; summary and open items in
 [GOVERNANCE.md](GOVERNANCE.md)):
 
-| Engine | Origin | Gitlink at constitution `4bcb512` | In canon `helix-deps.yaml` |
+| Engine | Origin | Gitlink at constitution `5f8503b` | In canon `helix-deps.yaml` |
 |---|---|---|---|
-| `llmctl` | `vasic-digital/llmctl` | `5354354b` (56 commits past `v3.2.2`) | yes, `v3.2.2`, `recursive_init: false` |
-| `claude_toolkit` | `vasic-digital/claude_toolkit` | `223c7025` (`v1.30.5`) | no |
-| `open_design` | `nexu-io/open-design` (third-party) | `3b0df90f30` (0.25.1) | no |
+| `llmctl` | `vasic-digital/llmctl` | `f42bad68` (`helixconstitution-v70-68-gf42bad6`) | yes, `f42bad6`, `recursive_init: false` |
+| `claude_toolkit` | `vasic-digital/claude_toolkit` | `1f6dad3b` (`v1.30.5-14-g1f6dad3`) | yes, `1f6dad3`, `recursive_init: false` |
+| `open_design` | `nexu-io/open-design` (third-party) | `3b0df90f30` (0.25.1) | yes, `third_party: true`, `3b0df90` |
 
-`llmctl` and `claude_toolkit` each vendor a constitution of their own, so a recursive update through `constitution/` is unsafe and
-canon's own gate `CM-LLMCTL-SUBMODULE-NONRECURSIVE` currently fails at this pin. Initialise one level only (section 11 above shows the
-safe form).
+`llmctl` and `claude_toolkit` used to vendor a constitution of their own, which made a recursive update through `constitution/` unsafe
+(canon's gate `CM-LLMCTL-SUBMODULE-NONRECURSIVE` failed at `4bcb512`). Owner mandate 2026-10-21: one source of truth, no nested
+submodule chains. `llmctl` is cleaned at `f42bad6` (nests only third-party `llama.cpp` and `colibri`; resolves `constitution`,
+`containers` and `superspec` through one resolver; the gate PASSes at canon `a3d80ce`). `claude_toolkit` was recorded at `223c702` (tag `v1.30.5`) inside canon `a3d80ce`, where it nested own-org repositories (`LLMsVerifier`, `containers`, `challenges`, `claude-code-router`, `HelixConstitution`) and had no `helix-deps.yaml` (both gates RED; history). Canon `5f8503b` pins the pushed flatten `1f6dad3`: it nests only the third-party Go toolchain (`submodules/go`), resolves its own-org dependencies flat through `scripts/resolve_deps.sh` and ships a tracked `helix-deps.yaml`; measured 2026-10-22, `CM-HUB-ENGINE-NO-OWNORG-NESTING` and `CM-HELIX-DEPS-MANIFEST-PRESENT` PASS and `scripts/verify_helix_deps_manifests.sh` prints `VERDICT: PASS (pass=54 fail=0 blind=0 skip_third_party=45 known=0)`. Canon `a3d80ce` (merged
+and pushed to canon `main`; this change stages its follow-up `5f8503b`) adds the hub entries `containers` (`vasic-digital/Containers`, `919ad1e`) and
+`superspec` (`WangX0111/superspec`, `c20ac6c`, third-party). `helix_qa`'s 27 nested tool repositories are registered flat in this project at
+`submodules/<snake_name>/`. Use `scripts/safe_submodule_init.sh` for initialisation (section 11 above shows the manual form).
+Two of those flat tools, `submodules/appcrawler` (`nicetester/AppCrawler`) and `submodules/rest_demo` (`nicehash/rest-clients-demo`), have an AMBIGUOUS existence verdict in `docs/dependency_existence_register.md`; they are kept under operator waiver WVR-CAT-2026-10-21-1 (tracked item CAT-DEP-001, expiry 2026-11-20). Both are excluded from the code index (`codegraph.json`, `.lumenignore`).
+
+**Known upstream defect, `submodules/docling` (third-party, found 2026-10-21; OPEN upstream).** Upstream stores
+`tests/data/uspto/sources/pftaps057006474.txt` with CRLF line endings in its index while its own `.gitattributes` says
+`*.txt text eol=lf`, so a fresh clone shows that fixture as modified even though nobody touched it. Root cause is upstream (the index
+content contradicts the attribute); nothing in this repository is wrong. Local workaround on this host only, not tracked and not applied
+by any script: `.git/modules/docling/info/attributes` holds the line `tests/data/uspto/sources/pftaps057006474.txt -text`, after which
+`git -C submodules/docling ls-files --eol` reports `i/crlf w/crlf attr/-text` and the status is clean. A fresh clone needs the same
+line added by hand until upstream re-normalises the file.

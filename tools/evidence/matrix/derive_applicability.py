@@ -383,7 +383,7 @@ def build_components(repo):
     # reviewer's probe. Fail closed (11.4.233 G): every module root must hold at least one tracked/regular file before anything is derived.
     empty = [n for n in a10 + a11 + a12 if not any(True for _ in walk(os.path.join(repo, "submodules", n)))]   # MUT:empty_submodule
     if empty:
-        sys.stderr.write("derive_applicability: REFUSED reason=submodule_uninitialised %d submodule(s) hold no file (run `git submodule update --init --recursive`): %s\n" % (len(empty), ", ".join(empty)))
+        sys.stderr.write("derive_applicability: REFUSED reason=submodule_uninitialised %d submodule(s) hold no file (run `scripts/safe_submodule_init.sh`; never `--recursive` through constitution/, see docs/GOVERNANCE.md section 5): %s\n" % (len(empty), ", ".join(empty)))
         sys.exit(3)
     for group, lst, gid in (("go_module", a10, "A10"), ("ts_module", a11, "A11"), ("governance_qa_module", a12, "A12")):
         for n in lst:

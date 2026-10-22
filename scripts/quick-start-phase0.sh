@@ -234,7 +234,8 @@ print_success "Directories created"
 
 # Update git submodules
 print_status "Updating git submodules..."
-git submodule update --init --recursive
+# Safe sequence: never descend through constitution/ (docs/GOVERNANCE.md section 5)
+bash "$(dirname "${BASH_SOURCE[0]}")/safe_submodule_init.sh"
 print_success "Submodules updated"
 
 # ==========================================
