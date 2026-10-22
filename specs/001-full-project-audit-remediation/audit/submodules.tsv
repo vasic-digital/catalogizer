@@ -32,7 +32,6 @@ constitution/submodules/watch-skill	third_party	git@github.com:oxbshw/watch-skil
 constitution/submodules/wave-dpctf	third_party	git@github.com:cta-wave/device-observation-framework.git	third_party	-
 submodules/allure2	third_party	git@github.com:allure-framework/allure2.git	third_party	-
 submodules/anthropic_quickstarts	third_party	git@github.com:anthropics/anthropic-quickstarts.git	third_party	-
-submodules/appcrawler	third_party	git@github.com:nicetester/AppCrawler.git	third_party	-
 submodules/appium	third_party	git@github.com:appium/appium.git	third_party	-
 submodules/assets	own	git@github.com:vasic-digital/Assets.git	own	-
 submodules/auth	own	git@github.com:vasic-digital/Auth.git	own	-
@@ -80,7 +79,6 @@ submodules/rate_limiter	own	git@github.com:vasic-digital/RateLimiter.git	own	-
 submodules/recovery	own	git@github.com:vasic-digital/Recovery.git	own	-
 submodules/redroid	third_party	git@github.com:remote-android/redroid-doc.git	third_party	-
 submodules/replay_buffer	own	git@github.com:vasic-digital/ReplayBuffer.git	own	-
-submodules/rest_demo	third_party	git@github.com:nicehash/rest-clients-demo.git	third_party	-
 submodules/scrcpy	third_party	git@github.com:Genymobile/scrcpy.git	third_party	-
 submodules/screen_diff	own	git@github.com:vasic-digital/ScreenDiff.git	own	-
 submodules/security	own	git@github.com:vasic-digital/Security.git	own	-

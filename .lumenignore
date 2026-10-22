@@ -68,7 +68,6 @@
 /specs/001-full-project-audit-remediation/evidence/
 /submodules/allure2/
 /submodules/anthropic_quickstarts/
-/submodules/appcrawler/
 /submodules/appium/
 /submodules/browser_use/
 /submodules/chroma/
@@ -91,7 +90,6 @@
 /submodules/moondream/
 /submodules/perfetto/
 /submodules/redroid/
-/submodules/rest_demo/
 /submodules/scrcpy/
 /submodules/shortest/
 /submodules/signoz/

@@ -144,7 +144,7 @@ deps:
 
   - name: helix_qa
     ssh_url: git@github.com:HelixDevelopment/HelixQA.git
-    ref: ad8b12b              # pinned sha = gitlink recorded for submodules/helix_qa
+    ref: 34d1e32              # pinned sha = gitlink recorded for submodules/helix_qa
     why: "HelixQA: autonomous QA orchestration, test banks and Vision-driven UI QA (11.4.27 / 11.4.278)"
     layout: grouped
 

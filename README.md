@@ -33,7 +33,7 @@ Catalogizer is a comprehensive media collection management system that automatic
 | Document | Purpose |
 |---|---|
 | 📄 **[Environment Variables Reference](docs/ENV_VARIABLES.md)** | Complete `.env` guide — every API key, token, provider registration URL, and configuration flag with 🔴/🟠/🟡/🟢/⚫ tier markers. **Start here to set up credentials.** |
-| 🏛️ **[Governance and the Constitution](docs/GOVERNANCE.md)** | How the Spec Kit constitution (`.specify/memory/constitution.md`, v2.5.0) follows the Helix canon, the pinned canon commit, the binding of the vendored engines `llmctl`, `claude_toolkit` and `open_design`, and safe submodule initialisation |
+| 🏛️ **[Governance and the Constitution](docs/GOVERNANCE.md)** | How the Spec Kit constitution (`.specify/memory/constitution.md`, v2.5.1) follows the Helix canon, the pinned canon commit, the binding of the vendored engines `llmctl`, `claude_toolkit` and `open_design`, and safe submodule initialisation |
 | 📐 **[CONSTITUTION.md](CONSTITUTION.md)** | Non-negotiable rules — Article V (100% test coverage), Article VI (Open-Points Closure Brief), **Article VII (Full-QA Master Cycle)** |
 | 🎯 **[Open-Points Closure Brief](docs/OPEN_POINTS_CLOSURE.md)** | Canonical operator-action checklist — every credential, hardware item, and infra task still outstanding |
 | 🗺️ **[OCU Program Roadmap](HelixQA/docs/nexus/ocu-roadmap.md)** | OpenClaw Ultimate phases P0–P7 status, contract versions, latency budgets, risks |

@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Revision | 7 (single-source flat layout: HE-1 to HE-3, HE-5, HE-8 updated, safe init through `scripts/safe_submodule_init.sh`, hub vendors `containers` and `superspec`; canon branch `feat/hub-engines-single-source` merged and pushed to canon `main` as `a3d80ce`; this change pins its follow-up `5f8503b` (claude_toolkit `1f6dad3`, flat; HE-0, HE-1 and HE-4 updated); previous revision text follows) 6 (canon pin move 94b8836 -> 4bcb512, helixconstitution-v70-6: canon text, index and groups unchanged, so Parts 1 and 2 are unchanged; NEW Part 3, the operative digest of the Constitution Hub Engines section of the constitution file, binding `llmctl`, `claude_toolkit` and `open_design`) |
+| Revision | 8 (2026-10-22: flat tool count 27 -> 25 after the removal of the unused `appcrawler` and `rest_demo`; previous revision text follows) 7 (single-source flat layout: HE-1 to HE-3, HE-5, HE-8 updated, safe init through `scripts/safe_submodule_init.sh`, hub vendors `containers` and `superspec`; canon branch `feat/hub-engines-single-source` merged and pushed to canon `main` as `a3d80ce`; this change pins its follow-up `5f8503b` (claude_toolkit `1f6dad3`, flat; HE-0, HE-1 and HE-4 updated); previous revision text follows) 6 (canon pin move 94b8836 -> 4bcb512, helixconstitution-v70-6: canon text, index and groups unchanged, so Parts 1 and 2 are unchanged; NEW Part 3, the operative digest of the Constitution Hub Engines section of the constitution file, binding `llmctl`, `claude_toolkit` and `open_design`) |
 | Created | 2026-10-02 |
-| Last modified | 2026-10-22T00:30:00Z |
+| Last modified | 2026-10-22T09:05:00Z |
 | Status | active, BINDING |
 | Binds | Part of the Catalogizer Constitution (`.specify/memory/constitution.md`) |
 | Canon pin | `constitution` at `5f8503b4f4f0f051b583d447a240c2a2a7ac253a`; `Constitution.md` sha256 `1c75391f7a52bc6bfa8eaec3e1cfff16bf4478df70968046aed9adc6fe18a58e` |
@@ -5081,7 +5081,7 @@ MUST initialise submodules with `scripts/safe_submodule_init.sh` (tests `scripts
 ### HE-3 Tooling, never product
 MUST NOT import, link, copy or ship an engine in `catalog-api`, `catalog-web`, `catalogizer-desktop`, `installer-wizard`,
 `catalogizer-android`, `catalogizer-androidtv`, the Website or any release image. MUST NOT mount an engine into a build container
-unless the build needs it. The 27 tool repositories that `helix_qa` used to nest are de-registered there (`docs/flat-tools-manifest.tsv`) and registered in this project as flat submodules `submodules/<snake_name>/` (27 gitlinks, registered); `helix_qa` resolves them through `HELIXQA_TOOLS_DIR`, then a flat sibling, then the legacy path, and its sync script is read-only. Measured 2026-10-21: no Go, TypeScript, JSON, Kotlin, Gradle or shell file outside `constitution/` and
+unless the build needs it. The 27 tool repositories that `helix_qa` used to nest are de-registered there (`docs/flat-tools-manifest.tsv`) and 25 of them are registered in this project as flat submodules `submodules/<snake_name>/` (25 gitlinks, registered; `appcrawler` and `rest_demo` removed 2026-10-22 by owner decision, unused); `helix_qa` resolves them through `HELIXQA_TOOLS_DIR`, then a flat sibling, then the legacy path, and its sync script is read-only. Measured 2026-10-21: no Go, TypeScript, JSON, Kotlin, Gradle or shell file outside `constitution/` and
 `specs/` names a path under `constitution/submodules/{llmctl,claude_toolkit,open_design}`. Composes §11.4.161, §11.4.173, §11.4.28,
 §11.4.246.
 

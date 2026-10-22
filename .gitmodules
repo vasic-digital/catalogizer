@@ -202,12 +202,6 @@
 [submodule "llama_index"]
 	path = submodules/llama_index
 	url = git@github.com:run-llama/llama_index.git
-[submodule "appcrawler"]
-	path = submodules/appcrawler
-	url = git@github.com:nicetester/AppCrawler.git
-[submodule "rest_demo"]
-	path = submodules/rest_demo
-	url = git@github.com:nicehash/rest-clients-demo.git
 [submodule "browser_use"]
 	path = submodules/browser_use
 	url = git@github.com:browser-use/browser-use.git

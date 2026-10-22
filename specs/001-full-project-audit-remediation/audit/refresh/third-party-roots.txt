@@ -17,7 +17,6 @@ submodules/constitution/submodules/watch-skill
 submodules/constitution/submodules/wave-dpctf
 submodules/helix_qa/tools/opensource/allure2
 submodules/helix_qa/tools/opensource/anthropic-quickstarts
-submodules/helix_qa/tools/opensource/appcrawler
 submodules/helix_qa/tools/opensource/appium
 submodules/helix_qa/tools/opensource/browser-use
 submodules/helix_qa/tools/opensource/chroma
@@ -43,5 +42,4 @@ submodules/helix_qa/tools/opensource/testdriverai
 submodules/helix_qa/tools/opensource/ui-tars
 submodules/helix_qa/tools/opensource/ui-tars-desktop
 submodules/helix_qa/tools/opensource/unstructured
-submodules/helix_qa/tools/test-apps/rest-demo
 submodules/superspec

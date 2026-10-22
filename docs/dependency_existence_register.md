@@ -2,13 +2,13 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 (2026-10-22: rows appcrawler and rest_demo removed with their submodules by owner decision 2026-10-22; waiver WVR-CAT-2026-10-21-1 retired; CAT-DEP-001 closed) |
 | Created | 2026-10-21T16:14:45Z |
-| Last modified | 2026-10-22T00:59:54Z |
+| Last modified | 2026-10-22T09:05:00Z |
 | Status | active |
-| Status summary | 33 rows, VERIFIED=31 AMBIGUOUS=2 UNVERIFIED=0; the 2 AMBIGUOUS rows carry a time-boxed operator waiver (section 5), expiry 2026-11-20 |
+| Status summary | 31 rows, VERIFIED=31 AMBIGUOUS=0 UNVERIFIED=0; no active waiver (section 5 records the retired one) |
 | Issues | none |
-| Issues summary | 2 AMBIGUOUS rows (appcrawler, rest_demo) kept as flat gitlinks under waiver WVR-CAT-2026-10-21-1 until 2026-11-20; owed work CAT-DEP-001 (section 5) |
+| Issues summary | none open. The 2 former AMBIGUOUS rows (appcrawler, rest_demo) were removed with their submodules on 2026-10-22 (owner decision); waiver WVR-CAT-2026-10-21-1 retired, CAT-DEP-001 closed (section 5) |
 | Fixed | n/a |
 | Fixed summary | n/a |
 | Continuation | Machine-readable twin: docs/dependency_existence_register.tsv; earlier PyPI/tool verdicts live in specs/001-full-project-audit-remediation/evidence/wp09/tool-existence.json |
@@ -62,8 +62,6 @@ Checked 2026-10-21T16:14:45Z (UTC), sequential `timeout 20 git ls-remote`, read-
 | signoz | third-party | helix_qa-flat-tool | VERIFIED | `7646aabb2b84` | `e69d3fcc8ce9` | no | MIT [LICENSE] | ls-remote HEAD returned a ref; pinned commit present locally as commit object; README identity consistent |
 | docling | third-party | helix_qa-flat-tool | VERIFIED | `c7b1734217fc` | `29caea8381e8` | no | MIT [LICENSE] | ls-remote HEAD returned a ref; pinned commit present locally as commit object; README identity consistent |
 | llama_index | third-party | helix_qa-flat-tool | VERIFIED | `5891d5f4f3e9` | `619d74664e84` | no | MIT [LICENSE] | ls-remote HEAD returned a ref; pinned commit present locally as commit object; README identity consistent |
-| appcrawler | third-party | helix_qa-flat-tool | AMBIGUOUS | `c1f4af109a77` | `c1f4af109a77` | yes | none | Declared URL nicetester/AppCrawler is an unofficial personal repo (Chinese-language Appium crawler, 2016 history, author huangys); canonical upstream identity unconfirmed offline, no LICENSE file or licence text in tree; existence is real but provenance/identity needs operator confirmation |
-| rest_demo | third-party | helix_qa-flat-tool | AMBIGUOUS | `e5cf556ee3b4` | `e5cf556ee3b4` | yes | none | README identity is "rest-clients-demo" = NiceHash REST API client examples (python/bash/c#/java/js), unrelated to QA tooling implied by the generic name rest_demo; no licence in tree; name/purpose mismatch needs operator confirmation |
 | browser_use | third-party | helix_qa-flat-tool | VERIFIED | `c8e6e8f0fe61` | `aa093a843da5` | no | MIT [LICENSE] | ls-remote HEAD returned a ref; pinned commit present locally as commit object; README identity consistent |
 | skyvern | third-party | helix_qa-flat-tool | VERIFIED | `d30575bb9a06` | `3dcc56776733` | no | AGPL-3.0 [LICENSE] | ls-remote HEAD returned a ref; pinned commit present locally as commit object; README identity consistent |
 | anthropic_quickstarts | third-party | helix_qa-flat-tool | VERIFIED | `f37f1685e256` | `9ec32b91df50` | no | MIT [LICENSE] | ls-remote HEAD returned a ref; pinned commit present locally as commit object; README identity consistent |
@@ -73,13 +71,14 @@ Full URLs, README first lines and per-row timestamps: docs/dependency_existence_
 
 ## 4. Findings: AMBIGUOUS and gaps
 
-- appcrawler: AMBIGUOUS. See register note. Waived (section 5) until 2026-11-20; then the owed confirmation of canonical origin and licence is due.
-- rest_demo: AMBIGUOUS. NiceHash API client examples under a generic name; waived (section 5) until 2026-11-20; then the owed confirmation that it is intended as a test-app fixture, plus its licence, is due.
-- Licence not found in tree for: claude_toolkit, design-toolkit, containers (README says MIT), testdriverai (package.json ISC), redroid (README says Apache), appcrawler, rest_demo. These are licence findings, not existence failures.
+- appcrawler and rest_demo: REMOVED 2026-10-22 (owner decision). Both rows were AMBIGUOUS (appcrawler: unofficial personal repo `nicetester/AppCrawler`, no licence in tree; rest_demo: NiceHash REST API client examples under a generic name, no licence in tree). Investigation before the decision: nothing in Catalogizer or `helix_qa` executes either repository; `helix_qa` listed them only in `docs/flat-tools-manifest.tsv` (rows 23-24) and in docs, and its resolver tests used `rest-demo` only as a fixture name. Both submodules are de-registered here and dropped from the `helix_qa` manifest (27 -> 25 rows); their `.git/modules` directories are kept as a backup outside the repository.
+- Licence not found in tree for: claude_toolkit, design-toolkit, containers (README says MIT), testdriverai (package.json ISC), redroid (README says Apache). These are licence findings, not existence failures.
 - Hub vs project pin: constitution hub pins containers at 919ad1e while the project flat pin is 4a8f04e; both objects exist locally. The ls-remote HEAD moved past the pin for most rows, which is expected for pinned dependencies.
 - open_design is third-party (nexu-io), Apache-2.0, pinned 3b0df90f305c8279e748c292accf336d02b924ef.
 
 ## 5. Waiver under canon section 11.4.271
+
+**RETIRED 2026-10-22.** The owner decided on 2026-10-22 to remove `submodules/appcrawler` and `submodules/rest_demo` completely (section 11.4.122 keep-or-remove decision: remove), so there is nothing left for WVR-CAT-2026-10-21-1 to waive and no active waiver remains in this register. CAT-DEP-001 is CLOSED, disposition: removed by owner decision 2026-10-22 (step (3) of the owed work below, the remove branch); evidence: the investigation in section 4, the removed rows, and the `helix_qa` manifest change (27 -> 25 rows). The text below is the record of the waiver as it stood (history, not rewritten).
 
 Canon section 11.4.270(C) refuses adoption while a verdict is AMBIGUOUS. The operator decided in this session to KEEP `submodules/appcrawler` and `submodules/rest_demo` as flat gitlinks (nothing removed, section 11.4.122), so the refusal is lifted for these two rows only through a waiver that has the three parts canon section 11.4.271 requires. The verdict columns stay AMBIGUOUS; the waiver is additional columns in the TSV (`waiver_id`, `waiver_authoriser`, `waiver_expiry`, `waiver_tracked_item`, `waiver_scope`).
 

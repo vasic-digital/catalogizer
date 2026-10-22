@@ -2,11 +2,11 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-21 |
-| Last modified | 2026-10-22T00:30:00Z |
+| Last modified | 2026-10-22T09:05:00Z |
 | Status | active |
-| Describes | the Spec Kit constitution `.specify/memory/constitution.md` (version 2.5.0) and `.specify/memory/constitution-appendix.md` (revision 7), pinned to `constitution` at `5f8503b4f4f0f051b583d447a240c2a2a7ac253a` (the pin this change stages; canon follow-up of `a3d80ce`; previous committed pin `4bcb512`) |
+| Describes | the Spec Kit constitution `.specify/memory/constitution.md` (version 2.5.1) and `.specify/memory/constitution-appendix.md` (revision 8), pinned to `constitution` at `5f8503b4f4f0f051b583d447a240c2a2a7ac253a` (the pin this change stages; canon follow-up of `a3d80ce`; previous committed pin `4bcb512`) |
 | Authority | The governing text is the Spec Kit constitution and, above it, the canon in `constitution/Constitution.md`. This page is a guide to them and never replaces them. Where it disagrees with either, they win. |
 
 ## Table of contents
@@ -96,9 +96,11 @@ above describes `5f8503b`; the hub additions are:
 Canon's `helix-deps.yaml` at `5f8503b` lists `claude_toolkit`, `open_design` (third-party, Apache-2.0), `containers` and `superspec`.
 Engine pins: `llmctl` `f42bad6` (no longer nests `constitution`, `containers`, `superspec` or `challenges`; resolves them through one
 resolver: environment override, parent hub, `<root>`, sibling; host fallback only by explicit opt-in variable) and the root
-`submodules/helix_qa` gitlink `ad8b12b`. `claude_toolkit` was recorded at `223c702` (tag `v1.30.5`) inside canon `a3d80ce`, where it nested own-org repositories and had no `helix-deps.yaml` (both gates RED; history). Canon `5f8503b` pins the pushed flatten `1f6dad3`: it nests only the third-party Go toolchain (`submodules/go`), resolves `HelixConstitution`, `containers`, `challenges`, `LLMsVerifier` and `claude-code-router` flat through `scripts/resolve_deps.sh`, and ships a tracked `helix-deps.yaml`. Measured 2026-10-22: `CM-HUB-ENGINE-NO-OWNORG-NESTING` PASS ("submodules/claude_toolkit@1f6dad3 nests only third-party repositories"), `CM-HELIX-DEPS-MANIFEST-PRESENT` PASS for canon (pass 11 / fail 0 / skip_third_party 17) and `scripts/verify_helix_deps_manifests.sh` `VERDICT: PASS (pass=54 fail=0 blind=0 skip_third_party=45 known=0)` (item 27, RESOLVED). `helix_qa` de-registered its 27
-nested tool repositories (manifest `docs/flat-tools-manifest.tsv`); this project registers them flat as 27 submodules at
-`submodules/<snake_name>/` (allure2, appium, scrcpy, perfetto, and so on; 27 gitlinks registered).
+`submodules/helix_qa` gitlink `ad8b12b` (moved to `34d1e32` on 2026-10-22, see below). `claude_toolkit` was recorded at `223c702` (tag `v1.30.5`) inside canon `a3d80ce`, where it nested own-org repositories and had no `helix-deps.yaml` (both gates RED; history). Canon `5f8503b` pins the pushed flatten `1f6dad3`: it nests only the third-party Go toolchain (`submodules/go`), resolves `HelixConstitution`, `containers`, `challenges`, `LLMsVerifier` and `claude-code-router` flat through `scripts/resolve_deps.sh`, and ships a tracked `helix-deps.yaml`. Measured 2026-10-22: `CM-HUB-ENGINE-NO-OWNORG-NESTING` PASS ("submodules/claude_toolkit@1f6dad3 nests only third-party repositories"), `CM-HELIX-DEPS-MANIFEST-PRESENT` PASS for canon (pass 11 / fail 0 / skip_third_party 17) and `scripts/verify_helix_deps_manifests.sh` `VERDICT: PASS (pass=54 fail=0 blind=0 skip_third_party=45 known=0)` (item 27, RESOLVED). `helix_qa` de-registered its 27
+nested tool repositories (manifest `docs/flat-tools-manifest.tsv`); this project registers 25 of them flat at
+`submodules/<snake_name>/` (allure2, appium, scrcpy, perfetto, and so on; 25 gitlinks registered). `appcrawler` and `rest_demo` were removed
+completely on 2026-10-22 (owner decision: unused, AMBIGUOUS existence verdict); the `helix_qa` manifest now lists 25 rows and the root
+`submodules/helix_qa` gitlink moves to `34d1e32`, the `helix_qa` commit that drops the two rows.
 
 What the binding means for a developer, in short (the constitution has the full rules):
 
