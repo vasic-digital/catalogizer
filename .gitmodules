@@ -205,3 +205,6 @@
 [submodule "browser_use"]
 	path = submodules/browser_use
 	url = git@github.com:browser-use/browser-use.git
+[submodule "submodules/llms_verifier"]
+	path = submodules/llms_verifier
+	url = git@github.com:vasic-digital/LLMsVerifier.git

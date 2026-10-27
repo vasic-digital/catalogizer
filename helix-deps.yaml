@@ -148,6 +148,12 @@ deps:
     why: "HelixQA: autonomous QA orchestration, test banks and Vision-driven UI QA (11.4.27 / 11.4.278)"
     layout: grouped
 
+  - name: llms_verifier
+    ssh_url: git@github.com:vasic-digital/LLMsVerifier.git
+    ref: b041175              # pinned sha = gitlink recorded for submodules/llms_verifier
+    why: "LLMsVerifier: LLM model/provider verification; llm-verifier/ module digital.vasic.llmsverifier consumed by helix_qa via replace"
+    layout: grouped
+
   - name: lazy
     ssh_url: git@github.com:vasic-digital/Lazy.git
     ref: 71bc650              # pinned sha = gitlink recorded for submodules/lazy
