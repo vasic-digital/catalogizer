@@ -355,10 +355,13 @@ func (s *SyncService) downloadFromWebDAV(session *models.SyncSession, endpoint *
 		}
 
 		localPath := filepath.Join(endpoint.LocalPath, relativePath)
-		if !pathguard.Within(endpoint.LocalPath, localPath) {
-			// a remote listing entry that climbs out of the sync root (§11.4.115)
+		// a remote listing entry that climbs out of the sync root, lexically or through a
+		// symlink under it, or that names a protected file (§11.4.115). Confine resolves like
+		// the kernel; filepath.Join above already removed every ".." lexically, and that
+		// cleaned path is the one written below, so both see the same path.
+		if _, gerr := pathguard.ConfineData(localPath, []string{endpoint.LocalPath}); gerr != nil {
 			session.FailedFiles++
-			s.logSyncError(session, fmt.Sprintf("Refusing remote path %q: escapes local root", remoteFile.Path))
+			s.logSyncError(session, fmt.Sprintf("Refusing remote path %q: escapes local root: %v", remoteFile.Path, gerr))
 			continue
 		}
 
@@ -1035,7 +1038,7 @@ func (s *SyncService) confineSyncPaths(endpoint *models.SyncEndpoint) error {
 	write := pathguard.SyncWriteRoots()
 	readable := pathguard.Readable(write)
 	check := func(label, p string, roots []string) error {
-		if _, err := pathguard.Confine(p, roots); err != nil {
+		if _, err := pathguard.ConfineData(p, roots); err != nil {
 			return fmt.Errorf("%s %q rejected: %w", label, p, err)
 		}
 		return nil

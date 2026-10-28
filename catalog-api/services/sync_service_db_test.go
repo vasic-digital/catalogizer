@@ -1878,6 +1878,7 @@ func TestSyncService_PerformSync_LocalType_Mirror(t *testing.T) {
 
 	srcDir := t.TempDir()
 	dstDir := t.TempDir()
+	allowSyncDirs(t, srcDir, dstDir)
 
 	require.NoError(t, os.WriteFile(filepath.Join(srcDir, "test.txt"), []byte("sync test"), 0644))
 
@@ -1925,6 +1926,7 @@ func TestSyncService_PerformSync_LocalType_Incremental(t *testing.T) {
 
 	srcDir := t.TempDir()
 	dstDir := t.TempDir()
+	allowSyncDirs(t, srcDir, dstDir)
 
 	require.NoError(t, os.WriteFile(filepath.Join(srcDir, "new.txt"), []byte("new file"), 0644))
 	require.NoError(t, os.WriteFile(filepath.Join(dstDir, "existing.txt"), []byte("existing"), 0644))
@@ -1972,6 +1974,7 @@ func TestSyncService_PerformSync_LocalType_Bidirectional(t *testing.T) {
 
 	srcDir := t.TempDir()
 	dstDir := t.TempDir()
+	allowSyncDirs(t, srcDir, dstDir)
 
 	require.NoError(t, os.WriteFile(filepath.Join(srcDir, "from_src.txt"), []byte("from source"), 0644))
 	require.NoError(t, os.WriteFile(filepath.Join(dstDir, "from_dst.txt"), []byte("from dest"), 0644))

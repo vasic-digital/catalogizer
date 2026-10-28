@@ -2382,7 +2382,7 @@ Create a new media format conversion job.
 
 **Response:** 200 OK (ConversionJob object)
 
-**Path confinement:** `source_path` must be absolute and lie in the read roots (`CATALOGIZER_READ_ROOTS`, default `MEDIA_ROOT_PATH` + `./data`) or the conversion roots; `target_path` must lie in `CATALOGIZER_CONVERSION_ROOTS` (default `./data`). So with `MEDIA_ROOT_PATH=/media` the example above needs a `target_path` under the conversion root (e.g. `./data/video.mp3` as an absolute path). Violations return 400. Pending jobs stored earlier are re-checked on start and fail if outside the roots. See [PATH_CONFINEMENT](../security/PATH_CONFINEMENT.md).
+**Path confinement:** `source_path` must be absolute and lie in the read roots (`CATALOGIZER_READ_ROOTS`, default `MEDIA_ROOT_PATH` + `./data`) or the conversion roots; `target_path` must lie in `CATALOGIZER_CONVERSION_ROOTS` (default `./data`). So with `MEDIA_ROOT_PATH=/media` the example above needs a `target_path` under the conversion root (e.g. `./data/video.mp3` as an absolute path). Neither path may be the application database (`./data/catalogizer.db` by default), a SQLite companion of it, its key file, or a directory containing one of them. A `..` is resolved after the symlinks before it, as the kernel does. Violations return 400. Pending jobs stored earlier are re-checked on start and fail if outside the roots. See [PATH_CONFINEMENT](../security/PATH_CONFINEMENT.md).
 
 ---
 

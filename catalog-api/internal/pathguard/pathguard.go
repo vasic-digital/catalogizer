@@ -63,12 +63,16 @@ func Confine(p string, roots []string) (string, error) {
 	if len(roots) == 0 {
 		return "", fmt.Errorf("pathguard: no allowed roots configured: %w", ErrOutsideRoots)
 	}
-	resolved, err := resolve(filepath.Clean(p))
+	// p is resolved exactly as given, never filepath.Clean'ed first: Clean folds "lnk/.."
+	// lexically, while the kernel follows lnk and then steps up from its target (review round
+	// 3, N1: root/lnk/../x with lnk -> /outside/sub was accepted as root/x and written to
+	// /outside/x). resolve handles "", "." and ".." components itself.
+	resolved, err := resolve(p)
 	if err != nil {
 		return "", fmt.Errorf("pathguard: %w", err)
 	}
 	for _, r := range roots {
-		rr, err := resolve(filepath.Clean(r))
+		rr, err := resolve(r)
 		if err != nil {
 			continue
 		}
@@ -96,8 +100,10 @@ const maxLinkDepth = 40
 
 // resolve walks p component by component the way the kernel does: every existing symlink is
 // followed (a dangling one included), a relative link target is resolved against the link's
-// already-resolved directory, and ".." always steps up from the resolved path, never from the
-// lexical one. Once an element does not exist, the remainder is appended lexically; a ".."
+// already-resolved directory, and a ".." steps up from the directory reached so far, i.e. from
+// the target of a symlink that preceded it, not from the symlink's own parent. Callers pass
+// the raw path; it must not be filepath.Clean'ed first (Clean removes "x/.." pairs without
+// looking at x). Once an element does not exist, the remainder is appended lexically; a ".."
 // after a missing element is refused, because its meaning depends on what is created later.
 //
 // Review round 1 (F1) made dangling links followed; review round 2 (S1) found that the

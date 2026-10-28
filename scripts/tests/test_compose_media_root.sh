@@ -5,11 +5,17 @@
 # is the library and not /app/media. Also asserts the default write root /app/data is a
 # named volume. Renders through the real compose provider (`podman compose config`), not a
 # grep of the YAML text, so ${VAR:-default} expansion is the provider's own.
-# Control: a fixture carrying the pre-fix form `${MEDIA_ROOT_PATH:-/media}` MUST fail.
+# Control: a fixture carrying the pre-fix form `${MEDIA_ROOT_PATH:-/media}` MUST fail, and
+# fail for THAT reason (MEDIA_ROOT_PATH not a mount target); a render error or any other
+# failure of the control is a self-test failure, not a detection.
+#
+# Exit codes: 0 PASS, 1 FAIL, 2 self-test or setup error, 77 SKIP (podman or a compose
+# provider is missing; 77 is the automake/TAP "skipped" convention, so a runner never counts a
+# SKIP as a PASS).
 set -u
 cd "$(git rev-parse --show-toplevel)" || exit 2
-command -v podman >/dev/null 2>&1 || { echo "SKIP - podman not installed (not a PASS)"; exit 0; }
-podman compose version >/dev/null 2>&1 || { echo "SKIP - no podman compose provider (not a PASS)"; exit 0; }
+command -v podman >/dev/null 2>&1 || { echo "SKIP - podman not installed (not a PASS)"; exit 77; }
+podman compose version >/dev/null 2>&1 || { echo "SKIP - no podman compose provider (not a PASS)"; exit 77; }
 
 check() { # $1 = compose file; prints the reason and returns 1 on failure
     local out
@@ -50,8 +56,10 @@ trap 'rm -rf "${tmp:?}"; rm -f "$PWD/.compose_media_selftest.yml"' EXIT
 if ! grep -q 'MEDIA_ROOT_PATH: ${MEDIA_ROOT_PATH:-/media}' "$PWD/.compose_media_selftest.yml"; then
     echo "SELFTEST FAIL: could not build the pre-fix fixture"; exit 2
 fi
-if check "$PWD/.compose_media_selftest.yml" >"$tmp/ctl" 2>&1; then
-    echo "SELFTEST FAIL: pre-fix compose passed: $(cat "$tmp/ctl")"; exit 2
+check "$PWD/.compose_media_selftest.yml" >"$tmp/ctl" 2>&1
+ctl_rc=$?
+if [ "$ctl_rc" -ne 1 ] || ! grep -q 'MEDIA_ROOT_PATH=.* is not a container mount target' "$tmp/ctl"; then
+    echo "SELFTEST FAIL: pre-fix compose was not rejected for the MEDIA_ROOT_PATH mount (rc=$ctl_rc): $(cat "$tmp/ctl")"; exit 2
 fi
 echo "selftest: pre-fix fixture rejected ($(cat "$tmp/ctl"))"
 

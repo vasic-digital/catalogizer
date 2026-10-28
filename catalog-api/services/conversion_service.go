@@ -785,13 +785,16 @@ func (s *ConversionService) GetSupportedFormats() *models.SupportedFormats {
 
 // confineConversionPaths: the input may come from the read roots (CATALOGIZER_READ_ROOTS,
 // default MEDIA_ROOT_PATH + ./data) or the conversion write roots; the output must lie in the
-// conversion write roots (CATALOGIZER_CONVERSION_ROOTS, default ./data). §11.4.115.
+// conversion write roots (CATALOGIZER_CONVERSION_ROOTS, default ./data). Neither may be the
+// application database, a SQLite companion of it, or a directory containing it
+// (pathguard.ConfineData, review round 3 N2). Both are checked exactly as the request gives
+// them, without filepath.Clean, because that raw string is what the converter opens. §11.4.115.
 func confineConversionPaths(source, target string) error {
 	write := pathguard.ConversionWriteRoots()
-	if _, err := pathguard.Confine(source, pathguard.Readable(write)); err != nil {
+	if _, err := pathguard.ConfineData(source, pathguard.Readable(write)); err != nil {
 		return fmt.Errorf("source path %q rejected: %w", source, err)
 	}
-	if _, err := pathguard.Confine(target, write); err != nil {
+	if _, err := pathguard.ConfineData(target, write); err != nil {
 		return fmt.Errorf("target path %q rejected: %w", target, err)
 	}
 	return nil

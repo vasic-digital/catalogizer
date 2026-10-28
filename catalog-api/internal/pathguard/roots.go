@@ -1,9 +1,11 @@
 package pathguard
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 // Environment variables that configure the confinement roots. Each is a colon-separated
@@ -49,6 +51,109 @@ func Readable(write []string) []string {
 
 // Describe renders the effective roots for a single boot log line.
 func Describe() string {
-	return fmt.Sprintf("read=%s sync_write=%s conversion_write=%s",
-		strings.Join(ReadRoots(), ":"), strings.Join(SyncWriteRoots(), ":"), strings.Join(ConversionWriteRoots(), ":"))
+	return fmt.Sprintf("read=%s sync_write=%s conversion_write=%s protected=%s",
+		strings.Join(ReadRoots(), ":"), strings.Join(SyncWriteRoots(), ":"), strings.Join(ConversionWriteRoots(), ":"),
+		strings.Join(ProtectedPaths(), ":"))
+}
+
+// ErrProtected is returned by ConfineData when a path is, contains, or lies under a protected
+// application file (the database, its SQLite companions, its key file).
+var ErrProtected = errors.New("path overlaps a protected application file")
+
+// DefaultDatabaseFile is the default SQLite database location (main.go), relative to the
+// working directory. It lives inside the default write root DataDir, so it is protected even
+// if the server never calls ProtectDatabase.
+var DefaultDatabaseFile = filepath.Join(DataDir, "catalogizer.db")
+
+// sqliteCompanions are the files SQLite keeps next to a database (WAL, shared memory, rollback
+// journal); overwriting or deleting them corrupts or rolls back the database.
+var sqliteCompanions = []string{"", "-wal", "-shm", "-journal"}
+
+var protected struct {
+	mu    sync.RWMutex
+	paths []string
+}
+
+func init() { protected.paths = defaultProtected() }
+
+func defaultProtected() []string { return databaseFiles(DefaultDatabaseFile) }
+
+func databaseFiles(db string) []string {
+	var out []string
+	for _, suf := range sqliteCompanions {
+		out = append(out, db+suf)
+	}
+	return out
+}
+
+// Protect adds files that request-named paths may never name, contain or lie under (see
+// ConfineData). Relative paths are made absolute against the working directory at call time;
+// empty entries are ignored.
+func Protect(paths ...string) {
+	protected.mu.Lock()
+	defer protected.mu.Unlock()
+	for _, p := range paths {
+		if p == "" {
+			continue
+		}
+		protected.paths = append(protected.paths, p)
+	}
+}
+
+// ProtectDatabase protects a SQLite database file and its companion files.
+func ProtectDatabase(db string) {
+	if db == "" {
+		return
+	}
+	Protect(databaseFiles(db)...)
+}
+
+// ProtectedPaths returns the absolute form of every protected path (for logs and tests).
+func ProtectedPaths() []string {
+	protected.mu.RLock()
+	defer protected.mu.RUnlock()
+	var out []string
+	for _, p := range protected.paths {
+		if abs, err := filepath.Abs(p); err == nil {
+			out = append(out, abs)
+		}
+	}
+	return out
+}
+
+// setProtectedForTest replaces the protected list and returns a function restoring it.
+func setProtectedForTest(paths []string) func() {
+	protected.mu.Lock()
+	old := protected.paths
+	protected.paths = append([]string(nil), paths...)
+	protected.mu.Unlock()
+	return func() {
+		protected.mu.Lock()
+		protected.paths = old
+		protected.mu.Unlock()
+	}
+}
+
+// ConfineData is Confine for paths a request names as data to read or write (sync local
+// paths, sync_settings directories, conversion source and target). In addition to Confine it
+// refuses, with ErrProtected, a path whose resolved form equals a protected file, lies below
+// one, or is a directory containing one: a sync of ./data would otherwise upload, overwrite or
+// mirror-delete ./data/catalogizer.db, and a conversion could write its output over it
+// (review round 3, N2). Both sides are compared after symlink resolution, so an alias of the
+// database is refused too.
+func ConfineData(p string, roots []string) (string, error) {
+	resolved, err := Confine(p, roots)
+	if err != nil {
+		return "", err
+	}
+	for _, q := range ProtectedPaths() {
+		rq, rerr := resolve(q)
+		if rerr != nil {
+			rq = q // resolution of the protected path failed: compare its lexical form
+		}
+		if within(rq, resolved) || within(resolved, rq) {
+			return "", fmt.Errorf("pathguard: %q: %w", p, ErrProtected)
+		}
+	}
+	return resolved, nil
 }

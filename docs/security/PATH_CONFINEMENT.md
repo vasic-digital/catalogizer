@@ -4,9 +4,19 @@ Request-fed filesystem paths (sync endpoints, conversion jobs, cover-art lookup,
 backup restore) are confined to configured root directories by `catalog-api/internal/pathguard`
 (symlink-resolving, fail-closed: an empty root list, relative path, NUL byte, symlink loop or any
 resolution error is a rejection; a dangling symlink is followed to where a write would land).
-Resolution walks the path one component at a time the way the kernel does: every symlink is followed
-(dangling ones included), a relative link target is resolved against the link's real directory, `..`
-steps up from the resolved directory, and a `..` that follows a not-yet-existing element is refused.
+Resolution walks the path exactly as the request gives it (it is not `filepath.Clean`ed first), one
+component at a time the way the kernel does: every symlink is followed (dangling ones included), a
+relative link target is resolved against the link's real directory, a `..` steps up from the directory
+reached so far (so `root/lnk/../x` with `lnk -> /outside/sub` resolves to `/outside/x`, not `root/x`),
+and a `..` that follows a not-yet-existing element is refused.
+
+Before review round 3 the path was `filepath.Clean`ed before resolution, which folds `lnk/..` without
+looking at `lnk`: `root/lnk/../pwn.txt` was accepted as `root/pwn.txt` while the kernel wrote
+`/outside/pwn.txt` (N1). A differential test (`internal/pathguard/confine_differential_test.go`) now
+creates random symlink trees and compares every verdict with what the kernel actually writes through the
+raw path; seeds default/1/2/3 (4,000 cases each) give 0 escapes. The price is more refusals on the safe
+side: about 200 of 4,000 random cases the kernel could have written inside the root are refused, nearly
+all of them a `..` after a missing element.
 
 ## Environment variables
 
@@ -44,6 +54,28 @@ The default write root `./data` is `/app/data` in the container (WORKDIR `/app`)
 so synced and converted files survive `podman compose down` / up. Without that volume (compose files before review
 round 2, or a hand-written `podman run`) they are lost when the container is recreated; set
 `CATALOGIZER_SYNC_ROOTS` / `CATALOGIZER_CONVERSION_ROOTS` to a mounted directory in that case.
+
+## Protected application files
+
+The default write root `./data` also holds the default SQLite database `./data/catalogizer.db`
+(`database.path`), and `./data` is a read root as well. So a request-named path (sync `local_path`,
+`source_directory` / `destination_directory`, every file a WebDAV download writes, conversion source and
+target) is additionally refused (`path overlaps a protected application file`) when, after symlink
+resolution, it
+
+* is the database or one of its SQLite companion files (`-wal`, `-shm`, `-journal`) or the database key
+  file (`database.encryption_key_file` / `DATABASE_ENCRYPTION_KEY_FILE` / the per-user default), or
+* lies below one of them, or
+* is a directory that contains one of them (a sync of `./data` would upload the database, overwrite it, or
+  delete it in mirror mode).
+
+`./data/catalogizer.db` is protected even if the server never registers it; at boot the configured
+database path and key file are added, and the boot log line lists them as `protected=`. Use a
+sub-directory such as `./data/sync` or `./data/converted` as a sync or conversion target. Cover-art
+lookup (`LocalScanResolver`) uses the plain read-root check and is not affected.
+
+Upgrade impact: a sync endpoint whose `local_path` (or a `sync_settings` directory) is `./data` itself, or
+any directory containing the database, is now refused when it runs; point it at a sub-directory.
 
 ## WebDAV listing limits
 

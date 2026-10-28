@@ -403,6 +403,13 @@ func main() {
 	moduleRegistry.StartBackgroundServices(ctx)
 
 	// Run database migrations
+	// The database lives in the default write root ./data; request-named sync/conversion
+	// paths may never be it, a SQLite companion of it, its key file, or a directory holding
+	// one of them (review round 3, N2).
+	pathguard.ProtectDatabase(cfg.Database.Path)
+	if keyFile, kerr := database.ResolveKeyFilePath(&cfg.Database); kerr == nil {
+		pathguard.Protect(keyFile)
+	}
 	logging.Infof("Filesystem path confinement roots: %s", pathguard.Describe())
 	logging.Info("Running database migrations...")
 	if err := databaseDB.RunMigrations(ctx); err != nil {

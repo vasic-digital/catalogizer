@@ -51,6 +51,16 @@ Each needs a RED selftest first, then the fix.
 - F4: TOCTOU between check and use remains open; plan `os.Root`-based sinks
   (see `docs/security/PATH_CONFINEMENT.md` once landed).
 - Consolidate `internal/pathguard` into `internal/pathsafe` after the security series lands.
+- Review round 3, T4 and P1: carried over from the round-3 review as follow-ups, not fixed in the
+  round-3 fix commit. Their exact text was not part of the hand-off to the fixer; copy it here from
+  the round-3 review record (UNKNOWN here).
+- `tests/integration` `TestDatabaseConcurrentAccess` fails when run on its own (3/3 runs on this
+  branch, and also on `main` 0916e992 before the round-3 fix); it passed once inside the whole
+  `./tests/...` run, so it is also order-dependent. Independent of path confinement; investigate
+  separately.
+- Path confinement refuses about 5% of random cases the kernel would have written inside the root
+  (mostly `..` after a not-yet-existing element; see `confine_differential_test.go` false-refusal
+  count). Safe direction; revisit only if a real client needs such paths.
 
 ## Live NAS tests
 - Two blind sleeps remain in `catalog-api/filesystem/ftp_readcloser_unit_test.go` (around lines 171 and 201).
