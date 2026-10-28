@@ -50,78 +50,16 @@ final_from() {
 }
 nonroot() { case "${1%%:*}" in ""|root|0) return 1;; *) return 0;; esac; }
 
-# compose_records FILE : "service<TAB>kind<TAB>value" records (kinds: service build_ctx build_df image privileged userns volume health_test)
+# compose_records FILE : "service<TAB>kind<TAB>value" records (kinds: service build_ctx build_df image privileged userns
+# volume health_test unmodeled); the reader lives in container_hygiene_compose.awk next to this script.
 compose_records() {
-  awk '
-    function ind(s){ match(s,/^ */); return RLENGTH }
-    function val(s,k){ sub("^[ ]*" k ":[ ]*","",s); sub(/[ ]+#.*$/,"",s); gsub(/^["\047]|["\047]$/,"",s); return s }
-    function unq(v){ sub(/^[ ]+/,"",v); sub(/[ ]+#.*$/,"",v); gsub(/^["\047]|["\047 ]+$/,"",v); return v }
-    function fget(b,k,   r){ if (match(b, "[{, ][\"\047]?" k "[\"\047]?[ ]*:[ ]*[^,}]*")) { r=substr(b,RSTART,RLENGTH); sub(/^[^:]*:[ ]*/,"",r); return unq(r) } return "" }
-    function vemit(ty,src,tgt,ro){
-      if (ty=="volume" || ty=="tmpfs" || ty=="npipe" || ty=="image" || ty=="cluster") return
-      if (src=="") return
-      print svc "\tvolume\t" src ":" tgt ((ro ~ /^(true|yes|on|1)$/) ? ":ro" : "") }
-    function vflush(){ if (lv) { vemit(ltype,lsrc,ltgt,lro); lv=0 } }
-    function flush(){ vflush(); if (intest) { print svc "\thealth_test\t" tst; intest=0 } }
-    # flow-mapping service body: model image/privileged/userns_mode, fail closed on what it cannot model
-    function flowsvc(b,   v){
-      v=fget(b,"privileged"); if (v!="") print svc "\tprivileged\t" v
-      v=fget(b,"userns_mode"); if (v!="") print svc "\tuserns\t" v
-      v=fget(b,"image"); if (v!="") print svc "\timage\t" v
-      if (b ~ /(volumes|build|healthcheck|<<)["\047]?[ ]*:/ || b ~ /[*&][A-Za-z0-9_]/) print svc "\tunmodeled\tflow-style service body uses keys/anchors this parser cannot model: " substr(b,1,60)
-    }
-    /^[ ]*#/ {next}
-    /^[ ]*$/ {next}
-    { i=ind($0) }
-    i==0 { flush(); insvc=($0 ~ /^services:/); svc=""
-      if (insvc && $0 ~ /^services:[ ]*[^ #]/) print "-\tunmodeled\tflow-style services mapping on one line"
-      next }
-    !insvc {next}
-    i==2 && /^  [A-Za-z0-9_.-]+:[ ]*(#.*)?$/ { flush(); svc=$1; sub(":","",svc); invol=0; inbuild=0; print svc "\tservice\t-"; next }
-    i==2 && /^  [A-Za-z0-9_.-]+:[ ]*\{/ { flush(); svc=$1; sub(":.*","",svc); invol=0; inbuild=0; print svc "\tservice\t-"; flowsvc($0); next }
-    i==2 { flush(); svc=""; print "-\tunmodeled\tservice entry the parser cannot model: " substr($0,1,60); next }
-    svc=="" {next}
-    invol && lv && i>vind && /^[ ]*[A-Za-z_"\047]+[ ]*:/ {
-      k=$0; sub(/^[ ]*["\047]?/,"",k); sub(/["\047]?[ ]*:.*$/,"",k); v=unq(substr($0, index($0,":")+1)); sub(/^[ ]+/,"",v)
-      if (k=="type") ltype=v; else if (k=="source"||k=="src") lsrc=v; else if (k=="target"||k=="dst"||k=="destination") ltgt=v; else if (k=="read_only") lro=v
-      next }
-    /^[ ]*- / {
-      item=$0; sub(/^[ ]*- /,"",item); sub(/[ ]+#.*$/,"",item)
-      if (invol && i>=6) {
-        vflush()
-        if (item ~ /^\{/) vemit(fget(item,"type"), fget(item,"source") fget(item,"src"), fget(item,"target") fget(item,"dst"), fget(item,"read_only"))
-        else if (item ~ /^(type|source|src|target|dst|destination|read_only|bind|volume|tmpfs)[ ]*:[ ]/) {
-          lv=1; vind=i; ltype=""; lsrc=""; ltgt=""; lro=""
-          k=item; sub(/[ ]*:.*$/,"",k); v=item; sub(/^[^:]*:[ ]*/,"",v); v=unq(v)
-          if (k=="type") ltype=v; else if (k=="source"||k=="src") lsrc=v; else if (k=="target"||k=="dst"||k=="destination") ltgt=v; else if (k=="read_only") lro=v
-        } else print svc "\tvolume\t" item
-      }
-      else if (intest) tst = tst " " item
-      next }
-    i==4 { flush(); invol=0; inbuild=0
-      if ($0 ~ /^    volumes:/) invol=1
-      else if ($0 ~ /^    <<[ ]*:/) print svc "\tunmodeled\tmerge key (<<) in service: values come from an anchor the parser cannot see"
-      else if ($0 ~ /^    \{/) flowsvc($0)
-      else if ($0 ~ /^    build:[ ]*[^ ]/) { print svc "\tbuild_ctx\t" val($0,"build"); print svc "\tbuild_df\tDockerfile" }
-      else if ($0 ~ /^    build:/) inbuild=1
-      else if ($0 ~ /^    image:/) print svc "\timage\t" val($0,"image")
-      else if ($0 ~ /^    privileged:/) { pv=val($0,"privileged"); print svc "\tprivileged\t" pv
-        if (pv ~ /^[*&]/) print svc "\tunmodeled\tprivileged value is a YAML alias" }
-      else if ($0 ~ /^    userns_mode:/) print svc "\tuserns\t" val($0,"userns_mode")
-      next }
-    i==6 { flush()
-      if (inbuild && /^      context:/) print svc "\tbuild_ctx\t" val($0,"context")
-      else if (inbuild && /^      dockerfile:/) print svc "\tbuild_df\t" val($0,"dockerfile")
-      else if (/^      test:/) { v=val($0,"test"); if (v=="") { intest=1; tst="" } else print svc "\thealth_test\t" v }
-      next }
-    END { flush() }
-  ' "$1"
+  awk -f "$SELF_DIR/container_hygiene_compose.awk" "$1"
 }
 
 # head_health : stdin = a healthcheck command text; succeeds if it is a HEAD-style probe of /health (GET-only route).
-# Flag clusters are parsed (curl -fsI, -sSfI), as are -X HEAD / -XHEAD / --request HEAD / --spider / --head; list/quote
+# Flag clusters are parsed (curl -fsI, -sSfI), as are -X HEAD / -XHEAD / --request HEAD / wget --method=HEAD / --spider / --head; list/quote
 # punctuation is normalised first so a compose JSON list ["CMD","curl","-fsI",...] is judged on its words.
-HEADRE='(^|[[:space:]])(--spider|--head|-[A-Za-z]*I[A-Za-z]*|-[A-Za-z]*X[[:space:]]*HEAD|--request[= ]+HEAD)([[:space:]]|$)'
+HEADRE='(^|[[:space:]])(--spider|--head|-[A-Za-z]*I[A-Za-z]*|-[A-Za-z]*X[[:space:]]*HEAD|--request[= ]+HEAD|--method[= ]+HEAD)([[:space:]]|$)'
 head_health() {
   tr '[],"\047' '    ' | grep -Eq -- "${HEADRE}.*/health|/health.*${HEADRE}"
 }
@@ -129,12 +67,55 @@ head_health() {
 # masked_build FILE : succeeds if a RUN step of a build command (npm/yarn/pnpm/bun build, go build, make, gradle,
 # tsc, cargo build, mvn, vite/ng/next/nuxt/webpack build) has its failure swallowed (`|| x` other than `|| exit N>0`/`|| false`,
 # any pipe (no pipefail in sh), `; true`, `; exit 0`, `; :`), or any RUN passes --skipLibCheck.
-R3_BUILD='((npm|yarn|pnpm|bun)([[:space:]]+run)?[[:space:]]+(build|compile)[A-Za-z0-9:_-]*|go[[:space:]]+(build|install)|make|(\./)?gradlew?|tsc|cargo[[:space:]]+build|(\./)?mvnw?|(npx[[:space:]]+)?(vite|ng|next|nuxt|webpack)[[:space:]]+build)'
-R3_MASK='(\|\||\|[^|]|;[[:space:]]*(true|exit[[:space:]]+0|:)([[:space:];&]|$))'
-R3_RE='^[[:space:]]*RUN[[:space:]]+((--[^[:space:]]+[[:space:]]+)*|.*[;&|(][[:space:]]*)'"$R3_BUILD"'([[:space:]][^|;]*)?'"$R3_MASK"
+# Package-manager options between the tool and its build script (`yarn --cwd web build`, `npm --prefix web run build`,
+# `yarn workspace web build`, `pnpm --filter web build`); a plain word other than `workspace NAME` is not skipped,
+# so `yarn add build-tools` is not a build.
+R3_PMOPT='(--?[A-Za-z][A-Za-z0-9-]*([= ][^[:space:]|;&-][^[:space:]|;&]*)?|workspace[[:space:]]+[^[:space:]|;&]+)'
+R3_PRE='(env([[:space:]]+-[^[:space:]]+)*[[:space:]]+)?([A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*((npx|bunx|pnpx)([[:space:]]+-[^[:space:]]+)*[[:space:]]+|(pnpm|yarn)[[:space:]]+(exec[[:space:]]+)?)?'
+R3_BUILD='((npm|yarn|pnpm|bun)([[:space:]]+'"$R3_PMOPT"')*([[:space:]]+run)?[[:space:]]+(build|compile)[A-Za-z0-9:_-]*|go[[:space:]]+(build|install)|make|(\./)?gradlew?|tsc|cargo[[:space:]]+build|(\./)?mvnw?|(vite|ng|next|nuxt|webpack)[[:space:]]+build)'
+# Masking forms after the build: `||`, a single pipe (no pipefail in sh), any `;` followed by a command (RUN is
+# `sh -c` without -e, so the last command's status wins), and a background `&` (not `&&`, not `>&1`).
+R3_MASK='(\|\||\|[^|]|;[[:space:]]*[^[:space:]]|[^&>]&([^&]|$))'
+# the build starts the RUN body (after --flags), or follows a separator, or opens a `sh -c "..."` string
+R3_RE='^[[:space:]]*RUN[[:space:]]+((--[^[:space:]]+[[:space:]]+)*|.*([;&|(]|-[A-Za-z]*c[[:space:]]+["'"'"'])[[:space:]]*)'"$R3_PRE$R3_BUILD"'([[:space:]][^|;]*)?'"$R3_MASK"
+# run_lines FILE : one normalised "RUN <body>" line per RUN instruction (continuations joined, instruction keyword
+# case-insensitive, --flags kept first). An interpreter heredoc (`RUN <<EOF`, `RUN bash -e <<EOF`) becomes its body
+# joined with "; ". A stage SHELL with pipefail / -e is prefixed to each later RUN of that stage as text the masks below
+# understand. A heredoc that feeds another command (`cat <<EOF > f`) is consumed and not treated as commands.
+run_lines() {
+  sed -e ':a' -e '/\\$/{N;s/\\\n/ /;ta' -e '}' "$1" | awk '
+    function out(flags, body){ print "RUN " flags shp body }
+    hd != "" { t=$0; sub(/^[\t ]+/,"",t)
+      if ($0 == hd || (hstrip && t == hd)) { if (hcmd) out(hflags, hpre hbody); hd=""; next }
+      if (hcmd) {
+        if (t ~ /^#!/) { if (t ~ /[ \t]-[A-Za-z]*e/) hbody = hbody "set -e && " }
+        else if (t != "" && t !~ /^#/) hbody = hbody ((hbody == "" || hbody ~ /&& $/) ? "" : "; ") t
+      }
+      next }
+    /^[ \t]*[Ff][Rr][Oo][Mm][ \t]/ { shp=""; next }
+    /^[ \t]*[Ss][Hh][Ee][Ll][Ll][ \t]/ { shp=""
+      if ($0 ~ /pipefail/) shp = shp "set -o pipefail && "
+      if ($0 ~ /"-[A-Za-z]*e[A-Za-z]*"|errexit/) shp = shp "set -e && "
+      next }
+    /^[ \t]*[Rr][Uu][Nn][ \t]/ {
+      b=$0; sub(/^[ \t]*[Rr][Uu][Nn][ \t]+/,"",b); fl=""
+      while (match(b, /^--[^ \t]+[ \t]+/)) { fl = fl substr(b, 1, RLENGTH); b = substr(b, RLENGTH+1) }
+      if (match(b, /<<-?[ ]*["\047]?[A-Za-z_][A-Za-z0-9_]*["\047]?/)) {
+        h=substr(b, RSTART, RLENGTH); hstrip=(h ~ /^<<-/); gsub(/^<<-?[ ]*|["\047]/, "", h); hd=h
+        hpre=substr(b, 1, RSTART-1); hflags=fl; hbody=""
+        hcmd = (hpre ~ /^[ \t]*((ba|da)?sh([ \t]+-[A-Za-z]+)*[ \t]*)?$/)
+        next }
+      out(fl, b) }'
+}
+# masked_build FILE : succeeds if a RUN step of a build command has its failure swallowed, or any RUN passes --skipLibCheck.
+# Under errexit (`set -e`, `sh -e`) a `;` is read as `&&`; under pipefail a single pipe is read as `&&`. `|| exit N`
+# (N in 1..255; 256 wraps to 0) and `|| false` fail loud and are removed, keeping the delimiter that follows them so
+# a masking tail (`|| false; true`, `|| false& true`) is still seen.
 masked_build() {
-  sed -e ':a' -e '/\\$/{N;s/\\\n/ /;ta' -e '}' "$1" | grep -Ev 'pipefail' \
-    | sed -E 's/\|\|[[:space:]]*(exit[[:space:]]+[1-9][0-9]*|false)([[:space:];&]|$)/ /g' \
+  run_lines "$1" | sed -E 's/([^&>[:space:]])&([^&]|$)/\1 \&\2/g' \
+    | sed -E '/(set[[:space:]]+-[A-Za-z]*e|errexit|(^|[[:space:]/])(ba|da)?sh[[:space:]]+-[A-Za-z]*e)/ s/;/ \&\& /g' \
+    | sed -E -e '/pipefail/ {' -e ':p' -e 's/(^|[^|])\|([^|]|$)/\1 \&\& \2/' -e 'tp' -e '}' \
+    | sed -E "s/\|\|[[:space:]]*(exit[[:space:]]+(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]?)|false)([[:space:];&)\"'\`]|\$)/ \3/g" \
     | grep -Eq -e "$R3_RE" -e '^[[:space:]]*RUN[[:space:]].*--skipLibCheck'
 }
 
@@ -464,6 +445,62 @@ selftest() {
   expect_rule o4topflow R10-COMPOSE-UNMODELED 'printf "services: {a: {image: x, privileged: true}}\n" > "$d/docker-compose.yml"'
   expect_rule o4weird  R10-COMPOSE-UNMODELED 'printf "services:\n  a:\n    image: x\n  \"quoted\": {image: y}\n" > "$d/docker-compose.yml"'
   expect_rule o4flowvol R10-COMPOSE-UNMODELED 'printf "services:\n  p: {image: x, volumes: [\"./a:/b\"], privileged: false}\n" > "$d/docker-compose.yml"'
+  # --- review round 2 of the O1-O4 closure: RED fixtures first, then the fixes ---
+  # S1/S2/RM3/RM7 (R3): the `|| false` / `|| exit N` exemption must keep the delimiter and only accept N in 1..255
+  expect_rule s1semi   R3-MASKED-BUILD 'printf "RUN npm run build || false; true\n" >> "$d/svc/Dockerfile"'
+  expect_rule s1amp    R3-MASKED-BUILD 'printf "RUN npm run build || false& true\n" >> "$d/svc/Dockerfile"'
+  expect_rule s2exit256 R3-MASKED-BUILD 'printf "RUN npm run build || exit 256\n" >> "$d/svc/Dockerfile"'
+  expect_rule rm3exit0 R3-MASKED-BUILD 'printf "RUN npm run build || exit 0\n" >> "$d/svc/Dockerfile"'
+  expect_rule rm7bg    R3-MASKED-BUILD 'printf "RUN yarn build & true\n" >> "$d/svc/Dockerfile"'
+  # T4/T5 (R3): env prefixes, runners, package-manager options, sh -c, lowercase run, heredocs, pipefail lines, trailing commands
+  expect_rule t4env    R3-MASKED-BUILD 'printf "RUN NODE_ENV=production yarn build || true\n" >> "$d/svc/Dockerfile"'
+  expect_rule t4npx    R3-MASKED-BUILD 'printf "RUN npx tsc || true\n" >> "$d/svc/Dockerfile"'
+  expect_rule t4ws     R3-MASKED-BUILD 'printf "RUN yarn workspace web build || true\n" >> "$d/svc/Dockerfile"'
+  expect_rule t4cwd    R3-MASKED-BUILD 'printf "RUN yarn --cwd web build || true\n" >> "$d/svc/Dockerfile"'
+  expect_rule t4prefix R3-MASKED-BUILD 'printf "RUN npm --prefix web run build || true\n" >> "$d/svc/Dockerfile"'
+  expect_rule t5shc    R3-MASKED-BUILD 'printf "RUN sh -c \"yarn build || true\"\n" >> "$d/svc/Dockerfile"'
+  expect_rule t5shsemi R3-MASKED-BUILD 'printf "RUN sh -c \"yarn build; echo done\"\n" >> "$d/svc/Dockerfile"'
+  expect_rule t5semi   R3-MASKED-BUILD 'printf "RUN yarn build; echo done\n" >> "$d/svc/Dockerfile"'
+  expect_rule t5lower  R3-MASKED-BUILD 'printf "run yarn build || true\n" >> "$d/svc/Dockerfile"'
+  expect_rule t5heredoc R3-MASKED-BUILD 'printf "RUN <<EOF\nyarn build\necho done\nEOF\n" >> "$d/svc/Dockerfile"'
+  expect_rule t5pipefail R3-MASKED-BUILD 'printf "RUN set -o pipefail && yarn build || true\n" >> "$d/svc/Dockerfile"'
+  expect_rule t5mount  R3-MASKED-BUILD 'printf "RUN --mount=type=cache,target=/c yarn build || true\n" >> "$d/svc/Dockerfile"'
+  # T7 (R9): wget --method=HEAD and a compose `test:` block scalar
+  expect_rule t7wget   R9-HEALTH-HEAD 'sed -i "s#^HEALTHCHECK.*#HEALTHCHECK CMD wget -q --method=HEAD -O- http://127.0.0.1:8080/health#" "$d/svc/Dockerfile"'
+  expect_rule t7bs     R9-HEALTH-HEAD 'printf "services:\n  api:\n    image: x\n    healthcheck:\n      test: >-\n        curl -fsI\n        http://127.0.0.1/health\n" > "$d/docker-compose.yml"'
+  # T1-T3 (R5/R7/R10): compose shapes the parser must model or fail closed on
+  local CB='services:\n  api:\n    build:\n      context: .\n      dockerfile: svc/Dockerfile\n'
+  expect_rule t1flowml R10-COMPOSE-UNMODELED 'printf "services:\n  p: {image: x,\n      privileged: true}\n" > "$d/docker-compose.yml"'
+  expect_rule t1flowml4 R10-COMPOSE-UNMODELED 'printf "services:\n  p:\n    {image: x,\n     privileged: true}\n" > "$d/docker-compose.yml"'
+  expect_rule t1quoted R5-PRIVILEGED 'printf "    \"privileged\": true\n" >> "$d/docker-compose.yml"'
+  expect_rule t1spcolon R5-PRIVILEGED 'printf "    privileged : true\n" >> "$d/docker-compose.yml"'
+  expect_rule t1tag    R10-COMPOSE-UNMODELED 'printf "    privileged: !!bool true\n" >> "$d/docker-compose.yml"'
+  expect_rule t1bs     R10-COMPOSE-UNMODELED 'printf "    privileged: >-\n      true\n" >> "$d/docker-compose.yml"'
+  expect_rule t1indent4 R10-COMPOSE-UNMODELED 'printf "services:\n    a:\n      image: x\n      privileged: true\n" > "$d/docker-compose.yml"'
+  expect_rule t1body6  R10-COMPOSE-UNMODELED 'printf "services:\n  a:\n      image: x\n      privileged: true\n" > "$d/docker-compose.yml"'
+  expect_rule t1odd    R10-COMPOSE-UNMODELED 'printf "services:\n  a:\n    image: x\n   privileged: true\n" > "$d/docker-compose.yml"'
+  expect_rule t1junk   R10-COMPOSE-UNMODELED 'printf "    ? privileged\n    : true\n" >> "$d/docker-compose.yml"'
+  expect_rule t2flowvol R10-COMPOSE-UNMODELED 'printf "'"$CB"'    volumes: [./svc:/app]\n" > "$d/docker-compose.yml"'
+  expect_rule t2seqkey R10-COMPOSE-UNMODELED 'printf "'"$CB"'    volumes:\n    - ./svc:/app\n" > "$d/docker-compose.yml"'
+  expect_rule t2qlong  R7-BUILDER-USERNS 'printf "'"$CB"'    volumes:\n      - \"type\": bind\n        \"source\": ./svc\n        \"target\": /app\n" > "$d/docker-compose.yml"'
+  expect_rule t2firstkey R7-BUILDER-USERNS 'printf "'"$CB"'    volumes:\n      - consistency: cached\n        type: bind\n        source: ./svc\n        target: /app\n" > "$d/docker-compose.yml"'
+  expect_rule t2qshort R7-BUILDER-USERNS 'printf "'"$CB"'    volumes:\n      - \"./svc:/app\"\n" > "$d/docker-compose.yml"'
+  expect_rule t2flowml R10-COMPOSE-UNMODELED 'printf "'"$CB"'    volumes:\n      - {type: bind,\n         source: ./svc, target: /app}\n" > "$d/docker-compose.yml"'
+  expect_rule t2alias  R10-COMPOSE-UNMODELED 'printf "'"$CB"'    volumes: *vols\n" > "$d/docker-compose.yml"'
+  expect_rule t3bflow  R10-COMPOSE-UNMODELED 'printf "services:\n  api:\n    build: {context: ., dockerfile: svc/Dockerfile}\n" > "$d/docker-compose.yml"'
+  expect_rule t3hcflow R10-COMPOSE-UNMODELED 'printf "services:\n  api:\n    image: x\n    healthcheck: {test: [CMD, true]}\n" > "$d/docker-compose.yml"'
+  expect_rule t3bind5  R10-COMPOSE-UNMODELED 'printf "services:\n  api:\n    build:\n     context: .\n" > "$d/docker-compose.yml"'
+  # reviewer survivors that had no fixture of their own (positive here, golden-FALSE in ctl4)
+  expect_rule rm5hcflow R10-COMPOSE-UNMODELED 'printf "services:\n  p: {image: x, healthcheck: {test: [CMD, true]}}\n" > "$d/docker-compose.yml"'
+  expect_rule rm6dest  R7-BUILDER-USERNS 'printf "'"$CB"'    volumes:\n      - type: bind\n        source: ./svc\n        destination: /app\n" > "$d/docker-compose.yml"'
+  expect_rule rm9flowalias R10-COMPOSE-UNMODELED 'printf "services:\n  p: {image: *img}\n" > "$d/docker-compose.yml"'
+  expect_rule rm10alias R10-COMPOSE-UNMODELED 'printf "    privileged: *priv\n" >> "$d/docker-compose.yml"'
+  # golden-FALSE for the round-2 fixes: each correct shape MUST NOT fire
+  d="$sb/ctl4"; mk_clean "$d"
+  printf 'FROM alpine\nRUN apk add curl\nUSER 1001\nHEALTHCHECK CMD wget -qO- http://127.0.0.1/health\n' > "$d/svc/Dockerfile"
+  printf 'RUN yarn build || false\nRUN npm run build || exit 1\nRUN npm run build || exit 255\nRUN yarn build 2>&1 && echo ok\nRUN set -e; yarn build; echo done\nRUN sh -ec "yarn build; echo done"\nRUN set -o pipefail && yarn build | tee /tmp/b\nRUN <<EOF\nset -e\nyarn build\necho done\nEOF\nRUN cat <<EOF > /etc/motd\nmake || true\nEOF\nRUN yarn add --dev build-tools\nRUN NODE_ENV=production yarn build\nRUN cd web; yarn build\nSHELL ["/bin/bash", "-o", "pipefail", "-c"]\nRUN yarn build | tee /tmp/b\n' >> "$d/svc/Dockerfile"
+  printf 'services:\n  api:\n    build:\n      context: .\n      dockerfile: svc/Dockerfile\n    "userns_mode": "keep-id"\n    environment:\n    - X=1\n    command: >-\n      sh -c "privileged: true"\n    entrypoint: [\n      "a",\n      "b"\n    ]\n    volumes:\n      - type: bind\n        source: ./svc\n        destination: /app\n        read_only: true\n      - consistency: cached\n        type: volume\n        source: named\n        target: /d\n      - "named2:/data"\n    healthcheck:\n      test: >-\n        curl -fsS\n        http://127.0.0.1/health\n  b:\n    image: x\n    privileged: false\n  p: {image: x-y, privileged: false}\n' > "$d/docker-compose.yml"
+  out="$(scan "$d")"; if [ $? -ne 0 ]; then echo "FAIL selftest[ctl4]: false positive: $out"; rc=1; else echo "ok   selftest[ctl4]: round-2 correct shapes not flagged"; fi
   # golden-FALSE controls for O1-O4: correct configurations MUST NOT fire
   d="$sb/ctl3"; mk_clean "$d"
   printf 'FROM alpine\nRUN apk add curl\nUSER 1001\nHEALTHCHECK CMD curl -fsS http://127.0.0.1/health\n' > "$d/svc/Dockerfile"

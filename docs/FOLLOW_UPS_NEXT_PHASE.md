@@ -6,12 +6,24 @@ land and are listed here. Layers follow constitution §11.4.235(D).
 Status values: OPEN until a commit on `main` closes the item.
 
 ## Container hygiene guard (`scripts/tests/test_container_hygiene.sh`) — test-instrumentation
-Found by the round-3 reviewer (landed series `a9e5248b`); closed in this commit, each with a RED selftest first:
-- O1 (R7): CLOSED in this commit. Long-form and flow-form bind volumes are parsed like the short form.
-- O2 (R9): CLOSED in this commit. Flag clusters (`-fsI`), `-XHEAD`, `--request HEAD` are parsed.
-- O3 (R3): CLOSED in this commit. The build-command class (npm/yarn/pnpm/bun, go, make, gradle, tsc, cargo, mvn, vite/ng/next/nuxt/webpack) with all swallow forms.
-- O4 (R5): CLOSED in this commit. Flow-style `privileged` is modelled; unmodellable compose syntax fails closed as `R10-COMPOSE-UNMODELED`.
-Residual gaps are listed in `docs/scripts/container_local.md` (section "Hygiene guard parser coverage").
+Found by the round-3 reviewer (landed series `a9e5248b`). Commit `8c73f797` claimed O1-O4 CLOSED; the
+independent review of that commit returned NO-GO (a regression in the R3 exemption, `|| exit 256` exempted, and
+compose shapes skipped silently), so those claims were wrong. Status after the round-2 fix commit:
+- O1 (R7): long-form, flow-form, quoted-key, unknown-first-key and quoted short-form bind volumes are parsed;
+  flow `volumes: [...]`, `volumes: *alias`, a volumes sequence at the key indentation and multi-line flow items
+  fail closed as `R10-COMPOSE-UNMODELED`. OPEN only for the gaps listed in `docs/scripts/container_local.md`.
+- O2 (R9): flag clusters, `-XHEAD`, `--request HEAD`, `wget --method=HEAD`, compose `test:` block scalars. OPEN only
+  for the listed gaps.
+- O3 (R3): the build-command class incl. env prefixes, `npx`/`yarn exec`, package-manager options
+  (`--cwd`, `--prefix`, `workspace`), `sh -c "..."`, lowercase `run`, interpreter heredocs, `--mount` flags; masks
+  `||`, single pipe, any `;`-trailing command, background `&`; `|| exit N` (1..255) and `|| false` exempt with the
+  following delimiter kept; errexit/pipefail read per line and per stage `SHELL`. OPEN only for the listed gaps.
+- O4 (R5/R10): quoted/space-before-colon keys modelled; tags, block scalars, aliases, flow values of
+  `privileged`/`userns_mode`/`build`/`volumes`/`healthcheck`, multi-line flow bodies, services or bodies at an
+  unmodelled indentation fail closed as R10. OPEN only for the listed gaps.
+- RM6 (`destination` key): equivalent mutant for every verdict (no rule reads the mount target, only the source and
+  `ro`), documented, not killable by a fixture.
+Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser coverage").
 
 ## Operator decisions pending (process-doc)
 - `deployment/amber-up.sh` runs plain `docker` (allowlisted R6): keep or migrate to podman.

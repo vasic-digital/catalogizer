@@ -47,17 +47,45 @@ scripts/container-local.sh [--dry-run] <api-build|api-test|web-build|web-test>
 
 * `docker/Dockerfile.android4` (emulator image, uid 1000): `/dev/kvm` access for a non-root user under rootless podman likely needs `--group-add keep-groups`. UNCONFIRMED, not run here.
 
-## Hygiene guard parser coverage (O1-O4 closure)
+## Hygiene guard parser coverage (O1-O4, after review round 2)
 
-`scripts/tests/test_container_hygiene.sh` models these shapes (each has a RED selftest fixture and a golden-FALSE control):
+`scripts/tests/test_container_hygiene.sh` (compose reader: `scripts/tests/container_hygiene_compose.awk`) models
+these shapes; each has a RED selftest fixture and a golden-FALSE control. This is not a full YAML or shell parser;
+the gaps below are known and not closed.
 
-- R7: compose volumes in short form, long form (`- type: bind` / `source:` / `target:` / `read_only:`, any key order) and flow form (`- {type: bind, source: ./x, target: /app}`); `type: volume|tmpfs` is not a bind.
-- R9: HEAD probes of `/health` in flag clusters (`curl -fsI`, `-sSfI`), `-X HEAD`, `-XHEAD`, `--request HEAD`, `--spider`, `--head`, in Dockerfile HEALTHCHECK and compose `test:` (string, JSON list, block list).
-- R3: a swallowed build failure for `npm|yarn|pnpm|bun [run] build|compile`, `go build|install`, `make`, `gradle(w)`, `tsc`, `cargo build`, `mvn(w)`, `vite|ng|next|nuxt|webpack build` (`|| x`, single pipe, `; true`, `; exit 0`, `; :`). `|| exit N` (N>0) and `|| false` are not treated as masking. Limit: a legitimate `|| (cat log; exit 1)` is still flagged.
-- R5: `privileged` in block and flow-mapping services.
-- R10-COMPOSE-UNMODELED (fail closed, allowlistable by file path): merge keys (`<<:`), YAML aliases as the `privileged` value, a one-line `services: {...}`, flow service bodies that carry `volumes`/`build`/`healthcheck`/aliases, and service entries the parser cannot recognise.
+- R7: compose volumes in short form (also quoted), long form (any key order, quoted keys, unknown first key,
+  `target`/`dst`/`destination`) and single-line flow form; `type: volume|tmpfs` is not a bind.
+- R9: HEAD probes of `/health` in flag clusters (`curl -fsI`, `-sSfI`), `-X HEAD`, `-XHEAD`, `--request HEAD`,
+  `wget --method=HEAD`, `--spider`, `--head`, in Dockerfile HEALTHCHECK and compose `test:` (string, JSON list, block
+  list, block scalar `>-`/`|`).
+- R3: a swallowed build failure for `npm|yarn|pnpm|bun [opts] [run] build|compile` (opts incl. `--cwd`, `--prefix`,
+  `--filter`, `workspace NAME`), `go build|install`, `make`, `gradle(w)`, `tsc`, `cargo build`, `mvn(w)`,
+  `vite|ng|next|nuxt|webpack build`, optionally after `VAR=x` / `env` / `npx|bunx|pnpx` / `yarn|pnpm [exec]`, at the
+  start of a RUN body (after `--flags`), after a separator, or opening a `sh -c "..."` string. Masks: `||`, a single
+  pipe, any command after `;`, a background `&`. Exempt: `|| exit N` with N in 1..255 and `|| false` (the delimiter
+  after them is kept, so `|| false; true` is flagged). A line with `set -e`/`errexit`/`sh -e` reads `;` as `&&`; a
+  line with `pipefail` reads a single pipe as `&&` (its `||` still masks). A stage `SHELL` with pipefail or `-e` applies
+  to later RUNs of that stage. `RUN` is case-insensitive. Interpreter heredocs (`RUN <<EOF`, `RUN bash -e <<EOF`) are
+  read as their body joined with `;` (a `#!... -e` shebang counts as errexit); a heredoc feeding another command
+  (`cat <<EOF > f`) is not read as commands.
+- R5: `privileged` in block and single-line flow-mapping services, also as a quoted key or with a space before `:`.
+- R10-COMPOSE-UNMODELED (fail closed, allowlistable by file path): merge keys; an alias, anchor, tag (`!!bool`),
+  block scalar or flow collection as the value of `privileged`, `userns_mode`, `build`, `volumes` or `healthcheck`;
+  a one-line `services: {...}`; multi-line flow service bodies; single-line flow bodies with
+  `volumes`/`build`/`healthcheck`/anchors/aliases/tags; services not at 2 spaces or bodies not at 4; lines at an odd
+  indentation; a volumes sequence at the key indentation; multi-line flow volume items; build/healthcheck keys at
+  5 spaces; any service-level line that is not `key: value`.
 
-Honest gaps: other YAML features (anchors elsewhere, `extends:`, `include:`, env-substituted `privileged: ${X}`) are not resolved; multi-document and `profiles`-gated services are scanned as written.
+Honest gaps (known, not closed):
+- Compose: anchors/aliases outside the modelled keys, `extends:`, `include:`, env-substituted values
+  (`privileged: ${X}`), multi-document files and `profiles` are not resolved; nested `- ` items deeper than a long-form
+  volume are not checked; a `test:` outside a `healthcheck:` block is still read as a healthcheck test.
+- R3: `set -e` is applied to the whole RUN line (a nested `sh -c` without `-e` on the same line is treated as
+  errexit); a `;` inside a quoted string after a build is read as a mask (false positive possible); a legitimate
+  `|| (cat log; exit 1)` is flagged; `if build; then ...; fi`, functions, `eval`, `$(...)`-wrapped builds, builds in
+  shell scripts copied into the image, and `ONBUILD RUN` are not modelled; a heredoc whose command sits after the
+  `<<EOF` marker on the same line is only read when the command before the marker is a shell.
+- R9: only `/health` is checked, and only the HEAD forms above; a probe built from variables is not resolved.
 
 ## Findings recorded by the hygiene guard (2026-10-28)
 
