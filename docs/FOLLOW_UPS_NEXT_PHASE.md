@@ -38,6 +38,12 @@ Each needs a RED selftest first, then the fix.
   Android TV `MainActivity.kt` (production app source: own item), and the helixqa banks.
 
 ## SQLCipher encryption at rest
+- Review of `60ee1acb` (GO, three LOW test-instrumentation findings, mutants that survive):
+  RV5 `scrubDSN` bypass in the new `probeInUse` open-error branch (the driver error never carries the DSN, so W1 cannot fail);
+  RV6 dropped `db.Close()` in that branch (needs a goroutine-count check);
+  RV4 NOTADB split in the `cipher_version` branch (probably an equivalent mutant).
+- `classifyProbeError` busy branch (`encryption.go:522`) formats `err` without `scrubDSN`; no live leak, add it for consistency.
+- `docker-compose.dev.yml` keeps a literal `MINIO_ROOT_USER: minioadmin` (a username, not a password).
 - Windows behaviour is validated only through emulated `hostOS` and `go vet`; no run on real Windows.
 - Descriptor-count tests are Linux-only (`/proc/self/fd`).
 
