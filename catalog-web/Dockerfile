@@ -1,4 +1,6 @@
-FROM docker.io/node:20-alpine AS builder
+# Node floor: images.lock.yaml IMG-NODE (20); override with --build-arg NODE_IMAGE=docker.io/library/node:22-alpine (also verified)
+ARG NODE_IMAGE=docker.io/library/node:20-alpine
+FROM ${NODE_IMAGE} AS builder
 
 WORKDIR /app
 
@@ -70,7 +72,8 @@ RUN cd /app/submodules/dashboard_analytics_react && npm run build
 COPY catalog-web/ /app/catalog-web/
 WORKDIR /app/catalog-web
 RUN npm ci --legacy-peer-deps
-RUN npm run build || npm run build -- --skipLibCheck
+# No masking fallback: a type or build error MUST fail the image build (no `|| ... --skipLibCheck`).
+RUN npm run build
 
 FROM docker.io/nginx:alpine
 
@@ -83,6 +86,10 @@ RUN chown -R nginx:nginx /var/cache/nginx /var/log/nginx && \
     touch /var/run/nginx.pid && chown nginx:nginx /var/run/nginx.pid
 
 EXPOSE 3000
+
+# Health check: nginx serves the SPA on 3000 (127.0.0.1: the server block listens on IPv4 only)
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/ || exit 1
 
 # Switch to non-root user
 USER nginx

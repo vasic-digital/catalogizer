@@ -58,8 +58,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Layer 2: Go toolchain copied from the digest-pinned golang stage above (go.mod minimum 1.25.7)
 # ============================================================
 COPY --from=gotoolchain /usr/local/go /usr/local/go
-ENV PATH="/usr/local/go/bin:/root/go/bin:${PATH}"
-ENV GOPATH="/root/go"
+ENV PATH="/usr/local/go/bin:/home/builder/go/bin:${PATH}"
+ENV GOPATH="/home/builder/go"
 ENV CGO_ENABLED=1
 
 RUN go version
@@ -91,7 +91,10 @@ ENV PATH="/opt/cargo/bin:${PATH}"
 
 RUN cargo install --locked --version 2.12.1 tauri-cli
 
-RUN chmod -R a+rX /opt/rustup /opt/cargo
+# The non-root build user (uid 1000) must be able to write the cargo registry cache: it OWNS /opt/cargo (no world-writable bits).
+# The user is created here (before its later, idempotent re-use below) so the chown has a target.
+RUN useradd --create-home --uid 1000 --shell /bin/bash builder \
+    && chmod -R a+rX /opt/rustup && chown -R builder:builder /opt/cargo
 
 RUN rustc --version && cargo --version
 
@@ -104,6 +107,12 @@ ENV JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
 ENV ANDROID_HOME="/opt/android-sdk"
 ENV ANDROID_SDK_ROOT="${ANDROID_HOME}"
 ENV PATH="${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${PATH}"
+
+# Non-root build user (uid 1000) created before the SDK install so the SDK is owned by it without a duplicated chown layer.
+# Its HOME holds the cache mount points used by docker-compose.build.yml (go, gradle, npm).
+RUN mkdir -p "${ANDROID_HOME}" /home/builder/go /home/builder/.gradle /home/builder/.npm \
+    && chown -R builder:builder "${ANDROID_HOME}" /home/builder
+USER builder
 
 RUN mkdir -p "${ANDROID_HOME}/cmdline-tools" \
     && cd "${ANDROID_HOME}/cmdline-tools" \
@@ -128,13 +137,23 @@ RUN sdkmanager \
     "platforms;android-35"
 
 # ============================================================
-# Layer 6: Playwright browsers
+# Layer 6: Playwright browsers (root: --with-deps installs OS packages); browsers live under /opt so the non-root user can use them
 # ============================================================
-RUN npx --yes playwright@1.57.0 install --with-deps chromium
+USER root
+# Browsers live under /opt/playwright, owned by the build user so a different Playwright revision can be downloaded at run time
+# (the version pinned here is playwright@1.57.0 for the browser installed in the image; which version a project's own lockfile resolves is not checked here).
+ENV PLAYWRIGHT_BROWSERS_PATH=/opt/playwright
+RUN npx --yes playwright@1.57.0 install --with-deps chromium && chown -R builder:builder /opt/playwright
 
 # ============================================================
 # Working directory
 # ============================================================
 WORKDIR /project
+
+# Health check: the toolchains the builder exists to provide must be runnable by the build user
+HEALTHCHECK --interval=60s --timeout=20s --start-period=10s --retries=3 \
+  CMD go version && node --version && cargo --version && java -version || exit 1
+
+USER builder
 
 ENTRYPOINT ["/project/scripts/build-test-release.sh"]

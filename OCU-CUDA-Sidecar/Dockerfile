@@ -77,9 +77,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY --from=builder /out/ocu-cuda-sidecar /usr/local/bin/ocu-cuda-sidecar
 
+# Non-root runtime user (GPU access comes from the container runtime's device injection, not from root)
+RUN useradd --system --uid 10001 --no-create-home --shell /usr/sbin/nologin ocu
+
 # Default listen address.
 ENV OCU_LISTEN=0.0.0.0:50060
 EXPOSE 50060
+
+# Health check: the gRPC listener accepts TCP connections (bash is present in the CUDA ubuntu base)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD bash -c 'exec 3<>/dev/tcp/127.0.0.1/50060' || exit 1
+
+USER ocu
 
 ENTRYPOINT ["/usr/local/bin/ocu-cuda-sidecar"]
 CMD ["--listen", "0.0.0.0:50060"]

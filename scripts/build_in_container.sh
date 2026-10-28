@@ -6,18 +6,27 @@
 #            (never on the bare host), then bring the artifact BACK to this host.
 # Usage:     scripts/build_in_container.sh
 # Inputs:    env (all config-injected, §11.4.28; defaults shown):
-#              BUILD_HOST=thinker.local   BUILD_USER=milosvasic
+#              BUILD_HOST=<remote host; UNSET => exec scripts/container-local.sh api-build on THIS host>   BUILD_USER=milosvasic
 #              REMOTE_BUILD_DIR=catalogizer-build
-#              GO_BUILD_IMAGE=docker.io/library/golang:1.25-alpine
-# Outputs:   deploy/artifacts/catalog-api-container (the brought-back binary)
-#            + a printed proof block (remote md5 == local md5, file type).
+#              GO_BUILD_IMAGE=docker.io/library/golang:1.25-bookworm  (glibc; NOT alpine, see the comment at GO_IMAGE below)
+# Outputs:   BUILD_HOST unset (default): deploy/artifacts/catalog-api (written by container-local.sh; no md5 compare,
+#            nothing is copied between hosts).
+#            BUILD_HOST set: deploy/artifacts/catalog-api-container (the brought-back binary) + a printed proof
+#            block (remote md5 == local md5, file type); exits 1 on md5 mismatch.
 # Side-fx:   rsync's source to the remote build host; runs a podman build there.
 # Deps:      ssh, rsync, scp, podman (on the remote), a Go build image (cached remote).
 # Cross-ref: §11.4.173 (containerized+distributed build), §11.4.76 (containers),
 #            §11.4.161 (rootless), docs/scripts/build_in_container.md.
 set -euo pipefail
 
-BUILD_HOST="${BUILD_HOST:-thinker.local}"
+# thinker.local is retired as a default build host. With BUILD_HOST unset the build runs on the LOCAL host inside
+# rootless podman via scripts/container-local.sh (same §11.4.173 containerized build, no remote hop). The remote
+# path below stays available ONLY when the caller names a host explicitly (BUILD_HOST=<host>).
+if [ -z "${BUILD_HOST:-}" ]; then
+  echo "[build] BUILD_HOST not set: delegating to scripts/container-local.sh api-build (local rootless podman)" >&2
+  exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/container-local.sh" api-build
+fi
+BUILD_HOST="${BUILD_HOST}"
 BUILD_USER="${BUILD_USER:-milosvasic}"
 REMOTE_DIR="${REMOTE_BUILD_DIR:-catalogizer-build}"
 # glibc-based (debian) golang image — NOT alpine/musl: a CGO dep (docx.c) references glibc

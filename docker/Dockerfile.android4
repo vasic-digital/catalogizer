@@ -32,6 +32,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
+# Non-root: a dedicated build user (uid 1000) owns the Android SDK and its own HOME. Ubuntu 24.04 ships a uid-1000 "ubuntu" user, which is replaced.
+RUN if id ubuntu >/dev/null 2>&1; then userdel --remove ubuntu; fi \
+    && useradd --create-home --uid 1000 --shell /bin/bash builder \
+    && mkdir -p "${ANDROID_HOME}" && chown builder:builder "${ANDROID_HOME}"
+USER builder
+
 # Verify JDK installation has jmods
 RUN java -version && \
     jlink --version && \
@@ -76,7 +82,10 @@ RUN for i in 1 2 3; do \
     done
 
 # Clean up
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+USER root
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && mkdir -p /project && chown builder:builder /project
+USER builder
 
 # Verify Android SDK installation
 RUN sdkmanager --list_installed 2>/dev/null | head -20 && echo "Android SDK installation verified"
@@ -84,5 +93,12 @@ RUN sdkmanager --list_installed 2>/dev/null | head -20 && echo "Android SDK inst
 # Set working directory
 WORKDIR /project
 
+# Health check: the toolchain this image exists to provide must be runnable by the build user
+HEALTHCHECK --interval=60s --timeout=20s --start-period=10s --retries=3 \
+  CMD java -version && sdkmanager --version || exit 1
+
 # Default command
 CMD ["bash"]
+
+# NOTE (F10, UNCONFIRMED - not run here): this image runs as uid 1000. If it is used to drive an emulator, /dev/kvm access for a
+# non-root user under rootless podman likely needs `--group-add keep-groups` (or a kvm-group mapping); this has NOT been verified.

@@ -67,9 +67,9 @@ check_prerequisites() {
         exit 1
     fi
     
-    # Check Docker
-    if ! command -v docker &> /dev/null; then
-        log_warning "Docker is not installed. Some features may not work"
+    # Check container runtime (rootless podman is the project runtime)
+    if ! command -v podman &> /dev/null; then
+        log_warning "podman is not installed. Some features may not work"
     fi
     
     # Check git
@@ -105,15 +105,15 @@ setup_backend_tests() {
     done
     
     # Setup test database
-    if command -v docker &> /dev/null; then
-        log_info "Setting up test database with Docker..."
+    if command -v podman &> /dev/null; then
+        log_info "Setting up test database with rootless podman..."
         # Random per-run password, kept in a 0600 env file (gitignored) and handed to the
         # container via --env-file so no credential is literal in this script or in argv.
         local test_db_env="$PROJECT_ROOT/.env.test-db"
         if [ ! -e "$test_db_env" ] && [ ! -L "$test_db_env" ]; then
             (umask 077; printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 16 2>/dev/null || od -An -N16 -tx1 /dev/urandom | tr -d ' \n')" > "$test_db_env")
         fi
-        docker run -d --name catalog-test-db --env-file "$test_db_env" -p 127.0.0.1:5433:5432 postgres:15-alpine || true
+        podman run -d --name catalog-test-db --env-file "$test_db_env" -p 127.0.0.1:5433:5432 docker.io/library/postgres:15-alpine || true
     fi
     
     log_success "Backend testing setup completed"

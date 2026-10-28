@@ -68,7 +68,7 @@ services:
       context: .
       dockerfile: catalog-api/Dockerfile
       args:
-        GO_VERSION: ${GO_VERSION:-1.25}
+        GO_IMAGE: ${GO_IMAGE:-docker.io/library/golang:1.25}
     container_name: catalogizer-api
     environment:
       # Database configuration
@@ -124,7 +124,7 @@ services:
       minio:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "-O", "/dev/null", "http://127.0.0.1:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
