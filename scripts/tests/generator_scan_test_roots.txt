@@ -1,0 +1,18 @@
+# Explicit test roots skipped by the generator-script scan in test_no_default_secrets.sh (TI-2).
+# These directories hold deliberate canary fixtures. A path is skipped ONLY if it lies under
+# one of these roots; any other `/tests/` directory (new or misplaced) IS scanned.
+# Rules (enforced by the test): one repo-relative path per line, last component `tests`, with tracked files.
+scripts/anti-mess/tests
+scripts/audit/tests
+scripts/build/tests
+scripts/containers/tests
+scripts/coverage/tests
+scripts/governance/tests
+scripts/ledger/tests
+scripts/llmctl/tests
+scripts/longops/tests
+scripts/qa/tests
+scripts/register/tests
+scripts/repo/tests
+scripts/review/tests
+scripts/tests
