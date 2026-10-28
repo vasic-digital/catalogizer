@@ -48,6 +48,11 @@ type DatabaseConfig struct {
 	EnableWAL   bool   `json:"enable_wal"`
 	CacheSize   int    `json:"cache_size"`
 	BusyTimeout int    `json:"busy_timeout"`
+	// EncryptionKeyFile is the path of the file (mode 0600, outside the
+	// repository) holding the SQLCipher key for file-backed SQLite databases
+	// (CAT-001). Empty means: $DATABASE_ENCRYPTION_KEY_FILE, else
+	// <user config dir>/catalogizer/db.key. The key is generated on first run.
+	EncryptionKeyFile string `json:"encryption_key_file"`
 	// Common
 	MaxOpenConnections int `json:"max_open_connections"`
 	MaxIdleConnections int `json:"max_idle_connections"`

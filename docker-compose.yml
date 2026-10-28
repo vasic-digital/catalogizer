@@ -73,6 +73,7 @@ services:
     environment:
       # Database configuration
       DATABASE_TYPE: ${DATABASE_TYPE:-postgres}
+      DATABASE_ENCRYPTION_KEY_FILE: ${DATABASE_ENCRYPTION_KEY_FILE:-/app/keys/db.key}
       DATABASE_HOST: postgres
       DATABASE_PORT: 5432
       DATABASE_USER: ${POSTGRES_USER:-catalogizer}
@@ -113,6 +114,8 @@ services:
     volumes:
       - ${MEDIA_ROOT_PATH:-./media}:/media:ro
       - api_logs:/var/log/catalogizer
+      # CAT-001: SQLite mode keeps its SQLCipher key here (0700, separate from data/backups)
+      - api_keys:/app/keys
     depends_on:
       postgres:
         condition: service_healthy
@@ -256,6 +259,8 @@ volumes:
   redis_data:
     driver: local
   api_logs:
+    driver: local
+  api_keys:
     driver: local
   nginx_logs:
     driver: local
