@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -44,15 +45,36 @@ func (c *WebDAVClient) TestConnection() error {
 	return nil
 }
 
-// maxListDepth bounds ListFiles recursion: a hostile server can otherwise answer every
-// PROPFIND with a directory entry that points back at itself and overflow the stack.
-const maxListDepth = 32
+// Listing limits. A hostile or broken server controls the shape of the tree it reports: it
+// can answer every PROPFIND with a sub-collection that points back into itself (unbounded
+// depth) or with two or more sub-collections per collection (exponential breadth: about
+// 2^33 PROPFINDs at depth 32). ListFiles therefore bounds depth, the number of PROPFIND
+// requests and the number of entries, and exceeding ANY bound is an error wrapping
+// ErrWebDAVListLimit: a partial listing is never returned as if it were complete
+// (review round 2, S2).
+const (
+	maxListDepth    = 32
+	maxListRequests = 10000
+	maxListEntries  = 200000
+)
+
+// ErrWebDAVListLimit is returned (wrapped) when a listing exceeds a bound above.
+var ErrWebDAVListLimit = errors.New("webdav listing exceeded its limit")
+
+type listBudget struct{ requests, entries int }
 
 func (c *WebDAVClient) ListFiles(remotePath string) ([]*WebDAVFile, error) {
-	return c.listFiles(remotePath, 0)
+	return c.listFiles(remotePath, 0, &listBudget{})
 }
 
-func (c *WebDAVClient) listFiles(remotePath string, depth int) ([]*WebDAVFile, error) {
+func (c *WebDAVClient) listFiles(remotePath string, depth int, b *listBudget) ([]*WebDAVFile, error) {
+	if depth > maxListDepth {
+		return nil, fmt.Errorf("%w: depth %d at %q", ErrWebDAVListLimit, maxListDepth, remotePath)
+	}
+	b.requests++
+	if b.requests > maxListRequests {
+		return nil, fmt.Errorf("%w: more than %d PROPFIND requests", ErrWebDAVListLimit, maxListRequests)
+	}
 	files, err := c.client.ReadDir(remotePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list files: %w", err)
@@ -60,6 +82,10 @@ func (c *WebDAVClient) listFiles(remotePath string, depth int) ([]*WebDAVFile, e
 
 	var webdavFiles []*WebDAVFile
 	for _, file := range files {
+		b.entries++
+		if b.entries > maxListEntries {
+			return nil, fmt.Errorf("%w: more than %d entries", ErrWebDAVListLimit, maxListEntries)
+		}
 		webdavFile := &WebDAVFile{
 			Path:    filepath.Join(remotePath, file.Name()),
 			Size:    file.Size(),
@@ -68,12 +94,14 @@ func (c *WebDAVClient) listFiles(remotePath string, depth int) ([]*WebDAVFile, e
 		}
 		webdavFiles = append(webdavFiles, webdavFile)
 
-		// Recursively list subdirectories if needed
-		if file.IsDir() && depth < maxListDepth && file.Name() != "." && file.Name() != ".." {
-			subFiles, err := c.listFiles(webdavFile.Path, depth+1)
-			if err == nil {
-				webdavFiles = append(webdavFiles, subFiles...)
+		// Recurse into sub-collections. A failing sub-listing fails the whole listing: a
+		// sync must not act on a tree it only partly saw.
+		if file.IsDir() && file.Name() != "." && file.Name() != ".." {
+			subFiles, err := c.listFiles(webdavFile.Path, depth+1, b)
+			if err != nil {
+				return nil, err
 			}
+			webdavFiles = append(webdavFiles, subFiles...)
 		}
 	}
 

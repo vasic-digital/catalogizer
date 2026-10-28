@@ -99,9 +99,12 @@ services:
       SMB_ENABLED: ${SMB_ENABLED:-true}
 
       # Media configuration
-      MEDIA_ROOT_PATH: ${MEDIA_ROOT_PATH:-/media}
+      # MEDIA_ROOT_PATH in .env is the HOST directory (mounted at /media below); inside the
+      # container the library is always /media, so the container value is fixed here
+      # (review round 2, S3: passing the host value made the read root /app/media).
+      MEDIA_ROOT_PATH: /media
       # Path confinement roots (docs/security/PATH_CONFINEMENT.md); empty = defaults
-      # (read: MEDIA_ROOT_PATH + ./data, write: ./data)
+      # (read: /media + /app/data, write: /app/data; /app/data is the api_data volume)
       CATALOGIZER_READ_ROOTS: ${CATALOGIZER_READ_ROOTS:-}
       CATALOGIZER_SYNC_ROOTS: ${CATALOGIZER_SYNC_ROOTS:-}
       CATALOGIZER_CONVERSION_ROOTS: ${CATALOGIZER_CONVERSION_ROOTS:-}
@@ -118,6 +121,9 @@ services:
       - "${API_PORT:-8080}:8080"
     volumes:
       - ${MEDIA_ROOT_PATH:-./media}:/media:ro
+      # default sync/conversion write root (./data relative to WORKDIR /app); persisted so
+      # synced and converted files survive container recreation
+      - api_data:/app/data
       - api_logs:/var/log/catalogizer
       # CAT-001: SQLite mode keeps its SQLCipher key here (0700, separate from data/backups)
       - api_keys:/app/keys
@@ -264,6 +270,8 @@ volumes:
   redis_data:
     driver: local
   api_logs:
+    driver: local
+  api_data:
     driver: local
   api_keys:
     driver: local

@@ -91,57 +91,77 @@ func within(base, p string) bool {
 // Within is the exported lexical containment check (no symlink resolution).
 func Within(base, p string) bool { return within(filepath.Clean(base), filepath.Clean(p)) }
 
-// maxLinkDepth bounds the number of dangling-symlink hops resolve follows (loop guard).
+// maxLinkDepth bounds the number of symlinks resolve follows (loop guard).
 const maxLinkDepth = 40
 
-// resolve evaluates symlinks on the longest existing ancestor of p and re-appends the
-// not-yet-existing remainder. An element that exists as a symlink is always followed, even
-// when its target is missing: a dangling link must resolve to where a write through it
-// would land, never be treated as an absent element (review round 1, F1).
-func resolve(p string) (string, error) { return resolveDepth(p, 0) }
-
-func resolveDepth(p string, depth int) (string, error) {
-	if depth > maxLinkDepth {
-		return "", fmt.Errorf("too many levels of symbolic links resolving %q", p)
-	}
-	cur := p
-	var tail []string
-	for {
-		fi, err := os.Lstat(cur)
-		if err == nil {
-			var r string
-			if fi.Mode()&os.ModeSymlink != 0 {
-				if r, err = filepath.EvalSymlinks(cur); err != nil {
-					// dangling (or looping) link: follow it by hand
-					if !errors.Is(err, os.ErrNotExist) {
-						return "", err
-					}
-					target, lerr := os.Readlink(cur)
-					if lerr != nil {
-						return "", lerr
-					}
-					if !filepath.IsAbs(target) {
-						target = filepath.Join(filepath.Dir(cur), target)
-					}
-					if r, err = resolveDepth(filepath.Clean(target), depth+1); err != nil {
-						return "", err
-					}
-				}
-			} else if r, err = filepath.EvalSymlinks(cur); err != nil {
+// resolve walks p component by component the way the kernel does: every existing symlink is
+// followed (a dangling one included), a relative link target is resolved against the link's
+// already-resolved directory, and ".." always steps up from the resolved path, never from the
+// lexical one. Once an element does not exist, the remainder is appended lexically; a ".."
+// after a missing element is refused, because its meaning depends on what is created later.
+//
+// Review round 1 (F1) made dangling links followed; review round 2 (S1) found that the
+// target was then joined to the LEXICAL parent and cleaned lexically, so a link reached
+// through a symlinked directory, or a target such as "s/../x" with s a symlink, resolved
+// inside the root while the kernel wrote outside it. The walk below has neither shortcut.
+func resolve(p string) (string, error) {
+	sep := string(filepath.Separator)
+	pending := splitPath(p)
+	cur := sep
+	links := 0
+	for i := 0; i < len(pending); i++ {
+		c := pending[i]
+		if c == ".." {
+			cur = filepath.Dir(cur)
+			continue
+		}
+		next := filepath.Join(cur, c)
+		fi, err := os.Lstat(next)
+		if err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
 				return "", err
 			}
-			for i := len(tail) - 1; i >= 0; i-- {
-				r = filepath.Join(r, tail[i])
+			out := next
+			for _, r := range pending[i+1:] {
+				if r == ".." {
+					return "", fmt.Errorf("%q: \"..\" after a missing element %q", p, next)
+				}
+				out = filepath.Join(out, r)
 			}
-			return r, nil
-		} else if !errors.Is(err, os.ErrNotExist) {
+			return out, nil
+		}
+		if fi.Mode()&os.ModeSymlink == 0 {
+			cur = next
+			continue
+		}
+		links++
+		if links > maxLinkDepth {
+			return "", fmt.Errorf("too many levels of symbolic links resolving %q", p)
+		}
+		target, err := os.Readlink(next)
+		if err != nil {
 			return "", err
 		}
-		parent := filepath.Dir(cur)
-		if parent == cur {
-			return "", fmt.Errorf("no existing ancestor for %q", p)
+		if target == "" {
+			return "", fmt.Errorf("empty symlink target at %q", next)
 		}
-		tail = append(tail, filepath.Base(cur))
-		cur = parent
+		if filepath.IsAbs(target) {
+			cur = sep
+		}
+		rest := append(splitPath(target), pending[i+1:]...)
+		pending = rest
+		i = -1
 	}
+	return cur, nil
+}
+
+// splitPath returns the non-empty, non-"." components of p ("..", if any, is kept).
+func splitPath(p string) []string {
+	var out []string
+	for _, c := range strings.Split(p, string(filepath.Separator)) {
+		if c != "" && c != "." {
+			out = append(out, c)
+		}
+	}
+	return out
 }
