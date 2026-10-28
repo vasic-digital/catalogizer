@@ -493,25 +493,25 @@ func TestNewMediaManager_DBInitFailure(t *testing.T) {
 		}
 	}()
 
-	// Force DB-file creation to fail by changing CWD to a read-only directory.
-	// Use a chmod'd temp dir, NOT /proc — /proc is Linux-only and does not
-	// exist on macOS, where os.Chdir("/proc") failed the test (§11.4.81
-	// cross-platform parity). A 0555 dir blocks file creation on any POSIX host
-	// for a non-root user.
-	roDir := t.TempDir()
-	require.NoError(t, os.Chmod(roDir, 0o555))
-	t.Cleanup(func() { _ = os.Chmod(roDir, 0o755) }) // restore so TempDir cleanup can remove it
+	// Force DB-file creation to fail deterministically for ANY uid (root
+	// included): NewMediaManager opens the relative path "media_catalog.db",
+	// so make that name an existing DIRECTORY inside a private CWD. SQLite
+	// cannot open a directory as a database file, whereas a 0555 CWD is
+	// ignored by root (the previous injection made NewMediaManager succeed
+	// under root and the test then dereferenced nil, aborting the package).
+	workDir := t.TempDir()
+	require.NoError(t, os.Mkdir(filepath.Join(workDir, "media_catalog.db"), 0o755))
 	origDir, err := os.Getwd()
 	require.NoError(t, err)
-	require.NoError(t, os.Chdir(roDir))
+	require.NoError(t, os.Chdir(workDir))
 	defer os.Chdir(origDir)
 
 	logger := zap.NewNop()
 	cfg := &config.Config{}
 
 	mm, err := NewMediaManager(cfg, logger, nil)
+	require.Error(t, err, "NewMediaManager must fail when the DB path is unusable")
 	assert.Nil(t, mm)
-	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "failed to initialize media database")
 }
 
