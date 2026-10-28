@@ -221,24 +221,34 @@ func (s *SMBService) DownloadFile(hostName, remotePath, localPath string) error 
 	}
 	defer remoteFile.Close()
 
-	// Create local file
-	localFile, err := pathsafe.CreateNoFollow(localPath, true)
-	if err != nil {
-		return fmt.Errorf("failed to create local file: %w", err)
-	}
-	defer localFile.Close()
-
-	// Copy data in chunks
-	buf := make([]byte, s.config.SMB.ChunkSize)
-	_, err = io.CopyBuffer(localFile, remoteFile, buf)
-	if err != nil {
-		return fmt.Errorf("failed to copy file: %w", err)
+	if err := copyRemoteToLocalNoFollow(localPath, remoteFile, s.config.SMB.ChunkSize); err != nil {
+		return err
 	}
 
 	s.logger.Info("File downloaded successfully",
 		zap.String("remote", remotePath),
 		zap.String("local", localPath))
 
+	return nil
+}
+
+// copyRemoteToLocalNoFollow writes src to localPath without following a symlink
+// at the final path component (pathsafe.CreateNoFollow), so a planted link
+// cannot redirect a download onto an arbitrary file.
+func copyRemoteToLocalNoFollow(localPath string, src io.Reader, chunkSize int) error {
+	localFile, err := pathsafe.CreateNoFollow(localPath, true)
+	if err != nil {
+		return fmt.Errorf("failed to create local file: %w", err)
+	}
+	defer localFile.Close()
+
+	if chunkSize <= 0 {
+		chunkSize = 32 * 1024
+	}
+	buf := make([]byte, chunkSize)
+	if _, err = io.CopyBuffer(localFile, src, buf); err != nil {
+		return fmt.Errorf("failed to copy file: %w", err)
+	}
 	return nil
 }
 

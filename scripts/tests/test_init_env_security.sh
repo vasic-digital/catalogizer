@@ -11,7 +11,7 @@ bad() { echo "FAIL $1"; fail=1; }
 [ -f "$LIB" ] || { echo "FAIL: $LIB missing"; exit 1; }
 # shellcheck disable=SC1090
 . "$LIB"
-T=$(mktemp -d ~/.cache/claude-tmp/ies.XXXXXX) || exit 2
+T=$(mktemp -d "${TMPDIR:-/tmp}/ies.XXXXXX") || exit 2
 trap 'rm -rf "${T:?}"' EXIT
 cd "$T" && git init -q . || exit 2
 printf 'SONAR_TOKEN=CHANGE_ME\nSNYK_TOKEN=CHANGE_ME\n' > .env.security.example

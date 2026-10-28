@@ -17,12 +17,16 @@ import (
 	"go.uber.org/zap"
 )
 
-// newProductionCopyRouter registers the copy routes exactly as catalog-api/main.go
-// does (api.POST("/copy/local", copyHandler.CopyToLocal) etc.) on a real gin
+// newProductionCopyRouter registers the copy handlers on a real gin
 // engine, with the production constructor. Services are nil: every request
 // below must be rejected by input validation BEFORE any service is touched,
 // and a panic (nil service reached) is turned into 500 by gin.Recovery, which
 // the assertions treat as a failure of the guard.
+//
+// It registers /copy/storage, /copy/local, /copy/upload (the routes wired in
+// catalog-api/main.go) plus /copy/smb and /smb/list/*path, which are NOT
+// routed in main.go today; they are registered here so the SMB handlers'
+// validation stays covered should they be routed.
 func newProductionCopyRouter(t *testing.T, root string) *gin.Engine {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
