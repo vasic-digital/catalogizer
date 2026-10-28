@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 // Config represents the API configuration
@@ -314,6 +315,12 @@ func validateConfig(config *Config) error {
 		if config.Auth.AdminUsername == "" || config.Auth.AdminPassword == "" {
 			return fmt.Errorf("admin credentials must be set via ADMIN_USERNAME and ADMIN_PASSWORD environment variables")
 		}
+		if isPlaceholderSecret(config.Auth.JWTSecret) {
+			return fmt.Errorf("JWT secret is a known placeholder/default value; generate a random secret")
+		}
+		if isPlaceholderPassword(config.Auth.AdminPassword) {
+			return fmt.Errorf("admin password is a known placeholder/default value; set a real ADMIN_PASSWORD")
+		}
 	}
 
 	if config.Catalog.DefaultPageSize <= 0 {
@@ -379,4 +386,38 @@ func (c *Config) GetDatabaseURL() string {
 // GetServerAddress returns the server address
 func (c *Config) GetServerAddress() string {
 	return net.JoinHostPort(c.Server.Host, strconv.Itoa(c.Server.Port))
+}
+
+// placeholderMarkers are substrings that identify documentation placeholders
+// and published defaults (matched case-insensitively). Any secret containing
+// one of them was copied from an example file and is therefore public.
+var placeholderMarkers = []string{
+	"change_me", "change-me", "change-this", "changeme", "your-super-secret",
+	"your_secret", "your-secret", "placeholder", "replace-me", "replace_me",
+}
+
+// placeholderPasswords are exact (case-insensitive) weak defaults.
+var placeholderPasswords = []string{"admin", "password", "admin_password", "catalogizer_password"}
+
+func isPlaceholderSecret(v string) bool {
+	l := strings.ToLower(v)
+	for _, m := range placeholderMarkers {
+		if strings.Contains(l, m) {
+			return true
+		}
+	}
+	return false
+}
+
+func isPlaceholderPassword(v string) bool {
+	if isPlaceholderSecret(v) {
+		return true
+	}
+	l := strings.ToLower(v)
+	for _, p := range placeholderPasswords {
+		if l == p {
+			return true
+		}
+	}
+	return false
 }

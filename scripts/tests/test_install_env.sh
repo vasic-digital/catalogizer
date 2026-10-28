@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Test: the installer's env-generation path (no containers started) writes a
+# .env that satisfies every `${VAR:?}` of docker-compose.yml, with random,
+# non-placeholder secrets, mode 0600, and prints no secret value.
+set -u
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+tmp="$(mktemp -d)"; trap 'rm -rf "${tmp:?}"' EXIT
+fail=0
+ok()  { echo "ok   - $1"; }
+bad() { echo "FAIL - $1"; fail=1; }
+
+LIB="$ROOT/scripts/lib/install_env.sh"
+[ -f "$LIB" ] || { echo "FAIL - $LIB missing"; exit 1; }
+# shellcheck disable=SC1090
+. "$LIB"
+
+out1="$(install_write_env "$tmp/env1" 2>&1)"; rc1=$?
+out2="$(install_write_env "$tmp/env2" 2>&1)"
+[ "$rc1" -eq 0 ] && ok "install_write_env succeeds" || bad "install_write_env rc=$rc1"
+
+mode="$(stat -c %a "$tmp/env1")"
+[ "$mode" = 600 ] && ok "mode is 0600" || bad "mode is $mode, want 600"
+
+val() { sed -n "s/^$2=//p" "$1" | head -1; }
+
+# Every required compose variable is present and non-empty.
+req="$(grep -hoE '\$\{[A-Za-z0-9_]+:\?' "$ROOT/docker-compose.yml" | tr -d '${:?' | sort -u)"
+[ -n "$req" ] || { echo "FAIL - no :? vars found (blind)"; exit 2; }
+for v in $req; do
+    x="$(val "$tmp/env1" "$v")"
+    [ -n "$x" ] && ok "$v present" || bad "$v missing/empty in generated env"
+done
+for v in DATABASE_PASSWORD POSTGRES_PASSWORD JWT_SECRET ADMIN_PASSWORD GRAFANA_PASSWORD MINIO_ROOT_PASSWORD; do
+    a="$(val "$tmp/env1" "$v")"; b="$(val "$tmp/env2" "$v")"
+    [ "${#a}" -ge 24 ] && ok "$v length>=24" || bad "$v too short (${#a})"
+    [ -n "$a" ] && [ "$a" != "$b" ] && ok "$v differs between runs (random)" || bad "$v not random"
+    case "$(printf %s "$a" | tr A-Z a-z)" in
+        *change*|*your-super*|*placeholder*|admin_password|catalogizer_password) bad "$v looks like a placeholder" ;;
+        *) ok "$v not a placeholder" ;;
+    esac
+    # Secrets must never be echoed.
+    case "$out1$out2" in *"$a"*) bad "$v value was printed" ;; *) ok "$v not printed" ;; esac
+done
+[ "$(val "$tmp/env1" DATABASE_PASSWORD)" = "$(val "$tmp/env1" POSTGRES_PASSWORD)" ] \
+    && ok "DATABASE_PASSWORD matches POSTGRES_PASSWORD" || bad "DATABASE_PASSWORD != POSTGRES_PASSWORD"
+# The ADMIN_PASSWORD / JWT_SECRET literals of the old heredoc are gone.
+grep -qE '^(DATABASE_PASSWORD=catalogizer_password|JWT_SECRET=your-super|ADMIN_PASSWORD=admin_password)' "$tmp/env1" \
+    && bad "old literal defaults still written" || ok "no old literal defaults"
+
+# Wiring: install.sh must use the generator and carry no literal credential.
+grep -q 'install_write_env' "$ROOT/scripts/install.sh" && ok "install.sh calls install_write_env" || bad "install.sh does not call install_write_env"
+grep -qE '^(DATABASE_PASSWORD|JWT_SECRET|ADMIN_PASSWORD|GRAFANA_PASSWORD|MINIO_ROOT_PASSWORD)=[^$[:space:]]' "$ROOT/scripts/install.sh" \
+    && bad "install.sh still contains a literal credential line" || ok "install.sh has no literal credential line"
+
+# Never overwrite an existing file.
+echo "KEEP=1" > "$tmp/env3"
+install_write_env "$tmp/env3" >/dev/null 2>&1; rc=$?
+{ [ "$rc" -ne 0 ] && [ "$(cat "$tmp/env3")" = "KEEP=1" ]; } && ok "existing file refused, untouched" || bad "existing file overwritten"
+
+[ "$fail" -eq 0 ] && echo "PASS" || echo "FAILED"
+exit $fail

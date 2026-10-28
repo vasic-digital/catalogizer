@@ -9,6 +9,8 @@ set -e
 SCRIPT_VERSION="1.0.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+# shellcheck source=lib/install_env.sh
+. "$SCRIPT_DIR/lib/install_env.sh"
 
 # Colors for output
 RED='\033[0;31m'
@@ -185,143 +187,7 @@ load_environment() {
 
 # Create default environment file
 create_default_env() {
-    cat > "$DEFAULT_ENV_FILE" << 'EOF'
-# Catalogizer Environment Configuration
-# Copy this file and modify as needed for your environment
-
-#==============================================================================
-# GENERAL SETTINGS
-#==============================================================================
-
-# Environment mode (development, staging, production)
-CATALOGIZER_ENV=production
-
-# Application version
-CATALOGIZER_VERSION=1.0.0
-
-# Installation directory
-INSTALL_DIR=/opt/catalogizer
-
-# Data directory for media files and databases
-DATA_DIR=/var/lib/catalogizer
-
-# Logs directory
-LOGS_DIR=/var/log/catalogizer
-
-#==============================================================================
-# SERVER CONFIGURATION
-#==============================================================================
-
-# Server hostname/IP
-CATALOGIZER_HOST=localhost
-
-# API server port
-CATALOGIZER_PORT=8080
-
-# WebSocket port
-CATALOGIZER_WS_PORT=8081
-
-# Admin interface port
-CATALOGIZER_ADMIN_PORT=9090
-
-# Database configuration
-DATABASE_TYPE=postgres  # postgres, mysql, sqlite
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_NAME=catalogizer
-DATABASE_USER=catalogizer
-DATABASE_PASSWORD=catalogizer_password
-
-# Redis configuration (for caching and sessions)
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=
-
-#==============================================================================
-# SECURITY SETTINGS
-#==============================================================================
-
-# JWT Secret for authentication (change this!)
-JWT_SECRET=your-super-secret-jwt-key-change-this
-
-# Admin user credentials (change these!)
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin_password
-ADMIN_EMAIL=admin@example.com
-
-# SSL/TLS Configuration
-SSL_ENABLED=false
-SSL_CERT_PATH=/etc/catalogizer/ssl/cert.pem
-SSL_KEY_PATH=/etc/catalogizer/ssl/key.pem
-
-#==============================================================================
-# MEDIA CONFIGURATION
-#==============================================================================
-
-# Default media directories (comma-separated)
-MEDIA_DIRECTORIES=/mnt/media,/storage/media
-
-# SMB/CIFS default configuration
-SMB_WORKGROUP=WORKGROUP
-SMB_DEFAULT_PORT=445
-
-# Media processing
-TRANSCODE_ENABLED=true
-TRANSCODE_QUALITY=medium  # low, medium, high
-THUMBNAIL_GENERATION=true
-
-#==============================================================================
-# DOCKER CONFIGURATION
-#==============================================================================
-
-# Docker network name
-DOCKER_NETWORK=catalogizer-network
-
-# Docker volumes
-DOCKER_DATA_VOLUME=catalogizer-data
-DOCKER_MEDIA_VOLUME=catalogizer-media
-DOCKER_CONFIG_VOLUME=catalogizer-config
-
-# Container restart policy
-RESTART_POLICY=unless-stopped
-
-#==============================================================================
-# CLIENT BUILD CONFIGURATION
-#==============================================================================
-
-# Android build configuration
-ANDROID_COMPILE_SDK=34
-ANDROID_MIN_SDK=26
-ANDROID_TARGET_SDK=34
-
-# Desktop build targets (comma-separated)
-DESKTOP_TARGETS=windows,macos,linux
-
-# Build output directory
-BUILD_OUTPUT_DIR=./releases
-
-#==============================================================================
-# DEPLOYMENT CONFIGURATION
-#==============================================================================
-
-# Git repository for updates
-GIT_REPOSITORY=https://github.com/catalogizer/catalogizer.git
-GIT_BRANCH=main
-
-# Backup configuration
-BACKUP_ENABLED=true
-BACKUP_SCHEDULE="0 2 * * *"  # Daily at 2 AM
-BACKUP_RETENTION_DAYS=30
-
-# Monitoring
-MONITORING_ENABLED=false
-METRICS_PORT=9091
-
-# Update check
-AUTO_UPDATE_CHECK=true
-UPDATE_CHANNEL=stable  # stable, beta, nightly
-
-EOF
+    install_write_env "$DEFAULT_ENV_FILE" || { log_error "Could not create $DEFAULT_ENV_FILE"; exit 1; }
 
     log_success "Default environment file created: $DEFAULT_ENV_FILE"
     log_warning "Please review and modify the environment file before continuing"
