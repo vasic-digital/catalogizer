@@ -219,6 +219,12 @@ func (c *FTPClient) reconnectIf(ctx context.Context, old *ftp.ServerConn) error 
 	defer cancel()
 	fresh, base, err := c.dial(rctx)
 	if err != nil {
+		c.mu.Lock()
+		disconnected := c.gen != gen
+		c.mu.Unlock()
+		if disconnected {
+			return nil // the user disconnected on purpose while the redial was in flight; its failure is not an error for Close
+		}
 		return err
 	}
 	c.mu.Lock()
