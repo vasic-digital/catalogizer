@@ -30,8 +30,13 @@ migrated automatically:
 
 1. the data is exported into `<db>.encrypting-<ts>` with `sqlcipher_export`;
 2. per-table row counts and `user_version` are verified to be identical;
-3. the original is kept as `<db>.plaintext-backup-<ts>` (plus its `-wal`/`-shm`
-   if present), mode `0600`;
+3. the original is kept as `<db>.plaintext-backup-<ts>`, mode `0600`. During
+   steps 1-4 the plaintext database is held under an exclusive lock (and taken
+   out of WAL mode, which folds the WAL into the main file), so a concurrent
+   commit is refused instead of being lost, and the migration refuses ("in
+   use") when another process has the database open. A non-empty plaintext
+   `-wal`/`-shm` that still exists at swap time makes the migration refuse;
+   empty ones are deleted;
 4. the encrypted file is atomically renamed into place.
 
 Any failure before step 3 leaves the original untouched.
@@ -52,8 +57,8 @@ Stop the server, then run:
 
 1. opens the database with the current key and takes a write lock;
 2. makes a **§9.2 backup** before touching anything:
-   `<db>.pre-rekey-<ts>` (encrypted with the OLD key, with `-wal`/`-shm` if
-   present) and `<keyfile>.pre-rekey-<ts>` (the OLD key, mode `0600`);
+   `<db>.pre-rekey-<ts>` (encrypted with the OLD key; it is a
+   `sqlcipher_export` snapshot, so it has no `-wal`/`-shm` sidecars) and `<keyfile>.pre-rekey-<ts>` (the OLD key, mode `0600`);
 3. stages the new key in `<keyfile>.new`, runs `PRAGMA rekey`, verifies that the
    new key opens the database with identical row counts and the old key no
    longer does, then atomically installs the new key file.
@@ -80,7 +85,11 @@ rollback option, then delete both securely.
   backup is first copied to a staging file and **opened with the active key**;
   a plaintext backup, a backup made with another key, or a corrupt one is
   refused before anything is touched. A running server is detected (exclusive
-  lock probe) and restore refuses. The live database is then hard-linked to
+  lock probe) **while it holds a connection**: the probe fails closed when the
+  database is busy or locked. A server whose connection pool is currently idle
+  (connections are closed after 3 minutes idle) holds no lock and cannot be
+  detected, so stop the server before restoring or re-keying. The probe lock is
+  kept until the restored file has been renamed into place (not on Windows). The live database is then hard-linked to
   `<db>.pre-restore-<ts>` and the verified staging file is renamed over it, so
   there is no moment without a database file.
 
@@ -124,5 +133,8 @@ separate key backup. This is the point of encryption at rest.
 `DATABASE_ENCRYPTION_KEY_FILE=/app/keys/db.key` and declare `/app/keys` as a
 `0700` volume owned by the app user (`docker-compose.test.yml` mounts a named
 `api-keys` volume). Keep that volume separate from the data volume and from
-backups; never bake a key into an image. Without a persistent volume a
-recreated container would generate a new key and could not open the old DB.
+backups; never bake a key into an image. The root and `deployment/` compose files
+mount a named key volume as well. Without a persistent key volume a recreated
+container finds an existing encrypted database but no key and **refuses to
+start** (fail closed: it never generates a new key for an existing database);
+restore the key from your key backup.

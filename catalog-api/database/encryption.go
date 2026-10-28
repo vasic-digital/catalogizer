@@ -27,6 +27,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -395,6 +396,7 @@ var lockBusyMS = 5000
 var (
 	afterExportHook func(tmpPath, keyHex string)
 	afterRekeyHook  func(dbPath, newKeyHex string)
+	beforeSwapHook  func()
 )
 
 // exportEncryptedCopy writes a full SQLCipher copy of the open database db
@@ -460,6 +462,18 @@ func verifyEncryptedCopy(path, keyHex string, wantCounts map[string]int64, wantU
 	return nil
 }
 
+// requireDeleteMode reports an error unless the journal mode reported by
+// "PRAGMA journal_mode=DELETE" is DELETE. On the bundled SQLite 3.20.1 the
+// pragma itself fails with "database is locked" while another connection has a
+// WAL database open, so this branch is defence in depth for engines that
+// return the unchanged mode (e.g. "wal") instead of an error.
+func requireDeleteMode(mode string) error {
+	if !strings.EqualFold(mode, "delete") {
+		return fmt.Errorf("journal mode stayed %q", mode)
+	}
+	return nil
+}
+
 // acquireExclusive makes the (single) connection of db the only user of the
 // database for as long as it stays open: it switches to exclusive locking,
 // leaves WAL mode (which fails while any other connection - e.g. a running
@@ -476,8 +490,8 @@ func acquireExclusive(db *sql.DB) error {
 	if err := db.QueryRow(`PRAGMA journal_mode=DELETE`).Scan(&mode); err != nil {
 		return inUse(err)
 	}
-	if !strings.EqualFold(mode, "delete") {
-		return inUse(fmt.Errorf("journal mode stayed %q", mode))
+	if err := requireDeleteMode(mode); err != nil {
+		return inUse(err)
 	}
 	if _, err := db.Exec(`BEGIN EXCLUSIVE`); err != nil {
 		return inUse(err)
@@ -488,20 +502,57 @@ func acquireExclusive(db *sql.DB) error {
 	return nil
 }
 
-// probeInUse reports an error when another process has the database at path
-// open (a running server). A database that cannot be opened with keyHex is
-// reported as not in use (nil): it cannot be a server using this key.
-func probeInUse(path, keyHex string) error {
+// isBusyErr reports whether err is SQLite's "database is locked/busy".
+func isBusyErr(err error) bool {
+	m := strings.ToLower(err.Error())
+	return strings.Contains(m, "locked") || strings.Contains(m, "busy")
+}
+
+// isNotADBErr reports SQLite's NOTADB error: what a wrong key (or a plaintext
+// file) produces on the first page read.
+func isNotADBErr(err error) bool {
+	m := strings.ToLower(err.Error())
+	return strings.Contains(m, "not a database") || strings.Contains(m, "encrypted")
+}
+
+// probeInUse takes the exclusive lock on the database at path and returns a
+// release function; the caller keeps the lock for as long as it needs the
+// guarantee that nobody else opens the file (call release when done). It
+// FAILS CLOSED: an error is returned when another connection holds or uses
+// the database, when the lock is busy, or when the state cannot be
+// determined. Only a genuine decrypt failure (NOTADB: wrong key or plaintext
+// file, on a database nobody holds) means "cannot be a server using this
+// key" and returns a no-op release with a nil error.
+// Limitation: a server that currently holds NO connection (idle pool) cannot
+// be detected - see docs/DATABASE_ENCRYPTION.md.
+func probeInUse(path, keyHex string) (func(), error) {
 	db, err := sql.Open("sqlite3", keyedDSN(path, keyHex, fmt.Sprintf("_busy_timeout=%d", lockBusyMS)))
 	if err != nil {
-		return scrubDSN(err)
+		return nil, scrubDSN(err)
 	}
 	db.SetMaxOpenConns(1)
-	defer db.Close()
-	if verifyKeyed(db) != nil {
-		return nil
+	var ver string
+	if err := db.QueryRow(`PRAGMA cipher_version`).Scan(&ver); err != nil || strings.TrimSpace(ver) == "" {
+		db.Close()
+		return nil, errors.New("SQLCipher is not active in this build; cannot probe the database")
 	}
-	return acquireExclusive(db)
+	var n int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM sqlite_master`).Scan(&n); err != nil {
+		db.Close()
+		switch {
+		case isBusyErr(err):
+			return nil, fmt.Errorf("database is in use by another process (stop the server first): %v", err)
+		case isNotADBErr(err):
+			return func() {}, nil
+		default:
+			return nil, fmt.Errorf("cannot determine whether the database is in use: %v", scrubDSN(err))
+		}
+	}
+	if err := acquireExclusive(db); err != nil {
+		db.Close()
+		return nil, err
+	}
+	return func() { _ = db.Close() }, nil
 }
 
 // linkOrExplain hard-links src to dst (so both names exist at all times).
@@ -538,36 +589,29 @@ func migratePlaintextToEncrypted(path, keyHex string) (err error) {
 		}
 	}()
 
-	src, err := sql.Open("sqlite3", path+"?_busy_timeout=30000")
+	src, err := sql.Open("sqlite3", fmt.Sprintf("%s?_busy_timeout=%d", path, lockBusyMS))
 	if err != nil {
 		return err
 	}
 	src.SetMaxOpenConns(1)
-
-	if _, err = src.Exec(`PRAGMA wal_checkpoint(TRUNCATE)`); err != nil {
-		src.Close()
-		return fmt.Errorf("checkpoint: %w", err)
+	// The source stays exclusively locked (and out of WAL mode, which also
+	// folds the WAL into the main file) from before the row counts until the
+	// encrypted file has been renamed over it: a commit by anyone else is
+	// refused instead of being silently missing from the encrypted copy. If
+	// another process has the database open, the migration refuses.
+	defer src.Close()
+	if err = acquireExclusive(src); err != nil {
+		return fmt.Errorf("plaintext database cannot be locked for migration: %w", err)
 	}
 	srcCounts, err := tableRowCounts(src)
 	if err != nil {
-		src.Close()
 		return fmt.Errorf("count source rows: %w", err)
 	}
 	var userVersion int64
 	if err = src.QueryRow(`PRAGMA user_version`).Scan(&userVersion); err != nil {
-		src.Close()
 		return err
 	}
 	if err = exportEncryptedCopy(src, tmpPath, keyHex, userVersion); err != nil {
-		src.Close()
-		return err
-	}
-	// Re-checkpoint the original so nothing is left in its WAL, then release it.
-	if _, err = src.Exec(`PRAGMA wal_checkpoint(TRUNCATE)`); err != nil {
-		src.Close()
-		return err
-	}
-	if err = src.Close(); err != nil {
 		return err
 	}
 	if afterExportHook != nil {
@@ -761,8 +805,14 @@ func RestoreBackup(cfg *config.DatabaseConfig, backup string) (err error) {
 	}
 
 	if _, serr := os.Lstat(target); serr == nil {
-		if err = probeInUse(target, key); err != nil {
-			return err
+		if rel, perr := probeInUse(target, key); perr != nil {
+			return perr
+		} else if runtime.GOOS == "windows" {
+			rel() // Windows cannot rename over an open file; the window stays open there
+		} else {
+			// Hold the exclusive lock until the restored file is renamed in:
+			// nobody can open the old file between the probe and the swap.
+			defer rel()
 		}
 		aside := uniquePath(target + ".pre-restore-" + ts)
 		if err = linkOrExplain(target, aside); err != nil {
@@ -783,6 +833,9 @@ func RestoreBackup(cfg *config.DatabaseConfig, backup string) (err error) {
 				_ = os.Rename(target+s, uniquePath(target+".pre-restore-"+ts+s))
 			}
 		}
+	}
+	if beforeSwapHook != nil {
+		beforeSwapHook()
 	}
 	if err = os.Rename(staging, target); err != nil {
 		return fmt.Errorf("install restored database (the previous database is intact): %w", err)
@@ -855,10 +908,12 @@ func verifyRekey(dbPath, oldKeyHex, newKeyHex string, before map[string]int64) e
 }
 
 // Rekey rotates the SQLCipher key of the configured database. The server MUST
-// be stopped; this is DETECTED, not just documented: the database is switched
-// to exclusive locking (which fails while any other connection has it open)
-// and that lock is held for the whole operation, so nothing can write between
-// the backup and the rekey and a live pool cannot be broken. Sequence: open
+// be stopped. A running server is detected only while it holds a connection:
+// the database is switched to exclusive locking (which fails while any other
+// connection has it open) and that lock is held for the whole operation, so
+// nothing can write between the backup and the rekey and a live pool cannot be
+// broken. A server whose pool is idle (connections are closed after 3 minutes)
+// holds no lock and is NOT detected. Sequence: open
 // with the old key -> take the exclusive lock -> §9.2 backup (sqlcipher_export
 // under the old key, verified) and old-key copy -> stage the new key ->
 // PRAGMA rekey -> verify (new key opens with identical row counts, old key

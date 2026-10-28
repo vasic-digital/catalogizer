@@ -74,7 +74,7 @@ mutate R2_rekey_no_exclusive_lock "$ENC" 'if err := acquireExclusive(db); err !=
 		closeDB()' 'if err := acquireExclusive(db); false && err != nil {
 		closeDB()'
 mutate R3_restore_no_staged_verification "$ENC" 'if err = verifyStaged(staging, key); err != nil {' 'if false {'
-mutate R3_restore_no_running_server_probe "$ENC" 'if err = probeInUse(target, key); err != nil {' 'if false {'
+mutate R3_restore_no_running_server_probe "$ENC" 'if rel, perr := probeInUse(target, key); perr != nil {' 'if rel, perr := probeInUse(target, key); false && perr != nil {'
 mutate R3_restore_accepts_plaintext_backup "$ENC" '} else if st == dbPlaintext {' '} else if false && st == dbPlaintext {'
 mutate L1_key_symlink_followed "$UNIX" 'os.O_RDONLY|syscall.O_NOFOLLOW' 'os.O_RDONLY'
 mutate L2_key_dir_perms_unchecked "$UNIX" 'st.Mode().Perm()&0o022 != 0' 'false'
@@ -82,6 +82,30 @@ mutate L3_no_staged_key_hint "$ENC" 'if _, err := os.Lstat(keyPath + ".new"); er
 		return fmt.Sprintf(' 'if _, err := os.Lstat(keyPath + ".new"); false && err == nil {
 		return fmt.Sprintf('
 mutate L4_rekey_installs_key_without_verify "$ENC" 'if err := verifyRekey(cfg.Path, oldKey, newKeyHex, before); err != nil {' 'if err := verifyRekey(cfg.Path, oldKey, newKeyHex, before); false && err != nil {'
+
+# --- review round 2 mutants (reviewer X1-X8 plus the R4/R6/F3 fixes) ---
+mutate X1_no_exclusive_locking_mode "$ENC" 'if _, err := db.Exec(`PRAGMA locking_mode=EXCLUSIVE`); err != nil {' 'if _, err := db.Exec(`PRAGMA locking_mode=NORMAL`); err != nil {'
+mutate X2_journal_mode_check_off "$ENC" 'if !strings.EqualFold(mode, "delete") {
+		return fmt.Errorf("journal mode stayed' 'if false {
+		return fmt.Errorf("journal mode stayed'
+mutate X3_restore_no_aside_link "$ENC" 'if err = linkOrExplain(target, aside); err != nil {' 'if false {'
+mutate X4_restore_integrity_check_off "$ENC" 'if res != "ok" {' 'if false {'
+mutate X5_backup_deferred_no_lock "$ENC" '`BEGIN IMMEDIATE`' '`BEGIN DEFERRED`'
+mutate X6_migration_sidecar_check_off "$ENC" 'if st, serr := os.Stat(s); serr == nil && st.Size() > 0 {
+			return fmt.Errorf("plaintext' 'if st, serr := os.Stat(s); false && serr == nil && st.Size() > 0 {
+			return fmt.Errorf("plaintext'
+mutate X7_rekey_no_oldkey_backup "$ENC" 'if err := copyFile(keyPath, res.OldKeyBackupPath); err != nil {' 'if false {'
+mutate X8_probe_skips_exclusive_lock "$ENC" 'if err := acquireExclusive(db); err != nil {
+		db.Close()
+		return nil, err
+	}
+	return func() { _ = db.Close() }, nil' 'db.Close()
+	return func() {}, nil'
+mutate R4_migration_source_not_locked "$ENC" 'if err = acquireExclusive(src); err != nil {' 'if false {'
+mutate R6_probe_busy_fails_open "$ENC" 'return nil, fmt.Errorf("database is in use by another process (stop the server first): %v", err)
+		case isNotADBErr' 'return func() {}, nil
+		case isNotADBErr'
+mutate F3_restore_releases_lock_early "$ENC" 'defer rel()' 'rel()'
 
 if [ "$survived" -ne 0 ]; then echo "$survived mutation(s) survived"; exit 1; fi
 echo "all mutations killed"
