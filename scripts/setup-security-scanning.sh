@@ -27,28 +27,9 @@ echo "✅ Prerequisites check passed"
 
 # Create environment file template
 echo "📝 Creating environment file template..."
-cat > .env.security << 'EOF'
-# Security Scanning Environment Variables
-# Copy this file to .env and fill in the values
-
-# SonarQube Configuration
-# Default credentials: admin/admin (change on first login)
-SONARQUBE_URL=http://localhost:9000
-SONARQUBE_USERNAME=admin
-SONARQUBE_PASSWORD=admin
-
-# Snyk Configuration (Get token from https://app.snyk.io/account)
-# SNYK_TOKEN=your-snyk-token-here
-SNYK_TOKEN=dummy-token-for-freemium-mode
-SNYK_ORG=catalogizer
-SNYK_SEVERITY_THRESHOLD=medium
-
-# SonarQube Project Token (Generate in SonarQube UI after setup)
-# SONAR_TOKEN=your-sonar-project-token-here
-SONAR_TOKEN=dummy-token-for-initial-setup
-EOF
-
-echo "✅ Created .env.security template"
+# shellcheck source=lib/init_env_security.sh
+. "$(dirname "${BASH_SOURCE[0]}")/lib/init_env_security.sh"
+init_env_security . || exit 1
 
 # Create SonarQube configuration directory
 echo "📁 Setting up SonarQube configuration..."
