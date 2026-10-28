@@ -55,6 +55,7 @@ services:
     environment:
       # Database configuration
       DATABASE_TYPE: ${DATABASE_TYPE:-postgres}
+      DATABASE_ENCRYPTION_KEY_FILE: ${DATABASE_ENCRYPTION_KEY_FILE:-/app/keys/db.key}
       DATABASE_HOST: database
       DATABASE_PORT: ${DATABASE_PORT:-5432}
       DATABASE_NAME: ${DATABASE_NAME:-catalogizer}
@@ -95,6 +96,8 @@ services:
       - "${CATALOGIZER_ADMIN_PORT:-9090}:9090"
     volumes:
       - server_data:/app/data
+      # CAT-001: SQLite mode keeps its SQLCipher key here (0700, separate from data/backups)
+      - server_keys:/app/keys
       - server_logs:/app/logs
       - server_config:/app/config
       - ${SSL_CERT_PATH:-./ssl}:/app/ssl:ro
@@ -255,6 +258,8 @@ volumes:
     name: catalogizer-redis-data
   server_data:
     name: catalogizer-server-data
+  server_keys:
+    name: catalogizer-server-keys
   server_logs:
     name: catalogizer-server-logs
   server_config:

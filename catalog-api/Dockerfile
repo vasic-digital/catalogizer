@@ -77,7 +77,8 @@ RUN groupadd --system --gid 1001 appgroup && \
     useradd --system --uid 1001 --gid appgroup --no-create-home appuser
 
 # Create necessary directories with proper permissions
-RUN mkdir -p /app/data /app/logs /app/temp && \
+RUN mkdir -p /app/data /app/logs /app/temp /app/keys && \
+    chmod 700 /app/keys && \
     chown -R appuser:appgroup /app
 
 # Bind address/port for containers: the app defaults to localhost:28080 (unreachable from outside the container, and not the
@@ -85,6 +86,12 @@ RUN mkdir -p /app/data /app/logs /app/temp && \
 ENV HOST=0.0.0.0 SERVER_PORT=8080
 
 # Expose API port
+# CAT-001: the SQLCipher key lives in its own 0700 volume, separate from the
+# database volume, so it survives container recreation and is not captured by
+# a plain backup of /app/data. Mount a named volume here in production.
+ENV DATABASE_ENCRYPTION_KEY_FILE=/app/keys/db.key
+VOLUME ["/app/keys"]
+
 EXPOSE 8080
 
 # Health check

@@ -27,6 +27,8 @@ volumes:
     driver: local
   api-data:
     driver: local
+  api-keys:
+    driver: local
   api-logs:
     driver: local
 
@@ -55,6 +57,7 @@ services:
       - WRITE_TIMEOUT=900
     volumes:
       - api-data:/app/data
+      - api-keys:/app/keys
       - api-logs:/app/logs
       - test-results:/app/test-results
     deploy:

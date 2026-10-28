@@ -2,8 +2,10 @@ package filesystem
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"net"
 	"strings"
 	"time"
@@ -95,6 +97,10 @@ func (c *SmbClient) Disconnect(ctx context.Context) error {
 			errs = append(errs, fmt.Errorf("failed to close connection: %w", err))
 		}
 	}
+
+	// The handles are dead whatever the close results were: forget them so IsConnected() is truthful and a later call returns
+	// "not connected" instead of blocking forever on a closed session (found by the live SMB tests).
+	c.share, c.session, c.conn = nil, nil, nil
 
 	if len(errs) > 0 {
 		return fmt.Errorf("errors closing SMB client: %v", errs)
@@ -298,11 +304,16 @@ func (c *SmbClient) GetConfig() interface{} {
 	return c.config
 }
 
-// Helper function to check if error is "file not found"
+// isNotExistError reports whether err means "the path does not exist". go-smb2 returns *fs.PathError values whose text carries
+// the operation and path ("stat X: file does not exist"), so the error chain is inspected, not just its text.
 func isNotExistError(err error) bool {
-	// This is a simplified check - in practice you might want to check
-	// for specific SMB error codes
-	return err != nil && (err.Error() == "file does not exist" || err.Error() == "no such file or directory")
+	if err == nil {
+		return false
+	}
+	if errors.Is(err, fs.ErrNotExist) {
+		return true
+	}
+	return err.Error() == "file does not exist" || err.Error() == "no such file or directory"
 }
 
 // smbPath applies the shared containment rule (ConfinePath) to a share-relative path: a path with a ".." SEGMENT is confined to the share root
