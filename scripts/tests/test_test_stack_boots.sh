@@ -48,10 +48,10 @@ out4="$(env ADMIN_PASSWORD=same-value-x QA_USER_PASSWORD=same-value-x bash "$ROO
 # Aliasing guard: no line of run-full-qa.sh may be a plain alias of ADMIN_PASSWORD (whole RHS is the expansion)
 # (e.g. `PW=$ADMIN_PASSWORD`, which could then feed the testuser_qa payload). Limit: indirect forms (eval, printf -v) are not seen.
 # F6: alias = any assignment whose RHS BEGINS with the expansion (trailing comment / suffix included).
-printf 'QPW=$ADMIN_PASSWORD # reuse\nQPW="${ADMIN_PASSWORD}x"\nQPW=${ADMIN_PASSWORD}\n' > "$tmp/alias_bad.sh"
+printf 'QPW=$ADMIN_PASSWORD # reuse\nQPW="${ADMIN_PASSWORD}x"\nQPW=${ADMIN_PASSWORD}\ndeclare QPW=$ADMIN_PASSWORD\nreadonly QPW="${ADMIN_PASSWORD}"\ndeclare -x QPW=$ADMIN_PASSWORD\n' > "$tmp/alias_bad.sh"
 printf 'ADMIN_PASSWORD="${ADMIN_PASSWORD:?req}"\nTOKEN=$(curl -d "${ADMIN_PASSWORD}" x)\nQ="${QA_USER_PASSWORD}"\n' > "$tmp/alias_ok.sh"
-alias_scan() { grep -nE '^[[:space:]]*(export[[:space:]]+|local[[:space:]]+)?[A-Za-z_][A-Za-z0-9_]*=["'"'"']?\$\{?ADMIN_PASSWORD' "$1" | grep -vE '^[0-9]+:[[:space:]]*ADMIN_PASSWORD=' ; }
-[ "$(alias_scan "$tmp/alias_bad.sh" | wc -l)" -eq 3 ] && [ -z "$(alias_scan "$tmp/alias_ok.sh")" ] || { echo "FAIL - alias scan self-test"; exit 2; }
+alias_scan() { grep -nE '^[[:space:]]*(export[[:space:]]+|local[[:space:]]+|readonly[[:space:]]+|declare[[:space:]]+(-[a-zA-Z]+[[:space:]]+)?)?[A-Za-z_][A-Za-z0-9_]*=["'"'"']?\$\{?ADMIN_PASSWORD' "$1" | grep -vE '^[0-9]+:[[:space:]]*ADMIN_PASSWORD=' ; }
+[ "$(alias_scan "$tmp/alias_bad.sh" | wc -l)" -eq 6 ] && [ -z "$(alias_scan "$tmp/alias_ok.sh")" ] || { echo "FAIL - alias scan self-test"; exit 2; }
 if alias_scan "$ROOT/scripts/run-full-qa.sh" | grep -q .; then echo "FAIL - run-full-qa.sh aliases ADMIN_PASSWORD into another variable"; fail=1; else echo "ok   - run-full-qa.sh does not alias ADMIN_PASSWORD"; fi
 for sc in run-full-qa run-api-validation run-helixqa run-helixqa-web run-helixqa-androidtv; do qa_files+=("$ROOT/scripts/$sc.sh"); done
 scan_out="$(python3 "$SCAN" "$tmp/empty_allow" "${qa_files[@]}" 2>&1)"; scan_rc=$?

@@ -64,6 +64,16 @@ def key_is_safe(key, val):
 # `POSTGRES_PASSWORD: 1234` in compose is a literal.
 COUNTER_KEYS = ('PASS', 'PASSES', 'TOKEN', 'TOKENS')
 
+def first_token(t):
+    """Text up to the first whitespace that is outside quotes."""
+    q = ''
+    for i, c in enumerate(t):
+        if q:
+            if c == q: q = ''
+        elif c in '"\'': q = c
+        elif c.isspace(): return t[:i]
+    return t
+
 def is_literal(val, shell=False, key=''):
     v = val.split(' #')[0].strip().strip('"\'')
     if v == '' or v.lower() in ('true', 'false', 'null', '~', 'none'):
@@ -85,10 +95,13 @@ def is_literal(val, shell=False, key=''):
     if v.startswith('$'):
         if ':-' in v or '-' in v.split('}')[0][2:]:
             return True                              # `${VAR:-literal}` default
+        v = first_token(val.split(' #')[0].strip()).strip('"\'')   # only text ATTACHED to the expansion counts (`SECRET="${r}" cmd` is clean)
         if shell:
             v = re.split(r'[;&|]', v)[0].strip('"\'')       # `A="${B}"; B=""`: only the first command's value counts
         rest = re.sub(r'\$\{[^}]*\}?|\$[A-Za-z_][A-Za-z0-9_]*', '', v)
-        return bool(re.search(r'[A-Za-z0-9]', rest))   # pure expansions / separators are refs; `${P}hunter2` has a literal tail
+        if rest.lstrip('"\'').startswith('/'):
+            return False                             # `${DIR}/db`: path suffix (residual: `${A}/secret`)
+        return bool(re.search(r'[A-Za-z0-9]', rest))   # `${PREFIX}hunter2` has a literal tail
     return True
 
 def load_allow(path):

@@ -5,6 +5,7 @@
 # Control needle: the scanner is first run on a synthetic fixture that must
 # be flagged, and on a clean fixture that must not (§11.4.201 / §11.4.273).
 set -u
+SELF="$(readlink -f "${BASH_SOURCE[0]}")"   # absolute BEFORE the cd (R2: runnable from any subdirectory)
 cd "$(git rev-parse --show-toplevel)" || exit 2
 # Covers `${X:-v}` and the colon-less `${X-v}` form, for names containing
 # PASSWORD/SECRET/TOKEN/API_KEY/ACCESS_KEY/PRIVATE_KEY/CREDENTIAL.
@@ -68,14 +69,17 @@ for bad in 'JWT_SECRET: /k7QzXw9pLm2' 'ADMIN_PASSWORD=[hunter2]' 'export DB_PASS
            'DB_PASSWORD: <password>hunter2' 'API_SECRET: <secretXYZ123>' \
            'POSTGRES_PASSWORD: 1234' 'DB_PASSWORD: "0000"' 'DB_PASSWORD: 1234 abcd' \
            'API_TOKEN_ENV: HUNTER2SECRET' 'AWS_ACCESS_KEY_ENV: AKIAIOSFODNN7EXAMPLE' 'X="${API_TOKEN_ENV:-hunter2}"' 'X="${AWS_SECRET_ENV:-ABCD1234EFGH5678}"' \
-           'DB_PASSWORD: ${PREFIX}hunter2' \
+           'DB_PASSWORD: ${PREFIX}hunter2' 'API_TOKEN_ENV: AKIA_IOSFODNN7EXAMPLE' \
            'SIGN_SECRET: /k7Qz/Xw9pL' 'SIGN_KEY_SECRET: /k7Qz+Xw9/pL2==' 'B_SECRET: /ab/cd/ef=' ; do
     ti=$((ti+1)); ext=yml; case "$bad" in export*|X=*) ext=sh;; esac
     printf '%s\n' "$bad" > "$tmp/ti$ti.$ext"
     python3 "$SCAN" "$tmp/empty_allow" "$tmp/ti$ti.$ext" >/dev/null && { echo "SELFTEST FAIL: scan blind to TI-1 literal $ti"; exit 2; }
 done
-printf 'VOL=api_keys:/app/keys\nJWT_SECRET: /run/secrets/jwt\nDB_PASSWORD: <your-password>\nAPI_TOKEN: {}\nSECRET_X: [\nSIGN_SECRET: {"a": 1}\nTLS_SECRET: key_vol:/etc/tls\n  needs: {service: x, credential_env: [QA_USER]}\n' > "$tmp/ti_ok.yml"
+printf 'VOL=api_keys:/app/keys\nJWT_SECRET: /run/secrets/jwt\nDB_PASSWORD: <your-password>\nAPI_TOKEN: {}\nSECRET_X: [\nSIGN_SECRET: {"a": 1}\nTLS_SECRET: key_vol:/etc/tls\nX_SECRET: ${SECRETS}/db\n  needs: {service: x, credential_env: [QA_USER]}\n' > "$tmp/ti_ok.yml"
 python3 "$SCAN" "$tmp/empty_allow" "$tmp/ti_ok.yml" >/dev/null || { echo "SELFTEST FAIL: scan flags TI-1 clean fixture"; exit 2; }
+# R3: an expansion followed by a space-separated command is not a literal tail
+printf 'SECRET="${ref}" cmd args\nTOKEN_X=$ref other\n' > "$tmp/r3_ok.sh"
+python3 "$SCAN" "$tmp/empty_allow" "$tmp/r3_ok.sh" >/dev/null || { echo "SELFTEST FAIL: scan flags 'SECRET=\"\${ref}\" cmd'"; exit 2; }
 printf 'services:\n  a:\n    command: TOKEN=$$(curl x)\n' > "$tmp/okc.yml"
 python3 "$SCAN" "$tmp/empty_allow" "$tmp/okc.yml" >/dev/null || { echo "SELFTEST FAIL: scan flags compose command substitution"; exit 2; }
 printf 'services:\n  a:\n    environment:\n      A_PASSWORD: ${A_PASSWORD:?req}\n      B_TOKEN: ${B_TOKEN:-}\n      C_PASSWORD_FILE: /run/x\n' > "$tmp/ok.yml"
@@ -108,13 +112,19 @@ printf 'services:\n  a:\n    environment:\n      X_TOKEN: ${X_TOKEN:-hunter2}\n'
 for fx in c_lit.yml c_def.yml; do
     check_compose "$tmp/$fx" >/dev/null && { echo "SELFTEST FAIL: compose check passes literal fixture $fx"; exit 2; }
 done
-# structural guard: `fail=0` must be assigned before the first `fail=1` in this script (a late reset discards findings)
-f0=$(grep -n '^fail=0' "$0" | head -1 | cut -d: -f1); f1=$(grep -n 'fail=1' "$0" | head -1 | cut -d: -f1)
-[ -n "$f0" ] && [ "$f0" -lt "$f1" ] || { echo "SELFTEST FAIL: fail=0 not assigned before first fail=1"; exit 2; }
+# R1: the use site is a function (`compose_gate`, sets `fail` itself) driven end-to-end in a subshell with a literal
+# fixture: an ignored result fails the self-test; a second `fail` initialisation is caught by the count below.
+compose_gate() { check_compose "$@" || fail=1; }
+( fail=$((0)); compose_gate "$tmp/c_lit.yml" >/dev/null; [ "$fail" -eq 1 ] ) || { echo "SELFTEST FAIL: compose_gate ignores a failing compose check"; exit 2; }
+# structural guard: exactly ONE `fail` initialisation (a second, later one discards findings)
+n0=$(grep -cE '(^|[;[:space:]])[f]ail=0' "$SELF")
+[ "$n0" -eq 1 ] || { echo "SELFTEST FAIL: expected exactly one fail initialisation, found $n0"; exit 2; }
+f0=$(grep -nE '(^|[;[:space:]])[f]ail=0' "$SELF" | head -1 | cut -d: -f1); f1=$(grep -n '[f]ail=1' "$SELF" | head -1 | cut -d: -f1)
+[ -n "$f0" ] && [ "$f0" -lt "$f1" ] || { echo "SELFTEST FAIL: fail init not before first failure assignment"; exit 2; }
 files=$(git ls-files | grep -E '(^|/)(docker-|infra-)?compose[^/]*\.ya?ml$')
 [ -n "$files" ] || { echo "FAIL: no compose files found (blind)"; exit 2; }
 # shellcheck disable=SC2086
-check_compose $files || fail=1
+compose_gate $files
 # TI-2: skip ONLY the explicit test roots listed as data (test dirs hold deliberate canary fixtures);
 # any other `/tests/` directory is scanned. Filter is a function so it is self-tested below.
 ROOTS=scripts/tests/generator_scan_test_roots.txt
@@ -149,5 +159,9 @@ for v in $req; do
     grep -rqE "\b$v=" scripts/test-infra 2>/dev/null && continue
     echo "FAIL: required variable $v is not documented in .env.example"; fail=1
 done
+# R2: the test must also work from a subdirectory (one nested run; NDS_NESTED stops recursion).
+if [ -z "${NDS_NESTED:-}" ]; then
+    ( cd "$(dirname "$SELF")" && NDS_NESTED=1 bash "$SELF" >/dev/null 2>&1 ) || { echo "FAIL: test does not pass when run from a subdirectory"; fail=1; }
+fi
 [ "$fail" -eq 0 ] && echo "PASS: no default secrets, .env.security untracked+ignored, example present"
 exit $fail
