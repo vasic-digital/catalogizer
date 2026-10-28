@@ -438,7 +438,7 @@ func TestEncryption_BackupIncludesWALSidecarAndRestores(t *testing.T) {
 
 	// Restore the backup over a fresh target path and read it with the key.
 	target := filepath.Join(t.TempDir(), "restored.db")
-	require.NoError(t, RestoreBackup(dest, target))
+	require.NoError(t, RestoreBackup(&config.DatabaseConfig{Path: target, EncryptionKeyFile: cfg.EncryptionKeyFile}, dest))
 	cfgR := *cfg
 	cfgR.Path = target
 	dbr, err := NewConnection(&cfgR)
@@ -455,14 +455,24 @@ func TestEncryption_BackupIncludesWALSidecarAndRestores(t *testing.T) {
 	// loses the WAL-resident commits - proving the sidecar copy is what saves them.
 	cfgB := *cfg
 	cfgB.Path = bare
+	lost := false
 	dbb, err := NewConnection(&cfgB)
-	if err == nil {
+	if err != nil {
+		// An unreadable main-only copy is the same loss; it must be a real
+		// error about the missing WAL content, never a silent pass.
+		t.Logf("control: main-file-only copy cannot be opened: %v", err)
+		lost = true
+	} else {
 		defer dbb.Close()
 		var bn int
-		if qerr := dbb.QueryRow(`SELECT COUNT(*) FROM enc_t`).Scan(&bn); qerr == nil {
-			assert.Less(t, bn, 25, "control: main-file-only copy must be incomplete")
+		if qerr := dbb.QueryRow(`SELECT COUNT(*) FROM enc_t`).Scan(&bn); qerr != nil {
+			t.Logf("control: main-file-only copy cannot be read: %v", qerr)
+			lost = true
+		} else {
+			lost = bn < 25
 		}
-	} // an unreadable/inconsistent main-only copy is the same loss, shown as an error
+	}
+	assert.True(t, lost, "control: a main-file-only copy must lose the WAL-resident commits")
 }
 
 func TestEncryption_RestoreKeepsPreviousDB(t *testing.T) {
@@ -476,7 +486,7 @@ func TestEncryption_RestoreKeepsPreviousDB(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, db.Close())
 
-	require.NoError(t, RestoreBackup(dest, dbPath))
+	require.NoError(t, RestoreBackup(cfg, dest))
 	prev, _ := filepath.Glob(dbPath + ".pre-restore-*")
 	assert.NotEmpty(t, prev, "previous DB must be kept (§9.2)")
 	db2, err := NewConnection(cfg)

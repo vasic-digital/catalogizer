@@ -65,7 +65,7 @@ func TestAdminHandler_CreateBackup_EncryptedAndRestorable(t *testing.T) {
 
 	// restore into a new location and read it back with the same key file
 	target := filepath.Join(work, "restored.db")
-	require.NoError(t, database.RestoreBackup(files[0], target))
+	require.NoError(t, database.RestoreBackup(&config.DatabaseConfig{Path: target, EncryptionKeyFile: filepath.Join(work, "keys", "db.key")}, files[0]))
 	rdb, err := database.NewConnection(&config.DatabaseConfig{
 		Path:              target,
 		EncryptionKeyFile: filepath.Join(work, "keys", "db.key"),

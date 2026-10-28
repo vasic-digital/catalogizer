@@ -36,10 +36,17 @@ func TestRunDBMaintenance_RekeyAndRestore(t *testing.T) {
 	newKey, _ := os.ReadFile(cfg.EncryptionKeyFile)
 	assert.NotEqual(t, oldKey, newKey)
 
-	// restore of a pre-rekey backup needs the OLD key: it must fail closed with the new key
-	assert.Equal(t, 0, runDBMaintenance(cfg, []string{"db-restore", backup}))
-	_, err = database.NewConnection(cfg)
-	assert.Error(t, err, "pre-rekey backup is encrypted with the old key")
+	// restore of a pre-rekey backup needs the OLD key: with the new key it must
+	// fail closed (exit 1) and leave the current database untouched.
+	assert.Equal(t, 1, runDBMaintenance(cfg, []string{"db-restore", backup}))
+	pre, _ := filepath.Glob(cfg.Path + ".pre-restore-*")
+	assert.Empty(t, pre, "a refused restore must not move the database aside")
+	db2, err := database.NewConnection(cfg)
+	require.NoError(t, err, "original database must still open with the active key")
+	var n int
+	require.NoError(t, db2.QueryRow(`SELECT COUNT(*) FROM t`).Scan(&n))
+	assert.Equal(t, 2, n)
+	require.NoError(t, db2.Close())
 
 	assert.Equal(t, 2, runDBMaintenance(cfg, []string{"db-restore"}))
 	cfgPG := *cfg

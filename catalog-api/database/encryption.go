@@ -106,22 +106,37 @@ func validKeyHex(s string) bool {
 	return err == nil
 }
 
-// loadKey reads and validates the key file. Fails closed.
+// loadKey reads and validates the key file. Fails closed. The file is opened
+// once (O_NOFOLLOW on POSIX) and every check is made on that descriptor, so
+// the file that was checked is the file that is read.
 func loadKey(path string) (string, error) {
-	info, err := os.Lstat(path)
+	f, err := openKeyFileNoFollow(path)
+	if err != nil {
+		if errors.Is(err, errKeySymlink) {
+			return "", fmt.Errorf("database key file %q must be a regular file (not a symlink)", path)
+		}
+		return "", fmt.Errorf("database key file %q: %w", path, err)
+	}
+	defer f.Close()
+	info, err := f.Stat()
 	if err != nil {
 		return "", fmt.Errorf("database key file %q: %w", path, err)
 	}
-	if info.Mode()&os.ModeSymlink != 0 || !info.Mode().IsRegular() {
+	if !info.Mode().IsRegular() {
 		return "", fmt.Errorf("database key file %q must be a regular file (not a symlink)", path)
 	}
-	if info.Mode().Perm()&0o077 != 0 {
-		return "", fmt.Errorf("database key file %q has insecure permission %04o: group/world access is not allowed (chmod 600)", path, info.Mode().Perm())
+	if keyPermissionsEnforced() {
+		if info.Mode().Perm()&0o077 != 0 {
+			return "", fmt.Errorf("database key file %q has insecure permission %04o: group/world access is not allowed (chmod 600)", path, info.Mode().Perm())
+		}
+		if err := checkKeyFileOwner(info); err != nil {
+			return "", err
+		}
+		if err := checkKeyDir(filepath.Dir(path)); err != nil {
+			return "", err
+		}
 	}
-	if err := checkKeyFileOwner(info); err != nil {
-		return "", err
-	}
-	raw, err := os.ReadFile(path)
+	raw, err := io.ReadAll(io.LimitReader(f, 4096))
 	if err != nil {
 		return "", fmt.Errorf("database key file %q is not readable: %w", path, err)
 	}
@@ -293,8 +308,21 @@ func prepareSQLiteKey(cfg *config.DatabaseConfig) (string, error) {
 		}
 		return key, nil
 	default:
-		return loadOrCreateKey(keyPath, false)
+		k, err := loadOrCreateKey(keyPath, false)
+		if err != nil {
+			return "", fmt.Errorf("%w%s", err, rekeyHint(keyPath))
+		}
+		return k, nil
 	}
+}
+
+// rekeyHint explains a leftover <keyfile>.new, which means a previous rekey
+// was interrupted: the database may already be encrypted with that key.
+func rekeyHint(keyPath string) string {
+	if _, err := os.Lstat(keyPath + ".new"); err == nil {
+		return fmt.Sprintf(" (a previous rekey did not finish: %s exists and may hold the key the database is now encrypted with; see docs/DATABASE_ENCRYPTION.md)", keyPath+".new")
+	}
+	return ""
 }
 
 func sidecars(path string) []string { return []string{path + "-wal", path + "-shm"} }
@@ -358,14 +386,143 @@ func uniquePath(base string) string {
 	}
 }
 
+// lockBusyMS is the busy timeout (milliseconds) used when trying to take the
+// exclusive lock for rekey/restore. Overridable in tests.
+var lockBusyMS = 5000
+
+// Test seams (nil in production): called after the export / after the rekey so
+// tests can corrupt the result and prove the verification refuses it.
+var (
+	afterExportHook func(tmpPath, keyHex string)
+	afterRekeyHook  func(dbPath, newKeyHex string)
+)
+
+// exportEncryptedCopy writes a full SQLCipher copy of the open database db
+// into the NEW file dest (created 0600), encrypted with keyHex, preserving
+// user_version. Uses sqlcipher_export: a clean, consistent snapshot that needs
+// no -wal/-shm sidecars.
+func exportEncryptedCopy(db *sql.DB, dest, keyHex string, userVersion int64) error {
+	f, err := os.OpenFile(dest, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
+	if err != nil {
+		return fmt.Errorf("create %s: %w", dest, err)
+	}
+	if err := f.Close(); err != nil {
+		return err
+	}
+	attach := fmt.Sprintf(`ATTACH DATABASE '%s' AS encrypted KEY "x'%s'"`, strings.ReplaceAll(dest, "'", "''"), keyHex)
+	if _, err := db.Exec(attach); err != nil {
+		return fmt.Errorf("attach encrypted target: %w", scrubDSN(err))
+	}
+	if _, err := db.Exec(`SELECT sqlcipher_export('encrypted')`); err != nil {
+		_, _ = db.Exec(`DETACH DATABASE encrypted`)
+		return fmt.Errorf("sqlcipher_export: %w", err)
+	}
+	if _, err := db.Exec(fmt.Sprintf(`PRAGMA encrypted.user_version = %d`, userVersion)); err != nil {
+		_, _ = db.Exec(`DETACH DATABASE encrypted`)
+		return fmt.Errorf("copy user_version: %w", err)
+	}
+	if _, err := db.Exec(`DETACH DATABASE encrypted`); err != nil {
+		return err
+	}
+	return nil
+}
+
+// verifyEncryptedCopy opens path with keyHex and proves it is a readable
+// SQLCipher database with exactly the expected per-table row counts and
+// user_version. It leaves no sidecars behind.
+func verifyEncryptedCopy(path, keyHex string, wantCounts map[string]int64, wantUV int64) error {
+	dst, err := sql.Open("sqlite3", keyedDSN(path, keyHex, "_busy_timeout=30000"))
+	if err != nil {
+		return scrubDSN(err)
+	}
+	dst.SetMaxOpenConns(1)
+	defer dst.Close()
+	if err := verifyKeyed(dst); err != nil {
+		return fmt.Errorf("verify encrypted copy: %w", err)
+	}
+	got, err := tableRowCounts(dst)
+	if err != nil {
+		return fmt.Errorf("count encrypted rows: %w", err)
+	}
+	var uv int64
+	if err := dst.QueryRow(`PRAGMA user_version`).Scan(&uv); err != nil {
+		return err
+	}
+	if _, err := dst.Exec(`PRAGMA wal_checkpoint(TRUNCATE)`); err != nil {
+		return err
+	}
+	if err := equalCounts(wantCounts, got); err != nil {
+		return fmt.Errorf("row-count verification failed: %w", err)
+	}
+	if uv != wantUV {
+		return fmt.Errorf("user_version mismatch: %d vs %d", wantUV, uv)
+	}
+	return nil
+}
+
+// acquireExclusive makes the (single) connection of db the only user of the
+// database for as long as it stays open: it switches to exclusive locking,
+// leaves WAL mode (which fails while any other connection - e.g. a running
+// server's pool - has the database open) and takes the lock. Returns an
+// "in use" error when another process holds the database.
+func acquireExclusive(db *sql.DB) error {
+	inUse := func(err error) error {
+		return fmt.Errorf("database is in use by another process (stop the server first): %v", err)
+	}
+	if _, err := db.Exec(`PRAGMA locking_mode=EXCLUSIVE`); err != nil {
+		return inUse(err)
+	}
+	var mode string
+	if err := db.QueryRow(`PRAGMA journal_mode=DELETE`).Scan(&mode); err != nil {
+		return inUse(err)
+	}
+	if !strings.EqualFold(mode, "delete") {
+		return inUse(fmt.Errorf("journal mode stayed %q", mode))
+	}
+	if _, err := db.Exec(`BEGIN EXCLUSIVE`); err != nil {
+		return inUse(err)
+	}
+	if _, err := db.Exec(`COMMIT`); err != nil { // exclusive locking_mode keeps the lock
+		return inUse(err)
+	}
+	return nil
+}
+
+// probeInUse reports an error when another process has the database at path
+// open (a running server). A database that cannot be opened with keyHex is
+// reported as not in use (nil): it cannot be a server using this key.
+func probeInUse(path, keyHex string) error {
+	db, err := sql.Open("sqlite3", keyedDSN(path, keyHex, fmt.Sprintf("_busy_timeout=%d", lockBusyMS)))
+	if err != nil {
+		return scrubDSN(err)
+	}
+	db.SetMaxOpenConns(1)
+	defer db.Close()
+	if verifyKeyed(db) != nil {
+		return nil
+	}
+	return acquireExclusive(db)
+}
+
+// linkOrExplain hard-links src to dst (so both names exist at all times).
+func linkOrExplain(src, dst string) error {
+	if err := os.Link(src, dst); err != nil {
+		if errors.Is(err, os.ErrExist) {
+			return err
+		}
+		return fmt.Errorf("cannot create a hard link %s -> %s (the filesystem may not support hard links; move the database to a filesystem that does, or copy it aside manually and retry): %w", src, dst, err)
+	}
+	return nil
+}
+
 // migratePlaintextToEncrypted converts path (plaintext SQLite) into an
 // encrypted database using sqlcipher_export. Safe sequence:
 //  1. checkpoint+export into path.encrypting-<ts> (original untouched);
 //  2. open the new file with the key and verify identical per-table row counts
 //     and user_version;
-//  3. move the plaintext original (and its -wal/-shm) to
-//     path.plaintext-backup-<ts>[...] (0600) - kept, never deleted;
-//  4. atomically rename the encrypted file into place.
+//  3. hard-link the plaintext original to path.plaintext-backup-<ts> (0600) -
+//     kept, never deleted; the database name never disappears;
+//  4. atomically rename the encrypted file over path.
 //
 // On any failure before step 3 the original is untouched; the temp file is
 // removed.
@@ -386,79 +543,38 @@ func migratePlaintextToEncrypted(path, keyHex string) (err error) {
 		return err
 	}
 	src.SetMaxOpenConns(1)
-	closeSrc := func() { _ = src.Close() }
 
 	if _, err = src.Exec(`PRAGMA wal_checkpoint(TRUNCATE)`); err != nil {
-		closeSrc()
+		src.Close()
 		return fmt.Errorf("checkpoint: %w", err)
 	}
 	srcCounts, err := tableRowCounts(src)
 	if err != nil {
-		closeSrc()
+		src.Close()
 		return fmt.Errorf("count source rows: %w", err)
 	}
 	var userVersion int64
 	if err = src.QueryRow(`PRAGMA user_version`).Scan(&userVersion); err != nil {
-		closeSrc()
+		src.Close()
 		return err
 	}
-	attach := fmt.Sprintf(`ATTACH DATABASE '%s' AS encrypted KEY "x'%s'"`, strings.ReplaceAll(tmpPath, "'", "''"), keyHex)
-	if _, err = src.Exec(attach); err != nil {
-		closeSrc()
-		return fmt.Errorf("attach encrypted target: %w", err)
-	}
-	if _, err = src.Exec(`SELECT sqlcipher_export('encrypted')`); err != nil {
-		closeSrc()
-		return fmt.Errorf("sqlcipher_export: %w", err)
-	}
-	if _, err = src.Exec(fmt.Sprintf(`PRAGMA encrypted.user_version = %d`, userVersion)); err != nil {
-		closeSrc()
-		return fmt.Errorf("copy user_version: %w", err)
-	}
-	if _, err = src.Exec(`DETACH DATABASE encrypted`); err != nil {
-		closeSrc()
+	if err = exportEncryptedCopy(src, tmpPath, keyHex, userVersion); err != nil {
+		src.Close()
 		return err
 	}
 	// Re-checkpoint the original so nothing is left in its WAL, then release it.
 	if _, err = src.Exec(`PRAGMA wal_checkpoint(TRUNCATE)`); err != nil {
-		closeSrc()
+		src.Close()
 		return err
 	}
 	if err = src.Close(); err != nil {
 		return err
 	}
-
-	dst, err := sql.Open("sqlite3", keyedDSN(tmpPath, keyHex, "_busy_timeout=30000"))
-	if err != nil {
+	if afterExportHook != nil {
+		afterExportHook(tmpPath, keyHex)
+	}
+	if err = verifyEncryptedCopy(tmpPath, keyHex, srcCounts, userVersion); err != nil {
 		return err
-	}
-	dst.SetMaxOpenConns(1)
-	if err = verifyKeyed(dst); err != nil {
-		dst.Close()
-		return fmt.Errorf("verify encrypted copy: %w", err)
-	}
-	dstCounts, err := tableRowCounts(dst)
-	if err != nil {
-		dst.Close()
-		return fmt.Errorf("count encrypted rows: %w", err)
-	}
-	var dstUV int64
-	if err = dst.QueryRow(`PRAGMA user_version`).Scan(&dstUV); err != nil {
-		dst.Close()
-		return err
-	}
-	if _, err = dst.Exec(`PRAGMA wal_checkpoint(TRUNCATE)`); err != nil {
-		dst.Close()
-		return err
-	}
-	if err = dst.Close(); err != nil {
-		return err
-	}
-	if err = equalCounts(srcCounts, dstCounts); err != nil {
-		return fmt.Errorf("row-count verification failed: %w", err)
-	}
-	if dstUV != userVersion {
-		return fmt.Errorf("user_version mismatch after export: %d vs %d", userVersion, dstUV)
 	}
 	for _, s := range sidecars(tmpPath) { // none expected after checkpoint
 		_ = os.Remove(s)
@@ -466,29 +582,30 @@ func migratePlaintextToEncrypted(path, keyHex string) (err error) {
 	if err = os.Chmod(tmpPath, 0o600); err != nil {
 		return err
 	}
+	// A leftover plaintext -wal/-shm would be attached to the new file.
+	for _, s := range sidecars(path) {
+		if st, serr := os.Stat(s); serr == nil && st.Size() > 0 {
+			return fmt.Errorf("plaintext database still has unmerged %s; stop other users of the database and retry", filepath.Base(s))
+		}
+		_ = os.Remove(s)
+	}
 
-	// Swap: keep the plaintext original as a (0600) backup, install the new file.
+	// Swap: keep the plaintext original as a (0600) backup via a hard link
+	// (the database name never disappears), then atomically replace it.
 	bak := uniquePath(path + ".plaintext-backup-" + ts)
-	if err = os.Rename(path, bak); err != nil {
+	if err = linkOrExplain(path, bak); err != nil {
 		return fmt.Errorf("keep plaintext backup: %w", err)
 	}
 	_ = os.Chmod(bak, 0o600)
-	for _, s := range []string{"-wal", "-shm"} {
-		if _, serr := os.Lstat(path + s); serr == nil {
-			_ = os.Rename(path+s, bak+s)
-			_ = os.Chmod(bak+s, 0o600)
-		}
-	}
 	if err = os.Rename(tmpPath, path); err != nil {
-		// restore the original so the system is never left without a database
-		_ = os.Rename(bak, path)
+		_ = os.Remove(bak) // path still names the original; nothing was lost
 		return fmt.Errorf("install encrypted database: %w", err)
 	}
 	syncDir(filepath.Dir(path))
 	return nil
 }
 
-// copyFile copies src to dst (0600), fsyncing dst.
+// copyFile copies src to dst (0600), fsyncing dst. dst must not exist.
 func copyFile(src, dst string) error {
 	in, err := os.Open(src)
 	if err != nil {
@@ -515,26 +632,37 @@ func copyFile(src, dst string) error {
 // copyDBSet copies the main database file plus its -wal/-shm sidecars (when
 // present and non-empty) to dest, dest-wal, dest-shm. Backups made by copying
 // only the main file silently lose every commit still living in the WAL.
-func copyDBSet(srcPath, dest string) error {
+// It returns the files THIS call created, so a caller can clean up exactly
+// those and never a pre-existing file.
+func copyDBSet(srcPath, dest string) (created []string, err error) {
 	if err := copyFile(srcPath, dest); err != nil {
-		return err
+		return created, err
 	}
+	created = append(created, dest)
 	for _, s := range []string{"-wal", "-shm"} {
-		st, err := os.Stat(srcPath + s)
-		if err != nil || st.Size() == 0 {
+		st, serr := os.Stat(srcPath + s)
+		if serr != nil || st.Size() == 0 {
 			continue
 		}
 		if err := copyFile(srcPath+s, dest+s); err != nil {
-			return err
+			return created, err
 		}
+		created = append(created, dest+s)
 	}
-	return nil
+	return created, nil
+}
+
+func removeAll(paths []string) {
+	for _, p := range paths {
+		_ = os.Remove(p)
+	}
 }
 
 // BackupTo writes a consistent, still-encrypted copy of the database to dest
 // (mode 0600) including the WAL/-shm sidecars when a reader prevented the WAL
-// from being fully checkpointed. The key is NOT part of the backup: back the
-// key file up separately (docs/guides/DATABASE_ENCRYPTION.md).
+// from being fully checkpointed. dest must not exist: an existing file is
+// never overwritten or deleted. The key is NOT part of the backup: back the
+// key file up separately (docs/DATABASE_ENCRYPTION.md).
 func (db *DB) BackupTo(dest string) error {
 	if db.DatabaseType() != "sqlite" {
 		return errors.New("backup is supported only for SQLite databases")
@@ -542,6 +670,9 @@ func (db *DB) BackupTo(dest string) error {
 	src := db.DBPath()
 	if src == "" || isMemoryPath(src) {
 		return errors.New("no file-backed database to back up")
+	}
+	if _, err := os.Lstat(dest); err == nil {
+		return fmt.Errorf("backup destination %q already exists; refusing to overwrite", dest)
 	}
 	// Best-effort, non-blocking: fold as much of the WAL as possible into the
 	// main file. A pinned reader may leave frames in the WAL; the sidecars are
@@ -561,64 +692,177 @@ func (db *DB) BackupTo(dest string) error {
 	if _, err := conn.ExecContext(context.Background(), `BEGIN IMMEDIATE`); err != nil {
 		return fmt.Errorf("cannot lock database for backup: %w", err)
 	}
-	copyErr := copyDBSet(src, dest)
+	created, copyErr := copyDBSet(src, dest)
 	if _, err := conn.ExecContext(context.Background(), `ROLLBACK`); err != nil && copyErr == nil {
 		copyErr = err
 	}
 	if copyErr != nil {
-		_ = os.Remove(dest)
-		_ = os.Remove(dest + "-wal")
-		_ = os.Remove(dest + "-shm")
+		removeAll(created) // only what this call created
 		return copyErr
 	}
 	return nil
 }
 
-// RestoreBackup installs a backup made by BackupTo at target. Any existing
-// database at target (and its sidecars) is first moved aside to
-// target.pre-restore-<ts> (never deleted, §9.2). The restore is performed with
-// the database closed; the key file must be the one the backup was made with.
-func RestoreBackup(backup, target string) error {
+// RestoreBackup installs a backup made by BackupTo at cfg.Path, using the
+// ACTIVE key. The existing database is never touched until the backup is
+// proven good:
+//  1. the active key file is loaded (fail closed);
+//  2. the backup is copied to a staging file next to the target and opened
+//     with the active key (readable, integrity ok) - on failure the original
+//     database is untouched;
+//  3. a running server is detected by an exclusive-lock probe of the target;
+//  4. the existing database is hard-linked to target.pre-restore-<ts> (never
+//     deleted, §9.2) and the staging file is atomically renamed over it.
+func RestoreBackup(cfg *config.DatabaseConfig, backup string) (err error) {
+	if cfg == nil || cfg.Path == "" || isMemoryPath(cfg.Path) {
+		return errors.New("restore requires a file-backed SQLite database")
+	}
+	target := cfg.Path
+	keyPath, err := ResolveKeyFilePath(cfg)
+	if err != nil {
+		return err
+	}
+	key, err := loadKey(keyPath)
+	if err != nil {
+		return err
+	}
 	if _, err := os.Stat(backup); err != nil {
 		return fmt.Errorf("backup not found: %w", err)
+	}
+	if st, err := inspectDBFile(backup); err != nil {
+		return err
+	} else if st == dbPlaintext {
+		return errors.New("backup is a plaintext SQLite file; refusing to restore it as the encrypted database (install it as the database file and start the server once to migrate it)")
 	}
 	if err := os.MkdirAll(filepath.Dir(target), 0o750); err != nil {
 		return err
 	}
 	ts := timestamp()
-	if _, err := os.Lstat(target); err == nil {
-		aside := uniquePath(target + ".pre-restore-" + ts)
-		if err := os.Rename(target, aside); err != nil {
-			return fmt.Errorf("move existing database aside: %w", err)
+	staging := uniquePath(target + ".restoring-" + ts)
+	created, err := copyDBSet(backup, staging)
+	if err != nil {
+		removeAll(created)
+		return fmt.Errorf("cannot stage backup: %w", err)
+	}
+	defer func() {
+		if err != nil {
+			removeAll(created)
+			removeAll(sidecars(staging))
 		}
+	}()
+	if err = verifyStaged(staging, key); err != nil {
+		return fmt.Errorf("backup cannot be used with the active key; the existing database was not touched: %w", err)
+	}
+	for _, s := range sidecars(staging) {
+		if st, serr := os.Stat(s); serr == nil && st.Size() > 0 {
+			return fmt.Errorf("staged backup still has unmerged %s", filepath.Base(s))
+		}
+		_ = os.Remove(s)
+	}
+
+	if _, serr := os.Lstat(target); serr == nil {
+		if err = probeInUse(target, key); err != nil {
+			return err
+		}
+		aside := uniquePath(target + ".pre-restore-" + ts)
+		if err = linkOrExplain(target, aside); err != nil {
+			return fmt.Errorf("keep existing database: %w", err)
+		}
+		// Stale sidecars must not be attached to the restored file.
 		for _, s := range []string{"-wal", "-shm"} {
 			if _, e := os.Lstat(target + s); e == nil {
-				_ = os.Rename(target+s, aside+s)
+				if rerr := os.Rename(target+s, aside+s); rerr != nil {
+					_ = os.Remove(aside)
+					return fmt.Errorf("move stale %s aside: %w", s, rerr)
+				}
 			}
 		}
 	} else {
-		// stale sidecars with no main file must not be attached to the restored DB
 		for _, s := range []string{"-wal", "-shm"} {
 			if _, e := os.Lstat(target + s); e == nil {
 				_ = os.Rename(target+s, uniquePath(target+".pre-restore-"+ts+s))
 			}
 		}
 	}
-	return copyDBSet(backup, target)
+	if err = os.Rename(staging, target); err != nil {
+		return fmt.Errorf("install restored database (the previous database is intact): %w", err)
+	}
+	created = nil
+	syncDir(filepath.Dir(target))
+	return nil
+}
+
+// verifyStaged proves the staged backup opens with key and is intact.
+func verifyStaged(path, keyHex string) error {
+	db, err := sql.Open("sqlite3", keyedDSN(path, keyHex, "_busy_timeout=30000"))
+	if err != nil {
+		return scrubDSN(err)
+	}
+	db.SetMaxOpenConns(1)
+	defer db.Close()
+	if err := verifyKeyed(db); err != nil {
+		return err
+	}
+	var res string
+	if err := db.QueryRow(`PRAGMA integrity_check`).Scan(&res); err != nil {
+		return fmt.Errorf("integrity check: %w", err)
+	}
+	if res != "ok" {
+		return fmt.Errorf("integrity check failed: %s", res)
+	}
+	_, err = db.Exec(`PRAGMA wal_checkpoint(TRUNCATE)`)
+	return err
 }
 
 // RekeyResult describes a completed key rotation (no key material).
 type RekeyResult struct {
-	BackupPath       string // encrypted pre-rekey copy of the database (+ sidecars)
+	BackupPath       string // encrypted pre-rekey copy of the database
 	OldKeyBackupPath string // the OLD key file copy, needed to open BackupPath
 	KeyFile          string // the (new) active key file
 }
 
+// verifyRekey proves, after PRAGMA rekey: the new key opens the database with
+// exactly the row counts it had before, and the old key no longer opens it.
+func verifyRekey(dbPath, oldKeyHex, newKeyHex string, before map[string]int64) error {
+	chk, err := sql.Open("sqlite3", keyedDSN(dbPath, newKeyHex, "_busy_timeout=5000"))
+	if err != nil {
+		return scrubDSN(err)
+	}
+	chk.SetMaxOpenConns(1)
+	if err := verifyKeyed(chk); err != nil {
+		chk.Close()
+		return fmt.Errorf("verification with new key failed: %w", err)
+	}
+	after, err := tableRowCounts(chk)
+	chk.Close()
+	if err != nil {
+		return err
+	}
+	if err := equalCounts(before, after); err != nil {
+		return fmt.Errorf("row-count verification after rekey failed: %w", err)
+	}
+	old, err := sql.Open("sqlite3", keyedDSN(dbPath, oldKeyHex, "_busy_timeout=5000"))
+	if err != nil {
+		return scrubDSN(err)
+	}
+	old.SetMaxOpenConns(1)
+	oerr := verifyKeyed(old)
+	old.Close()
+	if oerr == nil {
+		return errors.New("old key still opens the database after rekey")
+	}
+	return nil
+}
+
 // Rekey rotates the SQLCipher key of the configured database. The server MUST
-// be stopped. Sequence: open with old key -> checkpoint -> hold write lock ->
-// §9.2 backup (db + sidecars) and old-key copy -> PRAGMA rekey with a fresh
-// key -> verify (new key opens with identical row counts, old key fails) ->
-// atomically install the new key file. The new key is staged in
+// be stopped; this is DETECTED, not just documented: the database is switched
+// to exclusive locking (which fails while any other connection has it open)
+// and that lock is held for the whole operation, so nothing can write between
+// the backup and the rekey and a live pool cannot be broken. Sequence: open
+// with the old key -> take the exclusive lock -> §9.2 backup (sqlcipher_export
+// under the old key, verified) and old-key copy -> stage the new key ->
+// PRAGMA rekey -> verify (new key opens with identical row counts, old key
+// fails) -> atomically install the new key file. The new key is staged in
 // <keyfile>.new first so a crash can never lose it.
 func Rekey(cfg *config.DatabaseConfig) (*RekeyResult, error) {
 	if cfg == nil || cfg.Path == "" || isMemoryPath(cfg.Path) {
@@ -647,13 +891,17 @@ func Rekey(cfg *config.DatabaseConfig) (*RekeyResult, error) {
 		return nil, fmt.Errorf("a previous rekey did not finish: %q exists. Inspect it (it may hold the key the database is currently encrypted with) and remove it before retrying", stage)
 	}
 
-	db, err := sql.Open("sqlite3", keyedDSN(cfg.Path, oldKey, "_busy_timeout=5000"))
+	db, err := sql.Open("sqlite3", keyedDSN(cfg.Path, oldKey, fmt.Sprintf("_busy_timeout=%d", lockBusyMS)))
 	if err != nil {
-		return nil, err
+		return nil, scrubDSN(err)
 	}
 	db.SetMaxOpenConns(1)
 	closeDB := func() { _ = db.Close() }
 	if err := verifyKeyed(db); err != nil {
+		closeDB()
+		return nil, err
+	}
+	if err := acquireExclusive(db); err != nil {
 		closeDB()
 		return nil, err
 	}
@@ -662,9 +910,10 @@ func Rekey(cfg *config.DatabaseConfig) (*RekeyResult, error) {
 		closeDB()
 		return nil, err
 	}
-	if _, err := db.Exec(`PRAGMA wal_checkpoint(TRUNCATE)`); err != nil {
+	var uv int64
+	if err := db.QueryRow(`PRAGMA user_version`).Scan(&uv); err != nil {
 		closeDB()
-		return nil, fmt.Errorf("checkpoint: %w", err)
+		return nil, err
 	}
 
 	ts := timestamp()
@@ -673,29 +922,20 @@ func Rekey(cfg *config.DatabaseConfig) (*RekeyResult, error) {
 		OldKeyBackupPath: uniquePath(keyPath + ".pre-rekey-" + ts),
 		KeyFile:          keyPath,
 	}
-	// Hold the write lock so no other process modifies the DB while we copy.
-	conn, err := db.Conn(context.Background())
-	if err != nil {
+	if err := exportEncryptedCopy(db, res.BackupPath, oldKey, uv); err != nil {
 		closeDB()
-		return nil, err
+		_ = os.Remove(res.BackupPath)
+		return nil, fmt.Errorf("pre-rekey backup failed (database unchanged): %w", err)
 	}
-	if _, err := conn.ExecContext(context.Background(), `BEGIN IMMEDIATE`); err != nil {
-		conn.Close()
+	if err := verifyEncryptedCopy(res.BackupPath, oldKey, before, uv); err != nil {
 		closeDB()
-		return nil, fmt.Errorf("database is busy or in use; stop the server before rekeying: %w", err)
-	}
-	copyErr := copyDBSet(cfg.Path, res.BackupPath)
-	if _, err := conn.ExecContext(context.Background(), `ROLLBACK`); err != nil && copyErr == nil {
-		copyErr = err
-	}
-	conn.Close()
-	if copyErr != nil {
-		closeDB()
-		return nil, fmt.Errorf("pre-rekey backup failed (database unchanged): %w", copyErr)
+		_ = os.Remove(res.BackupPath)
+		removeAll(sidecars(res.BackupPath))
+		return nil, fmt.Errorf("pre-rekey backup did not verify (database unchanged): %w", err)
 	}
 	if err := copyFile(keyPath, res.OldKeyBackupPath); err != nil {
 		closeDB()
-		return nil, fmt.Errorf("old key backup failed (database unchanged): %w", err)
+		return nil, fmt.Errorf("old key backup failed (database unchanged, backup at %s): %w", res.BackupPath, err)
 	}
 
 	newKeyHex, err := newKey()
@@ -710,40 +950,14 @@ func Rekey(cfg *config.DatabaseConfig) (*RekeyResult, error) {
 	if _, err := db.Exec(fmt.Sprintf(`PRAGMA rekey = "x'%s'"`, newKeyHex)); err != nil {
 		closeDB()
 		_ = os.Remove(stage)
-		return nil, fmt.Errorf("PRAGMA rekey failed (database unchanged, backup at %s): %w", res.BackupPath, err)
+		return nil, fmt.Errorf("PRAGMA rekey failed (database unchanged, backup at %s): %w", res.BackupPath, scrubDSN(err))
 	}
-	if _, err := db.Exec(`PRAGMA wal_checkpoint(TRUNCATE)`); err != nil {
-		closeDB()
-		return nil, fmt.Errorf("checkpoint after rekey (new key staged at %s): %w", stage, err)
+	closeDB() // releases the exclusive lock
+	if afterRekeyHook != nil {
+		afterRekeyHook(cfg.Path, newKeyHex)
 	}
-	closeDB()
-
-	// Verify with the NEW key, and that the OLD key no longer works.
-	chk, err := sql.Open("sqlite3", keyedDSN(cfg.Path, newKeyHex, "_busy_timeout=5000"))
-	if err != nil {
-		return nil, err
-	}
-	chk.SetMaxOpenConns(1)
-	if err := verifyKeyed(chk); err != nil {
-		chk.Close()
-		return nil, fmt.Errorf("verification with new key failed (new key staged at %s, backup at %s): %w", stage, res.BackupPath, err)
-	}
-	after, err := tableRowCounts(chk)
-	chk.Close()
-	if err != nil {
-		return nil, err
-	}
-	if err := equalCounts(before, after); err != nil {
-		return nil, fmt.Errorf("row-count verification after rekey failed (backup at %s): %w", res.BackupPath, err)
-	}
-	old, err := sql.Open("sqlite3", keyedDSN(cfg.Path, oldKey, "_busy_timeout=5000"))
-	if err == nil {
-		old.SetMaxOpenConns(1)
-		oerr := verifyKeyed(old)
-		old.Close()
-		if oerr == nil {
-			return nil, errors.New("old key still opens the database after rekey; aborting before installing the new key")
-		}
+	if err := verifyRekey(cfg.Path, oldKey, newKeyHex, before); err != nil {
+		return nil, fmt.Errorf("%w (new key staged at %s, backup at %s, old key backup at %s)", err, stage, res.BackupPath, res.OldKeyBackupPath)
 	}
 	if err := os.Rename(stage, keyPath); err != nil {
 		return nil, fmt.Errorf("install new key (the new key is at %s): %w", stage, err)

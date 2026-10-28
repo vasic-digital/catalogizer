@@ -31,7 +31,7 @@ func runDBMaintenance(cfg *config.DatabaseConfig, args []string) int {
 			fmt.Fprintln(os.Stderr, "usage: catalog-api db-restore <backup-file>")
 			return 2
 		}
-		if err := database.RestoreBackup(args[1], cfg.Path); err != nil {
+		if err := database.RestoreBackup(cfg, args[1]); err != nil {
 			fmt.Fprintf(os.Stderr, "restore FAILED: %v\n", err)
 			return 1
 		}

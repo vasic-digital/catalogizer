@@ -114,7 +114,11 @@ func NewConnection(cfg *config.DatabaseConfig) (*DB, error) {
 		if !isMemoryPath(cfg.Path) {
 			if err := verifyKeyed(sqlDB); err != nil {
 				sqlDB.Close()
-				return nil, fmt.Errorf("database encryption: %w", err)
+				hint := ""
+				if kp, kerr := ResolveKeyFilePath(cfg); kerr == nil {
+					hint = rekeyHint(kp)
+				}
+				return nil, fmt.Errorf("database encryption: %w%s", err, hint)
 			}
 		}
 		if _, err := sqlDB.Exec("PRAGMA journal_mode=WAL"); err != nil {

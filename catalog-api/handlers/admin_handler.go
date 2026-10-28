@@ -413,6 +413,15 @@ func (h *AdminHandler) CreateBackup(c *gin.Context) {
 	timestamp := time.Now().Format("20060102_150405")
 	filename := fmt.Sprintf("backup_%s.db", timestamp)
 	destPath := filepath.Join(defaultBackupDir, filename)
+	// Two backups in the same second must not collide: BackupTo never
+	// overwrites, so pick the next free name.
+	for i := 1; ; i++ {
+		if _, err := os.Lstat(destPath); os.IsNotExist(err) {
+			break
+		}
+		filename = fmt.Sprintf("backup_%s_%d.db", timestamp, i)
+		destPath = filepath.Join(defaultBackupDir, filename)
+	}
 
 	// CAT-001: use the database-aware backup (WAL checkpoint + sidecar copy).
 	// A raw single-file copy loses commits still in the -wal file and, for the
