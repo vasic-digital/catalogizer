@@ -47,6 +47,9 @@ services:
       context: .
       dockerfile: catalog-api/Dockerfile.dev
     container_name: catalogizer-api-dev
+    # The image runs as uid 1000 (user dev) and ./catalog-api is bind-mounted rw: podman's keep-id maps the host user to uid 1000 so the
+    # app can write config.json, .service-port and ./cache. podman-only (docker has no keep-id).
+    userns_mode: "keep-id:uid=1000,gid=1000"
     restart: unless-stopped
     env_file: .env
     environment:

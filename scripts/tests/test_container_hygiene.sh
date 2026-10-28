@@ -12,7 +12,12 @@
 #               and no `/root/...` cache mounts in its defaults,
 #           (g) R8: a compose healthcheck command (curl) must exist in the final stage of the
 #               service's own Dockerfile.
-#           Dockerfile, Dockerfile.*, Containerfile and Containerfile.* are all scanned.
+#           (h) R9: no HEAD-style probe (--spider/-I/-X HEAD) of /health (GET-only route),
+#           (i) R0: fail closed - nonexistent root, unreadable input, a class of inputs with zero files, or a
+#               malformed/over-broad allowlist row are violations. R5 allowlist key is <file>#<service>;
+#               path globs are only accepted as a trailing "dir/*".
+#           Dockerfile*, Containerfile* anywhere (except submodules/constitution/node_modules/.git), compose files at any depth,
+#           and scripts under scripts/ Build/ deploy/ deployment/ docker/ are scanned; compose services are parsed per service.
 #           The scanner is self-tested against bad + clean fixtures and each rule has a paired
 #           mutation, so a scanner that cannot FAIL (or that FAILs on clean input) is itself a FAIL.
 # Usage:    scripts/tests/test_container_hygiene.sh            # selftest + scan of this repo
@@ -39,44 +44,128 @@ final_stage() {
 final_user() {
   final_stage "$1" | awk '/^[[:space:]]*USER[[:space:]]/{u=$2} END{print u}'
 }
+# final_from FILE : image reference of the last FROM
+final_from() {
+  awk '/^[[:space:]]*FROM[[:space:]]/{f=$2} END{print f}' "$1"
+}
+nonroot() { case "${1%%:*}" in ""|root|0) return 1;; *) return 0;; esac; }
 
-# scan DIR : prints violations, returns 1 if any.
+# compose_records FILE : "service<TAB>kind<TAB>value" records (kinds: service build_ctx build_df image privileged userns volume health_test)
+compose_records() {
+  awk '
+    function ind(s){ match(s,/^ */); return RLENGTH }
+    function val(s,k){ sub("^[ ]*" k ":[ ]*","",s); sub(/[ ]+#.*$/,"",s); gsub(/^["\047]|["\047]$/,"",s); return s }
+    function flush(){ if (intest) { print svc "\thealth_test\t" tst; intest=0 } }
+    /^[ ]*#/ {next}
+    /^[ ]*$/ {next}
+    { i=ind($0) }
+    i==0 { flush(); insvc=($0 ~ /^services:/); svc=""; next }
+    !insvc {next}
+    i==2 && /^  [A-Za-z0-9_.-]+:[ ]*$/ { flush(); svc=$1; sub(":","",svc); invol=0; inbuild=0; print svc "\tservice\t-"; next }
+    svc=="" {next}
+    /^[ ]*- / {
+      item=$0; sub(/^[ ]*- /,"",item); sub(/[ ]+#.*$/,"",item)
+      if (invol && i>=6) print svc "\tvolume\t" item
+      else if (intest) tst = tst " " item
+      next }
+    i==4 { flush(); invol=0; inbuild=0
+      if ($0 ~ /^    volumes:/) invol=1
+      else if ($0 ~ /^    build:[ ]*[^ ]/) { print svc "\tbuild_ctx\t" val($0,"build"); print svc "\tbuild_df\tDockerfile" }
+      else if ($0 ~ /^    build:/) inbuild=1
+      else if ($0 ~ /^    image:/) print svc "\timage\t" val($0,"image")
+      else if ($0 ~ /^    privileged:/) print svc "\tprivileged\t" val($0,"privileged")
+      else if ($0 ~ /^    userns_mode:/) print svc "\tuserns\t" val($0,"userns_mode")
+      next }
+    i==6 { flush()
+      if (inbuild && /^      context:/) print svc "\tbuild_ctx\t" val($0,"context")
+      else if (inbuild && /^      dockerfile:/) print svc "\tbuild_df\t" val($0,"dockerfile")
+      else if (/^      test:/) { v=val($0,"test"); if (v=="") { intest=1; tst="" } else print svc "\thealth_test\t" v }
+      next }
+    END { flush() }
+  ' "$1"
+}
+
+# scan DIR : prints violations, returns 1 if any. Fails CLOSED: missing root, unreadable input, or an empty class of
+# inputs (nothing to scan = blind instrument, §11.4.273) are violations, never a silent pass.
 scan() {
   local root="${1:?scan: root dir required}" n=0 f rel
   local allow="$root/scripts/tests/container_hygiene_allowlist.tsv"
 
+  if [ ! -d "$root" ]; then echo "VIOLATION R0-BLIND $root: scan root does not exist"; return 1; fi
+
+  # allowlist rows: rule<TAB>path<TAB>reason. path = exact repo path (compose rules: path#service) or a "dir/*" prefix.
   allowed() { # allowed <rule> <relpath>
-    [ -f "$allow" ] || return 1
-    awk -F'\t' -v r="$1" -v p="$2" '$1==r && length($3)>0 && ($2==p || (substr($2,length($2))=="*" && index(p, substr($2,1,length($2)-1))==1)) {found=1} END{exit !found}' "$allow"
+    [ -r "$allow" ] || return 1
+    awk -F'\t' -v r="$1" -v p="$2" '
+      function glob_ok(x) { return length(x) > 2 && substr(x, length(x)-1) == "/*" && index(substr(x,1,length(x)-1), "*") == 0 }
+      $1==r && length($3)>0 && ($2==p || (glob_ok($2) && index(p, substr($2,1,length($2)-1))==1)) {found=1}
+      END{exit !found}' "$allow"
   }
   report() { # report <rule> <relpath> <detail>
     if allowed "$1" "$2"; then return 0; fi
     echo "VIOLATION $1 $2: $3"; n=$((n+1))
   }
+  # a malformed allowlist row is itself a violation (no bare "*", no glob except a trailing "/*", rule and reason present)
+  if [ -e "$allow" ]; then
+    if [ ! -r "$allow" ]; then echo "VIOLATION R0-UNREADABLE scripts/tests/container_hygiene_allowlist.tsv: allowlist not readable"; n=$((n+1))
+    else
+      local bad
+      bad="$(awk -F'\t' 'NF==0||/^[[:space:]]*$/{next} $1=="" || $1 ~ /\*/ || $2=="" || ($2 ~ /\*/ && !(length($2)>2 && substr($2,length($2)-1)=="/*" && index(substr($2,1,length($2)-1),"*")==0)) {printf "line %d (%s %s); ", NR, $1, $2}' "$allow")"
+      [ -z "$bad" ] || { echo "VIOLATION R0-ALLOWLIST scripts/tests/container_hygiene_allowlist.tsv: malformed or over-broad rows: $bad"; n=$((n+1)); }
+    fi
+  fi
 
-  # --- Dockerfiles (Dockerfile, Dockerfile.*) outside vendored trees -----------------------
+  local -a PRUNE=( \( -path "$root/submodules" -o -path "$root/constitution" -o -name node_modules -o -name .git \) -prune -o )
+  local out st dfs composes scripts d
+  local -a sdirs=()
+  for d in scripts Build deploy deployment docker; do [ -d "$root/$d" ] && sdirs+=("$root/$d"); done
+
+  dfs="$(find "$root" "${PRUNE[@]}" -type f \( -name 'Dockerfile' -o -name 'Dockerfile.*' -o -name 'Containerfile' -o -name 'Containerfile.*' \) -print 2>&1 | sort)"
+  composes="$(find "$root" "${PRUNE[@]}" -type f \( -name 'docker-compose*.yml' -o -name 'docker-compose*.yaml' -o -name 'compose*.yml' -o -name 'compose*.yaml' \) -print 2>&1 | sort)"
+  scripts=""
+  [ ${#sdirs[@]} -gt 0 ] && scripts="$(find "${sdirs[@]}" -type f -name '*.sh' -not -path '*/tests/*' -print 2>&1 | sort)"
+  # find diagnostics (unreadable directories) end up in the lists: surface them
+  local lst
+  for lst in "$dfs" "$composes" "$scripts"; do
+    if printf '%s\n' "$lst" | grep -q '^find: '; then
+      echo "VIOLATION R0-UNREADABLE $root: find could not read part of the tree: $(printf '%s\n' "$lst" | grep '^find: ' | head -1)"; n=$((n+1))
+    fi
+  done
+  dfs="$(printf '%s\n' "$dfs" | grep -v '^find: ' | grep -v '^$')"
+  composes="$(printf '%s\n' "$composes" | grep -v '^find: ' | grep -v '^$')"
+  scripts="$(printf '%s\n' "$scripts" | grep -v '^find: ' | grep -v '^$')"
+  [ -n "$dfs" ]      || { echo "VIOLATION R0-BLIND $root: no Dockerfile/Containerfile found (blind scan)"; n=$((n+1)); }
+  [ -n "$composes" ] || { echo "VIOLATION R0-BLIND $root: no compose file found (blind scan)"; n=$((n+1)); }
+  [ -n "$scripts" ]  || { echo "VIOLATION R0-BLIND $root: no shell script found (blind scan)"; n=$((n+1)); }
+
+  # --- Dockerfiles / Containerfiles ----------------------------------------------------------
   while IFS= read -r f; do
+    [ -n "$f" ] || continue
     rel="${f#"$root"/}"
+    if [ ! -r "$f" ]; then report R0-UNREADABLE "$rel" "file not readable"; continue; fi
     local final lastuser
     final="$(final_stage "$f")"
     lastuser="$(final_user "$f")"
-    case "${lastuser%%:*}" in
-      ""|root|0) report R1-USER "$rel" "final stage has no non-root USER (got '${lastuser:-none}')" ;;
-    esac
+    nonroot "$lastuser" || report R1-USER "$rel" "final stage has no non-root USER (got '${lastuser:-none}')"
     if ! printf '%s' "$final" | grep -Eq '^[[:space:]]*HEALTHCHECK[[:space:]]+(--[^[:space:]]+[[:space:]]+)*CMD'; then
       report R2-HEALTHCHECK "$rel" "final stage has no HEALTHCHECK CMD"
     fi
-    # continuation-joined, so `RUN npm run build \` + newline + `|| true` is seen as one instruction
-    if sed -e ':a' -e '/\\$/{N;s/\\\n/ /;ta' -e '}' "$f" \
-         | grep -Eq '^[[:space:]]*RUN[[:space:]].*(npm run build[^|]*\|\||--skipLibCheck)'; then
-      report R3-MASKED-BUILD "$rel" "build failure masked (npm run build || ... / --skipLibCheck)"
+    # R3: continuation-joined; a build step whose failure is swallowed: `|| x`, any pipe (no pipefail in sh), `; true`, `; exit 0`, `; :`
+    if sed -e ':a' -e '/\\$/{N;s/\\\n/ /;ta' -e '}' "$f" | grep -Ev 'pipefail' \
+         | grep -Eq '^[[:space:]]*RUN[[:space:]].*((npm run build|npm run build:[a-z]+)([^|;]*)(\|\||\|[^|]|;[[:space:]]*(true|exit[[:space:]]+0|:)([[:space:];&]|$))|--skipLibCheck)'; then
+      report R3-MASKED-BUILD "$rel" "build failure masked (npm run build || / | tee / ; true / ; exit 0 / --skipLibCheck)"
     fi
-  done < <(find "$root" \( -path "$root/submodules" -o -path "$root/constitution" -o -name node_modules -o -name .git \) -prune \
-             -o -type f \( -name 'Dockerfile' -o -name 'Dockerfile.*' -o -name 'Containerfile' -o -name 'Containerfile.*' \) -print | sort)
+    # R9: a HEAD-style probe of /health (the route is GET-only: HEAD answers 404)
+    if printf '%s' "$final" | grep -E '^[[:space:]]*HEALTHCHECK' | grep -Eq -- '(--spider|--head|[[:space:]]-I[[:space:]]|-X[[:space:]]*HEAD).*/health|/health.*(--spider|--head)'; then
+      report R9-HEALTH-HEAD "$rel" "healthcheck uses a HEAD request against /health (GET-only route answers 404)"
+    fi
+  done <<< "$dfs"
 
   # --- scripts: thinker.local default, plain docker/sudo execution -------------------------
   while IFS= read -r f; do
+    [ -n "$f" ] || continue
     rel="${f#"$root"/}"
+    if [ ! -r "$f" ]; then report R0-UNREADABLE "$rel" "file not readable"; continue; fi
     if grep -Ev '^[[:space:]]*#' "$f" | grep -Eq ':?-[^}"]*thinker\.local|^[[:space:]]*(export[[:space:]]+|declare[[:space:]]+(-[a-zA-Z]+[[:space:]]+)?)?[A-Za-z_][A-Za-z0-9_]*=["'"'"']?thinker\.local'; then
       report R4-THINKER-DEFAULT "$rel" "defaults to retired host thinker.local"
     fi
@@ -86,45 +175,86 @@ scan() {
         | grep -Eq "${cmdpos}(sudo[[:space:]]|docker-compose([[:space:]]|\$)|docker[[:space:]]+(run|build|exec|pull|push|rm|stop|start|rmi|network|volume)[[:space:]]|docker[[:space:]]+compose[[:space:]]+([^v[:space:]]|v[^e]))"; then
       report R6-PLAIN-DOCKER-SUDO "$rel" "executes plain docker/docker-compose/sudo (use podman rootless)"
     fi
-  done < <(find "$root/scripts" -type f -name '*.sh' -not -path '*/tests/*' 2>/dev/null | sort)
+  done <<< "$scripts"
 
-  # --- compose files: privileged (true/yes/on/1, any case, quoted or not) ------------------
+  # --- compose files (any depth) --------------------------------------------------------------
+  local -A ctx df img priv userns tst vols
+  local svc kind value svcs base dfp fu tool words t
   while IFS= read -r f; do
+    [ -n "$f" ] || continue
     rel="${f#"$root"/}"
-    if grep -Ev '^[[:space:]]*#' "$f" | grep -Eiq "^[[:space:]]*privileged:[[:space:]]*[\"']?(true|yes|on|1)[\"']?[[:space:]]*(#.*)?$"; then
-      report R5-PRIVILEGED "$rel" "privileged enabled without allowlist reason"
-    fi
-    # R8: healthcheck command must exist in the final stage of the service's own Dockerfile
-    while IFS='|' read -r svc ctx df; do
-      [ -n "$svc" ] || continue
-      local dfp="$root/${ctx#./}/${df}"
-      [ -f "$dfp" ] || continue
-      if ! final_stage "$dfp" | grep -Ev '^[[:space:]]*#' | grep -Eq '(^|[^A-Za-z0-9_.-])curl([^A-Za-z0-9_.-]|$)'; then
-        report R8-HEALTHCHECK-TOOL "$rel" "service '$svc' healthcheck uses curl but the final stage of ${dfp#"$root"/} does not install it"
+    if [ ! -r "$f" ]; then report R0-UNREADABLE "$rel" "file not readable"; continue; fi
+    base="$(dirname "$f")"
+    ctx=(); df=(); img=(); priv=(); userns=(); tst=(); vols=(); svcs=()
+    while IFS=$'\t' read -r svc kind value; do
+      case "$kind" in
+        service) svcs+=("$svc") ;;
+        build_ctx) ctx[$svc]="$value" ;;
+        build_df) df[$svc]="$value" ;;
+        image) img[$svc]="$value" ;;
+        privileged) priv[$svc]="$value" ;;
+        userns) userns[$svc]="$value" ;;
+        volume) vols[$svc]+="$value"$'\n' ;;
+        health_test) tst[$svc]="$value" ;;
+      esac
+    done < <(compose_records "$f")
+    for svc in "${svcs[@]}"; do
+      # R5: privileged, allowlisted per (file, service)
+      if printf '%s\n' "${priv[$svc]:-}" | grep -Eiq '^(true|yes|on|1)$'; then
+        report R5-PRIVILEGED "$rel#$svc" "privileged enabled without allowlist reason"
       fi
-    done < <(awk '
-      /^[[:space:]]*#/ {next}
-      /^  [A-Za-z0-9_.-]+:[[:space:]]*$/ { svc=$1; sub(":","",svc); ctx=""; df=""; next }
-      svc!="" && /^    build:[[:space:]]*[^[:space:]]/ { v=$2; ctx=v; df="Dockerfile"; next }
-      svc!="" && /^      context:/ { ctx=$2 }
-      svc!="" && /^      dockerfile:/ { df=$2 }
-      svc!="" && /^      test:.*curl/ { if (ctx!="") print svc "|" ctx "|" (df==""?"Dockerfile":df) }
-    ' "$f")
-  done < <(find "$root" -maxdepth 1 -type f \( -name 'docker-compose*.yml' -o -name 'docker-compose*.yaml' -o -name 'compose*.yml' -o -name 'compose*.yaml' \) | sort)
+      # R9: HEAD probe of /health
+      t="${tst[$svc]:-}"
+      if printf '%s' "$t" | grep -Eq -- '(--spider|--head|[[:space:]]-I[[:space:]]|-X[[:space:]]*HEAD).*/health|/health.*(--spider|--head)'; then
+        report R9-HEALTH-HEAD "$rel#$svc" "healthcheck uses a HEAD request against /health (GET-only route answers 404)"
+      fi
+      # the service's own Dockerfile (only for services built from this repo)
+      dfp=""; fu=""
+      if [ -n "${ctx[$svc]:-}" ]; then
+        dfp="$(realpath -m "$base/${ctx[$svc]}/${df[$svc]:-Dockerfile}" 2>/dev/null)"
+        [ -f "$dfp" ] || dfp=""
+      fi
+      [ -n "$dfp" ] && fu="$(final_user "$dfp")"
+      # R7 (compose): non-root image + rw bind mount of a host path, without podman keep-id => files not writable
+      if [ -n "$dfp" ] && nonroot "$fu" && ! printf '%s' "${userns[$svc]:-}" | grep -q 'keep-id'; then
+        local v src opts first
+        while IFS= read -r v; do
+          [ -n "$v" ] || continue
+          first="${v:0:1}"
+          src="$(printf '%s' "$v" | sed 's/\${[^}]*}/V/g' | cut -d: -f1)"
+          opts="$(printf '%s' "$v" | sed 's/\${[^}]*}/V/g' | cut -d: -f3-)"
+          case "$first$src" in
+            .*|/*|\~*|\$*) printf '%s' ",$opts," | grep -q ',ro,' || report R7-BUILDER-USERNS "$rel#$svc" "rw bind mount '$v' into an image whose USER is '$fu' without userns_mode keep-id (host files not writable by the container user)" ;;
+          esac
+        done <<< "${vols[$svc]:-}"
+      fi
+      # R8: the tool the healthcheck invokes must exist in the final stage of the service's own Dockerfile
+      if [ -n "$dfp" ] && [ -n "$t" ]; then
+        words="$(printf '%s' "$t" | tr -d '[]",'"'" | sed -E 's/^[[:space:]]*(CMD-SHELL|CMD)[[:space:]]+//')"
+        tool="$(printf '%s' "$words" | awk '{print $1}')"
+        case "$tool" in
+          curl|wget|nc|ncat)
+            if ! final_stage "$dfp" | grep -Ev '^[[:space:]]*#' | grep -Eq "(^|[^A-Za-z0-9_.-])$tool([^A-Za-z0-9_.-]|\$)"; then
+              if ! { [ "$tool" = wget ] || [ "$tool" = nc ]; } || ! final_from "$dfp" | grep -Eiq 'alpine|busybox'; then
+                report R8-HEALTHCHECK-TOOL "$rel#$svc" "healthcheck invokes '$tool' but the final stage of ${dfp#"$root"/} does not install it"
+              fi
+            fi ;;
+        esac
+      fi
+    done
+  done <<< "$composes"
 
   # --- R7: non-root builder image needs keep-id in the orchestrator, and no /root cache mounts --
   if [ -f "$root/docker/Dockerfile.builder" ] && [ -f "$root/Build/lib/orchestrator.sh" ]; then
     local bu; bu="$(final_user "$root/docker/Dockerfile.builder")"
-    case "${bu%%:*}" in
-      ""|root|0) ;;
-      *)
-        grep -Ev '^[[:space:]]*#' "$root/Build/lib/orchestrator.sh" | grep -q -- '--userns=keep-id' \
-          || report R7-BUILDER-USERNS "Build/lib/orchestrator.sh" "builder image runs as '$bu' but the orchestrator lacks --userns=keep-id (bind mount would be root-owned)"
-        local cfgs=("$root/Build/lib/orchestrator.sh"); [ -f "$root/scripts/lib/project-config.sh" ] && cfgs+=("$root/scripts/lib/project-config.sh")
-        if cat "${cfgs[@]}" | grep -Ev '^[[:space:]]*#' | grep -Eq '[a-z-]+:/root/'; then
-          report R7-BUILDER-USERNS "Build/lib/orchestrator.sh" "cache mounts target /root/... but the builder image runs as '$bu'"
-        fi ;;
-    esac
+    if nonroot "$bu"; then
+      grep -Ev '^[[:space:]]*#' "$root/Build/lib/orchestrator.sh" | grep -q -- '--userns=keep-id' \
+        || report R7-BUILDER-USERNS "Build/lib/orchestrator.sh" "builder image runs as '$bu' but the orchestrator lacks --userns=keep-id (bind mount would be root-owned)"
+      local cfgs=("$root/Build/lib/orchestrator.sh"); [ -f "$root/scripts/lib/project-config.sh" ] && cfgs+=("$root/scripts/lib/project-config.sh")
+      if cat "${cfgs[@]}" | grep -Ev '^[[:space:]]*#' | grep -Eq '[a-z-]+:/root/'; then
+        report R7-BUILDER-USERNS "Build/lib/orchestrator.sh" "cache mounts target /root/... but the builder image runs as '$bu'"
+      fi
+    fi
   fi
 
   return $(( n > 0 ))
@@ -181,9 +311,9 @@ selftest() {
   expect_rule multistage R1-USER 'printf "FROM alpine AS b\nUSER app\nFROM alpine\nRUN true\n" > "$d/svc/Dockerfile"'
   # allowlist with reason suppresses; without reason does not
   local d="$sb/allow"; mk_clean "$d"; printf '    privileged: true\n' >> "$d/docker-compose.yml"
-  printf 'R5-PRIVILEGED\tdocker-compose.yml\tneeds KVM emulator\n' > "$d/scripts/tests/container_hygiene_allowlist.tsv"
+  printf 'R5-PRIVILEGED\tdocker-compose.yml#a\tneeds KVM emulator\n' > "$d/scripts/tests/container_hygiene_allowlist.tsv"
   out="$(scan "$d")"; if [ $? -ne 0 ]; then echo "FAIL selftest[allow]: reasoned allowlist ignored: $out"; rc=1; else echo "ok   selftest[allow]: reasoned allowlist honoured"; fi
-  printf 'R5-PRIVILEGED\tdocker-compose.yml\t\n' > "$d/scripts/tests/container_hygiene_allowlist.tsv"
+  printf 'R5-PRIVILEGED\tdocker-compose.yml#a\t\n' > "$d/scripts/tests/container_hygiene_allowlist.tsv"
   out="$(scan "$d")"; if [ $? -eq 0 ]; then echo "FAIL selftest[allow-noreason]: empty reason accepted"; rc=1; else echo "ok   selftest[allow-noreason]: empty reason rejected"; fi
   # golden-FALSE controls: correct configurations MUST NOT fire R7/R8/R6
   d="$sb/ctl"; mk_clean "$d"
@@ -199,6 +329,51 @@ selftest() {
   printf 'if docker compose version >/dev/null 2>&1; then :; fi\n' >> "$d/scripts/ok.sh"
   printf 'R1-USER\tb/*\ttool image, tracked\nR2-HEALTHCHECK\tb/*\ttool image, tracked\n' > "$d/scripts/tests/container_hygiene_allowlist.tsv"
   out="$(scan "$d")"; if [ $? -ne 0 ]; then echo "FAIL selftest[glob]: $out"; rc=1; else echo "ok   selftest[glob]: prefix allowlist honoured, compose-version probe not flagged"; fi
+
+  # --- round 2/3 reviewer survivors + fail-closed + keyed allowlist ---
+  expect_rule tee      R3-MASKED-BUILD 'printf "RUN npm run build 2>&1 | tee /tmp/b.log\n" >> "$d/svc/Dockerfile"'
+  expect_rule exit0    R3-MASKED-BUILD 'printf "RUN npm run build; exit 0\n" >> "$d/svc/Dockerfile"'
+  expect_rule semitrue R3-MASKED-BUILD 'printf "RUN npm run build ; true\n" >> "$d/svc/Dockerfile"'
+  expect_rule blocklist R8-HEALTHCHECK-TOOL 'printf "services:\n  api:\n    build:\n      context: .\n      dockerfile: svc/Dockerfile\n    healthcheck:\n      test:\n        - CMD\n        - curl\n        - -f\n        - http://x\n" > "$d/docker-compose.yml"'
+  expect_rule shelltool R8-HEALTHCHECK-TOOL 'printf "services:\n  api:\n    build: ./svc\n    healthcheck:\n      test: [\"CMD-SHELL\", \"wget -qO- http://x\"]\n" > "$d/docker-compose.yml"; printf "FROM debian\nUSER 1001\nHEALTHCHECK CMD true\n" > "$d/svc/Dockerfile"'
+  expect_rule deploydir R5-PRIVILEGED 'mkdir -p "$d/deploy/x"; printf "services:\n  s:\n    image: x\n    privileged: true\n" > "$d/deploy/x/docker-compose.yml"'
+  expect_rule spider   R9-HEALTH-HEAD 'printf "services:\n  api:\n    image: x\n    healthcheck:\n      test: [\"CMD\", \"wget\", \"--spider\", \"http://127.0.0.1:8080/health\"]\n" > "$d/docker-compose.yml"'
+  expect_rule spiderdf R9-HEALTH-HEAD 'sed -i "s#^HEALTHCHECK.*#HEALTHCHECK CMD wget --spider http://127.0.0.1:8080/health#" "$d/svc/Dockerfile"'
+  expect_rule composeuserns R7-BUILDER-USERNS 'printf "services:\n  api:\n    build:\n      context: .\n      dockerfile: svc/Dockerfile\n    volumes:\n      - ./svc:/app\n" > "$d/docker-compose.yml"'
+  expect_rule blind    R0-BLIND 'rm -f "$d/docker-compose.yml"'
+  expect_rule blind2   R0-BLIND 'rm -f "$d/scripts/ok.sh"'
+  expect_rule badglob  R0-ALLOWLIST 'printf "R1-USER\t*\tx\n" > "$d/scripts/tests/container_hygiene_allowlist.tsv"'
+  expect_rule badglob2 R0-ALLOWLIST 'printf "R1-USER\tsvc*\tx\n" > "$d/scripts/tests/container_hygiene_allowlist.tsv"'
+  # bare "*" row must NOT suppress a real violation
+  expect_rule starrow  R1-USER 'sed -i "/^USER/d" "$d/svc/Dockerfile"; printf "R1-USER\t*\tx\n" > "$d/scripts/tests/container_hygiene_allowlist.tsv"'
+  # new root Containerfile under a dir whose siblings are allowlisted explicitly is still flagged
+  expect_rule newsvc   R1-USER 'mkdir -p "$d/build/containers/old" "$d/build/containers/newsvc"; printf "FROM alpine\nHEALTHCHECK CMD true\n" > "$d/build/containers/old/Containerfile"; printf "FROM alpine\nHEALTHCHECK CMD true\n" > "$d/build/containers/newsvc/Containerfile"; printf "R1-USER\tbuild/containers/old/Containerfile\texplicit\n" > "$d/scripts/tests/container_hygiene_allowlist.tsv"'
+  out="$(scan "$sb/does-not-exist")"; r=$?
+  if [ $r -eq 0 ] || ! printf '%s\n' "$out" | grep -q "R0-BLIND"; then echo "FAIL selftest[noroot]: nonexistent root not failed (rc=$r) out=[$out]"; rc=1; else echo "ok   selftest[noroot]: nonexistent scan root fails"; fi
+  if [ "$(id -u)" -ne 0 ]; then
+    d="$sb/unread1"; mk_clean "$d"; chmod 000 "$d/docker-compose.yml"
+    out="$(scan "$d")"; r=$?; chmod 600 "$d/docker-compose.yml"
+    if [ $r -eq 0 ] || ! printf '%s\n' "$out" | grep -q "R0-UNREADABLE"; then echo "FAIL selftest[unreadable-compose]: rc=$r out=[$out]"; rc=1; else echo "ok   selftest[unreadable-compose]: flagged"; fi
+    d="$sb/unread2"; mk_clean "$d"; chmod 000 "$d/scripts/ok.sh"
+    out="$(scan "$d")"; r=$?; chmod 600 "$d/scripts/ok.sh"
+    if [ $r -eq 0 ] || ! printf '%s\n' "$out" | grep -q "R0-UNREADABLE"; then echo "FAIL selftest[unreadable-script]: rc=$r out=[$out]"; rc=1; else echo "ok   selftest[unreadable-script]: flagged"; fi
+  else echo "skip selftest[unreadable-*]: running as root"; fi
+  # allowlist keyed by (file, service): a second privileged service is still flagged; the old file-only key no longer suppresses
+  d="$sb/keyed"; mk_clean "$d"; printf '  b:\n    image: y\n    privileged: true\n' >> "$d/docker-compose.yml"
+  sed -i 's/^    image: x$/    image: x\n    privileged: true/' "$d/docker-compose.yml"
+  printf 'R5-PRIVILEGED\tdocker-compose.yml#a\tkvm\n' > "$d/scripts/tests/container_hygiene_allowlist.tsv"
+  out="$(scan "$d")"; r=$?
+  if [ $r -eq 0 ] || ! printf '%s\n' "$out" | grep -q "R5-PRIVILEGED docker-compose.yml#b" || printf '%s\n' "$out" | grep -q "docker-compose.yml#a"; then echo "FAIL selftest[keyed]: out=[$out]"; rc=1; else echo "ok   selftest[keyed]: service b flagged, allowlisted service a not"; fi
+  printf 'R5-PRIVILEGED\tdocker-compose.yml\tkvm\n' > "$d/scripts/tests/container_hygiene_allowlist.tsv"
+  out="$(scan "$d")"; r=$?
+  if [ $r -eq 0 ]; then echo "FAIL selftest[keyed-oldkey]: file-only key suppressed a service"; rc=1; else echo "ok   selftest[keyed-oldkey]: file-only key does not suppress"; fi
+  # golden-FALSE: keep-id present, ro mount, named volume, tool installed, GET probe, dir/* glob valid
+  d="$sb/ctl2"; mk_clean "$d"; mkdir -p "$d/build/c/x"
+  printf 'FROM alpine\nRUN apk add curl\nUSER 1001\nHEALTHCHECK CMD curl -f http://127.0.0.1/health\n' > "$d/svc/Dockerfile"
+  printf 'FROM alpine\nHEALTHCHECK CMD true\n' > "$d/build/c/x/Containerfile"
+  printf 'services:\n  api:\n    build:\n      context: .\n      dockerfile: svc/Dockerfile\n    userns_mode: "keep-id:uid=1000,gid=1000"\n    volumes:\n      - ./svc:/app\n    healthcheck:\n      test: ["CMD", "curl", "-f", "http://127.0.0.1/health"]\n  w:\n    build: ./svc\n    volumes:\n      - ./svc:/app:ro\n      - named:/data\n      - ${SSL:-./ssl}:/ssl:ro\n    healthcheck:\n      test:\n        - CMD\n        - curl\n        - -f\n        - http://127.0.0.1/health\n' > "$d/docker-compose.yml"
+  printf 'R1-USER\tbuild/c/*\tglob ok\n' > "$d/scripts/tests/container_hygiene_allowlist.tsv"
+  out="$(scan "$d")"; if [ $? -ne 0 ]; then echo "FAIL selftest[ctl2]: false positive: $out"; rc=1; else echo "ok   selftest[ctl2]: keep-id/ro/named/tool-present/GET/dir-glob not flagged"; fi
   # sandbox cleanup: path was created by mktemp above and validated by the case pattern
   rm -rf -- "${sb:?}"
   return $rc

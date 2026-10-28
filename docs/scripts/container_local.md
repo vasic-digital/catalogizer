@@ -46,3 +46,11 @@ scripts/container-local.sh [--dry-run] <api-build|api-test|web-build|web-test>
 ## Known limits
 
 * `docker/Dockerfile.android4` (emulator image, uid 1000): `/dev/kvm` access for a non-root user under rootless podman likely needs `--group-add keep-groups`. UNCONFIRMED, not run here.
+
+## Findings recorded by the hygiene guard (2026-10-28)
+
+* `docker-compose.dev.yml` api: bind-mounts `./catalog-api` rw into an image running as uid 1000; fixed with `userns_mode: keep-id` (podman-only). Guard rule R7 now covers any compose service.
+* `docker-compose.test.yml` catalog-api: healthcheck used `wget --spider` (HEAD) against `/health`, which is GET-only; now a GET. Guard rule R9.
+* `deployment/docker-compose.yml:109` `catalogizer/server` healthcheck uses `curl`. No Dockerfile in this repository builds `catalogizer/server` (the image is pulled by tag), so whether curl exists in it is UNCONFIRMED and the guard cannot check it. Tracked: verify against the published image or switch to a tool the image is known to carry.
+* `deployment/amber-up.sh` runs plain `docker` by design (amber.local is a rootless-Docker host); allowlisted, conflicts with podman-only, operator decision tracked.
+* `Build/lib/common.sh` `detect_runtime` no longer falls back to docker (the builder needs podman's `--userns=keep-id`); it fails loudly.

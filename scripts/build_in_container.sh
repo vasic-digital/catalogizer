@@ -8,7 +8,7 @@
 # Inputs:    env (all config-injected, §11.4.28; defaults shown):
 #              BUILD_HOST=<remote host; UNSET => exec scripts/container-local.sh api-build on THIS host>   BUILD_USER=milosvasic
 #              REMOTE_BUILD_DIR=catalogizer-build
-#              GO_BUILD_IMAGE=docker.io/library/golang:1.25-alpine
+#              GO_BUILD_IMAGE=docker.io/library/golang:1.25-bookworm  (glibc; NOT alpine, see the comment at GO_IMAGE below)
 # Outputs:   BUILD_HOST unset (default): deploy/artifacts/catalog-api (written by container-local.sh; no md5 compare,
 #            nothing is copied between hosts).
 #            BUILD_HOST set: deploy/artifacts/catalog-api-container (the brought-back binary) + a printed proof
