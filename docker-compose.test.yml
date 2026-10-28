@@ -49,9 +49,9 @@ services:
     environment:
       - GIN_MODE=release
       - DB_TYPE=sqlite
-      - JWT_SECRET=test-secret-key-for-userflow
+      - JWT_SECRET=${JWT_SECRET:?set JWT_SECRET in .env (scripts/lib/install_env.sh install_write_env generates it)}
       - ADMIN_USERNAME=admin
-      - ADMIN_PASSWORD=admin123
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env (install_write_env generates it)}
       - GOTOOLCHAIN=local
       - PORT=8080
       - WRITE_TIMEOUT=900

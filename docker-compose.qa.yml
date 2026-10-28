@@ -43,6 +43,7 @@ services:
       - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
       - TEST_WEB_URL=http://localhost:3000
       - TEST_API_URL=http://localhost:8080
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env (same value the test stack uses)}
     entrypoint: ["bash", "-c"]
     command:
       - |
@@ -74,7 +75,7 @@ services:
         echo "Authenticating..."
         TOKEN=$$(curl -sf -X POST http://localhost:8080/api/v1/auth/login \
           -H 'Content-Type: application/json' \
-          -d '{"username":"admin","password":"admin123"}' | \
+          -d "{\"username\":\"admin\",\"password\":\"$${ADMIN_PASSWORD}\"}" | \
           node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{console.log(JSON.parse(d).session_token||'')}catch(e){console.log('')}})" 2>/dev/null)
         echo "Token obtained: $${TOKEN:+yes}"
 
@@ -232,6 +233,8 @@ services:
     image: docker.io/library/node:20-bookworm@sha256:8f693eaa7e0a8e71560c9a82b55fd54c2ae920a2ba5d2cde28bac7d1c01c9ba5
     container_name: catalogizer-helixqa-api
     network_mode: host
+    environment:
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env (same value the test stack uses)}
     entrypoint: ["bash", "-c"]
     command:
       - |
@@ -251,7 +254,7 @@ services:
         # Login
         TOKEN=$$(curl -sf -X POST http://localhost:8080/api/v1/auth/login \
           -H 'Content-Type: application/json' \
-          -d '{"username":"admin","password":"admin123"}' | jq -r '.session_token // empty')
+          -d "{\"username\":\"admin\",\"password\":\"$${ADMIN_PASSWORD}\"}" | jq -r '.session_token // empty')
 
         echo "Authenticated: $${TOKEN:+yes}"
 

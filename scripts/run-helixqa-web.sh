@@ -13,6 +13,7 @@
 # Output: qa-results/helixqa-web-<timestamp>/
 
 set -euo pipefail
+ADMIN_PASSWORD="${ADMIN_PASSWORD:?set ADMIN_PASSWORD to the test-stack admin password (from your .env; never hardcoded)}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -59,7 +60,7 @@ ok "catalog-web running"
 # Get auth token
 TOKEN=$(curl -sf -X POST "$API_URL/api/v1/auth/login" \
     -H 'Content-Type: application/json' \
-    -d '{"username":"admin","password":"admin123"}' 2>/dev/null | \
+    -d "{\"username\":\"admin\",\"password\":\"${ADMIN_PASSWORD}\"}" 2>/dev/null | \
     python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('session_token', d.get('token','')))" 2>/dev/null || echo "")
 if [[ -n "$TOKEN" ]]; then
     ok "Authenticated"
