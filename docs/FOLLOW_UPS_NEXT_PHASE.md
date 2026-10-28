@@ -38,6 +38,14 @@ Each needs a RED selftest first, then the fix.
   deliberately not widened. Residual scanner limits: a secret shaped like a plain lowercase multi-segment path
   (`/ab/cd/ef`) is treated as a path; a keyword-led `<your-...>` value is treated as a placeholder; the PD-1 alias check
   does not see indirect forms (`eval`, `printf -v`).
+- Scanner residuals after the F1-F9 review round (documented, not closed):
+  - `*_ENV` keys: an underscore-bearing all-caps token (e.g. `ABCD_1234_EFGH`) is accepted as a variable name; single-word names (`HOME`) are flagged.
+  - Unclosed `<secret_…` style placeholders (any keyword) are accepted as placeholders; hex or no-digit slash secrets (`/ab/cd/ef`) are treated as paths.
+  - URL-embedded credentials (`postgres://u:pw@h`) are not seen (the scanner is name-keyed); `.env` `export` lines, lowercase `-e db_password=`, `env K=v cmd`, and k8s `name:`/`value:` pairs are not matched.
+  - `DB_PASSWORD: |` (YAML block scalar) is a false positive.
+  - `catalog-api/start_server.sh:4` still carries a `JWT_SECRET` literal.
+  - F9: the generator scan covers only `scripts/*.sh`; the other tracked `.sh` files (about 184) are unscanned.
+  - The PD-1 alias guard sees only direct `VAR=...$ADMIN_PASSWORD...` assignments, not `eval` or `printf -v`.
 - Out of scope but real: `admin123` still appears in `catalog-api/challenges/*`, `start_server.sh`,
   `run_challenges*.sh`, `check_scans.sh`, `catalog-web/e2e/fixtures/auth.ts`, the Android and
   Android TV `MainActivity.kt` (production app source: own item), and the helixqa banks.

@@ -47,22 +47,30 @@ def looks_random(v):
         if len(seg) >= 4 and re.search(r'[A-Z]', seg) and re.search(r'[a-z]', seg) and re.search(r'\d', seg):
             return True
     return False
-ENV_NAMES = re.compile(r'^\[?\s*[A-Z_][A-Z0-9_]*(?:\s*,\s*[A-Z_][A-Z0-9_]*)*\s*\]?$')
+_ENVNAME = r'[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+'      # needs an underscore: `HUNTER2SECRET` / `AKIAIOSFODNN7EXAMPLE` are not names
+ENV_NAMES = re.compile(r'^\[?\s*' + _ENVNAME + r'(?:\s*,\s*' + _ENVNAME + r')*\s*\]?$')
+KEY_ID_SHAPE = re.compile(r'^(?:AKIA|ASIA|AIza|ghp_|gho_|sk-|xox)', re.I)   # known key-id prefixes are never names
+# Residual (documented): an underscore-bearing all-caps token such as `ABCD_1234_EFGH` is accepted as a variable name.
 
 def key_is_safe(key, val):
     """Safe-suffix keys hold paths/ports/etc. `*_ENV` is safe only when the value is an env-var NAME or a list of names."""
     k = key.upper()
     if k.endswith('_ENV'):
-        return bool(ENV_NAMES.match(val.split(' #')[0].strip().strip('"\'')))
+        vv = val.split(' #')[0].strip().strip('"\'')
+        return bool(ENV_NAMES.match(vv)) and not KEY_ID_SHAPE.match(vv.lstrip('[ '))
     return k.endswith(SAFE_KEY_SUFFIX)
 
-def is_literal(val, shell=False):
+# Digit-led values are counters only in shell, or for bare counter-named keys (`PASS=0` embedded in a compose script);
+# `POSTGRES_PASSWORD: 1234` in compose is a literal.
+COUNTER_KEYS = ('PASS', 'PASSES', 'TOKEN', 'TOKENS')
+
+def is_literal(val, shell=False, key=''):
     v = val.split(' #')[0].strip().strip('"\'')
     if v == '' or v.lower() in ('true', 'false', 'null', '~', 'none'):
         return False
     if REF.match(val.split(' #')[0].strip()):
         return False
-    if v.split() and re.fullmatch(r'\d{1,4}', v.split()[0]):      # shell counter (PASS=0), not a secret value
+    if (shell or key.upper() in COUNTER_KEYS) and v.split() and re.fullmatch(r'\d{1,4}', v.split()[0]):      # shell counter (PASS=0), not a secret value
         return False
     if v in ('[', '{', '[]', '{}') or v.startswith(('{"', "{'", '["', "['", '[{', '[ ', '{ ')):
         return False                                # JSON/YAML structure opener, not a value (`[hunter2]` / `{hunter2}` ARE values)
@@ -74,8 +82,13 @@ def is_literal(val, shell=False):
         return False
     if v.startswith('$$'):
         return not shell     # shell: PID expansion; compose: `$$x` is the LITERAL `$x`
-    if v.startswith('$') and ':-' not in v and '-' not in v.split('}')[0][2:]:
-        return False        # plain $VAR / ${VAR} expansion (no literal default)
+    if v.startswith('$'):
+        if ':-' in v or '-' in v.split('}')[0][2:]:
+            return True                              # `${VAR:-literal}` default
+        if shell:
+            v = re.split(r'[;&|]', v)[0].strip('"\'')       # `A="${B}"; B=""`: only the first command's value counts
+        rest = re.sub(r'\$\{[^}]*\}?|\$[A-Za-z_][A-Za-z0-9_]*', '', v)
+        return bool(re.search(r'[A-Za-z0-9]', rest))   # pure expansions / separators are refs; `${P}hunter2` has a literal tail
     return True
 
 def load_allow(path):
@@ -113,7 +126,7 @@ def main():
                     cands += [(x.group(1), x.group(2)) for x in INLINE.finditer(line)]
                     cands += [(x.group(1), x.group(2)) for x in JSONKV.finditer(line)]
             for key, val in cands:
-                if not key_is_safe(key, val) and is_literal(val, shell) and key not in hits:
+                if not key_is_safe(key, val) and is_literal(val, shell, key) and key not in hits:
                     hits.append(key)
             for dm in DEFAULT.finditer(line):
                 if dm.group(2).startswith('$'):      # default is itself an expansion / command substitution

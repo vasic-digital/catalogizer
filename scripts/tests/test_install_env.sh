@@ -75,7 +75,7 @@ install_write_env "$tmp/env4" >/dev/null 2>&1; rc=$?
 { [ "$rc" -ne 0 ] && [ ! -e "$tmp/victim" ]; } && ok "dangling symlink refused, victim not created" || bad "dangling symlink followed (rc=$rc)"
 # The generator must not leak its locals into the caller's shell (run it in THIS shell, not a $(...) subshell).
 install_write_env "$tmp/env5" >/dev/null 2>&1
-{ [ -z "${_minio_user:-}" ] && [ -z "${_pgadmin_pw:-}" ] && [ -z "${_sonar_pw:-}" ] && [ -z "${_db_pw:-}" ]; } && ok "no secret locals leak" || bad "secret locals leaked into caller"
+{ [ -z "${_minio_user:-}" ] && [ -z "${_pgadmin_pw:-}" ] && [ -z "${_sonar_pw:-}" ] && [ -z "${_qa_pw:-}" ] && [ -z "${_db_pw:-}" ]; } && ok "no secret locals leak" || bad "secret locals leaked into caller"
 
 [ "$fail" -eq 0 ] && echo "PASS" || echo "FAILED"
 exit $fail

@@ -66,8 +66,11 @@ for bad in 'JWT_SECRET: /k7QzXw9pLm2' 'ADMIN_PASSWORD=[hunter2]' 'export DB_PASS
            'API_TOKEN: {hunter2}' 'DB_PASSWORD=<hunter2>' 'ENCRYPTION_SECRET: /9f8e7d6c5b4a' \
            'GITHUB_TOKEN_ENV: ghp_fakefixture123' 'SECRET_ENV: hunter2' 'X_PASSWORD: x:/hunter2' 'a_password: a:/b' \
            'DB_PASSWORD: <password>hunter2' 'API_SECRET: <secretXYZ123>' \
+           'POSTGRES_PASSWORD: 1234' 'DB_PASSWORD: "0000"' 'DB_PASSWORD: 1234 abcd' \
+           'API_TOKEN_ENV: HUNTER2SECRET' 'AWS_ACCESS_KEY_ENV: AKIAIOSFODNN7EXAMPLE' 'X="${API_TOKEN_ENV:-hunter2}"' 'X="${AWS_SECRET_ENV:-ABCD1234EFGH5678}"' \
+           'DB_PASSWORD: ${PREFIX}hunter2' \
            'SIGN_SECRET: /k7Qz/Xw9pL' 'SIGN_KEY_SECRET: /k7Qz+Xw9/pL2==' 'B_SECRET: /ab/cd/ef=' ; do
-    ti=$((ti+1)); ext=yml; case "$bad" in export*) ext=sh;; esac
+    ti=$((ti+1)); ext=yml; case "$bad" in export*|X=*) ext=sh;; esac
     printf '%s\n' "$bad" > "$tmp/ti$ti.$ext"
     python3 "$SCAN" "$tmp/empty_allow" "$tmp/ti$ti.$ext" >/dev/null && { echo "SELFTEST FAIL: scan blind to TI-1 literal $ti"; exit 2; }
 done
@@ -88,16 +91,30 @@ for fx in m1.sh inl.sh; do
 done
 [ -z "$(gen_scan "$tmp/okc.sh")" ] || { echo "SELFTEST FAIL: generator scan flags clean shell fixture"; exit 2; }
 
+fail=0
+# F1: the real compose checks live in a function so the SAME path is self-tested on a fixture that
+# contains literals (a discarded result would otherwise exit 0 on a bad compose file).
+check_compose() {
+    local rc=0 h l lrc
+    h=$(scan "$@")
+    if [ -n "$h" ]; then echo "FAIL: non-empty default secrets in compose files:"; echo "$h"; rc=1; fi
+    l=$(python3 "$SCAN" "$ALLOW" "$@" 2>&1); lrc=$?
+    if [ "$lrc" -ne 0 ]; then echo "FAIL: literal secrets in compose files (file:line:KEY):"; echo "$l"; rc=1; fi
+    return $rc
+}
+[ -f "$ALLOW" ] || { echo "FAIL: allowlist $ALLOW missing"; exit 2; }
+printf 'services:\n  a:\n    environment:\n      POSTGRES_PASSWORD: hunter2\n' > "$tmp/c_lit.yml"
+printf 'services:\n  a:\n    environment:\n      X_TOKEN: ${X_TOKEN:-hunter2}\n' > "$tmp/c_def.yml"
+for fx in c_lit.yml c_def.yml; do
+    check_compose "$tmp/$fx" >/dev/null && { echo "SELFTEST FAIL: compose check passes literal fixture $fx"; exit 2; }
+done
+# structural guard: `fail=0` must be assigned before the first `fail=1` in this script (a late reset discards findings)
+f0=$(grep -n '^fail=0' "$0" | head -1 | cut -d: -f1); f1=$(grep -n 'fail=1' "$0" | head -1 | cut -d: -f1)
+[ -n "$f0" ] && [ "$f0" -lt "$f1" ] || { echo "SELFTEST FAIL: fail=0 not assigned before first fail=1"; exit 2; }
 files=$(git ls-files | grep -E '(^|/)(docker-|infra-)?compose[^/]*\.ya?ml$')
 [ -n "$files" ] || { echo "FAIL: no compose files found (blind)"; exit 2; }
 # shellcheck disable=SC2086
-hits=$(scan $files)
-if [ -n "$hits" ]; then echo "FAIL: non-empty default secrets in compose files:"; echo "$hits"; fail=1; fi
-[ -f "$ALLOW" ] || { echo "FAIL: allowlist $ALLOW missing"; exit 2; }
-# shellcheck disable=SC2086
-lit=$(python3 "$SCAN" "$ALLOW" $files 2>&1); lrc=$?
-if [ "$lrc" -ne 0 ]; then echo "FAIL: literal secrets in compose files (file:line:KEY):"; echo "$lit"; fail=1; fi
-fail=0
+check_compose $files || fail=1
 # TI-2: skip ONLY the explicit test roots listed as data (test dirs hold deliberate canary fixtures);
 # any other `/tests/` directory is scanned. Filter is a function so it is self-tested below.
 ROOTS=scripts/tests/generator_scan_test_roots.txt
