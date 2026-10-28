@@ -87,7 +87,7 @@ services:
     image: docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
     container_name: catalogizer-snyk-cli
     environment:
-      SNYK_TOKEN: ${SNYK_TOKEN:-dummy-token}
+      SNYK_TOKEN: ${SNYK_TOKEN:?SNYK_TOKEN must be set (see .env.example)}
       SNYK_CFG_ORG: ${SNYK_ORG:-catalogizer}
       SNYK_SEVERITY_THRESHOLD: ${SNYK_SEVERITY_THRESHOLD:-medium}
       SNYK_INTEGRATION_NAME: "catalogizer-security-scan"

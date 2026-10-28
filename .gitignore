@@ -473,3 +473,6 @@ __pycache__/
 !/catalogizer-androidtv/app/src/main/res/values/
 !/catalogizer-androidtv/app/src/main/res/layout/
 # END helix-codegraph-scope
+
+# Security-scanner credentials (use .env.security.example as a template)
+.env.security

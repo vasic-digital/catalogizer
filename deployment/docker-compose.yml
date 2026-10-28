@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_DB: ${DATABASE_NAME:-catalogizer}
       POSTGRES_USER: ${DATABASE_USER:-catalogizer}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-catalogizer_password}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD must be set (see .env.example)}
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - database_data:/var/lib/postgresql/data
@@ -59,7 +59,7 @@ services:
       DATABASE_PORT: ${DATABASE_PORT:-5432}
       DATABASE_NAME: ${DATABASE_NAME:-catalogizer}
       DATABASE_USER: ${DATABASE_USER:-catalogizer}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-catalogizer_password}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD must be set (see .env.example)}
 
       # Redis configuration
       REDIS_HOST: redis
@@ -73,7 +73,7 @@ services:
       ADMIN_PORT: ${CATALOGIZER_ADMIN_PORT:-9090}
 
       # Security
-      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set (see .env.example)}
 
       # Media configuration
       MEDIA_DIRECTORIES: ${MEDIA_DIRECTORIES:-/media}
@@ -198,7 +198,7 @@ services:
           cpus: '0.5'
           memory: 512M
     environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?GRAFANA_PASSWORD must be set (see .env.example)}
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
       GF_USERS_ALLOW_SIGN_UP: "false"
       GF_INSTALL_PLUGINS: ""
@@ -229,7 +229,7 @@ services:
       DATABASE_PORT: ${DATABASE_PORT:-5432}
       DATABASE_NAME: ${DATABASE_NAME:-catalogizer}
       DATABASE_USER: ${DATABASE_USER:-catalogizer}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-catalogizer_password}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD must be set (see .env.example)}
       S3_BACKUP_ENABLED: ${S3_BACKUP_ENABLED:-false}
       S3_BUCKET: ${S3_BACKUP_BUCKET:-}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:-}

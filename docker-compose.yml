@@ -104,7 +104,7 @@ services:
       STORAGE_TYPE: ${STORAGE_TYPE:-s3}
       STORAGE_ENDPOINT: minio:9000
       STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
-      STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD must be set (see .env.example)}
       STORAGE_BUCKET: ${STORAGE_BUCKET:-catalogizer-covers}
       STORAGE_USE_SSL: "false"
       STORAGE_REGION: ${STORAGE_REGION:-us-east-1}
@@ -174,7 +174,7 @@ services:
       - monitoring
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?GRAFANA_PASSWORD must be set (see .env.example)}
     ports:
       - "${GRAFANA_PORT:-3001}:3000"
     volumes:
@@ -202,7 +202,7 @@ services:
     container_name: catalogizer-minio
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD must be set (see .env.example)}
     ports:
       - "${MINIO_API_PORT:-9000}:9000"
       - "${MINIO_CONSOLE_PORT:-9001}:9001"
