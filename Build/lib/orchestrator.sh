@@ -272,7 +272,7 @@ launch_container_build() {
     )
 
     # Add cache volumes for faster rebuilds
-    local cache_volumes="${BUILD_CONTAINER_VOLUMES:-go-cache:/root/go npm-cache:/root/.npm gradle-cache:/root/.gradle cargo-cache:/opt/cargo/registry}"
+    local cache_volumes="${BUILD_CONTAINER_VOLUMES:-go-cache:/home/builder/go npm-cache:/home/builder/.npm gradle-cache:/home/builder/.gradle cargo-cache:/opt/cargo/registry}"
     for vol in $cache_volumes; do
         vol_args+=(-v "$vol")
     done
@@ -287,7 +287,11 @@ launch_container_build() {
     )
 
     # Run the build
+    # The builder image runs as uid 1000 (user `builder`, docker/Dockerfile.builder). Under rootless podman the bind-mounted
+    # repo is owned by the host user, which is root inside the default user namespace; keep-id maps the host user to uid 1000
+    # so /project is writable. (podman-only; the project does not support docker.)
     $runtime run --rm \
+        --userns=keep-id:uid=1000,gid=1000 \
         --network host \
         --entrypoint bash \
         "${vol_args[@]}" \

@@ -5,7 +5,9 @@
 #   podman build --network host -f catalog-api/Dockerfile -t catalogizer-api .
 
 # Stage 1: Build (Debian-based for glibc — required by go-fitz/MuPDF)
-FROM docker.io/library/golang:1.25 AS builder
+# Go floor: go.mod `go 1.25.7` / images.lock.yaml IMG-GO (1.25); override with --build-arg GO_IMAGE=docker.io/library/golang:1.26 (also verified)
+ARG GO_IMAGE=docker.io/library/golang:1.25
+FROM ${GO_IMAGE} AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -75,15 +77,27 @@ RUN groupadd --system --gid 1001 appgroup && \
     useradd --system --uid 1001 --gid appgroup --no-create-home appuser
 
 # Create necessary directories with proper permissions
-RUN mkdir -p /app/data /app/logs /app/temp && \
+RUN mkdir -p /app/data /app/logs /app/temp /app/keys && \
+    chmod 700 /app/keys && \
     chown -R appuser:appgroup /app
 
+# Bind address/port for containers: the app defaults to localhost:28080 (unreachable from outside the container, and not the
+# EXPOSEd/health-checked 8080); main.go honours HOST and SERVER_PORT as overrides.
+ENV HOST=0.0.0.0 SERVER_PORT=8080
+
 # Expose API port
+# CAT-001: the SQLCipher key lives in its own 0700 volume, separate from the
+# database volume, so it survives container recreation and is not captured by
+# a plain backup of /app/data. Mount a named volume here in production.
+ENV DATABASE_ENCRYPTION_KEY_FILE=/app/keys/db.key
+VOLUME ["/app/keys"]
+
 EXPOSE 8080
 
 # Health check
+# GET, not --spider: /health is GET-only (a HEAD request answers 404)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+  CMD wget --no-verbose --tries=1 -O /dev/null http://127.0.0.1:8080/health || exit 1
 
 # Switch to non-root user
 USER appuser

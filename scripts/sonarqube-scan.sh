@@ -9,7 +9,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 SONAR_HOST_URL="${SONAR_HOST_URL:-http://localhost:9000}"
-SONAR_TOKEN="${SONAR_TOKEN:-admin}"
+SONAR_TOKEN="${SONAR_TOKEN:?set SONAR_TOKEN (SonarQube user token)}"
 PROJECT_KEY="${PROJECT_KEY:-catalogizer}"
 REPORTS_DIR="$PROJECT_ROOT/reports"
 

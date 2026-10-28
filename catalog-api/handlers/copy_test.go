@@ -295,19 +295,25 @@ func TestValidateLocalCopyRequest(t *testing.T) {
 		errMsg    string
 	}{
 		{
-			name:      "valid request",
-			req:       LocalCopyRequest{SourceFileID: 1, DestinationPath: "/local/dest"},
+			name:      "valid request inside the local root",
+			req:       LocalCopyRequest{SourceFileID: 1, DestinationPath: "/tmp/dest"},
 			expectErr: false,
 		},
 		{
+			name:      "absolute path outside the local root is rejected",
+			req:       LocalCopyRequest{SourceFileID: 1, DestinationPath: "/local/dest"},
+			expectErr: true,
+			errMsg:    "invalid destination_path",
+		},
+		{
 			name:      "zero source file ID",
-			req:       LocalCopyRequest{SourceFileID: 0, DestinationPath: "/local/dest"},
+			req:       LocalCopyRequest{SourceFileID: 0, DestinationPath: "/tmp/dest"},
 			expectErr: true,
 			errMsg:    "source_file_id is required",
 		},
 		{
 			name:      "negative source file ID",
-			req:       LocalCopyRequest{SourceFileID: -1, DestinationPath: "/local/dest"},
+			req:       LocalCopyRequest{SourceFileID: -1, DestinationPath: "/tmp/dest"},
 			expectErr: true,
 			errMsg:    "source_file_id is required",
 		},

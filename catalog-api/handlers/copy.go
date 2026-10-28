@@ -254,6 +254,11 @@ func (h *CopyHandler) CopyFromLocal(c *gin.Context) {
 		return
 	}
 
+	if err := safeRemotePath(destPath); err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid destination_path", err)
+		return
+	}
+
 	// Get uploaded file
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
@@ -261,6 +266,12 @@ func (h *CopyHandler) CopyFromLocal(c *gin.Context) {
 		return
 	}
 	defer file.Close()
+
+	uploadName, err := safeChildName(header.Filename)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid file name", err)
+		return
+	}
 
 	// Get SMB roots
 	smbRoots, err := h.fileRepo.GetStorageRoots(ctx)
@@ -292,7 +303,7 @@ func (h *CopyHandler) CopyFromLocal(c *gin.Context) {
 
 	// Perform upload
 	startTime := time.Now()
-	fullDestPath := filepath.Join(destPath, header.Filename)
+	fullDestPath := filepath.Join(destPath, uploadName)
 
 	// Check if file exists and overwrite policy
 	if exists, err := destSmbClient.FileExists(fullDestPath); err == nil && exists && !overwrite {
@@ -312,7 +323,7 @@ func (h *CopyHandler) CopyFromLocal(c *gin.Context) {
 		BytesCopied: header.Size,
 		FilesCount:  1,
 		TimeTaken:   time.Since(startTime),
-		SourcePath:  header.Filename,
+		SourcePath:  uploadName,
 		DestPath:    fullDestPath,
 	}
 
@@ -426,8 +437,12 @@ func (h *CopyHandler) copyDirectoryContentsToSmb(ctx context.Context, sourceSmbC
 			return ctx.Err()
 		}
 
-		sourceFilePath := filepath.Join(sourcePath, file.Name)
-		destFilePath := filepath.Join(destPath, file.Name)
+		childName, err := safeChildName(file.Name)
+		if err != nil {
+			return fmt.Errorf("refusing unsafe remote entry name: %w", err)
+		}
+		sourceFilePath := filepath.Join(sourcePath, childName)
+		destFilePath := filepath.Join(destPath, childName)
 
 		if file.IsDir {
 			// Create subdirectory
@@ -529,8 +544,12 @@ func (h *CopyHandler) copyDirectoryContentsToLocal(ctx context.Context, sourceSm
 			return ctx.Err()
 		}
 
-		sourceFilePath := filepath.Join(sourcePath, file.Name)
-		destFilePath := filepath.Join(destPath, file.Name)
+		childName, err := safeChildName(file.Name)
+		if err != nil {
+			return fmt.Errorf("refusing unsafe remote entry name: %w", err)
+		}
+		sourceFilePath := filepath.Join(sourcePath, childName)
+		destFilePath := filepath.Join(destPath, childName)
 
 		if file.IsDir {
 			// Create subdirectory
@@ -567,6 +586,9 @@ func (h *CopyHandler) validateSmbCopyRequest(req *SmbCopyRequest) error {
 	if req.DestinationPath == "" {
 		return fmt.Errorf("destination_path is required")
 	}
+	if err := safeRemotePath(req.DestinationPath); err != nil {
+		return fmt.Errorf("invalid destination_path: %w", err)
+	}
 	return nil
 }
 
@@ -577,6 +599,13 @@ func (h *CopyHandler) validateLocalCopyRequest(req *LocalCopyRequest) error {
 	if req.DestinationPath == "" {
 		return fmt.Errorf("destination_path is required")
 	}
+	// Local writes are confined to the configured temp/staging root; this also
+	// rejects ../ traversal, absolute paths outside it and symlink escapes.
+	resolved, err := containedJoin(h.tempDir, req.DestinationPath)
+	if err != nil {
+		return fmt.Errorf("invalid destination_path: %w", err)
+	}
+	req.DestinationPath = resolved
 	return nil
 }
 

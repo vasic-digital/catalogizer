@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 // Config represents the API configuration
@@ -47,6 +48,11 @@ type DatabaseConfig struct {
 	EnableWAL   bool   `json:"enable_wal"`
 	CacheSize   int    `json:"cache_size"`
 	BusyTimeout int    `json:"busy_timeout"`
+	// EncryptionKeyFile is the path of the file (mode 0600, outside the
+	// repository) holding the SQLCipher key for file-backed SQLite databases
+	// (CAT-001). Empty means: $DATABASE_ENCRYPTION_KEY_FILE, else
+	// <user config dir>/catalogizer/db.key. The key is generated on first run.
+	EncryptionKeyFile string `json:"encryption_key_file"`
 	// Common
 	MaxOpenConnections int `json:"max_open_connections"`
 	MaxIdleConnections int `json:"max_idle_connections"`
@@ -122,6 +128,11 @@ func LoadConfig(configPath string) (*Config, error) {
 		// Create default config file
 		if err := saveConfig(config, configPath); err != nil {
 			return nil, fmt.Errorf("failed to create default config: %w", err)
+		}
+		// A fresh container has no config.json; secrets still come from the
+		// environment and must pass the same validation as an existing file.
+		if err := validateConfig(config); err != nil {
+			return nil, fmt.Errorf("invalid configuration: %w", err)
 		}
 		return config, nil
 	}
@@ -314,6 +325,12 @@ func validateConfig(config *Config) error {
 		if config.Auth.AdminUsername == "" || config.Auth.AdminPassword == "" {
 			return fmt.Errorf("admin credentials must be set via ADMIN_USERNAME and ADMIN_PASSWORD environment variables")
 		}
+		if isPlaceholderSecret(config.Auth.JWTSecret) {
+			return fmt.Errorf("JWT secret is a known placeholder/default value; generate a random secret")
+		}
+		if isPlaceholderPassword(config.Auth.AdminPassword) {
+			return fmt.Errorf("admin password is a known placeholder/default value; set a real ADMIN_PASSWORD")
+		}
 	}
 
 	if config.Catalog.DefaultPageSize <= 0 {
@@ -379,4 +396,57 @@ func (c *Config) GetDatabaseURL() string {
 // GetServerAddress returns the server address
 func (c *Config) GetServerAddress() string {
 	return net.JoinHostPort(c.Server.Host, strconv.Itoa(c.Server.Port))
+}
+
+// normalizeSecret lower-cases v, trims whitespace and drops separator
+// characters (space, '-', '_', '.') so "Change Me", "change-me" and
+// "CHANGE_ME" compare equal.
+func normalizeSecret(v string) string {
+	v = strings.ToLower(strings.TrimSpace(v))
+	var b strings.Builder
+	for _, r := range v {
+		switch r {
+		case ' ', '\t', '\r', '\n', '-', '_', '.':
+			continue
+		}
+		b.WriteRune(r)
+	}
+	return b.String()
+}
+
+// placeholderMarkers are normalized substrings that identify documentation
+// placeholders and defaults this repository has published. Any secret that
+// contains one was copied from an example/compose file and is therefore public.
+var placeholderMarkers = []string{
+	"changeme", "changethis", "yoursupersecret", "yoursecret", "placeholder",
+	"replaceme", "distributedcatalogizersecret", "catalogizerdevelopmentsecret",
+}
+
+// placeholderPasswords are normalized exact weak/published defaults.
+var placeholderPasswords = []string{
+	"admin", "password", "adminpassword", "catalogizerpassword", "admin123",
+	"catalogizerdev", "minioadmin", "minioadmin123", "sonarpassword", "12345678",
+}
+
+func isPlaceholderSecret(v string) bool {
+	n := normalizeSecret(v)
+	for _, m := range placeholderMarkers {
+		if strings.Contains(n, m) {
+			return true
+		}
+	}
+	return false
+}
+
+func isPlaceholderPassword(v string) bool {
+	if isPlaceholderSecret(v) {
+		return true
+	}
+	n := normalizeSecret(v)
+	for _, p := range placeholderPasswords {
+		if n == p {
+			return true
+		}
+	}
+	return false
 }

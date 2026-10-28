@@ -65,9 +65,11 @@ detect_runtime() {
     if command -v podman &>/dev/null; then
         echo "podman"
     elif command -v docker &>/dev/null; then
-        echo "docker"
+        # podman-only: the builder image runs as uid 1000 and relies on podman's --userns=keep-id (docker has no equivalent)
+        log_error "docker found but not supported: this project builds with rootless podman only (--userns=keep-id). Install podman."
+        return 1
     else
-        log_error "No container runtime found. Install podman or docker."
+        log_error "No container runtime found. Install podman."
         return 1
     fi
 }

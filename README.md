@@ -42,6 +42,7 @@ Catalogizer is a comprehensive media collection management system that automatic
 | 📝 **[Full-QA Master Plan](docs/plans/2026-04-18-full-qa-cycle-master-plan.md)** | Plan for the rigid rebuild → test → Challenges → HelixQA → fix loop |
 | 🧾 **[v4.0.0 Release Notes (HelixQA)](HelixQA/docs/releases/v4.0.0.md)** | OpenClaw Ultimate v4.0.0 ship notes |
 | 🐞 **[QA Sessions Archive](docs/reports/qa-sessions/)** | Permanent per-session FINAL-REPORT.md + logs + videos + tickets |
+| 🔐 **[Database Encryption at Rest](docs/DATABASE_ENCRYPTION.md)** | SQLCipher key location, plaintext→encrypted migration, `db-rekey` rotation, encrypted backups/restore, FAQ |
 | 🛠️ **[Build Container Auto-Dispatch](docs/BUILD_CONTAINER_AUTO_DISPATCH.md)** | How Tauri/Rust builds transparently route through the `catalogizer-builder` container when the host lacks cargo. No sudo, no root. |
 | 🔒 **[Security audits (OCU)](HelixQA/docs/security/)** | Per-phase P0–P7 security posture notes |
 | 🪝 **[LD_PRELOAD Hook Guide](HelixQA/docs/hooks/README.md)** | How to compile and wire a per-target shim for hook-based observation |

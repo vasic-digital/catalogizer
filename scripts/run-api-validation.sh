@@ -4,6 +4,7 @@
 # Usage: ./scripts/run-api-validation.sh [API_URL]
 
 set -euo pipefail
+ADMIN_PASSWORD="${ADMIN_PASSWORD:?set ADMIN_PASSWORD to the test-stack admin password (from your .env; never hardcoded)}"
 
 API_URL="${1:-http://localhost:8085}"
 PASS=0; FAIL=0; TOTAL=0
@@ -71,8 +72,8 @@ check_contains "Health has version" GET "/health" "version"
 # --- Phase 2: Authentication ---
 echo ""
 echo "--- Phase 2: Authentication ---"
-check "Login with valid creds" POST "/api/v1/auth/login" "200" '{"username":"admin","password":"admin123"}'
-TOKEN=$(curl -s -X POST -H "Content-Type: application/json" -d '{"username":"admin","password":"admin123"}' "${API_URL}/api/v1/auth/login" | python3 -c "import sys,json; print(json.load(sys.stdin).get('session_token',''))" 2>/dev/null || echo "")
+check "Login with valid creds" POST "/api/v1/auth/login" "200" "{\"username\":\"admin\",\"password\":\"${ADMIN_PASSWORD}\"}"
+TOKEN=$(curl -s -X POST -H "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"${ADMIN_PASSWORD}\"}" "${API_URL}/api/v1/auth/login" | python3 -c "import sys,json; print(json.load(sys.stdin).get('session_token',''))" 2>/dev/null || echo "")
 
 if [ -z "$TOKEN" ]; then
     echo "  FATAL: Could not obtain auth token, aborting"

@@ -99,7 +99,7 @@ if [ -n "${ENV_FILE}" ] && [ -f "${ENV_FILE}" ]; then
 fi
 
 USER="${CATALOGIZER_USER:-${ADMIN_USERNAME:-admin}}"
-PASS="${CATALOGIZER_PASS:-${ADMIN_PASSWORD:-admin}}"
+PASS="${CATALOGIZER_PASS:-${ADMIN_PASSWORD:?set CATALOGIZER_PASS or ADMIN_PASSWORD}}"
 # Token precedence: explicit env var, else QA_TOKEN from the env file, else login.
 TOKEN="${CATALOGIZER_TOKEN:-${QA_TOKEN:-}}"
 

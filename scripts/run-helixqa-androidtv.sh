@@ -19,6 +19,7 @@
 # Output: qa-results/helixqa-androidtv-<timestamp>/
 
 set -euo pipefail
+ADMIN_PASSWORD="${ADMIN_PASSWORD:?set ADMIN_PASSWORD to the test-stack admin password (from your .env; never hardcoded)}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -175,7 +176,7 @@ login_on_device() {
     adb -s "$SERIAL" shell input tap "$PX" "$PY"; sleep 1
     adb -s "$SERIAL" shell input keyevent KEYCODE_MOVE_END; sleep 0.2
     for _ in $(seq 1 20); do adb -s "$SERIAL" shell input keyevent KEYCODE_DEL; done
-    adb -s "$SERIAL" shell input text "admin123"; sleep 0.5
+    adb -s "$SERIAL" shell input text "${ADMIN_PASSWORD}"; sleep 0.5
 
     # Clear logcat so the verification only sees THIS attempt's network traffic.
     adb -s "$SERIAL" logcat -c 2>/dev/null || true
@@ -489,7 +490,7 @@ cat >> "$REPORT" << 'EOF'
 ### Phase 1: Setup
 - APK deployed to all devices
 - Server URL configured via ADB reverse
-- Authentication completed (admin/admin123)
+- Authentication completed (admin / ADMIN_PASSWORD from env)
 - Screen recording started
 
 ### Phase 2: Doc-Driven Verification

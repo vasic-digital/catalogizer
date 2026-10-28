@@ -329,7 +329,7 @@ func TestAuthService_ValidateToken_WrongSigningMethod(t *testing.T) {
 	claims, err := svc.validateToken(tokenString)
 	assert.Error(t, err)
 	assert.Nil(t, claims)
-	assert.Contains(t, err.Error(), "unexpected signing method")
+	assert.Contains(t, err.Error(), "signing method")
 }
 
 func TestAuthService_ValidateToken_WrongClaimsType(t *testing.T) {

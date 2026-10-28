@@ -3,6 +3,7 @@
 # Tests EVERY API endpoint, EVERY web page, EVERY flow, EVERY edge case
 # Usage: ./scripts/run-full-qa.sh [API_URL] [WEB_URL]
 set -euo pipefail
+ADMIN_PASSWORD="${ADMIN_PASSWORD:?set ADMIN_PASSWORD to the test-stack admin password (from your .env; never hardcoded)}"
 
 API="${1:-http://localhost:8085}"
 WEB="${2:-http://localhost:3000}"
@@ -66,8 +67,8 @@ TOTAL=$((TOTAL+1)); curl -s "$API/health" | grep -q "healthy" && ok "Health stat
 
 # ==================== SECTION 2: AUTHENTICATION ====================
 echo ""; echo "=== 2. AUTHENTICATION (12 tests) ==="
-api POST "/api/v1/auth/login" "200" '{"username":"admin","password":"admin123"}' "no"
-TOKEN=$(curl -s -X POST -H "Content-Type: application/json" -d '{"username":"admin","password":"admin123"}' "$API/api/v1/auth/login" | python3 -c "import sys,json; print(json.load(sys.stdin).get('session_token',''))" 2>/dev/null)
+api POST "/api/v1/auth/login" "200" "{\"username\":\"admin\",\"password\":\"${ADMIN_PASSWORD}\"}" "no"
+TOKEN=$(curl -s -X POST -H "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"${ADMIN_PASSWORD}\"}" "$API/api/v1/auth/login" | python3 -c "import sys,json; print(json.load(sys.stdin).get('session_token',''))" 2>/dev/null)
 [ -n "$TOKEN" ] && ok "Token obtained (${#TOKEN} chars)" || { fail "Token extraction"; exit 1; }
 api GET "/api/v1/auth/me" "200"
 api GET "/api/v1/auth/status" "200" "" "no"
@@ -77,7 +78,7 @@ TOTAL=$((TOTAL+1)); RESP=$(curl -s -H "Authorization: Bearer $TOKEN" "$API/api/v
 api POST "/api/v1/auth/login" "400" 'invalid-json' "no"
 api GET "/api/v1/auth/me" "401|429" "" "no"
 # Skip logout/re-login mid-suite to avoid rate limiting — test logout at the very end
-api POST "/api/v1/auth/register" "201|409|400|429" '{"username":"testuser_qa","email":"qa@test.com","password":"TestPass123!"}' "no"
+api POST "/api/v1/auth/register" "201|409|400|429" "{\"username\":\"testuser_qa\",\"email\":\"qa@test.com\",\"password\":\"${ADMIN_PASSWORD}\"}" "no"
 
 # ==================== SECTION 3: SECURITY ====================
 echo ""; echo "=== 3. SECURITY (10 tests) ==="

@@ -245,7 +245,8 @@ fi
 
 echo
 echo "--- T2b: POST /api/v1/auth/login (wrong password -> 401) ---"
-BAD_BODY="{\"username\":\"${USER}\",\"password\":\"definitely-wrong-$$\"}"
+BAD_LOGIN="definitely-wrong-$$"   # deliberately invalid login for the negative test
+BAD_BODY="{\"username\":\"${USER}\",\"password\":\"${BAD_LOGIN}\"}"
 CODE="$(http_request POST /api/v1/auth/login no "${BAD_BODY}" t2b_login_bad)"
 EV="${RESULTS_DIR}/t2b_login_bad.json"
 if [ "${CODE}" = "401" ] && body_has_key "${EV}" error; then
