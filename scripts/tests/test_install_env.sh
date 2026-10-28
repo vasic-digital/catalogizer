@@ -36,7 +36,7 @@ for v in $req; do
     x="$(val "$tmp/env1" "$v")"
     [ -n "$x" ] && ok "$v present" || bad "$v missing/empty in generated env"
 done
-for v in DATABASE_PASSWORD POSTGRES_PASSWORD JWT_SECRET ADMIN_PASSWORD GRAFANA_PASSWORD MINIO_ROOT_PASSWORD SONAR_DB_PASSWORD PGADMIN_DEFAULT_PASSWORD STORAGE_SECRET_KEY; do
+for v in DATABASE_PASSWORD POSTGRES_PASSWORD JWT_SECRET ADMIN_PASSWORD GRAFANA_PASSWORD MINIO_ROOT_PASSWORD SONAR_DB_PASSWORD PGADMIN_DEFAULT_PASSWORD STORAGE_SECRET_KEY QA_USER_PASSWORD; do
     a="$(val "$tmp/env1" "$v")"; b="$(val "$tmp/env2" "$v")"
     [ "${#a}" -ge 24 ] && ok "$v length>=24" || bad "$v too short (${#a})"
     [ -n "$a" ] && [ "$a" != "$b" ] && ok "$v differs between runs (random)" || bad "$v not random"
@@ -47,6 +47,7 @@ for v in DATABASE_PASSWORD POSTGRES_PASSWORD JWT_SECRET ADMIN_PASSWORD GRAFANA_P
     # Secrets must never be echoed.
     case "$out1$out2" in *"$a"*) bad "$v value was printed" ;; *) ok "$v not printed" ;; esac
 done
+[ "$(val "$tmp/env1" QA_USER_PASSWORD)" != "$(val "$tmp/env1" ADMIN_PASSWORD)" ] && ok "QA_USER_PASSWORD differs from ADMIN_PASSWORD" || bad "QA_USER_PASSWORD equals ADMIN_PASSWORD"
 [ "$(val "$tmp/env1" DATABASE_PASSWORD)" = "$(val "$tmp/env1" POSTGRES_PASSWORD)" ] \
     && ok "DATABASE_PASSWORD matches POSTGRES_PASSWORD" || bad "DATABASE_PASSWORD != POSTGRES_PASSWORD"
 # The ADMIN_PASSWORD / JWT_SECRET literals of the old heredoc are gone.

@@ -42,6 +42,12 @@ SCAN="$ROOT/scripts/tests/scan_literal_secrets.py"; : > "$tmp/empty_allow"
 printf 'X_PASSWORD=hunter2\n' > "$tmp/needle.sh"
 python3 "$SCAN" "$tmp/empty_allow" "$tmp/needle.sh" >/dev/null && { echo "FAIL - scanner blind to control needle"; exit 2; }
 qa_files=("$ROOT/docker-compose.qa.yml" "$ROOT/docker-compose.test.yml")
+# A5: QA_USER_PASSWORD equal to ADMIN_PASSWORD must be refused (naming QA_USER_PASSWORD).
+out4="$(env ADMIN_PASSWORD=same-value-x QA_USER_PASSWORD=same-value-x bash "$ROOT/scripts/run-full-qa.sh" 2>&1 </dev/null)"; r4=$?
+{ [ "$r4" -ne 0 ] && grep -q 'QA_USER_PASSWORD must differ' <<<"$out4"; } && echo "ok   - run-full-qa.sh refuses QA_USER_PASSWORD == ADMIN_PASSWORD" || { echo "FAIL - run-full-qa.sh accepts QA_USER_PASSWORD == ADMIN_PASSWORD (rc=$r4)"; fail=1; }
+# Aliasing guard: no line of run-full-qa.sh may be a plain alias of ADMIN_PASSWORD (whole RHS is the expansion)
+# (e.g. `PW=$ADMIN_PASSWORD`, which could then feed the testuser_qa payload). Limit: indirect forms (eval, printf -v) are not seen.
+if grep -nE '^[[:space:]]*(export[[:space:]]+|local[[:space:]]+)?[A-Za-z_][A-Za-z0-9_]*=["'"'"']?\$\{?ADMIN_PASSWORD\}?["'"'"']?[[:space:]]*$' "$ROOT/scripts/run-full-qa.sh" | grep -vE '^[0-9]+:ADMIN_PASSWORD=' | grep -q .; then echo "FAIL - run-full-qa.sh aliases ADMIN_PASSWORD into another variable"; fail=1; else echo "ok   - run-full-qa.sh does not alias ADMIN_PASSWORD"; fi
 for sc in run-full-qa run-api-validation run-helixqa run-helixqa-web run-helixqa-androidtv; do qa_files+=("$ROOT/scripts/$sc.sh"); done
 scan_out="$(python3 "$SCAN" "$tmp/empty_allow" "${qa_files[@]}" 2>&1)"; scan_rc=$?
 if [ "$scan_rc" -eq 0 ]; then echo "ok   - scanner finds no literal secrets in QA compose/scripts"; else echo "FAIL - literal secrets in QA compose/scripts (file:line:KEY):"; echo "$scan_out"; fail=1; fi

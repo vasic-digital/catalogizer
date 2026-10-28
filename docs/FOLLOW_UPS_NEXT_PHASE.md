@@ -33,6 +33,11 @@ Each needs a RED selftest first, then the fix.
 - TI-2 (DONE, scripts/tests/generator_scan_test_roots.txt): generator scan skips every path containing `/tests/`; use an explicit list of test roots.
 - TI-3 (DONE: scanner now also runs over the QA compose/scripts): the stack-boot test greps only the literal `admin123`; broaden or rely on the scanner.
 - PD-1 (DONE: separate required `QA_USER_PASSWORD`, documented in `.env.example`): `run-full-qa.sh` registers `testuser_qa` with `ADMIN_PASSWORD`; use a separate value.
+- Tracked follow-ups from the TI-1..PD-1 review: `catalog-api/run_challenges_robust.sh:14` still hard-codes `admin123`
+  and its `grep -o '"session_token":"[^"]*"'` regex is a scanner false positive (the `[` value prefix); the gate was
+  deliberately not widened. Residual scanner limits: a secret shaped like a plain lowercase multi-segment path
+  (`/ab/cd/ef`) is treated as a path; a keyword-led `<your-...>` value is treated as a placeholder; the PD-1 alias check
+  does not see indirect forms (`eval`, `printf -v`).
 - Out of scope but real: `admin123` still appears in `catalog-api/challenges/*`, `start_server.sh`,
   `run_challenges*.sh`, `check_scans.sh`, `catalog-web/e2e/fixtures/auth.ts`, the Android and
   Android TV `MainActivity.kt` (production app source: own item), and the helixqa banks.

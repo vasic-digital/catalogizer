@@ -30,11 +30,31 @@ LINE = re.compile(r'^\s*(?:-\s*)?["\']?(' + NAME + r')["\']?\s*[:=]\s*(.*?)\s*$'
 # Inline literal defaults: ${NAME:-value} / ${NAME-value} for secret-named variables
 # (bare PASS is excluded here: shell pass/fail counters are everywhere in test scripts).
 DEFAULT = re.compile(r'\$\{([A-Za-z0-9_]*(?:PASSWORD|PASSWD|SECRET|TOKEN|API_KEY|ACCESS_KEY|PRIVATE_KEY|CREDENTIAL)[A-Za-z0-9_]*):?-([^}]+)\}', re.I)
-SAFE_KEY_SUFFIX = ('_ENV', '_FILE', '_PATH', '_DIR', '_PORT', '_PORTS', '_URL', '_ENABLED', '_PASSIVE_PORTS')
+SAFE_KEY_SUFFIX = ('_FILE', '_PATH', '_DIR', '_PORT', '_PORTS', '_URL', '_ENABLED', '_PASSIVE_PORTS')
 REF = re.compile(r'^["\']?\$\{[A-Za-z0-9_]+(?::?\?[^}]*|:?-)\}["\']?$')   # ${V:?x} ${V:-} ${V-}
 
-PLACEHOLDER = re.compile(r'^<(?:your|change|replace|insert|enter|put|example|redacted|secret|password|token|key|value|xxx|todo)[A-Za-z0-9_ .-]*(?:>|$)', re.I)   # `$` = shell capture cut at the first space: `<your token>` -> `<your`
-PATH_VALUE = re.compile(r'^(?:/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)+/?|[A-Za-z0-9_.-]+:/[A-Za-z0-9_./-]+)$')
+PLACEHOLDER = re.compile(r'^<(?:your|change|replace|insert|enter|put|example|redacted|secret|password|token|key|value|xxx|todo)(?:[ _.-][A-Za-z0-9_ .-]*)?(?:>\s*$|$)', re.I)
+# keyword must be a whole word and the closing `>` must end the value (`<password>hunter2`, `<secretXYZ123>` are literals);
+# the `$` alternative = shell capture cut at the first space: `<your token>` -> `<your`.
+PATH_CHARS = r'[A-Za-z0-9_.-]+'
+PATH_VALUE = re.compile(r'^(?:(?:/' + PATH_CHARS + r'){2,}/?|' + PATH_CHARS + r':(?:/' + PATH_CHARS + r'){2,}/?)$')
+# multi-segment absolute path, or short-volume `name:/abs/path` (ALSO needs a multi-segment path after the colon: `x:/hunter2` is a literal).
+# The class excludes `+` and `=` so padded/`+`-bearing base64 look-alikes are not paths. Residual (documented gap): a
+# secret shaped like a plain lowercase multi-segment path (`/ab/cd/ef`) is indistinguishable from a path and is not flagged.
+def looks_random(v):
+    """A path segment with upper+lower+digit and len>=4 is treated as base64-ish (`/k7Qz/Xw9pL`), not a directory name."""
+    for seg in re.split(r'[/:]', v):
+        if len(seg) >= 4 and re.search(r'[A-Z]', seg) and re.search(r'[a-z]', seg) and re.search(r'\d', seg):
+            return True
+    return False
+ENV_NAMES = re.compile(r'^\[?\s*[A-Z_][A-Z0-9_]*(?:\s*,\s*[A-Z_][A-Z0-9_]*)*\s*\]?$')
+
+def key_is_safe(key, val):
+    """Safe-suffix keys hold paths/ports/etc. `*_ENV` is safe only when the value is an env-var NAME or a list of names."""
+    k = key.upper()
+    if k.endswith('_ENV'):
+        return bool(ENV_NAMES.match(val.split(' #')[0].strip().strip('"\'')))
+    return k.endswith(SAFE_KEY_SUFFIX)
 
 def is_literal(val, shell=False):
     v = val.split(' #')[0].strip().strip('"\'')
@@ -48,7 +68,7 @@ def is_literal(val, shell=False):
         return False                                # JSON/YAML structure opener, not a value (`[hunter2]` / `{hunter2}` ARE values)
     if PLACEHOLDER.match(v):                       # exact `<your-secret>`-style hint; `<hunter2>` is a literal
         return False
-    if PATH_VALUE.match(v):                        # multi-segment absolute path or short-volume `name:/abs/path`;
+    if PATH_VALUE.match(v) and not looks_random(v):                        # multi-segment absolute path or short-volume `name:/abs/path`;
         return False                               # a single-segment `/k7Qz...` is a literal
     if v.startswith(('$(', '$$(')):                # command substitution / arithmetic (`$$(` is the compose-escaped form)
         return False
@@ -93,12 +113,12 @@ def main():
                     cands += [(x.group(1), x.group(2)) for x in INLINE.finditer(line)]
                     cands += [(x.group(1), x.group(2)) for x in JSONKV.finditer(line)]
             for key, val in cands:
-                if not key.upper().endswith(SAFE_KEY_SUFFIX) and is_literal(val, shell) and key not in hits:
+                if not key_is_safe(key, val) and is_literal(val, shell) and key not in hits:
                     hits.append(key)
             for dm in DEFAULT.finditer(line):
                 if dm.group(2).startswith('$'):      # default is itself an expansion / command substitution
                     continue
-                if not dm.group(1).upper().endswith(SAFE_KEY_SUFFIX) and dm.group(1) not in hits:
+                if not key_is_safe(dm.group(1), dm.group(2)) and dm.group(1) not in hits:
                     hits.append(dm.group(1))
             for key in hits:
                 ent = f'{f}:{key}'

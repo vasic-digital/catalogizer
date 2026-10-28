@@ -63,7 +63,10 @@ python3 "$SCAN" "$tmp/empty_allow" "$tmp/okt.sh" >/dev/null || { echo "SELFTEST 
 # (multi-segment absolute path, short-volume `name:/abs`), JSON openers and keyword placeholders clean.
 ti=0
 for bad in 'JWT_SECRET: /k7QzXw9pLm2' 'ADMIN_PASSWORD=[hunter2]' 'export DB_PASSWORD=/s3cr3t' \
-           'API_TOKEN: {hunter2}' 'DB_PASSWORD=<hunter2>' 'ENCRYPTION_SECRET: /9f8e7d6c5b4a'; do
+           'API_TOKEN: {hunter2}' 'DB_PASSWORD=<hunter2>' 'ENCRYPTION_SECRET: /9f8e7d6c5b4a' \
+           'GITHUB_TOKEN_ENV: ghp_fakefixture123' 'SECRET_ENV: hunter2' 'X_PASSWORD: x:/hunter2' 'a_password: a:/b' \
+           'DB_PASSWORD: <password>hunter2' 'API_SECRET: <secretXYZ123>' \
+           'SIGN_SECRET: /k7Qz/Xw9pL' 'SIGN_KEY_SECRET: /k7Qz+Xw9/pL2==' 'B_SECRET: /ab/cd/ef=' ; do
     ti=$((ti+1)); ext=yml; case "$bad" in export*) ext=sh;; esac
     printf '%s\n' "$bad" > "$tmp/ti$ti.$ext"
     python3 "$SCAN" "$tmp/empty_allow" "$tmp/ti$ti.$ext" >/dev/null && { echo "SELFTEST FAIL: scan blind to TI-1 literal $ti"; exit 2; }
@@ -109,6 +112,7 @@ drop_test_roots() { local f r keep; while IFS= read -r f; do keep=1; while IFS= 
 # self-test: a listed root is dropped, an UNLISTED /tests/ dir is kept (kills a blanket '/tests/' skip)
 first_root=$(head -1 <<<"$roots")
 [ -z "$(printf '%s\n' "$first_root/x.sh" | drop_test_roots)" ] || { echo "SELFTEST FAIL: listed test root not skipped"; exit 2; }
+[ -n "$(printf '%s\n' "${first_root}X/a.sh" | drop_test_roots)" ] || { echo "SELFTEST FAIL: sibling dir '${first_root}X' wrongly skipped (prefix must be a whole path component)"; exit 2; }
 [ -n "$(printf '%s\n' 'scripts/unlisted_dir/tests/x.sh' | drop_test_roots)" ] || { echo "SELFTEST FAIL: unlisted /tests/ dir wrongly skipped"; exit 2; }
 gens=$(git ls-files 'scripts/*.sh' | drop_test_roots)
 # shellcheck disable=SC2086
