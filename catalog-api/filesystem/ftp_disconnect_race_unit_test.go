@@ -5,21 +5,25 @@ package filesystem
 // refuse chosen control connections, so the redial can be held "in flight" deterministically. They prove the client's locking and
 // generation logic only; they say nothing about a real FTP server (that is live_nas_test.go).
 //
-// Every test asserts its PRECONDITION (the exact number of proxied control connections), so a run that never reached the race
-// cannot pass (§11.4.199).
+// The race is made deterministic with a GATE, not with sleeps: the proxy holds the redial's control connection on a channel, the test
+// waits until the proxy has actually accepted it (the redial is provably in flight: reconnectIf has released the lock and is inside
+// dial()), performs Disconnect/Connect, and only then releases the gate. Every test also asserts the exact number of proxied control
+// connections, so a run that never reached the scenario cannot pass (§11.4.199).
 
 import (
 	"context"
 	"net"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 )
 
-// plan decides, for the k-th control connection (1-based), how long the proxy waits before connecting upstream and whether it refuses.
-type plan func(k int32) (delay time.Duration, refuse bool)
+// plan decides, for the k-th control connection (1-based), a gate the proxy waits on before connecting upstream (nil = no wait) and
+// whether the connection is then refused (closed without a greeting).
+type plan func(k int32) (gate chan struct{}, refuse bool)
 
-// startProxy forwards control connections to the fake FTP server according to plan and counts them in *n.
+// startProxy forwards control connections to the fake FTP server according to plan and counts accepted ones in *n.
 func startProxy(t *testing.T, s *fakeFTP, n *int32, p plan) int {
 	t.Helper()
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
@@ -35,8 +39,10 @@ func startProxy(t *testing.T, s *fakeFTP, n *int32, p plan) int {
 			}
 			k := atomic.AddInt32(n, 1)
 			go func(c net.Conn, k int32) {
-				delay, refuse := p(k)
-				time.Sleep(delay)
+				gate, refuse := p(k)
+				if gate != nil {
+					<-gate
+				}
 				if refuse {
 					c.Close()
 					return
@@ -77,6 +83,18 @@ func startProxy(t *testing.T, s *fakeFTP, n *int32, p plan) int {
 	return ln.Addr().(*net.TCPAddr).Port
 }
 
+// waitAccepted blocks until the proxy has accepted at least want control connections (the redial is then in flight).
+func waitAccepted(t *testing.T, n *int32, want int32) {
+	t.Helper()
+	deadline := time.Now().Add(5 * time.Second)
+	for atomic.LoadInt32(n) < want {
+		if time.Now().After(deadline) {
+			t.Fatalf("proxy accepted %d control connections, want %d (the redial never started)", atomic.LoadInt32(n), want)
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+}
+
 func waitQuits(t *testing.T, s *fakeFTP, want int32) {
 	t.Helper()
 	deadline := time.Now().Add(3 * time.Second)
@@ -92,31 +110,42 @@ func waitQuits(t *testing.T, s *fakeFTP, want int32) {
 	}
 }
 
-// F1: Disconnect issued while the reader's Close is still redialling must win: the client stays disconnected and the connection the
-// redial eventually opens is ended with QUIT (not leaked). Control connections: #1 original, #2 the redial (held 300ms).
-func TestFTPReadCloser_DisconnectDuringRedialDoesNotResurrect(t *testing.T) {
-	s := startFakeFTP(t, "drop")
-	var n int32
-	port := startProxy(t, s, &n, func(k int32) (time.Duration, bool) {
+// gatedSetup connects a client through a proxy whose control connection #2 (the redial) waits on gate, starts Close of a partially
+// read transfer in a goroutine and returns once the redial is provably in flight.
+func gatedSetup(t *testing.T, refuseAfterGate bool) (c *FTPClient, s *fakeFTP, n *int32, gate chan struct{}, done chan error) {
+	t.Helper()
+	s = startFakeFTP(t, "drop")
+	n = new(int32)
+	gate = make(chan struct{})
+	port := startProxy(t, s, n, func(k int32) (chan struct{}, bool) {
 		if k == 2 {
-			return 300 * time.Millisecond, false
+			return gate, refuseAfterGate
 		}
-		return 0, false
+		return nil, false
 	})
-	c := NewFTPClient(&FTPConfig{Host: "127.0.0.1", Port: port, Username: "u", Password: "p"})
+	c = NewFTPClient(&FTPConfig{Host: "127.0.0.1", Port: port, Username: "u", Password: "p"})
 	if err := c.Connect(context.Background()); err != nil {
 		t.Fatalf("connect: %v", err)
 	}
+	t.Cleanup(func() { _ = c.Disconnect(context.Background()) }) // runs after the test body (and its waitQuits), before the listeners close
 	rc := partialRead(t, c)
-	done := make(chan error, 1)
+	done = make(chan error, 1)
 	go func() { done <- rc.Close() }()
-	time.Sleep(100 * time.Millisecond) // Close is now inside dial(), waiting for the delayed greeting of connection #2
+	waitAccepted(t, n, 2)
+	return
+}
+
+// F1: Disconnect issued while the redial is in flight must win: the client stays disconnected and the connection the redial eventually
+// opens is ended with QUIT (not leaked). Control connections: #1 original, #2 the redial (gated).
+func TestFTPReadCloser_DisconnectDuringRedialDoesNotResurrect(t *testing.T) {
+	c, s, n, gate, done := gatedSetup(t, false)
 	_ = c.Disconnect(context.Background())
+	close(gate)
 	if cerr := <-done; cerr != nil {
 		t.Fatalf("Close = %v, want nil", cerr)
 	}
-	if got := atomic.LoadInt32(&n); got != 2 {
-		t.Fatalf("proxied control connections = %d, want 2 (precondition: the redial must have been in flight)", got)
+	if got := atomic.LoadInt32(n); got != 2 {
+		t.Fatalf("proxied control connections = %d, want 2", got)
 	}
 	if c.IsConnected() {
 		t.Fatalf("IsConnected()==true after Disconnect(): the in-flight redial resurrected the client")
@@ -125,36 +154,22 @@ func TestFTPReadCloser_DisconnectDuringRedialDoesNotResurrect(t *testing.T) {
 	waitQuits(t, s, 1)
 }
 
-// Connect issued while a redial is in flight: Connect's connection is the live one, the redial's connection is discarded with QUIT.
-// Control connections: #1 original, #2 the redial (held 400ms), #3 the explicit Connect.
+// Connect issued while the redial is in flight: Connect's connection is the live one, the redial's connection is discarded with QUIT.
+// Control connections: #1 original, #2 the redial (gated), #3 the explicit Connect.
 func TestFTPReadCloser_ConnectDuringRedialKeepsConnectsConnection(t *testing.T) {
-	s := startFakeFTP(t, "drop")
-	var n int32
-	port := startProxy(t, s, &n, func(k int32) (time.Duration, bool) {
-		if k == 2 {
-			return 400 * time.Millisecond, false
-		}
-		return 0, false
-	})
-	c := NewFTPClient(&FTPConfig{Host: "127.0.0.1", Port: port, Username: "u", Password: "p"})
-	if err := c.Connect(context.Background()); err != nil {
-		t.Fatalf("connect: %v", err)
-	}
-	rc := partialRead(t, c)
-	done := make(chan error, 1)
-	go func() { done <- rc.Close() }()
-	time.Sleep(100 * time.Millisecond) // the redial (#2) is waiting for its delayed greeting
+	c, s, n, gate, done := gatedSetup(t, false)
 	if err := c.Connect(context.Background()); err != nil {
 		t.Fatalf("second Connect: %v", err)
 	}
 	c.mu.Lock()
 	connectsConn := c.client
 	c.mu.Unlock()
+	close(gate)
 	if cerr := <-done; cerr != nil {
 		t.Fatalf("Close = %v, want nil", cerr)
 	}
-	if got := atomic.LoadInt32(&n); got != 3 {
-		t.Fatalf("proxied control connections = %d, want 3 (precondition: Connect ran during the redial)", got)
+	if got := atomic.LoadInt32(n); got != 3 {
+		t.Fatalf("proxied control connections = %d, want 3", got)
 	}
 	c.mu.Lock()
 	after := c.client
@@ -171,32 +186,33 @@ func TestFTPReadCloser_ConnectDuringRedialKeepsConnectsConnection(t *testing.T) 
 }
 
 // Disconnect wins and the in-flight redial then fails: the user disconnected on purpose, so Close must not report "reconnect failed".
-// Control connections: #1 original, #2 the redial (held 300ms, then refused).
 func TestFTPReadCloser_DisconnectThenRedialFailureIsNotAnError(t *testing.T) {
-	s := startFakeFTP(t, "drop")
-	var n int32
-	port := startProxy(t, s, &n, func(k int32) (time.Duration, bool) {
-		if k == 2 {
-			return 300 * time.Millisecond, true
-		}
-		return 0, false
-	})
-	c := NewFTPClient(&FTPConfig{Host: "127.0.0.1", Port: port, Username: "u", Password: "p"})
-	if err := c.Connect(context.Background()); err != nil {
-		t.Fatalf("connect: %v", err)
-	}
-	rc := partialRead(t, c)
-	done := make(chan error, 1)
-	go func() { done <- rc.Close() }()
-	time.Sleep(100 * time.Millisecond)
+	c, _, n, gate, done := gatedSetup(t, true)
 	_ = c.Disconnect(context.Background())
+	close(gate) // connection #2 is now refused
 	if cerr := <-done; cerr != nil {
 		t.Fatalf("Close after an intentional Disconnect = %v, want nil", cerr)
 	}
-	if got := atomic.LoadInt32(&n); got != 2 {
-		t.Fatalf("proxied control connections = %d, want 2 (precondition: the redial must have been attempted)", got)
+	if got := atomic.LoadInt32(n); got != 2 {
+		t.Fatalf("proxied control connections = %d, want 2", got)
 	}
 	if c.IsConnected() {
 		t.Fatalf("IsConnected()==true after Disconnect()")
+	}
+}
+
+// The opposite case: NO Disconnect and the redial fails: the failure must be reported (mutation guard for the "disconnected" branch).
+func TestFTPReadCloser_RedialFailureWithoutDisconnectIsReported(t *testing.T) {
+	c, _, n, gate, done := gatedSetup(t, true)
+	close(gate) // connection #2 is refused, nobody disconnected
+	cerr := <-done
+	if cerr == nil || !strings.Contains(cerr.Error(), "reconnect failed") {
+		t.Fatalf("Close = %v, want an error containing \"reconnect failed\"", cerr)
+	}
+	if got := atomic.LoadInt32(n); got != 2 {
+		t.Fatalf("proxied control connections = %d, want 2", got)
+	}
+	if c.IsConnected() {
+		t.Fatalf("IsConnected()==true although the redial failed")
 	}
 }

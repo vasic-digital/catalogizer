@@ -181,7 +181,9 @@ func (r *ftpReadCloser) Read(p []byte) (int, error) {
 //   - the server dropped the control connection (io.EOF) after an early close: the session is re-established and nil is returned
 //     (the caller aborted on purpose); if the reader had been read to EOF the original error is returned;
 //   - any other failure (a 4xx/5xx status such as 426): returned as is, the dead session is replaced when this client still owns it;
-//   - if the client was Disconnect()ed or already moved to another connection since ReadFile, nothing is redialled.
+//   - if the client was Disconnect()ed or already moved to another connection since ReadFile, nothing is redialled; a redial that was
+//     already in flight when Disconnect ran is discarded, and if it fails the failure is not reported (the user disconnected on purpose).
+//     Without a Disconnect, a failed redial is returned as "... and reconnect failed".
 func (r *ftpReadCloser) Close() error {
 	if r.closed {
 		return nil
