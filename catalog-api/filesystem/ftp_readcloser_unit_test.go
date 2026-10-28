@@ -198,7 +198,7 @@ func TestFTPReadCloser_CloseAfterDisconnectDoesNotRedial(t *testing.T) {
 		t.Fatalf("IsConnected true after Disconnect+Close: Close redialled")
 	}
 	// Close redials synchronously (dial returns only after the fake accepted and sent its banner), so a wrongly dialled second session
-	// is already counted when Close returns. Wait for the observable end of the first session (Disconnect's QUIT) instead of sleeping.
+	// is already counted when Close returns. Wait for the observable end of the first session (it ends when Close shuts the data connection) instead of sleeping.
 	waitFor(t, "first control session ended after Disconnect", func() bool { return atomic.LoadInt32(&s.live) == 0 })
 	assertStays(t, "control connections accepted (no redial after Disconnect)", &s.accepted, 1)
 }
@@ -228,7 +228,7 @@ func TestFTPReadCloser_426QuitsOldSessionAndClientUsable(t *testing.T) {
 		t.Fatalf("expected the 426 error")
 	}
 	waitFor(t, "fake to count the QUIT of the old session", func() bool { return atomic.LoadInt32(&s.quits) >= 1 }) // counted asynchronously
-	assertStays(t, "QUIT count (old session must be Quit exactly once)", &s.quits, 1)
+	assertStays(t, "QUIT count (no QUIT on any session other than the old one)", &s.quits, 1)
 	if n := atomic.LoadInt32(&s.accepted); n != 2 {
 		t.Fatalf("control connections = %d, want 2", n)
 	}
