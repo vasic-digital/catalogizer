@@ -2,12 +2,14 @@ package filesystem
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"net"
 	pathpkg "path"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jlaffaye/ftp"
@@ -31,6 +33,9 @@ type FTPClient struct {
 	// ("movies") the server resolved it against the login directory, so prefixing the relative text again would address
 	// <login>/movies/movies (WF22 R18). base is what the server says the working directory is after the CWD.
 	base string
+	// mu guards the replacement of client/connected/base (Connect, Disconnect, reconnect). The client is otherwise single-goroutine,
+	// like the underlying *ftp.ServerConn; the production callers create one client per job via ClientFactory.CreateClient.
+	mu sync.Mutex
 }
 
 // NewFTPClient creates a new FTP client
@@ -45,7 +50,7 @@ func NewFTPClient(config *FTPConfig) *FTPClient {
 func (c *FTPClient) Connect(ctx context.Context) error {
 	addr := net.JoinHostPort(c.config.Host, fmt.Sprintf("%d", c.config.Port))
 
-	client, err := ftp.Dial(addr, ftp.DialWithTimeout(30*time.Second))
+	client, err := ftp.Dial(addr, ftp.DialWithTimeout(30*time.Second), ftp.DialWithContext(ctx))
 	if err != nil {
 		return fmt.Errorf("failed to connect to FTP server: %w", err)
 	}
@@ -75,20 +80,23 @@ func (c *FTPClient) Connect(ctx context.Context) error {
 			c.base = pathpkg.Clean("/" + c.config.Path)
 		}
 	}
+	c.mu.Lock()
 	c.client = client
 	c.connected = true
+	c.mu.Unlock()
 	return nil
 }
 
 // Disconnect closes the FTP connection
 func (c *FTPClient) Disconnect(ctx context.Context) error {
-	if c.client != nil {
-		err := c.client.Quit()
-		c.client = nil
-		c.connected = false
-		return err
-	}
+	c.mu.Lock()
+	conn := c.client
+	c.client = nil
 	c.connected = false
+	c.mu.Unlock()
+	if conn != nil {
+		return conn.Quit()
+	}
 	return nil
 }
 
@@ -124,11 +132,12 @@ func (c *FTPClient) ReadFile(ctx context.Context, path string) (io.ReadCloser, e
 		return nil, fmt.Errorf("not connected")
 	}
 	fullPath := c.resolvePath(path)
-	resp, err := c.client.Retr(fullPath)
+	conn := c.client
+	resp, err := conn.Retr(fullPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve FTP file %s: %w", fullPath, err)
 	}
-	return &ftpReadCloser{resp: resp, c: c}, nil
+	return &ftpReadCloser{resp: resp, c: c, conn: conn, ctx: context.WithoutCancel(ctx)}, nil
 }
 
 // ftpReadCloser closes an FTP data transfer and keeps the client usable afterwards. Closing a RETR before its end (header sniffing,
@@ -138,6 +147,8 @@ func (c *FTPClient) ReadFile(ctx context.Context, path string) (io.ReadCloser, e
 type ftpReadCloser struct {
 	resp   *ftp.Response
 	c      *FTPClient
+	conn   *ftp.ServerConn // the control connection this transfer ran on
+	ctx    context.Context // caller's context minus its cancellation (Close usually runs after the request context ended)
 	atEOF  bool
 	closed bool
 }
@@ -150,6 +161,12 @@ func (r *ftpReadCloser) Read(p []byte) (int, error) {
 	return n, err
 }
 
+// Close ends the transfer. Semantics (asserted by the unit and live tests):
+//   - clean close: nil;
+//   - the server dropped the control connection (io.EOF) after an early close: the session is re-established and nil is returned
+//     (the caller aborted on purpose); if the reader had been read to EOF the original error is returned;
+//   - any other failure (a 4xx/5xx status such as 426): returned as is, the dead session is replaced when this client still owns it;
+//   - if the client was Disconnect()ed or already moved to another connection since ReadFile, nothing is redialled.
 func (r *ftpReadCloser) Close() error {
 	if r.closed {
 		return nil
@@ -159,24 +176,30 @@ func (r *ftpReadCloser) Close() error {
 	if err == nil {
 		return nil
 	}
-	// the control connection state is unknown after a failed close: drop it and reconnect
-	if rerr := r.c.reconnect(); rerr != nil {
+	if rerr := r.c.reconnectIf(r.ctx, r.conn); rerr != nil {
 		return fmt.Errorf("FTP transfer close failed (%v) and reconnect failed: %w", err, rerr)
 	}
-	if r.atEOF {
-		return err
+	if !r.atEOF && errors.Is(err, io.EOF) {
+		return nil // aborted early by the caller on purpose; the session has been re-established
 	}
-	return nil // aborted early by the caller on purpose; the session has been re-established
+	return err
 }
 
-// reconnect discards the current control connection (best effort) and dials a new one with the same configuration.
-func (c *FTPClient) reconnect() error {
-	if c.client != nil {
-		_ = c.client.Quit()
+// reconnectIf replaces the control connection `old` with a fresh one, but only while `old` is still the client's current connection:
+// after Disconnect() (or a replacement) it does nothing, so a late Close can never resurrect a disconnected client.
+func (c *FTPClient) reconnectIf(ctx context.Context, old *ftp.ServerConn) error {
+	c.mu.Lock()
+	if c.client != old || old == nil {
+		c.mu.Unlock()
+		return nil
 	}
 	c.client = nil
 	c.connected = false
-	return c.Connect(context.Background())
+	c.mu.Unlock()
+	_ = old.Quit()
+	rctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
+	return c.Connect(rctx)
 }
 
 // WriteFile writes a file to the FTP server
@@ -217,7 +240,7 @@ func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, er
 		return &FileInfo{
 			Name:    pathpkg.Base(path),
 			Size:    size,
-			ModTime: time.Now(), // SIZE gives no mtime; kept as before for plain files
+			ModTime: c.fileModTime(fullPath),
 			IsDir:   false,
 			Mode:    0644,
 			Path:    path,
@@ -225,7 +248,7 @@ func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, er
 	}
 	name := pathpkg.Base(fullPath)
 	if fullPath == "/" || name == "." || name == "/" {
-		return &FileInfo{Name: name, IsDir: true, Mode: 0755, Path: path, ModTime: time.Now()}, nil
+		return &FileInfo{Name: name, IsDir: true, Mode: 0755, Path: path, ModTime: time.Time{}}, nil
 	}
 	entries, listErr := c.client.List(pathpkg.Dir(fullPath))
 	if listErr != nil {
@@ -249,6 +272,25 @@ func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, er
 		return &FileInfo{Name: name, Size: sz, ModTime: entry.Time, IsDir: isDir, Mode: mode, Path: path}, nil
 	}
 	return nil, fmt.Errorf("failed to get FTP file info %s: %w", fullPath, sizeErr)
+}
+
+// fileModTime returns the real modification time: MDTM when the server supports it, else the entry time from the parent listing, else
+// the zero time. It never invents "now" (the old behaviour made every FTP file look freshly modified).
+func (c *FTPClient) fileModTime(fullPath string) time.Time {
+	if c.client.IsGetTimeSupported() {
+		if t, err := c.client.GetTime(fullPath); err == nil {
+			return t
+		}
+	}
+	if entries, err := c.client.List(pathpkg.Dir(fullPath)); err == nil {
+		name := pathpkg.Base(fullPath)
+		for _, e := range entries {
+			if e.Name == name {
+				return e.Time
+			}
+		}
+	}
+	return time.Time{}
 }
 
 // ListDirectory lists files in a directory
