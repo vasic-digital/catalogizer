@@ -35,10 +35,10 @@ func algTokens(t *testing.T) map[string]string {
 	rsaKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err)
 	return map[string]string{
-		"alg=none":                    signWith(t, jwt.SigningMethodNone, jwt.UnsafeAllowNoneSignatureType),
-		"RS256 (asymmetric)":          signWith(t, jwt.SigningMethodRS256, rsaKey),
-		"HS384 signed with real key":  signWith(t, jwt.SigningMethodHS384, []byte(testSecret)),
-		"HS512 signed with real key":  signWith(t, jwt.SigningMethodHS512, []byte(testSecret)),
+		"alg=none":                   signWith(t, jwt.SigningMethodNone, jwt.UnsafeAllowNoneSignatureType),
+		"RS256 (asymmetric)":         signWith(t, jwt.SigningMethodRS256, rsaKey),
+		"HS384 signed with real key": signWith(t, jwt.SigningMethodHS384, []byte(testSecret)),
+		"HS512 signed with real key": signWith(t, jwt.SigningMethodHS512, []byte(testSecret)),
 	}
 }
 

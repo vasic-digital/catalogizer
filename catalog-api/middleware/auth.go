@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -71,9 +72,7 @@ func (m *JWTMiddleware) RequireAuth() gin.HandlerFunc {
 
 		// Parse and validate token
 		claims := &Claims{}
-		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-			return m.secretKey, nil
-		})
+		token, err := m.parseToken(tokenString, claims)
 
 		if err != nil {
 			utils.SendErrorResponse(c, http.StatusUnauthorized, "Invalid token", err)
@@ -148,12 +147,23 @@ func (m *JWTMiddleware) GenerateToken(username, userID string, expirationHours i
 	return token.SignedString(m.secretKey)
 }
 
+// parseToken parses and verifies tokenString into claims, pinning the signing
+// algorithm to HS256 (the only one GenerateToken issues). Pinning rejects
+// alg=none, asymmetric (RS*/ES*) tokens used for key-confusion and the other
+// HMAC variants (HS384/HS512) before the key is ever handed out.
+func (m *JWTMiddleware) parseToken(tokenString string, claims *Claims) (*jwt.Token, error) {
+	return jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		if token.Method != jwt.SigningMethodHS256 {
+			return nil, fmt.Errorf("unexpected signing method %q", token.Header["alg"])
+		}
+		return m.secretKey, nil
+	}, jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
+}
+
 // ValidateToken validates a JWT token and returns claims
 func (m *JWTMiddleware) ValidateToken(tokenString string) (*Claims, error) {
 	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return m.secretKey, nil
-	})
+	token, err := m.parseToken(tokenString, claims)
 
 	if err != nil {
 		return nil, err
