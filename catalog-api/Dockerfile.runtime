@@ -29,10 +29,15 @@ RUN groupadd --system --gid 1001 appgroup && \
     mkdir -p /app/data /app/logs /app/temp && \
     chown -R appuser:appgroup /app
 
+# Bind address/port for containers: the app defaults to localhost:28080 (unreachable from outside the container, and not the
+# EXPOSEd/health-checked 8080); main.go honours HOST and SERVER_PORT as overrides.
+ENV HOST=0.0.0.0 SERVER_PORT=8080
+
 EXPOSE 8080
 
+# GET, not --spider: /health is GET-only (a HEAD request answers 404)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
+  CMD wget --no-verbose --tries=1 -O /dev/null http://127.0.0.1:8080/health || exit 1
 
 USER appuser
 
