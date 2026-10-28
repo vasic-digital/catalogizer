@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 )
 
 // Path containment helpers shared by the copy handlers. Every path that
@@ -119,11 +118,14 @@ func within(root, p string) bool {
 // leaf swapped for a symlink between validation and open is refused. Symlinked
 // parent directories swapped in the same window remain a tracked residual.
 func CreateNoFollow(p string, overwrite bool) (*os.File, error) {
-	flags := os.O_WRONLY | os.O_CREATE | syscall.O_NOFOLLOW
+	flags := os.O_WRONLY | os.O_CREATE | noFollowFlag
 	if overwrite {
 		flags |= os.O_TRUNC
 	} else {
 		flags |= os.O_EXCL
+	}
+	if err := refuseLeafSymlink(p); err != nil {
+		return nil, err
 	}
 	return os.OpenFile(p, flags, 0o644)
 }
