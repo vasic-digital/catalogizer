@@ -3,6 +3,7 @@ package services
 import (
 	"catalogizer/internal/config"
 	"catalogizer/internal/models"
+	"catalogizer/internal/pathsafe"
 	"context"
 	"fmt"
 	"io"
@@ -221,7 +222,7 @@ func (s *SMBService) DownloadFile(hostName, remotePath, localPath string) error 
 	defer remoteFile.Close()
 
 	// Create local file
-	localFile, err := os.Create(localPath)
+	localFile, err := pathsafe.CreateNoFollow(localPath, true)
 	if err != nil {
 		return fmt.Errorf("failed to create local file: %w", err)
 	}

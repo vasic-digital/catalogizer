@@ -830,10 +830,11 @@ func TestCopyHandler_CopyToLocal_EmptyDestination(t *testing.T) {
 func TestCopyHandler_CopyToLocal_ValidSourceAndDest_NilService(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	logger := zap.NewNop()
-	handler := &CopyHandler{logger: logger, smbService: nil}
+	// The destination must lie inside the configured root (tempDir); a valid
+	// in-root destination passes validation and then reaches the nil service.
+	handler := &CopyHandler{logger: logger, smbService: nil, tempDir: t.TempDir()}
 
-	// Valid source and destination; smbService is nil -> panic when checking file exists
-	body := `{"source_path":"server:/source/file.txt","destination_path":"/tmp/test_copy_dest_xxx"}`
+	body := `{"source_path":"server:/source/file.txt","destination_path":"sub/test_copy_dest_xxx"}`
 	assert.Panics(t, func() {
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)

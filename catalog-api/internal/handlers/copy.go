@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"catalogizer/internal/models"
+	"catalogizer/internal/pathsafe"
 	"catalogizer/internal/services"
 	"net/http"
 	"os"
@@ -56,6 +57,10 @@ func (h *CopyHandler) CopyToSMB(c *gin.Context) {
 
 	if sourceHost == "" || destHost == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid host:path format. Use 'host:path'"})
+		return
+	}
+	if pathsafe.SafeRemotePath(sourcePath) != nil || pathsafe.SafeRemotePath(destPath) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid path"})
 		return
 	}
 
@@ -124,8 +129,18 @@ func (h *CopyHandler) CopyToLocal(c *gin.Context) {
 		return
 	}
 
-	// Destination is local path
-	destPath := req.DestinationPath
+	if pathsafe.SafeRemotePath(sourcePath) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid source path"})
+		return
+	}
+
+	// Destination is a local path and MUST stay inside the configured root
+	// (h.tempDir), lexically and after symlink resolution.
+	destPath, err := pathsafe.ContainedJoin(h.tempDir, req.DestinationPath)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid destination_path"})
+		return
+	}
 
 	// Check if destination exists and handle overwrite
 	if !req.Overwrite {
@@ -143,7 +158,7 @@ func (h *CopyHandler) CopyToLocal(c *gin.Context) {
 	}
 
 	// Download from SMB to local
-	err := h.smbService.DownloadFile(sourceHost, sourcePath, destPath)
+	err = h.smbService.DownloadFile(sourceHost, sourcePath, destPath)
 	if err != nil {
 		h.logger.Error("Failed to copy file from SMB to local",
 			zap.String("source", req.SourcePath),
@@ -160,7 +175,7 @@ func (h *CopyHandler) CopyToLocal(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":     "File copied successfully to local filesystem",
 		"source":      req.SourcePath,
-		"destination": destPath,
+		"destination": req.DestinationPath,
 	})
 }
 
@@ -185,6 +200,11 @@ func (h *CopyHandler) CopyFromLocal(c *gin.Context) {
 	}
 	defer file.Close()
 
+	if _, err := pathsafe.SafeChildName(header.Filename); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid upload file name"})
+		return
+	}
+
 	destination := c.PostForm("destination")
 	if destination == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Destination path is required"})
@@ -197,6 +217,10 @@ func (h *CopyHandler) CopyFromLocal(c *gin.Context) {
 	destHost, destPath := h.parseHostPath(destination)
 	if destHost == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid destination format. Use 'host:path'"})
+		return
+	}
+	if pathsafe.SafeRemotePath(destPath) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid destination path"})
 		return
 	}
 
@@ -276,6 +300,11 @@ func (h *CopyHandler) ListSMBPath(c *gin.Context) {
 	path := c.Param("path")
 	if path == "" {
 		path = "/"
+	}
+
+	if pathsafe.SafeRemotePath(path) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid path"})
+		return
 	}
 
 	// Remove leading slash if present
