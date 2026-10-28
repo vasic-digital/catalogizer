@@ -115,5 +115,30 @@ mutate R7_migration_keeps_lock_through_rename_on_windows "$ENC" 'if closeBeforeR
 mutate R7_restore_keeps_lock_through_rename_on_windows "$ENC" '} else if closeBeforeRename(hostOS) {' '} else if false {'
 mutate R7_close_before_rename_never "$ENC" 'func closeBeforeRename(goos string) bool { return goos == "windows" }' 'func closeBeforeRename(goos string) bool { return false }'
 
+# --- review round 4 follow-ups (descriptor leaks, wording, swap-hook coverage) ---
+mutate Z2_probe_notadb_path_leaks_handle "$ENC" 'Scan(&n); err != nil {
+		db.Close()
+		return classifyProbeError(err)' 'Scan(&n); err != nil {
+		return classifyProbeError(err)'
+mutate Z6_probe_lock_failure_leaks_handle "$ENC" 'if err := acquireExclusive(db); err != nil {
+		db.Close()
+		return nil, err' 'if err := acquireExclusive(db); err != nil {
+		return nil, err'
+mutate W1_probe_open_error_reported_as_missing_cipher "$ENC" 'cannot open the database to probe it: %v' 'SQLCipher is not active in this build: %v'
+mutate R7_migration_swap_hook_never_fires "$ENC" 'if beforeSwapHook != nil {
+		beforeSwapHook()
+	}
+	// Swap: keep' 'if false {
+		beforeSwapHook()
+	}
+	// Swap: keep'
+mutate R7_restore_swap_hook_never_fires "$ENC" 'if beforeSwapHook != nil {
+		beforeSwapHook()
+	}
+	if err = os.Rename(staging, target)' 'if false {
+		beforeSwapHook()
+	}
+	if err = os.Rename(staging, target)'
+
 if [ "$survived" -ne 0 ]; then echo "$survived mutation(s) survived"; exit 1; fi
 echo "all mutations killed"

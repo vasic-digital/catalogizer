@@ -557,7 +557,16 @@ func probeInUse(path, keyHex string) (func(), error) {
 	}
 	db.SetMaxOpenConns(1)
 	var ver string
-	if err := db.QueryRow(`PRAGMA cipher_version`).Scan(&ver); err != nil || strings.TrimSpace(ver) == "" {
+	if err := db.QueryRow(`PRAGMA cipher_version`).Scan(&ver); err != nil {
+		db.Close()
+		if isBusyErr(err) {
+			return nil, fmt.Errorf("database is in use by another process (stop the server first): %v", scrubDSN(err))
+		}
+		// The underlying error (a directory at the path, a missing parent,
+		// a permission problem) is reported as it is, never as a missing cipher.
+		return nil, fmt.Errorf("cannot open the database to probe it: %v", scrubDSN(err))
+	}
+	if strings.TrimSpace(ver) == "" {
 		db.Close()
 		return nil, errors.New("SQLCipher is not active in this build; cannot probe the database")
 	}

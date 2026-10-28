@@ -329,11 +329,15 @@ func TestHardening_R7_CloseBeforeRenameDecision(t *testing.T) {
 	assert.False(t, closeBeforeRename("darwin"))
 }
 
-// lockedAtSwap reports whether a reader is refused at the moment the swap
-// hook fires (i.e. whether the exclusive lock is still held).
-func lockedAtSwap(t *testing.T, path, key string) *bool {
-	var res bool
+// swapProbe records whether the swap hook fired at all and, if so, whether a
+// reader was refused at that moment (i.e. whether the exclusive lock was still
+// held). A test that never saw the hook fire proves nothing.
+type swapProbe struct{ fired, locked bool }
+
+func lockedAtSwap(t *testing.T, path, key string) *swapProbe {
+	res := &swapProbe{}
 	beforeSwapHook = func() {
+		res.fired = true
 		var r *sql.DB
 		var err error
 		if key == "" {
@@ -347,9 +351,9 @@ func lockedAtSwap(t *testing.T, path, key string) *bool {
 		defer r.Close()
 		r.SetMaxOpenConns(1)
 		var n int
-		res = r.QueryRow(`SELECT COUNT(*) FROM sqlite_master`).Scan(&n) != nil
+		res.locked = r.QueryRow(`SELECT COUNT(*) FROM sqlite_master`).Scan(&n) != nil
 	}
-	return &res
+	return res
 }
 
 func TestHardening_R7_MigrationLockReleasedBeforeRenameOnWindowsOnly(t *testing.T) {
@@ -365,7 +369,8 @@ func TestHardening_R7_MigrationLockReleasedBeforeRenameOnWindowsOnly(t *testing.
 			db, err := NewConnection(cfg)
 			require.NoError(t, err)
 			require.NoError(t, db.Close())
-			assert.Equal(t, goos == "linux", *locked, "lock held at swap time must be %v on %s", goos == "linux", goos)
+			require.True(t, locked.fired, "the swap hook never fired: the lock state at swap time was not observed")
+			assert.Equal(t, goos == "linux", locked.locked, "lock held at swap time must be %v on %s", goos == "linux", goos)
 		})
 	}
 }
@@ -386,7 +391,8 @@ func TestHardening_R7_RestoreLockReleasedBeforeRenameOnWindowsOnly(t *testing.T)
 			defer func() { hostOS = old; beforeSwapHook = nil }()
 			locked := lockedAtSwap(t, dbPath, keyOfCfg(t, keyPath))
 			require.NoError(t, RestoreBackup(cfg, b))
-			assert.Equal(t, goos == "linux", *locked)
+			require.True(t, locked.fired, "the swap hook never fired: the lock state at swap time was not observed")
+			assert.Equal(t, goos == "linux", locked.locked)
 		})
 	}
 }
