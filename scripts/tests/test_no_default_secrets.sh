@@ -47,12 +47,17 @@ printf 'services:\n  a:\n    environment:\n      POSTGRES_PASSWORD: 12345678\n' 
 printf 'services:\n  a:\n    environment:\n      D_PASSWORD: $$ecret1\n' > "$tmp/esc.yml"
 printf 'services:\n  a:\n    environment: {D_PASSWORD: hunter2}\n' > "$tmp/flow.yml"
 printf 'export DB_PASSWORD=hunter2\ndocker run -e POSTGRES_PASSWORD=hunter2 img\n' > "$tmp/inl.sh"
-for fx in m1.sh m2.yml esc.yml flow.yml inl.sh; do
+# T2: `*_TOKEN=literal` in shell (bare, exported, -e) and quoted lowercase secret keys in JSON text inside scripts.
+printf 'GH_TOKEN=ghp_fakefixture123\nexport NPM_TOKEN=npm_fake1\ndocker run -e API_TOKEN=abc123x img\n' > "$tmp/tok.sh"
+printf 'curl -d '"'"'{"admin_password":"admin123"}'"'"' http://x\nB="{\\"password\\":\\"hunter2x\\"}"\n' > "$tmp/json.sh"
+for fx in m1.sh m2.yml esc.yml flow.yml inl.sh tok.sh json.sh; do
     python3 "$SCAN" "$tmp/empty_allow" "$tmp/$fx" >/dev/null && { echo "SELFTEST FAIL: scan blind to $fx"; exit 2; }
 done
 # ...and these clean shapes MUST NOT be flagged (counters, PID, command substitution, refs).
 printf 'PASS=0\nPASSES=$((PASSES+1))\nTMP_PASSWORD=$(openssl rand -hex 8)\nX_SECRET=$$\nY_PASSWORD="${Y_PASSWORD:?req}"\nexport Z_TOKEN="${Z_TOKEN:-}"\n' > "$tmp/okc.sh"
 python3 "$SCAN" "$tmp/empty_allow" "$tmp/okc.sh" >/dev/null || { echo "SELFTEST FAIL: scan flags clean shell fixture"; exit 2; }
+printf 'TOKEN=0\nTOKENS=3\nexport Z_TOKEN="${Z_TOKEN:?req}"\nGH_TOKEN="$(cat f)"\nB="{\\"password\\":\\"${PW}\\"}"\nc='"'"'{"secrets": ['"'"'\nVOL=api_keys:/app/keys\n' > "$tmp/okt.sh"
+python3 "$SCAN" "$tmp/empty_allow" "$tmp/okt.sh" >/dev/null || { echo "SELFTEST FAIL: scan flags clean T2 shell fixture"; exit 2; }
 printf 'services:\n  a:\n    command: TOKEN=$$(curl x)\n' > "$tmp/okc.yml"
 python3 "$SCAN" "$tmp/empty_allow" "$tmp/okc.yml" >/dev/null || { echo "SELFTEST FAIL: scan flags compose command substitution"; exit 2; }
 printf 'services:\n  a:\n    environment:\n      A_PASSWORD: ${A_PASSWORD:?req}\n      B_TOKEN: ${B_TOKEN:-}\n      C_PASSWORD_FILE: /run/x\n' > "$tmp/ok.yml"
@@ -78,7 +83,7 @@ if [ -n "$hits" ]; then echo "FAIL: non-empty default secrets in compose files:"
 # shellcheck disable=SC2086
 lit=$(python3 "$SCAN" "$ALLOW" $files 2>&1); lrc=$?
 if [ "$lrc" -ne 0 ]; then echo "FAIL: literal secrets in compose files (file:line:KEY):"; echo "$lit"; fail=1; fi
-gens=$(git ls-files 'scripts/*.sh' | grep -v '^scripts/tests/')
+gens=$(git ls-files 'scripts/*.sh' | grep -v '^scripts/tests/' | grep -v '/tests/')   # test dirs hold deliberate canary fixtures
 # shellcheck disable=SC2086
 glit=$(gen_scan $gens); [ -z "$glit" ] || { echo "FAIL: literal secret defaults in shell scripts (file:line:KEY):"; echo "$glit"; fail=1; }
 if git ls-files --error-unmatch .env.security >/dev/null 2>&1; then echo "FAIL: .env.security is tracked"; fail=1; fi

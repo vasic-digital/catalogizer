@@ -26,8 +26,10 @@ val() { sed -n "s/^$2=//p" "$1" | head -1; }
 # Every required compose variable is present and non-empty.
 # Every non-test-infra compose file (test-infra/test/build/qa files carry their
 # own TI_*/FTPS_*/SFTP_* inputs, not installer secrets).
-files="$(cd "$ROOT" && ls docker-compose.yml docker-compose.dev.yml docker-compose.security.yml deploy/infra-compose.yml 2>/dev/null)"
+# Derived from git (not hand-listed) so a newly added compose file is covered automatically.
+files="$(cd "$ROOT" && git ls-files | grep -E '(^|/)(docker-|infra-)?compose[^/]*\.ya?ml$' | grep -vE 'test-infra|compose\.test\.|infra-compose-test|compose\.build\.|compose\.qa')"
 [ "$(echo "$files" | wc -l)" -ge 4 ] || { echo "FAIL - compose set shrank (blind)"; exit 2; }
+echo "$files" | grep -qx 'deployment/docker-compose.yml' || { echo "FAIL - deployment/docker-compose.yml not covered (blind)"; exit 2; }
 req="$(cd "$ROOT" && grep -hoE '\$\{[A-Za-z0-9_]+:\?' $files | tr -d '${:?' | sort -u)"
 [ -n "$req" ] || { echo "FAIL - no :? vars found (blind)"; exit 2; }
 for v in $req; do

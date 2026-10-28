@@ -99,8 +99,10 @@ func ContainedJoin(root, rel string) (string, error) {
 }
 
 // Within reports whether p is root or lies beneath it (separator-aware; also
-// correct for the filesystem root).
-func Within(root, p string) bool { return within(root, p) }
+// correct for the filesystem root). Both arguments are lexically cleaned first,
+// so "/a/b/../../etc" is NOT within "/a/b" and a trailing separator on root is
+// harmless. It performs no filesystem access (symlinks are not resolved).
+func Within(root, p string) bool { return within(filepath.Clean(root), filepath.Clean(p)) }
 
 func within(root, p string) bool {
 	if p == root {

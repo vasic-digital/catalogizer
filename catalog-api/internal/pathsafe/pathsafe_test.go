@@ -106,3 +106,24 @@ func TestCreateNoFollow_RefusesSymlinkLeaf(t *testing.T) {
 	}
 	f.Close()
 }
+
+// The exported Within must be safe on UNCLEANED input: a lexical prefix test on
+// raw strings would call "/a/b/../../etc" within "/a/b".
+func TestWithin_ExportedCleansBothArguments(t *testing.T) {
+	cases := []struct {
+		root, p string
+		want    bool
+	}{
+		{"/a/b", "/a/b/../../etc", false},
+		{"/a/b", "/a/b/c/../d", true},
+		{"/a/b/", "/a/b/c", true},
+		{"/a/b/../b", "/a/b/c", true},
+		{"/a/b", "/a/b/..", false},
+		{"/a/b", "/a/b/", true},
+	}
+	for _, c := range cases {
+		if got := Within(c.root, c.p); got != c.want {
+			t.Errorf("Within(%q, %q) = %v, want %v", c.root, c.p, got, c.want)
+		}
+	}
+}

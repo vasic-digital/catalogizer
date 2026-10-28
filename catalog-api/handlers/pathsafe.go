@@ -12,5 +12,3 @@ func safeChildName(name string) (string, error) { return pathsafe.SafeChildName(
 func safeRemotePath(p string) error { return pathsafe.SafeRemotePath(p) }
 
 func containedJoin(root, rel string) (string, error) { return pathsafe.ContainedJoin(root, rel) }
-
-func within(root, p string) bool { return pathsafe.Within(root, p) }

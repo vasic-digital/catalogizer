@@ -21,7 +21,11 @@ FLOW = re.compile(r'(?<!\$)[{,]\s*["\']?(' + NAME + r')["\']?\s*:\s*([^,}]*)', r
 # Shell scripts: counters/words such as PASS, PASSES, TOKENS are everywhere, so the
 # KEY=value forms are matched only for unambiguous secret names.
 SHNAME = r'[A-Za-z0-9_]*(?:PASSWORD|PASSWD|SECRET|API_KEY|ACCESS_KEY|PRIVATE_KEY)[A-Za-z0-9_]*'
-INLINE = re.compile(r'(?:^|[\s;&|(])(?:export\s+|local\s+|declare\s+(?:-\w+\s+)?|readonly\s+|-e\s+|--env[= ]\s*)["\']?(' + SHNAME + r')=([^\s;&|)]*)')
+# `*_TOKEN` is a secret name in shell too (GH_TOKEN=ghp_...); bare TOKEN/TOKENS counters are not.
+SHTOKEN = r'[A-Za-z0-9_]*_TOKEN'
+INLINE = re.compile(r'(?:^|[\s;&|(])(?:export\s+|local\s+|declare\s+(?:-\w+\s+)?|readonly\s+|-e\s+|--env[= ]\s*)["\']?((?:' + SHNAME + r')|(?:' + SHTOKEN + r'))=([^\s;&|)]*)')
+# Quoted JSON/YAML-ish key:value text inside scripts, any case: {"admin_password":"admin123"}
+JSONKV = re.compile(r'\\?["\']([A-Za-z0-9_]*(?:PASSWORD|PASSWD|SECRET|API_KEY|ACCESS_KEY|PRIVATE_KEY|TOKEN)[A-Za-z0-9_]*)\\?["\']\s*:\s*\\?["\']?([^"\'\\,}\s]*)', re.I)
 LINE = re.compile(r'^\s*(?:-\s*)?["\']?(' + NAME + r')["\']?\s*[:=]\s*(.*?)\s*$', re.I)
 # Inline literal defaults: ${NAME:-value} / ${NAME-value} for secret-named variables
 # (bare PASS is excluded here: shell pass/fail counters are everywhere in test scripts).
@@ -36,6 +40,10 @@ def is_literal(val, shell=False):
     if REF.match(val.split(' #')[0].strip()):
         return False
     if re.fullmatch(r'\d{1,4}', v.split()[0]):      # shell counter (PASS=0), not a secret value
+        return False
+    if v[:1] in '[{<':                              # JSON structure opener / <placeholder> hint, not a value
+        return False
+    if v.startswith('/'):                          # filesystem path (volume `api_keys:/app/keys`), not a secret value
         return False
     if v.startswith(('$(', '$$(')):                # command substitution / arithmetic (`$$(` is the compose-escaped form)
         return False
@@ -71,13 +79,14 @@ def main():
             shell = f.endswith('.sh')
             m = None if defaults_only else LINE.match(line)
             cands = []
-            if m and not (shell and not (re.fullmatch(SHNAME, m.group(1), re.I) and m.group(1).isupper())):
+            if m and not (shell and not ((re.fullmatch(SHNAME, m.group(1), re.I) or re.fullmatch(SHTOKEN, m.group(1))) and m.group(1).isupper())):
                 cands.append((m.group(1), m.group(2)))
             if not defaults_only:
                 if not shell:
                     cands += [(x.group(1), x.group(2)) for x in FLOW.finditer(line)]
                 if shell:
                     cands += [(x.group(1), x.group(2)) for x in INLINE.finditer(line)]
+                    cands += [(x.group(1), x.group(2)) for x in JSONKV.finditer(line)]
             for key, val in cands:
                 if not key.upper().endswith(SAFE_KEY_SUFFIX) and is_literal(val, shell) and key not in hits:
                     hits.append(key)
