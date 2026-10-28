@@ -83,6 +83,8 @@ func TestConversionIntegration(t *testing.T) {
 
 	// Create temp directory for test files
 	tempDir := t.TempDir()
+	// conversion paths are confined to configured roots (pathguard); allow this test's dir
+	t.Setenv("CATALOGIZER_CONVERSION_ROOTS", tempDir)
 	sourceFile := filepath.Join(tempDir, "test.txt")
 	targetFile := filepath.Join(tempDir, "test_copy.txt")
 

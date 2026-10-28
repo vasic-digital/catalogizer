@@ -213,3 +213,17 @@ func TestScanStorage(t *testing.T) {
 		})
 	}
 }
+
+// §11.4.115: id "." passed the separator/".." filter, Stat'ed the backups directory itself
+// and answered 202 "queued" for something that is not a backup file.
+func TestRestoreBackup_DotAndDirectoryIDsRejected(t *testing.T) {
+	require.NoError(t, os.MkdirAll(filepath.Join(defaultBackupDir, "subdir_not_a_backup"), 0750))
+	defer os.Remove(filepath.Join(defaultBackupDir, "subdir_not_a_backup"))
+	h := newBackupAdminHandler()
+	for _, id := range []string{".", "subdir_not_a_backup"} {
+		w, c := newAdminTestContext(t, "POST", "/api/v1/admin/backups/"+id+"/restore", "")
+		c.Params = gin.Params{{Key: "id", Value: id}}
+		h.RestoreBackup(c)
+		assert.NotEqual(t, http.StatusAccepted, w.Code, "id %q must not be queued as a restore", id)
+	}
+}

@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"catalogizer/internal/logging"
+	"catalogizer/internal/pathguard"
 	"catalogizer/models"
 	"catalogizer/repository"
 
@@ -242,6 +243,13 @@ func (s *SyncService) performSync(session *models.SyncSession, endpoint *models.
 
 	var err error
 
+	// Endpoints stored before the path confinement existed (or edited in the DB) are
+	// re-checked at execution time (§11.4.115).
+	if cerr := s.confineSyncPaths(endpoint); cerr != nil {
+		s.handleSyncError(session, fmt.Errorf("sync refused: %w", cerr))
+		return
+	}
+
 	switch endpoint.Type {
 	case models.SyncTypeWebDAV:
 		err = s.performWebDAVSync(session, endpoint)
@@ -347,6 +355,12 @@ func (s *SyncService) downloadFromWebDAV(session *models.SyncSession, endpoint *
 		}
 
 		localPath := filepath.Join(endpoint.LocalPath, relativePath)
+		if !pathguard.Within(endpoint.LocalPath, localPath) {
+			// a remote listing entry that climbs out of the sync root (§11.4.115)
+			session.FailedFiles++
+			s.logSyncError(session, fmt.Sprintf("Refusing remote path %q: escapes local root", remoteFile.Path))
+			continue
+		}
 
 		if s.shouldSkipRemoteFile(remoteFile, endpoint) {
 			continue
@@ -1010,6 +1024,51 @@ func (s *SyncService) shouldRunSchedule(schedule *models.SyncSchedule) bool {
 	}
 }
 
+// syncAllowedRoots are the directories local paths of a sync endpoint must stay inside
+// (§11.4.115). Configure with CATALOGIZER_SYNC_ROOTS (colon-separated absolute paths);
+// the default is ./data/sync. Read on every call so a config change needs no restart.
+func syncAllowedRoots() []string {
+	return pathguard.RootsFromEnv("CATALOGIZER_SYNC_ROOTS", filepath.Join(".", "data", "sync"))
+}
+
+// confineSyncPaths verifies every local filesystem path the endpoint will read or write:
+// LocalPath always; RemotePath only for local-type endpoints (it is a local path there);
+// and the source/destination directories carried in sync_settings.
+func (s *SyncService) confineSyncPaths(endpoint *models.SyncEndpoint) error {
+	roots := syncAllowedRoots()
+	check := func(label, p string) error {
+		if _, err := pathguard.Confine(p, roots); err != nil {
+			return fmt.Errorf("%s %q rejected: %w", label, p, err)
+		}
+		return nil
+	}
+	if endpoint.LocalPath != "" {
+		if err := check("local path", endpoint.LocalPath); err != nil {
+			return err
+		}
+	}
+	if endpoint.Type == models.SyncTypeLocal {
+		if endpoint.RemotePath != "" {
+			if err := check("remote path", endpoint.RemotePath); err != nil {
+				return err
+			}
+		}
+		if endpoint.SyncSettings != nil {
+			cfg := map[string]interface{}{}
+			if err := json.Unmarshal([]byte(*endpoint.SyncSettings), &cfg); err == nil {
+				for _, k := range []string{"source_directory", "destination_directory"} {
+					if v, ok := cfg[k].(string); ok && v != "" {
+						if err := check(k, v); err != nil {
+							return err
+						}
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
 func (s *SyncService) validateSyncEndpoint(endpoint *models.SyncEndpoint) error {
 	if endpoint.Name == "" {
 		return fmt.Errorf("name is required")
@@ -1029,6 +1088,10 @@ func (s *SyncService) validateSyncEndpoint(endpoint *models.SyncEndpoint) error 
 
 	if endpoint.LocalPath == "" {
 		return fmt.Errorf("local path is required")
+	}
+
+	if err := s.confineSyncPaths(endpoint); err != nil {
+		return fmt.Errorf("invalid local path: %w", err)
 	}
 
 	validTypes := []string{models.SyncTypeWebDAV, models.SyncTypeCloudStorage, models.SyncTypeLocal}

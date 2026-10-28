@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"catalogizer/internal/pathguard"
 	"fmt"
 	"io"
 	"net/http"
@@ -464,8 +465,14 @@ func (h *AdminHandler) RestoreBackup(c *gin.Context) {
 		return
 	}
 
+	// "." resolves to the backup directory itself; require a plain single-element id
+	// that names a regular file (a symlink or directory is not a backup).
+	if !pathguard.SafeComponent(id) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid backup ID"})
+		return
+	}
 	backupPath := filepath.Join(defaultBackupDir, id)
-	if _, err := os.Stat(backupPath); err != nil {
+	if fi, err := os.Lstat(backupPath); err != nil || !fi.Mode().IsRegular() {
 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Backup '%s' not found", id)})
 		return
 	}

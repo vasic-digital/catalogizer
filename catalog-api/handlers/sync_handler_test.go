@@ -39,6 +39,9 @@ func (s *SyncHandlerTestSuite) SetupSuite() {
 }
 
 func (s *SyncHandlerTestSuite) SetupTest() {
+	// Local sync paths are confined to configured roots (pathguard); these tests use /tmp.
+	// TestPathConfine_* override this with their own narrow root.
+	s.T().Setenv("CATALOGIZER_SYNC_ROOTS", "/tmp")
 	// Create in-memory test database with all required tables
 	sqlDB := tests.SetupTestDB(s.T())
 	s.db = database.WrapDB(sqlDB, database.DialectSQLite)
@@ -239,7 +242,7 @@ func (s *SyncHandlerTestSuite) createTestEndpointInDB(userID int, name, endpoint
 	result, err := s.db.Exec(
 		`INSERT INTO sync_endpoints (user_id, name, type, url, username, password, sync_direction, local_path, remote_path, status, created_at, updated_at)
 		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		userID, name, endpointType, "http://example.com", "user", "pass", "upload", "/local", "/remote", status, now, now,
+		userID, name, endpointType, "http://example.com", "user", "pass", "upload", "/tmp/local", "/tmp/remote", status, now, now,
 	)
 	if err != nil {
 		s.T().Fatalf("Failed to create test endpoint: %v", err)

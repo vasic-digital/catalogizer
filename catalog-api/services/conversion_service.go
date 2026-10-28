@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/pathguard"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -788,6 +789,11 @@ func (s *ConversionService) validateConversionRequest(request *models.Conversion
 		}
 		cleaned := filepath.Clean(p)
 		if strings.Contains(cleaned, "..") {
+			return false
+		}
+		// Absolute paths must stay inside the configured conversion roots; an
+		// authenticated caller must not read /etc/passwd or write ~/.ssh (§11.4.115).
+		if _, err := pathguard.Confine(p, pathguard.RootsFromEnv("CATALOGIZER_CONVERSION_ROOTS", filepath.Join(".", "data"))); err != nil {
 			return false
 		}
 	}

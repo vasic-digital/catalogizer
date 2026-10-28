@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/pathguard"
 	"context"
 	"fmt"
 	"net/http"
@@ -75,11 +76,16 @@ func (r *CachedFileResolver) Resolve(_ context.Context, req *resolver.ResolveReq
 }
 
 func (r *CachedFileResolver) cachePath(req *resolver.ResolveRequest) string {
-	if req.EntityType == "" || req.EntityID == "" {
+	// entity type/id come straight from POST /assets/request: single path elements only
+	// (§11.4.115 traversal), and the joined result must still sit under cacheDir.
+	if !pathguard.SafeComponent(req.EntityType) || !pathguard.SafeComponent(req.EntityID) {
 		return ""
 	}
 	for _, ext := range []string{".jpg", ".jpeg", ".png", ".webp"} {
 		path := filepath.Join(r.cacheDir, req.EntityType, req.EntityID+ext)
+		if !pathguard.Within(r.cacheDir, path) {
+			return ""
+		}
 		if _, err := os.Stat(path); err == nil {
 			return path
 		}
