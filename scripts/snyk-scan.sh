@@ -8,7 +8,7 @@ set -e
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-SNYK_TOKEN="${SNYK_TOKEN:-dummy-token}"
+SNYK_TOKEN="${SNYK_TOKEN:-}"
 SNYK_ORG="${SNYK_ORG:-catalogizer}"
 SNYK_SEVERITY_THRESHOLD="${SNYK_SEVERITY_THRESHOLD:-medium}"
 REPORTS_DIR="$PROJECT_ROOT/reports"
@@ -85,7 +85,7 @@ install_snyk() {
     snyk config set severity-threshold="$SNYK_SEVERITY_THRESHOLD" 2>/dev/null || true
 
     # Authenticate with Snyk (required for freemium usage)
-    if [ "$SNYK_TOKEN" != "dummy-token" ]; then
+    if [ -n "$SNYK_TOKEN" ]; then
         echo "🔐 Authenticating with Snyk (Freemium account)..."
         snyk auth "$SNYK_TOKEN" || echo "⚠️  Snyk authentication failed, continuing with limited functionality"
         echo "✅ Snyk authentication successful"
@@ -106,7 +106,7 @@ scan_go_project() {
         snyk test --org="$SNYK_ORG" --severity-threshold="$SNYK_SEVERITY_THRESHOLD" --json --json-file-output="$REPORTS_DIR/snyk-go-results.json" || true
         
         # Monitor for ongoing monitoring
-        if [ "$SNYK_TOKEN" != "dummy-token" ]; then
+        if [ -n "$SNYK_TOKEN" ]; then
             snyk monitor --org="$SNYK_ORG" --project-name="catalogizer-api" || true
         fi
         
@@ -134,7 +134,7 @@ scan_js_projects() {
             snyk test --org="$SNYK_ORG" --severity-threshold="$SNYK_SEVERITY_THRESHOLD" --json --json-file-output="$REPORTS_DIR/snyk-${project_dir}-results.json" || true
             
             # Monitor for ongoing monitoring
-            if [ "$SNYK_TOKEN" != "dummy-token" ]; then
+            if [ -n "$SNYK_TOKEN" ]; then
                 snyk monitor --org="$SNYK_ORG" --project-name="catalogizer-$project_dir" || true
             fi
             
@@ -159,7 +159,7 @@ scan_android_projects() {
                 snyk test --org="$SNYK_ORG" --severity-threshold="$SNYK_SEVERITY_THRESHOLD" --json --json-file-output="$REPORTS_DIR/snyk-${project_dir}-results.json" || true
                 
                 # Monitor for ongoing monitoring
-                if [ "$SNYK_TOKEN" != "dummy-token" ]; then
+                if [ -n "$SNYK_TOKEN" ]; then
                     snyk monitor --org="$SNYK_ORG" --project-name="catalogizer-$project_dir" || true
                 fi
             else
@@ -194,7 +194,7 @@ scan_docker_images() {
         snyk container test catalogizer-api:latest --org="$SNYK_ORG" --severity-threshold="$SNYK_SEVERITY_THRESHOLD" --json --json-file-output="$REPORTS_DIR/snyk-container-results.json" || true
 
         # Monitor container
-        if [ "$SNYK_TOKEN" != "dummy-token" ]; then
+        if [ -n "$SNYK_TOKEN" ]; then
             snyk container monitor catalogizer-api:latest --org="$SNYK_ORG" --project-name="catalogizer-api-container" || true
         fi
 
@@ -210,7 +210,7 @@ scan_code() {
     cd "$PROJECT_ROOT"
     
     # Run Snyk Code (SAST)
-    if [ "$SNYK_TOKEN" != "dummy-token" ]; then
+    if [ -n "$SNYK_TOKEN" ]; then
         snyk code test --org="$SNYK_ORG" --severity-threshold="$SNYK_SEVERITY_THRESHOLD" --json --json-file-output="$REPORTS_DIR/snyk-code-results.json" || true
     else
         echo "⚠️  Skipping Snyk Code analysis - requires valid token"

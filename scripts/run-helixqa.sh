@@ -13,6 +13,7 @@
 # Output: qa-results/helixqa-<timestamp>/
 
 set -euo pipefail
+ADMIN_PASSWORD="${ADMIN_PASSWORD:?set ADMIN_PASSWORD to the test-stack admin password (from your .env; never hardcoded)}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -68,7 +69,7 @@ fi
 log "Authenticating..."
 TOKEN=$(curl -sf -X POST "$API_URL/api/v1/auth/login" \
     -H 'Content-Type: application/json' \
-    -d '{"username":"admin","password":"admin123"}' | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('session_token', d.get('token','')))" 2>/dev/null || echo "")
+    -d "{\"username\":\"admin\",\"password\":\"${ADMIN_PASSWORD}\"}" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('session_token', d.get('token','')))" 2>/dev/null || echo "")
 
 if [[ -z "$TOKEN" ]]; then
     warn "Could not obtain auth token (some API tests may fail)"
@@ -158,7 +159,7 @@ run_api_session() {
             status=$(curl -sf -o /dev/null -w '%{http_code}' \
                 -X POST "${API_URL}${path}" \
                 -H 'Content-Type: application/json' \
-                -d '{"username":"admin","password":"admin123"}' 2>/dev/null || echo "000")
+                -d "{\"username\":\"admin\",\"password\":\"${ADMIN_PASSWORD}\"}" 2>/dev/null || echo "000")
         else
             status=$(curl -sf -o /dev/null -w '%{http_code}' \
                 -X "$method" "${API_URL}${path}" \
@@ -389,7 +390,7 @@ device_auto_login() {
     # Move to password field
     adb -s "$device" shell input keyevent KEYCODE_TAB 2>/dev/null
     sleep 0.5
-    adb -s "$device" shell input text "admin123" 2>/dev/null
+    adb -s "$device" shell input text "${ADMIN_PASSWORD}" 2>/dev/null
     sleep 0.5
     # Press Enter to submit
     adb -s "$device" shell input keyevent KEYCODE_ENTER 2>/dev/null

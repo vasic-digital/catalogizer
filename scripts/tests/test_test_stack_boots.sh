@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Test: the environment the tracked test stack (docker-compose.test.yml) hands to
+# catalog-api passes boot-time validation with NO config.json (the container case).
+# Resolves JWT_SECRET / ADMIN_USERNAME / ADMIN_PASSWORD from the compose file
+# (literal, or ${VAR:?} filled from a freshly generated install env), exports
+# them, and runs the real config.LoadConfig test. Never prints a secret value.
+set -u
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+command -v go >/dev/null 2>&1 || { echo "SKIP - no go toolchain (not a PASS)"; exit 0; }
+tmp="$(mktemp -d)"; trap 'rm -rf "${tmp:?}"' EXIT
+# shellcheck disable=SC1091
+. "$ROOT/scripts/lib/install_env.sh"
+install_write_env "$tmp/.env" >/dev/null || { echo "FAIL - env generation"; exit 1; }
+envval() { sed -n "s/^$1=//p" "$tmp/.env" | head -1; }
+
+C="$ROOT/docker-compose.test.yml"
+declare -A got
+for k in JWT_SECRET ADMIN_USERNAME ADMIN_PASSWORD; do
+    raw="$(sed -n "s/^ *- $k=//p" "$C" | head -1)"
+    [ -n "$raw" ] || { echo "FAIL - $k not set in $C (blind)"; exit 2; }
+    if [[ "$raw" =~ ^\$\{([A-Za-z0-9_]+):\?.*\}$ ]]; then got[$k]="$(envval "${BASH_REMATCH[1]}")"
+    elif [[ "$raw" =~ ^\$\{([A-Za-z0-9_]+):-(.*)\}$ ]]; then got[$k]="${BASH_REMATCH[2]}"
+    else got[$k]="$raw"; fi
+    [ -n "${got[$k]}" ] || { echo "FAIL - $k resolves empty"; exit 1; }
+done
+out="$(cd "$ROOT/catalog-api" && STACK_BOOT_CHECK=1 JWT_SECRET="${got[JWT_SECRET]}" ADMIN_USERNAME="${got[ADMIN_USERNAME]}" \
+    ADMIN_PASSWORD="${got[ADMIN_PASSWORD]}" GOFLAGS=-mod=mod GOPROXY=off \
+    go test ./config -run TestLoadConfig_TestStackEnv_NoConfigFile -count=1 -v 2>&1)"; rc=$?
+fail=0
+if [ "$rc" -eq 0 ] && grep -q -- '--- PASS: TestLoadConfig_TestStackEnv' <<<"$out"; then echo "ok   - test-stack env boots with no config.json"
+else echo "FAIL - test-stack env refused at boot (rc=$rc)"; grep -E 'Error:|invalid configuration' <<<"$out" | sed -E 's/(secret|password)[^ ]*/\1<redacted>/Ig' | head -4; fail=1; fi
+
+# The QA compose + the QA scripts must read the admin password from the environment
+# (they log in to the stack above) and must refuse to run without it.
+grep -q 'admin123' "$ROOT/docker-compose.qa.yml" && { echo "FAIL - docker-compose.qa.yml hardcodes a login password"; fail=1; } || echo "ok   - qa compose has no hardcoded login password"
+n=$(grep -c 'ADMIN_PASSWORD=\${ADMIN_PASSWORD:?' "$ROOT/docker-compose.qa.yml"); [ "$n" -ge 2 ] && echo "ok   - qa compose passes ADMIN_PASSWORD to both QA services" || { echo "FAIL - qa compose passes ADMIN_PASSWORD to $n services (want 2)"; fail=1; }
+for sc in run-full-qa run-api-validation run-helixqa run-helixqa-web run-helixqa-androidtv; do
+    f="$ROOT/scripts/$sc.sh"
+    if grep -q 'admin123' "$f"; then echo "FAIL - $sc.sh hardcodes a password"; fail=1; continue; fi
+    out2="$(env -u ADMIN_PASSWORD bash "$f" 2>&1 </dev/null)"; r2=$?
+    { [ "$r2" -ne 0 ] && grep -q 'ADMIN_PASSWORD' <<<"$out2"; } && echo "ok   - $sc.sh refuses to run without ADMIN_PASSWORD" || { echo "FAIL - $sc.sh runs without ADMIN_PASSWORD (rc=$r2)"; fail=1; }
+done
+[ "$fail" -eq 0 ] && echo PASS || echo FAILED
+exit $fail

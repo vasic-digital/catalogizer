@@ -68,7 +68,7 @@ services:
       context: .
       dockerfile: catalog-api/Dockerfile
       args:
-        GO_VERSION: ${GO_VERSION:-1.25}
+        GO_IMAGE: ${GO_IMAGE:-docker.io/library/golang:1.25}
     container_name: catalogizer-api
     environment:
       # Database configuration
@@ -104,8 +104,8 @@ services:
       # S3/MinIO configuration
       STORAGE_TYPE: ${STORAGE_TYPE:-s3}
       STORAGE_ENDPOINT: minio:9000
-      STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
-      STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      STORAGE_ACCESS_KEY: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER in .env}
+      STORAGE_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?set MINIO_ROOT_PASSWORD in .env}
       STORAGE_BUCKET: ${STORAGE_BUCKET:-catalogizer-covers}
       STORAGE_USE_SSL: "false"
       STORAGE_REGION: ${STORAGE_REGION:-us-east-1}
@@ -124,7 +124,7 @@ services:
       minio:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "-O", "/dev/null", "http://127.0.0.1:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -177,7 +177,7 @@ services:
       - monitoring
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?GRAFANA_PASSWORD must be set (see .env.example)}
     ports:
       - "${GRAFANA_PORT:-3001}:3000"
     volumes:
@@ -204,8 +204,8 @@ services:
     image: quay.io/minio/minio:latest
     container_name: catalogizer-minio
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?set MINIO_ROOT_USER in .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD must be set (see .env.example)}
     ports:
       - "${MINIO_API_PORT:-9000}:9000"
       - "${MINIO_CONSOLE_PORT:-9001}:9001"

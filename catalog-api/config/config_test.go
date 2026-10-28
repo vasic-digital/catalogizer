@@ -257,6 +257,11 @@ func TestLoadConfig_CreatesDefaultFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	configPath := filepath.Join(tmpDir, "new-config.json")
 
+	// The auto-create path validates like any other load, so secrets must be set.
+	t.Setenv("JWT_SECRET", "f3a91c07d2b84e5a9c6d1e0b7a38f245c9d0e1f2a3b4c5d6")
+	t.Setenv("ADMIN_USERNAME", "admin")
+	t.Setenv("ADMIN_PASSWORD", "a-real-looking-pass-9f3k")
+
 	config, err := LoadConfig(configPath)
 	require.NoError(t, err)
 	assert.NotNil(t, config)

@@ -147,7 +147,7 @@ tests:
         value: "admin"
       - action: input
         target: "#password"
-        value: "${ADMIN_PASSWORD:-admin}"
+        value: "${ADMIN_PASSWORD:?set ADMIN_PASSWORD}"
       - action: click
         target: "#login-button"
         assertions:

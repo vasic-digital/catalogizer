@@ -11,9 +11,9 @@ CONTAINER_NAME="catalogizer-api"
 IMAGE_NAME="catalogizer-api"
 
 # Default environment variables (override via export before running)
-JWT_SECRET="${JWT_SECRET:-catalogizer-development-secret-key-min-32-chars}"
+JWT_SECRET="${JWT_SECRET:?set JWT_SECRET (see .env.example; scripts/install.sh generates one)}"
 ADMIN_USERNAME="${ADMIN_USERNAME:-admin}"
-ADMIN_PASSWORD="${ADMIN_PASSWORD:-admin123}"
+ADMIN_PASSWORD="${ADMIN_PASSWORD:?set ADMIN_PASSWORD (see .env.example)}"
 GIN_MODE="${GIN_MODE:-release}"
 
 # Database configuration (PostgreSQL by default)
@@ -22,7 +22,7 @@ DATABASE_HOST="${DATABASE_HOST:-localhost}"
 DATABASE_PORT="${DATABASE_PORT:-5433}"
 DATABASE_NAME="${DATABASE_NAME:-catalogizer}"
 DATABASE_USER="${DATABASE_USER:-catalogizer}"
-DATABASE_PASSWORD="${DATABASE_PASSWORD:-catalogizer_dev}"
+DATABASE_PASSWORD="${DATABASE_PASSWORD:?set DATABASE_PASSWORD (see .env.example)}"
 DATABASE_SSL_MODE="${DATABASE_SSL_MODE:-disable}"
 
 REBUILD=false

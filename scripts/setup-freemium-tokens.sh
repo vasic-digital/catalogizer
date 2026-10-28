@@ -47,7 +47,7 @@ setup_sonarqube() {
     echo "4. Go to Account → Security → Generate Token"
     echo "5. Copy the token and set it:"
     echo ""
-    echo "   export SONAR_TOKEN=your_token_here"
+    echo "   export SONAR_TOKEN=<your token>"
     echo ""
     read -p "Do you have a SONAR_TOKEN? (y/n): " has_sonar
     if [[ $has_sonar =~ ^[Yy]$ ]]; then
@@ -77,7 +77,7 @@ setup_snyk() {
     echo "4. Go to Account → General → API Token"
     echo "5. Copy the token and set it:"
     echo ""
-    echo "   export SNYK_TOKEN=your_token_here"
+    echo "   export SNYK_TOKEN=<your token>"
     echo ""
     read -p "Do you have a SNYK_TOKEN? (y/n): " has_snyk
     if [[ $has_snyk =~ ^[Yy]$ ]]; then

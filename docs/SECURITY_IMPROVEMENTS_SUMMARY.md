@@ -280,3 +280,15 @@ All changes have been:
 **Last Updated**: 2026-03-22
 **Commits**: 4b84f3c0, 78485768, 0de7150a, 286620de
 **Status**: Phase 1-3 In Progress
+
+## Residual: remote (SMB) path segments (recorded 2026-10-28)
+
+`pathsafe.SafeRemotePath` rejects NUL bytes and any `..` segment (either slash
+style), but it accepts segments such as `".. "` (trailing space) and `"..."`.
+Some Windows/SMB servers normalise trailing dots and spaces, which could turn
+such a segment into `..` on the server side. UNCONFIRMED: not reproduced against
+a real share. Mitigation owed (tracked): reject segments that are all dots or
+that end in a dot or space, once confirmed against a real SMB target. The local
+copy handlers are unaffected (they use lexical containment plus symlink-resolved
+root checks).
+
