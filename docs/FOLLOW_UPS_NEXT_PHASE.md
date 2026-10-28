@@ -23,6 +23,12 @@ compose shapes skipped silently), so those claims were wrong. Status after the r
   unmodelled indentation fail closed as R10. OPEN only for the listed gaps.
 - RM6 (`destination` key): equivalent mutant for every verdict (no rule reads the mount target, only the source and
   `ro`), documented, not killable by a fixture.
+- Round 3 (review of `507120b6` returned NO-GO): F1 odd/over-deep indentation inside a service, F2 non-plain
+  top-level lines and env-substituted `privileged`/`userns_mode` now fail closed as R10; F3 exec-form RUN, a
+  build word glued to `"`/`)`/`>`, quoted script names, `run-script`, and positional errexit/pipefail are
+  modelled; F4 `curl -4I`, relative long-form bind sources and `target: /a:b` with `read_only` are modelled.
+  The R3 items that stay OPEN are listed in the gaps (nested `sh -c` under `set -e`, `set +e`, escaped quotes
+  in exec form). OPEN only for those.
 Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser coverage").
 
 ## Operator decisions pending (process-doc)
