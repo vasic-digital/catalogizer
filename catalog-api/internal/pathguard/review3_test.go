@@ -122,3 +122,26 @@ func TestConfineData_DefaultDatabaseProtectedWithoutRegistration(t *testing.T) {
 		t.Fatalf("data/sync must stay usable: %v", err)
 	}
 }
+
+// A root that is itself a symlink (e.g. /data -> /mnt/disk1/data) is resolved like the path,
+// so a path below it is accepted and one that leaves it is not; comparing the lexical root with
+// the resolved path would refuse everything under such a root.
+func TestConfine_SymlinkedRootResolvedLikeThePath(t *testing.T) {
+	base := t.TempDir()
+	real := filepath.Join(base, "real")
+	if err := os.MkdirAll(real, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	alias := filepath.Join(base, "alias")
+	if err := os.Symlink(real, alias); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range []string{filepath.Join(alias, "x.txt"), filepath.Join(real, "x.txt")} {
+		if _, err := Confine(p, []string{alias}); err != nil {
+			t.Errorf("Confine(%q, [%q]) = %v, want nil", p, alias, err)
+		}
+	}
+	if _, err := Confine(filepath.Join(base, "x.txt"), []string{alias}); err == nil {
+		t.Errorf("a path beside the symlinked root was accepted")
+	}
+}
