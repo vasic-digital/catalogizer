@@ -22,10 +22,11 @@ install_write_env() {
         echo "refusing: $target already exists; left untouched" >&2
         return 2
     fi
-    local _db_pw _jwt _admin_pw _grafana_pw _minio_pw _minio_user _pgadmin_pw _sonar_pw
+    local _db_pw _jwt _admin_pw _qa_pw _grafana_pw _minio_pw _minio_user _pgadmin_pw _sonar_pw
     _db_pw="$(gen_secret 24)" || return 1
     _jwt="$(gen_secret 32)" || return 1
     _admin_pw="$(gen_secret 16)" || return 1
+    _qa_pw="$(gen_secret 16)" || return 1
     _grafana_pw="$(gen_secret 16)" || return 1
     _minio_pw="$(gen_secret 16)" || return 1
     _minio_user="cat$(gen_secret 6)" || return 1
@@ -97,6 +98,8 @@ JWT_SECRET=${_jwt}
 # Admin user credentials (password generated randomly by the installer)
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=${_admin_pw}
+# Password for the throwaway testuser_qa account (scripts/run-full-qa.sh); differs from ADMIN_PASSWORD
+QA_USER_PASSWORD=${_qa_pw}
 ADMIN_EMAIL=admin@example.com
 
 # Monitoring / object-storage secrets required by docker-compose.yml (generated)

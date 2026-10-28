@@ -107,6 +107,35 @@ func (s *fakeFTP) serve(c net.Conn) {
 	}
 }
 
+// quiescenceWindow is a NEGATIVE-assertion window, not a synchronisation wait: after the awaited event has happened, a counter that must NOT
+// change is watched for this long and the test fails fast on the first change. It bounds how late a stray asynchronous action (a delayed
+// redial, a duplicate QUIT) can be and still be detected; a passing run costs exactly this long.
+const quiescenceWindow = 250 * time.Millisecond
+
+// assertStays fails as soon as *v differs from want during quiescenceWindow.
+func assertStays(t *testing.T, what string, v *int32, want int32) {
+	t.Helper()
+	end := time.Now().Add(quiescenceWindow)
+	for time.Now().Before(end) {
+		if n := atomic.LoadInt32(v); n != want {
+			t.Fatalf("%s = %d, want it to stay %d", what, n, want)
+		}
+		time.Sleep(time.Millisecond)
+	}
+}
+
+// waitFor polls cond until it holds or a 5s deadline passes (condition-based waiting, no blind sleep).
+func waitFor(t *testing.T, what string, cond func() bool) {
+	t.Helper()
+	deadline := time.Now().Add(5 * time.Second)
+	for !cond() {
+		if time.Now().After(deadline) {
+			t.Fatalf("timed out waiting for: %s", what)
+		}
+		time.Sleep(time.Millisecond)
+	}
+}
+
 func fakeClient(t *testing.T, s *fakeFTP) *FTPClient {
 	t.Helper()
 	c := NewFTPClient(&FTPConfig{Host: "127.0.0.1", Port: s.port(), Username: "u", Password: "p"})
@@ -168,10 +197,10 @@ func TestFTPReadCloser_CloseAfterDisconnectDoesNotRedial(t *testing.T) {
 	if c.IsConnected() {
 		t.Fatalf("IsConnected true after Disconnect+Close: Close redialled")
 	}
-	time.Sleep(200 * time.Millisecond)
-	if n := atomic.LoadInt32(&s.accepted); n != 1 {
-		t.Fatalf("control connections accepted = %d, want 1 (no redial after Disconnect)", n)
-	}
+	// Close redials synchronously (dial returns only after the fake accepted and sent its banner), so a wrongly dialled second session
+	// is already counted when Close returns. Wait for the observable end of the first session (it ends when Close shuts the data connection) instead of sleeping.
+	waitFor(t, "first control session ended after Disconnect", func() bool { return atomic.LoadInt32(&s.live) == 0 })
+	assertStays(t, "control connections accepted (no redial after Disconnect)", &s.accepted, 1)
 }
 
 // F2: a transfer read to its END and then a control drop is a real failure: Close must return the error, not swallow it as an early abort.
@@ -198,10 +227,8 @@ func TestFTPReadCloser_426QuitsOldSessionAndClientUsable(t *testing.T) {
 	if err := rc.Close(); err == nil {
 		t.Fatalf("expected the 426 error")
 	}
-	time.Sleep(100 * time.Millisecond) // the fake counts QUIT asynchronously
-	if n := atomic.LoadInt32(&s.quits); n != 1 {
-		t.Fatalf("QUIT received %d times, want 1 (old session must be Quit)", n)
-	}
+	waitFor(t, "fake to count the QUIT of the old session", func() bool { return atomic.LoadInt32(&s.quits) >= 1 }) // counted asynchronously
+	assertStays(t, "QUIT count (no QUIT on any session other than the old one)", &s.quits, 1)
 	if n := atomic.LoadInt32(&s.accepted); n != 2 {
 		t.Fatalf("control connections = %d, want 2", n)
 	}

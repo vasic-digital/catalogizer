@@ -4,6 +4,8 @@
 # Usage: ./scripts/run-full-qa.sh [API_URL] [WEB_URL]
 set -euo pipefail
 ADMIN_PASSWORD="${ADMIN_PASSWORD:?set ADMIN_PASSWORD to the test-stack admin password (from your .env; never hardcoded)}"
+QA_USER_PASSWORD="${QA_USER_PASSWORD:?set QA_USER_PASSWORD to the password for the throwaway testuser_qa account (must differ from ADMIN_PASSWORD; never hardcoded)}"
+[ "$QA_USER_PASSWORD" != "$ADMIN_PASSWORD" ] || { echo "QA_USER_PASSWORD must differ from ADMIN_PASSWORD" >&2; exit 1; }
 
 API="${1:-http://localhost:8085}"
 WEB="${2:-http://localhost:3000}"
@@ -78,7 +80,7 @@ TOTAL=$((TOTAL+1)); RESP=$(curl -s -H "Authorization: Bearer $TOKEN" "$API/api/v
 api POST "/api/v1/auth/login" "400" 'invalid-json' "no"
 api GET "/api/v1/auth/me" "401|429" "" "no"
 # Skip logout/re-login mid-suite to avoid rate limiting — test logout at the very end
-api POST "/api/v1/auth/register" "201|409|400|429" "{\"username\":\"testuser_qa\",\"email\":\"qa@test.com\",\"password\":\"${ADMIN_PASSWORD}\"}" "no"
+api POST "/api/v1/auth/register" "201|409|400|429" "{\"username\":\"testuser_qa\",\"email\":\"qa@test.com\",\"password\":\"${QA_USER_PASSWORD}\"}" "no"
 
 # ==================== SECTION 3: SECURITY ====================
 echo ""; echo "=== 3. SECURITY (10 tests) ==="
