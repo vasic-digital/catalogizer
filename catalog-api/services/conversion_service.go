@@ -79,6 +79,12 @@ func (s *ConversionService) StartConversion(jobID int) error {
 		return fmt.Errorf("job is not in pending status")
 	}
 
+	// jobs stored before the path confinement existed are re-checked before anything runs
+	if cerr := confineConversionPaths(job.SourcePath, job.TargetPath); cerr != nil {
+		s.handleConversionError(job, fmt.Errorf("conversion refused: %w", cerr))
+		return fmt.Errorf("conversion refused: %w", cerr)
+	}
+
 	job.Status = models.ConversionStatusRunning
 	job.StartedAt = &time.Time{}
 	*job.StartedAt = time.Now()
@@ -777,6 +783,20 @@ func (s *ConversionService) GetSupportedFormats() *models.SupportedFormats {
 	}
 }
 
+// confineConversionPaths: the input may come from the read roots (CATALOGIZER_READ_ROOTS,
+// default MEDIA_ROOT_PATH + ./data) or the conversion write roots; the output must lie in the
+// conversion write roots (CATALOGIZER_CONVERSION_ROOTS, default ./data). §11.4.115.
+func confineConversionPaths(source, target string) error {
+	write := pathguard.ConversionWriteRoots()
+	if _, err := pathguard.Confine(source, pathguard.Readable(write)); err != nil {
+		return fmt.Errorf("source path %q rejected: %w", source, err)
+	}
+	if _, err := pathguard.Confine(target, write); err != nil {
+		return fmt.Errorf("target path %q rejected: %w", target, err)
+	}
+	return nil
+}
+
 func (s *ConversionService) validateConversionRequest(request *models.ConversionRequest) bool {
 	if request.SourcePath == "" || request.TargetPath == "" {
 		return false
@@ -793,9 +813,9 @@ func (s *ConversionService) validateConversionRequest(request *models.Conversion
 		}
 		// Absolute paths must stay inside the configured conversion roots; an
 		// authenticated caller must not read /etc/passwd or write ~/.ssh (§11.4.115).
-		if _, err := pathguard.Confine(p, pathguard.RootsFromEnv("CATALOGIZER_CONVERSION_ROOTS", filepath.Join(".", "data"))); err != nil {
-			return false
-		}
+	}
+	if confineConversionPaths(request.SourcePath, request.TargetPath) != nil {
+		return false
 	}
 
 	if request.SourceFormat == "" || request.TargetFormat == "" {

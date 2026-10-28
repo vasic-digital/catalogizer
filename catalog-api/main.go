@@ -17,6 +17,7 @@ import (
 	"catalogizer/internal/metrics"
 	"catalogizer/internal/middleware"
 	"catalogizer/internal/modules"
+	"catalogizer/internal/pathguard"
 	"catalogizer/internal/services"
 	root_middleware "catalogizer/middleware"
 	root_repository "catalogizer/repository"
@@ -391,6 +392,7 @@ func main() {
 	moduleRegistry.StartBackgroundServices(ctx)
 
 	// Run database migrations
+	logging.Infof("Filesystem path confinement roots: %s", pathguard.Describe())
 	logging.Info("Running database migrations...")
 	if err := databaseDB.RunMigrations(ctx); err != nil {
 	logging.Fatal("Failed to run database migrations", logging.ErrorField(err))

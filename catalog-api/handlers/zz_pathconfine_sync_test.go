@@ -49,3 +49,20 @@ func (s *SyncHandlerTestSuite) TestPathConfine_LocalPathOutsideRootsRejected() {
 	w := s.doRequest("POST", "/sync/endpoints", body, true)
 	s.Equal(http.StatusBadRequest, w.Code)
 }
+
+// F2: the documented use case (docs/api/SYNC_API.md): push the read-only media library
+// (MEDIA_ROOT_PATH, mounted :ro) to a remote. local_path is only READ for upload, so a read
+// root is enough; the same path for a download (which WRITES local_path) is refused.
+func (s *SyncHandlerTestSuite) TestPathConfine_UploadFromMediaRootAccepted_DownloadRefused() {
+	media := s.T().TempDir()
+	writeRoot := s.T().TempDir()
+	s.T().Setenv("CATALOGIZER_SYNC_ROOTS", writeRoot)
+	s.T().Setenv("CATALOGIZER_READ_ROOTS", media)
+	mk := func(dir string) map[string]interface{} {
+		return map[string]interface{}{"name": "lib-" + dir, "type": "webdav", "url": "http://example.com/dav",
+			"sync_direction": dir, "local_path": filepath.Join(media, "movies"), "remote_path": "/backup/movies"}
+	}
+	// 502 = path validation passed, the (deliberately unreachable) WebDAV connection test failed
+	s.NotEqual(http.StatusBadRequest, s.doRequest("POST", "/sync/endpoints", mk("upload"), true).Code, "upload from the media root must pass path validation")
+	s.Equal(http.StatusBadRequest, s.doRequest("POST", "/sync/endpoints", mk("download"), true).Code)
+}

@@ -40,6 +40,8 @@ Create a new sync endpoint. The service validates configuration and tests the co
 
 **Response 201:** Created endpoint object.
 
+**Path confinement:** `local_path` (and `source_directory` / `destination_directory` in `sync_settings`) must lie inside the configured roots - read roots for paths that are only read (`upload`), sync write roots for paths that are written (`download`, `bidirectional`, destinations). Otherwise 400. Existing endpoints are re-checked when a sync runs. See [PATH_CONFINEMENT](../security/PATH_CONFINEMENT.md).
+
 **Errors:** 400 (invalid config), 502 (connection test failed).
 
 ### GET /api/v1/sync/endpoints

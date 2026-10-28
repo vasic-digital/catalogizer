@@ -192,47 +192,49 @@ var coverFilenames = []string{
 	"artwork.jpg", "artwork.jpeg", "artwork.png",
 }
 
-func (r *LocalScanResolver) CanResolve(_ context.Context, req *resolver.ResolveRequest) bool {
-	if req.SourceHint == "" || !strings.HasPrefix(req.SourceHint, "/") {
-		return false
+// coverFile returns the first regular (non-symlink) cover image in the directory of the
+// request's source hint. The hint is request-fed (POST /assets/request), so its directory
+// must lie inside the read roots (CATALOGIZER_READ_ROOTS, default MEDIA_ROOT_PATH + ./data)
+// and symlinked cover files are refused: otherwise a hint like /etc/x would serve and
+// reveal the existence of files anywhere (§11.4.115).
+func (r *LocalScanResolver) coverFile(hint string) (path, name string, info os.FileInfo, dir string) {
+	if hint == "" || !strings.HasPrefix(hint, "/") {
+		return "", "", nil, ""
 	}
-	dir := filepath.Dir(req.SourceHint)
-	for _, name := range coverFilenames {
-		path := filepath.Join(dir, name)
-		if info, err := os.Stat(path); err == nil && !info.IsDir() {
-			return true
+	dir, err := pathguard.Confine(filepath.Dir(hint), pathguard.ReadRoots())
+	if err != nil {
+		return "", "", nil, ""
+	}
+	for _, n := range coverFilenames {
+		p := filepath.Join(dir, n)
+		fi, err := os.Lstat(p)
+		if err == nil && fi.Mode().IsRegular() {
+			return p, n, fi, dir
 		}
 	}
-	return false
+	return "", "", nil, dir
+}
+
+func (r *LocalScanResolver) CanResolve(_ context.Context, req *resolver.ResolveRequest) bool {
+	p, _, _, _ := r.coverFile(req.SourceHint)
+	return p != ""
 }
 
 func (r *LocalScanResolver) Resolve(_ context.Context, req *resolver.ResolveRequest) (*resolver.ResolveResult, error) {
-	dir := filepath.Dir(req.SourceHint)
-	for _, name := range coverFilenames {
-		path := filepath.Join(dir, name)
-		info, err := os.Stat(path)
-		if err != nil || info.IsDir() {
-			continue
-		}
-
-		f, err := os.Open(path)
-		if err != nil {
-			continue
-		}
-
-		ct := "image/jpeg"
-		if strings.HasSuffix(name, ".png") {
-			ct = "image/png"
-		}
-
-		return &resolver.ResolveResult{
-			Content:     f,
-			ContentType: ct,
-			Size:        info.Size(),
-		}, nil
+	path, name, info, dir := r.coverFile(req.SourceHint)
+	if path == "" {
+		// generic message: do not reveal whether an out-of-roots directory exists
+		return nil, fmt.Errorf("no cover image found")
 	}
-
-	return nil, fmt.Errorf("no cover image found in %s", dir)
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("no cover image found in %s", dir)
+	}
+	ct := "image/jpeg"
+	if strings.HasSuffix(name, ".png") {
+		ct = "image/png"
+	}
+	return &resolver.ResolveResult{Content: f, ContentType: ct, Size: info.Size()}, nil
 }
 
 // Verify interface compliance at compile time.

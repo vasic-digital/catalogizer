@@ -44,7 +44,15 @@ func (c *WebDAVClient) TestConnection() error {
 	return nil
 }
 
+// maxListDepth bounds ListFiles recursion: a hostile server can otherwise answer every
+// PROPFIND with a directory entry that points back at itself and overflow the stack.
+const maxListDepth = 32
+
 func (c *WebDAVClient) ListFiles(remotePath string) ([]*WebDAVFile, error) {
+	return c.listFiles(remotePath, 0)
+}
+
+func (c *WebDAVClient) listFiles(remotePath string, depth int) ([]*WebDAVFile, error) {
 	files, err := c.client.ReadDir(remotePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list files: %w", err)
@@ -61,8 +69,8 @@ func (c *WebDAVClient) ListFiles(remotePath string) ([]*WebDAVFile, error) {
 		webdavFiles = append(webdavFiles, webdavFile)
 
 		// Recursively list subdirectories if needed
-		if file.IsDir() {
-			subFiles, err := c.ListFiles(webdavFile.Path)
+		if file.IsDir() && depth < maxListDepth && file.Name() != "." && file.Name() != ".." {
+			subFiles, err := c.listFiles(webdavFile.Path, depth+1)
 			if err == nil {
 				webdavFiles = append(webdavFiles, subFiles...)
 			}

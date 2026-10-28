@@ -71,3 +71,75 @@ func TestSafeComponent(t *testing.T) {
 		}
 	}
 }
+
+// F1 (review round 1): a DANGLING symlink inside a root must not be treated as a missing
+// path element; writing through it would create the target outside the root.
+func TestConfine_DanglingSymlinkEscapes(t *testing.T) {
+	root := t.TempDir()
+	outside := t.TempDir()
+	if err := os.Symlink(filepath.Join(outside, "newfile"), filepath.Join(root, "dangling")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(outside, "newdir"), filepath.Join(root, "danglingdir")); err != nil {
+		t.Fatal(err)
+	}
+	for name, p := range map[string]string{
+		"dangling leaf":   filepath.Join(root, "dangling"),
+		"dangling parent": filepath.Join(root, "danglingdir", "x"),
+	} {
+		if got, err := Confine(p, []string{root}); err == nil {
+			t.Errorf("%s: dangling symlink to outside accepted as %q", name, got)
+		}
+	}
+	// control: a dangling link whose target is inside the root is still confined (and allowed)
+	if err := os.Symlink(filepath.Join(root, "later"), filepath.Join(root, "inlink")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Confine(filepath.Join(root, "inlink"), []string{root}); err != nil {
+		t.Errorf("control: dangling link to a path inside the root must be allowed: %v", err)
+	}
+	// control: plain missing elements still allowed
+	if _, err := Confine(filepath.Join(root, "new", "deep", "f"), []string{root}); err != nil {
+		t.Errorf("control: missing path under root must be allowed: %v", err)
+	}
+}
+
+// A symlink loop must fail closed.
+func TestConfine_SymlinkLoopRejected(t *testing.T) {
+	root := t.TempDir()
+	a, b := filepath.Join(root, "a"), filepath.Join(root, "b")
+	_ = os.Symlink(b, a)
+	_ = os.Symlink(a, b)
+	if _, err := Confine(filepath.Join(root, "a", "x"), []string{root}); err == nil {
+		t.Error("symlink loop accepted")
+	}
+}
+
+func TestEffectiveRoots(t *testing.T) {
+	t.Setenv(EnvReadRoots, "")
+	t.Setenv(EnvSyncRoots, "")
+	t.Setenv(EnvConversionRoots, "")
+	t.Setenv(EnvMediaRoot, "")
+	abs := func(p string) string { a, _ := filepath.Abs(p); return a }
+	if got := ReadRoots(); len(got) != 1 || got[0] != abs("data") {
+		t.Fatalf("default read roots = %v", got)
+	}
+	t.Setenv(EnvMediaRoot, "/media")
+	if got := ReadRoots(); len(got) != 2 || got[0] != "/media" || got[1] != abs("data") {
+		t.Fatalf("read roots with MEDIA_ROOT_PATH = %v", got)
+	}
+	t.Setenv(EnvReadRoots, "/x:/y")
+	if got := ReadRoots(); len(got) != 2 || got[0] != "/x" {
+		t.Fatalf("explicit read roots must replace defaults: %v", got)
+	}
+	if got := SyncWriteRoots(); len(got) != 1 || got[0] != abs("data") {
+		t.Fatalf("sync write default = %v", got)
+	}
+	t.Setenv(EnvConversionRoots, "/w")
+	if got := Readable(ConversionWriteRoots()); got[len(got)-1] != "/w" || len(got) != 3 {
+		t.Fatalf("readable must include write roots: %v", got)
+	}
+	if d := Describe(); d == "" {
+		t.Fatal("empty describe")
+	}
+}

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"catalogizer/internal/pathguard"
 	"digital.vasic.assets/pkg/asset"
 	"digital.vasic.assets/pkg/resolver"
 )
@@ -116,6 +117,9 @@ func TestExternalMetadataResolver_Resolve(t *testing.T) {
 
 func TestLocalScanResolver_CanResolve(t *testing.T) {
 	r := NewLocalScanResolver(4)
+	dir := t.TempDir()
+	t.Setenv(pathguard.EnvMediaRoot, "")
+	t.Setenv(pathguard.EnvReadRoots, dir)
 
 	// No source hint
 	if r.CanResolve(context.Background(), &resolver.ResolveRequest{}) {
@@ -128,7 +132,6 @@ func TestLocalScanResolver_CanResolve(t *testing.T) {
 	}
 
 	// Local path with cover.jpg
-	dir := t.TempDir()
 	mediaFile := filepath.Join(dir, "movie.mkv")
 	os.WriteFile(filepath.Join(dir, "cover.jpg"), []byte("cover"), 0644)
 
@@ -140,6 +143,8 @@ func TestLocalScanResolver_CanResolve(t *testing.T) {
 func TestLocalScanResolver_Resolve(t *testing.T) {
 	r := NewLocalScanResolver(4)
 	dir := t.TempDir()
+	t.Setenv(pathguard.EnvMediaRoot, "")
+	t.Setenv(pathguard.EnvReadRoots, dir)
 
 	coverContent := []byte("folder-cover-art")
 	os.WriteFile(filepath.Join(dir, "folder.jpg"), coverContent, 0644)

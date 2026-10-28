@@ -1024,46 +1024,66 @@ func (s *SyncService) shouldRunSchedule(schedule *models.SyncSchedule) bool {
 	}
 }
 
-// syncAllowedRoots are the directories local paths of a sync endpoint must stay inside
-// (§11.4.115). Configure with CATALOGIZER_SYNC_ROOTS (colon-separated absolute paths);
-// the default is ./data/sync. Read on every call so a config change needs no restart.
-func syncAllowedRoots() []string {
-	return pathguard.RootsFromEnv("CATALOGIZER_SYNC_ROOTS", filepath.Join(".", "data", "sync"))
-}
-
-// confineSyncPaths verifies every local filesystem path the endpoint will read or write:
-// LocalPath always; RemotePath only for local-type endpoints (it is a local path there);
-// and the source/destination directories carried in sync_settings.
+// confineSyncPaths verifies every local filesystem path the endpoint will read or write
+// (§11.4.115). Paths a sync only READS (upload source, local-mirror source) may lie in the
+// read roots (CATALOGIZER_READ_ROOTS, default MEDIA_ROOT_PATH + ./data) or the sync write
+// roots; paths it WRITES (download target, destination_directory, either side of a
+// bidirectional sync) must lie in the sync write roots (CATALOGIZER_SYNC_ROOTS, default
+// ./data). sync_settings directories are checked for every endpoint type, because the
+// S3/GCS/local drivers all honour source_directory.
 func (s *SyncService) confineSyncPaths(endpoint *models.SyncEndpoint) error {
-	roots := syncAllowedRoots()
-	check := func(label, p string) error {
+	write := pathguard.SyncWriteRoots()
+	readable := pathguard.Readable(write)
+	check := func(label, p string, roots []string) error {
 		if _, err := pathguard.Confine(p, roots); err != nil {
 			return fmt.Errorf("%s %q rejected: %w", label, p, err)
 		}
 		return nil
 	}
-	if endpoint.LocalPath != "" {
-		if err := check("local path", endpoint.LocalPath); err != nil {
+	// local_path is written by download/bidirectional (and unknown directions), only read by upload
+	localRoots := write
+	if endpoint.SyncDirection == models.SyncDirectionUpload {
+		localRoots = readable
+	}
+
+	var cfg map[string]interface{}
+	if endpoint.SyncSettings != nil && *endpoint.SyncSettings != "" {
+		if err := json.Unmarshal([]byte(*endpoint.SyncSettings), &cfg); err != nil {
+			cfg = nil // unparsable settings are rejected by the driver itself
+		}
+	}
+	mode, _ := cfg["sync_mode"].(string)
+	srcRoots := readable
+	if mode == "bidirectional" {
+		srcRoots = write // bidirectional sync writes the source side too
+	}
+	dirSet := map[string]bool{}
+	if v, ok := cfg["source_directory"].(string); ok && v != "" {
+		dirSet["source_directory"] = true
+		if err := check("source_directory", v, srcRoots); err != nil {
 			return err
 		}
 	}
-	if endpoint.Type == models.SyncTypeLocal {
-		if endpoint.RemotePath != "" {
-			if err := check("remote path", endpoint.RemotePath); err != nil {
-				return err
-			}
+	if v, ok := cfg["destination_directory"].(string); ok && v != "" {
+		if err := check("destination_directory", v, write); err != nil {
+			return err
 		}
-		if endpoint.SyncSettings != nil {
-			cfg := map[string]interface{}{}
-			if err := json.Unmarshal([]byte(*endpoint.SyncSettings), &cfg); err == nil {
-				for _, k := range []string{"source_directory", "destination_directory"} {
-					if v, ok := cfg[k].(string); ok && v != "" {
-						if err := check(k, v); err != nil {
-							return err
-						}
-					}
-				}
-			}
+	}
+
+	if endpoint.LocalPath != "" {
+		roots := localRoots
+		// the local driver uses local_path as the source when source_directory is absent
+		if endpoint.Type == models.SyncTypeLocal && !dirSet["source_directory"] && mode == "bidirectional" {
+			roots = write
+		}
+		if err := check("local path", endpoint.LocalPath, roots); err != nil {
+			return err
+		}
+	}
+	// remote_path of a local-type endpoint is a local path (never used as a write target)
+	if endpoint.Type == models.SyncTypeLocal && endpoint.RemotePath != "" {
+		if err := check("remote path", endpoint.RemotePath, readable); err != nil {
+			return err
 		}
 	}
 	return nil

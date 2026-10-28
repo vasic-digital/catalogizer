@@ -99,6 +99,11 @@ services:
 
       # Media configuration
       MEDIA_ROOT_PATH: ${MEDIA_ROOT_PATH:-/media}
+      # Path confinement roots (docs/security/PATH_CONFINEMENT.md); empty = defaults
+      # (read: MEDIA_ROOT_PATH + ./data, write: ./data)
+      CATALOGIZER_READ_ROOTS: ${CATALOGIZER_READ_ROOTS:-}
+      CATALOGIZER_SYNC_ROOTS: ${CATALOGIZER_SYNC_ROOTS:-}
+      CATALOGIZER_CONVERSION_ROOTS: ${CATALOGIZER_CONVERSION_ROOTS:-}
 
       # S3/MinIO configuration
       STORAGE_TYPE: ${STORAGE_TYPE:-s3}

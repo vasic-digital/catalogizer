@@ -15,13 +15,15 @@ import (
 	"strings"
 )
 
+func getenv(name string) string { return os.Getenv(name) }
+
 // ErrOutsideRoots is returned when a path resolves outside every allowed root.
 var ErrOutsideRoots = errors.New("path is outside the allowed roots")
 
 // RootsFromEnv returns the colon-separated absolute roots in env var name, or the
 // defaults (made absolute against the working directory) when it is unset/empty.
 func RootsFromEnv(name string, defaults ...string) []string {
-	raw := os.Getenv(name)
+	raw := getenv(name)
 	var parts []string
 	if raw != "" {
 		parts = strings.Split(raw, string(os.PathListSeparator))
@@ -89,13 +91,45 @@ func within(base, p string) bool {
 // Within is the exported lexical containment check (no symlink resolution).
 func Within(base, p string) bool { return within(filepath.Clean(base), filepath.Clean(p)) }
 
+// maxLinkDepth bounds the number of dangling-symlink hops resolve follows (loop guard).
+const maxLinkDepth = 40
+
 // resolve evaluates symlinks on the longest existing ancestor of p and re-appends the
-// not-yet-existing remainder.
-func resolve(p string) (string, error) {
+// not-yet-existing remainder. An element that exists as a symlink is always followed, even
+// when its target is missing: a dangling link must resolve to where a write through it
+// would land, never be treated as an absent element (review round 1, F1).
+func resolve(p string) (string, error) { return resolveDepth(p, 0) }
+
+func resolveDepth(p string, depth int) (string, error) {
+	if depth > maxLinkDepth {
+		return "", fmt.Errorf("too many levels of symbolic links resolving %q", p)
+	}
 	cur := p
 	var tail []string
 	for {
-		if r, err := filepath.EvalSymlinks(cur); err == nil {
+		fi, err := os.Lstat(cur)
+		if err == nil {
+			var r string
+			if fi.Mode()&os.ModeSymlink != 0 {
+				if r, err = filepath.EvalSymlinks(cur); err != nil {
+					// dangling (or looping) link: follow it by hand
+					if !errors.Is(err, os.ErrNotExist) {
+						return "", err
+					}
+					target, lerr := os.Readlink(cur)
+					if lerr != nil {
+						return "", lerr
+					}
+					if !filepath.IsAbs(target) {
+						target = filepath.Join(filepath.Dir(cur), target)
+					}
+					if r, err = resolveDepth(filepath.Clean(target), depth+1); err != nil {
+						return "", err
+					}
+				}
+			} else if r, err = filepath.EvalSymlinks(cur); err != nil {
+				return "", err
+			}
 			for i := len(tail) - 1; i >= 0; i-- {
 				r = filepath.Join(r, tail[i])
 			}
