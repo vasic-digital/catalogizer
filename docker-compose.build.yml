@@ -87,6 +87,8 @@ services:
       dockerfile: docker/Dockerfile.builder
       network: host
     network_mode: host
+    # Rootless podman: map the invoking host user onto the image's non-root build user (uid 1000) so files written to /project stay host-user owned
+    userns_mode: "keep-id:uid=1000,gid=1000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -133,9 +135,9 @@ services:
           memory: 8G
     volumes:
       - .:/project
-      - go-cache:/root/go
-      - gradle-cache:/root/.gradle
-      - npm-cache:/root/.npm
+      - go-cache:/home/builder/go
+      - gradle-cache:/home/builder/.gradle
+      - npm-cache:/home/builder/.npm
       - cargo-cache:/opt/cargo/registry
 
   # ============================================================

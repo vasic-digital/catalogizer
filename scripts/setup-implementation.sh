@@ -67,9 +67,9 @@ check_prerequisites() {
         exit 1
     fi
     
-    # Check Docker
-    if ! command -v docker &> /dev/null; then
-        log_warning "Docker is not installed. Some features may not work"
+    # Check container runtime (rootless podman is the project runtime)
+    if ! command -v podman &> /dev/null; then
+        log_warning "podman is not installed. Some features may not work"
     fi
     
     # Check git
@@ -105,9 +105,9 @@ setup_backend_tests() {
     done
     
     # Setup test database
-    if command -v docker &> /dev/null; then
-        log_info "Setting up test database with Docker..."
-        docker run -d --name catalog-test-db -e POSTGRES_PASSWORD=testpass -p 5433:5432 postgres:15-alpine || true
+    if command -v podman &> /dev/null; then
+        log_info "Setting up test database with rootless podman..."
+        podman run -d --name catalog-test-db -e POSTGRES_PASSWORD=testpass -p 5433:5432 docker.io/library/postgres:15-alpine || true
     fi
     
     log_success "Backend testing setup completed"

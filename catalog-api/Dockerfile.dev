@@ -1,4 +1,5 @@
-FROM golang:1.25-alpine
+ARG GO_IMAGE=docker.io/library/golang:1.25-alpine
+FROM ${GO_IMAGE}
 
 RUN apk add --no-cache git make libffi mupdf-dev
 
@@ -12,6 +13,15 @@ RUN go mod download
 # Copy application source (overridden at runtime by volume mount in dev).
 COPY catalog-api/ .
 
+# Non-root: a dedicated dev user owns /app and its own Go caches (source is volume-mounted at runtime)
+RUN adduser -D -u 1000 dev && mkdir -p /home/dev/go /home/dev/.cache && chown -R dev:dev /app /home/dev
+ENV HOME=/home/dev GOPATH=/home/dev/go GOCACHE=/home/dev/.cache/go-build
+
 EXPOSE 8080
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:8080/health || exit 1
+
+USER dev
 
 CMD ["go", "run", "main.go"]

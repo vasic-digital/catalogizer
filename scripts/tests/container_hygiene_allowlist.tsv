@@ -1,0 +1,2 @@
+R4-THINKER-DEFAULT	scripts/deploy-vision-hosts.sh	vision-host deployment target list (HELIX_VISION_HOSTS), not a build default; whether thinker.local is retired for vision hosts is UNCONFIRMED - tracked, operator decision
+R5-PRIVILEGED	docker-compose.build.yml	android-emulator (profile "emulator", opt-in) budtmo/docker-android needs KVM; under rootless podman privileged grants only the invoking user caps; replacing it with devices:/dev/kvm alone is UNVERIFIED (no KVM emulator run here) - tracked

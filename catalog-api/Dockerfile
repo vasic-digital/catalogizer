@@ -5,7 +5,9 @@
 #   podman build --network host -f catalog-api/Dockerfile -t catalogizer-api .
 
 # Stage 1: Build (Debian-based for glibc — required by go-fitz/MuPDF)
-FROM docker.io/library/golang:1.25 AS builder
+# Go floor: go.mod `go 1.25.7` / images.lock.yaml IMG-GO (1.25); override with --build-arg GO_IMAGE=docker.io/library/golang:1.26 (also verified)
+ARG GO_IMAGE=docker.io/library/golang:1.25
+FROM ${GO_IMAGE} AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
