@@ -99,8 +99,11 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
   to the author of this entry; the reviewer or the coordinator who holds the round-3 review has to
   fill it in. Until then this line only records that two round-3 items are open and unnamed.
 - The sync walkers skip non-regular files and re-check each path, but a symlink or file swapped in
-  between that check and the `open` is not caught (same race as F4). The LibreOffice HTML output
-  file in the output directory is not checked for a planted symlink before LibreOffice writes it.
+  between that check and the `open` is not caught (same race as F4). Since round 6 the LibreOffice
+  HTML output path is checked (not a symlink or other non-regular file) before LibreOffice runs and
+  again before the rename, but LibreOffice itself opens it by path, so a link planted while it runs is
+  still the F4 race. `copyFile` opens its confined destination with `os.OpenFile` (no `O_NOFOLLOW`):
+  same race, same `os.Root` fix.
 - `uploadableFile` is called by the S3, GCS and (since round 5) WebDAV upload walkers. The WebDAV one
   is driven end to end against a real in-process WebDAV server; S3 and GCS are not (they need a bucket
   client, and a double would only be a gate-logic test, §11.4.289), so only `uploadableFile` itself is
@@ -117,6 +120,15 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
   branch, and also on `main` 0916e992 before the round-3 fix); it passed once inside the whole
   `./tests/...` run, so it is also order-dependent. Independent of path confinement; investigate
   separately.
+- Round 6, cover art: `GET` cover download serves `cover_art.local_path` with `c.File` without
+  re-checking it. Rows are written only by the cover-art service (cache dir + generated id), so this is
+  a database-trust residual, not a request-supplied path; a confine against the cover cache dir (and
+  the storage read roots for scanned local covers) needs the operator to say which roots are valid.
+- Round 6 discovery (not path confinement): PDF to text, and therefore the PDF to HTML fallback, fail
+  at run time in the test container with `failed to extract text from page 1: unipdf license code
+  required`. The conversion feature is broken for PDFs without a unipdf licence key; nothing in the
+  suite flags it because the existing tests stop before text extraction. Needs a licence decision or a
+  different PDF text engine (§11.4.238 coverage escape: add a live PDF-to-text test).
 - Path confinement refuses about 5% of random cases the kernel would have written inside the root
   (mostly `..` after a not-yet-existing element; see `confine_differential_test.go` false-refusal
   count). Safe direction; revisit only if a real client needs such paths.

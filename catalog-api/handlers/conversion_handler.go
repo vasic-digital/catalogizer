@@ -3,9 +3,11 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
+	"catalogizer/internal/pathguard"
 	"catalogizer/models"
 	"github.com/gin-gonic/gin"
 )
@@ -314,6 +316,18 @@ func (h *ConversionHandler) DownloadJobFile(c *gin.Context) {
 		return
 	}
 
+	// Serve only a regular file inside the conversion write roots. c.File follows symlinks and
+	// re-opens by path, so a job stored before the confinement existed, edited in the database
+	// or with a symlink planted at its target would otherwise serve any readable file (review
+	// round 6, class-exhaustive sink pass).
+	if _, err := pathguard.ConfineDataFile(job.TargetPath, pathguard.ConversionWriteRoots()); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Output file is outside the conversion roots"})
+		return
+	}
+	if fi, err := os.Lstat(job.TargetPath); err != nil || !fi.Mode().IsRegular() {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No output file available"})
+		return
+	}
 	c.File(job.TargetPath)
 }
 

@@ -2,6 +2,7 @@ package services
 
 import (
 	"catalogizer/internal/pathguard"
+	"catalogizer/internal/pathsafe"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -285,8 +286,8 @@ func (s *ConversionService) convertPDFToImage(job *models.ConversionJob, format 
 			outputPath = filepath.Join(dir, fmt.Sprintf("%s_page_%d%s", nameWithoutExt, i+1, ext))
 		}
 
-		// Create output file
-		file, err := os.Create(outputPath)
+		// Create output file (the per-page name is derived, so it is confined here, review round 6, F4)
+		file, err := createConversionOutput(outputPath)
 		if err != nil {
 			return fmt.Errorf("failed to create output file: %w", err)
 		}
@@ -355,8 +356,8 @@ func (s *ConversionService) convertPDFToText(job *models.ConversionJob) error {
 		}
 	}
 
-	// Create output file
-	outputFile, err := os.Create(job.TargetPath)
+	// Create output file (also used for the HTML fallback's ".tmp.txt" sibling)
+	outputFile, err := createConversionOutput(job.TargetPath)
 	if err != nil {
 		return fmt.Errorf("failed to create output file: %w", err)
 	}
@@ -396,6 +397,14 @@ func (s *ConversionService) convertPDFToText(job *models.ConversionJob) error {
 
 // convertPDFToHTML converts PDF to HTML using external tools
 func (s *ConversionService) convertPDFToHTML(job *models.ConversionJob) error {
+	// pandoc writes the target and LibreOffice writes <base>.html beside it; neither refuses a
+	// symlink planted there, so both are checked before the tools run (review round 6, F4).
+	if err := refuseNonRegularLeaf(job.TargetPath); err != nil {
+		return err
+	}
+	if err := refuseNonRegularLeaf(libreOfficeHTMLOutput(job.SourcePath, job.TargetPath)); err != nil {
+		return err
+	}
 	// Try pandoc first for HTML conversion
 	args := []string{
 		"-f", "pdf",
@@ -429,13 +438,9 @@ func (s *ConversionService) convertPDFToHTML(job *models.ConversionJob) error {
 	if err == nil {
 		// LibreOffice might create a different filename, rename if needed
 		libreOutput := libreOfficeHTMLOutput(job.SourcePath, job.TargetPath)
-		if _, err := os.Stat(libreOutput); err == nil {
-			if libreOutput != job.TargetPath {
-				if err := os.Rename(libreOutput, job.TargetPath); err != nil {
-					if logging.Logger != nil {
-						logging.With(logging.ErrorField(err)).Warn("Failed to rename LibreOffice output")
-					}
-				}
+		if err := moveLibreOfficeOutput(libreOutput, job.TargetPath); err != nil {
+			if logging.Logger != nil {
+				logging.With(logging.ErrorField(err)).Warn("Failed to rename LibreOffice output")
 			}
 		}
 		return nil
@@ -479,7 +484,15 @@ func (s *ConversionService) convertPDFToHTML(job *models.ConversionJob) error {
 </html>`, filepath.Base(job.SourcePath), filepath.Base(job.SourcePath), string(content))
 
 	// Write HTML file
-	return os.WriteFile(job.TargetPath, []byte(htmlContent), 0644)
+	out, err := createConversionOutput(job.TargetPath)
+	if err != nil {
+		return err
+	}
+	if _, err := out.WriteString(htmlContent); err != nil {
+		out.Close()
+		return err
+	}
+	return out.Close()
 }
 
 // convertPDFWithImageMagick converts PDF to image formats not directly supported by go-fitz
@@ -787,6 +800,61 @@ func (s *ConversionService) GetSupportedFormats() *models.SupportedFormats {
 // writes: the source's base name with .html, in the output directory. It used to be computed
 // next to the SOURCE, so an unrelated <source>.html in the read root was renamed onto the
 // target, i.e. moved out of the read root (review round 4).
+// moveLibreOfficeOutput renames the file LibreOffice wrote beside the target into place. Only a
+// regular file inside the conversion write roots is moved: renaming a planted symlink over the
+// target would make the download handler serve the link's target (review round 6, F4).
+func moveLibreOfficeOutput(libreOutput, target string) error {
+	fi, err := os.Lstat(libreOutput)
+	if os.IsNotExist(err) || (err == nil && libreOutput == target) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if !fi.Mode().IsRegular() {
+		return fmt.Errorf("LibreOffice output %q is not a regular file", libreOutput)
+	}
+	roots := pathguard.ConversionWriteRoots()
+	if _, err := pathguard.ConfineDataFile(libreOutput, roots); err != nil {
+		return fmt.Errorf("LibreOffice output %q rejected: %w", libreOutput, err)
+	}
+	if _, err := pathguard.ConfineDataFile(target, roots); err != nil {
+		return fmt.Errorf("target path %q rejected: %w", target, err)
+	}
+	return os.Rename(libreOutput, target)
+}
+
+// createConversionOutput opens a file a converter writes itself: the target or a name derived
+// from it (per-page images, the HTML fallback's temp file). The path must lie in the conversion
+// write roots, and a symlink in its final component is refused (O_NOFOLLOW).
+func createConversionOutput(p string) (*os.File, error) {
+	if _, err := pathguard.ConfineDataFile(p, pathguard.ConversionWriteRoots()); err != nil {
+		return nil, fmt.Errorf("output path %q rejected: %w", p, err)
+	}
+	f, err := pathsafe.CreateNoFollow(p, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create output file %q: %w", p, err)
+	}
+	return f, nil
+}
+
+// refuseNonRegularLeaf refuses a path an external converter will write when something other
+// than a regular file already sits there (a symlink the tool would follow). A missing path is
+// fine.
+func refuseNonRegularLeaf(p string) error {
+	fi, err := os.Lstat(p)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if !fi.Mode().IsRegular() {
+		return fmt.Errorf("output path %q exists and is not a regular file", p)
+	}
+	return nil
+}
+
 func libreOfficeHTMLOutput(source, target string) string {
 	base := filepath.Base(source)
 	return filepath.Join(filepath.Dir(target), strings.TrimSuffix(base, filepath.Ext(base))+".html")

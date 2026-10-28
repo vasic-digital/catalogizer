@@ -291,6 +291,9 @@ func (s *SyncService) performWebDAVSync(session *models.SyncSession, endpoint *m
 }
 
 func (s *SyncService) uploadToWebDAV(session *models.SyncSession, endpoint *models.SyncEndpoint, client *WebDAVClient) error {
+	if err := requireUploadSourceDir(endpoint.LocalPath); err != nil {
+		return err
+	}
 	localFiles, err := s.scanLocalFiles(endpoint.LocalPath)
 	if err != nil {
 		return fmt.Errorf("failed to scan local files: %w", err)
@@ -443,6 +446,14 @@ func (s *SyncService) performS3Sync(ctx context.Context, session *models.SyncSes
 		return fmt.Errorf("S3 secret key not specified")
 	}
 
+	// Resolve and check the upload source before any client is built: a single regular file
+	// or a missing path is refused loudly instead of reporting a 0-file success (review round
+	// 6, F3).
+	sourceDir, err := uploadSourceDir(syncConfig, endpoint)
+	if err != nil {
+		return err
+	}
+
 	// Create AWS configuration
 	awsCfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(region),
@@ -459,16 +470,6 @@ func (s *SyncService) performS3Sync(ctx context.Context, session *models.SyncSes
 
 	// Create S3 client
 	client := s3.NewFromConfig(awsCfg)
-
-	// Get source directory from sync settings
-	sourceDir, ok := syncConfig["source_directory"].(string)
-	if !ok {
-		// Fallback to local path
-		sourceDir = endpoint.LocalPath
-		if sourceDir == "" {
-			return fmt.Errorf("source directory not specified")
-		}
-	}
 
 	// Walk through source directory and upload files
 	err = filepath.Walk(sourceDir, func(path string, info os.FileInfo, err error) error {
@@ -541,9 +542,16 @@ func (s *SyncService) performGoogleCloudStorageSync(ctx context.Context, session
 
 	credentialsFile, _ := syncConfig["credentials_file"].(string)
 
+	// Resolve and check the upload source before any client is built: a single regular file
+	// or a missing path is refused loudly instead of reporting a 0-file success (review round
+	// 6, F3).
+	sourceDir, err := uploadSourceDir(syncConfig, endpoint)
+	if err != nil {
+		return err
+	}
+
 	// Create GCS client
 	var client *storage.Client
-	var err error
 
 	if credentialsFile != "" {
 		// Use credentials file for GCS authentication
@@ -559,16 +567,6 @@ func (s *SyncService) performGoogleCloudStorageSync(ctx context.Context, session
 		return fmt.Errorf("failed to create GCS client: %w", err)
 	}
 	defer client.Close()
-
-	// Get source directory from sync settings
-	sourceDir, ok := syncConfig["source_directory"].(string)
-	if !ok {
-		// Fallback to local path
-		sourceDir = endpoint.LocalPath
-		if sourceDir == "" {
-			return fmt.Errorf("source directory not specified")
-		}
-	}
 
 	// Walk through source directory and upload files
 	err = filepath.Walk(sourceDir, func(path string, info os.FileInfo, err error) error {
@@ -710,7 +708,12 @@ func (s *SyncService) performMirrorSync(sourceDir, destDir string, session *mode
 
 		// Handle directories
 		if info.IsDir() {
-			// Create destination directory
+			// The directory form: destDir itself (relPath ".") is valid. A directory symlink
+			// planted in the destination would otherwise let MkdirAll create directories
+			// outside the destination root (review round 6, F1).
+			if _, err := pathguard.ConfineData(destPath, []string{destDir}); err != nil {
+				return fmt.Errorf("destination directory %q refused: %w", destPath, err)
+			}
 			if err := os.MkdirAll(destPath, info.Mode()); err != nil {
 				return fmt.Errorf("failed to create directory %s: %w", destPath, err)
 			}
@@ -861,7 +864,12 @@ func (s *SyncService) copyFile(src, dst string, mode os.FileMode, srcRoot, dstRo
 	if _, err := pathguard.ConfineDataFile(dst, []string{dstRoot}); err != nil {
 		return fmt.Errorf("destination %q: %w", dst, err)
 	}
-	// Ensure destination directory exists
+	// Ensure destination directory exists. ConfineDataFile above already refuses a dst whose
+	// prefixes leave dstRoot; the parent is checked in the directory form as well so the
+	// MkdirAll call carries its own guard (review round 6, F1).
+	if _, err := pathguard.ConfineData(filepath.Dir(dst), []string{dstRoot}); err != nil {
+		return fmt.Errorf("destination directory %q: %w", filepath.Dir(dst), err)
+	}
 	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
 		return err
 	}
@@ -1213,6 +1221,37 @@ func (s *SyncService) getWebDAVClient(endpoint *models.SyncEndpoint) (*WebDAVCli
 // scanLocalFiles lists the files the WebDAV upload sends. Only uploadableFile entries are listed:
 // the upload opens each path with os.Open, which follows a symlink planted in the source and
 // reads a hard link of the database (review round 5, RV5-A; the other walkers got this in round 4).
+// uploadSourceDir returns the directory an S3 or GCS upload walks: source_directory from the
+// sync settings, else local_path. It must exist and be a directory (review round 6, F3).
+func uploadSourceDir(syncConfig map[string]interface{}, endpoint *models.SyncEndpoint) (string, error) {
+	sourceDir, ok := syncConfig["source_directory"].(string)
+	if !ok {
+		sourceDir = endpoint.LocalPath
+		if sourceDir == "" {
+			return "", fmt.Errorf("source directory not specified")
+		}
+	}
+	if err := requireUploadSourceDir(sourceDir); err != nil {
+		return "", err
+	}
+	return sourceDir, nil
+}
+
+// requireUploadSourceDir refuses an upload source that is missing or is not a directory. The
+// walkers below accept a regular-file root and then skip it, which reported a successful sync
+// of zero files; the local driver already refused this case ("source path is not a
+// directory").
+func requireUploadSourceDir(dir string) error {
+	fi, err := os.Stat(dir)
+	if err != nil {
+		return fmt.Errorf("upload source %q: %w", dir, err)
+	}
+	if !fi.IsDir() {
+		return fmt.Errorf("upload source %q is not a directory", dir)
+	}
+	return nil
+}
+
 func (s *SyncService) scanLocalFiles(path string) ([]string, error) {
 	var files []string
 

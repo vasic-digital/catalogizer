@@ -62,6 +62,10 @@ func SafeComponent(s string) bool {
 // a file, or next to which a file is written, use ConfineFile.
 func Confine(p string, roots []string) (string, error) { return confine(p, roots, false) }
 
+// ErrInvalidRoot is returned when a root list holds an entry that is empty, relative or carries
+// a NUL byte (review round 6, F2).
+var ErrInvalidRoot = errors.New("invalid allowed root entry")
+
 // ErrRootItself is returned by ConfineFile and ConfineDataFile for a path that resolves to one of
 // the roots: it is a directory argument, not a file below the root (review round 5, RV5-B).
 var ErrRootItself = errors.New("path is the allowed root itself, not a file below it")
@@ -84,6 +88,15 @@ func confine(p string, roots []string, file bool) (string, error) {
 	}
 	if len(roots) == 0 {
 		return "", fmt.Errorf("pathguard: no allowed roots configured: %w", ErrOutsideRoots)
+	}
+	// Every root entry must itself be a usable absolute path. An empty entry splits to no
+	// components and resolves to "/", which silently widened the allowed set to the whole
+	// filesystem (review round 6, F2); a relative entry resolves against the process working
+	// directory. One bad entry fails the whole call closed instead of being skipped.
+	for _, r := range roots {
+		if r == "" || strings.ContainsRune(r, 0) || !filepath.IsAbs(r) {
+			return "", fmt.Errorf("pathguard: root %q: %w", r, ErrInvalidRoot)
+		}
 	}
 	// p is resolved exactly as given, never filepath.Clean'ed first: Clean folds "lnk/.."
 	// lexically, while the kernel follows lnk and then steps up from its target (review round

@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"catalogizer/internal/pathsafe"
+
 	"github.com/studio-b12/gowebdav"
 )
 
@@ -145,8 +147,9 @@ func (c *WebDAVClient) DownloadFile(remotePath, localPath string) error {
 	}
 	defer reader.Close()
 
-	// Create local file
-	localFile, err := os.Create(localPath)
+	// Create local file. CreateNoFollow refuses a symlink planted at the leaf after the caller
+	// confined localPath (os.Create would follow it out of the sync root).
+	localFile, err := pathsafe.CreateNoFollow(localPath, true)
 	if err != nil {
 		return fmt.Errorf("failed to create local file: %w", err)
 	}

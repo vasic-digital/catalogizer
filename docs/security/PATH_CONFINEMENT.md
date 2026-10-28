@@ -2,8 +2,12 @@
 
 Request-fed filesystem paths (sync endpoints, conversion jobs, cover-art lookup, asset cache,
 backup restore) are confined to configured root directories by `catalog-api/internal/pathguard`
-(symlink-resolving, fail-closed: an empty root list, relative path, NUL byte, symlink loop or any
-resolution error is a rejection; a dangling symlink is followed to where a write would land).
+(symlink-resolving; a rejection is returned for an empty root list, a relative path, a NUL byte, a symlink
+loop or any resolution error; a dangling symlink is followed to where a write would land). Since review
+round 6 every root ENTRY is validated too: an empty, relative (including `.`) or NUL-carrying entry fails
+the whole call with `ErrInvalidRoot`. Before round 6 an empty entry resolved to `/`, so a root list such
+as `["/srv/data", ""]` silently allowed every path; a relative entry was resolved against nothing
+meaningful. An unparsable root list is therefore now a configuration error, not a wider allowed set.
 Resolution walks the path exactly as the request gives it (it is not `filepath.Clean`ed first), one
 component at a time the way the kernel does: every symlink is followed (dangling ones included), a
 relative link target is resolved against the link's real directory, a `..` steps up from the directory
@@ -170,6 +174,49 @@ with the same grep finding the 3 real callers of `NewSyncService` (positive cont
 | `WebDAVClient.SyncDirectory` / `UploadBatch` / `DownloadBatch`, `calculateChecksum`, `ConfigurationWizardService`, `NewEnhancedChangeWatcher`, `MediaPlayerHandlers`, `handlers/copy.go` (unrouted `CopyHandler`) | various | UNREACHABLE: no production caller (kept per §11.4.124, not deleted) |
 | config, firebase, encryption, provisioner, admin backup dir, `configPath`, `LogDirectory`, `statsPath`, cover-art `cacheDir`, temp files | server configuration | NOT request-supplied |
 
+## Sink inventory (review round 6, class-exhaustive)
+
+Grep over non-test `.go` files under `catalog-api` (`grep -rnE --include=*.go`, `_test.go` excluded):
+
+```
+os\.(Create|CreateTemp|OpenFile|MkdirAll|Mkdir|MkdirTemp|Rename|WriteFile|Remove|RemoveAll|Symlink|Link|Chmod|Chtimes|Truncate)\(|\.File\(|\.FileAttachment\(|SaveUploadedFile\(
+```
+
+* Result: 130 call sites (measured 2026-10-29 on this branch before the round-6 fixes were committed).
+* Positive control: `services/sync_service.go` returns 7 hits, including `os.MkdirAll(destPath` (the
+  mirror directory sink this round fixed); an instrument that misses it is blind.
+* Negative control: `os\.CreateZZQ\(` returns 0 hits.
+* Gin read sinks (`c.File`) are part of the pattern; `FileAttachment` and `SaveUploadedFile` returned 0.
+
+Rows are grouped by class; every hit belongs to exactly one row.
+
+| Sink (file:line at grep time) | Path source | Status |
+|---|---|---|
+| `handlers/conversion_handler.go:317` `c.File(job.TargetPath)` | stored conversion job | FIXED round 6: `ConfineDataFile` against the conversion roots (403) + `Lstat` regular-file check (404); a symlink or a root itself is never served |
+| `handlers/cover_handler.go:121` `c.File(*coverArt.LocalPath)` | `cover_art.local_path` row | RESIDUAL (DB trust): written only by the cover-art service (`cacheDir` + generated id); `ScanLocalCoverArt` paths come only from the unrouted `MediaPlayerHandlers`. A tampered row would be served; follow-up below |
+| `services/sync_service.go:717` mirror `MkdirAll(destPath)` | `local_path` + walked entry | FIXED round 6: `ConfineData(destPath, destDir)` before `MkdirAll` |
+| `services/sync_service.go:873` `copyFile` `MkdirAll(Dir(dst))` | destination root | FIXED round 6: `ConfineData(Dir(dst), dstRoot)` before `MkdirAll` (round 5 already refused it through `prefixesStayWithin`; the test is kept as a regression guard) |
+| `services/sync_service.go:885` `copyFile` `OpenFile(dst)` | destination root | CONFINED (`ConfineDataFile`); leaf-symlink TOCTOU residual, see F4 |
+| `services/sync_service.go:385` WebDAV download `MkdirAll` | `local_path` | CONFINED round 5 |
+| `services/sync_service.go:669` `MkdirAll(destDir)` | `confineSyncPaths` | CONFINED |
+| `services/sync_service.go:919,925` `Remove` | `cleanupDestination` | lexical walk, removes a link itself |
+| `services/webdav_client.go:137,149` `DownloadFile` | confined `localPath` from `downloadFromWebDAV`; `DownloadBatch`/`SyncDirectory` unreachable | FIXED round 6: `pathsafe.CreateNoFollow` (a symlink planted at the leaf after confinement is refused) |
+| `services/conversion_service.go` per-page writes, `.tmp.txt`, final HTML write | conversion target | FIXED round 6: `createConversionOutput` = `ConfineDataFile` against `ConversionWriteRoots()` + `pathsafe.CreateNoFollow`; HTML fallback checks the target leaf before any tool runs |
+| `services/conversion_service.go:824` LibreOffice `Rename` | tool output next to target | FIXED round 6: `moveLibreOfficeOutput` (`Lstat` regular file, both sides `ConfineDataFile`) |
+| `services/conversion_service.go:459` `Remove(tempTextFile)` | derived temp file | removes the link itself, never its target |
+| `internal/handlers/copy.go:165` | routed `POST /copy/local` | CONFINED round 5 |
+| `internal/handlers/copy.go:253,259`, `internal/handlers/download.go` (8), `handlers/comic_pages_handler.go`, `handlers/pdf_pages_handler.go`, `internal/services/smb.go:317,321`, `internal/services/cover_art_service.go:1357,1364,1413,1275` | `os.CreateTemp` names | NOT request-supplied (temp files) |
+| `internal/services/smb.go:213` `DownloadFile` `MkdirAll` | callers pass a temp file or the confined copy destination | CONFINED by caller |
+| `internal/services/cover_art_service.go:758,763,855,1151,1155` | `cacheDir` + generated ids | NOT request-supplied |
+| `internal/services/cover_art_service.go:441` `ProcessImage` | caller-supplied | UNREACHABLE: no production caller |
+| `filesystem/local_client.go` (7), `filesystem/nfs_client.go` (8), `filesystem/nfs_client_darwin.go` (5) | admin-configured storage base | FOLLOW-UP (unchanged): lexical `ConfinePath` |
+| `handlers/copy.go` (4) | unrouted `CopyHandler` | UNREACHABLE |
+| `services/configuration_wizard_service.go` (11) | wizard | UNREACHABLE |
+| `database/encryption.go` (33) | backup/restore/rekey paths | admin/operator-supplied (CLI and admin backup dir), NOT request-supplied |
+| `main.go` (5), `config/config.go` (2), `services/configuration_service.go` (2), `handlers/admin_handler.go:409`, `internal/media/manager.go:583`, `services/log_management_service.go:695,710` | server configuration / log directory walk | NOT request-supplied |
+| `internal/pathsafe/pathsafe.go:132` | the no-follow helper itself | helper |
+| `tests/automation/*.go`, `tests/test_utils.go`, `tests/test_main.go` | test harness (non-`_test` files) | NOT shipped behaviour |
+
 ## WebDAV listing limits
 
 `WebDAVClient.ListFiles` (used by WebDAV sync) bounds a listing by depth (32), PROPFIND requests (10000) and
@@ -186,10 +233,12 @@ could still force about 2^33 requests, so the round-1 commit message's "bounded"
 * Fix: add the directory to the matching variable (`CATALOGIZER_SYNC_ROOTS` for written paths,
   `CATALOGIZER_READ_ROOTS` for read-only paths, `CATALOGIZER_CONVERSION_ROOTS` for outputs) and restart; or edit the endpoint.
 * The old default `./data/sync` is now `./data`.
-* Since round 5 a sync whose `local_path` (or `source_directory`) is a single regular FILE rather than a
-  directory copies or uploads nothing: the walk visits the root itself, which the per-file check refuses
-  as "the root itself" (otherwise the copy would write the destination root as a file and create
-  directories in its parent). Point the endpoint at the directory that holds the file.
+* A sync whose `local_path` (or `source_directory`) is a single regular FILE rather than a directory is
+  refused LOUDLY since round 6, in every mode: a local sync fails with `source path is not a directory`;
+  WebDAV, S3 and GCS uploads fail with `upload source "<path>" is not a directory` (a missing source fails
+  with `upload source "<path>": ...`) before any remote client is created; mirror and `copyFile` refuse a
+  single-file root as "the root itself". Round 5 made the uploads copy nothing while reporting success
+  (0 files); that silent outcome is gone. Point the endpoint at the directory that holds the file.
 * A conversion whose `target_path` (or `source_path`) is a configured root itself, and a
   `POST /copy/local` with `destination_path` `.` or an equivalent, are refused since round 5.
 
