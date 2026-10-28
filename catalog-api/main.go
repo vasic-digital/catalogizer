@@ -354,9 +354,20 @@ func main() {
 	cfg.Database.SSLMode = dbSSL
 	}
 
+	if keyFile := os.Getenv("DATABASE_ENCRYPTION_KEY_FILE"); keyFile != "" {
+	cfg.Database.EncryptionKeyFile = keyFile
+	}
+
 	// Default SQLite path if not set
 	if cfg.Database.Path == "" {
 	cfg.Database.Path = "./data/catalogizer.db"
+	}
+
+	// CAT-001 offline maintenance commands (server must be stopped):
+	//   catalog-api db-rekey            rotate the SQLCipher key
+	//   catalog-api db-restore <file>   restore an encrypted backup
+	if flag.NArg() > 0 && (flag.Arg(0) == "db-rekey" || flag.Arg(0) == "db-restore") {
+		os.Exit(runDBMaintenance(&cfg.Database, flag.Args()))
 	}
 	// Default SSLMode
 	if cfg.Database.SSLMode == "" {
