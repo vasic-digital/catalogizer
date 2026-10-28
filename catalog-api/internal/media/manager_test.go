@@ -481,8 +481,8 @@ func TestNewMediaManager_WithPasswordDBCreationSucceeds(t *testing.T) {
 }
 
 func TestNewMediaManager_DBInitFailure(t *testing.T) {
-	// Force a DB initialization failure by changing to a read-only directory
-	// so that "media_catalog.db" cannot be created.
+	// Force a DB initialization failure: "media_catalog.db" is made an
+	// existing directory in a private CWD (see below), which SQLite cannot open.
 	original := os.Getenv("MEDIA_DB_PASSWORD")
 	os.Setenv("MEDIA_DB_PASSWORD", "test-password-for-db-failure")
 	defer func() {
@@ -501,10 +501,7 @@ func TestNewMediaManager_DBInitFailure(t *testing.T) {
 	// under root and the test then dereferenced nil, aborting the package).
 	workDir := t.TempDir()
 	require.NoError(t, os.Mkdir(filepath.Join(workDir, "media_catalog.db"), 0o755))
-	origDir, err := os.Getwd()
-	require.NoError(t, err)
-	require.NoError(t, os.Chdir(workDir))
-	defer os.Chdir(origDir)
+	t.Chdir(workDir) // restored automatically; panics if t.Parallel is ever added
 
 	logger := zap.NewNop()
 	cfg := &config.Config{}
