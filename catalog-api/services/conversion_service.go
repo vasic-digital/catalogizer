@@ -797,13 +797,16 @@ func libreOfficeHTMLOutput(source, target string) string {
 // conversion write roots (CATALOGIZER_CONVERSION_ROOTS, default ./data). Neither may be the
 // application database, a SQLite companion of it, or a directory containing it
 // (pathguard.ConfineData, review round 3 N2). Both are checked exactly as the request gives
-// them, without filepath.Clean, because that raw string is what the converter opens. §11.4.115.
+// them, without filepath.Clean, because that raw string is what the converter opens. Both are
+// FILE paths (pathguard.ConfineDataFile): a root itself is refused, because LibreOffice writes
+// into Dir(target) and the multi-page writer next to the target, which for the root is its parent
+// (review round 5, RV5-B). §11.4.115.
 func confineConversionPaths(source, target string) error {
 	write := pathguard.ConversionWriteRoots()
-	if _, err := pathguard.ConfineData(source, pathguard.Readable(write)); err != nil {
+	if _, err := pathguard.ConfineDataFile(source, pathguard.Readable(write)); err != nil {
 		return fmt.Errorf("source path %q rejected: %w", source, err)
 	}
-	if _, err := pathguard.ConfineData(target, write); err != nil {
+	if _, err := pathguard.ConfineDataFile(target, write); err != nil {
 		return fmt.Errorf("target path %q rejected: %w", target, err)
 	}
 	return nil

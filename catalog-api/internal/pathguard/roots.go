@@ -154,8 +154,14 @@ func setProtectedForTest(paths []string) func() {
 // mirror-delete ./data/catalogizer.db, and a conversion could write its output over it
 // (review round 3, N2). Both sides are compared after symlink resolution, so an alias of the
 // database is refused too.
-func ConfineData(p string, roots []string) (string, error) {
-	resolved, err := Confine(p, roots)
+func ConfineData(p string, roots []string) (string, error) { return confineData(p, roots, false) }
+
+// ConfineDataFile is ConfineData for a path used as a FILE (see ConfineFile): it must also
+// resolve strictly below the root it matched, so that its Dir stays inside that root.
+func ConfineDataFile(p string, roots []string) (string, error) { return confineData(p, roots, true) }
+
+func confineData(p string, roots []string, file bool) (string, error) {
+	resolved, err := confine(p, roots, file)
 	if err != nil {
 		return "", err
 	}

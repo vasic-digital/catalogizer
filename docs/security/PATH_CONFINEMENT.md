@@ -24,9 +24,29 @@ also refuses:
 * a path whose lexical reading (`filepath.Clean`) and kernel reading name different files, i.e. any `..`
   that follows a symlink (`path has a ".." after a symlink`);
 * a path whose lexical prefixes do not enter the root through the root itself, or leave it again once
-  inside: `Dir(path)` and every directory a caller derives by trimming the path stay inside the root.
-  This refuses, for example, `/elsewhere/l` with `l -> root/sub/f`, and `root/a/b` with
+  inside. This refuses, for example, `/elsewhere/l` with `l -> root/sub/f`, and `root/a/b` with
   `root/a -> /outside/x` and `/outside/x/b -> root/b`. Use the canonical path below the root instead.
+
+What that rule guarantees is narrower than the round-4 text of this file said ("`Dir(path)` and every
+directory derived by trimming stay inside the root"; review round 5, RV5-B, showed that was false). Every
+prefix from the root down to the path stays inside, but `Confine` also accepts the root itself, and for a
+path equal to the root `Dir(path)` is the root's PARENT. Since round 5 there are two entry points:
+
+* `Confine` / `ConfineData` for DIRECTORY arguments (a sync root, a walk start, `Confine(Dir(hint))`):
+  the root itself is valid.
+* `ConfineFile` / `ConfineDataFile` for a path written or read as a FILE, or next to which a file is
+  written (download target, copy source and destination, conversion source and target, every file an
+  upload walker reads): the path must resolve STRICTLY below the root it matched, otherwise
+  `ErrRootItself` (`path is the allowed root itself, not a file below it`). Only for such a path does
+  `Dir(path)` resolve inside the root (to the root at the shallowest). Directories derived by trimming
+  further than `Dir` are outside the guarantee, as they were before.
+
+A path equal to a nested root but strictly below an outer root is accepted through the outer root. Forms
+refused as "the root itself": `root`, `root/`, `root/.`, `root/sub/..`, a link inside the root pointing at
+`.`, and a WebDAV listing entry whose name is the configured remote path itself (it mapped the download
+target to the local root). Before round 5 a conversion with `target_path` equal to a conversion root was
+accepted, and LibreOffice and the multi-page image writer then wrote into the root's parent; the routed
+`POST /copy/local` with `destination_path` `.` did the same with the temp directory.
 
 What the differential test (`internal/pathguard/confine_differential_test.go`) covers: random trees of
 directories, files and symlinks (relative, absolute, dangling, loops, chains, `..`-bearing targets) inside
@@ -36,7 +56,15 @@ kernel created something outside the real root, or the walk visited a directory 
 file, `MkdirAll` it, create `Join(raw, "child")`, create a file in `Dir(raw)`, `Walk(raw)`. Measured on
 this commit: seeds default/1/2/3 at 4,000 cases each and seeds 4/5 at 20,000 each gave 0 escapes; an
 earlier draft of the round-4 fix had 1 escape on the default seed (the `/elsewhere/l` case above), which
-is how that rule was found. A random test is not a proof: it says nothing about trees it did not
+is how that rule was found. Since round 5 a second test
+(`internal/pathguard/confine_extended_differential_test.go`) runs seven operations through the raw
+string: create the file, `MkdirAll` it, create `Join(raw, "child")`, `MkdirAll(Join(raw, "d", "e"))`,
+`MkdirAll(Dir(raw))` plus a sibling file in it, `Walk(raw)`, and rename a file from `Dir(raw)` onto raw.
+The file-class operations (create, sibling in `Dir`, rename onto) are judged against `ConfineFile`, the
+others against `Confine`, with no exemption for the root itself. Measured on the round-5 commit, 1,500
+cases per seed: default 0 escapes (743 accepted as file, 36 refused as the root itself), seed 1 0 (717,
+50), seed 2 0 (708, 56), seed 3 0 (705, 44); the round-4 test at 4,000 cases per seed also gave 0 escapes
+for the same four seeds. A random test is not a proof: it says nothing about trees it did not
 generate, about more than one root, or about a symlink swapped between the check and the use (F4,
 below). The price is refusals on the safe side: about 5% of random cases the kernel could have handled
 inside the root are refused, nearly all a `..` after a missing element or after a symlink.
@@ -102,10 +130,12 @@ protected, because which name SQLite gives them is not assumed. Both are compute
 registered (at boot): a link changed later, or a hard link made to a companion file that did not exist
 at check time, is not seen.
 
-Per file, the sync walkers (local mirror / incremental / bidirectional, S3 and GCS upload) read only
-regular files: a symlink, device, socket or pipe met while walking a source is skipped and logged, and
-every file read or written is re-checked with `ConfineData` against its own root, so a link planted in a
-destination does not redirect a copy. A LibreOffice HTML conversion now renames the file LibreOffice wrote
+Per file, the sync walkers (local mirror / incremental / bidirectional, S3, GCS and WebDAV upload) read
+only regular files: a symlink, device, socket or pipe met while walking a source is skipped and logged,
+and every file read or written is re-checked with `ConfineDataFile` against its own root, so a link
+planted in a destination does not redirect a copy, and a hard link of the database planted in a source is
+not uploaded. The WebDAV upload walker (`scanLocalFiles`) was missed in round 4 and still uploaded
+symlinked and hard-linked files until round 5 (RV5-A). A LibreOffice HTML conversion now renames the file LibreOffice wrote
 in the output directory; before round 4 it renamed `<source>.html` next to the input, i.e. it could move a
 file out of the read root.
 
@@ -117,6 +147,28 @@ lookup (`LocalScanResolver`) uses the plain read-root check and is not affected.
 
 Upgrade impact: a sync endpoint whose `local_path` (or a `sync_settings` directory) is `./data` itself, or
 any directory containing the database, is now refused when it runs; point it at a sub-directory.
+
+## Sink inventory (review round 5)
+
+Every place in `catalog-api` (non-test code) that walks, reads or writes a local path a request or a
+stored endpoint can name, found with a grep over `filepath.Walk`, `os.Open*`, `os.Create`,
+`os.WriteFile`, `os.Remove*`, `os.Rename` and `MkdirAll`. A "no production caller" verdict was checked
+with the same grep finding the 3 real callers of `NewSyncService` (positive control).
+
+| Sink | Path source | Status |
+|---|---|---|
+| `uploadToWebDAV` -> `scanLocalFiles` walk + read | sync `local_path` | CLOSED round 5: `uploadableFile` per file (regular, `ConfineDataFile`) |
+| `downloadFromWebDAV` write | sync `local_path` + remote entry name | CLOSED: `ConfineDataFile`; entry equal to the remote path refused (round 5) |
+| S3 / GCS upload walkers | sync `local_path` | CLOSED round 4 (`uploadableFile`); not driven end to end without a storage double (V15, see follow-ups) |
+| local mirror / incremental / bidirectional `copyFile` | `local_path`, `sync_settings` dirs | CLOSED: both sides `ConfineDataFile` (round 5; round 4 used `ConfineData`) |
+| `cleanupDestination` remove | destination root | CLOSED: lexical `Walk` (does not follow a symlinked directory), `os.Remove` removes a link itself |
+| conversion readers / writers | `source_path`, `target_path` | CLOSED: both `ConfineDataFile` (round 5) |
+| routed `POST /copy/local` (`internal/handlers/copy.go`) | `destination_path` | CLOSED round 5: `ContainedJoin` + `ConfineDataFile` under the temp dir |
+| `asset_resolvers` cover lookup | media-item hint | SCOPED OUT: `Confine(Dir(hint))` directory argument, fixed cover file names, `Lstat` regular-file check; no hard-link check (read only) |
+| filesystem `local_client` / `nfs_client` | admin-configured storage base | FOLLOW-UP: `resolvePath` is lexical (`ConfinePath`); symlinks inside the base are followed (operator decision needed) |
+| SMB `DownloadFile` | temp file, routed copy handler | Callers pass a temp path or the confined copy destination |
+| `WebDAVClient.SyncDirectory` / `UploadBatch` / `DownloadBatch`, `calculateChecksum`, `ConfigurationWizardService`, `NewEnhancedChangeWatcher`, `MediaPlayerHandlers`, `handlers/copy.go` (unrouted `CopyHandler`) | various | UNREACHABLE: no production caller (kept per §11.4.124, not deleted) |
+| config, firebase, encryption, provisioner, admin backup dir, `configPath`, `LogDirectory`, `statsPath`, cover-art `cacheDir`, temp files | server configuration | NOT request-supplied |
 
 ## WebDAV listing limits
 

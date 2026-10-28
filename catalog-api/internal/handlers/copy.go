@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"catalogizer/internal/models"
+	"catalogizer/internal/pathguard"
 	"catalogizer/internal/pathsafe"
 	"catalogizer/internal/services"
 	"net/http"
@@ -138,6 +139,16 @@ func (h *CopyHandler) CopyToLocal(c *gin.Context) {
 	// (h.tempDir), lexically and after symlink resolution.
 	destPath, err := pathsafe.ContainedJoin(h.tempDir, req.DestinationPath)
 	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid destination_path"})
+		return
+	}
+	// The destination is a FILE: it must resolve strictly below the root (the root itself, e.g.
+	// ".", would make MkdirAll(Dir(dest)) and the download act on the root's parent) and must not
+	// be a protected application file or a hard link of one (review round 5, RV5-B).
+	if absRoot, aerr := filepath.Abs(h.tempDir); aerr != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid destination_path"})
+		return
+	} else if _, gerr := pathguard.ConfineDataFile(destPath, []string{absRoot}); gerr != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid destination_path"})
 		return
 	}

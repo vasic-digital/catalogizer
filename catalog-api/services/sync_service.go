@@ -358,8 +358,10 @@ func (s *SyncService) downloadFromWebDAV(session *models.SyncSession, endpoint *
 		// a remote listing entry that climbs out of the sync root, lexically or through a
 		// symlink under it, or that names a protected file (§11.4.115). Confine resolves like
 		// the kernel; filepath.Join above already removed every ".." lexically, and that
-		// cleaned path is the one written below, so both see the same path.
-		if _, gerr := pathguard.ConfineData(localPath, []string{endpoint.LocalPath}); gerr != nil {
+		// cleaned path is the one written below, so both see the same path. It is a FILE target:
+		// an entry equal to the remote root maps to the local root itself, whose Dir is the
+		// root's parent (review round 5, RV5-B), so ConfineDataFile refuses it.
+		if _, gerr := pathguard.ConfineDataFile(localPath, []string{endpoint.LocalPath}); gerr != nil {
 			session.FailedFiles++
 			s.logSyncError(session, fmt.Sprintf("Refusing remote path %q: escapes local root: %v", remoteFile.Path, gerr))
 			continue
@@ -828,13 +830,14 @@ func (s *SyncService) performBidirectionalSync(sourceDir, destDir string, sessio
 // regular file (filepath.Walk reports a symlink as itself, and os.Open would follow it, so a
 // link planted in the source to the database or to anything outside the root would be read),
 // confined to root and not a protected application file or a hard link of one. Anything else is
-// logged and skipped (review round 4).
+// logged and skipped (review round 4). Every walker that reads local files to send them uses it:
+// S3, GCS, local mirror and incremental, and the WebDAV upload scan (review round 5, RV5-A).
 func uploadableFile(path string, info os.FileInfo, root string) bool {
 	if !info.Mode().IsRegular() {
 		logSkippedFile(path, "not a regular file (symlink, device, socket or pipe)")
 		return false
 	}
-	if _, err := pathguard.ConfineData(path, []string{root}); err != nil {
+	if _, err := pathguard.ConfineDataFile(path, []string{root}); err != nil {
 		logSkippedFile(path, err.Error())
 		return false
 	}
@@ -849,12 +852,13 @@ func logSkippedFile(path, why string) {
 
 // copyFile copies a file with proper permissions. src must lie in srcRoot and dst in dstRoot
 // after symlink resolution, and neither may be a protected application file: a symlink planted
-// in the destination would otherwise redirect the write (review round 4).
+// in the destination would otherwise redirect the write (review round 4). Both are FILE paths,
+// strictly below their root (review round 5).
 func (s *SyncService) copyFile(src, dst string, mode os.FileMode, srcRoot, dstRoot string) error {
-	if _, err := pathguard.ConfineData(src, []string{srcRoot}); err != nil {
+	if _, err := pathguard.ConfineDataFile(src, []string{srcRoot}); err != nil {
 		return fmt.Errorf("source %q: %w", src, err)
 	}
-	if _, err := pathguard.ConfineData(dst, []string{dstRoot}); err != nil {
+	if _, err := pathguard.ConfineDataFile(dst, []string{dstRoot}); err != nil {
 		return fmt.Errorf("destination %q: %w", dst, err)
 	}
 	// Ensure destination directory exists
@@ -1206,6 +1210,9 @@ func (s *SyncService) getWebDAVClient(endpoint *models.SyncEndpoint) (*WebDAVCli
 	return client, nil
 }
 
+// scanLocalFiles lists the files the WebDAV upload sends. Only uploadableFile entries are listed:
+// the upload opens each path with os.Open, which follows a symlink planted in the source and
+// reads a hard link of the database (review round 5, RV5-A; the other walkers got this in round 4).
 func (s *SyncService) scanLocalFiles(path string) ([]string, error) {
 	var files []string
 
@@ -1214,7 +1221,7 @@ func (s *SyncService) scanLocalFiles(path string) ([]string, error) {
 			return err
 		}
 
-		if !info.IsDir() {
+		if !info.IsDir() && uploadableFile(filePath, info, path) {
 			files = append(files, filePath)
 		}
 

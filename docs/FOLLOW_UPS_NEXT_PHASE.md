@@ -101,8 +101,18 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
 - The sync walkers skip non-regular files and re-check each path, but a symlink or file swapped in
   between that check and the `open` is not caught (same race as F4). The LibreOffice HTML output
   file in the output directory is not checked for a planted symlink before LibreOffice writes it.
-- `uploadableFile` is called by the S3 and GCS upload walkers, but no test drives those walkers end
-  to end (they need a bucket client); only `uploadableFile` itself is tested.
+- `uploadableFile` is called by the S3, GCS and (since round 5) WebDAV upload walkers. The WebDAV one
+  is driven end to end against a real in-process WebDAV server; S3 and GCS are not (they need a bucket
+  client, and a double would only be a gate-logic test, §11.4.289), so only `uploadableFile` itself is
+  tested for them (round-5 item V15, kept open).
+- Round 4 missed the WebDAV upload walker (`scanLocalFiles`): it still uploaded symlinked and
+  hard-linked source files until round 5 (RV5-A). A class-wide sink inventory is now in
+  `docs/security/PATH_CONFINEMENT.md` ("Sink inventory").
+- Filesystem `local_client` / `nfs_client` `resolvePath` is lexical (`ConfinePath`): a symlink inside
+  the admin-configured storage base is followed outside it. Changing that changes behaviour for
+  existing storage roots; needs an operator decision.
+- `asset_resolvers` cover lookup checks the directory with `Confine` and each candidate with `Lstat`
+  (regular file) but not for a hard link of a protected file (read only, fixed file names).
 - `tests/integration` `TestDatabaseConcurrentAccess` fails when run on its own (3/3 runs on this
   branch, and also on `main` 0916e992 before the round-3 fix); it passed once inside the whole
   `./tests/...` run, so it is also order-dependent. Independent of path confinement; investigate

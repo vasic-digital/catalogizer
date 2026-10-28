@@ -57,8 +57,25 @@ func SafeComponent(s string) bool {
 }
 
 // Confine returns the symlink-resolved absolute form of p when it is equal to or below one
-// of roots, and an error otherwise. p must be absolute.
-func Confine(p string, roots []string) (string, error) {
+// of roots, and an error otherwise. p must be absolute. A path equal to a root is accepted:
+// Confine is for directory arguments (a sync root, a walk start). For a path written or read as
+// a file, or next to which a file is written, use ConfineFile.
+func Confine(p string, roots []string) (string, error) { return confine(p, roots, false) }
+
+// ErrRootItself is returned by ConfineFile and ConfineDataFile for a path that resolves to one of
+// the roots: it is a directory argument, not a file below the root (review round 5, RV5-B).
+var ErrRootItself = errors.New("path is the allowed root itself, not a file below it")
+
+// ConfineFile is Confine for a path a caller writes or reads as a FILE, or next to which it
+// writes (conversion output, a download target, a copy destination). The path must resolve
+// strictly below the root it matched. Confine already makes the path enter the root at the root
+// itself and never leave it, so for a path strictly below the root its Dir, and every directory
+// a caller derives by trimming it, lies inside that root; for the root itself Dir is the root's
+// PARENT (review round 5, RV5-B: a conversion target equal to the root made LibreOffice and the
+// multi-page writer write into the parent).
+func ConfineFile(p string, roots []string) (string, error) { return confine(p, roots, true) }
+
+func confine(p string, roots []string, file bool) (string, error) {
 	if p == "" || strings.ContainsRune(p, 0) {
 		return "", fmt.Errorf("pathguard: invalid path")
 	}
@@ -84,14 +101,23 @@ func Confine(p string, roots []string) (string, error) {
 	if lex, lerr := resolve(clean); lerr != nil || lex != resolved {
 		return "", fmt.Errorf("pathguard: %q: %w", p, ErrAmbiguousPath)
 	}
+	isRoot := false
 	for _, r := range roots {
 		rr, err := resolve(r)
 		if err != nil {
 			continue
 		}
 		if within(rr, resolved) && prefixesStayWithin(rr, clean) {
+			if file && resolved == rr {
+				// keep looking: an outer root may hold this nested root as a path below it
+				isRoot = true
+				continue
+			}
 			return resolved, nil
 		}
+	}
+	if isRoot {
+		return "", fmt.Errorf("pathguard: %q: %w", p, ErrRootItself)
 	}
 	return "", ErrOutsideRoots
 }
