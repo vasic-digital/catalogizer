@@ -478,6 +478,9 @@ func (s *SyncService) performS3Sync(ctx context.Context, session *models.SyncSes
 		if info.IsDir() {
 			return nil
 		}
+		if !uploadableFile(path, info, sourceDir) {
+			return nil
+		}
 
 		// Calculate relative path
 		relPath, err := filepath.Rel(sourceDir, path)
@@ -573,6 +576,9 @@ func (s *SyncService) performGoogleCloudStorageSync(ctx context.Context, session
 
 		// Skip directories
 		if info.IsDir() {
+			return nil
+		}
+		if !uploadableFile(path, info, sourceDir) {
 			return nil
 		}
 
@@ -727,7 +733,10 @@ func (s *SyncService) performMirrorSync(sourceDir, destDir string, session *mode
 		}
 
 		// Copy file
-		if err := s.copyFile(sourcePath, destPath, info.Mode()); err != nil {
+		if !uploadableFile(sourcePath, info, sourceDir) {
+			return nil
+		}
+		if err := s.copyFile(sourcePath, destPath, info.Mode(), sourceDir, destDir); err != nil {
 			return fmt.Errorf("failed to copy file %s to %s: %w", sourcePath, destPath, err)
 		}
 
@@ -783,7 +792,10 @@ func (s *SyncService) performIncrementalSync(sourceDir, destDir string, session 
 		}
 
 		// Copy file
-		if err := s.copyFile(sourcePath, destPath, info.Mode()); err != nil {
+		if !uploadableFile(sourcePath, info, sourceDir) {
+			return nil
+		}
+		if err := s.copyFile(sourcePath, destPath, info.Mode(), sourceDir, destDir); err != nil {
 			return fmt.Errorf("failed to copy file %s to %s: %w", sourcePath, destPath, err)
 		}
 
@@ -812,8 +824,39 @@ func (s *SyncService) performBidirectionalSync(sourceDir, destDir string, sessio
 	return nil
 }
 
-// copyFile copies a file with proper permissions
-func (s *SyncService) copyFile(src, dst string, mode os.FileMode) error {
+// uploadableFile reports whether a file met while walking root may be read and sent: only a
+// regular file (filepath.Walk reports a symlink as itself, and os.Open would follow it, so a
+// link planted in the source to the database or to anything outside the root would be read),
+// confined to root and not a protected application file or a hard link of one. Anything else is
+// logged and skipped (review round 4).
+func uploadableFile(path string, info os.FileInfo, root string) bool {
+	if !info.Mode().IsRegular() {
+		logSkippedFile(path, "not a regular file (symlink, device, socket or pipe)")
+		return false
+	}
+	if _, err := pathguard.ConfineData(path, []string{root}); err != nil {
+		logSkippedFile(path, err.Error())
+		return false
+	}
+	return true
+}
+
+func logSkippedFile(path, why string) {
+	if logging.Logger != nil {
+		logging.With(logging.String("path", path), logging.String("reason", why)).Warn("Sync skipped a file")
+	}
+}
+
+// copyFile copies a file with proper permissions. src must lie in srcRoot and dst in dstRoot
+// after symlink resolution, and neither may be a protected application file: a symlink planted
+// in the destination would otherwise redirect the write (review round 4).
+func (s *SyncService) copyFile(src, dst string, mode os.FileMode, srcRoot, dstRoot string) error {
+	if _, err := pathguard.ConfineData(src, []string{srcRoot}); err != nil {
+		return fmt.Errorf("source %q: %w", src, err)
+	}
+	if _, err := pathguard.ConfineData(dst, []string{dstRoot}); err != nil {
+		return fmt.Errorf("destination %q: %w", dst, err)
+	}
 	// Ensure destination directory exists
 	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
 		return err

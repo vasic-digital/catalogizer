@@ -51,9 +51,16 @@ Each needs a RED selftest first, then the fix.
 - F4: TOCTOU between check and use remains open; plan `os.Root`-based sinks
   (see `docs/security/PATH_CONFINEMENT.md` once landed).
 - Consolidate `internal/pathguard` into `internal/pathsafe` after the security series lands.
-- Review round 3, T4 and P1: carried over from the round-3 review as follow-ups, not fixed in the
-  round-3 fix commit. Their exact text was not part of the hand-off to the fixer; copy it here from
-  the round-3 review record (UNKNOWN here).
+- Review round 3, items T4 and P1: the review asked for them to be recorded here as follow-ups. Their
+  content was never given to the fixer (the hand-off named only the labels), and no copy of the
+  round-3 review was found in the fixer's working files. What T4 and P1 say is therefore not known
+  to the author of this entry; the reviewer or the coordinator who holds the round-3 review has to
+  fill it in. Until then this line only records that two round-3 items are open and unnamed.
+- The sync walkers skip non-regular files and re-check each path, but a symlink or file swapped in
+  between that check and the `open` is not caught (same race as F4). The LibreOffice HTML output
+  file in the output directory is not checked for a planted symlink before LibreOffice writes it.
+- `uploadableFile` is called by the S3 and GCS upload walkers, but no test drives those walkers end
+  to end (they need a bucket client); only `uploadableFile` itself is tested.
 - `tests/integration` `TestDatabaseConcurrentAccess` fails when run on its own (3/3 runs on this
   branch, and also on `main` 0916e992 before the round-3 fix); it passed once inside the whole
   `./tests/...` run, so it is also order-dependent. Independent of path confinement; investigate

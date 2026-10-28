@@ -409,6 +409,11 @@ func main() {
 	pathguard.ProtectDatabase(cfg.Database.Path)
 	if keyFile, kerr := database.ResolveKeyFilePath(&cfg.Database); kerr == nil {
 		pathguard.Protect(keyFile)
+	} else {
+		// Not fatal: with no key location there is no key file to protect; the database layer
+		// reports a missing key itself when encryption needs one.
+		logging.Warn("Database key file location unknown; it is not added to the protected paths",
+			logging.ErrorField(kerr))
 	}
 	logging.Infof("Filesystem path confinement roots: %s", pathguard.Describe())
 	logging.Info("Running database migrations...")

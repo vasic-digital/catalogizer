@@ -611,7 +611,7 @@ func TestSyncService_CopyFile(t *testing.T) {
 
 	// Copy to a new subdirectory
 	dstFile := filepath.Join(tmpDir, "sub", "dest.txt")
-	err = service.copyFile(srcFile, dstFile, 0644)
+	err = service.copyFile(srcFile, dstFile, 0644, tmpDir, tmpDir)
 	require.NoError(t, err)
 
 	// Verify content
@@ -624,7 +624,7 @@ func TestSyncService_CopyFile_NonexistentSource(t *testing.T) {
 	service := NewSyncService(nil, nil, nil)
 
 	tmpDir := t.TempDir()
-	err := service.copyFile("/nonexistent/source.txt", filepath.Join(tmpDir, "dest.txt"), 0644)
+	err := service.copyFile("/nonexistent/source.txt", filepath.Join(tmpDir, "dest.txt"), 0644, "/nonexistent", tmpDir)
 	assert.Error(t, err)
 }
 

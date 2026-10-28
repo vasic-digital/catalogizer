@@ -428,7 +428,7 @@ func (s *ConversionService) convertPDFToHTML(job *models.ConversionJob) error {
 	err = cmd.Run()
 	if err == nil {
 		// LibreOffice might create a different filename, rename if needed
-		libreOutput := strings.TrimSuffix(job.SourcePath, filepath.Ext(job.SourcePath)) + ".html"
+		libreOutput := libreOfficeHTMLOutput(job.SourcePath, job.TargetPath)
 		if _, err := os.Stat(libreOutput); err == nil {
 			if libreOutput != job.TargetPath {
 				if err := os.Rename(libreOutput, job.TargetPath); err != nil {
@@ -781,6 +781,15 @@ func (s *ConversionService) GetSupportedFormats() *models.SupportedFormats {
 			Output: []string{"jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"},
 		},
 	}
+}
+
+// libreOfficeHTMLOutput is where "libreoffice --convert-to html --outdir Dir(target) source"
+// writes: the source's base name with .html, in the output directory. It used to be computed
+// next to the SOURCE, so an unrelated <source>.html in the read root was renamed onto the
+// target, i.e. moved out of the read root (review round 4).
+func libreOfficeHTMLOutput(source, target string) string {
+	base := filepath.Base(source)
+	return filepath.Join(filepath.Dir(target), strings.TrimSuffix(base, filepath.Ext(base))+".html")
 }
 
 // confineConversionPaths: the input may come from the read roots (CATALOGIZER_READ_ROOTS,

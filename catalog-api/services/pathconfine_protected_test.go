@@ -20,7 +20,7 @@ func TestPathConfine_DatabaseIsNotAConversionOrSyncTarget(t *testing.T) {
 	data := t.TempDir()
 	db := filepath.Join(data, "catalogizer.db")
 	require.NoError(t, os.WriteFile(db, []byte("SQLite format 3\x00"), 0o600))
-	pathguard.ProtectDatabase(db)
+	protectDatabaseForTest(t, db)
 	t.Setenv(pathGuardEnvConv, data)
 	t.Setenv(pathGuardEnvSync, data)
 	t.Setenv(pathGuardEnvRead, data)
@@ -54,4 +54,15 @@ func TestPathConfine_DatabaseIsNotAConversionOrSyncTarget(t *testing.T) {
 	}
 	ok := models.SyncEndpoint{Type: "webdav", SyncDirection: models.SyncDirectionDownload, LocalPath: filepath.Join(data, "sync")}
 	assert.NoError(t, s.confineSyncPaths(&ok), "control: a sub-directory of ./data is still a valid target")
+}
+
+// protectDatabaseForTest adds db (and its companions) to the global protected list for one test
+// and restores the previous list afterwards. Without the restore the temp database stayed
+// protected for the rest of the package run, and every later test whose roots contain the temp
+// directory got ErrProtected (review round 4).
+func protectDatabaseForTest(t *testing.T, db string) {
+	t.Helper()
+	prev := pathguard.SetProtected(pathguard.ProtectedPaths())
+	t.Cleanup(func() { pathguard.SetProtected(prev) })
+	pathguard.ProtectDatabase(db)
 }

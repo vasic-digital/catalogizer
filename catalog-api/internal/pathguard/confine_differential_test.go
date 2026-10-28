@@ -102,22 +102,53 @@ func TestConfine_DifferentialKernelOracle(t *testing.T) {
 		got, cerr := Confine(raw, []string{root})
 		realRoot, _ := filepath.EvalSymlinks(root)
 		before := snap(base)
-		mode := it % 2
+		// Callers also derive paths from the raw string with lexical functions (review round 4,
+		// H1), so the oracle exercises those too: mode 2 creates Join(raw, "child"), mode 3
+		// creates a sibling in Dir(raw) (multi-page conversion output, LibreOffice --outdir),
+		// mode 4 Walks raw and records where each visited entry really is (sync upload walkers).
+		mode := it % 5
 		var kerr error
-		if mode == 0 {
-			var fh *os.File
-			fh, kerr = os.OpenFile(raw, os.O_CREATE|os.O_WRONLY, 0o644)
-			if kerr == nil {
+		create := func(q string) error {
+			fh, err := os.OpenFile(q, os.O_CREATE|os.O_WRONLY, 0o644)
+			if err == nil {
 				fh.Close()
 			}
-		} else {
+			return err
+		}
+		var walkedOutside []string
+		switch mode {
+		case 0:
+			kerr = create(raw)
+		case 1:
 			kerr = os.MkdirAll(raw, 0o755)
+		case 2:
+			kerr = create(filepath.Join(raw, "child"))
+		case 3:
+			if kerr = os.MkdirAll(filepath.Dir(raw), 0o755); kerr == nil {
+				kerr = create(filepath.Join(filepath.Dir(raw), "sibling"))
+			}
+		case 4:
+			kerr = filepath.Walk(raw, func(q string, fi os.FileInfo, err error) error {
+				if err != nil {
+					return nil
+				}
+				// where the entry itself lives: its parent directory resolved by the kernel
+				// (a symlinked leaf is the per-file check's business, not Confine's)
+				if d, derr := filepath.EvalSymlinks(filepath.Dir(q)); derr == nil && !within(realRoot, d) {
+					walkedOutside = append(walkedOutside, q)
+				} else if q == raw || q == filepath.Clean(raw) {
+					if r, rerr := filepath.EvalSymlinks(q); rerr == nil && !within(realRoot, r) {
+						walkedOutside = append(walkedOutside, q)
+					}
+				}
+				return nil
+			})
 		}
 		after := snap(base)
 		if kerr == nil {
 			kernelOK++
 		}
-		var outsideNew []string
+		outsideNew := append([]string(nil), walkedOutside...)
 		insideNew := 0
 		for q := range after {
 			if before[q] {

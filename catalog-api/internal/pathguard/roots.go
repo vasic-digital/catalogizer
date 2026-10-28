@@ -3,6 +3,7 @@ package pathguard
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -78,10 +79,19 @@ func init() { protected.paths = defaultProtected() }
 
 func defaultProtected() []string { return databaseFiles(DefaultDatabaseFile) }
 
+// databaseFiles returns db and its SQLite companions. When db is a symlink the companions next
+// to its target are added too: which name SQLite uses for them is not assumed (review round 4).
 func databaseFiles(db string) []string {
 	var out []string
 	for _, suf := range sqliteCompanions {
 		out = append(out, db+suf)
+	}
+	if abs, err := filepath.Abs(db); err == nil {
+		if real, err := filepath.EvalSymlinks(abs); err == nil && real != abs {
+			for _, suf := range sqliteCompanions {
+				out = append(out, real+suf)
+			}
+		}
 	}
 	return out
 }
@@ -121,17 +131,20 @@ func ProtectedPaths() []string {
 	return out
 }
 
+// SetProtected replaces the protected list and returns the previous one, so a caller that
+// changes it temporarily (a test in another package) can put it back with SetProtected(prev).
+func SetProtected(paths []string) (previous []string) {
+	protected.mu.Lock()
+	defer protected.mu.Unlock()
+	previous = protected.paths
+	protected.paths = append([]string(nil), paths...)
+	return previous
+}
+
 // setProtectedForTest replaces the protected list and returns a function restoring it.
 func setProtectedForTest(paths []string) func() {
-	protected.mu.Lock()
-	old := protected.paths
-	protected.paths = append([]string(nil), paths...)
-	protected.mu.Unlock()
-	return func() {
-		protected.mu.Lock()
-		protected.paths = old
-		protected.mu.Unlock()
-	}
+	old := SetProtected(paths)
+	return func() { SetProtected(old) }
 }
 
 // ConfineData is Confine for paths a request names as data to read or write (sync local
@@ -146,6 +159,9 @@ func ConfineData(p string, roots []string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// A hard link is the same file under another name, invisible to any path comparison:
+	// compare file identity with every protected file that exists.
+	target, terr := os.Stat(resolved)
 	for _, q := range ProtectedPaths() {
 		rq, rerr := resolve(q)
 		if rerr != nil {
@@ -153,6 +169,11 @@ func ConfineData(p string, roots []string) (string, error) {
 		}
 		if within(rq, resolved) || within(resolved, rq) {
 			return "", fmt.Errorf("pathguard: %q: %w", p, ErrProtected)
+		}
+		if terr == nil {
+			if qi, err := os.Stat(rq); err == nil && os.SameFile(target, qi) {
+				return "", fmt.Errorf("pathguard: %q: %w", p, ErrProtected)
+			}
 		}
 	}
 	return resolved, nil

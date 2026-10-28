@@ -506,7 +506,7 @@ func TestSyncService_CopyFile_Scenarios(t *testing.T) {
 		content := []byte("hello world copy test")
 		require.NoError(t, os.WriteFile(srcPath, content, 0644))
 
-		err := service.copyFile(srcPath, dstPath, 0644)
+		err := service.copyFile(srcPath, dstPath, 0644, srcDir, dstDir)
 		assert.NoError(t, err)
 
 		copied, err := os.ReadFile(dstPath)
@@ -523,7 +523,7 @@ func TestSyncService_CopyFile_Scenarios(t *testing.T) {
 		content := []byte("nested directory test")
 		require.NoError(t, os.WriteFile(srcPath, content, 0644))
 
-		err := service.copyFile(srcPath, dstPath, 0644)
+		err := service.copyFile(srcPath, dstPath, 0644, srcDir, dstDir)
 		assert.NoError(t, err)
 
 		copied, err := os.ReadFile(dstPath)
@@ -535,7 +535,7 @@ func TestSyncService_CopyFile_Scenarios(t *testing.T) {
 		dstDir := t.TempDir()
 		dstPath := filepath.Join(dstDir, "dest.txt")
 
-		err := service.copyFile("/nonexistent/source.txt", dstPath, 0644)
+		err := service.copyFile("/nonexistent/source.txt", dstPath, 0644, "/nonexistent", dstDir)
 		assert.Error(t, err)
 	})
 }
@@ -1363,7 +1363,7 @@ func TestSyncService_CopyFile_OverwritesExistingFile(t *testing.T) {
 	// Create source with new content
 	require.NoError(t, os.WriteFile(srcPath, []byte("new content"), 0644))
 
-	err := service.copyFile(srcPath, dstPath, 0644)
+	err := service.copyFile(srcPath, dstPath, 0644, srcDir, dstDir)
 	assert.NoError(t, err)
 
 	content, err := os.ReadFile(dstPath)

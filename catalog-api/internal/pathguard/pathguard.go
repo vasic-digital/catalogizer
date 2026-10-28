@@ -20,6 +20,11 @@ func getenv(name string) string { return os.Getenv(name) }
 // ErrOutsideRoots is returned when a path resolves outside every allowed root.
 var ErrOutsideRoots = errors.New("path is outside the allowed roots")
 
+// ErrAmbiguousPath is returned when the kernel and filepath.Clean read a path differently,
+// which happens when a ".." follows a symlink ("lnk/.." is the parent of lnk's target to the
+// kernel and nothing at all to Clean).
+var ErrAmbiguousPath = errors.New("path has a \"..\" after a symlink; the kernel and lexical path functions disagree on it")
+
 // RootsFromEnv returns the colon-separated absolute roots in env var name, or the
 // defaults (made absolute against the working directory) when it is unset/empty.
 func RootsFromEnv(name string, defaults ...string) []string {
@@ -71,16 +76,57 @@ func Confine(p string, roots []string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("pathguard: %w", err)
 	}
+	// Callers keep using the raw string: they Join children to it, take its Dir, Walk it, pass
+	// Dir to external tools. Those functions clean lexically, so the lexical reading must name
+	// the same file as the kernel reading (review round 4, H1: with lnk -> d1/d2,
+	// root/lnk/../../out is root/out to the kernel and <parent of root>/out to Join).
+	clean := filepath.Clean(p)
+	if lex, lerr := resolve(clean); lerr != nil || lex != resolved {
+		return "", fmt.Errorf("pathguard: %q: %w", p, ErrAmbiguousPath)
+	}
 	for _, r := range roots {
 		rr, err := resolve(r)
 		if err != nil {
 			continue
 		}
-		if within(rr, resolved) {
+		if within(rr, resolved) && prefixesStayWithin(rr, clean) {
 			return resolved, nil
 		}
 	}
 	return "", ErrOutsideRoots
+}
+
+// prefixesStayWithin reports whether the cleaned path p enters root through root itself and no
+// longer lexical prefix leaves it again. filepath.Dir(p), and any directory a caller derives by
+// trimming p, is such a prefix (review round 4):
+//   - root/a/b with root/a -> /outside/x and /outside/x/b -> root/b resolves inside the root,
+//     but Dir(root/a/b) is /outside/x;
+//   - /elsewhere/l with l -> root/sub/f resolves inside the root, but Dir is /elsewhere.
+//
+// Prefixes above the root (/, /home) are skipped until the first one that resolves inside it;
+// that first one must resolve to the root itself, not to a directory below it.
+func prefixesStayWithin(root, p string) bool {
+	sep := string(filepath.Separator)
+	cur := sep
+	entered := cur == root
+	for _, c := range splitPath(p) {
+		cur = filepath.Join(cur, c)
+		r, err := resolve(cur)
+		if err != nil {
+			return false
+		}
+		in := within(root, r)
+		switch {
+		case !entered && in:
+			if r != root {
+				return false // entered below the root through a link from outside
+			}
+			entered = true
+		case entered && !in:
+			return false
+		}
+	}
+	return entered
 }
 
 // within reports whether p equals base or is below it (component-wise, not by string prefix).
