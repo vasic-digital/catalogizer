@@ -21,6 +21,16 @@ compose shapes skipped silently), so those claims were wrong. Status after the r
 - O4 (R5/R10): quoted/space-before-colon keys modelled; tags, block scalars, aliases, flow values of
   `privileged`/`userns_mode`/`build`/`volumes`/`healthcheck`, multi-line flow bodies, services or bodies at an
   unmodelled indentation fail closed as R10. OPEN only for the listed gaps.
+- Round-3 review of `ca23173e` (GO with follow-ups, all test-instrumentation, OPEN until a commit on `main` closes them):
+  - F1-K (top priority): a modelled key with an empty value whose plain scalar sits on the NEXT line passes silently
+    (`privileged`, `userns_mode`, `image` at indent 4; `test`, `context`, `dockerfile` at indent 6) so R5/R7/R9 are missed
+    and `userns_mode: keep-id` on the next line is a false positive. Fix: take the value or report R10.
+  - F2-N: errexit/pipefail are read by position, not scope: quoted `set -e`, `(set -e); build; true`, `set -e & build`,
+    `true || set -e`, `! npm run build`, wrapped `timeout 600 npm run build || true`, a comment inside a `\` continuation,
+    `sh -ce '...'`; `set -o errexit -o pipefail; build | tee` is a false positive. Also the already-listed `set +e`, `if build; then`, `ONBUILD RUN`.
+  - F3-S: compose name scope misses `deploy/infra-compose*.yml` and `podman-compose.yml`; widening to `*compose*.y*ml` needs flow `volumes: [..]` modelled.
+  - F4-M: add selftest fixtures for `-o errexit`, a `/bin/sh -e` path prefix and a `key: |` block-scalar golden-FALSE (code mutants CM3, CM6, CM9 survive; CM1 shows the subshell choice is untested).
+  - F5-D: the gap list in `docs/scripts/container_local.md` omits the items above.
 - RM6 (`destination` key): equivalent mutant for every verdict (no rule reads the mount target, only the source and
   `ro`), documented, not killable by a fixture.
 - Round 3 (review of `507120b6` returned NO-GO): F1 odd/over-deep indentation inside a service, F2 non-plain
