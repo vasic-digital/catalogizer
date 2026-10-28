@@ -6,15 +6,12 @@ land and are listed here. Layers follow constitution §11.4.235(D).
 Status values: OPEN until a commit on `main` closes the item.
 
 ## Container hygiene guard (`scripts/tests/test_container_hygiene.sh`) — test-instrumentation
-Found by the round-3 reviewer (landed series `a9e5248b`); the guard fails open on these shapes:
-- O1 (R7): compose long-form bind volume (`type: bind`, `source:`, `target:`) bypasses the
-  non-root/keep-id rule; only the short form is caught.
-- O2 (R9): combined short flags such as `curl -fsI .../health` bypass the HEAD-healthcheck rule.
-- O3 (R3): `RUN yarn build || true` is not caught; enumerate the build-command class
-  (npm/yarn/pnpm build, go build, make, gradle, tsc), not just `npm run build`.
-- O4 (R5): flow-style `privileged: true` (`p: {image: x, privileged: true}`) is not caught;
-  handle flow mappings or fail closed on syntax the parser cannot model.
-Each needs a RED selftest first, then the fix.
+Found by the round-3 reviewer (landed series `a9e5248b`); closed in this commit, each with a RED selftest first:
+- O1 (R7): CLOSED in this commit. Long-form and flow-form bind volumes are parsed like the short form.
+- O2 (R9): CLOSED in this commit. Flag clusters (`-fsI`), `-XHEAD`, `--request HEAD` are parsed.
+- O3 (R3): CLOSED in this commit. The build-command class (npm/yarn/pnpm/bun, go, make, gradle, tsc, cargo, mvn, vite/ng/next/nuxt/webpack) with all swallow forms.
+- O4 (R5): CLOSED in this commit. Flow-style `privileged` is modelled; unmodellable compose syntax fails closed as `R10-COMPOSE-UNMODELED`.
+Residual gaps are listed in `docs/scripts/container_local.md` (section "Hygiene guard parser coverage").
 
 ## Operator decisions pending (process-doc)
 - `deployment/amber-up.sh` runs plain `docker` (allowlisted R6): keep or migrate to podman.

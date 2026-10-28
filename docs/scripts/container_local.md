@@ -47,6 +47,18 @@ scripts/container-local.sh [--dry-run] <api-build|api-test|web-build|web-test>
 
 * `docker/Dockerfile.android4` (emulator image, uid 1000): `/dev/kvm` access for a non-root user under rootless podman likely needs `--group-add keep-groups`. UNCONFIRMED, not run here.
 
+## Hygiene guard parser coverage (O1-O4 closure)
+
+`scripts/tests/test_container_hygiene.sh` models these shapes (each has a RED selftest fixture and a golden-FALSE control):
+
+- R7: compose volumes in short form, long form (`- type: bind` / `source:` / `target:` / `read_only:`, any key order) and flow form (`- {type: bind, source: ./x, target: /app}`); `type: volume|tmpfs` is not a bind.
+- R9: HEAD probes of `/health` in flag clusters (`curl -fsI`, `-sSfI`), `-X HEAD`, `-XHEAD`, `--request HEAD`, `--spider`, `--head`, in Dockerfile HEALTHCHECK and compose `test:` (string, JSON list, block list).
+- R3: a swallowed build failure for `npm|yarn|pnpm|bun [run] build|compile`, `go build|install`, `make`, `gradle(w)`, `tsc`, `cargo build`, `mvn(w)`, `vite|ng|next|nuxt|webpack build` (`|| x`, single pipe, `; true`, `; exit 0`, `; :`). `|| exit N` (N>0) and `|| false` are not treated as masking. Limit: a legitimate `|| (cat log; exit 1)` is still flagged.
+- R5: `privileged` in block and flow-mapping services.
+- R10-COMPOSE-UNMODELED (fail closed, allowlistable by file path): merge keys (`<<:`), YAML aliases as the `privileged` value, a one-line `services: {...}`, flow service bodies that carry `volumes`/`build`/`healthcheck`/aliases, and service entries the parser cannot recognise.
+
+Honest gaps: other YAML features (anchors elsewhere, `extends:`, `include:`, env-substituted `privileged: ${X}`) are not resolved; multi-document and `profiles`-gated services are scanned as written.
+
 ## Findings recorded by the hygiene guard (2026-10-28)
 
 * `docker-compose.dev.yml` api: bind-mounts `./catalog-api` rw into an image running as uid 1000; fixed with `userns_mode: keep-id` (podman-only). Guard rule R7 now covers any compose service.
