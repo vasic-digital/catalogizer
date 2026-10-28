@@ -13,7 +13,9 @@ package filesystem
 import (
 	"context"
 	"net"
+	"runtime"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -95,28 +97,75 @@ func waitAccepted(t *testing.T, n *int32, want int32) {
 	}
 }
 
-func waitQuits(t *testing.T, s *fakeFTP, want int32) {
+// settle waits (bounded) until the fake serves exactly wantLive sessions. Call it after Close returned: every control session that will ever
+// exist has been accepted by then (the redial read its greeting), so once only the intended long-lived sessions remain nothing else can
+// send a QUIT, and the QUIT count is final. This replaces a blind sleep with an observed event.
+func settle(t *testing.T, s *fakeFTP, wantLive int32) {
 	t.Helper()
-	deadline := time.Now().Add(3 * time.Second)
-	for time.Now().Before(deadline) {
-		if atomic.LoadInt32(&s.quits) >= want {
-			break
+	deadline := time.Now().Add(5 * time.Second)
+	for atomic.LoadInt32(&s.live) != wantLive {
+		if time.Now().After(deadline) {
+			t.Fatalf("fake serves %d control sessions, want %d (a discarded connection was not ended)", atomic.LoadInt32(&s.live), wantLive)
 		}
-		time.Sleep(20 * time.Millisecond)
+		time.Sleep(5 * time.Millisecond)
 	}
-	time.Sleep(150 * time.Millisecond) // a surplus QUIT would show up here
+}
+
+func assertQuits(t *testing.T, s *fakeFTP, want int32) {
+	t.Helper()
 	if got := atomic.LoadInt32(&s.quits); got != want {
 		t.Fatalf("QUIT received %d times, want exactly %d", got, want)
 	}
 }
 
-// gatedSetup connects a client through a proxy whose control connection #2 (the redial) waits on gate, starts Close of a partially
-// read transfer in a goroutine and returns once the redial is provably in flight.
-func gatedSetup(t *testing.T, refuseAfterGate bool) (c *FTPClient, s *fakeFTP, n *int32, gate chan struct{}, done chan error) {
+// bounded runs f in a goroutine and fails the test (instead of hanging the package until -timeout) when it does not finish in 5s.
+// f must not call t.Fatal*/FailNow; it reports through t.Errorf.
+func bounded(t *testing.T, what string, f func()) {
 	t.Helper()
+	ch := make(chan struct{})
+	go func() { defer close(ch); f() }()
+	select {
+	case <-ch:
+	case <-time.After(5 * time.Second):
+		t.Fatalf("%s did not finish within 5s (blocked: lock held across the dial, or the redial is stuck)", what)
+	}
+}
+
+// waitDone waits for Close's result, bounded.
+func waitDone(t *testing.T, done chan error) error {
+	t.Helper()
+	select {
+	case err := <-done:
+		return err
+	case <-time.After(5 * time.Second):
+		t.Fatalf("Close did not return within 5s (the redial never finished)")
+		return nil
+	}
+}
+
+// gatedSetup connects a client through a proxy whose control connection #2 (the redial) waits on a gate, starts Close of a partially
+// read transfer in a goroutine and returns once the redial is provably in flight. release() opens the gate (idempotent); it is also run
+// from t.Cleanup, so a failing test never leaves the redial blocked. A goroutine baseline check is registered first, therefore runs last:
+// after all cleanups no goroutine started by the test may be left.
+func gatedSetup(t *testing.T, refuseAfterGate bool) (c *FTPClient, s *fakeFTP, n *int32, release func(), done chan error) {
+	t.Helper()
+	baseline := runtime.NumGoroutine()
+	t.Cleanup(func() {
+		deadline := time.Now().Add(5 * time.Second)
+		for runtime.NumGoroutine() > baseline {
+			if time.Now().After(deadline) {
+				buf := make([]byte, 1<<16)
+				t.Errorf("goroutine leak: %d goroutines after cleanup, baseline %d\n%s", runtime.NumGoroutine(), baseline, buf[:runtime.Stack(buf, true)])
+				return
+			}
+			time.Sleep(10 * time.Millisecond)
+		}
+	})
 	s = startFakeFTP(t, "drop")
 	n = new(int32)
-	gate = make(chan struct{})
+	gate := make(chan struct{})
+	var once sync.Once
+	release = func() { once.Do(func() { close(gate) }) }
 	port := startProxy(t, s, n, func(k int32) (chan struct{}, bool) {
 		if k == 2 {
 			return gate, refuseAfterGate
@@ -127,7 +176,8 @@ func gatedSetup(t *testing.T, refuseAfterGate bool) (c *FTPClient, s *fakeFTP, n
 	if err := c.Connect(context.Background()); err != nil {
 		t.Fatalf("connect: %v", err)
 	}
-	t.Cleanup(func() { _ = c.Disconnect(context.Background()) }) // runs after the test body (and its waitQuits), before the listeners close
+	t.Cleanup(func() { _ = c.Disconnect(context.Background()) }) // runs after the test body, before the listeners close
+	t.Cleanup(release)                                           // registered after Disconnect, so it runs BEFORE it: a failed test must open the gate first or Disconnect blocks on the held lock
 	rc := partialRead(t, c)
 	done = make(chan error, 1)
 	go func() { done <- rc.Close() }()
@@ -138,10 +188,10 @@ func gatedSetup(t *testing.T, refuseAfterGate bool) (c *FTPClient, s *fakeFTP, n
 // F1: Disconnect issued while the redial is in flight must win: the client stays disconnected and the connection the redial eventually
 // opens is ended with QUIT (not leaked). Control connections: #1 original, #2 the redial (gated).
 func TestFTPReadCloser_DisconnectDuringRedialDoesNotResurrect(t *testing.T) {
-	c, s, n, gate, done := gatedSetup(t, false)
-	_ = c.Disconnect(context.Background())
-	close(gate)
-	if cerr := <-done; cerr != nil {
+	c, s, n, release, done := gatedSetup(t, false)
+	bounded(t, "Disconnect during the redial", func() { _ = c.Disconnect(context.Background()) })
+	release()
+	if cerr := waitDone(t, done); cerr != nil {
 		t.Fatalf("Close = %v, want nil", cerr)
 	}
 	if got := atomic.LoadInt32(n); got != 2 {
@@ -151,21 +201,24 @@ func TestFTPReadCloser_DisconnectDuringRedialDoesNotResurrect(t *testing.T) {
 		t.Fatalf("IsConnected()==true after Disconnect(): the in-flight redial resurrected the client")
 	}
 	// The fake already dropped original session #1 (mode "drop"), so its QUIT never arrives; the single QUIT is the discarded redial connection.
-	waitQuits(t, s, 1)
+	settle(t, s, 0)
+	assertQuits(t, s, 1)
 }
 
 // Connect issued while the redial is in flight: Connect's connection is the live one, the redial's connection is discarded with QUIT.
 // Control connections: #1 original, #2 the redial (gated), #3 the explicit Connect.
 func TestFTPReadCloser_ConnectDuringRedialKeepsConnectsConnection(t *testing.T) {
-	c, s, n, gate, done := gatedSetup(t, false)
-	if err := c.Connect(context.Background()); err != nil {
-		t.Fatalf("second Connect: %v", err)
+	c, s, n, release, done := gatedSetup(t, false)
+	var cerr0 error
+	bounded(t, "Connect during the redial", func() { cerr0 = c.Connect(context.Background()) })
+	if cerr0 != nil {
+		t.Fatalf("second Connect: %v", cerr0)
 	}
 	c.mu.Lock()
 	connectsConn := c.client
 	c.mu.Unlock()
-	close(gate)
-	if cerr := <-done; cerr != nil {
+	release()
+	if cerr := waitDone(t, done); cerr != nil {
 		t.Fatalf("Close = %v, want nil", cerr)
 	}
 	if got := atomic.LoadInt32(n); got != 3 {
@@ -182,15 +235,16 @@ func TestFTPReadCloser_ConnectDuringRedialKeepsConnectsConnection(t *testing.T) 
 	}
 	// Original session #1 was dropped by the fake (no QUIT arrives); the single QUIT is the discarded redial connection (#2).
 	// Connect's connection (#3) must stay open, so it must not have been QUIT.
-	waitQuits(t, s, 1)
+	settle(t, s, 1) // only Connect's session (#3) stays open
+	assertQuits(t, s, 1)
 }
 
 // Disconnect wins and the in-flight redial then fails: the user disconnected on purpose, so Close must not report "reconnect failed".
 func TestFTPReadCloser_DisconnectThenRedialFailureIsNotAnError(t *testing.T) {
-	c, _, n, gate, done := gatedSetup(t, true)
-	_ = c.Disconnect(context.Background())
-	close(gate) // connection #2 is now refused
-	if cerr := <-done; cerr != nil {
+	c, _, n, release, done := gatedSetup(t, true)
+	bounded(t, "Disconnect during the redial", func() { _ = c.Disconnect(context.Background()) })
+	release() // connection #2 is now refused
+	if cerr := waitDone(t, done); cerr != nil {
 		t.Fatalf("Close after an intentional Disconnect = %v, want nil", cerr)
 	}
 	if got := atomic.LoadInt32(n); got != 2 {
@@ -203,9 +257,9 @@ func TestFTPReadCloser_DisconnectThenRedialFailureIsNotAnError(t *testing.T) {
 
 // The opposite case: NO Disconnect and the redial fails: the failure must be reported (mutation guard for the "disconnected" branch).
 func TestFTPReadCloser_RedialFailureWithoutDisconnectIsReported(t *testing.T) {
-	c, _, n, gate, done := gatedSetup(t, true)
-	close(gate) // connection #2 is refused, nobody disconnected
-	cerr := <-done
+	c, _, n, release, done := gatedSetup(t, true)
+	release() // connection #2 is refused, nobody disconnected
+	cerr := waitDone(t, done)
 	if cerr == nil || !strings.Contains(cerr.Error(), "reconnect failed") {
 		t.Fatalf("Close = %v, want an error containing \"reconnect failed\"", cerr)
 	}

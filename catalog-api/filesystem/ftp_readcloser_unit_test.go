@@ -22,6 +22,7 @@ type fakeFTP struct {
 	mode     string // "drop": close the control connection after RETR is aborted; "426": answer 426 and keep the session; "eofdrop": send the whole file, close data, drop control
 	accepted int32
 	quits    int32 // QUIT commands received (sessions ended in an orderly way)
+	live     int32 // control sessions currently being served
 	wg       sync.WaitGroup
 }
 
@@ -49,6 +50,8 @@ func startFakeFTP(t *testing.T, mode string) *fakeFTP {
 func (s *fakeFTP) port() int { return s.ln.Addr().(*net.TCPAddr).Port }
 
 func (s *fakeFTP) serve(c net.Conn) {
+	atomic.AddInt32(&s.live, 1)
+	defer atomic.AddInt32(&s.live, -1)
 	defer c.Close()
 	r := bufio.NewReader(c)
 	say := func(f string, a ...interface{}) { fmt.Fprintf(c, f+"\r\n", a...) }
