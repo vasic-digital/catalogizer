@@ -89,7 +89,8 @@ func TestAllowPublicURL(t *testing.T) {
 		url  string
 		bad  bool
 	}{
-		{"https public ok", "https://upload.wikimedia.org/x.jpg", false},
+		// literal public IP: hostname rows would need live DNS, which hermetic (network none) runs lack
+		{"https public ok", "https://93.184.216.34/x.jpg", false},
 		{"loopback rejected", "http://127.0.0.1/x.jpg", true},
 		{"private range rejected", "http://192.168.1.1/x.jpg", true},
 		{"link local rejected", "http://169.254.1.1/x.jpg", true},
