@@ -13,7 +13,7 @@ set -euo pipefail
 
 CONTAINER_NAME="catalogizer-postgres"
 PG_USER="${POSTGRES_USER:-catalogizer}"
-PG_PASS="${POSTGRES_PASSWORD:-catalogizer_dev}"
+PG_PASS="${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD (see .env.example)}"
 PG_DB="${POSTGRES_DB:-catalogizer}"
 PG_PORT="${POSTGRES_PORT:-5433}"
 

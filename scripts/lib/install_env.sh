@@ -28,6 +28,8 @@ install_write_env() {
     _admin_pw="$(gen_secret 16)" || return 1
     _grafana_pw="$(gen_secret 16)" || return 1
     _minio_pw="$(gen_secret 16)" || return 1
+    _minio_user="cat$(gen_secret 6)" || return 1
+    _pgadmin_pw="$(gen_secret 16)" || return 1
     (
         umask 077
         cat > "$target" << EOF
@@ -97,7 +99,11 @@ ADMIN_EMAIL=admin@example.com
 
 # Monitoring / object-storage secrets required by docker-compose.yml (generated)
 GRAFANA_PASSWORD=${_grafana_pw}
+MINIO_ROOT_USER=${_minio_user}
 MINIO_ROOT_PASSWORD=${_minio_pw}
+STORAGE_ACCESS_KEY=${_minio_user}
+STORAGE_SECRET_KEY=${_minio_pw}
+PGADMIN_DEFAULT_PASSWORD=${_pgadmin_pw}
 
 # SSL/TLS Configuration
 SSL_ENABLED=false
