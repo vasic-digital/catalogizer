@@ -30,8 +30,11 @@ LINE = re.compile(r'^\s*(?:-\s*)?["\']?(' + NAME + r')["\']?\s*[:=]\s*(.*?)\s*$'
 # Inline literal defaults: ${NAME:-value} / ${NAME-value} for secret-named variables
 # (bare PASS is excluded here: shell pass/fail counters are everywhere in test scripts).
 DEFAULT = re.compile(r'\$\{([A-Za-z0-9_]*(?:PASSWORD|PASSWD|SECRET|TOKEN|API_KEY|ACCESS_KEY|PRIVATE_KEY|CREDENTIAL)[A-Za-z0-9_]*):?-([^}]+)\}', re.I)
-SAFE_KEY_SUFFIX = ('_FILE', '_PATH', '_DIR', '_PORT', '_PORTS', '_URL', '_ENABLED', '_PASSIVE_PORTS')
+SAFE_KEY_SUFFIX = ('_ENV', '_FILE', '_PATH', '_DIR', '_PORT', '_PORTS', '_URL', '_ENABLED', '_PASSIVE_PORTS')
 REF = re.compile(r'^["\']?\$\{[A-Za-z0-9_]+(?::?\?[^}]*|:?-)\}["\']?$')   # ${V:?x} ${V:-} ${V-}
+
+PLACEHOLDER = re.compile(r'^<(?:your|change|replace|insert|enter|put|example|redacted|secret|password|token|key|value|xxx|todo)[A-Za-z0-9_ .-]*(?:>|$)', re.I)   # `$` = shell capture cut at the first space: `<your token>` -> `<your`
+PATH_VALUE = re.compile(r'^(?:/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)+/?|[A-Za-z0-9_.-]+:/[A-Za-z0-9_./-]+)$')
 
 def is_literal(val, shell=False):
     v = val.split(' #')[0].strip().strip('"\'')
@@ -39,12 +42,14 @@ def is_literal(val, shell=False):
         return False
     if REF.match(val.split(' #')[0].strip()):
         return False
-    if re.fullmatch(r'\d{1,4}', v.split()[0]):      # shell counter (PASS=0), not a secret value
+    if v.split() and re.fullmatch(r'\d{1,4}', v.split()[0]):      # shell counter (PASS=0), not a secret value
         return False
-    if v[:1] in '[{<':                              # JSON structure opener / <placeholder> hint, not a value
+    if v in ('[', '{', '[]', '{}') or v.startswith(('{"', "{'", '["', "['", '[{', '[ ', '{ ')):
+        return False                                # JSON/YAML structure opener, not a value (`[hunter2]` / `{hunter2}` ARE values)
+    if PLACEHOLDER.match(v):                       # exact `<your-secret>`-style hint; `<hunter2>` is a literal
         return False
-    if v.startswith('/'):                          # filesystem path (volume `api_keys:/app/keys`), not a secret value
-        return False
+    if PATH_VALUE.match(v):                        # multi-segment absolute path or short-volume `name:/abs/path`;
+        return False                               # a single-segment `/k7Qz...` is a literal
     if v.startswith(('$(', '$$(')):                # command substitution / arithmetic (`$$(` is the compose-escaped form)
         return False
     if v.startswith('$$'):

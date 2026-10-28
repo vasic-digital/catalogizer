@@ -58,6 +58,18 @@ printf 'PASS=0\nPASSES=$((PASSES+1))\nTMP_PASSWORD=$(openssl rand -hex 8)\nX_SEC
 python3 "$SCAN" "$tmp/empty_allow" "$tmp/okc.sh" >/dev/null || { echo "SELFTEST FAIL: scan flags clean shell fixture"; exit 2; }
 printf 'TOKEN=0\nTOKENS=3\nexport Z_TOKEN="${Z_TOKEN:?req}"\nGH_TOKEN="$(cat f)"\nB="{\\"password\\":\\"${PW}\\"}"\nc='"'"'{"secrets": ['"'"'\nVOL=api_keys:/app/keys\n' > "$tmp/okt.sh"
 python3 "$SCAN" "$tmp/empty_allow" "$tmp/okt.sh" >/dev/null || { echo "SELFTEST FAIL: scan flags clean T2 shell fixture"; exit 2; }
+# TI-1: value-prefix literals (`/ [ { <`) that earlier versions treated as paths/placeholders.
+# Each of the six MUST be flagged on its own; the must-not-flag set below keeps real paths
+# (multi-segment absolute path, short-volume `name:/abs`), JSON openers and keyword placeholders clean.
+ti=0
+for bad in 'JWT_SECRET: /k7QzXw9pLm2' 'ADMIN_PASSWORD=[hunter2]' 'export DB_PASSWORD=/s3cr3t' \
+           'API_TOKEN: {hunter2}' 'DB_PASSWORD=<hunter2>' 'ENCRYPTION_SECRET: /9f8e7d6c5b4a'; do
+    ti=$((ti+1)); ext=yml; case "$bad" in export*) ext=sh;; esac
+    printf '%s\n' "$bad" > "$tmp/ti$ti.$ext"
+    python3 "$SCAN" "$tmp/empty_allow" "$tmp/ti$ti.$ext" >/dev/null && { echo "SELFTEST FAIL: scan blind to TI-1 literal $ti"; exit 2; }
+done
+printf 'VOL=api_keys:/app/keys\nJWT_SECRET: /run/secrets/jwt\nDB_PASSWORD: <your-password>\nAPI_TOKEN: {}\nSECRET_X: [\nSIGN_SECRET: {"a": 1}\nTLS_SECRET: key_vol:/etc/tls\n  needs: {service: x, credential_env: [QA_USER]}\n' > "$tmp/ti_ok.yml"
+python3 "$SCAN" "$tmp/empty_allow" "$tmp/ti_ok.yml" >/dev/null || { echo "SELFTEST FAIL: scan flags TI-1 clean fixture"; exit 2; }
 printf 'services:\n  a:\n    command: TOKEN=$$(curl x)\n' > "$tmp/okc.yml"
 python3 "$SCAN" "$tmp/empty_allow" "$tmp/okc.yml" >/dev/null || { echo "SELFTEST FAIL: scan flags compose command substitution"; exit 2; }
 printf 'services:\n  a:\n    environment:\n      A_PASSWORD: ${A_PASSWORD:?req}\n      B_TOKEN: ${B_TOKEN:-}\n      C_PASSWORD_FILE: /run/x\n' > "$tmp/ok.yml"
@@ -73,7 +85,6 @@ for fx in m1.sh inl.sh; do
 done
 [ -z "$(gen_scan "$tmp/okc.sh")" ] || { echo "SELFTEST FAIL: generator scan flags clean shell fixture"; exit 2; }
 
-fail=0
 files=$(git ls-files | grep -E '(^|/)(docker-|infra-)?compose[^/]*\.ya?ml$')
 [ -n "$files" ] || { echo "FAIL: no compose files found (blind)"; exit 2; }
 # shellcheck disable=SC2086
@@ -83,7 +94,23 @@ if [ -n "$hits" ]; then echo "FAIL: non-empty default secrets in compose files:"
 # shellcheck disable=SC2086
 lit=$(python3 "$SCAN" "$ALLOW" $files 2>&1); lrc=$?
 if [ "$lrc" -ne 0 ]; then echo "FAIL: literal secrets in compose files (file:line:KEY):"; echo "$lit"; fail=1; fi
-gens=$(git ls-files 'scripts/*.sh' | grep -v '^scripts/tests/' | grep -v '/tests/')   # test dirs hold deliberate canary fixtures
+fail=0
+# TI-2: skip ONLY the explicit test roots listed as data (test dirs hold deliberate canary fixtures);
+# any other `/tests/` directory is scanned. Filter is a function so it is self-tested below.
+ROOTS=scripts/tests/generator_scan_test_roots.txt
+[ -f "$ROOTS" ] || { echo "FAIL: $ROOTS missing"; exit 2; }
+roots=$(grep -vE '^[[:space:]]*(#|$)' "$ROOTS")
+[ -n "$roots" ] || { echo "FAIL: no test roots listed (blind)"; exit 2; }
+while IFS= read -r r; do
+    case "$r" in */tests) ;; *) echo "FAIL: test root '$r' must end in /tests (too broad)"; fail=1; continue;; esac
+    git ls-files --error-unmatch -- "$r" >/dev/null 2>&1 || [ -n "$(git ls-files -- "$r" | head -1)" ] || { echo "FAIL: test root '$r' has no tracked files (stale)"; fail=1; }
+done <<<"$roots"
+drop_test_roots() { local f r keep; while IFS= read -r f; do keep=1; while IFS= read -r r; do case "$f" in "$r"/*) keep=0; break;; esac; done <<<"$roots"; [ "$keep" = 1 ] && echo "$f"; done; }
+# self-test: a listed root is dropped, an UNLISTED /tests/ dir is kept (kills a blanket '/tests/' skip)
+first_root=$(head -1 <<<"$roots")
+[ -z "$(printf '%s\n' "$first_root/x.sh" | drop_test_roots)" ] || { echo "SELFTEST FAIL: listed test root not skipped"; exit 2; }
+[ -n "$(printf '%s\n' 'scripts/unlisted_dir/tests/x.sh' | drop_test_roots)" ] || { echo "SELFTEST FAIL: unlisted /tests/ dir wrongly skipped"; exit 2; }
+gens=$(git ls-files 'scripts/*.sh' | drop_test_roots)
 # shellcheck disable=SC2086
 glit=$(gen_scan $gens); [ -z "$glit" ] || { echo "FAIL: literal secret defaults in shell scripts (file:line:KEY):"; echo "$glit"; fail=1; }
 if git ls-files --error-unmatch .env.security >/dev/null 2>&1; then echo "FAIL: .env.security is tracked"; fail=1; fi

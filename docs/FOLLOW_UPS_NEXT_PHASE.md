@@ -26,13 +26,13 @@ Each needs a RED selftest first, then the fix.
 - Android `/dev/kvm` as uid 1000 (F10) and the real-image F1 run: UNCONFIRMED.
 
 ## Secrets scanner (`scripts/` secret scan) — test-instrumentation (security series round 5)
-- TI-1 (fix soon): value-prefix exclusions (`/ [ { <`) hide real literals such as
+- TI-1 (DONE, see scripts/tests/scan_literal_secrets.py): value-prefix exclusions (`/ [ { <`) hide real literals such as
   `JWT_SECRET: /k7Qz...`, `ADMIN_PASSWORD=[hunter2]`, `export DB_PASSWORD=/s3cr3t`. Treat `/` as a
   path only in the short-volume form; limit `<...>` to exact placeholders; add the six literals
   as must-flag fixtures and `VOL=api_keys:/app/keys` as must-not-flag.
-- TI-2: generator scan skips every path containing `/tests/`; use an explicit list of test roots.
-- TI-3: the stack-boot test greps only the literal `admin123`; broaden or rely on the scanner.
-- PD-1: `run-full-qa.sh` registers `testuser_qa` with `ADMIN_PASSWORD`; use a separate value.
+- TI-2 (DONE, scripts/tests/generator_scan_test_roots.txt): generator scan skips every path containing `/tests/`; use an explicit list of test roots.
+- TI-3 (DONE: scanner now also runs over the QA compose/scripts): the stack-boot test greps only the literal `admin123`; broaden or rely on the scanner.
+- PD-1 (DONE: separate required `QA_USER_PASSWORD`, documented in `.env.example`): `run-full-qa.sh` registers `testuser_qa` with `ADMIN_PASSWORD`; use a separate value.
 - Out of scope but real: `admin123` still appears in `catalog-api/challenges/*`, `start_server.sh`,
   `run_challenges*.sh`, `check_scans.sh`, `catalog-web/e2e/fixtures/auth.ts`, the Android and
   Android TV `MainActivity.kt` (production app source: own item), and the helixqa banks.
