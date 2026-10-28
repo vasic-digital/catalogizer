@@ -124,6 +124,11 @@ func LoadConfig(configPath string) (*Config, error) {
 		if err := saveConfig(config, configPath); err != nil {
 			return nil, fmt.Errorf("failed to create default config: %w", err)
 		}
+		// A fresh container has no config.json; secrets still come from the
+		// environment and must pass the same validation as an existing file.
+		if err := validateConfig(config); err != nil {
+			return nil, fmt.Errorf("invalid configuration: %w", err)
+		}
 		return config, nil
 	}
 
@@ -388,21 +393,40 @@ func (c *Config) GetServerAddress() string {
 	return net.JoinHostPort(c.Server.Host, strconv.Itoa(c.Server.Port))
 }
 
-// placeholderMarkers are substrings that identify documentation placeholders
-// and published defaults (matched case-insensitively). Any secret containing
-// one of them was copied from an example file and is therefore public.
-var placeholderMarkers = []string{
-	"change_me", "change-me", "change-this", "changeme", "your-super-secret",
-	"your_secret", "your-secret", "placeholder", "replace-me", "replace_me",
+// normalizeSecret lower-cases v, trims whitespace and drops separator
+// characters (space, '-', '_', '.') so "Change Me", "change-me" and
+// "CHANGE_ME" compare equal.
+func normalizeSecret(v string) string {
+	v = strings.ToLower(strings.TrimSpace(v))
+	var b strings.Builder
+	for _, r := range v {
+		switch r {
+		case ' ', '\t', '\r', '\n', '-', '_', '.':
+			continue
+		}
+		b.WriteRune(r)
+	}
+	return b.String()
 }
 
-// placeholderPasswords are exact (case-insensitive) weak defaults.
-var placeholderPasswords = []string{"admin", "password", "admin_password", "catalogizer_password"}
+// placeholderMarkers are normalized substrings that identify documentation
+// placeholders and defaults this repository has published. Any secret that
+// contains one was copied from an example/compose file and is therefore public.
+var placeholderMarkers = []string{
+	"changeme", "changethis", "yoursupersecret", "yoursecret", "placeholder",
+	"replaceme", "distributedcatalogizersecret", "catalogizerdevelopmentsecret",
+}
+
+// placeholderPasswords are normalized exact weak/published defaults.
+var placeholderPasswords = []string{
+	"admin", "password", "adminpassword", "catalogizerpassword", "admin123",
+	"catalogizerdev", "minioadmin", "minioadmin123", "sonarpassword", "12345678",
+}
 
 func isPlaceholderSecret(v string) bool {
-	l := strings.ToLower(v)
+	n := normalizeSecret(v)
 	for _, m := range placeholderMarkers {
-		if strings.Contains(l, m) {
+		if strings.Contains(n, m) {
 			return true
 		}
 	}
@@ -413,9 +437,9 @@ func isPlaceholderPassword(v string) bool {
 	if isPlaceholderSecret(v) {
 		return true
 	}
-	l := strings.ToLower(v)
+	n := normalizeSecret(v)
 	for _, p := range placeholderPasswords {
-		if l == p {
+		if n == p {
 			return true
 		}
 	}
