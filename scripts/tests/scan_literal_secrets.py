@@ -16,6 +16,12 @@ Exit 0 = clean, 1 = findings, 2 = usage/blind.
 import re, sys
 
 NAME = r'[A-Za-z0-9_]*(?:PASSWORD|PASSWD|PASS|SECRET|TOKEN|API_KEY|ACCESS_KEY|PRIVATE_KEY|CREDENTIAL)[A-Za-z0-9_]*'
+# Flow-map / inline forms: `{D_PASSWORD: x}` and shell `export K=v`, `-e K=v`, `--env K=v`.
+FLOW = re.compile(r'(?<!\$)[{,]\s*["\']?(' + NAME + r')["\']?\s*:\s*([^,}]*)', re.I)
+# Shell scripts: counters/words such as PASS, PASSES, TOKENS are everywhere, so the
+# KEY=value forms are matched only for unambiguous secret names.
+SHNAME = r'[A-Za-z0-9_]*(?:PASSWORD|PASSWD|SECRET|API_KEY|ACCESS_KEY|PRIVATE_KEY)[A-Za-z0-9_]*'
+INLINE = re.compile(r'(?:^|[\s;&|(])(?:export\s+|local\s+|declare\s+(?:-\w+\s+)?|readonly\s+|-e\s+|--env[= ]\s*)["\']?(' + SHNAME + r')=([^\s;&|)]*)')
 LINE = re.compile(r'^\s*(?:-\s*)?["\']?(' + NAME + r')["\']?\s*[:=]\s*(.*?)\s*$', re.I)
 # Inline literal defaults: ${NAME:-value} / ${NAME-value} for secret-named variables
 # (bare PASS is excluded here: shell pass/fail counters are everywhere in test scripts).
@@ -23,14 +29,18 @@ DEFAULT = re.compile(r'\$\{([A-Za-z0-9_]*(?:PASSWORD|PASSWD|SECRET|TOKEN|API_KEY
 SAFE_KEY_SUFFIX = ('_FILE', '_PATH', '_DIR', '_PORT', '_PORTS', '_URL', '_ENABLED', '_PASSIVE_PORTS')
 REF = re.compile(r'^["\']?\$\{[A-Za-z0-9_]+(?::?\?[^}]*|:?-)\}["\']?$')   # ${V:?x} ${V:-} ${V-}
 
-def is_literal(val):
+def is_literal(val, shell=False):
     v = val.split(' #')[0].strip().strip('"\'')
     if v == '' or v.lower() in ('true', 'false', 'null', '~', 'none'):
         return False
     if REF.match(val.split(' #')[0].strip()):
         return False
-    if v.split()[0].isdigit() or v.startswith(('$(', '$$')):      # shell counter / command substitution, not a secret value
+    if re.fullmatch(r'\d{1,4}', v.split()[0]):      # shell counter (PASS=0), not a secret value
         return False
+    if v.startswith(('$(', '$$(')):                # command substitution / arithmetic (`$$(` is the compose-escaped form)
+        return False
+    if v.startswith('$$'):
+        return not shell     # shell: PID expansion; compose: `$$x` is the LITERAL `$x`
     if v.startswith('$') and ':-' not in v and '-' not in v.split('}')[0][2:]:
         return False        # plain $VAR / ${VAR} expansion (no literal default)
     return True
@@ -58,10 +68,18 @@ def main():
     for f in args[1:]:
         for n, line in enumerate(open(f, errors='replace'), 1):
             hits = []
+            shell = f.endswith('.sh')
             m = None if defaults_only else LINE.match(line)
-            if m:
-                key, val = m.group(1), m.group(2)
-                if not key.upper().endswith(SAFE_KEY_SUFFIX) and is_literal(val):
+            cands = []
+            if m and not (shell and not (re.fullmatch(SHNAME, m.group(1), re.I) and m.group(1).isupper())):
+                cands.append((m.group(1), m.group(2)))
+            if not defaults_only:
+                if not shell:
+                    cands += [(x.group(1), x.group(2)) for x in FLOW.finditer(line)]
+                if shell:
+                    cands += [(x.group(1), x.group(2)) for x in INLINE.finditer(line)]
+            for key, val in cands:
+                if not key.upper().endswith(SAFE_KEY_SUFFIX) and is_literal(val, shell) and key not in hits:
                     hits.append(key)
             for dm in DEFAULT.finditer(line):
                 if dm.group(2).startswith('$'):      # default is itself an expansion / command substitution

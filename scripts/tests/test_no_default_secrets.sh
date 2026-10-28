@@ -38,11 +38,35 @@ for fx in lc.yml pass.yml; do
     python3 "$SCAN" "$tmp/empty_allow" "$tmp/$fx" >/dev/null && { echo "SELFTEST FAIL: scan blind to $fx"; exit 2; }
 done
 python3 "$SCAN" --defaults-only "$tmp/empty_allow" "$tmp/gen.sh" >/dev/null && { echo "SELFTEST FAIL: scan blind to shell default"; exit 2; }
+# Fixtures that earlier scanner versions missed (each MUST be flagged):
+#  M1 heredoc KEY=value literals inside a generator script (old full-distribute/install.sh shape),
+#  M2 an all-digit literal (a counter is at most 4 digits), a compose `$$`-escaped literal,
+#  flow-map `{KEY: x}`, and shell `export K=v` / `-e K=v`.
+printf 'cat > .env <<EOF\nJWT_SECRET=distributed-catalogizer-secret\nADMIN_PASSWORD=admin123\nEOF\n' > "$tmp/m1.sh"
+printf 'services:\n  a:\n    environment:\n      POSTGRES_PASSWORD: 12345678\n' > "$tmp/m2.yml"
+printf 'services:\n  a:\n    environment:\n      D_PASSWORD: $$ecret1\n' > "$tmp/esc.yml"
+printf 'services:\n  a:\n    environment: {D_PASSWORD: hunter2}\n' > "$tmp/flow.yml"
+printf 'export DB_PASSWORD=hunter2\ndocker run -e POSTGRES_PASSWORD=hunter2 img\n' > "$tmp/inl.sh"
+for fx in m1.sh m2.yml esc.yml flow.yml inl.sh; do
+    python3 "$SCAN" "$tmp/empty_allow" "$tmp/$fx" >/dev/null && { echo "SELFTEST FAIL: scan blind to $fx"; exit 2; }
+done
+# ...and these clean shapes MUST NOT be flagged (counters, PID, command substitution, refs).
+printf 'PASS=0\nPASSES=$((PASSES+1))\nTMP_PASSWORD=$(openssl rand -hex 8)\nX_SECRET=$$\nY_PASSWORD="${Y_PASSWORD:?req}"\nexport Z_TOKEN="${Z_TOKEN:-}"\n' > "$tmp/okc.sh"
+python3 "$SCAN" "$tmp/empty_allow" "$tmp/okc.sh" >/dev/null || { echo "SELFTEST FAIL: scan flags clean shell fixture"; exit 2; }
+printf 'services:\n  a:\n    command: TOKEN=$$(curl x)\n' > "$tmp/okc.yml"
+python3 "$SCAN" "$tmp/empty_allow" "$tmp/okc.yml" >/dev/null || { echo "SELFTEST FAIL: scan flags compose command substitution"; exit 2; }
 printf 'services:\n  a:\n    environment:\n      A_PASSWORD: ${A_PASSWORD:?req}\n      B_TOKEN: ${B_TOKEN:-}\n      C_PASSWORD_FILE: /run/x\n' > "$tmp/ok.yml"
 python3 "$SCAN" "$tmp/empty_allow" "$tmp/ok.yml" >/dev/null || { echo "SELFTEST FAIL: scan flags clean fixture"; exit 2; }
 printf 'lc.yml:pgadmin_default_password  # fixture\n' > "$tmp/al_ok"; printf 'lc.yml:pgadmin_default_password\n' > "$tmp/al_noreason"
 ( cd "$tmp" && python3 "$OLDPWD/$SCAN" al_ok lc.yml >/dev/null ) || { echo "SELFTEST FAIL: reasoned allowlist not honoured"; exit 2; }
 ( cd "$tmp" && python3 "$OLDPWD/$SCAN" al_noreason lc.yml >/dev/null 2>&1 ) && { echo "SELFTEST FAIL: reason-less allowlist accepted"; exit 2; }
+
+# The generator scan used on real scripts is the SAME function proven here on the heredoc fixtures.
+gen_scan() { python3 "$SCAN" "$ALLOW" "$@" 2>&1 | grep -v '^STALE ALLOWLIST'; }
+for fx in m1.sh inl.sh; do
+    [ -n "$(gen_scan "$tmp/$fx")" ] || { echo "SELFTEST FAIL: generator scan blind to $fx"; exit 2; }
+done
+[ -z "$(gen_scan "$tmp/okc.sh")" ] || { echo "SELFTEST FAIL: generator scan flags clean shell fixture"; exit 2; }
 
 fail=0
 files=$(git ls-files | grep -E '(^|/)(docker-|infra-)?compose[^/]*\.ya?ml$')
@@ -56,7 +80,7 @@ lit=$(python3 "$SCAN" "$ALLOW" $files 2>&1); lrc=$?
 if [ "$lrc" -ne 0 ]; then echo "FAIL: literal secrets in compose files (file:line:KEY):"; echo "$lit"; fail=1; fi
 gens=$(git ls-files 'scripts/*.sh' | grep -v '^scripts/tests/')
 # shellcheck disable=SC2086
-glit=$(python3 "$SCAN" --defaults-only "$ALLOW" $gens 2>&1 | grep -v '^STALE ALLOWLIST'); [ -z "$glit" ] || { echo "FAIL: literal secret defaults in shell scripts (file:line:KEY):"; echo "$glit"; fail=1; }
+glit=$(gen_scan $gens); [ -z "$glit" ] || { echo "FAIL: literal secret defaults in shell scripts (file:line:KEY):"; echo "$glit"; fail=1; }
 if git ls-files --error-unmatch .env.security >/dev/null 2>&1; then echo "FAIL: .env.security is tracked"; fail=1; fi
 git check-ignore -q .env.security || { echo "FAIL: .env.security not gitignored"; fail=1; }
 [ -f .env.security.example ] || { echo "FAIL: .env.security.example missing"; fail=1; }
