@@ -33,9 +33,13 @@ type FTPClient struct {
 	// ("movies") the server resolved it against the login directory, so prefixing the relative text again would address
 	// <login>/movies/movies (WF22 R18). base is what the server says the working directory is after the CWD.
 	base string
-	// mu guards the replacement of client/connected/base (Connect, Disconnect, reconnect). The client is otherwise single-goroutine,
-	// like the underlying *ftp.ServerConn; the production callers create one client per job via ClientFactory.CreateClient.
+	// mu guards the fields client, connected, base and gen: every WRITE of them (Connect, Disconnect, reconnectIf) and IsConnected hold it.
+	// Scope of the claim: the protocol operations (ReadFile, ListDirectory, ...) read c.client/c.base without the lock and are
+	// single-goroutine, exactly like the underlying *ftp.ServerConn; the production callers create one client per job via
+	// ClientFactory.CreateClient (no goroutine sharing was found in universal_scanner.go; other handlers were not audited).
 	mu sync.Mutex
+	// gen counts Disconnect calls. A reconnect started before a Disconnect must not install its new connection afterwards.
+	gen uint64
 }
 
 // NewFTPClient creates a new FTP client
@@ -48,17 +52,29 @@ func NewFTPClient(config *FTPConfig) *FTPClient {
 
 // Connect establishes the FTP connection
 func (c *FTPClient) Connect(ctx context.Context) error {
+	client, base, err := c.dial(ctx)
+	if err != nil {
+		return err
+	}
+	c.mu.Lock()
+	c.client, c.base, c.connected = client, base, true
+	c.mu.Unlock()
+	return nil
+}
+
+// dial opens, logs in and positions a new control connection without touching the client's fields.
+func (c *FTPClient) dial(ctx context.Context) (*ftp.ServerConn, string, error) {
 	addr := net.JoinHostPort(c.config.Host, fmt.Sprintf("%d", c.config.Port))
 
 	client, err := ftp.Dial(addr, ftp.DialWithTimeout(30*time.Second), ftp.DialWithContext(ctx))
 	if err != nil {
-		return fmt.Errorf("failed to connect to FTP server: %w", err)
+		return nil, "", fmt.Errorf("failed to connect to FTP server: %w", err)
 	}
 
 	err = client.Login(c.config.Username, c.config.Password)
 	if err != nil {
 		client.Quit()
-		return fmt.Errorf("failed to login to FTP server: %w", err)
+		return nil, "", fmt.Errorf("failed to login to FTP server: %w", err)
 	}
 
 	// Change to base directory if specified
@@ -66,25 +82,21 @@ func (c *FTPClient) Connect(ctx context.Context) error {
 		err = client.ChangeDir(c.config.Path)
 		if err != nil {
 			client.Quit()
-			return fmt.Errorf("failed to change to base directory %s: %w", c.config.Path, err)
+			return nil, "", fmt.Errorf("failed to change to base directory %s: %w", c.config.Path, err)
 		}
 	}
 
-	c.base = ""
+	base := ""
 	if c.config.Path != "" {
 		if cwd, err := client.CurrentDir(); err == nil && strings.HasPrefix(cwd, "/") {
-			c.base = pathpkg.Clean(cwd)
+			base = pathpkg.Clean(cwd)
 		} else {
 			// The server does not answer PWD (or answers something unusable): an absolute configured path is used as it is; a relative one is
 			// taken as relative to "/" (the login directory of a chrooted account).
-			c.base = pathpkg.Clean("/" + c.config.Path)
+			base = pathpkg.Clean("/" + c.config.Path)
 		}
 	}
-	c.mu.Lock()
-	c.client = client
-	c.connected = true
-	c.mu.Unlock()
-	return nil
+	return client, base, nil
 }
 
 // Disconnect closes the FTP connection
@@ -93,6 +105,7 @@ func (c *FTPClient) Disconnect(ctx context.Context) error {
 	conn := c.client
 	c.client = nil
 	c.connected = false
+	c.gen++
 	c.mu.Unlock()
 	if conn != nil {
 		return conn.Quit()
@@ -102,6 +115,8 @@ func (c *FTPClient) Disconnect(ctx context.Context) error {
 
 // IsConnected returns true if the client is connected
 func (c *FTPClient) IsConnected() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	return c.connected && c.client != nil
 }
 
@@ -185,21 +200,36 @@ func (r *ftpReadCloser) Close() error {
 	return err
 }
 
-// reconnectIf replaces the control connection `old` with a fresh one, but only while `old` is still the client's current connection:
-// after Disconnect() (or a replacement) it does nothing, so a late Close can never resurrect a disconnected client.
+// reconnectIf replaces the control connection `old` with a fresh one, but only while `old` is still the client's current connection and
+// no Disconnect happened meanwhile: the new connection is dialled outside the lock and installed only if the Disconnect generation is
+// unchanged, otherwise it is Quit and discarded. A late Close can therefore never resurrect a disconnected client, not even when
+// Disconnect runs while the redial is in flight.
 func (c *FTPClient) reconnectIf(ctx context.Context, old *ftp.ServerConn) error {
 	c.mu.Lock()
 	if c.client != old || old == nil {
 		c.mu.Unlock()
 		return nil
 	}
+	gen := c.gen
 	c.client = nil
 	c.connected = false
 	c.mu.Unlock()
 	_ = old.Quit()
 	rctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
-	return c.Connect(rctx)
+	fresh, base, err := c.dial(rctx)
+	if err != nil {
+		return err
+	}
+	c.mu.Lock()
+	if c.gen != gen || c.client != nil {
+		c.mu.Unlock()
+		_ = fresh.Quit() // Disconnect (or another Connect) won the race: do not install
+		return nil
+	}
+	c.client, c.base, c.connected = fresh, base, true
+	c.mu.Unlock()
+	return nil
 }
 
 // WriteFile writes a file to the FTP server

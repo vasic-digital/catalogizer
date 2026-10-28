@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"net"
 	"strings"
 	"sync"
@@ -18,8 +19,9 @@ import (
 
 type fakeFTP struct {
 	ln       net.Listener
-	mode     string // "drop": close the control connection after RETR is aborted; "426": answer 426 and keep the session
+	mode     string // "drop": close the control connection after RETR is aborted; "426": answer 426 and keep the session; "eofdrop": send the whole file, close data, drop control
 	accepted int32
+	quits    int32 // QUIT commands received (sessions ended in an orderly way)
 	wg       sync.WaitGroup
 }
 
@@ -80,6 +82,10 @@ func (s *fakeFTP) serve(c net.Conn) {
 				return
 			}
 			dc.Write(make([]byte, 4096))
+			if s.mode == "eofdrop" { // whole file sent, data connection closed, then the control connection dies without a 226
+				dc.Close()
+				return
+			}
 			buf := make([]byte, 1)
 			dc.SetReadDeadline(time.Now().Add(5 * time.Second))
 			dc.Read(buf) // returns when the client closes the data connection
@@ -89,6 +95,7 @@ func (s *fakeFTP) serve(c net.Conn) {
 			}
 			say("426 transfer aborted")
 		case "QUIT":
+			atomic.AddInt32(&s.quits, 1)
 			say("221 bye")
 			return
 		default:
@@ -161,5 +168,41 @@ func TestFTPReadCloser_CloseAfterDisconnectDoesNotRedial(t *testing.T) {
 	time.Sleep(200 * time.Millisecond)
 	if n := atomic.LoadInt32(&s.accepted); n != 1 {
 		t.Fatalf("control connections accepted = %d, want 1 (no redial after Disconnect)", n)
+	}
+}
+
+// F2: a transfer read to its END and then a control drop is a real failure: Close must return the error, not swallow it as an early abort.
+func TestFTPReadCloser_ReadToEOFThenControlDropIsReturned(t *testing.T) {
+	s := startFakeFTP(t, "eofdrop")
+	c := fakeClient(t, s)
+	rc, err := c.ReadFile(context.Background(), "/f.bin")
+	if err != nil {
+		t.Fatalf("ReadFile: %v", err)
+	}
+	if _, err := io.Copy(io.Discard, rc); err != nil {
+		t.Fatalf("read to EOF: %v", err)
+	}
+	if err := rc.Close(); err == nil {
+		t.Fatalf("Close swallowed a control drop after the transfer was read to EOF")
+	}
+}
+
+// F3: after a real 426 the old control session must be ended with QUIT (not leaked), exactly one replacement is dialled, and the client works.
+func TestFTPReadCloser_426QuitsOldSessionAndClientUsable(t *testing.T) {
+	s := startFakeFTP(t, "426")
+	c := fakeClient(t, s)
+	rc := partialRead(t, c)
+	if err := rc.Close(); err == nil {
+		t.Fatalf("expected the 426 error")
+	}
+	time.Sleep(100 * time.Millisecond) // the fake counts QUIT asynchronously
+	if n := atomic.LoadInt32(&s.quits); n != 1 {
+		t.Fatalf("QUIT received %d times, want 1 (old session must be Quit)", n)
+	}
+	if n := atomic.LoadInt32(&s.accepted); n != 2 {
+		t.Fatalf("control connections = %d, want 2", n)
+	}
+	if !c.IsConnected() || c.TestConnection(context.Background()) != nil {
+		t.Fatalf("client unusable after Close")
 	}
 }
