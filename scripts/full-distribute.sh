@@ -122,13 +122,16 @@ start_services() {
         # Create .env file for the services: random per-host secrets generated
         # locally (mode 0600, never printed) by the shared installer helper.
         _envdir=$(mktemp -d) || exit 1
+        # Remove the temp env dir on ANY exit (generation failure included); the guarded
+        # expansion makes an empty/unset value abort instead of expanding to a broad path.
+        trap '[[ -n "${_envdir:-}" && -d "${_envdir}" ]] && rm -rf -- "${_envdir:?}"; [[ -n "${TMP_DIR:-}" && -d "${TMP_DIR}" ]] && rm -rf -- "${TMP_DIR:?}"; true' EXIT
         # shellcheck source=lib/install_env.sh
         . "${PROJECT_ROOT}/scripts/lib/install_env.sh"
         install_write_env "${_envdir}/.env" >/dev/null || exit 1
         printf 'DATABASE_TYPE=sqlite\nGIN_MODE=release\n' >> "${_envdir}/.env"
         scp -q "${_envdir}/.env" "${host}:~/catalogizer/.env"
         ssh "${host}" "chmod 600 ~/catalogizer/.env"
-        rm -f "${_envdir:?}/.env"; rmdir "${_envdir:?}"
+        rm -f "${_envdir:?}/.env"; rmdir "${_envdir:?}"; _envdir=""
         
         # Stop existing containers
         ssh "${host}" "cd ~/catalogizer && podman-compose down 2>/dev/null || true"

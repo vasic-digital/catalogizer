@@ -33,6 +33,7 @@ install_write_env() {
     _sonar_pw="$(gen_secret 16)" || return 1
     (
         umask 077
+        set -o noclobber   # O_EXCL create: never follows a dangling symlink, never truncates
         cat > "$target" << EOF
 # Catalogizer Environment Configuration
 # Copy this file and modify as needed for your environment
