@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"net"
 	pathpkg "path"
 	"strings"
@@ -127,7 +128,55 @@ func (c *FTPClient) ReadFile(ctx context.Context, path string) (io.ReadCloser, e
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve FTP file %s: %w", fullPath, err)
 	}
-	return resp, nil
+	return &ftpReadCloser{resp: resp, c: c}, nil
+}
+
+// ftpReadCloser closes an FTP data transfer and keeps the client usable afterwards. Closing a RETR before its end (header sniffing,
+// thumbnails, range-like reads) makes some servers (measured on a real Synology FTP service) drop the CONTROL connection; the next command then
+// failed with "EOF" while IsConnected() still said true. When Close fails, the dead session is discarded and a
+// new one is opened, so the next operation works. A transfer that was read to its end keeps its normal Close error semantics.
+type ftpReadCloser struct {
+	resp   *ftp.Response
+	c      *FTPClient
+	atEOF  bool
+	closed bool
+}
+
+func (r *ftpReadCloser) Read(p []byte) (int, error) {
+	n, err := r.resp.Read(p)
+	if err == io.EOF {
+		r.atEOF = true
+	}
+	return n, err
+}
+
+func (r *ftpReadCloser) Close() error {
+	if r.closed {
+		return nil
+	}
+	r.closed = true
+	err := r.resp.Close()
+	if err == nil {
+		return nil
+	}
+	// the control connection state is unknown after a failed close: drop it and reconnect
+	if rerr := r.c.reconnect(); rerr != nil {
+		return fmt.Errorf("FTP transfer close failed (%v) and reconnect failed: %w", err, rerr)
+	}
+	if r.atEOF {
+		return err
+	}
+	return nil // aborted early by the caller on purpose; the session has been re-established
+}
+
+// reconnect discards the current control connection (best effort) and dials a new one with the same configuration.
+func (c *FTPClient) reconnect() error {
+	if c.client != nil {
+		_ = c.client.Quit()
+	}
+	c.client = nil
+	c.connected = false
+	return c.Connect(context.Background())
 }
 
 // WriteFile writes a file to the FTP server
@@ -161,27 +210,45 @@ func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, er
 	}
 	fullPath := c.resolvePath(path)
 
-	// Try to get file size
-	size, err := c.client.FileSize(fullPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get FTP file info %s: %w", fullPath, err)
+	// SIZE is defined for plain files only: a directory answers "550 not a plain file". Try it first (cheap, files), and on
+	// failure resolve the entry through the parent listing, which also tells a directory from a missing path.
+	size, sizeErr := c.client.FileSize(fullPath)
+	if sizeErr == nil {
+		return &FileInfo{
+			Name:    pathpkg.Base(path),
+			Size:    size,
+			ModTime: time.Now(), // SIZE gives no mtime; kept as before for plain files
+			IsDir:   false,
+			Mode:    0644,
+			Path:    path,
+		}, nil
 	}
-
-	// Get modification time - fallback since ModTime might not be available
-	modTime := time.Now() // Default fallback
-
-	// Check if it's a directory by trying to list it
-	_, err = c.client.List(fullPath)
-	isDir := err == nil
-
-	return &FileInfo{
-		Name:    pathpkg.Base(path),
-		Size:    size,
-		ModTime: modTime,
-		IsDir:   isDir,
-		Mode:    0644, // Default mode, FTP doesn't provide mode info
-		Path:    path,
-	}, nil
+	name := pathpkg.Base(fullPath)
+	if fullPath == "/" || name == "." || name == "/" {
+		return &FileInfo{Name: name, IsDir: true, Mode: 0755, Path: path, ModTime: time.Now()}, nil
+	}
+	entries, listErr := c.client.List(pathpkg.Dir(fullPath))
+	if listErr != nil {
+		return nil, fmt.Errorf("failed to get FTP file info %s: %w", fullPath, sizeErr)
+	}
+	for _, entry := range entries {
+		if entry.Name != name {
+			continue
+		}
+		var sz int64
+		if entry.Size > uint64(1<<63-1) {
+			sz = 1<<63 - 1
+		} else {
+			sz = int64(entry.Size)
+		}
+		isDir := entry.Type == ftp.EntryTypeFolder
+		mode := fs.FileMode(0644)
+		if isDir {
+			mode = 0755
+		}
+		return &FileInfo{Name: name, Size: sz, ModTime: entry.Time, IsDir: isDir, Mode: mode, Path: path}, nil
+	}
+	return nil, fmt.Errorf("failed to get FTP file info %s: %w", fullPath, sizeErr)
 }
 
 // ListDirectory lists files in a directory
