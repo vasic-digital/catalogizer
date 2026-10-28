@@ -305,7 +305,7 @@ func prepareSQLiteKey(cfg *config.DatabaseConfig) (string, error) {
 			return "", err
 		}
 		if err := migratePlaintextToEncrypted(cfg.Path, key); err != nil {
-			return "", fmt.Errorf("plaintext to encrypted migration failed (original left untouched): %w", err)
+			return "", fmt.Errorf("plaintext to encrypted migration failed (original data left intact; its journal mode may have been switched from WAL to DELETE, the server restores WAL when it opens the database): %w", err)
 		}
 		return key, nil
 	default:
@@ -502,6 +502,31 @@ func acquireExclusive(db *sql.DB) error {
 	return nil
 }
 
+// hostOS is the platform the file-handling decisions are made for; a variable
+// so tests can exercise the Windows branch.
+var hostOS = runtime.GOOS
+
+// closeBeforeRename reports whether the exclusive lock (an open handle) must
+// be released before a file is renamed over the database. The bundled SQLite
+// opens files on Windows without FILE_SHARE_DELETE, so renaming over (or
+// hard-linking) a file with an open handle fails there; elsewhere the lock is
+// held through the rename. On Windows a small unlocked window remains.
+func closeBeforeRename(goos string) bool { return goos == "windows" }
+
+// classifyProbeError turns a failed read of a probed database into the probe
+// result: busy/locked = in use (fail closed); NOTADB = a file this key cannot
+// open, so not a server using it; anything else = cannot determine (refuse).
+func classifyProbeError(err error) (func(), error) {
+	switch {
+	case isBusyErr(err):
+		return nil, fmt.Errorf("database is in use by another process (stop the server first): %v", err)
+	case isNotADBErr(err):
+		return func() {}, nil
+	default:
+		return nil, fmt.Errorf("cannot determine whether the database is in use: %v", scrubDSN(err))
+	}
+}
+
 // isBusyErr reports whether err is SQLite's "database is locked/busy".
 func isBusyErr(err error) bool {
 	m := strings.ToLower(err.Error())
@@ -539,14 +564,7 @@ func probeInUse(path, keyHex string) (func(), error) {
 	var n int
 	if err := db.QueryRow(`SELECT COUNT(*) FROM sqlite_master`).Scan(&n); err != nil {
 		db.Close()
-		switch {
-		case isBusyErr(err):
-			return nil, fmt.Errorf("database is in use by another process (stop the server first): %v", err)
-		case isNotADBErr(err):
-			return func() {}, nil
-		default:
-			return nil, fmt.Errorf("cannot determine whether the database is in use: %v", scrubDSN(err))
-		}
+		return classifyProbeError(err)
 	}
 	if err := acquireExclusive(db); err != nil {
 		db.Close()
@@ -568,14 +586,14 @@ func linkOrExplain(src, dst string) error {
 
 // migratePlaintextToEncrypted converts path (plaintext SQLite) into an
 // encrypted database using sqlcipher_export. Safe sequence:
-//  1. checkpoint+export into path.encrypting-<ts> (original untouched);
+//  1. checkpoint+export into path.encrypting-<ts> (original data unchanged);
 //  2. open the new file with the key and verify identical per-table row counts
 //     and user_version;
 //  3. hard-link the plaintext original to path.plaintext-backup-<ts> (0600) -
 //     kept, never deleted; the database name never disappears;
 //  4. atomically rename the encrypted file over path.
 //
-// On any failure before step 3 the original is untouched; the temp file is
+// On any failure before step 3 the original data is intact (its journal mode may have been switched from WAL to DELETE); the temp file is
 // removed.
 func migratePlaintextToEncrypted(path, keyHex string) (err error) {
 	ts := timestamp()
@@ -634,6 +652,12 @@ func migratePlaintextToEncrypted(path, keyHex string) (err error) {
 		_ = os.Remove(s)
 	}
 
+	if closeBeforeRename(hostOS) {
+		_ = src.Close() // release the lock: Windows cannot link/rename over an open file
+	}
+	if beforeSwapHook != nil {
+		beforeSwapHook()
+	}
 	// Swap: keep the plaintext original as a (0600) backup via a hard link
 	// (the database name never disappears), then atomically replace it.
 	bak := uniquePath(path + ".plaintext-backup-" + ts)
@@ -807,7 +831,7 @@ func RestoreBackup(cfg *config.DatabaseConfig, backup string) (err error) {
 	if _, serr := os.Lstat(target); serr == nil {
 		if rel, perr := probeInUse(target, key); perr != nil {
 			return perr
-		} else if runtime.GOOS == "windows" {
+		} else if closeBeforeRename(hostOS) {
 			rel() // Windows cannot rename over an open file; the window stays open there
 		} else {
 			// Hold the exclusive lock until the restored file is renamed in:

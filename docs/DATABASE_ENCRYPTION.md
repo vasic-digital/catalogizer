@@ -39,7 +39,12 @@ migrated automatically:
    empty ones are deleted;
 4. the encrypted file is atomically renamed into place.
 
-Any failure before step 3 leaves the original untouched.
+Any failure before step 3 leaves the original data intact. Taking the lock
+switches the plaintext database from WAL to rollback (DELETE) journal mode; this
+is harmless and the server sets WAL again when it opens the database. The same
+applies to a restore target after the in-use probe. On Windows the lock is
+released just before the final link and rename (an open file cannot be renamed
+over there), so a short unlocked window remains.
 **The `.plaintext-backup-*` file contains your data unencrypted. After you have
 verified the encrypted database, delete it securely** (and take your own
 backups of the key file, see below).
@@ -90,7 +95,8 @@ rollback option, then delete both securely.
   (connections are closed after 3 minutes idle) holds no lock and cannot be
   detected, so stop the server before restoring or re-keying. The probe lock is
   kept until the restored file has been renamed into place (not on Windows). The live database is then hard-linked to
-  `<db>.pre-restore-<ts>` and the verified staging file is renamed over it, so
+  `<db>.pre-restore-<ts>` (a hard link: it has the same file mode as the live
+  database, so keep the data directory private) and the verified staging file is renamed over it, so
   there is no moment without a database file.
 
 ## Key file safety checks

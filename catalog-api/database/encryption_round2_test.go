@@ -6,6 +6,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -318,4 +319,88 @@ func TestHardening_X2_RequireDeleteMode(t *testing.T) {
 	assert.NoError(t, requireDeleteMode("DELETE"))
 	assert.Error(t, requireDeleteMode("wal"))
 	assert.Error(t, requireDeleteMode(""))
+}
+
+// Round 3 / Windows: the platform decision and the lock release before the
+// final rename (the bundled SQLite opens files without FILE_SHARE_DELETE).
+func TestHardening_R7_CloseBeforeRenameDecision(t *testing.T) {
+	assert.True(t, closeBeforeRename("windows"))
+	assert.False(t, closeBeforeRename("linux"))
+	assert.False(t, closeBeforeRename("darwin"))
+}
+
+// lockedAtSwap reports whether a reader is refused at the moment the swap
+// hook fires (i.e. whether the exclusive lock is still held).
+func lockedAtSwap(t *testing.T, path, key string) *bool {
+	var res bool
+	beforeSwapHook = func() {
+		var r *sql.DB
+		var err error
+		if key == "" {
+			r, err = sql.Open("sqlite3", path+"?_busy_timeout=100")
+		} else {
+			r, err = sql.Open("sqlite3", keyedDSN(path, key, "_busy_timeout=100"))
+		}
+		if err != nil {
+			return
+		}
+		defer r.Close()
+		r.SetMaxOpenConns(1)
+		var n int
+		res = r.QueryRow(`SELECT COUNT(*) FROM sqlite_master`).Scan(&n) != nil
+	}
+	return &res
+}
+
+func TestHardening_R7_MigrationLockReleasedBeforeRenameOnWindowsOnly(t *testing.T) {
+	for _, goos := range []string{"linux", "windows"} {
+		goos := goos
+		t.Run(goos, func(t *testing.T) {
+			cfg, dbPath, _ := encEnv(t)
+			plainDB(t, dbPath, 5)
+			old := hostOS
+			hostOS = goos
+			defer func() { hostOS = old; beforeSwapHook = nil }()
+			locked := lockedAtSwap(t, dbPath, "")
+			db, err := NewConnection(cfg)
+			require.NoError(t, err)
+			require.NoError(t, db.Close())
+			assert.Equal(t, goos == "linux", *locked, "lock held at swap time must be %v on %s", goos == "linux", goos)
+		})
+	}
+}
+
+func TestHardening_R7_RestoreLockReleasedBeforeRenameOnWindowsOnly(t *testing.T) {
+	for _, goos := range []string{"linux", "windows"} {
+		goos := goos
+		t.Run(goos, func(t *testing.T) {
+			cfg, dbPath, keyPath := encEnv(t)
+			db, err := NewConnection(cfg)
+			require.NoError(t, err)
+			seed(t, db, "r7")
+			b := filepath.Join(t.TempDir(), "b.db")
+			require.NoError(t, db.BackupTo(b))
+			require.NoError(t, db.Close())
+			old := hostOS
+			hostOS = goos
+			defer func() { hostOS = old; beforeSwapHook = nil }()
+			locked := lockedAtSwap(t, dbPath, keyOfCfg(t, keyPath))
+			require.NoError(t, RestoreBackup(cfg, b))
+			assert.Equal(t, goos == "linux", *locked)
+		})
+	}
+}
+
+// Y2: an error that is neither busy nor NOTADB must make the probe refuse.
+func TestHardening_Y2_ProbeUnknownErrorFailsClosed(t *testing.T) {
+	rel, err := classifyProbeError(errors.New("disk I/O error"))
+	require.Error(t, err)
+	assert.Nil(t, rel)
+	assert.Contains(t, err.Error(), "cannot determine")
+	rel, err = classifyProbeError(errors.New("file is not a database"))
+	require.NoError(t, err)
+	assert.NotNil(t, rel)
+	_, err = classifyProbeError(errors.New("database is locked"))
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "in use")
 }

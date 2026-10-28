@@ -103,9 +103,17 @@ mutate X8_probe_skips_exclusive_lock "$ENC" 'if err := acquireExclusive(db); err
 	return func() {}, nil'
 mutate R4_migration_source_not_locked "$ENC" 'if err = acquireExclusive(src); err != nil {' 'if false {'
 mutate R6_probe_busy_fails_open "$ENC" 'return nil, fmt.Errorf("database is in use by another process (stop the server first): %v", err)
-		case isNotADBErr' 'return func() {}, nil
-		case isNotADBErr'
+	case isNotADBErr' 'return func() {}, nil
+	case isNotADBErr'
 mutate F3_restore_releases_lock_early "$ENC" 'defer rel()' 'rel()'
+
+# --- review round 3 mutants (Windows lock release, fail-closed default) ---
+mutate Y2_unknown_probe_error_treated_as_notadb "$ENC" 'return strings.Contains(m, "not a database") || strings.Contains(m, "encrypted")' 'return len(m) >= 0'
+mutate R7_migration_keeps_lock_through_rename_on_windows "$ENC" 'if closeBeforeRename(hostOS) {
+		_ = src.Close()' 'if false {
+		_ = src.Close()'
+mutate R7_restore_keeps_lock_through_rename_on_windows "$ENC" '} else if closeBeforeRename(hostOS) {' '} else if false {'
+mutate R7_close_before_rename_never "$ENC" 'func closeBeforeRename(goos string) bool { return goos == "windows" }' 'func closeBeforeRename(goos string) bool { return false }'
 
 if [ "$survived" -ne 0 ]; then echo "$survived mutation(s) survived"; exit 1; fi
 echo "all mutations killed"
