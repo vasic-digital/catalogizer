@@ -11,7 +11,7 @@ services:
     environment:
       SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonar
       SONAR_JDBC_USERNAME: sonar
-      SONAR_JDBC_PASSWORD: ${SONAR_JDBC_PASSWORD:?set SONAR_JDBC_PASSWORD in .env}
+      SONAR_JDBC_PASSWORD: ${SONAR_DB_PASSWORD:?set SONAR_DB_PASSWORD in .env}
       SONAR_WEB_HOST: 0.0.0.0
       SONAR_WEB_PORT: 9000
       SONAR_WEB_CONTEXT: /
@@ -58,7 +58,7 @@ services:
     container_name: catalogizer-sonarqube-db
     environment:
       POSTGRES_USER: sonar
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_PASSWORD: ${SONAR_DB_PASSWORD:?set SONAR_DB_PASSWORD in .env}
       POSTGRES_DB: sonar
     volumes:
       - sonarqube_db_data:/var/lib/postgresql/data

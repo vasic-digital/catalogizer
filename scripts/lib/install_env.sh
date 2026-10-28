@@ -18,11 +18,11 @@ gen_secret() {
 
 install_write_env() {
     local target="${1:?install_write_env: target file required}"
-    if [ -e "$target" ]; then
+    if [ -e "$target" ] || [ -L "$target" ]; then
         echo "refusing: $target already exists; left untouched" >&2
         return 2
     fi
-    local _db_pw _jwt _admin_pw _grafana_pw _minio_pw
+    local _db_pw _jwt _admin_pw _grafana_pw _minio_pw _minio_user _pgadmin_pw _sonar_pw
     _db_pw="$(gen_secret 24)" || return 1
     _jwt="$(gen_secret 32)" || return 1
     _admin_pw="$(gen_secret 16)" || return 1
@@ -30,6 +30,7 @@ install_write_env() {
     _minio_pw="$(gen_secret 16)" || return 1
     _minio_user="cat$(gen_secret 6)" || return 1
     _pgadmin_pw="$(gen_secret 16)" || return 1
+    _sonar_pw="$(gen_secret 16)" || return 1
     (
         umask 077
         cat > "$target" << EOF
@@ -104,6 +105,7 @@ MINIO_ROOT_PASSWORD=${_minio_pw}
 STORAGE_ACCESS_KEY=${_minio_user}
 STORAGE_SECRET_KEY=${_minio_pw}
 PGADMIN_DEFAULT_PASSWORD=${_pgadmin_pw}
+SONAR_DB_PASSWORD=${_sonar_pw}
 
 # SSL/TLS Configuration
 SSL_ENABLED=false

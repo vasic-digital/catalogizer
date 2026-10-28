@@ -24,13 +24,17 @@ mode="$(stat -c %a "$tmp/env1")"
 val() { sed -n "s/^$2=//p" "$1" | head -1; }
 
 # Every required compose variable is present and non-empty.
-req="$(grep -hoE '\$\{[A-Za-z0-9_]+:\?' "$ROOT/docker-compose.yml" | tr -d '${:?' | sort -u)"
+# Every non-test-infra compose file (test-infra/test/build/qa files carry their
+# own TI_*/FTPS_*/SFTP_* inputs, not installer secrets).
+files="$(cd "$ROOT" && ls docker-compose.yml docker-compose.dev.yml docker-compose.security.yml deploy/infra-compose.yml 2>/dev/null)"
+[ "$(echo "$files" | wc -l)" -ge 4 ] || { echo "FAIL - compose set shrank (blind)"; exit 2; }
+req="$(cd "$ROOT" && grep -hoE '\$\{[A-Za-z0-9_]+:\?' $files | tr -d '${:?' | sort -u)"
 [ -n "$req" ] || { echo "FAIL - no :? vars found (blind)"; exit 2; }
 for v in $req; do
     x="$(val "$tmp/env1" "$v")"
     [ -n "$x" ] && ok "$v present" || bad "$v missing/empty in generated env"
 done
-for v in DATABASE_PASSWORD POSTGRES_PASSWORD JWT_SECRET ADMIN_PASSWORD GRAFANA_PASSWORD MINIO_ROOT_PASSWORD; do
+for v in DATABASE_PASSWORD POSTGRES_PASSWORD JWT_SECRET ADMIN_PASSWORD GRAFANA_PASSWORD MINIO_ROOT_PASSWORD SONAR_DB_PASSWORD PGADMIN_DEFAULT_PASSWORD STORAGE_SECRET_KEY; do
     a="$(val "$tmp/env1" "$v")"; b="$(val "$tmp/env2" "$v")"
     [ "${#a}" -ge 24 ] && ok "$v length>=24" || bad "$v too short (${#a})"
     [ -n "$a" ] && [ "$a" != "$b" ] && ok "$v differs between runs (random)" || bad "$v not random"
@@ -51,6 +55,11 @@ grep -qE '^(DATABASE_PASSWORD=catalogizer_password|JWT_SECRET=your-super|ADMIN_P
 grep -q 'install_write_env' "$ROOT/scripts/install.sh" && ok "install.sh calls install_write_env" || bad "install.sh does not call install_write_env"
 grep -qE '^(DATABASE_PASSWORD|JWT_SECRET|ADMIN_PASSWORD|GRAFANA_PASSWORD|MINIO_ROOT_PASSWORD)=[^$[:space:]]' "$ROOT/scripts/install.sh" \
     && bad "install.sh still contains a literal credential line" || ok "install.sh has no literal credential line"
+
+# SonarQube and its database must be fed by ONE variable (they must be equal).
+jdbc="$(sed -n 's/^ *SONAR_JDBC_PASSWORD: *\${\([A-Z_]*\):?.*/\1/p' "$ROOT/docker-compose.security.yml")"
+dbpw="$(awk '/sonarqube-db:/{f=1} f&&/POSTGRES_PASSWORD:/{print; exit}' "$ROOT/docker-compose.security.yml" | sed -n 's/.*\${\([A-Z_]*\):?.*/\1/p')"
+{ [ -n "$jdbc" ] && [ "$jdbc" = "$dbpw" ]; } && ok "sonar app and db share one variable ($jdbc)" || bad "sonar vars differ: '$jdbc' vs '$dbpw'"
 
 # Never overwrite an existing file.
 echo "KEEP=1" > "$tmp/env3"
