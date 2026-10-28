@@ -22,7 +22,7 @@ describe('Avatar', () => {
 
   it('renders presence indicator when provided', () => {
     const { container } = render(<Avatar name="John" presence="online" />);
-    const presenceDot = container.querySelector('.bg-green-500');
+    const presenceDot = container.querySelector('[class*="bg-[var(--success)]"]');
     expect(presenceDot).toBeInTheDocument();
   });
 
