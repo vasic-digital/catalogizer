@@ -186,6 +186,12 @@ could still force about 2^33 requests, so the round-1 commit message's "bounded"
 * Fix: add the directory to the matching variable (`CATALOGIZER_SYNC_ROOTS` for written paths,
   `CATALOGIZER_READ_ROOTS` for read-only paths, `CATALOGIZER_CONVERSION_ROOTS` for outputs) and restart; or edit the endpoint.
 * The old default `./data/sync` is now `./data`.
+* Since round 5 a sync whose `local_path` (or `source_directory`) is a single regular FILE rather than a
+  directory copies or uploads nothing: the walk visits the root itself, which the per-file check refuses
+  as "the root itself" (otherwise the copy would write the destination root as a file and create
+  directories in its parent). Point the endpoint at the directory that holds the file.
+* A conversion whose `target_path` (or `source_path`) is a configured root itself, and a
+  `POST /copy/local` with `destination_path` `.` or an equivalent, are refused since round 5.
 
 ## Follow-up (tracked, NOT implemented): dynamic storage-root provider
 
