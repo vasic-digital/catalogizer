@@ -84,7 +84,7 @@ services:
     volumes:
       - ./catalog-api:/app
       - ./submodules:/submodules:ro
-      - api_cache:/go/pkg/mod
+      - api_cache:/home/dev/go/pkg/mod   # = GOMODCACHE of catalog-api/Dockerfile.dev (user dev)
     depends_on:
       postgres:
         condition: service_healthy

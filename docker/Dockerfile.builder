@@ -91,8 +91,10 @@ ENV PATH="/opt/cargo/bin:${PATH}"
 
 RUN cargo install --locked --version 2.12.1 tauri-cli
 
-# a+rwX on cargo: the non-root build user (uid 1000) must be able to write the registry cache
-RUN chmod -R a+rX /opt/rustup && chmod -R a+rwX /opt/cargo
+# The non-root build user (uid 1000) must be able to write the cargo registry cache: it OWNS /opt/cargo (no world-writable bits).
+# The user is created here (before its later, idempotent re-use below) so the chown has a target.
+RUN useradd --create-home --uid 1000 --shell /bin/bash builder \
+    && chmod -R a+rX /opt/rustup && chown -R builder:builder /opt/cargo
 
 RUN rustc --version && cargo --version
 
@@ -108,8 +110,7 @@ ENV PATH="${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tool
 
 # Non-root build user (uid 1000) created before the SDK install so the SDK is owned by it without a duplicated chown layer.
 # Its HOME holds the cache mount points used by docker-compose.build.yml (go, gradle, npm).
-RUN useradd --create-home --uid 1000 --shell /bin/bash builder \
-    && mkdir -p "${ANDROID_HOME}" /home/builder/go /home/builder/.gradle /home/builder/.npm \
+RUN mkdir -p "${ANDROID_HOME}" /home/builder/go /home/builder/.gradle /home/builder/.npm \
     && chown -R builder:builder "${ANDROID_HOME}" /home/builder
 USER builder
 
@@ -139,8 +140,10 @@ RUN sdkmanager \
 # Layer 6: Playwright browsers (root: --with-deps installs OS packages); browsers live under /opt so the non-root user can use them
 # ============================================================
 USER root
+# Browsers live under /opt/playwright, owned by the build user so a different Playwright revision can be downloaded at run time
+# (the version pinned here is playwright@1.57.0 for the browser installed in the image; which version a project's own lockfile resolves is not checked here).
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/playwright
-RUN npx --yes playwright@1.57.0 install --with-deps chromium && chmod -R a+rX /opt/playwright
+RUN npx --yes playwright@1.57.0 install --with-deps chromium && chown -R builder:builder /opt/playwright
 
 # ============================================================
 # Working directory

@@ -3,19 +3,21 @@ FROM ${GO_IMAGE}
 
 RUN apk add --no-cache git make libffi mupdf-dev
 
+# Non-root: a dedicated dev user owns /app and its own Go caches. The user and GOPATH/GOMODCACHE are set BEFORE `go mod download`
+# so the modules are downloaded as that user into the cache the running container (and the api_cache volume) really uses.
+RUN adduser -D -u 1000 dev && mkdir -p /app /home/dev/go /home/dev/.cache && chown -R dev:dev /app /home/dev
+ENV HOME=/home/dev GOPATH=/home/dev/go GOMODCACHE=/home/dev/go/pkg/mod GOCACHE=/home/dev/.cache/go-build
+
 WORKDIR /app
+USER dev
 
 # Copy module definition and local submodules so replace directives resolve.
-COPY catalog-api/go.mod catalog-api/go.sum ./
-COPY submodules/ /submodules/
+COPY --chown=dev:dev catalog-api/go.mod catalog-api/go.sum ./
+COPY --chown=dev:dev submodules/ /submodules/
 RUN go mod download
 
 # Copy application source (overridden at runtime by volume mount in dev).
-COPY catalog-api/ .
-
-# Non-root: a dedicated dev user owns /app and its own Go caches (source is volume-mounted at runtime)
-RUN adduser -D -u 1000 dev && mkdir -p /home/dev/go /home/dev/.cache && chown -R dev:dev /app /home/dev
-ENV HOME=/home/dev GOPATH=/home/dev/go GOCACHE=/home/dev/.cache/go-build
+COPY --chown=dev:dev catalog-api/ .
 
 # Bind address/port for containers: the app defaults to localhost:28080 (unreachable from outside the container, and not the
 # EXPOSEd/health-checked 8080); main.go honours HOST and SERVER_PORT as overrides.
@@ -26,7 +28,5 @@ EXPOSE 8080
 # GET, not --spider: /health is GET-only (a HEAD request answers 404)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
   CMD wget --no-verbose --tries=1 -O /dev/null http://127.0.0.1:8080/health || exit 1
-
-USER dev
 
 CMD ["go", "run", "main.go"]

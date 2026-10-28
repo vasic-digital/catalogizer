@@ -70,7 +70,8 @@ RUN for i in 1 2 3; do \
 
 # Clean up
 USER root
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && mkdir -p /project && chown builder:builder /project
 USER builder
 
 # Verify installation
@@ -80,9 +81,9 @@ RUN sdkmanager --list_installed 2>/dev/null | head -20 && echo "Android SDK chec
 # Set working directory
 WORKDIR /project
 
-# Default command
 # Health check: the toolchain this image exists to provide must be runnable by the build user
 HEALTHCHECK --interval=60s --timeout=20s --start-period=10s --retries=3 \
   CMD java -version && sdkmanager --version || exit 1
 
+# Default command
 CMD ["bash"]

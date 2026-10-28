@@ -96,6 +96,8 @@ func TestAllowPublicURL(t *testing.T) {
 		{"link local rejected", "http://169.254.1.1/x.jpg", true},
 		{"file scheme rejected", "file:///etc/passwd", true},
 		{"empty host rejected", "https:///x.jpg", true},
+		// hostname branch, hermetic: "localhost" is answered from /etc/hosts (no DNS, works with --network none) and must be refused
+		{"hostname resolving to loopback rejected", "http://localhost/x.jpg", true},
 	}
 	for _, tc := range tests {
 		err := allowPublicURL(tc.url)

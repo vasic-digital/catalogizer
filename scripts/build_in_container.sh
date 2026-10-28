@@ -6,11 +6,13 @@
 #            (never on the bare host), then bring the artifact BACK to this host.
 # Usage:     scripts/build_in_container.sh
 # Inputs:    env (all config-injected, §11.4.28; defaults shown):
-#              BUILD_HOST=<remote host; UNSET => local container-local.sh api-build>   BUILD_USER=milosvasic
+#              BUILD_HOST=<remote host; UNSET => exec scripts/container-local.sh api-build on THIS host>   BUILD_USER=milosvasic
 #              REMOTE_BUILD_DIR=catalogizer-build
 #              GO_BUILD_IMAGE=docker.io/library/golang:1.25-alpine
-# Outputs:   deploy/artifacts/catalog-api-container (the brought-back binary)
-#            + a printed proof block (remote md5 == local md5, file type).
+# Outputs:   BUILD_HOST unset (default): deploy/artifacts/catalog-api (written by container-local.sh; no md5 compare,
+#            nothing is copied between hosts).
+#            BUILD_HOST set: deploy/artifacts/catalog-api-container (the brought-back binary) + a printed proof
+#            block (remote md5 == local md5, file type); exits 1 on md5 mismatch.
 # Side-fx:   rsync's source to the remote build host; runs a podman build there.
 # Deps:      ssh, rsync, scp, podman (on the remote), a Go build image (cached remote).
 # Cross-ref: §11.4.173 (containerized+distributed build), §11.4.76 (containers),

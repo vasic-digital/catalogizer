@@ -88,6 +88,7 @@ services:
       network: host
     network_mode: host
     # Rootless podman: map the invoking host user onto the image's non-root build user (uid 1000) so files written to /project stay host-user owned
+    # `keep-id:` is a PODMAN-only userns mode (docker has no equivalent); this project supports rootless podman only.
     userns_mode: "keep-id:uid=1000,gid=1000"
     depends_on:
       postgres:
