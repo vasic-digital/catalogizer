@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -415,22 +414,10 @@ func (h *AdminHandler) CreateBackup(c *gin.Context) {
 	filename := fmt.Sprintf("backup_%s.db", timestamp)
 	destPath := filepath.Join(defaultBackupDir, filename)
 
-	srcFile, err := os.Open(dbPath)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open database file"})
-		return
-	}
-	defer srcFile.Close()
-
-	dstFile, err := os.Create(destPath)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create backup file"})
-		return
-	}
-	defer dstFile.Close()
-
-	if _, err := io.Copy(dstFile, srcFile); err != nil {
-		os.Remove(destPath) // Clean up partial file.
+	// CAT-001: use the database-aware backup (WAL checkpoint + sidecar copy).
+	// A raw single-file copy loses commits still in the -wal file and, for the
+	// encrypted database, must still be an encrypted, 0600 file.
+	if err := h.db.BackupTo(destPath); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write backup file"})
 		return
 	}

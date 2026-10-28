@@ -77,6 +77,7 @@ DATABASE_NAME=catalogizer                  # ✅
 DATABASE_USER=catalogizer                  # ✅
 DATABASE_PASSWORD=<secure>                 # ✅
 DATABASE_SSL_MODE=disable                  # ✅ (or require for remote)
+DATABASE_ENCRYPTION_KEY_FILE=              # SQLite only: path of the 0600 SQLCipher key file (default ~/.config/catalogizer/db.key, auto-generated; see docs/DATABASE_ENCRYPTION.md)
 
 # Shorthand mirrors (legacy clients)
 DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASSWORD / POSTGRES_URL  # ✅

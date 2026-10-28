@@ -44,16 +44,33 @@ func NewConnection(cfg *config.DatabaseConfig) (*DB, error) {
 
 	default: // "sqlite" or empty
 		dialect = Dialect{Type: DialectSQLite}
-		connStr := cfg.Path + "?_busy_timeout=30000&_journal_mode=WAL&_synchronous=NORMAL&_foreign_keys=1"
+		// NOTE: go-sqlcipher honours only _busy_timeout and _foreign_keys from
+		// this list; WAL is enabled explicitly below. The remaining parameters
+		// are kept for parity with the previous DSN.
+		params := "_busy_timeout=30000&_journal_mode=WAL&_synchronous=NORMAL&_foreign_keys=1"
 		if cfg.EnableWAL {
-			connStr += "&_wal_autocheckpoint=1000"
+			params += "&_wal_autocheckpoint=1000"
 		}
 		if cfg.CacheSize != 0 {
-			connStr += fmt.Sprintf("&_cache_size=%d", cfg.CacheSize)
+			params += fmt.Sprintf("&_cache_size=%d", cfg.CacheSize)
+		}
+		var connStr string
+		if isMemoryPath(cfg.Path) {
+			// The one explicit opt-out: in-memory databases are never persisted.
+			connStr = cfg.Path + "?" + params
+		} else {
+			// CAT-001: file databases are ALWAYS encrypted; any problem with
+			// the key fails closed (no plaintext fallback). The key is applied
+			// by the driver on every pooled connection through the DSN.
+			keyHex, kerr := prepareSQLiteKey(cfg)
+			if kerr != nil {
+				return nil, fmt.Errorf("database encryption: %w", kerr)
+			}
+			connStr = keyedDSN(cfg.Path, keyHex, params)
 		}
 		sqlDB, err = sql.Open("sqlite3", connStr)
 		if err != nil {
-			return nil, fmt.Errorf("failed to open sqlite database: %w", err)
+			return nil, fmt.Errorf("failed to open sqlite database: %w", scrubDSN(err))
 		}
 	}
 
@@ -88,12 +105,18 @@ func NewConnection(cfg *config.DatabaseConfig) (*DB, error) {
 	// Test connection
 	if err := sqlDB.Ping(); err != nil {
 		sqlDB.Close()
-		return nil, fmt.Errorf("failed to ping database: %w", err)
+		return nil, fmt.Errorf("failed to ping database: %w", scrubDSN(err))
 	}
 
 	// Ensure WAL mode is active for SQLite (connection string
 	// pragma may not be applied by go-sqlcipher).
 	if dbType != "postgres" {
+		if !isMemoryPath(cfg.Path) {
+			if err := verifyKeyed(sqlDB); err != nil {
+				sqlDB.Close()
+				return nil, fmt.Errorf("database encryption: %w", err)
+			}
+		}
 		if _, err := sqlDB.Exec("PRAGMA journal_mode=WAL"); err != nil {
 			sqlDB.Close()
 			return nil, fmt.Errorf("failed to enable WAL mode: %w", err)

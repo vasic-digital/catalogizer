@@ -19,7 +19,8 @@
 15. [Analytics and Insights](#analytics-and-insights)
 16. [AI Dashboard](#ai-dashboard)
 17. [Administration Panel](#administration-panel)
-18. [Troubleshooting](#troubleshooting)
+18. [Database Encryption and Key Rotation](#database-encryption-and-key-rotation)
+19. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -682,6 +683,15 @@ View server health metrics, version information, and uptime statistics.
 - Restore from a backup
 
 ---
+
+## Database Encryption and Key Rotation
+
+The main SQLite database is encrypted at rest (SQLCipher). The key is generated
+on first run and stored in a mode-0600 file outside the repository
+(`DATABASE_ENCRYPTION_KEY_FILE`, default `~/.config/catalogizer/db.key`).
+Rotate it with `catalog-api db-rekey` (server stopped; a backup is taken first).
+Back the key file up separately: without it the database and its backups cannot
+be opened. Full details and FAQ: [DATABASE_ENCRYPTION.md](DATABASE_ENCRYPTION.md).
 
 ## Troubleshooting
 
