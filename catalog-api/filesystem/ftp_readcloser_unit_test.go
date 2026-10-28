@@ -107,6 +107,18 @@ func (s *fakeFTP) serve(c net.Conn) {
 	}
 }
 
+// waitFor polls cond until it holds or a 5s deadline passes (condition-based waiting, no blind sleep).
+func waitFor(t *testing.T, what string, cond func() bool) {
+	t.Helper()
+	deadline := time.Now().Add(5 * time.Second)
+	for !cond() {
+		if time.Now().After(deadline) {
+			t.Fatalf("timed out waiting for: %s", what)
+		}
+		time.Sleep(time.Millisecond)
+	}
+}
+
 func fakeClient(t *testing.T, s *fakeFTP) *FTPClient {
 	t.Helper()
 	c := NewFTPClient(&FTPConfig{Host: "127.0.0.1", Port: s.port(), Username: "u", Password: "p"})
@@ -168,7 +180,9 @@ func TestFTPReadCloser_CloseAfterDisconnectDoesNotRedial(t *testing.T) {
 	if c.IsConnected() {
 		t.Fatalf("IsConnected true after Disconnect+Close: Close redialled")
 	}
-	time.Sleep(200 * time.Millisecond)
+	// Close redials synchronously (dial returns only after the fake accepted and sent its banner), so a wrongly dialled second session
+	// is already counted when Close returns. Wait for the observable end of the first session (Disconnect's QUIT) instead of sleeping.
+	waitFor(t, "first control session ended after Disconnect", func() bool { return atomic.LoadInt32(&s.live) == 0 })
 	if n := atomic.LoadInt32(&s.accepted); n != 1 {
 		t.Fatalf("control connections accepted = %d, want 1 (no redial after Disconnect)", n)
 	}
@@ -198,7 +212,7 @@ func TestFTPReadCloser_426QuitsOldSessionAndClientUsable(t *testing.T) {
 	if err := rc.Close(); err == nil {
 		t.Fatalf("expected the 426 error")
 	}
-	time.Sleep(100 * time.Millisecond) // the fake counts QUIT asynchronously
+	waitFor(t, "fake to count the QUIT of the old session", func() bool { return atomic.LoadInt32(&s.quits) >= 1 }) // counted asynchronously
 	if n := atomic.LoadInt32(&s.quits); n != 1 {
 		t.Fatalf("QUIT received %d times, want 1 (old session must be Quit)", n)
 	}
