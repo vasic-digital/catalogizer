@@ -14,6 +14,7 @@ import (
 	"net/textproto"
 	"os"
 	pathpkg "path"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -380,6 +381,11 @@ func (c *FTPClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo
 		if entry.Name == "." || entry.Name == ".." {
 			continue
 		}
+		// a temp file of an in-flight (or interrupted) CopyFile is not a catalogue entry
+		if isCopyTemp(entry.Name) {
+			log.Printf("ftp: skipping copy temp file %s/%s (in-flight or stale CopyFile leftover)", fullPath, entry.Name)
+			continue
+		}
 		// Safe conversion: Check for overflow before converting uint64 to int64
 		var size int64
 		if entry.Size > uint64(1<<63-1) {
@@ -552,13 +558,25 @@ func tempSibling(dst string) string {
 	base := pathpkg.Base(dst)
 	if len(base) > maxTempBase {
 		cut := maxTempBase
-		for cut > 0 && !utf8.RuneStart(base[cut]) {
-			cut--
+		for back := 0; back < utf8.UTFMax-1 && !utf8.RuneStart(base[cut]); back++ {
+			cut-- // at most 3 bytes back: a longer run of continuation bytes is not UTF-8 at all and is cut as raw bytes
 		}
 		base = base[:cut]
 	}
 	return pathpkg.Join(pathpkg.Dir(dst), "."+base+".ftpcopy-"+hex.EncodeToString(b[:])+".part")
 }
+
+// Test seams for the two instants around the cancel-watcher disarm in CopyFile (nil in production).
+var (
+	copyHookBeforeDisarm func()
+	copyHookBeforeCommit func()
+)
+
+// copyTempRe matches exactly the names tempSibling produces: .<base>.ftpcopy-<16 hex>.part
+var copyTempRe = regexp.MustCompile(`^\..+\.ftpcopy-[0-9a-f]{16}\.part$`)
+
+// isCopyTemp reports whether name is a CopyFile temp name. Strict on purpose: a user's own ".x.part" file is not matched.
+func isCopyTemp(name string) bool { return copyTempRe.MatchString(name) }
 
 // maxTempBase is the longest part of the destination's base name that is kept in the temp name (200 + 26 added bytes < 255).
 const maxTempBase = 200
@@ -570,7 +588,7 @@ func (c *FTPClient) storeTemp(ctx context.Context, w *ftp.ServerConn, dstFull st
 	if err := w.Stor(tmp, &ctxReader{ctx: ctx, r: r}); err != nil {
 		err = fmt.Errorf("failed to store %s (as %s): %w", dstFull, tmp, err)
 		if derr := c.discardTemp(w, tmp); derr != nil {
-			err = fmt.Errorf("%w; %v", err, derr)
+			err = fmt.Errorf("%w; %w", err, derr)
 		}
 		return "", err
 	}
@@ -621,9 +639,20 @@ func (c *FTPClient) discardTemp(w *ftp.ServerConn, tmp string) error {
 	return nil
 }
 
+// orphanError says that a temp file this copy created may still exist on the server. It is a distinct type so that a path that returns a
+// different primary error (a cancellation) can still carry the note (errors.As), never dropping it.
+type orphanError struct {
+	tmp   string
+	cause error
+}
+
+func (e *orphanError) Error() string {
+	return fmt.Sprintf("temporary file %s may remain on the server (cleanup failed: %v)", e.tmp, e.cause)
+}
+
 func orphanErr(tmp string, cause error) error {
 	log.Printf("ftp: temporary file %s may remain on the server: %v", tmp, cause)
-	return fmt.Errorf("temporary file %s may remain on the server (cleanup failed: %v)", tmp, cause)
+	return &orphanError{tmp: tmp, cause: cause}
 }
 
 // commitTemp renames the confirmed temp over dst. If the server refuses (e.g. rename onto an existing file is not allowed) the temp is
@@ -640,7 +669,7 @@ func (c *FTPClient) commitTemp(w *ftp.ServerConn, tmp, dstFull string) error {
 			out = fmt.Errorf("connection failed while moving the finished copy onto %s: the rename may or may not have been applied: %w", dstFull, err)
 		}
 		if derr != nil {
-			out = fmt.Errorf("%w; %v", out, derr)
+			out = fmt.Errorf("%w; %w", out, derr)
 		}
 		return out
 	}
@@ -681,6 +710,14 @@ var freeSpaceFn = freeSpace
 // The data is stored under a unique temporary name beside the destination and renamed into place only after the source transfer is
 // confirmed, so a failed, cancelled or refused copy never deletes or truncates a pre-existing destination; only the temp this copy
 // created is removed. Cancelling ctx interrupts a transfer that is blocked in the network (see watchCancel for the one documented limit).
+//
+// Known limits (documented, not hidden):
+//   - Once the source transfer is confirmed the cancel watcher is disarmed and the final RNFR/RNTO is NOT interruptible: a cancel that
+//     arrives during the rename is not honoured until the server answers (a server that never answers blocks the call; the connection
+//     timeout of the dialer does not apply to an established session). A cancel that arrives before the disarm abandons the copy.
+//   - Whether a failed cleanup DELE means "the temp never existed" is decided from the reply text (tempNeverCreated: a 550 saying no
+//     such file / not found / not exist). That is a heuristic: servers word it differently, and an unrecognised wording is treated as
+//     "the temp may remain" (reported as an orphan note, never silently dropped), so the heuristic errs towards reporting.
 func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error {
 	conn, base, err := c.session()
 	if err != nil {
@@ -718,8 +755,10 @@ func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 		err := fmt.Errorf("copy of %s cancelled: %w", srcFullPath, cerr)
 		if storErr == nil {
 			if derr := c.discardTemp(wconn, tmp); derr != nil {
-				err = fmt.Errorf("%w; %v", err, derr)
+				err = fmt.Errorf("%w; %w", err, derr)
 			}
+		} else if oe := (*orphanError)(nil); errors.As(storErr, &oe) {
+			err = fmt.Errorf("%w; %w", err, oe) // the failed STOR's own cleanup failed: the orphan note must survive the cancel mapping
 		}
 		return err
 	}
@@ -729,18 +768,24 @@ func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 	if closeErr != nil {
 		err := fmt.Errorf("source transfer of %s was not confirmed by the server: %w", srcFullPath, closeErr)
 		if derr := c.discardTemp(wconn, tmp); derr != nil { // unconfirmed source transfer: nothing is moved into place
-			err = fmt.Errorf("%w; %v", err, derr)
+			err = fmt.Errorf("%w; %w", err, derr)
 		}
 		return err
 	}
 	// the transfer is confirmed: disarm the cancel watcher so a late cancel cannot close the destination connection in the middle of the
 	// rename. If it already fired the connections are closed, so the copy is abandoned (cancelled) instead of committed.
+	if copyHookBeforeDisarm != nil {
+		copyHookBeforeDisarm()
+	}
 	if !stopWatch() {
 		err := fmt.Errorf("copy of %s cancelled before it was moved into place: %w", srcFullPath, context.Cause(ctx))
 		if derr := c.discardTemp(wconn, tmp); derr != nil {
-			err = fmt.Errorf("%w; %v", err, derr)
+			err = fmt.Errorf("%w; %w", err, derr)
 		}
 		return err
+	}
+	if copyHookBeforeCommit != nil {
+		copyHookBeforeCommit()
 	}
 	return c.commitTemp(wconn, tmp, dstFullPath)
 }

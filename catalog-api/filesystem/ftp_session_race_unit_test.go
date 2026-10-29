@@ -14,6 +14,7 @@ import (
 	"net"
 	"net/textproto"
 	"os"
+	pathpkg "path"
 	"runtime"
 	"strings"
 	"sync"
@@ -183,6 +184,14 @@ type strictFTP struct {
 	noAbortReply bool
 	maxNameLen   int
 	deleRefuse   bool
+	rntoStall    bool   // RNTO is accepted and never answered (until test cleanup)
+	rntoDrop     bool   // RNTO makes the server drop the control connection without a reply
+	listing      string // LIST payload (default: a single f.bin line)
+	refuseAfter  int32  // > 0: control connections beyond the Nth ever accepted are refused with 421 (no new session can be opened later)
+	// storCreateEarly: a real server creates the file when the STOR is opened. startStrictFTP defaults it to true, so the responder records
+	// the (partial) file at STOR start; a cleanup DELE that arrives later therefore always finds it (and a late end of the data stream
+	// does not resurrect a deleted file). Set false to model a server that only shows the file after the transfer completed.
+	storCreateEarly bool
 }
 
 func (s *strictFTP) seed(name, content string) {
@@ -220,7 +229,7 @@ func startStrictFTP(t *testing.T, opts ...func(*strictFTP)) *strictFTP {
 	if err != nil {
 		t.Fatal(err)
 	}
-	s := &strictFTP{ln: ln, storedCh: make(chan struct{}, 8), files: map[string][]byte{}, release: make(chan struct{})}
+	s := &strictFTP{ln: ln, storedCh: make(chan struct{}, 8), files: map[string][]byte{}, release: make(chan struct{}), storCreateEarly: true}
 	for _, o := range opts {
 		o(s) // configuration is applied before any goroutine of the responder starts
 	}
@@ -231,7 +240,12 @@ func startStrictFTP(t *testing.T, opts ...func(*strictFTP)) *strictFTP {
 			if err != nil {
 				return
 			}
-			atomic.AddInt32(&s.accepted, 1)
+			nAcc := atomic.AddInt32(&s.accepted, 1)
+			if s.refuseAfter > 0 && nAcc > s.refuseAfter {
+				fmt.Fprint(c, "421 no more sessions\r\n")
+				c.Close()
+				continue
+			}
 			over := func() bool { return atomic.AddInt32(&s.live, 1) > s.maxConns }
 			if s.maxConns > 0 && over() { // a CONCURRENT-session cap, like a real server's
 				// a real server needs a moment to notice a session the client just closed; wait for that before refusing
@@ -320,7 +334,11 @@ func (s *strictFTP) serve(c net.Conn) {
 			if err != nil {
 				return
 			}
-			fmt.Fprint(dc, "-rw-r--r-- 1 u g 10 Jan 01 2020 f.bin\r\n")
+			if s.listing != "" {
+				fmt.Fprint(dc, s.listing)
+			} else {
+				fmt.Fprint(dc, "-rw-r--r-- 1 u g 10 Jan 01 2020 f.bin\r\n")
+			}
 			dc.Close()
 			say("226 listed")
 		case "RETR":
@@ -408,6 +426,13 @@ func (s *strictFTP) serve(c net.Conn) {
 			rnfr = arg
 			say("350 ready for RNTO")
 		case "RNTO":
+			if s.rntoStall {
+				<-s.release
+				return
+			}
+			if s.rntoDrop {
+				return
+			}
 			s.mu.Lock()
 			from, content := rnfr, s.files[rnfr]
 			_, exists := s.files[arg]
@@ -444,6 +469,11 @@ func (s *strictFTP) serve(c net.Conn) {
 				dl.Close()
 				say("%s STOR refused", s.storRefuse)
 				continue
+			}
+			if s.storCreateEarly {
+				s.mu.Lock()
+				s.files[arg] = []byte("<partial>")
+				s.mu.Unlock()
 			}
 			if s.onStor != nil {
 				s.onStor()
@@ -487,10 +517,13 @@ func (s *strictFTP) serve(c net.Conn) {
 				say("451 disk full")
 			} else {
 				s.mu.Lock()
-				if n <= 1<<20 {
-					s.files[arg] = append([]byte(nil), b.Bytes()...)
-				} else {
-					s.files[arg] = []byte("<big>")
+				_, still := s.files[arg]
+				if still || !s.storCreateEarly { // a file the client deleted meanwhile stays deleted (unlinked inode)
+					if n <= 1<<20 {
+						s.files[arg] = append([]byte(nil), b.Bytes()...)
+					} else {
+						s.files[arg] = []byte("<big>")
+					}
 				}
 				s.mu.Unlock()
 				say("226 stored")
@@ -1087,6 +1120,11 @@ func blackholedSourceControl(t *testing.T, fallback bool) {
 	if !c.IsConnected() {
 		t.Fatal("client is left disconnected after the cancelled copy; the stuck session must be replaced by a live one")
 	}
+	// replacement proof (not just "some session works"): the client's own control connection + the copy's 2nd connection (or the refused
+	// attempt, on the fallback path) are 2 accepts; the REPLACEMENT session is the 3rd. Without it the stuck session would still be in use.
+	if n := atomic.LoadInt32(&s.accepted); n < 3 {
+		t.Fatalf("control connections accepted = %d, want >= 3: the stuck source session was not replaced by a new one", n)
+	}
 	fctx, fcancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer fcancel()
 	if ok, ferr := c.FileExists(fctx, "/dir/dst.bin"); ferr != nil || !ok {
@@ -1116,5 +1154,167 @@ func TestFTPCopyFile_OrphanTempIsNamedInError(t *testing.T) {
 	}
 	if got, _ := s.file("/dir/dst.bin"); got != oldDst {
 		t.Fatalf("destination = %q, want untouched", got)
+	}
+}
+
+// ---- round 5 -------------------------------------------------------------------------------------------------------------------------
+
+// F8: a cancelled copy whose STOR cleanup fails must still say that the temp may remain (the cancel mapping must not drop the note).
+// M12: the cleanup session cannot be opened (the server refuses new sessions). M13b: the fresh-session DELE is refused.
+func TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan(t *testing.T) {
+	cases := map[string]func(*strictFTP){
+		"cleanup-session-dial-refused": func(s *strictFTP) { s.refuseAfter = 2 },
+		"fresh-session-dele-refused":   func(s *strictFTP) { s.deleRefuse = true },
+	}
+	for name, mod := range cases {
+		t.Run(name, func(t *testing.T) {
+			s := startStrictFTP(t, func(s *strictFTP) { s.retrSize = 256 << 20; s.storStall = true; mod(s) })
+			s.seed("/dir/dst.bin", oldDst)
+			c := strictClient(t, s)
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			time.AfterFunc(700*time.Millisecond, cancel)
+			err := c.CopyFile(ctx, "/big.bin", "/dir/dst.bin")
+			if !errors.Is(err, context.Canceled) {
+				t.Fatalf("CopyFile = %v, want context.Canceled", err)
+			}
+			left := s.tempNames()
+			if len(left) != 1 {
+				t.Fatalf("temps on server = %v, want exactly the one orphan (the cleanup was made to fail)", left)
+			}
+			if !strings.Contains(err.Error(), left[0]) || !strings.Contains(err.Error(), "may remain") {
+				t.Fatalf("cancel error %q does not carry the orphan note for %s", err, left[0])
+			}
+			var oe *orphanError
+			if !errors.As(err, &oe) || oe.tmp != left[0] {
+				t.Fatalf("errors.As(*orphanError) failed or names another temp: %v", err)
+			}
+			if got, _ := s.file("/dir/dst.bin"); got != oldDst {
+				t.Fatalf("destination = %q, want untouched", got)
+			}
+		})
+	}
+}
+
+// F4: a cancel that arrives after the transfer is confirmed but before the watcher is disarmed abandons the copy (Canceled, destination
+// untouched, temp removed, no rename). Kills `if false && !stopWatch()` / `if false {...}` (the disarm result unused).
+func TestFTPCopyFile_CancelBeforeDisarmAbandonsCopy(t *testing.T) {
+	s := startStrictFTP(t)
+	s.seed("/dir/dst.bin", oldDst)
+	c := strictClient(t, s)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	copyHookBeforeDisarm = func() { cancel(); time.Sleep(300 * time.Millisecond) } // the watcher fires (closes the connections) meanwhile
+	t.Cleanup(func() { copyHookBeforeDisarm = nil })
+	err := c.CopyFile(ctx, "/src.bin", "/dir/dst.bin")
+	if !errors.Is(err, context.Canceled) || !strings.Contains(err.Error(), "before it was moved into place") {
+		t.Fatalf("CopyFile = %v, want a Canceled error saying the copy was abandoned before the move", err)
+	}
+	assertDstUntouched(t, s, "/dir/dst.bin")
+	onlyTempsDeleted(t, s, 1)
+	s.mu.Lock()
+	n := len(s.renames)
+	s.mu.Unlock()
+	if n != 0 {
+		t.Fatalf("%d rename(s) happened for an abandoned copy", n)
+	}
+}
+
+// F4: a cancel that arrives after the disarm (before the commit) is too late to matter: the copy completes and the destination is replaced.
+// Kills a mutant that never disarms (the late cancel would close the destination connection and fail the rename).
+func TestFTPCopyFile_CancelAfterDisarmStillCommits(t *testing.T) {
+	s := startStrictFTP(t)
+	s.seed("/dir/dst.bin", oldDst)
+	c := strictClient(t, s)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	copyHookBeforeCommit = func() { cancel(); time.Sleep(300 * time.Millisecond) }
+	t.Cleanup(func() { copyHookBeforeCommit = nil })
+	if err := c.CopyFile(ctx, "/src.bin", "/dir/dst.bin"); err != nil {
+		t.Fatalf("CopyFile = %v, want nil: a cancel after the disarm must not abort the rename", err)
+	}
+	if got, _ := s.file("/dir/dst.bin"); got != "hello-copy" {
+		t.Fatalf("destination = %q, want the new content", got)
+	}
+	if left := s.tempNames(); len(left) != 0 {
+		t.Fatalf("temp left: %v", left)
+	}
+}
+
+// F4 wording: a refusal says the destination was left unchanged; a connection that dies during the rename says the outcome is unknown
+// and must NOT claim "left unchanged".
+func TestFTPCopyFile_RenameFailureWording(t *testing.T) {
+	t.Run("server-refusal", func(t *testing.T) {
+		s := startStrictFTP(t, func(s *strictFTP) { s.noRenameOver = true })
+		s.seed("/dir/dst.bin", oldDst)
+		c := strictClient(t, s)
+		err := c.CopyFile(context.Background(), "/src.bin", "/dir/dst.bin")
+		if err == nil || !strings.Contains(err.Error(), "left unchanged") || strings.Contains(err.Error(), "may or may not") {
+			t.Fatalf("err = %v, want the 'left unchanged' wording", err)
+		}
+	})
+	t.Run("connection-lost", func(t *testing.T) {
+		s := startStrictFTP(t, func(s *strictFTP) { s.rntoDrop = true })
+		s.seed("/dir/dst.bin", oldDst)
+		c := strictClient(t, s)
+		err := c.CopyFile(context.Background(), "/src.bin", "/dir/dst.bin")
+		if err == nil || !strings.Contains(err.Error(), "may or may not have been applied") || strings.Contains(err.Error(), "left unchanged") {
+			t.Fatalf("err = %v, want the 'may or may not have been applied' wording and no 'left unchanged' claim", err)
+		}
+	})
+}
+
+// F9 (documented limit, pinned): a cancel during a stalled RNTO is NOT honoured; the call stays blocked until the server answers.
+// If someone makes it cancellable this test must be turned into the opposite assertion on purpose.
+func TestFTPCopyFile_CancelDuringStalledRenameIsNotHonoured(t *testing.T) {
+	s := startStrictFTP(t, func(s *strictFTP) { s.rntoStall = true })
+	c := strictClient(t, s)
+	ctx, cancel := context.WithCancel(context.Background())
+	time.AfterFunc(300*time.Millisecond, cancel)
+	done := make(chan error, 1)
+	go func() { done <- c.CopyFile(ctx, "/src.bin", "/dir/dst.bin") }()
+	select {
+	case err := <-done:
+		t.Fatalf("CopyFile returned %v during a stalled RNTO; the documented F9 limit (not interruptible) changed - update the doc comment and this test", err)
+	case <-time.After(1500 * time.Millisecond):
+	}
+	// unblock the responder so the copy can end; the test cleanup closes release
+	c.Disconnect(context.Background())
+}
+
+// Scanner: temp names of CopyFile are never listed as catalogue entries; a user's own look-alike files are.
+func TestFTPListDirectory_SkipsCopyTempFilesOnly(t *testing.T) {
+	s := startStrictFTP(t, func(s *strictFTP) {
+		s.listing = "-rw-r--r-- 1 u g 10 Jan 01 2020 f.bin\r\n" +
+			"-rw-r--r-- 1 u g 10 Jan 01 2020 .dst.bin.ftpcopy-0123456789abcdef.part\r\n" +
+			"-rw-r--r-- 1 u g 10 Jan 01 2020 .x.part\r\n" +
+			"-rw-r--r-- 1 u g 10 Jan 01 2020 .y.ftpcopy-XYZ.part\r\n" +
+			"-rw-r--r-- 1 u g 10 Jan 01 2020 dst.bin.ftpcopy-0123456789abcdef.part\r\n"
+	})
+	c := strictClient(t, s)
+	files, err := c.ListDirectory(context.Background(), "/dir")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var names []string
+	for _, f := range files {
+		names = append(names, f.Name)
+	}
+	want := []string{"f.bin", ".x.part", ".y.ftpcopy-XYZ.part", "dst.bin.ftpcopy-0123456789abcdef.part"}
+	if strings.Join(names, "|") != strings.Join(want, "|") {
+		t.Fatalf("listed %v, want %v (only the exact .<base>.ftpcopy-<16hex>.part shape is hidden)", names, want)
+	}
+}
+
+func TestFTPIsCopyTemp_MatchesWhatTempSiblingProduces(t *testing.T) {
+	for _, base := range []string{"a.bin", "x", ".hidden", strings.Repeat("é", 150), "name with spaces.mkv", strings.Repeat("\x80", 250), strings.Repeat("a", 199) + "日" + strings.Repeat("b", 60)} {
+		if n := pathpkg.Base(tempSibling("/d/" + base)); !isCopyTemp(n) {
+			t.Fatalf("tempSibling name %q is not recognised by isCopyTemp", n)
+		}
+	}
+	for _, n := range []string{".x.part", ".a.ftpcopy-0123456789abcde.part", ".a.ftpcopy-0123456789ABCDEF.part", "a.ftpcopy-0123456789abcdef.part", ".ftpcopy-0123456789abcdef.part"} {
+		if isCopyTemp(n) {
+			t.Fatalf("%q must not be taken for a copy temp", n)
+		}
 	}
 }
