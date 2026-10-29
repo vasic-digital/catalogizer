@@ -27,6 +27,7 @@ type memFS struct {
 	returnHook func(dir string, returned int)
 	listed     []string
 	connect    error
+	proto      string // GetProtocol (default "memfs")
 
 	inflight, maxInflight int32
 	listDelay             time.Duration
@@ -84,7 +85,12 @@ func (m *memFS) IsConnected() bool                { return true }
 func (m *memFS) TestConnection(context.Context) error {
 	return nil
 }
-func (m *memFS) GetProtocol() string    { return "memfs" }
+func (m *memFS) GetProtocol() string {
+	if m.proto != "" {
+		return m.proto
+	}
+	return "memfs"
+}
 func (m *memFS) GetConfig() interface{} { return nil }
 
 func (m *memFS) ListDirectory(ctx context.Context, p string) ([]*filesystem.FileInfo, error) {

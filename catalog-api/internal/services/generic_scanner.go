@@ -400,6 +400,16 @@ type scanRun struct {
 	skip        map[string]bool
 	incremental bool
 	allowEmpty  bool
+	// skipCopyTemps: the storage is FTP, where CopyFile stages its data in a hidden temp file beside the destination
+	// (filesystem.IsCopyTempName). An in-flight or stale temp is not content; FTPClient.ListDirectory still reports it so that directory
+	// moves see the real contents, and the catalogue hides it here.
+	skipCopyTemps bool
+}
+
+// isCopyTemp reports whether e is a CopyFile staging file that must not be catalogued (files only: CopyFile never creates a directory
+// with such a name, and a user's own look-alike such as ".x.part" does not match the strict pattern).
+func (rs *scanRun) isCopyTemp(e *filesystem.FileInfo) bool {
+	return rs.skipCopyTemps && e != nil && !e.IsDir && filesystem.IsCopyTempName(e.Name)
 }
 
 // ScanPath scans job.Path breadth first. See the file comment for the guarantees.
@@ -423,6 +433,7 @@ func (g *GenericScanner) ScanPath(ctx context.Context, client filesystem.FileSys
 		rootKey = job.StorageRoot.Name
 	}
 	rs := &scanRun{g: g, c: guarded, job: job, status: status, rootKey: rootKey, maxDepth: maxDepth, skip: map[string]bool{}}
+	rs.skipCopyTemps = client.GetProtocol() == "ftp"
 	rs.incremental = job.ScanType == "incremental" && g.o.Tokens != nil
 	rs.allowEmpty = g.o.AllowEmptyRoot || (job.StorageRoot != nil && job.StorageRoot.AllowEmpty)
 	if src, ok := client.(TokenSource); ok {
@@ -506,7 +517,7 @@ func (rs *scanRun) fetchLimit() int {
 func (rs *scanRun) countable(entries []*filesystem.FileInfo) int {
 	n := 0
 	for _, e := range entries {
-		if e != nil && e.Name != "." && e.Name != ".." && validEntryName(e.Name) && !(e.IsDir && rs.skip[e.Name]) {
+		if e != nil && e.Name != "." && e.Name != ".." && validEntryName(e.Name) && !(e.IsDir && rs.skip[e.Name]) && !rs.isCopyTemp(e) {
 			n++
 		}
 	}
@@ -641,6 +652,10 @@ func (rs *scanRun) processEntries(ctx context.Context, dir string, depth int, en
 		if !validEntryName(e.Name) {
 			rs.status.incrementCounters(0, 0, 0, 0, 1)
 			rs.g.o.Logger.Warn("entry with an invalid name skipped", zap.String("dir", dir))
+			continue
+		}
+		if rs.isCopyTemp(e) {
+			rs.g.o.Logger.Info("FTP copy temp file skipped (in-flight or stale CopyFile leftover)", zap.String("dir", dir), zap.String("name", e.Name))
 			continue
 		}
 		sorted = append(sorted, e)

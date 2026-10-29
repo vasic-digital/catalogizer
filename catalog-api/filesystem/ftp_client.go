@@ -17,6 +17,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 	"unicode/utf8"
 
@@ -381,11 +382,6 @@ func (c *FTPClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo
 		if entry.Name == "." || entry.Name == ".." {
 			continue
 		}
-		// a temp file of an in-flight (or interrupted) CopyFile is not a catalogue entry
-		if isCopyTemp(entry.Name) {
-			log.Printf("ftp: skipping copy temp file %s/%s (in-flight or stale CopyFile leftover)", fullPath, entry.Name)
-			continue
-		}
 		// Safe conversion: Check for overflow before converting uint64 to int64
 		var size int64
 		if entry.Size > uint64(1<<63-1) {
@@ -566,17 +562,35 @@ func tempSibling(dst string) string {
 	return pathpkg.Join(pathpkg.Dir(dst), "."+base+".ftpcopy-"+hex.EncodeToString(b[:])+".part")
 }
 
-// Test seams for the two instants around the cancel-watcher disarm in CopyFile (nil in production).
-var (
-	copyHookBeforeDisarm func()
-	copyHookBeforeCommit func()
-)
+// copyHooks are test seams for the two instants around the cancel-watcher disarm in CopyFile (never set in production). They are held in an
+// atomic pointer and read once per CopyFile call, so a test installing or removing them while a goroutine of an earlier test is still
+// finishing is race-free.
+type copyHooks struct {
+	beforeDisarm func()
+	beforeCommit func()
+}
 
-// copyTempRe matches exactly the names tempSibling produces: .<base>.ftpcopy-<16 hex>.part
-var copyTempRe = regexp.MustCompile(`^\..+\.ftpcopy-[0-9a-f]{16}\.part$`)
+var copyHooksPtr atomic.Pointer[copyHooks]
 
-// isCopyTemp reports whether name is a CopyFile temp name. Strict on purpose: a user's own ".x.part" file is not matched.
-func isCopyTemp(name string) bool { return copyTempRe.MatchString(name) }
+// setCopyHooksForTest installs the hooks and returns the function that removes them again. Test use only.
+func setCopyHooksForTest(h *copyHooks) (restore func()) {
+	copyHooksPtr.Store(h)
+	return func() { copyHooksPtr.Store(nil) }
+}
+
+// renameGraceAfterCancel is how long the final RNFR/RNTO may keep running after ctx was cancelled before the destination connection is
+// closed under it. A responsive server finishes the rename well inside this window (so a cancel that arrives in the middle of a healthy
+// rename still commits); a server that never answers is cut off, and the outcome is reported as unknown.
+var renameGraceAfterCancel = 5 * time.Second
+
+// copyTempRe matches exactly the names tempSibling produces: .<base>.ftpcopy-<16 hex>.part. (?s) so that a base name containing a newline
+// (legal on most file systems) still matches; "." would otherwise stop at it.
+var copyTempRe = regexp.MustCompile(`(?s)^\..+\.ftpcopy-[0-9a-f]{16}\.part$`)
+
+// IsCopyTempName reports whether name is a temp name of an in-flight (or interrupted) CopyFile. Strict on purpose: a user's own ".x.part"
+// file is not matched. FTPClient.ListDirectory does NOT hide these (callers such as a directory move must see every entry, otherwise they
+// delete a directory that still holds a hidden file); the catalogue scanner skips them (internal/services/generic_scanner.go).
+func IsCopyTempName(name string) bool { return copyTempRe.MatchString(name) }
 
 // maxTempBase is the longest part of the destination's base name that is kept in the temp name (200 + 26 added bytes < 255).
 const maxTempBase = 200
@@ -595,15 +609,27 @@ func (c *FTPClient) storeTemp(ctx context.Context, w *ftp.ServerConn, dstFull st
 	return tmp, nil
 }
 
-// tempNeverCreated reports whether a DELE error says the file did not exist (550 "no such file" and friends), i.e. there is nothing to
-// clean up. Any other answer (421, a 550 "permission denied", ...) says nothing about whether the temp exists.
+// tempNeverCreated reports whether a DELE error says the file did not exist (550 "no such file", "not found", ...), i.e. there is nothing
+// to clean up. It is deliberately conservative: only a 550 whose text names a missing file or directory counts, and any mention of a
+// permission, privilege or denial vetoes it ("File not found or permission denied" does not tell whether the file exists). Every other
+// answer (421, a 550 "permission denied", an unknown or localized wording, ...) is "the temp may remain" and the caller reports it.
 func tempNeverCreated(err error) bool {
 	var te *textproto.Error
 	if !errors.As(err, &te) || te.Code != 550 {
 		return false
 	}
 	m := strings.ToLower(te.Msg)
-	return strings.Contains(m, "no such") || strings.Contains(m, "not found") || strings.Contains(m, "not exist") || strings.Contains(m, "does not exist")
+	for _, veto := range []string{"permission", "privilege", "denied", "not permitted", "forbidden", "read-only", "read only", "refused", "access"} {
+		if strings.Contains(m, veto) {
+			return false
+		}
+	}
+	for _, missing := range []string{"no such file", "no such directory", "not found", "does not exist", "not exist"} {
+		if strings.Contains(m, missing) {
+			return true
+		}
+	}
+	return false
 }
 
 // discardTemp removes the temp file this copy created. If the connection it was written on is gone (a cancelled copy), a short-lived
@@ -712,12 +738,17 @@ var freeSpaceFn = freeSpace
 // created is removed. Cancelling ctx interrupts a transfer that is blocked in the network (see watchCancel for the one documented limit).
 //
 // Known limits (documented, not hidden):
-//   - Once the source transfer is confirmed the cancel watcher is disarmed and the final RNFR/RNTO is NOT interruptible: a cancel that
-//     arrives during the rename is not honoured until the server answers (a server that never answers blocks the call; the connection
-//     timeout of the dialer does not apply to an established session). A cancel that arrives before the disarm abandons the copy.
+//   - Once the source transfer is confirmed the cancel watcher is disarmed and a cancel no longer abandons the copy: a healthy final
+//     RNFR/RNTO is allowed to finish and the copy then succeeds. A rename that is still unanswered renameGraceAfterCancel after the cancel
+//     is cut off by closing the destination connection; the error then says the rename "may or may not have been applied". A cancel
+//     that arrives before the disarm abandons the copy. (The single-session spool fallback has no such cut-off: its rename runs on the
+//     client's own control connection.)
 //   - Whether a failed cleanup DELE means "the temp never existed" is decided from the reply text (tempNeverCreated: a 550 saying no
-//     such file / not found / not exist). That is a heuristic: servers word it differently, and an unrecognised wording is treated as
-//     "the temp may remain" (reported as an orphan note, never silently dropped), so the heuristic errs towards reporting.
+//     such file / no such directory / not found / does not exist, and no mention of permission, privilege or denial). That is a
+//     heuristic: servers word it differently. An unrecognised, localized or mixed wording ("File not found or permission denied") is
+//     treated as "the temp may remain" (reported as an orphan note), so a miss errs towards reporting; the opposite error (a wording
+//     read as "never created" although the file exists) is only possible for a 550 that names a missing file and no refusal, which a
+//     server would not send for a file it holds.
 func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error {
 	conn, base, err := c.session()
 	if err != nil {
@@ -774,8 +805,9 @@ func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 	}
 	// the transfer is confirmed: disarm the cancel watcher so a late cancel cannot close the destination connection in the middle of the
 	// rename. If it already fired the connections are closed, so the copy is abandoned (cancelled) instead of committed.
-	if copyHookBeforeDisarm != nil {
-		copyHookBeforeDisarm()
+	hooks := copyHooksPtr.Load()
+	if hooks != nil && hooks.beforeDisarm != nil {
+		hooks.beforeDisarm()
 	}
 	if !stopWatch() {
 		err := fmt.Errorf("copy of %s cancelled before it was moved into place: %w", srcFullPath, context.Cause(ctx))
@@ -784,10 +816,27 @@ func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 		}
 		return err
 	}
-	if copyHookBeforeCommit != nil {
-		copyHookBeforeCommit()
+	if hooks != nil && hooks.beforeCommit != nil {
+		hooks.beforeCommit()
 	}
-	return c.commitTemp(wconn, tmp, dstFullPath)
+	// After the disarm a cancel no longer abandons the copy (a healthy rename is allowed to finish), but it must not hang on a server that
+	// never answers either: once ctx is cancelled the rename gets renameGraceAfterCancel more, then the destination connections are
+	// closed, which ends the blocked read; commitTemp then reports "may or may not have been applied".
+	renameDone := make(chan struct{})
+	grace := renameGraceAfterCancel // read here, not in the watcher goroutine
+	stopGrace := context.AfterFunc(ctx, func() {
+		t := time.NewTimer(grace)
+		defer t.Stop()
+		select {
+		case <-renameDone:
+		case <-t.C:
+			tr.closeAll()
+		}
+	})
+	err = c.commitTemp(wconn, tmp, dstFullPath)
+	close(renameDone)
+	stopGrace()
+	return err
 }
 
 // copyViaTempFile is the fallback for servers that allow a single control session: RETR to a private temp file in SpoolDir, close it, then
