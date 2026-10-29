@@ -184,6 +184,9 @@ type strictFTP struct {
 	noAbortReply  bool
 	maxNameLen    int
 	deleRefuse    bool
+	deleCode      int           // > 0: a refused DELE answers with this code (e.g. 450) instead of 550
+	deleAttempts  int32         // every DELE seen, refused or not
+	retrEndDelay  time.Duration // pause before the final RETR reply (data already complete)
 	deleRefuseMsg string        // text of the 550 a refused DELE answers with (default "permission denied")
 	rntoStall     bool          // RNTO is accepted and never answered (until test cleanup)
 	rntoDelay     time.Duration // RNTO is answered after this delay
@@ -384,6 +387,9 @@ func (s *strictFTP) serve(c net.Conn) {
 				io.Copy(io.Discard, dc)
 				dc.Close()
 				busy.Store(false)
+				if s.retrEndDelay > 0 {
+					time.Sleep(s.retrEndDelay)
+				}
 				switch s.retrEnd {
 				case "426":
 					say("426 transfer aborted")
@@ -403,8 +409,11 @@ func (s *strictFTP) serve(c net.Conn) {
 				say("257 created")
 			}
 		case "DELE":
+			atomic.AddInt32(&s.deleAttempts, 1)
 			if s.deleRefuse {
-				if s.deleRefuseMsg != "" {
+				if s.deleCode > 0 {
+					say(fmt.Sprintf("%d file busy", s.deleCode))
+				} else if s.deleRefuseMsg != "" {
 					say("550 " + s.deleRefuseMsg)
 				} else {
 					say("550 permission denied")
