@@ -5,8 +5,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -657,18 +659,42 @@ func (s *SyncService) performLocalSync(session *models.SyncSession, endpoint *mo
 		syncMode = mode
 	}
 
-	// Verify source directory exists
-	sourceInfo, err := os.Stat(sourceDir)
-	if err != nil {
+	// Resolve and confine both roots in ONE step and walk the path that step returns (review
+	// round 8, item 1). confineSyncPaths ran earlier; resolving the roots again without a new
+	// check followed a root swapped for a symlink in between: a swapped source copied outside
+	// files in, a swapped destination let mirror cleanup delete outside files. The source is
+	// read (written too in bidirectional mode); the destination is written and cleaned.
+	switch syncMode {
+	case "mirror", "incremental", "bidirectional":
+	default:
+		return fmt.Errorf("unsupported sync mode: %s", syncMode)
+	}
+	write := pathguard.SyncWriteRoots()
+	srcRoots := pathguard.Readable(write)
+	if syncMode == "bidirectional" {
+		srcRoots = write
+	}
+	sourceDir, err := confinedWalkRoot(sourceDir, srcRoots)
+	switch {
+	case errors.Is(err, errNotADirectory):
+		return fmt.Errorf("source path is not a directory: %w", err)
+	case errors.Is(err, fs.ErrNotExist):
 		return fmt.Errorf("source directory does not exist: %w", err)
+	case err != nil:
+		return fmt.Errorf("source directory: %w", err)
 	}
-	if !sourceInfo.IsDir() {
-		return fmt.Errorf("source path is not a directory")
+	dst, err := pathguard.ConfineData(destDir, write)
+	if err != nil {
+		return fmt.Errorf("destination directory: %w", err)
 	}
-
-	// Create destination directory if it doesn't exist
-	if err := os.MkdirAll(destDir, 0755); err != nil {
+	// Create destination directory if it doesn't exist, then check the result again: the
+	// created (or existing) directory is what the walk writes into.
+	if err := os.MkdirAll(dst, 0755); err != nil {
 		return fmt.Errorf("failed to create destination directory: %w", err)
+	}
+	destDir, err = confinedWalkRoot(dst, write)
+	if err != nil {
+		return fmt.Errorf("destination directory: %w", err)
 	}
 
 	// Perform sync based on mode
@@ -691,13 +717,11 @@ func (s *SyncService) performLocalSync(session *models.SyncSession, endpoint *mo
 }
 
 // performMirrorSync creates exact copy of source in destination
+// sourceDir and destDir are the resolved, confined roots performLocalSync passes in; they are
+// walked as given (a symlinked root is not resolved again here, review round 8).
 func (s *SyncService) performMirrorSync(sourceDir, destDir string, session *models.SyncSession) error {
-	sourceDir, destDir, err := resolveSyncRoots(sourceDir, destDir)
-	if err != nil {
-		return err
-	}
 	// Walk through source directory
-	err = filepath.Walk(sourceDir, func(sourcePath string, info os.FileInfo, err error) error {
+	err := filepath.Walk(sourceDir, func(sourcePath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -770,13 +794,10 @@ func (s *SyncService) performMirrorSync(sourceDir, destDir string, session *mode
 }
 
 // performIncrementalSync only copies newer or missing files
+// Like performMirrorSync it walks the roots as given.
 func (s *SyncService) performIncrementalSync(sourceDir, destDir string, session *models.SyncSession) error {
-	sourceDir, destDir, err := resolveSyncRoots(sourceDir, destDir)
-	if err != nil {
-		return err
-	}
 	// Walk through source directory
-	err = filepath.Walk(sourceDir, func(sourcePath string, info os.FileInfo, err error) error {
+	err := filepath.Walk(sourceDir, func(sourcePath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -1241,25 +1262,28 @@ func uploadSourceDir(syncConfig map[string]interface{}, endpoint *models.SyncEnd
 	return requireUploadSourceDir(sourceDir)
 }
 
-// requireUploadSourceDir refuses an upload source that is missing or is not a directory. The
-// walkers below accept a regular-file root and then skip it, which reported a successful sync
-// of zero files; the local driver already refused this case ("source path is not a
-// directory"). It returns the resolved directory: filepath.Walk reports a symlinked root as the
-// link itself and does not descend, so walking the unresolved path uploaded zero files and
-// reported success (review round 7, S1).
+// requireUploadSourceDir refuses an upload source that is missing, is not a directory, or does
+// not resolve inside the roots an upload may read. The walkers below accept a regular-file root
+// and then skip it, which reported a successful sync of zero files; the local driver already
+// refused this case. It returns the resolved directory: filepath.Walk reports a symlinked root
+// as the link itself and does not descend, so walking the unresolved path uploaded zero files
+// and reported success (review round 7, S1).
 func requireUploadSourceDir(dir string) (string, error) {
-	resolved, err := resolveWalkRoot(dir)
+	resolved, err := confinedWalkRoot(dir, pathguard.Readable(pathguard.SyncWriteRoots()))
 	if err != nil {
 		return "", fmt.Errorf("upload source %q: %w", dir, err)
 	}
 	return resolved, nil
 }
 
-// resolveWalkRoot resolves every symlink in dir (the walk then visits the directory the path
-// names) and refuses anything that is not a directory. The caller has already confined dir;
-// EvalSymlinks lands where that resolution landed.
-func resolveWalkRoot(dir string) (string, error) {
-	resolved, err := filepath.EvalSymlinks(dir)
+// confinedWalkRoot resolves dir and confines the result in one step (pathguard.ConfineData
+// returns the resolved path it checked) and refuses anything that is not a directory. The
+// caller walks the returned path, never resolves dir again: an earlier check of dir followed
+// by a later unchecked resolution is exactly the window a root swapped for a symlink to an
+// outside directory used (review round 8, item 1). A root swapped AFTER this call is not
+// followed either: filepath.Walk does not descend into a symlinked root.
+func confinedWalkRoot(dir string, roots []string) (string, error) {
+	resolved, err := pathguard.ConfineData(dir, roots)
 	if err != nil {
 		return "", err
 	}
@@ -1268,27 +1292,13 @@ func resolveWalkRoot(dir string) (string, error) {
 		return "", err
 	}
 	if !fi.IsDir() {
-		return "", fmt.Errorf("is not a directory")
+		return "", fmt.Errorf("%q: %w", dir, errNotADirectory)
 	}
 	return resolved, nil
 }
 
-// resolveSyncRoots resolves the source root (it must be a directory) and, when it exists, the
-// destination root of a local sync, so neither walk skips a symlinked root (review round 7, S1).
-func resolveSyncRoots(sourceDir, destDir string) (string, string, error) {
-	src, err := resolveWalkRoot(sourceDir)
-	if err != nil {
-		return "", "", fmt.Errorf("source directory %q: %w", sourceDir, err)
-	}
-	if _, lerr := os.Lstat(destDir); lerr == nil {
-		dst, derr := resolveWalkRoot(destDir)
-		if derr != nil {
-			return "", "", fmt.Errorf("destination directory %q: %w", destDir, derr)
-		}
-		destDir = dst
-	}
-	return src, destDir, nil
-}
+// errNotADirectory is returned by confinedWalkRoot for a root that resolves to a non-directory.
+var errNotADirectory = errors.New("is not a directory")
 
 // scanLocalFiles lists the files the WebDAV upload sends. Only uploadableFile entries are listed:
 // the upload opens each path with os.Open, which follows a symlink planted in the source and

@@ -851,6 +851,10 @@ func publishConverterOutputs(priv, dir string, roots []string) error {
 	if len(entries) == 0 {
 		return fmt.Errorf("converter produced no output")
 	}
+	// keep[name] is the permission of a regular file the output replaces. Rename puts a new
+	// inode in place, written by the tool under its own umask; the replaced file's permission
+	// bits are copied onto it (owner, ACL and xattr are not, review round 8, item 5).
+	keep := map[string]os.FileMode{}
 	for _, e := range entries {
 		if !e.Type().IsRegular() {
 			return fmt.Errorf("converter output %q is not a regular file", e.Name())
@@ -862,9 +866,18 @@ func publishConverterOutputs(priv, dir string, roots []string) error {
 		if err := refuseNonRegularLeaf(dst); err != nil {
 			return err
 		}
+		if fi, err := os.Lstat(dst); err == nil && fi.Mode().IsRegular() {
+			keep[e.Name()] = fi.Mode().Perm()
+		}
 	}
 	for _, e := range entries {
-		if err := os.Rename(filepath.Join(priv, e.Name()), filepath.Join(dir, e.Name())); err != nil {
+		src := filepath.Join(priv, e.Name())
+		if perm, ok := keep[e.Name()]; ok {
+			if err := os.Chmod(src, perm); err != nil {
+				return err
+			}
+		}
+		if err := os.Rename(src, filepath.Join(dir, e.Name())); err != nil {
 			return err
 		}
 	}

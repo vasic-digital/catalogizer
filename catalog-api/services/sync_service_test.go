@@ -714,6 +714,9 @@ func TestSyncService_CleanupDestination(t *testing.T) {
 
 func TestSyncService_PerformLocalSync(t *testing.T) {
 	service := NewSyncService(nil, nil, nil)
+	// performLocalSync confines its roots (review round 8): the t.TempDir() directories below
+	// lie under the temp dir, and /nonexistent keeps its fixture role.
+	allowSyncDirs(t, os.TempDir(), "/nonexistent", "/tmp")
 
 	t.Run("local sync with mirror mode", func(t *testing.T) {
 		srcDir := t.TempDir()

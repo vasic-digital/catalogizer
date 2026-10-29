@@ -35,7 +35,8 @@ func newRV5Session(t *testing.T, svc *SyncService, endpointID int) *models.SyncS
 // link of the database was read and PUT to the remote server. Driven through the real upload
 // loop against a real WebDAV server (golang.org/x/net/webdav).
 func TestSync_WebDAVUploadSkipsLinksPlantedInTheSource(t *testing.T) {
-	_, src, _, db, secret := perFileFixture(t)
+	base, src, _, db, secret := perFileFixture(t)
+	allowSyncDirs(t, base) // the upload source is confined (review round 8)
 	require.NoError(t, os.Symlink(secret, filepath.Join(src, "leak")))
 	require.NoError(t, os.Symlink(db, filepath.Join(src, "dbl")))
 	require.NoError(t, os.Link(db, filepath.Join(src, "hl")))

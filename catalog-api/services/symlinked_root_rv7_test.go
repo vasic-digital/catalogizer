@@ -11,6 +11,13 @@ import (
 	"golang.org/x/net/webdav"
 )
 
+// rv7LocalSync drives a local sync through performLocalSync, the entry point that resolves and
+// confines the roots (since review round 8 the per-mode walkers walk the roots as given).
+func rv7LocalSync(t *testing.T, src, dst, mode string) error {
+	t.Helper()
+	return (&SyncService{}).performLocalSync(&models.SyncSession{}, rv8LocalEndpoint(src, dst, mode))
+}
+
 // Reviewer probe adopted verbatim (round-7 review of e5b65d1d, item S1; only the test names changed): an upload source that is a symlink to a directory inside
 // the root passes requireUploadSourceDir (os.Stat follows it) but filepath.Walk does not
 // descend into a symlinked root, so the upload reports success with zero files.
@@ -20,6 +27,7 @@ func TestRV7_ReviewerProbe_LinkedSourceDir(t *testing.T) {
 	if err := os.Symlink(src, link); err != nil {
 		t.Fatal(err)
 	}
+	allowSyncDirs(t, base)
 	davRoot := t.TempDir()
 	srv := httptest.NewServer(&webdav.Handler{FileSystem: webdav.Dir(davRoot), LockSystem: webdav.NewMemLS()})
 	defer srv.Close()
@@ -39,6 +47,14 @@ func TestRV7_ReviewerProbe_LinkedSourceDir(t *testing.T) {
 	if err == nil && n == 0 {
 		t.Errorf("symlinked upload source: success with 0 files uploaded (silent no-op)")
 	}
+	// Review round 8, item 2 (M12): the remote name is computed against the resolved source
+	// root, so a.txt lands at /r/a.txt (not /r/../src/a.txt, i.e. outside RemotePath).
+	if _, serr := os.Stat(filepath.Join(davRoot, "r", "a.txt")); serr != nil {
+		t.Errorf("symlinked upload source: a.txt not uploaded as /r/a.txt: %v", serr)
+	}
+	if n != 1 {
+		t.Errorf("symlinked upload source: %d remote files, want exactly 1 (/r/a.txt)", n)
+	}
 }
 
 // Probe: mirror local sync with a symlinked source directory.
@@ -48,7 +64,8 @@ func TestRV7_ReviewerProbe_LinkedSourceMirror(t *testing.T) {
 	if err := os.Symlink(src, link); err != nil {
 		t.Fatal(err)
 	}
-	err := (&SyncService{}).performMirrorSync(link, dst, &models.SyncSession{})
+	allowSyncDirs(t, base)
+	err := rv7LocalSync(t, link, dst, "mirror")
 	_, serr := os.Stat(filepath.Join(dst, "a.txt"))
 	t.Logf("PROBE mirror symlinked source: err=%v dst/a.txt stat=%v", err, serr)
 	if err == nil && serr != nil {
@@ -56,7 +73,7 @@ func TestRV7_ReviewerProbe_LinkedSourceMirror(t *testing.T) {
 	}
 }
 
-// S1 class-wide: every walker resolves its root once, so a symlinked root is walked as the
+// S1 class-wide: every root is resolved once (performLocalSync / uploadSourceDir), so a symlinked root is walked as the
 // directory it names instead of being reported as itself and skipped (a silent 0-file sync).
 func TestRV7_LinkedRootsAreWalked(t *testing.T) {
 	t.Run("incremental source", func(t *testing.T) {
@@ -65,7 +82,8 @@ func TestRV7_LinkedRootsAreWalked(t *testing.T) {
 		if err := os.Symlink(src, link); err != nil {
 			t.Fatal(err)
 		}
-		if err := (&SyncService{}).performIncrementalSync(link, dst, &models.SyncSession{}); err != nil {
+		allowSyncDirs(t, base)
+		if err := rv7LocalSync(t, link, dst, "incremental"); err != nil {
 			t.Fatal(err)
 		}
 		if _, err := os.Stat(filepath.Join(dst, "a.txt")); err != nil {
@@ -81,7 +99,8 @@ func TestRV7_LinkedRootsAreWalked(t *testing.T) {
 		if err := os.Symlink(dst, link); err != nil {
 			t.Fatal(err)
 		}
-		if err := (&SyncService{}).performBidirectionalSync(src, link, &models.SyncSession{}); err != nil {
+		allowSyncDirs(t, base)
+		if err := rv7LocalSync(t, src, link, "bidirectional"); err != nil {
 			t.Fatal(err)
 		}
 		if _, err := os.Stat(filepath.Join(src, "b.txt")); err != nil {
@@ -94,6 +113,7 @@ func TestRV7_LinkedRootsAreWalked(t *testing.T) {
 		if err := os.Symlink(src, link); err != nil {
 			t.Fatal(err)
 		}
+		allowSyncDirs(t, base)
 		got, err := uploadSourceDir(map[string]interface{}{}, &models.SyncEndpoint{LocalPath: link})
 		if err != nil {
 			t.Fatal(err)
@@ -109,13 +129,14 @@ func TestRV7_LinkedRootsAreWalked(t *testing.T) {
 		if err := os.Symlink(filepath.Join(src, "a.txt"), link); err != nil {
 			t.Fatal(err)
 		}
+		allowSyncDirs(t, base)
 		if _, err := uploadSourceDir(map[string]interface{}{}, &models.SyncEndpoint{LocalPath: link}); err == nil {
 			t.Errorf("a symlink to a regular file was accepted as an upload source")
 		}
 	})
 }
 
-// The destination root is resolved as well: a mirror sync into a linked destination removes the
+// The destination root is resolved as well (by performLocalSync): a mirror sync into a linked destination removes the
 // destination files that are not in the source (cleanupDestination walks the destination root).
 func TestRV7_MirrorLinkedDestinationIsCleaned(t *testing.T) {
 	base, src, dst, _, _ := perFileFixture(t)
@@ -127,7 +148,8 @@ func TestRV7_MirrorLinkedDestinationIsCleaned(t *testing.T) {
 	if err := os.Symlink(dst, link); err != nil {
 		t.Fatal(err)
 	}
-	if err := (&SyncService{}).performMirrorSync(src, link, &models.SyncSession{}); err != nil {
+	allowSyncDirs(t, base)
+	if err := rv7LocalSync(t, src, link, "mirror"); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(filepath.Join(dst, "a.txt")); err != nil {

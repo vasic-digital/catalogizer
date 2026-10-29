@@ -55,7 +55,8 @@ func TestRV6_CopyFileDoesNotCreateParentThroughPlantedLink(t *testing.T) {
 // F3: an upload whose local_path / source_directory is a single regular file used to succeed
 // with zero files. It must be refused loudly.
 func TestRV6_WebDAVUploadSingleFileRootIsRefused(t *testing.T) {
-	_, src, _, _, _ := perFileFixture(t)
+	base, src, _, _, _ := perFileFixture(t)
+	allowSyncDirs(t, base) // the upload source is confined (review round 8)
 	single := filepath.Join(src, "a.txt")
 	davRoot := t.TempDir()
 	srv := httptest.NewServer(&webdav.Handler{FileSystem: webdav.Dir(davRoot), LockSystem: webdav.NewMemLS()})
@@ -72,7 +73,8 @@ func TestRV6_WebDAVUploadSingleFileRootIsRefused(t *testing.T) {
 }
 
 func TestRV6_CloudUploadSingleFileRootIsRefused(t *testing.T) {
-	_, src, _, _, _ := perFileFixture(t)
+	base, src, _, _, _ := perFileFixture(t)
+	allowSyncDirs(t, base) // the upload source is confined (review round 8)
 	single := filepath.Join(src, "a.txt")
 	missing := filepath.Join(src, "missing")
 	svc := &SyncService{}

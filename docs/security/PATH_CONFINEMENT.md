@@ -144,10 +144,18 @@ in its output directory; before round 4 it renamed `<source>.html` next to the i
 file out of the read root.
 
 A sync ROOT that is itself a symlink to a directory (local mirror / incremental / bidirectional source and
-destination, WebDAV / S3 / GCS upload source) is resolved with `filepath.EvalSymlinks` before it is walked
-(review round 7, S1). `filepath.Walk` `Lstat`s its root, reports a symlinked root as the link and never
-descends, so until round 7 such a sync "succeeded" with 0 files. Entries met INSIDE the walk are still
-handled as above (links skipped).
+destination, WebDAV / S3 / GCS upload source) is resolved before it is walked (review round 7, S1).
+`filepath.Walk` `Lstat`s its root, reports a symlinked root as the link and never descends, so until round 7
+such a sync "succeeded" with 0 files. Entries met INSIDE the walk are still handled as above (links skipped).
+Since review round 8 the resolution IS the confinement check: `performLocalSync` and the upload source call
+`pathguard.ConfineData` on each root at run time and walk the resolved path it returns (source: read roots,
+or the sync write roots for a bidirectional sync; destination: sync write roots, checked before and again
+after `MkdirAll`; upload source: read roots). Round 7 resolved the root a second time with `EvalSymlinks`
+after `confineSyncPaths` had checked it and did not check the result, so a root swapped for a link to an
+outside directory in between was followed (outside files copied in, outside files deleted by mirror
+cleanup). A root swapped after the run-time check is not followed either, because `filepath.Walk` does not
+descend into a symlinked root. A symlinked NAS mount used as the configured root itself keeps working
+(regression test `TestRV8_SymlinkedRootLayoutsKeepWorking`).
 
 External converters (ffmpeg, ebook-convert, ImageMagick `convert`, pandoc, LibreOffice) open their output by
 path and follow a symlink there; ImageMagick also writes derived names (`out-0.bmp`, `out-1.bmp` for
@@ -157,6 +165,20 @@ conversion write roots); afterwards every entry it produced must be a regular fi
 `Dir(target)/<name>` must pass `ConfineDataFile` and must not already be a link, FIFO or directory, and only
 then are the files renamed into place (`rename(2)` never follows a link at the destination). All entries are
 checked before the first is moved, a tool failure publishes nothing, and the private directory is removed.
+What the private converter directory changes (review round 8, accepted behaviour):
+- Publish is all or nothing: every output is checked before the first rename (for example `out-1.bmp`
+  refused means `out-0.bmp` is not published either). The private directory is created 0700.
+- An existing target is REPLACED, not written in place: `rename(2)` puts a new inode at the name. Its
+  permission bits are copied from the replaced regular file (a 0664 target stays 0664 even when the tool
+  writes under `umask 077`); owner, group, ACLs and extended attributes are NOT copied, and other hard
+  links to the old target keep the old content (before round 7 a tool writing in place updated every hard
+  link). A new target gets the mode the tool created it with.
+- The output directory itself must be writable: `MkdirTemp` creates the private directory there. A
+  read-only output directory holding a writable, pre-created target used to work (`ffmpeg -y` wrote into
+  the existing file) and now fails with a permission error. Accepted: writing in place is exactly the
+  write-through-a-planted-link the private directory exists to stop.
+- A crash while a tool runs leaves `.catalogizer-conv-*` behind (see `docs/FOLLOW_UPS_NEXT_PHASE.md`).
+
 Proven with fake tools (unit class) and with the real ImageMagick 7.1.2 on the host: real `convert two.gif
 out.bmp` with `out-0.bmp` planted as a link to an outside file overwrites that file on the round-6 code and is
 refused on the round-7 code. What this does NOT close: a directory component of the target (`Dir(target)`)

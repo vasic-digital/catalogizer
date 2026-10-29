@@ -114,11 +114,28 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
   the roots is not refused (only links to the protected database/key files are). `fs.protected_hardlinks=1`
   limits it to files the service user may write anyway. Fix needs a link-count (`st_nlink > 1`) policy on
   every write sink, which would also refuse legitimate hard-linked media; operator decision.
-- Round 7, sync roots (S1): a symlinked sync root is now resolved with `EvalSymlinks` and the RESOLVED
-  path is walked and used as the per-file confinement root. If an operator relied on a root link
-  pointing outside the configured roots, the up-front `confineSyncPaths` check already refused it
-  (unchanged); nothing new is admitted. Upload source error text changed to
-  `upload source "<path>": is not a directory`.
+- Round 7, sync roots (S1): a symlinked sync root is resolved and the RESOLVED path is walked and used
+  as the per-file confinement root. Correction (review round 8, item 1): the round-7 text said "nothing
+  new is admitted". That was wrong. Round 7 resolved the root with `EvalSymlinks` at walk time,
+  AFTER `confineSyncPaths` had checked it, and did not check the result again: a root swapped for a
+  link to an outside directory in between was followed (a swapped source copied outside files into the
+  destination, a swapped destination let mirror cleanup delete outside files; reviewer probes
+  `TestRV8_Probe_RootSwapAfterConfine` / `..._DestSwapAfterConfine`). Since round 8 `performLocalSync`
+  and the upload source (WebDAV, S3, GCS) resolve and confine each root in ONE step
+  (`pathguard.ConfineData` returns the resolved path it checked) and walk that path; the walkers never
+  resolve a root again. Behaviour change: a sync now also fails at run time when its root is outside
+  the CURRENT roots (for example after `CATALOGIZER_SYNC_ROOTS` was narrowed), not only when the
+  endpoint is saved. Error texts: `source directory does not exist`, `source path is not a directory`
+  (unchanged), `source directory: ... outside the allowed roots`, `destination directory: ...`,
+  `upload source "<path>": ...`. OPEN residual: a component swapped while the walk is running is the
+  F4 race above.
+- Round 8 mutants that survive, recorded as equivalent: R8-2 (destination pre-`MkdirAll` confine
+  widened to `/`) and R8-3 (post-`MkdirAll` confine widened to `/`) each survive alone because the
+  other check still refuses the swapped root; widening both (R8-23) is killed. R8-10 (`MkdirAll` on
+  the unresolved destination instead of the confined path) survives: without a concurrent swap both
+  name the same directory, and the post-`MkdirAll` confine refuses a swapped one (F4 race otherwise).
+- Round 8, sync mode: an unknown `sync_mode` is refused before anything touches the file system (it
+  used to create the destination directory first).
 - Round 7 evidence gap: the reviewer's evidence file `EV/probe_symlinked_source.txt` named in the
   round-7 review does not exist at the given path; the probe test itself
   (`zz_reviewer_probe_test.go`) was found and adopted as `services/symlinked_root_rv7_test.go`.
@@ -130,6 +147,13 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
   destination is `Dir(target)` (already confined) joined with a `ReadDir` name (no `/`), and the only
   remaining escape (a leaf link pointing outside the roots) is refused by `refuseNonRegularLeaf`. The
   check stays as defence in depth against the `Dir(target)` swap race named above.
+- Round 8 (item 6): a crash (or kill) of the service while an external converter runs leaves its
+  private directory `.catalogizer-conv-*` next to the target; the deferred `RemoveAll` does not run.
+  Not swept automatically: a sweep at start-up or per conversion cannot tell a stale directory from one
+  a concurrent conversion is using without a lock or a process registry. OPEN: remove such
+  directories by hand, or add a start-up sweep once conversions record their owner.
+- Round 8 (items 4, 5) are documented, accepted behaviour of the private converter directory, see
+  `docs/security/PATH_CONFINEMENT.md` ("What the private converter directory changes").
 - `uploadableFile` is called by the S3, GCS and (since round 5) WebDAV upload walkers. The WebDAV one
   is driven end to end against a real in-process WebDAV server; S3 and GCS are not (they need a bucket
   client, and a double would only be a gate-logic test, §11.4.289), so only `uploadableFile` itself is
