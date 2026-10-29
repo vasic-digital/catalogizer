@@ -83,7 +83,7 @@ MUTANTS = [
     ("D14 230 (D.2) MUST softened", edit("11.4.230", "MUST leave the deliverable correct on every path a user or QA tester can reach", "should leave the deliverable correct on every path a user or QA tester can reach"), "killed"),
     ("D15 209 last sentence of the quoted operator mandate dropped", edit("11.4.209", " Work MUST BE performed with all means we have at particular moment!", ""), "killed"),
     ("D16 209 'NEVER left undone / blocked / deferred' cut to 'NEVER left undone'", edit("11.4.209", "NEVER left undone / blocked / deferred", "NEVER left undone"), "killed"),
-    ("D17 230 'four invariants' back to 'three invariants'", edit("11.4.230", "adds the four invariants they did not each state on their own", "adds three invariants"), "killed"),
+    ("D17 230 'five invariants' back to 'three invariants'", edit("11.4.230", "adds the five invariants they did not each state on their own", "adds three invariants"), "killed"),
 ]
 
 
