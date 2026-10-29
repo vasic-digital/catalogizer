@@ -162,7 +162,7 @@ deps:
 
   - name: llm_orchestrator
     ssh_url: git@github.com:HelixDevelopment/LLMOrchestrator.git
-    ref: 55d2dde              # pinned sha = gitlink recorded for submodules/llm_orchestrator
+    ref: c84c410              # pinned sha = gitlink recorded for submodules/llm_orchestrator
     why: "HelixDevelopment LLMOrchestrator: multi-provider LLM routing for HelixQA"
     layout: grouped
 
