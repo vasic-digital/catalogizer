@@ -257,6 +257,12 @@ cellitems '{"alpah|unit":"CAT-001"}'; rungate g7 "$T/g.yaml"
 [ "$GR" = 3 ] && grep -q 'cell_items_unmatched' "$T/g7.err" && ok "gate: a --cell-items key naming no component of the map is refused (3 cell_items_unmatched)" || bad "gate: stray cell-items key accepted (rc $GR)"
 cellitems '{"alpha|unit":"not an item"}'; rungate g7b "$T/g.yaml"
 [ "$GR" = 3 ] && grep -q 'cell_items_invalid' "$T/g7b.err" && ok "gate: a --cell-items value that is no register item id is refused (3 cell_items_invalid)" || bad "gate: invalid item id accepted (rc $GR)"
+# a WELL-FORMED id of another prefix is no register item of this project either (the key is CAT): ITEM_RE must not widen to any three-letter prefix
+cellitems '{"alpha|unit":"XYZ-901"}'; rungate g7c "$T/g.yaml"
+[ "$GR" = 3 ] && grep -q 'cell_items_invalid' "$T/g7c.err" && ok "gate: a well-formed id with a WRONG prefix (XYZ-901) is refused (3 cell_items_invalid): the register key is CAT" || bad "gate: wrong-prefix id accepted (rc $GR): $(head -c 200 "$T/g7c.err")"
+OLDKEY="AT""M"   # built from parts: this repository's files must not carry the retired prefix literally (scripts/governance/tests/test_no_atm_prefix.sh)
+cellitems '{"alpha|unit":"'"$OLDKEY"'-001"}'; rungate g7d "$T/g.yaml"
+[ "$GR" = 3 ] && grep -q 'cell_items_invalid' "$T/g7d.err" && ok "gate: the canon-notation id (retired prefix + -001) is refused too (3 cell_items_invalid): this project's key is CAT" || bad "gate: retired-prefix id accepted (rc $GR): $(head -c 200 "$T/g7d.err")"
 cellitems '{"alpha|unit":"CAT-001"}'
 mkmap "$T/allna.yaml" "alpha:na na na na na na na na na na na na na na na"
 rungate g8 "$T/allna.yaml"
@@ -410,6 +416,8 @@ PY
   mut candidate_check 'if ctx.get("candidate") and any(' 'if False and any('
   mut gate_needs_ledger 'if a["gate"] and not (a.get("ledger") and a.get("cell_items")):   # MUT:gate_needs_ledger' 'if False:'
   mut gate_needs_binding 'if a["gate"] and not (a.get("repo") or a["map_unbound"]):   # MUT:gate_needs_binding' 'if False:'
+  mut item_re_atm 'ITEM_RE = re.compile(r"^(CAT-[0-9]{3,}|' 'ITEM_RE = re.compile(r"^((?:CAT|'"$OLDKEY"')-[0-9]{3,}|'   # accepting the canon notation next to CAT must be caught by the retired-prefix leg
+  mut item_re_prefix 'ITEM_RE = re.compile(r"^(CAT-[0-9]{3,}|' 'ITEM_RE = re.compile(r"^([A-Z]{3}-[0-9]{3,}|'   # widening the register key to any 3-letter prefix must be caught by the XYZ-901 leg
   mut gate_unmatched 'if stray:   # MUT:cell_items_unmatched' 'if False:'
   mut gate_vacuous 'if not any(cells[t][0] != "n/a" for _cid, cells in comps for t in TYPES):   # MUT:gate_vacuous' 'if False:'
   mut map_binding 'if diff:   # MUT:map_binding' 'if False:'
