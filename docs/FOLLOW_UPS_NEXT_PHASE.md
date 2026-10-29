@@ -91,7 +91,16 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
 
 ## Path confinement
 - F4: TOCTOU between check and use remains open; plan `os.Root`-based sinks
-  (see `docs/security/PATH_CONFINEMENT.md` once landed).
+  (see `docs/security/PATH_CONFINEMENT.md` once landed). Named windows (review round 10, F-D):
+  WebDAV upload checks each file with `uploadableFile` at scan time, but `WebDAVClient.UploadFile`
+  (`catalog-api/services/webdav_client.go`, function at line 113, `os.Open` at line 121 at commit
+  `8e77e247`) opens it later with plain `os.Open`, without `O_NOFOLLOW`; a file or ancestor swapped
+  in between is read. The same check-then-open gap applies to the WebDAV download write, `copyFile`
+  and the `cleanupDestination` removes; all four are NARROWED by the round-9 per-file re-checks,
+  not closed.
+- Cost (review round 10, F-E): since round 9 each per-file sink confines twice (against the walk
+  root and against the configured roots), so confinement work per file is about 2x. Not measured;
+  measure on a large NAS tree before calling it acceptable.
 - Consolidate `internal/pathguard` into `internal/pathsafe` after the security series lands.
 - Review round 3, items T4 and P1: the review asked for them to be recorded here as follow-ups. Their
   content was never given to the fixer (the hand-off named only the labels), and no copy of the
@@ -140,10 +149,13 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
   and parent, mirror directory guard, WebDAV download path: sync write roots; `cleanupDestination`:
   `confineRemoval` checks each entry's parent before each `os.Remove`, and fails closed).
   What these per-file re-checks DO protect against: an ancestor swapped to a target outside the
-  configured roots before the per-file check runs. What they do NOT protect against: (a) a swap whose
-  target stays INSIDE the configured roots (a sync can then copy into, or mirror cleanup remove from,
-  another directory inside the roots); (b) a swap between a per-file check and the following
-  `open` / `remove` (the F4 race). The race is narrowed, not closed; `os.Root` remains the plan.
+  configured roots before the per-file check runs. Correction (review round 10, F-C): they also
+  refuse a swap that jumps below a DIFFERENT configured root (`prefixesStayWithin` requires the path
+  to enter a root at the root itself and never leave it), and for writes a swap to the read root
+  itself. What they do NOT protect against: (a) a swap whose target stays within the SAME checked
+  root, or points at another checked root's own top directory; (b) a swap between a per-file check
+  and the following `open` / `remove` (the F4 race). The race is narrowed, not closed; `os.Root`
+  remains the plan.
   Behaviour changes: `cleanupDestination` never removes the destination root itself (`relPath == "."`),
   and a refused remove stops the cleanup with an error; a refused WebDAV download entry counts as a
   failed file and the download continues.
@@ -160,6 +172,13 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
   (copyFile destination widened) and M9-4 (destination parent widened) each survive alone because the
   other check refuses the same swap; widening both (M9-34b) is killed. The two new tests were written
   after the fix, so their RED is shown by the mutants.
+- Round 10 (F-A): the reviewer's probes P1, P2 and P5 are adopted as
+  `catalog-api/services/read_root_distinct_test.go` (read root and sync write root are DIFFERENT
+  directories; P1/P2 are golden-FALSE). Mutants (script `mut10.py`, each restore byte-identical):
+  X1 (`syncReadRoots` returns the write roots only) killed by `TestReadRootSourceDistinctFromSyncRoot`;
+  X4 (`copyFile` write check widened to read roots), X5 (WebDAV download confine widened to read
+  roots) and X6 (`confineRemoval` widened to read roots) killed by `TestSwapToReadRootItselfIsRefused`.
+  These tests were written after the round-9 fix, so their RED is shown by the mutants.
 - Round 9 equivalent mutants named by the reviewer: N8, N14 and N16 (documented equivalents in the
   round-9 review). N6 (keep `fi.Mode()` instead of `Perm()`) is now killed by
   `TestRV9_KeptTargetModeDropsSpecialBits` (a setuid/setgid and a sticky target; that test was written
@@ -219,4 +238,9 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
   count). Safe direction; revisit only if a real client needs such paths.
 
 ## Live NAS tests
-- Two blind sleeps remain in `catalog-api/filesystem/ftp_readcloser_unit_test.go` (around lines 171 and 201).
+- FTP read-closer test leftovers (from the FTP review, recorded here as relayed; the author of this
+  entry did not see that review): M1b, the fixed 250 ms quiescence bound (`quiescenceWindow`,
+  `catalog-api/filesystem/ftp_readcloser_unit_test.go` line 113) is a timing assumption, not a
+  proven bound; O1 is open and its content was not given to the author of this entry (UNKNOWN; the
+  holder of the FTP review has to fill it in). The earlier "two blind sleeps" item is resolved and
+  removed.

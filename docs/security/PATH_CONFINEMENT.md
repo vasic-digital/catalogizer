@@ -168,13 +168,29 @@ confines against the CONFIGURED roots, which the swap does not move:
   root itself (`relPath == "."`) is never removed (behaviour change: before round 9 an empty destination
   root whose source was gone was removed).
 
-What the per-file re-checks protect against: an ancestor swap whose target is OUTSIDE the configured roots,
-done before the per-file check runs. What they do NOT protect against: a swap whose target stays INSIDE
-the configured roots (the configured-roots check passes, so files can still be copied into or removed from
-another directory inside the roots), and a swap made after a per-file check and before the matching
-`open` / `remove` (the F4 TOCTOU below). The race is narrowed, not closed; the planned fix is `os.Root`
-(F4). A symlinked NAS mount used as the configured root itself keeps working in every mode (regression
-tests `TestRV8_SymlinkedRootLayoutsKeepWorking`, `TestRV9_ConfiguredRootsCheckAdmitsLegitimateLayouts`).
+What the per-file re-checks refuse, when the swap happens before the per-file check runs:
+- an ancestor swapped to a target outside every configured root;
+- an ancestor swapped to a target BELOW a different configured root: `prefixesStayWithin` requires the
+  path to enter a root at the root itself and never leave it, so a prefix that jumps into the middle of
+  another root fails for both roots;
+- an ancestor swapped to the read root itself, for a WRITE (copy destination, WebDAV download, cleanup
+  remove): the read root enters at its root, but it is not a write root (test
+  `TestSwapToReadRootItselfIsRefused`).
+
+What they do NOT refuse:
+- a swap whose target stays inside the SAME configured root the path is checked under (a link from
+  `root/a` to `root/b`), or that points at another checked root's own top directory; such a path enters
+  and stays inside a checked root, so files can still be copied into, or removed from, another
+  directory of that root;
+- a swap made after a per-file check and before the matching `open` / `remove` (the F4 TOCTOU below).
+
+The race is narrowed, not closed; the planned fix is `os.Root` (F4). A symlinked NAS mount used as the
+configured root itself keeps working in every mode, also with read roots distinct from the sync write
+roots (regression tests `TestRV8_SymlinkedRootLayoutsKeepWorking`,
+`TestRV9_ConfiguredRootsCheckAdmitsLegitimateLayouts`, `TestReadRootSourceDistinctFromSyncRoot`,
+`TestBidirectionalReadsWriteRootWhenReadRootDiffers`). Cost: each per-file sink now runs about twice the
+confinement work (walk root plus configured roots, each resolving every path prefix); not yet measured
+on a large NAS tree (follow-up).
 
 External converters (ffmpeg, ebook-convert, ImageMagick `convert`, pandoc, LibreOffice) open their output by
 path and follow a symlink there; ImageMagick also writes derived names (`out-0.bmp`, `out-1.bmp` for
@@ -234,11 +250,11 @@ with the same grep finding the 3 real callers of `NewSyncService` (positive cont
 
 | Sink | Path source | Status |
 |---|---|---|
-| `uploadToWebDAV` -> `scanLocalFiles` walk + read | sync `local_path` | CLOSED round 5: `uploadableFile` per file (regular, `ConfineDataFile`); round 9 also confines against the configured read roots (ancestor swap, F4 residual) |
-| `downloadFromWebDAV` write | sync `local_path` + remote entry name | CLOSED: `ConfineDataFile`; entry equal to the remote path refused (round 5); round 9 also confines against the sync write roots (ancestor swap, F4 residual) |
+| `uploadToWebDAV` -> `scanLocalFiles` walk + read | sync `local_path` | NARROWED (round 9): `uploadableFile` per file (regular, `ConfineDataFile` against the walk root since round 5, and against the configured read roots since round 9). F4 residual: the file is checked at scan time, then `WebDAVClient.UploadFile` opens it with a plain `os.Open` (no `O_NOFOLLOW`) |
+| `downloadFromWebDAV` write | sync `local_path` + remote entry name | NARROWED (round 9): `ConfineDataFile` against `local_path` and, since round 9, the sync write roots; entry equal to the remote path refused (round 5); the leaf is created with `pathsafe.CreateNoFollow` (round 6). F4 residual: an ancestor swapped between the check and the create |
 | S3 / GCS upload walkers | sync `local_path` | CLOSED round 4 (`uploadableFile`); not driven end to end without a storage double (V15, see follow-ups) |
-| local mirror / incremental / bidirectional `copyFile` | `local_path`, `sync_settings` dirs | CLOSED: both sides `ConfineDataFile` (round 5; round 4 used `ConfineData`); round 9 also confines against the configured roots (ancestor swap, F4 residual) |
-| `cleanupDestination` remove | destination root | NARROWED (round 9): lexical `Walk`, `os.Remove` removes a link itself, and since round 9 each entry's parent is confined against the walk root and the sync write roots before each remove. An ancestor swapped to OUTSIDE the configured roots is refused; a swap that stays inside them, or one made between the check and the remove, is not (F4) |
+| local mirror / incremental / bidirectional `copyFile` | `local_path`, `sync_settings` dirs | NARROWED (round 9): both sides `ConfineDataFile` against the walk roots (round 5) and the configured roots (round 9). F4 residual: `os.Open` / `os.OpenFile` without `O_NOFOLLOW` after the check |
+| `cleanupDestination` remove | destination root | NARROWED (round 9): lexical `Walk`, `os.Remove` removes a link itself, and each entry's parent is confined against the walk root and the sync write roots before each remove. F4 residual: a swap between the check and the remove |
 | conversion readers / writers | `source_path`, `target_path` | CLOSED: both `ConfineDataFile` (round 5) |
 | routed `POST /copy/local` (`internal/handlers/copy.go`) | `destination_path` | CLOSED round 5: `ContainedJoin` + `ConfineDataFile` under the temp dir |
 | `asset_resolvers` cover lookup | media-item hint | SCOPED OUT: `Confine(Dir(hint))` directory argument, fixed cover file names, `Lstat` regular-file check; no hard-link check (read only) |
@@ -258,9 +274,10 @@ os\.(Create|CreateTemp|OpenFile|MkdirAll|Mkdir|MkdirTemp|Rename|WriteFile|Remove
 * Result: 129 call sites at commit `e5b65d1d` (the round-6 commit; measured with `git grep` on that
   commit, 2026-10-29). The round-6 report said 130: that count was wrong (corrected in round 7). The
   round-7 working tree has 132 (the private converter directory adds `MkdirTemp`, `RemoveAll` and `Rename`).
-  The round-9 working tree (on `b031ef41`) has 133 (round 8 added the private-directory `Chmod`); the line
-  numbers below were re-measured on that tree (evidence `sinks_rv9_counts.txt`).
-* Positive control: `services/sync_service.go` returns 7 hits (round 9: lines 396, 700, 758, 954, 966,
+  Commit `8e77e247` (review round 9) has 133 (round 8 added the private-directory `Chmod`). The line
+  numbers below are `8e77e247` line numbers; each was checked by printing the line at that commit
+  (evidence `lines_8e77e247.txt`).
+* Positive control: `services/sync_service.go` returns 7 hits (at commit `8e77e247`: lines 396, 700, 758, 954, 966,
   1010, 1016), including `os.MkdirAll(destPath` (1 hit, the mirror directory sink); an instrument that
   misses it is blind.
 * Negative control: `os\.CreateZZQ\(` returns 0 hits.
@@ -306,7 +323,7 @@ over non-test `.go` files under `catalog-api` (counts and needles: scratchpad ev
   one `runConverterTool`). Positive control: `services/conversion_service.go` gives 7, including
   `exec.Command("pandoc"`; negative control `exec\.CommandZZQ\(` gives 0.
 * Read sinks `os\.(Open|ReadFile|ReadDir|Lstat|Stat)\(|filepath\.(Walk|WalkDir)\(|ioutil\.(ReadFile|ReadDir)\(`:
-  146 call sites (147 on the round-9 tree; `services/sync_service.go` has 16 of them). Positive control:
+  146 call sites (147 at commit `8e77e247`; `services/sync_service.go` has 16 of them). Positive control:
   `services/sync_service.go` gives 6 `filepath.Walk(`; negative control `os\.OpenZZQ\(` gives 0.
 
 | Sink | Path source | Status |
@@ -315,7 +332,7 @@ over non-test `.go` files under `catalog-api` (counts and needles: scratchpad ev
 | `internal/services/cover_art_service.go:965,996,1389` (ffprobe, ffmpeg) | media item path / `cacheDir` output | read of a catalogued media path; output in `cacheDir` + generated id, NOT request-supplied |
 | `filesystem/nfs_client_darwin.go` (5: mount, umount x2, cp, mv) | admin-configured storage base | FOLLOW-UP (unchanged, same class as the write rows) |
 | `internal/infra/provisioner.go:168` `getent hosts` | configured host name | NOT a path |
-| sync walkers and readers (`services/sync_service.go`, 16 on the round-9 tree) | `local_path`, `sync_settings` dirs | CONFINED per file (rounds 4-6); symlinked ROOTS resolved since round 7 (S1) |
+| sync walkers and readers (`services/sync_service.go`, 16 at commit `8e77e247`) | `local_path`, `sync_settings` dirs | CONFINED per file (rounds 4-6); symlinked ROOTS resolved since round 7 (S1) |
 | `services/conversion_service.go` reads (`Open(SourcePath)`, `ReadFile(tempTextFile)`, `Lstat` x2) | conversion source / derived temp | CONFINED (`confineConversionPaths`, `createConversionOutput`) |
 | `handlers/conversion_handler.go:327` `Lstat(TargetPath)` | stored job | part of the round-6 download fix |
 | `internal/services/asset_resolvers.go` (6) | media-item hint | SCOPED OUT (unchanged, see round 5) |
