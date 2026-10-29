@@ -45,7 +45,7 @@ When the pin moves, regenerate the generated regions (`scripts/governance/regen_
 `scripts/containers/run_pinned.sh`): a non-zero exit blocks the pin commit. After an independently reviewed digest rewrite, the
 floor file is regenerated with `--write-floor`; lowering a floor row is a reviewed edit.
 
-## Part 1: Anchor operative digests (285 digests, one per canon block-start; the index's 288 ids add §1.1 and §2.1, digested in the constitution file's §1-§10 section, and §11.4.184(I), which continues the §11.4.184 digest)
+## Part 1: Anchor operative digests (297 digests, one per canon block-start; the index's 288 ids add §1.1 and §2.1, digested in the constitution file's §1-§10 section, and §11.4.184(I), which continues the §11.4.184 digest)
 
 ### Anti-bluff and evidence (34 anchors)
 
@@ -2898,6 +2898,7 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
   - (4) Risk-free reconciliation (§9.2/.113/.84): a mis-placed change is reconciled by MERGING its commits onto the group's canonical branch (union, no commit lost, no `-s ours`/reset), ff-only push to all upstreams (NEVER force-push), then removing it from the wrong branch only after the merge is confirmed on all mirrors.
   - Classification universal; consumer supplies `(track, branch)` map, `group_paths` seed, commit-wrapper wiring (§11.4.35). Non-compliance is a release blocker.
 - **Gates:** CM-COVENANT-114-191-PROPAGATION, CM-WORK-TRACK-BINDING-ENFORCED (paired §1.1 mutation)
+  - §11.4.288 amendment (2026-10-26): the default canonical destination of every logic group is `main`; a feature branch is canonical only for the life of a recorded vehicle; committing a group-owned file on `main` is canonical placement, not mis-placement. Registry migration (rows naming a feature branch set to `main` once it is merged and retired) is tracked as `CM-WORK-TRACK-BINDING-REGISTRY-MAIN-DEFAULT` (OWED-GATE-153); the hook and `CM-WORK-TRACK-BINDING-ENFORCED` still compare with the recorded destination (KNOWN GAP, tracked as `CM-WORK-TRACK-BINDING-HOOK-MAIN-DEFAULT-TESTED`, OWED-GATE-154); meanwhile the commit path accepts the audited `# guardrails:allow <reason>` escape with reason `§11.4.288 main-default`, the dispatch path has no escape (relabel with the registry destination). Text-only amendment; hook code unchanged.
 - **No escape hatch:** --allow-cross-track-commit, --skip-work-binding, --commit-any-branch-OK, --dispatch-any-track-OK, --no-file-scope-check
 - **Honest boundary:** none stated beyond the fail-closed/audited-escape behaviour.
 - **Composes:** §11.4.6, §11.4.28, §11.4.29, §11.4.35, §11.4.58, §11.4.75, §11.4.84, §11.4.93, §11.4.95, §11.4.109, §11.4.110, §11.4.113, §11.4.119, §11.4.167, §11.4.176, §11.4.177, §11.4.178, §11.4.181, §11.4.182, §9.2
@@ -4768,6 +4769,163 @@ floor file is regenerated with `--write-floor`; lowering a floor row is a review
 - **Composes:** §11.4.1, §11.4.6, §11.4.34, §11.4.54, §11.4.55, §11.4.66, §11.4.90, §11.4.93, §11.4.101, §11.4.102, §11.4.105, §11.4.107(10), §11.4.132, §11.4.148, §11.4.186, §11.4.189, §11.4.202, §11.4.7, §11.4.15, §11.4.33, §11.4.21, §11.4.17
 
 
+
+### Decision layer, safeguards and later covenants (12 anchors)
+
+#### §11.4.279 — Decision-model detection-first mandate (User mandate, 2026-10-07)
+- **Source:** Constitution.md §11.4.279
+- **Rules:**
+  - (A) Every project incorporating the constitution MUST run decision-model detection BEFORE the first generative-LLM invocation of any work item: `llmctl plan --json` (local `decision_instances`) and `claude-providers sync-jev` (ranked endpoint cache: local decide gateway, LAN pins, OpenRouter, TypeSafe hosted); the output is persisted as `jev-detection.json` (endpoints, per-endpoint model IDs, probe timestamps, absence reasons).
+  - (B) Detection is cheap and always-on: it MUST NOT do hosted network I/O at work-item time (TTL cache + local plan only); zero endpoints MUST yield an explicit `{"endpoints": [], "reason": "..."}` record, silent absence is a §7.1 bluff.
+  - (C) No detection, no generation claim: any session, cost or §11.4.141 token-efficiency claim that does not reference the session's `jev-detection.json` is non-compliant; zero endpoints is compliant only when the record proves the absence.
+  - (D) Gate `CM-JEV-DETECTION` asserts the detection command ran within the evidence window, the output parses and absence is reasoned; paired mutation fabricates a record with `llmctl` absent and MUST fail.
+  - (E) Operator key-file auto-discovery (mandate 2026-10-24): the operator key file (default `~/api_keys.sh`, `JEV_API_KEYS_FILE`) is read by variable NAME in a subshell, the value never printed, logged or persisted (§11.4.10); names come from the claude_toolkit pin (`TYPESAFE_API_KEY`, `OPENROUTER_API_KEY`, `LLMCTL_API_KEY`); a present non-placeholder key MUST cause detection, probing, install per the §11.4.280 consent rules and shadow-mode serving; hosted endpoints NEVER enforce; absent or placeholder key = reasoned-empty record. NO live measurement is claimed (earlier live figures UNCONFIRMED and withdrawn).
+  - Classification universal (§11.4.17); keys file, llmctl host and evidence path are DATA (§11.4.35). Non-compliance is a release blocker.
+- **Gates:** CM-COVENANT-114-279-PROPAGATION, CM-JEV-DETECTION (implemented: `scripts/gates/cm_jev_detection.sh` + mutation test)
+- **No escape hatch:** --skip-jev-detection, no env kill-switch for detection itself
+- **Composes:** §7.1, §11.4.10, §11.4.35, §11.4.141, §11.4.198, §11.4.231, §1.1
+
+#### §11.4.280 — Per-agent decision-layer installation mandate (User mandate, 2026-10-07)
+- **Source:** Constitution.md §11.4.280
+- **Rules:**
+  - (A) For every agent platform detected on the host (Claude Code, Kimi Code, pi, opencode and any platform SUPPORTED in the §11.4.228 matrix) the project MUST install the decision-layer artifacts that platform's verified mechanics allow: PreToolUse/UserPromptSubmit hook (`jev-gate.sh`), MCP registration (`jev_mcp.py`, `mcp/templates/jev-decisions.json.tmpl`), provider-alias env exports, plugin commands (`plugins/helix`) and skill `skills/jev-decision-layer/`, via the per-agent installer `jev-setup.sh` invoked by the §11.4.281 wizard.
+  - (B) Install, update and removal MUST follow §11.4.228 (provenance, symlink-preferred, closed compatibility vocabulary) and §11.4.272 (on-demand activation).
+  - (C) Honest coverage: a call class a platform cannot intercept MUST be stated verbatim as a coverage gap; claiming full coverage is a §7.1 bluff.
+  - (D) Gate `CM-JEV-WIRING` asserts per detected agent: hook entry, MCP registration, env exports and gap notes; paired mutation removes one agent's hook block and MUST fail naming it.
+  - No flag skips wiring a detected agent; uninstall is a deliberate, logged operator act (`jev-setup --uninstall`), never a side effect. Non-compliance is a release blocker.
+- **Gates:** CM-COVENANT-114-280-PROPAGATION, CM-JEV-WIRING (implemented: `scripts/gates/cm_jev_wiring.sh` + mutation test)
+- **Composes:** §7.1, §11.4.164, §11.4.228, §11.4.272, §1.1
+
+#### §11.4.281 — Bootstrap wizard and post-update auto-trigger (User mandate, 2026-10-07)
+- **Source:** Constitution.md §11.4.281
+- **Rules:**
+  - (A) `scripts/jev/bootstrap.sh` is the single master wizard: detect, provision (llmctl + claude_toolkit), detect decision models, install per-agent artifacts, configure, calibrate in shadow, enforce, reporting progress at every stage.
+  - (B) Interactive-but-automated: it MUST prompt on a TTY and MUST be fully automatable via `--non-interactive` plus `JEV_BOOTSTRAP_*` env; non-TTY without `--non-interactive` is an error, never a hang; every prompt has a flag/env equivalent.
+  - (C) `scripts/post_update_hook.sh` MUST invoke it on every constitution pull that changes the Jev extension files: guarded (opt-out marker), idempotent (second run a byte-stable no-op) and deferrable (`--defer` writes a pending stamp).
+  - (D) CLI-agent triggers `/jev_bootstrap` and `/jev_status` are generated from `actions/registry.yaml` rows (data, not code).
+  - (E) Gate `CM-JEV-BOOTSTRAP-IDEMPOTENT`: two consecutive non-interactive runs give identical state, the hook invokes the wizard, `--defer` semantics hold; paired mutation removes the hook invocation and MUST fail.
+  - Deferral is bounded and logged; silent skipping is non-compliance. Non-compliance is a release blocker.
+- **Gates:** CM-COVENANT-114-281-PROPAGATION, CM-JEV-BOOTSTRAP-IDEMPOTENT (implemented with mutation test)
+- **Composes:** §11.4.26, §11.4.32, §11.4.164, §11.4.228(D), §1.1
+
+#### §11.4.282 — Maximal decision-instance utilization (User mandate, 2026-10-07)
+- **Source:** Constitution.md §11.4.282
+- **Rules:**
+  - (A) Decision capacity is COMPUTED from `llmctl plan --json` `decision_instances` (per-profile counts under RAM/VRAM headroom) and recorded in `jev-detection.json`, never guessed.
+  - (B) When more than one decision endpoint or instance exists, decision traffic (gates, routing, scoring, calibration probes) MUST be distributed across them, local first, then LAN pins, then hosted, bounded per endpoint by the profile's `parallel` slots; one pinned endpoint used while idle local capacity exists is non-compliant.
+  - (C) Count 1 or 0 is recorded with its reason; the §11.4.231 ladder proceeds unchanged.
+  - (D) Covered by `CM-JEV-DETECTION` capacity fields and a §11.4.283 harness assertion; no separate gate code. Host-safety headroom (§12) is the ONLY legitimate limiter and §9/§12 budgets are never overridden. Non-compliance is a release blocker.
+- **Gates:** CM-COVENANT-114-282-PROPAGATION; capacity fields via CM-JEV-DETECTION
+- **Composes:** §9, §11.4.141, §11.4.231, §11.4.279, §12
+
+#### §11.4.283 — Decision-layer token-reduction proof (User mandate, 2026-10-07)
+- **Source:** Constitution.md §11.4.283
+- **Rules:**
+  - (A) Every incorporating project MUST extend its §11.4.141 BEFORE/AFTER harness with a decision-layer arm: BEFORE = frozen workload with `JEV_GATE=off`, AFTER = the identical workload with the layer active, accounted on provider `usage` fields.
+  - (B) Pass = AFTER <= BEFORE (or the declared reduction floor, DATA per §11.4.35) AND `decisions.jsonl` shows >= 1 decision served per gated tool-call class; the §11.4.141 aggregate bar stays in force.
+  - (C) `before.jsonl` / `after.jsonl` per the harness pattern; `jev-stats.sh` savings are labelled ESTIMATES and never substitute for the measured harness.
+  - (D) Gate `CM-JEV-TOKEN-REDUCTION` asserts the artifacts exist, parse, differ only in the decision arm and meet the criterion; paired mutation swaps AFTER for an inflated copy of BEFORE and MUST fail.
+  - No `--skip-token-efficiency` or analogous flag exists (§11.4.141 close inherited). Non-compliance is a release blocker.
+- **Gates:** CM-COVENANT-114-283-PROPAGATION, CM-JEV-TOKEN-REDUCTION (implemented with mutation test)
+- **No escape hatch:** --skip-token-efficiency
+- **Composes:** §11.4.35, §11.4.141, §11.4.198, §7.1, §1.1
+
+#### §11.4.284 — Decision layer as pre-ladder routing stage (amends §11.4.231) (User mandate, 2026-10-07)
+- **Source:** Constitution.md §11.4.284
+- **Rules:**
+  - (A) The decision layer runs BEFORE the §11.4.231 ladder: a judgment expressible as a typed decision (bool, choice, score) MUST be answered by a decision model; only genuinely generative work enters the ladder.
+  - (B) The closed ladder (`sonnet < opus`; `fable` not a rung; haiku context-floor prohibition) is neither extended nor weakened; decision models are not a rung, not a tier and never launchable as chat models.
+  - (C) Below its §11.4.285 threshold a decision, and only that decision, escalates to the lightest capable rung.
+  - (D) Decision models NEVER generate: no decision endpoint may be wired into any chat/provider configuration (llmctl `decide` excluded from `chat`; toolkit records carry `classification: decision` and emit no aliases); one found there is a critical defect.
+  - (E) `CM-JEV-WIRING` asserts no decision endpoint in a chat-model config. The stage has no bypass flag; zero endpoints is lawful only via the §11.4.279(B) detection record. Non-compliance is a release blocker.
+- **Gates:** CM-COVENANT-114-284-PROPAGATION; CM-JEV-WIRING covers clause (E)
+- **Composes:** §11.4.196, §11.4.231 (amends, does not repeal), §11.4.279, §11.4.285
+
+#### §11.4.285 — Traditional-LLM auto-tuning of decision thresholds, shadow-first (User mandate, 2026-10-07)
+- **Source:** Constitution.md §11.4.285
+- **Rules:**
+  - (A) The layer MUST begin in shadow mode: decisions appended to `decisions.jsonl` (state hash only, never raw state), never enforced.
+  - (B) Weekly and on demand (`jev-calibrate.sh --now`) a deterministic sample per question type is labelled by the project's main LLM at the §11.4.231 lightest-capable tier; per-type agreement is computed and per-type thresholds are written to `jev-thresholds.json` (DATA per §11.4.35).
+  - (C) A type enters enforce mode ONLY when calibrated agreement meets the declared floor (absent: 0.90) and the sample meets the declared minimum (absent: 30); below floor it stays in shadow, enforcement without calibration is non-compliance.
+  - (D) Every constitution update (via the §11.4.281 hook) and every decision-model version change MUST trigger recalibration of affected types.
+  - (E) Covered by `CM-JEV-WIRING` (thresholds file schema-valid when enforce is active). `JEV_MODE=shadow` is the only lawful alternative to calibrated enforcement. Non-compliance is a release blocker.
+- **Gates:** CM-COVENANT-114-285-PROPAGATION; thresholds schema via CM-JEV-WIRING
+- **Composes:** §7.1, §11.4.35, §11.4.231, §11.4.281
+
+#### §11.4.286 — llmctl and claude_toolkit as dependency submodules (User mandate, 2026-10-07)
+- **Source:** Constitution.md §11.4.286
+- **Rules:**
+  - (A) `llmctl` and `claude_toolkit` MUST be git submodules at `submodules/llmctl` and `submodules/claude_toolkit`, pinned in `helix-deps.yaml` (the single source of pin truth, §11.4.31), SSH-only, `conflict_resolution: operator-required`.
+  - (B) `scripts/jev/bootstrap.sh` MUST install/update them from the checkouts by invoking each tool's own installer (never reimplementing it) and MUST fall back to a managed clone at the same pinned refs when the submodule is absent.
+  - (C) A pull that advances either pin MUST mark the bootstrap pending (§11.4.281(C)).
+  - (D) `CM-JEV-DETECTION` asserts the provenance record (path, ref, source: submodule or clone). An unpinned, unprovenanced install is non-compliance. Non-compliance is a release blocker.
+- **Gates:** CM-COVENANT-114-286-PROPAGATION; provenance record via CM-JEV-DETECTION
+- **Composes:** §11.4.26, §11.4.28(C), §11.4.281, §3, §4
+
+#### §11.4.287 — Destructive-path safeguard: no agent, script, hook, test or subagent may recursively delete, re-permission or sync-delete the root, a system directory, /home, a home directory, an ancestor of it or a protected child (User mandate, 2026-10-23)
+- **Source:** Constitution.md §11.4.287
+- **Rules:**
+  - Forensic anchor (2026-10-23): a review subagent ran `W="$2"; export HOME="$W/home"; rm -rf "$HOME"` with empty arguments, `$HOME` became `/home` and a recursive delete ran against it (about 17,100 tracked files and the project `.env` lost); the harness had no target-aware guard and no rule bound scratch scripts.
+  - Terms: a DESTRUCTIVE COMMAND is recursive `rm`, `shred -r`-class, `chmod -R`, `chown -R`, `find` with `-delete` or `-exec rm`, `rsync --delete`; a PROTECTED TARGET is root, a system directory, `/home`, a home directory, `$HOME`/`~`, an ancestor of `$HOME` or a protected child (list: `scripts/lib/protected_paths.list`); a TAINTED VARIABLE derives from an unguarded positional parameter, run-time input or an expansion that can be empty.
+  - (A) PreToolUse guard `scripts/hooks/guard-destructive-paths.py` MUST be registered (by the consumer, with operator consent) for Bash, Write, Edit and MultiEdit: exit 0 allow, 2 block. CLASS P (protected target) is NEVER overridable; CLASS X (parse error, desync, degraded check, internal failure) fails closed and is NEVER overridable; CLASS H (HOME reassigned from an unguarded expansion), V (target from a tainted/empty variable) and U (code from an unreadable source) block unless a real top-level `# guardrails:allow <reason>` comment with a non-empty reason is present; a variable is guarded only by `${VAR:?}`, an exiting `[ -n "$VAR" ]` test or a literal/`mktemp` assignment.
+  - (B) Runtime helper `safe_rm_rf` (`scripts/lib/safe_rm.sh`) is the last line of defence and MUST be used by scripts that delete recursively: it refuses (rc 2, nothing deleted) any empty, option-like, relative, protected, ancestor, too-shallow or outside-allowed-roots argument, fails closed when the protected list is unreadable, validates all arguments before the first deletion, and applies each rule to the lexical and (trailing slash) resolved path.
+  - (C) Script hygiene: path variables to delete are expanded `"${VAR:?message}"`; `HOME` is never reassigned from an expansion that can be empty (use an explicit `mktemp -d` root); a deleting test runs in a sandbox it created; no recursive delete ends in a variable the script did not assign; `set -u` is necessary but not sufficient.
+  - (D) Every dispatch brief for an agent that may write scratch scripts MUST state these rules; hostile test payloads are assembled in a non-shell language, never in heredocs; the independent review of any deleting script MUST check (A) to (C) and attempt an empty-argument run in a sandbox.
+  - (E) Honest boundary: the guard is a best-effort text-scan tripwire, NOT a security boundary; it sees only Bash/Write/Edit/MultiEdit, not `NotebookEdit` or MCP shell tools, nor run-time-assembled commands; known unmodelled classes are documented in canon (bash bracket-glob negation, command-substitution evaluation, wrappers off the fixed list, interpreter shell-out, `tar --remove-files`, deep `../` chains, symlinked cwd with a glob); the structural replacement is tracked work (OWED-GATE-156 to OWED-GATE-160), not claimed done; the hook is shipped, not registered, so it protects nothing until the operator registers it.
+  - Classification universal (§11.4.17). Non-compliance is a release blocker.
+- **Gates:** CM-COVENANT-114-287-PROPAGATION, CM-GUARD-CLASS-P-NOT-OVERRIDABLE (both implemented with mutation tests); deferrals OWED-GATE-156..160: CM-GUARD-GLOB-BASH-SEMANTICS, CM-GUARD-UNCOMPUTABLE-VALUE-IS-V, CM-GUARD-WRAPPER-AGNOSTIC-EMBEDDED-COMMAND, CM-GUARD-DEEP-DOTDOT-AND-SYMLINK-GLOB, CM-SAFE-RM-PROTECTED-LIST-EQUALS-GUARD
+- **No escape hatch:** --allow-recursive-delete-of-home, --skip-destructive-path-guard, --bare-rm-of-variable-OK, --reassign-HOME-from-expansion, --delete-test-outside-sandbox, --guardrails-allow-overrides-class-P, --subagent-brief-without-delete-safety
+- **Composes:** §1.1, §9.2, §11.4.5, §11.4.6, §11.4.10, §11.4.20, §11.4.70, §11.4.109, §11.4.113, §11.4.142, §11.4.201, §11.4.209, §11.4.224, §11.4.263, §12
+
+#### §11.4.288 — All work on main, recursively (User mandate, 2026-10-26)
+- **Source:** Constitution.md §11.4.288
+- **Rules:**
+  - Mandate: all work, current and future, in the project root and every own-org submodule and constitution hub engine is made on and lands on `main` (fetch, merge onto the latest `main`, fast-forward push to every upstream, never force); a third-party submodule is consumed at a pinned ref and never committed to by us.
+  - Operator decisions (2026-10-26, relayed): (1) work lands on `main` at its source-correctness GO, §11.4.185 manual QA tests builds cut from `main` and gates the release tag, not the landing; (2) `product/` and `flavor/` lines merge to `main` and become §11.4.251 data packs; (3) a branch, worktree or clone is a VEHICLE used only when strictly necessary, landed fast-forward-only and retired before the item counts done; (4) existing off-`main` refs are merged to `main` and retired (UNCONFIRMED as a separately stated decision).
+  - (B) Direct work on `main` is the default and nothing but the §11.4.84/§11.4.121 quiescence waits holds a GO'd change off `main`; a vehicle records its necessity, merges `main` into itself, lands via `git merge --ff-only`, and before the item is reported done its unique commits (`git rev-list --count`) MUST be on `main` on every upstream, then it is retired; deleting a vehicle with unique commits is forbidden; a subagent hand-back reports vehicle, necessity, unique-commit count and landing, otherwise it is a §11.4.147 crash-class incomplete result.
+  - (C) Reconciliation: §11.4.113 stays; §11.4.188 and §11.4.181 stay for vehicles; §11.4.167(C) and §11.4.195(B)/(C) are AMENDED (approval, §11.4.40 retest and §11.4.185 live QA gate the release TAG; variants are data packs on `main`); §11.4.191 and §11.4.230(D.1) read with `main` as default; the citation "§11.4.167(I)" is corrected to (C).
+  - (D) A submodule commit is pushed to every upstream of that submodule FIRST, and in the same wave the parent records the new gitlink on the parent's `main`, recursively to the root; a recorded own-org gitlink MUST be reachable from that submodule's upstream `main`, never a vehicle-only commit; a detached checkout at such a commit is compliant.
+  - (E) Review and QA gates still apply: the review GO (§11.4.125/.142/.194 on the §11.4.209 substrate, §11.4.134, bounded by §11.4.276) is the source-correctness GO; findings after landing land as follow-up commits on `main`, never a reason to park work on a side branch.
+  - (F) Honest boundary: governs WHERE work lives, proves nothing correct, does not authorise committing to a third-party repository or deleting a ref holding unique commits.
+  - Non-compliance is a release blocker.
+- **Gates:** CM-COVENANT-114-288-PROPAGATION (implemented); deferrals OWED-GATE-150..152: CM-ALL-WORK-ON-MAIN, CM-SUBMODULE-POINTER-ON-MAIN, CM-VEHICLE-MERGED-AND-RETIRED; OWED-GATE-155: CM-PHANTOM-CLAUSE-CITATION-RESOLVES; amended gate readings: CM-BRANCH-TAXONOMY-CLASS, CM-FEATURE-WORKSTREAM-NO-MERGE-UNTIL-APPROVED
+- **No escape hatch:** --work-off-main-OK, --long-lived-branch-OK, --vehicle-without-necessity, --hold-GO-work-off-main, --qa-before-landing, --product-line-off-main, --skip-submodule-pointer-bump, --pointer-to-unmerged-commit, --bump-parent-before-submodule-push, --force-push-to-main, --delete-unmerged-vehicle, --keep-vehicle-after-done, --review-parks-work-off-main, --commit-to-third-party-submodule
+- **Composes:** §2.1, §9.2, §11.4.6, §11.4.15, §11.4.28(C), §11.4.31, §11.4.37, §11.4.40, §11.4.41, §11.4.66, §11.4.71, §11.4.84, §11.4.113, §11.4.122, §11.4.134, §11.4.142, §11.4.147, §11.4.167, §11.4.181, §11.4.185, §11.4.188, §11.4.191, §11.4.195, §11.4.197, §11.4.209, §11.4.230(D), §11.4.233(G), §11.4.251, §11.4.276, §11.4.287, §1.1
+
+#### §11.4.289 — No stubs, mocks or fixture servers as evidence: all verification is LIVE and deterministic (User mandate, 2026-10-26)
+- **Source:** Constitution.md §11.4.289
+- **Rules:**
+  - Mandate: there MUST be no stubs or mocks in LIVE, deterministic-driven testing, which is the mandatory way of testing, validating and verifying all results. EXTENDS §11.4.27(A) and §11.4.169(1) with a classification and a refusal rule, not a copy.
+  - Terms: LIVE = real artifact on a clean target, real services, network, devices, models, data and credentials (by variable name only, §11.4.10); a TEST DOUBLE is any stand-in for part of the system (mock, stub, fake, spy, fixture server, replayed traffic, simulated provider/device, canned answer, a flag making production code answer from canned data); a FIXTURE INPUT is data fed INTO the real system and is not a double; a double is defined by WHAT ANSWERS, not where it runs: a real service the test boots on demand is LIVE.
+  - (A) Verification is LIVE-class only; determinism = N >= 3 identical results against the same real artifact fingerprint, device and topology (§11.4.50), obtained by controlling inputs and timing, never by replacing the system.
+  - (B) A run answered in whole or part by a double is UNIT-CLASS (or gate-logic) and can never prove a feature, service, model, endpoint or device works; presenting it under a live label is a §11.4 PASS-bluff at the evidence-class layer (§11.4.226).
+  - (C) Doubles stay legal ONLY in unit tests, tests of a gate's own logic (golden-good/bad, controls, mutations), fixture inputs fed to the real system and hostile-text payloads (§11.4.287(D)); a fixture server standing in for the system under test is never legal.
+  - (D) A live-labelled result MUST carry machine fields proving a real target: fingerprint read from the target, endpoint identity reached, provider response ids/model id/usage, timestamp, producing command, and for loopback/bridge/socket endpoints the answering pid + executable hash or image digest; reclassified UNIT-CLASS when the executable/image is a registered double, its identity does not match the claimed artifact, answers come from recorded data, or identity is absent or unresolvable (conservative default); loopback or test-started alone is NOT disqualifying.
+  - (E) A missing real dependency yields SKIP-with-reason (closed codes, §11.4.3/§11.4.69) plus a tracked §11.4.197 item, NEVER a stand-in; no retry-until-green; a SKIP is never counted as a PASS.
+  - (F) A double reachable from production code or imported by a non-unit test is a release blocker; a canned-answer/simulate mode is a double and can never be the evidence-gathering mode.
+  - (G) Paid/hosted services: use the real service with minimal bounded calls (budget as DATA, credentials by name); if genuinely impossible, SKIP + owner decision; a provider-operated documented test mode is real, a project-built imitation is a double.
+  - (H) Reviewers MUST check evidence class against the claim, resolve what actually answered, and attempt a disconnection/redirection mutation the author did not write.
+  - (I) The decision-layer (Jev) fixture servers and `tests/jev/` suites are GATE-LOGIC UNIT TESTS and MUST NOT be cited as proof that a decision model, gateway, hosted endpoint, calibration or token saving works.
+  - (J) Honest boundary: classifies and refuses misclassified evidence, does not make a live run correct; the field check can be forged by a producer, bounded by §11.4.115(F), §11.4.240 and §11.4.268.
+  - Non-compliance is a release blocker.
+- **Gates:** CM-COVENANT-114-289-PROPAGATION (implemented), CM-NO-FAKES-BEYOND-UNIT-TESTS (contract extended); deferrals OWED-GATE-161..164: CM-NO-STUB-IN-LIVE-EVIDENCE, CM-LIVE-EVIDENCE-HAS-REAL-TARGET-FIELDS, CM-LIVE-DEPENDENCY-ABSENT-IS-SKIP-NOT-STUB, CM-FIXTURE-SERVER-CLASSIFIED-UNIT
+- **No escape hatch:** --stub-OK-for-live-test, --mock-the-provider, --fixture-server-as-evidence, --recorded-replay-as-live, --simulated-device-as-pass, --substitute-when-dependency-missing, --label-unit-run-as-live, --live-claim-without-target-fields, --canned-answer-mode-for-evidence, --double-in-production-path, --cite-jev-fixture-as-decision-proof, --retry-real-dependency-until-green-and-hide-failures
+- **Composes:** §1.1, §11.4, §11.4.3, §11.4.5, §11.4.6, §11.4.10, §11.4.27, §11.4.35, §11.4.50, §11.4.66, §11.4.69, §11.4.107(10), §11.4.108, §11.4.115(F), §11.4.141, §11.4.142, §11.4.169, §11.4.185, §11.4.194(6), §11.4.197, §11.4.200, §11.4.201, §11.4.202, §11.4.209, §11.4.226, §11.4.235(E), §11.4.236, §11.4.240, §11.4.248, §11.4.259, §11.4.262, §11.4.266, §11.4.267, §11.4.268, §11.4.273, §11.4.277, §11.4.278, §11.4.279, §11.4.287(D)
+
+#### §11.4.290 — Optimistic done with parallel background verification: PROVISIONAL-DONE vs VERIFIED-DONE (User mandate, 2026-10-27)
+- **Source:** Constitution.md §11.4.290
+- **Rules:**
+  - Mandate (2026-10-27): mark things done optimistically and release ASAP, but validate and verify against machine evidence ALWAYS in parallel in the background; on trouble, reopen; until proved not done, consider it done.
+  - Two labelled states, never conflated: PROVISIONAL-DONE (implemented AND wired per §11.4.197, a verification job already scheduled; counts as done for planning, roadmap and release scope, NEVER called verified, fixed or passing) and VERIFIED-DONE (§11.4.108 runtime signature on a clean target, evidence at the §11.4.226 class floor, §11.4.123 proof; the only state the words fixed, verified, passing may describe). The Status closed set (§11.4.15/.33) is unchanged: PROVISIONAL-DONE rides on `Ready for testing` / `In testing` plus a required `**Verification:** provisional ...` line and never appears in the Fixed file.
+  - (1) The verification job is scheduled at the moment of marking, or the item stays `In progress`.
+  - (2) Contrary evidence (a check of at least the declared layer's class FAILing on an artifact carrying the fix, same target, control-needled instrument) reopens the item AUTOMATICALLY with `Reopened-Details` and an evidence path, NEVER silently; a RED on a pre-fix artifact, a wrong target/fingerprint, a BLIND or erroring instrument, or a lower evidence class is NOT contrary evidence.
+  - (3) An overdue job neither promotes nor demotes: the item stays PROVISIONAL-DONE labelled `verification OVERDUE` and is re-run first.
+  - (4) Every report states "V verified + P provisional (O overdue)", never a bare "N done".
+  - (5) A release may ship on PROVISIONAL-DONE work in provisional-eligible classes (consumer DATA, default dev and pre-release) and its changelog MUST list VERIFIED, PROVISIONAL, REOPENED and OVERDUE separately.
+  - It relaxes no verdict-absence seam (§11.4.115(F) / §11.4.135 / §11.4.236; only §11.4.236(4) or §11.4.271 do) nor §7.1 / §11.4.1 / §11.4.6 / §9 / §12; the item-level seam (tracker field, scheduler, auto-reopen) is each consumer's own tracked work and is not claimed shipped. Non-compliance is a release blocker.
+- **Gates:** CM-COVENANT-114-290-PROPAGATION, CM-PROVISIONAL-DONE-ANCHOR-WIRED (paired §1.1 mutation)
+- **No escape hatch:** --provisional-counts-as-verified, --skip-verification-job, --silent-reopen, --hide-provisional-in-changelog, --promote-on-timeout, --unlabelled-done-count
+- **Composes:** §11.4.15, §11.4.33, §11.4.108, §11.4.123, §11.4.197, §11.4.226, §11.4.115(F), §11.4.135, §11.4.236, §11.4.271, §7.1, §11.4.1, §11.4.6, §9, §12
 
 ## Part 2: Project and module override digests
 
