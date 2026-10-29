@@ -140,8 +140,36 @@ and every file read or written is re-checked with `ConfineDataFile` against its 
 planted in a destination does not redirect a copy, and a hard link of the database planted in a source is
 not uploaded. The WebDAV upload walker (`scanLocalFiles`) was missed in round 4 and still uploaded
 symlinked and hard-linked files until round 5 (RV5-A). A LibreOffice HTML conversion now renames the file LibreOffice wrote
-in the output directory; before round 4 it renamed `<source>.html` next to the input, i.e. it could move a
+in its output directory; before round 4 it renamed `<source>.html` next to the input, i.e. it could move a
 file out of the read root.
+
+A sync ROOT that is itself a symlink to a directory (local mirror / incremental / bidirectional source and
+destination, WebDAV / S3 / GCS upload source) is resolved with `filepath.EvalSymlinks` before it is walked
+(review round 7, S1). `filepath.Walk` `Lstat`s its root, reports a symlinked root as the link and never
+descends, so until round 7 such a sync "succeeded" with 0 files. Entries met INSIDE the walk are still
+handled as above (links skipped).
+
+External converters (ffmpeg, ebook-convert, ImageMagick `convert`, pandoc, LibreOffice) open their output by
+path and follow a symlink there; ImageMagick also writes derived names (`out-0.bmp`, `out-1.bmp` for
+multi-frame input) and ffmpeg / ImageMagick expand `%d` patterns. Since review round 7 (S2) every such tool
+writes into a fresh private 0700 directory created next to the target (`.catalogizer-conv-*`, inside the
+conversion write roots); afterwards every entry it produced must be a regular file, every destination
+`Dir(target)/<name>` must pass `ConfineDataFile` and must not already be a link, FIFO or directory, and only
+then are the files renamed into place (`rename(2)` never follows a link at the destination). All entries are
+checked before the first is moved, a tool failure publishes nothing, and the private directory is removed.
+Proven with fake tools (unit class) and with the real ImageMagick 7.1.2 on the host: real `convert two.gif
+out.bmp` with `out-0.bmp` planted as a link to an outside file overwrites that file on the round-6 code and is
+refused on the round-7 code. What this does NOT close: a directory component of the target (`Dir(target)`)
+swapped for a symlink between the check and `MkdirTemp` / `rename` (the F4 TOCTOU below), and files a tool
+writes OUTSIDE its output directory by its own logic (none of the five is known to; not verified for every
+option).
+
+Not refused: a write through a HARD LINK to an arbitrary file outside the roots. A hard link inside a write
+root is a regular file there, so every check above passes and the write lands in the shared inode. Only
+links to the protected database / key files are caught (`os.SameFile`, above). Exposure is limited by the
+kernel setting `fs.protected_hardlinks=1` (default on most Linux distributions), which stops an unprivileged
+user from hard-linking a file it does not own or cannot read and write; a file the service user itself owns
+can still be linked. Not fixed; tracked in `docs/FOLLOW_UPS_NEXT_PHASE.md`.
 
 `./data/catalogizer.db` is protected even if the server never registers it; at boot the configured
 database path and key file are added (if the key file location cannot be determined, a warning is
@@ -182,7 +210,9 @@ Grep over non-test `.go` files under `catalog-api` (`grep -rnE --include=*.go`, 
 os\.(Create|CreateTemp|OpenFile|MkdirAll|Mkdir|MkdirTemp|Rename|WriteFile|Remove|RemoveAll|Symlink|Link|Chmod|Chtimes|Truncate)\(|\.File\(|\.FileAttachment\(|SaveUploadedFile\(
 ```
 
-* Result: 130 call sites (measured 2026-10-29 on this branch before the round-6 fixes were committed).
+* Result: 129 call sites at commit `e5b65d1d` (the round-6 commit; measured with `git grep` on that
+  commit, 2026-10-29). The round-6 report said 130: that count was wrong (corrected in round 7). The
+  round-7 working tree has 132 (the private converter directory adds `MkdirTemp`, `RemoveAll` and `Rename`).
 * Positive control: `services/sync_service.go` returns 7 hits, including `os.MkdirAll(destPath` (the
   mirror directory sink this round fixed); an instrument that misses it is blind.
 * Negative control: `os\.CreateZZQ\(` returns 0 hits.
@@ -202,7 +232,8 @@ Rows are grouped by class; every hit belongs to exactly one row.
 | `services/sync_service.go:919,925` `Remove` | `cleanupDestination` | lexical walk, removes a link itself |
 | `services/webdav_client.go:137,149` `DownloadFile` | confined `localPath` from `downloadFromWebDAV`; `DownloadBatch`/`SyncDirectory` unreachable | FIXED round 6: `pathsafe.CreateNoFollow` (a symlink planted at the leaf after confinement is refused) |
 | `services/conversion_service.go` per-page writes, `.tmp.txt`, final HTML write | conversion target | FIXED round 6: `createConversionOutput` = `ConfineDataFile` against `ConversionWriteRoots()` + `pathsafe.CreateNoFollow`; HTML fallback checks the target leaf before any tool runs |
-| `services/conversion_service.go:824` LibreOffice `Rename` | tool output next to target | FIXED round 6: `moveLibreOfficeOutput` (`Lstat` regular file, both sides `ConfineDataFile`) |
+| `services/conversion_service.go:824` LibreOffice `Rename` | tool output next to target | FIXED round 6: `moveLibreOfficeOutput` (`Lstat` regular file, both sides `ConfineDataFile`); since round 7 both names are inside the private converter directory |
+| external tools (ffmpeg, ebook-convert, ImageMagick, pandoc, LibreOffice) writing target / derived names | conversion target | FIXED round 7 (S2): private directory + publish of regular files only. Round 6 checked only the HTML path, so the derived writes were NOT closed in round 6, contrary to the round-6 commit wording |
 | `services/conversion_service.go:459` `Remove(tempTextFile)` | derived temp file | removes the link itself, never its target |
 | `internal/handlers/copy.go:165` | routed `POST /copy/local` | CONFINED round 5 |
 | `internal/handlers/copy.go:253,259`, `internal/handlers/download.go` (8), `handlers/comic_pages_handler.go`, `handlers/pdf_pages_handler.go`, `internal/services/smb.go:317,321`, `internal/services/cover_art_service.go:1357,1364,1413,1275` | `os.CreateTemp` names | NOT request-supplied (temp files) |
@@ -216,6 +247,33 @@ Rows are grouped by class; every hit belongs to exactly one row.
 | `main.go` (5), `config/config.go` (2), `services/configuration_service.go` (2), `handlers/admin_handler.go:409`, `internal/media/manager.go:583`, `services/log_management_service.go:695,710` | server configuration / log directory walk | NOT request-supplied |
 | `internal/pathsafe/pathsafe.go:132` | the no-follow helper itself | helper |
 | `tests/automation/*.go`, `tests/test_utils.go`, `tests/test_main.go` | test harness (non-`_test` files) | NOT shipped behaviour |
+
+## Sink inventory (review round 7: process and read sinks)
+
+The round-6 pattern covered writes only. Two more classes, measured on commit `e5b65d1d` with `git grep -nE`
+over non-test `.go` files under `catalog-api` (counts and needles: scratchpad evidence `sinks_rv7_counts.txt`):
+
+* `exec\.Command(Context)?\(`: 16 call sites (10 in the round-7 working tree; the 7 conversion calls became
+  one `runConverterTool`). Positive control: `services/conversion_service.go` gives 7, including
+  `exec.Command("pandoc"`; negative control `exec\.CommandZZQ\(` gives 0.
+* Read sinks `os\.(Open|ReadFile|ReadDir|Lstat|Stat)\(|filepath\.(Walk|WalkDir)\(|ioutil\.(ReadFile|ReadDir)\(`:
+  146 call sites. Positive control: `services/sync_service.go` gives 6 `filepath.Walk(`; negative control
+  `os\.OpenZZQ\(` gives 0.
+
+| Sink | Path source | Status |
+|---|---|---|
+| `services/conversion_service.go` 7 `exec.Command` (ffmpeg x2, ebook-convert, pandoc, libreoffice, convert x2) | conversion source / target | FIXED round 7 (S2), see above; the source is confined by `confineConversionPaths` |
+| `internal/services/cover_art_service.go:965,996,1389` (ffprobe, ffmpeg) | media item path / `cacheDir` output | read of a catalogued media path; output in `cacheDir` + generated id, NOT request-supplied |
+| `filesystem/nfs_client_darwin.go` (5: mount, umount x2, cp, mv) | admin-configured storage base | FOLLOW-UP (unchanged, same class as the write rows) |
+| `internal/infra/provisioner.go:168` `getent hosts` | configured host name | NOT a path |
+| sync walkers and readers (`services/sync_service.go`, 17) | `local_path`, `sync_settings` dirs | CONFINED per file (rounds 4-6); symlinked ROOTS resolved since round 7 (S1) |
+| `services/conversion_service.go` reads (`Open(SourcePath)`, `ReadFile(tempTextFile)`, `Lstat` x2) | conversion source / derived temp | CONFINED (`confineConversionPaths`, `createConversionOutput`) |
+| `handlers/conversion_handler.go:327` `Lstat(TargetPath)` | stored job | part of the round-6 download fix |
+| `internal/services/asset_resolvers.go` (6) | media-item hint | SCOPED OUT (unchanged, see round 5) |
+| `internal/handlers/copy.go:158`, `internal/services/smb.go:285` | confined copy destination / temp file | CONFINED by caller |
+| `services/webdav_client.go` (3), `handlers/copy.go:475`, `internal/media/realtime/enhanced_watcher.go` (3) | `DownloadFile` confined local path; `SyncDirectory`, unrouted `CopyHandler`, `NewEnhancedChangeWatcher` | CONFINED by caller / UNREACHABLE (no production caller) |
+| `handlers/admin_handler.go` (4) | admin backup dir, database path | admin-supplied, NOT request-supplied |
+| remaining (database/encryption, config, main, challenges, cover-art cache, media recognition, log management, filesystem clients, pathguard / pathsafe, tests harness) | server configuration, operator CLI, admin-configured storage base, test harness | NOT request-supplied, or the filesystem-client FOLLOW-UP |
 
 ## WebDAV listing limits
 
@@ -235,8 +293,9 @@ could still force about 2^33 requests, so the round-1 commit message's "bounded"
 * The old default `./data/sync` is now `./data`.
 * A sync whose `local_path` (or `source_directory`) is a single regular FILE rather than a directory is
   refused LOUDLY since round 6, in every mode: a local sync fails with `source path is not a directory`;
-  WebDAV, S3 and GCS uploads fail with `upload source "<path>" is not a directory` (a missing source fails
-  with `upload source "<path>": ...`) before any remote client is created; mirror and `copyFile` refuse a
+  WebDAV, S3 and GCS uploads fail with `upload source "<path>": is not a directory` (round-7 wording; round 6
+  printed it without the colon; a missing source fails with `upload source "<path>": ...`) before any remote
+  client is created; mirror and `copyFile` refuse a
   single-file root as "the root itself". Round 5 made the uploads copy nothing while reporting success
   (0 files); that silent outcome is gone. Point the endpoint at the directory that holds the file.
 * A conversion whose `target_path` (or `source_path`) is a configured root itself, and a
@@ -253,5 +312,6 @@ Storage roots registered at run time (through the storage-roots API) are not rea
 `Confine` validates then the caller opens by path; a symlink swapped in between validation and use is not closed.
 Proper fix: open through `os.Root` (Go 1.24+) at the sinks - `performLocalSync` / mirror / incremental / bidirectional
 copy+delete, `downloadFromWebDAV`, `uploadToWebDAV` (`scanLocalFiles`), S3/GCS `filepath.Walk`, conversion readers/writers
-(ffmpeg/ebook/text), `LocalScanResolver` open, admin restore. Consolidation of `pathguard` into `internal/pathsafe`
+(the text writer; the external-tool outputs go through a private directory since round 7, but `Dir(target)` itself
+can still be swapped), `LocalScanResolver` open, admin restore. Consolidation of `pathguard` into `internal/pathsafe`
 is a separate later step.

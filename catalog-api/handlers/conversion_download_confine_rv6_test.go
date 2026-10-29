@@ -27,6 +27,13 @@ func TestDownloadJobFile_RV6_ServesOnlyConfinedRegularFiles(t *testing.T) {
 	require.NoError(t, os.MkdirAll(root, 0o755))
 	require.NoError(t, os.MkdirAll(outside, 0o755))
 	t.Setenv(pathguard.EnvConversionRoots, root)
+	// T1 (review round 7): a file in a READ root that is not a conversion write root is not a
+	// conversion output and must not be served by the download endpoint.
+	readRoot := filepath.Join(base, "media")
+	require.NoError(t, os.MkdirAll(readRoot, 0o755))
+	t.Setenv(pathguard.EnvReadRoots, readRoot)
+	mediaFile := filepath.Join(readRoot, "media.txt")
+	require.NoError(t, os.WriteFile(mediaFile, []byte("TOPSECRET-MEDIA"), 0o644))
 	secret := filepath.Join(outside, "secret.txt")
 	require.NoError(t, os.WriteFile(secret, []byte("TOPSECRET"), 0o600))
 	good := filepath.Join(root, "good.txt")
@@ -58,6 +65,7 @@ func TestDownloadJobFile_RV6_ServesOnlyConfinedRegularFiles(t *testing.T) {
 		{"symlink-in-root", link},
 		{"root-itself", root},
 		{"in-root-symlink", inRootLink},
+		{"read-root-not-conversion-root", mediaFile},
 	} {
 		w := run(tc.target)
 		assert.NotEqual(t, http.StatusOK, w.Code, tc.name)

@@ -291,10 +291,11 @@ func (s *SyncService) performWebDAVSync(session *models.SyncSession, endpoint *m
 }
 
 func (s *SyncService) uploadToWebDAV(session *models.SyncSession, endpoint *models.SyncEndpoint, client *WebDAVClient) error {
-	if err := requireUploadSourceDir(endpoint.LocalPath); err != nil {
+	sourceRoot, err := requireUploadSourceDir(endpoint.LocalPath)
+	if err != nil {
 		return err
 	}
-	localFiles, err := s.scanLocalFiles(endpoint.LocalPath)
+	localFiles, err := s.scanLocalFiles(sourceRoot)
 	if err != nil {
 		return fmt.Errorf("failed to scan local files: %w", err)
 	}
@@ -303,7 +304,7 @@ func (s *SyncService) uploadToWebDAV(session *models.SyncSession, endpoint *mode
 	s.syncRepo.UpdateSession(session)
 
 	for _, localFile := range localFiles {
-		relativePath, err := filepath.Rel(endpoint.LocalPath, localFile)
+		relativePath, err := filepath.Rel(sourceRoot, localFile)
 		if err != nil {
 			continue
 		}
@@ -691,8 +692,12 @@ func (s *SyncService) performLocalSync(session *models.SyncSession, endpoint *mo
 
 // performMirrorSync creates exact copy of source in destination
 func (s *SyncService) performMirrorSync(sourceDir, destDir string, session *models.SyncSession) error {
+	sourceDir, destDir, err := resolveSyncRoots(sourceDir, destDir)
+	if err != nil {
+		return err
+	}
 	// Walk through source directory
-	err := filepath.Walk(sourceDir, func(sourcePath string, info os.FileInfo, err error) error {
+	err = filepath.Walk(sourceDir, func(sourcePath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -766,8 +771,12 @@ func (s *SyncService) performMirrorSync(sourceDir, destDir string, session *mode
 
 // performIncrementalSync only copies newer or missing files
 func (s *SyncService) performIncrementalSync(sourceDir, destDir string, session *models.SyncSession) error {
+	sourceDir, destDir, err := resolveSyncRoots(sourceDir, destDir)
+	if err != nil {
+		return err
+	}
 	// Walk through source directory
-	err := filepath.Walk(sourceDir, func(sourcePath string, info os.FileInfo, err error) error {
+	err = filepath.Walk(sourceDir, func(sourcePath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -1218,11 +1227,9 @@ func (s *SyncService) getWebDAVClient(endpoint *models.SyncEndpoint) (*WebDAVCli
 	return client, nil
 }
 
-// scanLocalFiles lists the files the WebDAV upload sends. Only uploadableFile entries are listed:
-// the upload opens each path with os.Open, which follows a symlink planted in the source and
-// reads a hard link of the database (review round 5, RV5-A; the other walkers got this in round 4).
 // uploadSourceDir returns the directory an S3 or GCS upload walks: source_directory from the
-// sync settings, else local_path. It must exist and be a directory (review round 6, F3).
+// sync settings, else local_path. It must exist and be a directory (review round 6, F3); the
+// returned path is the resolved directory, so a symlinked source is walked (review round 7, S1).
 func uploadSourceDir(syncConfig map[string]interface{}, endpoint *models.SyncEndpoint) (string, error) {
 	sourceDir, ok := syncConfig["source_directory"].(string)
 	if !ok {
@@ -1231,27 +1238,61 @@ func uploadSourceDir(syncConfig map[string]interface{}, endpoint *models.SyncEnd
 			return "", fmt.Errorf("source directory not specified")
 		}
 	}
-	if err := requireUploadSourceDir(sourceDir); err != nil {
-		return "", err
-	}
-	return sourceDir, nil
+	return requireUploadSourceDir(sourceDir)
 }
 
 // requireUploadSourceDir refuses an upload source that is missing or is not a directory. The
 // walkers below accept a regular-file root and then skip it, which reported a successful sync
 // of zero files; the local driver already refused this case ("source path is not a
-// directory").
-func requireUploadSourceDir(dir string) error {
-	fi, err := os.Stat(dir)
+// directory"). It returns the resolved directory: filepath.Walk reports a symlinked root as the
+// link itself and does not descend, so walking the unresolved path uploaded zero files and
+// reported success (review round 7, S1).
+func requireUploadSourceDir(dir string) (string, error) {
+	resolved, err := resolveWalkRoot(dir)
 	if err != nil {
-		return fmt.Errorf("upload source %q: %w", dir, err)
+		return "", fmt.Errorf("upload source %q: %w", dir, err)
 	}
-	if !fi.IsDir() {
-		return fmt.Errorf("upload source %q is not a directory", dir)
-	}
-	return nil
+	return resolved, nil
 }
 
+// resolveWalkRoot resolves every symlink in dir (the walk then visits the directory the path
+// names) and refuses anything that is not a directory. The caller has already confined dir;
+// EvalSymlinks lands where that resolution landed.
+func resolveWalkRoot(dir string) (string, error) {
+	resolved, err := filepath.EvalSymlinks(dir)
+	if err != nil {
+		return "", err
+	}
+	fi, err := os.Stat(resolved)
+	if err != nil {
+		return "", err
+	}
+	if !fi.IsDir() {
+		return "", fmt.Errorf("is not a directory")
+	}
+	return resolved, nil
+}
+
+// resolveSyncRoots resolves the source root (it must be a directory) and, when it exists, the
+// destination root of a local sync, so neither walk skips a symlinked root (review round 7, S1).
+func resolveSyncRoots(sourceDir, destDir string) (string, string, error) {
+	src, err := resolveWalkRoot(sourceDir)
+	if err != nil {
+		return "", "", fmt.Errorf("source directory %q: %w", sourceDir, err)
+	}
+	if _, lerr := os.Lstat(destDir); lerr == nil {
+		dst, derr := resolveWalkRoot(destDir)
+		if derr != nil {
+			return "", "", fmt.Errorf("destination directory %q: %w", destDir, derr)
+		}
+		destDir = dst
+	}
+	return src, destDir, nil
+}
+
+// scanLocalFiles lists the files the WebDAV upload sends. Only uploadableFile entries are listed:
+// the upload opens each path with os.Open, which follows a symlink planted in the source and
+// reads a hard link of the database (review round 5, RV5-A; the other walkers got this in round 4).
 func (s *SyncService) scanLocalFiles(path string) ([]string, error) {
 	var files []string
 

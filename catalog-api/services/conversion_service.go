@@ -5,6 +5,7 @@ import (
 	"catalogizer/internal/pathsafe"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"image/jpeg"
 	"image/png"
@@ -141,32 +142,26 @@ func (s *ConversionService) processConversion(job *models.ConversionJob) {
 }
 
 func (s *ConversionService) convertVideo(job *models.ConversionJob) error {
-	args := s.buildFFmpegVideoArgs(job)
-
-	cmd := exec.Command("ffmpeg", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
+	err := runConverterInPrivateDir(job.TargetPath, func(out string) error {
+		j := *job
+		j.TargetPath = out
+		return runConverterTool("ffmpeg", s.buildFFmpegVideoArgs(&j))
+	})
 	if err != nil {
 		return fmt.Errorf("ffmpeg video conversion failed: %w", err)
 	}
-
 	return nil
 }
 
 func (s *ConversionService) convertAudio(job *models.ConversionJob) error {
-	args := s.buildFFmpegAudioArgs(job)
-
-	cmd := exec.Command("ffmpeg", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
+	err := runConverterInPrivateDir(job.TargetPath, func(out string) error {
+		j := *job
+		j.TargetPath = out
+		return runConverterTool("ffmpeg", s.buildFFmpegAudioArgs(&j))
+	})
 	if err != nil {
 		return fmt.Errorf("ffmpeg audio conversion failed: %w", err)
 	}
-
 	return nil
 }
 
@@ -182,32 +177,26 @@ func (s *ConversionService) convertDocument(job *models.ConversionJob) error {
 }
 
 func (s *ConversionService) convertEbook(job *models.ConversionJob) error {
-	args := []string{
-		job.SourcePath,
-		job.TargetPath,
-	}
+	var opts []string
 
 	if job.Settings != nil {
 		settings := make(map[string]interface{})
 		if err := json.Unmarshal([]byte(*job.Settings), &settings); err == nil {
 			if cover, ok := settings["preserve_cover"].(bool); ok && cover {
-				args = append(args, "--preserve-cover")
+				opts = append(opts, "--preserve-cover")
 			}
 			if metadata, ok := settings["preserve_metadata"].(bool); ok && metadata {
-				args = append(args, "--preserve-metadata")
+				opts = append(opts, "--preserve-metadata")
 			}
 		}
 	}
 
-	cmd := exec.Command("ebook-convert", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
+	err := runConverterInPrivateDir(job.TargetPath, func(out string) error {
+		return runConverterTool("ebook-convert", append([]string{job.SourcePath, out}, opts...))
+	})
 	if err != nil {
 		return fmt.Errorf("ebook conversion failed: %w", err)
 	}
-
 	return nil
 }
 
@@ -397,53 +386,37 @@ func (s *ConversionService) convertPDFToText(job *models.ConversionJob) error {
 
 // convertPDFToHTML converts PDF to HTML using external tools
 func (s *ConversionService) convertPDFToHTML(job *models.ConversionJob) error {
-	// pandoc writes the target and LibreOffice writes <base>.html beside it; neither refuses a
-	// symlink planted there, so both are checked before the tools run (review round 6, F4).
+	// pandoc and LibreOffice each run in their own private directory and only regular files are
+	// moved into place (review round 7, S2). A link, FIFO or directory already at the target is
+	// refused before any tool runs (review round 6, F4).
 	if err := refuseNonRegularLeaf(job.TargetPath); err != nil {
 		return err
 	}
-	if err := refuseNonRegularLeaf(libreOfficeHTMLOutput(job.SourcePath, job.TargetPath)); err != nil {
+	// Try pandoc first for HTML conversion
+	err := runConverterInPrivateDir(job.TargetPath, func(out string) error {
+		return runConverterTool("pandoc", []string{"-f", "pdf", "-t", "html", "-o", out, job.SourcePath})
+	})
+	if err == nil {
+		return nil
+	}
+	if !isConverterToolError(err) {
 		return err
 	}
-	// Try pandoc first for HTML conversion
-	args := []string{
-		"-f", "pdf",
-		"-t", "html",
-		"-o", job.TargetPath,
-		job.SourcePath,
-	}
 
-	cmd := exec.Command("pandoc", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
-	if err == nil {
-		return nil
-	}
-
-	// Fallback to LibreOffice if pandoc is not available
-	args = []string{
-		"--headless",
-		"--convert-to", "html",
-		"--outdir", filepath.Dir(job.TargetPath),
-		job.SourcePath,
-	}
-
-	cmd = exec.Command("libreoffice", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Run()
-	if err == nil {
-		// LibreOffice might create a different filename, rename if needed
-		libreOutput := libreOfficeHTMLOutput(job.SourcePath, job.TargetPath)
-		if err := moveLibreOfficeOutput(libreOutput, job.TargetPath); err != nil {
-			if logging.Logger != nil {
-				logging.With(logging.ErrorField(err)).Warn("Failed to rename LibreOffice output")
-			}
+	// Fallback to LibreOffice if pandoc is not available. It names its output after the source,
+	// in --outdir; that file is renamed to the target's name inside the private directory.
+	err = runConverterInPrivateDir(job.TargetPath, func(out string) error {
+		priv := filepath.Dir(out)
+		if err := runConverterTool("libreoffice", []string{"--headless", "--convert-to", "html", "--outdir", priv, job.SourcePath}); err != nil {
+			return err
 		}
+		return moveLibreOfficeOutput(libreOfficeHTMLOutput(job.SourcePath, out), out)
+	})
+	if err == nil {
 		return nil
+	}
+	if !isConverterToolError(err) {
+		return err
 	}
 
 	// Last resort: try to convert PDF to text then wrap in HTML
@@ -515,32 +488,24 @@ func (s *ConversionService) convertPDFWithImageMagick(job *models.ConversionJob,
 		}
 	}
 
-	args = append(args, job.TargetPath)
-
-	cmd := exec.Command("convert", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
+	err := runConverterInPrivateDir(job.TargetPath, func(out string) error {
+		return runConverterTool("convert", append(append([]string(nil), args...), out))
+	})
 	if err != nil {
 		return fmt.Errorf("imagemagick PDF conversion failed: %w", err)
 	}
-
 	return nil
 }
 
 func (s *ConversionService) convertImage(job *models.ConversionJob) error {
-	args := s.buildImageMagickArgs(job)
-
-	cmd := exec.Command("convert", args...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
+	err := runConverterInPrivateDir(job.TargetPath, func(out string) error {
+		j := *job
+		j.TargetPath = out
+		return runConverterTool("convert", s.buildImageMagickArgs(&j))
+	})
 	if err != nil {
 		return fmt.Errorf("imagemagick conversion failed: %w", err)
 	}
-
 	return nil
 }
 
@@ -796,11 +761,8 @@ func (s *ConversionService) GetSupportedFormats() *models.SupportedFormats {
 	}
 }
 
-// libreOfficeHTMLOutput is where "libreoffice --convert-to html --outdir Dir(target) source"
-// writes: the source's base name with .html, in the output directory. It used to be computed
-// next to the SOURCE, so an unrelated <source>.html in the read root was renamed onto the
-// target, i.e. moved out of the read root (review round 4).
-// moveLibreOfficeOutput renames the file LibreOffice wrote beside the target into place. Only a
+// moveLibreOfficeOutput renames the file LibreOffice wrote to the target's name (since review
+// round 7 both paths lie in the private converter directory). Only a
 // regular file inside the conversion write roots is moved: renaming a planted symlink over the
 // target would make the download handler serve the link's target (review round 6, F4).
 func moveLibreOfficeOutput(libreOutput, target string) error {
@@ -822,6 +784,91 @@ func moveLibreOfficeOutput(libreOutput, target string) error {
 		return fmt.Errorf("target path %q rejected: %w", target, err)
 	}
 	return os.Rename(libreOutput, target)
+}
+
+// converterToolError marks a failure of the external tool itself (missing binary, non-zero exit),
+// as opposed to a refusal by the path checks: only a tool failure lets convertPDFToHTML fall back
+// to the next converter.
+type converterToolError struct{ err error }
+
+func (e *converterToolError) Error() string { return e.err.Error() }
+func (e *converterToolError) Unwrap() error { return e.err }
+
+func isConverterToolError(err error) bool {
+	var te *converterToolError
+	return errors.As(err, &te)
+}
+
+func runConverterTool(name string, args []string) error {
+	cmd := exec.Command(name, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return &converterToolError{fmt.Errorf("%s: %w", name, err)}
+	}
+	return nil
+}
+
+// runConverterInPrivateDir runs an external converter that opens its output by path and follows
+// a symlink there: ffmpeg, ebook-convert, ImageMagick (which also writes derived names such as
+// out-0.bmp for multi-frame input and expands %d patterns), pandoc and LibreOffice. The tool gets
+// <private dir>/<base(target)>, where the private directory is a fresh 0700 directory created
+// next to the target (inside the conversion write roots). Afterwards every entry it produced must
+// be a regular file, and each is renamed into Dir(target) under its own name. rename(2) replaces
+// the destination name and never follows a link there; a link, FIFO or directory already at any
+// destination is refused before anything is moved, so a planted link is not replaced either
+// (review round 7, S2).
+func runConverterInPrivateDir(target string, run func(out string) error) error {
+	roots := pathguard.ConversionWriteRoots()
+	if _, err := pathguard.ConfineDataFile(target, roots); err != nil {
+		return fmt.Errorf("target path %q rejected: %w", target, err)
+	}
+	if err := refuseNonRegularLeaf(target); err != nil {
+		return err
+	}
+	dir := filepath.Dir(target)
+	priv, err := os.MkdirTemp(dir, ".catalogizer-conv-")
+	if err != nil {
+		return fmt.Errorf("failed to create private converter directory in %q: %w", dir, err)
+	}
+	if priv == "" {
+		return fmt.Errorf("private converter directory has an empty name")
+	}
+	defer os.RemoveAll(priv)
+	if err := run(filepath.Join(priv, filepath.Base(target))); err != nil {
+		return err
+	}
+	return publishConverterOutputs(priv, dir, roots)
+}
+
+// publishConverterOutputs moves the converter's outputs from the private directory into dir. All
+// entries are checked before the first is moved, so a refusal publishes nothing.
+func publishConverterOutputs(priv, dir string, roots []string) error {
+	entries, err := os.ReadDir(priv)
+	if err != nil {
+		return err
+	}
+	if len(entries) == 0 {
+		return fmt.Errorf("converter produced no output")
+	}
+	for _, e := range entries {
+		if !e.Type().IsRegular() {
+			return fmt.Errorf("converter output %q is not a regular file", e.Name())
+		}
+		dst := filepath.Join(dir, e.Name())
+		if _, err := pathguard.ConfineDataFile(dst, roots); err != nil {
+			return fmt.Errorf("output path %q rejected: %w", dst, err)
+		}
+		if err := refuseNonRegularLeaf(dst); err != nil {
+			return err
+		}
+	}
+	for _, e := range entries {
+		if err := os.Rename(filepath.Join(priv, e.Name()), filepath.Join(dir, e.Name())); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // createConversionOutput opens a file a converter writes itself: the target or a name derived
@@ -855,6 +902,11 @@ func refuseNonRegularLeaf(p string) error {
 	return nil
 }
 
+// libreOfficeHTMLOutput is where "libreoffice --convert-to html --outdir Dir(target) source"
+// writes: the source's base name with .html, in the output directory (since review round 7 the
+// output directory is the private converter directory). It used to be computed next to the
+// SOURCE, so an unrelated <source>.html in the read root was renamed onto the target, i.e. moved
+// out of the read root (review round 4).
 func libreOfficeHTMLOutput(source, target string) string {
 	base := filepath.Base(source)
 	return filepath.Join(filepath.Dir(target), strings.TrimSuffix(base, filepath.Ext(base))+".html")

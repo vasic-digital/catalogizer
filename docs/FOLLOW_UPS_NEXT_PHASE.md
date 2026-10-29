@@ -99,11 +99,37 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
   to the author of this entry; the reviewer or the coordinator who holds the round-3 review has to
   fill it in. Until then this line only records that two round-3 items are open and unnamed.
 - The sync walkers skip non-regular files and re-check each path, but a symlink or file swapped in
-  between that check and the `open` is not caught (same race as F4). Since round 6 the LibreOffice
-  HTML output path is checked (not a symlink or other non-regular file) before LibreOffice runs and
-  again before the rename, but LibreOffice itself opens it by path, so a link planted while it runs is
-  still the F4 race. `copyFile` opens its confined destination with `os.OpenFile` (no `O_NOFOLLOW`):
-  same race, same `os.Root` fix.
+  between that check and the `open` is not caught (same race as F4). Round 6 checked the LibreOffice
+  HTML output path before LibreOffice ran and again before the rename; since round 7 LibreOffice writes
+  into the private converter directory instead (see below). `copyFile` opens its confined destination with `os.OpenFile` (no `O_NOFOLLOW`):
+  same race, same `os.Root` fix. Since round 7 the external converters write into a private 0700
+  directory and only regular files are renamed into place, so a link planted at the target or at a
+  derived name (ImageMagick `out-N.ext`, `%d`) is no longer written through; `Dir(target)` swapped for
+  a link between the check and `MkdirTemp`/`rename` remains the F4 race.
+- Round 7 correction: the round-6 commit and docs called the conversion derived writes "closed"; only
+  the Go writers and the HTML pre-check were. ffmpeg, ebook-convert, ImageMagick (`convertImage`,
+  `convertPDFWithImageMagick`, including `name-N.ext` and `%d`) still wrote through links until round 7
+  (S2). The round-6 report also gave 130 write sinks; the count at commit `e5b65d1d` is 129.
+- Round 7, hard links (P4): a write through a hard link inside a write root to an arbitrary file outside
+  the roots is not refused (only links to the protected database/key files are). `fs.protected_hardlinks=1`
+  limits it to files the service user may write anyway. Fix needs a link-count (`st_nlink > 1`) policy on
+  every write sink, which would also refuse legitimate hard-linked media; operator decision.
+- Round 7, sync roots (S1): a symlinked sync root is now resolved with `EvalSymlinks` and the RESOLVED
+  path is walked and used as the per-file confinement root. If an operator relied on a root link
+  pointing outside the configured roots, the up-front `confineSyncPaths` check already refused it
+  (unchanged); nothing new is admitted. Upload source error text changed to
+  `upload source "<path>": is not a directory`.
+- Round 7 evidence gap: the reviewer's evidence file `EV/probe_symlinked_source.txt` named in the
+  round-7 review does not exist at the given path; the probe test itself
+  (`zz_reviewer_probe_test.go`) was found and adopted as `services/symlinked_root_rv7_test.go`.
+- Round 7, process sinks: `exec.Command` call sites outside the conversion service (cover-art
+  ffprobe/ffmpeg, darwin NFS `cp`/`mv`/`mount`) were classified, not changed (see the round-7 inventory
+  in `docs/security/PATH_CONFINEMENT.md`).
+- Round 7 mutant R7-10 survives and is recorded as equivalent, not tested: removing the
+  `ConfineDataFile` check on each converter output destination changes nothing observable, because the
+  destination is `Dir(target)` (already confined) joined with a `ReadDir` name (no `/`), and the only
+  remaining escape (a leaf link pointing outside the roots) is refused by `refuseNonRegularLeaf`. The
+  check stays as defence in depth against the `Dir(target)` swap race named above.
 - `uploadableFile` is called by the S3, GCS and (since round 5) WebDAV upload walkers. The WebDAV one
   is driven end to end against a real in-process WebDAV server; S3 and GCS are not (they need a bucket
   client, and a double would only be a gate-logic test, §11.4.289), so only `uploadableFile` itself is
