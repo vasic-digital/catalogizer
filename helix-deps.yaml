@@ -168,7 +168,7 @@ deps:
 
   - name: llm_provider
     ssh_url: git@github.com:HelixDevelopment/LLMProvider.git
-    ref: e05ec64              # pinned sha = gitlink recorded for submodules/llm_provider
+    ref: 53e4b2e              # pinned sha = gitlink recorded for submodules/llm_provider
     why: "HelixDevelopment LLMProvider: LLM provider adapters"
     layout: grouped
 
