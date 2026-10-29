@@ -150,7 +150,7 @@ deps:
 
   - name: llms_verifier
     ssh_url: git@github.com:vasic-digital/LLMsVerifier.git
-    ref: b041175              # pinned sha = gitlink recorded for submodules/llms_verifier
+    ref: 94e666d              # pinned sha = gitlink recorded for submodules/llms_verifier
     why: "LLMsVerifier: LLM model/provider verification; llm-verifier/ module digital.vasic.llmsverifier consumed by helix_qa via replace"
     layout: grouped
 
