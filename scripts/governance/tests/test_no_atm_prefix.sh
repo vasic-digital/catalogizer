@@ -63,6 +63,7 @@ FRAGS = [
     "ATM, `docs/workable_items.db`",
     # the recorded deviation from the constitution (I1)
     "the constitution (11.4.54, 11.4.248) mandates the ATM prefix",
+    "the constitution (11.4.54, 11.4.248) uses ATM as the canonical notation for a per-project <KEY> (canon EXTENSION 2026-10-08)",
     "[PROTECTED-SPEC: ATM-NNN]",
 ]
 FRAGS_B = [f.encode() for f in FRAGS]
