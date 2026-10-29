@@ -432,6 +432,14 @@ func setupExtMetaFileDB(t *testing.T, maxConns int) (*ExternalMetadataRepository
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = sqlDB.Close() })
 	sqlDB.SetMaxOpenConns(maxConns)
+	// The go-sqlcipher driver ignores _journal_mode in the DSN (it only parses
+	// _loc, _busy_timeout, _txlock, _foreign_keys and the cipher pragmas), so
+	// WAL must be enabled explicitly, exactly as database.NewConnection does.
+	// Without this the file runs in rollback-journal mode, where readers block
+	// behind a committing writer.
+	var mode string
+	require.NoError(t, sqlDB.QueryRow("PRAGMA journal_mode=WAL").Scan(&mode))
+	require.Equal(t, "wal", mode)
 	createExtMetaSchema(t, sqlDB)
 	db := database.WrapDB(sqlDB, database.DialectSQLite)
 	return NewExternalMetadataRepository(db), db
