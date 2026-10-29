@@ -374,7 +374,7 @@ def build_components(repo):
            "middleware", "observability", "rate_limiter", "recovery", "security", "storage", "streaming", "watcher"]
     a11 = ["auth_context_react", "catalogizer_api_client_ts", "collection_manager_react", "dashboard_analytics_react", "media_browser_react",
            "media_player_react", "media_types_ts", "ui_components_react", "websocket_client_ts"]
-    names = [p.split("/", 1)[1] for p in paths]
+    names = [p[len("submodules/"):] for p in paths if p.startswith("submodules/")]   # a top-level path (e.g. `constitution`, the canon hub) has no module name and is not a submodules/ module
     a12 = [n for n in names if n not in a10 and n not in a11]
     for n in a10 + a11 + a12:
         if n not in names:

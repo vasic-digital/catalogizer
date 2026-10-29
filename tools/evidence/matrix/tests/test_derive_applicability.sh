@@ -19,7 +19,7 @@ T="$(mktemp -d "${TMPDIR:-/tmp}/derive-test.XXXXXX")"; trap 'rm -rf "$T"' EXIT
 [ -f "$DERIVE" ] || { bad "deriver not found at $DERIVE"; echo "Summary: PASS=$PASSES FAIL=$FAILS SKIP=0"; exit 1; }
 A10="assets auth cache concurrency config database discovery entities event_bus filesystem lazy media memory middleware observability rate_limiter recovery security storage streaming watcher"
 A11="auth_context_react catalogizer_api_client_ts collection_manager_react dashboard_analytics_react media_browser_react media_player_react media_types_ts ui_components_react websocket_client_ts"
-A12="constitution helix_qa"
+A12="helix_qa"   # post-772dd4c3 layout: the canon hub is the top-level path `constitution`, no longer a submodules/ module
 
 mkrepo() { # mkrepo DIR : the fixture repository with every module populated by one placeholder file
   local r="$1"; rm -rf "$r"; mkdir -p "$r/specs/001-full-project-audit-remediation/docs" "$r/submodules" "$r/Build/lib" "$r/Website" "$r/tests" "$r/scripts"
@@ -52,7 +52,7 @@ R="$T/repo"; mkrepo "$R"
 # -- determinism (the generator claims byte-identical output; the old test did not run the deriver at all)
 derive "$R" "$T/a1.yaml"; check "golden: the deriver exits 0 on a populated fixture" "$RC" 0
 derive "$R" "$T/a2.yaml"; check "golden: two runs over the same tree are byte-identical" "$(sha256sum <"$T/a1.yaml")" "$(sha256sum <"$T/a2.yaml")"
-check "golden: 30 modules + 2 governance modules + 9 applications + A13 = 42 components" "$(python3 -I -c "import yaml;print(len(yaml.safe_load(open('$T/a1.yaml'))['components']))")" 42
+check "golden: 30 modules + 1 governance module + 9 applications + A13 = 41 components" "$(python3 -I -c "import yaml;print(len(yaml.safe_load(open('$T/a1.yaml'))['components']))")" 41
 grep -q '^# enumeration: walk; files_fingerprint: [0-9a-f]\{32\} ' "$T/a1.yaml" && ok "m1: the header records the enumeration mode and a files_fingerprint (provenance of what was counted)" || bad "m1: provenance header missing: $(sed -n 5p "$T/a1.yaml")"
 # the fingerprint (the hex only, not the count in the same header line) moves when a counted file is ADDED and when one is merely RENAMED (same count)
 fp() { sed -n 's/^# enumeration: [^;]*; files_fingerprint: \([0-9a-f]*\) .*/\1/p' "$1"; }
@@ -73,6 +73,11 @@ grep -q 'submodule_uninitialised' "$T/stderr" && grep -q 'auth' "$T/stderr" && o
 mkrepo "$R"; rm -rf "$R/submodules/cache" "$R/submodules/media"
 derive "$R" "$T/e2.yaml"; [ "$RC" = 3 ] && grep -q 'cache' "$T/stderr" && grep -q 'media' "$T/stderr" && ok "I1: a MISSING directory is refused too, every empty module is named (2 listed)" || bad "I1: missing dirs not both named (rc $RC): $(cat "$T/stderr")"
 mkrepo "$R"; derive "$R" "$T/e3.yaml"; check "I1 control: the same fixture populated again derives (exit 0)" "$RC" 0
+# K11.1 root cause (WP-23 follow-up): a top-level submodule path (`constitution`, no `submodules/` prefix) in .gitmodules crashed the deriver with IndexError
+mkrepo "$R"; printf '[submodule "constitution"]\n\tpath = constitution\n\turl = x\n' >>"$R/.gitmodules"; derive "$R" "$T/tl.yaml"
+check "K11.1: a top-level submodule path in .gitmodules (path = constitution) does not crash the deriver (exit 0)" "$RC" 0
+[ -f "$T/tl.yaml" ] && check "K11.1: ... and the component set is unchanged (41: the top-level path is not a submodules/ module)" "$(python3 -I -c "import yaml;print(len(yaml.safe_load(open('$T/tl.yaml'))['components']))")" 41 || bad "K11.1: no output written"
+[ -f "$T/tl.yaml" ] && check "K11.1: ... and NO A12:constitution component appears (a deliberate coverage-scope change: the top-level canon hub is not measured as a module)" "$(python3 -I -c "import yaml;print(sum(1 for k in yaml.safe_load(open('$T/tl.yaml'))['components'] if k.startswith('A12:constitution')))")" 0
 
 # -- I2: markers are path TOKENS
 mkrepo "$R"; S="$R/submodules/assets"
@@ -151,7 +156,7 @@ GIT_DIR=/nonexistent GIT_WORK_TREE=/nonexistent python3 -I "$DERIVE" --repo "$R"
 mkrepo "$R"; printf 'gitdir: /nonexistent/modules/auth\n' >"$R/submodules/auth/.git"; derive "$R" "$T/d1.yaml"
 { [ "$RC" = 3 ] && grep -q 'git_unreadable' "$T/stderr"; } && ok "K11.4: a dangling gitfile (a submodule whose git dir is gone) is refused (3 git_unreadable), never walked as a populated tree" || bad "K11.4: dangling gitfile gave rc $RC: $(head -c 200 "$T/stderr")"
 mkrepo "$R"; sed -i 's#path = submodules/auth$#path=submodules/auth#' "$R/.gitmodules"; derive "$R" "$T/g1.yaml"
-{ [ "$RC" = 0 ] && check "K12.1: .gitmodules is read by git (a `path=` without spaces still names its module): 42 components" "$(python3 -I -c "import yaml;print(len(yaml.safe_load(open('$T/g1.yaml'))['components']))")" 42; } || bad "K12.1: path=submodules/auth (no spaces) was not read (rc $RC): $(head -c 200 "$T/stderr")"
+{ [ "$RC" = 0 ] && check "K12.1: .gitmodules is read by git (a `path=` without spaces still names its module): 41 components" "$(python3 -I -c "import yaml;print(len(yaml.safe_load(open('$T/g1.yaml'))['components']))")" 41; } || bad "K12.1: path=submodules/auth (no spaces) was not read (rc $RC): $(head -c 200 "$T/stderr")"
 mkdir -p "$T/cwd"; mkrepo "$R"; ( cd "$T/cwd" && python3 -I "$DERIVE" --repo "$R" --out rel.yaml >/dev/null 2>&1 ); [ -s "$T/cwd/rel.yaml" ] && [ ! -e "$R/rel.yaml" ] && ok "K11.4: a relative --out is relative to the current directory (not to the repository)" || bad "K11.4: relative --out landed in the wrong place"
 echo untouched >"$T/victim.txt"; ln -s "$T/victim.txt" "$T/cwd/link.yaml"; ( cd "$T/cwd" && python3 -I "$DERIVE" --repo "$R" --out link.yaml >/dev/null 2>&1 )
 { [ "$(cat "$T/victim.txt")" = untouched ] && [ ! -L "$T/cwd/link.yaml" ] && [ -s "$T/cwd/link.yaml" ]; } && ok "K11.4: the write is a temp file + rename: an --out that is a symlink is REPLACED, the file it pointed at is not written through" || bad "K11.4: --out symlink was written through ($(cat "$T/victim.txt" | head -c 60))"
