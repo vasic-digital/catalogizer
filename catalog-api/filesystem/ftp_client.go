@@ -1,13 +1,13 @@
 package filesystem
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"net"
+	"os"
 	pathpkg "path"
 	"strings"
 	"sync"
@@ -61,8 +61,12 @@ func (c *FTPClient) Connect(ctx context.Context) error {
 		return err
 	}
 	c.mu.Lock()
+	old := c.client
 	c.client, c.base, c.connected = client, base, true
 	c.mu.Unlock()
+	if old != nil {
+		_ = old.Quit() // a previous connection is ended, not leaked (an operation still running on it fails with a connection error)
+	}
 	return nil
 }
 
@@ -459,44 +463,100 @@ func (c *FTPClient) DeleteFile(ctx context.Context, path string) error {
 	return nil
 }
 
-// CopyFile copies a file on the FTP server
+// ctxReader makes a copy honour its context: every Read first checks it.
+type ctxReader struct {
+	ctx context.Context
+	r   io.Reader
+}
+
+func (r *ctxReader) Read(p []byte) (int, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
+	}
+	return r.r.Read(p)
+}
+
+// CopyFile copies a file on the FTP server. FTP has no copy command, so the source is streamed (RETR on this client's control connection)
+// into a STOR on a SECOND control connection: nothing is buffered in memory or on disk, and no command is ever issued on a control
+// connection while its RETR data connection is open (some servers reject that). If the server refuses a second session, the copy falls back
+// to a temporary file (bounded by disk, removed on every path). A failed or unconfirmed copy removes the partial destination.
 func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error {
 	conn, base, err := c.session()
 	if err != nil {
 		return err
 	}
-
-	// FTP doesn't have a native copy command, so we need to download and upload
 	srcFullPath := c.resolvePath(base, srcPath)
 	dstFullPath := c.resolvePath(base, dstPath)
 
-	// Read the source completely and close its data connection BEFORE any further command: some servers reject (or mis-sequence) MKD/STOR
-	// on the control connection while a RETR data connection is still open. The copy is therefore spooled in memory.
+	wconn, _, derr := c.dial(ctx)
+	if derr != nil {
+		if cerr := ctx.Err(); cerr != nil {
+			return cerr // cancelled: not a reason to fall back
+		}
+		return c.copyViaTempFile(ctx, conn, srcFullPath, dstFullPath, derr)
+	}
+	defer func() { _ = wconn.Quit() }()
+
 	resp, err := conn.Retr(srcFullPath)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve source file %s: %w", srcFullPath, err)
 	}
-	spool, readErr := io.ReadAll(resp)
+	if dstDir := pathpkg.Dir(dstFullPath); dstDir != "." && dstDir != "/" {
+		_ = wconn.MakeDir(dstDir) // ignore error if the directory exists
+	}
+	storErr := wconn.Stor(dstFullPath, &ctxReader{ctx: ctx, r: resp})
 	closeErr := resp.Close()
-	if readErr != nil {
-		return fmt.Errorf("failed to read source file %s: %w", srcFullPath, readErr)
+	if closeErr != nil {
+		// like ftpReadCloser.Close: the source session may be dead, so it is replaced and the client is not left "connected" to a corpse
+		_ = c.reconnectIf(context.WithoutCancel(ctx), conn)
+	}
+	if storErr != nil || closeErr != nil {
+		_ = wconn.Delete(dstFullPath) // best effort: no partial / unverified destination
+		if storErr != nil {
+			return fmt.Errorf("failed to store destination file %s: %w", dstFullPath, storErr)
+		}
+		return fmt.Errorf("source transfer of %s was not confirmed by the server: %w", srcFullPath, closeErr)
+	}
+	return nil
+}
+
+// copyViaTempFile is the fallback for servers that allow a single control session: RETR to a private temp file, close it, then MKD/STOR on
+// the same connection.
+func (c *FTPClient) copyViaTempFile(ctx context.Context, conn *ftp.ServerConn, srcFullPath, dstFullPath string, dialErr error) (err error) {
+	f, ferr := os.CreateTemp("", "ftpcopy-*")
+	if ferr != nil {
+		return fmt.Errorf("failed to open a second FTP session (%v) and to create a temporary file: %w", dialErr, ferr)
+	}
+	defer func() {
+		_ = f.Close()
+		_ = os.Remove(f.Name())
+	}()
+	resp, rerr := conn.Retr(srcFullPath)
+	if rerr != nil {
+		return fmt.Errorf("failed to retrieve source file %s: %w", srcFullPath, rerr)
+	}
+	_, cerr := io.Copy(f, &ctxReader{ctx: ctx, r: resp})
+	closeErr := resp.Close()
+	if closeErr != nil {
+		_ = c.reconnectIf(context.WithoutCancel(ctx), conn)
+	}
+	if cerr != nil {
+		return fmt.Errorf("failed to read source file %s: %w", srcFullPath, cerr)
 	}
 	if closeErr != nil {
-		return fmt.Errorf("failed to finish reading source file %s: %w", srcFullPath, closeErr)
+		return fmt.Errorf("source transfer of %s was not confirmed by the server: %w", srcFullPath, closeErr)
 	}
-
-	// Ensure destination directory exists
-	dstDir := pathpkg.Dir(dstFullPath)
-	if dstDir != "." && dstDir != "/" {
-		_ = conn.MakeDir(dstDir) // Ignore error if directory exists
+	if _, serr := f.Seek(0, io.SeekStart); serr != nil {
+		return serr
 	}
-
-	// Write to destination
-	err = conn.Stor(dstFullPath, bytes.NewReader(spool))
-	if err != nil {
+	// the control connection may have been replaced by reconnectIf only on error paths, which returned above
+	if dstDir := pathpkg.Dir(dstFullPath); dstDir != "." && dstDir != "/" {
+		_ = conn.MakeDir(dstDir)
+	}
+	if err := conn.Stor(dstFullPath, &ctxReader{ctx: ctx, r: f}); err != nil {
+		_ = conn.Delete(dstFullPath)
 		return fmt.Errorf("failed to store destination file %s: %w", dstFullPath, err)
 	}
-
 	return nil
 }
 
