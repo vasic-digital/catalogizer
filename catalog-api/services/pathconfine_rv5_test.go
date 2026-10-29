@@ -138,6 +138,9 @@ func TestConversion_TargetOrSourceEqualToTheRootIsRefused(t *testing.T) {
 // T-1 (V10 killer): copyFile must refuse a destination that is a hard link of the database.
 // Opening it with O_TRUNC would truncate the database itself.
 func TestSync_CopyFileRefusesADestinationHardLinkToTheDatabase(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	_, src, dst, db, _ := perFileFixture(t)
 	require.NoError(t, os.Link(db, filepath.Join(dst, "a.txt")))
 	before, err := os.ReadFile(db)
@@ -172,6 +175,9 @@ func TestSync_MirrorRefusesADestinationLinkIntoTheSource(t *testing.T) {
 // T-2 (V5 killer): the protected key file is itself a symlink to the real key; a hard link of
 // the REAL key planted in the source must still be refused.
 func TestSync_UploadRefusesAHardLinkOfASymlinkedKeyFile(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	_, src, _, _, _ := perFileFixture(t)
 	keyDir := t.TempDir()
 	realKey := filepath.Join(keyDir, "real.key")

@@ -602,6 +602,9 @@ func TestSyncRepository_CleanupSessions(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 func TestSyncService_CopyFile(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	service := NewSyncService(nil, nil, nil)
 
 	tmpDir := t.TempDir()

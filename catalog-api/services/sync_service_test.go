@@ -463,6 +463,9 @@ func TestSyncService_GetWebDAVClient(t *testing.T) {
 }
 
 func TestSyncService_ScanLocalFiles(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	service := NewSyncService(nil, nil, nil)
 
 	// Create temp directory structure
@@ -495,6 +498,9 @@ func TestSyncService_ScanLocalFiles_NonexistentPath(t *testing.T) {
 // ============================================================================
 
 func TestSyncService_CopyFile_Scenarios(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	service := NewSyncService(nil, nil, nil)
 
 	t.Run("copy file successfully", func(t *testing.T) {
@@ -541,6 +547,9 @@ func TestSyncService_CopyFile_Scenarios(t *testing.T) {
 }
 
 func TestSyncService_PerformMirrorSync(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	service := NewSyncService(nil, nil, nil)
 	session := &models.SyncSession{ID: 1, UserID: 1}
 
@@ -600,6 +609,9 @@ func TestSyncService_PerformMirrorSync(t *testing.T) {
 }
 
 func TestSyncService_PerformIncrementalSync(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	service := NewSyncService(nil, nil, nil)
 	session := &models.SyncSession{ID: 1, UserID: 1}
 
@@ -656,6 +668,9 @@ func TestSyncService_PerformIncrementalSync(t *testing.T) {
 }
 
 func TestSyncService_PerformBidirectionalSync(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	service := NewSyncService(nil, nil, nil)
 	session := &models.SyncSession{ID: 1, UserID: 1}
 
@@ -682,6 +697,9 @@ func TestSyncService_PerformBidirectionalSync(t *testing.T) {
 }
 
 func TestSyncService_CleanupDestination(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	service := NewSyncService(nil, nil, nil)
 	session := &models.SyncSession{ID: 1, UserID: 1}
 
@@ -1109,6 +1127,9 @@ func TestSyncService_IsValidType_Directions(t *testing.T) {
 }
 
 func TestSyncService_MirrorSync_SkipsUnchangedFiles(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	service := NewSyncService(nil, nil, nil)
 	session := &models.SyncSession{ID: 1, UserID: 1}
 
@@ -1137,6 +1158,9 @@ func TestSyncService_MirrorSync_SkipsUnchangedFiles(t *testing.T) {
 }
 
 func TestSyncService_IncrementalSync_CopiesNewerFiles(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	service := NewSyncService(nil, nil, nil)
 	session := &models.SyncSession{ID: 1, UserID: 1}
 
@@ -1186,6 +1210,9 @@ func TestSyncService_IncrementalSync_NonexistentSource(t *testing.T) {
 }
 
 func TestSyncService_CleanupDestination_WithSubdirectories(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	service := NewSyncService(nil, nil, nil)
 	session := &models.SyncSession{ID: 1, UserID: 1}
 
@@ -1352,6 +1379,9 @@ func TestSyncService_ValidateEndpoint_AllTypes(t *testing.T) {
 }
 
 func TestSyncService_CopyFile_OverwritesExistingFile(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	service := NewSyncService(nil, nil, nil)
 
 	srcDir := t.TempDir()
@@ -1398,6 +1428,9 @@ func TestSyncService_ScanLocalFiles_EmptyDirectory(t *testing.T) {
 }
 
 func TestSyncService_ScanLocalFiles_DeepNesting(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	service := NewSyncService(nil, nil, nil)
 
 	tmpDir := t.TempDir()

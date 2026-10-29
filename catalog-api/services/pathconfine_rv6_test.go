@@ -99,6 +99,9 @@ func TestRV6_CloudUploadSingleFileRootIsRefused(t *testing.T) {
 
 // Regression control: mirror / incremental / bidirectional inside one data root keep working.
 func TestRV6_LegitLocalModesInsideDataRoot(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	for _, mode := range []string{"mirror", "incremental", "bidirectional"} {
 		t.Run(mode, func(t *testing.T) {
 			data := t.TempDir()

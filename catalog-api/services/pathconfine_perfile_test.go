@@ -36,6 +36,9 @@ func perFileFixture(t *testing.T) (base, src, dst, db, secret string) {
 // link as itself and the copy used to os.Open it, following it to the database or outside the
 // source root (review round 4, per-file symlinks).
 func TestSync_MirrorAndIncrementalSkipLinksPlantedInTheSource(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	for _, mode := range []string{"mirror", "incremental"} {
 		t.Run(mode, func(t *testing.T) {
 			_, src, dst, db, secret := perFileFixture(t)
@@ -65,6 +68,9 @@ func TestSync_MirrorAndIncrementalSkipLinksPlantedInTheSource(t *testing.T) {
 // A symlink planted in the destination does not redirect the copy: the write is refused and the
 // file it points to is unchanged.
 func TestSync_CopyRefusesASymlinkPlantedInTheDestination(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	_, src, dst, db, secret := perFileFixture(t)
 	require.NoError(t, os.Symlink(secret, filepath.Join(dst, "a.txt")))
 	require.NoError(t, os.Symlink(db, filepath.Join(dst, "b.txt")))
@@ -84,6 +90,9 @@ func TestSync_CopyRefusesASymlinkPlantedInTheDestination(t *testing.T) {
 
 // The S3 and GCS upload walkers use uploadableFile for every file they meet.
 func TestSync_UploadableFile(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	base, src, _, db, secret := perFileFixture(t)
 	require.NoError(t, os.Symlink(secret, filepath.Join(src, "leak")))
 	require.NoError(t, os.Link(db, filepath.Join(src, "hl")))

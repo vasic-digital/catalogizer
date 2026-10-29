@@ -13,6 +13,9 @@ import (
 // per-file checks treat a path equal to its root as "not a file below the root".
 
 func TestSync_CopyFileRefusesSourceEqualToItsRoot(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	svc, _ := newSyncSvc(t)
 	base := t.TempDir()
 	srcRoot := filepath.Join(base, "single.bin")
@@ -76,6 +79,9 @@ func TestSync_CopyFileRefusesDestinationEqualToItsRoot(t *testing.T) {
 }
 
 func TestSync_UploadableFileRefusesARootThatIsItselfAFile(t *testing.T) {
+	// The per-file guards also check the configured roots (review round 9, F1); these fixtures
+	// live under the temp directory, outside the fixed roots TestMain sets.
+	allowSyncDirs(t, os.TempDir())
 	base := t.TempDir()
 	root := filepath.Join(base, "single.bin")
 	if err := os.WriteFile(root, []byte("payload"), 0o644); err != nil {

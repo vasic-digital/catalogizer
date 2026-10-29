@@ -842,7 +842,11 @@ func runConverterInPrivateDir(target string, run func(out string) error) error {
 }
 
 // publishConverterOutputs moves the converter's outputs from the private directory into dir. All
-// entries are checked before the first is moved, so a refusal publishes nothing.
+// entries are checked, and every kept permission is applied inside the private directory, before
+// the first is moved, so a refusal or a failed chmod publishes nothing. The moves themselves are
+// separate rename(2) calls: if one fails, the outputs renamed before it stay published (their
+// previous files are already replaced and cannot be restored); the error names how many were
+// published (review round 9, F4).
 func publishConverterOutputs(priv, dir string, roots []string) error {
 	entries, err := os.ReadDir(priv)
 	if err != nil {
@@ -871,14 +875,16 @@ func publishConverterOutputs(priv, dir string, roots []string) error {
 		}
 	}
 	for _, e := range entries {
-		src := filepath.Join(priv, e.Name())
 		if perm, ok := keep[e.Name()]; ok {
-			if err := os.Chmod(src, perm); err != nil {
+			if err := os.Chmod(filepath.Join(priv, e.Name()), perm); err != nil {
 				return err
 			}
 		}
-		if err := os.Rename(src, filepath.Join(dir, e.Name())); err != nil {
-			return err
+	}
+	for i, e := range entries {
+		if err := os.Rename(filepath.Join(priv, e.Name()), filepath.Join(dir, e.Name())); err != nil {
+			return fmt.Errorf("publishing converter output %q failed after %d of %d outputs were published: %w",
+				e.Name(), i, len(entries), err)
 		}
 	}
 	return nil

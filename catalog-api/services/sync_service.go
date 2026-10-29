@@ -372,6 +372,14 @@ func (s *SyncService) downloadFromWebDAV(session *models.SyncSession, endpoint *
 			s.logSyncError(session, fmt.Sprintf("Refusing remote path %q: escapes local root: %v", remoteFile.Path, gerr))
 			continue
 		}
+		// endpoint.LocalPath was only checked when the endpoint was saved, and a swapped
+		// ancestor moves it together with localPath; the configured roots do not move (review
+		// round 9, F1).
+		if _, gerr := pathguard.ConfineDataFile(localPath, pathguard.SyncWriteRoots()); gerr != nil {
+			session.FailedFiles++
+			s.logSyncError(session, fmt.Sprintf("Refusing local path %q: outside the sync roots: %v", localPath, gerr))
+			continue
+		}
 
 		if s.shouldSkipRemoteFile(remoteFile, endpoint) {
 			continue
@@ -743,6 +751,10 @@ func (s *SyncService) performMirrorSync(sourceDir, destDir string, session *mode
 			if _, err := pathguard.ConfineData(destPath, []string{destDir}); err != nil {
 				return fmt.Errorf("destination directory %q refused: %w", destPath, err)
 			}
+			// destDir follows a swapped ancestor; the configured roots do not (round 9, F1).
+			if _, err := pathguard.ConfineData(destPath, pathguard.SyncWriteRoots()); err != nil {
+				return fmt.Errorf("destination directory %q refused: %w", destPath, err)
+			}
 			if err := os.MkdirAll(destPath, info.Mode()); err != nil {
 				return fmt.Errorf("failed to create directory %s: %w", destPath, err)
 			}
@@ -874,7 +886,34 @@ func uploadableFile(path string, info os.FileInfo, root string) bool {
 		logSkippedFile(path, err.Error())
 		return false
 	}
+	// root is a resolved path string; ConfineDataFile resolves it again, so an ancestor of root
+	// swapped for an outside link moves root and path together and the check above passes. The
+	// configured roots do not move with the swap (review round 9, F1).
+	if _, err := pathguard.ConfineDataFile(path, syncReadRoots()); err != nil {
+		logSkippedFile(path, err.Error())
+		return false
+	}
 	return true
+}
+
+// syncReadRoots are the configured roots a sync may read from (read roots plus sync write roots).
+// The per-file guards check against these as well as against the walk root: a resolved walk root
+// is re-resolved by every check, so on its own it follows a swapped ancestor (review round 9, F1).
+func syncReadRoots() []string { return pathguard.Readable(pathguard.SyncWriteRoots()) }
+
+// confineRemoval checks a path cleanupDestination is about to remove. os.Remove resolves every
+// component but the last and removes the last without following it, so the PARENT is confined
+// (directory form) to the configured sync write roots and to the walk root; the entry itself may
+// be a link pointing anywhere (removing the link is harmless).
+func confineRemoval(p, walkRoot string) error {
+	parent := filepath.Dir(p)
+	if _, err := pathguard.ConfineData(parent, []string{walkRoot}); err != nil {
+		return fmt.Errorf("refusing to remove %q: %w", p, err)
+	}
+	if _, err := pathguard.ConfineData(parent, pathguard.SyncWriteRoots()); err != nil {
+		return fmt.Errorf("refusing to remove %q: %w", p, err)
+	}
+	return nil
 }
 
 func logSkippedFile(path, why string) {
@@ -894,10 +933,22 @@ func (s *SyncService) copyFile(src, dst string, mode os.FileMode, srcRoot, dstRo
 	if _, err := pathguard.ConfineDataFile(dst, []string{dstRoot}); err != nil {
 		return fmt.Errorf("destination %q: %w", dst, err)
 	}
+	// The roots above are resolved strings that follow a swapped ancestor; the configured roots
+	// do not (review round 9, F1).
+	write := pathguard.SyncWriteRoots()
+	if _, err := pathguard.ConfineDataFile(src, syncReadRoots()); err != nil {
+		return fmt.Errorf("source %q: %w", src, err)
+	}
+	if _, err := pathguard.ConfineDataFile(dst, write); err != nil {
+		return fmt.Errorf("destination %q: %w", dst, err)
+	}
 	// Ensure destination directory exists. ConfineDataFile above already refuses a dst whose
 	// prefixes leave dstRoot; the parent is checked in the directory form as well so the
 	// MkdirAll call carries its own guard (review round 6, F1).
 	if _, err := pathguard.ConfineData(filepath.Dir(dst), []string{dstRoot}); err != nil {
+		return fmt.Errorf("destination directory %q: %w", filepath.Dir(dst), err)
+	}
+	if _, err := pathguard.ConfineData(filepath.Dir(dst), write); err != nil {
 		return fmt.Errorf("destination directory %q: %w", filepath.Dir(dst), err)
 	}
 	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
@@ -943,6 +994,16 @@ func (s *SyncService) cleanupDestination(sourceDir, destDir string, session *mod
 		// Check if corresponding source file exists
 		_, err = os.Stat(sourcePath)
 		if err != nil {
+			// The destination root itself is never removed.
+			if relPath == "." {
+				return nil
+			}
+			// Each removal is confined first: destDir is a resolved string that follows a
+			// swapped ancestor, so the parent is checked against the configured roots too
+			// (review round 9, F1). A refusal fails the cleanup closed.
+			if err := confineRemoval(destPath, destDir); err != nil {
+				return err
+			}
 			// Source file doesn't exist, remove destination file
 			if info.IsDir() {
 				// Remove directory if it's empty

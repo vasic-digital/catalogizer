@@ -129,6 +129,41 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
   (unchanged), `source directory: ... outside the allowed roots`, `destination directory: ...`,
   `upload source "<path>": ...`. OPEN residual: a component swapped while the walk is running is the
   F4 race above.
+- Round 9, ancestor swap (F1): round 8 only stopped a swap of the root's LAST component. An ancestor of
+  the resolved root (inside the configured roots) swapped for a link to an outside directory after the
+  run-time check was followed: mirror cleanup removed `outside/a/dst/precious.txt`, `copyFile` wrote
+  into `outside/a/dst`, the upload walk read outside files, and the WebDAV download wrote outside (reviewer
+  probes in `rv9.jXwU`, adopted as `services/ancestor_swap_rv9_test.go`). The per-file checks compared
+  against the walk-root string, which `ConfineDataFile` re-resolves through the same swapped ancestor,
+  so they passed. Since round 9 every per-file sink ALSO confines against the configured roots
+  (`uploadableFile` and the `copyFile` source: read roots plus sync write roots; `copyFile` destination
+  and parent, mirror directory guard, WebDAV download path: sync write roots; `cleanupDestination`:
+  `confineRemoval` checks each entry's parent before each `os.Remove`, and fails closed).
+  What these per-file re-checks DO protect against: an ancestor swapped to a target outside the
+  configured roots before the per-file check runs. What they do NOT protect against: (a) a swap whose
+  target stays INSIDE the configured roots (a sync can then copy into, or mirror cleanup remove from,
+  another directory inside the roots); (b) a swap between a per-file check and the following
+  `open` / `remove` (the F4 race). The race is narrowed, not closed; `os.Root` remains the plan.
+  Behaviour changes: `cleanupDestination` never removes the destination root itself (`relPath == "."`),
+  and a refused remove stops the cleanup with an error; a refused WebDAV download entry counts as a
+  failed file and the download continues.
+- Round 9, converter publish (F4 doc): checks and kept-mode `chmod`s are all applied before the first
+  rename, but the renames are not atomic as a group; a failing rename leaves the earlier outputs
+  published and the error reports how many. The chmod-before-rename ordering is not covered by a test
+  (it needs fault injection into `os.Rename`); its mutant M9-CH (chmod moved into the rename loop)
+  survives and is recorded as not covered (equivalent without a failing rename).
+- Round 9 own mutants (script `mut9.py`): M9-1, M9-5, M9-6, M9-7, M9-8 and M9-N6 are killed by the
+  adopted probes. M9-2 (copyFile source check widened to `/`) first survived because both callers run
+  `uploadableFile` first; it is killed by the sink-level test `TestRV9_CopyFileRefusesSwappedSourceAncestorDirectly`.
+  M9-9 (root-removal guard dropped) first survived because `confineRemoval` still refused the root;
+  it is killed by `TestRV9_CleanupKeepsDestinationRoot` (asserts nil and that the root is kept). M9-3
+  (copyFile destination widened) and M9-4 (destination parent widened) each survive alone because the
+  other check refuses the same swap; widening both (M9-34b) is killed. The two new tests were written
+  after the fix, so their RED is shown by the mutants.
+- Round 9 equivalent mutants named by the reviewer: N8, N14 and N16 (documented equivalents in the
+  round-9 review). N6 (keep `fi.Mode()` instead of `Perm()`) is now killed by
+  `TestRV9_KeptTargetModeDropsSpecialBits` (a setuid/setgid and a sticky target; that test was written
+  after the fix, so its RED is shown by the mutant, not by a pre-fix run).
 - Round 8 mutants that survive, recorded as equivalent: R8-2 (destination pre-`MkdirAll` confine
   widened to `/`) and R8-3 (post-`MkdirAll` confine widened to `/`) each survive alone because the
   other check still refuses the swapped root; widening both (R8-23) is killed. R8-10 (`MkdirAll` on
