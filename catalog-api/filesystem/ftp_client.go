@@ -2,11 +2,15 @@ package filesystem
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"net"
+	"net/textproto"
 	"os"
 	pathpkg "path"
 	"strings"
@@ -23,6 +27,8 @@ type FTPConfig struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Path     string `json:"path"` // Base path on the FTP server
+	// SpoolDir is where CopyFile keeps its temporary file when the server allows only one control session. Empty = os.TempDir().
+	SpoolDir string `json:"spool_dir,omitempty"`
 }
 
 // FTPClient implements FileSystemClient for FTP protocol
@@ -71,10 +77,11 @@ func (c *FTPClient) Connect(ctx context.Context) error {
 }
 
 // dial opens, logs in and positions a new control connection without touching the client's fields.
-func (c *FTPClient) dial(ctx context.Context) (*ftp.ServerConn, string, error) {
+func (c *FTPClient) dial(ctx context.Context, extra ...ftp.DialOption) (*ftp.ServerConn, string, error) {
 	addr := net.JoinHostPort(c.config.Host, fmt.Sprintf("%d", c.config.Port))
 
-	client, err := ftp.Dial(addr, ftp.DialWithTimeout(30*time.Second), ftp.DialWithContext(ctx))
+	opts := append([]ftp.DialOption{ftp.DialWithTimeout(30 * time.Second), ftp.DialWithContext(ctx)}, extra...)
+	client, err := ftp.Dial(addr, opts...)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to connect to FTP server: %w", err)
 	}
@@ -463,7 +470,8 @@ func (c *FTPClient) DeleteFile(ctx context.Context, path string) error {
 	return nil
 }
 
-// ctxReader makes a copy honour its context: every Read first checks it.
+// ctxReader makes a copy honour its context between reads: every Read first checks it. A Read that is already blocked inside the
+// network is unblocked separately (see watchCancel).
 type ctxReader struct {
 	ctx context.Context
 	r   io.Reader
@@ -476,10 +484,129 @@ func (r *ctxReader) Read(p []byte) (int, error) {
 	return r.r.Read(p)
 }
 
+// connTracker remembers every network connection a dial function created (control and data connections of one ServerConn), so a
+// cancelled copy can close them and unblock a Read / Write stalled inside the network.
+type connTracker struct {
+	mu     sync.Mutex
+	conns  []net.Conn
+	closed bool
+}
+
+func (t *connTracker) dialFunc(ctx context.Context) func(network, address string) (net.Conn, error) {
+	d := net.Dialer{Timeout: 30 * time.Second}
+	return func(network, address string) (net.Conn, error) {
+		conn, err := d.DialContext(ctx, network, address)
+		if err != nil {
+			return nil, err
+		}
+		t.mu.Lock()
+		defer t.mu.Unlock()
+		if t.closed {
+			_ = conn.Close()
+			return nil, context.Canceled
+		}
+		t.conns = append(t.conns, conn)
+		return conn, nil
+	}
+}
+
+func (t *connTracker) closeAll() {
+	t.mu.Lock()
+	t.closed = true
+	conns := t.conns
+	t.conns = nil
+	t.mu.Unlock()
+	for _, c := range conns {
+		_ = c.Close()
+	}
+}
+
+// watchCancel makes a cancelled ctx interrupt a transfer that is blocked in the network: the source data connection gets an expired
+// deadline (ftp.Response.SetDeadline) and, when the destination connection was dialled with a connTracker, all of its connections are
+// closed. The returned function stops the watcher.
+//
+// What it cannot do (documented limit): on the single-session fallback the destination STOR runs on the client's own control connection,
+// which is not tracked, so a STOR write stalled inside the network is only interrupted when the server or the OS ends it.
+func watchCancel(ctx context.Context, resp *ftp.Response, tr *connTracker) func() bool {
+	return context.AfterFunc(ctx, func() {
+		if resp != nil {
+			_ = resp.SetDeadline(time.Now())
+		}
+		if tr != nil {
+			tr.closeAll()
+		}
+	})
+}
+
+// tempSibling returns a unique name in the destination's directory. The copy is stored under this name and only renamed over the
+// destination after the whole transfer is confirmed, so the destination is never partially written and a failed copy never touches it.
+func tempSibling(dst string) string {
+	var b [8]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		binary.BigEndian.PutUint64(b[:], uint64(time.Now().UnixNano()))
+	}
+	return pathpkg.Join(pathpkg.Dir(dst), "."+pathpkg.Base(dst)+".ftpcopy-"+hex.EncodeToString(b[:])+".part")
+}
+
+// storeTemp STORs r under a fresh temp name next to dst. On failure the temp (and only the temp: this copy created nothing else) is
+// removed again, best effort. On success the caller must commitTemp or discardTemp it.
+func (c *FTPClient) storeTemp(ctx context.Context, w *ftp.ServerConn, dstFull string, r io.Reader) (string, error) {
+	tmp := tempSibling(dstFull)
+	if err := w.Stor(tmp, &ctxReader{ctx: ctx, r: r}); err != nil {
+		c.discardTemp(w, tmp)
+		return "", fmt.Errorf("failed to store %s (as %s): %w", dstFull, tmp, err)
+	}
+	return tmp, nil
+}
+
+// discardTemp removes the temp file this copy created. If the connection it was written on is gone (a cancelled copy), a short-lived
+// fresh session is tried once. A pre-existing destination is never deleted here.
+func (c *FTPClient) discardTemp(w *ftp.ServerConn, tmp string) {
+	if w != nil {
+		derr := w.Delete(tmp)
+		var te *textproto.Error
+		if derr == nil || errors.As(derr, &te) {
+			return // deleted, or the server answered (e.g. 550: the temp was never created): the connection is alive, nothing more to do
+		}
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if fresh, _, err := c.dial(ctx); err == nil {
+		_ = fresh.Delete(tmp)
+		_ = fresh.Quit()
+	}
+}
+
+// commitTemp renames the confirmed temp over dst. If the server refuses (e.g. rename onto an existing file is not allowed) the temp is
+// removed and the destination is left exactly as it was: that is reported, never "fixed" by deleting the destination.
+func (c *FTPClient) commitTemp(w *ftp.ServerConn, tmp, dstFull string) error {
+	if err := w.Rename(tmp, dstFull); err != nil {
+		c.discardTemp(w, tmp)
+		return fmt.Errorf("server refused to move the finished copy onto %s (existing destination, if any, left unchanged): %w", dstFull, err)
+	}
+	return nil
+}
+
+// spoolDir is where the single-session fallback keeps its temporary file: FTPConfig.SpoolDir, default os.TempDir().
+func (c *FTPClient) spoolDir() string {
+	if c.config != nil && c.config.SpoolDir != "" {
+		return c.config.SpoolDir
+	}
+	return os.TempDir()
+}
+
+// freeSpaceFn reports the bytes available to this process in dir (replaceable in tests). An error means "unknown".
+var freeSpaceFn = freeSpace
+
 // CopyFile copies a file on the FTP server. FTP has no copy command, so the source is streamed (RETR on this client's control connection)
 // into a STOR on a SECOND control connection: nothing is buffered in memory or on disk, and no command is ever issued on a control
 // connection while its RETR data connection is open (some servers reject that). If the server refuses a second session, the copy falls back
-// to a temporary file (bounded by disk, removed on every path). A failed or unconfirmed copy removes the partial destination.
+// to a temporary file in SpoolDir (bounded by disk, refused up front when the source SIZE clearly exceeds the free space, removed on every
+// path).
+//
+// The data is stored under a unique temporary name beside the destination and renamed into place only after the source transfer is
+// confirmed, so a failed, cancelled or refused copy never deletes or truncates a pre-existing destination; only the temp this copy
+// created is removed. Cancelling ctx interrupts a transfer that is blocked in the network (see watchCancel for the one documented limit).
 func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error {
 	conn, base, err := c.session()
 	if err != nil {
@@ -488,7 +615,8 @@ func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 	srcFullPath := c.resolvePath(base, srcPath)
 	dstFullPath := c.resolvePath(base, dstPath)
 
-	wconn, _, derr := c.dial(ctx)
+	tr := &connTracker{}
+	wconn, _, derr := c.dial(ctx, ftp.DialWithDialFunc(tr.dialFunc(ctx)))
 	if derr != nil {
 		if cerr := ctx.Err(); cerr != nil {
 			return cerr // cancelled: not a reason to fall back
@@ -501,31 +629,45 @@ func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 	if err != nil {
 		return fmt.Errorf("failed to retrieve source file %s: %w", srcFullPath, err)
 	}
+	stopWatch := watchCancel(ctx, resp, tr)
+	defer stopWatch()
 	if dstDir := pathpkg.Dir(dstFullPath); dstDir != "." && dstDir != "/" {
 		_ = wconn.MakeDir(dstDir) // ignore error if the directory exists
 	}
-	storErr := wconn.Stor(dstFullPath, &ctxReader{ctx: ctx, r: resp})
+	tmp, storErr := c.storeTemp(ctx, wconn, dstFullPath, resp)
 	closeErr := resp.Close()
 	if closeErr != nil {
-		// like ftpReadCloser.Close: the source session may be dead, so it is replaced and the client is not left "connected" to a corpse
+		// like ftpReadCloser.Close: the source session may be dead or mid-transfer, so it is replaced and the client is not left "connected" to a corpse
 		_ = c.reconnectIf(context.WithoutCancel(ctx), conn)
 	}
-	if storErr != nil || closeErr != nil {
-		_ = wconn.Delete(dstFullPath) // best effort: no partial / unverified destination
-		if storErr != nil {
-			return fmt.Errorf("failed to store destination file %s: %w", dstFullPath, storErr)
+	if cerr := ctx.Err(); cerr != nil && (storErr != nil || closeErr != nil) {
+		if storErr == nil {
+			c.discardTemp(wconn, tmp)
 		}
+		return fmt.Errorf("copy of %s cancelled: %w", srcFullPath, cerr)
+	}
+	if storErr != nil {
+		return storErr
+	}
+	if closeErr != nil {
+		c.discardTemp(wconn, tmp) // unconfirmed source transfer: nothing is moved into place
 		return fmt.Errorf("source transfer of %s was not confirmed by the server: %w", srcFullPath, closeErr)
 	}
-	return nil
+	return c.commitTemp(wconn, tmp, dstFullPath)
 }
 
-// copyViaTempFile is the fallback for servers that allow a single control session: RETR to a private temp file, close it, then MKD/STOR on
-// the same connection.
+// copyViaTempFile is the fallback for servers that allow a single control session: RETR to a private temp file in SpoolDir, close it, then
+// MKD/STOR (to a temp name, then rename) on the same connection.
 func (c *FTPClient) copyViaTempFile(ctx context.Context, conn *ftp.ServerConn, srcFullPath, dstFullPath string, dialErr error) (err error) {
-	f, ferr := os.CreateTemp("", "ftpcopy-*")
+	dir := c.spoolDir()
+	if size, serr := conn.FileSize(srcFullPath); serr == nil && size > 0 {
+		if free, ferr := freeSpaceFn(dir); ferr == nil && free < uint64(size) {
+			return fmt.Errorf("cannot copy %s: the server allows no second session (%v) and the spool directory %s has %d bytes free for %d bytes", srcFullPath, dialErr, dir, free, size)
+		}
+	}
+	f, ferr := os.CreateTemp(dir, "ftpcopy-*")
 	if ferr != nil {
-		return fmt.Errorf("failed to open a second FTP session (%v) and to create a temporary file: %w", dialErr, ferr)
+		return fmt.Errorf("failed to open a second FTP session (%v) and to create a temporary file in %s: %w", dialErr, dir, ferr)
 	}
 	defer func() {
 		_ = f.Close()
@@ -535,12 +677,17 @@ func (c *FTPClient) copyViaTempFile(ctx context.Context, conn *ftp.ServerConn, s
 	if rerr != nil {
 		return fmt.Errorf("failed to retrieve source file %s: %w", srcFullPath, rerr)
 	}
+	stopWatch := watchCancel(ctx, resp, nil)
+	defer stopWatch()
 	_, cerr := io.Copy(f, &ctxReader{ctx: ctx, r: resp})
 	closeErr := resp.Close()
 	if closeErr != nil {
 		_ = c.reconnectIf(context.WithoutCancel(ctx), conn)
 	}
 	if cerr != nil {
+		if xerr := ctx.Err(); xerr != nil {
+			return fmt.Errorf("copy of %s cancelled: %w", srcFullPath, xerr)
+		}
 		return fmt.Errorf("failed to read source file %s: %w", srcFullPath, cerr)
 	}
 	if closeErr != nil {
@@ -549,15 +696,18 @@ func (c *FTPClient) copyViaTempFile(ctx context.Context, conn *ftp.ServerConn, s
 	if _, serr := f.Seek(0, io.SeekStart); serr != nil {
 		return serr
 	}
-	// the control connection may have been replaced by reconnectIf only on error paths, which returned above
+	// the source session was replaced only on error paths, which returned above, so conn is still the live control connection
 	if dstDir := pathpkg.Dir(dstFullPath); dstDir != "." && dstDir != "/" {
 		_ = conn.MakeDir(dstDir)
 	}
-	if err := conn.Stor(dstFullPath, &ctxReader{ctx: ctx, r: f}); err != nil {
-		_ = conn.Delete(dstFullPath)
-		return fmt.Errorf("failed to store destination file %s: %w", dstFullPath, err)
+	tmp, serr := c.storeTemp(ctx, conn, dstFullPath, f)
+	if serr != nil {
+		if xerr := ctx.Err(); xerr != nil {
+			return fmt.Errorf("copy of %s cancelled: %w", srcFullPath, xerr)
+		}
+		return serr
 	}
-	return nil
+	return c.commitTemp(conn, tmp, dstFullPath)
 }
 
 // GetProtocol returns the protocol name
