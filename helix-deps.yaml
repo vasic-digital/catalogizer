@@ -66,7 +66,7 @@ deps:
 
   - name: challenges
     ssh_url: git@github.com:vasic-digital/Challenges.git
-    ref: 8a352b9              # pinned sha = gitlink recorded for submodules/challenges
+    ref: 1aefc3a              # pinned sha = gitlink recorded for submodules/challenges
     why: "Challenges framework: end-to-end challenge scripts and anti-bluff recording (11.4.27)"
     layout: grouped
 
@@ -90,7 +90,7 @@ deps:
 
   - name: containers
     ssh_url: git@github.com:vasic-digital/Containers.git
-    ref: 4a8f04e              # pinned sha = gitlink recorded for submodules/containers
+    ref: bfd0e98              # pinned sha = gitlink recorded for submodules/containers
     why: "Rootless container orchestration layer (11.4.76 / 11.4.161 / 11.4.173 containerized build)"
     layout: grouped
 
@@ -114,7 +114,7 @@ deps:
 
   - name: doc_processor
     ssh_url: git@github.com:HelixDevelopment/DocProcessor.git
-    ref: 5692e52              # pinned sha = gitlink recorded for submodules/doc_processor
+    ref: b2ad2f7              # pinned sha = gitlink recorded for submodules/doc_processor
     why: "HelixDevelopment DocProcessor: document ingestion/parsing used by the catalog pipeline"
     layout: grouped
 
@@ -144,7 +144,7 @@ deps:
 
   - name: helix_qa
     ssh_url: git@github.com:HelixDevelopment/HelixQA.git
-    ref: 34d1e32              # pinned sha = gitlink recorded for submodules/helix_qa
+    ref: 8851c1a              # pinned sha = gitlink recorded for submodules/helix_qa
     why: "HelixQA: autonomous QA orchestration, test banks and Vision-driven UI QA (11.4.27 / 11.4.278)"
     layout: grouped
 
@@ -240,7 +240,7 @@ deps:
 
   - name: security
     ssh_url: git@github.com:vasic-digital/Security.git
-    ref: 79151f2              # pinned sha = gitlink recorded for submodules/security
+    ref: 0513361              # pinned sha = gitlink recorded for submodules/security
     why: "Security primitives (hashing, validation, sanitising) module"
     layout: grouped
 
@@ -270,7 +270,7 @@ deps:
 
   - name: vision_engine
     ssh_url: git@github.com:HelixDevelopment/VisionEngine.git
-    ref: ce16f92              # pinned sha = gitlink recorded for submodules/vision_engine
+    ref: d52fa44             # pinned sha = gitlink recorded for submodules/vision_engine
     why: "HelixDevelopment VisionEngine: Vision/OCR screen reading for HelixQA (11.4.160 / 11.4.278)"
     layout: grouped
 
