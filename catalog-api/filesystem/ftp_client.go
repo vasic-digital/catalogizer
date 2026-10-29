@@ -886,7 +886,11 @@ func (c *FTPClient) copyViaTempFile(ctx context.Context, conn *ftp.ServerConn, s
 	tmp, serr := c.storeTemp(ctx, conn, dstFullPath, f)
 	if serr != nil {
 		if xerr := ctx.Err(); xerr != nil {
-			return fmt.Errorf("copy of %s cancelled: %w", srcFullPath, xerr)
+			err := fmt.Errorf("copy of %s cancelled: %w", srcFullPath, xerr)
+			if oe := (*orphanError)(nil); errors.As(serr, &oe) {
+				err = fmt.Errorf("%w; %w", err, oe) // same as the streaming path: the orphan note must survive the cancel mapping
+			}
+			return err
 		}
 		return serr
 	}
