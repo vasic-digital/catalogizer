@@ -34,13 +34,13 @@ exclusions:
     justification: "golden inputs and recorded outputs read only by tests, never shipped"
   - path: "legacy/old_parser.go"
     class: first-party
-    tracked_item: ATM-1234
+    tracked_item: CAT-1234
     justification: "shipped parser kept out of the figure until its rewrite lands, plan in the tracked item"
 Y
 }
-printf 'ATM-1234\n' >"$T/items.txt"
+printf 'CAT-1234\n' >"$T/items.txt"
 runraw() { local a=("$@"); case " $* " in *" --root "*) ;; *) a+=(--schema-only);; esac; bash "$GATE" "${a[@]}" >"$T/out" 2>"$T/err"; RC=$?; }
-run() { runraw "$@" --items-file "$T/items.txt"; }   # a first-party item is verified against a register export; the golden fixture's ATM-1234 is in it
+run() { runraw "$@" --items-file "$T/items.txt"; }   # a first-party item is verified against a register export; the golden fixture's CAT-1234 is in it
 good; run "$T/app/demo.yaml" --json "$T/verdict.json"
 check "golden-good (schema only): exit 0" "$RC" 0
 check "golden-good (schema only): the verdict file says SCHEMA_ONLY and that no content or applied rule ran" "$(jq -r '.verdict + ":" + (.content_checked|tostring) + ":" + (.applied_checked|tostring)' "$T/verdict.json" 2>/dev/null)" "SCHEMA_ONLY:false:false"
@@ -66,9 +66,9 @@ run "$T/app/demo.yaml"; [ "$RC" = 1 ] && grep -qi 'unjustified' "$T/err" && ok "
 good; sed -i 's/justification: "third-party sources copied in unmodified, owned by their upstream"/justification: "x"/' "$T/app/demo.yaml"
 run "$T/app/demo.yaml"; [ "$RC" = 1 ] && ok "a one-character justification is not a justification: exit 1" || bad "a one-character justification accepted"
 # first-party without a tracked item
-good; sed -i '/tracked_item: ATM-1234/d' "$T/app/demo.yaml"
+good; sed -i '/tracked_item: CAT-1234/d' "$T/app/demo.yaml"
 run "$T/app/demo.yaml"; [ "$RC" = 1 ] && grep -qi 'tracked item' "$T/err" && grep -q 'old_parser' "$T/err" && ok "first-party entry without a tracked item: exit 1 naming it" || bad "first-party w/o item: rc $RC: $(cat "$T/err")"
-good; sed -i 's/tracked_item: ATM-1234/tracked_item: later/' "$T/app/demo.yaml"
+good; sed -i 's/tracked_item: CAT-1234/tracked_item: later/' "$T/app/demo.yaml"
 run "$T/app/demo.yaml"; [ "$RC" = 1 ] && ok "a tracked item that is not an item id is refused" || bad "a bogus tracked item accepted"
 # unknown class, over-broad pattern, schema, application mismatch, unreadable file, duplicate path, path escaping the root
 good; sed -i 's/class: vendored-third-party/class: whatever-i-like/' "$T/app/demo.yaml"; run "$T/app/demo.yaml"
@@ -186,7 +186,7 @@ mkfence "$(printf '  - path: "legacy/old.go"\n    class: first-party\n    measur
 gate; [ "$RC" = 1 ] && grep -q 'measured_by demo/nothing is not a row' "$T/err" && ok "I5: measured_by naming a lane no row of the lanes table measures is refused" || bad "I5: bogus measured_by accepted (rc $RC): $(cat "$T/err")"
 mkfence "$(printf '  - path: "legacy/old.go"\n    class: first-party\n    tracked_item: ZZZ-999999\n    measured_by: {app: demo, lane: rust}\n    justification: "a justification that is long enough to pass the length rule"\n')"
 gate; [ "$RC" = 1 ] && grep -q 'ZZZ-999999 does not exist' "$T/err" && ok "K1.4: a fabricated tracked item next to a VALID lane is refused (both route fields are verified)" || bad "K1.4: fabricated item beside a lane accepted (rc $RC): $(cat "$T/err")"
-mkfence "$(printf '  - path: "legacy/old.go"\n    class: first-party\n    tracked_item: ATM-1234\n    measured_by: {app: demo, lane: rust}\n    justification: "a justification that is long enough to pass the length rule"\n')"
+mkfence "$(printf '  - path: "legacy/old.go"\n    class: first-party\n    tracked_item: CAT-1234\n    measured_by: {app: demo, lane: rust}\n    justification: "a justification that is long enough to pass the length rule"\n')"
 gate; check "K1.4 control: a real item plus a valid different lane PASSes" "$RC" 0
 
 # ================= the original round-1 legs, on the fixture repository =================
@@ -206,7 +206,7 @@ mkfr
 good; cp "$T/app/demo.yaml" "$FR/coverage/exclusions/demo.yaml"
 bash "$GATE" "$FR/coverage/exclusions/demo.yaml" --root "$FR/app" --repo "$FR" >"$T/out" 2>"$T/err"; RC=$?
 [ "$RC" = 1 ] && grep -q 'tracked_item_unverifiable' "$T/err" && ok "I5: a well-formed tracked item with no register export is tracked_item_unverifiable (exit 1)" || bad "I5: unverifiable item accepted (rc $RC): $(cat "$T/err")"
-good; sed -i 's/tracked_item: ATM-1234/tracked_item: ZZZ-999999/' "$T/app/demo.yaml"; cp "$T/app/demo.yaml" "$FR/coverage/exclusions/demo.yaml"; gate
+good; sed -i 's/tracked_item: CAT-1234/tracked_item: ZZZ-999999/' "$T/app/demo.yaml"; cp "$T/app/demo.yaml" "$FR/coverage/exclusions/demo.yaml"; gate
 [ "$RC" = 1 ] && grep -q 'ZZZ-999999 does not exist' "$T/err" && ok "I5: a fabricated item id (ZZZ-999999) is refused when the register export lacks it" || bad "I5: fabricated item accepted (rc $RC): $(cat "$T/err")"
 # the content half of 11.4.224 E, with --root: matched fraction and class evidence
 R5="$FR/app"; rm -rf "$R5"; mkdir -p "$R5/src" "$R5/vendor/lib" "$R5/gen/schemas" "$R5/tests/fixtures"
@@ -392,7 +392,7 @@ mkfence ""; printf 'schema: coverage-exclusions/1\napplication: demo\nexclusions
 gate; [ "$RC" = 1 ] && grep -q 'unmeasured_first_party: 3 first-party file' "$T/err" && ok "K5.6: 4 in-scope scripts, 1 measured, none named by the fence: unmeasured_first_party names the other 3" || bad "K5.6: scope (rc $RC): $(cat "$T/err")"
 printf 'scripts/a.sh\nscripts/b.sh\nscripts/c.sh\nscripts/d.sh\n' >"$T/measured-all.txt"; gate --measured "$T/measured-all.txt"; check "K5.6 golden-false: the harness's real target list covers the scope: PASS" "$RC" 0
 printf 'scripts/a.sh\nscripts/b.sh\n' >"$T/measured-two.txt"; gate --measured "$T/measured-two.txt"; [ "$RC" = 1 ] && grep -q 'unmeasured_first_party: 2' "$T/err" && ok "K5.6: a --measured list that is a subset of the scope is judged by ITS content (2 unmeasured), not by the row's default" || bad "K5.6: measured list (rc $RC): $(cat "$T/err")"
-printf 'schema: coverage-exclusions/1\napplication: demo\nexclusions:\n  - path: "scripts/c.sh"\n    class: first-party\n    tracked_item: ATM-1234\n    justification: "a justification that is long enough to pass the length rule"\n  - path: "scripts/d.sh"\n    class: first-party\n    tracked_item: ATM-1234\n    justification: "a justification that is long enough to pass the length rule"\n' >"$FR/coverage/exclusions/demo.yaml"
+printf 'schema: coverage-exclusions/1\napplication: demo\nexclusions:\n  - path: "scripts/c.sh"\n    class: first-party\n    tracked_item: CAT-1234\n    justification: "a justification that is long enough to pass the length rule"\n  - path: "scripts/d.sh"\n    class: first-party\n    tracked_item: CAT-1234\n    justification: "a justification that is long enough to pass the length rule"\n' >"$FR/coverage/exclusions/demo.yaml"
 gate --measured "$T/measured-two.txt"; check "K5.6 golden-false: two first-party entries (a tracked item) naming c.sh and d.sh plus the measured a.sh and b.sh cover the whole scope: PASS" "$RC" 0
 # -- the real committed fences with --root and --repo: the committed verdicts (K14.6, CM14)
 real() { bash "$GATE" "$REPO/coverage/exclusions/$1.yaml" --root "$REPO/$2" --repo "$REPO" >"$T/out" 2>"$T/err"; RC=$?; }

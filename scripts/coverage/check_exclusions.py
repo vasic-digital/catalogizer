@@ -246,7 +246,7 @@ def main(argv):
         if cls == "first-party":
             first_party.append({"path": p, "tracked_item": item, "measured_by": mby})
             if not item_ok and not mby_ok:
-                problems.append("%s: a first-party exclusion needs a tracked item (an id such as ATM-123) naming the plan to bring it into scope, or `measured_by: {app, lane}` naming the lane that measures it" % label)
+                problems.append("%s: a first-party exclusion needs a tracked item (an id such as CAT-123) naming the plan to bring it into scope, or `measured_by: {app, lane}` naming the lane that measures it" % label)
             if item_ok:   # K1.4: a route field that is present is verified whether or not the other one is valid
                 if known_items is None:   # MUT:item_unverifiable
                     problems.append("%s: tracked_item_unverifiable: %s is well-formed but there is no register export (--items-file) to prove it exists" % (label, item))

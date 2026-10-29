@@ -16,7 +16,7 @@ Stage 1/2 of the findings-register import (doc04 section 9.3, the `register-impo
 
 1. **mint** a `reg_ids` row (`mint_basis='import'`, `minted_by='register-import:e<entry_id>'`, so a crash is resumed from the same id and never mints a second one);
 2. **write `reg_item_ext` BEFORE the item exists** (owner answer): `custody_basis='legacy_import'`, `reverify_required=1` and the raw `legacy_status` for a closed-class ticket (`resolved`, `fixed`, `closed`); `machine_evidence`/0 for `wontfix`, `open` and anything else (FR-008: `wontfix` is not a permitted closure, it imports `Queued` with `legacy_status='wontfix'`); `defect_layer='source'` (the lowest evidence floor, it can only be raised); `component_id` NULL; `severity` by the IC-01 scale (S1..S5 or the five words; an unmapped or absent value defaults to `medium` and says so in `severity_source`);
-3. **add** the item with the real engine, `workable-items add <Type> <severity> --id CAT-NNN --prefix CAT` (id prefix `CAT`, never `ATM`);
+3. **add** the item with the real engine, `workable-items add <Type> <severity> --id CAT-NNN --prefix CAT` (id prefix `CAT`);
 4. **close** a closed-class ticket on the legacy path with the engine's per-Type closure vocabulary (Bug `fixed`, Task `completed`, Feature `implemented`; evidence = the ticket file of the snapshot), which lands it terminal-but-unverified in `v_reverify_queue`;
 5. **map** the entry (`reg_source_map`: `relation='primary'`, `match_basis='import_1to1'` until the intake-match calibration allows more, `severity_governs=1`, `mapped_by='register-import'`).
 

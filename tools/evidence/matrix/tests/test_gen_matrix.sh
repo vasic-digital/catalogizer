@@ -315,7 +315,7 @@ python3 -I "$GEN" --applicability "$T/m.yaml" --out "$T/o-x" --timestamp "$TS" -
 check "mint: the retry calls the register ONCE more, for the pending cell, with the same key" "$(tail -n +3 "$T/mint.log" | tr '\n' '|')" "alpha integration ~ mint:alpha|integration|"
 check "mint: both cells are minted after the retry" "$(python3 -I -c "import json,sys;print(sorted(v['state'] for v in json.load(open(sys.argv[1]))['items'].values()))" "$T/mint-ledger-x.json")" "['minted', 'minted']"
 # refusals of what the register printed
-for bad_out in "ATM-FX1" "CAT-901 extra"; do
+for bad_out in "CAT-FX1" "CAT-901 extra"; do
   cat >"$T/mintbad.sh" <<M
 #!/usr/bin/env bash
 echo '$bad_out'

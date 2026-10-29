@@ -63,7 +63,7 @@ ROOT = os.environ["SYNC_ROOT"]; LOCKED = os.environ["SYNC_LOCKED"]; SELF = os.en
 WIIN = "/src/constitution/scripts/workable-items/bin/workable-items-linux"
 NAME_RE = re.compile(r"^[a-z][a-z0-9_]{0,31}$")
 ENV_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,63}$")
-ATM_RE = re.compile(r"^[A-Z]{3}-[0-9]{3,}$")
+ID_RE = re.compile(r"^[A-Z]{3}-[0-9]{3,}$")
 REF_RE = re.compile(r"^[\x21-\x7e]{1,512}$")
 STATE_RE = re.compile(r"^[\x20-\x7e]{1,64}$")
 SKIP_REASONS = ("credentials_absent", "tracker_client_absent", "unreachable", "not_configured", "disabled_by_operator")
