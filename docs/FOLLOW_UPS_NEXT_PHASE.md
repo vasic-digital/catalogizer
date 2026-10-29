@@ -244,3 +244,8 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
   proven bound; O1 is open and its content was not given to the author of this entry (UNKNOWN; the
   holder of the FTP review has to fill it in). The earlier "two blind sleeps" item is resolved and
   removed.
+
+## Appendix digests (279-290) — follow-ups from Opus re-review (2026-10-29)
+- m2, m5: minor test-instrumentation/process-doc findings from the re-review; texts to be re-extracted from the reviewer report (a8ee20da1e30f3655) when the next appendix pass runs.
+- M6: add an id-to-name join check comparing digest gate ids/names with `constitution/scripts/gates/gate_ledger_deferrals.tsv` (the §11.4.288 OWED-GATE-150..152 name-reorder mutant survives phrase rows).
+- 12 new digests not yet compared against groups/*.md (UNCONFIRMED).
