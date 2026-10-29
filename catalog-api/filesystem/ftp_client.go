@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log"
 	"net"
 	"net/textproto"
 	"os"
@@ -16,6 +17,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"github.com/jlaffaye/ftp"
 )
@@ -545,46 +547,118 @@ func tempSibling(dst string) string {
 	if _, err := rand.Read(b[:]); err != nil {
 		binary.BigEndian.PutUint64(b[:], uint64(time.Now().UnixNano()))
 	}
-	return pathpkg.Join(pathpkg.Dir(dst), "."+pathpkg.Base(dst)+".ftpcopy-"+hex.EncodeToString(b[:])+".part")
+	// the temp name adds 26 bytes to the base name; servers cap a name at NAME_MAX (255 on most file systems), so a long base is cut
+	// (at a rune boundary) to keep the whole temp name well below that. The destination keeps its own full name.
+	base := pathpkg.Base(dst)
+	if len(base) > maxTempBase {
+		cut := maxTempBase
+		for cut > 0 && !utf8.RuneStart(base[cut]) {
+			cut--
+		}
+		base = base[:cut]
+	}
+	return pathpkg.Join(pathpkg.Dir(dst), "."+base+".ftpcopy-"+hex.EncodeToString(b[:])+".part")
 }
 
+// maxTempBase is the longest part of the destination's base name that is kept in the temp name (200 + 26 added bytes < 255).
+const maxTempBase = 200
+
 // storeTemp STORs r under a fresh temp name next to dst. On failure the temp (and only the temp: this copy created nothing else) is
-// removed again, best effort. On success the caller must commitTemp or discardTemp it.
+// removed again; if that removal fails the error names the temp that was left behind.
 func (c *FTPClient) storeTemp(ctx context.Context, w *ftp.ServerConn, dstFull string, r io.Reader) (string, error) {
 	tmp := tempSibling(dstFull)
 	if err := w.Stor(tmp, &ctxReader{ctx: ctx, r: r}); err != nil {
-		c.discardTemp(w, tmp)
-		return "", fmt.Errorf("failed to store %s (as %s): %w", dstFull, tmp, err)
+		err = fmt.Errorf("failed to store %s (as %s): %w", dstFull, tmp, err)
+		if derr := c.discardTemp(w, tmp); derr != nil {
+			err = fmt.Errorf("%w; %v", err, derr)
+		}
+		return "", err
 	}
 	return tmp, nil
 }
 
+// tempNeverCreated reports whether a DELE error says the file did not exist (550 "no such file" and friends), i.e. there is nothing to
+// clean up. Any other answer (421, a 550 "permission denied", ...) says nothing about whether the temp exists.
+func tempNeverCreated(err error) bool {
+	var te *textproto.Error
+	if !errors.As(err, &te) || te.Code != 550 {
+		return false
+	}
+	m := strings.ToLower(te.Msg)
+	return strings.Contains(m, "no such") || strings.Contains(m, "not found") || strings.Contains(m, "not exist") || strings.Contains(m, "does not exist")
+}
+
 // discardTemp removes the temp file this copy created. If the connection it was written on is gone (a cancelled copy), a short-lived
-// fresh session is tried once. A pre-existing destination is never deleted here.
-func (c *FTPClient) discardTemp(w *ftp.ServerConn, tmp string) {
+// fresh session is tried once. A pre-existing destination is never deleted here. The returned error is non-nil exactly when the temp may
+// still exist on the server; it names the temp so an orphan is never silent (it is also logged).
+func (c *FTPClient) discardTemp(w *ftp.ServerConn, tmp string) error {
+	var last error
 	if w != nil {
 		derr := w.Delete(tmp)
+		if derr == nil || tempNeverCreated(derr) {
+			return nil
+		}
+		last = derr
 		var te *textproto.Error
-		if derr == nil || errors.As(derr, &te) {
-			return // deleted, or the server answered (e.g. 550: the temp was never created): the connection is alive, nothing more to do
+		if errors.As(derr, &te) && te.Code >= 500 {
+			// a permanent refusal (e.g. permission denied): a fresh session would be refused too
+			return orphanErr(tmp, last)
 		}
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if fresh, _, err := c.dial(ctx); err == nil {
-		_ = fresh.Delete(tmp)
-		_ = fresh.Quit()
+	fresh, _, err := c.dial(ctx)
+	if err != nil {
+		if last == nil {
+			last = err
+		}
+		return orphanErr(tmp, fmt.Errorf("%v (cleanup session: %v)", last, err))
 	}
+	defer func() { _ = fresh.Quit() }()
+	if derr := fresh.Delete(tmp); derr != nil && !tempNeverCreated(derr) {
+		return orphanErr(tmp, derr)
+	}
+	return nil
+}
+
+func orphanErr(tmp string, cause error) error {
+	log.Printf("ftp: temporary file %s may remain on the server: %v", tmp, cause)
+	return fmt.Errorf("temporary file %s may remain on the server (cleanup failed: %v)", tmp, cause)
 }
 
 // commitTemp renames the confirmed temp over dst. If the server refuses (e.g. rename onto an existing file is not allowed) the temp is
-// removed and the destination is left exactly as it was: that is reported, never "fixed" by deleting the destination.
+// removed and the destination is left exactly as it was: that is reported, never "fixed" by deleting the destination. If the connection
+// fails during the rename the outcome is unknown and is reported as such (the rename may or may not have been applied).
 func (c *FTPClient) commitTemp(w *ftp.ServerConn, tmp, dstFull string) error {
 	if err := w.Rename(tmp, dstFull); err != nil {
-		c.discardTemp(w, tmp)
-		return fmt.Errorf("server refused to move the finished copy onto %s (existing destination, if any, left unchanged): %w", dstFull, err)
+		derr := c.discardTemp(w, tmp)
+		var te *textproto.Error
+		var out error
+		if errors.As(err, &te) {
+			out = fmt.Errorf("server refused to move the finished copy onto %s (existing destination, if any, left unchanged): %w", dstFull, err)
+		} else {
+			out = fmt.Errorf("connection failed while moving the finished copy onto %s: the rename may or may not have been applied: %w", dstFull, err)
+		}
+		if derr != nil {
+			out = fmt.Errorf("%w; %v", out, derr)
+		}
+		return out
 	}
 	return nil
+}
+
+// closeResp closes a RETR response, i.e. waits for the server's final reply on the control connection. That read has no deadline of its
+// own: a server that never answers would block it forever even after ctx is cancelled. So on cancel it stops waiting and returns
+// ctx.Err(); the caller then replaces the session (reconnectIf closes the old control connection, which also ends the abandoned read).
+func (c *FTPClient) closeResp(ctx context.Context, resp *ftp.Response) error {
+	done := make(chan error, 1)
+	go func() { done <- resp.Close() }()
+	select {
+	case err := <-done:
+		return err
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 // spoolDir is where the single-session fallback keeps its temporary file: FTPConfig.SpoolDir, default os.TempDir().
@@ -635,23 +709,38 @@ func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 		_ = wconn.MakeDir(dstDir) // ignore error if the directory exists
 	}
 	tmp, storErr := c.storeTemp(ctx, wconn, dstFullPath, resp)
-	closeErr := resp.Close()
+	closeErr := c.closeResp(ctx, resp)
 	if closeErr != nil {
 		// like ftpReadCloser.Close: the source session may be dead or mid-transfer, so it is replaced and the client is not left "connected" to a corpse
 		_ = c.reconnectIf(context.WithoutCancel(ctx), conn)
 	}
 	if cerr := ctx.Err(); cerr != nil && (storErr != nil || closeErr != nil) {
+		err := fmt.Errorf("copy of %s cancelled: %w", srcFullPath, cerr)
 		if storErr == nil {
-			c.discardTemp(wconn, tmp)
+			if derr := c.discardTemp(wconn, tmp); derr != nil {
+				err = fmt.Errorf("%w; %v", err, derr)
+			}
 		}
-		return fmt.Errorf("copy of %s cancelled: %w", srcFullPath, cerr)
+		return err
 	}
 	if storErr != nil {
 		return storErr
 	}
 	if closeErr != nil {
-		c.discardTemp(wconn, tmp) // unconfirmed source transfer: nothing is moved into place
-		return fmt.Errorf("source transfer of %s was not confirmed by the server: %w", srcFullPath, closeErr)
+		err := fmt.Errorf("source transfer of %s was not confirmed by the server: %w", srcFullPath, closeErr)
+		if derr := c.discardTemp(wconn, tmp); derr != nil { // unconfirmed source transfer: nothing is moved into place
+			err = fmt.Errorf("%w; %v", err, derr)
+		}
+		return err
+	}
+	// the transfer is confirmed: disarm the cancel watcher so a late cancel cannot close the destination connection in the middle of the
+	// rename. If it already fired the connections are closed, so the copy is abandoned (cancelled) instead of committed.
+	if !stopWatch() {
+		err := fmt.Errorf("copy of %s cancelled before it was moved into place: %w", srcFullPath, context.Cause(ctx))
+		if derr := c.discardTemp(wconn, tmp); derr != nil {
+			err = fmt.Errorf("%w; %v", err, derr)
+		}
+		return err
 	}
 	return c.commitTemp(wconn, tmp, dstFullPath)
 }
@@ -680,7 +769,7 @@ func (c *FTPClient) copyViaTempFile(ctx context.Context, conn *ftp.ServerConn, s
 	stopWatch := watchCancel(ctx, resp, nil)
 	defer stopWatch()
 	_, cerr := io.Copy(f, &ctxReader{ctx: ctx, r: resp})
-	closeErr := resp.Close()
+	closeErr := c.closeResp(ctx, resp)
 	if closeErr != nil {
 		_ = c.reconnectIf(context.WithoutCancel(ctx), conn)
 	}

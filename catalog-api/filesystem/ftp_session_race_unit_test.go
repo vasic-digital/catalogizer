@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/textproto"
 	"os"
 	"runtime"
 	"strings"
@@ -19,6 +20,7 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+	"unicode/utf8"
 )
 
 // opsLoop runs the operations that read c.client/c.base until stop is closed; a panic (nil *ServerConn dereference) is reported as an error.
@@ -163,21 +165,24 @@ type strictFTP struct {
 	storStall    bool   // STOR accepts the data connection and never reads it (the client's writes block)
 	onStor       func() // called when a STOR is accepted (before data is read)
 	// observations
-	accepted  int32
-	live      int32 // control connections currently open (only counted when maxConns > 0)
-	quits     int32
-	rejected  int32
-	retrs     int32 // RETR commands received
-	storedN   int64 // bytes received by the last STOR
-	storing   int64 // bytes received so far by any STOR (progress)
-	mu        sync.Mutex
-	stored    []byte // content of the last STOR when <= 1 MiB
-	deleted   []string
-	storedCh  chan struct{}
-	files     map[string][]byte // the responder's tiny file store (<= 1 MiB content kept; bigger ones keep a marker)
-	storNames []string
-	renames   [][2]string
-	release   chan struct{} // closed at test cleanup: unblocks the stalled handlers
+	accepted     int32
+	live         int32 // control connections currently open (only counted when maxConns > 0)
+	quits        int32
+	rejected     int32
+	retrs        int32 // RETR commands received
+	storedN      int64 // bytes received by the last STOR
+	storing      int64 // bytes received so far by any STOR (progress)
+	mu           sync.Mutex
+	stored       []byte // content of the last STOR when <= 1 MiB
+	deleted      []string
+	storedCh     chan struct{}
+	files        map[string][]byte // the responder's tiny file store (<= 1 MiB content kept; bigger ones keep a marker)
+	storNames    []string
+	renames      [][2]string
+	release      chan struct{} // closed at test cleanup: unblocks the stalled handlers
+	noAbortReply bool
+	maxNameLen   int
+	deleRefuse   bool
 }
 
 func (s *strictFTP) seed(name, content string) {
@@ -333,6 +338,10 @@ func (s *strictFTP) serve(c net.Conn) {
 					io.Copy(io.Discard, dc)
 					dc.Close()
 					busy.Store(false)
+					if s.noAbortReply {
+						<-s.release
+						return
+					}
 					say("426 aborted by client")
 					return
 				}
@@ -374,6 +383,10 @@ func (s *strictFTP) serve(c net.Conn) {
 				say("257 created")
 			}
 		case "DELE":
+			if s.deleRefuse {
+				say("550 permission denied")
+				continue
+			}
 			s.mu.Lock()
 			s.deleted = append(s.deleted, arg)
 			_, existed := s.files[arg]
@@ -418,6 +431,10 @@ func (s *strictFTP) serve(c net.Conn) {
 			if busy.Load() {
 				atomic.AddInt32(&s.rejected, 1)
 				say("425 data connection open")
+				continue
+			}
+			if s.maxNameLen > 0 && len(arg[strings.LastIndex(arg, "/")+1:]) > s.maxNameLen {
+				say("553 file name too long")
 				continue
 			}
 			s.mu.Lock()
@@ -956,5 +973,148 @@ func TestFTPSession_ConnectedFlagWithNilClientIsNotConnected(t *testing.T) {
 	}
 	if err := c.TestConnection(context.Background()); err == nil {
 		t.Fatalf("TestConnection with a nil connection returned nil error")
+	}
+}
+
+// F7: concurrent copies onto one destination must each STOR under their OWN temp name (a constant or reused suffix would let them
+// overwrite each other's partial data), and the temp name must stay within NAME_MAX for any base name.
+func TestFTPCopyFile_ConcurrentCopiesUseDistinctTempNames(t *testing.T) {
+	s := startStrictFTP(t)
+	s.seed("/dir/dst.bin", oldDst)
+	const n = 6
+	var wg sync.WaitGroup
+	errs := make(chan error, n)
+	for i := 0; i < n; i++ {
+		c := strictClient(t, s)
+		wg.Add(1)
+		go func() { defer wg.Done(); errs <- c.CopyFile(context.Background(), "/src.bin", "/dir/dst.bin") }()
+	}
+	wg.Wait()
+	close(errs)
+	for e := range errs {
+		if e != nil {
+			t.Fatalf("concurrent copy failed: %v", e)
+		}
+	}
+	s.mu.Lock()
+	names := append([]string(nil), s.storNames...)
+	s.mu.Unlock()
+	seen := map[string]bool{}
+	for _, nm := range names {
+		if seen[nm] {
+			t.Fatalf("two concurrent copies stored under the same temp name %q (all: %v)", nm, names)
+		}
+		seen[nm] = true
+	}
+	if len(names) != n {
+		t.Fatalf("STOR names = %d (%v), want %d", len(names), names, n)
+	}
+}
+
+func TestFTPTempSibling_StaysWithinNameMaxAndRuneBoundary(t *testing.T) {
+	for _, base := range []string{strings.Repeat("a", 250), strings.Repeat("ü", 200), strings.Repeat("日", 120), "x"} {
+		tmp := tempSibling("/dir/" + base)
+		name := tmp[strings.LastIndex(tmp, "/")+1:]
+		if len(name) > 255 {
+			t.Fatalf("temp name for a %d-byte base is %d bytes, over NAME_MAX", len(base), len(name))
+		}
+		if !utf8.ValidString(name) {
+			t.Fatalf("temp name %q is cut in the middle of a rune", name)
+		}
+		if !strings.Contains(name, ".ftpcopy-") || !strings.HasSuffix(name, ".part") {
+			t.Fatalf("temp name %q lost its marker", name)
+		}
+	}
+}
+
+func TestFTPTempNeverCreated_OnlyNotFoundCounts(t *testing.T) {
+	for msg, want := range map[string]bool{"no such file": true, "File not found": true, "permission denied": false, "": false} {
+		if got := tempNeverCreated(&textproto.Error{Code: 550, Msg: msg}); got != want {
+			t.Errorf("550 %q: never-created=%v, want %v", msg, got, want)
+		}
+	}
+	if tempNeverCreated(&textproto.Error{Code: 421, Msg: "no such file"}) || tempNeverCreated(errors.New("EOF")) {
+		t.Error("a 421 or a non-protocol error must not count as 'never created'")
+	}
+}
+
+func TestFreeSpace_ReportsPositiveForRealDir(t *testing.T) {
+	free, err := freeSpace(t.TempDir())
+	if err != nil {
+		t.Skipf("free space unknown on this platform: %v", err)
+	}
+	if free == 0 {
+		t.Fatal("freeSpace reported 0 bytes for a writable temp dir")
+	}
+}
+
+// F1 (round 4): the source server never answers on the control connection after the data connection is torn down. Cancel must still
+// return promptly with the cancellation error, leave the destination untouched, and leave the client with a WORKING (replaced) session.
+func TestFTPCopyFile_CancelWithBlackholedSourceControlReplacesSession(t *testing.T) {
+	for _, mode := range []string{"stream", "fallback"} {
+		t.Run(mode, func(t *testing.T) { blackholedSourceControl(t, mode == "fallback") })
+	}
+}
+
+func blackholedSourceControl(t *testing.T, fallback bool) {
+	s := startStrictFTP(t, func(s *strictFTP) {
+		s.retrStall = true
+		s.noAbortReply = true
+		if fallback {
+			s.maxConns = 1
+		}
+	})
+	s.seed("/dir/dst.bin", oldDst)
+	c := strictClient(t, s)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	time.AfterFunc(1200*time.Millisecond, cancel)
+	start := time.Now()
+	done := make(chan error, 1)
+	go func() { done <- c.CopyFile(ctx, "/src.bin", "/dir/dst.bin") }()
+	var err error
+	select {
+	case err = <-done:
+	case <-time.After(8 * time.Second):
+		t.Fatal("CopyFile still blocked long after cancel (resp.Close waits for a control reply that never comes)")
+	}
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("err = %v, want it to wrap context.Canceled (after %v)", err, time.Since(start))
+	}
+	if got, ok := s.file("/dir/dst.bin"); !ok || got != oldDst {
+		t.Fatalf("destination = %q (exists=%v), want it untouched", got, ok)
+	}
+	if !c.IsConnected() {
+		t.Fatal("client is left disconnected after the cancelled copy; the stuck session must be replaced by a live one")
+	}
+	fctx, fcancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer fcancel()
+	if ok, ferr := c.FileExists(fctx, "/dir/dst.bin"); ferr != nil || !ok {
+		t.Fatalf("follow-up FileExists on the replaced session = %v, %v; want true, nil", ok, ferr)
+	}
+}
+
+// F3 (round 4): when the temp cannot be removed, the error must name it (never a silent orphan).
+func TestFTPCopyFile_OrphanTempIsNamedInError(t *testing.T) {
+	s := startStrictFTP(t, func(s *strictFTP) { s.noRenameOver = true; s.deleRefuse = true })
+	s.seed("/dir/dst.bin", oldDst)
+	c := strictClient(t, s)
+	err := c.CopyFile(context.Background(), "/src.bin", "/dir/dst.bin")
+	if err == nil {
+		t.Fatal("CopyFile succeeded although rename-over was refused")
+	}
+	left := s.tempNames()
+	if len(left) != 1 {
+		t.Fatalf("temps on server = %v, want exactly the one orphan", left)
+	}
+	// a permanent refusal (550 permission denied) is final: no extra cleanup session may be opened (client + the copy's 2nd connection = 2)
+	if n := atomic.LoadInt32(&s.accepted); n != 2 {
+		t.Fatalf("control connections accepted = %d, want 2 (a permanent DELE refusal must not trigger a retry on a fresh session)", n)
+	}
+	if !strings.Contains(err.Error(), left[0]) {
+		t.Fatalf("error %q does not name the orphan temp %s", err, left[0])
+	}
+	if got, _ := s.file("/dir/dst.bin"); got != oldDst {
+		t.Fatalf("destination = %q, want untouched", got)
 	}
 }
