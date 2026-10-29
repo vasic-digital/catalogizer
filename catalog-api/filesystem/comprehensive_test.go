@@ -934,7 +934,7 @@ func TestFTPClient_ResolvePath(t *testing.T) {
 				Port: 21,
 				Path: tt.basePath,
 			})
-			result := client.resolvePath(tt.input)
+			result := client.resolvePath(client.base, tt.input)
 			assert.Equal(t, tt.expected, result)
 		})
 	}

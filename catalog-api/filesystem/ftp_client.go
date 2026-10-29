@@ -1,6 +1,7 @@
 package filesystem
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -33,10 +34,13 @@ type FTPClient struct {
 	// ("movies") the server resolved it against the login directory, so prefixing the relative text again would address
 	// <login>/movies/movies (WF22 R18). base is what the server says the working directory is after the CWD.
 	base string
-	// mu guards the fields client, connected, base and gen: every WRITE of them (Connect, Disconnect, reconnectIf) and IsConnected hold it.
-	// Scope of the claim: the protocol operations (ReadFile, ListDirectory, ...) read c.client/c.base without the lock and are
-	// single-goroutine, exactly like the underlying *ftp.ServerConn; the production callers create one client per job via
-	// ClientFactory.CreateClient (no goroutine sharing was found in universal_scanner.go; other handlers were not audited).
+	// mu guards the fields client, connected, base and gen: every read and write of them (Connect, Disconnect, reconnectIf, IsConnected and
+	// session()) holds it. Every protocol operation (ReadFile, ListDirectory, ...) calls session() ONCE and uses only the (conn, base) it
+	// returned, so a concurrent Disconnect / redial can no longer hand it a nil *ftp.ServerConn or a torn client/base pair.
+	// Scope of the claim: this makes the client's OWN fields race-free. The underlying *ftp.ServerConn is not goroutine-safe: two
+	// operations on one client at the same time, or a Disconnect's QUIT overlapping an operation that is mid-command on that connection,
+	// still interleave on the control connection (an in-flight operation then fails with a connection error). The production callers create
+	// one client per job via ClientFactory.CreateClient (no goroutine sharing was found in universal_scanner.go; other handlers were not audited).
 	mu sync.Mutex
 	// gen counts Disconnect calls. A reconnect started before a Disconnect must not install its new connection afterwards.
 	gen uint64
@@ -120,20 +124,32 @@ func (c *FTPClient) IsConnected() bool {
 	return c.connected && c.client != nil
 }
 
+// session returns a consistent snapshot of the control connection and base directory, or a "not connected" error. It is the only way an
+// operation reads c.client / c.base: the lock is held while they are read, and the operation then uses the returned values only.
+func (c *FTPClient) session() (*ftp.ServerConn, string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if !c.connected || c.client == nil {
+		return nil, "", fmt.Errorf("not connected")
+	}
+	return c.client, c.base, nil
+}
+
 // TestConnection tests the FTP connection
 func (c *FTPClient) TestConnection(ctx context.Context) error {
-	if !c.IsConnected() {
-		return fmt.Errorf("not connected")
+	conn, _, err := c.session()
+	if err != nil {
+		return err
 	}
-	_, err := c.client.CurrentDir()
+	_, err = conn.CurrentDir()
 	return err
 }
 
 // resolvePath resolves a path within the FTP base directory (always as a slash path, whatever the host OS). The request is confined with
 // ConfinePath first, so "/../../etc" under "/srv/movies" is "/srv/movies/etc", never "/etc" (WF22 N2).
-func (c *FTPClient) resolvePath(p string) string {
-	if c.base != "" {
-		return JoinConfined(c.base, p)
+func (c *FTPClient) resolvePath(base, p string) string {
+	if base != "" {
+		return JoinConfined(base, p)
 	}
 	if c.config.Path != "" { // not connected through Connect (unit use): the configured path, made absolute
 		return JoinConfined(pathpkg.Join("/", c.config.Path), p)
@@ -143,11 +159,11 @@ func (c *FTPClient) resolvePath(p string) string {
 
 // ReadFile reads a file from the FTP server
 func (c *FTPClient) ReadFile(ctx context.Context, path string) (io.ReadCloser, error) {
-	if !c.IsConnected() {
-		return nil, fmt.Errorf("not connected")
+	conn, base, err := c.session()
+	if err != nil {
+		return nil, err
 	}
-	fullPath := c.resolvePath(path)
-	conn := c.client
+	fullPath := c.resolvePath(base, path)
 	resp, err := conn.Retr(fullPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve FTP file %s: %w", fullPath, err)
@@ -242,22 +258,22 @@ func (c *FTPClient) reconnectIf(ctx context.Context, old *ftp.ServerConn) error 
 
 // WriteFile writes a file to the FTP server
 func (c *FTPClient) WriteFile(ctx context.Context, path string, data io.Reader) error {
-	if !c.IsConnected() {
-		return fmt.Errorf("not connected")
+	conn, base, err := c.session()
+	if err != nil {
+		return err
 	}
-	fullPath := c.resolvePath(path)
+	fullPath := c.resolvePath(base, path)
 
 	// Ensure the directory exists
 	dir := pathpkg.Dir(fullPath)
 	if dir != "." && dir != "/" {
-		err := c.client.MakeDir(dir)
-		if err != nil {
+		if err := conn.MakeDir(dir); err != nil {
 			// Ignore error if directory already exists
 			// FTP doesn't have a standard way to check if directory exists
 		}
 	}
 
-	err := c.client.Stor(fullPath, data)
+	err = conn.Stor(fullPath, data)
 	if err != nil {
 		return fmt.Errorf("failed to store FTP file %s: %w", fullPath, err)
 	}
@@ -266,19 +282,20 @@ func (c *FTPClient) WriteFile(ctx context.Context, path string, data io.Reader) 
 
 // GetFileInfo gets information about a file
 func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, error) {
-	if !c.IsConnected() {
-		return nil, fmt.Errorf("not connected")
+	conn, base, err := c.session()
+	if err != nil {
+		return nil, err
 	}
-	fullPath := c.resolvePath(path)
+	fullPath := c.resolvePath(base, path)
 
 	// SIZE is defined for plain files only: a directory answers "550 not a plain file". Try it first (cheap, files), and on
 	// failure resolve the entry through the parent listing, which also tells a directory from a missing path.
-	size, sizeErr := c.client.FileSize(fullPath)
+	size, sizeErr := conn.FileSize(fullPath)
 	if sizeErr == nil {
 		return &FileInfo{
 			Name:    pathpkg.Base(path),
 			Size:    size,
-			ModTime: c.fileModTime(fullPath),
+			ModTime: c.fileModTime(conn, fullPath),
 			IsDir:   false,
 			Mode:    0644,
 			Path:    path,
@@ -288,7 +305,7 @@ func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, er
 	if fullPath == "/" || name == "." || name == "/" {
 		return &FileInfo{Name: name, IsDir: true, Mode: 0755, Path: path, ModTime: time.Time{}}, nil
 	}
-	entries, listErr := c.client.List(pathpkg.Dir(fullPath))
+	entries, listErr := conn.List(pathpkg.Dir(fullPath))
 	if listErr != nil {
 		return nil, fmt.Errorf("failed to get FTP file info %s: %w", fullPath, sizeErr)
 	}
@@ -314,13 +331,13 @@ func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, er
 
 // fileModTime returns the real modification time: MDTM when the server supports it, else the entry time from the parent listing, else
 // the zero time. It never invents "now" (the old behaviour made every FTP file look freshly modified).
-func (c *FTPClient) fileModTime(fullPath string) time.Time {
-	if c.client.IsGetTimeSupported() {
-		if t, err := c.client.GetTime(fullPath); err == nil {
+func (c *FTPClient) fileModTime(conn *ftp.ServerConn, fullPath string) time.Time {
+	if conn.IsGetTimeSupported() {
+		if t, err := conn.GetTime(fullPath); err == nil {
 			return t
 		}
 	}
-	if entries, err := c.client.List(pathpkg.Dir(fullPath)); err == nil {
+	if entries, err := conn.List(pathpkg.Dir(fullPath)); err == nil {
 		name := pathpkg.Base(fullPath)
 		for _, e := range entries {
 			if e.Name == name {
@@ -333,12 +350,13 @@ func (c *FTPClient) fileModTime(fullPath string) time.Time {
 
 // ListDirectory lists files in a directory
 func (c *FTPClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo, error) {
-	if !c.IsConnected() {
-		return nil, fmt.Errorf("not connected")
+	conn, base, err := c.session()
+	if err != nil {
+		return nil, err
 	}
-	fullPath := c.resolvePath(path)
+	fullPath := c.resolvePath(base, path)
 
-	entries, err := c.client.List(fullPath)
+	entries, err := conn.List(fullPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list FTP directory %s: %w", fullPath, err)
 	}
@@ -373,18 +391,19 @@ func (c *FTPClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo
 
 // FileExists checks if a file exists
 func (c *FTPClient) FileExists(ctx context.Context, path string) (bool, error) {
-	if !c.IsConnected() {
-		return false, fmt.Errorf("not connected")
+	conn, base, err := c.session()
+	if err != nil {
+		return false, err
 	}
-	fullPath := c.resolvePath(path)
+	fullPath := c.resolvePath(base, path)
 
 	// Try to get file size - if it succeeds, file exists
-	_, err := c.client.FileSize(fullPath)
+	_, err = conn.FileSize(fullPath)
 	if err != nil {
 		// Try to list the file's directory to see if it exists
 		dir := pathpkg.Dir(fullPath)
 		name := pathpkg.Base(fullPath)
-		entries, err := c.client.List(dir)
+		entries, err := conn.List(dir)
 		if err != nil {
 			return false, fmt.Errorf("failed to check FTP file existence %s: %w", fullPath, err)
 		}
@@ -400,11 +419,12 @@ func (c *FTPClient) FileExists(ctx context.Context, path string) (bool, error) {
 
 // CreateDirectory creates a directory
 func (c *FTPClient) CreateDirectory(ctx context.Context, path string) error {
-	if !c.IsConnected() {
-		return fmt.Errorf("not connected")
+	conn, base, err := c.session()
+	if err != nil {
+		return err
 	}
-	fullPath := c.resolvePath(path)
-	err := c.client.MakeDir(fullPath)
+	fullPath := c.resolvePath(base, path)
+	err = conn.MakeDir(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to create FTP directory %s: %w", fullPath, err)
 	}
@@ -413,11 +433,12 @@ func (c *FTPClient) CreateDirectory(ctx context.Context, path string) error {
 
 // DeleteDirectory deletes a directory
 func (c *FTPClient) DeleteDirectory(ctx context.Context, path string) error {
-	if !c.IsConnected() {
-		return fmt.Errorf("not connected")
+	conn, base, err := c.session()
+	if err != nil {
+		return err
 	}
-	fullPath := c.resolvePath(path)
-	err := c.client.RemoveDir(fullPath)
+	fullPath := c.resolvePath(base, path)
+	err = conn.RemoveDir(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to delete FTP directory %s: %w", fullPath, err)
 	}
@@ -426,11 +447,12 @@ func (c *FTPClient) DeleteDirectory(ctx context.Context, path string) error {
 
 // DeleteFile deletes a file
 func (c *FTPClient) DeleteFile(ctx context.Context, path string) error {
-	if !c.IsConnected() {
-		return fmt.Errorf("not connected")
+	conn, base, err := c.session()
+	if err != nil {
+		return err
 	}
-	fullPath := c.resolvePath(path)
-	err := c.client.Delete(fullPath)
+	fullPath := c.resolvePath(base, path)
+	err = conn.Delete(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to delete FTP file %s: %w", fullPath, err)
 	}
@@ -439,29 +461,38 @@ func (c *FTPClient) DeleteFile(ctx context.Context, path string) error {
 
 // CopyFile copies a file on the FTP server
 func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error {
-	if !c.IsConnected() {
-		return fmt.Errorf("not connected")
+	conn, base, err := c.session()
+	if err != nil {
+		return err
 	}
 
 	// FTP doesn't have a native copy command, so we need to download and upload
-	srcFullPath := c.resolvePath(srcPath)
-	dstFullPath := c.resolvePath(dstPath)
+	srcFullPath := c.resolvePath(base, srcPath)
+	dstFullPath := c.resolvePath(base, dstPath)
 
-	// Read source file
-	resp, err := c.client.Retr(srcFullPath)
+	// Read the source completely and close its data connection BEFORE any further command: some servers reject (or mis-sequence) MKD/STOR
+	// on the control connection while a RETR data connection is still open. The copy is therefore spooled in memory.
+	resp, err := conn.Retr(srcFullPath)
 	if err != nil {
 		return fmt.Errorf("failed to retrieve source file %s: %w", srcFullPath, err)
 	}
-	defer resp.Close()
+	spool, readErr := io.ReadAll(resp)
+	closeErr := resp.Close()
+	if readErr != nil {
+		return fmt.Errorf("failed to read source file %s: %w", srcFullPath, readErr)
+	}
+	if closeErr != nil {
+		return fmt.Errorf("failed to finish reading source file %s: %w", srcFullPath, closeErr)
+	}
 
 	// Ensure destination directory exists
 	dstDir := pathpkg.Dir(dstFullPath)
 	if dstDir != "." && dstDir != "/" {
-		c.client.MakeDir(dstDir) // Ignore error if directory exists
+		_ = conn.MakeDir(dstDir) // Ignore error if directory exists
 	}
 
 	// Write to destination
-	err = c.client.Stor(dstFullPath, resp)
+	err = conn.Stor(dstFullPath, bytes.NewReader(spool))
 	if err != nil {
 		return fmt.Errorf("failed to store destination file %s: %w", dstFullPath, err)
 	}

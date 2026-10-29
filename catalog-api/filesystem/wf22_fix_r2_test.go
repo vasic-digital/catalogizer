@@ -300,14 +300,14 @@ func TestWF22_F3_OnlyDirectChildrenAreListed(t *testing.T) {
 
 func TestWF22_R18_FTPResolvePath(t *testing.T) {
 	c := NewFTPClient(&FTPConfig{Path: "movies"})
-	assert.Equal(t, "/movies/a.mkv", c.resolvePath("/a.mkv"), "not connected: the relative base is anchored at /")
-	assert.Equal(t, "/movies", c.resolvePath("/"))
+	assert.Equal(t, "/movies/a.mkv", c.resolvePath(c.base, "/a.mkv"), "not connected: the relative base is anchored at /")
+	assert.Equal(t, "/movies", c.resolvePath(c.base, "/"))
 	c.base = "/home/ftp/movies" // what Connect records from PWD after the CWD
-	assert.Equal(t, "/home/ftp/movies/a.mkv", c.resolvePath("/a.mkv"), "the CWD result, not the configured text, is the base: it is not applied twice")
-	assert.Equal(t, "/home/ftp/movies", c.resolvePath("/"))
-	assert.Equal(t, "/home/ftp/movies/x/y", c.resolvePath("x/y"))
-	assert.Equal(t, "/a.mkv", NewFTPClient(&FTPConfig{}).resolvePath("/a.mkv"), "no base path: untouched")
-	assert.Equal(t, "/movies/a.mkv", NewFTPClient(&FTPConfig{Path: "/movies"}).resolvePath("/a.mkv"))
+	assert.Equal(t, "/home/ftp/movies/a.mkv", c.resolvePath(c.base, "/a.mkv"), "the CWD result, not the configured text, is the base: it is not applied twice")
+	assert.Equal(t, "/home/ftp/movies", c.resolvePath(c.base, "/"))
+	assert.Equal(t, "/home/ftp/movies/x/y", c.resolvePath(c.base, "x/y"))
+	assert.Equal(t, "/a.mkv", ftpResolve(NewFTPClient(&FTPConfig{}), "/a.mkv"), "no base path: untouched")
+	assert.Equal(t, "/movies/a.mkv", ftpResolve(NewFTPClient(&FTPConfig{Path: "/movies"}), "/a.mkv"))
 }
 
 // ---- X1: remote paths are slash paths ----------------------------------------------------------------------------------------------------

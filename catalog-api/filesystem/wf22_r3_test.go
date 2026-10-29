@@ -54,12 +54,12 @@ func TestWF22R3_A_ConfinePath_Table(t *testing.T) {
 // N2 (review P3): an FTP path is confined to the root's base like the WebDAV one.
 func TestWF22R3_N2_FTPPathConfinedToBase(t *testing.T) {
 	c := &FTPClient{config: &FTPConfig{Path: "/srv/movies"}, base: "/srv/movies"}
-	assert.Equal(t, "/srv/movies/etc", c.resolvePath("/../../etc"))
-	assert.Equal(t, "/srv/movies/Wait.. Live", c.resolvePath("/Wait.. Live"))
-	assert.Equal(t, "/srv/movies", c.resolvePath("/"))
+	assert.Equal(t, "/srv/movies/etc", c.resolvePath(c.base, "/../../etc"))
+	assert.Equal(t, "/srv/movies/Wait.. Live", c.resolvePath(c.base, "/Wait.. Live"))
+	assert.Equal(t, "/srv/movies", c.resolvePath(c.base, "/"))
 	// not connected through Connect: the configured path, made absolute, is the base
 	u := &FTPClient{config: &FTPConfig{Path: "movies"}}
-	assert.Equal(t, "/movies/etc", u.resolvePath("../../etc"))
+	assert.Equal(t, "/movies/etc", u.resolvePath(u.base, "../../etc"))
 }
 
 // N7 (review P2/P2b): a name containing ".." is a name; a ".." segment cannot leave the base - on NFS and on local.
