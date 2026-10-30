@@ -47,3 +47,7 @@ workable-items DB via `.helix/reporting.yaml` + `report_item.sh` once the regist
 `vision` is tier-GATED on this host while RAM is contended. Options: (A) start it when RAM frees (recommended,
 no override); (B) set the host tier explicitly via llmctl's supported override; (C) use `vision-pro` only after
 more RAM. Not decided; nothing was forced.
+
+## 2026-10-30 11:27 CET — continuous release train and 5-round cap (BACKGROUND :: CRITICAL)
+Operator mandate (verbatim, typos preserved): "Make sure we do not have more than 5 rounds unless absolutely needed! Minor issues can stay but to be tackled in next iterations. We MUST aim to make as much as possible releases consicutivelly! Even after we do release something we continue testing, fixing and polishing in the background and preparation iof next better version that is goinf to be released! This is continuous process wehich MUST BE already defined and explained to details in our constitution Submodule! Add any details we may be missing there so this is absolutely clear!"
+Status: applied to the working process now (memory `feedback_review_budget_policy.md`); constitution text being drafted by an author agent in a scratch clone of the v72.2 series, needs independent review before it joins canon v72.2. Not yet in canon.
