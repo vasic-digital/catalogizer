@@ -65,17 +65,67 @@ import (
 	sqlite3 "github.com/mutecomm/go-sqlcipher"
 )
 
-// sqliteBusyHandlerErr is nil when every connection opened through the
-// "sqlite3" driver in this process gets the millisecond-granularity busy
-// handler. It is non-nil (and the stock 1 s handler stays in place) when the
-// driver's connection layout is not the one this file was written against;
-// TestSQLiteBusyHandler_* then fail loudly instead of the fix silently lapsing.
+// sqliteBusyHandlerErr is nil when the replacement busy handler was attached
+// to the go-sqlcipher driver instance registered as "sqlite3". The hook lives
+// on that shared driver instance, so it then applies to every connection that
+// driver opens in this process, whichever package calls sql.Open (for example
+// internal/media/database in the catalog-api binary). It applies ONLY in
+// processes that link catalogizer/database: a test binary of a package that
+// does not import it keeps SQLite's stock 1 s handler.
+//
+// It is non-nil (and the stock handler stays in place) when the driver or its
+// SQLiteConn layout is not the one this file was written against;
+// TestSQLiteBusyHandler_HookInstalled then fails loudly instead of the fix
+// silently lapsing.
+//
+// Known limits, pinned by TestSQLiteBusyHandler_RuntimePragmaRestoresStockHandler:
+//   - sqlite3_busy_handler resets the connection's busyTimeout, so after the
+//     hook ran "PRAGMA busy_timeout" reads 0 even though the DSN timeout is
+//     still honoured by the replacement handler.
+//   - A later "PRAGMA busy_timeout=N" (or sqlite3_busy_timeout) on a
+//     connection reinstalls SQLite's stock handler, i.e. 1 s retries, on that
+//     connection. No production code issues it; only
+//     encryption_round2_test.go (TestHardening_X5_BackupRequiresWriteLock)
+//     does, on its own connection.
+//   - SQLite's VFS sleep (unixSleep) is untouched and still rounds every sleep
+//     up to whole seconds; walTryBeginRead's micro-second back-off after five
+//     WAL read retries therefore still costs seconds.
+//
+// Alternative considered: building the driver with CGO_CFLAGS=-DHAVE_USLEEP=1
+// fixes both the busy handler and unixSleep without touching driver internals,
+// but go.mod cannot set cgo flags for a dependency, so every build, test and
+// container invocation would have to export it, and a missing export silently
+// brings the 1 s behaviour back. This hook works for every invocation; the
+// flag stays the better long-term fix together with a driver upgrade.
 var sqliteBusyHandlerErr = installSQLiteBusyHandlerHook()
 
-// sqliteConnHandle returns the *C.sqlite3 held by the driver connection. The
-// field is unexported, so its layout is verified before it is read.
+// sqliteConnType is the driver connection type whose layout is checked.
+var sqliteConnType = reflect.TypeOf(sqlite3.SQLiteConn{})
+
+// checkSQLiteConnLayout verifies that t starts with the field "db" of type
+// *_Ctype_struct_sqlite3 (the C sqlite3 handle), as in the go-sqlcipher
+// version pinned in go.mod. It takes the type so tests can feed fake layouts.
+func checkSQLiteConnLayout(t reflect.Type) error {
+	if t == nil || t.Kind() != reflect.Struct {
+		return fmt.Errorf("go-sqlcipher SQLiteConn layout changed: %v is not a struct", t)
+	}
+	f, ok := t.FieldByName("db")
+	if !ok {
+		return errors.New("go-sqlcipher SQLiteConn layout changed: no field db")
+	}
+	if f.Offset != 0 {
+		return fmt.Errorf("go-sqlcipher SQLiteConn layout changed: field db at offset %d, want 0", f.Offset)
+	}
+	if f.Type.Kind() != reflect.Ptr || f.Type.Elem().Name() != "_Ctype_struct_sqlite3" {
+		return fmt.Errorf("go-sqlcipher SQLiteConn layout changed: field db has type %v, want *_Ctype_struct_sqlite3", f.Type)
+	}
+	return nil
+}
+
+// sqliteConnHandle returns the C sqlite3 handle held by the driver connection.
+// The field is unexported, so its layout is verified before it is read.
 func sqliteConnHandle(c *sqlite3.SQLiteConn) (unsafe.Pointer, error) {
-	if err := checkSQLiteConnLayout(); err != nil {
+	if err := checkSQLiteConnLayout(sqliteConnType); err != nil {
 		return nil, err
 	}
 	h := *(*unsafe.Pointer)(unsafe.Pointer(c))
@@ -83,16 +133,6 @@ func sqliteConnHandle(c *sqlite3.SQLiteConn) (unsafe.Pointer, error) {
 		return nil, errors.New("go-sqlcipher connection has no sqlite3 handle")
 	}
 	return h, nil
-}
-
-// checkSQLiteConnLayout verifies that SQLiteConn starts with the pointer field
-// "db" (the *C.sqlite3 handle), as in the go-sqlcipher version pinned in go.mod.
-func checkSQLiteConnLayout() error {
-	f, ok := reflect.TypeOf(sqlite3.SQLiteConn{}).FieldByName("db")
-	if !ok || f.Offset != 0 || f.Type.Kind() != reflect.Ptr {
-		return errors.New("go-sqlcipher SQLiteConn layout changed: field db not a pointer at offset 0")
-	}
-	return nil
 }
 
 // connBusyTimeoutMS reads the busy timeout the driver applied from the DSN
@@ -137,6 +177,21 @@ func installSQLiteBusyHandler(c *sqlite3.SQLiteConn) error {
 	return nil
 }
 
+// newBusyHandlerConnectHook returns the ConnectHook: install runs first and
+// its error fails the connection open (no silent fallback to the 1 s
+// handler); the previously registered hook, if any, runs afterwards.
+func newBusyHandlerConnectHook(install, prev func(*sqlite3.SQLiteConn) error) func(*sqlite3.SQLiteConn) error {
+	return func(c *sqlite3.SQLiteConn) error {
+		if err := install(c); err != nil {
+			return err
+		}
+		if prev != nil {
+			return prev(c)
+		}
+		return nil
+	}
+}
+
 // installSQLiteBusyHandlerHook attaches installSQLiteBusyHandler to the
 // driver instance registered as "sqlite3", chaining any hook already set.
 // It runs during package initialisation, before any connection is opened.
@@ -150,18 +205,9 @@ func installSQLiteBusyHandlerHook() error {
 	if !ok {
 		return fmt.Errorf("sqlite busy handler: driver %T is not go-sqlcipher", db.Driver())
 	}
-	if err := checkSQLiteConnLayout(); err != nil {
+	if err := checkSQLiteConnLayout(sqliteConnType); err != nil {
 		return fmt.Errorf("sqlite busy handler: %w", err)
 	}
-	prev := drv.ConnectHook
-	drv.ConnectHook = func(c *sqlite3.SQLiteConn) error {
-		if err := installSQLiteBusyHandler(c); err != nil {
-			return err
-		}
-		if prev != nil {
-			return prev(c)
-		}
-		return nil
-	}
+	drv.ConnectHook = newBusyHandlerConnectHook(installSQLiteBusyHandler, drv.ConnectHook)
 	return nil
 }
