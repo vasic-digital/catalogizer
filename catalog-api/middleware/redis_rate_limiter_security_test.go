@@ -48,10 +48,11 @@ func TestRedisRateLimit_SecurityBehavior(t *testing.T) {
 	assert.Equal(t, 0, requestCount, "No requests should be processed when Redis fails")
 }
 
-func TestRedisRateLimit_FixedBehavior(t *testing.T) {
+// Unit-class (miniredis double): proves limiter logic only.
+func TestRedisRateLimit_Unit_Miniredis_FixedBehavior(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	// Use miniredis for a real working Redis instance
+	// miniredis is an in-memory Redis double, not a real Redis server.
 	_, client := setupMiniredis(t)
 
 	config := DefaultRedisRateLimiterConfig(client)

@@ -93,36 +93,46 @@ func UserRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig {
 	}
 }
 
-// RedisRateLimit creates a Gin middleware for Redis-based rate limiting
+// fixedWindowScript increments the window counter and sets its expiry only
+// when the window starts. Returns {count, pttl_ms}.
+var fixedWindowScript = redis.NewScript(`
+local count = redis.call('INCR', KEYS[1])
+if count == 1 or redis.call('PTTL', KEYS[1]) == -1 then
+  redis.call('PEXPIRE', KEYS[1], ARGV[1])
+end
+return {count, redis.call('PTTL', KEYS[1])}
+`)
+
+// RedisRateLimit creates a Gin middleware for Redis-based rate limiting.
+//
+// Fixed window: the window starts at the first request for a key and ends
+// Window later; requests inside the window do not extend it. On any Redis
+// error the middleware fails closed (HTTP 503).
+//
+// Wiring (catalog-api/main.go): this limiter replaces the in-memory one only
+// when REDIS_RATE_LIMIT=true AND the startup Redis PING succeeds; otherwise
+// each process uses per-process in-memory limiting.
 func RedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		key := "rate_limit:" + config.KeyGenerator(c)
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 500*time.Millisecond)
 		defer cancel()
 
-		// Use Redis pipeline for atomic operations
-		pipe := config.Client.Pipeline()
+		// Atomic fixed window: INCR, and set the expiry only when the window
+		// starts (count == 1), so later requests inside the window never
+		// extend it. A key left without a TTL (PTTL == -1) is repaired too.
+		res, err := fixedWindowScript.Run(ctx, config.Client, []string{key},
+			config.Window.Milliseconds()).Int64Slice()
 
-		// Get current count
-		getCmd := pipe.Get(ctx, key)
-
-		// Increment count and set expiration if key doesn't exist
-		incrCmd := pipe.Incr(ctx, key)
-		expireCmd := pipe.Expire(ctx, key, config.Window)
-
-		// Execute pipeline
-		_, err := pipe.Exec(ctx)
-
-		// Handle Redis errors gracefully - fail closed for security
-		// redis.Nil is expected when the key doesn't exist yet (first request)
-		if err != nil && !errors.Is(err, redis.Nil) {
-			// Log the Redis error
+		// Fail closed: when Redis is unavailable, reject instead of letting
+		// requests bypass the limiter.
+		if err != nil || len(res) != 2 {
+			if err == nil {
+				err = errors.New("unexpected fixed-window script reply")
+			}
 			if logging.Logger != nil {
 				logging.With(logging.ErrorField(err)).Warn("Redis rate limiter error")
 			}
-
-			// When Redis is unavailable, we fail closed for security
-			// This prevents bypassing rate limiting when Redis is down
 			c.JSON(http.StatusServiceUnavailable, gin.H{
 				"error":   "Rate limiting service temporarily unavailable",
 				"message": "Please try again later",
@@ -131,31 +141,14 @@ func RedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc {
 			return
 		}
 
-		var currentCount int64
-		if getCmd.Err() != nil {
-			// Key doesn't exist, this is the first request
-			currentCount = 1
-		} else {
-			// Parse existing count
-			if val, err := getCmd.Int64(); err == nil {
-				currentCount = val + 1
-			} else {
-				currentCount = 1
-			}
+		currentCount := res[0]
+		ttl := time.Duration(res[1]) * time.Millisecond
+		if ttl <= 0 {
+			ttl = config.Window
 		}
-
-		// Wait for increment and expire commands to complete
-		incrCmd.Val()
-		expireCmd.Val()
 
 		// Check if rate limit exceeded
 		if currentCount > int64(config.Requests) {
-			// Get TTL for retry-after header
-			ttl, _ := config.Client.TTL(ctx, key).Result()
-			if ttl < 0 {
-				ttl = config.Window
-			}
-
 			// Log rate limit attempt
 			if logging.Logger != nil {
 				logging.With(
@@ -178,14 +171,15 @@ func RedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc {
 		remaining := int64(config.Requests) - currentCount
 		c.Header("X-RateLimit-Limit", strconv.Itoa(config.Requests))
 		c.Header("X-RateLimit-Remaining", strconv.Itoa(int(remaining)))
-		c.Header("X-RateLimit-Reset", time.Now().Add(config.Window).Format(time.RFC3339))
+		c.Header("X-RateLimit-Reset", time.Now().Add(ttl).Format(time.RFC3339))
 		c.Header("X-RateLimit-Window", config.Window.String())
 
 		c.Next()
 	}
 }
 
-// SlidingWindowRedisRateLimit implements sliding window rate limiting using Redis
+// SlidingWindowRedisRateLimit implements sliding window rate limiting using Redis.
+// On any Redis error it fails closed (HTTP 503), like RedisRateLimit.
 func SlidingWindowRedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		key := "sliding_rate_limit:" + config.KeyGenerator(c)
@@ -220,7 +214,12 @@ func SlidingWindowRedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc 
 			if logging.Logger != nil {
 				logging.With(logging.ErrorField(err)).Warn("Redis sliding window rate limiter error")
 			}
-			c.Next()
+			// Fail closed, consistent with RedisRateLimit.
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"error":   "Rate limiting service temporarily unavailable",
+				"message": "Please try again later",
+			})
+			c.Abort()
 			return
 		}
 

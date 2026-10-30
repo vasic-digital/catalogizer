@@ -17,7 +17,11 @@ func createTestRequest() *http.Request {
 	return httptest.NewRequest("GET", "/", nil)
 }
 
-// setupMiniredis creates an in-memory Redis server and returns a client connected to it
+// setupMiniredis creates an in-memory Redis server (miniredis) and returns a
+// client connected to it. miniredis is a test double: every test that uses it
+// is UNIT-class (§11.4.27 / §11.4.289) and proves only the middleware logic,
+// not behaviour against a real Redis server. Live-class coverage lives in
+// redis_rate_limiter_live_test.go.
 func setupMiniredis(t *testing.T) (*miniredis.Miniredis, *redis.Client) {
 	t.Helper()
 	mr, err := miniredis.Run()
@@ -74,7 +78,8 @@ func TestUserRedisRateLimiterConfig(t *testing.T) {
 	assert.NotNil(t, config.KeyGenerator)
 }
 
-func TestRedisRateLimit_Integration(t *testing.T) {
+// Unit-class (miniredis double).
+func TestRedisRateLimit_Unit_Miniredis_LimitEnforced(t *testing.T) {
 	_, client := setupMiniredis(t)
 
 	gin.SetMode(gin.TestMode)
@@ -118,7 +123,8 @@ func TestRedisRateLimit_Integration(t *testing.T) {
 	assert.Equal(t, 429, c4.Writer.Status())
 }
 
-func TestSlidingWindowRedisRateLimit_Integration(t *testing.T) {
+// Unit-class (miniredis double).
+func TestSlidingWindowRedisRateLimit_Unit_Miniredis_LimitEnforced(t *testing.T) {
 	_, client := setupMiniredis(t)
 
 	gin.SetMode(gin.TestMode)
@@ -149,7 +155,8 @@ func TestSlidingWindowRedisRateLimit_Integration(t *testing.T) {
 	assert.Equal(t, 429, c.Writer.Status())
 }
 
-func TestTokenBucketRedisRateLimit_Integration(t *testing.T) {
+// Unit-class (miniredis double).
+func TestTokenBucketRedisRateLimit_Unit_Miniredis_RefillAfterEmpty(t *testing.T) {
 	mr, client := setupMiniredis(t)
 
 	gin.SetMode(gin.TestMode)
