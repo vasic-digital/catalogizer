@@ -269,4 +269,4 @@ Source: independent Opus review (round 9) of the gate (fixture suite 276/276, fu
 - m1: no fixture covers the ls-tree branch where fewer gitlink paths differ than in the RANGE diff; needs a git wrapper to build.
 - m2: commit-graph trust (the gate reads history through commit-graph data it does not verify).
 - m3: documentation wording (see N9-1).
-- Hook wiring of the gate is a separate step and has NOT been done.
+- Wiring: done as CPA stage S3 row `submodule_ff` (`scripts/repo/check_submodule_ff_range.sh`, guide `docs/scripts/check_submodule_ff_range.md`); open: owner approval of the registry row and of the manifest files (wrapper, gate, `scripts/audit/org_of.py`, `own_orgs.txt`) in the cpa-host trust file; a post-S5/pre-S6 range check (S3 sees only already-made commits); the `--repo` pending-pin rows are not covered.

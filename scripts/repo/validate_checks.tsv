@@ -19,6 +19,7 @@ large_file	builtin:large_file	IMG-TESTUTIL	plain	-	files	check-added-large-files
 revision_header	scripts/repo/check_revision_headers.sh --assume-class-applied --root {root} --files-from {files}	IMG-TESTUTIL	plain	-	files	section 11.4.44 on declared *.md files; the baseline ratchet is owed (T040)
 no_ci	scripts/repo/check_no_ci.sh --root {root}	IMG-TESTUTIL	plain	-	changeset	section 11.4.156: no pipeline definition at a repository root
 detect_landmines	bash scripts/detect-landmines.sh	IMG-TESTUTIL	plain	-	changeset	reads the tracked tree; rc 0 on the current tree
+submodule_ff	scripts/repo/check_submodule_ff_range.sh --root {root}	IMG-TESTUTIL	plain	-	changeset	11.4.113/11.4.288(D): no own-org gitlink moves NON-fast-forward in <remote main>..HEAD; BLIND = exit 14 = deferred (check_submodule_ff_range.sh)
 no_false_positive_log	scripts/hooks/no-false-positive-log.sh {paths}	IMG-GO	plain	-	files	declared *_test.go files
 go_fmt	-	IMG-GO	deferred	-	files	gofmt -l in IMG-GO through cpa-host (T042/T121b); not runnable on the host slice
 go_vet	-	IMG-GO	deferred	-	files	owned by T121b (remote measurement); never run locally

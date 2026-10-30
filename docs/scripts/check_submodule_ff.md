@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Revision | 9 |
+| Revision | 10 |
 | Created | 2026-10-29 |
-| Last modified | 2026-10-30 (revision 9: review of 9308e21e, finding F8-1) |
+| Last modified | 2026-10-30 (revision 10: wiring note; revision 9: review of 9308e21e, finding F8-1) |
 | Status | new; independent review owed (constitution 11.4.142); indexed by `docs/scripts/README.md` |
 | Source | `scripts/check_submodule_ff.sh`; tests `scripts/tests/test_check_submodule_ff.sh`, `scripts/tests/test_check_submodule_ff_mutation.sh` |
 
@@ -79,7 +79,7 @@ Equivalence notes (mutants without a dedicated killing fixture, with the reason)
 
 ## Honest limits
 
-- Not wired into any hook or pipeline yet; it is run by hand or from a release or push procedure.
+- Wired as CPA stage S3 row `submodule_ff` through [`check_submodule_ff_range.md`](check_submodule_ff_range.md) (adoption by owner approval of the registry/manifest pending); it is not a git hook, and by hand it is still run as before.
 - No fetch: a pin missing locally is BLIND, not resolved. A fresh clone needs `git submodule update --init` first.
 - A partly stale own-org list classes the lost organisation third-party (see Classification); only a list that matches nothing is caught.
 - A submodule whose URL was switched to a third-party fork in the range stays own only if its name or path has an own URL in some tree of the range; a rename to a new name and a fork URL at once is BLIND (`unpaired-rename`) or, with a third-party side, REMOVED plus ADDED.

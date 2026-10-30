@@ -46,7 +46,7 @@
 #         bytes, nothing to judge) | not_judged non_regular <path> (a FIFO, a socket, a device: never opened) | left_out merge_conflict is never emitted: the conflict-marker scan reads every regular file, a NUL byte included (SKIP-2)
 #         A declared symlink in class evidence or evidence-ledger, or a regular file whose HEAD entry is a symlink there, is `fail symlink <path>` (10):
 #         it is judged by its link type, never followed (WF3 review B-1).
-# Exits   0 all ran checks pass; 10 a check failed or a table rule refused; 14 only pending rows (deferral class 14); 20 refusal
+# Exits   0 all ran checks pass (a changeset script that exits 14 prints `deferred <check> <msg>` and still exits 0 here: CPA records CHECKS_DEFERRED); 10 a check failed or a table rule refused; 14 only pending rows (deferral class 14); 20 refusal
 #         (unsafe value, registry invalid, command absent, check_unknown, ratchet_not_implemented, table_admits_unheld_path).
 #         Precedence: 20 over 10 over 14 (a failing check and a pending row exit 10, never 14; CENTRAL C1 (c)).
 # NOT done in this slice: ratchet baselines and `--measure`/`--check` catch-up modes, the pinned-container run, hook-filters.json.
@@ -475,6 +475,8 @@ for name, fl in script_files.items():
 for name in cs_checks:
     if rows[name]['argv'] is None: continue
     rc, msg = run_script(name, [])
+    # a changeset script that exits 14 could not decide (11.4.234(D)): a recorded `deferred` row (CPA turns it into CHECKS_DEFERRED, exit 14), never a pass and never a `fail`
+    if rc == 14: emit('deferred', name, msg.replace('\n', ' | ')[:300]); continue
     if rc != 0: emit('fail', name, '-', msg.replace('\n', ' | ')[:300]); failed = True
 for path, name in unheld_findings:
     emit('table_admits_unheld_path', path, name)
