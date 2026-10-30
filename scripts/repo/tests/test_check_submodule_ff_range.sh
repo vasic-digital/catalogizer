@@ -3,7 +3,7 @@
 # UNIT-CLASS (constitution 11.4.289(C)): it drives the REAL wrapper, the REAL gate and the REAL validate_cheap.sh against throwaway git repositories with real
 # local submodules built under mktemp -d; it is gate-logic evidence, not evidence about any real push of this project. Nothing outside $T is written.
 # Usage: bash scripts/repo/tests/test_check_submodule_ff_range.sh [--quiet]   Env: WRAP=<wrapper> VC=<validate_cheap.sh> (mutation driver)
-#        bash scripts/repo/tests/test_check_submodule_ff_range.sh --mutants    (4 lightweight mutants; each must make this test fail)
+#        bash scripts/repo/tests/test_check_submodule_ff_range.sh --mutants    (6 lightweight mutants; each must make this test fail)
 set -u
 cd "$(git rev-parse --show-toplevel)" || exit 2
 D0="$(pwd)"; QUIET=0
@@ -19,6 +19,8 @@ if [ "${1:-}" = --mutants ]; then
   mut NONFF_not_failed        check_submodule_ff_range.sh 's/^  exit 10$/  exit 14/'
   mut BLIND_read_as_pass      check_submodule_ff_range.sh 's/^\[ -z "\$blind" \] || defer.*$/true/'
   mut no_remote_read_as_pass  check_submodule_ff_range.sh 's/^\[ -n "\$tips" \] || defer.*$/[ -n "$tips" ] || exit 0/'
+  mut exit1_without_line_pass check_submodule_ff_range.sh 's/^       \[ -n "\$lines" \] || lines=.*$/       :/'
+  mut budget_not_clamped      check_submodule_ff_range.sh 's/^\[ "\${#BUDGET}" -le 6 \].*$/:/'
   mut deferral_read_as_fail   validate_cheap.sh           "s/^    if rc == 14: emit('deferred'.*\$/    pass/"
   exit "$bad"
 fi
@@ -60,6 +62,18 @@ fresh; pin "$C1"; git -C "$T/P" remote add mirror "$T/O.git"; git -C "$T/P" fetc
 fresh; pin "$C1"; run --root; eq "--root without a value: 20" "$RC" 20
 run; eq "no --root: 20" "$RC" 20; run --bogus; eq "unknown option: 20" "$RC" 20; run --root "$T/nonexistent"; eq "missing root: 20" "$RC" 20
 run --root -x; eq "option-like root: 20" "$RC" 20
+# ---- a gate that exits 1 without any `NONFF own` line must still be a refusal 10 (11.4.201(4) fail-closed), never a pass ----
+stubcode() { # stubcode <dir> <gate body>  (code root with a stub gate in place of the real one)
+  mkcode "$1" 0; printf '#!/bin/bash\n%s\n' "$2" > "$1/scripts/check_submodule_ff.sh"; chmod +x "$1/scripts/check_submodule_ff.sh"
+}
+stubcode "$T/stub1" 'echo "internal error: something broke" >&2; exit 1'
+stubcode "$T/stub2" 'echo "VERDICT: FAIL checked=1 own_nonff=1"; exit 1'
+fresh; pin "$C3"; CODEROOT="$T/stub1" case_ "gate exit 1 with no NONFF line (stderr only) is a refusal, not a pass" 10 "no 'NONFF own' line parsed"
+fresh; pin "$C3"; CODEROOT="$T/stub2" case_ "gate exit 1 with only a VERDICT FAIL line is a refusal, not a pass" 10 "VERDICT: FAIL checked=1"
+# SUBFF_RANGE_BUDGET is clamped below validate_cheap's 120 s kill: a fake `timeout` on PATH records the value the wrapper really passes
+mkdir -p "$T/fakebin"; printf '#!/bin/bash\necho "$1" > "%s/tmo"\nshift\nexec /usr/bin/timeout 60 "$@"\n' "$T" > "$T/fakebin/timeout"; chmod +x "$T/fakebin/timeout"
+fresh; pin "$C3"; ( export SUBFF_RANGE_BUDGET=100000 PATH="$T/fakebin:$PATH"; case_ "huge SUBFF_RANGE_BUDGET still runs and passes" 0 "" )
+t="$(cat "$T/tmo" 2>/dev/null || echo none)"; ok=1; if [ "$t" != none ] && [ "$t" -le 100 ] 2>/dev/null; then ok=0; fi; eq "huge SUBFF_RANGE_BUDGET is clamped to at most 100 s (timeout got $t)" "$ok" 0
 # ---- through validate_cheap.sh with a registry holding the submodule_ff row: NONFF -> fail/exit 10, BLIND -> deferred/exit 0, FF -> clean ----
 REG="$T/reg.tsv"; { printf 'check\tcommand\timage\tmode\tbaseline\tscope\tnote\n'; grep -E '^submodule_ff	' "$D0/scripts/repo/validate_checks.tsv"; } > "$T/reg.tsv"
 eq "the repository registry carries exactly one submodule_ff row (changeset scope, plain)" "$(awk -F'\t' '$1=="submodule_ff" && $4=="plain" && $6=="changeset"' "$D0/scripts/repo/validate_checks.tsv" | wc -l)" 1

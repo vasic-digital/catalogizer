@@ -10,7 +10,7 @@
 #         exit 14 into `deferred`, CPA records CHECKS_DEFERRED, exit 14, flag in every commit), never silent and never a block of the commit/push mechanism (11.4.234(D));
 #         20 usage error of this wrapper only.
 # Never   writes, stages, fetches or pushes; the gate it calls reads only. Bounded: the whole check stops after BUDGET seconds (default 100, below validate_cheap's 120 s kill) and
-#         then reports 14, so a long first push cannot become a refusal 20.
+#         then reports 14 (SUBFF_RANGE_BUDGET is clamped to at most 100), so a long first push cannot become a refusal 20.
 set -u
 D="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 die() { echo "check_submodule_ff_range: $1: $2" >&2; exit 20; }
@@ -25,6 +25,7 @@ done
 case "$ROOT" in -*) die unsafe_root "$(printf '%q' "$ROOT")" ;; esac
 [ -d "$ROOT" ] && git -C "$ROOT" rev-parse --show-toplevel >/dev/null 2>&1 || die not_a_repository "$(printf '%q' "$ROOT")"
 BUDGET="${SUBFF_RANGE_BUDGET:-100}"; case "$BUDGET" in ''|*[!0-9]*) die usage "SUBFF_RANGE_BUDGET must be whole seconds" ;; esac
+[ "${#BUDGET}" -le 6 ] || BUDGET=100; [ "$BUDGET" -le 100 ] || BUDGET=100   # clamp: never above validate_cheap's 120 s kill (a kill is a refusal 20)
 GATE="$D/../check_submodule_ff.sh"
 defer() { echo "BLIND submodule_ff_range: $1 (deferred, not a pass; run scripts/check_submodule_ff.sh by hand)"; exit 14; }
 [ -x "$GATE" ] || defer "gate scripts/check_submodule_ff.sh is not in the code root"
@@ -40,7 +41,10 @@ while IFS= read -r tip; do
   out="$(cd "$ROOT" && timeout "$left" "$GATE" "$tip" HEAD 2>&1)"; rc=$?
   case "$rc" in
     0) ;;
-    1) nonff="$nonff"$'\n'"$(printf '%s\n' "$out" | grep -E '^NONFF own ' | sed "s/^/tip ${tip:0:12}: /")" ;;
+    1) lines="$(printf '%s\n' "$out" | grep -E '^NONFF own ' | sed "s/^/tip ${tip:0:12}: /")"
+       # fail closed (11.4.201(4)): gate exit 1 with no parsable NONFF line is still a refusal, never a pass
+       [ -n "$lines" ] || lines="tip ${tip:0:12}: gate exit 1 (VERDICT FAIL) but no 'NONFF own' line parsed; output: $(printf '%s\n' "$out" | grep -E 'VERDICT|ERROR|rror' | head -1 | tr '\t\n' '  ')"
+       nonff="$nonff"$'\n'"$lines" ;;
     124) blind="$blind timeout:${tip:0:12}" ;;
     *) blind="$blind rc$rc:${tip:0:12}:$(printf '%s\n' "$out" | grep -E 'VERDICT|ERROR' | head -1 | tr '\t\n' '  ')" ;;
   esac
