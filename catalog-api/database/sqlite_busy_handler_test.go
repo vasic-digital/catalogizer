@@ -189,6 +189,28 @@ func TestSQLiteBusyHandler_TimeoutStillHonoured(t *testing.T) {
 	assert.Less(t, waited, 1500*time.Millisecond, "did not honour the 300 ms timeout: %v", waited)
 }
 
+// TestSQLiteBusyHandler_SmallTimeoutAccounting pins the accumulated-delay
+// accounting of the replacement handler: with a 50 ms timeout and the lock
+// held throughout, the delays 1+2+5+10+15+17 (the last one trimmed) add up to
+// the timeout, so the writer gives up after ~50 ms. A handler that forgets the
+// time already slept keeps retrying well past the timeout, which the 200 ms
+// ceiling catches.
+func TestSQLiteBusyHandler_SmallTimeoutAccounting(t *testing.T) {
+	db := openPlainFileSQLite(t, 50)
+	waiter := warmConn(t, db)
+	holder := holdWriteLock(t, db)
+	t.Cleanup(func() { _, _ = holder.ExecContext(context.Background(), "ROLLBACK") })
+
+	start := time.Now()
+	end, err := execWithin(t, waiter, 3*time.Second, "INSERT INTO t (v) VALUES ('waiter')")
+	waited := end.Sub(start)
+	t.Logf("waited %v", waited)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "locked")
+	assert.GreaterOrEqual(t, waited, 45*time.Millisecond, "gave up before the 50 ms timeout: %v", waited)
+	assert.LessOrEqual(t, waited, 200*time.Millisecond, "did not honour the 50 ms timeout: %v", waited)
+}
+
 // TestSQLiteBusyHandler_RuntimePragmaRestoresStockHandler pins the documented
 // limits of the hook (see sqliteBusyHandlerErr): after the hook ran, PRAGMA
 // busy_timeout reads 0, and a runtime "PRAGMA busy_timeout=N" on a connection
