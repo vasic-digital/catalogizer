@@ -3,7 +3,7 @@
 # UNIT-CLASS (constitution 11.4.289(C)): it drives the REAL wrapper, the REAL gate and the REAL validate_cheap.sh against throwaway git repositories with real
 # local submodules built under mktemp -d; it is gate-logic evidence, not evidence about any real push of this project. Nothing outside $T is written.
 # Usage: bash scripts/repo/tests/test_check_submodule_ff_range.sh [--quiet]   Env: WRAP=<wrapper> VC=<validate_cheap.sh> (mutation driver)
-#        bash scripts/repo/tests/test_check_submodule_ff_range.sh --mutants    (6 lightweight mutants; each must make this test fail)
+#        bash scripts/repo/tests/test_check_submodule_ff_range.sh --mutants    (7 lightweight mutants; each must make this test fail)
 set -u
 cd "$(git rev-parse --show-toplevel)" || exit 2
 D0="$(pwd)"; QUIET=0
@@ -21,6 +21,7 @@ if [ "${1:-}" = --mutants ]; then
   mut no_remote_read_as_pass  check_submodule_ff_range.sh 's/^\[ -n "\$tips" \] || defer.*$/[ -n "$tips" ] || exit 0/'
   mut exit1_without_line_pass check_submodule_ff_range.sh 's/^       \[ -n "\$lines" \] || lines=.*$/       :/'
   mut budget_not_clamped      check_submodule_ff_range.sh 's/^\[ "\${#BUDGET}" -le 6 \].*$/:/'
+  mut budget_octal_failopen   check_submodule_ff_range.sh 's/^\(\[ "\${#BUDGET}" -le 6 \].*\)BUDGET=\$((10#\$BUDGET)); /\1/'
   mut deferral_read_as_fail   validate_cheap.sh           "s/^    if rc == 14: emit('deferred'.*\$/    pass/"
   exit "$bad"
 fi
@@ -74,6 +75,17 @@ fresh; pin "$C3"; CODEROOT="$T/stub2" case_ "gate exit 1 with only a VERDICT FAI
 mkdir -p "$T/fakebin"; printf '#!/bin/bash\necho "$1" > "%s/tmo"\nshift\nexec /usr/bin/timeout 60 "$@"\n' "$T" > "$T/fakebin/timeout"; chmod +x "$T/fakebin/timeout"
 fresh; pin "$C3"; ( export SUBFF_RANGE_BUDGET=100000 PATH="$T/fakebin:$PATH"; case_ "huge SUBFF_RANGE_BUDGET still runs and passes" 0 "" )
 t="$(cat "$T/tmo" 2>/dev/null || echo none)"; ok=1; if [ "$t" != none ] && [ "$t" -le 100 ] 2>/dev/null; then ok=0; fi; eq "huge SUBFF_RANGE_BUDGET is clamped to at most 100 s (timeout got $t)" "$ok" 0
+# budget normalisation: leading zeros are decimal (08/0099 must not fail bash arithmetic and fail open), 010 is 10 not octal 8
+stubcode "$T/stub3" 'echo "NONFF own sub: x"; echo "VERDICT: FAIL checked=1 own_nonff=1"; exit 1'
+for b in 08 0099; do fresh; pin "$C3"; ( export SUBFF_RANGE_BUDGET=$b; CODEROOT="$T/stub3" case_ "budget $b (leading zero) does not fail open" 10 "NONFF own" ); done
+rm -f "$T/tmo"; fresh; pin "$C3"; ( export SUBFF_RANGE_BUDGET=010 PATH="$T/fakebin:$PATH"; case_ "budget 010 runs and passes" 0 "" )
+eq "budget 010 is decimal 10 (timeout got $(cat "$T/tmo" 2>/dev/null))" "$(cat "$T/tmo" 2>/dev/null)" 10
+# two distinct remote main tips: a gate failing on either one (both orders) must give 10
+mktwo() { fresh; pin "$C3"; rm -rf "$T/M.git"; git clone -q --bare "$T/P" "$T/M.git"; git -C "$T/P" remote add mirror "$T/M.git"; git -C "$T/P" fetch -q mirror
+  git -C "$T/P" update-ref refs/remotes/mirror/main "$(git -C "$T/P" rev-parse HEAD~1)"; }
+for bad in origin mirror; do mktwo; echo "$(git -C "$T/P" rev-parse "refs/remotes/$bad/main")" > "$T/badtip"
+  stubcode "$T/stub4" "[ \"\$1\" = \"\$(cat $T/badtip)\" ] && { echo 'NONFF own sub: x'; exit 1; }; exit 0"
+  CODEROOT="$T/stub4" case_ "two tips, gate fails on the $bad one only: refusal" 10 "NONFF own"; done
 # ---- through validate_cheap.sh with a registry holding the submodule_ff row: NONFF -> fail/exit 10, BLIND -> deferred/exit 0, FF -> clean ----
 REG="$T/reg.tsv"; { printf 'check\tcommand\timage\tmode\tbaseline\tscope\tnote\n'; grep -E '^submodule_ff	' "$D0/scripts/repo/validate_checks.tsv"; } > "$T/reg.tsv"
 eq "the repository registry carries exactly one submodule_ff row (changeset scope, plain)" "$(awk -F'\t' '$1=="submodule_ff" && $4=="plain" && $6=="changeset"' "$D0/scripts/repo/validate_checks.tsv" | wc -l)" 1

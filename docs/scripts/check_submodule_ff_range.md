@@ -29,7 +29,7 @@ BLIND is a recorded deferral, not a pass and not a refusal: the pin cannot be ju
 
 `validate_cheap.sh` change: a changeset-scope script that exits 14 now prints `deferred <check> <message>` and continues, instead of the generic `fail` for every non-zero exit. Other changeset checks (`no_ci`, `detect_landmines`) never exit 14. A files-scope script exiting 14 is still a `fail`.
 
-Gate exit 1 is always a refusal 10: when no `NONFF own` line can be parsed the report says so and quotes the first VERDICT/ERROR line (fail closed). Time bound: `SUBFF_RANGE_BUDGET` (whole seconds, default 100, values above 100 are clamped to 100) bounds the whole check and each gate call (`timeout`), below validate_cheap's own 120 s kill (which would be a refusal 20); an exceeded budget is a deferral. Gate cost is about 0.1 s per commit (see the gate guide).
+Gate exit 1 is always a refusal 10: when no `NONFF own` line can be parsed the report says so and quotes the first VERDICT/ERROR line (fail closed). Time bound: `SUBFF_RANGE_BUDGET` (whole seconds, default 100, leading zeros are decimal, so `010` is 10 and `08` is 8; values above 100 are clamped to 100; `0` means immediate deferral, rc 14) bounds the whole check and each gate call (`timeout`), below validate_cheap's own 120 s kill (which would be a refusal 20); an exceeded budget is a deferral. Gate cost is about 0.1 s per commit (see the gate guide).
 
 ## Tests
 

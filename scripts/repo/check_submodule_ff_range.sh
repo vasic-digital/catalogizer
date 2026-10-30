@@ -25,7 +25,7 @@ done
 case "$ROOT" in -*) die unsafe_root "$(printf '%q' "$ROOT")" ;; esac
 [ -d "$ROOT" ] && git -C "$ROOT" rev-parse --show-toplevel >/dev/null 2>&1 || die not_a_repository "$(printf '%q' "$ROOT")"
 BUDGET="${SUBFF_RANGE_BUDGET:-100}"; case "$BUDGET" in ''|*[!0-9]*) die usage "SUBFF_RANGE_BUDGET must be whole seconds" ;; esac
-[ "${#BUDGET}" -le 6 ] || BUDGET=100; [ "$BUDGET" -le 100 ] || BUDGET=100   # clamp: never above validate_cheap's 120 s kill (a kill is a refusal 20)
+[ "${#BUDGET}" -le 6 ] || BUDGET=100; BUDGET=$((10#$BUDGET)); [ "$BUDGET" -le 100 ] || BUDGET=100   # clamp: never above validate_cheap's 120 s kill (a kill is a refusal 20)
 GATE="$D/../check_submodule_ff.sh"
 defer() { echo "BLIND submodule_ff_range: $1 (deferred, not a pass; run scripts/check_submodule_ff.sh by hand)"; exit 14; }
 [ -x "$GATE" ] || defer "gate scripts/check_submodule_ff.sh is not in the code root"
