@@ -249,3 +249,15 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
 - m2, m5: minor test-instrumentation/process-doc findings from the re-review; texts to be re-extracted from the reviewer report (a8ee20da1e30f3655) when the next appendix pass runs.
 - M6: add an id-to-name join check comparing digest gate ids/names with `constitution/scripts/gates/gate_ledger_deferrals.tsv` (the §11.4.288 OWED-GATE-150..152 name-reorder mutant survives phrase rows).
 - 12 new digests not yet compared against groups/*.md (UNCONFIRMED).
+
+## Redis rate limiter (landed 4d5cafcf, 2026-10-30) — open operator decisions and follow-ups
+Source: independent Opus review of the fix plus a read-only audit; none of these were changed by 4d5cafcf.
+- Production default is the in-memory limiter. Redis limiting needs `REDIS_RATE_LIMIT=true` AND a successful startup PING (`catalog-api/main.go` ~586-602, ~931); the PING is never re-checked at runtime.
+- Operator decision: in Redis mode `AuthRedisRateLimiterConfig` (limit 5) and `DefaultRedisRateLimiterConfig` (limit 100) share the key `rate_limit:<IP>` (no username before auth), so ordinary traffic can lock a client out of auth routes, and `/auth/status`, `/me` are effectively 5/min against 600/min in memory.
+- Operator decision: Redis presets (5/100/200 per minute) versus in-memory tiers (30/600/2000 per minute).
+- Operator decision: `/login` and `/register` always use the in-memory limiter.
+- Operator decision: after startup, a Redis outage returns 503 on Redis-limited routes; alternative is fallback to the in-memory limiter.
+- `TokenBucketRedisRateLimit` still fails open on a Redis error (the other two now fail closed).
+- `docs/BACKEND_HARDENING_AUDIT.md` still says the limiter "activates whenever Redis is reachable"; the real condition is the flag plus the startup PING.
+- Live test uses `tests.SetupTestRedis`, which runs FLUSHDB on DB 15 of whatever answers on localhost:6379; no live-class tests exist for the sliding-window and token-bucket limiters; the live test has about 100-300 ms timing margins (may be flaky on a loaded host).
+- `retry_after` in the 429 JSON body is now millisecond precision (for example "44.8s"); no client code reading it was found.
