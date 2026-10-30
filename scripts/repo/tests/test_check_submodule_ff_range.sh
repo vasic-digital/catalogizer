@@ -3,7 +3,7 @@
 # UNIT-CLASS (constitution 11.4.289(C)): it drives the REAL wrapper, the REAL gate and the REAL validate_cheap.sh against throwaway git repositories with real
 # local submodules built under mktemp -d; it is gate-logic evidence, not evidence about any real push of this project. Nothing outside $T is written.
 # Usage: bash scripts/repo/tests/test_check_submodule_ff_range.sh [--quiet]   Env: WRAP=<wrapper> VC=<validate_cheap.sh> (mutation driver)
-#        bash scripts/repo/tests/test_check_submodule_ff_range.sh --mutants    (7 lightweight mutants; each must make this test fail)
+#        bash scripts/repo/tests/test_check_submodule_ff_range.sh --mutants    (10 lightweight mutants; each must make this test fail)
 set -u
 cd "$(git rev-parse --show-toplevel)" || exit 2
 D0="$(pwd)"; QUIET=0
@@ -22,6 +22,9 @@ if [ "${1:-}" = --mutants ]; then
   mut exit1_without_line_pass check_submodule_ff_range.sh 's/^       \[ -n "\$lines" \] || lines=.*$/       :/'
   mut budget_not_clamped      check_submodule_ff_range.sh 's/^\[ "\${#BUDGET}" -le 6 \].*$/:/'
   mut budget_octal_failopen   check_submodule_ff_range.sh 's/^\(\[ "\${#BUDGET}" -le 6 \].*\)BUDGET=\$((10#\$BUDGET)); /\1/'
+  mut budget_exhausted_bare_continue check_submodule_ff_range.sh 's/^  \[ "\$left" -gt 0 \] || {.*$/  [ "$left" -gt 0 ] || continue/'
+  mut budget_strip_zero_only  check_submodule_ff_range.sh 's/BUDGET=\$((10#\$BUDGET))/BUDGET=${BUDGET#0}/'
+  mut timeout_read_as_pass    check_submodule_ff_range.sh 's/^    124) blind=.*$/    124) ;;/'
   mut deferral_read_as_fail   validate_cheap.sh           "s/^    if rc == 14: emit('deferred'.*\$/    pass/"
   exit "$bad"
 fi
@@ -58,7 +61,7 @@ fresh; git -C "$T/P" update-index --add --cacheinfo "160000,deadbeefdeadbeefdead
 fresh;                               case_ "empty range, nothing to check (PASS)" 0 ""
 rm -rf "$T/P"; mkrepo "$T/P"; echo r > "$T/P/readme"; commit_all "$T/P" base; case_ "no remote main and no upstream is a deferral, not a pass" 14 "no remote main tip"
 fresh; pin "$C3"; CODEROOT="$CODE0" case_ "gate absent from the code root is a deferral" 14 "not in the code root"
-fresh; pin "$C3"; ( export SUBFF_RANGE_BUDGET=0; case_ "budget exhausted is a deferral, not a refusal 20" 14 "budget-exhausted" )
+fresh; pin "$C3"; SUBFF_RANGE_BUDGET=0 case_ "budget exhausted is a deferral, not a refusal 20" 14 "budget-exhausted"
 fresh; pin "$C1"; git -C "$T/P" remote add mirror "$T/O.git"; git -C "$T/P" fetch -q mirror; case_ "two remotes with one tip: still NONFF 10" 10 "NONFF own"
 fresh; pin "$C1"; run --root; eq "--root without a value: 20" "$RC" 20
 run; eq "no --root: 20" "$RC" 20; run --bogus; eq "unknown option: 20" "$RC" 20; run --root "$T/nonexistent"; eq "missing root: 20" "$RC" 20
@@ -73,13 +76,16 @@ fresh; pin "$C3"; CODEROOT="$T/stub1" case_ "gate exit 1 with no NONFF line (std
 fresh; pin "$C3"; CODEROOT="$T/stub2" case_ "gate exit 1 with only a VERDICT FAIL line is a refusal, not a pass" 10 "VERDICT: FAIL checked=1"
 # SUBFF_RANGE_BUDGET is clamped below validate_cheap's 120 s kill: a fake `timeout` on PATH records the value the wrapper really passes
 mkdir -p "$T/fakebin"; printf '#!/bin/bash\necho "$1" > "%s/tmo"\nshift\nexec /usr/bin/timeout 60 "$@"\n' "$T" > "$T/fakebin/timeout"; chmod +x "$T/fakebin/timeout"
-fresh; pin "$C3"; ( export SUBFF_RANGE_BUDGET=100000 PATH="$T/fakebin:$PATH"; case_ "huge SUBFF_RANGE_BUDGET still runs and passes" 0 "" )
+fresh; pin "$C3"; SUBFF_RANGE_BUDGET=100000 PATH="$T/fakebin:$PATH" case_ "huge SUBFF_RANGE_BUDGET still runs and passes" 0 ""
 t="$(cat "$T/tmo" 2>/dev/null || echo none)"; ok=1; if [ "$t" != none ] && [ "$t" -le 100 ] 2>/dev/null; then ok=0; fi; eq "huge SUBFF_RANGE_BUDGET is clamped to at most 100 s (timeout got $t)" "$ok" 0
 # budget normalisation: leading zeros are decimal (08/0099 must not fail bash arithmetic and fail open), 010 is 10 not octal 8
 stubcode "$T/stub3" 'echo "NONFF own sub: x"; echo "VERDICT: FAIL checked=1 own_nonff=1"; exit 1'
-for b in 08 0099; do fresh; pin "$C3"; ( export SUBFF_RANGE_BUDGET=$b; CODEROOT="$T/stub3" case_ "budget $b (leading zero) does not fail open" 10 "NONFF own" ); done
-rm -f "$T/tmo"; fresh; pin "$C3"; ( export SUBFF_RANGE_BUDGET=010 PATH="$T/fakebin:$PATH"; case_ "budget 010 runs and passes" 0 "" )
+for b in 08 0099; do fresh; pin "$C3"; SUBFF_RANGE_BUDGET=$b CODEROOT="$T/stub3" case_ "budget $b (leading zero) does not fail open" 10 "NONFF own"; done
+rm -f "$T/tmo"; fresh; pin "$C3"; SUBFF_RANGE_BUDGET=010 PATH="$T/fakebin:$PATH" case_ "budget 010 runs and passes" 0 ""
 eq "budget 010 is decimal 10 (timeout got $(cat "$T/tmo" 2>/dev/null))" "$(cat "$T/tmo" 2>/dev/null)" 10
+# gate exceeding the budget: timeout (rc 124) is a deferral 14 naming the timeout, never a pass (the env prefixes above and here are not subshells, so FAIL counts reach the parent)
+stubcode "$T/stub5" 'sleep 6; exit 0'
+fresh; pin "$C3"; SUBFF_RANGE_BUDGET=1 CODEROOT="$T/stub5" case_ "gate slower than the budget is a deferral naming the timeout" 14 "timeout:"
 # two distinct remote main tips: a gate failing on either one (both orders) must give 10
 mktwo() { fresh; pin "$C3"; rm -rf "$T/M.git"; git clone -q --bare "$T/P" "$T/M.git"; git -C "$T/P" remote add mirror "$T/M.git"; git -C "$T/P" fetch -q mirror
   git -C "$T/P" update-ref refs/remotes/mirror/main "$(git -C "$T/P" rev-parse HEAD~1)"; }

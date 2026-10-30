@@ -33,18 +33,18 @@ git -C "$ROOT" rev-parse --verify -q 'HEAD^{commit}' >/dev/null || defer "HEAD i
 tips="$( { git -C "$ROOT" for-each-ref --format='%(objectname)' 'refs/remotes/*/main'
            git -C "$ROOT" rev-parse -q --verify '@{upstream}^{commit}' 2>/dev/null; } | sort -u)"
 [ -n "$tips" ] || defer "no remote main tip and no upstream to compare HEAD with"
-START=$SECONDS; nonff=""; blind=""; n=0
+START=$SECONDS; nonff=""; blind=""; n=0; decided=0
 while IFS= read -r tip; do
   [ -n "$tip" ] || continue
   n=$((n+1)); left=$((BUDGET - (SECONDS - START)))
   [ "$left" -gt 0 ] || { blind="$blind budget-exhausted-before:${tip:0:12}"; continue; }
   out="$(cd "$ROOT" && timeout "$left" "$GATE" "$tip" HEAD 2>&1)"; rc=$?
   case "$rc" in
-    0) ;;
+    0) decided=$((decided+1)) ;;
     1) lines="$(printf '%s\n' "$out" | grep -E '^NONFF own ' | sed "s/^/tip ${tip:0:12}: /")"
        # fail closed (11.4.201(4)): gate exit 1 with no parsable NONFF line is still a refusal, never a pass
        [ -n "$lines" ] || lines="tip ${tip:0:12}: gate exit 1 (VERDICT FAIL) but no 'NONFF own' line parsed; output: $(printf '%s\n' "$out" | grep -E 'VERDICT|ERROR|rror' | head -1 | tr '\t\n' '  ')"
-       nonff="$nonff"$'\n'"$lines" ;;
+       nonff="$nonff"$'\n'"$lines"; decided=$((decided+1)) ;;
     124) blind="$blind timeout:${tip:0:12}" ;;
     *) blind="$blind rc$rc:${tip:0:12}:$(printf '%s\n' "$out" | grep -E 'VERDICT|ERROR' | head -1 | tr '\t\n' '  ')" ;;
   esac
@@ -55,4 +55,5 @@ if [ -n "${nonff//[$'\n ']/}" ]; then
   exit 10
 fi
 [ -z "$blind" ] || defer "gate could not decide:$blind"
+[ "$decided" -eq "$n" ] || defer "only $decided of $n remote tips were decided"   # fail closed: exit 0 only when every tip was judged
 exit 0
