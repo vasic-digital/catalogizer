@@ -290,7 +290,7 @@ them.
 ## e2e credential-default follow-ups (recorded 2026-10-31)
 Context: commit `0cfe6c63` ("test(e2e): require ADMIN_PASSWORD from env, remove literal credential defaults")
 landed on `main`. The Playwright specs were not run in review (UNCONFIRMED that they pass with the variable
-set). The items below were relayed by the operator's conductor; layers and severities are as relayed. All
+set). The items below were relayed by the operator's conductor; layers and severities are as relayed, except E4, E5 (re-classified to test-instrumentation) and E7 (author's reading). All
 OPEN until a commit on `main` closes them.
 - E1 (test-instrumentation, important): the control needle in `catalog-web/src/e2e-env.test.ts` covers only
   the `||` alternative of the scanner's three regex alternatives (`||`, `??`, `password:`); add a positive
@@ -311,12 +311,12 @@ OPEN until a commit on `main` closes them.
   an allow-listed passthrough looks needed (§11.4.173).
 - E6 (process-doc, minor): `catalog-web/e2e/README.md` (line 15) says to export values in the shell or a
   gitignored `.env`, but no dotenv use was found in `catalog-web/package.json`, `playwright.config.ts` or
-  `e2e/`; a search for `e2e/README` in `*.md`, `*.json` and `*.ts` finds only `catalog-web/e2e/fixtures/env.ts`,
+  `e2e/`; a search for `e2e/README` in `*.md`, `*.json` and `*.ts` finds only `catalog-web/e2e/fixtures/env.ts` (apart from this file),
   so no document links it; `catalog-web/docs/TESTING.md`, `docs/testing/TESTING.md`, root `AGENTS.md` and
   `catalog-web/AGENTS.md` do not mention `ADMIN_PASSWORD` (grep returned no match).
-- E7 (source, severity not assigned; layer is the author's reading): literal default passwords (the value
-  `admin123`, which is compromised by disclosure: it appeared in repository history and is not a live
-  credential) remain outside e2e (catalog-api challenges and tests, `config.go`, `auth/service.go`, shell scripts,
+- E7 (source-defect, severity not assigned; layer is the author's reading): literal default passwords (the value
+  `admin123`, which is compromised by disclosure: it appeared in repository history; it must be treated
+  as compromised, and whether any deployment still uses it is UNKNOWN) remain outside e2e (catalog-api challenges and tests, `config.go`, `auth/service.go`, shell scripts,
   Android `MainActivity`, HelixQA banks, Website docs, and also `tests/k6` and `docs/issues`); track separately. Measured
   2026-10-31 with `grep -rlF` on the literal: `tests/k6` 16 files (all 16 files in that directory),
   `docs/issues` 22 files (of 1778 entries); control needle: the same command finds known-present
