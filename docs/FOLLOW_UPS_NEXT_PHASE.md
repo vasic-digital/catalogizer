@@ -250,23 +250,30 @@ Source: the item list (S1-S4, T1 and one-line descriptions of S1 and T1) was rel
 conductor; the author of this entry did not see the FTP review that produced them. Everything else in this
 section is the author's reading of the code. The priority "high" and the layer tags on S1 and T1 are the
 author's assessment, not relayed, UNCONFIRMED by the operator. No `CAT-NNN` ticket exists for these items
-(this file carries none); mint one per item when they are triaged. All OPEN until a commit on `main` closes them.
+(this file carries none); mint one per item when they are triaged. All OPEN until a commit on `main` closes
+them.
 - S1 (high, source; author's assessment): the FTP reconnect can take up to about 60 s. Read in
   `catalog-api/filesystem/ftp_client.go`: `reconnectIf` (line 240) wraps the caller's context with
   `context.WithTimeout(ctx, 60*time.Second)` (line 251) and passes it to `c.dial` (Dial plus Login). `dial`
-  (line 84) sets `ftp.DialWithTimeout(30 * time.Second)` (line 87), and the data-connection tracker uses
-  `net.Dialer{Timeout: 30 * time.Second}` (line 500). So the bound already exists, but it is this repo's own
-  hard-coded literals, not a library default, and there is no separate re-Connect path. Fix: make the reconnect
-  bound (and probably the 30 s dial and dialer timeouts) configurable and shorter, with the values taken from
-  configuration rather than literals. Prove it with a live fixture: a real FTP server that is then cut off or
-  stalled mid-session, never a stub (§11.4.289).
+  (line 84) sets `ftp.DialWithTimeout(30 * time.Second)` (line 87). `connTracker` (lines 491-492) records the
+  control and data connections of one `ServerConn`; its only use is the dial of the copy-destination
+  connection in `CopyFile` (line 761), so its `net.Dialer{Timeout: 30 * time.Second}` (line 500) bounds
+  that copy dial, not the reconnect. So the bound already exists, but it is this repo's own hard-coded
+  literals, not a library default, and there is no separate re-Connect path. Fix: make the reconnect bound
+  (and probably the 30 s dial and dialer timeouts) configurable and shorter, with the values taken from
+  configuration rather than literals. Prove it with a live fixture: a real FTP server that is then cut off
+  or stalled mid-session, never a stub (§11.4.289).
+  UNCONFIRMED: the repo has two FTP clients: `catalog-api/filesystem/ftp_client.go` (imports
+  `github.com/jlaffaye/ftp`) and the `pkg/ftp` client described in `docs/FTP_CLIENT.md` (no `pkg/ftp`
+  directory exists at this HEAD). Which one S1 and T1 concern is UNKNOWN; the S1 line numbers above are from
+  the first.
 - T1 (high, test-instrumentation; author's assessment): an FTP test hangs (which test was not given:
   UNKNOWN, to be identified). Two steps: (1) add a per-test timeout (`context.WithTimeout` in the test and
   `go test -timeout`) so a hang fails with a stack dump instead of blocking the run; (2) root-cause the hang
   (§11.4.102), reproducing it first (§11.4.115). Possibly related to S1 (UNCONFIRMED: no evidence links them).
 - S2: UNKNOWN: details not found, needs triage. Searched `docs/` and the FTP commits `1c8acf3b` to
-  `256c376c`. `docs/FTP_CLIENT.md` has no `S` labels; the labels it names are F1-F16, G1-G12, P1-P4 and
-  T1-T5 (earlier review rounds), which are not these items.
+  `256c376c`. `docs/FTP_CLIENT.md` has no `S` labels; the labels it names include F1-F16, G1-G12, P1-P4 and
+  T1-T5, D1-D7, D11, D12, D16, D17 and N1-N17 (earlier review rounds), which are not these items.
 - S3: UNKNOWN: details not found, needs triage (same search as S2).
 - S4: UNKNOWN: details not found, needs triage (same search as S2).
 - Note: the `S1`/`S2` hits in the path-confinement section above are unrelated review items of that section.
