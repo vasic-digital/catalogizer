@@ -46,7 +46,7 @@ PY
 NC CTRL0 "negative control: an unmutated copy of mutation_safety.sh placed like a mutant" 'enable -n kill 2>/dev/null'
 M MS01 "RM8 (round-2 reviewer): any line containing a # is a comment, so a kill line with a trailing comment is admitted" "case \"\${line#\"\${line%%[![:space:]]*}\"}\" in '#'*) continue ;; esac" "case \"\$line\" in *'#'*) continue ;; esac"
 M MS02 "a glob-built absolute path (/usr/bin/k?ll) is not recognised" ' || [[ "$line" =~ $MS_GLOB_RE ]]' ''
-M MS03 "the left boundary excludes a dot again: os.killpg( and .kill( are invisible" '(^|[^A-Za-z0-9_-])(kill|' '(^|[^A-Za-z0-9_.-])(kill|'
+M MS03 "the left boundary excludes a dot again: os.killpg( and .kill( are invisible" '(^|[^A-Za-z0-9_-])(kill|' '(^|[^A-Za-z0-9_.-])(kill|'   # killpg-gate:allow mutation-table DATA: a regex fixture naming the scanner pattern, never executed
 M MS04 "the shim functions are not read-only: a mutant can redefine the guard" 'readonly -f kill pkill killall podman ms_blocked ms_kill_guard 2>/dev/null' ':'
 M MS05 "the PATH stub of podman is missing: podman inside the containment is the host binary" '>"$MS_BIN/podman"; chmod +x "$MS_BIN/podman"' '>/dev/null'
 M MS06 "a podman stop written with the PODMAN variable is not a side-effect token" '|PODMAN"?[[:space:]]+(stop|' '|PODMANX"?[[:space:]]+(stop|'

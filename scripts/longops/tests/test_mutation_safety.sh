@@ -30,24 +30,22 @@ mk g2 lib.sh '[[ "$pid" =~ ^[0-9]+$ && "$pid" -gt 1 ]] || return "$RC_UNSAFE"
 # lo_kill_child'
 ms_scan "$PR" "$FX/m-g2" >/dev/null; assert_rc "S2 golden-true: the M04 shape (guards removed, the kill replaced by a no-op) carries no signal line and runs" $? 0
 mk g3 lib.sh 'flock -w 15' 'flock -w 1'; ms_scan "$PR" "$FX/m-g3" >/dev/null; assert_rc "S3 golden-true: an edit of a line without any signal token runs" $? 0
-mk g4; app g4 '# kill -9 -1 would be a comment, not a command'; ms_scan "$PR" "$FX/m-g4" >/dev/null; assert_rc "S4 golden-true: a COMMENT that names kill cannot execute and is allowed" $? 0
+mk g4; app g4 '# kill -9 -1 would be a comment, not a command'; ms_scan "$PR" "$FX/m-g4" >/dev/null; assert_rc "S4 golden-true: a COMMENT that names kill cannot execute and is allowed" $? 0 # killpg-gate:allow textual mutant fixture: this line is DATA the containment scanner must refuse; it is never executed
 mk g5 lib.sh '  kill -s "$sig" -- "$pid" 2>/dev/null
 }
 # lo_kill_child' '  kill -s "$sig" -- "$pid" 2>/dev/null
 }
 # lo_kill_child'; ms_scan "$PR" "$FX/m-g5" >/dev/null; assert_rc "S5 golden-true: a signal line kept byte-identical is allowed" $? 0
 
+H1_NEW='  kill -s "$sig" -- -1 2>/dev/null'  # killpg-gate:allow textual mutant fixture: DATA the containment scanner must refuse, never executed
 mk h1 lib.sh '  kill -s "$sig" -- "$pid" 2>/dev/null
 }
-# lo_kill_child' '  kill -s "$sig" -- -1 2>/dev/null
-}
-# lo_kill_child'; ms_scan "$PR" "$FX/m-h1" >"$FX/o" 2>&1; assert_rc "S6 H1 kill target replaced by -1, guards intact: aborted (the old grep ran it)" $? 1
-grep -q 'kill -s "$sig" -- -1' "$FX/o" && ok "S6b the offending line is printed" || bad "S6b [$(cat "$FX/o")]"
+# lo_kill_child' "$H1_NEW"$'\n}\n# lo_kill_child'; ms_scan "$PR" "$FX/m-h1" >"$FX/o" 2>&1; assert_rc "S6 H1 kill target replaced by -1, guards intact: aborted (the old grep ran it)" $? 1
+grep -q 'kill -s "$sig" -- -1' "$FX/o" && ok "S6b the offending line is printed" || bad "S6b [$(cat "$FX/o")]" # killpg-gate:allow textual mutant fixture: this line is DATA the containment scanner must refuse; it is never executed
+H2_NEW='  kill -s "$sig" -- "-$pid" 2>/dev/null'  # killpg-gate:allow textual mutant fixture: DATA the containment scanner must refuse, never executed
 mk h2 lib.sh '  kill -s "$sig" -- "$pid" 2>/dev/null
 }
-# lo_kill_child' '  kill -s "$sig" -- "-$pid" 2>/dev/null
-}
-# lo_kill_child'; ms_scan "$PR" "$FX/m-h2" >/dev/null 2>&1; assert_rc "S7 H2 kill target replaced by the process group -pid: aborted" $? 1
+# lo_kill_child' "$H2_NEW"$'\n}\n# lo_kill_child'; ms_scan "$PR" "$FX/m-h2" >/dev/null 2>&1; assert_rc "S7 H2 kill target replaced by the process group -pid: aborted" $? 1
 mk h3 lib.sh '"$pid" -gt 1 ]] || return "$RC_UNSAFE"
   pg=$(lo_ppgrp "$pid"); [[ "$pg" =~ ^[0-9]+$ && "$pg" -gt 1 ]] || return "$RC_UNSAFE"
   printf' '"$pid" -gt -2 ]] || return "$RC_UNSAFE"
@@ -58,17 +56,17 @@ mk h3 lib.sh '"$pid" -gt 1 ]] || return "$RC_UNSAFE"
 }
 # lo_kill_child'; ms_scan "$PR" "$FX/m-h3" >/dev/null 2>&1; assert_rc "S8 H3 pid guard weakened AND the kill line re-spelled: aborted" $? 1
 n=8
-for spec in 'command kill -9 -1' 'builtin kill -9 -1' '/bin/kill -9 -1' '/usr/bin/kill -9 -1' 'pkill -u "$USER"' 'killall -u "$USER"' 'xargs kill -9' 'exec kill -9 -1' 'systemctl suspend' 'loginctl terminate-user "$USER"' 'reboot' 'poweroff' 'shutdown -h now' 'echo x; kill -9 -1'; do
+for spec in 'command kill -9 -1' 'builtin kill -9 -1' '/bin/kill -9 -1' '/usr/bin/kill -9 -1' 'pkill -u "$USER"' 'killall -u "$USER"' 'xargs kill -9' 'exec kill -9 -1' 'systemctl suspend' 'loginctl terminate-user "$USER"' 'reboot' 'poweroff' 'shutdown -h now' 'echo x; kill -9 -1'; do # killpg-gate:allow textual mutant fixture: this line is DATA the containment scanner must refuse; it is never executed
   n=$((n+1)); mk hx; app hx "$spec"; ms_scan "$PR" "$FX/m-hx" >/dev/null 2>&1; assert_rc "S$n hypothetical bad mutant appends [$spec]: aborted" $? 1
 done
-mk hf; printf 'kill -9 -1\n' >"$FX/m-hf/evil.sh"; ms_scan "$PR" "$FX/m-hf" >/dev/null 2>&1; assert_rc "S23 a NEW file carrying a kill line is aborted" $? 1
-mk hp; printf 'import os\nos.kill(-1, 9)\n' >"$FX/m-hp/evil.py"; ms_scan "$PR" "$FX/m-hp" >/dev/null 2>&1; assert_rc "S24 a NEW python file with os.kill is aborted" $? 1
+mk hf; printf 'kill -9 -1\n' >"$FX/m-hf/evil.sh"; ms_scan "$PR" "$FX/m-hf" >/dev/null 2>&1; assert_rc "S23 a NEW file carrying a kill line is aborted" $? 1 # killpg-gate:allow textual mutant fixture: this line is DATA the containment scanner must refuse; it is never executed
+mk hp; printf 'import os\nos.kill(-1, 9)\n' >"$FX/m-hp/evil.py"; ms_scan "$PR" "$FX/m-hp" >/dev/null 2>&1; assert_rc "S24 a NEW python file with os.kill is aborted" $? 1 # killpg-gate:allow textual mutant fixture: this line is DATA the containment scanner must refuse; it is never executed
 mk hq lib.sh 'lo_die() { echo "longops: $1: $2" >&2; exit "${3:-$RC_USAGE}"; }' 'lo_die() { killall -u me; echo "longops: $1: $2" >&2; exit "${3:-$RC_USAGE}"; }'
 ms_scan "$PR" "$FX/m-hq" >/dev/null 2>&1; assert_rc "S25 a token smuggled into an existing non-kill line is aborted" $? 1
 
 # WF14 round 3: the four bypasses the round-2 review demonstrated (R2-T1 RB5, RB7, RB8) and the reviewer mutant RM8 (any `#` made the whole line a comment)
-mk hy; app hy "python3 -c 'import os; os.killpg(1, 9)'"; ms_scan "$PR" "$FX/m-hy" >/dev/null 2>&1; assert_rc "S26 WF14 RB5 python os.killpg(1, 9) (the 11.4.263 incident itself) is aborted" $? 1
-mk hz; app hz "python3 -c 'import os; os.killpg(os.getpgid(0), 9)'"; ms_scan "$PR" "$FX/m-hz" >/dev/null 2>&1; assert_rc "S27 WF14 RB5 python os.killpg(os.getpgid(0), 9) is aborted" $? 1
+mk hy; app hy "python3 -c 'import os; os.killpg(1, 9)'"; ms_scan "$PR" "$FX/m-hy" >/dev/null 2>&1; assert_rc "S26 WF14 RB5 python os.killpg(1, 9) (the 11.4.263 incident itself) is aborted" $? 1 # killpg-gate:allow textual mutant fixture: this line is DATA the containment scanner must refuse; it is never executed
+mk hz; app hz "python3 -c 'import os; os.killpg(os.getpgid(0), 9)'"; ms_scan "$PR" "$FX/m-hz" >/dev/null 2>&1; assert_rc "S27 WF14 RB5 python os.killpg(os.getpgid(0), 9) is aborted" $? 1 # killpg-gate:allow textual mutant fixture: this line is DATA the containment scanner must refuse; it is never executed
 mk ha; app ha "python3 -c 'import psutil; psutil.Process(1).kill()'"; ms_scan "$PR" "$FX/m-ha" >/dev/null 2>&1; assert_rc "S28 WF14 RB5 psutil Process(1).kill() is aborted" $? 1
 for spec in 'import psutil as p' 'p.send_signal(9)' 'psutil.Process(1).terminate()'; do
   mk hi; app hi "$spec"; ms_scan "$PR" "$FX/m-hi" >/dev/null 2>&1; assert_rc "S28b WF14 RB5 an interpreter signal API [$spec] is aborted" $? 1
@@ -79,12 +77,12 @@ done
 for spec in 'ms_kill_guard() { "$MS_REAL_KILL" "$@"; }' 'unset -f kill' 'enable kill' 'BASH_ENV=/dev/null bash -c x' 'MS_REAL_KILL=/bin/true' 'ms_blocked() { return 0; }'; do
   mk hc; app hc "$spec"; ms_scan "$PR" "$FX/m-hc" >/dev/null 2>&1; assert_rc "S30 WF14 RB8 a mutant that redefines or disables the containment [$spec] is aborted" $? 1
 done
-mk hd; app hd 'kill -9 -1   # cleanup'; ms_scan "$PR" "$FX/m-hd" >/dev/null 2>&1; assert_rc "S31 WF14 RM8 a kill line with a TRAILING comment is code, not a comment: aborted" $? 1
-mk hd2; app hd2 'echo "x # y"; kill -9 -1'; ms_scan "$PR" "$FX/m-hd2" >/dev/null 2>&1; assert_rc "S31b a # inside a string before a kill command does not hide it: aborted" $? 1
+mk hd; app hd 'kill -9 -1   # cleanup'; ms_scan "$PR" "$FX/m-hd" >/dev/null 2>&1; assert_rc "S31 WF14 RM8 a kill line with a TRAILING comment is code, not a comment: aborted" $? 1 # killpg-gate:allow textual mutant fixture: this line is DATA the containment scanner must refuse; it is never executed
+mk hd2; app hd2 'echo "x # y"; kill -9 -1'; ms_scan "$PR" "$FX/m-hd2" >/dev/null 2>&1; assert_rc "S31b a # inside a string before a kill command does not hide it: aborted" $? 1 # killpg-gate:allow textual mutant fixture: this line is DATA the containment scanner must refuse; it is never executed
 for spec in '"$PODMAN" stop -t 5 "$(podman ps -q | head -1)"' 'podman rm -f x' '/usr/bin/podman stop x' 'podman system prune -af'; do
   mk he; app he "$spec"; ms_scan "$PR" "$FX/m-he" >/dev/null 2>&1; assert_rc "S32 WF14 R2-T2 a new podman side effect [$spec] is aborted" $? 1
 done
-mk hg; app hg '# podman stop x, kill -9 -1 : comments never execute'; ms_scan "$PR" "$FX/m-hg" >/dev/null 2>&1; assert_rc "S33 golden-true: a pure comment naming podman stop and kill is allowed" $? 0
+mk hg; app hg '# podman stop x, kill -9 -1 : comments never execute'; ms_scan "$PR" "$FX/m-hg" >/dev/null 2>&1; assert_rc "S33 golden-true: a pure comment naming podman stop and kill is allowed" $? 0 # killpg-gate:allow textual mutant fixture: this line is DATA the containment scanner must refuse; it is never executed
 mk hh lib.sh 'flock -w 15' 'flock -w 2'; ms_scan "$PR" "$FX/m-hh" >/dev/null 2>&1; assert_rc "S34 golden-true: an ordinary edit still runs after the token set grew" $? 0
 # round 5 (WF17 F7, CONS LO-T3 b): a computed absolute path or a quote-split word is refused when it is a NEW line; a pristine line, an ordinary edit and an empty-quote argument are not
 mk hj; app hj 'b=/usr/bin; "$b/k""ill" -0 2'; ms_scan "$PR" "$FX/m-hj" >/dev/null 2>&1; assert_rc "S35 WF17 F7 the computed-path line b=/usr/bin; \"\$b/k\"\"ill\" is aborted (golden-bad)" $? 1

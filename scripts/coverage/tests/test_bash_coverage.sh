@@ -327,7 +327,7 @@ set -m
 bash "$1" --src-root "$2" --out "$3" --target cov_fixture.sh --target cov_fixture2.sh -- bash "$4" "$2" &
 H=$!
 sleep "$5"
-kill -s "$6" -- "-$H"
+if [ -n "$H" ] && [ "$H" -gt 1 ]; then kill -s "$6" -- "-$H"; else echo "sig-driver: bad harness pid '$H'" >&2; exit 2; fi
 wait "$H"; echo "$?" >"$7"; echo "$SECONDS" >"$7.sec"
 D
 cat >"$T/absorb.sh" <<'F'

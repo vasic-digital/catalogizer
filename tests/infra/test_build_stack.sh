@@ -81,14 +81,15 @@ d=$(sweep_for "$CO" "$BP|$BOP"); [ -z "$d" ] && ok "failed-up: the real sweep is
 for sg in INT TERM HUP; do
   mkbuildco "$TI_SCRATCH/co-$sg"; build_start "$TI_SCRATCH/co-$sg" 60 0
   if wait_cond 120 started; then
-    build_facts "$CO"; kill -s "$sg" -- "-$BPG" 2>/dev/null
+    build_facts "$CO"
+    if [ -n "$BPG" ] && [ "$BPG" -gt 1 ]; then kill -s "$sg" -- "-$BPG" 2>/dev/null; else bad "$sg: cannot resolve the build process group (pgid '$BPG')"; fi
     if wait_cond 60 gone "$BPID"; then ok "$sg: container-build.sh exited after the signal"; else bad "$sg: still running 60 s after the signal"; continue; fi
     wait "$BPID" 2>/dev/null
     check "$sg: no container, pod, network or volume of the build project is left" "$(leftovers "$BP")" "c=0 p=0 n=0 v=0"
     check "$sg: the state directory is gone" "$([ -e "$CO/.audit/test-infra/$BP" ] && echo left || echo gone)" gone
     check "$sg: the operation is recorded failed and the claim released" "$(jq -r .state "$CO/.audit/longops/ops/$BOP.json" 2>/dev/null)$([ -d "$CO/.audit/longops/claims/$BP" ] && echo held || echo free)" failedfree
     d=$(sweep_for "$CO" "$BP|$BOP"); [ -z "$d" ] && ok "$sg: the real sweep is clean afterwards" || bad "$sg: sweep drift: $(printf '%s' "$d" | head -2 | cut -c1-200)"
-  else bad "$sg: the build never reached its up"; kill -s KILL -- "-$BPG" 2>/dev/null; fi
+  else bad "$sg: the build never reached its up"; if [ -n "${BPG:-}" ] && [ "$BPG" -gt 1 ]; then kill -s KILL -- "-$BPG" 2>/dev/null; fi; fi
 done
 
 # ================= row 4: a successful run with a HOSTILE exported environment (TI-D2 for the build path) =================

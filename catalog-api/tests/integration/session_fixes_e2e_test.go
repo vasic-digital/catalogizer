@@ -156,7 +156,10 @@ func (sb *spawnedBinary) Close() {
 	if sb == nil || sb.cmd == nil || sb.cmd.Process == nil {
 		return
 	}
-	_ = syscall.Kill(-sb.cmd.Process.Pid, syscall.SIGKILL)
+	// Never signal a process group id <= 1 (-1 would SIGKILL every process of this user).
+	if pid := sb.cmd.Process.Pid; pid > 1 {
+		_ = syscall.Kill(-pid, syscall.SIGKILL)
+	}
 	_ = sb.cmd.Wait()
 	if sb.t.Failed() {
 		sb.t.Logf("server log: %s", sb.logPath)
