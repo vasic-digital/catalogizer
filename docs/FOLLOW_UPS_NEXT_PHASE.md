@@ -245,6 +245,15 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
   holder of the FTP review has to fill it in). The earlier "two blind sleeps" item is resolved and
   removed.
 
+## FTP live-test follow-ups S1-S4 and T1 (recorded 2026-10-31, as relayed)
+Source: relayed by the operator's conductor; the author of this entry did not see the FTP review that produced S1-S4 and T1. Ids below are the labels as relayed; no `CAT-NNN` ticket exists for them yet (this file carries none; a ticket per item is to be minted when they are triaged). Priority: S1 and T1 high, S2-S4 unknown. All OPEN until a commit on `main` closes them.
+- S1 (high, source): the FTP client reconnect can take up to about 60 s. Add a bounded reconnect: derive a `context` with a deadline from the caller's context and pass it to the dial, login and re-`Connect` path in `catalog-api/filesystem/ftp_client.go`, so a dead server fails within the declared bound instead of the library default. Declare the bound as configuration, not a literal. Needs a real-server test (a live FTP fixture that stops answering), not a double (§11.4.289).
+- T1 (high, test-instrumentation): an FTP test hangs (which test was not given: UNKNOWN, to be identified). Two steps: (1) add a per-test timeout (`context.WithTimeout` in the test and `go test -timeout`) so a hang fails with a stack dump instead of blocking the run; (2) root-cause the hang (§11.4.102) before any fix, reproducing it first (§11.4.115). Likely related to S1 (UNCONFIRMED: no evidence links them).
+- S2: UNKNOWN: details not found, needs triage. Searched `docs/` and the last FTP commits (`1c8acf3b` to `256c376c`); the `S1`..`T5` labels found in `docs/FTP_CLIENT.md` belong to earlier review rounds (F1-F16, T1-T3, G1-G12, T4-T5, P1-P4) and are not these items.
+- S3: UNKNOWN: details not found, needs triage (same search as S2).
+- S4: UNKNOWN: details not found, needs triage (same search as S2).
+- Note: the `S1`/`S2` hits in the path-confinement section above are unrelated review items of that section, not these.
+
 ## Appendix digests (279-290) — follow-ups from Opus re-review (2026-10-29)
 - m2, m5: minor test-instrumentation/process-doc findings from the re-review; texts to be re-extracted from the reviewer report (a8ee20da1e30f3655) when the next appendix pass runs.
 - M6: add an id-to-name join check comparing digest gate ids/names with `constitution/scripts/gates/gate_ledger_deferrals.tsv` (the §11.4.288 OWED-GATE-150..152 name-reorder mutant survives phrase rows).
