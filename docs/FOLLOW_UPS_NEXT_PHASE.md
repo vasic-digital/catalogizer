@@ -257,9 +257,10 @@ them.
   `context.WithTimeout(ctx, 60*time.Second)` (line 251) and passes it to `c.dial` (line 84), which calls
   `ftp.Dial` with `ftp.DialWithTimeout(30 * time.Second)` (line 87), then `Login` (line 93). Read in
   jlaffaye v0.2.4 `ftp.go`: `DialWithTimeout` only sets `dialer.Timeout` (line 189) and `Dial` uses the
-  context only inside the TCP dial function (`DialContext`, lines 129-155). After the TCP connect, the 220
-  greeting read (`ReadResponse`, line 168), the explicit-TLS handshake (`authTLS`) and `Login` have no
-  deadline. So the 60 s and 30 s literals bound only the TCP connect, and a server that accepts TCP and
+  context only inside the TCP dial function (`DialContext`, lines 129-151). After the TCP connect, the 220
+  greeting read (`ReadResponse`, line 168), the explicit-TLS handshake (`authTLS`, line 175, which runs only
+  if explicit TLS is configured; `ftp_client.go` passes no TLS option, so it does not run for this client),
+  `Login` and `ChangeDir` (line 101, the base-directory change in `dial`) have no deadline. So the 60 s and 30 s literals bound only the TCP connect, and a server that accepts TCP and
   then stalls makes `reconnectIf` hang with no bound; `docs/FTP_CLIENT.md` line 11 says the same of this
   library. Fix: a deadline on the control connection (or a context-aware dial that closes it on
   cancellation), not only shorter literals; make the values configurable. Prove it with a live fixture: a
@@ -284,6 +285,32 @@ them.
 - S3: UNKNOWN: details not found, needs triage (same search as S2).
 - S4: UNKNOWN: details not found, needs triage (same search as S2).
 - Note: the `S1`/`S2` hits in the path-confinement section above are unrelated review items of that section.
+
+## e2e credential-default follow-ups (recorded 2026-10-31)
+Context: commit `0cfe6c63` ("test(e2e): require ADMIN_PASSWORD from env, remove literal credential defaults")
+landed on `main`. The Playwright specs were not run in review (UNCONFIRMED that they pass with the variable
+set). The items below were relayed by the operator's conductor; layers and severities are as relayed. All
+OPEN until a commit on `main` closes them.
+- E1 (test-instrumentation, important): the control needle in `catalog-web/src/e2e-env.test.ts` covers only
+  the `||` alternative of the scanner's three regex alternatives (`||`, `??`, `password:`); add a positive
+  needle for each alternative.
+- E2 (test-instrumentation, important): scanner blind spots: a dead `fill(` exclusion; only `.ts` files are
+  scanned (not `.js`/`.mjs`); a destructuring default `const { ADMIN_PASSWORD = '...' } = process.env` is not
+  matched; multi-line defaults are not matched.
+- E3 (test-instrumentation, minor): the test does not assert that the `requireEnv` error message omits env
+  values.
+- E4 (tooling, important): `scripts/build-test-release.sh` (around line 224, `|| true` and then records PASS)
+  and `scripts/run-all-tests-comprehensive.sh` (around line 120, warning only) swallow the new load-time
+  failure when `ADMIN_PASSWORD` is unset; they should fail or SKIP with reason `credentials_absent`
+  (constitution §11.4.289(E)).
+- E5 (tooling, important): `scripts/containers/run_playwright.sh` via `run_pinned.sh` passes no host env, so
+  `ADMIN_PASSWORD` cannot reach the container without being put on argv; needs an env-file or an allow-listed
+  passthrough (§11.4.173).
+- E6 (process-doc, minor): `catalog-web/e2e/README.md` says a gitignored `.env` is loaded, but nothing loads
+  it (no dotenv); the README is not linked from any README or testing doc; `catalog-web/CLAUDE.md`,
+  `AGENTS.md` and `docs/TESTING.md` do not mention the required variable.
+- E7 (info): literal `admin123` defaults remain outside e2e (catalog-api challenges and tests, `config.go`,
+  `auth/service.go`, shell scripts, Android `MainActivity`, HelixQA banks, Website docs); track separately.
 
 ## Appendix digests (279-290) — follow-ups from Opus re-review (2026-10-29)
 - m2, m5: minor test-instrumentation/process-doc findings from the re-review; texts to be re-extracted from the reviewer report (a8ee20da1e30f3655) when the next appendix pass runs.
