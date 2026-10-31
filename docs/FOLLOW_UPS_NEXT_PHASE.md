@@ -252,21 +252,28 @@ section is the author's reading of the code. The priority "high" and the layer t
 author's assessment, not relayed, UNCONFIRMED by the operator. No `CAT-NNN` ticket exists for these items
 (this file carries none); mint one per item when they are triaged. All OPEN until a commit on `main` closes
 them.
-- S1 (high, source; author's assessment): the FTP reconnect can take up to about 60 s. Read in
+- S1 (high, source; author's assessment): the FTP reconnect is not bounded. Read in
   `catalog-api/filesystem/ftp_client.go`: `reconnectIf` (line 240) wraps the caller's context with
-  `context.WithTimeout(ctx, 60*time.Second)` (line 251) and passes it to `c.dial` (Dial plus Login). `dial`
-  (line 84) sets `ftp.DialWithTimeout(30 * time.Second)` (line 87). `connTracker` (lines 491-492) records the
-  control and data connections of one `ServerConn`; its only use is the dial of the copy-destination
-  connection in `CopyFile` (line 761), so its `net.Dialer{Timeout: 30 * time.Second}` (line 500) bounds
-  that copy dial, not the reconnect. So the bound already exists, but it is this repo's own hard-coded
-  literals, not a library default, and there is no separate re-Connect path. Fix: make the reconnect bound
-  (and probably the 30 s dial and dialer timeouts) configurable and shorter, with the values taken from
-  configuration rather than literals. Prove it with a live fixture: a real FTP server that is then cut off
-  or stalled mid-session, never a stub (§11.4.289).
-  UNCONFIRMED: the repo has two FTP clients: `catalog-api/filesystem/ftp_client.go` (imports
-  `github.com/jlaffaye/ftp`) and the `pkg/ftp` client described in `docs/FTP_CLIENT.md` (no `pkg/ftp`
-  directory exists at this HEAD). Which one S1 and T1 concern is UNKNOWN; the S1 line numbers above are from
-  the first.
+  `context.WithTimeout(ctx, 60*time.Second)` (line 251) and passes it to `c.dial` (line 84), which calls
+  `ftp.Dial` with `ftp.DialWithTimeout(30 * time.Second)` (line 87), then `Login` (line 93). Read in
+  jlaffaye v0.2.4 `ftp.go`: `DialWithTimeout` only sets `dialer.Timeout` (line 189) and `Dial` uses the
+  context only inside the TCP dial function (`DialContext`, lines 129-155). After the TCP connect, the 220
+  greeting read (`ReadResponse`, line 168), the explicit-TLS handshake (`authTLS`) and `Login` have no
+  deadline. So the 60 s and 30 s literals bound only the TCP connect, and a server that accepts TCP and
+  then stalls makes `reconnectIf` hang with no bound; `docs/FTP_CLIENT.md` line 11 says the same of this
+  library. Fix: a deadline on the control connection (or a context-aware dial that closes it on
+  cancellation), not only shorter literals; make the values configurable. Prove it with a live fixture: a
+  real FTP server that accepts TCP and then stalls, or is cut off mid-session, never a stub (§11.4.289).
+  `connTracker` (type at lines 493-497, doc comment 491-492) records every connection its `dialFunc`
+  creates, i.e. all connections of the copy-destination `ServerConn`; it is used only in `CopyFile` (line
+  761) and its `net.Dialer{Timeout: 30 * time.Second}` (line 500) bounds only their TCP connect. A link
+  between this and T1 is plausible but UNCONFIRMED. UNCONFIRMED: the repo has two FTP clients.
+  `catalog-api/filesystem/ftp_client.go` (the only FTP import in catalog-api production code, line 24)
+  imports `github.com/jlaffaye/ftp`. The `pkg/ftp` client described in `docs/FTP_CLIENT.md` lives in the
+  own-org submodule `submodules/filesystem` (module `digital.vasic.filesystem`; 18 files under `pkg/ftp` at
+  the pinned gitlink, 0 `jlaffaye` lines in its `go.mod`) and is imported by
+  `scripts/test-infra/nas_clients/nas_diag_test.go` (line 23) and `nas_clients_test.go` (line 40). Which
+  client T1 concerns is UNKNOWN; the S1 analysis above is of the first.
 - T1 (high, test-instrumentation; author's assessment): an FTP test hangs (which test was not given:
   UNKNOWN, to be identified). Two steps: (1) add a per-test timeout (`context.WithTimeout` in the test and
   `go test -timeout`) so a hang fails with a stack dump instead of blocking the run; (2) root-cause the hang
