@@ -260,8 +260,9 @@ them.
   context only inside the TCP dial function (`DialContext`, lines 129-151). After the TCP connect, the 220
   greeting read (`ReadResponse`, line 168), the explicit-TLS handshake (`authTLS`, line 175, which runs only
   if explicit TLS is configured; `ftp_client.go` passes no TLS option, so it does not run for this client),
-  `Login` and `ChangeDir` (line 101, the base-directory change in `dial`) have no deadline. So the 60 s and 30 s literals bound only the TCP connect, and a server that accepts TCP and
-  then stalls makes `reconnectIf` hang with no bound; `docs/FTP_CLIENT.md` line 11 says the same of this
+  `Login` and `ChangeDir` (line 101, the base-directory change in `dial`) have no deadline. So the 60 s and
+  30 s literals bound only the TCP connect, and a server that accepts TCP and then stalls makes `reconnectIf`
+  hang with no bound; `docs/FTP_CLIENT.md` line 11 says the same of this
   library. Fix: a deadline on the control connection (or a context-aware dial that closes it on
   cancellation), not only shorter literals; make the values configurable. Prove it with a live fixture: a
   real FTP server that accepts TCP and then stalls, or is cut off mid-session, never a stub (§11.4.289).
@@ -299,18 +300,28 @@ OPEN until a commit on `main` closes them.
   matched; multi-line defaults are not matched.
 - E3 (test-instrumentation, minor): the test does not assert that the `requireEnv` error message omits env
   values.
-- E4 (tooling, important): `scripts/build-test-release.sh` (around line 224, `|| true` and then records PASS)
-  and `scripts/run-all-tests-comprehensive.sh` (around line 120, warning only) swallow the new load-time
-  failure when `ADMIN_PASSWORD` is unset; they should fail or SKIP with reason `credentials_absent`
+- E4 (test-instrumentation, important): `scripts/build-test-release.sh` (line 224 ends in `|| true`; a
+  `record_phase "Web Frontend" "PASS"` follows at line 232, control flow between not traced)
+  and `scripts/run-all-tests-comprehensive.sh` (lines 120-123, `log_warning` only) appear to swallow the new
+  load-time failure when `ADMIN_PASSWORD` is unset (not run to confirm); they should fail or SKIP with reason `credentials_absent`
   (constitution §11.4.289(E)).
-- E5 (tooling, important): `scripts/containers/run_playwright.sh` via `run_pinned.sh` passes no host env, so
-  `ADMIN_PASSWORD` cannot reach the container without being put on argv; needs an env-file or an allow-listed
-  passthrough (§11.4.173).
-- E6 (process-doc, minor): `catalog-web/e2e/README.md` says a gitignored `.env` is loaded, but nothing loads
-  it (no dotenv); the README is not linked from any README or testing doc; `catalog-web/CLAUDE.md`,
-  `AGENTS.md` and `docs/TESTING.md` do not mention the required variable.
-- E7 (info): literal `admin123` defaults remain outside e2e (catalog-api challenges and tests, `config.go`,
-  `auth/service.go`, shell scripts, Android `MainActivity`, HelixQA banks, Website docs); track separately.
+- E5 (test-instrumentation, important): `scripts/containers/run_playwright.sh` runs through `run_pinned.sh`,
+  where the only `-e` flags found (line 261) are fixed cache/home variables, so no route for `ADMIN_PASSWORD`
+  into the container was found other than putting it on the command line (not run to confirm); an env-file or
+  an allow-listed passthrough looks needed (§11.4.173).
+- E6 (process-doc, minor): `catalog-web/e2e/README.md` (line 15) says to export values in the shell or a
+  gitignored `.env`, but no dotenv use was found in `catalog-web/package.json`, `playwright.config.ts` or
+  `e2e/`; a search for `e2e/README` in `*.md`, `*.json` and `*.ts` finds only `catalog-web/e2e/fixtures/env.ts`,
+  so no document links it; `catalog-web/docs/TESTING.md`, `docs/testing/TESTING.md`, root `AGENTS.md` and
+  `catalog-web/AGENTS.md` do not mention `ADMIN_PASSWORD` (grep returned no match).
+- E7 (source, severity not assigned; layer is the author's reading): literal default passwords (the value
+  `admin123`, which is compromised by disclosure: it appeared in repository history and is not a live
+  credential) remain outside e2e (catalog-api challenges and tests, `config.go`, `auth/service.go`, shell scripts,
+  Android `MainActivity`, HelixQA banks, Website docs, and also `tests/k6` and `docs/issues`); track separately. Measured
+  2026-10-31 with `grep -rlF` on the literal: `tests/k6` 16 files (all 16 files in that directory),
+  `docs/issues` 22 files (of 1778 entries); control needle: the same command finds known-present
+  `tests/k6/monitoring_test.js` and returns 0 for the absent literal `zzq_no_such_literal_9431` in both
+  directories. The other locations listed were not re-counted here.
 
 ## Appendix digests (279-290) — follow-ups from Opus re-review (2026-10-29)
 - m2, m5: minor test-instrumentation/process-doc findings from the re-review; texts to be re-extracted from the reviewer report (a8ee20da1e30f3655) when the next appendix pass runs.
