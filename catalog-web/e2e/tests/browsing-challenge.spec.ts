@@ -1,7 +1,8 @@
 import { test, expect, Page } from '@playwright/test';
+import { requireEnv } from '../fixtures/env';
 
 const username = process.env.ADMIN_USERNAME || 'admin';
-const password = process.env.ADMIN_PASSWORD || 'admin123';
+const password = requireEnv('ADMIN_PASSWORD');
 
 /**
  * Browsing Challenge E2E Tests

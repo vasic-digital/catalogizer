@@ -1,14 +1,18 @@
 import { Page } from '@playwright/test';
+import { requireEnv } from './env';
+
+// Required: no literal fallback. Fails the run, naming the variable, when unset.
+const ADMIN_PASSWORD = requireEnv('ADMIN_PASSWORD');
 
 export const testUser = {
   username: 'admin',
-  password: 'admin123',
+  password: ADMIN_PASSWORD,
   role: 'admin',
 };
 
 export const adminUser = {
   username: 'admin',
-  password: 'admin123',
+  password: ADMIN_PASSWORD,
   role: 'admin',
 };
 
