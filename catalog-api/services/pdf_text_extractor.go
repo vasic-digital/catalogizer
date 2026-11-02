@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"os/exec"
@@ -24,8 +25,17 @@ import (
 const (
 	// pdfTextTimeout bounds one whole extraction (primary and fallback together).
 	pdfTextTimeout = 2 * time.Minute
-	// pdfTextMaxBytes bounds the extracted text so a hostile PDF cannot exhaust memory.
+	// pdfTextMaxBytes bounds the output of the pdftotext fallback and the total text kept from the
+	// primary extractor across pages.
 	pdfTextMaxBytes = 64 << 20
+	// pdfMaxPageContentBytes bounds the DECOMPRESSED content stream of one page for the primary
+	// extractor. The library's Content() allocates a struct per glyph (measured on the previous
+	// version: a 16 KB file with 16M glyphs reached 4.3 GB RSS in 12 s and could not be
+	// cancelled), so the stream is measured, with a limited reader, before it is parsed; a page
+	// over the limit is refused here and left to the pdftotext fallback. 1 MiB is far above
+	// ordinary text pages and bounds the parse at roughly 270 MB for one page. Font programs,
+	// CMaps and form XObjects are not measured (documented gap).
+	pdfMaxPageContentBytes = 1 << 20
 )
 
 // pdfTextExtractor extracts the text of a PDF file. Pages are 1-based and inclusive.
@@ -39,7 +49,7 @@ type pdfTextExtractor interface {
 // ledongthucExtractor is the pure-Go primary extractor.
 type ledongthucExtractor struct{}
 
-func (ledongthucExtractor) open(path string) (*os.File, *pdf.Reader, error) {
+func (ledongthucExtractor) open(ctx context.Context, path string) (*os.File, *pdf.Reader, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to open PDF: %w", err)
@@ -54,7 +64,7 @@ func (ledongthucExtractor) open(path string) (*os.File, *pdf.Reader, error) {
 		f.Close()
 		return nil, nil, fmt.Errorf("failed to create PDF reader: %w", err)
 	}
-	if err := checkPageTree(r); err != nil {
+	if err := checkPageTree(ctx, r); err != nil {
 		f.Close()
 		return nil, nil, fmt.Errorf("rejected PDF: %w", err)
 	}
@@ -63,7 +73,7 @@ func (ledongthucExtractor) open(path string) (*os.File, *pdf.Reader, error) {
 
 const (
 	pdfMaxTreeDepth = 64
-	pdfMaxTreeNodes = 1 << 20
+	pdfMaxTreeNodes = 1 << 16
 )
 
 // checkPageTree walks the page tree before any page is requested. The library's Reader.Page
@@ -71,7 +81,7 @@ const (
 // it spin forever (measured: a one-byte edit of a valid PDF hung the extractor with a CPU core
 // pinned and no way to cancel it). A tree deeper than pdfMaxTreeDepth, or larger than
 // pdfMaxTreeNodes, is refused.
-func checkPageTree(r *pdf.Reader) (err error) {
+func checkPageTree(ctx context.Context, r *pdf.Reader) (err error) {
 	defer func() {
 		if p := recover(); p != nil {
 			err = fmt.Errorf("PDF parser panic: %v", p)
@@ -89,6 +99,11 @@ func checkPageTree(r *pdf.Reader) (err error) {
 		}
 		if nodes++; nodes > pdfMaxTreeNodes {
 			return errors.New("page tree too large")
+		}
+		if nodes%256 == 0 {
+			if cerr := ctx.Err(); cerr != nil {
+				return cerr
+			}
 		}
 		if v.Key("Type").Name() != "Pages" {
 			return nil
@@ -115,7 +130,7 @@ func safePDFReader(f *os.File, size int64) (r *pdf.Reader, err error) {
 }
 
 func (e ledongthucExtractor) NumPages(ctx context.Context, path string) (n int, err error) {
-	f, r, err := e.open(path)
+	f, r, err := e.open(ctx, path)
 	if err != nil {
 		return 0, err
 	}
@@ -129,7 +144,7 @@ func (e ledongthucExtractor) NumPages(ctx context.Context, path string) (n int, 
 }
 
 func (e ledongthucExtractor) ExtractPages(ctx context.Context, path string, start, end int) (out []string, err error) {
-	f, r, err := e.open(path)
+	f, r, err := e.open(ctx, path)
 	if err != nil {
 		return nil, err
 	}
@@ -162,16 +177,50 @@ func pageText(r *pdf.Reader, n int) (txt string, err error) {
 	if p.V.IsNull() {
 		return "", fmt.Errorf("page %d not found", n)
 	}
+	if err := checkPageContentSize(p); err != nil {
+		return "", err
+	}
 	return layoutPageText(p.Content().Text), nil
+}
+
+// checkPageContentSize measures the decompressed content stream(s) of a page with a limited
+// reader (reads at most pdfMaxPageContentBytes+1 bytes) and refuses a page over the limit.
+func checkPageContentSize(p pdf.Page) error {
+	c := p.V.Key("Contents")
+	var streams []pdf.Value
+	if c.Kind() == pdf.Array {
+		for i := 0; i < c.Len() && i < 4096; i++ {
+			streams = append(streams, c.Index(i))
+		}
+	} else {
+		streams = append(streams, c)
+	}
+	remaining := int64(pdfMaxPageContentBytes) + 1
+	for _, sv := range streams {
+		if sv.Kind() != pdf.Stream {
+			continue
+		}
+		rd := sv.Reader()
+		n, _ := io.Copy(io.Discard, io.LimitReader(rd, remaining))
+		rd.Close()
+		remaining -= n
+		if remaining <= 0 {
+			return fmt.Errorf("page content exceeds %d bytes decompressed", pdfMaxPageContentBytes)
+		}
+	}
+	return nil
 }
 
 // layoutPageText rebuilds text lines from the positioned glyph runs of a page, in content-stream
 // order (which for multi-column layouts follows the producer's column/cell order). The library's
 // GetPlainText concatenates every text-show string with no separators (no line breaks, words glued
-// at wraps) and its per-run X/W values carry no per-glyph advance (W is 0), so no geometric
-// reflow is attempted: a new line starts when the baseline moves by more than half the font
-// size; spaces are those present in the stream. A trailing U+FFFD at a line end (the line-end
-// marker some producers emit) is dropped.
+// at wraps), so lines are rebuilt here: a new line starts when the baseline moves by more than
+// half the font size; spaces are those present in the stream, plus one inserted where a glyph
+// starts more than 0.2 em to the right of the previous glyph's advance (this is how TJ kerning
+// offsets such as -333 between words, as pdfTeX and Word emit them, become word breaks). The gap
+// test needs the font's advance widths: W is 0 for fonts without width metrics (the CID fonts of
+// the weasyprint fixtures), where only stream spaces apply. The synthetic "\n" run the library
+// emits after every TJ is dropped, and a trailing U+FFFD at a line end is trimmed.
 func layoutPageText(runs []pdf.Text) string {
 	var sb strings.Builder
 	var line strings.Builder
@@ -182,19 +231,28 @@ func layoutPageText(runs []pdf.Text) string {
 	}
 	have := false
 	var lastY float64
+	var prev pdf.Text
 	for _, r := range runs {
+		if r.S == "\n" || r.S == "\r" {
+			continue
+		}
 		tol := math.Max(r.FontSize, 1) * 0.5
 		if have && math.Abs(r.Y-lastY) > tol {
 			flush()
+		} else if have && prev.W > 0 && line.Len() > 0 && !isSpaceRun(prev.S) && !isSpaceRun(r.S) &&
+			r.X-(prev.X+prev.W) > 0.2*math.Max(r.FontSize, 1) {
+			line.WriteByte(' ')
 		}
 		line.WriteString(r.S)
-		lastY, have = r.Y, true
+		lastY, have, prev = r.Y, true, r
 	}
 	if have {
 		flush()
 	}
 	return sb.String()
 }
+
+func isSpaceRun(s string) bool { return strings.TrimSpace(s) == "" }
 
 // popplerExtractor runs pdftotext without a shell. The source path is made absolute (so it can
 // never be read as an option), the tool gets a timeout via ctx, and its output is size-bounded.
@@ -324,7 +382,8 @@ func (b *limitedBuffer) Write(p []byte) (int, error) {
 func settingInt(settings map[string]interface{}, key string) (int, bool) {
 	switch v := settings[key].(type) {
 	case float64:
-		if v == float64(int(v)) {
+		// bounds first: converting NaN, Inf or an out-of-range float to int is implementation-defined
+		if v >= -(1<<31) && v <= 1<<31 && v == math.Trunc(v) {
 			return int(v), true
 		}
 	case int:

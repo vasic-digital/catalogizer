@@ -38,8 +38,8 @@ func hostilePDFs(t *testing.T) map[string][]byte {
 		"header only":                []byte("%PDF-1.7\n"),
 		"truncated":                  good[:len(good)/2],
 		"truncated tail":             good[:len(good)-40],
-		"bogus huge count":           []byte(strings.Replace(string(rv6PDF(1)), "/Count 1", "/Count 999999999", 1)),
-		"self-referencing page tree": []byte(strings.Replace(string(rv6PDF(1)), "/Kids[4 0 R ]", "/Kids[2 0 R ]", 1)),
+		"bogus huge count":           fixPDFOffsets(strings.Replace(string(rv6PDF(1)), "/Count 1", "/Count 999999999", 1)),
+		"self-referencing page tree": fixPDFOffsets(strings.Replace(string(rv6PDF(1)), "/Kids[4 0 R ]", "/Kids[2 0 R ]", 1)),
 		"flipped bytes": func() []byte {
 			b := append([]byte(nil), good...)
 			for i := 200; i < len(b); i += 97 {

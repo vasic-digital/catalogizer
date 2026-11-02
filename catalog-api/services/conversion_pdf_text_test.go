@@ -185,8 +185,9 @@ func TestCAT002_Integration_ConvertPDFRoutes(t *testing.T) {
 	require.NoError(t, s.convertPDF(&models.ConversionJob{SourcePath: src, TargetPath: htmlOut, SourceFormat: "pdf", TargetFormat: "html", ConversionType: "document"}))
 	hb, err := os.ReadFile(htmlOut)
 	require.NoError(t, err)
-	// whichever converter in the chain produced it (pandoc, LibreOffice or the text fallback), the
-	// document text must be in the HTML: a conversion that "succeeds" with an empty page is the bluff.
+	// NOT EXERCISED ON THIS HOST: the pandoc and LibreOffice legs (pandoc cannot read PDF, LibreOffice
+	// fails to start: libreglo.so missing), so this run passes through the text fallback only. The expectation:
+	// the document text must be in the HTML: a conversion that "succeeds" with an empty page is the bluff.
 	assert.Contains(t, string(hb), "Catalogizer")
 	_, serr := os.Lstat(htmlOut + ".tmp.txt")
 	assert.True(t, os.IsNotExist(serr), "temp sibling must be removed")
