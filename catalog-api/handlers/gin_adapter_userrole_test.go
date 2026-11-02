@@ -119,23 +119,34 @@ func TestUserRoleHandlers_ResolveIDsOnVersionedRoutes(t *testing.T) {
 	}
 }
 
-// Sweep gate: no handler in the package may derive an id from a hard-coded
-// "/api/..." URL prefix (breaks under /api/v1 and any group move).
+// Sweep gate: no handler may derive ids from r.URL.Path by trimming a
+// hard-coded "/api/" prefix or by splitting / path.Base-ing the raw path
+// (breaks under /api/v1 and any group move). routedID (path_params.go) is the
+// single allowed reader of r.URL.Path.
+var rawPathParseRe = regexp.MustCompile(`(Trim\w*|Split\w*|Fields|path\.Base|path\.Dir|filepath\.Base|filepath\.Dir)\(\s*r\.URL\.Path`)
+
 func TestNoHardcodedAPIPrefixPathParsing(t *testing.T) {
-	re := regexp.MustCompile(`TrimPrefix\(\s*r\.URL\.Path,\s*"/api/`)
-	files, err := filepath.Glob("*.go")
-	require.NoError(t, err)
-	needle := false
+	// control needle: the regex must match synthetic positives and not a negative
+	for _, pos := range []string{
+		`strings.TrimPrefix(r.URL.Path, "/api/users/")`,
+		`strings.Split(r.URL.Path, "/")`,
+		`path.Base(r.URL.Path)`,
+		`strings.Split(strings.Trim(r.URL.Path, "/"), "/")`,
+	} {
+		require.True(t, rawPathParseRe.MatchString(pos), "regex must match %q", pos)
+	}
+	require.False(t, rawPathParseRe.MatchString(`mux.Vars(r)["id"]`))
+	files := handlerFiles(t)
+	require.NotEmpty(t, files)
+	scanned := 0
 	for _, f := range files {
-		if strings.HasSuffix(f, "_test.go") {
-			continue
+		if filepath.Base(f) == "path_params.go" {
+			continue // routedID: the one sanctioned fallback reader
 		}
 		b, err := os.ReadFile(f)
 		require.NoError(t, err)
-		if strings.Contains(string(b), "r.URL.Path") {
-			needle = true
-		}
-		assert.False(t, re.Match(b), "%s parses ids from a hard-coded /api/ prefix; use the routed path param", f)
+		scanned++
+		assert.False(t, rawPathParseRe.Match(b), "%s parses ids from the raw URL path; use the routed path param (routedID)", f)
 	}
-	assert.True(t, needle, "control needle: scan must see TrimPrefix usage")
+	assert.Greater(t, scanned, 10)
 }

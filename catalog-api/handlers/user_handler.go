@@ -496,7 +496,6 @@ func (h *UserHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userIDStr := routedID(r, "users")
-	userIDStr = strings.TrimSuffix(userIDStr, "/reset-password")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
@@ -551,7 +550,6 @@ func (h *UserHandler) LockAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userIDStr := routedID(r, "users")
-	userIDStr = strings.TrimSuffix(userIDStr, "/lock")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
@@ -612,7 +610,6 @@ func (h *UserHandler) UnlockAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userIDStr := routedID(r, "users")
-	userIDStr = strings.TrimSuffix(userIDStr, "/unlock")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
@@ -642,7 +639,6 @@ func (h *UserHandler) UpdateUserSettings(w http.ResponseWriter, r *http.Request)
 	}
 
 	userIDStr := routedID(r, "users")
-	userIDStr = strings.TrimSuffix(userIDStr, "/settings")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)

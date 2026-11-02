@@ -169,6 +169,11 @@ func (h *RoleHandler) UpdateRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.Name == nil {
+		http.Error(w, "Role name is required", http.StatusBadRequest)
+		return
+	}
+
 	role := &models.Role{
 		ID:          roleID,
 		Name:        *req.Name,
