@@ -262,9 +262,10 @@ A=(podman run --rm
    -v "$PWD:/src:ro"
    --workdir /src   # MUT:workdir
 )
-# E5: forward ADMIN_PASSWORD by NAME only (`-e NAME` makes podman copy the value from the launcher environment; the value never
-# appears in argv, in print mode or in logs). Forwarded only when set, so there is no default value.
-[ -z "${ADMIN_PASSWORD+x}" ] || A+=(-e ADMIN_PASSWORD)
+# E5: least-privilege env passthrough BY NAME. RUNP_PASS_ENV is a space-separated list of variable names; only the closed set below is accepted
+# (anything else: pass_env_not_allowed). `-e NAME` makes podman copy the value from the launcher environment, so the value never appears in
+# argv, print mode or logs. A listed name is forwarded only when set (no default). Without RUNP_PASS_ENV nothing is forwarded.
+for _pv in ${RUNP_PASS_ENV:-}; do case "$_pv" in ADMIN_PASSWORD) [ -z "${!_pv+x}" ] || A+=(-e "$_pv");; *) refuse pass_env_not_allowed "$_pv (allowed: ADMIN_PASSWORD)";; esac; done   # MUT:passenv
 [ -z "$RW_BIND" ] || A+=(-v "$RW_BIND")
 A+=(-v "$OUT:/out:rw")
 [ "$NET" != none ] || A+=(--network=none)

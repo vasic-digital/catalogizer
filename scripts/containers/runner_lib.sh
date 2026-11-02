@@ -251,6 +251,8 @@ runner_main() {
 
   # ---- inherited RUNP_* controls the wrapper does not own are scrubbed (F4): RUNP_PRINT_ARGV=1 would make run_pinned.sh print its argv and exit 0 with
   # no container, which the version-probe mode read as a version line (`podman`). RUNP_LOCK and RUNP_USER are documented inputs and pass through.
+  # least privilege (E5): only a wrapper that declares RUNNER_PASS_ENV itself (run_playwright) may hand variables to its container; ambient values never count
+  [ "$RUNNER_NAME" = run_playwright ] || RUNNER_PASS_ENV=""
   local _v
   while IFS= read -r _v; do
     case "$_v" in RUNP_LOCK|RUNP_USER) ;; RUNP_*) echo "$RUNNER_NAME: note: ignored inherited $_v (the wrapper owns every RUNP_* control but RUNP_LOCK and RUNP_USER)" >&2; unset "$_v";; esac   # MUT:scrub-runp
@@ -385,7 +387,7 @@ PY
     [ -z "$NEED" ] || A+=(--need "$NEED")
     [ "$NET" != none ] || A+=(--network=none)
     # the OMP_* thread caps are scrubbed (GNU nproc honours them: run_pinned.sh would read a CPU count the envelope did not, review round 3 m1); they do not enter the container
-    RUNP_MEMORY="$LIM_MEM" RUNP_CPUS="$LIM_CPUS" RUNP_PIDS="$LIM_PIDS" exec env -u OMP_NUM_THREADS -u OMP_THREAD_LIMIT bash "$RUNP" "${A[@]}" --out "$OUT" --op-id "$OP_ID" "$IMG" -- "$@"
+    RUNP_PASS_ENV="${RUNNER_PASS_ENV:-}" RUNP_MEMORY="$LIM_MEM" RUNP_CPUS="$LIM_CPUS" RUNP_PIDS="$LIM_PIDS" exec env -u OMP_NUM_THREADS -u OMP_THREAD_LIMIT bash "$RUNP" "${A[@]}" --out "$OUT" --op-id "$OP_ID" "$IMG" -- "$@"
   }
   rl_spawn() { # rl_spawn <stdout-file> <stderr-file> <command word>...: background child CH, identity recorded; a signal that arrived meanwhile is honoured at once
     local so=$1 se=$2; shift 2

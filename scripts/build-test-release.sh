@@ -7,7 +7,8 @@
 
 set -euo pipefail
 
-PROJECT_DIR="${PROJECT_DIR:-/project}"
+# BTR_PROJECT_DIR is a dedicated test override (not the ambient PROJECT_DIR): main() runs rm -rf on $RELEASES_DIR/$REPORTS_DIR
+PROJECT_DIR="${BTR_PROJECT_DIR:-/project}"
 RELEASES_DIR="$PROJECT_DIR/releases"
 REPORTS_DIR="$PROJECT_DIR/reports"
 SCRIPTS_DIR="$PROJECT_DIR/scripts"
@@ -17,6 +18,7 @@ SKIP_E2E="${SKIP_E2E_TESTS:-false}"
 
 # Track results
 PHASE_RESULTS=()
+PHASE_NOTES=()
 TOTAL_PHASES=0
 PASSED_PHASES=0
 FAILED_PHASES=0
@@ -219,6 +221,7 @@ phase_4_web_frontend() {
         log_warn "E2E tests skipped (SKIP_E2E_TESTS=true)"
     elif [ -z "${ADMIN_PASSWORD:-}" ]; then
         log_warn "E2E tests SKIPPED reason=credentials_absent (ADMIN_PASSWORD is not set; E2E not run, not counted as passed)"
+        PHASE_NOTES+=("Web Frontend: E2E SKIPPED reason=credentials_absent")
     else
         log_step "Running Playwright E2E tests..."
 
@@ -599,7 +602,8 @@ main() {
     echo -e "${NC}"
 
     # Prepare output directories
-    rm -rf "$RELEASES_DIR" "$REPORTS_DIR"
+    : "${PROJECT_DIR:?}" "${RELEASES_DIR:?}" "${REPORTS_DIR:?}"
+    rm -rf -- "${RELEASES_DIR:?}" "${REPORTS_DIR:?}"
     mkdir -p "$RELEASES_DIR"/{linux,windows,android}/{catalog-api,catalog-web,catalogizer-desktop,installer-wizard}
     mkdir -p "$RELEASES_DIR/macos"/{amd64,arm64}/catalog-api
     mkdir -p "$RELEASES_DIR/android"/{catalogizer-android,catalogizer-androidtv}
@@ -646,6 +650,8 @@ main() {
             echo -e "  ${RED}[FAIL]${NC} $name"
         fi
     done
+
+    for note in "${PHASE_NOTES[@]:-}"; do [ -z "$note" ] || echo -e "  ${YELLOW}[SKIP]${NC} $note"; done
 
     echo ""
     echo -e "  Releases: $RELEASES_DIR"

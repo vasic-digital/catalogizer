@@ -586,10 +586,20 @@ check "R-8 control: HOME unset but XDG_STATE_HOME set composes, exit 0" "$(cat "
 
 # R-2: environment classification of run_pinned.sh. Every default-expansion read is listed; a new unclassified variable FAILs.
 #   forwarded-safe: validated/bounded or inert    gated: needs RUNP_TEST_MODE=1    scrubbed: never reaches disk_headroom.sh
-RUNP_ENV_CLASS="RUNP_PRINT_ARGV:inert RUNP_LOCK:input RUNP_MEMORY:bounded RUNP_CPUS:bounded RUNP_PIDS:bounded RUNP_USER:validated RUNP_TEST_MODE:gate RUNP_MEMINFO:gated RUNP_ULIMIT_U:gated XDG_STATE_HOME:store HOME:store TMPDIR:gated-root"
+RUNP_ENV_CLASS="RUNP_PRINT_ARGV:inert RUNP_LOCK:input RUNP_MEMORY:bounded RUNP_CPUS:bounded RUNP_PIDS:bounded RUNP_USER:validated RUNP_TEST_MODE:gate RUNP_MEMINFO:gated RUNP_ULIMIT_U:gated RUNP_PASS_ENV:allowlisted-by-name XDG_STATE_HOME:store HOME:store TMPDIR:gated-root"
 found="$(grep -oE '\$\{[A-Z][A-Z0-9_]*(:-|-|:\+|\+)' "$SUT" | sed -E 's/^\$\{//; s/(:-|-|:\+|\+)$//' | sort -u | tr '\n' ' ')"
 unclassified=""; for v in $found; do case " $RUNP_ENV_CLASS " in *" $v:"*) ;; *) unclassified="$unclassified $v";; esac; done
 check "R-2: every default-expansion environment read of run_pinned.sh is classified" "$unclassified" ""
+# E5: RUNP_PASS_ENV is an allow-list passthrough BY NAME (least privilege): forwarded only when listed AND set, only ADMIN_PASSWORD is allowed
+( export ADMIN_PASSWORD="pw-sentinel-$$"; export RUNP_PASS_ENV=ADMIN_PASSWORD; runp IMG-TOOL -- true; echo $RC >"$T/rc" )
+check "E5: allow-listed passthrough composes, exit 0" "$(cat "$T/rc")" 0
+( export ADMIN_PASSWORD="pw-sentinel-$$"; export RUNP_PASS_ENV=ADMIN_PASSWORD; runp IMG-TOOL -- true; i="$(grep -nxF ADMIN_PASSWORD "$T/argv" | head -1 | cut -d: -f1)"; printf "%s\n" "${i:+$(sed -n "$((i-1))p" "$T/argv")}" >"$T/e5" )
+check "E5: argv carries '-e ADMIN_PASSWORD' (name only) when allow-listed" "$(cat "$T/e5")" "-e"
+grep -q "pw-sentinel-$$" "$T/argv" "$T/err" && bad "E5: password value leaked" || ok "E5: password value not in argv/stderr"
+( export ADMIN_PASSWORD="pw-sentinel-$$"; unset RUNP_PASS_ENV; runp IMG-TOOL -- true )
+argv_has ADMIN_PASSWORD && bad "E5: ambient ADMIN_PASSWORD forwarded without RUNP_PASS_ENV" || ok "E5: nothing forwarded without RUNP_PASS_ENV"
+( export RUNP_PASS_ENV=SOME_OTHER; runp IMG-TOOL -- true; echo $RC >"$T/rc" )
+check "E5: a name outside the allow-list is refused" "$(cat "$T/rc")" 1
 # the scrubbed set never reaches disk_headroom.sh: a stub in a scratch tree dumps the environment it receives
 FW="$T/fwd/scripts/containers"; mkdir -p "$FW" "$T/fwd/build/containers"
 cp "$SUT" "$FW/run_pinned.sh"

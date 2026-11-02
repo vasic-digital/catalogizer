@@ -19,6 +19,7 @@ NC='\033[0m'
 REPORTS_DIR="reports/tests"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 OVERALL_EXIT_CODE=0
+E2E_STATUS="not-run"   # PASSED | FAILED | SKIPPED (credentials_absent)
 
 mkdir -p "${REPORTS_DIR}/${TIMESTAMP}"
 
@@ -120,10 +121,13 @@ run_e2e_tests() {
     if [ -z "${ADMIN_PASSWORD:-}" ]; then
         # E4: the specs require ADMIN_PASSWORD from the environment; without it they cannot run. Honest SKIP, never a PASS.
         log_warning "E2E tests SKIPPED reason=credentials_absent (ADMIN_PASSWORD is not set; not counted as passed)"
+        E2E_STATUS="SKIPPED (reason: credentials_absent)"
     elif npm run test:e2e > "../${REPORTS_DIR}/${TIMESTAMP}/e2e-tests.log" 2>&1; then
         log_success "E2E tests passed"
+        E2E_STATUS="PASSED"
     else
         log_error "E2E tests failed"
+        E2E_STATUS="FAILED"
         OVERALL_EXIT_CODE=1
     fi
     
@@ -286,14 +290,14 @@ generate_test_summary() {
 
 **Date:** $(date)
 **Test Run ID:** ${TIMESTAMP}
-**Status:** $([ $OVERALL_EXIT_CODE -eq 0 ] && echo "✅ PASSED" || echo "❌ FAILED")
+**Status:** $(if [ $OVERALL_EXIT_CODE -ne 0 ]; then echo "❌ FAILED"; elif [ "${E2E_STATUS#SKIPPED}" != "$E2E_STATUS" ]; then echo "⚠️ PASSED WITH SKIPS (E2E ${E2E_STATUS})"; else echo "✅ PASSED"; fi)
 
 ## Tests Executed
 
 1. ✅ Go Unit Tests (with race detection)
 2. ✅ Go Integration Tests
 3. ✅ TypeScript Unit Tests
-4. ✅ E2E Tests (Playwright)
+4. $([ "$E2E_STATUS" = PASSED ] && echo "✅" || { [ "${E2E_STATUS#SKIPPED}" != "$E2E_STATUS" ] && echo "⏭️"; } || echo "❌") E2E Tests (Playwright): ${E2E_STATUS}
 5. ✅ Contract Tests
 6. ✅ Performance Tests
 7. ✅ Linting and Static Analysis
@@ -361,7 +365,10 @@ main() {
     # Final status
     print_header "TEST EXECUTION COMPLETE"
     
-    if [ $OVERALL_EXIT_CODE -eq 0 ]; then
+    if [ $OVERALL_EXIT_CODE -eq 0 ] && [ "${E2E_STATUS#SKIPPED}" != "$E2E_STATUS" ]; then
+        log_warning "Tests passed, but E2E was SKIPPED (${E2E_STATUS}); this is not a full pass"
+        log_info "Review detailed reports at: ${REPORTS_DIR}/${TIMESTAMP}/"
+    elif [ $OVERALL_EXIT_CODE -eq 0 ]; then
         log_success "All tests passed successfully!"
         log_info "Review detailed reports at: ${REPORTS_DIR}/${TIMESTAMP}/"
     else

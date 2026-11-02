@@ -13,6 +13,7 @@ RUNNER_TOOLCHAIN=playwright
 RUNNER_PROBE_MODE=sh
 RUNNER_PROBE_VERSION='npx playwright --version'
 RUNNER_CMD_PREFIX=''
+RUNNER_PASS_ENV='ADMIN_PASSWORD'   # E5: the E2E specs read ADMIN_PASSWORD from the environment; forwarded by name, only for this wrapper
 RUNNER_BLOCKED_NOTE='IMG-PW is pinned by T106; this message is only reachable if its lock entry is removed'
 . "$(dirname "${BASH_SOURCE[0]}")/runner_lib.sh"
 runner_main "$@"
