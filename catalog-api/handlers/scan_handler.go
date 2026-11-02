@@ -28,12 +28,17 @@ type scannerInterface interface {
 type ScanHandler struct {
 	scanner scannerInterface
 	db      *database.DB
+	// clientFactory builds the real protocol client used to probe a storage root's connectivity (GetStorageRootStatus).
+	clientFactory filesystem.ClientFactory
 }
 
 // NewScanHandler creates a new ScanHandler.
 func NewScanHandler(scanner scannerInterface, db *database.DB) *ScanHandler {
-	return &ScanHandler{scanner: scanner, db: db}
+	return &ScanHandler{scanner: scanner, db: db, clientFactory: filesystem.NewDefaultClientFactory()}
 }
+
+// storageRootProbeTimeout bounds one connectivity probe so a black-holed host cannot hold a status request open.
+const storageRootProbeTimeout = 10 * time.Second
 
 // createStorageRootRequest is the JSON body for POST /storage/roots.
 type createStorageRootRequest struct {
@@ -223,22 +228,48 @@ func (h *ScanHandler) GetStorageRootStatus(c *gin.Context) {
 		return
 	}
 
-	// Check if storage root exists
-	var exists bool
-	err = h.db.QueryRowContext(c.Request.Context(),
-		"SELECT 1 FROM storage_roots WHERE id = ?", id).Scan(&exists)
+	root, err := h.loadStorageRoot(c.Request.Context(), id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Storage root not found"})
 		return
 	}
 
-	// For now, return dummy connectivity status
-	c.JSON(http.StatusOK, gin.H{
-		"id":         id,
-		"connected":  true,
-		"status":     "online",
-		"checked_at": time.Now().Format(time.RFC3339),
-	})
+	resp := gin.H{"id": id, "checked_at": time.Now().Format(time.RFC3339)}
+	if !root.Enabled {
+		// A disabled root is never scanned or probed: it is reported as such, not as online.
+		resp["connected"], resp["status"] = false, "disabled"
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+
+	// Probe the root with the same settings mapping and client factory the scanner uses, so the answer is the one a scan would meet.
+	settings, err := filesystem.SettingsFromRoot(root, services.ResolveSMBIdentity)
+	if err != nil {
+		resp["connected"], resp["status"], resp["error"] = false, "misconfigured", services.ScrubErrorFor(err, root)
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+	fsClient, err := h.clientFactory.CreateClient(&filesystem.StorageConfig{ID: root.Name, Name: root.Name, Protocol: root.Protocol, Settings: settings})
+	if err != nil {
+		resp["connected"], resp["status"], resp["error"] = false, "misconfigured", services.ScrubErrorFor(err, root)
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+	ctx, cancel := context.WithTimeout(c.Request.Context(), storageRootProbeTimeout)
+	defer cancel()
+	if err := fsClient.Connect(ctx); err != nil {
+		resp["connected"], resp["status"], resp["error"] = false, "offline", services.ScrubErrorFor(err, root)
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+	defer fsClient.Disconnect(context.Background())
+	if err := fsClient.TestConnection(ctx); err != nil {
+		resp["connected"], resp["status"], resp["error"] = false, "offline", services.ScrubErrorFor(err, root)
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+	resp["connected"], resp["status"] = true, "online"
+	c.JSON(http.StatusOK, resp)
 }
 
 // queueScanRequest is the JSON body for POST /scans.
