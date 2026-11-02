@@ -47,7 +47,7 @@ echo "$OUT" | grep -q '^RES=FAIL:Web Frontend' && ok "E4a: failing unit-test ste
 grep -q '^NOTE=Web Frontend: E2E SKIPPED reason=credentials_absent' <<<"$(phase4 SKIP_E2E_TESTS=false ADMIN_PASSWORD=)" && ok "E4a: skipped E2E leaves a SKIP note" || bad "E4a: no SKIP note"
 # ambient PROJECT_DIR must not steer the script's rm -rf: main() with PROJECT_DIR=$T/victim must not delete victim/releases
 mkdir -p "$T/victim/releases"; : >"$T/victim/releases/keep"
-( cd "$T" && PROJECT_DIR="$T/victim" PATH="$SH:$PATH" bash "$REPO/scripts/build-test-release.sh" >/dev/null 2>&1 ) || true
+mkdir -p "$T/safe"; ( cd "$T" && PROJECT_DIR="$T/victim" BTR_PROJECT_DIR="$T/safe" PATH="$SH:$PATH" bash "$REPO/scripts/build-test-release.sh" >/dev/null 2>&1 ) || true
 [ -e "$T/victim/releases/keep" ] && ok "E4a: ambient PROJECT_DIR is not honoured (no rm -rf of it)" || bad "E4a: ambient PROJECT_DIR steered rm -rf"
 
 # ---- E4b: run-all-tests-comprehensive.sh run_e2e_tests ----
