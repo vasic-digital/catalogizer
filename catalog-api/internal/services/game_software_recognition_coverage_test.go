@@ -94,7 +94,7 @@ func TestGameSoftwareRecognitionProvider_RecognizeMedia_SoftwareFallback(t *test
 	assert.Equal(t, "SourceForge", result.APIProvider)
 }
 
-func TestGameSoftwareRecognitionProvider_RecognizeMedia_GameFallbackToSteam(t *testing.T) {
+func TestGameSoftwareRecognitionProvider_RecognizeMedia_IGDBFailNeverClaimsSteam(t *testing.T) {
 	logger := zap.NewNop()
 	provider := NewGameSoftwareRecognitionProvider(logger)
 
@@ -105,7 +105,6 @@ func TestGameSoftwareRecognitionProvider_RecognizeMedia_GameFallbackToSteam(t *t
 	defer tsIGDB.Close()
 
 	provider.baseURLs["igdb"] = tsIGDB.URL
-	// Steam uses mock implementation (always returns result)
 
 	req := &MediaRecognitionRequest{
 		FilePath:  "/games/Some.Game.Steam.exe",
@@ -116,8 +115,8 @@ func TestGameSoftwareRecognitionProvider_RecognizeMedia_GameFallbackToSteam(t *t
 	result, err := provider.RecognizeMedia(context.Background(), req)
 	require.NoError(t, err)
 	require.NotNil(t, result)
-	// Should get Steam result since IGDB failed
-	assert.Equal(t, MediaTypeGame, result.MediaType)
+	// IGDB failed and Steam has no client: a Steam match must never be invented.
+	assert.NotEqual(t, "Steam", result.APIProvider)
 }
 
 // =============================================================================
@@ -149,7 +148,7 @@ func TestGameSoftwareRecognitionProvider_RecognizeGame_IGDBSuccess(t *testing.T)
 	assert.Equal(t, "Test Game", result.Title)
 }
 
-func TestGameSoftwareRecognitionProvider_RecognizeGame_IGDBFailFallbackSteam(t *testing.T) {
+func TestGameSoftwareRecognitionProvider_RecognizeGame_IGDBFailReturnsError(t *testing.T) {
 	logger := zap.NewNop()
 	provider := NewGameSoftwareRecognitionProvider(logger)
 
@@ -161,9 +160,8 @@ func TestGameSoftwareRecognitionProvider_RecognizeGame_IGDBFailFallbackSteam(t *
 	provider.baseURLs["igdb"] = ts.URL
 
 	result, err := provider.recognizeGame(context.Background(), "Steam Game", "PC")
-	require.NoError(t, err)
-	assert.Equal(t, "Steam Game", result.Title)
-	assert.Equal(t, "Steam", result.APIProvider)
+	assert.Error(t, err)
+	assert.Nil(t, result)
 }
 
 // =============================================================================
@@ -325,17 +323,14 @@ func TestGameSoftwareRecognitionProvider_ConvertIGDBGame_Minimal(t *testing.T) {
 // searchSteam — Steam mock results
 // =============================================================================
 
-func TestGameSoftwareRecognitionProvider_SearchSteam(t *testing.T) {
-	logger := zap.NewNop()
-	provider := NewGameSoftwareRecognitionProvider(logger)
+// CAT-001: Steam has no search client; claiming any name is a Steam game with
+// 0.6 confidence was fabricated recognition.
+func TestGameSoftwareRecognitionProvider_SearchSteam_NotFabricated(t *testing.T) {
+	provider := NewGameSoftwareRecognitionProvider(zap.NewNop())
 
 	result, err := provider.searchSteam(context.Background(), "Half-Life 2")
-	require.NoError(t, err)
-	require.NotNil(t, result)
-	assert.Equal(t, "Half-Life 2", result.Title)
-	assert.Equal(t, "Steam", result.APIProvider)
-	assert.Equal(t, MediaTypeGame, result.MediaType)
-	assert.Equal(t, 0.6, result.Confidence)
+	assert.ErrorIs(t, err, ErrGameProviderNotImplemented)
+	assert.Nil(t, result)
 }
 
 // =============================================================================

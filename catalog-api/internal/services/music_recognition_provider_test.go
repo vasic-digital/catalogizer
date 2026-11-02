@@ -373,3 +373,29 @@ func TestMusicRecognitionProvider_GenerateID(t *testing.T) {
 	assert.NotEqual(t, id1, id2)
 	assert.Equal(t, id1, id3)
 }
+
+// CAT-001: tempo/energy/valence were derived from len(sample); they must not be
+// reported as measurements.
+func TestMusicRecognitionProvider_AudioAnalysisDoesNotInventMusicalFeatures(t *testing.T) {
+	p := NewMusicRecognitionProvider(zap.NewNop())
+	sample := make([]byte, 4096)
+	for i := range sample {
+		sample[i] = byte(i)
+	}
+	a := p.analyzeAudioFeatures(sample)
+	assert.Zero(t, a.Tempo)
+	assert.Zero(t, a.Energy)
+	assert.Zero(t, a.Valence)
+
+	fp, err := p.generateAudioFingerprint(sample)
+	assert.NoError(t, err)
+	if fp == nil {
+		t.Fatal("nil fingerprint")
+	}
+	for _, k := range []string{"tempo", "energy", "valence"} {
+		assert.NotContains(t, fp.Features, k)
+		for _, seg := range fp.Segments {
+			assert.NotContains(t, seg.Features, k)
+		}
+	}
+}
