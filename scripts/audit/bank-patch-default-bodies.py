@@ -18,6 +18,7 @@ Usage:
   scripts/audit/bank-patch-default-bodies.py submodules/helix_qa/banks/full-qa-api.json
 """
 
+import os
 import json
 import re
 import sys
@@ -27,7 +28,7 @@ import sys
 # more specific paths first.
 DEFAULT_BODIES = [
     # exact paths
-    ("/api/v1/auth/login",          {"username": "admin", "password": "admin123"}),
+    ("/api/v1/auth/login",          {"username": "admin", "password": os.environ.get("ADMIN_PASSWORD", "")}),
     ("/api/v1/auth/logout",         {}),
     ("/api/v1/auth/refresh",        {"refresh_token": "placeholder-set-by-bank-patch"}),
     ("/api/v1/auth/register",       {
@@ -38,7 +39,7 @@ DEFAULT_BODIES = [
         "last_name": "User",
     }),
     ("/api/v1/auth/change-password", {
-        "old_password": "admin123",
+        "old_password": os.environ.get("ADMIN_PASSWORD", ""),
         "new_password": "NewAdmin!23",
     }),
     ("/api/v1/admin/storage/scan",  {}),

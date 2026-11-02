@@ -153,7 +153,7 @@ podman logs catalogizer-api 2>&1 | tail -50
 # Test login manually
 curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin123"}'
+  -d '{"username":"admin","password":"<ADMIN_PASSWORD>"}'
 
 # Check environment variables
 echo $ADMIN_USERNAME
@@ -162,7 +162,7 @@ echo $ADMIN_PASSWORD
 
 **Solutions:**
 
-- **Wrong credentials:** Set `ADMIN_PASSWORD=admin123` (or whatever is configured) via environment variable or `.env` file.
+- **Wrong credentials:** Set `ADMIN_PASSWORD=<ADMIN_PASSWORD>` (or whatever is configured) via environment variable or `.env` file.
 - **JWT secret mismatch:** Ensure `JWT_SECRET` is consistent between the API server and the challenge environment.
 - **User not created:** The admin user is created on first startup. If the database was reset, restart the API server to recreate it.
 

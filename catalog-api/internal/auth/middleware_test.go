@@ -33,7 +33,7 @@ func setupMiddlewareTestWithRealDB(t *testing.T) (*AuthService, *AuthMiddleware)
 	logger := zap.NewNop()
 	// Set admin credentials for tests (matches hardcoded values in test expectations)
 	os.Setenv("ADMIN_USERNAME", "admin")
-	os.Setenv("ADMIN_PASSWORD", "admin123")
+	os.Setenv("ADMIN_PASSWORD", "Test-Admin-Pw-9xK2-local")
 	service := NewAuthService(db, "integration-test-secret", logger)
 	err = service.Initialize()
 	require.NoError(t, err)
@@ -280,7 +280,7 @@ func TestRequireRole_MatchingRole(t *testing.T) {
 	service, mw := setupMiddlewareTestWithRealDB(t)
 
 	// admin user is created by Initialize; login as admin
-	loginResp, err := service.Login("admin", "admin123", "127.0.0.1", "test")
+	loginResp, err := service.Login("admin", "Test-Admin-Pw-9xK2-local", "127.0.0.1", "test")
 	require.NoError(t, err)
 
 	router := gin.New()
@@ -319,7 +319,7 @@ func TestRequireRole_WrongRole(t *testing.T) {
 func TestRequireRole_AdminBypassesRoleCheck(t *testing.T) {
 	service, mw := setupMiddlewareTestWithRealDB(t)
 
-	loginResp, err := service.Login("admin", "admin123", "127.0.0.1", "test")
+	loginResp, err := service.Login("admin", "Test-Admin-Pw-9xK2-local", "127.0.0.1", "test")
 	require.NoError(t, err)
 
 	router := gin.New()
@@ -462,7 +462,7 @@ func TestOptionalAuth_WithInvalidToken(t *testing.T) {
 func TestAdminOnly_AdminUser(t *testing.T) {
 	service, mw := setupMiddlewareTestWithRealDB(t)
 
-	loginResp, err := service.Login("admin", "admin123", "127.0.0.1", "test")
+	loginResp, err := service.Login("admin", "Test-Admin-Pw-9xK2-local", "127.0.0.1", "test")
 	require.NoError(t, err)
 
 	router := gin.New()

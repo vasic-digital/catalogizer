@@ -198,7 +198,7 @@ func TestAuthRequiredChallenge_Execute_MockServer(t *testing.T) {
 		config: &BrowsingConfig{
 			BaseURL:  srv.URL,
 			Username: "admin",
-			Password: "admin123",
+			Password: testAdminPassword,
 		},
 	}
 
@@ -282,7 +282,7 @@ func TestAssetServingChallenge_Execute_MockServer(t *testing.T) {
 		config: &BrowsingConfig{
 			BaseURL:  srv.URL,
 			Username: "admin",
-			Password: "admin123",
+			Password: testAdminPassword,
 		},
 	}
 
@@ -306,7 +306,7 @@ func TestAssetLazyLoadingChallenge_Execute_MockServer(t *testing.T) {
 		config: &BrowsingConfig{
 			BaseURL:  srv.URL,
 			Username: "admin",
-			Password: "admin123",
+			Password: testAdminPassword,
 		},
 	}
 
@@ -341,7 +341,7 @@ func TestNoSensitiveErrorsChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  srv.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -364,7 +364,7 @@ func TestAuthRequiredChallenge_Execute_Unreachable(t *testing.T) {
 		config: &BrowsingConfig{
 			BaseURL:  "http://127.0.0.1:1",
 			Username: "admin",
-			Password: "admin123",
+			Password: testAdminPassword,
 		},
 	}
 
@@ -472,7 +472,7 @@ func TestStorageRootsAPIChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  srv.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -490,7 +490,7 @@ func TestCollectionsAPIChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  srv.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -575,7 +575,7 @@ func TestJWTExpirationChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  srv.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -598,7 +598,7 @@ func TestJWTExpirationChallenge_Execute_Unreachable(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  "http://127.0.0.1:1",
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	ctx, cancel := shortCtx()
@@ -626,7 +626,7 @@ func TestRateLimitAuthChallenge_Execute_MockServer(t *testing.T) {
 			fmt.Fprint(w, `{"error":"bad request"}`)
 			return
 		}
-		if body["username"] == "admin" && body["password"] == "admin123" {
+		if body["username"] == "admin" && body["password"] == testAdminPassword {
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, `{"session_token":"test-jwt-token"}`)
 			return
@@ -645,7 +645,7 @@ func TestRateLimitAuthChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  srv.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -669,7 +669,7 @@ func TestRateLimitAuthChallenge_Execute_Unreachable(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  "http://127.0.0.1:1",
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	ctx, cancel := shortCtx()
@@ -689,7 +689,7 @@ func TestFileListingLatencyChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  srv.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -710,7 +710,7 @@ func TestFileListingLatencyChallenge_Execute_Unreachable(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  "http://127.0.0.1:1",
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	ctx, cancel := shortCtx()
@@ -730,7 +730,7 @@ func TestEntitySearchLatencyChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  srv.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -750,7 +750,7 @@ func TestEntitySearchLatencyChallenge_Execute_Unreachable(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  "http://127.0.0.1:1",
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	ctx, cancel := shortCtx()
@@ -770,7 +770,7 @@ func TestWebSocketLatencyChallenge_Execute_Unreachable(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  "http://127.0.0.1:1",
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	ctx, cancel := shortCtx()
@@ -790,7 +790,7 @@ func TestDBErrorRecoveryChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  srv.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -813,7 +813,7 @@ func TestDBErrorRecoveryChallenge_Execute_Unreachable(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  "http://127.0.0.1:1",
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	ctx, cancel := shortCtx()
@@ -873,7 +873,7 @@ func TestScannerRecoveryChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  srv.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -895,7 +895,7 @@ func TestScannerRecoveryChallenge_Execute_Unreachable(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  "http://127.0.0.1:1",
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	ctx, cancel := shortCtx()
@@ -915,7 +915,7 @@ func TestGracefulShutdownChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  srv.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -935,7 +935,7 @@ func TestGracefulShutdownChallenge_Execute_Unreachable(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  "http://127.0.0.1:1",
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())

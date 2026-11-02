@@ -70,7 +70,7 @@ test_cases:
         expected: "Field active"
         timeout: 2
       - name: "Type password"
-        action: "text: admin123"
+        action: "text: ${ADMIN_PASSWORD}"
         expected: "Password entered"
         timeout: 3
       - name: "Navigate to login button"

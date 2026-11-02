@@ -20,7 +20,7 @@ Obtain a JWT token by sending credentials to the login endpoint:
 
 ```
 POST /api/v1/auth/login
-Body: { "username": "admin", "password": "admin123" }
+Body: { "username": "admin", "password": "<ADMIN_PASSWORD>" }
 Response: { "access_token": "...", "refresh_token": "...", "expires_in": 86400 }
 ```
 

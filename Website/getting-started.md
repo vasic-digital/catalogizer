@@ -66,7 +66,7 @@ The web interface is available at `http://localhost:3000`. It automatically prox
 Open `http://localhost:3000` in your browser. Log in with the default credentials:
 
 - **Username**: `admin`
-- **Password**: The value of `ADMIN_PASSWORD` from your `.env` file (default: `admin123`)
+- **Password**: The value of `ADMIN_PASSWORD` from your `.env` file (default: `<ADMIN_PASSWORD>`)
 
 ## Step 5: Add a Storage Source
 

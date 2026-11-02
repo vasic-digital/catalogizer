@@ -521,3 +521,22 @@ func TestGetDatabaseURL_EmptySSLMode(t *testing.T) {
 	url := config.GetDatabaseURL()
 	assert.Contains(t, url, "sslmode=disable")
 }
+
+func TestIsPlaceholderPassword_Exported(t *testing.T) {
+	assert.True(t, IsPlaceholderPassword("admin"+"123"))
+	assert.True(t, IsPlaceholderPassword("Admin-123"))
+	assert.False(t, IsPlaceholderPassword("Op3rator-Supplied-Value-9x"))
+}
+
+func TestValidateConfig_DevModeAllowsPlaceholderAdmin(t *testing.T) {
+	t.Setenv("JWT_SECRET", "this-is-a-very-long-jwt-secret-for-test-purposes-only")
+	t.Setenv("ADMIN_USERNAME", "admin")
+	t.Setenv("ADMIN_PASSWORD", "admin"+"123")
+	t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", "true")
+	c := getDefaultConfig()
+	c.Auth.EnableAuth = true
+	assert.NoError(t, validateConfig(c))
+
+	t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", "")
+	assert.Error(t, validateConfig(c))
+}

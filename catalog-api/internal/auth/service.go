@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"catalogizer/config"
 	"catalogizer/database"
 
 	jwtmod "digital.vasic.auth/pkg/jwt"
@@ -211,8 +212,13 @@ func (s *AuthService) createDefaultAdmin() error {
 		s.logger.Warn("No ADMIN_PASSWORD set. Generated random password. Set ADMIN_PASSWORD environment variable for production.",
 			zap.String("username", adminUsername),
 			zap.String("password", adminPassword))
-	} else if adminPassword == "admin123" {
-		s.logger.Warn("Using default password 'admin123'. Change ADMIN_PASSWORD for production security.")
+	} else if config.IsPlaceholderPassword(adminPassword) {
+		// Fail closed (CAT-021): a published/weak default must never become the
+		// admin credential outside explicit dev mode.
+		if !config.AllowInsecureDefaults() {
+			return fmt.Errorf("ADMIN_PASSWORD is a known placeholder/default value; set a real ADMIN_PASSWORD (or CATALOGIZER_ALLOW_INSECURE_DEFAULTS=true for local dev only)")
+		}
+		s.logger.Warn("INSECURE: placeholder ADMIN_PASSWORD accepted because CATALOGIZER_ALLOW_INSECURE_DEFAULTS=true (dev only)")
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)

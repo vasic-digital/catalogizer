@@ -45,7 +45,7 @@ WEB_IMAGE="${WEB_IMAGE:-localhost/catalogizer-web:latest}"
 : "${POSTGRES_PASSWORD:=catalogizer}"
 : "${POSTGRES_DB:=catalogizer}"
 : "${JWT_SECRET:=dev-secret-for-operational-run-needs-32-plus-chars-to-be-valid}"
-: "${ADMIN_PASSWORD:=admin123}"
+: "${ADMIN_PASSWORD:?set ADMIN_PASSWORD (no default; CAT-021)}"
 : "${GIN_MODE:=release}"
 : "${DB_TYPE:=postgres}"
 

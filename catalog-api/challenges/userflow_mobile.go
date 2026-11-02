@@ -244,7 +244,7 @@ func registerUserFlowMobileChallenges() []challenge.Challenge {
 					{
 						Name:   "type-password",
 						Action: "send_keys",
-						Value:  "admin123",
+						Value:  adminPasswordFromEnv(),
 					},
 					{
 						Name:   "tap-login-button",
@@ -381,7 +381,7 @@ func registerUserFlowMobileChallenges() []challenge.Challenge {
 					{
 						Name:   "type-password",
 						Action: "send_keys",
-						Value:  "admin123",
+						Value:  adminPasswordFromEnv(),
 					},
 					{
 						Name:   "tap-login",

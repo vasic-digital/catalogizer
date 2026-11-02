@@ -48,7 +48,7 @@ The server URL is persisted via DataStore and remembered across app restarts.
 Enter your credentials:
 
 - **Username:** `admin`
-- **Password:** `admin123`
+- **Password:** `<ADMIN_PASSWORD>`
 
 Tap **Sign In**.
 

@@ -67,7 +67,7 @@ class MainActivity : ComponentActivity() {
 
         // Auto-login via intent extras (for ADB testing / HelixQA).
         // Usage: adb shell am start -n com.catalogizer.android/.ui.MainActivity \
-        //          --es qa_username admin --es qa_password admin123
+        //          --es qa_username admin --es qa_password "$ADMIN_PASSWORD"
         // Runs the login on IO, blocks the splash until done so the
         // Compose auth check sees isAuthenticated=true on first render.
         val qaUser = intent.getStringExtra("qa_username")

@@ -24,7 +24,7 @@
 // Environment:
 //   API_URL   — base URL (default http://localhost:8080)
 //   API_USER  — valid user for recovery check (default admin)
-//   API_PASS  — valid pass (default admin123)
+//   API_PASS  — valid pass (required; no default)
 
 import http from 'k6/http';
 import { check, group, sleep } from 'k6';

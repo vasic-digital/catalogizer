@@ -328,8 +328,8 @@ func validateConfig(config *Config) error {
 		if isPlaceholderSecret(config.Auth.JWTSecret) {
 			return fmt.Errorf("JWT secret is a known placeholder/default value; generate a random secret")
 		}
-		if isPlaceholderPassword(config.Auth.AdminPassword) {
-			return fmt.Errorf("admin password is a known placeholder/default value; set a real ADMIN_PASSWORD")
+		if isPlaceholderPassword(config.Auth.AdminPassword) && !AllowInsecureDefaults() {
+			return fmt.Errorf("admin password is a known placeholder/default value; set a real ADMIN_PASSWORD (or CATALOGIZER_ALLOW_INSECURE_DEFAULTS=true for local dev only)")
 		}
 	}
 
@@ -436,6 +436,18 @@ func isPlaceholderSecret(v string) bool {
 		}
 	}
 	return false
+}
+
+// IsPlaceholderPassword reports whether v is a published/weak default password
+// (the same denylist the config validator uses). Exported so the auth service
+// enforces one list (CAT-021).
+func IsPlaceholderPassword(v string) bool { return isPlaceholderPassword(v) }
+
+// AllowInsecureDefaults is the single explicit dev-mode switch. Production
+// must leave CATALOGIZER_ALLOW_INSECURE_DEFAULTS unset; it is read by NAME and
+// only the exact value "true" enables it.
+func AllowInsecureDefaults() bool {
+	return os.Getenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS") == "true"
 }
 
 func isPlaceholderPassword(v string) bool {

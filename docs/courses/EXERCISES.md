@@ -33,7 +33,7 @@ This document contains practical exercises for each of the 6 core modules in the
    GIN_MODE=debug
    DB_TYPE=sqlite
    JWT_SECRET=exercise-dev-secret-key
-   ADMIN_PASSWORD=admin123
+   ADMIN_PASSWORD=<ADMIN_PASSWORD>
    EOF
    ```
 
@@ -54,7 +54,7 @@ This document contains practical exercises for each of the 6 core modules in the
 
 5. Open a browser and navigate to `http://localhost:3000`. Verify the login page loads.
 
-6. Log in with the default admin credentials (admin / admin123).
+6. Log in with the default admin credentials (admin / <ADMIN_PASSWORD>).
 
 **Expected Result**:
 
@@ -375,7 +375,7 @@ This document contains practical exercises for each of the 6 core modules in the
 import { CatalogizerClient } from '@vasic-digital/catalogizer-api-client';
 
 const client = new CatalogizerClient({ baseUrl: 'http://localhost:8080' });
-await client.auth.login('admin', 'admin123');
+await client.auth.login('admin', '<ADMIN_PASSWORD>');
 const media = await client.media.list();
 console.log(`Total media items: ${media.length}`);
 ```
@@ -780,7 +780,7 @@ console.log(`Total media items: ${media.length}`);
    ```bash
    TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login \
      -H "Content-Type: application/json" \
-     -d '{"username":"admin","password":"admin123"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+     -d '{"username":"admin","password":"<ADMIN_PASSWORD>"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
    ```
 
 2. Create a database backup:
