@@ -1255,34 +1255,50 @@ components:
 
     SystemInfo:
       type: object
-      description: System runtime information for admin dashboard
+      description: |
+        Runtime information for the admin dashboard. A figure the host cannot
+        measure is JSON null and its name is listed in `unavailable`; it is never
+        a fabricated 0.
+      required: [version, uptime, memoryUsage, activeConnections, unavailable]
       properties:
         version:
           type: string
-        build_number:
-          type: string
-        build_date:
-          type: string
-        uptime_seconds:
+        uptime:
+          type: integer
+          description: Seconds since the process started
+        cpuUsage:
+          type: number
+          nullable: true
+          description: Host CPU busy percentage sampled over ~200 ms from /proc/stat; null when not measurable
+        memoryUsage:
+          type: number
+          description: Go heap in use as a percentage of memory obtained from the OS
+        diskUsage:
+          type: object
+          nullable: true
+          description: File system holding the local database; null without a local data directory
+          properties:
+            total:
+              type: integer
+              format: int64
+            used:
+              type: integer
+              format: int64
+            free:
+              type: integer
+              format: int64
+        activeConnections:
+          type: integer
+        totalRequests:
           type: integer
           format: int64
-        goroutines:
-          type: integer
-        memory_alloc_mb:
-          type: number
-          format: float
-        memory_sys_mb:
-          type: number
-          format: float
-        gc_cycles:
-          type: integer
-        db_open_connections:
-          type: integer
-        db_idle_connections:
-          type: integer
-        db_wait_count:
-          type: integer
-          format: int64
+          nullable: true
+          description: Always null today (no request counter exists)
+        unavailable:
+          type: array
+          items:
+            type: string
+          description: Names of the figures above that could not be measured
 
     AdminUserUpdate:
       type: object
@@ -3257,6 +3273,11 @@ paths:
     get:
       tags: [storage]
       summary: List storage path
+      description: |
+        Lists a directory of a configured storage root. Admin only. Local roots
+        are confined to the directories named in CATALOGIZER_LOCAL_ROOT_BASES
+        (default: none) and symlinks are resolved before the check. At most 1000
+        entries are returned; `truncated` is true when more exist.
       security:
         - BearerAuth: []
       parameters:
@@ -3265,9 +3286,58 @@ paths:
           required: true
           schema:
             type: string
+        - name: storage_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
       responses:
         '200':
           description: Storage path listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                  storage_id:
+                    type: integer
+                    format: int64
+                  truncated:
+                    type: boolean
+                  files:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        path:
+                          type: string
+                        size:
+                          type: integer
+                          format: int64
+                        is_dir:
+                          type: boolean
+                        modified_at:
+                          type: string
+                          format: date-time
+        '400':
+          description: Missing or invalid storage_id
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin role required, or the local path is outside the allowed bases
+        '404':
+          description: Storage root not found
+        '409':
+          description: Storage root is disabled
+        '422':
+          description: Root configuration cannot be used to connect
+        '502':
+          description: The storage backend could not be reached
 
   /api/v1/storage/roots:
     get:
@@ -3291,7 +3361,10 @@ paths:
     post:
       tags: [storage]
       summary: Create storage root
-      description: Creates or updates a storage root configuration.
+      description: |
+        Creates or updates a storage root configuration. Admin only. A local
+        root must lie inside one of the directories in CATALOGIZER_LOCAL_ROOT_BASES
+        (default deny) or the request fails with 403.
       security:
         - BearerAuth: []
       requestBody:
