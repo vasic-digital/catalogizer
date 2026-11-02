@@ -637,6 +637,27 @@ case "${1:-deploy}" in
 esac
 ```
 
+### catalog-web container: API upstream
+
+The `catalog-web` image (nginx serving the SPA) proxies `/api` and `/ws` to the
+catalog-api. The upstream is **configurable at run time** through the
+`API_UPSTREAM` environment variable (`host:port`, no scheme). The nginx image
+renders `catalog-web/nginx.conf.template` with `envsubst` on start; only `API_*`
+variables are substituted.
+
+| Situation | `API_UPSTREAM` |
+|---|---|
+| Default (unset) | `host.containers.internal:8080` (API on the container host, rootless podman) |
+| Compose stack, API service named `catalog-api` | `catalog-api:8080` |
+| Host networking (`network_mode: host`) | `127.0.0.1:8080` |
+
+```bash
+podman run -d -p 3000:3000 -e API_UPSTREAM=catalog-api:8080 --network catalogizer localhost/catalogizer-web
+```
+
+nginx resolves the upstream name when it starts, so the API container must be
+resolvable (same network) at that moment.
+
 ## Kubernetes Deployment
 
 ### Namespace and ConfigMap

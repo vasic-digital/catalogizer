@@ -532,12 +532,11 @@ func (s *CacheService) SetThumbnail(ctx context.Context, videoID, position int64
 		zap.Int64("video_id", videoID),
 		zap.Int64("position", position))
 
-	query := `
-		INSERT OR REPLACE INTO thumbnail_cache (video_id, position, url, width, height, file_size, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-	`
+	query := s.db.Dialect().UpsertSQL("thumbnail_cache",
+		[]string{"video_id", "position", "url", "width", "height", "file_size", "created_at"},
+		[]string{"video_id", "position", "width", "height"})
 
-	_, err := s.db.ExecContext(ctx, query, videoID, position, url, width, height, fileSize)
+	_, err := s.db.ExecContext(ctx, query, videoID, position, url, width, height, fileSize, time.Now().UTC())
 	if err != nil {
 		s.logger.Error("Failed to set thumbnail cache", zap.Error(err))
 		return fmt.Errorf("failed to set thumbnail: %w", err)
