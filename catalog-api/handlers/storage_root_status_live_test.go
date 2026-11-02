@@ -100,3 +100,36 @@ func TestCAT001_StorageRootStatus_UnreachableUrlWithUserinfoDoesNotLeakPassword(
 	assert.NotEmpty(t, reason)
 	assert.False(t, strings.Contains(reason, "UserinfoPw-77"), "reason leaks the URL password: %s", reason)
 }
+
+// Every protocol whose server this test can stand up or refuse without privileges goes through the single settings mapping and the real
+// client: a root pointing at a closed port / a missing directory must come back offline (never online, never a 5xx). NFS is not exercised
+// here: its Connect performs a real mount(2), which needs privileges and a server (honest gap, tracked in the CAT-001 report).
+func TestCAT001_StorageRootStatus_SettingsGoThroughTheSingleMapping_AllProtocols(t *testing.T) {
+	srv := davServer(t, "u", "p", map[string][]string{"/": {}})
+	hostport := strings.TrimPrefix(srv.URL, "http://")
+	srv.Close()
+	host, port, _ := strings.Cut(hostport, ":")
+	portN, _ := strconv.Atoi(port)
+	h := statusHarness(t)
+	roots := []map[string]interface{}{
+		{"name": "p-smb", "protocol": "smb", "host": host, "port": portN, "path": "share", "username": "u", "password": "p"},
+		{"name": "p-ftp", "protocol": "ftp", "host": host, "port": portN, "path": "/", "username": "u", "password": "p"},
+		{"name": "p-dav", "protocol": "webdav", "url": "http://" + hostport, "username": "u", "password": "p", "path": "/"},
+		{"name": "p-local", "protocol": "local", "path": t.TempDir() + "/does-not-exist"},
+	}
+	for _, r := range roots {
+		code, body := h.do("POST", "/storage/roots", r)
+		require.Equal(t, http.StatusCreated, code, "%v: %v", r["name"], body)
+		id := int64(body["id"].(float64))
+		code, st := h.do("GET", statusURL(id), nil)
+		require.Equal(t, http.StatusOK, code, "%v: %v", r["name"], st)
+		assert.Equal(t, false, st["connected"], "%v must not be reported connected: %v", r["name"], st)
+		assert.Contains(t, []interface{}{"offline", "misconfigured"}, st["status"], "%v: %v", r["name"], st)
+	}
+	// and the positive local case: an existing directory is online
+	code, body := h.do("POST", "/storage/roots", map[string]interface{}{"name": "p-local-ok", "protocol": "local", "path": t.TempDir()})
+	require.Equal(t, http.StatusCreated, code, "%v", body)
+	code, st := h.do("GET", statusURL(int64(body["id"].(float64))), nil)
+	require.Equal(t, http.StatusOK, code)
+	assert.Equal(t, "online", st["status"], "%v", st)
+}

@@ -26,6 +26,7 @@ var expectedCreateClientSites = map[string]string{
 	"internal/handlers/stream_handler.go":    "TestStreamHandler_StorageRootToSettings_AllProtocols (internal/handlers)",
 	"handlers/comic_pages_handler.go":        "TestWF22_ComicAndPDFSettingsGoThroughTheSingleMapping (handlers)",
 	"handlers/pdf_pages_handler.go":          "TestWF22_ComicAndPDFSettingsGoThroughTheSingleMapping (handlers)",
+	"handlers/scan_handler.go":               "TestCAT001_StorageRootStatus_SettingsGoThroughTheSingleMapping_AllProtocols (handlers; NFS excluded: real mount(2))",
 }
 
 func TestWF22_R1_Gate_EveryCreateClientCallerUsesTheSingleSettingsMapping(t *testing.T) {
