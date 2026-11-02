@@ -58,7 +58,7 @@ record_phase() {
 log_step "Initializing git submodules..."
 if [ -f "$PROJECT_DIR/.gitmodules" ]; then
     cd "$PROJECT_DIR"
-    git submodule init 2>/dev/null || true
+    git submodule init 2>/dev/null || log_warn "git submodule init failed (continuing; safe_submodule_init follows)"
     bash "$PROJECT_DIR/scripts/safe_submodule_init.sh" 2>/dev/null || log_warn "Some submodules may not be available"
     log_info "Git submodules initialized"
 fi
@@ -154,10 +154,10 @@ phase_3_backend_api() {
     go test -v -race -coverprofile="$REPORTS_DIR/go-coverage.out" -covermode=atomic ./... 2>&1 | tee "$REPORTS_DIR/go-test.log"
 
     # Generate coverage HTML report
-    go tool cover -html="$REPORTS_DIR/go-coverage.out" -o "$REPORTS_DIR/go-coverage.html" 2>/dev/null || true
+    go tool cover -html="$REPORTS_DIR/go-coverage.out" -o "$REPORTS_DIR/go-coverage.html" 2>/dev/null || log_warn "Go coverage HTML report generation failed"
 
     # Generate coverage summary
-    go tool cover -func="$REPORTS_DIR/go-coverage.out" > "$REPORTS_DIR/go-coverage-summary.txt" 2>/dev/null || true
+    go tool cover -func="$REPORTS_DIR/go-coverage.out" > "$REPORTS_DIR/go-coverage-summary.txt" 2>/dev/null || log_warn "Go coverage summary generation failed"
 
     log_step "Building Linux AMD64 binary..."
     GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.Version=$VERSION" \
@@ -190,12 +190,19 @@ phase_4_web_frontend() {
     log_step "Installing dependencies..."
     npm install
 
-    log_step "Running lint and type-check..."
-    npm run lint 2>&1 | tee "$REPORTS_DIR/web-lint.log" || true
-    npm run type-check 2>&1 | tee "$REPORTS_DIR/web-typecheck.log" || true
-
     # E4: a failing step fails the phase; it is never swallowed and never reported PASS.
     local phase_rc=0
+
+    log_step "Running lint and type-check..."
+    # Lint findings are surfaced (warning + phase note), like run-all-tests-comprehensive.sh; a type error fails the phase.
+    if ! npm run lint 2>&1 | tee "$REPORTS_DIR/web-lint.log"; then
+        log_warn "Web lint reported issues (see web-lint.log)"
+        PHASE_NOTES+=("Web Frontend: lint FAILED (see web-lint.log)")
+    fi
+    if ! npm run type-check 2>&1 | tee "$REPORTS_DIR/web-typecheck.log"; then
+        log_error "Web type-check FAILED"
+        phase_rc=1
+    fi
 
     log_step "Running unit tests..."
     if npm run test -- --run 2>&1 | tee "$REPORTS_DIR/web-test.log"; then
@@ -274,7 +281,7 @@ phase_5_desktop_apps() {
         # Copy built artifacts
         mkdir -p "$RELEASES_DIR/linux/catalogizer-desktop"
         find src-tauri/target/release/bundle -type f \( -name "*.AppImage" -o -name "*.deb" \) \
-            -exec cp {} "$RELEASES_DIR/linux/catalogizer-desktop/" \; 2>/dev/null || true
+            -exec cp -t "$RELEASES_DIR/linux/catalogizer-desktop/" {} + || log_warn "Desktop bundle artifact copy failed"
         # Also copy the raw binary
         if [ -f "src-tauri/target/release/catalogizer-desktop" ]; then
             cp "src-tauri/target/release/catalogizer-desktop" "$RELEASES_DIR/linux/catalogizer-desktop/"
@@ -299,7 +306,7 @@ phase_5_desktop_apps() {
     if npm run tauri:build 2>&1 | tee "$REPORTS_DIR/wizard-build.log"; then
         mkdir -p "$RELEASES_DIR/linux/installer-wizard"
         find src-tauri/target/release/bundle -type f \( -name "*.AppImage" -o -name "*.deb" \) \
-            -exec cp {} "$RELEASES_DIR/linux/installer-wizard/" \; 2>/dev/null || true
+            -exec cp -t "$RELEASES_DIR/linux/installer-wizard/" {} + || log_warn "Installer wizard bundle artifact copy failed"
         if [ -f "src-tauri/target/release/installer-wizard" ]; then
             cp "src-tauri/target/release/installer-wizard" "$RELEASES_DIR/linux/installer-wizard/"
         fi
@@ -339,15 +346,15 @@ phase_6_android_apps() {
 
             # Copy test reports
             mkdir -p "$REPORTS_DIR/$project"
-            cp -r app/build/reports/tests/* "$REPORTS_DIR/$project/" 2>/dev/null || true
-            cp -r app/build/reports/jacoco/* "$REPORTS_DIR/$project/" 2>/dev/null || true
+            cp -r app/build/reports/tests/* "$REPORTS_DIR/$project/" 2>/dev/null || log_warn "No unit-test report to copy for $project"
+            cp -r app/build/reports/jacoco/* "$REPORTS_DIR/$project/" 2>/dev/null || log_warn "No JaCoCo report to copy for $project"
 
             # Build signed release APK
             log_step "Building release APK for $project..."
             if ./gradlew assembleRelease 2>&1 | tee "$REPORTS_DIR/${project}-build.log"; then
                 mkdir -p "$RELEASES_DIR/android/$project"
                 find app/build/outputs/apk -name "*.apk" \
-                    -exec cp {} "$RELEASES_DIR/android/$project/" \; 2>/dev/null || true
+                    -exec cp -t "$RELEASES_DIR/android/$project/" {} + || log_warn "APK copy failed for $project"
                 log_info "$project APK built successfully"
             else
                 log_warn "$project APK build failed"
@@ -390,7 +397,7 @@ phase_7_emulator_tests() {
 
                 # Launch app and check if it starts
                 log_step "Launching app..."
-                adb -s android-emulator:5555 shell am start -n com.catalogizer.android/.MainActivity 2>&1 || true
+                adb -s android-emulator:5555 shell am start -n com.catalogizer.android/.MainActivity 2>&1 || log_warn "am start failed (the activity check below decides)"
                 sleep 5
 
                 # Check if activity is running
@@ -440,15 +447,20 @@ phase_9_collect_artifacts() {
     log_step "Collecting API client library..."
     mkdir -p "$RELEASES_DIR/lib/catalogizer-api-client"
     if [ -d "$PROJECT_DIR/catalogizer-api-client/dist" ]; then
-        cp -r "$PROJECT_DIR/catalogizer-api-client/dist"/* "$RELEASES_DIR/lib/catalogizer-api-client/" 2>/dev/null || true
-        cp "$PROJECT_DIR/catalogizer-api-client/package.json" "$RELEASES_DIR/lib/catalogizer-api-client/" 2>/dev/null || true
+        cp -r "$PROJECT_DIR/catalogizer-api-client/dist"/* "$RELEASES_DIR/lib/catalogizer-api-client/" || log_warn "API client dist copy failed"
+        cp "$PROJECT_DIR/catalogizer-api-client/package.json" "$RELEASES_DIR/lib/catalogizer-api-client/" || log_warn "API client package.json copy failed"
     fi
 
     # Generate SHA256 checksums
     log_step "Generating SHA256 checksums..."
-    find . -type f \( -name "*.exe" -o -name "*.AppImage" -o -name "*.deb" \
+    # A failed checksum run must not leave a silently truncated SHA256SUMS.txt that looks like an integrity file.
+    if ! find . -type f \( -name "*.exe" -o -name "*.AppImage" -o -name "*.deb" \
         -o -name "*.apk" -o -name "catalog-api*" -o -name "*.msi" \) \
-        -exec sha256sum {} \; > "$RELEASES_DIR/SHA256SUMS.txt" 2>/dev/null || true
+        -exec sha256sum {} + > "$RELEASES_DIR/SHA256SUMS.txt"; then
+        log_error "SHA256 checksum generation FAILED"
+        record_phase "Artifact Collection" "FAIL"
+        return 1
+    fi
 
     # Generate MANIFEST.json
     log_step "Generating MANIFEST.json..."
