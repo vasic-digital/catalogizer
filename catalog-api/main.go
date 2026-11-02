@@ -546,7 +546,7 @@ func main() {
 	jwtSecret = hex.EncodeToString(secretBytes)
 	logging.Warn("No JWT secret configured. Generated ephemeral secret. Set Auth.JWTSecret in config for persistent sessions across restarts.")
 	}
-	authService := root_services.NewAuthService(userRepo, jwtSecret)
+	authService := root_services.NewAuthServiceWithAudit(userRepo, jwtSecret, databaseDB)
 	analyticsService := root_services.NewAnalyticsService(analyticsRepo)
 	reportingService := root_services.NewReportingService(analyticsRepo, userRepo, databaseDB)
 	configurationService := root_services.NewConfigurationService(configurationRepo, "./config.json")

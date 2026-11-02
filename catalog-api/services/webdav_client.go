@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -253,8 +254,8 @@ func (c *WebDAVClient) GetQuota() (*WebDAVQuota, error) {
 			Propstats []struct {
 				Status string `xml:"status"`
 				Prop   struct {
-					Used      *int64 `xml:"quota-used-bytes"`
-					Available *int64 `xml:"quota-available-bytes"`
+					Used      *string `xml:"quota-used-bytes"`
+					Available *string `xml:"quota-available-bytes"`
 				} `xml:"prop"`
 			} `xml:"propstat"`
 		} `xml:"response"`
@@ -262,26 +263,49 @@ func (c *WebDAVClient) GetQuota() (*WebDAVQuota, error) {
 	if err := xml.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&ms); err != nil {
 		return nil, fmt.Errorf("quota response: %w", err)
 	}
+	// Each property counts only from a propstat whose <status> is 2xx (RFC 4918: an unsupported property sits in a 404 propstat as an empty
+	// element) and only with a numeric value. Both must be reported: a missing one is unknown, never 0 and never "unlimited".
+	var used, avail *int64
 	for _, r := range ms.Responses {
 		for _, ps := range r.Propstats {
-			if ps.Prop.Used != nil || ps.Prop.Available != nil {
-				q := &WebDAVQuota{Used: 0, Available: -1}
-				if ps.Prop.Used != nil {
-					q.Used = *ps.Prop.Used
-				}
-				if ps.Prop.Available != nil {
-					q.Available = *ps.Prop.Available
-				}
-				return q, nil
+			if !propstatOK(ps.Status) {
+				continue
+			}
+			if v, ok := parseQuotaBytes(ps.Prop.Used); ok {
+				used = &v
+			}
+			if v, ok := parseQuotaBytes(ps.Prop.Available); ok {
+				avail = &v
 			}
 		}
 	}
-	return nil, ErrWebDAVQuotaUnavailable
+	if used == nil || avail == nil {
+		return nil, ErrWebDAVQuotaUnavailable
+	}
+	return &WebDAVQuota{Used: *used, Available: *avail}, nil
+}
+
+// propstatOK reports whether a propstat status line ("HTTP/1.1 200 OK") is a 2xx; an empty or unparsable status is not trusted.
+func propstatOK(status string) bool {
+	f := strings.Fields(status)
+	if len(f) < 2 {
+		return false
+	}
+	code, err := strconv.Atoi(f[1])
+	return err == nil && code >= 200 && code < 300
+}
+
+func parseQuotaBytes(s *string) (int64, bool) {
+	if s == nil {
+		return 0, false
+	}
+	v, err := strconv.ParseInt(strings.TrimSpace(*s), 10, 64)
+	return v, err == nil && v >= 0
 }
 
 type WebDAVQuota struct {
 	Used      int64 `json:"used"`
-	Available int64 `json:"available"` // -1 for unlimited
+	Available int64 `json:"available"`
 }
 
 // Batch operations for efficiency
