@@ -82,7 +82,7 @@ for sg in INT TERM HUP; do
   mkbuildco "$TI_SCRATCH/co-$sg"; build_start "$TI_SCRATCH/co-$sg" 60 0
   if wait_cond 120 started; then
     build_facts "$CO"
-    if [ -n "$BPG" ] && [ "$BPG" -gt 1 ]; then kill -s "$sg" -- "-$BPG" 2>/dev/null; else bad "$sg: cannot resolve the build process group (pgid '$BPG')"; fi
+    if [ -n "$BPG" ] && [ "$BPG" -gt 1 ]; then kill -s "$sg" -- "-$BPG" 2>/dev/null; else bad "$sg: cannot resolve the build process group (pgid '$BPG')"; continue; fi
     if wait_cond 60 gone "$BPID"; then ok "$sg: container-build.sh exited after the signal"; else bad "$sg: still running 60 s after the signal"; continue; fi
     wait "$BPID" 2>/dev/null
     check "$sg: no container, pod, network or volume of the build project is left" "$(leftovers "$BP")" "c=0 p=0 n=0 v=0"
