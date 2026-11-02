@@ -63,7 +63,7 @@ OUT="$STABLE"; mkdir -p "$OUT/res" || ti_die "cannot create $OUT/res"
 if [ "$ASSEMBLE_ONLY" = 0 ]; then for p in ${PROTOS//,/ }; do for i in "${IDX[@]}"; do rm -f -- "${OUT:?}/res/$p-$i.json"; done; done; fi
 USER_V="$(envval SYNOLOGY_SMB_USER)"; PASS_V="$(envval SYNOLOGY_SMB_PASSWORD)"
 RUNRE=TestNASClients; [ "$DIAG" = 0 ] || RUNRE=TestDiagFTPUnparsed
-GOCMD='set -u; NCL_RUNRE=__RUNRE__; W=/tmp/w; mkdir -p $W/scripts/test-infra $W/submodules && cp -a /src/submodules/filesystem $W/submodules/ && cp -a /src/scripts/test-infra/nas_clients $W/scripts/test-infra/ && cd $W/scripts/test-infra/nas_clients && env GOTOOLCHAIN=local GOFLAGS=-mod=mod HOME=/out GOCACHE=/out/gocache GOMODCACHE=/out/gomod GOMAXPROCS=2 CGO_ENABLED=1 go test -tags nasleg -count=1 -run "$NCL_RUNRE" -timeout 45m -v . ; rc=$?; cp go.sum /out/go.sum.generated 2>/dev/null; exit $rc'
+GOCMD='set -u; export CGO_CPPFLAGS=-DHAVE_USLEEP=1; NCL_RUNRE=__RUNRE__; W=/tmp/w; mkdir -p $W/scripts/test-infra $W/submodules && cp -a /src/submodules/filesystem $W/submodules/ && cp -a /src/scripts/test-infra/nas_clients $W/scripts/test-infra/ && cd $W/scripts/test-infra/nas_clients && env GOTOOLCHAIN=local GOFLAGS=-mod=mod HOME=/out GOCACHE=/out/gocache GOMODCACHE=/out/gomod GOMAXPROCS=2 CGO_ENABLED=1 go test -tags nasleg -count=1 -run "$NCL_RUNRE" -timeout 45m -v . ; rc=$?; cp go.sum /out/go.sum.generated 2>/dev/null; exit $rc'
 GOCMD="${GOCMD//__RUNRE__/$RUNRE}"
 echo "nas_clients_leg: hosts=$HOSTS protocols=$PROTOS (read-only, <=1 request/s per host, one container at a time)"
 RC=0

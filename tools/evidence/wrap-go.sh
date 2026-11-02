@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# shellcheck source=/dev/null
+. "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")/../../scripts/lib/cgo_flags.sh" || { echo "FATAL: ../../scripts/lib/cgo_flags.sh missing (cgo define for go-sqlcipher)" >&2; exit 1; }   # 2026-11-02 decision; scripts/lib/cgo_flags.sh
 # wrap-go.sh - runner wrapper for Go tests (tasks.md T051). Usage and exit statuses: lib/wrap_common.sh; guide docs/scripts/evidence-wrappers.md.
 #   wrap-go.sh --run-token TOKEN [opts] -- GO_TEST_ARGS...      runs  go test -json -count=1 GO_TEST_ARGS...  and judges its test2json events
 # `-count=1` always: a cached result is not a run (docs/06 s16). WRAP_GO_BIN overrides the `go` binary (tests only).
