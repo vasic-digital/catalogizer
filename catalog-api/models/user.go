@@ -1002,6 +1002,9 @@ type SecurityMetrics struct {
 	ThreatLevel        string  `json:"threat_level"`
 	VulnerabilityCount int     `json:"vulnerability_count"`
 	SecurityScore      float64 `json:"security_score"`
+	// Unavailable names inputs that could not be measured; a metric listed
+	// here is unknown, not zero.
+	Unavailable []string `json:"unavailable,omitempty"`
 }
 
 type ResponseTimes struct {

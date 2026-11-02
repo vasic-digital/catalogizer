@@ -1274,7 +1274,10 @@ func TestReportingService_GenerateReport_SecurityAudit_Integration(t *testing.T)
 	db := setupTestDB(t)
 	analyticsRepo := repository.NewAnalyticsRepository(db)
 	userRepo := repository.NewUserRepository(db)
-	service := NewReportingService(analyticsRepo, userRepo, nil)
+	if _, err := db.Exec(authAuditDDL); err != nil {
+		t.Fatal(err)
+	}
+	service := NewReportingService(analyticsRepo, userRepo, db)
 
 	params := map[string]interface{}{
 		"start_date": time.Now().Add(-24 * time.Hour).Format("2006-01-02"),
