@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck source=/dev/null
-. "$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)/cgo_flags.sh"   # 2026-11-02 decision: cgo define for go-sqlcipher (scripts/lib/cgo_flags.sh)
+. "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")/cgo_flags.sh" || { echo "FATAL: cgo_flags.sh missing (cgo define for go-sqlcipher)" >&2; exit 1; }   # 2026-11-02 decision; scripts/lib/cgo_flags.sh
 # build-catalog-api.sh - Builder for catalog-api (Go backend)
 # Produces binaries for the native platform (CGO required for sqlcipher)
 # and cross-compiled CGO_ENABLED=0 builds where possible

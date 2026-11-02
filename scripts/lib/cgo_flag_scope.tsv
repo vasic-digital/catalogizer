@@ -1,38 +1,42 @@
-Build/lib/orchestrator.sh	covered
-OCU-CUDA-Sidecar/Dockerfile	exempt:separate CUDA sidecar module, no sqlcipher
 build/containers/gotools/Containerfile	exempt:go install of third-party tools, no sqlcipher
 build/containers/infra-client/Containerfile	exempt:go install of third-party tools, no sqlcipher
+Build/lib/orchestrator.sh	covered
+catalog-api/.air.toml	covered
 catalog-api/Dockerfile	covered
+catalog-api/Dockerfile.dev	covered
 catalog-api/scripts/build.sh	covered
 catalog-api/scripts/run_comprehensive_tests.sh	covered
 catalog-api/scripts/test-all.sh	covered
 catalog-api/tests/run_all_tests.sh	covered
 catalog-api/verify_conversion_service.sh	covered
 catalog-web/test-advanced-features.sh	covered
+docker-compose.dev.yml	covered
+OCU-CUDA-Sidecar/Dockerfile	exempt:separate CUDA sidecar module, no sqlcipher
 qa-ai-system/scripts/ci-cd/pre-commit-qa.sh	covered
 qa-ai-system/scripts/quick-qa.sh	covered
 qa-ai-system/scripts/run-qa-tests.sh	covered
 scripts/audit/cascade-governance.sh	exempt:go command appears in text only
 scripts/build-all-releases.sh	covered
+scripts/build_in_container.sh	covered
 scripts/build-test-release.sh	covered
 scripts/build/tests/test_dispatch_c_e2e.sh	exempt:test of the runner scripts, go is a shim
 scripts/build/tests/test_dispatch_e2e.sh	exempt:test of the runner scripts, go is a shim
-scripts/build_in_container.sh	covered
 scripts/ci-local.sh	covered
 scripts/ci-pipeline.sh	covered
 scripts/complete-remaining-tasks.sh	covered
 scripts/container-local.sh	covered
 scripts/containers/tests/test_check_pins.sh	exempt:test of the runner scripts, go is a shim
 scripts/containers/tests/test_race_detector.sh	exempt:test of the runner scripts, go is a shim
-scripts/containers/tests/test_run_pinned.sh	exempt:test of the runner scripts, go is a shim
 scripts/containers/tests/test_runners.sh	exempt:test of the runner scripts, go is a shim
+scripts/containers/tests/test_run_pinned.sh	exempt:test of the runner scripts, go is a shim
 scripts/containers/tests/test_test_in_container.sh	exempt:test of the runner scripts, go is a shim
 scripts/coverage/tests/test_track_coverage.sh	exempt:test of the runner scripts, go is a shim
 scripts/coverage/track-coverage.sh	exempt:go runs inside a runner container whose env comes from the runner prefix
 scripts/deploy.sh	covered
-scripts/distribute.sh	covered
 scripts/distributed-boot.sh	covered
+scripts/distribute.sh	covered
 scripts/gates/cm_cgo_usleep_flag.sh	exempt:the gate itself, go appears in its own pattern text
+scripts/gates/tests/test_cm_cgo_usleep_flag.sh	exempt:the gate test, go appears in fixture text
 scripts/helixqa-orchestrator.sh	covered
 scripts/install-security-tools.sh	exempt:go install of third-party tools, no sqlcipher
 scripts/lib/build-catalog-api.sh	covered
@@ -48,8 +52,8 @@ scripts/run-all-platform-tests.sh	covered
 scripts/run-all-tests-comprehensive.sh	covered
 scripts/run-all-tests.sh	covered
 scripts/run-go-tests.sh	covered
-scripts/run-helixqa-tests.sh	covered
 scripts/run-helixqa.sh	exempt:go command appears in text only
+scripts/run-helixqa-tests.sh	covered
 scripts/run-race-detector.sh	covered
 scripts/run-sonarqube-scan.sh	covered
 scripts/run-stress-tests.sh	covered

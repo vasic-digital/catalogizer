@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck source=/dev/null
-. "$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)/lib/cgo_flags.sh"   # 2026-11-02 decision: cgo define for go-sqlcipher (scripts/lib/cgo_flags.sh)
+. "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")/lib/cgo_flags.sh" || { echo "FATAL: lib/cgo_flags.sh missing (cgo define for go-sqlcipher)" >&2; exit 1; }   # 2026-11-02 decision; scripts/lib/cgo_flags.sh
 # run-race-detector.sh — Run Go race detector across catalog-api and every
 # Go submodule. Exits non-zero on any race or test failure.
 #
