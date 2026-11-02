@@ -12,6 +12,9 @@
 //	SYNOLOGY_SMB_USER, SYNOLOGY_SMB_PASSWORD, SYNOLOGY_IP_1..SYNOLOGY_IP_7   credentials and host addresses
 //	LIVE_SMB_SHARES            "SHARE:folder,SHARE:folder" SMB shares and the Cyrillic folder to start in (default: the survey set)
 //	LIVE_SMB_OPTIONAL_SHARES   shares that are exercised only when some host mounts them (default DATA22-2)
+//	LIVE_SMB_NEG_SHARE         one real SMB share for the SMB negative controls; unset = honest SKIP(share_not_configured)
+//	LIVE_FTP_NEG_SHARE         one real FTP root folder for the FTP negative controls; unset = honest SKIP(share_not_configured)
+//	LIVE_FTP_CYR_BASE          "SHARE:cyrillic_folder" for the Cyrillic base-path leg; unset = honest SKIP
 //	LIVE_FTP_SHARES            "SHARE:folder,..." FTP root folders and the base folder inside each
 //	LIVE_SPECIAL_REQUIRED      shares where the survey found ASCII special-character names; zero such names checked there is a FAIL
 //
@@ -316,8 +319,8 @@ func TestLiveSMB_ListStatReadWalk(t *testing.T) {
 				if err != nil {
 					t.Fatalf("stat %q (Cyrillic dir): %v", tg.preferred, rd(err))
 				}
-				if !fi.IsDir || fi.Name != tg.preferred {
-					t.Fatalf("stat %q: IsDir=%v Name=%q (round-trip mismatch)", tg.preferred, fi.IsDir, fi.Name)
+				if !fi.IsDir || fi.Name != pathpkg.Base(tg.preferred) {
+					t.Fatalf("stat %q: IsDir=%v Name=%q want base %q (round-trip mismatch)", tg.preferred, fi.IsDir, fi.Name, pathpkg.Base(tg.preferred))
 				}
 				start = tg.preferred
 			}
@@ -416,10 +419,14 @@ func firstN(in []string, n int) []string {
 
 func TestLiveSMB_NegativeControls(t *testing.T) {
 	e := loadLiveEnv(t)
-	host := findSMBHost(t, e, "DATA12")
+	negShare := strings.TrimSpace(os.Getenv("LIVE_SMB_NEG_SHARE"))
+	if negShare == "" {
+		t.Skip("SKIP(share_not_configured): LIVE_SMB_NEG_SHARE not set; the SMB negative controls need one configured real share")
+	}
+	host := findSMBHost(t, e, negShare)
 	ctx := context.Background()
 	t.Run("wrong_password", func(t *testing.T) {
-		c := NewSmbClient(&SmbConfig{Host: host, Port: 445, Share: "DATA12", Username: e.user, Password: e.pass + "_WRONG"})
+		c := NewSmbClient(&SmbConfig{Host: host, Port: 445, Share: negShare, Username: e.user, Password: e.pass + "_WRONG"})
 		if err := c.Connect(ctx); err == nil {
 			_ = c.Disconnect(ctx)
 			t.Fatalf("Connect with wrong password succeeded against real host")
@@ -429,7 +436,7 @@ func TestLiveSMB_NegativeControls(t *testing.T) {
 		}
 	})
 	t.Run("unreachable_port_on_real_host", func(t *testing.T) {
-		c := NewSmbClient(&SmbConfig{Host: host, Port: 1, Share: "DATA12", Username: e.user, Password: e.pass})
+		c := NewSmbClient(&SmbConfig{Host: host, Port: 1, Share: negShare, Username: e.user, Password: e.pass})
 		start := time.Now()
 		if err := c.Connect(ctx); err == nil {
 			_ = c.Disconnect(ctx)
@@ -445,7 +452,7 @@ func TestLiveSMB_NegativeControls(t *testing.T) {
 		}
 	})
 	t.Run("nonexistent_path_and_not_connected", func(t *testing.T) {
-		c := connectSMB(t, e, "DATA12")
+		c := connectSMB(t, e, negShare)
 		if _, err := c.GetFileInfo(ctx, "no-such-dir-live-xyz"); err == nil {
 			t.Fatalf("stat of nonexistent path succeeded")
 		}
@@ -655,7 +662,11 @@ func TestLiveFTP_NameRoundTrip(t *testing.T) {
 		t.Errorf("0 special-character names CHECKED on any FTP share")
 	}
 	// a Cyrillic base Path (as the product configures it) must be accepted and listable
-	c := connectFTP(t, e, ftpTarget{"DATA12", "Филмови"})
+	cyr := parseTargets("LIVE_FTP_CYR_BASE", "")
+	if len(cyr) == 0 || cyr[0][0] == "" || cyr[0][1] == "" {
+		t.Skip("SKIP(share_not_configured): LIVE_FTP_CYR_BASE=SHARE:cyrillic_folder not set; Cyrillic base-path leg not exercised")
+	}
+	c := connectFTP(t, e, ftpTarget{cyr[0][0], cyr[0][1]})
 	if ents, err := c.ListDirectory(context.Background(), "."); err != nil || len(ents) == 0 {
 		t.Fatalf("Cyrillic base path not listable: n=%d err=%v", len(ents), rd(err))
 	}
@@ -663,7 +674,11 @@ func TestLiveFTP_NameRoundTrip(t *testing.T) {
 
 func TestLiveFTP_NegativeControls(t *testing.T) {
 	e := loadLiveEnv(t)
-	a := findFTPHost(t, e, "DATA12")
+	negShare := strings.TrimSpace(os.Getenv("LIVE_FTP_NEG_SHARE"))
+	if negShare == "" {
+		t.Skip("SKIP(share_not_configured): LIVE_FTP_NEG_SHARE not set; the FTP negative controls need one configured real FTP root folder")
+	}
+	a := findFTPHost(t, e, negShare)
 	ctx := context.Background()
 	t.Run("wrong_password", func(t *testing.T) {
 		c := NewFTPClient(&FTPConfig{Host: a.host, Port: a.port, Username: e.user, Password: e.pass + "_WRONG"})
@@ -690,7 +705,7 @@ func TestLiveFTP_NegativeControls(t *testing.T) {
 		}
 	})
 	t.Run("nonexistent_entries", func(t *testing.T) {
-		c := connectFTP(t, e, ftpTarget{"DATA12", ""})
+		c := connectFTP(t, e, ftpTarget{negShare, ""})
 		if _, err := c.ListDirectory(ctx, "no-such-dir-live-xyz"); err == nil {
 			t.Fatalf("ListDirectory(nonexistent) returned no error")
 		}
