@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -224,21 +225,15 @@ func (rs *RecommendationService) findLocalSimilarItems(ctx context.Context, req 
 
 	var allLocalMedia []*models.MediaMetadata
 
-	// Query files with metadata from the database
+	// Query files with metadata from the database. A failed query is an error for the caller: the former fallback
+	// fabricated "Similar Movie 1" items (generateMockLocalMedia) and presented them as the user's own library (CAT-001).
 	filesWithMetadata, err := rs.querySimilarMediaFromDatabase(ctx, req.MediaMetadata)
 	if err != nil {
-		// If database query fails, fall back to mock data for now
-		if logging.Logger != nil {
-			logging.With(logging.ErrorField(err)).Warn("Failed to query similar media from database, falling back to mock data")
-		}
-		allLocalMedia = rs.generateMockLocalMedia(req.MediaMetadata)
-	} else {
-		// Convert FileWithMetadata to MediaMetadata
-		for _, fileWithMeta := range filesWithMetadata {
-			mediaMetadata := rs.convertFileToMediaMetadata(fileWithMeta)
-			if mediaMetadata != nil {
-				allLocalMedia = append(allLocalMedia, mediaMetadata)
-			}
+		return nil, fmt.Errorf("query similar media: %w", err)
+	}
+	for _, fileWithMeta := range filesWithMetadata {
+		if mediaMetadata := rs.convertFileToMediaMetadata(fileWithMeta); mediaMetadata != nil {
+			allLocalMedia = append(allLocalMedia, mediaMetadata)
 		}
 	}
 
@@ -1163,6 +1158,8 @@ func (rs *RecommendationService) querySimilarMediaFromDatabase(ctx context.Conte
 	// This can be enhanced with more sophisticated similarity algorithms
 
 	var allResults []*models.FileWithMetadata
+	attempts := 0
+	var searchErrs []error
 
 	// Search by MediaType
 	if originalMetadata.MediaType != "" {
@@ -1175,7 +1172,10 @@ func (rs *RecommendationService) querySimilarMediaFromDatabase(ctx context.Conte
 			Field: "modified_at",
 			Order: "desc",
 		})
-		if err == nil && result != nil {
+		attempts++
+		if err != nil {
+			searchErrs = append(searchErrs, err)
+		} else if result != nil {
 			for i := range result.Files {
 				allResults = append(allResults, &result.Files[i])
 			}
@@ -1193,11 +1193,19 @@ func (rs *RecommendationService) querySimilarMediaFromDatabase(ctx context.Conte
 			Field: "modified_at",
 			Order: "desc",
 		})
-		if err == nil && result != nil {
+		attempts++
+		if err != nil {
+			searchErrs = append(searchErrs, err)
+		} else if result != nil {
 			for i := range result.Files {
 				allResults = append(allResults, &result.Files[i])
 			}
 		}
+	}
+
+	// Every search that was attempted failed: report it instead of returning an empty (or, upstream, a mock) result.
+	if attempts > 0 && len(searchErrs) == attempts {
+		return nil, errors.Join(searchErrs...)
 	}
 
 	// Remove duplicates and limit results
@@ -1214,55 +1222,6 @@ func (rs *RecommendationService) querySimilarMediaFromDatabase(ctx context.Conte
 	}
 
 	return uniqueResults, nil
-}
-
-// Mock data generation for testing
-func (rs *RecommendationService) generateMockLocalMedia(original *models.MediaMetadata) []*models.MediaMetadata {
-	var mockMedia []*models.MediaMetadata
-
-	// Create mock similar items based on genre
-	// Note: This is simplified since MediaMetadata doesn't have MediaType, Artist, Author, FilePath, etc.
-	year2022 := 2022
-	year2023 := 2023
-	rating82 := 8.2
-	rating78 := 7.8
-	rating85 := 8.5
-	duration240 := 240
-	duration195 := 195
-
-	mockMedia = append(mockMedia, []*models.MediaMetadata{
-		{
-			Title:    "Similar Movie 1",
-			Year:     original.Year,
-			Genre:    original.Genre,
-			Director: "Similar Director",
-			Rating:   &rating82,
-		},
-		{
-			Title:    "Another " + original.Genre + " Film",
-			Year:     &year2022,
-			Genre:    original.Genre,
-			Director: "Another Director",
-			Rating:   &rating78,
-		},
-		{
-			Title:    "Similar Track",
-			Year:     original.Year,
-			Genre:    original.Genre,
-			Producer: "Similar Producer",
-			Duration: &duration240,
-			Rating:   &rating85,
-		},
-		{
-			Title:    "Another Media Item",
-			Year:     &year2023,
-			Genre:    original.Genre,
-			Producer: "Different Producer",
-			Duration: &duration195,
-		},
-	}...)
-
-	return mockMedia
 }
 
 // Utility helper functions
