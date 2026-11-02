@@ -1759,7 +1759,10 @@ func TestReportingService_FormatReport_JSON_SystemOverview(t *testing.T) {
 // ===========================================================================
 
 func TestReportingService_GenerateReport_UnsupportedFormat(t *testing.T) {
-	service := NewReportingService(nil, nil, nil)
+	db := setupTestDB(t)
+	_, err := db.Exec(authAuditDDL)
+	assert.NoError(t, err)
+	service := NewReportingService(nil, nil, db)
 
 	report, err := service.GenerateReport("security_audit", "xml", map[string]interface{}{
 		"start_date": "2025-01-01",
