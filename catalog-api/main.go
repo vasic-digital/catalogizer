@@ -1321,11 +1321,7 @@ func main() {
 			subGroup.GET("/languages", func(c *gin.Context) { getSubtitleHandler().GetSupportedLanguages(c) })
 			subGroup.GET("/providers", func(c *gin.Context) { getSubtitleHandler().GetSupportedProviders(c) })
 	}
-	api.GET("/storage/list/*path", scanHandler.ListStoragePath)
-	api.GET("/storage/roots", scanHandler.GetStorageRoots)
-	api.POST("/storage/roots", scanHandler.CreateStorageRoot)
-	api.GET("/storage-roots", scanHandler.GetStorageRoots)
-	api.GET("/storage-roots/:id/status", scanHandler.GetStorageRootStatus)
+	root_handlers.RegisterStorageRoutes(api, scanHandler, jwtMiddleware)
 
 	// Statistics and sorting
 	api.GET("/stats/directories/by-size", catalogHandler.GetDirectoriesBySize)
@@ -1362,7 +1358,7 @@ func main() {
 	// Scan endpoints
 	scanGroup := api.Group("/scans")
 	{
-			scanGroup.POST("", scanHandler.QueueScan)
+			scanGroup.POST("", jwtMiddleware.RequireAdmin(), scanHandler.QueueScan)
 			scanGroup.GET("", scanHandler.ListScans)
 			scanGroup.GET("/:job_id", scanHandler.GetScanStatus)
 	}
