@@ -524,17 +524,33 @@ func (p *BookRecognitionProvider) RecognizeMedia(ctx context.Context, req *Media
 }
 
 func (p *BookRecognitionProvider) performOCR(ctx context.Context, imageData []byte) (*OCRResponse, error) {
-	// Try OCR.space API first (free tier)
-	if result, err := p.performOCRSpace(ctx, imageData); err == nil {
+	var errs []error
+
+	// Try OCR.space API first
+	result, err := p.performOCRSpace(ctx, imageData)
+	if err == nil {
 		return result, nil
 	}
+	errs = append(errs, err)
 
 	// Try Tesseract via local processing
-	if result, err := p.performTesseract(ctx, imageData); err == nil {
+	result, err = p.performTesseract(ctx, imageData)
+	if err == nil {
 		return result, nil
 	}
+	errs = append(errs, err)
 
-	return nil, fmt.Errorf("OCR processing failed")
+	// Every engine unconfigured: say so, so callers can tell "not set up" from "tried and failed".
+	allUnconfigured := true
+	for _, e := range errs {
+		if !errors.Is(e, ErrOCRNotConfigured) {
+			allUnconfigured = false
+		}
+	}
+	if allUnconfigured {
+		return nil, fmt.Errorf("OCR processing failed: %w", ErrOCRNotConfigured)
+	}
+	return nil, fmt.Errorf("OCR processing failed: %w", errors.Join(errs...))
 }
 
 // ErrOCRNotConfigured is returned when an OCR engine has no usable credential or binary. OCR output is never fabricated (CAT-001).
@@ -592,9 +608,16 @@ func (p *BookRecognitionProvider) performTesseract(ctx context.Context, imageDat
 	cmd := exec.CommandContext(ctx, bin, "stdin", "stdout", "-l", "eng")
 	cmd.Stdin = bytes.NewReader(imageData)
 	var stdout, stderr bytes.Buffer
-	cmd.Stdout, cmd.Stderr = &stdout, &stderr
+	bounded := &boundedWriter{w: &stdout, remaining: maxTesseractOutputBytes}
+	cmd.Stdout, cmd.Stderr = bounded, &limitedStderr{w: &stderr, remaining: 64 << 10}
 	if err := cmd.Run(); err != nil {
+		if bounded.exceeded {
+			return nil, ErrOCROutputTooLarge
+		}
 		return nil, fmt.Errorf("tesseract failed: %w: %s", err, strings.TrimSpace(stderr.String()))
+	}
+	if bounded.exceeded {
+		return nil, ErrOCROutputTooLarge
 	}
 	text := strings.TrimSpace(stdout.String())
 	if text == "" {
@@ -1561,4 +1584,44 @@ func (p *BookRecognitionProvider) SupportsMediaType(mediaType MediaType) bool {
 
 func (p *BookRecognitionProvider) GetConfidenceThreshold() float64 {
 	return 0.4
+}
+
+// maxTesseractOutputBytes bounds how much recognised text is kept in memory.
+const maxTesseractOutputBytes = 4 << 20
+
+// ErrOCROutputTooLarge is returned when the OCR process writes more than maxTesseractOutputBytes.
+var ErrOCROutputTooLarge = errors.New("OCR output exceeds size limit")
+
+// boundedWriter stops the child (write error) once the limit is passed instead of buffering without bound.
+type boundedWriter struct {
+	w         *bytes.Buffer
+	remaining int
+	exceeded  bool
+}
+
+func (b *boundedWriter) Write(p []byte) (int, error) {
+	if len(p) > b.remaining {
+		b.exceeded = true
+		return 0, ErrOCROutputTooLarge
+	}
+	b.remaining -= len(p)
+	return b.w.Write(p)
+}
+
+// limitedStderr keeps only the first bytes of stderr but never fails the child.
+type limitedStderr struct {
+	w         *bytes.Buffer
+	remaining int
+}
+
+func (l *limitedStderr) Write(p []byte) (int, error) {
+	n := len(p)
+	if l.remaining > 0 {
+		if len(p) > l.remaining {
+			p = p[:l.remaining]
+		}
+		l.remaining -= len(p)
+		l.w.Write(p)
+	}
+	return n, nil
 }
