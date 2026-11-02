@@ -93,7 +93,7 @@ describe('Admin Page', () => {
 
   it('shows default values when data is loading', () => {
     render(<Admin />, { wrapper: createWrapper() })
-    // Default values are shown immediately from the fallback props
+    // The panel renders immediately; figures are honest 'Unavailable' until data loads
     expect(screen.getByText('Admin Panel')).toBeInTheDocument()
   })
 

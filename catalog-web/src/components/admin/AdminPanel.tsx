@@ -4,20 +4,8 @@ import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Progress } from '../ui/Progress';
-
-interface SystemInfo {
-  version: string;
-  uptime: number;
-  cpuUsage: number;
-  memoryUsage: number;
-  diskUsage: {
-    total: number;
-    used: number;
-    free: number;
-  };
-  activeConnections: number;
-  totalRequests: number;
-}
+import type { SystemInfo, StorageInfo } from '@/types/admin';
+import { formatCountOrUnavailable, formatPercentOrUnavailable, usagePercent, UNAVAILABLE_LABEL } from '@/lib/adminMetrics';
 
 interface User {
   id: string;
@@ -27,15 +15,6 @@ interface User {
   status: 'active' | 'inactive' | 'suspended';
   lastLogin?: string;
   createdAt: string;
-}
-
-interface StorageInfo {
-  path: string;
-  totalSpace: number;
-  usedSpace: number;
-  availableSpace: number;
-  mediaCount: number;
-  lastScan?: string;
 }
 
 interface Backup {
@@ -201,7 +180,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="flex items-center">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-600">Total Requests</p>
-                    <p className="text-2xl font-bold text-gray-900">{systemInfo.totalRequests.toLocaleString()}</p>
+                    <p className="text-2xl font-bold text-gray-900">{formatCountOrUnavailable(systemInfo.totalRequests)}</p>
                   </div>
                   <Activity className="w-8 h-8 text-orange-500" />
                 </div>
@@ -219,9 +198,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium">CPU Usage</span>
-                    <span className="text-sm text-gray-600">{systemInfo.cpuUsage}%</span>
+                    <span className="text-sm text-gray-600">{formatPercentOrUnavailable(systemInfo.cpuUsage)}</span>
                   </div>
-                  <Progress value={systemInfo.cpuUsage} />
+                  <Progress value={systemInfo.cpuUsage ?? 0} />
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
@@ -234,11 +213,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium">Disk Usage</span>
                     <span className="text-sm text-gray-600">
-                      {formatFileSize(systemInfo.diskUsage.used)} / {formatFileSize(systemInfo.diskUsage.total)}
+                      {systemInfo.diskUsage
+                        ? `${formatFileSize(systemInfo.diskUsage.used)} / ${formatFileSize(systemInfo.diskUsage.total)}`
+                        : UNAVAILABLE_LABEL}
                     </span>
                   </div>
                   <Progress 
-                    value={(systemInfo.diskUsage.used / systemInfo.diskUsage.total) * 100} 
+                    value={systemInfo.diskUsage ? (usagePercent(systemInfo.diskUsage.used, systemInfo.diskUsage.total) ?? 0) : 0} 
                   />
                 </div>
               </CardContent>
@@ -349,15 +330,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Total Space</p>
-                    <p className="text-lg font-semibold">{formatFileSize(storage.totalSpace)}</p>
+                    <p className="text-lg font-semibold">{storage.totalSpace == null ? UNAVAILABLE_LABEL : formatFileSize(storage.totalSpace)}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600">Used Space</p>
-                    <p className="text-lg font-semibold">{formatFileSize(storage.usedSpace)}</p>
+                    <p className="text-lg font-semibold">{storage.usedSpace == null ? UNAVAILABLE_LABEL : formatFileSize(storage.usedSpace)}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600">Available</p>
-                    <p className="text-lg font-semibold">{formatFileSize(storage.availableSpace)}</p>
+                    <p className="text-lg font-semibold">{storage.availableSpace == null ? UNAVAILABLE_LABEL : formatFileSize(storage.availableSpace)}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-600">Media Count</p>
@@ -366,7 +347,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
                 <div className="mt-4">
                   <Progress 
-                    value={(storage.usedSpace / storage.totalSpace) * 100} 
+                    value={usagePercent(storage.usedSpace, storage.totalSpace) ?? 0} 
                     className="mb-2"
                   />
                   <p className="text-xs text-gray-600">

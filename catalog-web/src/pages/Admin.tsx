@@ -6,7 +6,20 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { FileBarChart, Gauge } from 'lucide-react';
 import toast from 'react-hot-toast';
-import type { User } from '@/types/admin';
+import type { User, SystemInfo } from '@/types/admin';
+
+// Shown only while the system-info request is loading or has failed. Every
+// figure is null / zero-with-unavailable, never an invented healthy-looking value.
+const UNAVAILABLE_SYSTEM_INFO: SystemInfo = {
+  version: 'Unavailable',
+  uptime: 0,
+  cpuUsage: null,
+  memoryUsage: 0,
+  diskUsage: null,
+  activeConnections: 0,
+  totalRequests: null,
+  unavailable: ['all'],
+};
 
 export const Admin: React.FC = () => {
   const { data: systemInfo, isLoading: _systemLoading } = useQuery({
@@ -85,19 +98,7 @@ export const Admin: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <AdminPanel
-        systemInfo={systemInfo || {
-          version: '1.0.0',
-          uptime: 86400,
-          cpuUsage: 45,
-          memoryUsage: 62,
-          diskUsage: {
-            total: 1073741824000,
-            used: 536870912000,
-            free: 536870912000
-          },
-          activeConnections: 12,
-          totalRequests: 15420
-        }}
+        systemInfo={systemInfo || UNAVAILABLE_SYSTEM_INFO}
         users={users || []}
         storageInfo={storageInfo || []}
         backups={backups || []}
