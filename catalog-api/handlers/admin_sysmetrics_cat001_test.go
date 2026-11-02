@@ -5,15 +5,18 @@ package handlers
 // where the host can provide them; JSON null plus an "unavailable" list where it cannot - never a fabricated 0.
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"runtime"
 	"testing"
 
+	"catalogizer/database"
 	"catalogizer/models"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/mutecomm/go-sqlcipher"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -45,7 +48,8 @@ func TestCAT001_SystemInfo_ReportsMeasuredDiskAndHonestUnknowns(t *testing.T) {
 	if runtime.GOOS != "linux" {
 		t.Skip("topology_unsupported: /proc/stat and statfs measurements are asserted on Linux only")
 	}
-	h := newTestAdminHandler(adminAuthOK(), &mockAdminUserRepo{})
+	// A file database: disk usage is measured on the directory holding it.
+	h := NewAdminHandler(adminAuthOK(), &mockAdminUserRepo{}, openProductionFileDB(t), "t")
 	code, resp, _ := adminCall(t, h, h.GetSystemInfo)
 	require.Equal(t, http.StatusOK, code)
 
@@ -98,4 +102,28 @@ func TestCAT001_StorageInfo_LocalRootHasRealSpaceOtherProtocolsAreNull(t *testin
 	require.NotNil(t, rem, "%v", byPath)
 	assert.Nil(t, rem["totalSpace"], "space of a remote share is unknown, not 0")
 	assert.Nil(t, rem["availableSpace"])
+}
+
+// F9: disk usage must describe the data directory, never the process cwd.
+func TestCAT001_SystemInfo_DiskUsageNeedsADataDir(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("topology_unsupported")
+	}
+	// A database with no local data directory (wrapped, no file path): the cwd
+	// is not a substitute, so the figure is unavailable.
+	sqlDB, err := sql.Open("sqlite3", ":memory:")
+	require.NoError(t, err)
+	defer sqlDB.Close()
+	h := NewAdminHandler(adminAuthOK(), &mockAdminUserRepo{}, database.WrapDB(sqlDB, database.DialectSQLite), "t")
+	code, obj, _ := adminCall(t, h, h.GetSystemInfo)
+	require.Equal(t, http.StatusOK, code)
+	assert.Nil(t, obj["diskUsage"])
+	assert.Contains(t, obj["unavailable"], "diskUsage")
+
+	// A file database reports the filesystem of its own directory.
+	h2 := NewAdminHandler(adminAuthOK(), &mockAdminUserRepo{}, openProductionFileDB(t), "t")
+	_, obj2, _ := adminCall(t, h2, h2.GetSystemInfo)
+	du, ok := obj2["diskUsage"].(map[string]interface{})
+	require.True(t, ok, "%v", obj2)
+	assert.Greater(t, du["total"].(float64), 0.0)
 }

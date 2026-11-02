@@ -120,7 +120,13 @@ func (h *AdminHandler) GetSystemInfo(c *gin.Context) {
 		unavailable = append(unavailable, "cpuUsage")
 	}
 	var diskUsage interface{}
-	if total, used, avail, ok := diskUsageOf("."); ok {
+	// The disk that holds the data, not whatever the process cwd happens to be.
+	var diskOK bool
+	var dTotal, dUsed, dAvail int64
+	if dir := h.db.DataDir(); dir != "" {
+		dTotal, dUsed, dAvail, diskOK = diskUsageOf(dir)
+	}
+	if total, used, avail, ok := dTotal, dUsed, dAvail, diskOK; ok {
 		diskUsage = gin.H{"total": total, "used": used, "free": avail}
 	} else {
 		unavailable = append(unavailable, "diskUsage")
