@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"net/http"
 	"testing"
 	"time"
 
@@ -500,4 +501,22 @@ func TestLanguageDetectionResult_Validation(t *testing.T) {
 	assert.Equal(t, "es", result.Code)
 	assert.Equal(t, 0.98, result.Confidence)
 	assert.Equal(t, "mock", result.Provider) // Should match what's set
+}
+
+// CAT-001: the built-in providers have no HTTP client implemented. They must
+// report themselves unavailable and fail loudly, never return "[GT] text".
+func TestTranslationService_BuiltInProvidersDoNotFabricate(t *testing.T) {
+	logger := zap.NewNop()
+	client := &http.Client{}
+	providers := []TranslationProvider{
+		NewGoogleTranslateFreeProvider(client, logger),
+		NewLibreTranslateProvider(client, logger),
+		NewMyMemoryProvider(client, logger),
+	}
+	for _, p := range providers {
+		assert.False(t, p.IsAvailable(), p.GetName())
+		res, err := p.Translate(context.Background(), &TranslationRequest{Text: "hello", SourceLanguage: "en", TargetLanguage: "es"})
+		assert.ErrorIs(t, err, ErrTranslationProviderNotImplemented, p.GetName())
+		assert.Nil(t, res, p.GetName())
+	}
 }
