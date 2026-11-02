@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -208,15 +209,24 @@ func (s *SubtitleService) SearchSubtitles(ctx context.Context, request *Subtitle
 	}
 
 	// Collect results
+	var providerErrs []error
+	succeeded := 0
 	for i := 0; i < len(providers); i++ {
 		select {
 		case results := <-resultsChan:
+			succeeded++
 			allResults = append(allResults, results...)
-		case <-errorsChan:
-			// Log error but continue with other providers
+		case perr := <-errorsChan:
+			// Logged above; keep going with the other providers, but remember
+			// the failure so total failure is reported, not hidden as "no results".
+			providerErrs = append(providerErrs, perr)
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		}
+	}
+
+	if succeeded == 0 && len(providerErrs) > 0 {
+		return nil, fmt.Errorf("subtitle search: every provider failed: %w", errors.Join(providerErrs...))
 	}
 
 	// Sort by match score and rating
@@ -477,60 +487,25 @@ func (s *SubtitleService) searchProvider(ctx context.Context, provider SubtitleP
 	}
 }
 
+// ErrSubtitleProviderNotImplemented is returned by provider searches that have
+// no real API client behind them. It replaces the former fabricated results.
+var ErrSubtitleProviderNotImplemented = errors.New("subtitle provider client not implemented")
+
 func (s *SubtitleService) searchOpenSubtitles(ctx context.Context, request *SubtitleSearchRequest) ([]SubtitleSearchResult, error) {
-	// Implementation for OpenSubtitles API
-	// This is a simplified version - real implementation would use their API
-
-	s.logger.Debug("Searching OpenSubtitles", zap.String("title", getStringValue(request.Title)))
-
-	// Mock results for demonstration
-	results := []SubtitleSearchResult{
-		{
-			ID:           "opensubtitles_1",
-			Provider:     ProviderOpenSubtitles,
-			Language:     "English",
-			LanguageCode: "en",
-			Title:        "Sample Movie (2024)",
-			DownloadURL:  "https://dl.opensubtitles.org/sample1.srt",
-			Format:       "srt",
-			Encoding:     "utf-8",
-			UploadDate:   time.Now().AddDate(0, 0, -7),
-			Downloads:    1500,
-			Rating:       4.2,
-			Comments:     23,
-			MatchScore:   0.95,
-		},
-	}
-
-	return results, nil
+	s.logger.Debug("OpenSubtitles search requested but no client is implemented")
+	return nil, fmt.Errorf("%w: %s", ErrSubtitleProviderNotImplemented, ProviderOpenSubtitles)
 }
 
 func (s *SubtitleService) searchSubDB(ctx context.Context, request *SubtitleSearchRequest) ([]SubtitleSearchResult, error) {
-	// Implementation for SubDB
-	s.logger.Debug("Searching SubDB")
-	return []SubtitleSearchResult{}, nil
+	return nil, fmt.Errorf("%w: %s", ErrSubtitleProviderNotImplemented, ProviderSubDB)
 }
 
 func (s *SubtitleService) searchYifySubtitles(ctx context.Context, request *SubtitleSearchRequest) ([]SubtitleSearchResult, error) {
-	// Implementation for YifySubtitles
-	s.logger.Debug("Searching YifySubtitles")
-	return []SubtitleSearchResult{}, nil
+	return nil, fmt.Errorf("%w: %s", ErrSubtitleProviderNotImplemented, ProviderYifySubtitles)
 }
 
 // Helper functions
 func (s *SubtitleService) downloadContent(ctx context.Context, url string) (string, string, error) {
-	// For testing, return mock subtitle content
-	if url == "https://dl.opensubtitles.org/1.srt" {
-		content := `1
-00:00:01,000 --> 00:00:03,000
-Test subtitle line 1
-
-2
-00:00:04,000 --> 00:00:06,000
-Test subtitle line 2`
-		return content, "utf-8", nil
-	}
-
 	if err := GuardProviderURL(url, SSRFGuardConfig{}); err != nil {
 		return "", "", fmt.Errorf("subtitle: unsafe URL: %w", err)
 	}
@@ -934,17 +909,7 @@ func (s *SubtitleService) getDownloadInfo(ctx context.Context, resultID string) 
 	var reconstructedResult *SubtitleSearchResult
 	switch provider {
 	case ProviderOpenSubtitles:
-		reconstructedResult = &SubtitleSearchResult{
-			ID:           resultID,
-			Provider:     ProviderOpenSubtitles,
-			Language:     "English", // Default, would be determined from actual API
-			LanguageCode: "en",
-			Title:        "Unknown Title", // Would be fetched from API
-			DownloadURL:  "https://dl.opensubtitles.org/1.srt",
-			Format:       "srt",
-			Encoding:     "utf-8",
-			MatchScore:   0.9,
-		}
+		return nil, fmt.Errorf("%w: %s", ErrSubtitleProviderNotImplemented, ProviderOpenSubtitles)
 	case ProviderSubDB:
 		reconstructedResult = &SubtitleSearchResult{
 			ID:           resultID,
