@@ -35,7 +35,7 @@ run() { # run <network> <workdir> <image> <shell-snippet> [extra podman args...]
   local cmd=(podman run --rm --userns=keep-id --network "$net" --memory "$MEM" --cpus "$CPUS"
     -v "$PROJ:/src:Z" -v "$OUT:/out:Z" -v "$CACHE/gomod:/gocache/mod:Z" -v "$CACHE/gobuild:/gocache/build:Z"
     -v "$CACHE/npm:/npmcache:Z" -w "$wd"
-    -e HOME=/tmp/home -e GOTOOLCHAIN=local -e CGO_ENABLED=1 -e GOFLAGS=-buildvcs=false
+    -e HOME=/tmp/home -e GOTOOLCHAIN=local -e CGO_ENABLED=1 -e CGO_CFLAGS=-DHAVE_USLEEP=1 -e GOFLAGS=-buildvcs=false
     -e GOMODCACHE=/gocache/mod -e GOCACHE=/gocache/build -e GOMAXPROCS="$CPUS"
     -e npm_config_cache=/npmcache -e CI=1 "$@" "$img" sh -c "$sh")
   if [ "$DRY" = 1 ]; then printf '%q ' "${cmd[@]}"; echo; else mkdir -p "$OUT" "$CACHE"/{gomod,gobuild,npm}; "${cmd[@]}"; fi

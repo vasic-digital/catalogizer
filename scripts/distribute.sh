@@ -121,7 +121,7 @@ _build_api() {
 
     pushd "$api_dir" >/dev/null
 
-    GOMAXPROCS=3 GOTOOLCHAIN=local CGO_ENABLED=1 \
+    GOMAXPROCS=3 GOTOOLCHAIN=local CGO_ENABLED=1 CGO_CFLAGS=-DHAVE_USLEEP=1 \
         go build -ldflags="-s -w" -o "$output_path" . 2>&1 | while IFS= read -r line; do
         _debug "go: $line"
     done

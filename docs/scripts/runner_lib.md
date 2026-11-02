@@ -63,7 +63,7 @@ collected in `$PWD/.audit/runner-logs/<op id>.{out,err}` and replayed to the cal
 
 | Wrapper | Image | Command prefix | Version probe | State now |
 |---|---|---|---|---|
-| `run_go.sh` | IMG-GO | `env GOMAXPROCS=3 GOTOOLCHAIN=local CGO_ENABLED=1` (docs/16 6.2) | `go version` | runs (real leg of the test) |
+| `run_go.sh` | IMG-GO | `env GOMAXPROCS=3 GOTOOLCHAIN=local CGO_ENABLED=1 CGO_CFLAGS=-DHAVE_USLEEP=1` (docs/16 6.2) | `go version` | runs (real leg of the test) |
 | `run_testutil.sh` | IMG-TESTUTIL | none | `python3 --version` | runs |
 | `run_scan.sh` | IMG-SHELLCHECK (default) or `--image` one of IMG-SCAN-TRIVY, -GITLEAKS, -TRUFFLEHOG, -SEMGREP, -GOSEC, -HADOLINT, -SYFT, -SONAR-SCANNER, -DEPCHECK | none | IMG-SHELLCHECK: `shellcheck --version` (entrypoint-only image: the first output line with a dotted version number, e.g. `version: 0.10.0`, WF13 m5; the three write probes are recorded `n/a:no_shell`) | IMG-SHELLCHECK runs; every other scanner image is refused `probe_not_defined` until a reviewed row defines its version command |
 | `run_node.sh` | IMG-NODE | none | `node --version` | runs while the lock has IMG-NODE; else `image_not_in_lock` |

@@ -184,7 +184,7 @@ if [ "$MODE" = selftest ]; then GOCMD='cd /src/filesystem && go test -count=1 -t
 OUTD="$(mktemp -d /tmp/catalogizer-sftp-out.XXXXXX)" || refuse scratch_uncreatable "cannot create the output directory under /tmp"
 ARGV=()
 while IFS= read -r line; do ARGV+=("$line"); done < <(cd "$SD/view" && RUNP_PRINT_ARGV=1 bash "$ROOT/scripts/containers/run_pinned.sh" --out "$OUTD" --op-id "$OPID" IMG-GO -- \
-    env GOMAXPROCS=3 GOTOOLCHAIN=local CGO_ENABLED=1 GOFLAGS=-buildvcs=false sh -c "$GOCMD")
+    env GOMAXPROCS=3 GOTOOLCHAIN=local CGO_ENABLED=1 CGO_CFLAGS=-DHAVE_USLEEP=1 GOFLAGS=-buildvcs=false sh -c "$GOCMD")
 [ "${#ARGV[@]}" -gt 5 ] && [ "${ARGV[0]}" = podman ] || refuse run_pinned_failed "run_pinned.sh printed no podman argv"
 NEW=("${ARGV[0]}" "${ARGV[1]}" --network "$NET" --env-file "$ENVF")
 for ((i = 2; i < ${#ARGV[@]}; i++)); do NEW+=("${ARGV[$i]}"); done
