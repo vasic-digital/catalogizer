@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html"
 	"image/jpeg"
 	"image/png"
 	"os"
@@ -21,8 +22,6 @@ import (
 	"catalogizer/repository"
 
 	"github.com/gen2brain/go-fitz"
-	"github.com/unidoc/unipdf/v3/extractor"
-	"github.com/unidoc/unipdf/v3/model"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -308,41 +307,30 @@ func (s *ConversionService) convertPDFToImage(job *models.ConversionJob, format 
 
 // convertPDFToText converts PDF to plain text using unipdf
 func (s *ConversionService) convertPDFToText(job *models.ConversionJob) error {
-	file, err := os.Open(job.SourcePath)
-	if err != nil {
-		return fmt.Errorf("failed to open PDF: %w", err)
-	}
-	defer file.Close()
+	// CAT-002: text extraction goes through the pdfTextExtractor interface (ledongthuc/pdf, with an
+	// optional pdftotext fallback); unipdf needed a commercial licence key at run time.
+	ctx, cancel := context.WithTimeout(context.Background(), pdfTextTimeout)
+	defer cancel()
+	ex := defaultPDFTextExtractor()
 
-	pdfReader, err := model.NewPdfReader(file)
+	totalPages, err := ex.NumPages(ctx, job.SourcePath)
 	if err != nil {
-		return fmt.Errorf("failed to create PDF reader: %w", err)
+		return fmt.Errorf("failed to get total pages: %w", err)
 	}
 
 	// Parse settings
 	settings := make(map[string]interface{})
 	if job.Settings != nil {
-		if err := json.Unmarshal([]byte(*job.Settings), &settings); err == nil {
-			// Settings parsed successfully
-		}
+		_ = json.Unmarshal([]byte(*job.Settings), &settings)
+	}
+	startPage, endPage := selectPDFPages(settings, totalPages)
+	if totalPages == 0 || startPage > endPage {
+		return fmt.Errorf("PDF has no pages in the requested range")
 	}
 
-	// Determine page range
-	totalPages, err := pdfReader.GetNumPages()
+	pages, err := ex.ExtractPages(ctx, job.SourcePath, startPage, endPage)
 	if err != nil {
-		return fmt.Errorf("failed to get total pages: %w", err)
-	}
-	startPage := 1
-	endPage := totalPages
-
-	if page, ok := settings["page"].(int); ok && page > 0 && page <= totalPages {
-		startPage = page
-		endPage = page
-	} else if start, ok := settings["start_page"].(int); ok && start > 0 {
-		startPage = start
-		if end, ok := settings["end_page"].(int); ok && end >= start && end <= totalPages {
-			endPage = end
-		}
+		return err
 	}
 
 	// Create output file (also used for the HTML fallback's ".tmp.txt" sibling)
@@ -352,35 +340,17 @@ func (s *ConversionService) convertPDFToText(job *models.ConversionJob) error {
 	}
 	defer outputFile.Close()
 
-	// Extract text from pages
-	for i := startPage; i <= endPage; i++ {
-		page, err := pdfReader.GetPage(i)
-		if err != nil {
-			return fmt.Errorf("failed to get page %d: %w", i, err)
-		}
-
-		extractor, err := extractor.New(page)
-		if err != nil {
-			return fmt.Errorf("failed to create extractor for page %d: %w", i, err)
-		}
-
-		content, err := extractor.ExtractText()
-		if err != nil {
-			return fmt.Errorf("failed to extract text from page %d: %w", i, err)
-		}
-
+	for i, content := range pages {
 		if _, err := outputFile.WriteString(content); err != nil {
 			return fmt.Errorf("failed to write text to file: %w", err)
 		}
-
 		// Add page separator for multi-page PDFs
-		if i < endPage {
-			if _, err := outputFile.WriteString(fmt.Sprintf("\n\n--- Page %d ---\n\n", i+1)); err != nil {
+		if i < len(pages)-1 {
+			if _, err := outputFile.WriteString(fmt.Sprintf("\n\n--- Page %d ---\n\n", startPage+i+1)); err != nil {
 				return fmt.Errorf("failed to write page separator: %w", err)
 			}
 		}
 	}
-
 	return nil
 }
 
@@ -454,7 +424,7 @@ func (s *ConversionService) convertPDFToHTML(job *models.ConversionJob) error {
     <h1>%s</h1>
     <pre>%s</pre>
 </body>
-</html>`, filepath.Base(job.SourcePath), filepath.Base(job.SourcePath), string(content))
+</html>`, html.EscapeString(filepath.Base(job.SourcePath)), html.EscapeString(filepath.Base(job.SourcePath)), html.EscapeString(string(content)))
 
 	// Write HTML file
 	out, err := createConversionOutput(job.TargetPath)
