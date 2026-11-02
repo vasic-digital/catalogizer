@@ -95,7 +95,11 @@ func runAdminReset(db *database.DB, args []string, stdout, stderr io.Writer) int
 	}
 	rows.Close()
 	if len(todo) == 0 {
-		fmt.Fprintln(stdout, "no matching admin account to rotate")
+		if target != "" {
+			fmt.Fprintf(stderr, "admin-reset-password FAILED: no admin account named %q\n", target)
+			return 1
+		}
+		fmt.Fprintln(stdout, "no compromised admin account to rotate")
 		return 0
 	}
 	for _, a := range todo {
@@ -108,6 +112,12 @@ func runAdminReset(db *database.DB, args []string, stdout, stderr io.Writer) int
 		h, err := bcryptHash([]byte(pw + salt))
 		if err != nil {
 			fmt.Fprintf(stderr, "admin-reset-password FAILED: %v\n", err)
+			return 1
+		}
+		// Revoke every session/refresh token FIRST: if the hash update then fails the
+		// account is merely logged out, never left with live old-credential sessions.
+		if _, err := db.Exec("UPDATE user_sessions SET is_active = 0 WHERE user_id = ?", a.id); err != nil {
+			fmt.Fprintf(stderr, "admin-reset-password FAILED (session revoke): %v\n", err)
 			return 1
 		}
 		if _, err := db.Exec("UPDATE users SET password_hash = ?, salt = ? WHERE id = ?", string(h), salt, a.id); err != nil {

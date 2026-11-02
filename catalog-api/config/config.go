@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -424,12 +425,19 @@ func normalizeSecret(v string) string {
 var placeholderMarkers = []string{
 	"changeme", "changethis", "yoursupersecret", "yoursecret", "placeholder",
 	"replaceme", "distributedcatalogizersecret", "catalogizerdevelopmentsecret",
+	// documentation example shapes (CAT-021 D1): your-admin-password,
+	// secure-admin-password, strong-admin-password, SecurePassword123, ...
+	"adminpassword", "securepassword", "strongpassword", "securepass",
 }
+
+// placeholderShape matches normalized "your...password/secret/token/key" and
+// "...password...here" example forms.
+var placeholderShape = regexp.MustCompile(`^your[a-z0-9]*(password|passwd|secret|token|key)|(password|passwd|secret|token|key)[a-z0-9]*here$`)
 
 // placeholderPasswords are normalized exact weak/published defaults.
 var placeholderPasswords = []string{
 	"admin", "password", "adminpassword", "catalogizerpassword", "admin123",
-	"catalogizerdev", "minioadmin", "minioadmin123", "sonarpassword", "12345678",
+	"catalogizerdev", "minioadmin", "minioadmin123", "sonarpassword", "12345678", "secret",
 }
 
 func isPlaceholderSecret(v string) bool {
@@ -437,6 +445,9 @@ func isPlaceholderSecret(v string) bool {
 		return true
 	}
 	n := normalizeSecret(v)
+	if placeholderShape.MatchString(n) {
+		return true
+	}
 	for _, m := range placeholderMarkers {
 		if strings.Contains(n, m) {
 			return true

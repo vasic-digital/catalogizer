@@ -34,7 +34,7 @@ If `JWT_SECRET` is weak or predictable, an attacker can forge tokens. Use a cryp
 The admin user password, set at startup. Used for initial login.
 
 ```env
-ADMIN_PASSWORD=strong-admin-password
+ADMIN_PASSWORD=<your-admin-password>
 ```
 
 ### ADMIN_USERNAME

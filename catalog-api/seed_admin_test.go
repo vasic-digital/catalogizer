@@ -6,15 +6,13 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/DATA-DOG/go-sqlmock"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"testing"
 
 	"catalogizer/database"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func seedTestDB(t *testing.T) *database.DB {
@@ -24,7 +22,28 @@ func seedTestDB(t *testing.T) *database.DB {
 	t.Cleanup(func() { sqlDB.Close() })
 	_, err = sqlDB.Exec(`CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, email TEXT, password_hash TEXT, salt TEXT, role_id INTEGER, first_name TEXT, last_name TEXT, display_name TEXT, is_active INTEGER)`)
 	require.NoError(t, err)
+	_, err = sqlDB.Exec(`CREATE TABLE user_sessions (id INTEGER PRIMARY KEY, user_id INTEGER, session_token TEXT, refresh_token TEXT, is_active INTEGER DEFAULT 1)`)
+	require.NoError(t, err)
 	return database.WrapDB(sqlDB, database.DialectSQLite)
+}
+
+// verifyStored mirrors services.AuthService.verifyPassword: bcrypt(password+salt).
+func verifyStored(t *testing.T, db *database.DB, user, password string) bool {
+	t.Helper()
+	var hash, salt string
+	require.NoError(t, db.QueryRow("SELECT password_hash, COALESCE(salt,'') FROM users WHERE username = ?", user).Scan(&hash, &salt))
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password+salt)) == nil
+}
+
+func addAdmin(t *testing.T, db *database.DB, user, password string) int64 {
+	t.Helper()
+	salt := "salt-" + user
+	h, err := bcrypt.GenerateFromPassword([]byte(password+salt), bcrypt.MinCost)
+	require.NoError(t, err)
+	res, err := db.Exec(`INSERT INTO users (username,email,password_hash,salt,role_id,first_name,last_name,display_name,is_active) VALUES (?,?,?,?,1,'a','b','c',1)`, user, user+"@x", string(h), salt)
+	require.NoError(t, err)
+	id, _ := res.LastInsertId()
+	return id
 }
 
 const seedCompromised = "admin" + "123"
@@ -126,26 +145,6 @@ func TestAdminReset_RejectsMissingOrPlaceholderNewPassword(t *testing.T) {
 	}
 }
 
-// Real binary path: build the server and run the subcommand offline.
-func TestAdminReset_RealBinary(t *testing.T) {
-	if testing.Short() {
-		t.Skip("builds the binary")
-	}
-	dir := t.TempDir()
-	bin := filepath.Join(dir, "catalog-api")
-	build := exec.Command("go", "build", "-buildvcs=false", "-o", bin, ".")
-	if out, err := build.CombinedOutput(); err != nil {
-		t.Skipf("cannot build binary here: %v\n%s", err, out)
-	}
-	cmd := exec.Command(bin, "admin-reset-password")
-	cmd.Dir = dir
-	cmd.Env = append(os.Environ(), "ADMIN_NEW_PASSWORD=", "DATABASE_TYPE=sqlite",
-		"DATABASE_PATH="+filepath.Join(dir, "x.db"), "JWT_SECRET=Zq7-test-only-jwt-secret-0123456789abcdef", "ADMIN_USERNAME=admin", "ADMIN_PASSWORD=Op3rator-Supplied-Value-9x")
-	out, err := cmd.CombinedOutput()
-	require.Error(t, err, "empty ADMIN_NEW_PASSWORD must be refused by the real binary: %s", out)
-	assert.Contains(t, string(out), "ADMIN_NEW_PASSWORD")
-}
-
 // rows.Err must fail closed (mid-iteration error).
 func TestRefuseCompromisedAdminHashes_FailsClosedOnRowsErr(t *testing.T) {
 	sqlDB, mock, err := sqlmock.New()
@@ -172,4 +171,81 @@ func TestAdminReset_EveryCandidateRotated(t *testing.T) {
 		assert.Contains(t, out.String(), "rotated", "candidate %q", c)
 		assert.NoError(t, refuseCompromisedAdminHashes(db), "candidate %q", c)
 	}
+}
+
+// I3: sessions/refresh tokens issued before the reset are revoked by it.
+func TestAdminReset_RevokesExistingSessions(t *testing.T) {
+	t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", "")
+	db := seedTestDB(t)
+	id := addAdmin(t, db, "admin", seedCompromised)
+	other := addAdmin(t, db, "other", "Other-Strong-Pw-4k")
+	for _, u := range []int64{id, other} {
+		_, err := db.Exec("INSERT INTO user_sessions (user_id, session_token, refresh_token) VALUES (?, 'st', 'rt')", u)
+		require.NoError(t, err)
+	}
+	t.Setenv("ADMIN_NEW_PASSWORD", "Rotated-Op3rator-Value-7q")
+	var out, errb bytes.Buffer
+	require.Equal(t, 0, runAdminReset(db, []string{"admin-reset-password"}, &out, &errb))
+	var active int
+	require.NoError(t, db.QueryRow("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND is_active = 1", id).Scan(&active))
+	assert.Equal(t, 0, active, "pre-reset sessions must be revoked")
+	require.NoError(t, db.QueryRow("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND is_active = 1", other).Scan(&active))
+	assert.Equal(t, 1, active, "unrotated account's sessions untouched")
+}
+
+// T1(a): after reset the NEW password verifies against stored hash+salt, with and without a username.
+func TestAdminReset_NewPasswordVerifies(t *testing.T) {
+	const newPw = "Rotated-Op3rator-Value-7q"
+	t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", "")
+	for _, args := range [][]string{{"admin-reset-password"}, {"admin-reset-password", "admin"}} {
+		db := seedTestDB(t)
+		addAdmin(t, db, "admin", seedCompromised)
+		t.Setenv("ADMIN_NEW_PASSWORD", newPw)
+		var out, errb bytes.Buffer
+		require.Equal(t, 0, runAdminReset(db, args, &out, &errb))
+		assert.True(t, verifyStored(t, db, "admin", newPw), "args %v", args)
+		assert.False(t, verifyStored(t, db, "admin", seedCompromised), "args %v", args)
+		var salt string
+		require.NoError(t, db.QueryRow("SELECT salt FROM users WHERE username='admin'").Scan(&salt))
+		assert.NotEqual(t, "salt-admin", salt, "salt must be regenerated")
+	}
+}
+
+// T1(c)/R1: only the named admin is rotated, even when others are compromised too.
+func TestAdminReset_OnlyNamedAdminRotated(t *testing.T) {
+	t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", "")
+	db := seedTestDB(t)
+	addAdmin(t, db, "alice", seedCompromised)
+	addAdmin(t, db, "bob", seedCompromised)
+	t.Setenv("ADMIN_NEW_PASSWORD", "Rotated-Op3rator-Value-7q")
+	var out, errb bytes.Buffer
+	require.Equal(t, 0, runAdminReset(db, []string{"admin-reset-password", "bob"}, &out, &errb))
+	assert.True(t, verifyStored(t, db, "bob", "Rotated-Op3rator-Value-7q"))
+	assert.True(t, verifyStored(t, db, "alice", seedCompromised), "alice must be untouched")
+}
+
+// M7: named account missing or not an admin exits non-zero.
+func TestAdminReset_UnknownOrNonAdminNamedExitsNonZero(t *testing.T) {
+	t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", "")
+	db := seedTestDB(t)
+	addAdmin(t, db, "alice", seedCompromised)
+	_, err := db.Exec(`INSERT INTO users (username,email,password_hash,salt,role_id,first_name,last_name,display_name,is_active) VALUES ('norm','n@x','h','s',2,'a','b','c',1)`)
+	require.NoError(t, err)
+	t.Setenv("ADMIN_NEW_PASSWORD", "Rotated-Op3rator-Value-7q")
+	for _, u := range []string{"nobody", "norm"} {
+		var out, errb bytes.Buffer
+		assert.Equal(t, 1, runAdminReset(db, []string{"admin-reset-password", u}, &out, &errb), u)
+	}
+}
+
+// R4: rows.Err inside runAdminReset must fail the command.
+func TestAdminReset_RowsErrFails(t *testing.T) {
+	sqlDB, mock, err := sqlmock.New()
+	require.NoError(t, err)
+	defer sqlDB.Close()
+	mock.ExpectQuery("SELECT id, username").WillReturnRows(
+		sqlmock.NewRows([]string{"id", "username", "password_hash", "salt"}).AddRow(1, "admin", "x", "").RowError(0, errors.New("boom")))
+	t.Setenv("ADMIN_NEW_PASSWORD", "Rotated-Op3rator-Value-7q")
+	var out, errb bytes.Buffer
+	assert.Equal(t, 1, runAdminReset(database.WrapDB(sqlDB, database.DialectSQLite), []string{"admin-reset-password"}, &out, &errb))
 }

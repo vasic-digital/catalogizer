@@ -33,7 +33,7 @@ export SNYK_SEVERITY_THRESHOLD="medium"
 
 # Database and application secrets
 export JWT_SECRET="your-jwt-secret-here"
-export ADMIN_PASSWORD="your-admin-password-here"
+export ADMIN_PASSWORD="<your-admin-password>"
 export SMB_PASSWORD="your-smb-password-here"
 export FTP_PASSWORD="your-ftp-password-here"
 export WEBDAV_PASSWORD="your-webdav-password-here"

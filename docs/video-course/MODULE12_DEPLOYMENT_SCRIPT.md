@@ -246,7 +246,7 @@ DB_NAME=catalogizer
 DB_USER=catalogizer
 DB_PASSWORD=secure-password
 JWT_SECRET=256-bit-cryptographic-random-secret
-ADMIN_PASSWORD=secure-admin-password
+ADMIN_PASSWORD=<your-admin-password>
 REDIS_ADDR=localhost:6379
 ```
 

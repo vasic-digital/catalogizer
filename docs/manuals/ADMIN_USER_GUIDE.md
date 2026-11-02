@@ -56,7 +56,21 @@ ADMIN_NEW_PASSWORD='<choose-a-strong-password>' ./catalog-api admin-reset-passwo
 ```
 
 It rotates every admin whose stored hash matches a published default (or the named
-admin) and prints the account names only. Then start the server normally.
+admin), revokes all of that account's existing sessions and refresh tokens in the same
+step, and prints account names only. Then start the server normally.
+
+The command loads the full server configuration first, so the same environment as
+the server is required: `JWT_SECRET` (at least 32 characters), `ADMIN_USERNAME`, a
+non-default `ADMIN_PASSWORD`, the database settings and the encryption key file,
+plus `ADMIN_NEW_PASSWORD`. In a container (entrypoint `/app/catalogizer-api`):
+
+```bash
+docker compose run --rm -e ADMIN_NEW_PASSWORD api admin-reset-password [username]
+```
+
+Exit codes: `0` rotated (or, without a username, nothing needed rotating);
+`1` failure, or the named account does not exist or is not an admin;
+`2` `ADMIN_NEW_PASSWORD` missing or a known placeholder.
 Release mode (`GIN_MODE=release`, the default in the production compose file)
 ignores `CATALOGIZER_ALLOW_INSECURE_DEFAULTS`.
 
