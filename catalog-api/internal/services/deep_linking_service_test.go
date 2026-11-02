@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -1370,49 +1371,16 @@ func TestTrackLinkEvent(t *testing.T) {
 // GetLinkAnalytics
 // ---------------------------------------------------------------------------
 
-func TestGetLinkAnalytics(t *testing.T) {
+func TestGetLinkAnalytics_NotFabricated(t *testing.T) {
 	svc := NewDeepLinkingService("https://catalogizer.app", "v1")
-	ctx := context.Background()
-
-	tests := []struct {
-		name       string
-		trackingID string
-	}{
-		{"standard", "track_123"},
-		{"other", "track_abc"},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			a, err := svc.GetLinkAnalytics(ctx, tt.trackingID)
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if a == nil {
-				t.Fatal("expected non-nil analytics")
-			}
-			if a.TrackingID != tt.trackingID {
-				t.Errorf("tracking ID = %q, want %q", a.TrackingID, tt.trackingID)
-			}
-			if a.TotalClicks <= 0 {
-				t.Error("expected positive total clicks")
-			}
-			if a.UniqueClicks <= 0 {
-				t.Error("expected positive unique clicks")
-			}
-			if a.UniqueClicks > a.TotalClicks {
-				t.Error("unique should not exceed total")
-			}
-			if a.PlatformBreakdown == nil || len(a.PlatformBreakdown) == 0 {
-				t.Error("expected non-empty platform breakdown")
-			}
-			if a.ConversionRate < 0 || a.ConversionRate > 1 {
-				t.Errorf("conversion rate %f out of [0,1]", a.ConversionRate)
-			}
-			if a.FirstClickAt.After(a.LastClickAt) {
-				t.Error("first click should be before last click")
-			}
-		})
+	for _, id := range []string{"track_123", "track_abc"} {
+		a, err := svc.GetLinkAnalytics(context.Background(), id)
+		if !errors.Is(err, ErrLinkAnalyticsNotImplemented) {
+			t.Fatalf("err = %v, want ErrLinkAnalyticsNotImplemented", err)
+		}
+		if a != nil {
+			t.Fatalf("analytics must not be fabricated, got %+v", a)
+		}
 	}
 }
 

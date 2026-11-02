@@ -366,19 +366,10 @@ func TestDeepLinkingService_TrackingAndAnalytics(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("get link analytics", func(t *testing.T) {
-		trackingID := "analytics_test_123"
-
-		analytics, err := deepLinkingService.GetLinkAnalytics(ctx, trackingID)
-		require.NoError(t, err)
-		require.NotNil(t, analytics)
-
-		assert.Equal(t, trackingID, analytics.TrackingID)
-		assert.True(t, analytics.TotalClicks >= 0)
-		assert.True(t, analytics.UniqueClicks >= 0)
-		assert.True(t, analytics.UniqueClicks <= analytics.TotalClicks)
-		assert.NotNil(t, analytics.PlatformBreakdown)
-		assert.True(t, analytics.ConversionRate >= 0 && analytics.ConversionRate <= 1)
+	t.Run("get link analytics is honestly unavailable", func(t *testing.T) {
+		analytics, err := deepLinkingService.GetLinkAnalytics(ctx, "analytics_test_123")
+		assert.ErrorIs(t, err, services.ErrLinkAnalyticsNotImplemented)
+		assert.Nil(t, analytics)
 	})
 }
 
