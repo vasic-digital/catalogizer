@@ -85,3 +85,18 @@ func TestCAT001_StorageRootStatus_UnknownRootIs404(t *testing.T) {
 }
 
 var _ = gin.TestMode
+
+// A connection error quotes the URL it dialled; a password carried in the URL userinfo must be scrubbed from the reported reason.
+func TestCAT001_StorageRootStatus_UnreachableUrlWithUserinfoDoesNotLeakPassword(t *testing.T) {
+	srv := davServer(t, "alice", "pw", map[string][]string{"/": {}})
+	hostport := strings.TrimPrefix(srv.URL, "http://")
+	srv.Close()
+	h := statusHarness(t)
+	id := createDavRoot(t, h, "leaky", "http://alice:UserinfoPw-77@"+hostport, "", "")
+	code, body := h.do("GET", statusURL(id), nil)
+	require.Equal(t, http.StatusOK, code, "%v", body)
+	assert.Equal(t, "offline", body["status"])
+	reason, _ := body["error"].(string)
+	assert.NotEmpty(t, reason)
+	assert.False(t, strings.Contains(reason, "UserinfoPw-77"), "reason leaks the URL password: %s", reason)
+}
