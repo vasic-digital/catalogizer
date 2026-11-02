@@ -371,6 +371,14 @@ func main() {
 	if flag.NArg() > 0 && (flag.Arg(0) == "db-rekey" || flag.Arg(0) == "db-restore") {
 		os.Exit(runDBMaintenance(&cfg.Database, flag.Args()))
 	}
+	// Offline recovery (CAT-021): validate the replacement password before any
+	// database work; the rotation itself runs after the DB is connected.
+	if flag.NArg() > 0 && flag.Arg(0) == "admin-reset-password" {
+	if _, err := newAdminPasswordFromEnv(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(2)
+	}
+	}
 	// Default SSLMode
 	if cfg.Database.SSLMode == "" {
 	cfg.Database.SSLMode = "disable"
@@ -424,12 +432,12 @@ func main() {
 	logging.Info("Database migrations completed successfully")
 
 	// Seed default admin user if none exists
-	if err := seedDefaultAdmin(databaseDB, cfg.Auth.AdminUsername, cfg.Auth.AdminPassword); err != nil {
-	if errors.Is(err, errCompromisedAdmin) {
-		logging.Fatal("Refusing to start", logging.ErrorField(err))
+	if flag.NArg() > 0 && flag.Arg(0) == "admin-reset-password" {
+	os.Exit(runAdminReset(databaseDB, flag.Args(), os.Stdout, os.Stderr))
 	}
-	logging.Warnf("Failed to seed admin user: %v", err)
-	}
+	handleSeedAdminError(seedDefaultAdmin(databaseDB, cfg.Auth.AdminUsername, cfg.Auth.AdminPassword),
+	func(m string, e error) { logging.Fatal(m, logging.ErrorField(e)) },
+	func(m string, e error) { logging.Warnf("%s: %v", m, e) })
 
 	// Initialize services
 	// Convert config to internal format
@@ -2026,7 +2034,7 @@ var errCompromisedAdmin = errors.New("existing admin account uses a published de
 func refuseCompromisedAdminHashes(db *database.DB) error {
 	rows, err := db.Query("SELECT username, password_hash, COALESCE(salt,'') FROM users WHERE role_id = 1")
 	if err != nil {
-	return fmt.Errorf("check admin hashes: %w", err)
+	return fmt.Errorf("%w: %v", errAdminHashCheck, err)
 	}
 	defer rows.Close()
 	type acct struct{ user, hash, salt string }
@@ -2034,14 +2042,17 @@ func refuseCompromisedAdminHashes(db *database.DB) error {
 	for rows.Next() {
 	var a acct
 	if err := rows.Scan(&a.user, &a.hash, &a.salt); err != nil {
-		return err
+		return fmt.Errorf("%w: %v", errAdminHashCheck, err)
 	}
 	accts = append(accts, a)
+	}
+	if err := rows.Err(); err != nil {
+	return fmt.Errorf("%w: %v", errAdminHashCheck, err)
 	}
 	for _, a := range accts {
 	for _, c := range root_config.PlaceholderPasswordCandidates() {
 		if bcrypt.CompareHashAndPassword([]byte(a.hash), []byte(c+a.salt)) == nil {
-		return fmt.Errorf("%w: account %q; rotate its password before starting", errCompromisedAdmin, a.user)
+		return fmt.Errorf("%w: account %q; run the offline recovery `catalog-api admin-reset-password` (with ADMIN_NEW_PASSWORD set) before starting", errCompromisedAdmin, a.user)
 		}
 	}
 	}

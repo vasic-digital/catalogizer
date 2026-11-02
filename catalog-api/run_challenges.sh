@@ -15,7 +15,7 @@ API_PORT=$(get_server_port)
 API_BASE="http://localhost:$API_PORT"
 
 # Get JWT token using jq (more robust)
-RESP=$(curl -s -X POST $API_BASE/api/v1/auth/login -H "Content-Type: application/json" -d "$LOGIN_BODY")
+RESP=$(curl -s -X POST $API_BASE/api/v1/auth/login -H "Content-Type: application/json" -d @- <<<"$LOGIN_BODY")
 TOKEN=$(echo "$RESP" | jq -r '.session_token')
 if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
     echo "Failed to extract token from response: $RESP"

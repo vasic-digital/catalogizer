@@ -10,6 +10,7 @@
   "test_cases": [
     {
       "id": "FQA-ATV-141",
+      "requires_env": ["ADMIN_PASSWORD"],
       "name": "Catalogizer Picks channel appears on TV home",
       "category": "functional",
       "priority": "critical",

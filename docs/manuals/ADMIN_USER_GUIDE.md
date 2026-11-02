@@ -43,6 +43,23 @@ Catalogizer uses two roles:
 
 ---
 
+### Recovering an install that still uses a published default password
+
+If startup stops with "still uses a published default password", the server
+refuses to run until that admin account is rotated. With the server stopped, run
+the offline subcommand (the new password is read from the environment by name and
+is never printed):
+
+```bash
+ADMIN_NEW_PASSWORD='<choose-a-strong-password>' ./catalog-api admin-reset-password
+# or a single named admin: ./catalog-api admin-reset-password <username>
+```
+
+It rotates every admin whose stored hash matches a published default (or the named
+admin) and prints the account names only. Then start the server normally.
+Release mode (`GIN_MODE=release`, the default in the production compose file)
+ignores `CATALOGIZER_ALLOW_INSECURE_DEFAULTS`.
+
 ## System Information Overview
 
 The admin dashboard (landing page of the admin panel) displays a real-time overview of the system:

@@ -21,7 +21,7 @@ while read id; do
     fi
     echo "=== Running challenge $COUNT: $id ==="
     # Get fresh token for each challenge
-    TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login -H "Content-Type: application/json" -d "$LOGIN_BODY" | jq -r '.session_token')
+    TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login -H "Content-Type: application/json" -d @- <<<"$LOGIN_BODY" | jq -r '.session_token')
     if [ -z "$TOKEN" ]; then
         echo "  FAILED to get token"
         exit 1

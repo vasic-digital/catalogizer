@@ -570,3 +570,9 @@ func TestAllowInsecureDefaults_RefusedInReleaseMode(t *testing.T) {
 	t.Setenv("GIN_MODE", "debug")
 	assert.True(t, AllowInsecureDefaults())
 }
+
+// M5: NFKC must fold fullwidth template delimiters (kills removal of the NFKC in looksLikeTemplate).
+func TestIsPlaceholderPassword_FullwidthTemplates(t *testing.T) {
+	assert.True(t, IsPlaceholderPassword("＜ADMIN_PASSWORD＞"))
+	assert.True(t, IsPlaceholderPassword("＄｛ADMIN_PASSWORD｝"))
+}
