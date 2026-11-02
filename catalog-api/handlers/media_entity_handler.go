@@ -1164,12 +1164,12 @@ func (h *MediaEntityHandler) UpdateUserMetadata(c *gin.Context) {
 		return
 	}
 
-	// Extract user ID from JWT context (default to 1 for now)
-	userID := int64(1)
-	if uid, exists := c.Get("user_id"); exists {
-		if uidInt, ok := uid.(int64); ok {
-			userID = uidInt
-		}
+	// The authenticated user (JWT middleware sets int, int64 or a string subject). Never default to another account: an
+	// unauthenticated request is refused instead of being written under user 1 (CAT-001).
+	userID, ok := userIDFromContext(c)
+	if !ok {
+		utils.SendErrorResponse(c, http.StatusUnauthorized, "Authentication required", nil)
+		return
 	}
 
 	um := &models.UserMetadata{
