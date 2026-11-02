@@ -22,9 +22,10 @@ type permAuth struct {
 	got map[string]string
 }
 
-var tokenUsers = map[string]int{"admin": 1, "plain": 2, "viewer": 3, "updater": 4, "manager": 5, "reporter": 6, "reportviewer": 7}
+var tokenUsers = map[string]int{"mgr2": 8, "admin": 1, "plain": 2, "viewer": 3, "updater": 4, "manager": 5, "reporter": 6, "reportviewer": 7}
 
 var userPerms = map[int][]string{
+	8: {models.PermissionUserManage, models.PermissionUserDelete, models.PermissionUserUpdate},
 	1: {models.PermissionSystemAdmin, models.PermissionUserView, models.PermissionUserUpdate, models.PermissionUserDelete,
 		models.PermissionUserManage, models.PermissionReportView, models.PermissionReportCreate, models.PermissionSystemConfig},
 	2: {},
@@ -73,10 +74,13 @@ type memStore struct {
 
 func newMemStore() *memStore {
 	s := &memStore{users: map[int]*models.User{}, roles: map[int]*models.Role{}}
-	for id := 1; id <= 5; id++ {
+	for id := 1; id <= 8; id++ {
 		s.users[id] = &models.User{ID: id, Username: "u" + strconv.Itoa(id), Email: "u" + strconv.Itoa(id) + "@x.io", RoleID: 2, IsActive: true}
 	}
 	s.roles[2] = &models.Role{ID: 2, Name: "user"}
+	s.roles[1] = &models.Role{ID: 1, Name: "admin", Permissions: models.Permissions{models.PermissionSystemAdmin}}
+	s.users[1].RoleID = 1 // admin caller
+	s.users[6].RoleID = 1 // a second admin: the escalation target
 	s.roles[9] = &models.Role{ID: 9, Name: "other"}
 	s.roles[7] = &models.Role{ID: 7, Name: "custom"}
 	return s
@@ -280,6 +284,9 @@ func newHandlersEnv() *authzEnv {
 	r.GET("/api/v1/errors/crashes/:id", WrapHTTPHandler(eh.GetCrashReport))
 	r.PUT("/api/v1/errors/crashes/:id/status", WrapHTTPHandler(eh.UpdateCrashStatus))
 	r.GET("/api/v1/configuration/wizard/step/:step_id", WrapHTTPHandler(ch.GetWizardStep))
+	r.POST("/api/v1/configuration/wizard/step/:step_id/save", WrapHTTPHandler(ch.SaveWizardProgress))
+	r.GET("/api/v1/configuration/wizard/progress", WrapHTTPHandler(ch.GetWizardProgress))
+	r.POST("/api/v1/configuration/wizard/complete", WrapHTTPHandler(ch.CompleteWizard))
 	e.r = r
 	return e
 }
@@ -305,7 +312,11 @@ func TestLogRoutes_Authorization(t *testing.T) {
 }
 
 // GetLogShare is deliberately token-gated (the share token is the capability):
-// it needs no user_id. Unknown token -> 404 is covered by the recLogSvc stub.
+// the handler itself needs no user_id. In production the whole /api/v1 group
+// sits behind jwtMiddleware.RequireAuth() (main.go, api.Use(...)), so callers
+// are authenticated there; this test mounts the handler WITHOUT that middleware
+// to prove the handler does not itself depend on user_id. Unknown token -> 404
+// comes from the recLogSvc stub.
 func TestGetLogShare_IsTokenGatedNotUserGated(t *testing.T) {
 	e := newHandlersEnv()
 	w := do(e, "", "GET", "/api/v1/logs/share/tok-abc", "")
@@ -342,3 +353,56 @@ func (s *memStore) Create(*models.User) (int, error) { return 0, nil }
 func (a *permAuth) HashPassword(p string) (string, error)   { return p, nil }
 func (a *permAuth) GenerateSecureToken(int) (string, error) { return "t", nil }
 func (a *permAuth) HashData(d string) string                { return d }
+
+// S1: a non-admin with user.manage must not act on an Admin user nor mint an
+// admin. Admin callers and plain-user targets are the positive controls.
+func TestUserManage_CannotTouchAdminsOrPromoteToAdmin(t *testing.T) {
+	body := `{"lock_until":"2030-01-01T00:00:00Z"}`
+	for _, tok := range []string{"manager", "mgr2"} {
+		t.Run(tok, func(t *testing.T) {
+			e := newUserRoleEnv()
+			assert.Equal(t, 403, do(e, tok, "POST", "/api/v1/users/6/reset-password", `{"new_password":"x"}`).Code)
+			assert.Equal(t, 403, do(e, tok, "POST", "/api/v1/users/6/lock", body).Code)
+			assert.Equal(t, 403, do(e, tok, "POST", "/api/v1/users/6/unlock", "").Code)
+			assert.Equal(t, 403, do(e, tok, "PUT", "/api/v1/users/6", `{"email":"pwn@x.io"}`).Code)
+			assert.Empty(t, e.got["ResetPassword"]+e.got["LockAccount"]+e.got["UnlockAccount"])
+			assert.Equal(t, "u6@x.io", e.store.users[6].Email)
+			// promotion: assigning the admin role to a plain user is refused
+			assert.Equal(t, 403, do(e, tok, "PUT", "/api/v1/users/3", `{"role_id":1}`).Code)
+			assert.Equal(t, 2, e.store.users[3].RoleID, "plain user must not be promoted")
+			// positive controls: a plain target and a non-admin role still work
+			assert.Equal(t, 200, do(e, tok, "POST", "/api/v1/users/3/unlock", "").Code)
+			assert.Equal(t, 200, do(e, tok, "PUT", "/api/v1/users/3", `{"role_id":9}`).Code)
+			assert.Equal(t, 9, e.store.users[3].RoleID)
+		})
+	}
+	t.Run("DeleteUser: user.delete without admin cannot delete an admin", func(t *testing.T) {
+		e := newUserRoleEnv()
+		assert.Equal(t, 403, do(e, "mgr2", "DELETE", "/api/v1/users/6", "").Code)
+		assert.Contains(t, e.store.users, 6)
+		assert.Equal(t, 204, do(e, "mgr2", "DELETE", "/api/v1/users/3", "").Code, "plain target still deletable")
+	})
+	t.Run("admin caller unchanged", func(t *testing.T) {
+		e := newUserRoleEnv()
+		assert.Equal(t, 200, do(e, "admin", "POST", "/api/v1/users/6/reset-password", `{"new_password":"x"}`).Code)
+		assert.Equal(t, 200, do(e, "admin", "POST", "/api/v1/users/6/lock", body).Code)
+		assert.Equal(t, 200, do(e, "admin", "POST", "/api/v1/users/6/unlock", "").Code)
+		assert.Equal(t, 200, do(e, "admin", "PUT", "/api/v1/users/3", `{"role_id":1}`).Code)
+		assert.Equal(t, 1, e.store.users[3].RoleID)
+		assert.Equal(t, 204, do(e, "admin", "DELETE", "/api/v1/users/6", "").Code)
+	})
+}
+
+// S2: wizard handlers must answer 401, not panic, when user_id is absent.
+func TestWizardHandlers_MissingUserIDIs401(t *testing.T) {
+	e := newHandlersEnv()
+	for _, x := range [][3]string{
+		{"POST", "/api/v1/configuration/wizard/step/welcome/save", `{}`},
+		{"GET", "/api/v1/configuration/wizard/progress", ""},
+		{"POST", "/api/v1/configuration/wizard/complete", `{}`},
+	} {
+		assert.Equal(t, 401, do(e, "", x[0], x[1], x[2]).Code, x[1])
+	}
+	assert.Equal(t, 200, do(e, "plain", "POST", "/api/v1/configuration/wizard/step/welcome/save", `{}`).Code)
+	assert.Equal(t, "welcome", e.got["SaveWizardProgress"])
+}

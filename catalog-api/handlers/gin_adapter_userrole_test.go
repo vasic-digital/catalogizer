@@ -123,15 +123,17 @@ func TestUserRoleHandlers_ResolveIDsOnVersionedRoutes(t *testing.T) {
 // hard-coded "/api/" prefix or by splitting / path.Base-ing the raw path
 // (breaks under /api/v1 and any group move). routedID (path_params.go) is the
 // single allowed reader of r.URL.Path.
-var rawPathParseRe = regexp.MustCompile(`(Trim\w*|Split\w*|Fields|path\.Base|path\.Dir|filepath\.Base|filepath\.Dir)\(\s*r\.URL\.Path`)
+var rawPathParseRe = regexp.MustCompile(`\.URL\.(Path|RawPath|EscapedPath\(\))`)
 
 func TestNoHardcodedAPIPrefixPathParsing(t *testing.T) {
 	// control needle: the regex must match synthetic positives and not a negative
 	for _, pos := range []string{
 		`strings.TrimPrefix(r.URL.Path, "/api/users/")`,
-		`strings.Split(r.URL.Path, "/")`,
-		`path.Base(r.URL.Path)`,
+		`strings.Split(req.URL.Path, "/")`,
+		`path.Base(httpReq.URL.Path)`,
 		`strings.Split(strings.Trim(r.URL.Path, "/"), "/")`,
+		`x := r.URL.RawPath`,
+		`y := q.URL.EscapedPath()`,
 	} {
 		require.True(t, rawPathParseRe.MatchString(pos), "regex must match %q", pos)
 	}
@@ -139,14 +141,19 @@ func TestNoHardcodedAPIPrefixPathParsing(t *testing.T) {
 	files := handlerFiles(t)
 	require.NotEmpty(t, files)
 	scanned := 0
+	sawAllowed := false
 	for _, f := range files {
-		if filepath.Base(f) == "path_params.go" {
-			continue // routedID: the one sanctioned fallback reader
-		}
 		b, err := os.ReadFile(f)
 		require.NoError(t, err)
+		if filepath.Base(f) == "path_params.go" {
+			// routedID is the one sanctioned reader; the scan must SEE it (positive needle)
+			require.True(t, rawPathParseRe.Match(b), "control needle: scan must match path_params.go")
+			sawAllowed = true
+			continue
+		}
 		scanned++
 		assert.False(t, rawPathParseRe.Match(b), "%s parses ids from the raw URL path; use the routed path param (routedID)", f)
 	}
+	assert.True(t, sawAllowed, "path_params.go must be among the scanned files")
 	assert.Greater(t, scanned, 10)
 }

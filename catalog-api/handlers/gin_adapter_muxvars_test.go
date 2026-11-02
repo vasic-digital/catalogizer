@@ -367,6 +367,7 @@ func TestWrappedHandlersReadOnlyRoutePatternMuxVars(t *testing.T) {
 	covered := coverageKeys()
 	seen := 0
 	for _, rt := range routes {
+		assert.False(t, strings.HasPrefix(rt.key, "."), "route %s %q: handler receiver type cannot be resolved (%s)", rt.verb, rt.pattern, rt.key)
 		keys := readers[rt.key]
 		if len(keys) == 0 {
 			continue
@@ -412,6 +413,7 @@ func f() {
 	g.POST("/b/:x", mw1, mw2, wrap(h.B))
 	api.Group("/c").DELETE("/:k", wrap(h.C))
 	g.GET("/plain", h.NotWrapped)
+	g.GET("/u/:id", wrap(unknownVar.D))
 }`
 	require.NoError(t, os.WriteFile(f, []byte(src), 0o600))
 	got := wrappedRoutes(t, f)
@@ -419,6 +421,7 @@ func f() {
 		{"GET", "/v1/g/a/:id", "FooHandler.A"},
 		{"POST", "/v1/g/b/:x", "FooHandler.B"},
 		{"DELETE", "/v1/c/:k", "FooHandler.C"},
+		{"GET", "/v1/g/u/:id", ".D"}, // unresolved receiver: the real gate FAILs on a "." key
 	}, got)
 }
 

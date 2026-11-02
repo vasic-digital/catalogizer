@@ -477,6 +477,7 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 				authService.On("GetCurrentUser", "valid-token").Return(authUser, nil)
 				authService.On("CheckPermission", 1, models.PermissionUserUpdate).Return(true, nil)
 				authService.On("CheckPermission", 1, models.PermissionUserManage).Return(true, nil)
+				authService.On("CheckPermission", 1, models.PermissionSystemAdmin).Return(true, nil)
 
 				existingUser := &models.User{
 					ID:       2,
