@@ -262,6 +262,9 @@ A=(podman run --rm
    -v "$PWD:/src:ro"
    --workdir /src   # MUT:workdir
 )
+# E5: forward ADMIN_PASSWORD by NAME only (`-e NAME` makes podman copy the value from the launcher environment; the value never
+# appears in argv, in print mode or in logs). Forwarded only when set, so there is no default value.
+[ -z "${ADMIN_PASSWORD+x}" ] || A+=(-e ADMIN_PASSWORD)
 [ -z "$RW_BIND" ] || A+=(-v "$RW_BIND")
 A+=(-v "$OUT:/out:rw")
 [ "$NET" != none ] || A+=(--network=none)

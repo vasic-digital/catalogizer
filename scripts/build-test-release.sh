@@ -7,7 +7,7 @@
 
 set -euo pipefail
 
-PROJECT_DIR="/project"
+PROJECT_DIR="${PROJECT_DIR:-/project}"
 RELEASES_DIR="$PROJECT_DIR/releases"
 REPORTS_DIR="$PROJECT_DIR/reports"
 SCRIPTS_DIR="$PROJECT_DIR/scripts"
@@ -40,12 +40,12 @@ record_phase() {
     local name="$1"
     local status="$2"
     PHASE_RESULTS+=("$status:$name")
-    ((TOTAL_PHASES++))
+    TOTAL_PHASES=$((TOTAL_PHASES + 1))
     if [ "$status" = "PASS" ]; then
-        ((PASSED_PHASES++))
+        PASSED_PHASES=$((PASSED_PHASES + 1))
         log_info "Phase '$name' completed successfully"
     else
-        ((FAILED_PHASES++))
+        FAILED_PHASES=$((FAILED_PHASES + 1))
         log_error "Phase '$name' FAILED"
     fi
 }
@@ -192,22 +192,34 @@ phase_4_web_frontend() {
     npm run lint 2>&1 | tee "$REPORTS_DIR/web-lint.log" || true
     npm run type-check 2>&1 | tee "$REPORTS_DIR/web-typecheck.log" || true
 
+    # E4: a failing step fails the phase; it is never swallowed and never reported PASS.
+    local phase_rc=0
+
     log_step "Running unit tests..."
     if npm run test -- --run 2>&1 | tee "$REPORTS_DIR/web-test.log"; then
         log_info "Web unit tests passed"
     else
-        log_warn "Web unit tests had failures"
+        log_error "Web unit tests FAILED"
+        phase_rc=1
     fi
 
     log_step "Building production bundle..."
-    npm run build
+    if ! npm run build; then
+        log_error "Web production build FAILED"
+        record_phase "Web Frontend" "FAIL"
+        return 1
+    fi
 
     # Copy web build to releases
     mkdir -p "$RELEASES_DIR/linux/catalog-web"
     cp -r dist/* "$RELEASES_DIR/linux/catalog-web/"
 
-    # E2E tests (optional, requires running server)
-    if [ "$SKIP_E2E" != "true" ]; then
+    # E2E tests (optional, requires running server and ADMIN_PASSWORD from the environment)
+    if [ "$SKIP_E2E" = "true" ]; then
+        log_warn "E2E tests skipped (SKIP_E2E_TESTS=true)"
+    elif [ -z "${ADMIN_PASSWORD:-}" ]; then
+        log_warn "E2E tests SKIPPED reason=credentials_absent (ADMIN_PASSWORD is not set; E2E not run, not counted as passed)"
+    else
         log_step "Running Playwright E2E tests..."
 
         # Start API server in background for E2E
@@ -221,13 +233,18 @@ phase_4_web_frontend() {
         local web_pid=$!
         sleep 10
 
-        PLAYWRIGHT_BASE_URL="http://localhost:5173" xvfb-run npx playwright test --project=chromium 2>&1 | tee "$REPORTS_DIR/web-e2e.log" || true
+        if ! PLAYWRIGHT_BASE_URL="http://localhost:5173" xvfb-run npx playwright test --project=chromium 2>&1 | tee "$REPORTS_DIR/web-e2e.log"; then
+            log_error "Playwright E2E tests FAILED"
+            phase_rc=1
+        fi
 
         kill $api_pid $web_pid 2>/dev/null || true
-    else
-        log_warn "E2E tests skipped (SKIP_E2E_TESTS=true)"
     fi
 
+    if [ "$phase_rc" -ne 0 ]; then
+        record_phase "Web Frontend" "FAIL"
+        return 1
+    fi
     log_info "Web frontend built successfully"
     record_phase "Web Frontend" "PASS"
 }
@@ -644,4 +661,6 @@ main() {
     fi
 }
 
-main "$@"
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+    main "$@"
+fi

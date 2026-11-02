@@ -117,10 +117,14 @@ run_e2e_tests() {
     
     log_info "Running Playwright E2E tests..."
     
-    if npm run test:e2e > "../${REPORTS_DIR}/${TIMESTAMP}/e2e-tests.log" 2>&1; then
+    if [ -z "${ADMIN_PASSWORD:-}" ]; then
+        # E4: the specs require ADMIN_PASSWORD from the environment; without it they cannot run. Honest SKIP, never a PASS.
+        log_warning "E2E tests SKIPPED reason=credentials_absent (ADMIN_PASSWORD is not set; not counted as passed)"
+    elif npm run test:e2e > "../${REPORTS_DIR}/${TIMESTAMP}/e2e-tests.log" 2>&1; then
         log_success "E2E tests passed"
     else
-        log_warning "Some E2E tests failed or not configured"
+        log_error "E2E tests failed"
+        OVERALL_EXIT_CODE=1
     fi
     
     cd ..
@@ -370,4 +374,6 @@ main() {
 }
 
 # Run main function
-main "$@"
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+    main "$@"
+fi
