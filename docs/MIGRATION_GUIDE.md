@@ -317,7 +317,7 @@ Environment variables always override values from `config.json` and `.env` files
 
 1. Back up the database (see [Disaster Recovery](DISASTER_RECOVERY.md))
 2. Note the current version: `curl -s http://localhost:8080/health | jq .version`
-3. Review the [API Changelog](api/CHANGELOG.md) for breaking changes
+3. Review the [API Endpoints](api/API_ENDPOINTS.md) for breaking changes
 4. Test the upgrade in a staging environment
 
 ### Upgrade Steps

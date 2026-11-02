@@ -1,6 +1,8 @@
-# API Changelog
+# API Endpoint Catalog
 
-This document catalogs all REST API endpoints exposed by the Catalogizer backend (`catalog-api`). Endpoints are grouped by domain and listed with their HTTP method, path, and description. All authenticated endpoints require a valid JWT token in the `Authorization: Bearer <token>` header.
+> Renamed from `CHANGELOG.md` (it never was a changelog). This is a condensed method/path catalog (172 table rows at the time of writing) and may lag the router; the authoritative sources are [`openapi.yaml`](openapi.yaml) and [`API_DOCUMENTATION.md`](API_DOCUMENTATION.md) (247 operations, kept in sync with `catalog-api/main.go` by `scripts/check_api_route_vs_spec.py`).
+
+This document catalogs REST API endpoints exposed by the Catalogizer backend (`catalog-api`). Endpoints are grouped by domain and listed with their HTTP method, path, and description. All authenticated endpoints require a valid JWT token in the `Authorization: Bearer <token>` header.
 
 ---
 
@@ -68,7 +70,7 @@ Rate limited to 5 requests per minute per user. No JWT required for login/regist
 
 ## Catalog Browsing
 
-All endpoints below require JWT authentication and are rate limited to 100 requests per minute.
+All endpoints below require JWT authentication and are rate limited (2000 requests per minute per user; login/register 30 per minute; see `API_DOCUMENTATION.md`).
 
 | Method | Path | Description |
 |--------|------|-------------|
