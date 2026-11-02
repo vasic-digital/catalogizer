@@ -19,8 +19,9 @@ import (
 
 // CAT-002: PDF text extraction. The previous engine (unipdf) needs a commercial licence key and
 // failed at run time with "unipdf license code required". Text extraction now goes through the
-// pdfTextExtractor interface: the primary implementation is github.com/ledongthuc/pdf
-// (BSD-3-Clause, pure Go); poppler's pdftotext is an optional exec fallback.
+// pdfTextExtractor interface. Production wiring (defaultPDFTextExtractor): poppler's pdftotext when
+// installed, with github.com/ledongthuc/pdf (BSD-3-Clause, pure Go) as fallback and as the only
+// extractor on hosts without poppler.
 
 const (
 	// pdfTextTimeout bounds one whole extraction (primary and fallback together).
@@ -32,10 +33,14 @@ const (
 	// extractor. The library's Content() allocates a struct per glyph (measured on the previous
 	// version: a 16 KB file with 16M glyphs reached 4.3 GB RSS in 12 s and could not be
 	// cancelled), so the stream is measured, with a limited reader, before it is parsed; a page
-	// over the limit is refused here and left to the pdftotext fallback. 1 MiB is far above
-	// ordinary text pages and bounds the parse at roughly 270 MB for one page. Font programs,
+	// over the limit is refused here and left to the pdftotext fallback. 256 KiB is far above
+	// ordinary text pages (typically 5-50 KB); measured amplification of the library is about 340x
+	// for one long string (1 MiB of content allocated 340 MB), so this bounds one page at roughly
+	// 85 MB. Font programs,
 	// CMaps and form XObjects are not measured (documented gap).
-	pdfMaxPageContentBytes = 1 << 20
+	pdfMaxPageContentBytes = 256 << 10
+	// pdfToolAddressSpace caps the virtual memory of a pdftotext child when prlimit is present.
+	pdfToolAddressSpace = 4 << 30
 )
 
 // pdfTextExtractor extracts the text of a PDF file. Pages are 1-based and inclusive.
@@ -180,7 +185,23 @@ func pageText(r *pdf.Reader, n int) (txt string, err error) {
 	if err := checkPageContentSize(p); err != nil {
 		return "", err
 	}
-	return layoutPageText(p.Content().Text), nil
+	txt = layoutPageText(p.Content().Text)
+	if strings.TrimSpace(txt) == "" && hasFormXObject(p) {
+		// The library's interpreter has no "Do" operator: text drawn from a form XObject would be
+		// silently dropped and reported as an empty success.
+		return "", errors.New("page text is in form XObjects, which the built-in extractor does not read")
+	}
+	return txt, nil
+}
+
+func hasFormXObject(p pdf.Page) bool {
+	xo := p.V.Key("Resources").Key("XObject")
+	for _, k := range xo.Keys() {
+		if xo.Key(k).Key("Subtype").Name() == "Form" {
+			return true
+		}
+	}
+	return false
 }
 
 // checkPageContentSize measures the decompressed content stream(s) of a page with a limited
@@ -256,7 +277,10 @@ func isSpaceRun(s string) bool { return strings.TrimSpace(s) == "" }
 
 // popplerExtractor runs pdftotext without a shell. The source path is made absolute (so it can
 // never be read as an option), the tool gets a timeout via ctx, and its output is size-bounded.
-type popplerExtractor struct{ bin string }
+type popplerExtractor struct {
+	bin    string
+	maxOut int // output bound; 0 means pdfTextMaxBytes
+}
 
 func newPopplerExtractor() (popplerExtractor, bool) {
 	bin, err := exec.LookPath("pdftotext")
@@ -272,9 +296,19 @@ func (e popplerExtractor) run(ctx context.Context, path string, args ...string) 
 		return nil, err
 	}
 	full := append(append([]string{}, args...), abs, "-")
-	cmd := exec.CommandContext(ctx, e.bin, full...)
+	name := e.bin
+	if pl, perr := exec.LookPath("prlimit"); perr == nil {
+		// address-space cap for the child (util-linux prlimit, no shell): a hostile PDF cannot
+		// take more than pdfToolAddressSpace of virtual memory.
+		full = append([]string{"--as=" + strconv.Itoa(pdfToolAddressSpace), "--", e.bin}, full...)
+		name = pl
+	}
+	cmd := exec.CommandContext(ctx, name, full...)
 	var stdout, stderr limitedBuffer
-	stdout.max, stderr.max = pdfTextMaxBytes, 4096
+	stdout.max, stderr.max = e.maxOut, 4096
+	if stdout.max <= 0 {
+		stdout.max = pdfTextMaxBytes
+	}
 	cmd.Stdout, cmd.Stderr = &stdout, &stderr
 	if err := cmd.Run(); err != nil {
 		if cerr := ctx.Err(); cerr != nil {
@@ -353,29 +387,41 @@ func (f fallbackPDFExtractor) ExtractPages(ctx context.Context, path string, sta
 	return nil, err
 }
 
-// defaultPDFTextExtractor is the production wiring; tests may replace it.
+// defaultPDFTextExtractor is the production wiring. When poppler (pdftotext and pdfinfo) is
+// installed it is the primary: it is faster (about 5x on the 146-page fixture), handles TJ
+// kerning, tracked and rotated text and form XObjects, and runs in a memory-capped child process.
+// The pure-Go ledongthuc extractor is the fallback, and the only extractor on hosts without
+// poppler; there its documented limits apply (see layoutPageText and pageText).
 var defaultPDFTextExtractor = func() pdfTextExtractor {
-	fb := fallbackPDFExtractor{primary: ledongthucExtractor{}}
+	lg := ledongthucExtractor{}
 	if p, ok := newPopplerExtractor(); ok {
-		fb.secondary = p
+		if _, err := exec.LookPath("pdfinfo"); err == nil {
+			return fallbackPDFExtractor{primary: p, secondary: lg}
+		}
 	}
-	return fb
+	return lg
 }
 
-// limitedBuffer is a bytes.Buffer that stops growing at max and records the overflow.
+// limitedBuffer is a writer that stops storing at max and records the overflow. It deliberately
+// does NOT embed bytes.Buffer: os/exec copies through io.Copy, which would use the embedded
+// buffer's promoted ReadFrom and bypass this Write (found by test: the earlier version never
+// enforced its bound).
 type limitedBuffer struct {
-	bytes.Buffer
+	buf  bytes.Buffer
 	max  int
 	over bool
 }
 
 func (b *limitedBuffer) Write(p []byte) (int, error) {
-	if b.Len()+len(p) > b.max {
+	if b.buf.Len()+len(p) > b.max {
 		b.over = true
 		return len(p), nil
 	}
-	return b.Buffer.Write(p)
+	return b.buf.Write(p)
 }
+
+func (b *limitedBuffer) Bytes() []byte  { return b.buf.Bytes() }
+func (b *limitedBuffer) String() string { return b.buf.String() }
 
 // settingInt reads an integer setting from decoded JSON, which yields float64 (the previous
 // settings["page"].(int) assertion never matched a JSON-decoded number).

@@ -305,12 +305,18 @@ func (s *ConversionService) convertPDFToImage(job *models.ConversionJob, format 
 	return nil
 }
 
-// convertPDFToText converts PDF to plain text using unipdf
+// convertPDFToText converts PDF to plain text through the pdfTextExtractor interface
 func (s *ConversionService) convertPDFToText(job *models.ConversionJob) error {
-	// CAT-002: text extraction goes through the pdfTextExtractor interface (ledongthuc/pdf, with an
-	// optional pdftotext fallback); unipdf needed a commercial licence key at run time.
+	// CAT-002: text extraction goes through the pdfTextExtractor interface (pdftotext when installed,
+	// otherwise / on failure the pure-Go ledongthuc/pdf); the former unipdf engine needed a
+	// commercial licence key at run time.
 	ctx, cancel := context.WithTimeout(context.Background(), pdfTextTimeout)
 	defer cancel()
+	if f, err := os.Open(job.SourcePath); err != nil {
+		return fmt.Errorf("failed to open PDF: %w", err)
+	} else {
+		f.Close()
+	}
 	ex := defaultPDFTextExtractor()
 
 	totalPages, err := ex.NumPages(ctx, job.SourcePath)
