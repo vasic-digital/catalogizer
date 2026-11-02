@@ -10,9 +10,14 @@ func diskUsageOf(path string) (total, used, avail int64, ok bool) {
 	if err := syscall.Statfs(path, &st); err != nil {
 		return 0, 0, 0, false
 	}
-	bsize := uint64(st.Bsize)
-	t := uint64(st.Blocks) * bsize
-	f := uint64(st.Bfree) * bsize
-	a := uint64(st.Bavail) * bsize
-	return int64(t), int64(t - f), int64(a), true
+	total, used, avail = statfsFigures(uint64(st.Blocks), uint64(st.Bfree), uint64(st.Bavail), uint64(st.Bsize))
+	return total, used, avail, true
+}
+
+// statfsFigures converts statfs block counts to bytes: used is total minus ALL free blocks, avail is what an unprivileged user may use (Bavail).
+func statfsFigures(blocks, bfree, bavail, bsize uint64) (total, used, avail int64) {
+	t := blocks * bsize
+	f := bfree * bsize
+	a := bavail * bsize
+	return int64(t), int64(t - f), int64(a)
 }

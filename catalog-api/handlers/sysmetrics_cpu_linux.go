@@ -14,7 +14,12 @@ func readCPUTimes() (idle, total uint64, ok bool) {
 	if err != nil {
 		return 0, 0, false
 	}
-	line := strings.SplitN(string(b), "\n", 2)[0]
+	return parseCPUStat(string(b))
+}
+
+// parseCPUStat parses the aggregate "cpu" line of /proc/stat; idle is idle + iowait.
+func parseCPUStat(content string) (idle, total uint64, ok bool) {
+	line := strings.SplitN(content, "\n", 2)[0]
 	f := strings.Fields(line)
 	if len(f) < 5 || f[0] != "cpu" {
 		return 0, 0, false

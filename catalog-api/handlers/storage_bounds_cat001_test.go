@@ -116,3 +116,36 @@ func TestCAT001_F2_LocalClientHonoursListLimit(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, got, 5)
 }
+
+// CAT-001 review F11 (M1): a disabled root is never listed.
+func TestCAT001_F11_DisabledRootListIs409(t *testing.T) {
+	base := t.TempDir()
+	h := statusHarness(t)
+	t.Setenv(filesystem.AllowedLocalBasesEnv, base)
+	h.r.GET("/storage/list/*path", h.handle.ListStoragePath)
+	code, body := h.do("POST", "/storage/roots", map[string]interface{}{"name": "d", "protocol": "local", "path": base})
+	require.Equal(t, http.StatusCreated, code, "%v", body)
+	_, err := h.db.Exec(`UPDATE storage_roots SET enabled = 0 WHERE name = 'd'`)
+	require.NoError(t, err)
+	code, out := h.do("GET", "/storage/list/?storage_id="+idOf(body), nil)
+	assert.Equal(t, http.StatusConflict, code, "%v", out)
+}
+
+// CAT-001 review F11 (M13): List must disconnect the client it connected (bounded wait, no hang on a mutant).
+func TestCAT001_F11_ListDisconnects(t *testing.T) {
+	base := t.TempDir()
+	h := statusHarness(t)
+	t.Setenv(filesystem.AllowedLocalBasesEnv, base)
+	h.r.GET("/storage/list/*path", h.handle.ListStoragePath)
+	code, body := h.do("POST", "/storage/roots", map[string]interface{}{"name": "l", "protocol": "local", "path": base})
+	require.Equal(t, http.StatusCreated, code, "%v", body)
+	oc := &observedClient{disconnected: make(chan struct{})}
+	h.handle.clientFactory = observedFactory{oc}
+	code, out := h.do("GET", "/storage/list/?storage_id="+idOf(body), nil)
+	require.Equal(t, http.StatusOK, code, "%v", out)
+	select {
+	case <-oc.disconnected:
+	case <-time.After(5 * time.Second):
+		t.Fatal("ListStoragePath never disconnected its client")
+	}
+}
