@@ -1,6 +1,7 @@
 package services
 
 import (
+	"net"
 	"os"
 	"testing"
 	"time"
@@ -1002,8 +1003,8 @@ func TestConfigurationWizardService_TestNetworkDatabaseConnection(t *testing.T) 
 
 	t.Run("all required fields present", func(t *testing.T) {
 		config := map[string]interface{}{
-			"db_host":     "localhost",
-			"db_port":     5432,
+			"db_host":     "127.0.0.1",
+			"db_port":     listeningPort(t),
 			"db_name":     "testdb",
 			"db_username": "user",
 			"db_password": "pass",
@@ -1090,8 +1091,8 @@ func TestConfigurationWizardService_TestDatabaseConnection(t *testing.T) {
 	t.Run("mysql type", func(t *testing.T) {
 		config := map[string]interface{}{
 			"db_type":     "mysql",
-			"db_host":     "localhost",
-			"db_port":     3306,
+			"db_host":     "127.0.0.1",
+			"db_port":     listeningPort(t),
 			"db_name":     "testdb",
 			"db_username": "user",
 			"db_password": "pass",
@@ -1103,8 +1104,8 @@ func TestConfigurationWizardService_TestDatabaseConnection(t *testing.T) {
 	t.Run("postgresql type", func(t *testing.T) {
 		config := map[string]interface{}{
 			"db_type":     "postgresql",
-			"db_host":     "localhost",
-			"db_port":     5432,
+			"db_host":     "127.0.0.1",
+			"db_port":     listeningPort(t),
 			"db_name":     "testdb",
 			"db_username": "user",
 			"db_password": "pass",
@@ -1533,4 +1534,15 @@ func TestConfigurationWizardService_GetSession_CurrentSession(t *testing.T) {
 	result, err := service.getSession("test-session-123")
 	assert.NoError(t, err)
 	assert.Equal(t, session, result)
+}
+
+// listeningPort opens a real TCP listener for the lifetime of the test and returns its port (CAT-001: the network database check dials).
+func listeningPort(t *testing.T) int {
+	t.Helper()
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { ln.Close() })
+	return ln.Addr().(*net.TCPAddr).Port
 }

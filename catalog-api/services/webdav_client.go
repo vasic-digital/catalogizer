@@ -1,9 +1,11 @@
 package services
 
 import (
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -223,13 +225,58 @@ func (c *WebDAVClient) GetFileSize(remotePath string) (int64, error) {
 	return info.Size(), nil
 }
 
+// ErrWebDAVQuotaUnavailable is returned by GetQuota when the server does not report RFC 4331 quota properties.
+var ErrWebDAVQuotaUnavailable = errors.New("WebDAV server does not report quota")
+
+// GetQuota asks the server for its RFC 4331 quota properties (PROPFIND, Depth 0). A server that reports none yields
+// ErrWebDAVQuotaUnavailable: "no quota information" is never presented as "unlimited" (CAT-001).
 func (c *WebDAVClient) GetQuota() (*WebDAVQuota, error) {
-	// This would require parsing PROPFIND response for quota information
-	// For now, return a placeholder
-	return &WebDAVQuota{
-		Used:      0,
-		Available: -1, // Unlimited
-	}, nil
+	body := `<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:"><d:prop><d:quota-used-bytes/><d:quota-available-bytes/></d:prop></d:propfind>`
+	req, err := http.NewRequest("PROPFIND", c.baseURL, strings.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("quota request: %w", err)
+	}
+	req.SetBasicAuth(c.username, c.password)
+	req.Header.Set("Depth", "0")
+	req.Header.Set("Content-Type", "application/xml")
+	httpClient := &http.Client{Timeout: 30 * time.Second}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("quota request: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusMultiStatus {
+		return nil, fmt.Errorf("quota request: unexpected status %s", resp.Status)
+	}
+	var ms struct {
+		Responses []struct {
+			Propstats []struct {
+				Status string `xml:"status"`
+				Prop   struct {
+					Used      *int64 `xml:"quota-used-bytes"`
+					Available *int64 `xml:"quota-available-bytes"`
+				} `xml:"prop"`
+			} `xml:"propstat"`
+		} `xml:"response"`
+	}
+	if err := xml.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&ms); err != nil {
+		return nil, fmt.Errorf("quota response: %w", err)
+	}
+	for _, r := range ms.Responses {
+		for _, ps := range r.Propstats {
+			if ps.Prop.Used != nil || ps.Prop.Available != nil {
+				q := &WebDAVQuota{Used: 0, Available: -1}
+				if ps.Prop.Used != nil {
+					q.Used = *ps.Prop.Used
+				}
+				if ps.Prop.Available != nil {
+					q.Available = *ps.Prop.Available
+				}
+				return q, nil
+			}
+		}
+	}
+	return nil, ErrWebDAVQuotaUnavailable
 }
 
 type WebDAVQuota struct {

@@ -1031,11 +1031,11 @@ func TestSyncService_CreateSyncEndpoint_WithDB(t *testing.T) {
 			RemotePath:    "/",
 		}
 
+		// CAT-001: there is no connectivity test (nor a runnable sync) for cloud storage; creation must not pretend it was reachable.
 		got, err := service.CreateSyncEndpoint(2, endpoint)
-		require.NoError(t, err)
-		assert.NotNil(t, got)
-		assert.Equal(t, 2, got.UserID)
-		assert.Equal(t, models.SyncTypeCloudStorage, got.Type)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "connection test")
+		assert.Nil(t, got)
 	})
 
 	t.Run("validation failure missing name", func(t *testing.T) {
