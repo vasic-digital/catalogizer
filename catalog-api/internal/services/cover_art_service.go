@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -216,15 +217,22 @@ func (s *CoverArtService) SearchCoverArt(ctx context.Context, request *CoverArtS
 	}
 
 	// Search each provider
+	var providerErrs []error
+	succeeded := 0
 	for _, provider := range providers {
 		results, err := s.searchProvider(ctx, provider, request)
 		if err != nil {
 			s.logger.Warn("Provider search failed",
 				zap.String("provider", string(provider)),
 				zap.Error(err))
+			providerErrs = append(providerErrs, err)
 			continue
 		}
+		succeeded++
 		allResults = append(allResults, results...)
+	}
+	if succeeded == 0 && len(providerErrs) > 0 {
+		return nil, fmt.Errorf("cover art search: every provider failed: %w", errors.Join(providerErrs...))
 	}
 
 	// Sort by match score and quality
@@ -477,70 +485,20 @@ func (s *CoverArtService) searchProvider(ctx context.Context, provider CoverArtP
 	}
 }
 
+// ErrCoverArtProviderNotImplemented marks cover-art providers with no real API
+// client. They replaced fabricated results pointing at sample image URLs.
+var ErrCoverArtProviderNotImplemented = errors.New("cover art provider client not implemented")
+
 func (s *CoverArtService) searchMusicBrainz(ctx context.Context, request *CoverArtSearchRequest) ([]CoverArtSearchResult, error) {
-	s.logger.Debug("Searching MusicBrainz",
-		zap.String("artist", request.Artist),
-		zap.String("album", getStringValue(request.Album)))
-
-	// Mock implementation for demonstration
-	result := CoverArtSearchResult{
-		ID:         "mb_1",
-		Provider:   CoverArtProviderMusicBrainz,
-		Title:      request.Title,
-		Artist:     request.Artist,
-		Album:      request.Album,
-		URL:        "https://coverartarchive.org/sample/front.jpg",
-		Width:      500,
-		Height:     500,
-		Format:     "jpeg",
-		Quality:    QualityHigh,
-		MatchScore: 0.9,
-		Source:     "coverartarchive.org",
-	}
-
-	return []CoverArtSearchResult{result}, nil
+	return nil, fmt.Errorf("%w: %s", ErrCoverArtProviderNotImplemented, CoverArtProviderMusicBrainz)
 }
 
 func (s *CoverArtService) searchLastFM(ctx context.Context, request *CoverArtSearchRequest) ([]CoverArtSearchResult, error) {
-	s.logger.Debug("Searching Last.FM")
-
-	result := CoverArtSearchResult{
-		ID:         "lastfm_1",
-		Provider:   CoverArtProviderLastFM,
-		Title:      request.Title,
-		Artist:     request.Artist,
-		Album:      request.Album,
-		URL:        "https://lastfm-img2.akamaized.net/sample.jpg",
-		Width:      300,
-		Height:     300,
-		Format:     "jpeg",
-		Quality:    QualityMedium,
-		MatchScore: 0.85,
-		Source:     "last.fm",
-	}
-
-	return []CoverArtSearchResult{result}, nil
+	return nil, fmt.Errorf("%w: %s", ErrCoverArtProviderNotImplemented, CoverArtProviderLastFM)
 }
 
 func (s *CoverArtService) searchITunes(ctx context.Context, request *CoverArtSearchRequest) ([]CoverArtSearchResult, error) {
-	s.logger.Debug("Searching iTunes")
-
-	result := CoverArtSearchResult{
-		ID:         "itunes_1",
-		Provider:   CoverArtProviderITunes,
-		Title:      request.Title,
-		Artist:     request.Artist,
-		Album:      request.Album,
-		URL:        "https://is1-ssl.mzstatic.com/sample.jpg",
-		Width:      600,
-		Height:     600,
-		Format:     "jpeg",
-		Quality:    QualityHigh,
-		MatchScore: 0.92,
-		Source:     "itunes.apple.com",
-	}
-
-	return []CoverArtSearchResult{result}, nil
+	return nil, fmt.Errorf("%w: %s", ErrCoverArtProviderNotImplemented, CoverArtProviderITunes)
 }
 
 // Helper functions
@@ -1591,80 +1549,80 @@ type CoverURLRequest struct {
 // The design mimics streaming-service placeholder cards with rich gradients,
 // subtle texture, and large type-friendly icons.
 func GeneratePlaceholderSVG(mediaType string) []byte {
-    gradients := map[string][2]string{
-        "movie":        {"#1a1a2e", "#16213e"},
-        "tv_show":      {"#2d132c", "#801336"},
-        "tv_season":    {"#1b1b2f", "#4a4e69"},
-        "tv_episode":   {"#1b1b2f", "#4a4e69"},
-        "music_artist": {"#0f3460", "#533483"},
-        "music_album":  {"#1a1a2e", "#16213e"},
-        "song":         {"#0f3460", "#e94560"},
-        "game":         {"#1a1a2e", "#0f3460"},
-        "software":     {"#2c3e50", "#3498db"},
-        "book":         {"#2d3436", "#636e72"},
-        "comic":        {"#2d132c", "#c0392b"},
-    }
+	gradients := map[string][2]string{
+		"movie":        {"#1a1a2e", "#16213e"},
+		"tv_show":      {"#2d132c", "#801336"},
+		"tv_season":    {"#1b1b2f", "#4a4e69"},
+		"tv_episode":   {"#1b1b2f", "#4a4e69"},
+		"music_artist": {"#0f3460", "#533483"},
+		"music_album":  {"#1a1a2e", "#16213e"},
+		"song":         {"#0f3460", "#e94560"},
+		"game":         {"#1a1a2e", "#0f3460"},
+		"software":     {"#2c3e50", "#3498db"},
+		"book":         {"#2d3436", "#636e72"},
+		"comic":        {"#2d132c", "#c0392b"},
+	}
 
-    accentColors := map[string]string{
-        "movie":        "#e94560",
-        "tv_show":      "#ff6b6b",
-        "tv_season":    "#74b9ff",
-        "tv_episode":   "#74b9ff",
-        "music_artist": "#a29bfe",
-        "music_album":  "#fd79a8",
-        "song":         "#00b894",
-        "game":         "#f39c12",
-        "software":     "#00cec9",
-        "book":         "#fab1a0",
-        "comic":        "#e17055",
-    }
+	accentColors := map[string]string{
+		"movie":        "#e94560",
+		"tv_show":      "#ff6b6b",
+		"tv_season":    "#74b9ff",
+		"tv_episode":   "#74b9ff",
+		"music_artist": "#a29bfe",
+		"music_album":  "#fd79a8",
+		"song":         "#00b894",
+		"game":         "#f39c12",
+		"software":     "#00cec9",
+		"book":         "#fab1a0",
+		"comic":        "#e17055",
+	}
 
-    icons := map[string]string{
-        "movie":        "&#127916;",
-        "tv_show":      "&#128250;",
-        "tv_season":    "&#128250;",
-        "tv_episode":   "&#128250;",
-        "music_artist": "&#127908;",
-        "music_album":  "&#128191;",
-        "song":         "&#127925;",
-        "game":         "&#127918;",
-        "software":     "&#128187;",
-        "book":         "&#128214;",
-        "comic":        "&#128214;",
-    }
+	icons := map[string]string{
+		"movie":        "&#127916;",
+		"tv_show":      "&#128250;",
+		"tv_season":    "&#128250;",
+		"tv_episode":   "&#128250;",
+		"music_artist": "&#127908;",
+		"music_album":  "&#128191;",
+		"song":         "&#127925;",
+		"game":         "&#127918;",
+		"software":     "&#128187;",
+		"book":         "&#128214;",
+		"comic":        "&#128214;",
+	}
 
-    labels := map[string]string{
-        "movie":        "MOVIE",
-        "tv_show":      "TV SHOW",
-        "tv_season":    "SEASON",
-        "tv_episode":   "EPISODE",
-        "music_artist": "ARTIST",
-        "music_album":  "ALBUM",
-        "song":         "SONG",
-        "game":         "GAME",
-        "software":     "SOFTWARE",
-        "book":         "BOOK",
-        "comic":        "COMIC",
-    }
+	labels := map[string]string{
+		"movie":        "MOVIE",
+		"tv_show":      "TV SHOW",
+		"tv_season":    "SEASON",
+		"tv_episode":   "EPISODE",
+		"music_artist": "ARTIST",
+		"music_album":  "ALBUM",
+		"song":         "SONG",
+		"game":         "GAME",
+		"software":     "SOFTWARE",
+		"book":         "BOOK",
+		"comic":        "COMIC",
+	}
 
-    g, ok := gradients[mediaType]
-    if !ok {
-        g = [2]string{"#1a1a2e", "#16213e"}
-    }
-    accent, ok := accentColors[mediaType]
-    if !ok {
-        accent = "#e94560"
-    }
-    icon, ok := icons[mediaType]
-    if !ok {
-        icon = "&#128196;"
-    }
-    label, ok := labels[mediaType]
-    if !ok {
-        label = strings.ReplaceAll(strings.ToUpper(mediaType), "_", " ")
-    }
+	g, ok := gradients[mediaType]
+	if !ok {
+		g = [2]string{"#1a1a2e", "#16213e"}
+	}
+	accent, ok := accentColors[mediaType]
+	if !ok {
+		accent = "#e94560"
+	}
+	icon, ok := icons[mediaType]
+	if !ok {
+		icon = "&#128196;"
+	}
+	label, ok := labels[mediaType]
+	if !ok {
+		label = strings.ReplaceAll(strings.ToUpper(mediaType), "_", " ")
+	}
 
-    svg := fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450">
+	svg := fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450">
   <defs>
     <linearGradient id="bg" x1="0%%" y1="0%%" x2="0%%" y2="100%%">
       <stop offset="0%%" stop-color="%s"/>
@@ -1687,5 +1645,5 @@ func GeneratePlaceholderSVG(mediaType string) []byte {
   <line x1="100" y1="330" x2="200" y2="330" stroke="white" stroke-width="1" stroke-opacity="0.2"/>
 </svg>`, g[0], g[1], accent, accent, accent, icon, accent, label)
 
-    return []byte(svg)
+	return []byte(svg)
 }
