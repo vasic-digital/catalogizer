@@ -111,14 +111,32 @@ func (h *AdminHandler) GetSystemInfo(c *gin.Context) {
 		memoryUsage = float64(memStats.HeapInuse) / float64(memStats.Sys) * 100
 	}
 
+	// Measured where the host can provide the figure; JSON null plus the "unavailable" list otherwise (never a fabricated 0, CAT-001).
+	var unavailable []string
+	var cpuUsage interface{}
+	if v, ok := hostCPUPercent(); ok {
+		cpuUsage = v
+	} else {
+		unavailable = append(unavailable, "cpuUsage")
+	}
+	var diskUsage interface{}
+	if total, used, avail, ok := diskUsageOf("."); ok {
+		diskUsage = gin.H{"total": total, "used": used, "free": avail}
+	} else {
+		unavailable = append(unavailable, "diskUsage")
+	}
+	// No request counter exists in this process.
+	unavailable = append(unavailable, "totalRequests")
+
 	c.JSON(http.StatusOK, gin.H{
 		"version":           h.version,
 		"uptime":            uptimeSeconds,
-		"cpuUsage":          0, // CPU usage requires OS-specific sampling; return 0 for now
+		"cpuUsage":          cpuUsage,
 		"memoryUsage":       memoryUsage,
-		"diskUsage":         gin.H{"total": 0, "used": 0, "free": 0},
+		"diskUsage":         diskUsage,
 		"activeConnections": runtime.NumGoroutine(),
-		"totalRequests":     0,
+		"totalRequests":     nil,
+		"unavailable":       unavailable,
 	})
 }
 
@@ -249,9 +267,9 @@ func (h *AdminHandler) GetStorageInfo(c *gin.Context) {
 
 	type storageInfo struct {
 		Path           string  `json:"path"`
-		TotalSpace     int64   `json:"totalSpace"`
-		UsedSpace      int64   `json:"usedSpace"`
-		AvailableSpace int64   `json:"availableSpace"`
+		TotalSpace     *int64  `json:"totalSpace"` // nil = not measurable (remote protocols), never a fake 0
+		UsedSpace      *int64  `json:"usedSpace"`
+		AvailableSpace *int64  `json:"availableSpace"`
 		MediaCount     int     `json:"mediaCount"`
 		LastScan       *string `json:"lastScan,omitempty"`
 	}
@@ -284,11 +302,14 @@ func (h *AdminHandler) GetStorageInfo(c *gin.Context) {
 		_ = h.db.QueryRow(`SELECT COUNT(*) FROM files WHERE storage_root_id = ?`, id).Scan(&mediaCount)
 
 		si := storageInfo{
-			Path:           fmt.Sprintf("%s://%s", protocol, path),
-			TotalSpace:     0, // Disk space query depends on protocol; 0 for now
-			UsedSpace:      0,
-			AvailableSpace: 0,
-			MediaCount:     mediaCount,
+			Path:       fmt.Sprintf("%s://%s", protocol, path),
+			MediaCount: mediaCount,
+		}
+		// Space is measured for a local root (statfs of its directory); the capacity of a remote share is not known here.
+		if protocol == "local" {
+			if total, used, avail, ok := diskUsageOf(path); ok {
+				si.TotalSpace, si.UsedSpace, si.AvailableSpace = &total, &used, &avail
+			}
 		}
 
 		if lastScan != nil {
