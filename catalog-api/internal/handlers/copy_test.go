@@ -145,15 +145,15 @@ func TestCopyHandler_ListStoragePath(t *testing.T) {
 			name:       "Valid list request",
 			path:       "test",
 			storageID:  "local",
-			wantStatus: http.StatusOK,
-			wantError:  false,
+			wantStatus: http.StatusNotImplemented, // CAT-001: no fabricated listing
+			wantError:  true,
 		},
 		{
 			name:       "Valid list request with nested path",
 			path:       "test/subdir",
 			storageID:  "local",
-			wantStatus: http.StatusOK,
-			wantError:  false,
+			wantStatus: http.StatusNotImplemented,
+			wantError:  true,
 		},
 		{
 			name:       "Missing storage_id",
@@ -166,8 +166,8 @@ func TestCopyHandler_ListStoragePath(t *testing.T) {
 			name:       "Empty path with storage_id",
 			path:       "",
 			storageID:  "local",
-			wantStatus: http.StatusOK,
-			wantError:  false,
+			wantStatus: http.StatusNotImplemented,
+			wantError:  true,
 		},
 	}
 
@@ -556,7 +556,7 @@ func TestCopyHandler_StorageOperations_Integration(t *testing.T) {
 	c2.Params = gin.Params{{Key: "path", Value: "test"}}
 	c2.Request.URL.RawQuery = "storage_id=" + storageID
 	handler.ListStoragePath(c2)
-	assert.Equal(t, http.StatusOK, w2.Code)
+	assert.Equal(t, http.StatusNotImplemented, w2.Code) // CAT-001: no fabricated listing
 
 	var listResponse map[string]interface{}
 	err = json.Unmarshal(w2.Body.Bytes(), &listResponse)
@@ -581,4 +581,16 @@ func TestCopyHandler_StorageOperations_Integration(t *testing.T) {
 	err = json.Unmarshal(w3.Body.Bytes(), &copyResponse)
 	assert.NoError(t, err)
 	assert.Equal(t, storageID, copyResponse["storage_id"])
+}
+
+// CAT-001: the CopyHandler has no storage backend to list, so it must say so instead of answering 200 with a fabricated empty listing.
+func TestCAT001_CopyHandler_ListStoragePath_IsNotAFabricatedEmptyListing(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	handler := &CopyHandler{logger: zap.NewNop()}
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("GET", "/storage/list/x?storage_id=1", nil)
+	c.Params = gin.Params{{Key: "path", Value: "x"}}
+	handler.ListStoragePath(c)
+	assert.Equal(t, http.StatusNotImplemented, w.Code)
 }

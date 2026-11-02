@@ -1321,7 +1321,7 @@ func main() {
 			subGroup.GET("/languages", func(c *gin.Context) { getSubtitleHandler().GetSupportedLanguages(c) })
 			subGroup.GET("/providers", func(c *gin.Context) { getSubtitleHandler().GetSupportedProviders(c) })
 	}
-	api.GET("/storage/list/*path", copyHandler.ListStoragePath)
+	api.GET("/storage/list/*path", scanHandler.ListStoragePath)
 	api.GET("/storage/roots", scanHandler.GetStorageRoots)
 	api.POST("/storage/roots", scanHandler.CreateStorageRoot)
 	api.GET("/storage-roots", scanHandler.GetStorageRoots)

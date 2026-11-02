@@ -425,11 +425,12 @@ func (h *CopyHandler) ListStoragePath(c *gin.Context) {
 		return
 	}
 
-	// Return mock data for now
-	c.JSON(http.StatusOK, gin.H{
+	// This handler has no storage backend to list; the real listing is ScanHandler.ListStoragePath (wired in main.go). Answering 200 with an
+	// empty list would be fabricated data (CAT-001).
+	c.JSON(http.StatusNotImplemented, gin.H{
+		"error":      "directory listing is not available on this handler; use the scan handler's /storage/list route",
 		"path":       path,
 		"storage_id": storageID,
-		"files":      []gin.H{},
 	})
 }
 

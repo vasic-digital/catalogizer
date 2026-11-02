@@ -6,10 +6,13 @@ import (
 	"catalogizer/internal/services"
 	"catalogizer/models"
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -270,6 +273,64 @@ func (h *ScanHandler) GetStorageRootStatus(c *gin.Context) {
 	}
 	resp["connected"], resp["status"] = true, "online"
 	c.JSON(http.StatusOK, resp)
+}
+
+// ListStoragePath handles GET /api/v1/storage/list/*path?storage_id=<storage root id>.
+// Lists the directory through the same settings mapping and real protocol client the scanner uses; it never answers with a fabricated listing
+// (CAT-001: the former handler returned an always-empty "mock" list).
+func (h *ScanHandler) ListStoragePath(c *gin.Context) {
+	idStr := c.Query("storage_id")
+	if idStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "storage_id is required"})
+		return
+	}
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "storage_id must be a storage root id"})
+		return
+	}
+	root, err := h.loadStorageRoot(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Storage root not found"})
+		return
+	}
+	if !root.Enabled {
+		c.JSON(http.StatusConflict, gin.H{"error": "storage root is disabled"})
+		return
+	}
+	settings, err := filesystem.SettingsFromRoot(root, services.ResolveSMBIdentity)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": services.ScrubErrorFor(err, root)})
+		return
+	}
+	fsClient, err := h.clientFactory.CreateClient(&filesystem.StorageConfig{ID: root.Name, Name: root.Name, Protocol: root.Protocol, Settings: settings})
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": services.ScrubErrorFor(err, root)})
+		return
+	}
+	ctx, cancel := context.WithTimeout(c.Request.Context(), storageRootProbeTimeout)
+	defer cancel()
+	if err := fsClient.Connect(ctx); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": services.ScrubErrorFor(err, root)})
+		return
+	}
+	defer fsClient.Disconnect(context.Background())
+
+	dir := "/" + strings.TrimLeft(c.Param("path"), "/")
+	entries, err := fsClient.ListDirectory(ctx, dir)
+	if err != nil {
+		status := http.StatusBadGateway
+		if errors.Is(err, os.ErrNotExist) {
+			status = http.StatusNotFound
+		}
+		c.JSON(status, gin.H{"error": services.ScrubErrorFor(err, root)})
+		return
+	}
+	files := make([]gin.H, 0, len(entries))
+	for _, e := range entries {
+		files = append(files, gin.H{"name": e.Name, "path": e.Path, "size": e.Size, "is_dir": e.IsDir, "modified_at": e.ModTime.Format(time.RFC3339)})
+	}
+	c.JSON(http.StatusOK, gin.H{"path": dir, "storage_id": id, "files": files})
 }
 
 // queueScanRequest is the JSON body for POST /scans.
