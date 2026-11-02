@@ -203,7 +203,11 @@ func TestCAT002_HTMLFallbackEscapesPDFText(t *testing.T) {
 	src := filepath.Join(root, "evil.pdf")
 	require.NoError(t, os.WriteFile(src, textPDF(`(<b>x</b> & <script>) Tj`), 0o644))
 	// make the external converters unavailable so the text fallback is the path under test
-	t.Setenv("PATH", t.TempDir())
+	bin := t.TempDir()
+	pl, perr := exec.LookPath("prlimit")
+	require.NoError(t, perr)
+	require.NoError(t, os.Symlink(pl, filepath.Join(bin, "prlimit")))
+	t.Setenv("PATH", bin) // only prlimit is left: poppler and the converters are unavailable
 	tgt := filepath.Join(root, "evil.html")
 	require.NoError(t, (&ConversionService{}).convertPDFToHTML(&models.ConversionJob{SourcePath: src, TargetPath: tgt}))
 	b, err := os.ReadFile(tgt)

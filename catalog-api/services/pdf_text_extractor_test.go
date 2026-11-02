@@ -120,7 +120,7 @@ func TestCAT002_OutputSizeBound(t *testing.T) {
 	assert.Equal(t, 7, n)
 	_, _ = b.Write([]byte("89abc"))
 	assert.True(t, b.over)
-	assert.Equal(t, "0123456", b.String(), "overflowing write must not be stored")
+	assert.Equal(t, "012345689a", b.String(), "an overflowing write keeps only the prefix that fits")
 }
 
 func TestCAT002_NonexistentSource(t *testing.T) {

@@ -399,9 +399,9 @@ func TestCAT002_DefaultExtractorPrefersPoppler(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, pages[0], "Inside the form XObject")
 
-	t.Setenv("PATH", t.TempDir()) // no poppler
-	_, only := defaultPDFTextExtractor().(ledongthucExtractor)
-	assert.True(t, only, "without poppler the built-in extractor is the only one")
+	hideTools(t, "pdftotext") // no poppler
+	_, only := defaultPDFTextExtractor().(isolatedExtractor)
+	assert.True(t, only, "without poppler the isolated built-in extractor is the only one")
 }
 
 // Documented limits of the built-in extractor (the reason poppler is preferred): character
