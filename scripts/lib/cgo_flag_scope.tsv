@@ -1,0 +1,79 @@
+Build/lib/orchestrator.sh	covered
+OCU-CUDA-Sidecar/Dockerfile	exempt:separate CUDA sidecar module, no sqlcipher
+build/containers/gotools/Containerfile	exempt:go install of third-party tools, no sqlcipher
+build/containers/infra-client/Containerfile	exempt:go install of third-party tools, no sqlcipher
+catalog-api/Dockerfile	covered
+catalog-api/scripts/build.sh	covered
+catalog-api/scripts/run_comprehensive_tests.sh	covered
+catalog-api/scripts/test-all.sh	covered
+catalog-api/tests/run_all_tests.sh	covered
+catalog-api/verify_conversion_service.sh	covered
+catalog-web/test-advanced-features.sh	covered
+qa-ai-system/scripts/ci-cd/pre-commit-qa.sh	covered
+qa-ai-system/scripts/quick-qa.sh	covered
+qa-ai-system/scripts/run-qa-tests.sh	covered
+scripts/audit/cascade-governance.sh	exempt:go command appears in text only
+scripts/build-all-releases.sh	covered
+scripts/build-test-release.sh	covered
+scripts/build/tests/test_dispatch_c_e2e.sh	exempt:test of the runner scripts, go is a shim
+scripts/build/tests/test_dispatch_e2e.sh	exempt:test of the runner scripts, go is a shim
+scripts/build_in_container.sh	covered
+scripts/ci-local.sh	covered
+scripts/ci-pipeline.sh	covered
+scripts/complete-remaining-tasks.sh	covered
+scripts/container-local.sh	covered
+scripts/containers/tests/test_check_pins.sh	exempt:test of the runner scripts, go is a shim
+scripts/containers/tests/test_race_detector.sh	exempt:test of the runner scripts, go is a shim
+scripts/containers/tests/test_run_pinned.sh	exempt:test of the runner scripts, go is a shim
+scripts/containers/tests/test_runners.sh	exempt:test of the runner scripts, go is a shim
+scripts/containers/tests/test_test_in_container.sh	exempt:test of the runner scripts, go is a shim
+scripts/coverage/tests/test_track_coverage.sh	exempt:test of the runner scripts, go is a shim
+scripts/coverage/track-coverage.sh	exempt:go runs inside a runner container whose env comes from the runner prefix
+scripts/deploy.sh	covered
+scripts/distribute.sh	covered
+scripts/distributed-boot.sh	covered
+scripts/gates/cm_cgo_usleep_flag.sh	exempt:the gate itself, go appears in its own pattern text
+scripts/helixqa-orchestrator.sh	covered
+scripts/install-security-tools.sh	exempt:go install of third-party tools, no sqlcipher
+scripts/lib/build-catalog-api.sh	covered
+scripts/llmctl/helixqa_llmctl_go_test.sh	exempt:CGO_ENABLED=0 pure-Go helixqa module, no sqlcipher
+scripts/local-ci.sh	covered
+scripts/memory-leak-check.sh	covered
+scripts/performance-test.sh	covered
+scripts/pre-flight-check.sh	covered
+scripts/quick-go-test.sh	covered
+scripts/quick-start-phase0.sh	covered
+scripts/reorg_submodules.sh	exempt:go command appears in text only
+scripts/run-all-platform-tests.sh	covered
+scripts/run-all-tests-comprehensive.sh	covered
+scripts/run-all-tests.sh	covered
+scripts/run-go-tests.sh	covered
+scripts/run-helixqa-tests.sh	covered
+scripts/run-helixqa.sh	exempt:go command appears in text only
+scripts/run-race-detector.sh	covered
+scripts/run-sonarqube-scan.sh	covered
+scripts/run-stress-tests.sh	covered
+scripts/scan-gosec.sh	exempt:go install of third-party tools, no sqlcipher
+scripts/scan-nancy.sh	covered
+scripts/security-scan-comprehensive.sh	exempt:go install of third-party tools, no sqlcipher
+scripts/security-scan-full.sh	exempt:go install of third-party tools, no sqlcipher
+scripts/security-test.sh	covered
+scripts/setup-go-testing.sh	covered
+scripts/setup-implementation.sh	exempt:go install of third-party tools, no sqlcipher
+scripts/sonarqube-scan.sh	covered
+scripts/test-infra/ftps_fixture.sh	covered
+scripts/test-infra/nas_clients_leg.sh	covered
+scripts/test-infra/sftp_fixture.sh	covered
+scripts/tests/test_container_hygiene.sh	exempt:go appears in hygiene fixtures text
+scripts/tests/test_pathsafe_crossbuild.sh	exempt:vets the pure-Go pathsafe package only
+scripts/tests/test_test_stack_boots.sh	covered
+scripts/track-coverage.sh	covered
+scripts/wire-submodules.sh	covered
+specs/001-full-project-audit-remediation/evidence/wp12/ftp/fix-r2-mutate-run.sh	exempt:frozen audit evidence fixture
+specs/001-full-project-audit-remediation/evidence/wp12/ftp/fix-r3-mutate-run.sh	exempt:frozen audit evidence fixture
+specs/001-full-project-audit-remediation/evidence/wp12/scanner/fix-r2-run_realfs.sh	exempt:frozen audit evidence fixture
+specs/001-full-project-audit-remediation/evidence/wp12/scanner/run_realfs.sh	exempt:frozen audit evidence fixture
+specs/001-full-project-audit-remediation/evidence/wp12/scanner/run_unit.sh	exempt:frozen audit evidence fixture
+tools/evidence/tests/continuum_probe.sh	exempt:continuum module, no sqlcipher
+tools/evidence/tests/test_wrap_go.sh	exempt:test of the wrapper, go is a shim
+tools/evidence/wrap-go.sh	covered

@@ -1,4 +1,6 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+. "$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)/lib/cgo_flags.sh"   # 2026-11-02 decision: cgo define for go-sqlcipher (scripts/lib/cgo_flags.sh)
 set -e
 
 COLOR_RED='\033[0;31m'

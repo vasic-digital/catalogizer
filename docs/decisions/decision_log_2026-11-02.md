@@ -15,7 +15,7 @@ No credential value appears in this document (§11.4.10).
 | # | Decision | Implementation status in this change |
 |---|---|---|
 | D1 | `atm_id` is renamed to `cat_id` (schema migration plus a compatibility view, ids preserved) wherever it lives in Catalogizer's own code | PARTIAL (nothing renamed), see "atm_id scope". OWED: CAT-NNN proposal "register atm_id to cat_id rename" |
-| D2 | Where SQLite/SQLCipher is built, `-DHAVE_USLEEP=1` is added | DONE via `CGO_CPPFLAGS=-DHAVE_USLEEP=1` (CPPFLAGS, not CFLAGS: setting CGO_CFLAGS replaces go's default `-O2 -g`). Paths: `scripts/containers/run_go.sh`, `container-local.sh`, `build_in_container.sh`, `distribute.sh`, `build-all-releases.sh`, `build-test-release.sh`, `ci-local.sh`, `ci-pipeline.sh`, `deploy.sh`, ftps/sftp fixtures, `nas_clients_leg.sh`, `wf22/run_go.sh`, `catalog-api/Dockerfile`, `docker/Dockerfile.builder`. NOT verified end to end: the two Dockerfiles and the shell build scripts were not executed (syntax check only); the busy-handler test is flag-aware but detects the flag from the environment, not by timing |
+| D2 | Where SQLite/SQLCipher is built, `-DHAVE_USLEEP=1` is added | PARTIAL / PROVISIONAL until verified end to end. Mechanism: one sourced definition `scripts/lib/cgo_flags.sh` exports `CGO_CPPFLAGS` (append-safe, idempotent; CPPFLAGS not CFLAGS so go's default `-O2 -g` is kept) and is sourced by every covered script; Dockerfiles and the container runner prefixes carry the define inline. Class guard: `scripts/gates/cm_cgo_usleep_flag.sh` sweeps all tracked `*.sh`, Dockerfile, Containerfile and Makefile outside `submodules/` and `constitution/` (control-needled), requires every file with a go build/test/vet/run/install line to be classified in `scripts/lib/cgo_flag_scope.tsv` and every `covered` file to carry the define or source the lib; test `scripts/gates/tests/test_cm_cgo_usleep_flag.sh` has golden-good/bad fixtures and paired mutations. VERIFIED: the define takes effect in the driver (`./database` suite green with it). NOT VERIFIED: the two Dockerfiles and the release/shell build scripts were never executed (syntax and gate checks only); the sweep cannot see go invoked through a variable (`tools/evidence/wrap-go.sh` is listed by hand); the busy-handler test picks its branch from the environment (a compiled-in probe would need a production cgo file, not done) |
 | D3 | `deployment/amber-up.sh` uses rootless podman, not docker | DONE; the R6 allowlist row is removed |
 | D4 | `thinker.local` is obsolete. Builds run as local containerised builds. This is a written exception to §11.4.173 (which requires remote distribution of builds) | RECORDED as a standing amendment by operator decision (no expiry; revisit if a remote build host returns); script and CLAUDE.md follow-up OWED (`scripts/build_in_container.sh` still targets a remote host, `scripts/container-local.sh` is the local path) |
 | D5 | A BLIND gate result fails closed | RECORDED; per-gate audit OWED |
@@ -24,9 +24,9 @@ No credential value appears in this document (§11.4.10).
 | D8 | The canon repository is not renamed | RECORDED |
 | D9 | The commit-push-all trust manifest is approved as drafted | RECORDED; no manifest content changed here |
 | D10 | The waiver expiring 2026-11-20 is resolved before expiry by implementing the gate consumer-data design | OWED, deadline 2026-11-20 |
-| D11 | Release train defaults: trigger `per-ready-candidate`; `pre-release` and `dev` classes are provisional-eligible; stall bound N=3 (§11.4.230(E.4)/(F)) | RECORDED as consumer DATA  Details here are author defaults awaiting operator confirmation. |
-| D12 | `llms_verifier` becomes a real own-org flat submodule | RECORDED; submodule add OWED (see `docs/decisions/llms_verifier_reconciliation.md`)  Details here are author defaults awaiting operator confirmation. |
-| D13 | Key rotation stays deferred, severity HIGH (see `SECURITY_KEY_ROTATION_REQUIRED.md`) | RECORDED; remains an open HIGH item  Details here are author defaults awaiting operator confirmation. |
+| D11 | Release train defaults. Operator decision: the defaults are the ones in this row | Operator decisions: trigger `per-ready-candidate`; `pre-release` and `dev` classes are provisional-eligible. Author default, awaiting operator confirmation: stall bound N=3 (§11.4.230(E.4)/(F)). Recorded as consumer DATA |
+| D12 | `llms_verifier` becomes a real own-org flat submodule | Operator decision: as stated. Author note, awaiting operator confirmation: the add itself is OWED and follows `docs/decisions/llms_verifier_reconciliation.md` |
+| D13 | Key rotation stays deferred, severity HIGH | Operator decision: deferred. Author note, awaiting operator confirmation: severity HIGH and the pointer to `SECURITY_KEY_ROTATION_REQUIRED.md`; remains an open item |
 | D14 | Synology write tests run only in `work20/Testing` | RECORDED; no test is allowed to write elsewhere on the Synology |
 
 ## D4 exception text (§11.4.173)
@@ -52,4 +52,5 @@ Status: OWED as a dedicated change: (a) `ALTER TABLE ... RENAME COLUMN atm_id TO
 | CAT-NNN (4) | Waiver expiring 2026-11-20: implement the gate consumer-data design before expiry (D10) |
 | CAT-NNN (5) | Add `llms_verifier` as a flat own-org submodule (D12) |
 | CAT-NNN (6) | Execute-verify the D2 Dockerfile and shell-script build paths in containers (D2) |
+| CAT-NNN (8) | Make the busy-handler test pick its branch from a compiled-in probe or timing (D2) |
 | CAT-NNN (7) | Verify amber.local: podman installed, cgroup delegation, image store (D3) |

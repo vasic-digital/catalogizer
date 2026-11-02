@@ -1,4 +1,6 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+. "$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)/../../scripts/lib/cgo_flags.sh"   # 2026-11-02 decision: cgo define for go-sqlcipher (scripts/lib/cgo_flags.sh)
 
 # Catalogizer QA Tests Runner
 # Manual execution of all quality assurance tests

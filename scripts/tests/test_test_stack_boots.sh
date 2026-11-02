@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# shellcheck source=/dev/null
+. "$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)/../lib/cgo_flags.sh"   # 2026-11-02 decision: cgo define for go-sqlcipher (scripts/lib/cgo_flags.sh)
 # Test: the environment the tracked test stack (docker-compose.test.yml) hands to
 # catalog-api passes boot-time validation with NO config.json (the container case).
 # Resolves JWT_SECRET / ADMIN_USERNAME / ADMIN_PASSWORD from the compose file
