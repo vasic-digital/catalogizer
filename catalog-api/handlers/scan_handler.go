@@ -40,6 +40,16 @@ func NewScanHandler(scanner scannerInterface, db *database.DB) *ScanHandler {
 	return &ScanHandler{scanner: scanner, db: db, clientFactory: filesystem.NewDefaultClientFactory()}
 }
 
+// clientForRoot builds the real protocol client of a storage root: the same settings mapping (filesystem.SettingsFromRoot) and factory the
+// scanner uses, so a probe or listing meets exactly what a scan would meet.
+func (h *ScanHandler) clientForRoot(root *models.StorageRoot) (filesystem.FileSystemClient, error) {
+	settings, err := filesystem.SettingsFromRoot(root, services.ResolveSMBIdentity)
+	if err != nil {
+		return nil, err
+	}
+	return h.clientFactory.CreateClient(&filesystem.StorageConfig{ID: root.Name, Name: root.Name, Protocol: root.Protocol, Settings: settings})
+}
+
 // storageRootProbeTimeout bounds one connectivity probe so a black-holed host cannot hold a status request open.
 const storageRootProbeTimeout = 10 * time.Second
 
@@ -246,13 +256,7 @@ func (h *ScanHandler) GetStorageRootStatus(c *gin.Context) {
 	}
 
 	// Probe the root with the same settings mapping and client factory the scanner uses, so the answer is the one a scan would meet.
-	settings, err := filesystem.SettingsFromRoot(root, services.ResolveSMBIdentity)
-	if err != nil {
-		resp["connected"], resp["status"], resp["error"] = false, "misconfigured", services.ScrubErrorFor(err, root)
-		c.JSON(http.StatusOK, resp)
-		return
-	}
-	fsClient, err := h.clientFactory.CreateClient(&filesystem.StorageConfig{ID: root.Name, Name: root.Name, Protocol: root.Protocol, Settings: settings})
+	fsClient, err := h.clientForRoot(root)
 	if err != nil {
 		resp["connected"], resp["status"], resp["error"] = false, "misconfigured", services.ScrubErrorFor(err, root)
 		c.JSON(http.StatusOK, resp)
@@ -298,12 +302,7 @@ func (h *ScanHandler) ListStoragePath(c *gin.Context) {
 		c.JSON(http.StatusConflict, gin.H{"error": "storage root is disabled"})
 		return
 	}
-	settings, err := filesystem.SettingsFromRoot(root, services.ResolveSMBIdentity)
-	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": services.ScrubErrorFor(err, root)})
-		return
-	}
-	fsClient, err := h.clientFactory.CreateClient(&filesystem.StorageConfig{ID: root.Name, Name: root.Name, Protocol: root.Protocol, Settings: settings})
+	fsClient, err := h.clientForRoot(root)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": services.ScrubErrorFor(err, root)})
 		return

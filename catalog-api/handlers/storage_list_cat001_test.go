@@ -53,5 +53,5 @@ func TestCAT001_ListStoragePath_ErrorsAreHonest(t *testing.T) {
 	require.Equal(t, http.StatusCreated, code)
 	id := strconv.FormatInt(int64(body["id"].(float64)), 10)
 	code, out := h.do("GET", "/storage/list/does-not-exist?storage_id="+id, nil)
-	assert.GreaterOrEqual(t, code, 400, "a missing directory is an error, not an empty listing: %v", out)
+	assert.Equal(t, http.StatusNotFound, code, "a missing directory is an error, not an empty listing: %v", out)
 }

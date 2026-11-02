@@ -336,7 +336,7 @@ func TestWF22R3_C_Classifier_SettingsFromRootCallersAreAClosedSet(t *testing.T) 
 		"filesystem/settings.go:MustSettingsFromRoot":                  true, // the test helper itself
 		"filesystem/settings.go:ValidateRoot":                          true,
 		"handlers/comic_pages_handler.go:comicStorageRootSettings":     true,
-		"handlers/scan_handler.go:GetStorageRootStatus":                true,
+		"handlers/scan_handler.go:clientForRoot":                true,
 		"internal/handlers/stream_handler.go:storageRootToSettings":    true,
 		"internal/services/universal_scanner.go:storageRootToSettings": true,
 		"internal/services/cover_art_service.go:copyRemoteFileToTemp":  true,
