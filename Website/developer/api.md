@@ -32,7 +32,7 @@ POST /api/v1/auth/login
 ```json
 {
   "username": "admin",
-  "password": "admin123"
+  "password": "<your-admin-password>"
 }
 ```
 

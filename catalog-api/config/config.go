@@ -6,8 +6,11 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 // Config represents the API configuration
@@ -328,8 +331,8 @@ func validateConfig(config *Config) error {
 		if isPlaceholderSecret(config.Auth.JWTSecret) {
 			return fmt.Errorf("JWT secret is a known placeholder/default value; generate a random secret")
 		}
-		if isPlaceholderPassword(config.Auth.AdminPassword) {
-			return fmt.Errorf("admin password is a known placeholder/default value; set a real ADMIN_PASSWORD")
+		if isPlaceholderPassword(config.Auth.AdminPassword) && !AllowInsecureDefaults() {
+			return fmt.Errorf("admin password is a known placeholder/default value; set a real ADMIN_PASSWORD (or CATALOGIZER_ALLOW_INSECURE_DEFAULTS=true for local dev only)")
 		}
 	}
 
@@ -402,7 +405,9 @@ func (c *Config) GetServerAddress() string {
 // characters (space, '-', '_', '.') so "Change Me", "change-me" and
 // "CHANGE_ME" compare equal.
 func normalizeSecret(v string) string {
-	v = strings.ToLower(strings.TrimSpace(v))
+	// NFKC folds fullwidth/compatibility forms (e.g. fullwidth digits) onto
+	// their ASCII equivalents so they cannot slip past the denylist.
+	v = strings.ToLower(strings.TrimSpace(norm.NFKC.String(v)))
 	var b strings.Builder
 	for _, r := range v {
 		switch r {
@@ -420,22 +425,73 @@ func normalizeSecret(v string) string {
 var placeholderMarkers = []string{
 	"changeme", "changethis", "yoursupersecret", "yoursecret", "placeholder",
 	"replaceme", "distributedcatalogizersecret", "catalogizerdevelopmentsecret",
+	// documentation example shapes (CAT-021 D1): your-admin-password,
+	// secure-admin-password, strong-admin-password, SecurePassword123, ...
+	"adminpassword", "securepassword", "strongpassword", "securepass",
 }
+
+// placeholderShape matches normalized "your...password/secret/token/key" and
+// "...password...here" example forms. Both halves are fully anchored: a strong
+// passphrase that merely starts with "your" or ends with "here" is not refused.
+var placeholderShape = regexp.MustCompile(`^your[a-z0-9]*(password|passwd|secret|token|key)(here|value)?$|^[a-z0-9]{0,12}(password|passwd|secret|token|key)here$`)
 
 // placeholderPasswords are normalized exact weak/published defaults.
 var placeholderPasswords = []string{
 	"admin", "password", "adminpassword", "catalogizerpassword", "admin123",
-	"catalogizerdev", "minioadmin", "minioadmin123", "sonarpassword", "12345678",
+	"catalogizerdev", "minioadmin", "minioadmin123", "sonarpassword", "12345678", "secret",
 }
 
 func isPlaceholderSecret(v string) bool {
+	if looksLikeTemplate(v) {
+		return true
+	}
 	n := normalizeSecret(v)
+	if placeholderShape.MatchString(n) {
+		return true
+	}
 	for _, m := range placeholderMarkers {
 		if strings.Contains(n, m) {
 			return true
 		}
 	}
 	return false
+}
+
+// looksLikeTemplate reports documentation placeholders such as <ADMIN_PASSWORD>,
+// ${ADMIN_PASSWORD}, $(cmd) or {{ .X }}: copying them verbatim must never yield
+// an accepted credential.
+func looksLikeTemplate(v string) bool {
+	t := strings.TrimSpace(norm.NFKC.String(v))
+	if strings.HasPrefix(t, "<") && strings.HasSuffix(t, ">") {
+		return true
+	}
+	return strings.Contains(t, "${") || strings.Contains(t, "$(") || strings.Contains(t, "{{")
+}
+
+// PlaceholderPasswordCandidates returns the literal denylisted passwords, for
+// checking stored hashes of existing accounts (CAT-021).
+func PlaceholderPasswordCandidates() []string {
+	return []string{"admin" + "123", "admin", "password", "adminpassword", "catalogizerpassword",
+		"catalogizerdev", "minioadmin", "minioadmin123", "sonarpassword", "12345678", "changeme"}
+}
+
+// IsPlaceholderPassword reports whether v is a published/weak default password
+// (the same denylist the config validator uses). Exported so the auth service
+// enforces one list (CAT-021).
+func IsPlaceholderPassword(v string) bool { return isPlaceholderPassword(v) }
+
+// AllowInsecureDefaults is the single explicit dev-mode switch. Production
+// must leave CATALOGIZER_ALLOW_INSECURE_DEFAULTS unset; it is read by NAME and
+// only the exact value "true" enables it, and never in release mode.
+func AllowInsecureDefaults() bool {
+	if os.Getenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS") != "true" {
+		return false
+	}
+	if os.Getenv("GIN_MODE") == "release" {
+		fmt.Fprintln(os.Stderr, "CATALOGIZER_ALLOW_INSECURE_DEFAULTS is ignored in release mode (GIN_MODE=release)")
+		return false
+	}
+	return true
 }
 
 func isPlaceholderPassword(v string) bool {

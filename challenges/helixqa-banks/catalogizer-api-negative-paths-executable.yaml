@@ -252,7 +252,7 @@ test_cases:
   steps:
   - name: Login with null byte in username
     action: '# TODO: Convert to executable - post /api/v1/auth/login with username:
-      "admin\u0000injected" and password: "admin123"'
+      "admin\u0000injected" and password: "${ADMIN_PASSWORD}"'
     expected: 401 Unauthorized or 400 Bad Request, null byte must be sanitized, no
       string truncation vulnerability
     timeout: 10
@@ -381,7 +381,7 @@ test_cases:
   steps:
   - name: Send array to login endpoint
     action: '# TODO: Convert to executable - post /api/v1/auth/login with body: ["admin",
-      "admin123"]'
+      "${ADMIN_PASSWORD}"]'
     expected: 400 Bad Request with clear error about expected object format, not 500
     timeout: 10
   - name: Send array to create collection
@@ -1118,7 +1118,7 @@ test_cases:
     timeout: 10
   - name: Send form data to JSON endpoint
     action: '# TODO: Convert to executable - post /api/v1/auth/login with content-type:
-      application/x-www-form-urlencoded and body username=admin&password=admin123'
+      application/x-www-form-urlencoded and body username=admin&password=${ADMIN_PASSWORD}'
     expected: 415 or 400 with error about expected JSON content type
     timeout: 10
 - id: neg-api-error-404-consistent
@@ -1274,7 +1274,7 @@ test_cases:
   steps:
   - name: Change password from two sessions at once
     action: '# TODO: Convert to executable - post /api/v1/auth/change-password with
-      {"old_password": "admin123", "new_password": "newpass1"} and same with new_password:
+      {"old_password": "${ADMIN_PASSWORD}", "new_password": "newpass1"} and same with new_password:
       "newpass2" sent simultaneously'
     expected: One succeeds, the other may fail with 401 (old password no longer valid).
       No account lockout or corruption
@@ -1536,17 +1536,17 @@ test_cases:
   steps:
   - name: Send trailing comma JSON
     action: '# TODO: Convert to executable - post /api/v1/auth/login with body: {"username":
-      "admin", "password": "admin123",}'
+      "admin", "password": "${ADMIN_PASSWORD}",}'
     expected: 400 Bad Request, Go's JSON parser rejects trailing commas
     timeout: 10
   - name: Send single-quoted JSON
     action: '# TODO: Convert to executable - post /api/v1/auth/login with body: {''username'':
-      ''admin'', ''password'': ''admin123''}'
+      ''admin'', ''password'': ''${ADMIN_PASSWORD}''}'
     expected: 400 Bad Request, single quotes are invalid JSON
     timeout: 10
   - name: Send unquoted keys
     action: '# TODO: Convert to executable - post /api/v1/auth/login with body: {username:
-      "admin", password: "admin123"}'
+      "admin", password: "${ADMIN_PASSWORD}"}'
     expected: 400 Bad Request, unquoted keys are invalid JSON
     timeout: 10
   - name: Send just a string
@@ -1563,7 +1563,7 @@ test_cases:
   steps:
   - name: Login with extra fields
     action: '# TODO: Convert to executable - post /api/v1/auth/login with {"username":
-      "admin", "password": "admin123", "evil": true, "__proto__": {"admin": true}}'
+      "admin", "password": "${ADMIN_PASSWORD}", "evil": true, "__proto__": {"admin": true}}'
     expected: 200 OK (extra fields ignored) or 400 Bad Request. Extra fields must
       not cause privilege escalation or prototype pollution
     timeout: 10
@@ -1764,7 +1764,7 @@ test_cases:
   steps:
   - name: Send JSON with duplicate keys
     action: '# TODO: Convert to executable - post /api/v1/auth/login with body: {"username":
-      "admin", "username": "hacker", "password": "admin123"}'
+      "admin", "username": "hacker", "password": "${ADMIN_PASSWORD}"}'
     expected: Uses last value per Go encoding/json spec (username=hacker) and returns
       401, or 400 if duplicate keys rejected
     timeout: 10
@@ -1868,7 +1868,7 @@ test_cases:
   - api
   steps:
   - name: Try login via query parameters
-    action: '# TODO: Convert to executable - get /api/v1/auth/login?username=admin&password=admin123'
+    action: '# TODO: Convert to executable - get /api/v1/auth/login?username=admin&password=${ADMIN_PASSWORD}'
     expected: 405 Method Not Allowed (login is POST-only), credentials must never
       be accepted via URL where they would appear in access logs
     timeout: 10

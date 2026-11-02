@@ -313,7 +313,7 @@ func (s *AuthService) verifyPassword(password, salt, hash string) bool {
 ```bash
 # Environment variables always override config.json
 export JWT_SECRET=your-production-secret
-export ADMIN_PASSWORD=secure-admin-password
+export ADMIN_PASSWORD=<your-admin-password>
 ```
 
 ---

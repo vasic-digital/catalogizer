@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"catalogizer/challenges"
 	root_config "catalogizer/config"
 	"catalogizer/database"
@@ -370,6 +371,14 @@ func main() {
 	if flag.NArg() > 0 && (flag.Arg(0) == "db-rekey" || flag.Arg(0) == "db-restore") {
 		os.Exit(runDBMaintenance(&cfg.Database, flag.Args()))
 	}
+	// Offline recovery (CAT-021): validate the replacement password before any
+	// database work; the rotation itself runs after the DB is connected.
+	if flag.NArg() > 0 && flag.Arg(0) == "admin-reset-password" {
+	if _, err := newAdminPasswordFromEnv(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(2)
+	}
+	}
 	// Default SSLMode
 	if cfg.Database.SSLMode == "" {
 	cfg.Database.SSLMode = "disable"
@@ -423,9 +432,12 @@ func main() {
 	logging.Info("Database migrations completed successfully")
 
 	// Seed default admin user if none exists
-	if err := seedDefaultAdmin(databaseDB, cfg.Auth.AdminUsername, cfg.Auth.AdminPassword); err != nil {
-	logging.Warnf("Failed to seed admin user: %v", err)
+	if flag.NArg() > 0 && flag.Arg(0) == "admin-reset-password" {
+	os.Exit(runAdminReset(databaseDB, flag.Args(), os.Stdout, os.Stderr))
 	}
+	handleSeedAdminError(seedDefaultAdmin(databaseDB, cfg.Auth.AdminUsername, cfg.Auth.AdminPassword),
+	func(m string, e error) { logging.Fatal(m, logging.ErrorField(e)) },
+	func(m string, e error) { logging.Warnf("%s: %v", m, e) })
 
 	// Initialize services
 	// Convert config to internal format
@@ -906,6 +918,7 @@ func main() {
 
 	// Initialize JWT middleware
 	jwtMiddleware := root_middleware.NewJWTMiddleware(jwtSecret)
+	jwtMiddleware.SetSessionChecker(newSessionChecker(databaseDB))
 
 	// Initialize tiered rate limiters using internal auth middleware.
 	// Constitution Article V §5.1 category 7 (DDoS/rate-limit) requires
@@ -1973,7 +1986,18 @@ func seedDefaultAdmin(db *database.DB, username, password string) error {
 	return fmt.Errorf("check admin count: %w", err)
 	}
 	if count > 0 {
+	if !root_config.AllowInsecureDefaults() {
+		if err := refuseCompromisedAdminHashes(db); err != nil {
+			return err
+		}
+	}
 	return nil // admin already exists
+	}
+
+	// Never seed an empty or placeholder password (CAT-021), regardless of
+	// whether auth is currently enabled.
+	if password == "" || (root_config.IsPlaceholderPassword(password) && !root_config.AllowInsecureDefaults()) {
+	return fmt.Errorf("refusing to seed admin %q: ADMIN_PASSWORD is empty or a known placeholder/default", username)
 	}
 
 	// Generate salt
@@ -1999,6 +2023,40 @@ func seedDefaultAdmin(db *database.DB, username, password string) error {
 	}
 
 	logging.Infof("Default admin user '%s' created", username)
+	return nil
+}
+
+// errCompromisedAdmin marks an existing admin account that still uses a
+// published default password.
+var errCompromisedAdmin = errors.New("existing admin account uses a published default password")
+
+// refuseCompromisedAdminHashes checks stored (salted) admin hashes against the
+// denylist so upgraded installs cannot keep the compromised default.
+func refuseCompromisedAdminHashes(db *database.DB) error {
+	rows, err := db.Query("SELECT username, password_hash, COALESCE(salt,'') FROM users WHERE role_id = 1")
+	if err != nil {
+	return fmt.Errorf("%w: %v", errAdminHashCheck, err)
+	}
+	defer rows.Close()
+	type acct struct{ user, hash, salt string }
+	var accts []acct
+	for rows.Next() {
+	var a acct
+	if err := rows.Scan(&a.user, &a.hash, &a.salt); err != nil {
+		return fmt.Errorf("%w: %v", errAdminHashCheck, err)
+	}
+	accts = append(accts, a)
+	}
+	if err := rows.Err(); err != nil {
+	return fmt.Errorf("%w: %v", errAdminHashCheck, err)
+	}
+	for _, a := range accts {
+	for _, c := range root_config.PlaceholderPasswordCandidates() {
+		if bcrypt.CompareHashAndPassword([]byte(a.hash), []byte(c+a.salt)) == nil {
+		return fmt.Errorf("%w: account %q; run the offline recovery `catalog-api admin-reset-password` (with ADMIN_NEW_PASSWORD set) before starting", errCompromisedAdmin, a.user)
+		}
+	}
+	}
 	return nil
 }
 

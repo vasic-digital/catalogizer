@@ -467,7 +467,7 @@ func TestDefaultAdminUser_Integration(t *testing.T) {
 	defer service.db.Close()
 
 	// Admin should have been created by Initialize
-	loginResp, err := service.Login("admin", "admin123", "127.0.0.1", "test")
+	loginResp, err := service.Login("admin", "Test-Admin-Pw-9xK2-local", "127.0.0.1", "test")
 	require.NoError(t, err)
 	assert.Equal(t, "admin", loginResp.User.Username)
 	assert.Equal(t, RoleAdmin, loginResp.User.Role)

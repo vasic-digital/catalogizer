@@ -55,7 +55,7 @@ On first launch, the app redirects you to **Settings** to configure your server.
 Enter your credentials:
 
 - **Username:** `admin`
-- **Password:** `admin123`
+- **Password:** `<your-admin-password>`
 
 Click **Sign In**. Your auth token is stored securely via Tauri's native storage.
 

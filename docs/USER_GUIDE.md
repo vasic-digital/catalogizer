@@ -73,7 +73,7 @@ All clients communicate with **catalog-api**, the backend server that handles me
    cd catalog-api
    export JWT_SECRET="your-secret-key-at-least-32-chars"
    export ADMIN_USERNAME="admin"
-   export ADMIN_PASSWORD="your-admin-password"
+   export ADMIN_PASSWORD="<your-admin-password>"
    go run main.go
    ```
 

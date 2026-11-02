@@ -39,6 +39,7 @@ test_cases:
         vision_verify: true
 
   - id: tv-login-complete-exec
+    requires_env: [ADMIN_PASSWORD]  # HelixQA does not expand ${VAR} in step text: SKIPs when unset; typed text is the literal placeholder (tracked CAT-021-F4)
     name: "TV Login - Full Executable Flow"
     category: authentication
     priority: critical
@@ -70,7 +71,7 @@ test_cases:
         expected: "Field active"
         timeout: 2
       - name: "Type password"
-        action: "text: admin123"
+        action: "text: ${ADMIN_PASSWORD}"
         expected: "Password entered"
         timeout: 3
       - name: "Navigate to login button"

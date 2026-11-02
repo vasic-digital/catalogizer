@@ -75,7 +75,7 @@ describe('AuthService', () => {
       };
       mockHttp.post.mockResolvedValueOnce(loginResponse);
 
-      await authService.login({ username: 'admin', password: 'admin123' });
+      await authService.login({ username: 'admin', password: 'Test-Admin-Pw-9xK2-local' });
 
       expect(mockHttp.setAuthToken).toHaveBeenCalledWith('canonical-jwt-token');
     });
@@ -89,7 +89,7 @@ describe('AuthService', () => {
       };
       mockHttp.post.mockResolvedValueOnce(loginResponse);
 
-      await authService.login({ username: 'admin', password: 'admin123' });
+      await authService.login({ username: 'admin', password: 'Test-Admin-Pw-9xK2-local' });
 
       expect(mockHttp.setAuthToken).toHaveBeenCalledWith('legacy-jwt-token');
     });
@@ -102,7 +102,7 @@ describe('AuthService', () => {
       mockHttp.post.mockResolvedValueOnce(loginResponse);
 
       await expect(
-        authService.login({ username: 'admin', password: 'admin123' }),
+        authService.login({ username: 'admin', password: 'Test-Admin-Pw-9xK2-local' }),
       ).rejects.toThrow(/missing both session_token and token/i);
       expect(mockHttp.setAuthToken).not.toHaveBeenCalled();
     });

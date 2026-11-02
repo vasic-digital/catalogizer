@@ -229,7 +229,7 @@ func TestLoadBrowsingConfig_Defaults(t *testing.T) {
 	cfg := LoadBrowsingConfig()
 	assert.Equal(t, "http://localhost:28080", cfg.BaseURL)
 	assert.Equal(t, "admin", cfg.Username)
-	assert.Equal(t, "admin123", cfg.Password)
+	assert.Empty(t, cfg.Password, "no default admin password (CAT-021)")
 	assert.Equal(t, "http://localhost:3000", cfg.WebAppURL)
 	assert.Equal(t, "../catalog-web", cfg.WebAppDir)
 }
@@ -259,7 +259,7 @@ func TestLoadBrowsingConfig_PartialEnv(t *testing.T) {
 	cfg := LoadBrowsingConfig()
 	assert.Equal(t, "http://localhost:28080", cfg.BaseURL)
 	assert.Equal(t, "custom_user", cfg.Username)
-	assert.Equal(t, "admin123", cfg.Password)
+	assert.Empty(t, cfg.Password, "no default admin password (CAT-021)")
 }
 
 // ---------------------------------------------------------------------------
@@ -912,6 +912,7 @@ func TestDependencyChain_Populate(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 func TestChallengesWithConfig_ConfigNotNil(t *testing.T) {
+	t.Setenv("ADMIN_PASSWORD", testAdminPassword)
 	tests := []struct {
 		name   string
 		create func() interface{ config() *BrowsingConfig }
@@ -1207,7 +1208,7 @@ func TestUserFlowCredentials_Defaults(t *testing.T) {
 	t.Setenv("ADMIN_PASSWORD", "")
 	creds := userFlowCredentials()
 	assert.Equal(t, "admin", creds.Username)
-	assert.Equal(t, "admin123", creds.Password)
+	assert.Empty(t, creds.Password, "no default admin password (CAT-021)")
 }
 
 func TestUserFlowCredentials_EnvOverride(t *testing.T) {
@@ -1650,7 +1651,7 @@ func TestExecute_APIChallenges_NoServer(t *testing.T) {
 	// Use a port that nothing is listening on.
 	t.Setenv("BROWSING_API_URL", "http://127.0.0.1:19999")
 	t.Setenv("ADMIN_USERNAME", "admin")
-	t.Setenv("ADMIN_PASSWORD", "admin123")
+	t.Setenv("ADMIN_PASSWORD", testAdminPassword)
 	t.Setenv("BROWSING_WEB_URL", "http://127.0.0.1:19998")
 
 	// Use a short context timeout so LoginWithRetry fails fast
@@ -2058,7 +2059,7 @@ func TestExecute_APIChallenges_WithMockServer(t *testing.T) {
 
 	t.Setenv("BROWSING_API_URL", baseURL)
 	t.Setenv("ADMIN_USERNAME", "admin")
-	t.Setenv("ADMIN_PASSWORD", "admin123")
+	t.Setenv("ADMIN_PASSWORD", testAdminPassword)
 	t.Setenv("BROWSING_WEB_URL", "http://127.0.0.1:19998")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -2117,7 +2118,7 @@ func TestExecute_Populate_WithMockServer(t *testing.T) {
 
 	t.Setenv("BROWSING_API_URL", baseURL)
 	t.Setenv("ADMIN_USERNAME", "admin")
-	t.Setenv("ADMIN_PASSWORD", "admin123")
+	t.Setenv("ADMIN_PASSWORD", testAdminPassword)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

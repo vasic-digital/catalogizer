@@ -42,7 +42,7 @@ func TestFullAPIFlow(t *testing.T) {
 	// --- Step 2: Login ---
 	var authToken string
 	t.Run("Login", func(t *testing.T) {
-		loginBody := strings.NewReader(`{"username":"admin","password":"admin123"}`)
+		loginBody := strings.NewReader(`{"username":"admin","password":"` + testAdminPassword + `"}`)
 		resp, err := client.Post(sb.baseURL+"/api/v1/auth/login", "application/json", loginBody)
 		require.NoError(t, err)
 		defer resp.Body.Close()
@@ -191,7 +191,7 @@ func TestFullAPIFlow_InvalidLogin(t *testing.T) {
 		password string
 	}{
 		{"WrongPassword", "admin", "wrongpassword"},
-		{"WrongUsername", "nonexistent", "admin123"},
+		{"WrongUsername", "nonexistent", testAdminPassword},
 		{"BothWrong", "nobody", "nothing"},
 		{"EmptyCredentials", "", ""},
 	}

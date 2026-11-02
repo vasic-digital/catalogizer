@@ -24,7 +24,7 @@ The admin panel is available exclusively to users with the **admin** role. Acces
 On first startup, Catalogizer creates a default admin account:
 
 - **Username**: `admin`
-- **Password**: Set via the `ADMIN_PASSWORD` environment variable (defaults to `admin123` in development)
+- **Password**: Set via the `ADMIN_PASSWORD` environment variable (no default: a published or placeholder value is refused at startup; leave it unset to get a random one-time password printed to stderr)
 
 Change the default password immediately after first login. Navigate to the admin panel, select your user account, and update the password.
 
@@ -42,6 +42,38 @@ Catalogizer uses two roles:
 | `admin` | All user capabilities plus: user management, storage configuration, scanning, backup/restore, log access, system configuration, cache management, challenge execution |
 
 ---
+
+### Recovering an install that still uses a published default password
+
+If startup stops with "still uses a published default password", the server
+refuses to run until that admin account is rotated. With the server stopped, run
+the offline subcommand (the new password is read from the environment by name and
+is never printed):
+
+```bash
+ADMIN_NEW_PASSWORD='<choose-a-strong-password>' ./catalog-api admin-reset-password
+# or a single named admin: ./catalog-api admin-reset-password <username>
+```
+
+It rotates every admin whose stored hash matches a published default (or the named
+admin), revokes all of that account's existing sessions in the same step (every
+`/api/v1` request checks that its token's session is still active, so already-issued
+access tokens stop working immediately, not only at expiry), and prints account names only. Then start the server normally.
+
+The command loads the full server configuration first, so the same environment as
+the server is required: `JWT_SECRET` (at least 32 characters), `ADMIN_USERNAME`, a
+non-default `ADMIN_PASSWORD`, the database settings and the encryption key file,
+plus `ADMIN_NEW_PASSWORD`. In a container (entrypoint `/app/catalogizer-api`):
+
+```bash
+docker compose run --rm -e ADMIN_NEW_PASSWORD api admin-reset-password [username]
+```
+
+Exit codes: `0` rotated (or, without a username, nothing needed rotating);
+`1` failure, or the named account does not exist or is not an admin;
+`2` `ADMIN_NEW_PASSWORD` missing or a known placeholder.
+Release mode (`GIN_MODE=release`, the default in the production compose file)
+ignores `CATALOGIZER_ALLOW_INSECURE_DEFAULTS`.
 
 ## System Information Overview
 

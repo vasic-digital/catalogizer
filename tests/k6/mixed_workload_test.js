@@ -40,7 +40,7 @@ const SEARCH_TERMS = [
 export function setup() {
   const loginRes = http.post(`${BASE_URL}/api/v1/auth/login`, JSON.stringify({
     username: __ENV.API_USER || 'admin',
-    password: __ENV.API_PASS || 'admin123',
+    password: __ENV.API_PASS || '',
   }), { headers: { 'Content-Type': 'application/json' } });
 
   if (loginRes.status === 200) {

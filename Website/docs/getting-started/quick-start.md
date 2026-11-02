@@ -43,7 +43,7 @@ Edit `.env` and set at minimum:
 
 ```env
 JWT_SECRET=your-dev-secret-key-at-least-32-chars
-ADMIN_PASSWORD=admin123
+ADMIN_PASSWORD=<generate-your-own, e.g. openssl rand -base64 24>
 ```
 
 Start the server:
@@ -90,7 +90,7 @@ ss -tlnp | grep :3000
 Open `http://localhost:3000` in your browser. Log in with:
 
 - **Username**: `admin`
-- **Password**: The `ADMIN_PASSWORD` value from your `.env` file (default: `admin123`)
+- **Password**: The `ADMIN_PASSWORD` value from your `.env` file (no default: set your own strong value)
 
 You will see the dashboard with an empty catalog.
 

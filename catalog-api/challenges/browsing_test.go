@@ -200,8 +200,8 @@ func TestBrowsingConfigDefaults(t *testing.T) {
 	if cfg.Username != "admin" {
 		t.Errorf("expected default Username 'admin', got '%s'", cfg.Username)
 	}
-	if cfg.Password != "admin123" {
-		t.Errorf("expected default Password 'admin123', got '%s'", cfg.Password)
+	if cfg.Password != "" {
+		t.Errorf("expected NO default Password (CAT-021), got a non-empty value (%d chars)", len(cfg.Password))
 	}
 	if cfg.WebAppURL != "http://localhost:3000" {
 		t.Errorf("expected default WebAppURL 'http://localhost:3000', got '%s'", cfg.WebAppURL)

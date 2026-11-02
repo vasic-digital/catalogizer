@@ -1,5 +1,7 @@
 #!/bin/bash
 set -e
+: "${ADMIN_PASSWORD:?set ADMIN_PASSWORD (no default; CAT-021)}"
+LOGIN_BODY=$(jq -n --arg u admin --arg p "$ADMIN_PASSWORD" '{username:$u,password:$p}')
 
 # Get server port from .service-port file, default 8080
 get_server_port() {
@@ -13,7 +15,7 @@ API_PORT=$(get_server_port)
 API_BASE="http://localhost:$API_PORT"
 
 # Get JWT token using jq (more robust)
-RESP=$(curl -s -X POST $API_BASE/api/v1/auth/login -H "Content-Type: application/json" -d '{"username":"admin","password":"admin123"}')
+RESP=$(curl -s -X POST $API_BASE/api/v1/auth/login -H "Content-Type: application/json" -d @- <<<"$LOGIN_BODY")
 TOKEN=$(echo "$RESP" | jq -r '.session_token')
 if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
     echo "Failed to extract token from response: $RESP"
