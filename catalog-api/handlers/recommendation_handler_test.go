@@ -80,89 +80,78 @@ func (suite *RecommendationHandlerTestSuite) TestGetSimilarItems_MethodNotAllowe
 
 // GetTrendingItems tests
 
-func (suite *RecommendationHandlerTestSuite) TestGetTrendingItems_DefaultParams() {
-	req := httptest.NewRequest("GET", "/api/v1/recommendations/trending", nil)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, req)
+func (suite *RecommendationHandlerTestSuite) TestGetTrendingItems_NotImplementedNeverFabricates() {
+	for _, q := range []string{"", "?media_type=movie", "?time_range=month", "?limit=3"} {
+		req := httptest.NewRequest("GET", "/api/v1/recommendations/trending"+q, nil)
+		w := httptest.NewRecorder()
+		suite.router.ServeHTTP(w, req)
 
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-	var resp TrendingResponse
-	err := json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "week", resp.TimeRange)
-	assert.NotNil(suite.T(), resp.Items)
-}
-
-func (suite *RecommendationHandlerTestSuite) TestGetTrendingItems_WithMediaType() {
-	req := httptest.NewRequest("GET", "/api/v1/recommendations/trending?media_type=movie", nil)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, req)
-
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-	var resp TrendingResponse
-	err := json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "movie", resp.MediaType)
-}
-
-func (suite *RecommendationHandlerTestSuite) TestGetTrendingItems_WithTimeRange() {
-	req := httptest.NewRequest("GET", "/api/v1/recommendations/trending?time_range=month", nil)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, req)
-
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-	var resp TrendingResponse
-	err := json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "month", resp.TimeRange)
-}
-
-func (suite *RecommendationHandlerTestSuite) TestGetTrendingItems_WithCustomLimit() {
-	req := httptest.NewRequest("GET", "/api/v1/recommendations/trending?limit=3", nil)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, req)
-
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-	var resp TrendingResponse
-	err := json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.NoError(suite.T(), err)
-	assert.LessOrEqual(suite.T(), len(resp.Items), 5) // Capped at 5 in mock
+		assert.Equal(suite.T(), http.StatusNotImplemented, w.Code, q)
+		assert.NotContains(suite.T(), w.Body.String(), `"items"`, q)
+		assert.NotContains(suite.T(), w.Body.String(), "/trending/path", q)
+	}
 }
 
 // GetPersonalizedRecommendations tests
 
+func (suite *RecommendationHandlerTestSuite) personalizedRouter(callerID interface{}, role int) *gin.Engine {
+	r := gin.New()
+	r.GET("/p/:user_id", func(c *gin.Context) {
+		if callerID != nil {
+			c.Set("user_id", callerID)
+			c.Set("role_id", role)
+		}
+		suite.handler.GetPersonalizedRecommendations(c)
+	})
+	return r
+}
+
 func (suite *RecommendationHandlerTestSuite) TestGetPersonalizedRecommendations_InvalidUserID() {
-	req := httptest.NewRequest("GET", "/api/v1/recommendations/personalized/abc", nil)
+	req := httptest.NewRequest("GET", "/p/abc", nil)
 	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, req)
+	suite.personalizedRouter(1, 2).ServeHTTP(w, req)
 
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
 	var resp map[string]interface{}
-	err := json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.NoError(suite.T(), err)
+	assert.NoError(suite.T(), json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Contains(suite.T(), resp["error"], "Invalid user ID")
 }
 
-func (suite *RecommendationHandlerTestSuite) TestGetPersonalizedRecommendations_ValidUserID() {
-	req := httptest.NewRequest("GET", "/api/v1/recommendations/personalized/1", nil)
+func (suite *RecommendationHandlerTestSuite) TestGetPersonalizedRecommendations_FloatUserID() {
+	req := httptest.NewRequest("GET", "/p/1.5", nil)
 	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, req)
-
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-	var resp PersonalizedResponse
-	err := json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), int64(1), resp.UserID)
-	assert.NotNil(suite.T(), resp.Items)
-	assert.LessOrEqual(suite.T(), len(resp.Items), 3)
+	suite.personalizedRouter(1, 2).ServeHTTP(w, req)
+	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
 }
 
-func (suite *RecommendationHandlerTestSuite) TestGetPersonalizedRecommendations_FloatUserID() {
-	req := httptest.NewRequest("GET", "/api/v1/recommendations/personalized/1.5", nil)
+func (suite *RecommendationHandlerTestSuite) TestGetPersonalizedRecommendations_RequiresAuthentication() {
+	req := httptest.NewRequest("GET", "/p/1", nil)
 	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, req)
+	suite.personalizedRouter(nil, 0).ServeHTTP(w, req)
+	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
+}
 
-	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+// IDOR: a normal user must not request another user's recommendations.
+func (suite *RecommendationHandlerTestSuite) TestGetPersonalizedRecommendations_OtherUserForbidden() {
+	req := httptest.NewRequest("GET", "/p/2", nil)
+	w := httptest.NewRecorder()
+	suite.personalizedRouter(1, 2).ServeHTTP(w, req)
+	assert.Equal(suite.T(), http.StatusForbidden, w.Code)
+}
+
+// The caller's own id (and admin for anyone) passes the IDOR check and then
+// gets an honest 501, never invented titles.
+func (suite *RecommendationHandlerTestSuite) TestGetPersonalizedRecommendations_NotImplementedNeverFabricates() {
+	for _, tc := range []struct {
+		caller interface{}
+		role   int
+	}{{1, 2}, {int64(1), 2}, {99, 1}} {
+		req := httptest.NewRequest("GET", "/p/1", nil)
+		w := httptest.NewRecorder()
+		suite.personalizedRouter(tc.caller, tc.role).ServeHTTP(w, req)
+		assert.Equal(suite.T(), http.StatusNotImplemented, w.Code)
+		assert.NotContains(suite.T(), w.Body.String(), "Personalized Media")
+	}
 }
 
 func TestRecommendationHandlerTestSuite(t *testing.T) {
