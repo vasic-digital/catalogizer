@@ -20,6 +20,15 @@ REPORTS_DIR="reports/tests"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 OVERALL_EXIT_CODE=0
 E2E_STATUS="not-run"   # PASSED | FAILED | SKIPPED (credentials_absent)
+PERF_STATUS="not-run"  # PASSED | FAILED | SKIPPED (reason: ...)
+SEC_STATUS="not-run"   # PASSED | FAILED | SKIPPED (reason: ...)
+
+# is_skipped STATUS: true when STATUS starts with SKIPPED
+is_skipped() { [ "${1#SKIPPED}" != "$1" ]; }
+# status_mark STATUS: tick / skip / cross glyph for the summary
+status_mark() { if [ "$1" = PASSED ]; then echo "✅"; elif is_skipped "$1"; then echo "⏭️"; else echo "❌"; fi; }
+# any_skipped: true when a skip-capable stage was skipped
+any_skipped() { is_skipped "$E2E_STATUS" || is_skipped "$PERF_STATUS" || is_skipped "$SEC_STATUS"; }
 
 mkdir -p "${REPORTS_DIR}/${TIMESTAMP}"
 
@@ -169,13 +178,21 @@ run_performance_tests() {
     # Check if k6 is installed
     if command -v k6 &> /dev/null; then
         if [ -f "tests/performance/load-test.js" ]; then
-            k6 run --out json="${REPORTS_DIR}/${TIMESTAMP}/performance-results.json" tests/performance/load-test.js 2>&1 || true
-            log_success "Performance tests completed"
+            if k6 run --out json="${REPORTS_DIR}/${TIMESTAMP}/performance-results.json" tests/performance/load-test.js > "${REPORTS_DIR}/${TIMESTAMP}/performance-tests.log" 2>&1; then
+                log_success "Performance tests passed"
+                PERF_STATUS="PASSED"
+            else
+                log_error "Performance tests failed"
+                PERF_STATUS="FAILED"
+                OVERALL_EXIT_CODE=1
+            fi
         else
-            log_warning "Performance test scripts not found"
+            log_warning "Performance tests SKIPPED reason=script_not_found (tests/performance/load-test.js)"
+            PERF_STATUS="SKIPPED (reason: script_not_found)"
         fi
     else
-        log_warning "k6 not installed, skipping performance tests"
+        log_warning "Performance tests SKIPPED reason=tool_absent (k6 not installed; not counted as passed)"
+        PERF_STATUS="SKIPPED (reason: tool_absent)"
     fi
 }
 
@@ -234,10 +251,17 @@ run_security_tests() {
     log_info "Running security test suite..."
     
     if [ -f "scripts/security-scan-comprehensive.sh" ]; then
-        ./scripts/security-scan-comprehensive.sh 2>&1 || true
-        log_success "Security tests completed"
+        if ./scripts/security-scan-comprehensive.sh > "${REPORTS_DIR}/${TIMESTAMP}/security-tests.log" 2>&1; then
+            log_success "Security tests passed"
+            SEC_STATUS="PASSED"
+        else
+            log_error "Security tests failed (see security-tests.log)"
+            SEC_STATUS="FAILED"
+            OVERALL_EXIT_CODE=1
+        fi
     else
-        log_warning "Security scan script not found"
+        log_warning "Security tests SKIPPED reason=script_not_found (scripts/security-scan-comprehensive.sh)"
+        SEC_STATUS="SKIPPED (reason: script_not_found)"
     fi
 }
 
@@ -290,18 +314,18 @@ generate_test_summary() {
 
 **Date:** $(date)
 **Test Run ID:** ${TIMESTAMP}
-**Status:** $(if [ $OVERALL_EXIT_CODE -ne 0 ]; then echo "❌ FAILED"; elif [ "${E2E_STATUS#SKIPPED}" != "$E2E_STATUS" ]; then echo "⚠️ PASSED WITH SKIPS (E2E ${E2E_STATUS})"; else echo "✅ PASSED"; fi)
+**Status:** $(if [ $OVERALL_EXIT_CODE -ne 0 ]; then echo "❌ FAILED"; elif any_skipped; then echo "⚠️ PASSED WITH SKIPS (E2E: ${E2E_STATUS}; Performance: ${PERF_STATUS}; Security: ${SEC_STATUS})"; else echo "✅ PASSED"; fi)
 
 ## Tests Executed
 
 1. ✅ Go Unit Tests (with race detection)
 2. ✅ Go Integration Tests
 3. ✅ TypeScript Unit Tests
-4. $([ "$E2E_STATUS" = PASSED ] && echo "✅" || { [ "${E2E_STATUS#SKIPPED}" != "$E2E_STATUS" ] && echo "⏭️"; } || echo "❌") E2E Tests (Playwright): ${E2E_STATUS}
+4. $(status_mark "$E2E_STATUS") E2E Tests (Playwright): ${E2E_STATUS}
 5. ✅ Contract Tests
-6. ✅ Performance Tests
+6. $(status_mark "$PERF_STATUS") Performance Tests (k6): ${PERF_STATUS}
 7. ✅ Linting and Static Analysis
-8. ✅ Security Tests
+8. $(status_mark "$SEC_STATUS") Security Tests: ${SEC_STATUS}
 9. ✅ Build Verification
 
 ## Results
@@ -365,8 +389,8 @@ main() {
     # Final status
     print_header "TEST EXECUTION COMPLETE"
     
-    if [ $OVERALL_EXIT_CODE -eq 0 ] && [ "${E2E_STATUS#SKIPPED}" != "$E2E_STATUS" ]; then
-        log_warning "Tests passed, but E2E was SKIPPED (${E2E_STATUS}); this is not a full pass"
+    if [ $OVERALL_EXIT_CODE -eq 0 ] && any_skipped; then
+        log_warning "Tests passed, but a stage was SKIPPED (E2E: ${E2E_STATUS}; Performance: ${PERF_STATUS}; Security: ${SEC_STATUS}); this is not a full pass"
         log_info "Review detailed reports at: ${REPORTS_DIR}/${TIMESTAMP}/"
     elif [ $OVERALL_EXIT_CODE -eq 0 ]; then
         log_success "All tests passed successfully!"
