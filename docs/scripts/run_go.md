@@ -10,7 +10,7 @@
 
 ## Purpose
 
-Go build and test (catalog-api, Go submodules, race, bench, fuzz). The command is prefixed `env GOMAXPROCS=3 GOTOOLCHAIN=local CGO_ENABLED=1 CGO_CFLAGS=-DHAVE_USLEEP=1` (docs/16 6.2). Image: IMG-GO. State now: runs. The whole contract (usage, limits from the envelope, anti-mess sweep, registered long operation,
+Go build and test (catalog-api, Go submodules, race, bench, fuzz). The command is prefixed `env GOMAXPROCS=3 GOTOOLCHAIN=local CGO_ENABLED=1 CGO_CPPFLAGS=-DHAVE_USLEEP=1` (docs/16 6.2). Image: IMG-GO. State now: runs. The whole contract (usage, limits from the envelope, anti-mess sweep, registered long operation,
 toolchain record, refusals, exit codes, test hooks) is in [`runner_lib.md`](runner_lib.md).
 
 ## Usage

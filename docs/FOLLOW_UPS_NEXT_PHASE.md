@@ -42,7 +42,7 @@ compose shapes skipped silently), so those claims were wrong. Status after the r
 Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser coverage").
 
 ## Operator decisions pending (process-doc)
-- `deployment/amber-up.sh` runs plain `docker` (allowlisted R6): keep or migrate to podman.
+- `deployment/amber-up.sh` now uses rootless `podman` (operator decision 2026-11-02; the R6 allowlist row is removed). UNCONFIRMED on amber.local (not contacted): podman installed, cgroup delegation for `--cpus`/`--memory`, and the image store (images built with docker must be rebuilt or loaded into podman).
 - `scripts/deploy-vision-hosts.sh` default host `thinker.local` (allowlisted R4): the operator
   said it is obsolete, but constitution §11.4.173 still names it as the build host; needs a
   recorded decision.

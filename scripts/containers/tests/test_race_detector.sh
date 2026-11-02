@@ -187,7 +187,7 @@ rm -rf "$LONGOPS_DIR"; mkdir -p "$LONGOPS_DIR"; : >"$T/shim.log"
 mkdir -p "$T/ck"
 ( cd "$T/ck" && env SHIM_LOG="$T/shim.log" PATH="$SH:$PATH" RUNNER_TEST_MODE=1 RUNNER_RUNP="$SH/run_pinned.sh" RUNNER_SWEEP="$T/sweep-shim.sh" bash "$RUNGO" --out "$T/o-shim" -- sh -c "$(race_cmd "-race")" ) >"$T/stdout" 2>"$T/stderr"; RC=$?
 check "L2 shim: the lane command runs through run_go.sh (exit 0)" "$RC" 0
-tr '\n' ' ' <"$T/shim.log" | grep -q 'ARG:env ARG:GOMAXPROCS=3 ARG:GOTOOLCHAIN=local ARG:CGO_ENABLED=1 ARG:CGO_CFLAGS=-DHAVE_USLEEP=1 ARG:sh ARG:-c ARG:go test -race -p 2 -parallel 2 -count=1 -json \./\.\.\. > /out/go-test\.jsonl' && ok "L2 shim: GOMAXPROCS=3 + the docs/16 flags -race -p 2 -parallel 2 -json reach run_pinned.sh in the IMG-GO container call" || bad "L2 shim: $(tr '\n' ' ' <"$T/shim.log")"
+tr '\n' ' ' <"$T/shim.log" | grep -q 'ARG:env ARG:GOMAXPROCS=3 ARG:GOTOOLCHAIN=local ARG:CGO_ENABLED=1 ARG:CGO_CPPFLAGS=-DHAVE_USLEEP=1 ARG:sh ARG:-c ARG:go test -race -p 2 -parallel 2 -count=1 -json \./\.\.\. > /out/go-test\.jsonl' && ok "L2 shim: GOMAXPROCS=3 + the docs/16 flags -race -p 2 -parallel 2 -json reach run_pinned.sh in the IMG-GO container call" || bad "L2 shim: $(tr '\n' ' ' <"$T/shim.log")"
 grep -qxF 'ARG:IMG-GO' "$T/shim.log" && ok "L2 shim: the image is IMG-GO" || bad "L2 shim: image missing"
 grep -q 'ENV:RUNP_MEMORY=[0-9][0-9]* RUNP_CPUS=[0-9][0-9]* RUNP_PIDS=[0-9][0-9]*' "$T/shim.log" && ok "L2 shim: the envelope limits (--memory, --cpus, --pids-limit) are handed to run_pinned.sh as container limits" || bad "L2 shim: limits missing"
 

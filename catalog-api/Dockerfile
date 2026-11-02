@@ -16,6 +16,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Prevent Go from auto-downloading newer toolchain
 ENV GOTOOLCHAIN=local
 ENV CGO_ENABLED=1
+# 2026-11-02 decision: SQLite busy handler sleeps in ms (go-sqlcipher); CPPFLAGS keeps go's default -O2 -g CFLAGS
+ENV CGO_CPPFLAGS=-DHAVE_USLEEP=1
 
 WORKDIR /build
 

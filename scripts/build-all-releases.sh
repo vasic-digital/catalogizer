@@ -50,7 +50,7 @@ log_info "Building catalog-api..."
 cd "$ROOT_DIR/catalog-api"
 
 log_info "  - Linux AMD64"
-GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.Version=$VERSION" \
+CGO_CPPFLAGS=-DHAVE_USLEEP=1 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.Version=$VERSION" \
     -o "$RELEASES_DIR/linux/catalog-api/catalog-api-v$VERSION-linux-amd64" main.go
 
 log_info "  - Windows AMD64"
