@@ -2,9 +2,9 @@
 
 | Field | Value |
 |---|---|
-| Revision | 5 |
+| Revision | 6 |
 | Created | 2026-10-06 |
-| Last modified | 2026-10-30 (added check_submodule_ff_range.md; earlier 2026-10-29: added check_submodule_ff.md; earlier 2026-10-08: added lumenignore_skeleton.md, review WP-02-T028-r2 N3; earlier: added scope_drift_check.md, review WP-02-T028 F4/F5) |
+| Last modified | 2026-11-02 (added check_api_route_vs_spec.md; earlier 2026-10-30: added check_submodule_ff_range.md; earlier 2026-10-29: added check_submodule_ff.md; earlier 2026-10-08: added lumenignore_skeleton.md, review WP-02-T028-r2 N3; earlier: added scope_drift_check.md, review WP-02-T028 F4/F5) |
 | Status | tracked; created in round 7 (WF7 review F7-1, constitution 11.4.212 reachability); independent review of this revision owed (constitution 11.4.142) |
 | Linked from | the root [`README.md`](../../README.md), documentation section |
 
@@ -16,6 +16,7 @@ One guide per script (constitution 11.4.18). Every page of this directory is lis
 | Guide | Script | Notes |
 |---|---|---|
 | [anti-bluff-scan.md](anti-bluff-scan.md) | `scripts/anti-bluff-scan.sh` | wrapper over the audit scanner |
+| [check_api_route_vs_spec.md](check_api_route_vs_spec.md) | `scripts/check_api_route_vs_spec.py`, `scripts/lib/gin_routes_ast.go` | Gin router vs `docs/api/openapi.yaml` drift gate (go/ast extraction) |
 | [check_classes.md](check_classes.md) | `scripts/repo/check_class.sh` and the class tables | |
 | [check_review_provenance.md](check_review_provenance.md) | `scripts/review/check_review_provenance.sh` | review provenance checker |
 | [derive_scope.md](derive_scope.md) | `scripts/audit/derive_scope.sh` | |

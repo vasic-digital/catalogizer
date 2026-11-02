@@ -88,6 +88,53 @@ paths:
 Y
 expect "equivalent templated paths in the spec fail" 1 --main "$T/main.go" --spec "$T/clash.yaml" "${EX[@]}"
 case "$OUT" in *"EQUIVALENT TEMPLATED PATHS"*) ok "report names the equivalent templated paths" ;; *) no "clash text" "$OUT" ;; esac
+
+# --- go/ast extraction cases that a line regex misses (reviewer mutations) ---
+cat >"$T/ast_main.go" <<'GO'
+package main
+
+func registerExtra(g *gin.RouterGroup) {
+	g.GET("/helper-route", h)
+	sub := g.Group("/hsub")
+	sub.POST("/x", h)
+}
+
+func main() {
+	router := gin.Default()
+	api := router.Group("/api/v1")
+	api.
+		GET(
+			"/multi/line",
+			h,
+		)
+	api.Handle("PATCH", "/handled", h)
+	api.Any("/anyroute", h)
+	api.Match([]string{"GET", "POST"}, "/matched", h)
+	registerExtra(api)
+}
+GO
+run --main "$T/ast_main.go" --spec "$T/good.yaml" --list
+for n in "GET /api/v1/multi/line" "PATCH /api/v1/handled" "GET /api/v1/anyroute" "DELETE /api/v1/anyroute" "POST /api/v1/matched" "GET /api/v1/helper-route" "POST /api/v1/hsub/x"; do
+  case "$OUT" in *"$n"*) ok "AST extracts: $n" ;; *) no "AST extraction missed: $n" "$OUT" ;; esac
+done
+# a spec lacking those routes must be drift (the regex gate would have passed the multi-line/Handle/Any/helper cases)
+printf 'openapi: 3.0.3\ninfo: {title: t, version: 1}\npaths:\n  /api/v1/matched:\n    get: {responses: {"200": {description: ok}}}\n    post: {responses: {"200": {description: ok}}}\n' >"$T/ast_spec.yaml"
+expect "MUTATION: undocumented multi-line/Handle/Any/helper routes are drift" 1 --main "$T/ast_main.go" --spec "$T/ast_spec.yaml"
+for n in "/api/v1/multi/line" "/api/v1/handled" "/api/v1/helper-route" "/api/v1/hsub/x"; do
+  case "$OUT" in *"$n"*) ok "drift report names $n" ;; *) no "drift report missing $n" "$OUT" ;; esac
+done
+# non-literal path / unknown receiver cannot be verified -> blind (rc 3), never silently in sync
+cat >"$T/nonlit.go" <<'GO'
+package main
+
+func main() {
+	router := gin.Default()
+	router.GET("/health", h)
+	router.GET(somePath, h)
+	other.GET("/mystery", h)
+}
+GO
+expect "non-literal path / unknown receiver is refused (rc 3)" 3 --main "$T/nonlit.go" --spec "$T/good.yaml"
 # real tree
 run; if [ "$RC" = 0 ]; then ok "REAL TREE: router and docs/api/openapi.yaml agree ($(echo "$OUT" | tail -1))"; else no "REAL TREE drift" "$(echo "$OUT" | head -20)"; fi
 run --list; case "$OUT" in *"GET /api/v1/auth/login"*|*"POST /api/v1/auth/login"*) ok "control needle: real-tree extraction sees POST /api/v1/auth/login" ;; *) no "real tree needle" "$(echo "$OUT"|head)" ;; esac

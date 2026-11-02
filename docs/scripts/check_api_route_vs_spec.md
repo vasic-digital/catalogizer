@@ -2,11 +2,11 @@
 
 | Field | Value |
 |---|---|
-| Revision | 1 |
+| Revision | 2 |
 | Created | 2026-11-02 |
-| Last modified | 2026-11-02T00:00:00Z |
+| Last modified | 2026-11-02T12:00:00Z (go/ast extraction replaces the line regex) |
 | Status | committed on the scratch vehicle only; independent review owed (constitution 11.4.142 / 11.4.209) |
-| Source | `scripts/check_api_route_vs_spec.py`; test `scripts/tests/test_check_api_route_vs_spec.sh` |
+| Source | `scripts/check_api_route_vs_spec.py`, `scripts/lib/gin_routes_ast.go`; test `scripts/tests/test_check_api_route_vs_spec.sh` |
 
 ## Purpose
 
@@ -31,17 +31,26 @@ and are documented as a note in `info.description`). `--list` prints every extra
 
 ## How it works
 
-Tracks Gin group variables (`v1 := r.Group(...)`), strips `//` comments, normalizes `:x`, `*x` and `{x}` to `{}` (parameter names are ignored), and loads the YAML with a
-duplicate-key-detecting loader (the original spec was invalid because of 13 duplicate keys).
+`scripts/lib/gin_routes_ast.go` (Go stdlib `go/ast` only; the gate builds it with `go build`, offline, `GOTOOLCHAIN=local`, so the Go toolchain is required, exit 2 without it) interprets `main()` of
+the router file: `gin.Default/New` roots, `X.Group("lit")` prefixes, chained `.Use(...)`, `GET/POST/PUT/DELETE/PATCH/HEAD/OPTIONS`, `Any` (expanded to those 7 methods),
+`Handle("METHOD", path, ...)`, `Match([]string{...}, path, ...)`, calls split over several lines, and same-file helper functions with a `*gin.RouterGroup`/`*gin.Engine`/`gin.IRouter`/`gin.IRoutes`
+parameter (interpreted at each call site with the caller's prefix). Parameter names are ignored (`:x`, `*x`, `{x}` all become `{}`). The YAML is loaded with a duplicate-key-detecting
+loader (the original spec was invalid because of 13 duplicate keys).
+
+A registration that cannot be resolved (non-literal path, `Handle` with a non-literal method, a route-verb call with a literal `/path` on a receiver that is not a known group) makes the gate
+exit 3 (blind) instead of passing.
 
 ## Test
 
-`scripts/tests/test_check_api_route_vs_spec.sh` (20 checks): golden-good, comment carrier, excluded prefix, golden-bad (missing route, phantom, method mismatch), equivalent
-templates, blind refusal, duplicate keys, missing file, the real tree, control needles (`POST /api/v1/auth/login`, `GET /health`) and two paired mutations on copies of the real files.
+`scripts/tests/test_check_api_route_vs_spec.sh` (33 checks): golden-good, comment carrier, excluded prefix, golden-bad (missing route, phantom, method mismatch), equivalent
+templates, blind refusal, duplicate keys, missing file, the real tree, control needles (`POST /api/v1/auth/login`, `GET /health`) and two paired mutations on copies of the real files, and the AST cases a line regex misses: a multi-line call, Handle("PATCH", ...), Any(...), Match(...), a helper registering on a *gin.RouterGroup (all must be extracted and reported as drift when undocumented), plus the non-literal-path refusal.
 
 ## Honest limits
 
-- Only the Gin router in `main.go` is read. The gorilla/mux `RegisterRoutes` in `internal/handlers/localization_handlers.go` and `media_player_handlers.go` are called from tests only, not wired into the server.
-- Compares operations only: no request/response schema or field checking. A schema validity check is separate (a real OpenAPI validator, for example kin-openapi, was used once; it is not part of this gate).
-- Routes assembled at run time by means other than the supported group/verb calls are not seen.
+- Only `main()` of the Gin router file is interpreted, plus same-file helpers reached from it. Registrations in other files (a helper in another package taking a group) are not seen; none exist in `main.go` today.
+- Groups held in struct fields, slices or maps, or returned from functions, are not tracked; a route verb on such a receiver with a literal `/path` is reported as unresolved (exit 3), not skipped.
+- `Any` is expanded to GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS (Gin also registers CONNECT and TRACE; those are not compared). `Static*`/`StaticFS`/`StaticFile` are not compared.
+- The gorilla/mux `RegisterRoutes` in `internal/handlers/localization_handlers.go` and `media_player_handlers.go` are called from tests only, not wired into the server.
+- Compares operations only: no request/response schema or field checking. Schema validity is a separate check (a real OpenAPI validator, kin-openapi, was run once offline; it is not part of this gate). A documented response being true at runtime is also not checked (see the `x-currently-broken` operations in `openapi.yaml`).
+- Runtime-conditional routes (`/debug/pprof`, enabled by `HELIX_PPROF_ENABLED=true`) are excluded by default.
 - Not wired into any pre-build sweep by this change.

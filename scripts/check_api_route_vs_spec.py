@@ -3,13 +3,17 @@
 
 Usage: scripts/check_api_route_vs_spec.py [--main FILE] [--spec FILE] [--exclude-prefix P]... [--list]
 
+Needs the Go toolchain (stdlib go/ast extractor in scripts/lib/gin_routes_ast.go).
 Exit: 0 in sync | 1 drift (undocumented route, phantom spec operation, equivalent templated paths) | 2 usage / unreadable / invalid YAML (duplicate keys)
-      3 blind instrument (zero routes or zero spec operations extracted: a zero would be a lie)
+      3 blind instrument (zero routes/operations extracted, or a route registration with a non-literal path/unknown receiver)
 See docs/scripts/check_api_route_vs_spec.md.
 """
 import os
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 
 try:
     import yaml
@@ -19,32 +23,7 @@ except ImportError:  # pragma: no cover
 
 METHODS = ("GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS")
 DEFAULT_EXCLUDES = ("/debug/pprof",)
-GROUP_RE = re.compile(r'^\s*(?:var\s+)?(\w+)\s*(?::=|=)\s*(\w+)\.Group\(\s*"([^"]*)"')
-ROOT_RE = re.compile(r'^\s*(?:var\s+)?(\w+)\s*(?::=|=)\s*gin\.(?:Default|New)\(')
-ROUTE_RE = re.compile(r'\b(\w+)\.(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\(\s*"([^"]*)"')
-
-
-def strip_comment(line):
-    """Drop a // comment that is not inside a string literal."""
-    out, q = [], None
-    i = 0
-    while i < len(line):
-        c = line[i]
-        if q:
-            out.append(c)
-            if c == "\\" and q != "`" and i + 1 < len(line):
-                out.append(line[i + 1]); i += 1
-            elif c == q:
-                q = None
-        else:
-            if c in "\"`'":
-                q = c; out.append(c)
-            elif c == "/" and line[i:i + 2] == "//":
-                break
-            else:
-                out.append(c)
-        i += 1
-    return "".join(out)
+AST_SRC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib", "gin_routes_ast.go")
 
 
 def norm(path):
@@ -53,20 +32,39 @@ def norm(path):
     return p.rstrip("/") or "/"
 
 
+class Unresolved(Exception):
+    pass
+
+
 def code_routes(path):
-    groups, routes = {}, set()
-    for raw in open(path, encoding="utf-8"):
-        line = strip_comment(raw)
-        if ROOT_RE.match(line):
-            groups[ROOT_RE.match(line).group(1)] = ""
+    """Extract (METHOD, normalised path) from main() of a Go file with go/ast (scripts/lib/gin_routes_ast.go)."""
+    go = shutil.which("go")
+    if not go:
+        raise OSError("the Go toolchain (go) is required for go/ast route extraction")
+    env = dict(os.environ, GOTOOLCHAIN="local", GOPROXY="off", GOFLAGS="", CGO_ENABLED="0")
+    tmp = tempfile.mkdtemp(prefix="carvs_ast.")
+    try:
+        exe = os.path.join(tmp, "ast")
+        b = subprocess.run([go, "build", "-o", exe, AST_SRC], env=env, capture_output=True, text=True, cwd=tmp)
+        if b.returncode != 0:
+            raise OSError("cannot build the AST extractor: %s" % b.stderr.strip())
+        r = subprocess.run([exe, path], env=env, capture_output=True, text=True)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    if r.returncode != 0:
+        raise OSError("AST extraction failed: %s" % r.stderr.strip())
+    routes, bad = set(), []
+    for line in r.stdout.splitlines():
+        line = line.strip()
+        if not line:
             continue
-        m = GROUP_RE.match(line)
-        if m and m.group(2) in groups:
-            groups[m.group(1)] = groups[m.group(2)] + m.group(3)
+        if line.startswith("UNRESOLVED"):
+            bad.append(line)
             continue
-        for m in ROUTE_RE.finditer(line):
-            if m.group(1) in groups:
-                routes.add((m.group(2), norm(groups[m.group(1)] + m.group(3))))
+        m, p = line.split(" ", 1)
+        routes.add((m, norm(p)))
+    if bad:
+        raise Unresolved("\n".join(bad))
     return routes
 
 
@@ -121,6 +119,8 @@ def main(argv):
     try:
         code = code_routes(main_go)
         ops, clashes = spec_ops(spec)
+    except Unresolved as e:
+        print("BLIND: route registrations that cannot be resolved statically (refusing to report in-sync):\n%s" % e); return 3
     except (OSError, yaml.YAMLError) as e:
         print("check_api_route_vs_spec: cannot read input: %s" % e, file=sys.stderr); return 2
     keep = lambda r: not any(r[1] == x or r[1].startswith(x + "/") for x in excludes)

@@ -105,11 +105,9 @@ components:
     Error:
       type: object
       properties:
-        success:
-          type: boolean
-          description: Present (false) on errors produced by the shared error helper
         error:
           type: string
+          description: "Human-readable message; the default error envelope is only {error: ...}"
         details:
           type: string
 
@@ -2375,7 +2373,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
 
-
   /api/v1/catalog:
     get:
       tags: [catalog]
@@ -2785,7 +2782,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
 
   /api/v1/download/file/{id}:
     get:
@@ -3442,7 +3438,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
 
   /api/v1/recommendations/similar/{media_id}:
     get:
@@ -4743,9 +4738,13 @@ paths:
           required: true
           schema:
             type: string
+      x-currently-broken: true
+      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. The handler runs with an empty path parameter, so it cannot do what the summary says."
       responses:
-        '200':
-          description: Wizard step data
+        '404':
+          description: Unknown wizard step (the lookup runs with an empty step id). The intended success response is unreachable until the adapter is fixed.
+        '401':
+          description: Unauthenticated (JWT middleware).
 
   /api/v1/configuration/wizard/step/{step_id}/validate:
     post:
@@ -4759,9 +4758,13 @@ paths:
           required: true
           schema:
             type: string
+      x-currently-broken: true
+      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. The handler runs with an empty path parameter, so it cannot do what the summary says."
       responses:
-        '200':
-          description: Validation result
+        '400':
+          description: "Invalid request body. Other outcomes depend on how the service treats an empty step id: UNCONFIRMED, not documented."
+        '401':
+          description: Unauthenticated (JWT middleware).
 
   /api/v1/configuration/wizard/step/{step_id}/save:
     post:
@@ -4775,9 +4778,13 @@ paths:
           required: true
           schema:
             type: string
+      x-currently-broken: true
+      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. The handler runs with an empty path parameter, so it cannot do what the summary says."
       responses:
-        '200':
-          description: Progress saved
+        '400':
+          description: "Invalid request body. Other outcomes depend on how the service treats an empty step id: UNCONFIRMED, not documented."
+        '401':
+          description: Unauthenticated (JWT middleware).
 
   /api/v1/configuration/wizard/progress:
     get:
@@ -4851,9 +4858,17 @@ paths:
           required: true
           schema:
             type: integer
+      x-currently-broken: true
+      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
       responses:
-        '200':
-          description: Error report details
+        '400':
+          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+        '401':
+          description: Missing or non-integer user_id in the request context.
+        '403':
+          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+        '500':
+          description: Service error (not reachable today for the same reason).
 
   /api/v1/errors/reports/{id}/status:
     put:
@@ -4867,9 +4882,17 @@ paths:
           required: true
           schema:
             type: integer
+      x-currently-broken: true
+      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
       responses:
-        '200':
-          description: Status updated
+        '400':
+          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+        '401':
+          description: Missing or non-integer user_id in the request context.
+        '403':
+          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+        '500':
+          description: Service error (not reachable today for the same reason).
 
   /api/v1/errors/crashes:
     get:
@@ -4893,9 +4916,17 @@ paths:
           required: true
           schema:
             type: integer
+      x-currently-broken: true
+      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
       responses:
-        '200':
-          description: Crash report details
+        '400':
+          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+        '401':
+          description: Missing or non-integer user_id in the request context.
+        '403':
+          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+        '500':
+          description: Service error (not reachable today for the same reason).
 
   /api/v1/errors/crashes/{id}/status:
     put:
@@ -4909,9 +4940,17 @@ paths:
           required: true
           schema:
             type: integer
+      x-currently-broken: true
+      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
       responses:
-        '200':
-          description: Status updated
+        '400':
+          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+        '401':
+          description: Missing or non-integer user_id in the request context.
+        '403':
+          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+        '500':
+          description: Service error (not reachable today for the same reason).
 
   /api/v1/errors/statistics:
     get:
@@ -4980,9 +5019,17 @@ paths:
           required: true
           schema:
             type: integer
+      x-currently-broken: true
+      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
       responses:
-        '200':
-          description: Log collection details
+        '400':
+          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+        '401':
+          description: Missing or non-integer user_id in the request context.
+        '403':
+          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+        '500':
+          description: Service error (not reachable today for the same reason).
 
   /api/v1/logs/collections/{id}/entries:
     get:
@@ -4996,9 +5043,17 @@ paths:
           required: true
           schema:
             type: integer
+      x-currently-broken: true
+      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
       responses:
-        '200':
-          description: Log entries
+        '400':
+          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+        '401':
+          description: Missing or non-integer user_id in the request context.
+        '403':
+          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+        '500':
+          description: Service error (not reachable today for the same reason).
 
   /api/v1/logs/collections/{id}/export:
     post:
@@ -5012,9 +5067,17 @@ paths:
           required: true
           schema:
             type: integer
+      x-currently-broken: true
+      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
       responses:
-        '200':
-          description: Exported log data
+        '400':
+          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+        '401':
+          description: Missing or non-integer user_id in the request context.
+        '403':
+          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+        '500':
+          description: Service error (not reachable today for the same reason).
 
   /api/v1/logs/collections/{id}/analyze:
     get:
@@ -5028,9 +5091,17 @@ paths:
           required: true
           schema:
             type: integer
+      x-currently-broken: true
+      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
       responses:
-        '200':
-          description: Log analysis results
+        '400':
+          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+        '401':
+          description: Missing or non-integer user_id in the request context.
+        '403':
+          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+        '500':
+          description: Service error (not reachable today for the same reason).
 
   /api/v1/logs/share:
     post:
@@ -5059,9 +5130,13 @@ paths:
           required: true
           schema:
             type: string
+      x-currently-broken: true
+      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. The handler runs with an empty path parameter, so it cannot do what the summary says."
       responses:
-        '200':
-          description: Shared log data
+        '404':
+          description: Unknown share (the lookup runs with an empty token). The intended success response is unreachable until the adapter is fixed.
+        '401':
+          description: Unauthenticated (JWT middleware).
     delete:
       tags: [logs]
       summary: Revoke log share
@@ -5078,10 +5153,16 @@ paths:
           description: Share id (DELETE) or share token (GET)
           schema:
             type: string
+      x-currently-broken: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
       responses:
-        '200':
-          description: Share revoked
-
+        '400':
+          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+        '401':
+          description: Missing or non-integer user_id in the request context.
+        '403':
+          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+        '500':
+          description: Service error (not reachable today for the same reason).
 
   /api/v1/logs/stream:
     get:
@@ -6815,7 +6896,7 @@ paths:
       security:
       - BearerAuth: []
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema:
@@ -8580,7 +8661,7 @@ paths:
       tags:
       - playlists
       summary: List playlists
-      description: Playlists of the authenticated user.
+      description: "Playlists of the authenticated user. A limit that is not in 1..200 is not rejected and not clamped: the handler resets it to the default 50. A negative offset is reset to 0."
       security:
       - BearerAuth: []
       parameters:

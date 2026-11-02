@@ -3540,6 +3540,9 @@ Get system component health status.
 
 ### GET /api/v1/configuration/wizard/step/:step_id
 
+**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler runs with an empty `step_id`; the intended behaviour is unreachable today. See the `x-currently-broken` responses in `openapi.yaml`.
+
+
 Get a specific setup wizard step definition.
 
 **Description:** Returns the step configuration including fields, validation rules, and defaults.
@@ -3550,6 +3553,9 @@ Get a specific setup wizard step definition.
 
 ### POST /api/v1/configuration/wizard/step/:step_id/validate
 
+**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler runs with an empty `step_id`; the intended behaviour is unreachable today. See the `x-currently-broken` responses in `openapi.yaml`.
+
+
 Validate data for a specific wizard step.
 
 **Description:** Validates user input for a wizard step without saving.
@@ -3559,6 +3565,9 @@ Validate data for a specific wizard step.
 ---
 
 ### POST /api/v1/configuration/wizard/step/:step_id/save
+
+**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler runs with an empty `step_id`; the intended behaviour is unreachable today. See the `x-currently-broken` responses in `openapi.yaml`.
+
 
 Save progress for a specific wizard step.
 
@@ -3662,6 +3671,9 @@ List error reports with filtering.
 
 ### GET /api/v1/errors/reports/:id
 
+**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+
+
 Get a specific error report.
 
 **Description:** Returns full details of an error report.
@@ -3671,6 +3683,9 @@ Get a specific error report.
 ---
 
 ### PUT /api/v1/errors/reports/:id/status
+
+**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+
 
 Update error report status.
 
@@ -3700,6 +3715,9 @@ List crash reports with filtering.
 
 ### GET /api/v1/errors/crashes/:id
 
+**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+
+
 Get a specific crash report.
 
 **Description:** Returns full details of a crash report.
@@ -3709,6 +3727,9 @@ Get a specific crash report.
 ---
 
 ### PUT /api/v1/errors/crashes/:id/status
+
+**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+
 
 Update crash report status.
 
@@ -3816,6 +3837,9 @@ List log collections.
 
 ### GET /api/v1/logs/collections/:id
 
+**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+
+
 Get a specific log collection.
 
 **Description:** Returns metadata for a log collection.
@@ -3825,6 +3849,9 @@ Get a specific log collection.
 ---
 
 ### GET /api/v1/logs/collections/:id/entries
+
+**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+
 
 Get log entries for a collection.
 
@@ -3848,6 +3875,9 @@ Get log entries for a collection.
 
 ### POST /api/v1/logs/collections/:id/export
 
+**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+
+
 Export log collection data.
 
 **Description:** Exports a log collection in the specified format.
@@ -3863,6 +3893,9 @@ Export log collection data.
 ---
 
 ### GET /api/v1/logs/collections/:id/analyze
+
+**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+
 
 Analyze a log collection for patterns and insights.
 
@@ -3910,6 +3943,9 @@ Create a shareable link for a log collection.
 
 ### GET /api/v1/logs/share/:token
 
+**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler runs with an empty `token`; the intended behaviour is unreachable today. See the `x-currently-broken` responses in `openapi.yaml`.
+
+
 Access a shared log collection via share token.
 
 **Description:** Retrieves log collection data using a share token.
@@ -3919,6 +3955,9 @@ Access a shared log collection via share token.
 ---
 
 ### DELETE /api/v1/logs/share/:id
+
+**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+
 
 Revoke a log share.
 
@@ -4838,7 +4877,7 @@ Check if an entity is in the user's favorites.
 
 List the current user's playlists.
 
-**Description:** Returns all playlists owned by the user.
+**Description:** Returns all playlists owned by the user. Query `limit` (default 50) outside 1..200 is reset to 50 (not rejected, not clamped); a negative `offset` is reset to 0.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -5475,4 +5514,4 @@ The limits are the values wired in `catalog-api/main.go`.
 
 When rate limited, the server returns `429 Too Many Requests`.
 
-Optional Redis-based distributed rate limiting is available when a Redis instance is configured. Supports both fixed-window and sliding-window algorithms.
+Optional Redis-based distributed rate limiting replaces the in-memory limiters only when a Redis client exists AND `REDIS_RATE_LIMIT=true` (otherwise per-process in-memory limiting). With it on, the limits change: the group listed above as 600/min (other `/api/v1/auth/*` session endpoints) becomes 5/min and the 2000/min group becomes 100/min, both fixed-window and keyed per client IP (auth: username plus IP when a username is in the context); login/register stay on the in-memory 30/min limiter, keyed per IP when unauthenticated. If Redis errors, the middleware fails closed with 503.

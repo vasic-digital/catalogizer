@@ -1,6 +1,6 @@
 # API Endpoint Catalog
 
-> Renamed from `CHANGELOG.md` (it never was a changelog). This is a condensed method/path catalog (172 table rows at the time of writing) and may lag the router; the authoritative sources are [`openapi.yaml`](openapi.yaml) and [`API_DOCUMENTATION.md`](API_DOCUMENTATION.md) (247 operations, kept in sync with `catalog-api/main.go` by `scripts/check_api_route_vs_spec.py`).
+> Renamed from `CHANGELOG.md`; despite that old name this is an endpoint catalog, not a changelog (the "Version History" at the end is the only history it keeps). This is a condensed method/path catalog (172 table rows at the time of writing) and may lag the router; the authoritative sources are [`openapi.yaml`](openapi.yaml) and [`API_DOCUMENTATION.md`](API_DOCUMENTATION.md) (247 operations, kept in sync with `catalog-api/main.go` by `scripts/check_api_route_vs_spec.py`).
 
 This document catalogs REST API endpoints exposed by the Catalogizer backend (`catalog-api`). Endpoints are grouped by domain and listed with their HTTP method, path, and description. All authenticated endpoints require a valid JWT token in the `Authorization: Bearer <token>` header.
 
@@ -53,7 +53,7 @@ These endpoints do not require authentication.
 
 ## Authentication
 
-Rate limited to 5 requests per minute per user. No JWT required for login/register/refresh/logout.
+Rate limited per client IP: login and register 30 requests per minute, other session endpoints 600 per minute (5 per minute only when the optional Redis limiter is on, see `API_DOCUMENTATION.md`). No JWT required for login/register/refresh/logout.
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
@@ -434,8 +434,9 @@ All requests pass through the following middleware in order:
 
 Additional per-group middleware:
 - **RequireAuth (JWT)** -- Applied to all `/api/v1` routes
-- **RateLimitByUser(5/min)** -- Applied to `/api/v1/auth` routes
-- **RateLimitByUser(100/min)** -- Applied to all other `/api/v1` routes
+- **RateLimitByUser(30/min)** -- login and register
+- **RateLimitByUser(600/min)** -- other `/api/v1/auth` session routes
+- **RateLimitByUser(2000/min)** -- all other authenticated `/api/v1` routes
 - **CacheHeaders(60s)** -- Applied to statistics endpoints
 - **CacheHeaders(300s)** -- Applied to entity browsing endpoints
 - **StaticCacheHeaders** -- Applied to asset serving
@@ -457,7 +458,7 @@ Additional per-group middleware:
 - Added asset management endpoints
 - Added challenge system endpoints
 - Added HTTP/3 (QUIC) support with Brotli compression
-- Added rate limiting per user (auth: 5/min, general: 100/min)
+- Added rate limiting per user (initial release values 5/min and 100/min; current values: login/register 30/min, other auth 600/min, general 2000/min)
 - Added request ID middleware
 - Added input validation middleware
 
