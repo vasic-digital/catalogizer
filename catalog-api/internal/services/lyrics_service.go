@@ -4,13 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"catalogizer/database"
-	"catalogizer/utils"
 
 	"go.uber.org/zap"
 )
@@ -153,15 +153,22 @@ func (s *LyricsService) SearchLyrics(ctx context.Context, request *LyricsSearchR
 	}
 
 	// Search each provider
+	var providerErrs []error
+	succeeded := 0
 	for _, provider := range providers {
 		results, err := s.searchProvider(ctx, provider, request)
 		if err != nil {
 			s.logger.Warn("Provider search failed",
 				zap.String("provider", string(provider)),
 				zap.Error(err))
+			providerErrs = append(providerErrs, err)
 			continue
 		}
+		succeeded++
 		allResults = append(allResults, results...)
+	}
+	if succeeded == 0 && len(providerErrs) > 0 {
+		return nil, fmt.Errorf("lyrics search: every provider failed: %w", errors.Join(providerErrs...))
 	}
 
 	// Filter synced only if requested
@@ -434,93 +441,27 @@ func (s *LyricsService) searchProvider(ctx context.Context, provider LyricsProvi
 	}
 }
 
+// ErrLyricsProviderNotImplemented marks lyrics operations that have no real
+// provider client or audio-analysis backend. They replaced fabricated output.
+var ErrLyricsProviderNotImplemented = errors.New("lyrics provider/backend not implemented")
+
 func (s *LyricsService) searchGenius(ctx context.Context, request *LyricsSearchRequest) ([]LyricsSearchResult, error) {
-	s.logger.Debug("Searching Genius",
-		zap.String("title", request.Title),
-		zap.String("artist", request.Artist))
-
-	// Mock implementation for demonstration
-	result := LyricsSearchResult{
-		ID:           "genius_1",
-		Provider:     LyricsProviderGenius,
-		Title:        request.Title,
-		Artist:       request.Artist,
-		Language:     "English",
-		LanguageCode: "en",
-		Content:      generateSampleLyrics(request.Title, request.Artist),
-		IsSynced:     false,
-		Source:       "genius.com",
-		Confidence:   0.95,
-		MatchScore:   0.9,
-		URL:          utils.StringPtr("https://genius.com/sample"),
-	}
-
-	return []LyricsSearchResult{result}, nil
+	return nil, fmt.Errorf("%w: %s", ErrLyricsProviderNotImplemented, LyricsProviderGenius)
 }
 
 func (s *LyricsService) searchMusixmatch(ctx context.Context, request *LyricsSearchRequest) ([]LyricsSearchResult, error) {
-	s.logger.Debug("Searching Musixmatch")
-
-	// Mock synced lyrics
-	syncData := []LyricsLine{
-		{StartTime: 0.0, EndTime: floatPtr(3.5), Text: "Verse 1 line 1"},
-		{StartTime: 3.5, EndTime: floatPtr(7.0), Text: "Verse 1 line 2"},
-		{StartTime: 7.0, EndTime: floatPtr(10.5), Text: "Chorus line 1"},
-		{StartTime: 10.5, EndTime: floatPtr(14.0), Text: "Chorus line 2"},
-	}
-
-	result := LyricsSearchResult{
-		ID:           "musixmatch_1",
-		Provider:     LyricsProviderMusixmatch,
-		Title:        request.Title,
-		Artist:       request.Artist,
-		Language:     "English",
-		LanguageCode: "en",
-		Content:      generateSampleLyrics(request.Title, request.Artist),
-		IsSynced:     true,
-		SyncData:     syncData,
-		Source:       "musixmatch.com",
-		Confidence:   0.88,
-		MatchScore:   0.85,
-	}
-
-	return []LyricsSearchResult{result}, nil
+	return nil, fmt.Errorf("%w: %s", ErrLyricsProviderNotImplemented, LyricsProviderMusixmatch)
 }
 
 func (s *LyricsService) searchAZLyrics(ctx context.Context, request *LyricsSearchRequest) ([]LyricsSearchResult, error) {
-	s.logger.Debug("Searching AZLyrics")
-	return []LyricsSearchResult{}, nil
+	return nil, fmt.Errorf("%w: %s", ErrLyricsProviderNotImplemented, LyricsProviderAZLyrics)
 }
 
 // Synchronization methods
 func (s *LyricsService) autoSynchronizeLyrics(ctx context.Context, lyrics *LyricsData, audioPath string) ([]LyricsLine, error) {
-	// Implementation would use audio analysis to automatically sync lyrics
-	// This is a complex process involving:
-	// 1. Audio feature extraction
-	// 2. Text-to-speech alignment
-	// 3. Machine learning models for timing prediction
-
-	s.logger.Debug("Auto-synchronizing lyrics", zap.String("audio_path", audioPath))
-
-	// Mock implementation
-	lines := s.parseLyricsLines(lyrics.Content)
-	duration := 180.0 // Mock 3-minute song
-
-	var syncData []LyricsLine
-	timePerLine := duration / float64(len(lines))
-
-	for i, line := range lines {
-		startTime := float64(i) * timePerLine
-		endTime := startTime + timePerLine
-
-		syncData = append(syncData, LyricsLine{
-			StartTime: startTime,
-			EndTime:   &endTime,
-			Text:      line,
-		})
-	}
-
-	return syncData, nil
+	// Real synchronisation needs audio feature extraction / forced alignment,
+	// which is not implemented. Do not spread lines over an invented duration.
+	return nil, fmt.Errorf("%w: automatic synchronisation", ErrLyricsProviderNotImplemented)
 }
 
 func (s *LyricsService) manualSynchronizeLyrics(ctx context.Context, lyrics *LyricsData, offset float64) ([]LyricsLine, error) {
@@ -592,38 +533,6 @@ func (s *LyricsService) sortLyricsResults(results []LyricsSearchResult) {
 	}
 }
 
-func generateSampleLyrics(title, artist string) string {
-	return fmt.Sprintf(`[Verse 1]
-Sample lyrics for "%s" by %s
-This is a demonstration of lyrics content
-With multiple lines and verses
-
-[Chorus]
-This is the chorus section
-It repeats throughout the song
-Making it memorable and catchy
-
-[Verse 2]
-Another verse with different content
-Continuing the story or theme
-Building on the first verse
-
-[Chorus]
-This is the chorus section
-It repeats throughout the song
-Making it memorable and catchy
-
-[Bridge]
-A bridge section with different melody
-Providing contrast to verses and chorus
-Leading back to the final chorus
-
-[Chorus]
-This is the chorus section
-It repeats throughout the song
-Making it memorable and catchy`, title, artist)
-}
-
 func generateLyricsID() string {
 	return fmt.Sprintf("lyrics_%d", time.Now().UnixNano())
 }
@@ -645,20 +554,7 @@ func (s *LyricsService) getCachedLyrics(ctx context.Context, title, artist strin
 
 // getLyricsDownloadInfo retrieves download information for a lyrics result
 func (s *LyricsService) getLyricsDownloadInfo(ctx context.Context, resultID string) (*LyricsSearchResult, error) {
-	// Mock implementation - would normally fetch from provider
-	return &LyricsSearchResult{
-		ID:           resultID,
-		Provider:     LyricsProviderGenius,
-		Title:        "Sample Title",
-		Artist:       "Sample Artist",
-		Language:     "English",
-		LanguageCode: "en",
-		Content:      "Sample lyrics content",
-		IsSynced:     false,
-		Source:       "genius.com",
-		Confidence:   0.9,
-		MatchScore:   0.85,
-	}, nil
+	return nil, fmt.Errorf("%w: download info for %q", ErrLyricsProviderNotImplemented, resultID)
 }
 
 // saveLyricsData saves lyrics data to the database

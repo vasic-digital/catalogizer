@@ -639,17 +639,26 @@ func TestLyrics_GetCachedTranslation(t *testing.T) {
 	assert.Nil(t, result)
 }
 
-func TestLyrics_GetLyricsDownloadInfo(t *testing.T) {
+func TestLyrics_GetLyricsDownloadInfo_NotFabricated(t *testing.T) {
+	svc := newTestLyricsServiceUtil()
+	result, err := svc.getLyricsDownloadInfo(context.Background(), "test-result-id")
+	assert.ErrorIs(t, err, ErrLyricsProviderNotImplemented)
+	assert.Nil(t, result)
+}
+
+// CAT-001: no lyrics provider has a client, so search must fail loudly and
+// auto-sync must not invent a 3-minute timeline.
+func TestLyrics_SearchAndSyncDoNotFabricate(t *testing.T) {
 	svc := newTestLyricsServiceUtil()
 	ctx := context.Background()
 
-	result, err := svc.getLyricsDownloadInfo(ctx, "test-result-id")
-	require.NoError(t, err)
-	require.NotNil(t, result)
-	assert.Equal(t, "test-result-id", result.ID)
-	assert.Equal(t, LyricsProviderGenius, result.Provider)
-	assert.Equal(t, "en", result.LanguageCode)
-	assert.InDelta(t, 0.85, result.MatchScore, 0.001)
+	res, err := svc.SearchLyrics(ctx, &LyricsSearchRequest{Title: "Bohemian Rhapsody", Artist: "Queen"})
+	assert.ErrorIs(t, err, ErrLyricsProviderNotImplemented)
+	assert.Empty(t, res)
+
+	lines, err := svc.autoSynchronizeLyrics(ctx, &LyricsData{Content: "a\nb\nc"}, "/nonexistent.mp3")
+	assert.ErrorIs(t, err, ErrLyricsProviderNotImplemented)
+	assert.Empty(t, lines)
 }
 
 func TestLyrics_PreserveLyricsTiming_EqualLines(t *testing.T) {
