@@ -706,81 +706,18 @@ func (rs *RecommendationService) getGoogleBooksSimilar(ctx context.Context, meta
 	return items, nil
 }
 
+// ErrRecommendationProviderNotImplemented marks external recommendation
+// sources with no real client. They replaced invented "Similar Game N" items.
+var ErrRecommendationProviderNotImplemented = errors.New("recommendation provider client not implemented")
+
 func (rs *RecommendationService) getIGDBSimilarGames(ctx context.Context, metadata *models.MediaMetadata) ([]*ExternalSimilarItem, error) {
-	// IGDB requires OAuth token - simplified implementation
-	// In a real implementation, you'd get an OAuth token first
-
-	// Mock similar games for demonstration
-	var items []*ExternalSimilarItem
-
-	// This would normally use IGDB's similar games endpoint
-	similarGames := []struct {
-		ID     int
-		Name   string
-		Genre  string
-		Rating float64
-		URL    string
-	}{
-		{1, "Similar Game 1", metadata.Genre, 8.5, "https://www.igdb.com/games/similar-game-1"},
-		{2, "Similar Game 2", metadata.Genre, 7.8, "https://www.igdb.com/games/similar-game-2"},
-	}
-
-	for _, game := range similarGames {
-		item := &ExternalSimilarItem{
-			ExternalID:        fmt.Sprintf("igdb_%d", game.ID),
-			Title:             game.Name,
-			Genre:             game.Genre,
-			Rating:            game.Rating,
-			Provider:          "IGDB",
-			ExternalLink:      game.URL,
-			SimilarityScore:   0.8, // Mock score
-			SimilarityReasons: []string{"genre_match", "igdb_recommendation"},
-		}
-
-		items = append(items, item)
-	}
-
-	return items, nil
+	// IGDB needs an OAuth token and a similar-games query; neither exists here.
+	return nil, fmt.Errorf("%w: IGDB", ErrRecommendationProviderNotImplemented)
 }
 
 func (rs *RecommendationService) getSteamSimilarGames(ctx context.Context, metadata *models.MediaMetadata) ([]*ExternalSimilarItem, error) {
-	// Steam doesn't have a public recommendations API
-	// This would normally require Steam Web API key and additional processing
-
-	// Mock implementation
-	var items []*ExternalSimilarItem
-
-	// This is just for demonstration
-	steamGames := []struct {
-		ID    string
-		Name  string
-		Genre string
-		Price string
-	}{
-		{"123456", "Steam Similar Game 1", metadata.Genre, "$19.99"},
-		{"789012", "Steam Similar Game 2", metadata.Genre, "$29.99"},
-	}
-
-	for _, game := range steamGames {
-		item := &ExternalSimilarItem{
-			ExternalID:        fmt.Sprintf("steam_%s", game.ID),
-			Title:             game.Name,
-			Genre:             game.Genre,
-			Provider:          "Steam",
-			ExternalLink:      fmt.Sprintf("https://store.steampowered.com/app/%s", game.ID),
-			SimilarityScore:   0.7, // Mock score
-			SimilarityReasons: []string{"genre_match", "steam_recommendation"},
-			PriceInfo: &PriceInfo{
-				PurchasePrice: game.Price,
-				Currency:      "USD",
-				LastUpdated:   time.Now(),
-			},
-		}
-
-		items = append(items, item)
-	}
-
-	return items, nil
+	// Steam has no public recommendations API.
+	return nil, fmt.Errorf("%w: Steam", ErrRecommendationProviderNotImplemented)
 }
 
 func (rs *RecommendationService) getGitHubSimilarSoftware(ctx context.Context, metadata *models.MediaMetadata) ([]*ExternalSimilarItem, error) {
@@ -1237,18 +1174,22 @@ func (rs *RecommendationService) parseLastFmMatch(matchStr string) float64 {
 	if matchStr == "" {
 		return 0.5
 	}
-	// This would normally parse the string to float
-	// For simplicity, returning a mock value
-	return 0.7
+	v, err := strconv.ParseFloat(strings.TrimSpace(matchStr), 64)
+	if err != nil || v < 0 || v > 1 {
+		return 0.5 // unparseable: neutral, same as an absent value
+	}
+	return v
 }
 
 func parseYear(yearStr string) int {
 	if yearStr == "" {
 		return 0
 	}
-	// This would normally parse the year string to int
-	// For simplicity, returning a mock value
-	return 2023
+	y, err := strconv.Atoi(strings.TrimSpace(yearStr))
+	if err != nil {
+		return 0
+	}
+	return y
 }
 
 func abs(x float64) float64 {

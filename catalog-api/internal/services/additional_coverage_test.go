@@ -740,8 +740,9 @@ func TestRecommendation_Abs(t *testing.T) {
 
 func TestRecommendation_ParseYear(t *testing.T) {
 	// parseYear always returns 2023 (mock implementation)
-	assert.Equal(t, 2023, parseYear("2024"))
-	assert.Equal(t, 2023, parseYear("1999"))
+	assert.Equal(t, 2024, parseYear("2024"))
+	assert.Equal(t, 1999, parseYear("1999"))
+	assert.Equal(t, 0, parseYear("abc"))
 	assert.Equal(t, 0, parseYear(""))
 }
 
