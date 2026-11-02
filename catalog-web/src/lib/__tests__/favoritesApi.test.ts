@@ -23,7 +23,7 @@ describe('favoritesApi', () => {
   })
 
   describe('getFavorites', () => {
-    it('calls GET /api/v1/favorites with query params', async () => {
+    it('calls GET /favorites with query params', async () => {
       const mockResponse = {
         items: [{ id: '1', media_id: 42, created_at: '2024-01-01' }],
         total: 1,
@@ -41,7 +41,7 @@ describe('favoritesApi', () => {
       })
 
       expect(mockApi.get).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/favorites')
+        expect.stringContaining('/favorites')
       )
       expect(result).toEqual(mockResponse)
     })
@@ -51,12 +51,12 @@ describe('favoritesApi', () => {
 
       await favoritesApi.getFavorites()
 
-      expect(mockApi.get).toHaveBeenCalledWith('/api/v1/favorites?')
+      expect(mockApi.get).toHaveBeenCalledWith('/favorites?')
     })
   })
 
   describe('getFavoriteStats', () => {
-    it('calls GET /api/v1/favorites/stats', async () => {
+    it('calls GET /favorites/stats', async () => {
       const stats = {
         total_count: 42,
         media_type_breakdown: { movie: 20, tv_show: 15, music: 7 },
@@ -66,13 +66,13 @@ describe('favoritesApi', () => {
 
       const result = await favoritesApi.getFavoriteStats()
 
-      expect(mockApi.get).toHaveBeenCalledWith('/api/v1/favorites/stats')
+      expect(mockApi.get).toHaveBeenCalledWith('/favorites/stats')
       expect(result).toEqual(stats)
     })
   })
 
   describe('toggleFavorite', () => {
-    it('calls POST /api/v1/favorites/toggle with request data', async () => {
+    it('calls POST /favorites/toggle with request data', async () => {
       const toggleResponse = { is_favorite: true }
       mockApi.post.mockResolvedValue({ data: toggleResponse })
 
@@ -81,7 +81,7 @@ describe('favoritesApi', () => {
         is_favorite: true,
       })
 
-      expect(mockApi.post).toHaveBeenCalledWith('/api/v1/favorites/toggle', {
+      expect(mockApi.post).toHaveBeenCalledWith('/favorites/toggle', {
         media_id: 42,
         is_favorite: true,
       })
@@ -90,12 +90,12 @@ describe('favoritesApi', () => {
   })
 
   describe('checkFavorite', () => {
-    it('calls GET /api/v1/favorites/check/:mediaId', async () => {
+    it('calls GET /favorites/check/:mediaId', async () => {
       mockApi.get.mockResolvedValue({ data: { is_favorite: true } })
 
       const result = await favoritesApi.checkFavorite(42)
 
-      expect(mockApi.get).toHaveBeenCalledWith('/api/v1/favorites/check/42')
+      expect(mockApi.get).toHaveBeenCalledWith('/favorites/check/42')
       expect(result.is_favorite).toBe(true)
     })
 
@@ -109,34 +109,34 @@ describe('favoritesApi', () => {
   })
 
   describe('addToFavorites', () => {
-    it('calls POST /api/v1/favorites with media_id', async () => {
+    it('calls POST /favorites with media_id', async () => {
       const favorite = { id: '1', media_id: 42, user_id: 1, created_at: '2024-01-01' }
       mockApi.post.mockResolvedValue({ data: favorite })
 
       const result = await favoritesApi.addToFavorites(42)
 
-      expect(mockApi.post).toHaveBeenCalledWith('/api/v1/favorites', { media_id: 42 })
+      expect(mockApi.post).toHaveBeenCalledWith('/favorites', { media_id: 42 })
       expect(result).toEqual(favorite)
     })
   })
 
   describe('removeFromFavorites', () => {
-    it('calls DELETE /api/v1/favorites/:mediaId', async () => {
+    it('calls DELETE /favorites/:mediaId', async () => {
       mockApi.delete.mockResolvedValue({})
 
       await favoritesApi.removeFromFavorites(42)
 
-      expect(mockApi.delete).toHaveBeenCalledWith('/api/v1/favorites/42')
+      expect(mockApi.delete).toHaveBeenCalledWith('/favorites/42')
     })
   })
 
   describe('bulkAddToFavorites', () => {
-    it('calls POST /api/v1/favorites/bulk with media IDs', async () => {
+    it('calls POST /favorites/bulk with media IDs', async () => {
       mockApi.post.mockResolvedValue({ data: { added: 3, failed: 0 } })
 
       const result = await favoritesApi.bulkAddToFavorites([1, 2, 3])
 
-      expect(mockApi.post).toHaveBeenCalledWith('/api/v1/favorites/bulk', {
+      expect(mockApi.post).toHaveBeenCalledWith('/favorites/bulk', {
         media_ids: [1, 2, 3],
       })
       expect(result).toEqual({ added: 3, failed: 0 })
@@ -144,12 +144,12 @@ describe('favoritesApi', () => {
   })
 
   describe('bulkRemoveFromFavorites', () => {
-    it('calls DELETE /api/v1/favorites/bulk with media IDs', async () => {
+    it('calls DELETE /favorites/bulk with media IDs', async () => {
       mockApi.delete.mockResolvedValue({ data: { removed: 2, failed: 0 } })
 
       const result = await favoritesApi.bulkRemoveFromFavorites([1, 2])
 
-      expect(mockApi.delete).toHaveBeenCalledWith('/api/v1/favorites/bulk', {
+      expect(mockApi.delete).toHaveBeenCalledWith('/favorites/bulk', {
         data: { media_ids: [1, 2] },
       })
       expect(result).toEqual({ removed: 2, failed: 0 })

@@ -264,7 +264,7 @@ const AIDashboard: React.FC = () => {
   // Render navigation tabs
   const renderNavigationTabs = () => (
     <div className="border-b border-gray-200 mb-6">
-      <nav className="-mb-px flex space-x-8">
+      <nav className="-mb-px flex space-x-6 sm:space-x-8 overflow-x-auto">
         {[
           { id: 'overview', label: 'Overview', icon: Activity },
           { id: 'suggestions', label: 'AI Suggestions', icon: Sparkles },
@@ -276,7 +276,7 @@ const AIDashboard: React.FC = () => {
           <button
             key={tab.id}
             onClick={() => handleSectionChange(tab.id as AIDashboardState['activeSection'])}
-            className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+            className={`flex flex-shrink-0 whitespace-nowrap items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
               state.activeSection === tab.id
                 ? 'border-indigo-500 text-indigo-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'

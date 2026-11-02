@@ -50,7 +50,7 @@ export const Header: React.FC = () => {
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center space-x-2 text-xl font-bold text-gray-900 dark:text-white"
+            className="flex flex-shrink-0 items-center space-x-2 [@media(pointer:coarse)]:min-h-[44px] text-xl font-bold text-gray-900 dark:text-white"
           >
             <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">C</span>
@@ -60,7 +60,7 @@ export const Header: React.FC = () => {
 
           {/* Desktop Navigation */}
           {isAuthenticated && (
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="hidden md:flex items-center space-x-4 2xl:space-x-8 flex-1 min-w-0 overflow-x-auto whitespace-nowrap [scrollbar-width:thin]">
               <Link to="/dashboard" className={navLinkClass(location.pathname, '/dashboard')}>
                 Dashboard
               </Link>
@@ -110,7 +110,7 @@ export const Header: React.FC = () => {
 
           {/* Search Bar */}
           {isAuthenticated && (
-            <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
+            <div className="hidden md:flex items-center flex-1 min-w-[10rem] max-w-md mx-4 2xl:mx-8">
               <div className="relative w-full">
                 <label htmlFor="header-search" className="sr-only">Search media</label>
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -145,7 +145,7 @@ export const Header: React.FC = () => {
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-700 dark:text-gray-300">
+                <span className="hidden 2xl:inline text-sm text-gray-700 dark:text-gray-300">
                   Welcome, {user?.first_name || user?.username}
                 </span>
                 <div className="flex items-center space-x-2">

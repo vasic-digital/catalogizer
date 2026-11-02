@@ -201,14 +201,14 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row flex-wrap gap-2 items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Activity className="h-5 w-5" />
           Recent Activity
         </CardTitle>
         
         {showFilters && (
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant={filter === 'all' ? 'default' : 'ghost'}
               size="sm"
