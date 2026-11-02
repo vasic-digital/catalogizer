@@ -67,6 +67,9 @@ services:
       REDIS_PORT: ${REDIS_PORT:-6379}
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
 
+      # Release mode: also disables CATALOGIZER_ALLOW_INSECURE_DEFAULTS (CAT-021)
+      GIN_MODE: ${GIN_MODE:-release}
+
       # Server configuration
       SERVER_HOST: ${CATALOGIZER_HOST:-0.0.0.0}
       SERVER_PORT: ${CATALOGIZER_PORT:-8080}

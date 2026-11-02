@@ -54,7 +54,7 @@ rsync -az --delete \
 echo "[build] building catalog-api in container on $BUILD_HOST ..."
 ssh "$HOST" "cd ~/$REMOTE_DIR && podman run --rm \
   -v \$PWD:/src:Z -w /src/catalog-api \
-  -e GOTOOLCHAIN=local -e CGO_ENABLED=1 \
+  -e GOTOOLCHAIN=local -e CGO_ENABLED=1 -e CGO_CPPFLAGS=-DHAVE_USLEEP=1 \
   $GO_IMAGE sh -c '(command -v apk >/dev/null 2>&1 && apk add --no-cache build-base sqlite-dev >/dev/null 2>&1) || true; go build -o catalog-api-container . && echo BUILD_OK'"
 
 # 3. Capture the remote artifact identity.

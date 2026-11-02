@@ -25,12 +25,10 @@ func (r *ConfigurationRepository) SaveConfiguration(config *models.SystemConfigu
 		return fmt.Errorf("failed to marshal configuration: %w", err)
 	}
 
-	query := `
-		INSERT OR REPLACE INTO system_configuration (
-			id, version, configuration, created_at, updated_at
-		) VALUES (1, ?, ?, ?, ?)`
+	query := r.db.Dialect().UpsertSQL("system_configuration",
+		[]string{"id", "version", "configuration", "created_at", "updated_at"}, []string{"id"})
 
-	_, err = r.db.Exec(query, config.Version, string(configJSON), config.CreatedAt, config.UpdatedAt)
+	_, err = r.db.Exec(query, 1, config.Version, string(configJSON), config.CreatedAt, config.UpdatedAt)
 	if err != nil {
 		return fmt.Errorf("failed to save configuration: %w", err)
 	}
@@ -75,10 +73,8 @@ func (r *ConfigurationRepository) SaveWizardProgress(progress *models.WizardProg
 		return fmt.Errorf("failed to marshal all data: %w", err)
 	}
 
-	query := `
-		INSERT OR REPLACE INTO wizard_progress (
-			user_id, current_step, step_data, all_data, updated_at
-		) VALUES (?, ?, ?, ?, ?)`
+	query := r.db.Dialect().UpsertSQL("wizard_progress",
+		[]string{"user_id", "current_step", "step_data", "all_data", "updated_at"}, []string{"user_id"})
 
 	_, err = r.db.Exec(query,
 		progress.UserID, progress.CurrentStep, string(stepDataJSON),
@@ -136,10 +132,8 @@ func (r *ConfigurationRepository) DeleteWizardProgress(userID int) error {
 }
 
 func (r *ConfigurationRepository) MarkWizardCompleted(userID int) error {
-	query := `
-		INSERT OR REPLACE INTO wizard_completion (
-			user_id, completed_at
-		) VALUES (?, ?)`
+	query := r.db.Dialect().UpsertSQL("wizard_completion",
+		[]string{"user_id", "completed_at"}, []string{"user_id"})
 
 	_, err := r.db.Exec(query, userID, time.Now())
 	if err != nil {
@@ -433,11 +427,10 @@ func (r *ConfigurationRepository) GetConfigurationStatistics() (*models.Configur
 
 // SaveWizardSession saves a wizard session
 func (r *ConfigurationRepository) SaveWizardSession(session *models.WizardSession) error {
-	query := `
-		INSERT OR REPLACE INTO wizard_sessions (
-			session_id, user_id, current_step, total_steps, step_data,
-			configuration, started_at, last_activity, is_completed, config_type
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	query := r.db.Dialect().UpsertSQL("wizard_sessions", []string{
+		"session_id", "user_id", "current_step", "total_steps", "step_data",
+		"configuration", "started_at", "last_activity", "is_completed", "config_type",
+	}, []string{"session_id"})
 
 	stepDataJSON, err := json.Marshal(session.StepData)
 	if err != nil {
@@ -496,11 +489,10 @@ func (r *ConfigurationRepository) GetWizardSession(sessionID string) (*models.Wi
 
 // SaveConfigurationProfile saves a configuration profile
 func (r *ConfigurationRepository) SaveConfigurationProfile(profile *models.ConfigurationProfile) error {
-	query := `
-		INSERT OR REPLACE INTO configuration_profiles (
-			profile_id, name, description, user_id, configuration,
-			created_at, updated_at, is_active, tags
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	query := r.db.Dialect().UpsertSQL("configuration_profiles", []string{
+		"profile_id", "name", "description", "user_id", "configuration",
+		"created_at", "updated_at", "is_active", "tags",
+	}, []string{"profile_id"})
 
 	configJSON, err := json.Marshal(profile.Configuration)
 	if err != nil {

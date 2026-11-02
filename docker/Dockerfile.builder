@@ -61,6 +61,8 @@ COPY --from=gotoolchain /usr/local/go /usr/local/go
 ENV PATH="/usr/local/go/bin:/home/builder/go/bin:${PATH}"
 ENV GOPATH="/home/builder/go"
 ENV CGO_ENABLED=1
+# 2026-11-02 decision: SQLite busy handler sleeps in ms (go-sqlcipher); CPPFLAGS keeps go's default -O2 -g CFLAGS
+ENV CGO_CPPFLAGS=-DHAVE_USLEEP=1
 
 RUN go version
 

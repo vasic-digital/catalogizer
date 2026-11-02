@@ -34,7 +34,7 @@ test_cases:
   - web
   steps:
   - name: Enter valid credentials
-    action: '# TODO: Convert to executable - fill username=admin, password=admin123
+    action: '# TODO: Convert to executable - fill username=admin, password=${ADMIN_PASSWORD}
       and submit'
     expected: Login succeeds, redirect to /dashboard, JWT stored in localStorage
     timeout: 10
@@ -1963,7 +1963,7 @@ test_cases:
   - web
   steps:
   - name: Login and reach dashboard
-    action: '# TODO: Convert to executable - navigate to /login, enter admin/admin123,
+    action: '# TODO: Convert to executable - navigate to /login, enter admin/${ADMIN_PASSWORD},
       submit'
     expected: Login succeeds, redirected to /dashboard with stats cards and charts
       loaded

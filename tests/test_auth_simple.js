@@ -15,7 +15,7 @@ async function testAuth() {
     // Try login with minimal required fields
     const loginData = {
       username: 'admin',
-      password: 'admin123'
+      password: process.env.ADMIN_PASSWORD
       // DeviceInfo is optional, don't send it to avoid binding issues
     };
     

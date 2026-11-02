@@ -10,6 +10,7 @@
   "test_cases": [
     {
       "id": "FQA-ATV-141",
+      "requires_env": ["ADMIN_PASSWORD"],
       "name": "Catalogizer Picks channel appears on TV home",
       "category": "functional",
       "priority": "critical",
@@ -19,7 +20,7 @@
       "steps": [
         {
           "name": "Login to app",
-          "action": "adb_shell: am start -n com.catalogizer.androidtv/.ui.MainActivity --es qa_username admin --es qa_password admin123",
+          "action": "adb_shell: am start -n com.catalogizer.androidtv/.ui.MainActivity --es qa_username admin --es qa_password ${ADMIN_PASSWORD}",
           "expected": "Catalogizer app runs, channels synced"
         },
         {

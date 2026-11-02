@@ -2,7 +2,7 @@
 """Article XI §11.2 real-browser verification of catalog-web.
 
 Drives Chromium against http://localhost:3093 (amber.local nginx proxy),
-fills login form with admin/admin123, clicks Sign In, captures
+fills login form with admin/<ADMIN_PASSWORD>, clicks Sign In, captures
 post-login DOM evidence + screenshot. Asserts:
 
 1. Login form renders with expected fields (positive).
@@ -66,7 +66,7 @@ with sync_playwright() as p:
         fail(f"login fields not found at {page.url}; HTML excerpt:\n{page.content()[:1500]}")
 
     user_input.fill("admin")
-    pass_input.fill("admin123")
+    pass_input.fill(os.environ["ADMIN_PASSWORD"])
     page.screenshot(path=f"{EVID}/02-creds-filled.png", full_page=True)
     print(f"  saved: {EVID}/02-creds-filled.png")
 
@@ -176,6 +176,6 @@ with sync_playwright() as p:
 print("\n✓ All Article XI §11.2 assertions passed:")
 print("  - landing page loads with correct title (positive)")
 print("  - login form renders with username + password fields (positive)")
-print("  - admin/admin123 succeeds → 'Sign In' is absent post-login (positive outcome)")
+print("  - admin/<ADMIN_PASSWORD> succeeds → 'Sign In' is absent post-login (positive outcome)")
 print("  - logged-in shell shows expected nav markers (positive outcome)")
 print("  - WRONG-PASSWORD is rejected, form stays visible (matching negative)")

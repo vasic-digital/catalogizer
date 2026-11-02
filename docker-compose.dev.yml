@@ -79,6 +79,9 @@ services:
       API_PORT: 28080
       LOG_LEVEL: debug
 
+      # 2026-11-02 decision: go-sqlcipher built with -DHAVE_USLEEP=1 for `go run`
+      CGO_CPPFLAGS: "-DHAVE_USLEEP=1"
+
       # CORS for local development
       CORS_ENABLED: "true"
       CORS_ORIGINS: "http://localhost:3000,http://localhost:19006"

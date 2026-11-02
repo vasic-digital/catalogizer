@@ -44,7 +44,7 @@ func TestInputValidationChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  server.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -105,7 +105,7 @@ func TestPaginationChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  server.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -157,7 +157,7 @@ func TestContentTypesChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  server.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -229,7 +229,7 @@ func TestUserManagementChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  server.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -293,7 +293,7 @@ func TestAnalyticsAPIChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  server.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -353,7 +353,7 @@ func TestEntityCRUDChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  server.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -417,7 +417,7 @@ func TestSyncAPIChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  server.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -477,7 +477,7 @@ func TestSubtitleAPIChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  server.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -533,7 +533,7 @@ func TestRecommendationAPIChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  server.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())
@@ -593,7 +593,7 @@ func TestLocalizationAPIChallenge_Execute_MockServer(t *testing.T) {
 	ch.config = &BrowsingConfig{
 		BaseURL:  server.URL,
 		Username: "admin",
-		Password: "admin123",
+		Password: testAdminPassword,
 	}
 
 	result, err := ch.Execute(context.Background())

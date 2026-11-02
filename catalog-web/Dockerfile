@@ -79,10 +79,15 @@ FROM docker.io/nginx:alpine
 
 # Copy built assets and nginx config with proper ownership
 COPY --from=builder --chown=nginx:nginx /app/catalog-web/dist /usr/share/nginx/html
-COPY --chown=nginx:nginx catalog-web/nginx.conf /etc/nginx/conf.d/default.conf
+# The upstream is configurable at run time: the official nginx image renders
+# /etc/nginx/templates/*.template with envsubst into /etc/nginx/conf.d/ on
+# start. Only API_* variables are substituted (keeps $host, $uri, ... intact).
+COPY --chown=nginx:nginx catalog-web/nginx.conf.template /etc/nginx/templates/default.conf.template
+ENV API_UPSTREAM=host.containers.internal:8080 \
+    NGINX_ENVSUBST_FILTER=^API_
 
 # Create required directories with nginx user ownership for non-root operation
-RUN chown -R nginx:nginx /var/cache/nginx /var/log/nginx && \
+RUN chown -R nginx:nginx /var/cache/nginx /var/log/nginx /etc/nginx/conf.d && \
     touch /var/run/nginx.pid && chown nginx:nginx /var/run/nginx.pid
 
 EXPOSE 3000

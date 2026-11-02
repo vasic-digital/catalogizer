@@ -914,7 +914,7 @@ export SNYK_ORG="catalogizer"
 
 # Application secrets
 export JWT_SECRET="your-jwt-secret-here"
-export ADMIN_PASSWORD="your-admin-password-here"
+export ADMIN_PASSWORD="<your-admin-password>"
 ```
 
 #### Test Reports

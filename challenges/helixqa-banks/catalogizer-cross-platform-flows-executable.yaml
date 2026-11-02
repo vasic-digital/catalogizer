@@ -14,11 +14,11 @@ test_cases:
   - androidtv
   steps:
   - name: Login via API
-    action: '# TODO: Convert to executable - post /api/v1/auth/login with admin/admin123'
+    action: '# TODO: Convert to executable - post /api/v1/auth/login with admin/${ADMIN_PASSWORD}'
     expected: 200 with JWT token
     timeout: 10
   - name: Login via Web
-    action: '# TODO: Convert to executable - navigate to /login, enter admin/admin123,
+    action: '# TODO: Convert to executable - navigate to /login, enter admin/${ADMIN_PASSWORD},
       submit'
     expected: Redirect to /dashboard
     timeout: 10

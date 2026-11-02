@@ -36,7 +36,7 @@ echo ""
 
 # Step 2: Tests
 echo "Step 2: Running tests..."
-if GOMAXPROCS=3 go test -short ./... 2>&1 | tail -3; then
+if CGO_CPPFLAGS=-DHAVE_USLEEP=1 GOMAXPROCS=3 go test -short ./... 2>&1 | tail -3; then
     echo "  ✓ Tests passed"
 else
     echo "  ✗ Tests failed"
@@ -47,7 +47,7 @@ echo ""
 
 # Step 3: Coverage
 echo "Step 3: Checking coverage..."
-coverage=$(GOMAXPROCS=3 go test -cover -short ./services/... 2>&1 | grep -o 'coverage: [0-9.]*%' | head -1 | grep -o '[0-9.]*')
+coverage=$(CGO_CPPFLAGS=-DHAVE_USLEEP=1 GOMAXPROCS=3 go test -cover -short ./services/... 2>&1 | grep -o 'coverage: [0-9.]*%' | head -1 | grep -o '[0-9.]*')
 echo "  Services coverage: ${coverage}%"
 
 if (( $(echo "$coverage < 70" | bc -l) )); then
@@ -61,7 +61,7 @@ echo ""
 
 # Step 4: Build
 echo "Step 4: Building..."
-if GOMAXPROCS=3 go build -o /tmp/catalogizer-test ./... 2>&1 | grep -v "sqlite3.c"; then
+if CGO_CPPFLAGS=-DHAVE_USLEEP=1 GOMAXPROCS=3 go build -o /tmp/catalogizer-test ./... 2>&1 | grep -v "sqlite3.c"; then
     echo "  ✗ Build failed"
     FAILED=1
 else

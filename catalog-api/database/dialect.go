@@ -149,3 +149,40 @@ func (d *Dialect) IsSQLite() bool {
 func (d *Dialect) IsPostgres() bool {
 	return d.Type == DialectPostgres
 }
+
+// UpsertSQL builds a portable single-row upsert for table.
+//
+// SQLite (the go-sqlcipher build predates SQLite 3.24, so ON CONFLICT ... DO
+// UPDATE is a syntax error there) gets "INSERT OR REPLACE INTO t (cols)
+// VALUES (?, ...)". PostgreSQL gets "INSERT INTO t (cols) VALUES (?, ...) ON
+// CONFLICT (conflictCols) DO UPDATE SET c = EXCLUDED.c ..." because the plain
+// INSERT that RewriteInsertOrReplace produces fails with a duplicate key on
+// the second save (or silently duplicates rows when no unique key exists).
+// The conflict columns MUST be backed by a PRIMARY KEY or UNIQUE index. If
+// every column is a conflict column, DO NOTHING is used on PostgreSQL.
+// Placeholders stay "?" (the DB wrapper rewrites them).
+func (d *Dialect) UpsertSQL(table string, cols, conflictCols []string) string {
+	marks := make([]string, len(cols))
+	for i := range marks {
+		marks[i] = "?"
+	}
+	head := " INTO " + table + " (" + strings.Join(cols, ", ") + ") VALUES (" + strings.Join(marks, ", ") + ")"
+	if d.Type != DialectPostgres {
+		return "INSERT OR REPLACE" + head
+	}
+	isConflict := make(map[string]bool, len(conflictCols))
+	for _, c := range conflictCols {
+		isConflict[c] = true
+	}
+	var sets []string
+	for _, c := range cols {
+		if !isConflict[c] {
+			sets = append(sets, c+" = EXCLUDED."+c)
+		}
+	}
+	q := "INSERT" + head + " ON CONFLICT (" + strings.Join(conflictCols, ", ") + ") "
+	if len(sets) == 0 {
+		return q + "DO NOTHING"
+	}
+	return q + "DO UPDATE SET " + strings.Join(sets, ", ")
+}

@@ -99,18 +99,18 @@ func spawnBinary(t *testing.T, extraEnv ...string) *spawnedBinary {
 	configJSON := fmt.Sprintf(`{
   "server": {"host":"127.0.0.1","port":%d,"read_timeout":30,"write_timeout":30,"idle_timeout":60,"enable_cors":true,"enable_https":false},
   "database": {"type":"sqlite","path":%q,"enable_wal":true,"cache_size":-2000,"busy_timeout":5000,"max_open_connections":25,"max_idle_connections":5,"conn_max_lifetime":300,"conn_max_idle_time":60},
-  "auth": {"jwt_secret":"e2e-spawned-binary-session-fixes-jwt-secret-xyz","jwt_expiration_hours":24,"enable_auth":true,"admin_username":"admin","admin_password":"admin123"},
+  "auth": {"jwt_secret":"e2e-spawned-binary-session-fixes-jwt-secret-xyz","jwt_expiration_hours":24,"enable_auth":true,"admin_username":"admin","admin_password":%q},
   "catalog": {"default_page_size":100,"max_page_size":1000,"enable_cache":true,"cache_ttl_minutes":15,"max_concurrent_scans":3,"scanner_concurrency":4,"download_chunk_size":1048576,"max_archive_size":5368709120,"temp_dir":"/tmp"},
   "storage": {"type":"local","endpoint":"","access_key":"","secret_key":"","bucket":"catalogizer-covers","use_ssl":false,"region":"us-east-1"},
   "logging": {"level":"info","format":"json","output":"stdout","max_size":100,"max_backups":3,"max_age":28,"compress":true},
   "proxy": {"enabled":false,"url":"","http_url":"","username":"","password":""}
-}`, port, dbFile.Name())
+}`, port, dbFile.Name(), testAdminPassword)
 	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "config.json"), []byte(configJSON), 0644))
 
 	baseEnv := []string{
 		"GIN_MODE=release",
 		"ADMIN_USERNAME=admin",
-		"ADMIN_PASSWORD=admin123",
+		"ADMIN_PASSWORD=" + testAdminPassword,
 		"JWT_SECRET=e2e-spawned-binary-session-fixes-jwt-secret-xyz",
 		"GOTOOLCHAIN=local",
 	}
@@ -203,9 +203,9 @@ func (sb *spawnedBinary) do(method, path string, body []byte, headers map[string
 	return resp.StatusCode, respBody, parsed
 }
 
-// login returns a session token for admin/admin123.
+// login returns a session token for admin/<test password>.
 func (sb *spawnedBinary) login() string {
-	body := []byte(`{"username":"admin","password":"admin123"}`)
+	body := []byte(`{"username":"admin","password":"` + testAdminPassword + `"}`)
 	status, rawBody, parsed := sb.do(http.MethodPost, "/api/v1/auth/login", body, nil)
 	require.Equalf(sb.t, 200, status, "login failed: %s", string(rawBody))
 	token, ok := parsed["session_token"].(string)

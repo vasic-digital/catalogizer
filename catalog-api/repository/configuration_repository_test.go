@@ -55,7 +55,7 @@ func TestConfigurationRepository_SaveConfiguration(t *testing.T) {
 			},
 			setup: func(mock sqlmock.Sqlmock) {
 				mock.ExpectExec("INSERT OR REPLACE INTO system_configuration").
-					WithArgs("1.0.0", sqlmock.AnyArg(), now, now).
+					WithArgs(1, "1.0.0", sqlmock.AnyArg(), now, now).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 		},

@@ -75,7 +75,7 @@ run_tests() {
     log_info "Running tests..."
     
     cd "${PROJECT_ROOT}/catalog-api"
-    GOMAXPROCS=3 go test -short ./... 2>&1 | tail -5
+    CGO_CPPFLAGS=-DHAVE_USLEEP=1 GOMAXPROCS=3 go test -short ./... 2>&1 | tail -5
     
     if [ ${PIPESTATUS[0]} -ne 0 ]; then
         log_error "Tests failed"
@@ -99,7 +99,7 @@ build_backend() {
         output="${BUILD_DIR}/catalog-api-${VERSION}-${GOOS}-${GOARCH}"
         
         log_info "Building for ${GOOS}/${GOARCH}..."
-        GOOS=${GOOS} GOARCH=${GOARCH} GOMAXPROCS=3 go build \
+        CGO_CPPFLAGS=-DHAVE_USLEEP=1 GOOS=${GOOS} GOARCH=${GOARCH} GOMAXPROCS=3 go build \
             -ldflags "-X main.Version=${VERSION} -X main.BuildDate=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             -o "${output}" \
             . 2>&1 | head -5

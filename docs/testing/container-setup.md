@@ -51,7 +51,7 @@ Environment variables:
 GIN_MODE=release
 DB_TYPE=sqlite
 JWT_SECRET=test-secret-key
-ADMIN_PASSWORD=admin123
+ADMIN_PASSWORD=<generate-your-own, e.g. openssl rand -base64 24>
 GOTOOLCHAIN=local
 ```
 
