@@ -26,9 +26,12 @@ import sys
 # Per-endpoint default body templates. Match by exact path equality
 # OR longest-prefix match. Keys are checked in the order listed —
 # more specific paths first.
+# Placeholder token only: the real password is never written to a tracked file (CAT-021).
+ADMIN_PASSWORD_PLACEHOLDER = "${ADMIN_PASSWORD}"
+
 DEFAULT_BODIES = [
     # exact paths
-    ("/api/v1/auth/login",          {"username": "admin", "password": os.environ.get("ADMIN_PASSWORD", "")}),
+    ("/api/v1/auth/login",          {"username": "admin", "password": ADMIN_PASSWORD_PLACEHOLDER}),
     ("/api/v1/auth/logout",         {}),
     ("/api/v1/auth/refresh",        {"refresh_token": "placeholder-set-by-bank-patch"}),
     ("/api/v1/auth/register",       {
@@ -39,7 +42,7 @@ DEFAULT_BODIES = [
         "last_name": "User",
     }),
     ("/api/v1/auth/change-password", {
-        "old_password": os.environ.get("ADMIN_PASSWORD", ""),
+        "old_password": ADMIN_PASSWORD_PLACEHOLDER,
         "new_password": "NewAdmin!23",
     }),
     ("/api/v1/admin/storage/scan",  {}),

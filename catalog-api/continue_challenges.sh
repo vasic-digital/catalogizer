@@ -1,5 +1,7 @@
 #!/bin/bash
 set -e
+: "${ADMIN_PASSWORD:?set ADMIN_PASSWORD (no default; CAT-021)}"
+LOGIN_BODY=$(jq -n --arg u admin --arg p "$ADMIN_PASSWORD" '{username:$u,password:$p}')
 
 # Read challenge IDs
 if [ ! -f challenge_ids.txt ]; then
@@ -19,7 +21,7 @@ while read id; do
     fi
     echo "=== Running challenge $COUNT: $id ==="
     # Get fresh token for each challenge
-    TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login -H "Content-Type: application/json" -d "{\"username\":\"admin\",\"password\":\"${ADMIN_PASSWORD:?set ADMIN_PASSWORD}\"}" | jq -r '.session_token')
+    TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login -H "Content-Type: application/json" -d "$LOGIN_BODY" | jq -r '.session_token')
     if [ -z "$TOKEN" ]; then
         echo "  FAILED to get token"
         exit 1

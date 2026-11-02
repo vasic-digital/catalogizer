@@ -107,7 +107,7 @@ On first launch, a default admin account is created. The credentials are set via
 
 ```env
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=<ADMIN_PASSWORD>
+ADMIN_PASSWORD=<generate-your-own, e.g. openssl rand -base64 24>
 JWT_SECRET=your-dev-secret-key-minimum-32-characters
 ```
 
@@ -1302,7 +1302,7 @@ curl http://localhost:8080/health/deep
 # Verify authentication
 curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"<ADMIN_PASSWORD>"}'
+  -d '{"username":"admin","password":"<your-admin-password>"}'
 
 # Check storage root status
 curl -H "Authorization: Bearer $TOKEN" \

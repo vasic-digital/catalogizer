@@ -540,3 +540,33 @@ func TestValidateConfig_DevModeAllowsPlaceholderAdmin(t *testing.T) {
 	t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", "")
 	assert.Error(t, validateConfig(c))
 }
+
+func TestIsPlaceholderPassword_TemplateAndUnicodeVariants(t *testing.T) {
+	for _, v := range []string{
+		"<ADMIN_PASSWORD>", "<your-password>", "${ADMIN_PASSWORD}", "$(cat x)", "{{ .Password }}",
+		"admin１２３",       // fullwidth digits (NFKC -> published default)
+		"ＡＤＭＩＮ１２３", // fullwidth upper
+		"Admin-123", "ADMIN_123", " admin 123 ",
+	} {
+		assert.True(t, IsPlaceholderPassword(v), "must reject %q", v)
+	}
+	assert.False(t, IsPlaceholderPassword("Op3rator-Supplied-Value-9x"))
+}
+
+// Mutation guard M2: only the exact string "true" enables dev mode.
+func TestAllowInsecureDefaults_ExactTrueOnly(t *testing.T) {
+	t.Setenv("GIN_MODE", "")
+	for v, want := range map[string]bool{"true": true, "1": false, "TRUE": false, "True": false, "false": false, "": false, " true": false, "yes": false} {
+		t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", v)
+		assert.Equal(t, want, AllowInsecureDefaults(), "value %q", v)
+	}
+}
+
+// F3: dev mode is refused in release mode.
+func TestAllowInsecureDefaults_RefusedInReleaseMode(t *testing.T) {
+	t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", "true")
+	t.Setenv("GIN_MODE", "release")
+	assert.False(t, AllowInsecureDefaults())
+	t.Setenv("GIN_MODE", "debug")
+	assert.True(t, AllowInsecureDefaults())
+}

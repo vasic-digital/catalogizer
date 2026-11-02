@@ -291,7 +291,7 @@ DELETE FROM migrations WHERE version = 9;
 |----------|-------------|---------|
 | `JWT_SECRET` | JWT signing key | Auto-generated (ephemeral) |
 | `ADMIN_USERNAME` | Default admin username | admin |
-| `ADMIN_PASSWORD` | Default admin password | <ADMIN_PASSWORD> |
+| `ADMIN_PASSWORD` | Admin password (no default; placeholders refused) | _required_ |
 
 ### Redis
 

@@ -29,7 +29,7 @@ A value set as an environment variable always overrides the same key in `.env` o
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `JWT_SECRET` | Secret key for signing JWT tokens. Use 32+ random characters in production. | `a-random-string-at-least-32-characters` |
-| `ADMIN_PASSWORD` | Password for the default admin account. Change immediately after first login. | `<ADMIN_PASSWORD>` |
+| `ADMIN_PASSWORD` | Password for the default admin account. Change immediately after first login. | _none (required; placeholders refused)_ |
 
 ### Server Settings
 
@@ -85,7 +85,7 @@ PORT=8080
 GIN_MODE=debug
 DB_TYPE=sqlite
 JWT_SECRET=your-dev-secret-key
-ADMIN_PASSWORD=<ADMIN_PASSWORD>
+ADMIN_PASSWORD=<generate-your-own, e.g. openssl rand -base64 24>
 TMDB_API_KEY=your_tmdb_key
 OMDB_API_KEY=your_omdb_key
 ```
@@ -119,7 +119,7 @@ PORT=8080
 GIN_MODE=debug
 DB_TYPE=sqlite
 JWT_SECRET=dev-secret-change-in-production
-ADMIN_PASSWORD=<ADMIN_PASSWORD>
+ADMIN_PASSWORD=<generate-your-own, e.g. openssl rand -base64 24>
 ```
 
 This is the simplest setup. The backend creates `catalogizer.db` automatically and writes its port to `.service-port` for the frontend to discover.

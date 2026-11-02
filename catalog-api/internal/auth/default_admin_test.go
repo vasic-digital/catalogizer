@@ -59,3 +59,41 @@ func TestCreateDefaultAdmin_UnsetGeneratesRandom(t *testing.T) {
 	_, err := s.Login("admin", compromised, "127.0.0.1", "t")
 	assert.Error(t, err)
 }
+
+// Mutation guard M3: case/separator/unicode variants are rejected at the auth level.
+func TestCreateDefaultAdmin_RejectsVariants(t *testing.T) {
+	t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", "")
+	for _, v := range []string{"Admin-123", "ADMIN_123", "<ADMIN_PASSWORD>", "${ADMIN_PASSWORD}", "admin１２３"} {
+		t.Setenv("ADMIN_PASSWORD", v)
+		assert.Error(t, newRealAuth(t).Initialize(), "must reject %q", v)
+	}
+}
+
+// F3 at auth level: release mode ignores the dev switch.
+func TestCreateDefaultAdmin_DevSwitchIgnoredInRelease(t *testing.T) {
+	t.Setenv("ADMIN_PASSWORD", compromised)
+	t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", "true")
+	t.Setenv("GIN_MODE", "release")
+	assert.Error(t, newRealAuth(t).Initialize())
+}
+
+// F2: an existing install seeded with the compromised password must not start.
+func TestCreateDefaultAdmin_ExistingCompromisedAdminRefused(t *testing.T) {
+	t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", "true")
+	t.Setenv("ADMIN_PASSWORD", compromised)
+	s := newRealAuth(t)
+	require.NoError(t, s.Initialize()) // dev seed with the compromised value
+	t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", "")
+	t.Setenv("ADMIN_PASSWORD", "Op3rator-Supplied-Value-9x")
+	err := s.Initialize()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "rotate")
+}
+
+func TestCreateDefaultAdmin_ExistingSafeAdminOK(t *testing.T) {
+	t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", "")
+	t.Setenv("ADMIN_PASSWORD", "Op3rator-Supplied-Value-9x")
+	s := newRealAuth(t)
+	require.NoError(t, s.Initialize())
+	require.NoError(t, s.Initialize())
+}

@@ -113,7 +113,7 @@ Create a `config.json` file with the following structure:
     "jwt_expiration_hours": 24,
     "enable_auth": false,
     "admin_username": "admin",
-    "admin_password": "<ADMIN_PASSWORD>"
+    "admin_password": "<your-admin-password>"
   },
   "catalog": {
     "default_page_size": 100,

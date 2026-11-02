@@ -113,7 +113,7 @@ export const options = {
 let token;
 
 export function setup() {
-  token = login(BASE_URL, 'admin', '<ADMIN_PASSWORD>');
+  token = login(BASE_URL, 'admin', '<your-admin-password>');
   return { token };
 }
 

@@ -3699,6 +3699,8 @@ test_cases:
     timeout: 10
 
 - id: api-playback-session-lifecycle
+  requires_env:
+    - ADMIN_PASSWORD  # HelixQA does not expand ${VAR} on-device: skipped when unset (tracked CAT-021-F4)
   name: Playback session lifecycle (start, progress, end, progress read)
   category: playback-verification
   priority: critical

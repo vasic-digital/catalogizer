@@ -3355,7 +3355,7 @@ PORT=8080
 GIN_MODE=debug
 DB_TYPE=sqlite
 JWT_SECRET=your-dev-secret-key-at-least-32-chars
-ADMIN_PASSWORD=<ADMIN_PASSWORD>
+ADMIN_PASSWORD=<generate-your-own, e.g. openssl rand -base64 24>
 ```
 
 Run the development server:

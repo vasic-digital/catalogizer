@@ -186,7 +186,7 @@ DB_PATH=catalogizer.db
 JWT_SECRET=your-development-secret-key-change-in-production
 JWT_EXPIRATION=24h
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=<ADMIN_PASSWORD>
+ADMIN_PASSWORD=<generate-your-own, e.g. openssl rand -base64 24>
 SESSION_TIMEOUT=30m
 
 # External API Keys (optional)
@@ -700,7 +700,7 @@ npm run dev &
 
 # 3. Open browser
 xdg-open http://localhost:5173
-# Login: admin / <ADMIN_PASSWORD>
+# Login: admin / <your-admin-password>
 ```
 
 **Verify everything works:**

@@ -24,7 +24,7 @@ The admin panel is available exclusively to users with the **admin** role. Acces
 On first startup, Catalogizer creates a default admin account:
 
 - **Username**: `admin`
-- **Password**: Set via the `ADMIN_PASSWORD` environment variable (defaults to `<ADMIN_PASSWORD>` in development)
+- **Password**: Set via the `ADMIN_PASSWORD` environment variable (no default: a published or placeholder value is refused at startup; leave it unset to get a random one-time password printed to stderr)
 
 Change the default password immediately after first login. Navigate to the admin panel, select your user account, and update the password.
 

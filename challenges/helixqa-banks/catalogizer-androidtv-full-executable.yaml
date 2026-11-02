@@ -64,6 +64,7 @@ test_cases:
   # LOGIN TESTS
   # =====================================
   - id: tv-login-complete
+    requires_env: [ADMIN_PASSWORD]  # HelixQA does not expand ${VAR} in step text: SKIPs when unset; typed text is the literal placeholder (tracked CAT-021-F4)
     name: "Login - Full Credential Entry"
     category: authentication
     priority: critical

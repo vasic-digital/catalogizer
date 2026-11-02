@@ -70,7 +70,7 @@ Every interaction follows: **screenshot → LLM analysis → action decision**.
 **Anti-pattern** (prose description):
 ```json
 {
-  "action": "Enter admin/<ADMIN_PASSWORD> credentials",
+  "action": "Enter admin/<your-admin-password> credentials",
   "expected": "Home screen loads"
 }
 ```
@@ -87,7 +87,7 @@ Every interaction follows: **screenshot → LLM analysis → action decision**.
   action: "adb_shell: input keyevent KEYCODE_TAB"
   expected: "password field focused"
 - name: Type password
-  action: "adb_shell: input text <ADMIN_PASSWORD>"
+  action: "adb_shell: input text <your-admin-password>"
   expected: "password field populated"
 - name: Submit
   action: "adb_shell: input keyevent KEYCODE_ENTER"

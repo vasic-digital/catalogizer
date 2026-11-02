@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"catalogizer/challenges"
 	root_config "catalogizer/config"
 	"catalogizer/database"
@@ -424,6 +425,9 @@ func main() {
 
 	// Seed default admin user if none exists
 	if err := seedDefaultAdmin(databaseDB, cfg.Auth.AdminUsername, cfg.Auth.AdminPassword); err != nil {
+	if errors.Is(err, errCompromisedAdmin) {
+		logging.Fatal("Refusing to start", logging.ErrorField(err))
+	}
 	logging.Warnf("Failed to seed admin user: %v", err)
 	}
 
@@ -1973,7 +1977,18 @@ func seedDefaultAdmin(db *database.DB, username, password string) error {
 	return fmt.Errorf("check admin count: %w", err)
 	}
 	if count > 0 {
+	if !root_config.AllowInsecureDefaults() {
+		if err := refuseCompromisedAdminHashes(db); err != nil {
+			return err
+		}
+	}
 	return nil // admin already exists
+	}
+
+	// Never seed an empty or placeholder password (CAT-021), regardless of
+	// whether auth is currently enabled.
+	if password == "" || (root_config.IsPlaceholderPassword(password) && !root_config.AllowInsecureDefaults()) {
+	return fmt.Errorf("refusing to seed admin %q: ADMIN_PASSWORD is empty or a known placeholder/default", username)
 	}
 
 	// Generate salt
@@ -1999,6 +2014,37 @@ func seedDefaultAdmin(db *database.DB, username, password string) error {
 	}
 
 	logging.Infof("Default admin user '%s' created", username)
+	return nil
+}
+
+// errCompromisedAdmin marks an existing admin account that still uses a
+// published default password.
+var errCompromisedAdmin = errors.New("existing admin account uses a published default password")
+
+// refuseCompromisedAdminHashes checks stored (salted) admin hashes against the
+// denylist so upgraded installs cannot keep the compromised default.
+func refuseCompromisedAdminHashes(db *database.DB) error {
+	rows, err := db.Query("SELECT username, password_hash, COALESCE(salt,'') FROM users WHERE role_id = 1")
+	if err != nil {
+	return fmt.Errorf("check admin hashes: %w", err)
+	}
+	defer rows.Close()
+	type acct struct{ user, hash, salt string }
+	var accts []acct
+	for rows.Next() {
+	var a acct
+	if err := rows.Scan(&a.user, &a.hash, &a.salt); err != nil {
+		return err
+	}
+	accts = append(accts, a)
+	}
+	for _, a := range accts {
+	for _, c := range root_config.PlaceholderPasswordCandidates() {
+		if bcrypt.CompareHashAndPassword([]byte(a.hash), []byte(c+a.salt)) == nil {
+		return fmt.Errorf("%w: account %q; rotate its password before starting", errCompromisedAdmin, a.user)
+		}
+	}
+	}
 	return nil
 }
 
