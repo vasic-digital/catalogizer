@@ -56,8 +56,9 @@ ADMIN_NEW_PASSWORD='<choose-a-strong-password>' ./catalog-api admin-reset-passwo
 ```
 
 It rotates every admin whose stored hash matches a published default (or the named
-admin), revokes all of that account's existing sessions and refresh tokens in the same
-step, and prints account names only. Then start the server normally.
+admin), revokes all of that account's existing sessions in the same step (every
+`/api/v1` request checks that its token's session is still active, so already-issued
+access tokens stop working immediately, not only at expiry), and prints account names only. Then start the server normally.
 
 The command loads the full server configuration first, so the same environment as
 the server is required: `JWT_SECRET` (at least 32 characters), `ADMIN_USERNAME`, a

@@ -124,6 +124,8 @@ func TestAdminReset_RealBinaryLifecycle(t *testing.T) {
 	oldToken, _ := login["session_token"].(string)
 	require.NotEmpty(t, oldToken)
 	require.Equal(t, 200, b.get("/api/v1/auth/me", oldToken))
+	// JWT-only route (guarded by middleware.RequireAuth alone, no session lookup in the handler).
+	require.Equal(t, 200, b.get("/api/v1/catalog", oldToken))
 	b.stop(cmd, done)
 
 	// 2. production-mode start must REFUSE (Fatal) and name the recovery command.
@@ -155,8 +157,11 @@ func TestAdminReset_RealBinaryLifecycle(t *testing.T) {
 	oc, _ := b.login(seedCompromised)
 	assert.Equal(t, 401, oc)
 	assert.Equal(t, 401, b.get("/api/v1/auth/me", oldToken), "pre-reset session must be rejected")
+	// F1 (round 4): stateless access JWTs on JWT-only routes must die with the session.
+	assert.Equal(t, 401, b.get("/api/v1/catalog", oldToken), "pre-reset access token must be rejected on JWT-only routes")
 	if nt, _ := nl["session_token"].(string); nt != "" {
 		assert.Equal(t, 200, b.get("/api/v1/auth/me", nt))
+		assert.Equal(t, 200, b.get("/api/v1/catalog", nt), "post-reset token must work on JWT-only routes")
 	}
 	assert.False(t, strings.Contains(out.String(), seedCompromised))
 }

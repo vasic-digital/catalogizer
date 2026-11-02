@@ -431,8 +431,9 @@ var placeholderMarkers = []string{
 }
 
 // placeholderShape matches normalized "your...password/secret/token/key" and
-// "...password...here" example forms.
-var placeholderShape = regexp.MustCompile(`^your[a-z0-9]*(password|passwd|secret|token|key)|(password|passwd|secret|token|key)[a-z0-9]*here$`)
+// "...password...here" example forms. Both halves are fully anchored: a strong
+// passphrase that merely starts with "your" or ends with "here" is not refused.
+var placeholderShape = regexp.MustCompile(`^your[a-z0-9]*(password|passwd|secret|token|key)(here|value)?$|^[a-z0-9]{0,12}(password|passwd|secret|token|key)here$`)
 
 // placeholderPasswords are normalized exact weak/published defaults.
 var placeholderPasswords = []string{

@@ -180,7 +180,8 @@ func TestAdminReset_RevokesExistingSessions(t *testing.T) {
 	id := addAdmin(t, db, "admin", seedCompromised)
 	other := addAdmin(t, db, "other", "Other-Strong-Pw-4k")
 	for _, u := range []int64{id, other} {
-		_, err := db.Exec("INSERT INTO user_sessions (user_id, session_token, refresh_token) VALUES (?, 'st', 'rt')", u)
+		// explicit session id deliberately != user id so a revoke keyed on the wrong column cannot pass by coincidence
+		_, err := db.Exec("INSERT INTO user_sessions (id, user_id, session_token, refresh_token) VALUES (?, ?, 'st', 'rt')", 1000+u*7, u)
 		require.NoError(t, err)
 	}
 	t.Setenv("ADMIN_NEW_PASSWORD", "Rotated-Op3rator-Value-7q")

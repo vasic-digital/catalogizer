@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -25,7 +26,7 @@ func censusAdminPasswordValues(t *testing.T, files []string) map[string][]string
 		}
 		for i, line := range strings.Split(string(b), "\n") {
 			for _, m := range adminPwAssign.FindAllStringSubmatch(line, -1) {
-				out[m[1]] = append(out[m[1]], f+":"+string(rune('0'+i%10)))
+				out[m[1]] = append(out[m[1]], f+":"+strconv.Itoa(i+1))
 			}
 		}
 	}
@@ -77,6 +78,10 @@ func TestDocsAdminPasswordExamplesAreAllRejected(t *testing.T) {
 	vals := censusAdminPasswordValues(t, files)
 	require.NotContains(t, vals, "zz-never-written-9f3")
 	require.NotEmpty(t, vals, "census must find documented ADMIN_PASSWORD values")
+	// positive needle that can only come from the documentation scan (docs/manuals line documenting the reset command)
+	needleWhere, ok := vals["<choose-a-strong-password>"]
+	require.True(t, ok, "census must see the value documented in docs/manuals/ADMIN_USER_GUIDE.md")
+	require.True(t, strings.Contains(strings.Join(needleWhere, ","), "ADMIN_USER_GUIDE.md:"), "needle must come from the docs scan, got %v", needleWhere)
 
 	for v, where := range vals {
 		v = strings.TrimRight(v, ",.;)`")
@@ -93,8 +98,11 @@ func TestIsPlaceholderPassword_ExampleShapes(t *testing.T) {
 		"SecureAdminPassword123!", "your-api-key", "your_token_value", "db-secret-here", "my-password-here", "SecurePass123!", "SecurePassword123", "<generate-your-own>"} {
 		assert.True(t, IsPlaceholderPassword(v), v)
 	}
-	// real-looking values stay accepted (no false positive)
-	for _, v := range []string{"Op3rator-Supplied-Value-9x", "k8#Qm2!vLp0zR", "correct-horse-battery-staple-42"} {
+	// real-looking values stay accepted (no false positive); the shape regex is anchored on both
+	// halves so strong passphrases that merely start with "your" or end with "here" are not refused
+	for _, v := range []string{"Op3rator-Supplied-Value-9x", "k8#Qm2!vLp0zR", "correct-horse-battery-staple-42",
+		"Your-Key-Is-Safe-In-My-Heart-77", "Your-Token-Of-Appreciation-4412", "Meet-Me-Over-There-At-Noon-88",
+		"Hidden-Treasure-Is-Buried-Somewhere-Here-55q"} {
 		assert.False(t, IsPlaceholderPassword(v), v)
 	}
 }

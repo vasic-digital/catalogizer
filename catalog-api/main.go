@@ -918,6 +918,7 @@ func main() {
 
 	// Initialize JWT middleware
 	jwtMiddleware := root_middleware.NewJWTMiddleware(jwtSecret)
+	jwtMiddleware.SetSessionChecker(newSessionChecker(databaseDB))
 
 	// Initialize tiered rate limiters using internal auth middleware.
 	// Constitution Article V §5.1 category 7 (DDoS/rate-limit) requires
