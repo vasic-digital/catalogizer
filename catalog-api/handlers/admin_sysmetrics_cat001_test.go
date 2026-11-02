@@ -73,9 +73,12 @@ func TestCAT001_StorageInfo_LocalRootHasRealSpaceOtherProtocolsAreNull(t *testin
 	}
 	db := openProductionFileDB(t)
 	dir := t.TempDir()
+	// An smb root whose path happens to exist locally: a measurement of it would
+	// be a statfs of the wrong machine, so it must still be null.
+	remDir := t.TempDir()
 	_, err := db.Exec(`INSERT INTO storage_roots (name, protocol, path, enabled, max_depth) VALUES ('loc','local',?,1,3)`, dir)
 	require.NoError(t, err)
-	_, err = db.Exec(`INSERT INTO storage_roots (name, protocol, host, path, enabled, max_depth) VALUES ('rem','smb','nas.invalid','share',1,3)`)
+	_, err = db.Exec(`INSERT INTO storage_roots (name, protocol, host, path, enabled, max_depth) VALUES ('rem','smb','nas.invalid',?,1,3)`, remDir)
 	require.NoError(t, err)
 	h := NewAdminHandler(adminAuthOK(), &mockAdminUserRepo{}, db, "t")
 
@@ -91,7 +94,7 @@ func TestCAT001_StorageInfo_LocalRootHasRealSpaceOtherProtocolsAreNull(t *testin
 	require.NotNil(t, loc, "%v", byPath)
 	assert.Greater(t, loc["totalSpace"].(float64), 0.0)
 	assert.Greater(t, loc["availableSpace"].(float64), 0.0)
-	rem := byPath["smb://share"]
+	rem := byPath["smb://"+remDir]
 	require.NotNil(t, rem, "%v", byPath)
 	assert.Nil(t, rem["totalSpace"], "space of a remote share is unknown, not 0")
 	assert.Nil(t, rem["availableSpace"])
