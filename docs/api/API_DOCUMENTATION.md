@@ -954,6 +954,8 @@ Content-Length: 4294967296
 
 ## File Copy Operations
 
+> **Permission:** requires `storage.manage` (a user whose role holds `system.admin` or `*` also passes). It is checked against the caller's CURRENT role in the database on every request, so a token claim never grants. Anonymous callers get `401`, authenticated callers without the permission get `403`; a failed lookup answers `503`. Self-registered users (role 2: `media.view`, `media.download`) are refused.
+
 ### POST /api/v1/copy/storage
 
 Copy a file to a storage location.
@@ -1965,6 +1967,9 @@ Content-Type: `application/json`
 
 ## Storage and Storage Roots
 
+> **Permission:** requires `storage.manage` (a user whose role holds `system.admin` or `*` also passes). It is checked against the caller's CURRENT role in the database on every request, so a token claim never grants. Anonymous callers get `401`, authenticated callers without the permission get `403`; a failed lookup answers `503`. Self-registered users (role 2: `media.view`, `media.download`) are refused.
+> A `local` storage root must be an absolute path inside the configured media roots (`MEDIA_ROOT_PATH`, `CATALOGIZER_READ_ROOTS`, `./data`), symlinks resolved; any other path is refused with `400`.
+
 ### GET /api/v1/storage/list/{path}
 
 List files in a storage path.
@@ -2454,6 +2459,8 @@ Content-Type: `application/json`
 
 ## SMB Discovery
 
+> **Permission:** requires `storage.manage` (a user whose role holds `system.admin` or `*` also passes). It is checked against the caller's CURRENT role in the database on every request, so a token claim never grants. Anonymous callers get `401`, authenticated callers without the permission get `403`; a failed lookup answers `503`. Self-registered users (role 2: `media.view`, `media.download`) are refused.
+
 ### POST /api/v1/smb/discover
 
 Discover available SMB shares on a host.
@@ -2666,6 +2673,8 @@ Content-Type: `application/json`
 ## Scanning
 
 ### POST /api/v1/scans
+
+> **Permission:** `storage.manage` (see Storage and Storage Roots). `GET /api/v1/scans` and `GET /api/v1/scans/:job_id` stay available to any authenticated user (progress only).
 
 Queue a new scan job for a storage root.
 
@@ -5352,6 +5361,8 @@ Content-Type: `application/json`
 ---
 
 ## Challenges
+
+> **Permission:** the three `POST .../run` operations execute server-side code paths and need the administrator role (`system.admin`, decided from the database on every request): `403` otherwise.
 
 Challenge system endpoints for running validation and testing challenges.
 

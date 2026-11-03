@@ -21,6 +21,7 @@ import (
 	"catalogizer/internal/pathguard"
 	"catalogizer/internal/services"
 	root_middleware "catalogizer/middleware"
+	"catalogizer/models"
 	root_repository "catalogizer/repository"
 	root_services "catalogizer/services"
 	"context"
@@ -1234,10 +1235,18 @@ func main() {
 	// Streaming endpoint — proxies file data from any storage backend (SMB, FTP, NFS, WebDAV, local)
 	api.GET("/stream/:id", streamHandler.StreamFile)
 
+	// Storage-operator routes (P2, authz review r3): creating storage roots,
+	// listing them, queueing scans, SMB discovery/probe/ingest and server-side
+	// copy act on the host's storage and network, so they need the
+	// storage.manage permission (system.admin also passes). Decided live from
+	// the database, like RequireAdmin: a stale token claim never grants, and a
+	// self-registered role-2 user (media.view/media.download) is refused.
+	storageGate := jwtMiddleware.RequirePermission(models.PermissionStorageManage)
+
 	// File operations
-	api.POST("/copy/storage", copyHandler.CopyToStorage)
-	api.POST("/copy/local", copyHandler.CopyToLocal)
-	api.POST("/copy/upload", copyHandler.CopyFromLocal)
+	api.POST("/copy/storage", storageGate, copyHandler.CopyToStorage)
+	api.POST("/copy/local", storageGate, copyHandler.CopyToLocal)
+	api.POST("/copy/upload", storageGate, copyHandler.CopyFromLocal)
 
 	// Media browsing endpoints (must be before :id to prevent route conflict)
 	api.GET("/media/search", mediaBrowseHandler.SearchMedia)
@@ -1344,11 +1353,11 @@ func main() {
 			subGroup.GET("/languages", func(c *gin.Context) { getSubtitleHandler().GetSupportedLanguages(c) })
 			subGroup.GET("/providers", func(c *gin.Context) { getSubtitleHandler().GetSupportedProviders(c) })
 	}
-	api.GET("/storage/list/*path", copyHandler.ListStoragePath)
-	api.GET("/storage/roots", scanHandler.GetStorageRoots)
-	api.POST("/storage/roots", scanHandler.CreateStorageRoot)
-	api.GET("/storage-roots", scanHandler.GetStorageRoots)
-	api.GET("/storage-roots/:id/status", scanHandler.GetStorageRootStatus)
+	api.GET("/storage/list/*path", storageGate, copyHandler.ListStoragePath)
+	api.GET("/storage/roots", storageGate, scanHandler.GetStorageRoots)
+	api.POST("/storage/roots", storageGate, scanHandler.CreateStorageRoot)
+	api.GET("/storage-roots", storageGate, scanHandler.GetStorageRoots)
+	api.GET("/storage-roots/:id/status", storageGate, scanHandler.GetStorageRootStatus)
 
 	// Statistics and sorting
 	api.GET("/stats/directories/by-size", catalogHandler.GetDirectoriesBySize)
@@ -1371,6 +1380,7 @@ func main() {
 
 	// SMB Discovery endpoints
 	smbGroup := api.Group("/smb")
+	smbGroup.Use(storageGate) // P2: every /smb/* route needs storage.manage
 	{
 			smbGroup.POST("/discover", smbDiscoveryHandler.DiscoverShares)
 			smbGroup.GET("/discover", smbDiscoveryHandler.DiscoverSharesGET)
@@ -1385,7 +1395,7 @@ func main() {
 	// Scan endpoints
 	scanGroup := api.Group("/scans")
 	{
-			scanGroup.POST("", scanHandler.QueueScan)
+			scanGroup.POST("", storageGate, scanHandler.QueueScan)
 			scanGroup.GET("", scanHandler.ListScans)
 			scanGroup.GET("/:job_id", scanHandler.GetScanStatus)
 	}
@@ -1650,9 +1660,10 @@ func main() {
 	{
 			challengeGroup.GET("", challengeHandler.ListChallenges)
 			challengeGroup.GET("/:id", challengeHandler.GetChallenge)
-			challengeGroup.POST("/:id/run", challengeHandler.RunChallenge)
-			challengeGroup.POST("/run", challengeHandler.RunAll)
-			challengeGroup.POST("/run/category/:category", challengeHandler.RunByCategory)
+			// Running challenges executes server-side code paths: administrators only (P2).
+			challengeGroup.POST("/:id/run", jwtMiddleware.RequireAdmin(), challengeHandler.RunChallenge)
+			challengeGroup.POST("/run", jwtMiddleware.RequireAdmin(), challengeHandler.RunAll)
+			challengeGroup.POST("/run/category/:category", jwtMiddleware.RequireAdmin(), challengeHandler.RunByCategory)
 			challengeGroup.GET("/results", challengeHandler.GetResults)
 	}
 

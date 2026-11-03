@@ -3,6 +3,7 @@ package handlers
 import (
 	"catalogizer/database"
 	"catalogizer/filesystem"
+	"catalogizer/internal/pathguard"
 	"catalogizer/internal/services"
 	"catalogizer/models"
 	"context"
@@ -106,6 +107,21 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 	if err := filesystem.ValidateRoot(candidate); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	// A local root is a directory of THIS host the scanner will read and the API
+	// will list: it must lie inside the configured read roots (CATALOGIZER_READ_ROOTS,
+	// MEDIA_ROOT_PATH, ./data), symlinks resolved, or it is refused (P2). The check
+	// runs after ValidateRoot so a missing path is already a 400 of its own.
+	if req.Protocol == "local" && req.Path != nil {
+		resolved, cerr := pathguard.Confine(*req.Path, pathguard.ReadRoots())
+		if cerr != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "local storage root must be an absolute path inside the configured media roots (set MEDIA_ROOT_PATH or CATALOGIZER_READ_ROOTS)",
+			})
+			return
+		}
+		req.Path = &resolved
 	}
 
 	if req.MaxDepth <= 0 {

@@ -332,6 +332,9 @@ func (h *RoleHandler) GetPermissions(w http.ResponseWriter, r *http.Request) {
 			"edit_shares":   models.PermissionShareEdit,
 			"delete_shares": models.PermissionShareDelete,
 		},
+		"storage_management": map[string]string{
+			"manage_storage": models.PermissionStorageManage,
+		},
 		"system": map[string]string{
 			"system_admin":    models.PermissionSystemAdmin,
 			"view_analytics":  models.PermissionAnalyticsView,

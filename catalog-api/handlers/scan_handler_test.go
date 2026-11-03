@@ -223,6 +223,9 @@ func (suite *ScanHandlerTestSuite) TestCreateStorageRoot_UnsupportedProtocolReje
 // works. Article XI §11.2.3 matching positive — proves the fix
 // didn't over-restrict.
 func (suite *ScanHandlerTestSuite) TestCreateStorageRoot_AllSupportedProtocolsAccepted() {
+	// P2: a local root must lie inside the configured read roots.
+	mediaRoot := suite.T().TempDir()
+	suite.T().Setenv("CATALOGIZER_READ_ROOTS", mediaRoot)
 	for _, proto := range []string{"local", "smb", "ftp", "nfs", "webdav"} {
 		req0 := map[string]interface{}{
 			"name":     "Root_" + proto,
@@ -233,7 +236,7 @@ func (suite *ScanHandlerTestSuite) TestCreateStorageRoot_AllSupportedProtocolsAc
 		case "webdav":
 			req0["url"] = "http://nas.example/dav"
 		case "local":
-			req0["path"] = "/data/local"
+			req0["path"] = mediaRoot
 		case "smb":
 			req0["host"], req0["path"] = "nas.example", "share"
 		case "ftp":

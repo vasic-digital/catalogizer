@@ -429,6 +429,11 @@ const (
 	PermissionSystemAdmin  = "system.admin"
 	PermissionSystemConfig = "system.configure"
 
+	// Storage permissions: creating/inspecting storage roots, queueing scans,
+	// SMB discovery/probe/ingest and server-side copy. system.admin and "*"
+	// also pass (see middleware.RequirePermission).
+	PermissionStorageManage = "storage.manage"
+
 	// User management permissions
 	PermissionUserView   = "user.view"
 	PermissionUserCreate = "user.create"

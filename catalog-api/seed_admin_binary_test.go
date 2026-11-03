@@ -11,12 +11,33 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+// safeBuf is a mutex-guarded output sink for the child process: exec's copier
+// goroutine writes while the test reads String(), which raced under -race when
+// a plain bytes.Buffer was used (P2/T1).
+type safeBuf struct {
+	mu sync.Mutex
+	b  bytes.Buffer
+}
+
+func (s *safeBuf) Write(p []byte) (int, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.b.Write(p)
+}
+
+func (s *safeBuf) String() string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.b.String()
+}
 
 type binEnv struct {
 	t    *testing.T
@@ -37,16 +58,16 @@ func (b *binEnv) env(extra ...string) []string {
 
 // start launches the server and returns (cmd, exited-channel). Only the child
 // pid is signalled (never a process group, §11.4.263).
-func (b *binEnv) start(extra ...string) (*exec.Cmd, chan error, *bytes.Buffer) {
+func (b *binEnv) start(extra ...string) (*exec.Cmd, chan error, *safeBuf) {
 	cmd := exec.Command(b.bin)
 	cmd.Dir = b.dir
 	cmd.Env = b.env(extra...)
-	var out bytes.Buffer
-	cmd.Stdout, cmd.Stderr = &out, &out
+	out := &safeBuf{}
+	cmd.Stdout, cmd.Stderr = out, out
 	require.NoError(b.t, cmd.Start())
 	done := make(chan error, 1)
 	go func() { done <- cmd.Wait() }()
-	return cmd, done, &out
+	return cmd, done, out
 }
 
 func (b *binEnv) waitHealthy(done chan error) bool {

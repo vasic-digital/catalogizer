@@ -2866,6 +2866,8 @@ paths:
             schema:
               type: object
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Copy initiated
 
@@ -2882,6 +2884,8 @@ paths:
             schema:
               type: object
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Copy initiated
 
@@ -2898,6 +2902,8 @@ paths:
             schema:
               type: object
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Upload initiated
 
@@ -3617,6 +3623,8 @@ paths:
           schema:
             type: string
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Storage path listing
 
@@ -3628,6 +3636,8 @@ paths:
       security:
         - BearerAuth: []
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Storage roots list
           content:
@@ -3642,7 +3652,10 @@ paths:
     post:
       tags: [storage]
       summary: Create storage root
-      description: Creates or updates a storage root configuration.
+      description: |
+        Creates a storage root. Requires the storage.manage permission (or system.admin).
+        A protocol `local` root must be an absolute path inside the configured media roots
+        (MEDIA_ROOT_PATH, CATALOGIZER_READ_ROOTS, ./data), symlinks resolved; anything else is refused with 400.
       security:
         - BearerAuth: []
       requestBody:
@@ -3652,6 +3665,8 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateStorageRootRequest'
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '201':
           description: Storage root created
           content:
@@ -3682,6 +3697,8 @@ paths:
       security:
         - BearerAuth: []
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Storage roots list
           content:
@@ -3707,6 +3724,8 @@ paths:
           schema:
             type: integer
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Connectivity status
           content:
@@ -3936,6 +3955,8 @@ paths:
             schema:
               type: object
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Discovered shares
     get:
@@ -3944,6 +3965,8 @@ paths:
       security:
         - BearerAuth: []
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Discovered shares
 
@@ -3959,6 +3982,8 @@ paths:
             schema:
               type: object
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Connection test result
     get:
@@ -3967,6 +3992,8 @@ paths:
       security:
         - BearerAuth: []
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Connection test result
 
@@ -3982,6 +4009,8 @@ paths:
             schema:
               type: object
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Share contents
 
@@ -3999,6 +4028,8 @@ paths:
             schema:
               $ref: '#/components/schemas/QueueScanRequest'
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '202':
           description: Scan job queued
           content:
@@ -5995,6 +6026,8 @@ paths:
           schema:
             type: string
       responses:
+        '403':
+          description: Administrator role required (system.admin)
         '200':
           description: Challenge result
           content:
@@ -6019,6 +6052,8 @@ paths:
       security:
         - BearerAuth: []
       responses:
+        '403':
+          description: Administrator role required (system.admin)
         '200':
           description: All challenge results
           content:
@@ -6055,6 +6090,8 @@ paths:
           schema:
             type: string
       responses:
+        '403':
+          description: Administrator role required (system.admin)
         '200':
           description: Category challenge results
 
@@ -9350,6 +9387,8 @@ paths:
       security:
       - BearerAuth: []
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Identities
           content:
@@ -9379,6 +9418,8 @@ paths:
             schema:
               $ref: '#/components/schemas/SMBProbeRequest'
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Probe result
           content:
@@ -9418,6 +9459,8 @@ paths:
             schema:
               $ref: '#/components/schemas/SMBProbeRequest'
       responses:
+        '403':
+          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
         '200':
           description: Probe and ingest result
           content:

@@ -41,11 +41,16 @@ func TestWF22R3_ProductionDBHarnessHasTheMigratedSchema(t *testing.T) {
 // N3 (review P5/P5b) + the create matrix.
 func TestWF22R3_N3_CreateStorageRootValidatesTheRow(t *testing.T) {
 	h := newAPIHarness(t, false)
+	// P2: a local root must lie inside the configured read roots.
+	mediaRoot := t.TempDir()
+	t.Setenv("CATALOGIZER_READ_ROOTS", mediaRoot)
 	cases := []struct {
 		name string
 		body map[string]interface{}
 		want int
 	}{
+		{"local outside the configured roots", map[string]interface{}{"name": "c8", "protocol": "local", "path": "/etc"}, 400},
+		{"local relative", map[string]interface{}{"name": "c9", "protocol": "local", "path": "media/rel"}, 400},
 		{"ftp with url + mount_point", map[string]interface{}{"name": "c1", "protocol": "ftp", "host": "nas", "path": "/media", "url": "https://user:pw@elsewhere/dav", "mount_point": "/mnt/x"}, 400},
 		{"nfs empty", map[string]interface{}{"name": "c2", "protocol": "nfs"}, 400},
 		{"smb without share", map[string]interface{}{"name": "c3", "protocol": "smb", "host": "nas"}, 400},
@@ -57,7 +62,7 @@ func TestWF22R3_N3_CreateStorageRootValidatesTheRow(t *testing.T) {
 		{"nfs ok", map[string]interface{}{"name": "ok-nfs", "protocol": "nfs", "host": "nas", "path": "/export", "mount_point": "/mnt/nas", "options": "vers=4"}, 201},
 		{"webdav ok", map[string]interface{}{"name": "ok-dav", "protocol": "webdav", "url": "https://nas/dav", "username": "u", "password": "p"}, 201},
 		{"smb ok with identity", map[string]interface{}{"name": "ok-smb", "protocol": "smb", "host": "nas", "path": "media", "options": `{"identity_index": 1}`}, 201},
-		{"local ok", map[string]interface{}{"name": "ok-local", "protocol": "local", "path": "/data"}, 201},
+		{"local ok", map[string]interface{}{"name": "ok-local", "protocol": "local", "path": mediaRoot}, 201},
 	}
 	for _, c := range cases {
 		code, body := h.do("POST", "/storage/roots", c.body)

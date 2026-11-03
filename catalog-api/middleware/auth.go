@@ -26,7 +26,21 @@ type JWTMiddleware struct {
 	// user's CURRENT role permissions) instead of the role_id claim baked into
 	// the access token. See SetAdminChecker.
 	adminCheck AdminChecker
+	// permCheck, when set, decides RequirePermission from the database (the
+	// user's CURRENT role permissions). See SetPermissionChecker.
+	permCheck PermissionChecker
 }
+
+// PermissionChecker reports whether the user identified by userID (the token
+// subject) is, right now, an active user entitled to permission (a role that
+// carries it, or system administration). A non-nil error means "could not be
+// determined"; RequirePermission fails closed on it.
+type PermissionChecker func(ctx context.Context, userID int, permission string) (bool, error)
+
+// SetPermissionChecker installs the live permission check. Without it
+// RequirePermission falls back to the token's role_id claim equal to
+// RoleAdminID (administrators only: it never grants a non-admin).
+func (m *JWTMiddleware) SetPermissionChecker(c PermissionChecker) { m.permCheck = c }
 
 // AdminChecker reports whether the user identified by userID (the token
 // subject) is, right now, an active user whose role carries system
@@ -194,6 +208,55 @@ func (m *JWTMiddleware) RequireAdmin() gin.HandlerFunc {
 		roleID, ok := roleVal.(int)
 		if !ok || roleID != RoleAdminID {
 			utils.SendErrorResponse(c, http.StatusForbidden, "Admin role required", nil)
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+// RequirePermission returns a middleware that requires the authenticated
+// caller to hold permission (or be an administrator). Like RequireAdmin the
+// decision is made from the database on every request when a PermissionChecker
+// is installed, so a stale role_id claim never grants; without one it admits
+// only the token's role_id == RoleAdminID (deny by default for everyone else).
+// Responds 401 when unauthenticated, 403 when refused, 503 when the check
+// could not be made (fail closed).
+//
+// MUST be installed AFTER RequireAuth.
+func (m *JWTMiddleware) RequirePermission(permission string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		roleVal, exists := c.Get("role_id")
+		if !exists {
+			utils.SendErrorResponse(c, http.StatusUnauthorized, "Authentication required", nil)
+			c.Abort()
+			return
+		}
+		if m.permCheck != nil {
+			uid, ok := c.Get("user_id")
+			userID, isInt := uid.(int)
+			if !ok || !isInt {
+				utils.SendErrorResponse(c, http.StatusForbidden, "Insufficient permissions", nil)
+				c.Abort()
+				return
+			}
+			allowed, err := m.permCheck(c.Request.Context(), userID, permission)
+			if err != nil {
+				utils.SendErrorResponse(c, http.StatusServiceUnavailable, "Could not verify permissions", nil)
+				c.Abort()
+				return
+			}
+			if !allowed {
+				utils.SendErrorResponse(c, http.StatusForbidden, "Insufficient permissions", nil)
+				c.Abort()
+				return
+			}
+			c.Next()
+			return
+		}
+		roleID, ok := roleVal.(int)
+		if !ok || roleID != RoleAdminID {
+			utils.SendErrorResponse(c, http.StatusForbidden, "Insufficient permissions", nil)
 			c.Abort()
 			return
 		}
