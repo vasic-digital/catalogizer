@@ -1845,7 +1845,7 @@ var (
 	ErrInvalidConversionRequest = errors.New("invalid conversion request")
 	ErrConversionJobNotFound    = errors.New("job not found")
 	ErrConversionJobState       = errors.New("conversion job is not in a state that allows this operation")
-	ErrConversionForbidden      = errors.New("not allowed to access this conversion job")
+	ErrConversionForbidden      = errors.New("unauthorized to access this conversion job")
 	ErrForbidden    = errors.New("forbidden")
 	ErrNotFound     = errors.New("not found")
 	ErrConflict     = errors.New("conflict")
