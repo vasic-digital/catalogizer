@@ -296,6 +296,7 @@ session, _ := service.StartSync(created.ID, userID)
 
 **New Libraries Integrated**:
 1. **go-fitz** (`github.com/gen2brain/go-fitz`)
+   - **Status 2026-11-03:** removal pending (AGPL; operator decision to keep poppler only). Still imported at `catalog-api/handlers/pdf_pages_handler.go:19`; see `docs/UPGRADE_NOTES.md`.
    - PDF to image conversion
    - Multi-format support (PNG, JPEG, etc.)
    - DPI and quality controls
