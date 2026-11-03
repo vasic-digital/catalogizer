@@ -128,6 +128,10 @@
         },
         "script_sha256": {
           "type": "string"
+        },
+        "runtime_hint": {
+          "type": "string",
+          "description": "Interpreter runtime detected from /proc/<pid>/maps (libpython, libnode, libjvm, ...) when the exe name is not a known interpreter."
         }
       }
     },

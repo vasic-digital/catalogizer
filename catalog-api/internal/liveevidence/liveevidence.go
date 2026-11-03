@@ -47,6 +47,9 @@ type Answering struct {
 	// the script that actually answers is recorded here (heuristic: first non-option argument; never for -c/-e/-m code, which stays unbound).
 	ScriptPath   string `json:"script_path,omitempty"`
 	ScriptSHA256 string `json:"script_sha256,omitempty"`
+	// RuntimeHint: a language-runtime library mapped into the process (libpython, libjvm ...): marks an interpreter even when the binary was renamed.
+	// Statically linked runtimes (node, deno, bun) expose none: a renamed copy of those is not detected (documented limit).
+	RuntimeHint string `json:"runtime_hint,omitempty"`
 }
 type Expected struct {
 	ExeSHA256    string `json:"exe_sha256,omitempty"`
@@ -257,28 +260,77 @@ func listenInodes(host string, port int) map[string]bool {
 }
 
 var interpreterRE = regexp.MustCompile(`(?i)^(python[0-9.]*|pypy[0-9.]*|node|nodejs|deno|bun|java|ruby[0-9.]*|perl[0-9.]*|php[0-9.]*|lua[0-9.]*|bash|sh|dash|zsh|ksh|fish)$`)
+var runtimeLibRE = regexp.MustCompile(`(libpython[0-9.]*|libjvm|libruby[0-9.]*|libperl|libphp[0-9.]*|liblua[0-9.]*|libnode|libv8|/lib-dynload/|/site-packages/|/node_modules/)`)
 
-// scriptOf returns the script file an interpreter process runs (first non-option argument that is a readable file, relative paths resolved against the
-// process cwd; for java, the argument of -jar). Inline code (-c, -e) and modules (-m) yield "" so the verifier reports interpreter_script_missing.
+// interpOpts: per interpreter family, options that take no value and options that take the NEXT argument as value, plus inline-code options.
+// An option that is in none of these tables makes the script ambiguous: the record then carries no script and the verifier reports UNIT.
+type interpOpts struct{ noval, val, inline map[string]bool }
+
+func set(xs ...string) map[string]bool {
+	m := map[string]bool{}
+	for _, x := range xs {
+		m[x] = true
+	}
+	return m
+}
+
+var interpTable = map[string]interpOpts{
+	"python": {set("-u", "-B", "-E", "-s", "-S", "-I", "-O", "-OO", "-v", "-vv", "-b", "-bb", "-q", "-d", "-R", "-x", "-P"), set("-W", "-X"), set("-c", "-m")},
+	"node":   {set("--no-warnings", "--trace-warnings", "--expose-gc", "--enable-source-maps", "--experimental-vm-modules", "--harmony", "--use-strict", "--preserve-symlinks"), set("-r", "--require", "--import", "--loader", "--experimental-loader", "--conditions", "-C", "--input-type", "--title"), set("-e", "-p", "--eval", "--print")},
+	"java":   {set("-server", "-ea", "-da", "-verbose"), set("-cp", "-classpath", "--class-path", "-p", "--module-path"), set()},
+	"ruby":   {set("-w", "-W0", "-W1", "-W2", "-v"), set("-I", "-r"), set("-e")},
+	"perl":   {set("-w", "-W", "-t", "-T", "-l"), set("-I"), set("-e", "-E")},
+	"php":    {set("-q", "-n"), set("-d", "-c"), set("-r")},
+	"lua":    {set("-W", "-i"), set("-l"), set("-e")},
+	"shell":  {set("-x", "-e", "-u", "-v", "-eu", "-ex", "-eux", "-l"), set(), set("-c")},
+}
+
+func interpFamily(base string) string {
+	b := strings.ToLower(base)
+	switch {
+	case strings.HasPrefix(b, "python"), strings.HasPrefix(b, "pypy"):
+		return "python"
+	case b == "node", b == "nodejs":
+		return "node"
+	case b == "bash", b == "sh", b == "dash", b == "zsh", b == "ksh", b == "fish":
+		return "shell"
+	}
+	for _, f := range []string{"java", "ruby", "perl", "php", "lua"} {
+		if strings.HasPrefix(b, f) {
+			return f
+		}
+	}
+	return "" // deno, bun and unknown: no table => nothing is guessed
+}
+
+// scriptOf returns the script file an interpreter process runs. Options are parsed with the per-family tables above; an unknown option, inline code
+// (-c, -e, -m ...) or a non-file first positional (module, main class, subcommand) yields "" so the verifier reports interpreter_script_missing.
+// For java, -jar's argument is the artifact. Relative paths are resolved against the process cwd.
 func scriptOf(pid int, exe string, args []string) (string, string) {
-	if !interpreterRE.MatchString(filepath.Base(exe)) {
+	fam := interpFamily(filepath.Base(exe))
+	t, ok := interpTable[fam]
+	if !ok {
 		return "", ""
 	}
 	cand := ""
-	for i := 1; i < len(args); i++ {
+	for i := 1; i < len(args) && cand == ""; i++ {
 		a := args[i]
 		switch {
-		case a == "-c" || a == "-e" || a == "-m" || a == "-p" || a == "-r":
+		case t.inline[a]:
 			return "", ""
-		case a == "-jar" && i+1 < len(args):
+		case fam == "java" && a == "-jar":
+			if i+1 >= len(args) {
+				return "", ""
+			}
 			cand = args[i+1]
+		case t.val[a]:
+			i++
+		case t.noval[a], strings.HasPrefix(a, "--") && strings.Contains(a, "="):
+		case fam == "java" && (strings.HasPrefix(a, "-X") || strings.HasPrefix(a, "-D")):
 		case strings.HasPrefix(a, "-"):
-			continue
+			return "", "" // unknown option: ambiguous, never guessed
 		default:
 			cand = a
-		}
-		if cand != "" {
-			break
 		}
 	}
 	if cand == "" {
@@ -294,6 +346,15 @@ func scriptOf(pid int, exe string, args []string) (string, string) {
 		return "", ""
 	}
 	return cand, sum
+}
+
+// runtimeHint names a language-runtime library mapped into the process (python, jvm, ...), which marks an interpreter even when the binary was renamed.
+func runtimeHint(pid int) string {
+	b, err := os.ReadFile(fmt.Sprintf("/proc/%d/maps", pid))
+	if err != nil {
+		return ""
+	}
+	return runtimeLibRE.FindString(string(b))
 }
 
 // ResolveListener finds the process holding the LISTEN socket on port on any address (same-user processes only; never guessed).
@@ -350,5 +411,5 @@ func ResolveListenerAddr(host string, port int) (*Answering, error) {
 	cl, _ := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
 	args := strings.FieldsFunc(string(cl), func(r rune) bool { return r == 0 })
 	sp, ss := scriptOf(pid, exe, args)
-	return &Answering{Kind: "process", PID: pid, ExePath: exe, ExeSHA256: sum, Cmdline: strings.Join(args, " "), ScriptPath: sp, ScriptSHA256: ss}, nil
+	return &Answering{Kind: "process", PID: pid, ExePath: exe, ExeSHA256: sum, Cmdline: strings.Join(args, " "), ScriptPath: sp, ScriptSHA256: ss, RuntimeHint: runtimeHint(pid)}, nil
 }

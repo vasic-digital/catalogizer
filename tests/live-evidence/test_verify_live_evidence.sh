@@ -59,6 +59,14 @@ expect golden_interp_script 0 LIVE
 expect bad_interp_no_script 1 UNIT interpreter_script_missing
 expect bad_interp_unbound 1 UNIT interpreter_script_unbound
 expect bad_multi_value 2 INVALID not_exactly_one_json_value
+expect bad_proc_vs_image 1 UNIT expected_kind_mismatch
+expect bad_container_vs_exe 1 UNIT expected_kind_mismatch
+expect bad_socket_vs_image 1 UNIT expected_kind_mismatch
+expect bad_double_by_name_case 1 UNIT registered_double
+expect bad_fp_bare_mismatch 1 UNIT fingerprint_mismatch
+expect golden_fp_bare_match 0 LIVE
+expect bad_renamed_interp 1 UNIT interpreter_script_missing
+expect bad_timestamp_range 2 INVALID timestamp_not_rfc3339
 # --require-live turns a declared UNIT record into a failure
 "$VERIFIER" --require-live "$FX/declared_unit.json" >/dev/null 2>&1; [ $? = 1 ] && ok || no "require-live on UNIT must exit 1"
 # --require-live: a SKIP is never live proof
@@ -73,6 +81,15 @@ n=$(printf '%s\n' "$out" | grep -c 'class='); [ "$n" = "$(ls "$FX"/*.json | wc -
 # control needle: the verifier can see a known-present marker and not a fabricated one (11.4.273)
 "$VERIFIER" "$FX/bad_double_by_hash.json" 2>&1 | grep -q registered_double && ok || no "needle+ missing"
 "$VERIFIER" "$FX/golden_good.json" 2>&1 | grep -q registered_double && no "needle- false hit" || ok
+# empty / comment-only register is BLIND (exit 2), a one-rule register is not
+e=$(mktemp); printf '# only a comment\n\n' > "$e"
+LIVE_EVIDENCE_DOUBLES=$e "$VERIFIER" "$FX/golden_good.json" >/dev/null 2>&1; [ $? = 2 ] && ok || no "comment-only register must exit 2"
+: > "$e"; LIVE_EVIDENCE_DOUBLES=$e "$VERIFIER" "$FX/golden_good.json" >/dev/null 2>&1; [ $? = 2 ] && ok || no "empty register must exit 2"
+printf 'name:zzz\n' > "$e"; LIVE_EVIDENCE_DOUBLES=$e "$VERIFIER" "$FX/golden_good.json" >/dev/null 2>&1; [ $? = 0 ] && ok || no "one-rule register must work"
+# '?' is a single-character wildcard in name: rules
+printf 'name:catalog-ap?\n' > "$e"; LIVE_EVIDENCE_DOUBLES=$e "$VERIFIER" "$FX/golden_good.json" 2>&1 | grep -q registered_double && ok || no "? glob not honoured"
+printf 'name:catalog-ap??\n' > "$e"; LIVE_EVIDENCE_DOUBLES=$e "$VERIFIER" "$FX/golden_good.json" 2>&1 | grep -q registered_double && no "?? matched a 1-char tail" || ok
+rm -f "${e:?}"
 # custom register
 r=$(mktemp); printf 'sha256:%s\n' "$(printf a | sha256sum | cut -d' ' -f1)" > "$r"
 LIVE_EVIDENCE_DOUBLES=$r "$VERIFIER" "$FX/golden_good.json" 2>&1 | grep -q registered_double && ok || no "custom register not honoured"

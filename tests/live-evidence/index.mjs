@@ -49,22 +49,50 @@ function procNetListeners(port, host) {
 }
 
 const INTERP = /^(python[0-9.]*|pypy[0-9.]*|node|nodejs|deno|bun|java|ruby[0-9.]*|perl[0-9.]*|php[0-9.]*|lua[0-9.]*|bash|sh|dash|zsh|ksh|fish)$/i;
-// Script an interpreter process runs: first non-option argument that is a readable file (relative to the process cwd); java: argument of -jar.
-// Inline code (-c, -e, -p, -r) and modules (-m) yield null so the verifier reports interpreter_script_missing.
-function scriptOf(pid, exe, args) {
-  if (!INTERP.test(path.basename(exe))) return null;
+const S = (...x) => new Set(x);
+// Per interpreter family: options without value, options taking the NEXT argument, inline-code options. An option in none of them makes the
+// script ambiguous (no script recorded => verifier reports UNIT); deno/bun have no table, so nothing is guessed for them.
+const OPTS = {
+  python: { noval: S('-u', '-B', '-E', '-s', '-S', '-I', '-O', '-OO', '-v', '-vv', '-b', '-bb', '-q', '-d', '-R', '-x', '-P'), val: S('-W', '-X'), inline: S('-c', '-m') },
+  node: { noval: S('--no-warnings', '--trace-warnings', '--expose-gc', '--enable-source-maps', '--experimental-vm-modules', '--harmony', '--use-strict', '--preserve-symlinks'), val: S('-r', '--require', '--import', '--loader', '--experimental-loader', '--conditions', '-C', '--input-type', '--title'), inline: S('-e', '-p', '--eval', '--print') },
+  java: { noval: S('-server', '-ea', '-da', '-verbose'), val: S('-cp', '-classpath', '--class-path', '-p', '--module-path'), inline: S() },
+  ruby: { noval: S('-w', '-W0', '-W1', '-W2', '-v'), val: S('-I', '-r'), inline: S('-e') },
+  perl: { noval: S('-w', '-W', '-t', '-T', '-l'), val: S('-I'), inline: S('-e', '-E') },
+  php: { noval: S('-q', '-n'), val: S('-d', '-c'), inline: S('-r') },
+  lua: { noval: S('-W', '-i'), val: S('-l'), inline: S('-e') },
+  shell: { noval: S('-x', '-e', '-u', '-v', '-eu', '-ex', '-eux', '-l'), val: S(), inline: S('-c') },
+};
+function family(base) {
+  const b = base.toLowerCase();
+  if (b.startsWith('python') || b.startsWith('pypy')) return 'python';
+  if (b === 'node' || b === 'nodejs') return 'node';
+  if (['bash', 'sh', 'dash', 'zsh', 'ksh', 'fish'].includes(b)) return 'shell';
+  return ['java', 'ruby', 'perl', 'php', 'lua'].find((f) => b.startsWith(f)) || '';
+}
+export function scriptOf(pid, exe, args) {
+  const fam = family(path.basename(exe)); const t = OPTS[fam];
+  if (!t) return null;
   let cand = null;
   for (let i = 1; i < args.length && cand === null; i++) {
     const a = args[i];
-    if (['-c', '-e', '-m', '-p', '-r'].includes(a)) return null;
-    if (a === '-jar' && i + 1 < args.length) cand = args[i + 1];
-    else if (!a.startsWith('-')) cand = a;
+    if (t.inline.has(a)) return null;
+    if (fam === 'java' && a === '-jar') { if (i + 1 >= args.length) return null; cand = args[i + 1]; }
+    else if (t.val.has(a)) i++;
+    else if (t.noval.has(a) || (a.startsWith('--') && a.includes('='))) continue;
+    else if (fam === 'java' && (a.startsWith('-X') || a.startsWith('-D'))) continue;
+    else if (a.startsWith('-')) return null;
+    else cand = a;
   }
   if (cand === null) return null;
   try {
     if (!path.isAbsolute(cand)) cand = path.join(fs.readlinkSync(`/proc/${pid}/cwd`), cand);
     return { script_path: cand, script_sha256: sha256File(cand) };
   } catch { return null; }
+}
+// A language-runtime library / module path mapped into the process marks an interpreter even when its binary was renamed (heuristic; static runtimes expose none).
+const RUNTIME_RE = /(libpython[0-9.]*|libjvm|libruby[0-9.]*|libperl|libphp[0-9.]*|liblua[0-9.]*|libnode|libv8|\/lib-dynload\/|\/site-packages\/|\/node_modules\/)/;
+function runtimeHint(pid) {
+  try { const m = RUNTIME_RE.exec(fs.readFileSync(`/proc/${pid}/maps`, 'utf8')); return m ? m[1] : ''; } catch { return ''; }
 }
 
 // Find the process that holds the LISTEN socket on host:port (same user only; others are unreadable -> null, never guessed).
@@ -89,7 +117,7 @@ export function findListener(port, host = '') {
   try {
     const exe = fs.realpathSync(`/proc/${pid}/exe`);
     const args = fs.readFileSync(`/proc/${pid}/cmdline`, 'utf8').split('\0').filter(Boolean);
-    return { kind: 'process', pid, exe_path: exe, exe_sha256: sha256File(exe), cmdline: args.join(' '), ...(scriptOf(pid, exe, args) || {}) };
+    return { kind: 'process', pid, exe_path: exe, exe_sha256: sha256File(exe), cmdline: args.join(' '), ...(scriptOf(pid, exe, args) || {}), ...(runtimeHint(pid) ? { runtime_hint: runtimeHint(pid) } : {}) };
   } catch { return null; }
 }
 

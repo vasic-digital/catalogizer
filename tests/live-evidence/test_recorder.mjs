@@ -3,7 +3,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'; import http from 'node:http';
 import assert from 'node:assert/strict';
-import { Recorder, sha256File, findListener } from './index.mjs';
+import { Recorder, sha256File, findListener, scriptOf } from './index.mjs';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../..');
 const verifier = path.join(root, 'scripts/test-infra/verify_live_evidence.sh');
@@ -43,6 +43,15 @@ try {
     assert.equal(r.rec.answering, null); assert.match(r.rec.resolve_error, /ambiguous/);
   });
   await t('bound address must cover host', () => assert.equal(findListener(port, '10.255.255.1'), null));
+  await t('scriptOf parses known options and refuses ambiguity', () => {
+    const ok = (args) => scriptOf(0, '/usr/bin/' + args[0], args)?.script_path === script;
+    assert.ok(ok(['python3', script])); assert.ok(ok(['python3', '-W', 'ignore', script])); assert.ok(ok(['node', '--require=./f.js', script]));
+    assert.ok(ok(['node', '--require', './f.js', script]));
+    assert.equal(scriptOf(0, '/usr/bin/python3', ['python3', '-Z', script]), null);
+    assert.equal(scriptOf(0, '/usr/bin/python3', ['python3', '-W', script]), null);
+    assert.equal(scriptOf(0, '/usr/bin/python3', ['python3', '-m', 'http.server']), null);
+    assert.equal(scriptOf(0, '/opt/app/server', ['server', script]), null);
+  });
   await t('control needle: a port nobody listens on resolves to null', () => assert.equal(findListener(port === 65000 ? 65001 : 65000), null));
   await t('carrier: real loopback service stays LIVE', async () => {
     const r = new Recorder({ testId: 'carrier', command: 'node test_recorder.mjs' });

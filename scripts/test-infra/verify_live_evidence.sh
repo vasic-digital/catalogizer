@@ -33,7 +33,7 @@ done
 [ ${#files[@]} -gt 0 ] || { echo "verify_live_evidence: no records found (empty is not a pass)" >&2; exit 2; }
 
 read -r -d '' PROG <<'JQ'
-def glob2re: gsub("(?<c>[.+^$(){}|\\[\\]\\\\?])"; "\\\(.c)") | gsub("\\*"; ".*") | "^" + . + "$";
+def glob2re: gsub("(?<c>[.+^$(){}|\\[\\]\\\\])"; "\\\(.c)") | gsub("\\*"; ".*") | gsub("\\?"; ".") | "^" + . + "$";
 def rules($k): [$reg | split("\n")[] | select(startswith($k + ":")) | .[($k|length)+1:] | gsub("^\\s+|\\s+$"; "") | select(length > 0)];
 def present: . != null and . != "";
 def is_double($a):
@@ -52,7 +52,7 @@ def is_double($a):
      or ($imgs | any(. as $r | ($img + " " + $d) | test($r; "i"))));
 def norm($s): ($s // "") | ascii_downcase | ltrimstr("sha256:");
 def is_sha($s): ($s // "") | test("^(sha256:)?[0-9a-fA-F]{64}$");
-def interp($a): (($a.exe_path // "") | split("/") | (last // "")) | test("^(python[0-9.]*|pypy[0-9.]*|node|nodejs|deno|bun|java|ruby[0-9.]*|perl[0-9.]*|php[0-9.]*|lua[0-9.]*|bash|sh|dash|zsh|ksh|fish)$"; "i");
+def interp($a): (($a.runtime_hint | present) or ((($a.exe_path // "") | split("/") | (last // "")) | test("^(python[0-9.]*|pypy[0-9.]*|node|nodejs|deno|bun|java|ruby[0-9.]*|perl[0-9.]*|php[0-9.]*|lua[0-9.]*|bash|sh|dash|zsh|ksh|fish)$"; "i")));
 def identity_reasons:  # IDENTITY-CHECK
   . as $r
   | ($r.answering // null) as $a
@@ -60,7 +60,7 @@ def identity_reasons:  # IDENTITY-CHECK
   | ($a // {}) as $A
   | ($e // {}) as $E
   | (($A.kind // "") == "process" and interp($A)) as $ip
-  | (if $ip then $E.script_sha256 else ($E.exe_sha256 // $E.image_digest) end) as $bound
+  | (if $ip then $E.script_sha256 elif $A.kind == "container" then $E.image_digest else $E.exe_sha256 end) as $bound
   | ($a == null or ($a.kind | present | not)
      or ($a.kind != "process" and $a.kind != "container" and $a.kind != "socket")
      or ($a.kind == "process" and (($a.pid | type) != "number" or ($a.exe_path | present | not) or ($a.exe_sha256 | present | not)))
@@ -74,6 +74,7 @@ def identity_reasons:  # IDENTITY-CHECK
       (if ($amiss | not) and is_double($A) then "registered_double" else empty end),  # R:double
       (if ($amiss | not) and ($A.kind == "process") and ($A.cmdline | present | not) then "endpoint_identity_incomplete" else empty end),  # R:cmdline_missing
       (if ($amiss | not) and ($E.exe_sha256 | present | not) and ($E.image_digest | present | not) then "expected_identity_missing" else empty end),  # R:expected_missing
+      (if ($amiss | not) and (($E.exe_sha256 | present) or ($E.image_digest | present)) and ((($A.kind == "container") and ($E.image_digest | present | not)) or (($A.kind != "container") and ($E.exe_sha256 | present | not))) then "expected_kind_mismatch" else empty end),  # R:kind_mismatch
       (if ($amiss | not) and ($E.exe_sha256 | present) and ($A.kind != "container") and norm($E.exe_sha256) != norm($A.exe_sha256) then "identity_mismatch" else empty end),  # R:exe_mismatch
       (if ($amiss | not) and ($E.image_digest | present) and ($A.kind == "container") and norm($E.image_digest) != norm($A.image_digest) then "identity_mismatch" else empty end),  # R:image_mismatch
       (if ($amiss | not) and $ip and (($A.script_path | present | not) or ($A.script_sha256 | present | not)) then "interpreter_script_missing" else empty end),  # R:script_missing
@@ -85,7 +86,7 @@ def invalid_reasons:
   . as $r
   | [ (if $r.schema == "catalogizer.live-evidence/1" then empty else "schema" end),  # R:schema
       (if ($r.test_id | present) and ($r.command | present) and ($r.timestamp | present) then empty else "required_field_missing" end),
-      (if ($r.timestamp | type) == "string" and ($r.timestamp | test("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$")) then empty else "timestamp_not_rfc3339" end),  # R:timestamp
+      (if ($r.timestamp | type) == "string" and ($r.timestamp | test("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$") and ($r.timestamp | test("^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|[+-]([01][0-9]|2[0-3]):[0-5][0-9])$"))) then empty else "timestamp_not_rfc3339" end),  # R:timestamp
       (if ($r.class == "LIVE" or $r.class == "UNIT") then empty else "class" end),  # R:class
       (if ($r.verdict == "PASS" or $r.verdict == "FAIL" or $r.verdict == "SKIP") then empty else "verdict" end),  # R:verdict
       (if $r.verdict == "SKIP" and (skip_set | index($r.skip_reason) | not) then "skip_reason_not_in_closed_set" else empty end),  # R:skip_reason
@@ -104,6 +105,8 @@ def invalid_reasons:
   end
 JQ
 reg=$(grep -v '^[[:space:]]*#' "$DOUBLES")
+# control needle (11.4.273): an empty or comment-only register would let every double pass -> the instrument is BLIND
+if [ "$(printf '%s\n' "$reg" | grep -Ec '^(sha256|name|cmd|image):[^[:space:]]')" -lt 1 ]; then echo "verify_live_evidence: double register has no rules: $DOUBLES (BLIND, REFUSED)" >&2; exit 2; fi
 worst=0
 for f in "${files[@]}"; do
   if ! jq -e . "$f" >/dev/null 2>&1; then echo "$f class=INVALID reasons=unparseable_json"; worst=2; continue; fi

@@ -287,3 +287,51 @@ func TestBoundAddressMustCoverHost(t *testing.T) {
 		t.Fatal("a listener bound to 127.0.0.1 must not satisfy 10.255.255.1:port")
 	}
 }
+
+func TestScriptOfParsesKnownOptionsAndRefusesAmbiguity(t *testing.T) {
+	d := t.TempDir()
+	sc := filepath.Join(d, "real.py")
+	if err := os.WriteFile(sc, []byte("print(1)\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	want := fileSHA(t, sc)
+	cases := []struct {
+		name string
+		args []string
+		ok   bool
+	}{
+		{"plain", []string{"python3", sc}, true},
+		{"-W takes a value", []string{"python3", "-W", "ignore", sc}, true},
+		{"-W ignore must not be read as the script", []string{"python3", "-W", sc}, false}, // -W swallows the script path as its value => no positional
+		{"-u flag", []string{"python3", "-u", sc}, true},
+		{"unknown option is ambiguous", []string{"python3", "-Z", sc}, false},
+		{"-m module", []string{"python3", "-m", "http.server"}, false},
+		{"-c inline", []string{"python3", "-c", "print(1)"}, false},
+		{"node --require=file real.js", []string{"node", "--require=./f.js", sc}, true},
+		{"node --require f.js real.js", []string{"node", "--require", "./f.js", sc}, true},
+		{"node unknown flag", []string{"node", "--frobnicate", sc}, false},
+	}
+	for _, c := range cases {
+		p, h := scriptOf(0, "/usr/bin/"+c.args[0], c.args)
+		if c.ok && (p != sc || h != want) {
+			t.Errorf("%s: want script %s got %q %q", c.name, sc, p, h)
+		}
+		if !c.ok && (p != "" || h != "") {
+			t.Errorf("%s: want no script, got %q", c.name, p)
+		}
+	}
+	if p, _ := scriptOf(0, "/opt/app/server", []string{"server", sc}); p != "" {
+		t.Error("non-interpreter basename must yield no script")
+	}
+}
+
+func TestRuntimeHintSetForPythonServer(t *testing.T) {
+	port, _, _, _ := startScriptServer(t, "")
+	a, err := ResolveListenerAddr("127.0.0.1", port)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a.RuntimeHint == "" {
+		t.Skipf("python on this host maps no recognisable runtime library (heuristic): %+v", a)
+	}
+}
