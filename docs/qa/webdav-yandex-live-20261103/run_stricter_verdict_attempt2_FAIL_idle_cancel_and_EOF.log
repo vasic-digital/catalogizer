@@ -1,0 +1,61 @@
+    live_webdav_yandex_test.go:272: read: context canceled (idle-guard cancel or unexpected cancel) is never retried and fails the run: context canceled
+    live_webdav_yandex_test.go:586: read /catalogizer-live-1793739948/two_mb.bin: context canceled
+--- FAIL: TestLiveYandex_Suite (306.66s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (36.41s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (0.20s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (0.88s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (196.91s)
+    --- PASS: TestLiveYandex_Suite/05_list_sizes_mtimes (0.80s)
+    --- FAIL: TestLiveYandex_Suite/06_download_sha256_and_stat (69.05s)
+FAIL
+FAIL	catalogizer/filesystem	306.671s
+FAIL
+RUN 1 GO_RC=1
+    live_webdav_yandex_test.go:816: concurrent uploads failed: [conc/c1.bin: failed to upload WebDAV file https://<redacted>/Testing/catalogizer-live-1793740255/conc/c1.bin: Put "https://<redacted>/Testing/catalogizer-live-1793740255/conc/c1.bin": EOF]
+--- FAIL: TestLiveYandex_Suite (383.78s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (0.43s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (7.05s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (20.89s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (194.16s)
+    --- PASS: TestLiveYandex_Suite/05_list_sizes_mtimes (0.21s)
+    --- PASS: TestLiveYandex_Suite/06_download_sha256_and_stat (1.68s)
+    --- PASS: TestLiveYandex_Suite/07_range_partial_read (0.24s)
+    --- PASS: TestLiveYandex_Suite/08_copy_rename_move (33.58s)
+    --- PASS: TestLiveYandex_Suite/09_overwrite (2.98s)
+    --- PASS: TestLiveYandex_Suite/10_nonexistent_errors (1.14s)
+    --- PASS: TestLiveYandex_Suite/11_unicode_and_special_names (11.20s)
+    --- PASS: TestLiveYandex_Suite/12_large_listing_200 (43.24s)
+    --- FAIL: TestLiveYandex_Suite/13_concurrent_uploads_4 (37.94s)
+    --- PASS: TestLiveYandex_Suite/14_unsized_reader_upload (6.78s)
+    --- PASS: TestLiveYandex_Suite/15_timeout_and_cancel (2.10s)
+    --- PASS: TestLiveYandex_Suite/16_delete (10.43s)
+    --- PASS: TestLiveYandex_Suite/17_guard_refuses_outside_sandbox (0.54s)
+FAIL
+FAIL	catalogizer/filesystem	383.785s
+FAIL
+RUN 2 GO_RC=1
+    live_webdav_yandex_test.go:816: concurrent uploads failed: [conc/c7.bin: failed to upload WebDAV file https://<redacted>/Testing/catalogizer-live-1793740640/conc/c7.bin: Put "https://<redacted>/Testing/catalogizer-live-1793740640/conc/c7.bin": EOF]
+--- FAIL: TestLiveYandex_Suite (358.70s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (0.46s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (0.20s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (0.95s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (194.73s)
+    --- PASS: TestLiveYandex_Suite/05_list_sizes_mtimes (0.23s)
+    --- PASS: TestLiveYandex_Suite/06_download_sha256_and_stat (2.10s)
+    --- PASS: TestLiveYandex_Suite/07_range_partial_read (0.25s)
+    --- PASS: TestLiveYandex_Suite/08_copy_rename_move (30.27s)
+    --- PASS: TestLiveYandex_Suite/09_overwrite (2.77s)
+    --- PASS: TestLiveYandex_Suite/10_nonexistent_errors (1.04s)
+    --- PASS: TestLiveYandex_Suite/11_unicode_and_special_names (8.66s)
+    --- PASS: TestLiveYandex_Suite/12_large_listing_200 (44.98s)
+    --- FAIL: TestLiveYandex_Suite/13_concurrent_uploads_4 (34.02s)
+    --- PASS: TestLiveYandex_Suite/14_unsized_reader_upload (7.06s)
+    --- PASS: TestLiveYandex_Suite/15_timeout_and_cancel (1.77s)
+    --- PASS: TestLiveYandex_Suite/16_delete (7.64s)
+    --- PASS: TestLiveYandex_Suite/17_guard_refuses_outside_sandbox (0.61s)
+FAIL
+FAIL	catalogizer/filesystem	358.707s
+FAIL
+RUN 3 GO_RC=1
+RUNS=3 PASSED=0 SKIPPED=0 FAILED=3 EVIDENCE_DIR=<scratch>/evJ
+VERDICT=FAIL
