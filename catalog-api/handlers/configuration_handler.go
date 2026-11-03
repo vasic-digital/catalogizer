@@ -83,7 +83,11 @@ func (h *ConfigurationHandler) ValidateWizardStep(w http.ResponseWriter, r *http
 }
 
 func (h *ConfigurationHandler) SaveWizardProgress(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("user_id").(int)
+	userID, ok := r.Context().Value("user_id").(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 	vars := mux.Vars(r)
 	stepID := vars["step_id"]
 
@@ -106,7 +110,11 @@ func (h *ConfigurationHandler) SaveWizardProgress(w http.ResponseWriter, r *http
 }
 
 func (h *ConfigurationHandler) GetWizardProgress(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("user_id").(int)
+	userID, ok := r.Context().Value("user_id").(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	progress, err := h.configurationService.GetWizardProgress(userID)
 	if err != nil {
@@ -119,7 +127,11 @@ func (h *ConfigurationHandler) GetWizardProgress(w http.ResponseWriter, r *http.
 }
 
 func (h *ConfigurationHandler) CompleteWizard(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("user_id").(int)
+	userID, ok := r.Context().Value("user_id").(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	var finalData map[string]interface{}
 	if err := json.NewDecoder(r.Body).Decode(&finalData); err != nil {
@@ -167,7 +179,11 @@ func (h *ConfigurationHandler) GetConfiguration(w http.ResponseWriter, r *http.R
 }
 
 func (h *ConfigurationHandler) TestConfiguration(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("user_id").(int)
+	userID, ok := r.Context().Value("user_id").(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	hasPermission, err := h.authService.CheckPermission(userID, models.PermissionSystemAdmin)
 	if err != nil || !hasPermission {
@@ -193,7 +209,11 @@ func (h *ConfigurationHandler) TestConfiguration(w http.ResponseWriter, r *http.
 }
 
 func (h *ConfigurationHandler) DeleteBackup(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("user_id").(int)
+	userID, ok := r.Context().Value("user_id").(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 	vars := mux.Vars(r)
 	_, err := strconv.Atoi(vars["backup_id"])
 	if err != nil {
@@ -217,7 +237,11 @@ func (h *ConfigurationHandler) DeleteBackup(w http.ResponseWriter, r *http.Reque
 // Health check endpoint
 
 func (h *ConfigurationHandler) GetSystemStatus(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("user_id").(int)
+	userID, ok := r.Context().Value("user_id").(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	hasPermission, err := h.authService.CheckPermission(userID, models.PermissionSystemConfig)
 	if err != nil || !hasPermission {
