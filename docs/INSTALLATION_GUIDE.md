@@ -1,6 +1,6 @@
 # Catalogizer - Installation & Setup Guide
 
-![Installation Wizard](screenshots/wizard/welcome-step.png)
+*[screenshot not captured yet: Installation Wizard]*
 *Welcome screen of the Catalogizer installation wizard*
 
 ## 📋 Table of Contents
@@ -17,6 +17,7 @@
 
 ---
 
+<a id="system-requirements"></a>
 ## 🖥️ System Requirements
 
 ### Minimum Requirements
@@ -48,9 +49,10 @@
 
 ---
 
+<a id="pre-installation-checklist"></a>
 ## ✅ Pre-Installation Checklist
 
-![Pre-Installation Check](screenshots/wizard/requirements-check.png)
+*[screenshot not captured yet: Pre-Installation Check]*
 *System requirements verification in the wizard*
 
 ### Before You Begin
@@ -69,6 +71,7 @@
 
 ---
 
+<a id="installation-methods"></a>
 ## 📦 Installation Methods
 
 ### Method 1: Binary Installation (Recommended)
@@ -99,7 +102,7 @@ catalogizer --version
 
 ### Method 2: Docker Installation
 
-![Docker Setup](screenshots/docker/docker-setup.png)
+*[screenshot not captured yet: Docker Setup]*
 *Docker container configuration interface*
 
 > Uses rootless Podman Compose; never use sudo. Release artifacts are built only inside rootless build containers (constitution §11.4.173).
@@ -177,17 +180,18 @@ catalogizer --version
 
 ---
 
+<a id="database-setup"></a>
 ## 🗄️ Database Setup
 
 ### SQLite (Default - No Setup Required)
 SQLite is the default database and requires no additional setup. The database file will be created automatically.
 
-![SQLite Setup](screenshots/wizard/database-sqlite.png)
+*[screenshot not captured yet: SQLite Setup]*
 *SQLite configuration in the setup wizard*
 
 ### MySQL Setup
 
-![MySQL Setup](screenshots/wizard/database-mysql.png)
+*[screenshot not captured yet: MySQL Setup]*
 *MySQL database configuration interface*
 
 #### 1. Install MySQL Server
@@ -229,7 +233,7 @@ mysql -u catalogizer -p catalogizer
 
 ### PostgreSQL Setup
 
-![PostgreSQL Setup](screenshots/wizard/database-postgresql.png)
+*[screenshot not captured yet: PostgreSQL Setup]*
 *PostgreSQL configuration options*
 
 #### 1. Install PostgreSQL
@@ -275,6 +279,7 @@ GRANT ALL PRIVILEGES ON DATABASE catalogizer TO catalogizer;
 
 ---
 
+<a id="configuration"></a>
 ## ⚙️ Configuration
 
 ### Configuration File Location
@@ -285,7 +290,7 @@ GRANT ALL PRIVILEGES ON DATABASE catalogizer TO catalogizer;
 
 ### Basic Configuration (config.json)
 
-![Configuration File](screenshots/admin/config-file-edit.png)
+*[screenshot not captured yet: Configuration File]*
 *Configuration file editor interface*
 
 ```json
@@ -376,15 +381,16 @@ export CATALOGIZER_JWT_SECRET=your-jwt-secret
 
 ---
 
+<a id="first-time-setup-wizard"></a>
 ## 🧙‍♂️ First-Time Setup Wizard
 
-![Setup Wizard Overview](screenshots/wizard/wizard-overview.png)
+*[screenshot not captured yet: Setup Wizard Overview]*
 *Complete setup wizard flow*
 
 When you first start Catalogizer, you'll be guided through an interactive setup wizard.
 
 ### Step 1: Welcome & Requirements
-![Welcome Step](screenshots/wizard/welcome-step.png)
+*[screenshot not captured yet: Welcome Step]*
 *Welcome screen with system requirements check*
 
 The wizard will:
@@ -393,7 +399,7 @@ The wizard will:
 - Display license information
 
 ### Step 2: Database Configuration
-![Database Step](screenshots/wizard/database-step.png)
+*[screenshot not captured yet: Database Step]*
 *Database configuration with connection testing*
 
 Choose your database type and provide connection details:
@@ -404,7 +410,7 @@ Choose your database type and provide connection details:
 The wizard will test the connection before proceeding.
 
 ### Step 3: Storage Configuration
-![Storage Step](screenshots/wizard/storage-step.png)
+*[screenshot not captured yet: Storage Step]*
 *Storage location and capacity settings*
 
 Configure storage locations:
@@ -414,7 +420,7 @@ Configure storage locations:
 - **Storage Limits**: Optional storage quotas
 
 ### Step 4: Network Configuration
-![Network Step](screenshots/wizard/network-step.png)
+*[screenshot not captured yet: Network Step]*
 *Network and security settings configuration*
 
 Set up network access:
@@ -424,7 +430,7 @@ Set up network access:
 - **CORS**: Cross-origin request settings
 
 ### Step 5: Authentication Setup
-![Authentication Step](screenshots/wizard/authentication-step.png)
+*[screenshot not captured yet: Authentication Step]*
 *User authentication and security configuration*
 
 Configure security settings:
@@ -434,7 +440,7 @@ Configure security settings:
 - **Admin Account**: Create the first administrator
 
 ### Step 6: Feature Selection
-![Features Step](screenshots/wizard/features-step.png)
+*[screenshot not captured yet: Features Step]*
 *Advanced feature enablement interface*
 
 Enable optional features:
@@ -445,7 +451,7 @@ Enable optional features:
 - **Log Management**: Centralized logging
 
 ### Step 7: External Services
-![External Services Step](screenshots/wizard/external-services-step.png)
+*[screenshot not captured yet: External Services Step]*
 *Third-party service integration setup*
 
 Configure integrations:
@@ -454,7 +460,7 @@ Configure integrations:
 - **Analytics**: Usage tracking
 
 ### Step 8: Configuration Summary
-![Summary Step](screenshots/wizard/summary-step.png)
+*[screenshot not captured yet: Summary Step]*
 *Configuration review before finalization*
 
 Review all settings before applying:
@@ -463,7 +469,7 @@ Review all settings before applying:
 - Preview generated config file
 
 ### Step 9: Installation Complete
-![Complete Step](screenshots/wizard/complete-step.png)
+*[screenshot not captured yet: Complete Step]*
 *Installation completion with next steps*
 
 Final steps:
@@ -474,11 +480,12 @@ Final steps:
 
 ---
 
+<a id="advanced-configuration"></a>
 ## 🔧 Advanced Configuration
 
 ### SSL/HTTPS Setup
 
-![HTTPS Configuration](screenshots/admin/https-setup.png)
+*[screenshot not captured yet: HTTPS Configuration]*
 *SSL certificate configuration interface*
 
 #### Using Let's Encrypt
@@ -517,7 +524,7 @@ sudo chmod 600 /etc/ssl/private/catalogizer.key
 
 ### Reverse Proxy Setup (Nginx)
 
-![Nginx Configuration](screenshots/admin/nginx-setup.png)
+*[screenshot not captured yet: Nginx Configuration]*
 *Nginx reverse proxy configuration*
 
 Create `/etc/nginx/sites-available/catalogizer`:
@@ -557,7 +564,7 @@ sudo systemctl reload nginx
 
 ### Systemd Service Setup
 
-![Service Configuration](screenshots/admin/service-setup.png)
+*[screenshot not captured yet: Service Configuration]*
 *System service configuration interface*
 
 Create `/etc/systemd/system/catalogizer.service`:
@@ -601,12 +608,13 @@ sudo systemctl status catalogizer
 
 ---
 
+<a id="troubleshooting"></a>
 ## 🔍 Troubleshooting
 
 ### Common Installation Issues
 
 #### Issue: "Command not found"
-![Command Not Found](screenshots/troubleshooting/command-not-found.png)
+*[screenshot not captured yet: Command Not Found]*
 
 **Solution:**
 ```bash
@@ -621,7 +629,7 @@ echo 'export PATH=$PATH:/usr/local/bin' >> ~/.bashrc
 ```
 
 #### Issue: Database Connection Failed
-![Database Error](screenshots/troubleshooting/database-error.png)
+*[screenshot not captured yet: Database Error]*
 
 **Solutions:**
 1. **Check database service status:**
@@ -652,7 +660,7 @@ echo 'export PATH=$PATH:/usr/local/bin' >> ~/.bashrc
    ```
 
 #### Issue: Permission Denied
-![Permission Error](screenshots/troubleshooting/permission-error.png)
+*[screenshot not captured yet: Permission Error]*
 
 **Solutions:**
 ```bash
@@ -668,7 +676,7 @@ sudo chmod -R 644 /var/lib/catalogizer/*
 ```
 
 #### Issue: Port Already in Use
-![Port Conflict](screenshots/troubleshooting/port-conflict.png)
+*[screenshot not captured yet: Port Conflict]*
 
 **Solutions:**
 ```bash
@@ -688,7 +696,7 @@ sudo kill -9 <PID>
 
 ### Getting Help
 
-![Support Interface](screenshots/troubleshooting/support-interface.png)
+*[screenshot not captured yet: Support Interface]*
 *Built-in support and diagnostics interface*
 
 1. **Built-in Diagnostics**: `/admin/diagnostics`
@@ -699,11 +707,12 @@ sudo kill -9 <PID>
 
 ---
 
+<a id="upgrade-instructions"></a>
 ## 📈 Upgrade Instructions
 
 ### Backup Before Upgrading
 
-![Backup Interface](screenshots/admin/backup-interface.png)
+*[screenshot not captured yet: Backup Interface]*
 *System backup and restore interface*
 
 ```bash
@@ -756,7 +765,7 @@ podman compose up -d
 
 ### Post-Upgrade Verification
 
-![Upgrade Verification](screenshots/admin/upgrade-verification.png)
+*[screenshot not captured yet: Upgrade Verification]*
 *Post-upgrade system verification*
 
 1. **Check service status:**
@@ -793,7 +802,7 @@ After successful installation:
 6. **Set up monitoring**
 7. **Schedule regular backups**
 
-![Getting Started](screenshots/dashboard/getting-started.png)
+*[screenshot not captured yet: Getting Started]*
 *Getting started guide in the main dashboard*
 
 **Welcome to Catalogizer v3.0!** 🚀

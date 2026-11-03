@@ -659,3 +659,24 @@ Listed, not fixed (reason):
 - R2-N7 (= F4): 403 vs 404 for another user's job id stays an operator decision.
 - Pre-existing, not from this branch: `GOOS=windows go vet ./services/` fails on older test files that use `syscall.Mkfifo`/unix helpers (`pathconfine_*`, `converter_private_dir_rv7`, `pdf_text_*`); the conversion worker tests are split so they add no new windows failure (`conversion_worker_unix_test.go`). The non-test package builds for windows.
 - The `pgid > 1` guard is pinned by `TestGroupKillTarget_RefusesPidsAtOrBelowOne` (pure function); the surrounding `Cancel` closure is not exercised with a faked pid.
+
+## Documentation follow-ups 3
+
+Found by `scripts/docs/check_md_links.py` (links to documents or assets that do not exist; nothing was invented, the links were turned into plain text):
+
+- `docs/COMPREHENSIVE_IMPLEMENTATION_PLAN.md`: the table of contents lists "Appendices" but the document has no such section; the entry is marked "not written yet".
+- `docs/diagrams/SEQUENCE_DIAGRAMS.md`: `images/sequence-diagrams-11.svg`, `-12.svg`, `-13.svg` (Admin System Info, Lazy Provider Search, Non-Blocking Health Check) were never generated; the table cells say "not generated yet".
+- `docs/INSTALLATION_GUIDE.md`: 28 screenshots under `docs/screenshots/` (wizard, docker, admin, troubleshooting, dashboard) were never captured; each image is replaced by "screenshot not captured yet" with its caption. Capturing them needs a real wizard run (HelixQA recording), not mock images.
+- `docs/deployment/DEPLOYMENT.md`: the table of contents had no dedicated "Environment Configuration" and "SMB Configuration" sections; both entries point to "Production Environment Variables" (the nearest real section). A dedicated SMB configuration section is still unwritten.
+- `README.md` table of contents: "Frontend Documentation", "Media Detection Engine" and "External Providers" had no section in the README; they now point to `docs/architecture/REACT_FRONTEND_GUIDE.md`, `docs/architecture/MEDIA_RECOGNITION_PIPELINE.md` and `docs/ENV_VARIABLES.md` (nearest real documents; a dedicated external-providers guide is not written yet).
+- `docs/CONTRIBUTING.md` had a stray code fence that hid the "Pull Request Process" heading; removed. The issue-template block near "Logs" nests a fence inside a fence and will still render early on GitHub (use a four-backtick outer fence); not changed here.
+
+## Docs link checker review follow-ups (review GO-with-follow-ups, 2026-11-03)
+
+Source: independent Opus review of `scripts/docs/check_md_links.py` (merge 71ab088e). All minor.
+
+1. test-instrumentation: `scripts/docs/tests/test_check_md_links.py` does not cover duplicate-heading `-N` suffixes, emoji/punctuation slugs, reference-style link definitions, setext headings, `--alt-root`, or the BLIND control path. Reviewer mutations M1, M2, M5, M6, M7 survived the tests (M5 only the real scan catches). Add one fixture per case plus a test that a blinded `controls()` exits 2.
+2. test-instrumentation: `CHECK_MD_LINKS_NO_EXISTENCE` is a mutation switch built into the shipped checker; with it set in the environment the pre-flight check passes silently because `controls()` ignores it. Remove the switch (mutate a test copy instead) or make `controls()` refuse when it is set.
+3. process-doc: `scripts/pre-flight-check.sh` hides the BROKEN rows (output to /dev/null) and runs without `--alt-root`, so in a checkout without initialised submodules it fails on 11 submodule-path links. Print the BROKEN rows on failure.
+4. nit: `check_md_links.py` anchor lookup falls back to case-insensitive match; UNCONFIRMED whether GitHub resolves mixed-case fragments that way.
+5. nit: setext heading underline requires `-{2,}`; CommonMark accepts a single `-`.

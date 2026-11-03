@@ -16,9 +16,9 @@ Mermaid sequence diagrams for the key operational flows in the Catalogizer syste
 | Subtitle Search/Download | ![Subtitle Search](images/sequence-diagrams-8.svg) |
 | Subtitle Sync | ![Subtitle Sync](images/sequence-diagrams-9.svg) |
 | Subtitle Lifecycle | ![Subtitle Lifecycle](images/sequence-diagrams-10.svg) |
-| Admin System Info | ![Admin System Info](images/sequence-diagrams-11.svg) |
-| Lazy Provider Search | ![Lazy Provider Search](images/sequence-diagrams-12.svg) |
-| Non-Blocking Health Check | ![Non-Blocking Health Check](images/sequence-diagrams-13.svg) |
+| Admin System Info | *not generated yet: Admin System Info* |
+| Lazy Provider Search | *not generated yet: Lazy Provider Search* |
+| Non-Blocking Health Check | *not generated yet: Non-Blocking Health Check* |
 
 ## Table of Contents
 
