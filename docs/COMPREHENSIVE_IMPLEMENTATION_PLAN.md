@@ -23,7 +23,7 @@
 10. [Phase 8: Documentation & Training](#phase-8-documentation--training)
 11. [Phase 9: Website & Content](#phase-9-website--content)
 12. [Phase 10: Final Validation & Deployment](#phase-10-final-validation--deployment)
-13. [Appendices](#appendices)
+13. Appendices (not written yet)
 
 ---
 
