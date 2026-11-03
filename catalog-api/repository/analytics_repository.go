@@ -277,7 +277,8 @@ func (r *AnalyticsRepository) GetTopAccessedMedia(startDate, endDate time.Time, 
 	}
 	defer rows.Close()
 
-	var results []models.MediaAccessCount
+	// Non-nil so an empty result serialises as [] rather than null.
+	results := make([]models.MediaAccessCount, 0)
 	for rows.Next() {
 		var result models.MediaAccessCount
 		err := rows.Scan(&result.MediaID, &result.AccessCount)

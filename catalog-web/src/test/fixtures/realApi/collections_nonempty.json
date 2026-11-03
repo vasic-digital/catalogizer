@@ -1,0 +1,73 @@
+{
+  "items": [
+    {
+      "collection_type": "custom",
+      "cover_url": null,
+      "created_at": "2026-11-03T01:49:36.500209042+01:00",
+      "description": "e2e",
+      "external_ids": null,
+      "id": 1,
+      "name": "Weekend",
+      "total_items": 0,
+      "updated_at": "2026-11-03T01:49:36.500209042+01:00"
+    },
+    {
+      "collection_type": "custom",
+      "cover_url": null,
+      "created_at": "2026-11-03T01:54:09.78889129+01:00",
+      "description": "e2e",
+      "external_ids": null,
+      "id": 2,
+      "name": "e2e-1793667249776",
+      "total_items": 0,
+      "updated_at": "2026-11-03T01:54:09.78889129+01:00"
+    },
+    {
+      "collection_type": "custom",
+      "cover_url": null,
+      "created_at": "2026-11-03T01:55:25.062464662+01:00",
+      "description": "e2e",
+      "external_ids": null,
+      "id": 3,
+      "name": "e2e-1793667325045",
+      "total_items": 0,
+      "updated_at": "2026-11-03T01:55:25.062464662+01:00"
+    },
+    {
+      "collection_type": "custom",
+      "cover_url": null,
+      "created_at": "2026-11-03T01:57:15.294875388+01:00",
+      "description": "e2e",
+      "external_ids": null,
+      "id": 4,
+      "name": "e2e-1793667435282",
+      "total_items": 0,
+      "updated_at": "2026-11-03T01:57:15.294875388+01:00"
+    },
+    {
+      "collection_type": "custom",
+      "cover_url": null,
+      "created_at": "2026-11-03T02:00:17.946697276+01:00",
+      "description": "e2e",
+      "external_ids": null,
+      "id": 5,
+      "name": "e2e-1793667617923",
+      "total_items": 0,
+      "updated_at": "2026-11-03T02:00:17.946697276+01:00"
+    },
+    {
+      "collection_type": "custom",
+      "cover_url": null,
+      "created_at": "2026-11-03T02:02:08.804538461+01:00",
+      "description": "e2e",
+      "external_ids": null,
+      "id": 6,
+      "name": "e2e-1793667728789",
+      "total_items": 0,
+      "updated_at": "2026-11-03T02:02:08.804538461+01:00"
+    }
+  ],
+  "limit": 24,
+  "offset": 0,
+  "total": 6
+}

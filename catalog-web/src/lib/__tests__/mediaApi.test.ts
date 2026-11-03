@@ -159,13 +159,15 @@ describe('mediaApi', () => {
 
   describe('getRecentMedia', () => {
     it('calls GET /media/recent with default limit', async () => {
-      const mockItems = [{ id: 1, title: 'Recent Movie' }]
-      mockApi.get.mockResolvedValue({ data: mockItems })
+      // wire shape: {items,total,limit,offset}, not a bare array
+      mockApi.get.mockResolvedValue({ data: { items: [{ id: 1, title: 'Recent Movie' }], total: 1, limit: 10, offset: 0 } })
 
       const result = await mediaApi.getRecentMedia()
 
       expect(mockApi.get).toHaveBeenCalledWith('/media/recent', { params: { limit: 10 } })
-      expect(result).toEqual(mockItems)
+      expect(Array.isArray(result)).toBe(true)
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({ id: 1, title: 'Recent Movie' })
     })
 
     it('calls GET /media/recent with custom limit', async () => {

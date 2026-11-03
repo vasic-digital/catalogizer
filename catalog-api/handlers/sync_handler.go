@@ -70,6 +70,11 @@ func (h *SyncHandler) GetUserEndpoints(c *gin.Context) {
 		return
 	}
 
+	// A user with no endpoints must get [] (not null): clients iterate `data`.
+	if endpoints == nil {
+		endpoints = []models.SyncEndpoint{}
+	}
+
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": endpoints})
 }
 
@@ -228,6 +233,11 @@ func (h *SyncHandler) GetUserSessions(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Failed to get sync sessions", "details": err.Error()})
 		return
+	}
+
+	// No sessions yet must be [] (not null): clients iterate `data`.
+	if sessions == nil {
+		sessions = []models.SyncSession{}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": sessions})

@@ -1,0 +1,13 @@
+{
+  "data": {
+    "by_status": {},
+    "by_type": {},
+    "end_date": "2026-11-03T00:27:21.050742675Z",
+    "start_date": "2026-10-03T00:27:21.050742305Z",
+    "success_rate": 0,
+    "total_files_failed": 0,
+    "total_files_synced": 0,
+    "total_sessions": 0
+  },
+  "success": true
+}

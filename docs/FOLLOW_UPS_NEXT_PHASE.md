@@ -433,6 +433,39 @@ Tracked follow-ups (status OPEN):
 - F5: limits are sized from host MemAvailable, not the container memory limit; three children at their ceilings could exceed a container limit. No compose file limits catalog-api memory today.
 - UNCONFIRMED: image build and in-container extraction; real 64-CPU host.
 
+
+---
+
+## Crash-pages fix, round 2 follow-ups
+
+Minor or out-of-scope items found while fixing the four crashing pages
+(`/analytics`, `/collections`, `/admin`, `/settings`) and the class-exhaustive
+sweep of the api modules. Each is a tracked item for the next iteration; none
+blocks the crash fix.
+
+| ID | Item | Where | Why deferred |
+|----|------|-------|--------------|
+| WEB-F4 | Favorites are always created with `entity_type: 'movie'` (`DEFAULT_ENTITY`) | `catalog-web/src/lib/favoritesApi.ts` | Needs the page to pass the real entity type; UI change |
+| WEB-F5 | `addToFavorites` returns a synthesised, not the stored, `Favorite` | `favoritesApi.ts` | Backend returns no row; needs a backend contract decision |
+| WEB-F6 | Favorites stats are derived client side from at most 200 rows | `favoritesApi.ts` | Needs a backend stats endpoint |
+| WEB-F7 | Favorites tab is unfiltered by type and sort is always ascending | `pages/Favorites*` | Product decision on filter/sort semantics |
+| WEB-F12 | `useOptimizedData` has a global cache keyed off its inputs and is unused by `Collections` now | `components/performance/MemoCache.tsx` | Do not delete without a §11.4.124 history investigation |
+| SMB | `POST /smb/discover` needs a JSON body with `host` (400 without), so the Settings "Discover Shares" button cannot work; the client is now null-safe but the button needs a host input | `lib/smbApi.ts`, `pages/Settings.tsx`, backend `SMBDiscoveryHandler` | Product decision: scan a subnet server side, or add a host field |
+| COL | `collectionsApi` still calls routes the backend does not serve (smart-rule preview, templates, automation, integrations) | `lib/collectionsApi.ts` | Backend features absent; pages should hide or label them |
+| ID | identities/discovery endpoints answer 404 | catalog-api routes | Feature not implemented |
+| SIM | `getSimilar` shows owned (local) similar items only; `external_items` are not rendered | `lib/recommendationsApi.ts`, `pages/EntityDetail.tsx` | UI for external suggestions not designed |
+| MET | `/admin` performance counters are cumulative since process start and `error_rate` is already a percentage; uptime and total requests are not in the report | `reporting_service.go` | Needs a report schema extension |
+
+## Production mock data (§11.4.289)
+
+These ship canned data in production paths and must be removed or clearly
+labelled; they are listed so they are tracked, not because this change touches
+them:
+
+- `catalog-api/handlers/recommendation_handler.go` lines ~231-275
+- `catalog-api/internal/services/recommendation_service.go` lines ~229-234, 713, 751, 1220-1290
+- `catalog-web/src/lib/adminApi.ts` lines ~4-75 (mock fallbacks used on 404 around lines 89, 101, 113, 125)
+
 ## Docs C2/C5 landing (openapi.yaml re-verification) - source defects found (review round 1)
 
 Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/api/openapi.yaml` and
@@ -467,3 +500,21 @@ Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/ap
 - `UserAuthServiceInterface.HashData` and `AuthServiceAdapter.HashData` are no longer used by production code (dead since the shared hasher); investigate history before removing (section 11.4.124).
 - `database/schema_v3_multiuser.sql` seeds a published default admin hash (password `password`). Checked 2026-11-03: no Go code, script, Makefile, compose or Dockerfile references it and `scripts/register/root_dispositions.yaml` records it as not loaded; consider deleting or neutralising the seed row (investigate history first, section 11.4.124).
 - The access-token `role_id` claim is trusted by `RequireAdmin` until expiry. Session revocation on role change closes the gap while the session checker is installed; a DB re-check of the role in `RequireAdmin` was considered and not done.
+
+- R7 (measured): the input validator pattern list is `catalog-api/middleware/input_validation.go:57-66`. On POST /api/v1/users it rejects whole words CREATE, AND, OR, FROM, SLEEP and `--` in ANY string field (password, display_name "Rock and Roll"); `Selection` and `Order-By` pass. Permission names `user.create` fail for the same reason. Under investigation in the login/validator fix.
+
+### Crash-pages fix, round 3 follow-ups
+
+| ID | Item | Where | Why deferred |
+|----|------|-------|--------------|
+| WEB-N3 | Similar items carry a file id built by `generateMediaID` but `EntityDetail` uses it to navigate to `/entity/:id`: it may open the wrong entity. UNCONFIRMED latent | `recommendation_service.go`, `pages/EntityDetail.tsx`, `lib/recommendationsApi.ts` | Needs a reproduction with real media rows; scratch DB has none |
+| WEB-N4 | No test asserts the `genre` field of `getMediaMetadata`; a mutant mapping genre from the director column survives | `handlers/web_contract_realdb_test.go` | Add a seeded-genre assertion |
+| WEB-N5 | `SubtitleService.SearchSubtitles` returns canned "Sample Movie (2024)" results in production (§11.4.289 production mock data) | `internal/services/subtitle_service.go:~485` | Needs real provider integration or removal |
+| WEB-N6 | Subtitle page sends `query`, `limit`, `offset` that the search handler ignores; `/subtitles/media/:id` carries no title/year so the client fills blanks | `handlers/subtitle_handler.go`, `lib/subtitleApi.ts` | Backend contract extension |
+| WEB-N7 | Remaining `omitempty` list/map fields were swept: the unguarded ones consumed by catalog-web were the two subtitle lists (fixed); the others (`audio_tracks`, `chapters`, `cast`, `external_ids`, `metadata`, wizard `fields`) are read behind `x && x.length` guards or are not consumed | `catalog-api/**` | Keep the sweep in the review checklist |
+
+## Crash-pages review round 3 follow-ups (GO-with-follow-ups, test-instrumentation minor)
+
+- R3-1: add a subtitles fixture where `media_item_id` differs from the requested id (removing the `media_item_id` -> `media_id` mapping survives today).
+- R3-2: the Go wire test calls the response builders directly; add a handler-level test so a handler that stops using them is caught.
+- UNCONFIRMED: live subtitle flow on a populated DB; recommendations query on Postgres; Playwright suite not re-run by the reviewer.

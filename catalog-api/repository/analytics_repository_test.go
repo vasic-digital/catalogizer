@@ -443,6 +443,25 @@ func TestAnalyticsRepository_GetTopAccessedMedia(t *testing.T) {
 	}
 }
 
+// An empty result must be a non-nil slice: it is serialised into the
+// /analytics/system response as "top_accessed_media" and a JSON null there
+// broke catalog-web (clients iterate the field).
+func TestAnalyticsRepository_GetTopAccessedMedia_EmptyIsNonNilSlice(t *testing.T) {
+	startDate := time.Now().Add(-24 * time.Hour)
+	endDate := time.Now()
+	repo, mock := newMockAnalyticsRepo(t)
+	mock.ExpectQuery("SELECT media_id, COUNT").
+		WithArgs(startDate, endDate, 10).
+		WillReturnRows(sqlmock.NewRows([]string{"media_id", "access_count"}))
+
+	results, err := repo.GetTopAccessedMedia(startDate, endDate, 10)
+	require.NoError(t, err)
+	assert.NotNil(t, results, "empty result must be [] (non-nil), not nil")
+	b, err := json.Marshal(results)
+	require.NoError(t, err)
+	assert.Equal(t, "[]", string(b))
+}
+
 // ---------------------------------------------------------------------------
 // GetFileTypeData
 // ---------------------------------------------------------------------------
