@@ -1,0 +1,996 @@
+{
+  "config": {
+    "argv": [
+      "/home/milosvasic/.nvm/versions/node/v26.8.1/bin/node",
+      "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/node_modules/.bin/playwright",
+      "test",
+      "-c",
+      "playwright.live.config.ts",
+      "--project=chromium-desktop"
+    ],
+    "configFile": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/playwright.live.config.ts",
+    "rootDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-desktop",
+        "name": "chromium-desktop",
+        "testDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.live\\.spec\\.ts/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-390",
+        "name": "chromium-390",
+        "testDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.live\\.spec\\.ts/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox-desktop",
+        "name": "firefox-desktop",
+        "testDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.live\\.spec\\.ts/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox-390",
+        "name": "firefox-390",
+        "testDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.live\\.spec\\.ts/"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "catalog.live.spec.ts",
+      "file": "catalog.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "catalog pages over the seeded corpus (real backend)",
+          "file": "catalog.live.spec.ts",
+          "line": 57,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Media page lists the seeded items: counts equal the real API",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
+                      "location": {
+                        "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
+                        "line": 55,
+                        "column": 30
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 74,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:53:42.094Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
+                          "location": {
+                            "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
+                            "line": 55,
+                            "column": 30
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b955bd8104f9462b2367-1135ef154452b581d350",
+              "file": "catalog.live.spec.ts",
+              "line": 58,
+              "column": 7
+            },
+            {
+              "title": "Media search narrows to exactly what the real API returns; no-match shows no items",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
+                      "location": {
+                        "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
+                        "line": 55,
+                        "column": 30
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 49,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:53:42.458Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
+                          "location": {
+                            "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
+                            "line": 55,
+                            "column": 30
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b955bd8104f9462b2367-732c530a0353eb249cf6",
+              "file": "catalog.live.spec.ts",
+              "line": 72,
+              "column": 7
+            },
+            {
+              "title": "Browse page entity-type counts equal the real /entities/stats",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
+                      "location": {
+                        "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
+                        "line": 55,
+                        "column": 30
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 50,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:53:42.531Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
+                          "location": {
+                            "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
+                            "line": 55,
+                            "column": 30
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b955bd8104f9462b2367-3f776f1ea4fe0389c239",
+              "file": "catalog.live.spec.ts",
+              "line": 88,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "login.live.spec.ts",
+      "file": "login.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "login (real backend)",
+          "file": "login.live.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "valid admin credentials: real 200, dashboard, token stored and accepted by /auth/me",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6437,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:53:42.602Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "login-success-dashboard",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/login.live-login-real-back-43b3c-red-and-accepted-by-auth-me-chromium-desktop/attachments/login-success-dashboard-3fde4c537d1e2a2995c03d9d769b0cc713a404b1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2b210780b52e408e16af-88b7e3db69968805c773",
+              "file": "login.live.spec.ts",
+              "line": 9,
+              "column": 7
+            },
+            {
+              "title": "wrong password: real 401, stays on /login, visible error, no session stored",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6133,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:53:49.062Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "login-failure-visible-error",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/login.live-login-real-back-73294-ble-error-no-session-stored-chromium-desktop/attachments/login-failure-visible-error-5c284d465509f7e37d2869e95b10e05e67c692d7.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2b210780b52e408e16af-91b5cce995d2134f1565",
+              "file": "login.live.spec.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "unknown user: rejected with the same 401 and no user enumeration in the message",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5885,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:53:55.212Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2b210780b52e408e16af-627fc00660bcd3caa900",
+              "file": "login.live.spec.ts",
+              "line": 32,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "pages.live.spec.ts",
+      "file": "pages.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "pages render for a real admin session",
+          "file": "pages.live.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Collections page renders without the error boundary",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9119,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:54:01.113Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "collections-page",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/pages.live-pages-render-fo-9268f--without-the-error-boundary-chromium-desktop/attachments/collections-page-a199f82cfb654eb9a9f7d0794d55d705dbfacb8e.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1797f876caa0c5d04767-7d1124f13f2df7fe93e7",
+              "file": "pages.live.spec.ts",
+              "line": 6,
+              "column": 9
+            },
+            {
+              "title": "Favorites page renders without the error boundary",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9199,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:54:10.247Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "favorites-page",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/pages.live-pages-render-fo-59b18--without-the-error-boundary-chromium-desktop/attachments/favorites-page-05d8c5c5eae7e6076fc93bbd7dd52098c72431eb.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1797f876caa0c5d04767-2eea4362f6cc37a2f12d",
+              "file": "pages.live.spec.ts",
+              "line": 6,
+              "column": 9
+            },
+            {
+              "title": "Admin page renders without the error boundary",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9399,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:54:19.466Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "admin-page",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/pages.live-pages-render-fo-2f0a9--without-the-error-boundary-chromium-desktop/attachments/admin-page-42720e19db172dfe68b476fe3ea42887b67c24f8.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1797f876caa0c5d04767-666a2a47c958bbe04a0f",
+              "file": "pages.live.spec.ts",
+              "line": 6,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "registration.live.spec.ts",
+      "file": "registration.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "registration with admin approval (real backend)",
+          "file": "registration.live.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "client-side validation: mismatched passwords make no registration request",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6065,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:54:28.892Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "register-validation",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/registration.live-registra-bfdca-ake-no-registration-request-chromium-desktop/attachments/register-validation-23d06427a94aa34921f0a6366bd4040bd8914d9a.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95bb79a2e25b6fc16312-d5fc2579ab45c6d33d1f",
+              "file": "registration.live.spec.ts",
+              "line": 7,
+              "column": 7
+            },
+            {
+              "title": "new user cannot log in until the admin approves, then can",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13032,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:54:34.975Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "pending-login-refused",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/registration.live-registra-355e3-the-admin-approves-then-can-chromium-desktop/attachments/pending-login-refused-0d609722ed91af02f6b617bab6f3493a9bfc04f0.png"
+                        },
+                        {
+                          "name": "approved-login-dashboard",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/registration.live-registra-355e3-the-admin-approves-then-can-chromium-desktop/attachments/approved-login-dashboard-6db8390d8d800077346cdfb04b0d82a4fb000168.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95bb79a2e25b6fc16312-ff0d62d57b9e03d78b8c",
+              "file": "registration.live.spec.ts",
+              "line": 23,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "session.live.spec.ts",
+      "file": "session.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "session lifecycle (real backend)",
+          "file": "session.live.spec.ts",
+          "line": 12,
+          "column": 6,
+          "specs": [
+            {
+              "title": "logout: real POST /auth/logout, local session cleared, back on /login, old token revoked server-side",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10734,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:54:48.024Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "after-logout",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/session.live-session-lifec-80240-d-token-revoked-server-side-chromium-desktop/attachments/after-logout-00bc41c11560b8ddef5c856215cb05b2164ca8c9.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bed92dcf6f1403f0a3c1-1d5b5529b6a6afb17755",
+              "file": "session.live.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "tampered token: real API says 401 and the app drops to /login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8914,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:54:58.773Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "tampered-token-login",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/session.live-session-lifec-b7eac--and-the-app-drops-to-login-chromium-desktop/attachments/tampered-token-login-a65ee4ddc25da36d11209f01e089d73075e9ef0a.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bed92dcf6f1403f0a3c1-f3276fe9594525829d67",
+              "file": "session.live.spec.ts",
+              "line": 29,
+              "column": 7
+            },
+            {
+              "title": "a valid session survives a page reload (stays on /dashboard)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10318,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:55:07.704Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "after-reload",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/session.live-session-lifec-bc846--reload-stays-on-dashboard--chromium-desktop/attachments/after-reload-b4fa23d90d96798d36ce7a17a50e174f47ca5ea9.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bed92dcf6f1403f0a3c1-9f5758072c006438f96e",
+              "file": "session.live.spec.ts",
+              "line": 42,
+              "column": 7
+            },
+            {
+              "title": "a valid session survives a deep link (hard navigation to /media)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10123,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:55:18.039Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "deep-link-media",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/session.live-session-lifec-78b44-k-hard-navigation-to-media--chromium-desktop/attachments/deep-link-media-9ed25eee62812e901522610fc919e23fbd2c4943.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bed92dcf6f1403f0a3c1-fef6d405f83b7842ca1e",
+              "file": "session.live.spec.ts",
+              "line": 51,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "websocket.live.spec.ts",
+      "file": "websocket.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "websocket connection status (real backend)",
+          "file": "websocket.live.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "no \"Disconnected\" chip before login (nothing to connect yet)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2899,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:55:28.185Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "login-no-chip",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/websocket.live-websocket-c-20bae-gin-nothing-to-connect-yet--chromium-desktop/attachments/login-no-chip-615aad8bfdb1066887b49e441f3201e4da71d7e6.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d7e635d3b39835b7590f-99f45362364da19d5d24",
+              "file": "websocket.live.spec.ts",
+              "line": 7,
+              "column": 7
+            },
+            {
+              "title": "after login the real socket opens, stays open, receives no close, and the chip is hidden (= connected)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10280,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:55:31.107Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "connected-chip-hidden",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/websocket.live-websocket-c-629b9-e-chip-is-hidden-connected--chromium-desktop/attachments/connected-chip-hidden-5657bf5358a778e7e7c72b1e92d5d49e4f969628.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d7e635d3b39835b7590f-691d6fc28e77c258baac",
+              "file": "websocket.live.spec.ts",
+              "line": 14,
+              "column": 7
+            },
+            {
+              "title": "network outage shows the chip (Connecting/Disconnected); recovery reconnects a NEW socket and hides it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13684,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T22:55:41.408Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "outage-chip-visible",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/websocket.live-websocket-c-3a462-s-a-NEW-socket-and-hides-it-chromium-desktop/attachments/outage-chip-visible-5aa7dab9dd19d7813f281c16734736a7332aaf4f.png"
+                        },
+                        {
+                          "name": "recovered-chip-hidden",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-desktop/run1/artifacts/websocket.live-websocket-c-3a462-s-a-NEW-socket-and-hides-it-chromium-desktop/attachments/recovered-chip-hidden-34f6541d3646c232c5cc180711600b3fb93655d6.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d7e635d3b39835b7590f-b933f04b63acf119d3b6",
+              "file": "websocket.live.spec.ts",
+              "line": 31,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-03T22:53:41.429Z",
+    "duration": 133788.031,
+    "expected": 15,
+    "skipped": 3,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

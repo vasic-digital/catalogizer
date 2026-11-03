@@ -1,0 +1,61 @@
+{
+  "schema": "catalogizer.live-evidence/1",
+  "test_id": "catalog-web-live/firefox-desktop/pages",
+  "class": "LIVE",
+  "verdict": "PASS",
+  "timestamp": "2026-11-03T23:14:58.158Z",
+  "command": "catalog-web/e2e/live/run_live.sh firefox-desktop",
+  "artifact": {
+    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:950df7c8276f25f2d50b3934123c4632bd75d7093e9f95ba24b5ea3599695c89;api-health={\"version\":\"1e92bc3316ac2d49fabbe062f181112539f8ca18\",\"build_number\":\"1e92bc3316ac2d49fabbe062f181112539f8ca18\",\"build_date\":\"stack3\"};web-image=sha256:27386b1078e1ce792269da80b3ec8b5f315115afeb618b2cb449e64bb2712bd8",
+    "source": "target"
+  },
+  "endpoint": {
+    "host": "127.0.0.1",
+    "port": 33020,
+    "resolved_ip": "127.0.0.1",
+    "url": "http://127.0.0.1:33020"
+  },
+  "answering": {
+    "kind": "container",
+    "image": "localhost/catqa3-web:main-1e92bc33",
+    "image_digest": "sha256:27386b1078e1ce792269da80b3ec8b5f315115afeb618b2cb449e64bb2712bd8",
+    "container_id": "0612a4bc396761a4f393b84ccef62ee62632c1f75aca4e655356fd35fa06fc89"
+  },
+  "expected": {
+    "image_digest": "sha256:27386b1078e1ce792269da80b3ec8b5f315115afeb618b2cb449e64bb2712bd8"
+  },
+  "requests": {
+    "total": 43,
+    "methods": {
+      "GET": 40,
+      "POST": 3
+    }
+  },
+  "responses": {
+    "status_histogram": {
+      "200": 43
+    }
+  },
+  "runs": {
+    "n": 3,
+    "identical": true,
+    "signature": "sha256:1a6f237442245bd11a174d7d152579e1e3db200465d85a20d0f5ccd37f76f784"
+  },
+  "tests": {
+    "run1": [
+      "Admin page renders without the error boundary=passed",
+      "Collections page renders without the error boundary=passed",
+      "Favorites page renders without the error boundary=passed"
+    ],
+    "run2": [
+      "Admin page renders without the error boundary=passed",
+      "Collections page renders without the error boundary=passed",
+      "Favorites page renders without the error boundary=passed"
+    ],
+    "run3": [
+      "Admin page renders without the error boundary=passed",
+      "Collections page renders without the error boundary=passed",
+      "Favorites page renders without the error boundary=passed"
+    ]
+  }
+}

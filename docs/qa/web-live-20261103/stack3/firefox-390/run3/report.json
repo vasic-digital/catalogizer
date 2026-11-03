@@ -1,0 +1,996 @@
+{
+  "config": {
+    "argv": [
+      "/home/milosvasic/.nvm/versions/node/v26.8.1/bin/node",
+      "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/node_modules/.bin/playwright",
+      "test",
+      "-c",
+      "playwright.live.config.ts",
+      "--project=firefox-390"
+    ],
+    "configFile": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/playwright.live.config.ts",
+    "rootDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-desktop",
+        "name": "chromium-desktop",
+        "testDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.live\\.spec\\.ts/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-390",
+        "name": "chromium-390",
+        "testDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.live\\.spec\\.ts/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox-desktop",
+        "name": "firefox-desktop",
+        "testDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.live\\.spec\\.ts/"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox-390",
+        "name": "firefox-390",
+        "testDir": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live",
+        "testIgnore": [],
+        "testMatch": [
+          "/.*\\.live\\.spec\\.ts/"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "catalog.live.spec.ts",
+      "file": "catalog.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "catalog pages over the seeded corpus (real backend)",
+          "file": "catalog.live.spec.ts",
+          "line": 57,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Media page lists the seeded items: counts equal the real API",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
+                      "location": {
+                        "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
+                        "line": 55,
+                        "column": 30
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 960,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:20:02.685Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
+                          "location": {
+                            "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
+                            "line": 55,
+                            "column": 30
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b955bd8104f9462b2367-6942c396ed0f0153d171",
+              "file": "catalog.live.spec.ts",
+              "line": 58,
+              "column": 7
+            },
+            {
+              "title": "Media search narrows to exactly what the real API returns; no-match shows no items",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
+                      "location": {
+                        "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
+                        "line": 55,
+                        "column": 30
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 312,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:20:04.301Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
+                          "location": {
+                            "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
+                            "line": 55,
+                            "column": 30
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b955bd8104f9462b2367-84073cf1553867674bcb",
+              "file": "catalog.live.spec.ts",
+              "line": 72,
+              "column": 7
+            },
+            {
+              "title": "Browse page entity-type counts equal the real /entities/stats",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
+                      "location": {
+                        "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
+                        "line": 55,
+                        "column": 30
+                      }
+                    }
+                  ],
+                  "expectedStatus": "skipped",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "skipped",
+                      "duration": 493,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:20:04.632Z",
+                      "annotations": [
+                        {
+                          "type": "skip",
+                          "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
+                          "location": {
+                            "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
+                            "line": 55,
+                            "column": 30
+                          }
+                        }
+                      ],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b955bd8104f9462b2367-76421250825e515b7e10",
+              "file": "catalog.live.spec.ts",
+              "line": 88,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "login.live.spec.ts",
+      "file": "login.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "login (real backend)",
+          "file": "login.live.spec.ts",
+          "line": 8,
+          "column": 6,
+          "specs": [
+            {
+              "title": "valid admin credentials: real 200, dashboard, token stored and accepted by /auth/me",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6525,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:20:05.151Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "login-success-dashboard",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/login.live-login-real-back-43b3c-red-and-accepted-by-auth-me-firefox-390/attachments/login-success-dashboard-aaf4691d53d7a8ed8fa3b4e406bed86b479d80ba.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2b210780b52e408e16af-2831983a7f0670f5224f",
+              "file": "login.live.spec.ts",
+              "line": 9,
+              "column": 7
+            },
+            {
+              "title": "wrong password: real 401, stays on /login, visible error, no session stored",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6296,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:20:11.713Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "login-failure-visible-error",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/login.live-login-real-back-73294-ble-error-no-session-stored-firefox-390/attachments/login-failure-visible-error-30ffe327bb7f43455397760378fafe3b8c77d779.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2b210780b52e408e16af-4222deea46a680408fe7",
+              "file": "login.live.spec.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "unknown user: rejected with the same 401 and no user enumeration in the message",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6127,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:20:18.035Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2b210780b52e408e16af-ada1b14ca0021beeac9a",
+              "file": "login.live.spec.ts",
+              "line": 32,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "pages.live.spec.ts",
+      "file": "pages.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "pages render for a real admin session",
+          "file": "pages.live.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "Collections page renders without the error boundary",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13187,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:20:24.179Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "collections-page",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/pages.live-pages-render-fo-9268f--without-the-error-boundary-firefox-390/attachments/collections-page-7381aec7ee8af5fe9080547236e8c7fb284df34a.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1797f876caa0c5d04767-83dd92f06e37adec12fd",
+              "file": "pages.live.spec.ts",
+              "line": 6,
+              "column": 9
+            },
+            {
+              "title": "Favorites page renders without the error boundary",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13121,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:20:37.386Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "favorites-page",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/pages.live-pages-render-fo-59b18--without-the-error-boundary-firefox-390/attachments/favorites-page-ac26961fb1caa77e558259cfd6af27be2fe055cf.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1797f876caa0c5d04767-03119145af1060e9984a",
+              "file": "pages.live.spec.ts",
+              "line": 6,
+              "column": 9
+            },
+            {
+              "title": "Admin page renders without the error boundary",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12986,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:20:50.524Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "admin-page",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/pages.live-pages-render-fo-2f0a9--without-the-error-boundary-firefox-390/attachments/admin-page-b9c56a0b0fd3c4a78adfd777163cfbb918404117.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "1797f876caa0c5d04767-42dd8d12999907af22ef",
+              "file": "pages.live.spec.ts",
+              "line": 6,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "registration.live.spec.ts",
+      "file": "registration.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "registration with admin approval (real backend)",
+          "file": "registration.live.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "client-side validation: mismatched passwords make no registration request",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6823,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:21:03.529Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "register-validation",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/registration.live-registra-bfdca-ake-no-registration-request-firefox-390/attachments/register-validation-554d6a539849c077aba4b2c16096b66780ddf56f.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95bb79a2e25b6fc16312-946e18173008d20d6a69",
+              "file": "registration.live.spec.ts",
+              "line": 7,
+              "column": 7
+            },
+            {
+              "title": "new user cannot log in until the admin approves, then can",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13459,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:21:10.366Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "pending-login-refused",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/registration.live-registra-355e3-the-admin-approves-then-can-firefox-390/attachments/pending-login-refused-7b8f1ce78114b27ac9ca20afd9a7d500b136f2c7.png"
+                        },
+                        {
+                          "name": "approved-login-dashboard",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/registration.live-registra-355e3-the-admin-approves-then-can-firefox-390/attachments/approved-login-dashboard-b1f17fce36f93b23e1624d91ed09a51b86c1d60c.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "95bb79a2e25b6fc16312-0d0d186b80ca02aca73a",
+              "file": "registration.live.spec.ts",
+              "line": 23,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "session.live.spec.ts",
+      "file": "session.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "session lifecycle (real backend)",
+          "file": "session.live.spec.ts",
+          "line": 12,
+          "column": 6,
+          "specs": [
+            {
+              "title": "logout: real POST /auth/logout, local session cleared, back on /login, old token revoked server-side",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10396,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:21:23.841Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "after-logout",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/session.live-session-lifec-80240-d-token-revoked-server-side-firefox-390/attachments/after-logout-5505a0e5e2c01ab5d90fc2596eceb8ffe43b26b5.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bed92dcf6f1403f0a3c1-d8f65982166bd4a6500c",
+              "file": "session.live.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "tampered token: real API says 401 and the app drops to /login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9113,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:21:34.256Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "tampered-token-login",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/session.live-session-lifec-b7eac--and-the-app-drops-to-login-firefox-390/attachments/tampered-token-login-bb060ea9181dd271bb34c00c93ee92df06a957b3.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bed92dcf6f1403f0a3c1-3233e46e8e30957c5104",
+              "file": "session.live.spec.ts",
+              "line": 29,
+              "column": 7
+            },
+            {
+              "title": "a valid session survives a page reload (stays on /dashboard)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10453,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:21:43.384Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "after-reload",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/session.live-session-lifec-bc846--reload-stays-on-dashboard--firefox-390/attachments/after-reload-c0d2679c590e0d1d2c977989b5bbc9e072f92242.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bed92dcf6f1403f0a3c1-c51782e19a06675343af",
+              "file": "session.live.spec.ts",
+              "line": 42,
+              "column": 7
+            },
+            {
+              "title": "a valid session survives a deep link (hard navigation to /media)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10451,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:21:53.851Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "deep-link-media",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/session.live-session-lifec-78b44-k-hard-navigation-to-media--firefox-390/attachments/deep-link-media-dc369a76da0eb7abdb1e91ef401164e3526574e9.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "bed92dcf6f1403f0a3c1-7741a3ee13605fdd84d0",
+              "file": "session.live.spec.ts",
+              "line": 51,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "websocket.live.spec.ts",
+      "file": "websocket.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "websocket connection status (real backend)",
+          "file": "websocket.live.spec.ts",
+          "line": 6,
+          "column": 6,
+          "specs": [
+            {
+              "title": "no \"Disconnected\" chip before login (nothing to connect yet)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3112,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:22:04.330Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "login-no-chip",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/websocket.live-websocket-c-20bae-gin-nothing-to-connect-yet--firefox-390/attachments/login-no-chip-bd2aa249302f28aa83cc4a0d1892da1fa4e3862b.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d7e635d3b39835b7590f-08c15d0f745eec7cdba5",
+              "file": "websocket.live.spec.ts",
+              "line": 7,
+              "column": 7
+            },
+            {
+              "title": "after login the real socket opens, stays open, receives no close, and the chip is hidden (= connected)",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10428,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:22:07.458Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "connected-chip-hidden",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/websocket.live-websocket-c-629b9-e-chip-is-hidden-connected--firefox-390/attachments/connected-chip-hidden-1f5778eaf3962cacb283edbe3c0b5e32dae6593b.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d7e635d3b39835b7590f-250ffc56fda31028cb9a",
+              "file": "websocket.live.spec.ts",
+              "line": 14,
+              "column": 7
+            },
+            {
+              "title": "network outage shows the chip (Connecting/Disconnected); recovery reconnects a NEW socket and hides it",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "firefox-390",
+                  "projectName": "firefox-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 14254,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-03T23:22:17.904Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "outage-chip-visible",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/websocket.live-websocket-c-3a462-s-a-NEW-socket-and-hides-it-firefox-390/attachments/outage-chip-visible-ce30c43877413ba2a4379cd0ccaf9e1680a13f3f.png"
+                        },
+                        {
+                          "name": "recovered-chip-hidden",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/firefox-390/run3/artifacts/websocket.live-websocket-c-3a462-s-a-NEW-socket-and-hides-it-firefox-390/attachments/recovered-chip-hidden-22f42ae39f3e4e86cd87c9d4f0bbdff2c8ede7c1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d7e635d3b39835b7590f-cd6c0bee018f9e0554ef",
+              "file": "websocket.live.spec.ts",
+              "line": 31,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-03T23:20:02.015Z",
+    "duration": 150670.951,
+    "expected": 15,
+    "skipped": 3,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

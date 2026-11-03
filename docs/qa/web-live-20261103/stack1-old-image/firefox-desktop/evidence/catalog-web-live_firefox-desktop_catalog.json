@@ -1,0 +1,62 @@
+{
+  "schema": "catalogizer.live-evidence/1",
+  "test_id": "catalog-web-live/firefox-desktop/catalog",
+  "class": "LIVE",
+  "verdict": "PASS",
+  "timestamp": "2026-11-03T23:39:11.220Z",
+  "command": "catalog-web/e2e/live/run_live.sh firefox-desktop",
+  "artifact": {
+    "fingerprint": "base=http://127.0.0.1:33000;api=http://127.0.0.1:38080;api-image=sha256:c2282d1d2b357cd512446f81d56592185734cc2ea7495cea6e57b90001a1b157;api-health={\"version\":\"dev\",\"build_number\":\"0\",\"build_date\":\"unknown\"};web-image=sha256:02ef41ced0f68ba3f3c611d7d74235874023e75436abc26c417bbb3ef36763ba",
+    "source": "target"
+  },
+  "endpoint": {
+    "host": "127.0.0.1",
+    "port": 33000,
+    "resolved_ip": "127.0.0.1",
+    "url": "http://127.0.0.1:33000"
+  },
+  "answering": {
+    "kind": "container",
+    "image": "localhost/catqa-web:main",
+    "image_digest": "sha256:02ef41ced0f68ba3f3c611d7d74235874023e75436abc26c417bbb3ef36763ba",
+    "container_id": "594ecc7b2297a849d3fb8b6f9c7801cec7f27f626632e9b2b918caf600aeb1c7"
+  },
+  "expected": {
+    "image_digest": "sha256:02ef41ced0f68ba3f3c611d7d74235874023e75436abc26c417bbb3ef36763ba"
+  },
+  "requests": {
+    "total": 169,
+    "methods": {
+      "GET": 166,
+      "POST": 3
+    }
+  },
+  "responses": {
+    "status_histogram": {
+      "200": 96,
+      "404": 73
+    }
+  },
+  "runs": {
+    "n": 3,
+    "identical": true,
+    "signature": "sha256:5fd33fa9fc962d5cacdf431c724cb051ba28a24c866b4ee4e94d315eb44d788d"
+  },
+  "tests": {
+    "run1": [
+      "Browse page entity-type counts equal the real /entities/stats=passed",
+      "Media page lists the seeded items: counts equal the real API=passed",
+      "Media search narrows to exactly what the real API returns; no-match shows no items=passed"
+    ],
+    "run2": [
+      "Browse page entity-type counts equal the real /entities/stats=passed",
+      "Media page lists the seeded items: counts equal the real API=passed",
+      "Media search narrows to exactly what the real API returns; no-match shows no items=passed"
+    ],
+    "run3": [
+      "Browse page entity-type counts equal the real /entities/stats=passed",
+      "Media page lists the seeded items: counts equal the real API=passed",
+      "Media search narrows to exactly what the real API returns; no-match shows no items=passed"
+    ]
+  }
+}

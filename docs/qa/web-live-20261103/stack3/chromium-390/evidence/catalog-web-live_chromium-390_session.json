@@ -1,0 +1,64 @@
+{
+  "schema": "catalogizer.live-evidence/1",
+  "test_id": "catalog-web-live/chromium-390/session",
+  "class": "LIVE",
+  "verdict": "PASS",
+  "timestamp": "2026-11-03T23:07:44.726Z",
+  "command": "catalog-web/e2e/live/run_live.sh chromium-390",
+  "artifact": {
+    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:950df7c8276f25f2d50b3934123c4632bd75d7093e9f95ba24b5ea3599695c89;api-health={\"version\":\"1e92bc3316ac2d49fabbe062f181112539f8ca18\",\"build_number\":\"1e92bc3316ac2d49fabbe062f181112539f8ca18\",\"build_date\":\"stack3\"};web-image=sha256:27386b1078e1ce792269da80b3ec8b5f315115afeb618b2cb449e64bb2712bd8",
+    "source": "target"
+  },
+  "endpoint": {
+    "host": "127.0.0.1",
+    "port": 33020,
+    "resolved_ip": "127.0.0.1",
+    "url": "http://127.0.0.1:33020"
+  },
+  "answering": {
+    "kind": "container",
+    "image": "localhost/catqa3-web:main-1e92bc33",
+    "image_digest": "sha256:27386b1078e1ce792269da80b3ec8b5f315115afeb618b2cb449e64bb2712bd8",
+    "container_id": "0612a4bc396761a4f393b84ccef62ee62632c1f75aca4e655356fd35fa06fc89"
+  },
+  "expected": {
+    "image_digest": "sha256:27386b1078e1ce792269da80b3ec8b5f315115afeb618b2cb449e64bb2712bd8"
+  },
+  "requests": {
+    "total": 35,
+    "methods": {
+      "GET": 30,
+      "POST": 5
+    }
+  },
+  "responses": {
+    "status_histogram": {
+      "200": 35
+    }
+  },
+  "runs": {
+    "n": 3,
+    "identical": true,
+    "signature": "sha256:5184952a0964522eb264ad515620705414384f4d27e59dff3177c1eaad34b1b9"
+  },
+  "tests": {
+    "run1": [
+      "a valid session survives a deep link (hard navigation to /media)=passed",
+      "a valid session survives a page reload (stays on /dashboard)=passed",
+      "logout: real POST /auth/logout, local session cleared, back on /login, old token revoked server-side=passed",
+      "tampered token: real API says 401 and the app drops to /login=passed"
+    ],
+    "run2": [
+      "a valid session survives a deep link (hard navigation to /media)=passed",
+      "a valid session survives a page reload (stays on /dashboard)=passed",
+      "logout: real POST /auth/logout, local session cleared, back on /login, old token revoked server-side=passed",
+      "tampered token: real API says 401 and the app drops to /login=passed"
+    ],
+    "run3": [
+      "a valid session survives a deep link (hard navigation to /media)=passed",
+      "a valid session survives a page reload (stays on /dashboard)=passed",
+      "logout: real POST /auth/logout, local session cleared, back on /login, old token revoked server-side=passed",
+      "tampered token: real API says 401 and the app drops to /login=passed"
+    ]
+  }
+}
