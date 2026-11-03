@@ -386,6 +386,15 @@ A conversion that runs longer is killed (whole process group) and the job ends `
 "conversion timed out". An invalid, zero or negative value is ignored with a warning in the log
 and the default is used; "unlimited" is not supported.
 
+```bash
+CATALOGIZER_CONVERSION_MAX_OUTPUT_BYTES=34359738368   # 🟢 per-tool output size cap (RLIMIT_FSIZE, bytes); default 32 GiB
+```
+
+ffmpeg and ImageMagick run under `prlimit` (CPU, address space, open files, no core dump) and this
+output cap. A tool that tries to write more is stopped by the kernel and the job ends `failed`.
+Raise it only for very large video outputs; an invalid, zero or negative value is ignored and the
+default is used.
+
 ---
 
 ## 13. Database / retention of existing services (reference only)

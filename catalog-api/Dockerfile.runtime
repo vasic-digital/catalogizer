@@ -16,7 +16,8 @@ ARG BINARY_PATH=releases/catalog-api/linux-amd64/latest/catalog-api
 # Runtime dependencies (ca-certs for outbound HTTPS, tzdata for time, wget for healthcheck,
 # poppler-utils = pdftotext/pdfinfo primary PDF text engine, util-linux = prlimit that caps every
 # PDF parser child; without prlimit the service refuses to parse PDFs - CAT-002; ffmpeg +
-# imagemagick = the conversion worker's audio/video/image converters, see GET /health/deep -> converters)
+# imagemagick = the conversion worker's audio/video/image converters (no ghostscript on purpose: PDF pages
+# are rasterised by go-fitz; the converters run under a built-in ImageMagick policy, prlimit caps and an ffmpeg protocol allowlist), see GET /health/deep -> converters)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates tzdata wget poppler-utils util-linux ffmpeg imagemagick \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*

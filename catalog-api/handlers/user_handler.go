@@ -300,6 +300,8 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	oldRoleID, oldActive := user.RoleID, user.IsActive
+	wasPending := user.IsRegistrationPending()
+	decidedActive := false
 	// privilegedChangeRequested: the caller is allowed to and did name role_id or
 	// is_active. A retry after a failed post-update revoke sees no value change, so
 	// revocation is keyed on the request too, not only on the diff.
@@ -347,6 +349,10 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 			}
 			if req.IsActive != nil {
 				user.IsActive = *req.IsActive
+				// An explicit activation decision ends the pending-registration state: otherwise a
+				// later deactivation would show the approved user as pending again (F4).
+				user.ClearRegistrationPending()
+				decidedActive = true
 			}
 		}
 	}
@@ -414,6 +420,15 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "User updated but revoking the user's sessions failed; repeat the request to finish revoking", http.StatusInternalServerError)
 			return
 		}
+	}
+
+	if decidedActive && wasPending {
+		event := "registration_rejected"
+		if user.IsActive {
+			event = "registration_approved"
+		}
+		recordAuth(h.authService, user.ID, event, r.RemoteAddr, r.UserAgent(),
+			"actor="+strconv.Itoa(currentUser.ID)+" is_active="+strconv.FormatBool(user.IsActive))
 	}
 
 	role, err := h.userRepo.GetRole(user.RoleID)

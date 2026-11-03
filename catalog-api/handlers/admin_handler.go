@@ -224,7 +224,8 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 // UpdateUser updates a user's role or status.
 // PUT /api/v1/admin/users/:id
 func (h *AdminHandler) UpdateUser(c *gin.Context) {
-	if h.requireAdmin(c) == nil {
+	admin := h.requireAdmin(c)
+	if admin == nil {
 		return
 	}
 
@@ -257,7 +258,16 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 	}
 
 	wasActive := user.IsActive
+	wasPending := user.IsRegistrationPending()
 	if updates.Status != nil {
+		// The status is a closed set; anything else is refused before it can change
+		// (or clear the pending marker of) the account.
+		switch *updates.Status {
+		case "active", "inactive", "suspended":
+		default:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status (active, inactive, suspended)"})
+			return
+		}
 		// Any explicit administrator status decision (approve or reject) ends
 		// the pending-registration state.
 		user.ClearRegistrationPending()
@@ -296,6 +306,18 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "User updated but revoking sessions failed; repeat the request"})
 			return
 		}
+	}
+
+	if updates.Status != nil {
+		event := "admin_user_status_changed"
+		switch {
+		case wasPending && *updates.Status == "active":
+			event = "registration_approved"
+		case wasPending && *updates.Status == "inactive":
+			event = "registration_rejected"
+		}
+		recordAuth(h.authService, user.ID, event, c.ClientIP(), c.Request.UserAgent(),
+			"actor="+strconv.Itoa(admin.ID)+" status="+*updates.Status)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})

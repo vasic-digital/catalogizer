@@ -64,6 +64,14 @@ func (s *AuthService) auditEvent(userID int, eventType, ipAddress, userAgent, de
 	}
 }
 
+// RecordAuditEvent writes an event to the audit trail (auth_audit_log) when the service was built
+// with NewAuthServiceWithAudit; otherwise it is a no-op. Callers pass the event type, the subject
+// user id (0 = none), the client address and user agent, and details that carry no password, login
+// name or e-mail address.
+func (s *AuthService) RecordAuditEvent(userID int, eventType, ipAddress, userAgent, details string) {
+	s.auditEvent(userID, eventType, ipAddress, userAgent, details)
+}
+
 // JWTClaims represents the claims in our JWT tokens
 type JWTClaims struct {
 	UserID    int    `json:"user_id"`

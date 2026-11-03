@@ -660,9 +660,15 @@ func (s *ConversionService) convertPDFToHTML(job *models.ConversionJob) error {
 
 // convertPDFWithImageMagick converts PDF to image formats not directly supported by go-fitz
 func (s *ConversionService) convertPDFWithImageMagick(job *models.ConversionJob, format string) error {
+	// F2: IM rasterises a PDF through Ghostscript. Without `gs` it cannot, so say that instead of
+	// failing with an opaque delegate error (the runtime images do not ship Ghostscript: it is a
+	// large PostScript interpreter and PDF -> png/jpg does not need it, go-fitz renders those).
+	if _, err := lookPath("gs"); err != nil {
+		return fmt.Errorf("PDF to %s needs Ghostscript (gs), which is not installed on this server; convert to png or jpg instead", format)
+	}
 	args := []string{
 		"-density", "150", // DPI
-		job.SourcePath,
+		"pdf:" + job.SourcePath,
 	}
 
 	// Parse settings for quality options
@@ -688,9 +694,30 @@ func (s *ConversionService) convertPDFWithImageMagick(job *models.ConversionJob,
 }
 
 func (s *ConversionService) convertImage(job *models.ConversionJob) error {
+	prefix, perr := imageMagickCoder(job.SourcePath)
+	if perr != nil {
+		return fmt.Errorf("imagemagick conversion failed: %w", perr)
+	}
+	source := job.SourcePath
+	if prefix == "svg:" { // svg: render a private copy of the re-serialised, checked document
+		raw, serr := readCheckedSVG(job.SourcePath)
+		if serr != nil {
+			return fmt.Errorf("imagemagick conversion failed: %w", serr)
+		}
+		dir, derr := os.MkdirTemp("", "catalogizer-svg-")
+		if derr != nil {
+			return fmt.Errorf("imagemagick conversion failed: %w", derr)
+		}
+		defer os.RemoveAll(dir)
+		source = filepath.Join(dir, "in.svg")
+		if werr := os.WriteFile(source, raw, 0o600); werr != nil {
+			return fmt.Errorf("imagemagick conversion failed: %w", werr)
+		}
+	}
 	err := runConverterInPrivateDir(job.TargetPath, func(out string) error {
 		j := *job
 		j.TargetPath = out
+		j.SourcePath = prefix + source
 		return s.runTool(job, "convert", s.buildImageMagickArgs(&j))
 	})
 	if err != nil {
@@ -1033,8 +1060,12 @@ func runConverterTool(name string, args []string) error {
 	return runConverterToolCtx(context.Background(), name, args)
 }
 
-// runConverterToolCtx runs a converter tool and kills it when ctx is cancelled.
+// runConverterToolCtx runs a converter tool and kills it when ctx is cancelled. ffmpeg and
+// ImageMagick go through the hardened launcher (converter_hardening.go).
 func runConverterToolCtx(ctx context.Context, name string, args []string) error {
+	if isHardenedTool(name) {
+		return runHardenedTool(ctx, name, args)
+	}
 	cmd := exec.CommandContext(ctx, name, args...)
 	setProcessGroup(cmd)
 	cmd.Stdout = os.Stdout
