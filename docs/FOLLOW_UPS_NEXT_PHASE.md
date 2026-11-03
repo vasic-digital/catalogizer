@@ -453,3 +453,8 @@ Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/ap
   raw service or SQL error text; error reports store the server host name in `system_info`.
 - F4 (minor): an empty body on `POST /api/v1/users/{id}/unlock` is rejected (400 `invalid JSON format`).
 - F6 (minor): `scripts/check_doc_reachability.py` does not require a direct README to `docs/README.md` link.
+
+## Docs C2/C5 review round 2 follow-ups (GO-with-follow-ups, process-doc minor)
+
+- R6: docs say every cell of the user/role permission table is "asserted by" the binary contract test; the test only uses `user.*` roles, so single-permission cells (`user.view` only, `user.manage` only) are measured live but not asserted. Add those two roles to the test or soften the wording.
+- R7 (measured): the input validator pattern list is `catalog-api/middleware/input_validation.go:57-66`. On POST /api/v1/users it rejects whole words CREATE, AND, OR, FROM, SLEEP and `--` in ANY string field (password, display_name "Rock and Roll"); `Selection` and `Order-By` pass. Permission names `user.create` fail for the same reason. Under investigation in the login/validator fix.
