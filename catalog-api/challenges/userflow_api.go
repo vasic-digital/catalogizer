@@ -135,7 +135,7 @@ func registerUserFlowAPIChallenges() []challenge.Challenge {
 			"UF-API-HEALTH-METRICS",
 			adapter,
 			"/metrics",
-			200,
+			401, // /metrics is admin-only: an unauthenticated scrape MUST be rejected
 			[]challenge.ID{"UF-API-HEALTH"},
 		),
 	)
