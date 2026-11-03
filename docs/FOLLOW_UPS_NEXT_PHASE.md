@@ -761,3 +761,11 @@ Remaining, listed for the next iteration:
 - R5-7 `GET /auth/init-status` (`stub_handler.go:631`, `MediaQueryHandler.GetInitStatus`) always answers `{"initialized": true}` without looking at the database. Disposition: derive from the user count or document it as a constant.
 - `CollectionSharing` handlers (create/revoke/delete/email) are strict but unreachable behind `SHARE_API_AVAILABLE = false`; no test drives them until the server grows the routes. Same for `TEMPLATE_APPLY_AVAILABLE`.
 - `localization_handlers.go:423` constant `confidence: 1.0`, Collections.tsx:411-453 AI toasts, `mediaApi.analyzeDirectory` payload: unchanged from the R4 inventory above.
+
+## CAT-001 verification round (R6, GO-with-follow-ups)
+- F1 (minor): other QA consumers still expect 200 from endpoints that now answer an honest 501: scripts/run-full-qa.sh:207 (recommendations/personalized/1), scripts/testing/full_automation/catalog_collections_downloads_stats.sh:384-386, challenges/helixqa-banks/catalogizer-api-comprehensive-executable.yaml:387 and :1023, tests/test_recommendations.sh:29-35, scripts/run-helixqa-web.sh:153-159; close the whole class at once.
+- F2 (nit): docker-compose.qa.yml and run-helixqa.sh accept 200-399 for configuration/status and trending, so a regression to an invented 200 would pass.
+- F3 (process-doc): the R5 note that useFavorites "no longer wipes the cache on add" is wrong; tanstack query-core 4.41 setQueryData ignores an undefined updater result, so no wipe existed. The change is harmless.
+- F4 (nit): gofmt turned SQL '' into a typographic quote in comments at catalog-api/handlers/media_entity_handler.go:913 and media_entity_handler_test.go:470; rephrase.
+- F5 (minor): strict response.ok handlers in CollectionSharing and the template apply path are unreachable behind SHARE_API_AVAILABLE / TEMPLATE_APPLY_AVAILABLE=false and are untested.
+- F6 (nit): run-helixqa.sh without curl -f reports status 000000 on connection failure (still FAIL).
