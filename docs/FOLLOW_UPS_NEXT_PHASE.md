@@ -534,3 +534,12 @@ Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/ap
 - Add a paired mutation (wrong password via env, wrong sandbox) to the WebDAV live test as the SMB/FTP live tests have (`LIVE_MUTATE`).
 - Pin the Synology certificate instead of `LIVE_WEBDAV_INSECURE=1` (as `submodules/filesystem/pkg/ftp/tls.go` pins per host; confirmed).
 - Review R1 F12/F13 (deferred): IPv6 literal hosts are mangled by the redaction host extraction; the probe URL escaping should reuse the client's URL builder. Positive-leg assertion that `ReadFile` error text contains `404` depends on the client's message format and is UNCONFIRMED live.
+
+## Documentation follow-ups (docs link audit, 2026-11-03)
+
+Status: OPEN until a commit on `main` closes the item.
+
+- Six runbooks named by `docs/runbooks/ALERT_RUNBOOKS_INDEX.md` do not exist and were un-linked, not invented: SLOW_QUERIES, BRUTE_FORCE, DOS_ATTACK, NODE_DOWN, NETWORK_ISSUES, CERTIFICATE_EXPIRY. Each needs a real runbook written from the alert rules and the code, then re-linked from the index, `DATABASE_CONNECTION.md`, `HIGH_CPU.md` and `SECURITY_BREACH.md`.
+- Link-checker weaknesses (T1, test-instrumentation, the checker is not in the repository yet; the audit copy lives in the session scratchpad): (a) its control check ended in `or True`, so a broken control could never fail; (b) it ignores `#anchors`, so a link to a heading that does not exist passes (the spec 001 crawl found 83 broken anchors); (c) it had no VitePress site-root mode, so 37 `Website/` links such as `/download` were reported broken. The scratchpad copy now asserts a positive and a negative control and resolves `Website/` root links against `Website/` (`.md` and `index.md` forms); anchors are still unchecked. Land a checker in `scripts/` with these three properties plus a gate before relying on its counts.
+- Link-check false positives to exclude when the checker lands: backticked code such as `NewValue[T](loader)` in `docs/architecture/LAZY_LOADING.md` and spec 001 doc 19, and links into submodules that are not checked out.
+

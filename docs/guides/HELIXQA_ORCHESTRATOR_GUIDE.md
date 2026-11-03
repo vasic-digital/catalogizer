@@ -434,7 +434,7 @@ cat qa-results/session-*/report.md
 
 - [Device Connect Guide](./DEVCONNECT_GUIDE.md) - `.devconnect` documentation
 - [Testing Guide](./TESTING_GUIDE.md) - General testing procedures
-- [HelixQA Documentation](../../HelixQA/README.md) - HelixQA reference
+- [HelixQA Documentation](../../submodules/helix_qa/README.md) - HelixQA reference
 - [AGENTS.md](../../AGENTS.md) - Agent constraints and guidelines
 
 ## Support

@@ -36,19 +36,19 @@ Catalogizer is a comprehensive media collection management system that automatic
 | 🏛️ **[Governance and the Constitution](docs/GOVERNANCE.md)** | How the Spec Kit constitution (`.specify/memory/constitution.md`, v2.5.1) follows the Helix canon, the pinned canon commit, the binding of the vendored engines `llmctl`, `claude_toolkit` and `open_design`, and safe submodule initialisation |
 | 📐 **[CONSTITUTION.md](CONSTITUTION.md)** | Non-negotiable rules — Article V (100% test coverage), Article VI (Open-Points Closure Brief), **Article VII (Full-QA Master Cycle)** |
 | 🎯 **[Open-Points Closure Brief](docs/OPEN_POINTS_CLOSURE.md)** | Canonical operator-action checklist — every credential, hardware item, and infra task still outstanding |
-| 🗺️ **[OCU Program Roadmap](HelixQA/docs/nexus/ocu-roadmap.md)** | OpenClaw Ultimate phases P0–P7 status, contract versions, latency budgets, risks |
+| 🗺️ **[OCU Program Roadmap](submodules/helix_qa/docs/nexus/ocu-roadmap.md)** | OpenClaw Ultimate phases P0–P7 status, contract versions, latency budgets, risks |
 | 📆 **[Session Handoff 2026-04-18](docs/SESSION_HANDOFF_2026-04-18.md)** | Latest session's completed work + known issues + exact resume commands |
 | 🔎 **[Full Project Audit and Remediation (spec 001)](specs/001-full-project-audit-remediation/README.md)** | Specification, 21 planning documents, research, data model, contracts, POC tools and the task list for the project-wide audit and remediation (entry point to every plan document) |
 | 📝 **[Full-QA Master Plan](docs/plans/2026-04-18-full-qa-cycle-master-plan.md)** | Plan for the rigid rebuild → test → Challenges → HelixQA → fix loop |
-| 🧾 **[v4.0.0 Release Notes (HelixQA)](HelixQA/docs/releases/v4.0.0.md)** | OpenClaw Ultimate v4.0.0 ship notes |
+| 🧾 **[v4.0.0 Release Notes (HelixQA)](submodules/helix_qa/docs/releases/v4.0.0.md)** | OpenClaw Ultimate v4.0.0 ship notes |
 | 🐞 **[QA Sessions Archive](docs/reports/qa-sessions/)** | Permanent per-session FINAL-REPORT.md + logs + videos + tickets |
 | 🔐 **[Database Encryption at Rest](docs/DATABASE_ENCRYPTION.md)** | SQLCipher key location, plaintext→encrypted migration, `db-rekey` rotation, encrypted backups/restore, FAQ |
 | 🛠️ **[Build Container Auto-Dispatch](docs/BUILD_CONTAINER_AUTO_DISPATCH.md)** | How Tauri/Rust builds transparently route through the `catalogizer-builder` container when the host lacks cargo. No sudo, no root. |
-| 🔒 **[Security audits (OCU)](HelixQA/docs/security/)** | Per-phase P0–P7 security posture notes |
-| 🪝 **[LD_PRELOAD Hook Guide](HelixQA/docs/hooks/README.md)** | How to compile and wire a per-target shim for hook-based observation |
-| 📜 **[OCU Replay DSL](HelixQA/docs/ocu-replay-format.md)** | `helixqa replay <ticket>` DSL spec |
-| 📊 **[Challenges Dashboard](HelixQA/docs/website/challenges-dashboard/)** | Static HTML dashboard over qa-results/ pipeline reports |
-| 🎫 **[Ticket Viewer](HelixQA/docs/website/ticket-viewer/)** | Static HTML renderer for OCU tickets with inline evidence |
+| 🔒 **[Security audits (OCU)](submodules/helix_qa/docs/security/)** | Per-phase P0–P7 security posture notes |
+| 🪝 **[LD_PRELOAD Hook Guide](submodules/helix_qa/docs/hooks/README.md)** | How to compile and wire a per-target shim for hook-based observation |
+| 📜 **[OCU Replay DSL](submodules/helix_qa/docs/ocu-replay-format.md)** | `helixqa replay <ticket>` DSL spec |
+| 📊 **[Challenges Dashboard](submodules/helix_qa/docs/website/challenges-dashboard/)** | Static HTML dashboard over qa-results/ pipeline reports |
+| 🎫 **[Ticket Viewer](submodules/helix_qa/docs/website/ticket-viewer/)** | Static HTML renderer for OCU tickets with inline evidence |
 | 🤖 **[CLAUDE.md](CLAUDE.md)** | Agent-ingestible project rules + architecture pointers |
 | 🤖 **[AGENTS.md](AGENTS.md)** | Autonomous-agent constraints + coding conventions |
 | 🧠 **[MEMORY.md](MEMORY.md)** | Auto-memory index (persistent Claude session state) |
