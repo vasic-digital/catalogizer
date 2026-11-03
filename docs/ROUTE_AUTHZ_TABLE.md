@@ -1,10 +1,14 @@
 # Route authorization table (authz round 2)
 
-Generated 2026-11-03 on branch `fix-authz-round2` from (a) a static extraction of every `GET|POST|PUT|DELETE|PATCH` registration in `catalog-api/main.go` plus the routes mounted from `handlers/storage_routes.go` and `handlers/alias_routes.go` (259 rows), and (b) a live probe of the REAL binary (`route_enumeration_probe_test.go`, env-gated by `ROUTE_PROBE_FILE`/`ROUTE_PROBE_OUT`): each route is requested with no token, with a self-registered plain user's token and, for GET routes, with the administrator's token. Cells are HTTP status codes. `404`/`400` for a user means the request passed the gate and the handler rejected the made-up id or empty body. `skip` = not requested as admin (mutating or streaming). `ERR` = the 4 s probe client timed out (`pprof/profile` samples for 30 s).
+Generated 2026-11-03 on branch `fix-authz-round2` from (a) a static extraction of every `GET|POST|PUT|DELETE|PATCH` registration in `catalog-api/main.go` plus the routes mounted from `handlers/storage_routes.go` and `handlers/alias_routes.go` (260 rows), and (b) a live probe of the REAL binary (`route_enumeration_probe_test.go`, env-gated by `ROUTE_PROBE_FILE`/`ROUTE_PROBE_OUT`): each route is requested with no token, with a self-registered plain user's token and, for GET routes, with the administrator's token. Cells are HTTP status codes. `404`/`400` for a user means the request passed the gate and the handler rejected the made-up id or empty body. `skip` = not requested as admin (mutating or streaming). `ERR` = the 4 s probe client timed out (`pprof/profile` samples for 30 s).
 
-Instrument checks (control needles): the static extractor found 238 `main.go` registrations, equal to an independent `grep -cE` count of the same file region (238); the known routes `/metrics` and `/api/v1/smb/probe-and-ingest` are present and a fabricated route is absent; the probe asserts before and after the run that the plain token still gets `403` (not `401`) on `POST /api/v1/smb/probe` (the first probe run was invalid because `POST /auth/logout` revoked the plain token; that route and `change-password` are now skipped).
+Instrument checks (control needles): the static extractor found 239 `main.go` registrations, equal to an independent `grep -cE` count of the same file region (239); the known routes `/metrics` and `/api/v1/smb/probe-and-ingest` are present and a fabricated route is absent; the probe asserts before and after the run that the plain token still gets `403` (not `401`) on `POST /api/v1/smb/probe` (the first probe run was invalid because `POST /auth/logout` revoked the plain token; that route and `change-password` are now skipped).
 
-Gate legend: `public` = no authentication; `auth` = `RequireAuth` on the `/api/v1` group only; `RequireAdmin` = live-DB admin decision (a stale claim never grants); `RequireAuth+RequireAdmin` = both; `auth + in-handler permission` = the handler itself checks a permission (users, roles, configuration, errors, logs).
+Gate legend: `public` = no authentication; `auth` = `RequireAuth` on the `/api/v1` group only; `RequireAdmin (route)` = per-route `RequireAdmin` (live-DB admin decision, a stale claim never grants); `RequireAdmin (group)` = the whole group is mounted behind `RequireAdmin`; `RequireAuth+RequireAdmin` = both, applied explicitly on the route (`/metrics`, `/debug/pprof/*`); `RequireSelfOrAdmin` = the caller must be the user named in the path or an admin; `configGate` = the route is mounted behind the configuration-permission gate; `auth + in-handler permission` = `RequireAuth` only at the router, the handler itself checks a permission (users, roles, configuration, errors, logs; recognised by plain user = 403 in the live probe); `not probed` = deliberately not requested (it would revoke the probe session or change the probe user password).
+
+`/metrics` additionally accepts the dedicated scrape credential `METRICS_SCRAPE_TOKEN` as `Authorization: Bearer` (this route only; see `docs/deployment/MONITORING_GUIDE.md`); the live probe does not send it.
+
+This round also added the merged-main route `GET /api/v1/collections/:id/items` (auth; ownership enforced in the handler: plain user 404 for an id they do not own).
 
 Operator decisions encoded here: `/metrics` and `/debug/pprof/*` admin-only; outbound enrichment, asset-resolution and subtitle search/download/translate triggers admin-only and SSRF-guarded through `internal/netguard`; `GET /scans*` auth-only; `POST /admin/image-quality/revalidate` and `POST /admin/covers/generate-thumbnails` keep a per-route `RequireAdmin`.
 
@@ -57,9 +61,9 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/download/directory/*path` | auth | 401 | 500 | skip |
 | POST | `/api/v1/download/archive` | auth | 401 | 400 | skip |
 | GET | `/api/v1/stream/:id` | auth | 401 | 404 | skip |
-| POST | `/api/v1/copy/storage` | RequireAdmin | 401 | 403 | skip |
-| POST | `/api/v1/copy/local` | RequireAdmin | 401 | 403 | skip |
-| POST | `/api/v1/copy/upload` | RequireAdmin | 401 | 403 | skip |
+| POST | `/api/v1/copy/storage` | RequireAdmin (route) | 401 | 403 | skip |
+| POST | `/api/v1/copy/local` | RequireAdmin (route) | 401 | 403 | skip |
+| POST | `/api/v1/copy/upload` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/media/search` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/media/stats` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/media/recent` | auth | 401 | 200 | 200 |
@@ -71,16 +75,16 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | PUT | `/api/v1/media/:id/favorite` | auth | 401 | 400 | skip |
 | POST | `/api/v1/media/:id/refresh` | auth | 401 | 404 | skip |
 | GET | `/api/v1/media/:id/quality` | auth | 401 | 404 | 404 |
-| POST | `/api/v1/admin/image-quality/revalidate` | RequireAdmin() | 401 | 403 | skip |
-| POST | `/api/v1/admin/covers/generate-thumbnails` | RequireAdmin() | 401 | 403 | skip |
+| POST | `/api/v1/admin/image-quality/revalidate` | RequireAdmin (route) | 401 | 403 | skip |
+| POST | `/api/v1/admin/covers/generate-thumbnails` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/recommendations/similar/:media_id` | auth | 401 | 404 | 404 |
 | GET | `/api/v1/recommendations/trending` | auth | 401 | 501 | 501 |
-| GET | `/api/v1/recommendations/personalized/:user_id` | RequireSelfOrAdmin("user_id") | 401 | 403 | 501 |
-| GET | `/api/v1/subtitles/search` | RequireAdmin | 401 | 403 | 400 |
-| POST | `/api/v1/subtitles/download` | RequireAdmin | 401 | 403 | skip |
+| GET | `/api/v1/recommendations/personalized/:user_id` | RequireSelfOrAdmin | 401 | 403 | 501 |
+| GET | `/api/v1/subtitles/search` | RequireAdmin (route) | 401 | 403 | 400 |
+| POST | `/api/v1/subtitles/download` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/subtitles/media/:media_id` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/subtitles/:subtitle_id/verify-sync/:media_id` | auth | 401 | 404 | 404 |
-| POST | `/api/v1/subtitles/translate` | RequireAdmin | 401 | 403 | skip |
+| POST | `/api/v1/subtitles/translate` | RequireAdmin (route) | 401 | 403 | skip |
 | POST | `/api/v1/subtitles/upload` | auth | 401 | 400 | skip |
 | GET | `/api/v1/subtitles/languages` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/subtitles/providers` | auth | 401 | 200 | 200 |
@@ -170,9 +174,10 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/collections` | auth | 401 | 200 | 200 |
 | POST | `/api/v1/collections` | auth | 401 | 400 | skip |
 | GET | `/api/v1/collections/:id` | auth | 401 | 404 | 404 |
+| GET | `/api/v1/collections/:id/items` | auth | 401 | 404 | 404 |
 | PUT | `/api/v1/collections/:id` | auth | 401 | 404 | skip |
 | DELETE | `/api/v1/collections/:id` | auth | 401 | 404 | skip |
-| POST | `/api/v1/assets/request` | RequireAdmin | 401 | 403 | skip |
+| POST | `/api/v1/assets/request` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/assets/by-entity/:type/:id` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/entities` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/entities/search` | auth | 401 | 200 | 200 |
@@ -192,10 +197,10 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/entities/:id/pdf-pages` | auth | 401 | 404 | 404 |
 | GET | `/api/v1/entities/:id/pdf-pages/:n` | auth | 401 | 404 | 404 |
 | GET | `/api/v1/entities/:id/install-info` | auth | 401 | 404 | 404 |
-| POST | `/api/v1/entities/:id/metadata/refresh` | RequireAdmin | 401 | 403 | skip |
+| POST | `/api/v1/entities/:id/metadata/refresh` | RequireAdmin (route) | 401 | 403 | skip |
 | PUT | `/api/v1/entities/:id/user-metadata` | auth | 401 | 500 | skip |
 | POST | `/api/v1/entities/:id/user-metadata` | auth | 401 | 500 | skip |
-| POST | `/api/v1/entities/enrich` | RequireAdmin | 401 | 403 | skip |
+| POST | `/api/v1/entities/enrich` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/entities/:id/progress` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/entities/:id/history` | auth | 401 | 200 | 200 |
 | POST | `/api/v1/playback/sessions/start` | auth | 401 | 400 | skip |
@@ -203,12 +208,12 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | POST | `/api/v1/playback/sessions/end` | auth | 401 | 400 | skip |
 | POST | `/api/v1/analytics/access` | auth | 401 | 200 | skip |
 | POST | `/api/v1/analytics/event` | auth | 401 | 200 | skip |
-| GET | `/api/v1/analytics/user/:user_id` | RequireSelfOrAdmin("user_id") | 401 | 403 | 200 |
-| GET | `/api/v1/analytics/system` | RequireAdmin() | 401 | 403 | 200 |
-| GET | `/api/v1/analytics/media/:media_id` | RequireAdmin() | 401 | 403 | 200 |
-| POST | `/api/v1/analytics/reports` | RequireAdmin() | 401 | 403 | skip |
-| GET | `/api/v1/reports/usage` | RequireAdmin() | 401 | 403 | 200 |
-| GET | `/api/v1/reports/performance` | RequireAdmin() | 401 | 403 | 200 |
+| GET | `/api/v1/analytics/user/:user_id` | RequireSelfOrAdmin | 401 | 403 | 200 |
+| GET | `/api/v1/analytics/system` | RequireAdmin (route) | 401 | 403 | 200 |
+| GET | `/api/v1/analytics/media/:media_id` | RequireAdmin (route) | 401 | 403 | 200 |
+| POST | `/api/v1/analytics/reports` | RequireAdmin (route) | 401 | 403 | skip |
+| GET | `/api/v1/reports/usage` | RequireAdmin (route) | 401 | 403 | 200 |
+| GET | `/api/v1/reports/performance` | RequireAdmin (route) | 401 | 403 | 200 |
 | GET | `/api/v1/favorites` | auth | 401 | 200 | 200 |
 | POST | `/api/v1/favorites` | auth | 401 | 400 | skip |
 | DELETE | `/api/v1/favorites/:entity_type/:entity_id` | auth | 401 | 400 | skip |
@@ -217,30 +222,30 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | POST | `/api/v1/playlists` | auth | 401 | 400 | skip |
 | GET | `/api/v1/playlists/:id` | auth | 401 | 404 | 404 |
 | PUT | `/api/v1/playlists/:id` | auth | 401 | 404 | skip |
-| DELETE | `/api/v1/playlists/:id` | auth | 401 | 500 | skip |
+| DELETE | `/api/v1/playlists/:id` | auth | 401 | 404 | skip |
 | POST | `/api/v1/playlists/:id/items` | auth | 401 | 400 | skip |
-| DELETE | `/api/v1/playlists/:id/items/:item_id` | auth | 401 | 500 | skip |
+| DELETE | `/api/v1/playlists/:id/items/:item_id` | auth | 401 | 404 | skip |
 | GET | `/api/v1/browse/roots` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/browse/directory/*path` | auth | 401 | 400 | 400 |
 | GET | `/api/v1/browse/file-info/*path` | auth | 401 | 400 | 400 |
 | GET | `/api/v1/browse/directory-sizes/*path` | auth | 401 | 400 | 400 |
 | GET | `/api/v1/browse/duplicates/*path` | auth | 401 | 400 | 400 |
-| POST | `/api/v1/sync/endpoints` | RequireAdmin | 401 | 403 | skip |
+| POST | `/api/v1/sync/endpoints` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/sync/endpoints` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/sync/endpoints/:id` | auth | 401 | 404 | 404 |
-| PUT | `/api/v1/sync/endpoints/:id` | RequireAdmin | 401 | 403 | skip |
-| DELETE | `/api/v1/sync/endpoints/:id` | RequireAdmin | 401 | 403 | skip |
-| POST | `/api/v1/sync/endpoints/:id/sync` | RequireAdmin | 401 | 403 | skip |
+| PUT | `/api/v1/sync/endpoints/:id` | RequireAdmin (route) | 401 | 403 | skip |
+| DELETE | `/api/v1/sync/endpoints/:id` | RequireAdmin (route) | 401 | 403 | skip |
+| POST | `/api/v1/sync/endpoints/:id/sync` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/sync/sessions` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/sync/sessions/:id` | auth | 401 | 404 | 404 |
-| POST | `/api/v1/sync/schedules` | RequireAdmin | 401 | 403 | skip |
+| POST | `/api/v1/sync/schedules` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/sync/statistics` | auth | 401 | 200 | 200 |
-| POST | `/api/v1/sync/cleanup` | RequireAdmin() | 401 | 403 | skip |
+| POST | `/api/v1/sync/cleanup` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/challenges` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/challenges/:id` | auth | 401 | 404 | 404 |
-| POST | `/api/v1/challenges/:id/run` | RequireAdmin() | 401 | 403 | skip |
-| POST | `/api/v1/challenges/run` | RequireAdmin() | 401 | 403 | skip |
-| POST | `/api/v1/challenges/run/category/:category` | RequireAdmin() | 401 | 403 | skip |
+| POST | `/api/v1/challenges/:id/run` | RequireAdmin (route) | 401 | 403 | skip |
+| POST | `/api/v1/challenges/run` | RequireAdmin (route) | 401 | 403 | skip |
+| POST | `/api/v1/challenges/run/category/:category` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/challenges/results` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/browse` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/analytics/stats` | auth | 401 | 200 | 200 |
@@ -250,12 +255,12 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/recommendations` | auth | 401 | 501 | 501 |
 | GET | `/api/v1/sync/history` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/localization/languages` | auth | 401 | 200 | 200 |
-| GET | `/api/v1/storage/list/*path` | RequireAdmin | 401 | 403 | 400 |
+| GET | `/api/v1/storage/list/*path` | RequireAdmin (route) | 401 | 403 | 400 |
 | GET | `/api/v1/storage/roots` | auth | 401 | 200 | 200 |
-| POST | `/api/v1/storage/roots` | RequireAdmin | 401 | 403 | skip |
+| POST | `/api/v1/storage/roots` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/storage-roots` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/storage-roots/:id/status` | auth | 401 | 404 | 404 |
-| POST | `/api/v1/scans` | RequireAdmin | 401 | 403 | skip |
+| POST | `/api/v1/scans` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/scans` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/scans/:job_id` | auth | 401 | 404 | 404 |
 | GET | `/api/v1/media-types` | auth | 401 | 200 | 200 |
@@ -271,6 +276,3 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/localization/translations` | auth | 401 | 501 | 501 |
 | GET | `/api/v1/localization/stats` | auth | 401 | 501 | 501 |
 | GET | `/api/v1/recommendations/by-type` | auth | 401 | 501 | 501 |
-
-
-Not covered by the table: WebSocket message authorisation after `/ws` upgrade; routes registered by code outside the three files above (none found by grep); `internal/monitoring.StartPrometheusServer` (unused, see `FOLLOW_UPS_NEXT_PHASE.md` AZ2-3).
