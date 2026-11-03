@@ -29,8 +29,17 @@ GO_STATUS="not-run"; INT_STATUS="not-run"; TS_STATUS="not-run"; CONTRACT_STATUS=
 # is_skipped STATUS: true when STATUS starts with SKIPPED
 is_skipped() { [ "${1#SKIPPED}" != "$1" ]; }
 # status_mark STATUS: tick / skip / cross glyph for the summary
-status_mark() { if [ "$1" = PASSED ]; then echo "✅"; elif is_skipped "$1"; then echo "⏭️"; else echo "❌"; fi; }
+status_mark() { if [ "${1#PASSED}" != "$1" ]; then echo "✅"; elif is_skipped "$1"; then echo "⏭️"; else echo "❌"; fi; }
 # any_skipped: true when a skip-capable stage was skipped
+# skipped_list: names the skipped stages
+skipped_list() {
+    local out="" n v
+    for n in E2E PERF SEC CONTRACT; do
+        v="${n}_STATUS"; v="${!v}"
+        if is_skipped "$v"; then out="${out:+$out; }$n: $v"; fi
+    done
+    echo "$out"
+}
 any_skipped() { is_skipped "$E2E_STATUS" || is_skipped "$PERF_STATUS" || is_skipped "$SEC_STATUS" || is_skipped "$CONTRACT_STATUS"; }
 
 mkdir -p "${REPORTS_DIR}/${TIMESTAMP}"
@@ -226,10 +235,14 @@ run_linting() {
         log_success "Go formatting passed"
     fi
     
+    local vet_failed=0 eslint_issues=0
     if go vet ./... > "../${REPORTS_DIR}/${TIMESTAMP}/go-vet.log" 2>&1; then
         log_success "Go vet passed"
     else
-        log_warning "Go vet found issues"
+        # project rule: go vet ./... must pass with zero warnings
+        log_error "Go vet failed"
+        vet_failed=1
+        OVERALL_EXIT_CODE=1
     fi
     
     cd ..
@@ -242,14 +255,18 @@ run_linting() {
     if npm run lint > "../${REPORTS_DIR}/${TIMESTAMP}/eslint.log" 2>&1; then
         log_success "ESLint passed"
     else
+        # policy (unchanged): ESLint findings are surfaced, not fatal; the row says so
         log_warning "ESLint found issues"
+        eslint_issues=1
     fi
     
     log_info "Running TypeScript type check..."
     
     if npm run type-check > "../${REPORTS_DIR}/${TIMESTAMP}/tsc.log" 2>&1; then
         log_success "TypeScript type check passed"
-        LINT_STATUS="PASSED"
+        if [ "$vet_failed" = 1 ]; then LINT_STATUS="FAILED (go vet)"
+        elif [ "$eslint_issues" = 1 ]; then LINT_STATUS="PASSED (eslint issues)"
+        else LINT_STATUS="PASSED"; fi
     else
         log_error "TypeScript type check failed"
         LINT_STATUS="FAILED"
@@ -335,7 +352,7 @@ generate_test_summary() {
 
 **Date:** $(date)
 **Test Run ID:** ${TIMESTAMP}
-**Status:** $(if [ $OVERALL_EXIT_CODE -ne 0 ]; then echo "❌ FAILED"; elif any_skipped; then echo "⚠️ PASSED WITH SKIPS (E2E: ${E2E_STATUS}; Performance: ${PERF_STATUS}; Security: ${SEC_STATUS})"; else echo "✅ PASSED"; fi)
+**Status:** $(if [ $OVERALL_EXIT_CODE -ne 0 ]; then echo "❌ FAILED"; elif any_skipped; then echo "⚠️ PASSED WITH SKIPS ($(skipped_list))"; else echo "✅ PASSED"; fi)
 
 ## Tests Executed
 
@@ -411,7 +428,7 @@ main() {
     print_header "TEST EXECUTION COMPLETE"
     
     if [ $OVERALL_EXIT_CODE -eq 0 ] && any_skipped; then
-        log_warning "Tests passed, but a stage was SKIPPED (E2E: ${E2E_STATUS}; Performance: ${PERF_STATUS}; Security: ${SEC_STATUS}); this is not a full pass"
+        log_warning "Tests passed, but a stage was SKIPPED ($(skipped_list)); this is not a full pass"
         log_info "Review detailed reports at: ${REPORTS_DIR}/${TIMESTAMP}/"
     elif [ $OVERALL_EXIT_CODE -eq 0 ]; then
         log_success "All tests passed successfully!"

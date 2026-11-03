@@ -99,4 +99,22 @@ grep -q '✅ Go Unit' <<<"$S" && bad "F4 summary ticks failed Go unit tests" || 
 O="$(mainrun PASSED PASSED 'SKIPPED (reason: script_not_found)' 0)"
 grep -q 'not a full pass' <<<"$O" && grep -q '^RC=0' <<<"$O" && ok "F5 main: security skipped -> pass-with-skips message, rc 0" || bad "F5 main: sec skip branch: $O"
 
+# R3-F3: go vet / ESLint / type-check in run_linting
+lint() { # $1 = go fail-on args, $2 = npm fail-on subcommand ; prints OVERALL and LINT_STATUS
+  rm -f -- "${T:?}/stage.out"
+  ( cd "$C" && env PATH="$G:$SH:$PATH" SHIM_GO_FAIL_ON="$1" SHIM_NPM_FAIL_ON="$2" "$BASH_BIN" -c 'source "$1/scripts/run-all-tests-comprehensive.sh" >/dev/null 2>&1; run_linting >"$2/stage.out" 2>&1; echo "OVERALL=$OVERALL_EXIT_CODE STATUS=$LINT_STATUS"' _ "$REPO" "$T" )
+}
+printf '#!/usr/bin/env bash\n[ -n "${SHIM_NPM_FAIL_ON:-}" ] && { [ "${2:-}" = "$SHIM_NPM_FAIL_ON" ] || [ "${1:-}" = "$SHIM_NPM_FAIL_ON" ]; } && exit 1\nexit 0\n' >"$SH/npm"; chmod +x "$SH/npm"
+mkdir -p "$C/catalog-web"
+check "R3-F3 lint: go vet failure sets OVERALL=1 and a FAILED row" "$(lint 'vet ./...' '')" "OVERALL=1 STATUS=FAILED (go vet)"
+check "R3-F3 lint: type-check failure -> FAILED" "$(lint '' 'type-check')" "OVERALL=1 STATUS=FAILED"
+check "R3-F3 lint: ESLint issues alone are surfaced in the row, not fatal" "$(lint '' 'lint')" "OVERALL=0 STATUS=PASSED (eslint issues)"
+check "R3-F3 lint: golden-good -> PASSED" "$(lint '' '')" "OVERALL=0 STATUS=PASSED"
+S="$( cd "$C" && bash -c 'source "$1/scripts/run-all-tests-comprehensive.sh" >/dev/null 2>&1; LINT_STATUS="FAILED (go vet)"; generate_test_summary >/dev/null 2>&1; cat "${REPORTS_DIR}/${TIMESTAMP}/TEST_SUMMARY.md"' _ "$REPO" )"
+grep -q '✅ Linting' <<<"$S" && bad "R3-F3 summary ticks a failed lint row" || ok "R3-F3 summary does not tick a failed lint row"
+S="$( cd "$C" && bash -c 'source "$1/scripts/run-all-tests-comprehensive.sh" >/dev/null 2>&1; LINT_STATUS="PASSED (eslint issues)"; generate_test_summary >/dev/null 2>&1; cat "${REPORTS_DIR}/${TIMESTAMP}/TEST_SUMMARY.md"' _ "$REPO" )"
+grep -q '✅ Linting.*eslint issues' <<<"$S" && ok "R3-F3 summary ticks a PASSED (eslint issues) row and says so" || bad "R3-F3 eslint row wrong"
+# R3-F8: Status line and final warning name every skipped stage, including contract
+S="$( cd "$C" && bash -c 'source "$1/scripts/run-all-tests-comprehensive.sh" >/dev/null 2>&1; CONTRACT_STATUS="SKIPPED (reason: script_not_found)"; PERF_STATUS=PASSED; generate_test_summary >/dev/null 2>&1; cat "${REPORTS_DIR}/${TIMESTAMP}/TEST_SUMMARY.md"' _ "$REPO" )"
+grep -q 'PASSED WITH SKIPS (CONTRACT: SKIPPED (reason: script_not_found))' <<<"$S" && ok "R3-F8 Status line names the skipped contract stage" || bad "R3-F8 status line: $(grep Status <<<"$S")"
 echo "failures: $FAILS"; [ "$FAILS" -eq 0 ]

@@ -17,7 +17,7 @@ printf '#!/usr/bin/env bash\n[ -n "${SHIM_NPM_FAIL_ON:-}" ] && { [ "${2:-}" = "$
 printf '#!/usr/bin/env bash\nexit 0\n' >"$SH/npx"
 printf '#!/usr/bin/env bash\n[ "${SHIM_SHA_FAIL:-0}" = 1 ] && exit 1\ncase "$*" in *"${SHIM_SHA_FAIL_MATCH:-@@none@@}"*) exit 1;; esac\nexec "$SHIM_REAL_SHA" "$@"\n' >"$SH/sha256sum"
 printf '#!/usr/bin/env bash\n# fails when SHIM_GO_FAIL_ON equals the go subcommand (test/build/mod)\n[ -n "${SHIM_GO_FAIL_ON:-}" ] && [ "${1:-}" = "$SHIM_GO_FAIL_ON" ] && exit 1\nexit 0\n' >"$SH/go"
-printf '#!/usr/bin/env bash\n[ "${SHIM_ADB_CONNECT_FAIL:-0}" = 1 ] && [ "${1:-}" = connect ] && exit 1\ncase "$*" in *dumpsys*) [ "${SHIM_ADB_NOLAUNCH:-0}" = 1 ] || echo catalogizer;; esac\nexit 0\n' >"$SH/adb"
+printf '#!/usr/bin/env bash\n[ "${SHIM_ADB_CONNECT_FAIL:-0}" = 1 ] && [ "${1:-}" = connect ] && exit 1\ncase "$*" in *dumpsys*) [ "${SHIM_ADB_NOLAUNCH:-0}" = 1 ] || { echo catalogizer; [ "${SHIM_ADB_BIG:-0}" = 1 ] && for i in $(seq 1 3000); do printf "%%0100d\\n" 0; done; };; esac\nexit 0\n' >"$SH/adb"
 chmod +x "$SH"/*
 REAL_SHA="$(command -v sha256sum)"
 
@@ -127,6 +127,7 @@ mainx() { # $@ = env; runs main() with phases 0-8 stubbed, phase 9 and 10 real
   ( cd "$T" && env PATH="$SH:$PATH" BTR_PROJECT_DIR="$P" SHIM_REAL_SHA="$REAL_SHA" "$@" "$BASH_BIN" -c '
       source "$1/scripts/build-test-release.sh" >/dev/null 2>&1
       for f in phase_0_signing_keys phase_1_health_checks phase_2_api_client phase_3_backend_api phase_4_web_frontend phase_5_desktop_apps phase_6_android_apps phase_7_emulator_tests phase_8_coverage_validation; do eval "$f(){ record_phase $f PASS; }"; done
+      phase_8_coverage_validation(){ : >"$RELEASES_DIR/catalog-api-x"; record_phase phase_8 PASS; }   # leaves one artifact so phase 9 has something to checksum
       phase_7_emulator_tests(){ PHASE_NOTES+=("Emulator Tests: SKIPPED reason=x"); record_phase Emulator SKIP; }
       main' _ "$REPO" 2>&1; echo "RC=$?" ) | sed 's/\x1b\[[0-9;]*m//g'
 }
@@ -134,4 +135,30 @@ mkdir -p "$P/releases";
 O="$(mainx SHIM_SHA_FAIL=1)"
 grep -q 'Build Pipeline Summary' <<<"$O" && grep -q 'Phase 10\|Generate Reports' <<<"$O" && [ -s "$P/reports/build-report.json" ] && grep -q '^RC=1' <<<"$O" && grep -q '\[FAIL\] Artifact Collection' <<<"$O" && ok "F2: phase-9 failure still produces report + summary and exits non-zero" || bad "F2: main aborted early: $(tail -12 <<<"$O")"
 grep -q '\[NOTE\] Emulator Tests: SKIPPED' <<<"$O" && grep -q '\[SKIP\] Emulator' <<<"$O" && ok "F9: notes print under [NOTE], skipped phases under [SKIP]" || bad "F9: labels wrong: $(tail -12 <<<"$O")"
+# ---------------- round 3 ----------------
+# F2: a launched app with a LARGE dumpsys dump (matching line first, lots of output after) must be PASS, not "did not launch" (SIGPIPE 141 under pipefail)
+rm -rf -- "${P:?}/releases"; mkdir -p "$P/releases/android/catalogizer-android"; : >"$P/releases/android/catalogizer-android/app.apk"
+expect "R3-F2 phase 7: launched app with large dumpsys output -> PASS (no SIGPIPE false FAIL)" "$(phasex phase_7_emulator_tests SKIP_EMULATOR_TESTS=false SHIM_ADB_BIG=1)" "PASS:Emulator Tests" 0
+# F4: phase 0 with no signing script is SKIP
+expect "R3-F4 phase 0: signing script absent -> SKIP (not PASS)" "$(phasex phase_0_signing_keys)" "SKIP:Signing Keys" 0
+# F5: phase 4 npm install failing with no dist -> FAIL
+mv "$P/catalog-web/dist" "$T/dist.bak"
+expect "R3-F5 phase 4: npm install failing and no dist -> FAIL" "$(phasex phase_4_web_frontend SHIM_NPM_FAIL_ON=install)" "FAIL:Web Frontend" 1
+mv "$T/dist.bak" "$P/catalog-web/dist"
+# F1 + F6: reports render SKIP distinctly and the Passed count excludes skips
+reports() { ( cd "$T" && env PATH="$SH:$PATH" BTR_PROJECT_DIR="$P" "$BASH_BIN" -c '
+    source "$1/scripts/build-test-release.sh" >/dev/null 2>&1
+    mkdir -p "$REPORTS_DIR"
+    record_phase "Alpha" PASS >/dev/null 2>&1; record_phase "Beta" SKIP >/dev/null 2>&1; record_phase "Gamma" FAIL >/dev/null 2>&1
+    phase_10_generate_reports >/dev/null 2>&1' _ "$REPO" ); }
+reports
+H="$P/reports/build-report.html"; J="$P/reports/build-report.json"
+grep -q 'Beta</span><span class="status-skip">SKIP' "$H" && ok "R3-F1 HTML renders a SKIP phase as SKIP (status-skip)" || bad "R3-F1 HTML SKIP row wrong: $(grep Beta "$H")"
+grep -q 'Beta</span><span class="status-pass"' "$H" && bad "R3-F1 HTML shows the skipped phase as PASS" || ok "R3-F1 HTML never shows the skipped phase as PASS"
+grep -q 'Alpha</span><span class="status-pass">PASS' "$H" && grep -q 'Gamma</span><span class="status-fail">FAIL' "$H" && ok "R3-F1 HTML golden: PASS and FAIL rows unchanged" || bad "R3-F1 HTML golden rows wrong"
+grep -q '<h3>Skipped</h3><p class="skip">1</p>' "$H" && ok "R3-F1 HTML has a Skipped metric" || bad "R3-F1 HTML lacks Skipped metric"
+grep -q '"skipped_phases": 1' "$J" && grep -q '"passed_phases": 1' "$J" && ok "R3-F1/F6 JSON: skipped_phases=1 and the skip is NOT counted in passed_phases" || bad "R3-F1/F6 JSON counts wrong: $(head -9 "$J")"
+# F7: summary and final line with skips
+O="$(mainx)"
+grep -q 'Skipped:  1' <<<"$O" && grep -q 'not a full pass' <<<"$O" && ! grep -q 'completed successfully!' <<<"$O" && grep -q '^RC=0' <<<"$O" && ok "R3-F7 main: skips -> Skipped count, qualified final line, rc 0" || bad "R3-F7 main skip summary: $(tail -14 <<<"$O")"
 echo "failures: $FAILS"; [ "$FAILS" -eq 0 ]

@@ -22,6 +22,7 @@ PHASE_NOTES=()
 TOTAL_PHASES=0
 PASSED_PHASES=0
 FAILED_PHASES=0
+SKIPPED_PHASES=0
 START_TIME=$(date +%s)
 
 # Colors
@@ -44,6 +45,7 @@ record_phase() {
     PHASE_RESULTS+=("$status:$name")
     TOTAL_PHASES=$((TOTAL_PHASES + 1))
     if [ "$status" = "SKIP" ]; then
+        SKIPPED_PHASES=$((SKIPPED_PHASES + 1))
         log_warn "Phase '$name' SKIPPED (not counted as passed)"
     elif [ "$status" = "PASS" ]; then
         PASSED_PHASES=$((PASSED_PHASES + 1))
@@ -74,8 +76,9 @@ phase_0_signing_keys() {
     if [ -x "$PROJECT_DIR/docker/signing/generate-keys.sh" ]; then
         "$PROJECT_DIR/docker/signing/generate-keys.sh" && record_phase "Signing Keys" "PASS" || record_phase "Signing Keys" "FAIL"
     else
-        log_warn "Signing key script not found or not executable, skipping"
-        record_phase "Signing Keys" "PASS"
+        log_warn "Signing key script not found or not executable, SKIPPED"
+        PHASE_NOTES+=("Signing Keys: SKIPPED reason=tool_absent (docker/signing/generate-keys.sh)")
+        record_phase "Signing Keys" "SKIP"
     fi
 }
 
@@ -198,13 +201,12 @@ phase_3_backend_api() {
 phase_4_web_frontend() {
     log_phase "Phase 4: Test & Build - Web Frontend"
 
-    cd "$PROJECT_DIR/catalog-web"
-
-    log_step "Installing dependencies..."
-    npm install
-
     # E4: a failing step fails the phase; it is never swallowed and never reported PASS.
     local phase_rc=0
+    cd "$PROJECT_DIR/catalog-web" || { log_error "catalog-web directory missing"; record_phase "Web Frontend" "FAIL"; return 1; }
+
+    log_step "Installing dependencies..."
+    npm install || { log_error "Web npm install FAILED"; phase_rc=1; }
 
     log_step "Running lint and type-check..."
     # Lint findings are surfaced (warning + phase note), like run-all-tests-comprehensive.sh; a type error fails the phase.
@@ -234,7 +236,7 @@ phase_4_web_frontend() {
 
     # Copy web build to releases
     mkdir -p "$RELEASES_DIR/linux/catalog-web"
-    cp -r dist/* "$RELEASES_DIR/linux/catalog-web/"
+    cp -r dist/* "$RELEASES_DIR/linux/catalog-web/" || { log_error "Web dist copy FAILED"; phase_rc=1; }
 
     # E2E tests (optional, requires running server and ADMIN_PASSWORD from the environment)
     if [ "$SKIP_E2E" = "true" ]; then
@@ -405,7 +407,8 @@ phase_7_emulator_tests() {
     sleep 5
 
     log_step "Waiting for emulator to boot..."
-    adb -s android-emulator:5555 wait-for-device || { log_error "wait-for-device FAILED"; phase_rc=1; }
+    # bounded: an emulator that never appears must not hang the pipeline (adb connect exit semantics for "failed to connect" are version-dependent: UNCONFIRMED, hence the launch check below)
+    timeout 300 adb -s android-emulator:5555 wait-for-device || { log_error "wait-for-device FAILED"; phase_rc=1; }
     sleep 10
 
     for apk in "$RELEASES_DIR"/android/catalogizer-android/*.apk; do
@@ -418,7 +421,10 @@ phase_7_emulator_tests() {
         adb -s android-emulator:5555 shell am start -n com.catalogizer.android/.MainActivity 2>&1 || log_warn "am start failed (the activity check below decides)"
         sleep 5
 
-        if adb -s android-emulator:5555 shell dumpsys activity activities 2>/dev/null | grep -q "catalogizer"; then
+        # capture first: `adb ... | grep -q` gets SIGPIPE (141 under pipefail) once grep exits on the first match of large dumpsys output
+        local act_out
+        act_out="$(adb -s android-emulator:5555 shell dumpsys activity activities 2>/dev/null)" || act_out=""
+        if grep -q "catalogizer" <<<"$act_out"; then
             log_info "App launched successfully"
         else
             log_error "App did not launch"
@@ -562,6 +568,7 @@ phase_10_generate_reports() {
   "total_phases": $TOTAL_PHASES,
   "passed_phases": $PASSED_PHASES,
   "failed_phases": $FAILED_PHASES,
+  "skipped_phases": $SKIPPED_PHASES,
   "phases": [
 $(for result in "${PHASE_RESULTS[@]}"; do
     local status="${result%%:*}"
@@ -587,11 +594,13 @@ REPORT_EOF
         .metric p { margin: 8px 0 0; font-size: 28px; font-weight: bold; }
         .pass { color: #28a745; }
         .fail { color: #dc3545; }
+        .skip { color: #b8860b; }
         .section { background: white; margin: 15px 0; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         .phase { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e9ecef; }
         .phase:last-child { border-bottom: none; }
         .status-pass { color: #28a745; font-weight: bold; }
         .status-fail { color: #dc3545; font-weight: bold; }
+        .status-skip { color: #b8860b; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -607,6 +616,7 @@ HTML_HEADER
         <div class="metric"><h3>Total Phases</h3><p>$TOTAL_PHASES</p></div>
         <div class="metric"><h3>Passed</h3><p class="pass">$PASSED_PHASES</p></div>
         <div class="metric"><h3>Failed</h3><p class="fail">$FAILED_PHASES</p></div>
+        <div class="metric"><h3>Skipped</h3><p class="skip">$SKIPPED_PHASES</p></div>
     </div>
     <div class="section">
         <h2>Phase Results</h2>
@@ -620,6 +630,9 @@ HTML_BODY
         if [ "$status" = "FAIL" ]; then
             css_class="status-fail"
             symbol="FAIL"
+        elif [ "$status" = "SKIP" ]; then
+            css_class="status-skip"
+            symbol="SKIP"
         fi
         echo "        <div class=\"phase\"><span>$name</span><span class=\"$css_class\">$symbol</span></div>" >> "$REPORTS_DIR/build-report.html"
     done
@@ -684,6 +697,7 @@ main() {
     echo -e "  Phases:   $TOTAL_PHASES total"
     echo -e "  ${GREEN}Passed:   $PASSED_PHASES${NC}"
     echo -e "  ${RED}Failed:   $FAILED_PHASES${NC}"
+    echo -e "  ${YELLOW}Skipped:  $SKIPPED_PHASES${NC} (not counted as passed)"
     echo ""
 
     for result in "${PHASE_RESULTS[@]}"; do
@@ -708,6 +722,9 @@ main() {
     if [ "$FAILED_PHASES" -gt 0 ]; then
         echo -e "${RED}Build pipeline completed with $FAILED_PHASES failure(s)${NC}"
         exit 1
+    elif [ "$SKIPPED_PHASES" -gt 0 ]; then
+        echo -e "${YELLOW}Build pipeline completed with no failures, but $SKIPPED_PHASES phase(s) were SKIPPED (not a full pass)${NC}"
+        exit 0
     else
         echo -e "${GREEN}Build pipeline completed successfully!${NC}"
         exit 0
