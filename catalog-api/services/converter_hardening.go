@@ -232,7 +232,7 @@ func runHardenedTool(ctx context.Context, name string, args []string) error {
 }
 
 // imageMagickCoder returns the coder prefix forced on an input of the given extension, or "" when
-// no forcing applies (svg is checked by checkSVGSource instead).
+// the svg coder is forced too; the file itself is the re-serialised copy from readCheckedSVG.
 func imageMagickCoder(path string) (string, error) {
 	ext := strings.ToLower(strings.TrimPrefix(filepath.Ext(path), "."))
 	switch ext {
@@ -251,7 +251,7 @@ func imageMagickCoder(path string) (string, error) {
 	case "pdf":
 		return "pdf:", nil
 	case "svg":
-		return "", nil
+		return "svg:", nil
 	}
 	return "", fmt.Errorf("source file extension %q is not a supported image input", filepath.Ext(path))
 }
@@ -283,90 +283,198 @@ func readCheckedSVG(path string) ([]byte, error) {
 	if len(raw) > svgMaxBytes {
 		return nil, fmt.Errorf("SVG refused: larger than %d bytes", svgMaxBytes)
 	}
-	if err := checkSVGBytes(raw); err != nil {
-		return nil, err
-	}
-	return raw, nil
+	return sanitizeSVG(raw)
 }
 
+const (
+	svgNS   = "http://www.w3.org/2000/svg"
+	xlinkNS = "http://www.w3.org/1999/xlink"
+	xmlNS   = "http://www.w3.org/XML/1998/namespace"
+)
+
+// svgName is the only shape of element/attribute local name that is re-emitted.
+var svgNameOK = func(n string) bool {
+	if n == "" {
+		return false
+	}
+	for i, r := range n {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r == '_':
+		case i > 0 && (r >= '0' && r <= '9' || r == '-' || r == '.'):
+		default:
+			return false
+		}
+	}
+	return true
+}
+
+// checkSVGBytes validates raw (see sanitizeSVG).
 func checkSVGBytes(raw []byte) error {
+	_, err := sanitizeSVG(raw)
+	return err
+}
+
+// sanitizeSVG does not trust Go's XML parse as a model of the renderer (libxml2/Inkscape resolve
+// namespace prefixes, duplicate declarations and odd names differently). It RE-SERIALISES the
+// document from the parsed tree: only elements in the SVG namespace, only unprefixed / SVG /
+// xlink:* / xml:* attributes under canonical fixed prefixes, one xmlns declaration pair on the root;
+// comments, processing instructions, DOCTYPE, foreign elements (with their subtree), foreign or
+// ambiguous attributes and every original namespace declaration are dropped. The renderer is given
+// THESE bytes, so it can only see what is allowed here. A prefixed attribute whose prefix Go maps
+// to the empty namespace is re-emitted as its bare local name, which no delegate treats as a path.
+func sanitizeSVG(raw []byte) ([]byte, error) {
 	dec := xml.NewDecoder(bytes.NewReader(raw))
 	dec.Strict = false
 	dec.Entity = nil
+	var out bytes.Buffer
+	var stack []string // emitted element names; "" marks a dropped element
 	inStyle := 0
-	sawRoot := false
+	sawRoot, rootDone := false, false
+	skip := 0 // depth inside a dropped subtree
 	for {
 		tok, err := dec.Token()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("SVG refused: not well-formed XML: %w", err)
+			return nil, fmt.Errorf("SVG refused: not well-formed XML: %w", err)
 		}
 		switch t := tok.(type) {
 		case xml.Directive:
-			return fmt.Errorf("%w (DOCTYPE/entity declaration)", errSVGExternal)
+			return nil, fmt.Errorf("%w (DOCTYPE/entity declaration)", errSVGExternal)
 		case xml.ProcInst:
 			if strings.EqualFold(t.Target, "xml-stylesheet") {
-				return fmt.Errorf("%w (xml-stylesheet)", errSVGExternal)
+				return nil, fmt.Errorf("%w (xml-stylesheet)", errSVGExternal)
 			}
+		case xml.Comment:
 		case xml.StartElement:
-			sawRoot = true
+			if rootDone {
+				return nil, errors.New("SVG refused: content after the root element")
+			}
+			if skip > 0 {
+				skip++
+				continue
+			}
+			if !sawRoot && (t.Name.Space != svgNS || t.Name.Local != "svg") {
+				return nil, errors.New("SVG refused: the root element must be <svg> in the SVG namespace")
+			}
 			name := strings.ToLower(t.Name.Local)
 			switch name {
 			case "script", "foreignobject", "iframe", "embed", "object", "audio", "video", "handler", "listener":
-				return fmt.Errorf("%w (<%s>)", errSVGExternal, name)
-			case "style":
-				inStyle++
+				return nil, fmt.Errorf("%w (<%s>)", errSVGExternal, name)
 			}
+			if t.Name.Space != svgNS || !svgNameOK(t.Name.Local) {
+				skip = 1 // foreign element: dropped with its subtree
+				continue
+			}
+			out.WriteString("<" + t.Name.Local)
+			if !sawRoot {
+				out.WriteString(` xmlns="` + svgNS + `" xmlns:xlink="` + xlinkNS + `"`)
+			}
+			sawRoot = true
+			seen := map[string]bool{}
 			for _, a := range t.Attr {
-				if !svgAttrNamespaceAllowed(a.Name) {
-					return fmt.Errorf("%w (attribute %s:%s in a foreign namespace)", errSVGExternal, a.Name.Space, a.Name.Local)
+				if a.Name.Space == "xmlns" || (a.Name.Space == "" && a.Name.Local == "xmlns") {
+					continue // original declarations are dropped
 				}
+				var emit string
+				switch a.Name.Space {
+				case "", svgNS:
+					emit = a.Name.Local
+				case xlinkNS:
+					switch a.Name.Local {
+					case "href", "title", "role", "arcrole", "show", "actuate", "type":
+					default:
+						return nil, fmt.Errorf("%w (attribute xlink:%s)", errSVGExternal, a.Name.Local)
+					}
+					emit = "xlink:" + a.Name.Local
+				case xmlNS:
+					emit = "xml:" + a.Name.Local
+				default:
+					// foreign or ambiguous namespace (sodipodi, inkscape, a literal "xml" bound
+					// through xmlns:x="xml", ...): refuse, never guess how a delegate reads it
+					return nil, fmt.Errorf("%w (attribute %s:%s in a foreign namespace)", errSVGExternal, a.Name.Space, a.Name.Local)
+				}
+				if !svgNameOK(a.Name.Local) {
+					return nil, fmt.Errorf("SVG refused: unusual attribute name %.40q", a.Name.Local)
+				}
+				if seen[emit] {
+					return nil, fmt.Errorf("SVG refused: duplicate attribute %s", emit)
+				}
+				seen[emit] = true
 				an := strings.ToLower(a.Name.Local)
 				v := strings.TrimSpace(a.Value)
 				switch {
 				case an == "href" || an == "src" || an == "data":
 					if name == "a" {
-						continue // a link is never fetched while rendering
+						continue // a link is never fetched while rendering: dropped
 					}
 					if !safeSVGRef(v) {
-						return fmt.Errorf("%w (%s=%.60q)", errSVGExternal, an, v)
+						return nil, fmt.Errorf("%w (%s=%.60q)", errSVGExternal, an, v)
 					}
 				case strings.HasPrefix(an, "on"):
-					return fmt.Errorf("%w (event handler %s)", errSVGExternal, an)
+					return nil, fmt.Errorf("%w (event handler %s)", errSVGExternal, an)
 				default:
-					if badCSSRef(v) {
-						return fmt.Errorf("%w (%s=%.60q)", errSVGExternal, an, v)
+					// no SVG attribute value is a file path or URL (hrefs are handled above): an
+					// absolute path or scheme in any other attribute is a delegate-specific path
+					// attribute (absref and friends) and is refused
+					if badCSSRef(v) || strings.HasPrefix(v, "/") || strings.HasPrefix(v, "\\") ||
+						strings.Contains(v, "://") || strings.Contains(strings.ToLower(v), "file:") {
+						return nil, fmt.Errorf("%w (%s=%.60q)", errSVGExternal, an, v)
 					}
 				}
+				out.WriteString(" " + emit + `="`)
+				_ = xml.EscapeText(&out, []byte(a.Value))
+				out.WriteString(`"`)
+			}
+			out.WriteString(">")
+			stack = append(stack, t.Name.Local)
+			if name == "style" {
+				inStyle++
 			}
 		case xml.EndElement:
-			if strings.EqualFold(t.Name.Local, "style") && inStyle > 0 {
+			if skip > 0 {
+				skip--
+				continue
+			}
+			if len(stack) == 0 {
+				continue
+			}
+			n := stack[len(stack)-1]
+			stack = stack[:len(stack)-1]
+			out.WriteString("</" + n + ">")
+			if strings.EqualFold(n, "style") && inStyle > 0 {
 				inStyle--
 			}
-		case xml.CharData:
-			if inStyle > 0 && badCSSRef(string(t)) {
-				return fmt.Errorf("%w (style)", errSVGExternal)
+			if len(stack) == 0 {
+				rootDone = true
 			}
+		case xml.CharData:
+			if !sawRoot {
+				if len(bytes.TrimSpace(t)) != 0 {
+					return nil, errors.New("SVG refused: text before the root element (content sniffing)")
+				}
+				continue
+			}
+			if skip > 0 || rootDone {
+				if rootDone && len(bytes.TrimSpace(t)) != 0 {
+					return nil, errors.New("SVG refused: text after the root element")
+				}
+				continue
+			}
+			if inStyle > 0 && badCSSRef(string(t)) {
+				return nil, fmt.Errorf("%w (style)", errSVGExternal)
+			}
+			_ = xml.EscapeText(&out, t)
 		}
 	}
 	if !sawRoot {
-		return fmt.Errorf("SVG refused: no root element")
+		return nil, errors.New("SVG refused: no root element")
 	}
-	return nil
-}
-
-// svgAttrNamespaceAllowed: attributes may be unprefixed or in the svg, xlink or xml namespaces (or
-// be xmlns declarations). Anything else (sodipodi:absref, inkscape:*, vendor extensions) is read
-// by delegates such as Inkscape as a file path and is refused.
-func svgAttrNamespaceAllowed(n xml.Name) bool {
-	switch n.Space {
-	case "", "xmlns", "xml", "http://www.w3.org/2000/svg", "http://www.w3.org/1999/xlink",
-		"http://www.w3.org/XML/1998/namespace":
-		return true
+	if len(stack) != 0 {
+		return nil, errors.New("SVG refused: unclosed element")
 	}
-	return false
+	return out.Bytes(), nil
 }
 
 // safeSVGRef: a reference is safe when it stays inside the document or is an inline raster/svg

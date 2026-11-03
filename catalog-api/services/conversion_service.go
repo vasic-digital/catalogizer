@@ -699,7 +699,7 @@ func (s *ConversionService) convertImage(job *models.ConversionJob) error {
 		return fmt.Errorf("imagemagick conversion failed: %w", perr)
 	}
 	source := job.SourcePath
-	if prefix == "" { // svg: render a private copy of exactly the bytes that were checked
+	if prefix == "svg:" { // svg: render a private copy of the re-serialised, checked document
 		raw, serr := readCheckedSVG(job.SourcePath)
 		if serr != nil {
 			return fmt.Errorf("imagemagick conversion failed: %w", serr)

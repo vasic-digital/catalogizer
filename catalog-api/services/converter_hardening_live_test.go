@@ -292,3 +292,145 @@ func TestHardenLive_ChildEnvironmentScrubbed(t *testing.T) {
 	}
 	assert.NotContains(t, string(raw), "s3cr3t")
 }
+
+// redLeak reports mean(r)-mean(g) of an image: the out-of-root victim is pure red on a white/transparent page.
+func redLeak(t *testing.T, png string) float64 {
+	t.Helper()
+	out, err := exec.Command("convert", png, "-background", "white", "-alpha", "remove", "-colorspace", "sRGB", "-format", "%[fx:mean.g-mean.r]", "info:").CombinedOutput()
+	require.NoError(t, err, "%s", out)
+	var v float64
+	_, serr := fmt.Sscanf(strings.TrimSpace(string(out)), "%g", &v)
+	require.NoError(t, serr, "%s", out)
+	return v
+}
+
+// Review round 2 N1/N2: parser differentials. Go's XML parse resolves prefixes differently from
+// libxml2, so the SVG is re-serialised and only the re-serialised bytes are rendered.
+func TestHardenLive_SVGParserDifferentialsNeverDrawOutsideFile(t *testing.T) {
+	needTools(t, "convert", "prlimit")
+	root, outside, _ := rv6ConvFixture(t)
+	victim := filepath.Join(outside, "victim.png")
+	out, err := exec.Command("convert", "-size", "40x40", "xc:red", victim).CombinedOutput()
+	require.NoError(t, err, "%s", out)
+	hdr := `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" `
+	img := `<image width="40" height="40" xlink:href="#nope" `
+	sod := "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+	cases := map[string]string{
+		"N1-empty-prefix-binding": hdr + `xmlns:sodipodi="" width="40" height="40">` + img + `sodipodi:absref="` + victim + `"/></svg>`,
+		"N2-duplicate-binding":    hdr + `xmlns:sodipodi="` + sod + `" xmlns:sodipodi="http://www.w3.org/1999/xlink" width="40" height="40">` + img + `sodipodi:absref="` + victim + `"/></svg>`,
+		"xml-literal-binding":     hdr + `xmlns:x="xml" width="40" height="40">` + img + `x:absref="` + victim + `"/></svg>`,
+		"bare-absref":             hdr + `width="40" height="40">` + img + `absref="` + victim + `"/></svg>`,
+		"default-ns-prefix-svg":   `<s:svg xmlns:s="http://www.w3.org/2000/svg" xmlns:sodipodi="" xmlns:xlink="http://www.w3.org/1999/xlink" width="40" height="40"><s:image width="40" height="40" xlink:href="#n" sodipodi:absref="` + victim + `"/></s:svg>`,
+	}
+	for name, svg := range cases {
+		t.Run(name, func(t *testing.T) {
+			src := filepath.Join(root, name+".svg")
+			require.NoError(t, os.WriteFile(src, []byte(svg), 0o644))
+			tgt := filepath.Join(root, name+".png")
+			cerr := (&ConversionService{}).convertImage(&models.ConversionJob{SourcePath: src, TargetPath: tgt})
+			if cerr == nil {
+				assert.Less(t, redLeak(t, tgt), 0.5, "the out-of-root red file was drawn")
+			}
+			// the path never survives re-serialisation as an attribute value
+			clean, serr := sanitizeSVG([]byte(svg))
+			assert.Error(t, serr, "a path-valued foreign attribute must be refused outright")
+			assert.NotContains(t, string(clean), victim)
+		})
+	}
+}
+
+// Review round 2: the parser-differential census. Each input must be refused or re-serialised
+// into something that carries no foreign namespace, comment, PI, DOCTYPE or declaration.
+func TestSanitizeSVG_DifferentialCensus(t *testing.T) {
+	refused := map[string]string{
+		"pdf-sniff":        "%PDF-1.4\n<svg xmlns=\"http://www.w3.org/2000/svg\"/>",
+		"ps-sniff":         "%!PS\n<svg xmlns=\"http://www.w3.org/2000/svg\"/>",
+		"bom-text":         "\ufeffjunk<svg xmlns=\"http://www.w3.org/2000/svg\"/>",
+		"doctype":          "<!DOCTYPE svg [<!ENTITY x SYSTEM \"file:///etc/passwd\">]><svg xmlns=\"http://www.w3.org/2000/svg\"/>",
+		"stylesheet-pi":    "<?xml-stylesheet href=\"/o.css\"?><svg xmlns=\"http://www.w3.org/2000/svg\"/>",
+		"no-namespace":     "<svg width=\"1\"/>",
+		"wrong-root":       "<html xmlns=\"http://www.w3.org/2000/svg\"/>",
+		"foreign-root":     "<svg xmlns=\"urn:x\"/>",
+		"utf16-decl":       "<?xml version=\"1.0\" encoding=\"UTF-16\"?><svg xmlns=\"http://www.w3.org/2000/svg\"/>",
+		"dup-attr":         "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1\" width=\"2\"/>",
+		"import":           "<svg xmlns=\"http://www.w3.org/2000/svg\"><style>@import \"/outside/s.css\";</style></svg>",
+		"import-cdata":     "<svg xmlns=\"http://www.w3.org/2000/svg\"><style><![CDATA[@import \"/outside/s.css\";]]></style></svg>",
+		"url-attr":         "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect fill=\"url(/outside/x.svg#a)\"/></svg>",
+		"style-attr-url":   "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect style=\"fill:url('file:///x')\"/></svg>",
+		"upper-script":     "<svg xmlns=\"http://www.w3.org/2000/svg\"><SCRIPT/></svg>",
+		"upper-href":       "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><image XLINK:HREF=\"/x\"/></svg>",
+		"xlink-abs":        "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><image xlink:href=\"/outside/v.png\"/></svg>",
+		"space-in-name":    "<svg xmlns=\"http://www.w3.org/2000/svg\"><image href =\"/x\"/></svg>",
+		"two-roots":        "<svg xmlns=\"http://www.w3.org/2000/svg\"/><svg xmlns=\"http://www.w3.org/2000/svg\"/>",
+		"unclosed":         "<svg xmlns=\"http://www.w3.org/2000/svg\"><g>",
+		"onload":           "<svg xmlns=\"http://www.w3.org/2000/svg\" onload=\"x()\"/>",
+		"sodipodi-decl":    "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:sodipodi=\"http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd\" sodipodi:absref=\"/o\"/>",
+		"abs-path-attr":    "<svg xmlns=\"http://www.w3.org/2000/svg\"><image absref=\"/outside/v.png\"/></svg>",
+		"xlink-absref":     "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"><image xlink:absref=\"v.png\"/></svg>",
+		"literal-xml-bind": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:x=\"xml\" x:space=\"preserve\"/>",
+	}
+	for name, in := range refused {
+		_, err := sanitizeSVG([]byte(in))
+		assert.Error(t, err, name)
+	}
+	// golden-FALSE: valid documents still pass; foreign elements/comments/PIs are dropped
+	good := "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!-- c --><svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xml:space=\"preserve\" width=\"20\" height=\"20\">\n<defs><linearGradient id=\"g\"><stop offset=\"0\" stop-color=\"red\"/></linearGradient></defs><foo:x xmlns:foo=\"urn:foo\"><rect/></foo:x><use xlink:href=\"#g\"/><a href=\"https://example.test\"><rect width=\"5\" height=\"5\" fill=\"url(#g)\"/></a><style><![CDATA[rect{fill:red}]]></style><text>a &amp; b &lt;</text></svg>"
+	out, err := sanitizeSVG([]byte(good))
+	require.NoError(t, err)
+	s := string(out)
+	for _, bad := range []string{"<!--", "<?", "foo", "example.test", "<rect/></foo"} {
+		assert.NotContains(t, s, bad)
+	}
+	for _, want := range []string{`xlink:href="#g"`, `fill="url(#g)"`, "<text>a &amp; b &lt;</text>", `xml:space="preserve"`} {
+		assert.Contains(t, s, want)
+	}
+	_, err = sanitizeSVG(out)
+	assert.NoError(t, err, "the output must itself pass")
+}
+
+// Review round 2 N4: @import in an SVG style is applied by Inkscape (measured); it is refused.
+func TestHardenLive_SVGStyleImportOutsideFileRefused(t *testing.T) {
+	needTools(t, "convert", "prlimit")
+	root, outside, _ := rv6ConvFixture(t)
+	css := filepath.Join(outside, "s.css")
+	require.NoError(t, os.WriteFile(css, []byte("rect{fill:#f00}"), 0o644))
+	src := filepath.Join(root, "imp.svg")
+	svg := `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><style>@import "` + css + `";</style><rect width="20" height="20"/></svg>`
+	require.NoError(t, os.WriteFile(src, []byte(svg), 0o644))
+	tgt := filepath.Join(root, "imp.png")
+	assert.Error(t, (&ConversionService{}).convertImage(&models.ConversionJob{SourcePath: src, TargetPath: tgt}))
+	_, serr := os.Stat(tgt)
+	assert.Error(t, serr)
+}
+
+// Review round 2 N3/N5: convert is handed the svg: coder and a PRIVATE re-serialised copy, never
+// the original path or its bytes.
+func TestHardenLive_SVGRenderedFromForcedCoderPrivateCopy(t *testing.T) {
+	needTools(t, "prlimit")
+	root, _, _ := rv6ConvFixture(t)
+	dir := t.TempDir()
+	rec := filepath.Join(dir, "args.txt")
+	fake := filepath.Join(dir, "convert")
+	// bake the paths in: the child environment is scrubbed
+	script := "#!/bin/sh\nfor a in \"$@\"; do printf '%s\\n' \"$a\" >> '" + rec + "'; done\nfor a in \"$@\"; do case \"$a\" in svg:*) cat \"${a#svg:}\" > '" + rec + ".content';; esac; done\nfor a; do last=\"$a\"; done\nprintf x > \"$last\"\n"
+	require.NoError(t, os.WriteFile(fake, []byte(script), 0o755))
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	src := filepath.Join(root, "orig.svg")
+	require.NoError(t, os.WriteFile(src, []byte(`<svg xmlns="http://www.w3.org/2000/svg" width="5" height="5"><!-- marker-comment --><rect width="5" height="5"/></svg>`), 0o644))
+	require.NoError(t, (&ConversionService{}).convertImage(&models.ConversionJob{SourcePath: src, TargetPath: filepath.Join(root, "orig.png")}))
+	args, err := os.ReadFile(rec)
+	require.NoError(t, err)
+	assert.NotContains(t, string(args), src, "the original path must not reach the renderer")
+	assert.Contains(t, string(args), "svg:")
+	content, err := os.ReadFile(rec + ".content")
+	require.NoError(t, err)
+	assert.NotContains(t, string(content), "marker-comment", "the renderer must get the re-serialised copy")
+}
+
+// A prefix bound to the literal "xmlns" cannot be told apart from a declaration by Go's parser;
+// the attribute is dropped, never emitted.
+func TestSanitizeSVG_LiteralXmlnsBindingDropped(t *testing.T) {
+	out, err := sanitizeSVG([]byte(`<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="xmlns" x:foo="1"/>`))
+	require.NoError(t, err)
+	assert.NotContains(t, string(out), "foo")
+}

@@ -102,7 +102,7 @@ func TestHardenSVG_Check(t *testing.T) {
 
 func TestHardenCoder_ForcedFromExtension(t *testing.T) {
 	for in, want := range map[string]string{"/d/a.PNG": "png:", "/d/a.jpg": "jpeg:", "/d/a.jpeg": "jpeg:", "/d/a.gif": "gif:",
-		"/d/a.bmp": "bmp:", "/d/a.tiff": "tiff:", "/d/a.webp": "webp:", "/d/a.pdf": "pdf:", "/d/a.svg": ""} {
+		"/d/a.bmp": "bmp:", "/d/a.tiff": "tiff:", "/d/a.webp": "webp:", "/d/a.pdf": "pdf:", "/d/a.svg": "svg:"} {
 		got, err := imageMagickCoder(in)
 		require.NoError(t, err, in)
 		assert.Equal(t, want, got, in)
