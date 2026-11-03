@@ -525,3 +525,12 @@ Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/ap
 - XSS rule nits: `behavior:url(...)` (old Internet Explorer only) is not detected; the open-tag rule's `<\s*` also flags prose such as "x < link y" (browsers do not parse `< tag` as a tag); drop the `\s*` after `<`.
 - catalog-web: after change-password the success toast is followed by a redirect to /login on the next 401; log out explicitly or keep the caller's own session.
 - Pre-existing on main (not caused by this branch): admin "suspended" status sets IsLocked but `UserRepository.Update` does not persist `is_locked` and no sessions are revoked; `tests/stress` CacheWriteThroughput and middleware TestTokenBucketRedisRateLimit_Unit_Miniredis_RefillAfterEmpty are flaky under load (section 11.4.248 quarantine candidates).
+
+## Conversion worker fix follow-ups (minor)
+
+- `UpdateJob` writes the whole row, so a `cancel` that lands while a job is running is overwritten by `completed`/`failed` when the tool exits; make terminal writes conditional (`WHERE status = 'running'`) and kill the tool on cancel.
+- The worker requeues `running` jobs at start, which assumes a single API instance per database; with several instances use a lease column (`claimed_by`, `claimed_until`).
+- `convertPDFToImage` reads `dpi`/`page` settings as Go `int` from decoded JSON (always `float64`), so those settings are silently ignored; same family in `start_page`/`end_page`.
+- Converter tool stdout/stderr go to the process stdout; capture a bounded tail into `error_message` for diagnosis.
+- `retry` is allowed only for `failed`; `cancelled` jobs cannot be re-queued (the openapi text used to promise it).
+- Not verified here: ffmpeg/pandoc/ebook/LibreOffice paths through the worker (only ImageMagick end to end); the Postgres dialect of `ClaimJob`/`RequeueRunning` (plain `?` placeholders, as the rest of the repository).

@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"catalogizer/internal/auth"
@@ -30,6 +31,9 @@ type ConversionService struct {
 	userRepo       *repository.UserRepository
 	authService    *AuthService
 	sem            *semaphore.Weighted // Limits concurrent conversion processes
+
+	ctxMu     sync.RWMutex
+	workerCtx context.Context // cancelled when the worker is stopping; converter tools are killed with it
 }
 
 func NewConversionService(conversionRepo *repository.ConversionRepository, userRepo *repository.UserRepository, authService *AuthService) *ConversionService {
@@ -43,7 +47,7 @@ func NewConversionService(conversionRepo *repository.ConversionRepository, userR
 
 func (s *ConversionService) CreateConversionJob(userID int, request *models.ConversionRequest) (*models.ConversionJob, error) {
 	if !s.validateConversionRequest(request) {
-		return nil, fmt.Errorf("invalid conversion request")
+		return nil, models.ErrInvalidConversionRequest
 	}
 
 	job := &models.ConversionJob{
@@ -70,6 +74,8 @@ func (s *ConversionService) CreateConversionJob(userID int, request *models.Conv
 	return job, nil
 }
 
+// StartConversion claims one pending job and runs it in the background. The claim is atomic, so
+// a job can never be started twice. Concurrency is bounded by the service semaphore.
 func (s *ConversionService) StartConversion(jobID int) error {
 	job, err := s.conversionRepo.GetJob(jobID)
 	if err != nil {
@@ -86,13 +92,8 @@ func (s *ConversionService) StartConversion(jobID int) error {
 		return fmt.Errorf("conversion refused: %w", cerr)
 	}
 
-	job.Status = models.ConversionStatusRunning
-	job.StartedAt = &time.Time{}
-	*job.StartedAt = time.Now()
-
-	err = s.conversionRepo.UpdateJob(job)
-	if err != nil {
-		return fmt.Errorf("failed to update job status: %w", err)
+	if err := s.claim(job); err != nil {
+		return err
 	}
 
 	go s.processConversion(job)
@@ -100,6 +101,22 @@ func (s *ConversionService) StartConversion(jobID int) error {
 	return nil
 }
 
+// claim moves the job from pending to running exactly once across all callers.
+func (s *ConversionService) claim(job *models.ConversionJob) error {
+	now := time.Now()
+	won, err := s.conversionRepo.ClaimJob(job.ID, now)
+	if err != nil {
+		return fmt.Errorf("failed to update job status: %w", err)
+	}
+	if !won {
+		return fmt.Errorf("job is not in pending status")
+	}
+	job.Status = models.ConversionStatusRunning
+	job.StartedAt = &now
+	return nil
+}
+
+// processConversion waits for a concurrency slot (bounded) and runs the job.
 func (s *ConversionService) processConversion(job *models.ConversionJob) {
 	// Limit concurrent conversion processes (ffmpeg, LibreOffice, etc.)
 	// Use a timeout to prevent blocking forever if all semaphore slots are occupied.
@@ -110,7 +127,11 @@ func (s *ConversionService) processConversion(job *models.ConversionJob) {
 		return
 	}
 	defer s.sem.Release(1)
+	s.executeJob(job)
+}
 
+// executeJob runs a claimed (running) job to a terminal state. The caller holds a semaphore slot.
+func (s *ConversionService) executeJob(job *models.ConversionJob) {
 	var err error
 
 	defer func() {
@@ -140,11 +161,102 @@ func (s *ConversionService) processConversion(job *models.ConversionJob) {
 	s.handleConversionSuccess(job)
 }
 
+// RunWorker is the conversion worker: it drains the pending queue every interval until ctx is
+// cancelled. Concurrency is bounded by the service semaphore (never more than its capacity of
+// jobs run at once, and the worker only claims a job when a slot is free). On cancellation it
+// kills running converter tools, returns their jobs to `pending` (they run again after restart),
+// and returns only when every job goroutine has finished. Jobs left `running` by a previous
+// process are requeued at start (this process is the only worker for the database).
+func (s *ConversionService) RunWorker(ctx context.Context, interval time.Duration) {
+	if interval <= 0 {
+		interval = 2 * time.Second
+	}
+	s.ctxMu.Lock()
+	s.workerCtx = ctx
+	s.ctxMu.Unlock()
+
+	if n, err := s.conversionRepo.RequeueRunning(); err != nil {
+		if logging.Logger != nil {
+			logging.With(logging.ErrorField(err)).Warn("Conversion worker could not requeue interrupted jobs")
+		}
+	} else if n > 0 && logging.Logger != nil {
+		logging.With(logging.Int("requeued", int(n))).Info("Conversion worker requeued interrupted jobs")
+	}
+
+	var wg sync.WaitGroup
+	defer wg.Wait()
+
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+	for {
+		s.dispatchPending(ctx, &wg)
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+	}
+}
+
+// dispatchPending claims pending jobs while concurrency slots are free and runs each in its own
+// goroutine registered on wg.
+func (s *ConversionService) dispatchPending(ctx context.Context, wg *sync.WaitGroup) {
+	jobs, err := s.GetJobQueue()
+	if err != nil {
+		if logging.Logger != nil {
+			logging.With(logging.ErrorField(err)).Error("Conversion worker could not read the job queue")
+		}
+		return
+	}
+	for i := range jobs {
+		if ctx.Err() != nil {
+			return
+		}
+		job := jobs[i]
+		if job.ScheduledFor != nil && job.ScheduledFor.After(time.Now()) {
+			continue
+		}
+		if !s.sem.TryAcquire(1) {
+			return // all slots busy; the next tick continues
+		}
+		// jobs stored before the path confinement existed are re-checked before anything runs
+		if cerr := confineConversionPaths(job.SourcePath, job.TargetPath); cerr != nil {
+			s.sem.Release(1)
+			s.handleConversionError(&job, fmt.Errorf("conversion refused: %w", cerr))
+			continue
+		}
+		if err := s.claim(&job); err != nil {
+			s.sem.Release(1)
+			continue
+		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			defer s.sem.Release(1)
+			s.executeJob(&job)
+		}()
+	}
+}
+
+// toolContext is the context converter tools run under: the worker's, or Background outside it.
+func (s *ConversionService) toolContext() context.Context {
+	s.ctxMu.RLock()
+	defer s.ctxMu.RUnlock()
+	if s.workerCtx != nil {
+		return s.workerCtx
+	}
+	return context.Background()
+}
+
+func (s *ConversionService) runTool(name string, args []string) error {
+	return runConverterToolCtx(s.toolContext(), name, args)
+}
+
 func (s *ConversionService) convertVideo(job *models.ConversionJob) error {
 	err := runConverterInPrivateDir(job.TargetPath, func(out string) error {
 		j := *job
 		j.TargetPath = out
-		return runConverterTool("ffmpeg", s.buildFFmpegVideoArgs(&j))
+		return s.runTool("ffmpeg", s.buildFFmpegVideoArgs(&j))
 	})
 	if err != nil {
 		return fmt.Errorf("ffmpeg video conversion failed: %w", err)
@@ -156,7 +268,7 @@ func (s *ConversionService) convertAudio(job *models.ConversionJob) error {
 	err := runConverterInPrivateDir(job.TargetPath, func(out string) error {
 		j := *job
 		j.TargetPath = out
-		return runConverterTool("ffmpeg", s.buildFFmpegAudioArgs(&j))
+		return s.runTool("ffmpeg", s.buildFFmpegAudioArgs(&j))
 	})
 	if err != nil {
 		return fmt.Errorf("ffmpeg audio conversion failed: %w", err)
@@ -191,7 +303,7 @@ func (s *ConversionService) convertEbook(job *models.ConversionJob) error {
 	}
 
 	err := runConverterInPrivateDir(job.TargetPath, func(out string) error {
-		return runConverterTool("ebook-convert", append([]string{job.SourcePath, out}, opts...))
+		return s.runTool("ebook-convert", append([]string{job.SourcePath, out}, opts...))
 	})
 	if err != nil {
 		return fmt.Errorf("ebook conversion failed: %w", err)
@@ -371,7 +483,7 @@ func (s *ConversionService) convertPDFToHTML(job *models.ConversionJob) error {
 	}
 	// Try pandoc first for HTML conversion
 	err := runConverterInPrivateDir(job.TargetPath, func(out string) error {
-		return runConverterTool("pandoc", []string{"-f", "pdf", "-t", "html", "-o", out, job.SourcePath})
+		return s.runTool("pandoc", []string{"-f", "pdf", "-t", "html", "-o", out, job.SourcePath})
 	})
 	if err == nil {
 		return nil
@@ -384,7 +496,7 @@ func (s *ConversionService) convertPDFToHTML(job *models.ConversionJob) error {
 	// in --outdir; that file is renamed to the target's name inside the private directory.
 	err = runConverterInPrivateDir(job.TargetPath, func(out string) error {
 		priv := filepath.Dir(out)
-		if err := runConverterTool("libreoffice", []string{"--headless", "--convert-to", "html", "--outdir", priv, job.SourcePath}); err != nil {
+		if err := s.runTool("libreoffice", []string{"--headless", "--convert-to", "html", "--outdir", priv, job.SourcePath}); err != nil {
 			return err
 		}
 		return moveLibreOfficeOutput(libreOfficeHTMLOutput(job.SourcePath, out), out)
@@ -466,7 +578,7 @@ func (s *ConversionService) convertPDFWithImageMagick(job *models.ConversionJob,
 	}
 
 	err := runConverterInPrivateDir(job.TargetPath, func(out string) error {
-		return runConverterTool("convert", append(append([]string(nil), args...), out))
+		return s.runTool("convert", append(append([]string(nil), args...), out))
 	})
 	if err != nil {
 		return fmt.Errorf("imagemagick PDF conversion failed: %w", err)
@@ -478,7 +590,7 @@ func (s *ConversionService) convertImage(job *models.ConversionJob) error {
 	err := runConverterInPrivateDir(job.TargetPath, func(out string) error {
 		j := *job
 		j.TargetPath = out
-		return runConverterTool("convert", s.buildImageMagickArgs(&j))
+		return s.runTool("convert", s.buildImageMagickArgs(&j))
 	})
 	if err != nil {
 		return fmt.Errorf("imagemagick conversion failed: %w", err)
@@ -602,6 +714,20 @@ func (s *ConversionService) handleConversionSuccess(job *models.ConversionJob) {
 }
 
 func (s *ConversionService) handleConversionError(job *models.ConversionJob, conversionError error) {
+	// The worker is shutting down and killed the tool: not a conversion failure. Return the job
+	// to the queue so it runs again after restart.
+	if wc := s.toolContext(); wc.Err() != nil && errors.Is(wc.Err(), context.Canceled) {
+		job.Status = models.ConversionStatusPending
+		job.StartedAt = nil
+		job.CompletedAt = nil
+		job.Duration = nil
+		job.ErrorMessage = nil
+		if err := s.conversionRepo.UpdateJob(job); err != nil && logging.Logger != nil {
+			logging.With(logging.Int("job_id", job.ID), logging.ErrorField(err)).Warn("Failed to requeue interrupted conversion job")
+		}
+		return
+	}
+
 	job.Status = models.ConversionStatusFailed
 	job.CompletedAt = &time.Time{}
 	*job.CompletedAt = time.Now()
@@ -647,7 +773,7 @@ func (s *ConversionService) GetJob(jobID int, userID int) (*models.ConversionJob
 	if job.UserID != userID {
 		hasPermission, err := s.authService.CheckPermission(userID, auth.PermissionViewMedia)
 		if err != nil || !hasPermission {
-			return nil, fmt.Errorf("unauthorized to view this job")
+			return nil, fmt.Errorf("%w: view", models.ErrConversionForbidden)
 		}
 	}
 
@@ -663,12 +789,12 @@ func (s *ConversionService) CancelJob(jobID int, userID int) error {
 	if job.UserID != userID {
 		hasPermission, err := s.authService.CheckPermission(userID, auth.PermissionManageUsers)
 		if err != nil || !hasPermission {
-			return fmt.Errorf("unauthorized to cancel this job")
+			return fmt.Errorf("%w: cancel", models.ErrConversionForbidden)
 		}
 	}
 
 	if job.Status != models.ConversionStatusPending && job.Status != models.ConversionStatusRunning {
-		return fmt.Errorf("cannot cancel job in status: %s", job.Status)
+		return fmt.Errorf("%w: cannot cancel job in status: %s", models.ErrConversionJobState, job.Status)
 	}
 
 	job.Status = models.ConversionStatusCancelled
@@ -687,12 +813,12 @@ func (s *ConversionService) RetryJob(jobID int, userID int) error {
 	if job.UserID != userID {
 		hasPermission, err := s.authService.CheckPermission(userID, auth.PermissionManageUsers)
 		if err != nil || !hasPermission {
-			return fmt.Errorf("unauthorized to retry this job")
+			return fmt.Errorf("%w: retry", models.ErrConversionForbidden)
 		}
 	}
 
 	if job.Status != models.ConversionStatusFailed {
-		return fmt.Errorf("can only retry failed jobs")
+		return fmt.Errorf("%w: can only retry failed jobs", models.ErrConversionJobState)
 	}
 
 	job.Status = models.ConversionStatusPending
@@ -701,12 +827,8 @@ func (s *ConversionService) RetryJob(jobID int, userID int) error {
 	job.Duration = nil
 	job.ErrorMessage = nil
 
-	err = s.conversionRepo.UpdateJob(job)
-	if err != nil {
-		return err
-	}
-
-	return s.StartConversion(jobID)
+	// The job goes back to the queue; the worker (RunWorker) claims and runs it.
+	return s.conversionRepo.UpdateJob(job)
 }
 
 func (s *ConversionService) GetJobStatistics(userID *int, startDate, endDate time.Time) (*models.ConversionStatistics, error) {
@@ -777,7 +899,12 @@ func isConverterToolError(err error) bool {
 }
 
 func runConverterTool(name string, args []string) error {
-	cmd := exec.Command(name, args...)
+	return runConverterToolCtx(context.Background(), name, args)
+}
+
+// runConverterToolCtx runs a converter tool and kills it when ctx is cancelled.
+func runConverterToolCtx(ctx context.Context, name string, args []string) error {
+	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -1025,24 +1152,14 @@ func (s *ConversionService) GetJobQueue() ([]models.ConversionJob, error) {
 	return s.conversionRepo.GetJobsByStatus(models.ConversionStatusPending, 100, 0)
 }
 
+// ProcessJobQueue runs one dispatch pass (what RunWorker does on every tick) and returns once
+// the jobs it started have finished.
 func (s *ConversionService) ProcessJobQueue() error {
-	jobs, err := s.GetJobQueue()
-	if err != nil {
+	if _, err := s.GetJobQueue(); err != nil {
 		return err
 	}
-
-	for _, job := range jobs {
-		if job.ScheduledFor != nil && job.ScheduledFor.After(time.Now()) {
-			continue
-		}
-
-		err := s.StartConversion(job.ID)
-		if err != nil {
-			if logging.Logger != nil {
-				logging.With(logging.Int("job_id", job.ID), logging.ErrorField(err)).Error("Failed to start conversion job")
-			}
-		}
-	}
-
+	var wg sync.WaitGroup
+	s.dispatchPending(context.Background(), &wg)
+	wg.Wait()
 	return nil
 }

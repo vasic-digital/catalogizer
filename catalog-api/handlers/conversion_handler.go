@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -66,6 +67,10 @@ func (h *ConversionHandler) CreateJob(c *gin.Context) {
 
 	job, err := h.conversionService.CreateConversionJob(currentUser.ID, &request)
 	if err != nil {
+		if errors.Is(err, models.ErrInvalidConversionRequest) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid conversion request"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create conversion job"})
 		return
 	}
@@ -89,11 +94,7 @@ func (h *ConversionHandler) GetJob(c *gin.Context) {
 
 	job, err := h.conversionService.GetJob(jobID, currentUser.ID)
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Job not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get job"})
+		writeJobError(c, err, "Failed to get job")
 		return
 	}
 
@@ -134,10 +135,18 @@ func (h *ConversionHandler) ListJobs(c *gin.Context) {
 		}
 	}
 
-	jobs, err := h.conversionService.GetUserJobs(currentUser.ID, &status, limit, offset)
+	// An absent ?status= means "all statuses": filtering on the empty string matched nothing.
+	var statusFilter *string
+	if status != "" {
+		statusFilter = &status
+	}
+	jobs, err := h.conversionService.GetUserJobs(currentUser.ID, statusFilter, limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get jobs"})
 		return
+	}
+	if jobs == nil {
+		jobs = []models.ConversionJob{} // marshal as [], never null
 	}
 
 	c.JSON(http.StatusOK, jobs)
@@ -170,6 +179,10 @@ func (h *ConversionHandler) CancelJob(c *gin.Context) {
 
 	err = h.conversionService.CancelJob(jobID, currentUser.ID)
 	if err != nil {
+		if errors.Is(err, models.ErrConversionJobNotFound) || errors.Is(err, models.ErrConversionForbidden) || errors.Is(err, models.ErrConversionJobState) {
+			writeJobError(c, err, "Failed to cancel job")
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to cancel job"})
 		return
 	}
@@ -229,11 +242,7 @@ func (h *ConversionHandler) DeleteJob(c *gin.Context) {
 
 	err = h.conversionService.CancelJob(jobID, currentUser.ID)
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Job not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete job"})
+		writeJobError(c, err, "Failed to delete job")
 		return
 	}
 
@@ -269,11 +278,7 @@ func (h *ConversionHandler) RetryJob(c *gin.Context) {
 
 	err = h.conversionService.RetryJob(jobID, currentUser.ID)
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Job not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retry job"})
+		writeJobError(c, err, "Failed to retry job")
 		return
 	}
 
@@ -329,6 +334,20 @@ func (h *ConversionHandler) DownloadJobFile(c *gin.Context) {
 		return
 	}
 	c.File(job.TargetPath)
+}
+
+// writeJobError maps a service error to its HTTP status; anything unclassified stays 500.
+func writeJobError(c *gin.Context, err error, fallback string) {
+	switch {
+	case errors.Is(err, models.ErrConversionJobNotFound), strings.Contains(err.Error(), "not found"):
+		c.JSON(http.StatusNotFound, gin.H{"error": "Job not found"})
+	case errors.Is(err, models.ErrConversionForbidden):
+		c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient permissions"})
+	case errors.Is(err, models.ErrConversionJobState):
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+	default:
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fallback})
+	}
 }
 
 func (h *ConversionHandler) getCurrentUser(c *gin.Context) (*models.User, error) {

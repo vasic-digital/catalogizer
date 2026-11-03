@@ -4075,12 +4075,18 @@ paths:
             schema:
               $ref: '#/components/schemas/ConversionRequest'
       responses:
-        '201':
-          description: Job created
+        '200':
+          description: Job queued (status `pending`); the background conversion worker picks it up and moves it to running, then completed or failed
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConversionJob'
+        '400':
+          description: Invalid request (malformed body, unsupported type/format, or a path outside the conversion roots)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     get:
       tags: [conversion]
       summary: List conversion jobs
@@ -4088,7 +4094,13 @@ paths:
         - BearerAuth: []
       responses:
         '200':
-          description: Conversion jobs list
+          description: Conversion jobs list; an empty list is `[]`, never `null`
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConversionJob'
 
   /api/v1/conversion/jobs/{id}:
     get:
@@ -4163,9 +4175,9 @@ paths:
       tags: [conversion]
       summary: Retry a failed conversion job
       description: |
-        Resets a failed or cancelled conversion job back to pending status,
-        clearing the error message and resetting timing fields. Only jobs
-        with status 'failed' or 'cancelled' can be retried.
+        Resets a failed conversion job back to pending status, clearing the
+        error message and resetting timing fields; the background worker then
+        runs it again. Only jobs with status 'failed' can be retried.
       security:
         - BearerAuth: []
       parameters:
@@ -4176,13 +4188,15 @@ paths:
             type: integer
       responses:
         '200':
-          description: Job reset to pending
+          description: Job reset to pending (body `{"message": "Job retry started"}`)
+        '403':
+          description: Not the job owner and no manage permission
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConversionJob'
-        '400':
-          description: Job cannot be retried (wrong status)
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Job cannot be retried (status is not `failed`)
           content:
             application/json:
               schema:

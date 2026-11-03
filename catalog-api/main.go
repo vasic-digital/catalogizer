@@ -565,13 +565,20 @@ func main() {
 	logManagementService := root_services.NewLogManagementService(logManagementRepo)
 	favoritesService := root_services.NewFavoritesService(favoritesRepo, authService)
 
-	// Lazy initialization: ConversionService — only needed when conversion endpoints are hit
+	// ConversionService is eager: the background worker must run from startup so queued jobs are
+	// processed even before any conversion endpoint is hit. Only the HTTP handler is lazy.
+	conversionRepo := root_repository.NewConversionRepository(databaseDB)
+	conversionService := root_services.NewConversionService(conversionRepo, userRepo, authService)
+	conversionWorkerCtx, conversionWorkerCancel := context.WithCancel(context.Background())
+	conversionWorkerDone := make(chan struct{})
+	go func() {
+	defer close(conversionWorkerDone)
+	conversionService.RunWorker(conversionWorkerCtx, 2*time.Second)
+	}()
 	var conversionHandlerOnce sync.Once
 	var lazyConversionHandler *root_handlers.ConversionHandler
 	getConversionHandler := func() *root_handlers.ConversionHandler {
 	conversionHandlerOnce.Do(func() {
-			conversionRepo := root_repository.NewConversionRepository(databaseDB)
-			conversionService := root_services.NewConversionService(conversionRepo, userRepo, authService)
 			lazyConversionHandler = root_handlers.NewConversionHandler(conversionService, authService)
 	})
 	return lazyConversionHandler
@@ -1909,6 +1916,15 @@ func main() {
 	// the request it is currently handling
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer shutdownCancel()
+
+	// Stop the conversion worker: running converter tools are killed, their jobs go back to
+	// `pending`, and we wait (bounded by the shutdown context) for the job goroutines to finish.
+	conversionWorkerCancel()
+	select {
+	case <-conversionWorkerDone:
+	case <-shutdownCtx.Done():
+		logger.Warn("Conversion worker did not stop within the shutdown timeout")
+	}
 
 	// Stop runtime metrics collector
 	metrics.StopRuntimeCollector()

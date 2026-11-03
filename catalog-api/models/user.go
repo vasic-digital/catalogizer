@@ -1839,6 +1839,13 @@ type AddPlaylistItemRequest struct {
 // Common Error Variables
 var (
 	ErrUnauthorized = errors.New("unauthorized")
+
+	// Conversion service sentinels: the handler maps them to 400 / 403 / 404 / 409 instead of
+	// answering every service error with 500.
+	ErrInvalidConversionRequest = errors.New("invalid conversion request")
+	ErrConversionJobNotFound    = errors.New("job not found")
+	ErrConversionJobState       = errors.New("conversion job is not in a state that allows this operation")
+	ErrConversionForbidden      = errors.New("not allowed to access this conversion job")
 	ErrForbidden    = errors.New("forbidden")
 	ErrNotFound     = errors.New("not found")
 	ErrConflict     = errors.New("conflict")

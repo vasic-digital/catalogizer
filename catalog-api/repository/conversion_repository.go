@@ -58,7 +58,7 @@ func (r *ConversionRepository) GetJob(jobID int) (*models.ConversionJob, error) 
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("job not found")
+			return nil, models.ErrConversionJobNotFound
 		}
 		return nil, fmt.Errorf("failed to get job: %w", err)
 	}
@@ -94,7 +94,7 @@ func (r *ConversionRepository) GetJob(jobID int) (*models.ConversionJob, error) 
 func (r *ConversionRepository) UpdateJob(job *models.ConversionJob) error {
 	query := `
 		UPDATE conversion_jobs
-		SET status = ?, started_at = ?, completed_at = ?, duration = ?, error_message = ?, updated_at = ?
+		SET status = ?, started_at = ?, completed_at = ?, duration = ?, error_message = ?
 		WHERE id = ?
 	`
 
@@ -118,8 +118,34 @@ func (r *ConversionRepository) UpdateJob(job *models.ConversionJob) error {
 		errorMessage = sql.NullString{String: *job.ErrorMessage, Valid: true}
 	}
 
-	_, err := r.db.Exec(query, job.Status, startedAt, completedAt, durationSeconds, errorMessage, time.Now(), job.ID)
+	_, err := r.db.Exec(query, job.Status, startedAt, completedAt, durationSeconds, errorMessage, job.ID)
 	return err
+}
+
+// ClaimJob atomically moves a pending job to running. It reports whether THIS caller won the
+// claim, so two workers (or a worker and a retry) can never run one job twice.
+func (r *ConversionRepository) ClaimJob(jobID int, startedAt time.Time) (bool, error) {
+	res, err := r.db.Exec(`UPDATE conversion_jobs SET status = ?, started_at = ? WHERE id = ? AND status = ?`,
+		models.ConversionStatusRunning, startedAt, jobID, models.ConversionStatusPending)
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return n == 1, nil
+}
+
+// RequeueRunning returns jobs left in `running` (a previous process died or was stopped mid-job)
+// to `pending`. Only valid while this process is the sole worker for the database.
+func (r *ConversionRepository) RequeueRunning() (int64, error) {
+	res, err := r.db.Exec(`UPDATE conversion_jobs SET status = ?, started_at = NULL WHERE status = ?`,
+		models.ConversionStatusPending, models.ConversionStatusRunning)
+	if err != nil {
+		return 0, err
+	}
+	return res.RowsAffected()
 }
 
 func (r *ConversionRepository) GetUserJobs(userID int, status *string, limit, offset int) ([]models.ConversionJob, error) {
@@ -351,7 +377,7 @@ func (r *ConversionRepository) GetPopularFormats(limit int) ([]models.FormatPopu
 }
 
 func (r *ConversionRepository) scanJobs(rows *sql.Rows) ([]models.ConversionJob, error) {
-	var jobs []models.ConversionJob
+	jobs := []models.ConversionJob{} // never nil: an empty list must marshal as [], not null
 
 	for rows.Next() {
 		var job models.ConversionJob
@@ -394,6 +420,10 @@ func (r *ConversionRepository) scanJobs(rows *sql.Rows) ([]models.ConversionJob,
 		}
 
 		jobs = append(jobs, job)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("failed to iterate jobs: %w", err)
 	}
 
 	return jobs, nil
