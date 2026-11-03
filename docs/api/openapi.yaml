@@ -4117,12 +4117,17 @@ paths:
       responses:
         '200':
           description: Conversion job details
+        '403':
+          description: The job belongs to another user and the caller has no media.view permission
+        '404':
+          description: Job not found
     delete:
       tags: [conversion]
-      summary: Delete a conversion job
+      summary: Cancel (delete) a conversion job
       description: |
-        Deletes a conversion job. Only jobs with status 'pending' or 'failed'
-        can be deleted. Running or completed jobs are protected from deletion.
+        Same operation as POST .../cancel (the web client calls DELETE). A pending or running
+        job moves to status 'cancelled' and, if running, its converter process group is killed;
+        the row is kept. Failed, completed or already cancelled jobs are refused with 409.
       security:
         - BearerAuth: []
       parameters:
@@ -4133,7 +4138,7 @@ paths:
             type: integer
       responses:
         '200':
-          description: Job deleted
+          description: Job cancelled (body `{"message": "Job deleted successfully"}`)
           content:
             application/json:
               schema:
@@ -4141,8 +4146,10 @@ paths:
                 properties:
                   message:
                     type: string
-        '400':
-          description: Job cannot be deleted (wrong status)
+        '403':
+          description: Not the job owner and no manage-users permission
+        '409':
+          description: Job is not pending or running
           content:
             application/json:
               schema:
@@ -4158,6 +4165,10 @@ paths:
     post:
       tags: [conversion]
       summary: Cancel conversion job
+      description: |
+        A pending or running job moves to 'cancelled'; a running job's converter process group
+        is killed and the cancelled state is never overwritten by the finishing worker or
+        resurrected at shutdown.
       security:
         - BearerAuth: []
       parameters:
@@ -4169,6 +4180,12 @@ paths:
       responses:
         '200':
           description: Job cancelled
+        '403':
+          description: Not the job owner and no manage-users permission
+        '404':
+          description: Job not found
+        '409':
+          description: Job is not pending or running
 
   /api/v1/conversion/jobs/{id}/retry:
     post:

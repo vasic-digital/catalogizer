@@ -303,11 +303,7 @@ func (h *ConversionHandler) DownloadJobFile(c *gin.Context) {
 
 	job, err := h.conversionService.GetJob(jobID, currentUser.ID)
 	if err != nil {
-		if strings.Contains(err.Error(), "not found") {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Job not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get job"})
+		writeJobError(c, err, "Failed to get job")
 		return
 	}
 

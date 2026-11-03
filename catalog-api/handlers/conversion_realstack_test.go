@@ -32,12 +32,14 @@ import (
 // ImageMagick converter. No mock, stub or fixture server is in the path.
 
 type convStack struct {
-	router  *gin.Engine
-	svc     *services.ConversionService
-	repo    *repository.ConversionRepository
-	token   string
-	userID  int
-	dataDir string
+	router   *gin.Engine
+	svc      *services.ConversionService
+	repo     *repository.ConversionRepository
+	token    string
+	userRepo *repository.UserRepository
+	auth     *services.AuthService
+	userID   int
+	dataDir  string
 }
 
 func newConvStack(t *testing.T) *convStack {
@@ -78,7 +80,7 @@ func newConvStack(t *testing.T) *convStack {
 	g.DELETE("/jobs/:id", h.DeleteJob)
 	g.POST("/jobs/:id/retry", h.RetryJob)
 	g.GET("/jobs/:id/download", h.DownloadJobFile)
-	return &convStack{router: r, svc: svc, repo: repo, token: res.SessionToken, userID: uid, dataDir: dir}
+	return &convStack{router: r, svc: svc, repo: repo, userRepo: userRepo, auth: auth, token: res.SessionToken, userID: uid, dataDir: dir}
 }
 
 func (s *convStack) do(t *testing.T, method, path string, body interface{}) (int, []byte) {
@@ -257,4 +259,89 @@ func TestConversionRealStack_FailedJobRetryReachesTerminalAgain(t *testing.T) {
 	require.Equal(t, http.StatusOK, code, string(body))
 	m = pollJob(t, s, job.ID, "completed", "failed")
 	assert.Equal(t, "completed", m["status"], "%v", m)
+}
+
+// Ownership isolation: a second user whose role may use conversion (create/view/manage) but is
+// neither admin nor holds media.view / manage-users must reach only their own jobs.
+func (s *convStack) addUser(t *testing.T, name string, perms models.Permissions) (int, string) {
+	t.Helper()
+	db := s.userRepo
+	roleID := 2 // the standard "User" role
+	if perms != nil {
+		desc := name + " role"
+		id, err := db.CreateRole(&models.Role{Name: name + "-role", Description: &desc, Permissions: perms,
+			CreatedAt: time.Now(), UpdatedAt: time.Now()})
+		require.NoError(t, err)
+		roleID = id
+	}
+	hash, salt, err := s.auth.HashPasswordForUser("correct-horse-battery-1A")
+	require.NoError(t, err)
+	uid, err := db.Create(&models.User{Username: name, Email: name + "@example.com", PasswordHash: hash, Salt: salt,
+		RoleID: roleID, IsActive: true, CreatedAt: time.Now(), UpdatedAt: time.Now()})
+	require.NoError(t, err)
+	res, err := s.auth.Login(models.LoginRequest{Username: name, Password: "correct-horse-battery-1A"}, "127.0.0.1", "test")
+	require.NoError(t, err)
+	return uid, res.SessionToken
+}
+
+func (s *convStack) doAs(t *testing.T, token, method, path string) int {
+	t.Helper()
+	req := httptest.NewRequest(method, "/api/v1/conversion"+path, nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+	return w.Code
+}
+
+func TestConversionRealStack_OwnershipIsolation(t *testing.T) {
+	s := newConvStack(t)
+	_, tokB := s.addUser(t, "bob", models.Permissions{
+		models.PermissionConversionCreate, models.PermissionConversionView, models.PermissionConversionManage})
+	// A owns a failed job, a pending job and a completed job with a real output file
+	src := filepath.Join(s.dataDir, "own.png")
+	writePNG(t, src)
+	failed := insertFailedJob(t, s, src, filepath.Join(s.dataDir, "own.jpg"))
+	pending, err := s.repo.CreateJob(&models.ConversionJob{UserID: s.userID, SourcePath: src,
+		TargetPath: filepath.Join(s.dataDir, "p.jpg"), SourceFormat: "png", TargetFormat: "jpg",
+		ConversionType: "image", Quality: "high", Status: models.ConversionStatusPending, CreatedAt: time.Now()})
+	require.NoError(t, err)
+	outFile := filepath.Join(s.dataDir, "done.jpg")
+	require.NoError(t, os.WriteFile(outFile, []byte{0xFF, 0xD8, 0xFF, 0xD9}, 0o600))
+	completed, err := s.repo.CreateJob(&models.ConversionJob{UserID: s.userID, SourcePath: src, TargetPath: outFile,
+		SourceFormat: "png", TargetFormat: "jpg", ConversionType: "image", Quality: "high",
+		Status: models.ConversionStatusCompleted, CreatedAt: time.Now()})
+	require.NoError(t, err)
+
+	// another user's job: 403 on every route
+	assert.Equal(t, http.StatusForbidden, s.doAs(t, tokB, "GET", "/jobs/"+convItoa(failed)))
+	assert.Equal(t, http.StatusForbidden, s.doAs(t, tokB, "POST", "/jobs/"+convItoa(failed)+"/retry"))
+	assert.Equal(t, http.StatusForbidden, s.doAs(t, tokB, "POST", "/jobs/"+convItoa(pending)+"/cancel"))
+	assert.Equal(t, http.StatusForbidden, s.doAs(t, tokB, "DELETE", "/jobs/"+convItoa(pending)))
+	assert.Equal(t, http.StatusForbidden, s.doAs(t, tokB, "GET", "/jobs/"+convItoa(completed)+"/download"))
+	// untouched
+	j, err := s.repo.GetJob(failed)
+	require.NoError(t, err)
+	assert.Equal(t, models.ConversionStatusFailed, j.Status)
+	j, err = s.repo.GetJob(pending)
+	require.NoError(t, err)
+	assert.Equal(t, models.ConversionStatusPending, j.Status)
+	// B's list shows none of A's jobs
+	req := httptest.NewRequest("GET", "/api/v1/conversion/jobs", nil)
+	req.Header.Set("Authorization", "Bearer "+tokB)
+	w := httptest.NewRecorder()
+	s.router.ServeHTTP(w, req)
+	assert.JSONEq(t, `[]`, w.Body.String())
+
+	// the owner succeeds on the same routes
+	assert.Equal(t, http.StatusOK, s.doAs(t, s.token, "GET", "/jobs/"+convItoa(failed)))
+	assert.Equal(t, http.StatusOK, s.doAs(t, s.token, "GET", "/jobs/"+convItoa(completed)+"/download"))
+	assert.Equal(t, http.StatusOK, s.doAs(t, s.token, "POST", "/jobs/"+convItoa(failed)+"/retry"))
+	assert.Equal(t, http.StatusOK, s.doAs(t, s.token, "POST", "/jobs/"+convItoa(pending)+"/cancel"))
+}
+
+func TestConversionRealStack_PlainUserRoleHasNoConversionAccess(t *testing.T) {
+	s := newConvStack(t)
+	_, tok := s.addUser(t, "plain", nil) // standard User role: media.view, media.download only
+	assert.Equal(t, http.StatusForbidden, s.doAs(t, tok, "GET", "/jobs"))
+	assert.Equal(t, http.StatusForbidden, s.doAs(t, tok, "POST", "/jobs/1/retry"))
 }

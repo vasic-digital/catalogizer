@@ -528,9 +528,16 @@ Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/ap
 
 ## Conversion worker fix follow-ups (minor)
 
-- `UpdateJob` writes the whole row, so a `cancel` that lands while a job is running is overwritten by `completed`/`failed` when the tool exits; make terminal writes conditional (`WHERE status = 'running'`) and kill the tool on cancel.
 - The worker requeues `running` jobs at start, which assumes a single API instance per database; with several instances use a lease column (`claimed_by`, `claimed_until`).
 - `convertPDFToImage` reads `dpi`/`page` settings as Go `int` from decoded JSON (always `float64`), so those settings are silently ignored; same family in `start_page`/`end_page`.
 - Converter tool stdout/stderr go to the process stdout; capture a bounded tail into `error_message` for diagnosis.
 - `retry` is allowed only for `failed`; `cancelled` jobs cannot be re-queued (the openapi text used to promise it).
 - Not verified here: ffmpeg/pandoc/ebook/LibreOffice paths through the worker (only ImageMagick end to end); the Postgres dialect of `ClaimJob`/`RequeueRunning` (plain `?` placeholders, as the rest of the repository).
+
+### Review R1 deferrals (conversion worker)
+
+- F4: a foreign job id answers 403 while an unknown id answers 404, so ids are probeable (ids are sequential); consider 404 for non-owners without permission (decision pending).
+- F6: `RunWorker` refuses a second start in one process, but two API instances on one database still requeue each other's running jobs; needs the lease column (`claimed_by`, `claimed_until`).
+- F10: `TestClaimJob_ExactlyOneWinner` runs on a single-connection in-memory SQLite; it is a logic check, not a concurrency proof against Postgres.
+- F11: `ClaimJob`, `RequeueJob`-style conditional updates, `GetDueJobs` and `UpdateJobIf` have no live Postgres run (SKIP, tracked: needs a Postgres test DSN in the suite).
+- Per-job timeout default is 2h (`CATALOGIZER_CONVERSION_TIMEOUT`, Go duration); no per-type limits (ffmpeg vs image).

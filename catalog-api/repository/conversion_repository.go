@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"catalogizer/database"
@@ -92,6 +93,19 @@ func (r *ConversionRepository) GetJob(jobID int) (*models.ConversionJob, error) 
 }
 
 func (r *ConversionRepository) UpdateJob(job *models.ConversionJob) error {
+	_, err := r.updateJob(job, nil)
+	return err
+}
+
+// UpdateJobIf writes the job only while its stored status is one of from (an atomic
+// UPDATE ... WHERE status IN (...)). It reports whether the row was written: false means the
+// state changed underneath the caller (for example the owner cancelled a running job) and the
+// stored state wins.
+func (r *ConversionRepository) UpdateJobIf(job *models.ConversionJob, from ...string) (bool, error) {
+	return r.updateJob(job, from)
+}
+
+func (r *ConversionRepository) updateJob(job *models.ConversionJob, from []string) (bool, error) {
 	query := `
 		UPDATE conversion_jobs
 		SET status = ?, started_at = ?, completed_at = ?, duration = ?, error_message = ?
@@ -118,8 +132,42 @@ func (r *ConversionRepository) UpdateJob(job *models.ConversionJob) error {
 		errorMessage = sql.NullString{String: *job.ErrorMessage, Valid: true}
 	}
 
-	_, err := r.db.Exec(query, job.Status, startedAt, completedAt, durationSeconds, errorMessage, job.ID)
-	return err
+	args := []interface{}{job.Status, startedAt, completedAt, durationSeconds, errorMessage, job.ID}
+	if len(from) > 0 {
+		marks := make([]string, len(from))
+		for i, f := range from {
+			marks[i] = "?"
+			args = append(args, f)
+		}
+		query += " AND status IN (" + strings.Join(marks, ",") + ")"
+	}
+	res, err := r.db.Exec(query, args...)
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, err
+	}
+	return n > 0 || len(from) == 0, nil
+}
+
+// GetDueJobs returns pending jobs that are due now (not scheduled for the future), highest
+// priority first. The schedule filter is in SQL so future-scheduled rows cannot fill the window.
+func (r *ConversionRepository) GetDueJobs(now time.Time, limit int) ([]models.ConversionJob, error) {
+	rows, err := r.db.Query(`
+		SELECT id, user_id, source_path, target_path, source_format, target_format,
+			   conversion_type, quality, settings, priority, status, created_at,
+			   started_at, completed_at, scheduled_for, duration, error_message
+		FROM conversion_jobs
+		WHERE status = ? AND (scheduled_for IS NULL OR scheduled_for <= ?)
+		ORDER BY priority DESC, created_at ASC
+		LIMIT ?`, models.ConversionStatusPending, now, limit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get due jobs: %w", err)
+	}
+	defer rows.Close()
+	return r.scanJobs(rows)
 }
 
 // ClaimJob atomically moves a pending job to running. It reports whether THIS caller won the

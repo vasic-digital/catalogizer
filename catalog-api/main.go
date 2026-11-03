@@ -1919,11 +1919,17 @@ func main() {
 
 	// Stop the conversion worker: running converter tools are killed, their jobs go back to
 	// `pending`, and we wait (bounded by the shutdown context) for the job goroutines to finish.
+	// The wait has its own short budget so it cannot eat the HTTP shutdown budget; if the worker
+	// has not stopped, the database is NOT closed below (job goroutines may still write), and the
+	// process exit ends the rest. Converter tools are killed by process group on cancel, so this
+	// normally takes milliseconds.
 	conversionWorkerCancel()
+	conversionWorkerStopped := false
 	select {
 	case <-conversionWorkerDone:
-	case <-shutdownCtx.Done():
-		logger.Warn("Conversion worker did not stop within the shutdown timeout")
+	conversionWorkerStopped = true
+	case <-time.After(10 * time.Second):
+	logger.Error("Conversion worker did not stop within 10s; the database will not be closed while jobs may still write")
 	}
 
 	// Stop runtime metrics collector
@@ -1977,8 +1983,10 @@ func main() {
 	}
 	}
 
-	// Close database connection
-	if err := databaseDB.Close(); err != nil {
+	// Close database connection (never while conversion job goroutines may still write)
+	if !conversionWorkerStopped {
+	logger.Warn("Skipping database close: conversion worker still running")
+	} else if err := databaseDB.Close(); err != nil {
 	logger.Error("Database close error", zap.Error(err))
 	} else {
 	logger.Info("Database connection closed")

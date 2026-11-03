@@ -2820,7 +2820,7 @@ Get a specific conversion job by ID.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
-**Errors:** 400 (invalid ID), 404 (not found)
+**Errors:** 400 (invalid ID), 403 (another user's job), 404 (not found)
 
 ---
 
@@ -2828,7 +2828,7 @@ Get a specific conversion job by ID.
 
 Cancel a running conversion job.
 
-**Description:** Cancels an in-progress or queued conversion.
+**Description:** Cancels a pending or running conversion. A running job's converter process group is killed; the job ends as `cancelled` and stays so. Errors: 403 (another user's job), 404, 409 (job already finished).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -2846,11 +2846,11 @@ Cancel a running conversion job.
 
 Delete a conversion job record.
 
-**Description:** Removes a completed or cancelled conversion job from history.
+**Description:** Same as cancel (the row is kept with status `cancelled`). Errors: 403, 404, 409 (job not pending or running).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
-**Response:** 204 No Content
+**Response:** 200 OK (`{"message": "Job deleted successfully"}`)
 
 ---
 
