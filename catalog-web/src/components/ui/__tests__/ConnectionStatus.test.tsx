@@ -291,22 +291,21 @@ describe('ConnectionStatus', () => {
   })
 })
 
-// Responsive contract (11.4.190): a top-right fixed badge covers the page title on a phone. On small screens it sits
-// at the bottom edge inside the gutters; from `sm` up it keeps the top-right position.
+// Responsive contract (11.4.190, defect D1): the badge is docked in the header (Header.tsx renders it), in normal flow. A
+// fixed overlay can cover page content or header controls at any width, so nothing here may be positioned out of flow.
 describe('ConnectionStatus - placement', () => {
-  it('is bottom-anchored on phones and top-right from sm up, inside the viewport gutters', () => {
+  it('is an in-flow, non-overlay status chip that is icon-only on phones and shows its text from sm up', () => {
     vi.useFakeTimers()
     mockUseAuth.mockReturnValue({ isAuthenticated: true, user: null } as any)
     mockUseWebSocket.mockReturnValue({ getConnectionState: vi.fn().mockReturnValue('closed') })
     render(<ConnectionStatus />)
-    const wrapper = screen.getByText('Disconnected').closest('.fixed') as HTMLElement
-    // bottom-10 (2.5rem) clears the fixed version chip in Layout (bottom-2, ~1rem tall) so the two never overlap on a phone
-    expect(wrapper.className).toMatch(/(^|\s)bottom-10(\s|$)/)
-    expect(wrapper.className).not.toMatch(/(^|\s)bottom-4(\s|$)/)
-    expect(wrapper.className).toContain('left-4')
-    expect(wrapper.className).toContain('right-4')
-    expect(wrapper.className).toContain('sm:top-20')
-    expect(wrapper.className).not.toMatch(/(^|\s)top-20(\s|$)/)
+    const status = screen.getByRole('status')
+    expect(status.className).not.toMatch(/(^|\s)(fixed|absolute|sticky)(\s|$)/)
+    expect(status.closest('.fixed')).toBeNull()
+    expect(status.className).not.toMatch(/(^|\s)(sm:)?(top|bottom|left|right)-/)
+    const label = screen.getByText('Disconnected')
+    expect(label.className).toContain('sr-only')
+    expect(label.className).toContain('sm:not-sr-only')
     vi.useRealTimers()
   })
 })

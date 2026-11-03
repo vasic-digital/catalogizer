@@ -446,6 +446,33 @@ Tracked follow-ups (status OPEN):
   browser, mouse pointer). Today 44px is enforced on coarse pointers only. Options: (a) enforce the WCAG 2.2 AA 2.5.8
   minimum of 24x24 CSS px everywhere and keep 44 on coarse; (b) keep 44 on coarse only (status quo); (c) enforce 44
   everywhere. Recommendation: (a). Nobody has decided this yet.
+- CLOSED on branch `fix-ui-d1-d2` (2026-11-03, operator decision: fix to spec; both recommendations applied):
+  - D1 (badge): the connection badge is no longer a fixed overlay. `ConnectionStatus` is an in-flow `role="status"` chip docked in
+    the header (`Header.tsx`), icon-only below `sm` (text stays for screen readers), icon + text from `sm`. RED (real
+    chromium, real catalog-api, `tests/responsive-audit/measure_d1_d2.mjs`, 5 viewports x 2 themes x 6 pages = 60 cases): 28 of
+    60 FAIL, the badge intersected "Smart Collection", selects, "Refresh", "Last updated", etc. at every width from 320 to 1440.
+    GREEN: 60 of 60 PASS, 0 unobserved, 0 intersections.
+  - D2 (target size): `@media (pointer: fine)` now enforces the WCAG 2.2 AA 2.5.8 floor of 24x24 CSS px (central zero-specificity
+    `:where()` rule, `.touch-target`, login "Remember me" and "Forgot password?"); 44px on coarse pointers is unchanged (touch
+    viewports measured 0 violations before and after). The audit oracle uses 24 on fine pointers and `run.mjs` now fails on
+    `tap_target_small_desktop`. RED: 8 oracle findings under 24px at login (20px) plus "Home" breadcrumb 38x20 on `/playlists`.
+  - New unit guards (RED on revert, three mutations each killed): `ConnectionStatus.test.tsx` placement, `Header.test.tsx` slot,
+    `touch_targets.test.ts` fine floor.
+  - Further defects found while measuring (NOT fixed, OPEN): (a) the fixed version chip `v1.1.0` (Layout) overlaps the primary
+    "Smart Collection" button on `/collections` at 320x568 (visible in the screenshot, the chip is `fixed` and not in the
+    oracle's overlap rule because it has no text overlap with a text box of its own); (b) on `/collections` two chevron icons
+    float right of the select boxes (detached from the controls) at 320 and 375; (c) `/collections` shows "Render: 0.0ms" and
+    "Page 1/0" developer-style stats to end users; (d) the audit harness `run.mjs` still has fixed default ports and is not
+    wired into a gate; `measure_d1_d2.mjs` needs the real API and a built dist.
+- D1/D2 review follow-ups (tracked, open; review of fix-ui-d1-d2 @7a539819, GO-with-follow-ups):
+  - F2: the connection chip's live region announces "Disconnected" for about 1.3 s on every page load before the socket opens. Show the chip only after a grace period or after the first successful open.
+  - F3: use a persistent live-region wrapper (always mounted, content changes) so assistive tech reliably announces state changes; today the `role="status"` node mounts together with its text.
+  - F4: chip contrast: red-100 text on red-500 is about 3.1:1 (below 4.5:1 AA for 14px text); check the yellow "Connecting" chip too and pick token pairs that pass in light and dark.
+  - F5: `tests/responsive-audit/measure_d1_d2.mjs` should force the socket down deterministically (`page.routeWebSocket`), include `/login`, and cover more than one fine-pointer viewport (it currently measures 1440 only for the fine floor).
+  - F7: commit the firefox and webkit evidence JSON, with an artifact fingerprint, to `docs/qa/responsive_d1_d2/` (only chromium is committed).
+  - F8: a clean `npm ci` may fail to load 4 test files for lack of the devDependency `@testing-library/dom` (pre-existing); not reproduced or changed here.
+  - Version chip overlap at 320 px, the header chevrons, and the dev stats strip still need a responsive pass.
+  - Done in this round: F1 (App.test.tsx now asserts the chip is not rendered by App) and F6 (24x24 passes / 24x23 flagged pinned in needle.mjs).
 - Oracle tolerance: webkit reported tap_target_small at exactly 44.00 x 44.00 in one of two identical runs (7 cases; r2b), i.e. a float/layout-unit error below 0.01px. The oracle now allows 0.02px (`minPx - 0.02`). Not re-proven by a full matrix run yet.
 - OPEN, UNCONFIRMED: the earlier webkit `tap_target_small` pair (register inputs, 132x44 after rounding) and the reviewer's
   3 chromium results (ActivityFeed tabs) were not root-caused. The oracle was changed to record unrounded sizes and to wait
@@ -858,6 +885,38 @@ Closes F1, F2, F4, F5, F6, F7 of the scaling/chaos review (details in `docs/TEST
 - Nits: pending list filtered inside List(1000,0); registration response echoes the raw settings marker; /health/deep unauthenticated discloses installed tools; auth_handler.go imports unsorted.
 - Operator decision: API image grew ~300 MB -> 761 MB (ffmpeg deps libLLVM/Mesa); accept, use a static ffmpeg, or slim. catalog-web changes UNVERIFIED (no node_modules).
 
+## Converter hardening + registration follow-ups (2026-11-03, branch `fix-converter-hardening`)
+Fixed (RED first, real binaries; see the commit message for the evidence list):
+- F1: ffmpeg runs with `-nostdin`, `-protocol_whitelist file,pipe` and a demuxer allowlist (`-format_whitelist`, so HLS/concat/dash playlists are refused); ImageMagick runs under an embedded `policy.xml` (`MAGICK_CONFIGURE_PATH`, dangerous coders and delegates denied, resource limits), the coder is forced from the file extension, SVG is sanitised and rendered from a private copy; every tool is wrapped in `prlimit` (as, cpu, fsize, nofile, core=0) with a hard timeout and a process-group kill that refuses pgid <= 1.
+- F2: ghostscript is deliberately NOT added (the image is 761 MB; go-fitz already rasterises PDF pages). The ImageMagick PDF fallback now returns a specific "needs ghostscript" error and `/health/deep` reports `convert_pdf` only when `convert` and `gs` are both present. Dockerfile comments and the deployment guide say so.
+- F3: `ProbeConverters` is tested on both sides with stub executables on a temp PATH.
+- F4: `PUT /users/:id` with `is_active` clears the pending marker. F5: admin `PUT /admin/users/:id` rejects a `status` outside active/inactive/suspended with 400 before touching the marker (`suspended` is stored as inactive, as before).
+- F7: `registration_created`, `registration_approved`, `registration_rejected`, `admin_user_status_changed` go to `auth_audit_log` through `AuthService.RecordAuditEvent` (no login name, e-mail or password in details).
+- N1 gofmt of auth_handler.go imports; N2 the registration response no longer echoes the settings marker; N3 decided: `/health/deep` stays boolean-only and unauthenticated (names which tools exist, nothing else); documented here.
+- F6 (partial): `docker-compose.test.yml` sets `REGISTRATION_MODE=open` by default; QA note added to `docs/guides/TESTING_GUIDE.md`.
+
+Still open / UNCONFIRMED:
+- F6: the comprehensive bank (`api-flow-login-registered-user`) and the `UF-API-AUTH-*` challenge were NOT inspected or changed; they need `REGISTRATION_MODE=open` or an approve step on whichever stack runs them.
+- N4: the pending-users list is still filtered inside `List(1000,0)` (users beyond the first 1000 are invisible to the filter).
+- ffmpeg network-protocol reachability (http/tcp) could not be reproduced on this ffmpeg build (the default whitelist already blocks it): the protocol allowlist is defensive, UNCONFIRMED as a fix for a reproduced hole.
+- This host's ghostscript is broken (`convert pdf:x.pdf` fails with `/undefinedfilename`), so the live ImageMagick-PDF test SKIPs here with a reason; it did not run on a working gs.
+- `prlimit --as` uses a host-adaptive value; its fit for very large legitimate media is UNCONFIRMED (no large-file run).
+- Image size decision (761 MB) and catalog-web changes remain as listed in the review round above.
+
+Review round 1 of this branch (NO-GO at 1586248e), addressed in the following commit:
+- F1 fixed: `checkSVGBytes` allows only unprefixed attributes and the svg, xlink and xml namespaces (plus xmlns declarations); `sodipodi:absref`, `inkscape:*` and vendor attributes are refused (`TestHardenLive_SVGForeignNamespaceAttributeRefused`). Cost: SVGs saved by Inkscape with `sodipodi:*` metadata are now refused; they must be exported as plain SVG.
+- F2 fixed: `imageMagickPolicyDir` verifies file and bytes before EVERY run, rewrites it (fresh directory if needed) and refuses the job when that fails (`TestHardenLive_PolicyRestoredBeforeEveryRun`). The Dockerfiles never installed a policy file (it is embedded and applied through MAGICK_CONFIGURE_PATH); their comments say "built-in policy", and the `ImageMagickPolicy` doc comment was corrected.
+- F3 fixed: `CATALOGIZER_CONVERSION_MAX_OUTPUT_BYTES` documented in `docs/ENV_VARIABLES.md` (12b).
+- F4 fixed: env-scrub assertion test (`TestHardenLive_ChildEnvironmentScrubbed`) and the `PUT /users/:id` audit-event test (`TestApproval_F4_UserUpdateRecordsAuditEvent`).
+- F5 (partial): `/health/deep` now reports `convert_svg` (true only with convert AND inkscape or rsvg-convert on PATH). STILL OPEN: the trixie-slim runtime image installs no SVG renderer, so SVG input fails there while `GetSupportedFormats` still lists `svg` as an input; the list is static. Either install `librsvg2-bin` in `Dockerfile`/`Dockerfile.runtime` (UNCONFIRMED that ImageMagick then uses it under the policy) or filter `svg` out of the list when `convert_svg` is false. The golden-FALSE SVG test passes only because Inkscape is on this host.
+- F6 residual: the PDF path through ImageMagick needs ghostscript, which is deliberately not in the image (go-fitz rasterises); `convert_pdf` is false there and the ImageMagick PDF fallback returns a specific error. Not re-verified on a working gs.
+
+Review round 2 (NO-GO at 43d99475), addressed in the following commit:
+- N1/N2/N3 fixed structurally: `sanitizeSVG` re-serialises the SVG from the parsed tree (only SVG-namespace elements, canonical xmlns/xlink declarations, unprefixed/svg/xlink/xml attributes, xlink limited to href/title/role/arcrole/show/actuate/type, no comments/PIs/DOCTYPE/foreign subtrees, attribute values that are absolute paths or URLs refused outside hrefs, duplicate attributes refused, root must be `svg` in the SVG namespace, non-whitespace text before/after the root refused) and the renderer gets only those bytes through the forced `svg:` coder from a private copy.
+- N4/N5 adopted as tests (`TestHardenLive_SVGStyleImportOutsideFileRefused`, `TestHardenLive_SVGRenderedFromForcedCoderPrivateCopy`).
+- N6 OPEN: the ImageMagick policy directory check compares bytes but a symlink at policy.xml pointing at a file with identical bytes is accepted (the target could be swapped afterwards). The directory is private (0700, created by MkdirTemp), so only the same uid can plant it; Lstat + regular-file check would close it.
+- Census limits (UNCONFIRMED): the re-serialised SVG was exercised against Inkscape on this host only; other delegates (rsvg, MSVG) were not run. Entity references other than the five predefined ones are emitted as literal text (escaped), never expanded.
+
 ## Docs sync C4 (2026-11-03) - remaining documentation gaps
 Found by `scripts/docs/check_doc_coverage.py` (guide `docs/scripts/check_doc_coverage.md`, evidence `docs/qa/docs_sync_c4.md`). Status: OPEN until a commit on `main` closes the item.
 - D1: 90 top-level scripts have no `docs/scripts/<name>.md` guide (constitution 11.4.18). They are listed with a reason in `scripts/docs/doc_coverage_exempt.tsv`; write each guide from the script's own behaviour (do not infer) and delete its line. Paths: `scripts/api-down.sh` `scripts/api-up.sh` `scripts/audit-lazy-init.sh` `scripts/audit-semaphores.sh` `scripts/build-all-releases.sh` `scripts/build-test-release.sh` `scripts/ci-local.sh` `scripts/ci-pipeline.sh` `scripts/complete-remaining-tasks.sh` `scripts/deploy-vision-hosts.sh` `scripts/deploy.sh` `scripts/detect-landmines.sh` `scripts/devconnect.sh` `scripts/distributed-boot.sh` `scripts/full-distribute.sh` `scripts/gosec-scan.sh` `scripts/helixqa-orchestrator.sh` `scripts/install-security-tools.sh` `scripts/install-tauri-deps.sh` `scripts/install.sh` `scripts/install_git_hooks.sh` `scripts/local-ci.sh` `scripts/memory-leak-check.sh` `scripts/meta_test_constitution_inheritance.sh` `scripts/mutation_sqlcipher_encryption.sh` `scripts/nancy-scan.sh` `scripts/normalize_submodule_pointers.sh` `scripts/performance-test.sh` `scripts/postgres-down.sh` `scripts/postgres-up.sh` `scripts/pre-flight-check.sh` `scripts/prepare-build-host.sh` `scripts/push_all_submodules.sh` `scripts/python-min-version` `scripts/quick-go-test.sh` `scripts/quick-security-scan.sh` `scripts/quick-start-phase0.sh` `scripts/release-build.sh` `scripts/run-all-platform-tests.sh` `scripts/run-all-security-scans.sh` `scripts/run-all-tests-comprehensive.sh` `scripts/run-all-tests.sh` `scripts/run-android-tests.sh` `scripts/run-api-validation.sh` `scripts/run-desktop-tests.sh` `scripts/run-full-qa.sh` `scripts/run-go-tests.sh` `scripts/run-helixqa-all.sh` `scripts/run-helixqa-android.sh` `scripts/run-helixqa-api.sh` `scripts/run-helixqa-desktop.sh` `scripts/run-helixqa-tests.sh` `scripts/run-helixqa-web.sh` `scripts/run-helixqa.sh` `scripts/run-module-challenges.sh` `scripts/run-race-detector.sh` `scripts/run-security-scan.sh` `scripts/run-sonarqube-scan.sh` `scripts/run-stress-tests.sh` `scripts/safe_submodule_init.sh` `scripts/scan-gosec.sh` `scripts/scan-nancy.sh` `scripts/scan-trivy.sh` `scripts/security-gates.sh` `scripts/security-scan-all.sh` `scripts/security-scan-comprehensive.sh` `scripts/security-scan-full.sh` `scripts/security-scan.sh` `scripts/security-test.sh` `scripts/services-down.sh` `scripts/services-status.sh` `scripts/services-up.sh` `scripts/setup-android-testing.sh` `scripts/setup-android.sh` `scripts/setup-desktop-testing.sh` `scripts/setup-freemium-tokens.sh` `scripts/setup-go-testing.sh` `scripts/setup-implementation.sh` `scripts/setup-security-scanning.sh` `scripts/setup-submodule.sh` `scripts/snyk-scan.sh` `scripts/sonarqube-scan.sh` `scripts/track-progress.sh` `scripts/validate-coverage.sh` `scripts/verify-freemium-setup.sh` `scripts/verify-security-infra.sh` `scripts/verify_constitution_inheritance.sh` `scripts/web-down.sh` `scripts/web-up.sh` `scripts/wire-submodules.sh`.
@@ -923,6 +982,21 @@ Open / not fixed (reason):
 ## Route permissions review (round 4 findings N1-N6)
 - N1 closed: `POST /analytics/access` and `POST /analytics/event` attribute the write to the token's user id (`bindWriteUserID` in `handlers/service_handlers.go`); a body `user_id` naming another account answers 403, an absent one is replaced by the caller's id (before: user_id 0 rows, or forged rows that raised the admin's `GET /analytics/user/1` counts). Real-binary test `TestRoutePerms_RealBinary_AnalyticsWritesCannotForgeUserID` (RED before) and mutations (see the round report). Control-needled census of handlers reading a user or owner id from body, query or path: mounted routes read the id from the token (`c.Get("user_id")`, `r.Context().Value("user_id")`) except `Param("user_id")` in `GetUserAnalytics` and `recommendations/personalized/:user_id`, both behind `RequireSelfOrAdmin`. No other mounted handler binds a user id from the body. UNMOUNTED, not reachable today: `internal/handlers/media_player_handlers.go` binds `services.UpdatePositionRequest`, `BookmarkRequest`, `ReorderPlaylistRequest` and others that carry `user_id` in the body, and `internal/handlers/localization_handlers.go` `SetupWizardLocalization` accepts a body `UserID`; their constructors (`NewMediaPlayerHandlers`, `NewLocalizationHandlers`) are called only from tests. Whoever mounts them must take the user id from the token first (P2-u).
 - N2 (important, OPEN in this branch): `media_collections` has no owner column, so any authenticated user can PUT/DELETE/POST any collection (reviewer live proof: bob `PUT`/`DELETE /collections/1` answered 200). CLOSED BY the pending `feat-smart-collections` branch (migration 23 adds owner and is_public; writes need the owner or an admin; ownerless collections are admin only). It MUST land before or with the release. Not touched here, to avoid conflicts. Regression test: `TestRoutePerms_RealBinary_CollectionOwnership` in `route_perms_round1_binary_test.go` is skipped with that reason until the branch lands (run it today with `CATALOGIZER_RUN_N2=1`: RED, bob's PUT and DELETE answer 200); remove the skip when it merges. N1 mutations: forge check removed, body id not overwritten, LogEvent unbound, LogMediaAccess unbound, 403 turned into 400, zero-id rejected (mut7) are all killed by the real-binary test; the unauthenticated branch of `bindWriteUserID` is unreachable behind the auth middleware and is pinned by the unit test `TestBindWriteUserID_ContextWithoutCallerIsRefused`.
+- F-A (round 3, closed): `getWebDAVClient` reused the client cached by endpoint id even after a URL or credential change; it now reuses it only when URL, username and password match. Tests `TestSyncService_CredentialOnlyUpdateUsesNewCredentials` and `TestSyncService_WrongNewPasswordIsRefusedNotTestedWithOldCredentials` (RED before); dropping the comparison is killed by both. F-B: the SelfOrAdmin real-binary test now includes a prefix-sharing id.
 - N4 (minor): another user's playlist `PUT`/`DELETE` answers 500 instead of 404. Closed by the same branch (`ownedPlaylist` returns 404). Not touched here.
 - N5 (flaky, pre-existing): `tests/stress` `CacheWriteThroughput` has a floor of 100 ops that fails under `-p 4` load. Make the floor relative or run it serially.
 - N6 (pre-existing, fails on plain main): `internal/tests/examples` `TestUserRepositoryExample` panics on a nil value.
+
+## UI D1/D2 landing follow-ups (reviewer GO-with-follow-ups, 2026-11-03)
+- UI-F5: force socket down via routeWebSocket, cover /login and more than one fine-pointer viewport.
+- UI-F7: commit firefox/webkit evidence JSON.
+- UI-F8: run clean `npm ci`; missing `@testing-library/dom` devDependency not reproduced.
+- UI-F2..F4, version chip overlap at 320, chevrons, dev stats: see UI branch notes.
+- Full vitest/eslint not run after merging main bd8e52e4.
+
+## Converter hardening landing follow-ups (reviewers GO / GO-with-follow-ups, 2026-11-03)
+- CV-F1: add census entry for text after `</svg>` (mutation M4 survives).
+- CV-F2: refusal census should assert which refusal fired, not just assert.Error.
+- CV-F3: fix doc comment on imageMagickCoder (returns "svg:", not "").
+- CV-F4: renderer-side CSS parser-differential classes (CSS escapes in url(, other fetch functions) not covered by the independent payload review; a second reviewer's hands-on attacks found no leak. Residual: UNCONFIRMED for other renderers.
+- CV-F5: Inkscape-metadata and UTF-16 SVGs are refused; consider dropping foreign attrs instead of refusing; document UTF-16; update note on rsvg-convert coverage.

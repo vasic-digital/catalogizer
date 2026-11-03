@@ -46,6 +46,11 @@ vi.mock('react-router-dom', async () => ({
   useNavigate: () => mockNavigate,
 }))
 
+// ConnectionStatus reads the WebSocket provider; it has its own tests. Here only its slot in the header is asserted.
+vi.mock('@/components/ui/ConnectionStatus', async () => ({
+  ConnectionStatus: () => <div data-testid="connection-status-slot" />,
+}))
+
 // Mock framer-motion to avoid animation issues in tests
 vi.mock('framer-motion', async () => ({
   motion: {

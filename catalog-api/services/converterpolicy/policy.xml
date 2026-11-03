@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Catalogizer ImageMagick security policy for the conversion worker (services/converter_hardening.go
+  embeds this file and points MAGICK_CONFIGURE_PATH at a copy; the runtime images also install it as
+  /etc/ImageMagick-7/policy.xml). Input files are user-controlled, so everything that can make
+  ImageMagick read another local file, make a network request, run a script or render arbitrary
+  text is denied. The first matching rule wins in ImageMagick, so the denials come before the
+  resource limits and nothing here relies on the distribution policy.
+-->
+<policymap>
+  <!-- active content / indirect reads / network: ImageTragick class -->
+  <policy domain="coder" rights="none" pattern="MVG"/>
+  <policy domain="coder" rights="none" pattern="MSL"/>
+  <policy domain="coder" rights="none" pattern="URL"/>
+  <policy domain="coder" rights="none" pattern="HTTPS"/>
+  <policy domain="coder" rights="none" pattern="HTTP"/>
+  <policy domain="coder" rights="none" pattern="FTP"/>
+  <policy domain="coder" rights="none" pattern="EPHEMERAL"/>
+  <policy domain="coder" rights="none" pattern="TEXT"/>
+  <policy domain="coder" rights="none" pattern="LABEL"/>
+  <policy domain="coder" rights="none" pattern="CAPTION"/>
+  <policy domain="coder" rights="none" pattern="PANGO"/>
+  <policy domain="coder" rights="none" pattern="SCRIPT"/>
+  <policy domain="coder" rights="none" pattern="INLINE"/>
+  <policy domain="coder" rights="none" pattern="VID"/>
+  <policy domain="coder" rights="none" pattern="MPEG"/>
+  <policy domain="coder" rights="none" pattern="SHOW"/>
+  <policy domain="coder" rights="none" pattern="WIN"/>
+  <policy domain="coder" rights="none" pattern="X"/>
+  <!-- PostScript family: arbitrary programs for Ghostscript (PDF stays readable, see below) -->
+  <policy domain="coder" rights="none" pattern="PS"/>
+  <policy domain="coder" rights="none" pattern="PS2"/>
+  <policy domain="coder" rights="none" pattern="PS3"/>
+  <policy domain="coder" rights="none" pattern="EPS"/>
+  <policy domain="coder" rights="none" pattern="EPS2"/>
+  <policy domain="coder" rights="none" pattern="EPS3"/>
+  <policy domain="coder" rights="none" pattern="EPSF"/>
+  <policy domain="coder" rights="none" pattern="EPSI"/>
+  <policy domain="coder" rights="none" pattern="EPT"/>
+  <policy domain="coder" rights="none" pattern="XPS"/>
+  <!-- delegates that fetch or execute -->
+  <policy domain="delegate" rights="none" pattern="URL"/>
+  <policy domain="delegate" rights="none" pattern="HTTPS"/>
+  <policy domain="delegate" rights="none" pattern="HTTP"/>
+  <policy domain="delegate" rights="none" pattern="FTP"/>
+  <policy domain="delegate" rights="none" pattern="mpeg:decode"/>
+  <policy domain="delegate" rights="none" pattern="mpeg:encode"/>
+  <!-- "@file" and "@*" paths read a list of files; no filter modules -->
+  <policy domain="path" rights="none" pattern="@*"/>
+  <policy domain="filter" rights="none" pattern="*"/>
+  <policy domain="Undefined" rights="none"/>
+  <!-- resource limits -->
+  <policy domain="resource" name="memory" value="512MiB"/>
+  <policy domain="resource" name="map" value="1GiB"/>
+  <policy domain="resource" name="disk" value="2GiB"/>
+  <policy domain="resource" name="area" value="128MP"/>
+  <policy domain="resource" name="width" value="32KP"/>
+  <policy domain="resource" name="height" value="32KP"/>
+  <policy domain="resource" name="list-length" value="64"/>
+  <policy domain="resource" name="thread" value="2"/>
+  <policy domain="resource" name="time" value="3600"/>
+</policymap>

@@ -72,18 +72,23 @@ export const ConnectionStatus: React.FC = () => {
 
   const config = getStatusConfig()
 
+  // Docked in the page header (see Header.tsx), in normal flow: it can never float over page content or
+  // other header controls. Icon-only below `sm` (the text stays available to screen readers), icon + text from `sm`.
   return (
     <AnimatePresence>
       {showStatus && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          className="fixed z-50 pointer-events-none bottom-10 left-4 right-4 flex justify-end sm:bottom-auto sm:left-auto sm:top-20 sm:right-4 sm:max-w-[calc(100vw-2rem)]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          role="status"
+          aria-live="polite"
+          data-testid="connection-status"
+          className="flex-none"
         >
-          <div className={`${config.color} ${config.textColor} px-3 py-2 rounded-lg shadow-lg flex items-center space-x-2 text-sm font-medium`}>
+          <div className={`${config.color} ${config.textColor} px-2 sm:px-3 py-1.5 rounded-lg shadow flex items-center gap-2 text-sm font-medium`}>
             {config.icon}
-            <span>{config.text}</span>
+            <span className="sr-only sm:not-sr-only whitespace-nowrap">{config.text}</span>
           </div>
         </motion.div>
       )}

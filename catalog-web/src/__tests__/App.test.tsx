@@ -132,9 +132,9 @@ describe('App', () => {
       expect(authProvider).toContainElement(websocketProvider)
     })
 
-    it('renders ConnectionStatus globally', () => {
+    it('does not render ConnectionStatus globally (docked in Header, D1)', () => {
       render(<App />)
-      expect(screen.getByTestId('connection-status')).toBeInTheDocument()
+      expect(screen.queryByTestId('connection-status')).not.toBeInTheDocument()
     })
 
     it('sets up Router correctly', () => {
@@ -329,7 +329,7 @@ describe('App', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('login-form')).toBeInTheDocument()
-        expect(screen.getByTestId('connection-status')).toBeInTheDocument()
+        expect(screen.queryByTestId('connection-status')).not.toBeInTheDocument()
       })
     })
 
@@ -339,22 +339,22 @@ describe('App', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('layout')).toBeInTheDocument()
-        expect(screen.getByTestId('connection-status')).toBeInTheDocument()
+        expect(screen.queryByTestId('connection-status')).not.toBeInTheDocument()
       })
     })
 
-    it('renders ConnectionStatus on public routes', async () => {
+    it('does not float ConnectionStatus on public routes', async () => {
       (global as any).testInitialRoute = '/login'
       render(<App />)
 
-      expect(screen.getByTestId('connection-status')).toBeInTheDocument()
+      expect(screen.queryByTestId('connection-status')).not.toBeInTheDocument()
     })
 
-    it('renders ConnectionStatus on protected routes', async () => {
+    it('does not float ConnectionStatus on protected routes', async () => {
       (global as any).testInitialRoute = '/dashboard'
       render(<App />)
 
-      expect(screen.getByTestId('connection-status')).toBeInTheDocument()
+      expect(screen.queryByTestId('connection-status')).not.toBeInTheDocument()
     })
   })
 })

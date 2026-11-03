@@ -2,7 +2,6 @@ import React, { Suspense, useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { WebSocketProvider } from '@/contexts/WebSocketContext'
-import { ConnectionStatus } from '@/components/ui/ConnectionStatus'
 import { Layout } from '@/components/layout/Layout'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
@@ -55,7 +54,6 @@ function App() {
       <AuthProvider>
         <WebSocketProvider>
           <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-            <ConnectionStatus />
             <Suspense fallback={<PageLoader />}>
               <Routes>
               {/* Public routes */}

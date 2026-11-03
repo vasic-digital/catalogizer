@@ -34,9 +34,11 @@ import (
 // path; fail = write a partial file and exit 1; none = exit 0 without writing. The output path is the last argument, the
 // second for ebook-convert, the argument after -o for pandoc, and --outdir/<src>.html for
 // libreoffice.
-func rv7FakeTool(t *testing.T, name, mode string) {
+func rv7FakeTool(t *testing.T, name, mode string) (ranMark string) {
 	t.Helper()
 	bin := t.TempDir()
+	ranMark = filepath.Join(bin, "tool-ran")
+	// The hardened launcher gives tools a scrubbed environment: mode and mark are baked into the script.
 	script := `#!/bin/sh
 set -u
 for a in "$@"; do out="$a"; done
@@ -46,8 +48,7 @@ case "` + name + `" in
   libreoffice) prev=""; for a in "$@"; do [ "$prev" = "--outdir" ] && dir="$a"; prev="$a"; done
                b=$(basename "$out"); out="$dir/${b%.*}.html" ;;
 esac
-[ -n "${FAKE_MARK:-}" ] && : > "$FAKE_MARK"
-case "$FAKE_MODE" in
+` + ": > '" + ranMark + "'\n" + `case "` + mode + `" in
   single) printf OUT > "$out" ;;
   multi)  base="${out%.*}"; ext="${out##*.}"; printf F0 > "$base-0.$ext"; printf F1 > "$base-1.$ext" ;;
   pct)    printf F0 > "$(printf "$out" 0)"; printf F1 > "$(printf "$out" 1)" ;;
@@ -58,7 +59,7 @@ esac
 `
 	require.NoError(t, os.WriteFile(filepath.Join(bin, name), []byte(script), 0o755))
 	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
-	t.Setenv("FAKE_MODE", mode)
+	return ranMark
 }
 
 // rv7Victim plants a file outside the conversion root and returns its path.
@@ -235,9 +236,7 @@ b=$(basename "$out"); printf LO > "$dir/${b%.*}.html"
 // T1: a FIFO or a directory at the target is refused before any tool runs (not only symlinks).
 func TestRV7_NonRegularTargetLeavesAreRefused(t *testing.T) {
 	root, _, src := rv6ConvFixture(t)
-	rv7FakeTool(t, "convert", "single")
-	mark := filepath.Join(t.TempDir(), "tool-ran")
-	t.Setenv("FAKE_MARK", mark)
+	mark := rv7FakeTool(t, "convert", "single")
 	fifo := filepath.Join(root, "fifo.bmp")
 	require.NoError(t, syscall.Mkfifo(fifo, 0o644))
 	dir := filepath.Join(root, "dir.bmp")
@@ -314,9 +313,7 @@ func TestRV7_RealImageMagickMultiFrameLink(t *testing.T) {
 // outside the roots for the duration of the run).
 func TestRV7_ConverterTargetOutsideRootsRefusedBeforeToolRuns(t *testing.T) {
 	_, outside, src := rv6ConvFixture(t)
-	rv7FakeTool(t, "ffmpeg", "single")
-	mark := filepath.Join(t.TempDir(), "tool-ran")
-	t.Setenv("FAKE_MARK", mark)
+	mark := rv7FakeTool(t, "ffmpeg", "single")
 	err := (&ConversionService{}).convertVideo(&models.ConversionJob{SourcePath: src, TargetPath: filepath.Join(outside, "out.mp4")})
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "target path")
