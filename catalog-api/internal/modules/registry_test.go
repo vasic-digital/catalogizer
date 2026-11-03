@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"digital.vasic.memory/pkg/memory"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -263,4 +264,16 @@ func TestRegistryLogger_Debug(t *testing.T) {
 	l := &registryLogger{}
 	// Should not panic (debug is suppressed)
 	l.Debug("debug message", "key", "value")
+}
+
+func TestClassifyMemoryAlert(t *testing.T) {
+	// S1: the observed false positive - heap ratio 1.45, 205 goroutines (flagged only by the goroutine criterion)
+	got := classifyMemoryAlert(memory.LeakReport{HeapGrowthRatio: 1.45, GoroutineCount: 205, InitialGoroutines: 29}, memoryHeapThresholdRatio)
+	assert.Equal(t, memoryTriggerGoroutines, got)
+	// a real heap blow-up stays an alert
+	got = classifyMemoryAlert(memory.LeakReport{HeapGrowthRatio: 12.5, GoroutineCount: 30, InitialGoroutines: 29}, memoryHeapThresholdRatio)
+	assert.Equal(t, memoryTriggerHeap, got)
+	// boundary: exactly the threshold is not above it
+	got = classifyMemoryAlert(memory.LeakReport{HeapGrowthRatio: memoryHeapThresholdRatio}, memoryHeapThresholdRatio)
+	assert.Equal(t, memoryTriggerGoroutines, got)
 }

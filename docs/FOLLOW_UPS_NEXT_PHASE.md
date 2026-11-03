@@ -769,3 +769,21 @@ Remaining, listed for the next iteration:
 - F4 (nit): gofmt turned SQL '' into a typographic quote in comments at catalog-api/handlers/media_entity_handler.go:913 and media_entity_handler_test.go:470; rephrase.
 - F5 (minor): strict response.ok handlers in CollectionSharing and the template apply path are unreachable behind SHARE_API_AVAILABLE / TEMPLATE_APPLY_AVAILABLE=false and are untested.
 - F6 (nit): run-helixqa.sh without curl -f reports status 000000 on connection failure (still FAIL).
+### S1 resolution (memory soak, 2026-11-03, branch `fix-s1-leak`)
+
+- S1 is NOT an unbounded Go-heap leak. Reproduced with `TestLiveSoak` (new, `catalog-api/scaling_soak_live_test.go`): 30 identical rounds at 32 clients, RSS 183 -> 298 MiB (+115) while Go `HeapSys` stayed 44 -> 52 MiB and post-GC heap objects stayed about 24k. Cause CONFIRMED by smaps (54 glibc malloc arenas, about 190 MiB anonymous) and by the control `MALLOC_ARENA_MAX=2` (+12 MiB over 16 rounds, one arena). The earlier suspect (rate limiter) is REFUTED as the cause of the ramp (the 4-IP `fewips` run ramps the same way) but is a REAL separate defect (below).
+- Fixed: arena cap applied in a load-time C constructor (`main_malloc_glibc.go`; mallopt from Go `init()` was measured ineffective, still 54 arenas); operator `MALLOC_ARENA_MAX` wins. Test `TestMallocArenaCapAppliedAtLoad` (RED when the mallopt call is disabled: `applied=0`). Live result after the fix: 70 rounds plateau at about 170 MiB (slope about 0 over rounds 51-70).
+- Fixed: `RateLimitByUser` retained one entry per distinct client forever (real, bounded only by client cardinality; about 6 heap objects per client measured). New `internal/auth/ratelimit.go` sweeps idle keys at most once per window. Tests (RED first, 2 of 3 failed with 5001 / 2001 retained keys): `TestSlidingWindowLimiter_EvictsIdleKeys`, `..._EvictionKeepsLiveKeysLimited`, `TestRateLimitByUser_BoundedAcrossManyClients`; mutations run: disabling the sweep fails all three, evicting live keys fails the keeps-live test.
+- Fixed (monitor false positive): the `MEMORY ALERT` fired on the goroutine criterion (>1.5x start-up baseline) with heap ratio 1.45 against a 10x threshold. Goroutines: 29 to 30 idle, 207 to 256 peak during 64 clients (measured mid-round), back to 29. The callback now logs `MEMORY NOTICE` at info level with a `trigger` field for goroutine-only flags, and `MEMORY ALERT` only for the heap criterion (`classifyMemoryAlert`, test `TestClassifyMemoryAlert`). Start-up log said threshold 3x; it is 10x (fixed).
+- Open: the Go side of the monitor still reads `GetReport()` from the third-party-style `digital.vasic.memory` module (unchanged, submodule untouched); a goroutine criterion relative to a start-up baseline is structurally load-correlated, consider a request-concurrency-aware threshold upstream. Musl/non-cgo builds have no arena cap (no-op); Alpine/musl images were not measured. A 30 to 60 minute soak with write paths and non-search endpoints has not been run (70 x 6 s rounds only).
+
+## S1 memory fix review (round 1, GO-with-follow-ups)
+- F1 (minor): no concurrent test for the rate limiter sweep dead-entry protocol (reviewer mutations M4/M5/M9 survive -race); add a parallel allow+sweep test asserting exact in-window counts.
+- F2 (minor, docs): arena counts in TESTING_GUIDE/FOLLOW_UPS ("54 before / 6 after") are not reproducible; reviewer counted 44-46 before and 1 after (64 MiB-aligned mappings); restate with the counting command (scratchpad arenas.py approach).
+- F3 (nit, docs): 70-round row "162 -> 167" should read about 165.6 -> 171.1 MiB.
+- F4 (minor): GLIBC_TUNABLES=glibc.malloc.arena_max is silently overridden by mallopt; skip when set or document.
+- F5 (nit): "no-op on musl" holds only with the custom musl tag; the build requires glibc (bionic/musl cgo builds would not compile).
+- F6 (minor): goroutine-only trigger demotion cannot tell load-correlated counts from a real goroutine leak at idle; add a sustained-growth-at-idle signal.
+- F7 (minor): sweep is O(n) in the triggering request once per window; lastSweep uses wall clock (backward step delays sweeps).
+- F8/F9 (nit): arena test proves constructor ran, not the arena count; test-only limiter field on production struct.
+- UNCONFIRMED: p99 latency effect of M_ARENA_MAX=2 under 64 clients (not measured).
