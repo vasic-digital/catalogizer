@@ -1207,4 +1207,4 @@ test: add integration tests for SMB discovery
 
 ---
 
-*For server administration, see the [Admin Guide](ADMIN_GUIDE.md). For end-user documentation, see the [User Guide](USER_GUIDE.md). For quick reference, see the [Quick Reference](QUICK_REFERENCE.md).*
+*For server administration, see the [Admin Guide](ADMIN_GUIDE.md). For end-user documentation, see the [User Guide](USER_GUIDE.md). For quick reference, see the [Quick Reference](../QUICK_REFERENCE.md).*

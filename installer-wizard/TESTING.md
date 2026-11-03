@@ -239,9 +239,7 @@ jobs:
 ## 📚 Testing Resources
 
 ### Internal Documentation
-- [Component Testing Guide](./docs/testing/components.md)
-- [Context Testing Guide](./docs/testing/contexts.md)
-- [Service Testing Guide](./docs/testing/services.md)
+- Component, context and service tests live under `installer-wizard/src` next to the code (no separate guides are written yet)
 
 ### External Resources
 - [Vitest Documentation](https://vitest.dev/)

@@ -1,4 +1,4 @@
-> **SUPERSEDED** — This document was a planning artifact from an earlier phase. The work described here has been completed or superseded by the [2026-03-26 Project Completion Plan](../superpowers/plans/2026-03-26-project-completion-plan.md). Retained for historical reference.
+> **SUPERSEDED** — This document was a planning artifact from an earlier phase. The work described here has been completed or superseded by the [2026-03-26 Project Completion Plan](superpowers/plans/2026-03-26-project-completion-plan.md). Retained for historical reference.
 
 ---
 

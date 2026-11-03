@@ -680,4 +680,4 @@ go run main.go
 - [Development Setup Guide](DEVELOPMENT_SETUP.md)
 - [Protocol Implementation Guide](PROTOCOL_IMPLEMENTATION_GUIDE.md)
 - [API Documentation](../api/API_DOCUMENTATION.md)
-- [Security Guide](../security/SECURITY_GUIDE.md)
+- [Security Guide](../security/README.md)

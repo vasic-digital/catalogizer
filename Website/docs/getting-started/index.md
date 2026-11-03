@@ -185,11 +185,10 @@ After installation, access Catalogizer in your browser:
 
 Congratulations! You now have Catalogizer installed and running. Here are some next steps:
 
-- [Browse your media library](../user-guide/media-browsing.md)
-- [Learn about collections](../user-guide/collections.md)
-- [Set up automatic organization](../user-guide/automation.md)
-- [Install mobile apps](../user-guide/mobile-setup.md)
-- [Configure advanced settings](../user-guide/settings.md)
+- [Browse your media library with the web app](../../guides/web-app.md)
+- [Install the Android app](../../guides/android.md)
+- [Install the Android TV app](../../guides/android-tv.md)
+- [Configure advanced settings](../../guides/configuration.md)
 
 ## Troubleshooting
 
@@ -234,7 +233,7 @@ sudo chown -R $USER:$USER /path/to/catalogizer
 
 ## Need Help?
 
-- [Documentation](../user-guide/)
+- [Documentation](../../documentation.md)
 - [Community Forum](https://forum.catalogizer.com)
 - [Discord Server](https://discord.gg/catalogizer)
 - [Report Issues](https://github.com/catalogizer/catalogizer/issues)

@@ -206,8 +206,8 @@ open reports/coverage/trend.png
 ### Architecture
 - [ADR-001: Dual Database Dialect](docs/architecture/decisions/ADR-001-dual-database-dialect.md)
 - [ADR-002: Submodule Architecture](docs/architecture/decisions/ADR-002-submodule-architecture.md)
-- [ADR-003: HTTP/3 Requirement](docs/architecture/decisions/ADR-003-http3-requirement.md)
-- [ADR-004: Challenge-Based Testing](docs/architecture/decisions/ADR-004-challenge-testing.md)
+- [ADR-003: HTTP/3 Requirement](docs/architecture/decisions/ADR-003-http3-quic-requirement.md)
+- [ADR-004: Challenge-Based Testing](docs/architecture/decisions/ADR-004-challenge-based-testing.md)
 
 ### Guides
 - [Developer Guide](docs/DEVELOPER_GUIDE.md)
