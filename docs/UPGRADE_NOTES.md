@@ -44,3 +44,11 @@ register page, integration tests) must either handle the pending state or run ag
 `REGISTRATION_MODE=open`. An unrecognised `REGISTRATION_MODE` value falls back to `approval` and is
 logged. No database migration is needed (the pending marker lives in the user's settings JSON).
 Reference: `docs/ENV_VARIABLES.md`, `docs/architecture/AUTH_FLOW.md`, `docs/api/openapi.yaml`.
+
+## Smart collections: legacy collections become admin-edit-only
+
+Migration 23 adds `owner_user_id` and `is_public` to `media_collections`. Collections created before it
+have no owner (`owner_user_id` NULL). They stay readable by every authenticated user, but only an
+administrator can edit or delete them; an owned collection is editable by its owner and by administrators.
+To hand a legacy collection to a user, set its `owner_user_id` (administrator action). Covered by
+`catalog-api/handlers/collection_ownerless_test.go`.

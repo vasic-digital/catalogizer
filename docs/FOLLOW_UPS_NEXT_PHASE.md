@@ -809,11 +809,11 @@ Closes F1, F2, F4, F5, F6, F7 of the scaling/chaos review (details in `docs/TEST
 ## Smart collections and smart playlists (feat-smart-collections)
 - Implemented: closed rule language `internal/smartrules` (parameterised SQL only), evaluation at read time, `GET /collections/:id/items`, smart playlists, owner/admin authz, migration 23. Guide: docs/guides/SMART_COLLECTIONS_GUIDE.md.
 - UNVERIFIED (no `node_modules` in the scratch clone or the live checkout, so vitest and `tsc --noEmit` were not run): the catalog-web edits (Playlists.tsx smart save, SmartPlaylistBuilder.tsx, CollectionTemplates.tsx text, the three updated/added test files).
-- UNCONFIRMED: Postgres. The migration (ADD COLUMN IF NOT EXISTS) and the compiled SQL for the Postgres dialect were not run against a real Postgres.
+- Postgres: tested against a real postgres:15-alpine (rootless podman) by `internal/smartrules/smartrules_pg_test.go` (edge cases and a field x operator parity matrix); see docs/SMART_COLLECTION_RULES.md. The migration `ADD COLUMN IF NOT EXISTS` itself is exercised by `RunMigrations` in that run.
 - Open: collection templates (CollectionTemplates.tsx) use fields and values the rule language rejects (category, ai_score, trending_score, user_preference_match, `30_days_ago`, media type `audio`, `is_not_empty`); applying stays disabled with a reason until they are rewritten.
 - Open: the Collections page does not show smart items yet (the page lists collections; the items endpoint exists and `collectionsApi.getCollectionItems` already targets it).
 - Open: `image` media type matches nothing (the catalogue has no image media type); `tags` supports only contains / not_contains (comma-separated text column).
-- Open: no per-user cap on the number of smart collections; each read evaluates the rules (bounded by the 500-item page cap and rule limits, no timing benchmark taken).
+- Per-user caps: 50 smart collections (`MaxSmartCollectionsPerUser`) and 50 smart playlists (`MaxSmartPlaylistsPerUser`); each read evaluates the rules (bounded by the 500-item page cap, list count cap 1000 and rule limits, no timing benchmark taken).
 
 ## Registration approval + converter tools in the API image (2026-11-03, branch `feat-registration-approval-ffmpeg`)
 
@@ -856,7 +856,7 @@ Found by `scripts/docs/check_doc_coverage.py` (guide `docs/scripts/check_doc_cov
 - N1-N5: MALLOC_ARENA_MAX condition (cgo && linux && !musl); scripts check covers top-level scripts/<file> only; empty/unparseable openapi exits 1 not 2/3; missing --exempt path treated as empty silently; shebang without exec bit.
 
 ## Smart collections round 1 follow-ups
-- SC1: the Postgres jsonb branches (genre, quality, tags) are written but untested (no Postgres in this run); UNCONFIRMED.
+- SC1 (resolved): the Postgres jsonb branches (genre, quality) now run against a real Postgres in `smartrules_pg_test.go`; tags are comma-separated text and use the text path.
 - SC2 (F7): case-insensitive matching is ASCII-only on SQLite; non-ASCII folding is not done.
 - SC3 (F10): SmartCollectionBuilder still offers options the server rejects (artist, album, decade, play_count, last_played, file_extension, bitrate, resolution, fps, channels, subtitles, is_empty, last_N_days); aliases were added for is_favorite/file_size/duration/date_modified only. catalog-web edits are UNVERIFIED (no node_modules).
 - SC4: control characters (\x01-\x03) are rejected in values; values with control characters never match JSON-encoded columns.
@@ -898,3 +898,7 @@ Open / not fixed (reason):
 - QC6 (nit): `personalized/${ME_ID:-0}` cannot detect a failed id lookup when run as admin.
 - QC7 (nit): qa_registration.sh header names docker-compose.qa.yml; the setting is in docker-compose.test.yml.
 - QC8 (gap): the docker-compose.qa.yml helixqa-api loop was read, not executed.
+- SC6 (review round 3, finding 4): Postgres `::jsonb` casts run on text that may not be valid JSON (a legacy plain-text genre, malformed quality_info) and can raise an error for the whole query; the guards only test the first character.
+- SC7 (review round 3, finding 5): the per-user cap check (count then insert) is not atomic; concurrent creates can exceed the cap by a few.
+- SC8 (review round 3, finding 6): `fillLiveCounts` shares one per-request deadline, so a slow early collection starves the later ones in a list.
+- SC9 (review round 3, finding 7): error mapping of rule/evaluation failures to HTTP statuses is coarse (some evaluation errors surface as 500).

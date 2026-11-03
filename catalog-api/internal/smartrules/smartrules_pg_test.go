@@ -147,6 +147,9 @@ func seedEdge(t *testing.T, db *database.DB, pg bool) map[string]int64 {
 func edgeCases(t *testing.T, db *database.DB, pg bool) {
 	ctx := context.Background()
 	ids := seedEdge(t, db, pg)
+	// language/country are NULL for every row but Uni: negations must still match the NULL rows.
+	_, err0 := db.Exec(`UPDATE media_items SET language = 'pt', country = 'BR' WHERE title = 'Uni'`)
+	require.NoError(t, err0)
 	type tc struct {
 		doc  string
 		want []string
@@ -179,6 +182,12 @@ func edgeCases(t *testing.T, db *database.DB, pg bool) {
 		{rule("quality", "equals", "1080p"), []string{}}, // nested key: not reachable from the QualityInfo writer
 		{rule("quality", "contains", "null"), []string{}},
 		{rule("quality", "not_equals", "x"), []string{"Back", "Comma", "Empty", "Inj", "Nil", "SciFi", "Sep", "Uni"}},
+		{rule("language", "equals", "PT"), []string{"Uni"}},
+		{rule("language", "not_equals", "pt"), []string{"Back", "Comma", "Empty", "Inj", "Nil", "SciFi", "Sep"}},
+		{rule("language", "not_in", []string{"pt", "zz"}), []string{"Back", "Comma", "Empty", "Inj", "Nil", "SciFi", "Sep"}},
+		{rule("country", "not_equals", "br"), []string{"Back", "Comma", "Empty", "Inj", "Nil", "SciFi", "Sep"}},
+		{rule("country", "not_in", []string{"br"}), []string{"Back", "Comma", "Empty", "Inj", "Nil", "SciFi", "Sep"}},
+		{rule("country", "not_contains", "r"), []string{"Back", "Comma", "Empty", "Inj", "Nil", "SciFi", "Sep"}},
 		{rule("title", "equals", "' OR 1=1 --"), []string{}},
 		{rule("title", "contains", "%"), []string{}},
 	}
