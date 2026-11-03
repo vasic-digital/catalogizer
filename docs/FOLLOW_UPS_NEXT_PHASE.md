@@ -658,3 +658,26 @@ Authz round-2 additions (landed with fix-authz-gaps):
 - T4 (latent, minor): `UserHandler.UpdateUserSettings` (user_handler.go ~763-781) full-row `Update` from a stale read; unrouted today; use `UpdateGuarded` or limit to the settings column before routing.
 - P2 (source-defect, pre-existing, IMPORTANT, new item): `POST /storage/roots`, `/smb/*`, `POST /scans`, `/smb/probe-and-ingest` (main.go ~1349-1388) have no permission check; registration is open, so any self-registered user can create storage roots, queue scans and probe/ingest SMB hosts. UNCONFIRMED whether a `local` root outside the configured base is accepted. Being fixed with systematic debugging.
 - P3 (minor, operator decision): `/metrics` unauthenticated; `/debug/pprof` unauthenticated when `HELIX_PPROF_ENABLED=true`.
+
+## Live scaling / stress / chaos suite (2026-11-03, branch `test-scaling-chaos`)
+
+- Added `scripts/test-infra/scaling_live.sh` and `catalog-api/scaling_live_test.go` (tag `live`); guide section "Scaling and chaos (live)" in `docs/TESTING_GUIDE.md`. Measured on a shared host, host-dependent.
+- FIXED here (RED first): `FileRepository.SearchFiles` pool deadlock (metadata query while the result cursor was open); beyond 25 concurrent searches the API stalled until clients timed out (32 clients: 19 x 200 in 10 s, p99 about 29.9 s). Test: `repository/file_repository_pool_test.go`.
+- S1 (open, UNCONFIRMED): RSS grew from 146 to 257 MiB across 9 load rounds (about 2 minutes of cumulative 8/32/64-client load is not enough to tell warm-up from a leak) and the module monitor logged `MEMORY ALERT: potential leak detected` once at 64 clients. Needs a 30 to 60 minute soak with heap profiles (`HELIX_PPROF_ENABLED=true`, `/debug/pprof/heap`); suspects to check first: the per-IP sliding-window rate limiter (`internal/auth/middleware.go`, `RateLimitByUser` rebuilds a timestamp slice per request and never evicts idle keys) and gin/zap request logging buffers.
+- S2 (open): `getFileMetadata` is still an N+1 query per result row (50 queries per `search/files` page). The pool deadlock is gone, but a single batched `WHERE file_id IN (...)` query would cut per-request latency and pool pressure; `GetFileByID` is unaffected.
+- S3 (open): `RateLimitByUser` keys on client IP (the user branch is never taken because the JWT middleware stores `user_id` under a different context key than `GetCurrentUser` reads), so all users behind one NAT share 2000 requests/min and 30 logins/min. The live suite works around it with distinct loopback source IPs and documents it.
+- S4 (open, by design today): when the DB is starved the session checker answers 401 after 3 s (fail closed). Operators see 401 instead of 503; consider 503 + `Retry-After` for a checker timeout (decision pending).
+- S5: `/debug/pprof/*` is registered on the public router when `HELIX_PPROF_ENABLED=true` (the suite relies on it for goroutine counts); confirm it is never enabled in a published configuration.
+- Not covered by the live suite: write-heavy load, SMB/WebDAV/NFS backends, Postgres, TLS listener, more than 64 clients, multi-instance on one DB (F6).
+
+## Scaling/chaos review r1 follow-ups (GO-with-follow-ups, 2026-11-03)
+
+Source fix (SearchFiles pool deadlock) confirmed correct (RED reproduced, semantics unchanged). Findings on the suite and class:
+- F1 (test-instrumentation, important): `evaluateRound` never flags 401/403/404; a round of 90% 401 passes (the pre-fix session-checker symptom). Bound non-200/non-429 share or fail on any 401/403 after login.
+- F2 (test-instrumentation, important): a `go build` failure becomes SKIP (exit 77) in `scaling_live_test.go:93`; `scaling_live.sh:46` exits 0 on partial pass+skip. Build failure must FAIL; partial run needs a distinct exit code.
+- F3 (minor): stress/chaos/sigterm evidence written only after assertions pass; `exe_sha256` never asserted equal to `buildInfo.sha256`.
+- F4 (minor): 5xx check unit-tested with "500" only (mutation 503 survives).
+- F5 (source-defect, minor, same class as the fix): nested pooled query while an outer cursor is open, same deadlock risk under concurrency: `handlers/admin_handler.go:293` GetStorageInfo; `internal/services/catalog.go:443` GetDuplicateGroups; `repository/duplicate_entity_repository.go:60` GetDuplicateGroups; `internal/services/aggregation_service.go:860` getTopLevelDirectories; `internal/services/playlist_service.go:274` GetUserPlaylists (getPlaylistTags/getPlaylistCollaborators at 757/775); `internal/media/realtime/watcher.go:455` checkMediaItemIntegrity. Mutation re-introducing the pattern in `GetDirectoryContents` survived (pool test covers SearchFiles only). Needs a pool test per member plus a class-level guard.
+- F6 (minor): SIGKILL integrity oracle has no golden-bad (corrupt DB) control.
+- F7 (source-defect, minor): `services/conversion_proc_unix.go:16` converter children have Setpgid but no Pdeathsig; after a server SIGKILL a running `convert` can orphan and race the requeued job on the same output file.
+- F8 (nit): about 424 MB left under `.scaling-live-artifacts/` per run, no rotation. F9 (nit): factor 25 and RSS bounds are chosen, not measured (disclosed); `go build` runs on the bare host, not in a container (11.4.173 exception for local containerised builds not applied to test builds).

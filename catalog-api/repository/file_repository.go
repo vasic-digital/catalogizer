@@ -189,7 +189,11 @@ func (r *FileRepository) SearchFiles(ctx context.Context, filter models.SearchFi
 	}
 	defer rows.Close()
 
-	var files []models.FileWithMetadata
+	// Read every row of the page FIRST and close the cursor, then fetch per-file metadata.
+	// Running the metadata query while this cursor is still open made each in-flight search hold
+	// one pooled connection and wait for a second: with more concurrent searches than pool
+	// connections every search waited on another (pool deadlock, found by the live scaling suite).
+	var page []models.File
 	for rows.Next() {
 		var file models.File
 		err := rows.Scan(
@@ -203,7 +207,15 @@ func (r *FileRepository) SearchFiles(ctx context.Context, filter models.SearchFi
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan search result: %w", err)
 		}
+		page = append(page, file)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating search results: %w", err)
+	}
+	rows.Close()
 
+	var files []models.FileWithMetadata
+	for _, file := range page {
 		// Get metadata for search results if needed
 		metadata, err := r.getFileMetadata(ctx, file.ID)
 		if err != nil {
@@ -214,10 +226,6 @@ func (r *FileRepository) SearchFiles(ctx context.Context, filter models.SearchFi
 			File:     file,
 			Metadata: metadata,
 		})
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating search results: %w", err)
 	}
 
 	totalPages := int((totalCount + int64(pagination.Limit) - 1) / int64(pagination.Limit))
