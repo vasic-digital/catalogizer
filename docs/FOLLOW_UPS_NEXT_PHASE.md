@@ -578,6 +578,18 @@ Status: OPEN until a commit on `main` closes the item.
 - Link-check false positives to exclude when the checker lands: backticked code such as `NewValue[T](loader)` in `docs/architecture/LAZY_LOADING.md` and spec 001 doc 19, and links into submodules that are not checked out.
 
 
+
+## Authorization gaps (branch fix-authz-gaps, CAT-049/050/051/052)
+
+- F4 / CAT-051 FIXED: `RequireAdmin` consults `UserRepository.IsAdmin` (current role permissions, active user) when `SetAdminChecker` is installed (main.go does); the role_id claim is only the fallback for stacks without the checker. Fails closed (503) when the lookup fails.
+- R3-M1 / CAT-049 FIXED for the target side: `UserRepository.UpdateGuarded` is a compare-and-set on role_id and is_active; `UpdateUser` answers 409 when they changed between the decision and the save. Other columns are still last-write-wins. A caller demoted mid-request is not re-checked (its sessions are revoked on demotion).
+- R3-M2 / CAT-050 FIXED: a non-admin may only assign roles whose every permission it holds itself (role 2, the standard user role, always assignable). OPERATOR DECISION still open: whether this subset rule is the wanted role model; acting on (not assigning to) a more privileged non-admin target is still unguarded.
+- CAT-052: `memStore.GetRole` now returns an error for unknown roles like the real repository.
+- N1 (review r1, minor): `defaultUserRoleID = 2` is hard-coded as always assignable by a user manager. If an admin later widens role 2's permissions, any user manager can hand them out. Decision needed: compare role 2 against the caller too, or keep the baseline.
+- N2 (review r1) FIXED: `Permissions.HasPermission` prefix wildcards now need a segment boundary (`.` or `:`), so `sys*`/`s*`/`system*` no longer grant `system.admin`; `*`, `system.*`, `admin:*` unchanged. Existing roles stored with such boundary-less wildcards lose that grant (none are seeded).
+- N7 (review r1, minor): the compare-and-set covers only the target's role_id/is_active; a concurrent change of the target role's permissions or of the caller's own role is not re-checked; `admin_handler.UpdateUser` still uses a plain Update.
+- B1: `newAuthMiddleware` (main_jwtwire.go) is the only constructor main.go uses; `TestMainGoWiresJWTMiddlewareThroughHelper` fails if main.go builds a bare middleware.
+
 ## Login/validator follow-ups closed (branch fix-lv-followups, 2026-11-03)
 
 - SQLi detector: 5 corpus misses closed (`admin' #`, `admin'/*`, `x';SHUTDOWN`, `1' ORDER BY 1#`, `PROCEDURE ANALYSE()`), and two prose false positives removed (`a -- b`, `Loop; sleep well`).
@@ -632,3 +644,17 @@ Source: independent Opus review of `scripts/docs/check_md_links.py` (merge 71ab0
 3. process-doc: `scripts/pre-flight-check.sh` hides the BROKEN rows (output to /dev/null) and runs without `--alt-root`, so in a checkout without initialised submodules it fails on 11 submodule-path links. Print the BROKEN rows on failure.
 4. nit: `check_md_links.py` anchor lookup falls back to case-insensitive match; UNCONFIRMED whether GitHub resolves mixed-case fragments that way.
 5. nit: setext heading underline requires `-{2,}`; CommonMark accepts a single `-`.
+
+Authz round-2 additions (landed with fix-authz-gaps):
+
+- R2 (authz): `/admin/image-quality/revalidate` and `/admin/covers/generate-thumbnails` were registered on the plain API group (any authenticated user could trigger the sweeps); they now carry `RequireAdmin` per route. They were NOT moved into `adminGroup`, because that group also installs the CSRF guard and existing bearer-token clients of these two POSTs send no CSRF token; moving them is an operator decision. `TestAdminGate_RealBinary` pins the gate on the real binary; the group's `RequireAdmin` is distinguishable from the handlers' own permission checks only by a `system.configure`-only role (handlers of /admin/config etc. check their own permission).
+- R2: `docs/api/openapi.yaml` from main had two unquoted descriptions (conversion cancel/retry) that made the file invalid YAML; quoted them.
+
+## Authz review r3 follow-ups (GO-with-follow-ups, 2026-11-03)
+
+- T1 (test-instrumentation, minor): `catalog-api/admin_gate_binary_test.go` and the existing `binEnv` harness in `seed_admin_binary_test.go` fail under `go test -race` (stdout buffer read while the child's copier writes). `scripts/run-all-tests.sh` runs `-race ./...`, so the root package is red there. Fix: mutex-guarded writer in `binEnv`.
+- T2 (nit): comment at `admin_gate_binary_test.go:43-45` wrongly says /admin/health, /logs, /errors have no handler-level check.
+- T3 (nit): B1 line above still names the grep test as the guard; it is `TestAdminGate_RealBinary`.
+- T4 (latent, minor): `UserHandler.UpdateUserSettings` (user_handler.go ~763-781) full-row `Update` from a stale read; unrouted today; use `UpdateGuarded` or limit to the settings column before routing.
+- P2 (source-defect, pre-existing, IMPORTANT, new item): `POST /storage/roots`, `/smb/*`, `POST /scans`, `/smb/probe-and-ingest` (main.go ~1349-1388) have no permission check; registration is open, so any self-registered user can create storage roots, queue scans and probe/ingest SMB hosts. UNCONFIRMED whether a `local` root outside the configured base is accepted. Being fixed with systematic debugging.
+- P3 (minor, operator decision): `/metrics` unauthenticated; `/debug/pprof` unauthenticated when `HELIX_PPROF_ENABLED=true`.

@@ -22,7 +22,22 @@ type JWTMiddleware struct {
 	// server-side revocation (admin-reset-password, logout, deactivation)
 	// effective for stateless access tokens. See SetSessionChecker.
 	sessionCheck SessionChecker
+	// adminCheck, when set, decides RequireAdmin from the database (the
+	// user's CURRENT role permissions) instead of the role_id claim baked into
+	// the access token. See SetAdminChecker.
+	adminCheck AdminChecker
 }
+
+// AdminChecker reports whether the user identified by userID (the token
+// subject) is, right now, an active user whose role carries system
+// administration rights. A non-nil error means "could not be determined";
+// RequireAdmin fails closed on it.
+type AdminChecker func(ctx context.Context, userID int) (bool, error)
+
+// SetAdminChecker installs the live admin check. Without it RequireAdmin falls
+// back to the token's role_id claim equal to RoleAdminID (legacy behaviour kept
+// for stacks that do not wire the database); production wires it in main.go.
+func (m *JWTMiddleware) SetAdminChecker(c AdminChecker) { m.adminCheck = c }
 
 // SessionChecker reports whether the session identified by sessionID (the
 // "session_id" claim) is still active and belongs to userID (the token
@@ -135,7 +150,10 @@ func (m *JWTMiddleware) RequireAuth() gin.HandlerFunc {
 const RoleAdminID = 1
 
 // RequireAdmin returns a middleware that requires the authenticated
-// caller to carry role_id == RoleAdminID. Article XI §11.5: prior to
+// caller to be an administrator. With an AdminChecker installed (production)
+// the decision is made from the database on every request using the caller's
+// current role permissions; without one it requires the token's role_id claim
+// to equal RoleAdminID. Article XI §11.5: prior to
 // 2026-04-29 the /api/v1/admin/* group had no role gate at all — any
 // authenticated user could call /admin/system-info, /admin/users,
 // /admin/storage, /admin/backups, etc. Caught by FQA-API-010 in the
@@ -149,6 +167,28 @@ func (m *JWTMiddleware) RequireAdmin() gin.HandlerFunc {
 		if !exists {
 			utils.SendErrorResponse(c, http.StatusUnauthorized, "Authentication required", nil)
 			c.Abort()
+			return
+		}
+		if m.adminCheck != nil {
+			uid, ok := c.Get("user_id")
+			userID, isInt := uid.(int)
+			if !ok || !isInt {
+				utils.SendErrorResponse(c, http.StatusForbidden, "Admin role required", nil)
+				c.Abort()
+				return
+			}
+			admin, err := m.adminCheck(c.Request.Context(), userID)
+			if err != nil {
+				utils.SendErrorResponse(c, http.StatusServiceUnavailable, "Could not verify admin role", nil)
+				c.Abort()
+				return
+			}
+			if !admin {
+				utils.SendErrorResponse(c, http.StatusForbidden, "Admin role required", nil)
+				c.Abort()
+				return
+			}
+			c.Next()
 			return
 		}
 		roleID, ok := roleVal.(int)

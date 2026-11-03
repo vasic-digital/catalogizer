@@ -115,6 +115,11 @@ func (p Permissions) HasPermission(permission string) bool {
 		// Check for wildcard patterns (e.g., "media.*" matches "media.view")
 		if len(perm) > 0 && perm[len(perm)-1] == '*' {
 			prefix := perm[:len(perm)-1]
+			// A prefix wildcard needs a segment boundary ("system.*", "admin:*"):
+			// "sys*" must not span "system.admin".
+			if prefix != "" && prefix[len(prefix)-1] != '.' && prefix[len(prefix)-1] != ':' {
+				continue
+			}
 			if len(permission) >= len(prefix) && permission[:len(prefix)] == prefix {
 				return true
 			}

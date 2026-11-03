@@ -263,6 +263,12 @@ Source: `catalog-api/internal/auth/models.go` -- `GetRolePermissions()`
 
 Source: `catalog-api/database/migrations.go` -- `createAuthTables()`
 
+### Wildcards and the admin gate
+
+- `*` grants every permission. A prefix wildcard must end at a segment boundary: `system.*` (dot form) and `admin:*` (colon form) are valid; `sys*`, `s*` and `system*` are NOT treated as wildcards and grant nothing beyond a literal match (`Permissions.HasPermission`).
+- `/api/v1/admin/*` (and the two admin routes registered on the API group, `image-quality/revalidate` and `covers/generate-thumbnails`) are gated by `RequireAdmin`, which reads the caller's CURRENT role from the database on every request (`UserRepository.IsAdmin`: active user whose role holds `system.admin`, `*` or a covering wildcard). The `role_id` claim in the access token is not trusted for this decision, so demotions, role permission edits and deactivations apply on the next request. A lookup failure answers 503 (fail closed).
+- A non-admin with `user.manage`/`user.create` may assign only roles whose every permission it holds itself (the standard user role, id 2, is always assignable).
+
 ### Permission Categories
 
 #### Internal Auth Permissions (resource:action format)

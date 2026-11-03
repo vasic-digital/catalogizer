@@ -375,7 +375,27 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = h.userRepo.Update(user)
+	// Compare-and-set on the role/activation the authorization decisions above
+	// were made against (CAT-049 R3-M1): a concurrent role change must not be
+	// overwritten by a save built from a stale read.
+	if g, ok := h.userRepo.(guardedUserUpdater); ok {
+		applied, gerr := g.UpdateGuarded(user, oldRoleID, oldActive)
+		if gerr != nil {
+			if strings.Contains(gerr.Error(), "UNIQUE constraint failed") {
+				http.Error(w, "Username or email already exists", http.StatusConflict)
+				return
+			}
+			http.Error(w, "Failed to update user", http.StatusInternalServerError)
+			return
+		}
+		if !applied {
+			http.Error(w, "User was modified concurrently; reload and retry", http.StatusConflict)
+			return
+		}
+		err = nil
+	} else {
+		err = h.userRepo.Update(user)
+	}
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			http.Error(w, "Username or email already exists", http.StatusConflict)
@@ -828,7 +848,9 @@ func (h *UserHandler) allowedToActOn(w http.ResponseWriter, caller *models.User,
 }
 
 // allowedToAssignRole: a non-admin may not assign an admin role (or a role
-// that cannot be resolved).
+// that cannot be resolved), and may not assign a role carrying any permission
+// the caller's own role does not already cover (CAT-050 R3-M2: no escalation
+// among non-admin roles; a caller can only hand out what it holds).
 func (h *UserHandler) allowedToAssignRole(w http.ResponseWriter, caller *models.User, roleID int) bool {
 	admin, ok := h.callerIsAdmin(w, caller)
 	if !ok {
@@ -842,7 +864,37 @@ func (h *UserHandler) allowedToAssignRole(w http.ResponseWriter, caller *models.
 		http.Error(w, "Insufficient permissions", http.StatusForbidden)
 		return false
 	}
+	// Every permission of the target role must be one the caller itself holds
+	// (resolved by the same CheckPermission the other guards use). A wildcard
+	// permission in the target ("media.*", "*") is covered only by an equal
+	// permission or a wildcard spanning it, never by individual grants.
+	//
+	// The standard user role (what self-registration already hands out) is the
+	// baseline and stays assignable by any user manager: it grants nothing a new
+	// account does not get anyway.
+	if roleID == defaultUserRoleID {
+		return true
+	}
+	for _, p := range role.Permissions {
+		held, err := h.authService.CheckPermission(caller.ID, p)
+		if err != nil {
+			http.Error(w, "Failed to check permissions", http.StatusInternalServerError)
+			return false
+		}
+		if !held {
+			http.Error(w, "Insufficient permissions", http.StatusForbidden)
+			return false
+		}
+	}
 	return true
+}
+
+// defaultUserRoleID is the seeded standard user role (see RegisterGin).
+const defaultUserRoleID = 2
+
+// guardedUserUpdater is implemented by the production user repository.
+type guardedUserUpdater interface {
+	UpdateGuarded(user *models.User, expectedRoleID int, expectedActive bool) (bool, error)
 }
 
 // sessionRevoker is the revocation capability. UserServiceInterface and
