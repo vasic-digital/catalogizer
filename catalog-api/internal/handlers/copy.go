@@ -382,9 +382,8 @@ func (h *CopyHandler) GetSMBHosts(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param request body object true "Copy to storage request"
-// @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} map[string]string
-// @Failure 500 {object} map[string]string
+// @Failure 501 {object} map[string]string
 // @Router /api/v1/copy/storage [post]
 func (h *CopyHandler) CopyToStorage(c *gin.Context) {
 	var req struct {
@@ -398,12 +397,13 @@ func (h *CopyHandler) CopyToStorage(c *gin.Context) {
 		return
 	}
 
-	// Implement storage copy logic
-	c.JSON(http.StatusOK, gin.H{
-		"message":     "File copied to storage successfully",
-		"source":      req.SourcePath,
-		"destination": req.DestPath,
-		"storage_id":  req.StorageID,
+	// No storage copy backend is wired behind this route. The previous
+	// handler answered 200 "copied" without copying anything (CAT-001, §11.4.289).
+	// Real copies: /copy/local (to the local filesystem) and /copy/upload.
+	c.JSON(http.StatusNotImplemented, gin.H{
+		"error":      "copying to a storage root is not implemented; use /api/v1/copy/local or /api/v1/copy/upload",
+		"source":     req.SourcePath,
+		"storage_id": req.StorageID,
 	})
 }
 
@@ -441,10 +441,7 @@ func (h *CopyHandler) ListStoragePath(c *gin.Context) {
 // @Success 200 {object} map[string]interface{}
 // @Router /api/v1/storage/roots [get]
 func (h *CopyHandler) GetStorageRoots(c *gin.Context) {
-	roots := []gin.H{
-		{"id": "local", "name": "Local Storage", "path": "/data/storage"},
-		{"id": "smb", "name": "SMB Storage", "path": "smb://server/share"},
-	}
-
-	c.JSON(http.StatusOK, gin.H{"roots": roots})
+	// This handler has no storage-root registry; the real list is served by
+	// the storage routes (/storage/roots). A hard-coded list would be fabricated (CAT-001).
+	c.JSON(http.StatusNotImplemented, gin.H{"error": "storage roots are served by the storage routes (/api/v1/storage/roots)"})
 }

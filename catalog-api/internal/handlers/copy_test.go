@@ -33,8 +33,8 @@ func TestCopyHandler_CopyToStorage(t *testing.T) {
 				"dest_path":   "/storage/test.txt",
 				"storage_id":  "local",
 			},
-			wantStatus: http.StatusOK,
-			wantError:  false,
+			wantStatus: http.StatusNotImplemented, // CAT-001: no storage copy backend; honest 501, never a fake "copied"
+			wantError:  true,
 		},
 		{
 			name: "Missing source_path",
@@ -91,11 +91,7 @@ func TestCopyHandler_CopyToStorage(t *testing.T) {
 			if tt.wantError {
 				assert.Contains(t, response, "error")
 			} else {
-				assert.Contains(t, response, "message")
-				assert.Equal(t, "File copied to storage successfully", response["message"])
-				assert.Equal(t, tt.body["source_path"], response["source"])
-				assert.Equal(t, tt.body["dest_path"], response["destination"])
-				assert.Equal(t, tt.body["storage_id"], response["storage_id"])
+				assert.NotContains(t, response, "message")
 			}
 		})
 	}
@@ -209,78 +205,21 @@ func TestCopyHandler_ListStoragePath(t *testing.T) {
 	}
 }
 
-func TestCopyHandler_GetStorageRoots(t *testing.T) {
+// CAT-001: the CopyHandler holds no storage-root registry; it must not serve a hard-coded list.
+func TestCopyHandler_GetStorageRoots_IsNotAFabricatedList(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	logger := zap.NewNop()
-
-	handler := &CopyHandler{
-		logger: logger,
-	}
-
+	handler := &CopyHandler{logger: zap.NewNop()}
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = httptest.NewRequest("GET", "/storage/roots", nil)
 
 	handler.GetStorageRoots(c)
 
-	assert.Equal(t, http.StatusOK, w.Code)
-
+	assert.Equal(t, http.StatusNotImplemented, w.Code)
 	var response map[string]interface{}
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
-	assert.Contains(t, response, "roots")
-
-	roots, ok := response["roots"].([]interface{})
-	assert.True(t, ok)
-	assert.NotEmpty(t, roots)
-
-	// Verify structure of roots
-	assert.GreaterOrEqual(t, len(roots), 2)
-
-	// Check first root
-	firstRoot, ok := roots[0].(map[string]interface{})
-	assert.True(t, ok)
-	assert.Contains(t, firstRoot, "id")
-	assert.Contains(t, firstRoot, "name")
-	assert.Contains(t, firstRoot, "path")
-	assert.Equal(t, "local", firstRoot["id"])
-	assert.Equal(t, "Local Storage", firstRoot["name"])
-	assert.Equal(t, "/data/storage", firstRoot["path"])
-
-	// Check second root
-	secondRoot, ok := roots[1].(map[string]interface{})
-	assert.True(t, ok)
-	assert.Contains(t, secondRoot, "id")
-	assert.Contains(t, secondRoot, "name")
-	assert.Contains(t, secondRoot, "path")
-	assert.Equal(t, "smb", secondRoot["id"])
-	assert.Equal(t, "SMB Storage", secondRoot["name"])
-	assert.Equal(t, "smb://server/share", secondRoot["path"])
-}
-
-func TestCopyHandler_GetStorageRoots_ResponseFormat(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	logger := zap.NewNop()
-
-	handler := &CopyHandler{
-		logger: logger,
-	}
-
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest("GET", "/storage/roots", nil)
-
-	handler.GetStorageRoots(c)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	// Verify content type
-	assert.Equal(t, "application/json; charset=utf-8", w.Header().Get("Content-Type"))
-
-	// Verify the response is valid JSON
-	var response map[string]interface{}
-	err := json.Unmarshal(w.Body.Bytes(), &response)
-	assert.NoError(t, err)
+	assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &response))
+	assert.NotContains(t, response, "roots")
+	assert.Contains(t, response, "error")
 }
 
 func TestCopyHandler_NewCopyHandler(t *testing.T) {
@@ -540,14 +479,8 @@ func TestCopyHandler_StorageOperations_Integration(t *testing.T) {
 	c1, _ := gin.CreateTestContext(w1)
 	c1.Request = httptest.NewRequest("GET", "/storage/roots", nil)
 	handler.GetStorageRoots(c1)
-	assert.Equal(t, http.StatusOK, w1.Code)
-
-	var rootsResponse map[string]interface{}
-	err := json.Unmarshal(w1.Body.Bytes(), &rootsResponse)
-	assert.NoError(t, err)
-	roots := rootsResponse["roots"].([]interface{})
-	firstRoot := roots[0].(map[string]interface{})
-	storageID := firstRoot["id"].(string)
+	assert.Equal(t, http.StatusNotImplemented, w1.Code) // CAT-001: no fabricated root list
+	storageID := "local"
 
 	// Test 2: List storage path with the storage ID from roots
 	w2 := httptest.NewRecorder()
@@ -559,7 +492,7 @@ func TestCopyHandler_StorageOperations_Integration(t *testing.T) {
 	assert.Equal(t, http.StatusNotImplemented, w2.Code) // CAT-001: no fabricated listing
 
 	var listResponse map[string]interface{}
-	err = json.Unmarshal(w2.Body.Bytes(), &listResponse)
+	err := json.Unmarshal(w2.Body.Bytes(), &listResponse)
 	assert.NoError(t, err)
 	assert.Equal(t, storageID, listResponse["storage_id"])
 
@@ -575,12 +508,13 @@ func TestCopyHandler_StorageOperations_Integration(t *testing.T) {
 	c3.Request = httptest.NewRequest("POST", "/copy/storage", bytes.NewBuffer(jsonBody))
 	c3.Request.Header.Set("Content-Type", "application/json")
 	handler.CopyToStorage(c3)
-	assert.Equal(t, http.StatusOK, w3.Code)
+	// CAT-001: there is no storage copy backend; the endpoint must not claim success.
+	assert.Equal(t, http.StatusNotImplemented, w3.Code)
 
 	var copyResponse map[string]interface{}
 	err = json.Unmarshal(w3.Body.Bytes(), &copyResponse)
 	assert.NoError(t, err)
-	assert.Equal(t, storageID, copyResponse["storage_id"])
+	assert.Contains(t, copyResponse, "error")
 }
 
 // CAT-001: the CopyHandler has no storage backend to list, so it must say so instead of answering 200 with a fabricated empty listing.

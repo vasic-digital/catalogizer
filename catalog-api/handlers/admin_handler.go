@@ -473,7 +473,7 @@ func (h *AdminHandler) CreateBackup(c *gin.Context) {
 	})
 }
 
-// RestoreBackup validates a backup and queues it for restore on next restart.
+// RestoreBackup validates the backup id and answers 501: no restore is implemented.
 // POST /api/v1/admin/backups/:id/restore
 func (h *AdminHandler) RestoreBackup(c *gin.Context) {
 	if h.requireAdmin(c) == nil {
@@ -507,14 +507,16 @@ func (h *AdminHandler) RestoreBackup(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{
-		"id":      id,
-		"status":  "queued",
-		"message": "Restore queued - will take effect on restart",
+	// No restore is queued anywhere: nothing reads a restore marker on
+	// restart. Answering 202 "queued" would be a fabricated success (CAT-001),
+	// so say so, consistent with DeleteBackup.
+	c.JSON(http.StatusNotImplemented, gin.H{
+		"id":    id,
+		"error": "restoring a backup through the API is not implemented; restore offline with the database restore tooling",
 	})
 }
 
-// ScanStorage triggers a storage scan for the given path.
+// ScanStorage validates the request and answers 501: the real trigger is POST /api/v1/scans.
 // POST /api/v1/admin/storage/scan
 func (h *AdminHandler) ScanStorage(c *gin.Context) {
 	if h.requireAdmin(c) == nil {
@@ -545,9 +547,10 @@ func (h *AdminHandler) ScanStorage(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{
-		"status":  "accepted",
-		"message": "Scan initiated",
-		"path":    req.Path,
+	// This endpoint never started a scan (CAT-001). The real, admin-gated
+	// scan trigger is POST /api/v1/scans.
+	c.JSON(http.StatusNotImplemented, gin.H{
+		"error": "this endpoint does not start a scan; use POST /api/v1/scans",
+		"path":  req.Path,
 	})
 }

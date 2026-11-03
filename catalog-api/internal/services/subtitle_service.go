@@ -482,10 +482,18 @@ func (s *SubtitleService) searchProvider(ctx context.Context, provider SubtitleP
 		return s.searchSubDB(ctx, request)
 	case ProviderYifySubtitles:
 		return s.searchYifySubtitles(ctx, request)
+	case ProviderSubscene, ProviderAddic7ed:
+		return nil, fmt.Errorf("%w: %s", ErrSubtitleProviderNotImplemented, provider)
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}
 }
+
+// ImplementedSubtitleProviders lists the providers that have a working API
+// client behind them. It is empty today: every searchX returns
+// ErrSubtitleProviderNotImplemented. Add a provider here only together with
+// a real client (CAT-001, §11.4.289).
+func ImplementedSubtitleProviders() []SubtitleProvider { return []SubtitleProvider{} }
 
 // ErrSubtitleProviderNotImplemented is returned by provider searches that have
 // no real API client behind them. It replaces the former fabricated results.
@@ -904,46 +912,15 @@ func (s *SubtitleService) getDownloadInfo(ctx context.Context, resultID string) 
 	}
 
 	provider := SubtitleProvider(parts[0])
-	providerID := parts[1]
 
-	var reconstructedResult *SubtitleSearchResult
+	// No provider has a search client, so no real result id can exist and none can be
+	// reconstructed; the previous code invented language, score and URL (CAT-001, §11.4.289).
 	switch provider {
-	case ProviderOpenSubtitles:
-		return nil, fmt.Errorf("%w: %s", ErrSubtitleProviderNotImplemented, ProviderOpenSubtitles)
-	case ProviderSubDB:
-		reconstructedResult = &SubtitleSearchResult{
-			ID:           resultID,
-			Provider:     ProviderSubDB,
-			Language:     "English",
-			LanguageCode: "en",
-			DownloadURL:  fmt.Sprintf("http://api.thesubdb.com/?action=download&hash=%s&language=en", providerID),
-			Format:       "srt",
-			MatchScore:   0.8,
-		}
-	case ProviderYifySubtitles:
-		reconstructedResult = &SubtitleSearchResult{
-			ID:           resultID,
-			Provider:     ProviderYifySubtitles,
-			Language:     "English",
-			LanguageCode: "en",
-			DownloadURL:  fmt.Sprintf("https://yifysubtitles.org/subtitle/%s.srt", providerID),
-			Format:       "srt",
-			MatchScore:   0.7,
-		}
+	case ProviderOpenSubtitles, ProviderSubDB, ProviderYifySubtitles:
+		return nil, fmt.Errorf("%w: %s", ErrSubtitleProviderNotImplemented, provider)
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", provider)
 	}
-
-	// Cache the reconstructed result
-	if err := s.cacheService.Set(ctx, cacheKey, *reconstructedResult, 24*time.Hour); err != nil {
-		s.logger.Warn("Failed to cache reconstructed download info", zap.Error(err))
-	}
-
-	s.logger.Debug("Reconstructed subtitle download info",
-		zap.String("result_id", resultID),
-		zap.String("provider", string(provider)))
-
-	return reconstructedResult, nil
 }
 
 // saveSubtitleTrack saves a subtitle track to the database

@@ -2882,8 +2882,8 @@ paths:
             schema:
               type: object
       responses:
-        '200':
-          description: Copy initiated
+        '501':
+          description: Not implemented. Copying to a storage root is not wired to any copy engine; nothing is copied. Use POST /api/v1/copy/local or /api/v1/copy/upload.
 
   /api/v1/copy/local:
     post:
@@ -3496,8 +3496,12 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
-          description: Personalized recommendations
+        '401':
+          description: Missing or invalid token
+        '403':
+          description: The path user_id is not the caller (and the caller is not an admin)
+        '501':
+          description: Not implemented. The server has no recommendation engine; no recommendations are fabricated.
 
   /api/v1/subtitles/search:
     get:
@@ -3618,7 +3622,7 @@ paths:
         - BearerAuth: []
       responses:
         '200':
-          description: Supported providers list
+          description: Providers that have a working client. Currently an empty list, because no provider client is implemented.
 
   /api/v1/storage/list/{path}:
     get:
@@ -3680,13 +3684,13 @@ paths:
         '401':
           description: Unauthorized
         '403':
-          description: Admin role required, or the local path is outside the allowed bases
+          description: Admin role required
         '404':
-          description: Storage root not found
+          description: Storage root not found, or the directory does not exist
         '409':
           description: Storage root is disabled
         '422':
-          description: Root configuration cannot be used to connect
+          description: Root configuration cannot be used to connect, or the local path is outside the allowed bases (CATALOGIZER_LOCAL_ROOT_BASES)
         '502':
           description: The storage backend could not be reached
 
@@ -4455,16 +4459,16 @@ paths:
                   type: integer
                   format: int64
       responses:
-        '200':
-          description: Scan initiated
+        '501':
+          description: Not implemented. This endpoint starts nothing; use POST /api/v1/scans (admin).
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
+                  error:
                     type: string
-                  job_id:
+                  path:
                     type: string
         '400':
           description: Invalid storage root
@@ -4539,14 +4543,14 @@ paths:
           schema:
             type: string
       responses:
-        '200':
-          description: Restore initiated
+        '501':
+          description: Not implemented. Nothing is restored or queued; restore a backup by replacing the database file while the service is stopped.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
+                  error:
                     type: string
         '401':
           description: Unauthorized
@@ -7603,32 +7607,27 @@ paths:
     get:
       tags:
       - browse
-      summary: List files (placeholder)
-      description: 'Placeholder: always returns an empty listing and echoes the requested path. Use GET /api/v1/browse/directory/{path} for real listings.'
+      summary: List files of a storage root
+      description: 'Forwards to the storage browser. Requires the storage_root query parameter (400 otherwise).'
       security:
       - BearerAuth: []
       parameters:
-      - name: path
+      - name: storage_root
         in: query
+        required: true
         schema:
           type: string
-        description: Path echoed back
       responses:
         '200':
-          description: Empty listing
+          description: Directory listing
+        '400':
+          description: storage_root is missing
+        '501':
+          description: Not implemented (no file browser is wired); nothing is fabricated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  files:
-                    type: array
-                    items:
-                      type: object
-                  path:
-                    type: string
-                  count:
-                    type: integer
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -7640,7 +7639,7 @@ paths:
       tags:
       - media
       summary: List media types
-      description: Returns the 11 canonical media types as a static list.
+      description: 'Rows of the media_types table (id, name).'
       security:
       - BearerAuth: []
       responses:
@@ -7653,13 +7652,6 @@ paths:
                 properties:
                   media_types:
                     type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: integer
-                        name:
-                          type: string
         '401':
           description: Unauthorized
           content:
@@ -7670,13 +7662,13 @@ paths:
     get:
       tags:
       - stats
-      summary: Media-type distribution (placeholder)
-      description: 'Placeholder: returns a zeroed distribution. Real counts are available from GET /api/v1/entities/types.'
+      summary: Media-type distribution
+      description: 'Counts of media_items per media type, computed from the database.'
       security:
       - BearerAuth: []
       responses:
         '200':
-          description: Zeroed distribution
+          description: Distribution
           content:
             application/json:
               schema:
@@ -7684,8 +7676,6 @@ paths:
                 properties:
                   distribution:
                     type: object
-                    additionalProperties:
-                      type: integer
                   total:
                     type: integer
         '401':
@@ -7698,13 +7688,13 @@ paths:
     get:
       tags:
       - stats
-      summary: Scan history (placeholder)
-      description: 'Placeholder: returns an empty history. Real history is available from GET /api/v1/stats/scans.'
+      summary: Scan history
+      description: 'Rows of scan_history, newest first. An empty list means no scan has run.'
       security:
       - BearerAuth: []
       responses:
         '200':
-          description: Empty history
+          description: History
           content:
             application/json:
               schema:
@@ -7712,8 +7702,6 @@ paths:
                 properties:
                   history:
                     type: array
-                    items:
-                      type: object
                   count:
                     type: integer
         '401':
@@ -8605,29 +8593,17 @@ paths:
     get:
       tags:
       - subtitles
-      summary: Get translations (placeholder)
-      description: 'Placeholder: returns an empty translation map for the requested locale.'
+      summary: Get translations
+      description: 'No localization catalog exists.'
       security:
       - BearerAuth: []
-      parameters:
-      - name: locale
-        in: query
-        schema:
-          type: string
-          default: en
       responses:
-        '200':
-          description: Empty map
+        '501':
+          description: Not implemented (no localization catalog exists); nothing is fabricated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  locale:
-                    type: string
-                  translations:
-                    type: object
-                    additionalProperties: true
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -8638,24 +8614,17 @@ paths:
     get:
       tags:
       - subtitles
-      summary: Localization statistics (placeholder)
-      description: 'Placeholder: returns static values.'
+      summary: Localization statistics
+      description: 'No localization catalog exists.'
       security:
       - BearerAuth: []
       responses:
-        '200':
-          description: Static stats
+        '501':
+          description: Not implemented (no localization catalog exists); nothing is fabricated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  supported_locales:
-                    type: integer
-                  default_locale:
-                    type: string
-                  coverage:
-                    type: number
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -8666,24 +8635,17 @@ paths:
     get:
       tags:
       - subtitles
-      summary: List translations (placeholder)
-      description: 'Placeholder: always returns an empty list.'
+      summary: List translations
+      description: 'No translation catalog exists.'
       security:
       - BearerAuth: []
       responses:
-        '200':
-          description: Empty list
+        '501':
+          description: Not implemented (no translation catalog exists); nothing is fabricated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  translations:
-                    type: array
-                    items:
-                      type: object
-                  count:
-                    type: integer
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -8694,13 +8656,13 @@ paths:
     get:
       tags:
       - subtitles
-      summary: List subtitles (placeholder)
-      description: 'Placeholder: always returns an empty list. Per-media subtitles are at GET /api/v1/subtitles/media/{media_id}.'
+      summary: List stored subtitle tracks
+      description: 'Rows of subtitle_tracks. Does not search providers.'
       security:
       - BearerAuth: []
       responses:
         '200':
-          description: Empty list
+          description: Tracks
           content:
             application/json:
               schema:
@@ -8708,8 +8670,6 @@ paths:
                 properties:
                   subtitles:
                     type: array
-                    items:
-                      type: object
                   count:
                     type: integer
         '401':
@@ -9211,37 +9171,17 @@ paths:
     get:
       tags:
       - recommendations
-      summary: Recommendations by type (placeholder)
-      description: 'Placeholder: returns empty lists for movie, tv, music and book.'
+      summary: Recommendations by type
+      description: 'The server has no recommendation engine.'
       security:
       - BearerAuth: []
       responses:
-        '200':
-          description: Empty shell
+        '501':
+          description: Not implemented (no recommendation engine is wired); nothing is fabricated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  recommendations:
-                    type: object
-                    properties:
-                      movie:
-                        type: array
-                        items:
-                          type: object
-                      tv:
-                        type: array
-                        items:
-                          type: object
-                      music:
-                        type: array
-                        items:
-                          type: object
-                      book:
-                        type: array
-                        items:
-                          type: object
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -9445,24 +9385,17 @@ paths:
     get:
       tags:
       - sync
-      summary: List sync conflicts (placeholder)
-      description: 'Placeholder: always returns an empty list.'
+      summary: List sync conflicts
+      description: 'No sync conflict store exists.'
       security:
       - BearerAuth: []
       responses:
-        '200':
-          description: Empty list
+        '501':
+          description: Not implemented (no sync conflict store exists); nothing is fabricated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  conflicts:
-                    type: array
-                    items:
-                      type: object
-                  count:
-                    type: integer
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -9473,24 +9406,17 @@ paths:
     get:
       tags:
       - sync
-      summary: List sync devices (placeholder)
-      description: 'Placeholder: always returns an empty list.'
+      summary: List sync devices
+      description: 'No device registry exists.'
       security:
       - BearerAuth: []
       responses:
-        '200':
-          description: Empty list
+        '501':
+          description: Not implemented (no device registry exists); nothing is fabricated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  devices:
-                    type: array
-                    items:
-                      type: object
-                  count:
-                    type: integer
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -9501,13 +9427,13 @@ paths:
     get:
       tags:
       - sync
-      summary: Sync status (placeholder)
-      description: 'Placeholder: always reports idle with no active sessions. Real figures are at GET /api/v1/sync/statistics.'
+      summary: Sync status
+      description: 'Derived from the caller sync_sessions rows (status, active_sessions, last_sync).'
       security:
       - BearerAuth: []
       responses:
         '200':
-          description: Static status
+          description: Status
           content:
             application/json:
               schema:
@@ -9515,12 +9441,10 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: idle
                   active_sessions:
                     type: integer
                   last_sync:
                     type: string
-                    nullable: true
         '401':
           description: Unauthorized
           content:
@@ -9532,7 +9456,7 @@ paths:
       tags:
       - sync
       summary: List sync providers
-      description: Static list of the supported sync backends.
+      description: 'Endpoint types the caller has configured in sync_endpoints, with endpoint counts.'
       security:
       - BearerAuth: []
       responses:
@@ -9545,15 +9469,6 @@ paths:
                 properties:
                   providers:
                     type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        name:
-                          type: string
-                        enabled:
-                          type: boolean
         '401':
           description: Unauthorized
           content:

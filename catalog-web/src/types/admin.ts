@@ -1,15 +1,16 @@
 export interface SystemInfo {
   version: string;
-  uptime: number;
+  /** null when not measured (never a fabricated 0). */
+  uptime: number | null;
   /** null when the host cannot measure it (never a fabricated 0); see `unavailable`. */
   cpuUsage: number | null;
-  memoryUsage: number;
+  memoryUsage: number | null;
   diskUsage: {
     total: number;
     used: number;
     free: number;
   } | null;
-  activeConnections: number;
+  activeConnections: number | null;
   totalRequests: number | null;
   /** Names of the figures above that the server could not measure. */
   unavailable?: string[];

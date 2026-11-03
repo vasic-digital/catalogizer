@@ -72,6 +72,9 @@ func (c *LocalClient) resolvePath(path string) string {
 }
 
 // ErrPathEscapesRoot is returned when a path, after symbolic links are resolved, lies outside the storage root.
+// ErrRefuseDeleteRoot is returned when a delete would remove the storage root itself.
+var ErrRefuseDeleteRoot = errors.New("refusing to delete the storage root")
+
 var ErrPathEscapesRoot = errors.New("path resolves outside the storage root")
 
 // resolveConfined is resolvePath plus the symlink check: ConfinePath is lexical, so a link inside the root that points outside
@@ -277,6 +280,14 @@ func (c *LocalClient) DeleteDirectory(ctx context.Context, path string) error {
 	fullPath, rerr := c.resolveConfined(path)
 	if rerr != nil {
 		return rerr
+	}
+	if baseReal, berr := filepath.EvalSymlinks(c.basePath); berr == nil {
+		if real, rerr := filepath.EvalSymlinks(fullPath); rerr == nil && filepath.Clean(real) == filepath.Clean(baseReal) {
+			return ErrRefuseDeleteRoot
+		}
+	}
+	if filepath.Clean(fullPath) == filepath.Clean(c.basePath) {
+		return ErrRefuseDeleteRoot
 	}
 	err := os.RemoveAll(fullPath)
 	if err != nil {

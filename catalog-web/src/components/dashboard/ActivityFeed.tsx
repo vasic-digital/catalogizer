@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { 
@@ -16,6 +16,12 @@ import type { ActivityItem } from '@/types/dashboard'
 interface ActivityFeedProps {
   limit?: number
   showFilters?: boolean
+  /**
+   * Real activity items supplied by the caller. When omitted the feed shows an
+   * "unavailable" state: the server exposes no activity endpoint yet, and the
+   * feed never invents sample activity (CAT-001).
+   */
+  activities?: ActivityItem[]
 }
 
 const ACTIVITY_ICONS = {
@@ -51,77 +57,32 @@ const ACTIVITY_MESSAGES = {
  */
 export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   limit = 10,
-  showFilters = true
+  showFilters = true,
+  activities
 }) => {
-  const [activities, setActivities] = useState<ActivityItem[]>([])
   const [filter, setFilter] = useState<string>('all')
-  const [loading, setLoading] = useState(true)
 
-  // Fetch initial activities
-  useEffect(() => {
-    const fetchActivities = async () => {
-      try {
-        setLoading(true)
-        // Mock data for now - replace with actual API call
-        const mockActivities: ActivityItem[] = [
-          {
-            id: '1',
-            type: 'media_played',
-            title: 'Sample Movie.mp4',
-            user: 'John Doe',
-            timestamp: new Date(Date.now() - 1000 * 60 * 5), // 5 minutes ago
-            metadata: {
-              title: 'Sample Movie.mp4',
-              duration: '2h 15m',
-              quality: '1080p'
-            }
-          },
-          {
-            id: '2',
-            type: 'media_uploaded',
-            title: 'New Episode.mkv',
-            user: 'Jane Smith',
-            timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 minutes ago
-            metadata: {
-              title: 'New Episode.mkv',
-              size: '1.2GB',
-              format: 'MKV'
-            }
-          },
-          {
-            id: '3',
-            type: 'user_login',
-            title: 'User Activity',
-            user: 'Mike Johnson',
-            timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-            metadata: {
-              username: 'Mike Johnson',
-              ip: '192.168.1.100'
-            }
-          },
-          {
-            id: '4',
-            type: 'system_event',
-            title: 'System Update',
-            user: 'System',
-            timestamp: new Date(Date.now() - 1000 * 60 * 60), // 1 hour ago
-            metadata: {
-              message: 'Library scan completed successfully'
-            }
-          }
-        ]
-        
-        setActivities(mockActivities)
-      } catch (error) {
-        // Activity fetch failure — UI shows empty state
-        void error;
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchActivities()
-  }, [])
+  if (activities === undefined) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Recent Activity
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center py-12" data-testid="activity-unavailable">
+            <Activity className="h-12 w-12 text-gray-400 mb-4" />
+            <p className="text-gray-500 text-center">Activity feed unavailable</p>
+            <p className="text-sm text-gray-400 text-center">
+              The server does not provide an activity feed yet.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   // Filter activities
   const filteredActivities = activities.filter(activity => {
@@ -170,32 +131,6 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
           </div>
         </div>
       </div>
-    )
-  }
-
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Recent Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-start space-x-3 animate-pulse">
-                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
     )
   }
 

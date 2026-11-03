@@ -62,3 +62,24 @@ func TestCAT001_CheckLocalRoot(t *testing.T) {
 }
 
 func stringsReader(s string) *strings.Reader { return strings.NewReader(s) }
+
+// CAT-001 review F9: DeleteDirectory("/") (or ".", "") must not remove the storage root itself and everything under it.
+func TestCAT001_LocalClient_DeleteDirectoryRefusesTheStorageRoot(t *testing.T) {
+	base := t.TempDir()
+	require.NoError(t, os.MkdirAll(filepath.Join(base, "sub"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(base, "sub", "keep.txt"), []byte("k"), 0o644))
+	c := NewLocalClient(&LocalConfig{BasePath: base})
+	ctx := context.Background()
+	require.NoError(t, c.Connect(ctx))
+
+	for _, p := range []string{"/", "", ".", "/sub/.."} {
+		err := c.DeleteDirectory(ctx, p)
+		assert.True(t, errors.Is(err, ErrRefuseDeleteRoot), "path %q: %v", p, err)
+		_, statErr := os.Stat(filepath.Join(base, "sub", "keep.txt"))
+		assert.NoError(t, statErr, "path %q must not delete content", p)
+	}
+	// control: an ordinary subdirectory is still deleted
+	require.NoError(t, c.DeleteDirectory(ctx, "/sub"))
+	_, statErr := os.Stat(filepath.Join(base, "sub"))
+	assert.True(t, os.IsNotExist(statErr))
+}

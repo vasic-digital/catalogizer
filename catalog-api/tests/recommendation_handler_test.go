@@ -6,15 +6,18 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	"catalogizer/config"
 	"catalogizer/database"
 	"catalogizer/handlers"
 	"catalogizer/internal/middleware"
 	"catalogizer/internal/services"
+	rootmw "catalogizer/middleware"
 	root_repository "catalogizer/repository"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/zap"
@@ -132,19 +135,33 @@ func (suite *RecommendationTestSuite) TestPersonalizedRecommendationsEndpoint() 
 	// Unauthenticated callers are refused (IDOR guard), never served data.
 	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
 
-	serve := func(callerID int64, path string) int {
-		r := gin.New()
-		r.Use(func(c *gin.Context) { c.Set("user_id", callerID); c.Next() })
-		r.GET("/api/v1/recommendations/personalized/:user_id", suite.recommendationHandler.GetPersonalizedRecommendations)
-		rq, _ := http.NewRequest("GET", path, nil)
+	// Authenticated callers go through the REAL JWT middleware with a signed token (not c.Set).
+	const secret = "rec-suite-secret-0123456789abcdef"
+	jwtmw := rootmw.NewJWTMiddleware(secret)
+	r := gin.New()
+	r.Use(jwtmw.RequireAuth())
+	r.GET("/api/v1/recommendations/personalized/:user_id", suite.recommendationHandler.GetPersonalizedRecommendations)
+	serve := func(sub string, role int) int {
+		claims := &rootmw.Claims{Username: "u" + sub, RoleID: role, RegisteredClaims: jwt.RegisteredClaims{
+			Subject: sub, ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour))}}
+		tok, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(secret))
+		suite.Require().NoError(err)
+		rq, _ := http.NewRequest("GET", "/api/v1/recommendations/personalized/456", nil)
+		rq.Header.Set("Authorization", "Bearer "+tok)
 		rec := httptest.NewRecorder()
 		r.ServeHTTP(rec, rq)
 		return rec.Code
 	}
 	// Owner: honest 501 (no engine wired), not fabricated titles.
-	assert.Equal(suite.T(), http.StatusNotImplemented, serve(456, "/api/v1/recommendations/personalized/456"))
-	// Another non-admin user's id: 403.
-	assert.Equal(suite.T(), http.StatusForbidden, serve(7, "/api/v1/recommendations/personalized/456"))
+	assert.Equal(suite.T(), http.StatusNotImplemented, serve("456", 2))
+	// Another non-admin user: 403. An admin may ask for anyone: 501.
+	assert.Equal(suite.T(), http.StatusForbidden, serve("7", 2))
+	assert.Equal(suite.T(), http.StatusNotImplemented, serve("7", 1))
+	// No token at all: refused by the middleware itself.
+	rq, _ := http.NewRequest("GET", "/api/v1/recommendations/personalized/456", nil)
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, rq)
+	assert.Equal(suite.T(), http.StatusUnauthorized, rec.Code)
 }
 
 func TestRecommendationSuite(t *testing.T) {

@@ -556,3 +556,12 @@ Status: OPEN until a commit on `main` closes the item.
 - Link-checker weaknesses (T1, test-instrumentation, the checker is not in the repository yet; the audit copy lives in the session scratchpad): (a) its control check ended in `or True`, so a broken control could never fail; (b) it ignores `#anchors`, so a link to a heading that does not exist passes (the spec 001 crawl found 83 broken anchors); (c) it had no VitePress site-root mode, so 37 `Website/` links such as `/download` were reported broken. The scratchpad copy now asserts a positive and a negative control and resolves `Website/` root links against `Website/` (`.md` and `index.md` forms); anchors are still unchecked. Land a checker in `scripts/` with these three properties plus a gate before relying on its counts.
 - Link-check false positives to exclude when the checker lands: backticked code such as `NewValue[T](loader)` in `docs/architecture/LAZY_LOADING.md` and spec 001 doc 19, and links into submodules that are not checked out.
 
+
+## CAT-001 review R1 deferrals (2026-11-03)
+
+Status: OPEN until a commit on `main` closes the item.
+
+- F10 (latent, test-instrumentation class): `ConfigurationWizardService.testNetworkDatabaseConnection` dials a user-supplied host:port. It is reachable only from the setup wizard, which is admin-gated, but it is an SSRF-shaped probe. Add an allow-list or a private-range policy plus a test through the real router.
+- F2 follow-up: `POST /api/v1/copy/storage`, `POST /api/v1/admin/storage/scan` (use `POST /api/v1/scans`), `POST /api/v1/admin/backups/{id}/restore`, `GET /api/v1/sync/devices`, `/sync/conflicts`, `/translations`, `/localization/*` and `/recommendations*` now answer 501 because no engine exists. Building a real copy-to-storage engine, restore, recommendation engine, device registry and localization catalog is feature work, not done here.
+- F2 web follow-up: `CollectionAutomation`, `AIUserBehaviorAnalytics`, `AIPredictions`, `AISmartOrganization` show an "unavailable" state; the collection-analytics usage tabs and the dashboard activity feed need a server-side events source before they can show data.
+- F3 follow-up: no subtitle provider client is implemented; `GET /subtitles/providers` is an empty list and `POST /subtitles/search` is 501 until at least one client (for example OpenSubtitles) is written and live-tested.

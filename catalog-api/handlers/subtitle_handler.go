@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -169,6 +170,14 @@ func (h *SubtitleHandler) SearchSubtitles(c *gin.Context) {
 	ctx := c.Request.Context()
 	results, err := h.subtitleService.SearchSubtitles(ctx, request)
 	if err != nil {
+		if errors.Is(err, services.ErrSubtitleProviderNotImplemented) {
+			c.JSON(http.StatusNotImplemented, ErrorResponse{
+				Success: false,
+				Error:   "No subtitle provider client is implemented yet: " + err.Error(),
+				Code:    "NOT_IMPLEMENTED",
+			})
+			return
+		}
 		h.logger.Error("Failed to search subtitles", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Success: false,
@@ -485,13 +494,8 @@ func (h *SubtitleHandler) GetSupportedLanguages(c *gin.Context) {
 func (h *SubtitleHandler) GetSupportedProviders(c *gin.Context) {
 	h.logger.Info("Get supported providers request received")
 
-	providers := []services.SubtitleProvider{
-		services.ProviderOpenSubtitles,
-		services.ProviderSubDB,
-		services.ProviderYifySubtitles,
-		services.ProviderSubscene,
-		services.ProviderAddic7ed,
-	}
+	// Only providers with a working client are advertised (CAT-001).
+	providers := services.ImplementedSubtitleProviders()
 
 	providerInfo := make([]ProviderInfo, len(providers))
 	for i, provider := range providers {

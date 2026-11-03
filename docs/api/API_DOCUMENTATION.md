@@ -1515,8 +1515,8 @@ Get trending media items based on recent activity.
 
 Get personalized recommendations based on viewing history.
 
-**Description:** ML-based recommendations tailored to user preferences.
-**Auth:** Required
+**Description:** Not implemented. The server has no recommendation engine and returns 501 instead of invented items.
+**Auth:** Required (401 without a token; 403 when `user_id` is not the caller and the caller is not an admin)
 **Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
@@ -1531,14 +1531,10 @@ Get personalized recommendations based on viewing history.
 |---|---|---|---|
 | `limit` | int | `20` | Max results |
 
-**Response:** 200 OK
+**Response:** 501 Not Implemented
 
 ```json
-{
-  "user_id": 1,
-  "items": [...],
-  "generated_at": "2024-01-20T12:00:00Z"
-}
+{ "error": "..." }
 ```
 
 ---

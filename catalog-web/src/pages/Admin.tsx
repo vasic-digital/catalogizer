@@ -9,14 +9,14 @@ import toast from 'react-hot-toast';
 import type { User, SystemInfo } from '@/types/admin';
 
 // Shown only while the system-info request is loading or has failed. Every
-// figure is null / zero-with-unavailable, never an invented healthy-looking value.
+// figure is null and renders as "Unavailable", never an invented healthy-looking value.
 const UNAVAILABLE_SYSTEM_INFO: SystemInfo = {
   version: 'Unavailable',
-  uptime: 0,
+  uptime: null,
   cpuUsage: null,
-  memoryUsage: 0,
+  memoryUsage: null,
   diskUsage: null,
-  activeConnections: 0,
+  activeConnections: null,
   totalRequests: null,
   unavailable: ['all'],
 };

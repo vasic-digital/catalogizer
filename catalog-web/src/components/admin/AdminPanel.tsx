@@ -53,7 +53,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'storage' | 'backups'>('overview');
 
-  const formatUptime = (seconds: number) => {
+  const formatUptime = (seconds: number | null) => {
+    if (typeof seconds !== 'number' || !Number.isFinite(seconds)) return UNAVAILABLE_LABEL;
     const days = Math.floor(seconds / 86400);
     const hours = Math.floor((seconds % 86400) / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -168,7 +169,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div className="flex items-center">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-600">Active Connections</p>
-                    <p className="text-2xl font-bold text-gray-900">{systemInfo.activeConnections}</p>
+                    <p className="text-2xl font-bold text-gray-900">{formatCountOrUnavailable(systemInfo.activeConnections)}</p>
                   </div>
                   <Users className="w-8 h-8 text-purple-500" />
                 </div>
@@ -205,9 +206,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium">Memory Usage</span>
-                    <span className="text-sm text-gray-600">{systemInfo.memoryUsage}%</span>
+                    <span className="text-sm text-gray-600">{formatPercentOrUnavailable(systemInfo.memoryUsage)}</span>
                   </div>
-                  <Progress value={systemInfo.memoryUsage} />
+                  <Progress value={systemInfo.memoryUsage ?? 0} />
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">

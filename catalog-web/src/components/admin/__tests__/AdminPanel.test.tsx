@@ -202,6 +202,26 @@ describe('AdminPanel', () => {
       expect(screen.queryByText('0%')).not.toBeInTheDocument()
     })
 
+    it('shows Unavailable (not 0%, 0 or 0d 0h 0m) for null memory, uptime and connections (review F4)', () => {
+      const props = {
+        ...defaultProps,
+        systemInfo: {
+          ...defaultProps.systemInfo,
+          cpuUsage: null,
+          memoryUsage: null,
+          uptime: null,
+          activeConnections: null,
+          diskUsage: null,
+          totalRequests: null,
+        },
+      }
+      render(<AdminPanel {...props} />)
+      expect(screen.queryByText('0%')).not.toBeInTheDocument()
+      expect(screen.queryByText('0d 0h 0m')).not.toBeInTheDocument()
+      expect(screen.queryByText('0')).not.toBeInTheDocument()
+      expect(screen.getAllByText('Unavailable').length).toBeGreaterThanOrEqual(6)
+    })
+
     it('shows Unavailable for null storage capacity instead of 0 B', async () => {
       const user = userEvent.setup()
       const props = {

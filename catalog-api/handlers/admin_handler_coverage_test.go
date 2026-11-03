@@ -572,13 +572,14 @@ func TestAdminHandler_ScanStorage(t *testing.T) {
 	c.Request.Header.Set("Authorization", "Bearer token")
 
 	h.ScanStorage(c)
-	// ScanStorage now returns 202 Accepted (scan is queued, not completed immediately).
-	assert.Equal(t, http.StatusAccepted, w.Code)
+	// CAT-001: this endpoint starts no scan; it must say so (501) instead of 202 "Scan initiated".
+	assert.Equal(t, http.StatusNotImplemented, w.Code)
 
 	var resp map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	require.NoError(t, err)
-	assert.Equal(t, "accepted", resp["status"])
+	assert.NotEqual(t, "accepted", resp["status"])
+	assert.Contains(t, resp["error"], "POST /api/v1/scans")
 }
 
 func TestAdminHandler_ScanStorage_BadBody(t *testing.T) {

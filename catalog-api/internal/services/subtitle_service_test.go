@@ -232,15 +232,13 @@ func TestSubtitleService_GetDownloadInfo_SubDB(t *testing.T) {
 
 	// Mock cache miss
 	mockCache.On("Get", mock.Anything, "subtitle_download_info:subdb_abc123", mock.AnythingOfType("*services.SubtitleSearchResult")).Return(false, nil)
-	mockCache.On("Set", mock.Anything, "subtitle_download_info:subdb_abc123", mock.AnythingOfType("services.SubtitleSearchResult"), mock.AnythingOfType("time.Duration")).Return(nil)
 
+	// CAT-001: no provider client exists, so a result id cannot be reconstructed into invented
+	// language/score/URL data; the honest outcome is ErrSubtitleProviderNotImplemented.
 	result, err := service.getDownloadInfo(context.Background(), "subdb_abc123")
 
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.Equal(t, "subdb_abc123", result.ID)
-	assert.Equal(t, ProviderSubDB, result.Provider)
-	assert.Contains(t, result.DownloadURL, "api.thesubdb.com")
+	assert.ErrorIs(t, err, ErrSubtitleProviderNotImplemented)
+	assert.Nil(t, result)
 }
 
 func TestSubtitleService_GetDownloadInfo_InvalidFormat(t *testing.T) {

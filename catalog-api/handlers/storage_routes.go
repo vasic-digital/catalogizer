@@ -17,3 +17,11 @@ func RegisterStorageRoutes(api *gin.RouterGroup, h *ScanHandler, auth *middlewar
 	api.GET("/storage-roots", h.GetStorageRoots)
 	api.GET("/storage-roots/:id/status", h.GetStorageRootStatus)
 }
+
+// RegisterScanRoutes mounts the scan-job endpoints on g (the /scans group). Queueing a scan makes the server read a
+// configured storage root, so it is admin-only; listing and status stay available to any authenticated user.
+func RegisterScanRoutes(g *gin.RouterGroup, h *ScanHandler, auth *middleware.JWTMiddleware) {
+	g.POST("", auth.RequireAdmin(), h.QueueScan)
+	g.GET("", h.ListScans)
+	g.GET("/:job_id", h.GetScanStatus)
+}
