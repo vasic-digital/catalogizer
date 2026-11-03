@@ -30,7 +30,7 @@ import (
 //   - 64 lowercase hex      legacy SHA-256(password+salt), written by the old
 //     POST /users; verified in constant time and reported with
 //     needsUpgrade=true so the login rewrites it (compare-and-swap, see
-//     AuthService.Login). Legacy rows have NO sunset yet (tracked follow-up).
+//     AuthService.Login). Sunset plan: docs/security/LEGACY_PASSWORD_HASH_SUNSET.md.
 //
 // Only v2 is ever written. v1 rows stay valid until the user's next password
 // change.
