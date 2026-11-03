@@ -432,3 +432,29 @@ Tracked follow-ups (status OPEN):
 - F3: "851 pages in ~4 s" holds for the generated fixture only; real very large PDFs (e.g. 851 and 570 pages) cannot be extracted by the pure-Go engine (>120 s) and rely on poppler.
 - F5: limits are sized from host MemAvailable, not the container memory limit; three children at their ceilings could exceed a container limit. No compose file limits catalog-api memory today.
 - UNCONFIRMED: image build and in-container extraction; real 64-CPU host.
+
+## Docs C2/C5 landing (openapi.yaml re-verification) - source defects found (review round 1)
+
+Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/api/openapi.yaml` and
+`docs/api/API_DOCUMENTATION.md` as known defects. The fixes belong to a separate fix work item.
+
+- R2 (important): `PUT /api/v1/users/{id}` never saves `role_id`. The response is 200 and echoes the requested
+  `role_id`, but `UserRepository.Update` (`catalog-api/repository/user_repository.go`) has no `role_id` column, so a
+  later GET shows the old role; `is_active` is saved. Changing a user's role through the API does not work. The defect
+  is pinned by `catalog-api/openapi_contract_binary_test.go` (assertion "role_id is not persisted"); the fix must flip
+  that assertion and update both docs.
+- R5 (important): the request validation middleware rejects passwords that contain SQL keywords (for example a word
+  such as `Create`) as potential SQL injection. Reported by review round 1; the exact keyword list is UNCONFIRMED here.
+- F1 (important): users created with `POST /api/v1/users` cannot log in until an admin runs reset-password (password
+  stored as SHA-256, login verifies bcrypt).
+- F2 (important): the same validator rejects the permission names `user.create`, `user.update`, `user.delete` on
+  `POST /api/v1/roles`; only `user.view`, `user.manage` and `user.*` pass.
+- F3 (minor): `DELETE /api/v1/logs/share/{id}` with an unknown id answers 500, not 404; several 404/500 bodies echo
+  raw service or SQL error text; error reports store the server host name in `system_info`.
+- F4 (minor): an empty body on `POST /api/v1/users/{id}/unlock` is rejected (400 `invalid JSON format`).
+- F6 (minor): `scripts/check_doc_reachability.py` does not require a direct README to `docs/README.md` link.
+
+## Docs C2/C5 review round 2 follow-ups (GO-with-follow-ups, process-doc minor)
+
+- R6: docs say every cell of the user/role permission table is "asserted by" the binary contract test; the test only uses `user.*` roles, so single-permission cells (`user.view` only, `user.manage` only) are measured live but not asserted. Add those two roles to the test or soften the wording.
+- R7 (measured): the input validator pattern list is `catalog-api/middleware/input_validation.go:57-66`. On POST /api/v1/users it rejects whole words CREATE, AND, OR, FROM, SLEEP and `--` in ANY string field (password, display_name "Rock and Roll"); `Selection` and `Order-By` pass. Permission names `user.create` fail for the same reason. Under investigation in the login/validator fix.
