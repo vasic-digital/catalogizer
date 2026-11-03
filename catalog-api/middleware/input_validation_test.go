@@ -112,7 +112,7 @@ func TestInputValidation_GinMiddleware(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
-		assert.Contains(t, strings.ToLower(w.Body.String()), "potential sql injection")
+		assert.Contains(t, strings.ToLower(w.Body.String()), "potential xss")
 	})
 
 	// Test valid input
@@ -255,7 +255,9 @@ func TestValidateJSONValues_ArrayOfStrings(t *testing.T) {
 	}
 	err := validateJSONValues(config, data)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "potential SQL injection")
+	// An XSS payload is reported as XSS (the old bare-keyword SQL rule mislabelled
+	// it as SQL injection because of the word "script").
+	assert.Contains(t, err.Error(), "potential XSS")
 }
 
 func TestValidateJSONValues_ArrayWithSafeStrings(t *testing.T) {

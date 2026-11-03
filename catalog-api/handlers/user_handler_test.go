@@ -155,7 +155,6 @@ func TestUserHandler_CreateUser(t *testing.T) {
 				authService.On("CheckPermission", 1, models.PermissionSystemAdmin).Return(true, nil).Maybe()
 				authService.On("ValidatePassword", "password123").Return(nil)
 				authService.On("GenerateSecureToken", 16).Return("random-salt-123", nil)
-				authService.On("HashData", mock.AnythingOfType("string")).Return("hashed-combined")
 
 				userRepo.On("Create", mock.AnythingOfType("*models.User")).Return(1, nil)
 			},
@@ -228,7 +227,6 @@ func TestUserHandler_CreateUser(t *testing.T) {
 				authService.On("CheckPermission", 1, models.PermissionSystemAdmin).Return(true, nil).Maybe()
 				authService.On("ValidatePassword", "password123").Return(nil)
 				authService.On("GenerateSecureToken", 16).Return("random-salt-123", nil)
-				authService.On("HashData", mock.AnythingOfType("string")).Return("hashed-combined")
 
 				userRepo.On("Create", mock.AnythingOfType("*models.User")).Return(0, assert.AnError)
 			},

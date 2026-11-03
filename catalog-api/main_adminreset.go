@@ -10,6 +10,7 @@ import (
 
 	root_config "catalogizer/config"
 	"catalogizer/database"
+	root_services "catalogizer/services"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -109,7 +110,7 @@ func runAdminReset(db *database.DB, args []string, stdout, stderr io.Writer) int
 			return 1
 		}
 		salt := hex.EncodeToString(sb)
-		h, err := bcryptHash([]byte(pw + salt))
+		h, err := root_services.HashPasswordWithSalt(pw, salt)
 		if err != nil {
 			fmt.Fprintf(stderr, "admin-reset-password FAILED: %v\n", err)
 			return 1
@@ -120,7 +121,7 @@ func runAdminReset(db *database.DB, args []string, stdout, stderr io.Writer) int
 			fmt.Fprintf(stderr, "admin-reset-password FAILED (session revoke): %v\n", err)
 			return 1
 		}
-		if _, err := db.Exec("UPDATE users SET password_hash = ?, salt = ? WHERE id = ?", string(h), salt, a.id); err != nil {
+		if _, err := db.Exec("UPDATE users SET password_hash = ?, salt = ? WHERE id = ?", h, salt, a.id); err != nil {
 			fmt.Fprintf(stderr, "admin-reset-password FAILED: %v\n", err)
 			return 1
 		}

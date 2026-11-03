@@ -172,14 +172,14 @@ func (r *UserRepository) Update(user *models.User) error {
 		UPDATE users SET
 			username = ?, email = ?, first_name = ?, last_name = ?, display_name = ?,
 			avatar_url = ?, time_zone = ?, language = ?, is_active = ?, settings = ?,
-			updated_at = ?
+			role_id = ?, updated_at = ?
 		WHERE id = ?
 	`
 
 	_, err := r.db.Exec(query,
 		user.Username, user.Email, user.FirstName, user.LastName, user.DisplayName,
 		user.AvatarURL, user.TimeZone, user.Language, user.IsActive, user.Settings,
-		time.Now(), user.ID)
+		user.RoleID, time.Now(), user.ID)
 
 	return err
 }

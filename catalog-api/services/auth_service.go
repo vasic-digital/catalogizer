@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 
 	"catalogizer/models"
 	"catalogizer/repository"
@@ -73,10 +72,19 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	}
 
 	// Verify password
-	if !s.verifyPassword(req.Password, user.Salt, user.PasswordHash) {
+	ok, needsUpgrade := CheckPassword(req.Password, user.Salt, user.PasswordHash)
+	if !ok {
 		// Increment failed login attempts
 		s.userRepo.IncrementFailedLoginAttempts(user.ID)
 		return nil, errors.New("invalid credentials")
+	}
+	if needsUpgrade {
+		// Legacy hex SHA-256 row (written by the old POST /users): rewrite it
+		// as the canonical bcrypt hash now that the password is known. Best
+		// effort: a failure leaves the legacy hash, which still verifies.
+		if newHash, herr := HashPasswordWithSalt(req.Password, user.Salt); herr == nil {
+			_ = s.userRepo.UpdatePassword(user.ID, newHash, user.Salt)
+		}
 	}
 
 	// Reset failed login attempts on successful login
@@ -416,25 +424,12 @@ func (s *AuthService) generateSalt() (string, error) {
 }
 
 func (s *AuthService) hashPassword(password, salt string) (string, error) {
-	// Combine password and salt
-	combined := password + salt
-
-	// Use bcrypt for additional security
-	hash, err := bcrypt.GenerateFromPassword([]byte(combined), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-
-	return string(hash), nil
+	return HashPasswordWithSalt(password, salt)
 }
 
 func (s *AuthService) verifyPassword(password, salt, hash string) bool {
-	// Combine password and salt
-	combined := password + salt
-
-	// Compare with bcrypt
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(combined))
-	return err == nil
+	ok, _ := CheckPassword(password, salt, hash)
+	return ok
 }
 
 // Session management methods

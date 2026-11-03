@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"catalogizer/models"
+	"catalogizer/services"
 )
 
 // UserServiceInterface defines interface for user repository operations
@@ -121,7 +122,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passwordHash, err := h.hashPassword(req.Password, salt)
+	passwordHash, err := services.HashPasswordWithSalt(req.Password, salt)
 	if err != nil {
 		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
 		return
@@ -739,12 +740,6 @@ func (h *UserHandler) getCurrentUser(r *http.Request) (*models.User, error) {
 	}
 
 	return h.authService.GetCurrentUser(token)
-}
-
-func (h *UserHandler) hashPassword(password, salt string) (string, error) {
-	combined := password + salt
-	hash := h.authService.HashData(combined)
-	return hash, nil
 }
 
 func parseTime(timeStr string) (time.Time, error) {

@@ -183,25 +183,55 @@ func EscapeHTML(input string) string {
 	return input
 }
 
-// ContainsSQLInjection checks for common SQL injection patterns
-func ContainsSQLInjection(input string) bool {
-	sqlPatterns := []string{
-		`(?i)(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION)\b)`,
-		`(?i)(['"]\s*;\s*(SELECT|INSERT|UPDATE|DELETE|DROP))`,
-		`(?i)(/\*.*\*/)`,
-		`(?i)(--.*$)`,
-		`(?i)(\bWAITFOR\s+DELAY\b)`,
-		`(?i)(\bSLEEP\s*\()`,
-		`(?i)(\bEXEC\s*\()`,
-	}
+// sqlInjectionPatterns detect SQL injection by STRUCTURE (a statement shape,
+// a tautology, a stacked statement, a comment terminator, a time-delay or
+// stored-procedure call), never by a bare keyword.
+//
+// Root cause of the former false positive: the old list matched a lone
+// `\b(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|OR|AND|FROM|WHERE|...)\b`.
+// `\b` is a word/non-word boundary, and '.' is a non-word character, so the
+// legitimate permission names "user.create", "user.update", "user.delete" (and
+// any prose such as "Users and groups") contained a "word" that equalled a SQL
+// keyword and were rejected as injection. A bare keyword carries no injection
+// capability on its own: injection needs a statement, an operator expression or
+// a terminator around it, so those are what is matched now.
+var sqlInjectionPatterns = []*regexp.Regexp{
+	// UNION [ALL] SELECT
+	regexp.MustCompile(`(?i)\bUNION\b(\s+(ALL|DISTINCT))?\s+SELECT\b`),
+	// SELECT <list> FROM <source>
+	regexp.MustCompile(`(?i)\bSELECT\s+(\*|[\w.` + "`" + `"'(),\s]+?)\s+FROM\s+[\w.` + "`" + `"\[]+`),
+	// INSERT INTO, DELETE FROM, UPDATE <t> SET
+	regexp.MustCompile(`(?i)\bINSERT\s+(OR\s+\w+\s+)?INTO\b`),
+	regexp.MustCompile(`(?i)\bDELETE\s+FROM\b`),
+	regexp.MustCompile(`(?i)\bUPDATE\s+[\w.` + "`" + `"\[\]]+\s+SET\b`),
+	// DDL: DROP/ALTER/CREATE/TRUNCATE <object>
+	regexp.MustCompile(`(?i)\b(DROP|ALTER|CREATE|TRUNCATE)\s+(TABLE|DATABASE|SCHEMA|INDEX|VIEW|USER|ROLE|TRIGGER|PROCEDURE|FUNCTION|COLUMN)\b`),
+	// Tautologies: quote OR/AND ..., or OR/AND <literal> <comparison>
+	regexp.MustCompile(`(?i)['"]\s*(OR|AND)\s+['"\w(]`),
+	regexp.MustCompile(`(?i)\b(OR|AND)\s+(\d+|'[^']*'|"[^"]*")\s*(=|<>|!=|<|>|\bLIKE\b)`),
+	// Stacked statement: ; <statement keyword>
+	regexp.MustCompile(`(?i);\s*(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|EXECUTE|SLEEP|WAITFOR)\b`),
+	regexp.MustCompile(`(?i)(['"]\s*;\s*(SELECT|INSERT|UPDATE|DELETE|DROP))`),
+	// Comment terminators / inline comments
+	regexp.MustCompile(`(?i)(/\*.*\*/)`),
+	regexp.MustCompile(`(?i)(--.*$)`),
+	// Time delay / stored procedures / dangerous functions (call syntax)
+	regexp.MustCompile(`(?i)\bWAITFOR\s+DELAY\b`),
+	regexp.MustCompile(`(?i)\b(PG_)?SLEEP\s*\(`),
+	regexp.MustCompile(`(?i)\bBENCHMARK\s*\(`),
+	regexp.MustCompile(`(?i)\bEXEC(UTE)?\s*\(`),
+	regexp.MustCompile(`(?i)\bEXEC(UTE)?\s+(sp_|xp_|master\b)`),
+	regexp.MustCompile(`(?i)\bXP_\w+\b`),
+}
 
-	for _, pattern := range sqlPatterns {
-		re := regexp.MustCompile(pattern)
+// ContainsSQLInjection checks for SQL injection by statement structure. It is
+// the single implementation shared with the HTTP input-validation middleware.
+func ContainsSQLInjection(input string) bool {
+	for _, re := range sqlInjectionPatterns {
 		if re.MatchString(input) {
 			return true
 		}
 	}
-
 	return false
 }
 

@@ -2008,7 +2008,7 @@ func seedDefaultAdmin(db *database.DB, username, password string) error {
 	salt := hex.EncodeToString(saltBytes)
 
 	// Hash password with salt (same as services.AuthService.hashPassword)
-	hash, err := bcryptHash([]byte(password + salt))
+	hash, err := root_services.HashPasswordWithSalt(password, salt)
 	if err != nil {
 	return fmt.Errorf("hash password: %w", err)
 	}
@@ -2016,7 +2016,7 @@ func seedDefaultAdmin(db *database.DB, username, password string) error {
 	_, err = db.Exec(
 	`INSERT INTO users (username, email, password_hash, salt, role_id, first_name, last_name, display_name, is_active)
 	VALUES (?, ?, ?, ?, 1, 'System', 'Administrator', 'Admin', ?)`,
-	username, username+"@catalogizer.local", string(hash), salt, 1,
+	username, username+"@catalogizer.local", hash, salt, 1,
 	)
 	if err != nil {
 	return fmt.Errorf("insert admin user: %w", err)
@@ -2058,11 +2058,6 @@ func refuseCompromisedAdminHashes(db *database.DB) error {
 	}
 	}
 	return nil
-}
-
-// bcryptHash wraps bcrypt.GenerateFromPassword.
-func bcryptHash(data []byte) ([]byte, error) {
-	return bcrypt.GenerateFromPassword(data, bcrypt.DefaultCost)
 }
 
 // dnsCacheEntry holds resolved IPs with an expiration time.

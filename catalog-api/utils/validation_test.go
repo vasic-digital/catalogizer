@@ -253,7 +253,7 @@ func TestContainsSQLInjection(t *testing.T) {
 	}{
 		{"SELECT * FROM users", true},
 		{"'; DROP TABLE users; --", true},
-		{"admin' OR '1'='1", false}, // OR alone is not in SQL injection patterns
+		{"admin' OR '1'='1", true}, // quote + OR tautology
 		{"normal text", false},
 		{"selection", false},
 		{"", false},
@@ -356,5 +356,30 @@ func TestCompactWhitespace(t *testing.T) {
 		t.Run(tt.input, func(t *testing.T) {
 			assert.Equal(t, tt.expected, CompactWhitespace(tt.input))
 		})
+	}
+}
+
+// Regression (root cause: bare-keyword matching on word boundaries): permission
+// names and ordinary prose must not be flagged, real injection must be.
+func TestContainsSQLInjection_PermissionNamesAndProse(t *testing.T) {
+	benign := []string{
+		"user.create", "user.update", "user.delete", "role.create", "media.delete",
+		"select", "from", "or", "and", "create", "Users and groups", "Cats or dogs",
+		"Can create and update items", "Order by popularity", "where the heart is",
+		"system.admin", "media.view",
+	}
+	for _, in := range benign {
+		assert.False(t, ContainsSQLInjection(in), in)
+	}
+	attacks := []string{
+		"'; DROP TABLE users; --", "' OR '1'='1", "x' OR 1=1", "1 OR 2>1",
+		"1 UNION SELECT a FROM b", "1 UNION ALL SELECT 1", "SELECT * FROM users",
+		"INSERT INTO t VALUES (1)", "UPDATE users SET admin=1", "DELETE FROM users",
+		"admin'--", "1; DROP TABLE x", "1; SLEEP(5)", "WAITFOR DELAY '0:0:5'",
+		"BENCHMARK(5000000,SHA1('t'))", "EXEC(xp_cmdshell 'dir')", "EXEC xp_cmdshell",
+		"1/**/OR/**/1=1", "1; SELECT 1", "pg_sleep(10)", "ALTER TABLE t ADD c int",
+	}
+	for _, in := range attacks {
+		assert.True(t, ContainsSQLInjection(in), in)
 	}
 }

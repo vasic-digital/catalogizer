@@ -9,6 +9,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"catalogizer/utils"
+
 	obslogging "digital.vasic.observability/pkg/logging"
 	"digital.vasic.security/pkg/guardrails"
 	"github.com/gin-gonic/gin"
@@ -48,27 +50,11 @@ func DefaultInputValidationConfig() InputValidationConfig {
 
 // Pre-compiled injection detection patterns
 var (
-	sqlInjectionRegexes  []*regexp.Regexp
 	xssRegexes           []*regexp.Regexp
 	pathTraversalRegexes []*regexp.Regexp
 )
 
 func init() {
-	// SQL Injection patterns
-	for _, p := range []string{
-		`(?i)(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION|SCRIPT|OR)\b)`,
-		`(?i)(\b(FROM|WHERE|AND|OR|HAVING|GROUP BY|ORDER BY)\b)`,
-		`(?i)(['"]\s*;\s*(SELECT|INSERT|UPDATE|DELETE|DROP))`,
-		`(?i)(/\*.*\*/)`,
-		`(?i)(--.*$)`,
-		`(?i)(\bWAITFOR\s+DELAY\b)`,
-		`(?i)(\bBENCHMARK\b)`,
-		`(?i)(\bSLEEP\b)`,
-		`(?i)(\bEXEC\b\s*\(|\bXP_\w+\b)`,
-	} {
-		sqlInjectionRegexes = append(sqlInjectionRegexes, regexp.MustCompile(p))
-	}
-
 	// XSS patterns
 	for _, p := range []string{
 		`(?i)(<script[^>]*>.*?</script>)`,
@@ -133,13 +119,11 @@ func SanitizeInput(input string) string {
 }
 
 // DetectSQLInjection checks for common SQL injection patterns
+// Detection is structural (see utils.ContainsSQLInjection): bare SQL keywords
+// such as the "create"/"update"/"delete" in the permission names
+// "user.create"/"user.update"/"user.delete" are not injection.
 func DetectSQLInjection(input string) bool {
-	for _, re := range sqlInjectionRegexes {
-		if re.MatchString(input) {
-			return true
-		}
-	}
-	return false
+	return utils.ContainsSQLInjection(input)
 }
 
 // DetectXSS checks for common XSS patterns
@@ -238,8 +222,44 @@ func validateJSONValues(config InputValidationConfig, data map[string]interface{
 	return nil
 }
 
+// secretFieldNames are JSON keys whose values are credentials. They are hashed
+// (bcrypt) and never interpolated into SQL, HTML or a file path, and a strong
+// password legitimately contains any character or word ("Create", "Select-1",
+// "a--b", "x=1"). Pattern-checking them can only reject valid passwords, so they
+// are exempt from the injection pattern checks (length is bounded by the body
+// limit and by AuthService.ValidatePassword). All other fields keep the checks.
+var secretFieldNames = map[string]struct{}{
+	"password":         {},
+	"new_password":     {},
+	"current_password": {},
+	"old_password":     {},
+	"confirm_password": {},
+}
+
+// isSecretField reports whether the (possibly "name[3]"-indexed) key is a credential field.
+func isSecretField(key string) bool {
+	if i := strings.IndexByte(key, '['); i >= 0 {
+		key = key[:i]
+	}
+	_, ok := secretFieldNames[strings.ToLower(key)]
+	return ok
+}
+
 // validateStringValue validates individual string values
 func validateStringValue(config InputValidationConfig, key, value string) error {
+	if isSecretField(key) {
+		// Only an explicit, operator-configured rule applies to a credential.
+		if pattern, exists := config.CustomRules[key]; exists {
+			re, err := regexp.Compile(pattern)
+			if err != nil {
+				return fmt.Errorf("invalid validation pattern for field %s", key)
+			}
+			if !re.MatchString(value) {
+				return fmt.Errorf("field %s does not match required pattern", key)
+			}
+		}
+		return nil
+	}
 	// Sanitize input
 	value = SanitizeInput(value)
 
