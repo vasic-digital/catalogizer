@@ -58,6 +58,8 @@ vi.mock('@/lib/mediaApi', () => ({
   },
 }))
 
+vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ isAdmin: true }) }))
+
 vi.mock('react-hot-toast', () => ({
   default: {
     success: vi.fn(),

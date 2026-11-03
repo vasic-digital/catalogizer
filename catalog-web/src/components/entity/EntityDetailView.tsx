@@ -20,6 +20,7 @@ export function EntityHero({
   onFavorite,
   onRefresh,
   refreshPending,
+  canRefresh = true,
 }: {
   entity: MediaEntityDetail
   files: EntityFile[]
@@ -27,6 +28,8 @@ export function EntityHero({
   onFavorite: () => void
   onRefresh: () => void
   refreshPending: boolean
+  /** Metadata refresh triggers outbound provider calls and is admin-only on the API; hide it for non-admins. */
+  canRefresh?: boolean
 }) {
   const Icon = TYPE_ICONS[entity.media_type] || Film
 
@@ -101,9 +104,11 @@ export function EntityHero({
               <Button variant="outline" size="sm" onClick={onFavorite}>
                 <Heart className="h-4 w-4 mr-1" /> Favorite
               </Button>
-              <Button variant="outline" size="sm" onClick={onRefresh} disabled={refreshPending}>
-                <RefreshCw className={`h-4 w-4 mr-1 ${refreshPending ? 'animate-spin' : ''}`} /> Refresh
-              </Button>
+              {canRefresh && (
+                <Button variant="outline" size="sm" onClick={onRefresh} disabled={refreshPending}>
+                  <RefreshCw className={`h-4 w-4 mr-1 ${refreshPending ? 'animate-spin' : ''}`} /> Refresh
+                </Button>
+              )}
               {files.length > 0 && (
                 <>
                   <Button
