@@ -752,7 +752,13 @@ func (c *compiler) qualityExpr() string {
 	}
 	const key = "'\"quality_profile\":\"'"
 	s2 := protectEscapes("mf.quality_info")
-	inner := "(SELECT SUBSTR(x.r, 1, INSTR(x.r, '\"') - 1) FROM (SELECT SUBSTR(y.s, INSTR(y.s, " + key + ") + 19) AS r FROM (SELECT " + s2 + " AS s) y WHERE INSTR(y.s, " + key + ") > 0) x)"
+	// Only the TOP-LEVEL key counts (Postgres ->> reads top level only). The text before the first
+	// occurrence must not hold an unclosed nested object: openers (the three characters ":{ ) minus
+	// closers (}) must be zero. A '}' inside an earlier string value makes the rule not match (safe
+	// direction); the QualityInfo writer's only nested object is resolution with integer members.
+	pre := "SUBSTR(z.s, 1, INSTR(z.s, " + key + ") - 1)"
+	depthOK := "(LENGTH(y.pre) - LENGTH(REPLACE(y.pre, '\":{', ''))) / 3 = LENGTH(y.pre) - LENGTH(REPLACE(y.pre, '}', ''))"
+	inner := "(SELECT SUBSTR(x.r, 1, INSTR(x.r, '\"') - 1) FROM (SELECT SUBSTR(y.s, y.p + 19) AS r FROM (SELECT z.s AS s, " + pre + " AS pre, INSTR(z.s, " + key + ") AS p FROM (SELECT " + s2 + " AS s) z) y WHERE y.p > 0 AND " + depthOK + ") x)"
 	return decodeJSONText(inner)
 }
 
@@ -763,6 +769,13 @@ func (c *compiler) genre(r Rule) (string, error) {
 	pos, negate, err := c.arrayText("mi.genre", r)
 	if err != nil {
 		return "", err
+	}
+	if c.opt.Postgres {
+		// pos is an EXISTS (...) here: a non-null boolean. COALESCE(boolean, 0) is a type error on Postgres.
+		if negate {
+			return "NOT " + pos, nil
+		}
+		return pos, nil
 	}
 	if negate {
 		return "NOT COALESCE(" + pos + ", 0)", nil
