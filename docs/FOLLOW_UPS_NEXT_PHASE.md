@@ -544,3 +544,11 @@ Status: OPEN until a commit on `main` closes the item.
 - Link-checker weaknesses (T1, test-instrumentation, the checker is not in the repository yet; the audit copy lives in the session scratchpad): (a) its control check ended in `or True`, so a broken control could never fail; (b) it ignores `#anchors`, so a link to a heading that does not exist passes (the spec 001 crawl found 83 broken anchors); (c) it had no VitePress site-root mode, so 37 `Website/` links such as `/download` were reported broken. The scratchpad copy now asserts a positive and a negative control and resolves `Website/` root links against `Website/` (`.md` and `index.md` forms); anchors are still unchecked. Land a checker in `scripts/` with these three properties plus a gate before relying on its counts.
 - Link-check false positives to exclude when the checker lands: backticked code such as `NewValue[T](loader)` in `docs/architecture/LAZY_LOADING.md` and spec 001 doc 19, and links into submodules that are not checked out.
 
+
+
+## Authorization gaps (branch fix-authz-gaps, CAT-049/050/051/052)
+
+- F4 / CAT-051 FIXED: `RequireAdmin` consults `UserRepository.IsAdmin` (current role permissions, active user) when `SetAdminChecker` is installed (main.go does); the role_id claim is only the fallback for stacks without the checker. Fails closed (503) when the lookup fails.
+- R3-M1 / CAT-049 FIXED for the target side: `UserRepository.UpdateGuarded` is a compare-and-set on role_id and is_active; `UpdateUser` answers 409 when they changed between the decision and the save. Other columns are still last-write-wins. A caller demoted mid-request is not re-checked (its sessions are revoked on demotion).
+- R3-M2 / CAT-050 FIXED: a non-admin may only assign roles whose every permission it holds itself (role 2, the standard user role, always assignable). OPERATOR DECISION still open: whether this subset rule is the wanted role model; acting on (not assigning to) a more privileged non-admin target is still unguarded.
+- CAT-052: `memStore.GetRole` now returns an error for unknown roles like the real repository.

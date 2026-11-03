@@ -100,6 +100,7 @@ func newRTEnv(t *testing.T) *rtEnv {
 		}
 		return nil
 	})
+	jwtMW.SetAdminChecker(repo.IsAdmin) // same wiring as main.go (CAT-051 F4)
 	adm := NewAdminHandler(adapter, repo, db, "test")
 	r.PUT("/api/v1/admin/users/:id", adm.UpdateUser)
 	r.GET("/api/v1/admin/ping", jwtMW.RequireAuth(), jwtMW.RequireAdmin(), func(c *gin.Context) { c.String(200, "admin-ok") })

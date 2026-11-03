@@ -4302,7 +4302,10 @@ paths:
       description: |
         Updates a user's role, active status, or lock status. Admin users
         cannot modify their own account to prevent self-lockout. Requires
-        admin role.
+        admin role: every /api/v1/admin request is checked against the
+        caller's CURRENT role in the database (system.admin / `*`), not the
+        role_id claim in the access token, so a demotion, a role permission
+        change or a deactivation takes effect on the next request.
       security:
         - BearerAuth: []
       parameters:
@@ -4336,6 +4339,8 @@ paths:
           description: Forbidden (admin role required)
         '404':
           description: User not found
+        '503':
+          description: The caller's admin status could not be determined (fail closed)
 
   /api/v1/admin/storage:
     get:
@@ -4559,7 +4564,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateUserRequest'
-      description: "Updates profile fields (username, email, first/last/display name, avatar_url, time_zone, language, settings). Self-update: allowed without any permission and returns 200, but `role_id` and `is_active` in the body are silently ignored, also for an administrator updating their own account (measured on the real binary). Updating another user needs `user.update`; `is_active` is applied only when the caller also has `user.manage`. `role_id` is validated and permission-checked (it needs `user.manage`, and a caller without `system.admin` may not assign a role that carries `system.admin`, 403) and is saved and echoed in the 200 response, and a later GET shows it (pinned by catalog-api/openapi_contract_binary_test.go). A change of `role_id` or `is_active` revokes all of the target user's sessions, so the old access token stops working at once and the user must log in again. Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved)."
+      description: "Updates profile fields (username, email, first/last/display name, avatar_url, time_zone, language, settings). Self-update: allowed without any permission and returns 200, but `role_id` and `is_active` in the body are silently ignored, also for an administrator updating their own account (measured on the real binary). Updating another user needs `user.update`; `is_active` is applied only when the caller also has `user.manage`. `role_id` is validated and permission-checked (it needs `user.manage`, and a caller without `system.admin` may not assign a role that carries `system.admin`, nor any role carrying a permission the caller does not itself hold, 403; the standard user role (id 2) stays assignable by any user manager; the same rule applies to `role_id` on POST /users) and is saved and echoed in the 200 response, and a later GET shows it (pinned by catalog-api/openapi_contract_binary_test.go). A change of `role_id` or `is_active` revokes all of the target user's sessions, so the old access token stops working at once and the user must log in again. Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved)."
       responses:
         '200':
           description: "Updated user (JSON)."
@@ -4568,11 +4573,11 @@ paths:
         '401':
           description: "Unauthenticated (JWT middleware) or the session token is not valid."
         '403':
-          description: "Another user without `user.update`, an admin target for a non-admin caller, or assigning an admin role without `system.admin`."
+          description: "Another user without `user.update`, an admin target for a non-admin caller, or assigning an admin role (or a role stronger than the caller's own permissions) without `system.admin`."
         '404':
           description: "No such user."
         '409':
-          description: "Username or email already exists."
+          description: "Username or email already exists, or the target's role or activation changed while the request was being processed (the save is a compare-and-set on the values the authorization decision used; reload and retry)."
         '500':
           description: "Repository or permission-check error."
     delete:

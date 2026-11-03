@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -109,7 +110,7 @@ func (s *memStore) GetRole(id int) (*models.Role, error) {
 		c := *r
 		return &c, nil
 	}
-	return &models.Role{}, nil
+	return nil, errors.New("role not found") // like the real repository (CAT-052)
 }
 func (s *memStore) CreateRole(*models.Role) (int, error) { return 0, nil }
 func (s *memStore) UpdateRole(r *models.Role) error      { c := *r; s.roles[r.ID] = &c; return nil }
