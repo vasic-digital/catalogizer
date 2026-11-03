@@ -9,8 +9,8 @@ import (
 func TestProbeConverters_RealLookups(t *testing.T) {
 	t.Setenv("PATH", t.TempDir()) // no tools on PATH
 	got := ProbeConverters()
-	if len(got) != len(ConverterTools)+1 {
-		t.Fatalf("want an entry per tool plus %s, got %v", ConverterPDFRaster, got)
+	if len(got) != len(ConverterTools)+2 {
+		t.Fatalf("want an entry per tool plus %s and %s, got %v", ConverterPDFRaster, ConverterSVGRender, got)
 	}
 	for tool, ok := range got {
 		if ok {
@@ -59,12 +59,31 @@ func TestProbeConverters_ToolPresentSide(t *testing.T) {
 		t.Errorf("convert and gs are on PATH but %s is false: %v", ConverterPDFRaster, got)
 	}
 
+	// SVG input: convert alone is not enough, a renderer is needed (F5 of review round 1)
+	if got[ConverterSVGRender] {
+		t.Errorf("%s must stay false without inkscape/rsvg-convert: %v", ConverterSVGRender, got)
+	}
+	stubTool(t, dir, "rsvg-convert", true)
+	if got = ProbeConverters(); !got[ConverterSVGRender] {
+		t.Errorf("convert and rsvg-convert are on PATH but %s is false: %v", ConverterSVGRender, got)
+	}
+	if err := os.Remove(filepath.Join(dir, "rsvg-convert")); err != nil {
+		t.Fatal(err)
+	}
+	stubTool(t, dir, "inkscape", true)
+	if got = ProbeConverters(); !got[ConverterSVGRender] {
+		t.Errorf("convert and inkscape are on PATH but %s is false: %v", ConverterSVGRender, got)
+	}
+
 	// gs without convert is not PDF-capable either
 	if err := os.Remove(filepath.Join(dir, "convert")); err != nil {
 		t.Fatal(err)
 	}
 	if got = ProbeConverters(); got[ConverterPDFRaster] || got["convert"] {
 		t.Errorf("convert is gone: %v", got)
+	}
+	if got[ConverterSVGRender] {
+		t.Errorf("a renderer without convert cannot convert SVG: %v", got)
 	}
 }
 

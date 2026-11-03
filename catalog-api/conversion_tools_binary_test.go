@@ -71,7 +71,7 @@ func TestConversionToolsMissing_RealBinary(t *testing.T) {
 	require.NoError(t, json.Unmarshal(raw, &h), "%s", raw)
 	caps, ok := h["converters"].(map[string]interface{})
 	require.True(t, ok, "/health/deep must carry a converters object: %s", raw)
-	for _, tool := range []string{"ffmpeg", "convert", "convert_pdf", "pdftotext"} {
+	for _, tool := range []string{"ffmpeg", "convert", "convert_pdf", "convert_svg", "pdftotext"} {
 		assert.Equal(t, false, caps[tool], "%s is not on this PATH: %s", tool, raw)
 	}
 }

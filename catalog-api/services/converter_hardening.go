@@ -38,7 +38,7 @@ import (
 //go:embed converterpolicy/policy.xml
 var imageMagickPolicy []byte
 
-// ImageMagickPolicy returns the embedded security policy (the Dockerfiles install the same file).
+// ImageMagickPolicy returns the embedded security policy (it is embedded in the binary and applied through MAGICK_CONFIGURE_PATH at every run; the Dockerfiles install nothing).
 func ImageMagickPolicy() []byte { return append([]byte(nil), imageMagickPolicy...) }
 
 const (
@@ -72,27 +72,44 @@ func ffmpegGuardArgs() []string {
 }
 
 var (
-	policyOnce sync.Once
-	policyDir  string
-	policyErr  error
+	policyMu  sync.Mutex
+	policyDir string
 )
 
-// imageMagickPolicyDir writes the embedded policy into a private directory once per process and
-// returns it (for MAGICK_CONFIGURE_PATH).
+// imageMagickPolicyDir returns a private directory holding the embedded policy (for
+// MAGICK_CONFIGURE_PATH) and verifies it on EVERY call: the file must exist with exactly the
+// embedded bytes, otherwise it is rewritten (in a fresh directory when the old one is unusable).
+// An unrecoverable failure returns an error and the job is refused: ImageMagick without the
+// policy would read MVG/MSL/URL coders and "@file" paths (fail-open), so it never runs.
 func imageMagickPolicyDir() (string, error) {
-	policyOnce.Do(func() {
-		d, err := os.MkdirTemp("", "catalogizer-magick-policy-")
-		if err != nil {
-			policyErr = err
-			return
+	policyMu.Lock()
+	defer policyMu.Unlock()
+	if policyDir != "" {
+		pf := filepath.Join(policyDir, "policy.xml")
+		if cur, err := os.ReadFile(pf); err == nil && bytes.Equal(cur, imageMagickPolicy) {
+			return policyDir, nil
 		}
-		if err := os.WriteFile(filepath.Join(d, "policy.xml"), imageMagickPolicy, 0o444); err != nil {
-			policyErr = err
-			return
+		_ = os.Chmod(pf, 0o600)
+		_ = os.Remove(pf)
+		if err := os.WriteFile(pf, imageMagickPolicy, 0o444); err == nil {
+			if cur, rerr := os.ReadFile(pf); rerr == nil && bytes.Equal(cur, imageMagickPolicy) {
+				return policyDir, nil
+			}
 		}
-		policyDir = d
-	})
-	return policyDir, policyErr
+	}
+	d, err := os.MkdirTemp("", "catalogizer-magick-policy-")
+	if err != nil {
+		return "", err
+	}
+	pf := filepath.Join(d, "policy.xml")
+	if err := os.WriteFile(pf, imageMagickPolicy, 0o444); err != nil {
+		return "", err
+	}
+	if cur, rerr := os.ReadFile(pf); rerr != nil || !bytes.Equal(cur, imageMagickPolicy) {
+		return "", errors.New("the ImageMagick security policy could not be verified after writing")
+	}
+	policyDir = d
+	return d, nil
 }
 
 // isHardenedTool reports whether name goes through the hardened launcher.
@@ -303,6 +320,9 @@ func checkSVGBytes(raw []byte) error {
 				inStyle++
 			}
 			for _, a := range t.Attr {
+				if !svgAttrNamespaceAllowed(a.Name) {
+					return fmt.Errorf("%w (attribute %s:%s in a foreign namespace)", errSVGExternal, a.Name.Space, a.Name.Local)
+				}
 				an := strings.ToLower(a.Name.Local)
 				v := strings.TrimSpace(a.Value)
 				switch {
@@ -335,6 +355,18 @@ func checkSVGBytes(raw []byte) error {
 		return fmt.Errorf("SVG refused: no root element")
 	}
 	return nil
+}
+
+// svgAttrNamespaceAllowed: attributes may be unprefixed or in the svg, xlink or xml namespaces (or
+// be xmlns declarations). Anything else (sodipodi:absref, inkscape:*, vendor extensions) is read
+// by delegates such as Inkscape as a file path and is refused.
+func svgAttrNamespaceAllowed(n xml.Name) bool {
+	switch n.Space {
+	case "", "xmlns", "xml", "http://www.w3.org/2000/svg", "http://www.w3.org/1999/xlink",
+		"http://www.w3.org/XML/1998/namespace":
+		return true
+	}
+	return false
 }
 
 // safeSVGRef: a reference is safe when it stays inside the document or is an inline raster/svg

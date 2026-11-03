@@ -249,3 +249,29 @@ func TestApproval_N2_ResponseDoesNotEchoSettingsMarker(t *testing.T) {
 }
 
 func toStr(v interface{}) string { b, _ := json.Marshal(v); return string(b) }
+
+// Review round 1 F4: approving or rejecting through PUT /users/:id {is_active} is audited exactly
+// like the admin status route (registration_approved / registration_rejected, actor = the admin),
+// and a change of an already decided user is not.
+func TestApproval_F4_UserUpdateRecordsAuditEvent(t *testing.T) {
+	t.Setenv("REGISTRATION_MODE", "approval")
+	e := newApprEnv(t)
+	okID, _ := e.register(t, "uaudit1")
+	noID, _ := e.register(t, "uaudit2")
+
+	require.Equal(t, 200, e.do(e.adminTok, "PUT", "/api/v1/users/"+strconv.Itoa(okID), `{"is_active":true}`).Code)
+	require.Equal(t, 200, e.do(e.adminTok, "PUT", "/api/v1/users/"+strconv.Itoa(noID), `{"is_active":false}`).Code)
+
+	appr := e.audit(t, "registration_approved")
+	require.Len(t, appr, 1)
+	assert.EqualValues(t, okID, appr[0].UserID.Int64)
+	assert.Contains(t, appr[0].Details, "actor="+strconv.Itoa(e.adminID))
+	rej := e.audit(t, "registration_rejected")
+	require.Len(t, rej, 1)
+	assert.EqualValues(t, noID, rej[0].UserID.Int64)
+
+	// golden-FALSE: deactivating an already approved user is not a registration decision
+	require.Equal(t, 200, e.do(e.adminTok, "PUT", "/api/v1/users/"+strconv.Itoa(okID), `{"is_active":false}`).Code)
+	assert.Len(t, e.audit(t, "registration_approved"), 1)
+	assert.Len(t, e.audit(t, "registration_rejected"), 1)
+}

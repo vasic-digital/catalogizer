@@ -2,6 +2,7 @@ package services
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -205,4 +206,89 @@ func TestHardenLive_OrdinaryConversionsStillWork(t *testing.T) {
 	svg := filepath.Join(root, "ok.svg")
 	require.NoError(t, os.WriteFile(svg, []byte(`<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><defs><linearGradient id="g"><stop offset="0" stop-color="red"/></linearGradient></defs><rect width="20" height="20" fill="url(#g)"/></svg>`), 0o644))
 	require.NoError(t, svc.convertImage(&models.ConversionJob{SourcePath: svg, TargetPath: filepath.Join(root, "ok_svg.png")}))
+}
+
+// Review round 1 F1: an attribute in a non-SVG namespace (sodipodi:absref, inkscape:*) is read by
+// the Inkscape delegate as a file path. The sanitiser allows only the svg, xlink and xml namespaces.
+func TestHardenLive_SVGForeignNamespaceAttributeRefused(t *testing.T) {
+	needTools(t, "convert", "prlimit")
+	root, outside, _ := rv6ConvFixture(t)
+	victim := filepath.Join(outside, "victim.png")
+	out, err := exec.Command("convert", "-size", "40x40", "xc:red", victim).CombinedOutput()
+	require.NoError(t, err, "%s", out)
+	for name, attr := range map[string]string{
+		"sodipodi": `sodipodi:absref="` + victim + `"`,
+		"inkscape": `inkscape:href="` + victim + `"`,
+		"other":    `foo:bar="x"`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			src := filepath.Join(root, name+".svg")
+			svg := `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:foo="urn:foo" width="40" height="40"><image width="40" height="40" xlink:href="#nope" ` + attr + `/></svg>`
+			require.NoError(t, os.WriteFile(src, []byte(svg), 0o644))
+			require.Error(t, checkSVGBytes([]byte(svg)), "the sanitiser must refuse a foreign-namespace attribute")
+			tgt := filepath.Join(root, name+".png")
+			cerr := (&ConversionService{}).convertImage(&models.ConversionJob{SourcePath: src, TargetPath: tgt})
+			assert.Error(t, cerr)
+			_, serr := os.Stat(tgt)
+			assert.Error(t, serr, "no output may be published")
+		})
+	}
+	// golden-FALSE: svg/xlink/xml namespaced attributes and the xmlns declarations stay allowed
+	ok := `<?xml version="1.0"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xml:space="preserve" width="20" height="20"><defs><linearGradient id="g"><stop offset="0" stop-color="red"/></linearGradient></defs><use xlink:href="#g"/><rect width="20" height="20" fill="url(#g)"/></svg>`
+	assert.NoError(t, checkSVGBytes([]byte(ok)))
+}
+
+// Review round 1 F2: the policy must exist, with the embedded bytes, at EVERY run; a deleted file
+// is rewritten, an unrecoverable one refuses the job (no fail-open run without policy).
+func TestHardenLive_PolicyRestoredBeforeEveryRun(t *testing.T) {
+	needTools(t, "convert", "prlimit")
+	root, _, _ := rv6ConvFixture(t)
+	src := filepath.Join(root, "a.png")
+	out, err := exec.Command("convert", "-size", "8x8", "xc:blue", src).CombinedOutput()
+	require.NoError(t, err, "%s", out)
+	svc := &ConversionService{}
+	require.NoError(t, svc.convertImage(&models.ConversionJob{SourcePath: src, TargetPath: filepath.Join(root, "b.png")}))
+	dir, derr := imageMagickPolicyDir()
+	require.NoError(t, derr)
+	pf := filepath.Join(dir, "policy.xml")
+	require.NoError(t, os.Remove(pf))
+	require.NoError(t, svc.convertImage(&models.ConversionJob{SourcePath: src, TargetPath: filepath.Join(root, "c.png")}))
+	got, rerr := os.ReadFile(pf)
+	require.NoError(t, rerr, "the policy must be rewritten before the run")
+	assert.Equal(t, imageMagickPolicy, got)
+	// tampered content is restored too
+	require.NoError(t, os.Chmod(pf, 0o644))
+	require.NoError(t, os.WriteFile(pf, []byte("<policymap></policymap>"), 0o644))
+	require.NoError(t, svc.convertImage(&models.ConversionJob{SourcePath: src, TargetPath: filepath.Join(root, "d.png")}))
+	got, _ = os.ReadFile(pf)
+	assert.Equal(t, imageMagickPolicy, got)
+	// unrecoverable: the directory is gone and cannot be recreated at that path -> the cache is
+	// rebuilt in a fresh directory, never a run without policy
+	require.NoError(t, os.RemoveAll(dir))
+	require.NoError(t, svc.convertImage(&models.ConversionJob{SourcePath: src, TargetPath: filepath.Join(root, "e.png")}))
+	dir2, _ := imageMagickPolicyDir()
+	got, rerr = os.ReadFile(filepath.Join(dir2, "policy.xml"))
+	require.NoError(t, rerr)
+	assert.Equal(t, imageMagickPolicy, got)
+}
+
+// Review round 1 F4: the hardened child gets a scrubbed environment; a planted secret must not reach it.
+func TestHardenLive_ChildEnvironmentScrubbed(t *testing.T) {
+	needTools(t, "prlimit")
+	dir := t.TempDir()
+	dump := filepath.Join(dir, "env.txt")
+	fake := filepath.Join(dir, "convert")
+	require.NoError(t, os.WriteFile(fake, []byte("#!/bin/sh\nenv > '"+dump+"'\n"), 0o755))
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	t.Setenv("CATALOGIZER_PLANTED_SECRET", "s3cr3t-value")
+	t.Setenv("JWT_SECRET", "s3cr3t-jwt")
+	require.NoError(t, runHardenedTool(context.Background(), "convert", []string{"x"}))
+	raw, err := os.ReadFile(dump)
+	require.NoError(t, err)
+	allowed := map[string]bool{"LC_CTYPE": true, "TMPDIR": true, "MAGICK_CONFIGURE_PATH": true, "PATH": true, "LANG": true, "PWD": true, "SHLVL": true, "_": true}
+	for _, line := range strings.Split(strings.TrimSpace(string(raw)), "\n") {
+		k := strings.SplitN(line, "=", 2)[0]
+		assert.True(t, allowed[k], "unexpected variable reached the child: %s", k)
+	}
+	assert.NotContains(t, string(raw), "s3cr3t")
 }
