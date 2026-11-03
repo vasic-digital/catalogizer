@@ -25,10 +25,32 @@ func NewAnalyticsHandler(service *services.AnalyticsService, logger *zap.Logger)
 	}
 }
 
+// bindWriteUserID attributes a write to the caller. A body user_id that names another
+// account is refused with 403 (forged rows would feed the admin reports); an absent (0)
+// or matching one is replaced by the token's id. It reports whether the handler may go on.
+func bindWriteUserID(c *gin.Context, bodyID *int) bool {
+	id64, ok := callerUserID(c)
+	uid := int(id64)
+	if !ok || uid <= 0 {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		return false
+	}
+	if *bodyID != 0 && *bodyID != uid {
+		c.JSON(http.StatusForbidden, gin.H{"error": "user_id must be the authenticated user"})
+		return false
+	}
+	*bodyID = uid
+	return true
+}
+
 func (h *AnalyticsHandler) LogMediaAccess(c *gin.Context) {
 	var access models.MediaAccessLog
 	if err := c.ShouldBindJSON(&access); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		return
+	}
+
+	if !bindWriteUserID(c, &access.UserID) {
 		return
 	}
 
@@ -49,6 +71,10 @@ func (h *AnalyticsHandler) LogEvent(c *gin.Context) {
 	var event models.AnalyticsEvent
 	if err := c.ShouldBindJSON(&event); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		return
+	}
+
+	if !bindWriteUserID(c, &event.UserID) {
 		return
 	}
 

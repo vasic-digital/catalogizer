@@ -223,28 +223,56 @@ func (r *UserRepository) UpdateGuarded(user *models.User, expectedRoleID int, ex
 // baked into an access token is never trusted for this decision (CAT-051 F4).
 // Any lookup problem returns an error so the caller fails closed.
 func (r *UserRepository) IsAdmin(ctx context.Context, userID int) (bool, error) {
-	var (
-		active          bool
-		permissionsJSON sql.NullString
-	)
-	err := r.db.QueryRowContext(ctx, `
-		SELECT u.is_active, ro.permissions
-		FROM users u JOIN roles ro ON ro.id = u.role_id
-		WHERE u.id = ?`, userID).Scan(&active, &permissionsJSON)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false, nil // unknown user or dangling role: not an admin
-		}
-		return false, fmt.Errorf("failed to resolve admin status: %w", err)
-	}
-	if !active || !permissionsJSON.Valid {
-		return false, nil
-	}
-	var perms models.Permissions
-	if err := json.Unmarshal([]byte(permissionsJSON.String), &perms); err != nil {
-		return false, fmt.Errorf("failed to unmarshal permissions: %w", err)
+	perms, active, err := r.livePermissions(ctx, userID)
+	if err != nil || !active {
+		return false, err
 	}
 	return perms.HasPermission(models.PermissionSystemAdmin), nil
+}
+
+// HasPermission reports whether the user is, right now, an active user whose
+// CURRENT role carries permission, or system.admin (administrators pass every
+// permission gate, as they pass RequireAdmin). Decided from the database on
+// every call so a role that lost the permission stops working at once, whatever
+// the token claims. An unknown user or dangling role is (false, nil); a failure
+// to read is an error and callers fail closed on it.
+func (r *UserRepository) HasPermission(ctx context.Context, userID int, permission string) (bool, error) {
+	perms, active, err := r.livePermissions(ctx, userID)
+	if err != nil || !active {
+		return false, err
+	}
+	return perms.HasPermission(permission) || perms.HasPermission(models.PermissionSystemAdmin), nil
+}
+
+// livePermissions reads the user's current role permissions; active is false
+// for an unknown, deactivated or role-less user.
+func (r *UserRepository) livePermissions(ctx context.Context, userID int) (perms models.Permissions, active bool, err error) {
+	var (
+		isActive        bool
+		permissionsJSON sql.NullString
+		isLocked        bool
+		lockedUntil     *time.Time
+	)
+	qerr := r.db.QueryRowContext(ctx, `
+		SELECT u.is_active, ro.permissions, u.is_locked, u.locked_until
+		FROM users u JOIN roles ro ON ro.id = u.role_id
+		WHERE u.id = ?`, userID).Scan(&isActive, &permissionsJSON, &isLocked, &lockedUntil)
+	if qerr != nil {
+		if qerr == sql.ErrNoRows {
+			return nil, false, nil // unknown user or dangling role
+		}
+		return nil, false, fmt.Errorf("failed to resolve permissions: %w", qerr)
+	}
+	// A locked account (permanent, or with an unexpired locked_until) is as unentitled as
+	// a deactivated one, exactly as at login (User.CanLogin) - review round 1, F11.
+	locked := (&models.User{IsLocked: isLocked, LockedUntil: lockedUntil}).IsAccountLocked()
+	if !isActive || locked || !permissionsJSON.Valid {
+		return nil, false, nil
+	}
+	if uerr := json.Unmarshal([]byte(permissionsJSON.String), &perms); uerr != nil {
+		return nil, false, fmt.Errorf("failed to unmarshal permissions: %w", uerr)
+	}
+	return perms, true, nil
 }
 
 func (r *UserRepository) UpdatePassword(userID int, passwordHash, salt string) error {

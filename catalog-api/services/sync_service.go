@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"catalogizer/internal/logging"
+	"catalogizer/internal/netguard"
 	"catalogizer/internal/pathguard"
 	"catalogizer/models"
 	"catalogizer/repository"
@@ -31,6 +32,7 @@ type SyncService struct {
 	syncRepo      *repository.SyncRepository
 	userRepo      *repository.UserRepository
 	authService   *AuthService
+	webdavMu      sync.Mutex // guards webdavClients (request goroutines and sync workers share it)
 	webdavClients map[int]*WebDAVClient
 	wg            sync.WaitGroup
 	ctx           context.Context
@@ -101,7 +103,7 @@ func (s *SyncService) GetEndpoint(endpointID int, userID int) (*models.SyncEndpo
 	return endpoint, nil
 }
 
-func (s *SyncService) UpdateEndpoint(endpointID int, userID int, updates *models.UpdateSyncEndpointRequest) (*models.SyncEndpoint, error) {
+func (s *SyncService) UpdateEndpoint(endpointID int, userID int, updates *models.UpdateSyncEndpointRequest) (_ *models.SyncEndpoint, retErr error) {
 	endpoint, err := s.syncRepo.GetEndpoint(endpointID)
 	if err != nil {
 		return nil, err
@@ -120,6 +122,14 @@ func (s *SyncService) UpdateEndpoint(endpointID int, userID int, updates *models
 
 	if updates.URL != "" {
 		endpoint.URL = updates.URL
+		s.evictWebDAVClient(endpoint.ID) // never keep a client built for the old URL
+		// The connection test below caches a client for the NEW URL; if the update is then
+		// rejected the stored URL is unchanged, so that client must not outlive the attempt.
+		defer func() {
+			if retErr != nil {
+				s.evictWebDAVClient(endpoint.ID)
+			}
+		}()
 	}
 
 	if updates.Username != "" {
@@ -1268,6 +1278,20 @@ func (s *SyncService) validateSyncEndpoint(endpoint *models.SyncEndpoint) error 
 		return fmt.Errorf("invalid sync type: %s", endpoint.Type)
 	}
 
+	// The server connects to this URL: refuse loopback, private, link-local and other
+	// internal destinations, checked after name resolution (review round 1, F3).
+	if endpoint.Type == models.SyncTypeWebDAV || endpoint.Type == models.SyncTypeCloudStorage {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		// cloud_storage endpoints name a bucket (s3://bucket, gs://bucket): no host is
+		// dialled from that string, so only http(s) URLs are network-checked there.
+		if endpoint.Type == models.SyncTypeCloudStorage && bucketURL(endpoint.URL) {
+			// nothing to resolve
+		} else if _, err := netguard.CheckURL(ctx, endpoint.URL, "http", "https"); err != nil {
+			return fmt.Errorf("invalid endpoint URL: %w", err)
+		}
+	}
+
 	validDirections := []string{models.SyncDirectionUpload, models.SyncDirectionDownload, models.SyncDirectionBidirectional}
 	if !s.isValidType(endpoint.SyncDirection, validDirections) {
 		return fmt.Errorf("invalid sync direction: %s", endpoint.SyncDirection)
@@ -1301,13 +1325,30 @@ func (s *SyncService) testConnection(endpoint *models.SyncEndpoint) error {
 	}
 }
 
+// evictWebDAVClient drops the cached client of an endpoint.
+func (s *SyncService) evictWebDAVClient(id int) {
+	s.webdavMu.Lock()
+	defer s.webdavMu.Unlock()
+	delete(s.webdavClients, id)
+}
+
 func (s *SyncService) getWebDAVClient(endpoint *models.SyncEndpoint) (*WebDAVClient, error) {
-	if client, exists := s.webdavClients[endpoint.ID]; exists {
+	s.webdavMu.Lock()
+	defer s.webdavMu.Unlock()
+	// Reuse the cached client only if it was built for exactly this URL and credentials:
+	// after a credential or URL change the stale entry is replaced, never reused.
+	if client, exists := s.webdavClients[endpoint.ID]; exists &&
+		client.baseURL == endpoint.URL && client.username == endpoint.Username && client.password == endpoint.Password {
 		return client, nil
 	}
 
 	client := NewWebDAVClient(endpoint.URL, endpoint.Username, endpoint.Password)
-	s.webdavClients[endpoint.ID] = client
+	// Every WebDAV request is dialled through the SSRF guard (resolved address checked
+	// and pinned), also for endpoints stored before the URL validation existed.
+	client.client.SetTransport(netguard.Transport())
+	if endpoint.ID != 0 { // a not-yet-stored endpoint (ID 0) must never be cached under 0
+		s.webdavClients[endpoint.ID] = client
+	}
 
 	return client, nil
 }
@@ -1439,4 +1480,14 @@ func (s *SyncService) calculateChecksum(filePath string) (string, error) {
 
 func (s *SyncService) CleanupOldSessions(olderThan time.Time) error {
 	return s.syncRepo.CleanupSessions(olderThan)
+}
+
+// bucketURL reports whether raw is an object-store bucket reference (s3://, gs://, gcs://).
+func bucketURL(raw string) bool {
+	for _, p := range []string{"s3://", "gs://", "gcs://"} {
+		if strings.HasPrefix(strings.ToLower(raw), p) {
+			return true
+		}
+	}
+	return false
 }

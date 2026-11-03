@@ -1,6 +1,7 @@
 package filesystem
 
 import (
+	"catalogizer/internal/pathguard"
 	"errors"
 	"fmt"
 	"os"
@@ -31,17 +32,26 @@ func AllowedLocalBases() []string {
 // CheckLocalRoot reports whether path, with every symbolic link resolved, lies inside one of the allowed bases (also resolved).
 // An empty bases list denies everything. The path must exist: a root that cannot be resolved cannot be proven confined.
 func CheckLocalRoot(path string, bases []string) error {
+	_, err := ResolveLocalRoot(path, bases)
+	return err
+}
+
+// ResolveLocalRoot is CheckLocalRoot that also returns the symlink-resolved path, which is what a caller should store (a root that is
+// a symlink at creation time must not keep pointing wherever the link is later re-pointed). On top of the base confinement it refuses a
+// root that is, contains or aliases a protected application file (database, SQLite wal/shm/journal, key file or key directory): a
+// directory root that holds the database would let the API list and download it (pathguard.ConfineData semantics, P2).
+func ResolveLocalRoot(path string, bases []string) (string, error) {
 	if path == "" || !filepath.IsAbs(path) {
-		return fmt.Errorf("%w: path must be absolute", ErrLocalRootNotAllowed)
+		return "", fmt.Errorf("%w: path must be absolute", ErrLocalRootNotAllowed)
 	}
 	if len(bases) == 0 {
-		return fmt.Errorf("%w: no base directory is configured (set %s)", ErrLocalRootNotAllowed, AllowedLocalBasesEnv)
+		return "", fmt.Errorf("%w: no base directory is configured (set %s)", ErrLocalRootNotAllowed, AllowedLocalBasesEnv)
 	}
 	// The deepest existing ancestor is resolved, the not-yet-existing tail is appended: a root may be registered before its directory
 	// exists, and it is re-checked every time it is used (clientForRoot / QueueScan), when a symlink could have appeared.
 	real, err := resolveExistingPrefix(filepath.Clean(path))
 	if err != nil {
-		return fmt.Errorf("%w: cannot resolve path: %v", ErrLocalRootNotAllowed, err)
+		return "", fmt.Errorf("%w: cannot resolve path: %v", ErrLocalRootNotAllowed, err)
 	}
 	for _, b := range bases {
 		rb, err := filepath.EvalSymlinks(b)
@@ -49,10 +59,13 @@ func CheckLocalRoot(path string, bases []string) error {
 			continue
 		}
 		if withinDir(rb, real) {
-			return nil
+			if _, perr := pathguard.ConfineData(real, []string{rb}); errors.Is(perr, pathguard.ErrProtected) {
+				return "", fmt.Errorf("%w: %s holds a protected application file (database or key)", ErrLocalRootNotAllowed, path)
+			}
+			return real, nil
 		}
 	}
-	return fmt.Errorf("%w: %s", ErrLocalRootNotAllowed, path)
+	return "", fmt.Errorf("%w: %s", ErrLocalRootNotAllowed, path)
 }
 
 // resolveExistingPrefix runs EvalSymlinks on the deepest existing ancestor of p and re-appends the missing tail.

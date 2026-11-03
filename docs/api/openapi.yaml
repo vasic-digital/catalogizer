@@ -2932,6 +2932,10 @@ paths:
             schema:
               type: object
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '501':
           description: Not implemented. Copying to a storage root is not wired to any copy engine; nothing is copied. Use POST /api/v1/copy/local or /api/v1/copy/upload.
 
@@ -2948,6 +2952,10 @@ paths:
             schema:
               type: object
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Copy initiated
 
@@ -2964,6 +2972,10 @@ paths:
             schema:
               type: object
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Upload initiated
 
@@ -3541,6 +3553,8 @@ paths:
           description: Missing or invalid token
         '403':
           description: The path user_id is not the caller (and the caller is not an admin)
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '501':
           description: Not implemented. The server has no recommendation engine; no recommendations are fabricated.
 
@@ -3691,6 +3705,10 @@ paths:
             type: integer
             format: int64
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Storage path listing
           content:
@@ -3745,6 +3763,10 @@ paths:
       security:
         - BearerAuth: []
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Storage roots list
           content:
@@ -3763,6 +3785,8 @@ paths:
         Creates or updates a storage root configuration. Admin only. A local
         root must lie inside one of the directories in CATALOGIZER_LOCAL_ROOT_BASES
         (default deny) or the request fails with 403.
+        A root that is, contains or aliases the application database, its SQLite companions or the key file/directory is refused
+        with 403, and the symlink-resolved path is what is stored.
       security:
         - BearerAuth: []
       requestBody:
@@ -3772,6 +3796,10 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateStorageRootRequest'
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '201':
           description: Storage root created
           content:
@@ -3802,6 +3830,10 @@ paths:
       security:
         - BearerAuth: []
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Storage roots list
           content:
@@ -3827,6 +3859,10 @@ paths:
           schema:
             type: integer
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Connectivity status
           content:
@@ -4056,6 +4092,10 @@ paths:
             schema:
               type: object
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Discovered shares
     get:
@@ -4064,6 +4104,10 @@ paths:
       security:
         - BearerAuth: []
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Discovered shares
 
@@ -4079,6 +4123,10 @@ paths:
             schema:
               type: object
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Connection test result
     get:
@@ -4087,6 +4135,10 @@ paths:
       security:
         - BearerAuth: []
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Connection test result
 
@@ -4102,6 +4154,10 @@ paths:
             schema:
               type: object
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Share contents
 
@@ -4119,6 +4175,8 @@ paths:
             schema:
               $ref: '#/components/schemas/QueueScanRequest'
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '202':
           description: Scan job queued
           content:
@@ -5056,6 +5114,10 @@ paths:
             type: string
       description: "Validates a JSON object of step data for one wizard step without saving it. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
+        '403':
+          description: Caller lacks the system.configure permission (system.admin also passes; decided from the database on every request)
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: "Validation result, for example `{\"is_valid\":true}`."
         '400':
@@ -5078,6 +5140,10 @@ paths:
             type: string
       description: "Saves the caller's progress for one wizard step. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
+        '403':
+          description: Caller lacks the system.configure permission (system.admin also passes; decided from the database on every request)
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: "`{\"message\":\"Progress saved successfully\"}`."
         '400':
@@ -5103,6 +5169,10 @@ paths:
       security:
         - BearerAuth: []
       responses:
+        '403':
+          description: Caller lacks the system.configure permission (system.admin also passes; decided from the database on every request)
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: Wizard completed
 
@@ -6135,6 +6205,8 @@ paths:
           schema:
             type: string
       responses:
+        '403':
+          description: Administrator role required (system.admin)
         '200':
           description: Challenge result
           content:
@@ -6159,6 +6231,8 @@ paths:
       security:
         - BearerAuth: []
       responses:
+        '403':
+          description: Administrator role required (system.admin)
         '200':
           description: All challenge results
           content:
@@ -6195,6 +6269,8 @@ paths:
           schema:
             type: string
       responses:
+        '403':
+          description: Administrator role required (system.admin)
         '200':
           description: Category challenge results
 
@@ -6537,6 +6613,10 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateSyncEndpointRequest'
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '201':
           description: Sync endpoint created
           content:
@@ -6681,6 +6761,8 @@ paths:
             schema:
               $ref: '#/components/schemas/UpdateSyncEndpointRequest'
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: Sync endpoint updated
           content:
@@ -6742,6 +6824,8 @@ paths:
           schema:
             type: integer
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: Sync endpoint deleted
           content:
@@ -6798,6 +6882,8 @@ paths:
           schema:
             type: integer
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: Sync started
           content:
@@ -6958,6 +7044,8 @@ paths:
             schema:
               $ref: '#/components/schemas/ScheduleSyncRequest'
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '201':
           description: Sync schedule created
           content:
@@ -7060,6 +7148,10 @@ paths:
             schema:
               $ref: '#/components/schemas/CleanupSessionsRequest'
       responses:
+        '403':
+          description: Administrator role required (decided from the database on every request)
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: Cleanup completed
           content:
@@ -7432,6 +7524,10 @@ paths:
           format: date
         description: 'End of the range, YYYY-MM-DD (default: today)'
       responses:
+        '403':
+          description: Caller is neither the requested user nor an administrator
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: User analytics
           content:
@@ -7478,6 +7574,10 @@ paths:
           format: date
         description: 'End of the range, YYYY-MM-DD (default: today)'
       responses:
+        '403':
+          description: Administrator role required (decided from the database on every request)
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: System analytics
           content:
@@ -7507,7 +7607,7 @@ paths:
       tags:
       - analytics
       summary: Get analytics for a media item
-      description: Aggregated analytics for one media item over a date range.
+      description: Aggregated analytics for one media item over a date range, computed from every user's access logs. Admin only (answers 403 to other users).
       security:
       - BearerAuth: []
       parameters:
@@ -7558,7 +7658,7 @@ paths:
       tags:
       - analytics
       summary: Create an analytics report
-      description: Creates a report of the requested type.
+      description: Creates a report of the requested type. Every report type aggregates system-wide data, so the route is admin only (answers 403 to other users).
       security:
       - BearerAuth: []
       requestBody:
@@ -7939,7 +8039,7 @@ paths:
       tags:
       - assets
       summary: Proxy an external image
-      description: Public. Fetches an image from an allowed CDN (image.tmdb.org, img.omdbapi.com, images.igdb.com) and streams it with a 24 hour cache header. When the upstream is unreachable or not 200, returns a type-specific SVG placeholder instead.
+      description: Public. Fetches an image from an allowed CDN and streams it. The URL must be https, carry no credentials and name EXACTLY one of image.tmdb.org, img.omdbapi.com or images.igdb.com (port 443 only; compared as the parsed host, never as a substring of the string); redirects are followed only to another such URL and connections to loopback, private or link-local addresses are refused. Streams it with a 24 hour cache header. When the upstream is unreachable or not 200, returns a type-specific SVG placeholder instead.
       parameters:
       - name: url
         in: query
@@ -7968,7 +8068,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: Domain not allowed
+          description: Domain not allowed (not https, not an exact allow-listed host, credentials or a non-443 port in the URL)
           content:
             application/json:
               schema:
@@ -9349,6 +9449,10 @@ paths:
           format: date
         description: 'End of the range, YYYY-MM-DD (default: today)'
       responses:
+        '403':
+          description: Administrator role required (decided from the database on every request)
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: Report
           content:
@@ -9395,6 +9499,10 @@ paths:
           format: date
         description: 'End of the range, YYYY-MM-DD (default: today)'
       responses:
+        '403':
+          description: Administrator role required (decided from the database on every request)
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: Report
           content:
@@ -9428,6 +9536,10 @@ paths:
       security:
       - BearerAuth: []
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Identities
           content:
@@ -9457,6 +9569,10 @@ paths:
             schema:
               $ref: '#/components/schemas/SMBProbeRequest'
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Probe result
           content:
@@ -9496,6 +9612,10 @@ paths:
             schema:
               $ref: '#/components/schemas/SMBProbeRequest'
       responses:
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Probe and ingest result
           content:

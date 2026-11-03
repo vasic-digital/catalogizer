@@ -155,10 +155,12 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 	}
 
 	if req.Protocol == "local" {
-		if err := filesystem.CheckLocalRoot(derefString(req.Path), filesystem.AllowedLocalBases()); err != nil {
+		resolved, err := filesystem.ResolveLocalRoot(derefString(req.Path), filesystem.AllowedLocalBases())
+		if err != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			return
 		}
+		req.Path = &resolved // the resolved path is stored, not the symlink the caller named
 	}
 
 	if req.MaxDepth <= 0 {
