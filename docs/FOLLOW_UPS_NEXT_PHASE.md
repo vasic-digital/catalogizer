@@ -525,3 +525,11 @@ Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/ap
 - XSS rule nits: `behavior:url(...)` (old Internet Explorer only) is not detected; the open-tag rule's `<\s*` also flags prose such as "x < link y" (browsers do not parse `< tag` as a tag); drop the `\s*` after `<`.
 - catalog-web: after change-password the success toast is followed by a redirect to /login on the next 401; log out explicitly or keep the caller's own session.
 - Pre-existing on main (not caused by this branch): admin "suspended" status sets IsLocked but `UserRepository.Update` does not persist `is_locked` and no sessions are revoked; `tests/stress` CacheWriteThroughput and middleware TestTokenBucketRedisRateLimit_Unit_Miniredis_RefillAfterEmpty are flaky under load (section 11.4.248 quarantine candidates).
+
+## Login/validator follow-ups closed (branch fix-lv-followups, 2026-11-03)
+
+- SQLi detector: 5 corpus misses closed (`admin' #`, `admin'/*`, `x';SHUTDOWN`, `1' ORDER BY 1#`, `PROCEDURE ANALYSE()`), and two prose false positives removed (`a -- b`, `Loop; sleep well`).
+- XSS: `behavior:url(` detected; `< tag` with a space is no longer flagged.
+- Legacy SHA-256 hash: metric `catalogizer_auth_legacy_password_hashes`, startup log, plan in docs/security/LEGACY_PASSWORD_HASH_SUNSET.md (verify path not removed).
+- `AuthService.HashData` removed (dead since c0c5ac78). `database/schema_v3_multiuser.sql` no longer seeds the published-hash admin.
+- Session revocation is interface-required and runs before the update (fails closed). catalog-web signs out locally after change-password.
