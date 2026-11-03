@@ -419,3 +419,16 @@ Tracked follow-ups (status OPEN):
 - T3: no test covers the phase 7 path where the dumpsys call itself fails.
 - Nits: unguarded `cd` in the E2E branch; `redis | grep -q` has the F2 shape (low risk).
 - UNCONFIRMED: adb connect exit semantics. ESLint findings stay non-fatal by policy.
+## CAT-002 PDF text isolation - follow-ups (review round 5)
+- F-E3: the pure-Go child re-runs all package `init`s of the API binary (about 80 MB RSS, 0.1-0.2 s) on every call; a small dedicated child binary or lazy init would cut this.
+- The hostile fallback chain (poppler killed by the 20 s CPU limit, then the Go child) measured 20.7 s total; a stricter bound would need a shared per-file budget across the two engines.
+- A genuinely large legitimate document (more than roughly 4000 pages of pure-Go extraction) can now exceed the 20 s CPU limit; poppler handles about 8000 pages in the same budget. Make the CPU limit page-count aware if such inputs are expected.
+- Measurements were taken on a 16-CPU host; GOMAXPROCS=64 is simulated by environment, not run on 64 CPUs. A full catalog-api image build and a container run of the extractor were not done in this round.
+
+## CAT-002 review round 5 follow-ups (GO-with-follow-ups, all minor)
+
+- F1: the child env allowlist is tested only on the poppler path; a mutation giving the Go child the full environment survives.
+- F2: mutations dropping GOMEMLIMIT and raising the child ceiling to 4 GiB survive (ceiling assertion compares against its own constant); marker check HasPrefix vs Contains (nit).
+- F3: "851 pages in ~4 s" holds for the generated fixture only; real very large PDFs (e.g. 851 and 570 pages) cannot be extracted by the pure-Go engine (>120 s) and rely on poppler.
+- F5: limits are sized from host MemAvailable, not the container memory limit; three children at their ceilings could exceed a container limit. No compose file limits catalog-api memory today.
+- UNCONFIRMED: image build and in-container extraction; real 64-CPU host.

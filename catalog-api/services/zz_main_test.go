@@ -12,5 +12,7 @@ func TestMain(m *testing.M) {
 	const roots = "/input:/output:/tmp:/nonexistent:/media:/test:/data:/source:/remote:/local:/old:/new"
 	os.Setenv("CATALOGIZER_SYNC_ROOTS", roots)
 	os.Setenv("CATALOGIZER_CONVERSION_ROOTS", roots)
-	os.Exit(m.Run())
+	code := m.Run()
+	cleanupProdBinary()
+	os.Exit(code)
 }
