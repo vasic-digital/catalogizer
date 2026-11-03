@@ -468,3 +468,7 @@ reports/
     ├── dependency-check-report.json
     └── dependency-check-report.xml
 ```
+
+## Live WebDAV test (real server only)
+
+`catalog-api/filesystem/live_webdav_test.go` (build tag `live`) drives the real `WebDAVClient` against a real WebDAV server: connect, list, write a uniquely named file inside the sandbox, read back and compare sha256, HTTP 404 on a missing file (asserted as a status), rejection of a deliberately wrong password, delete only its own file. Environment: `LIVE_WEBDAV_URL`, `LIVE_WEBDAV_USER`, `LIVE_WEBDAV_PASSWORD`, `LIVE_WEBDAV_SANDBOX` (at least share/folder deep), optional `LIVE_WEBDAV_INSECURE=1` for a self-signed certificate. Without the tag the test is not compiled; with the tag and no environment it SKIPs `credentials_absent`; a dial/TLS failure or a non-WebDAV answer (405, or 200 without a DAV header) SKIPs `service_unavailable`, while a WebDAV server answering 401/403/404 FAILs with the status; the sandbox is cleaned and must be a rooted path of at least share/folder with no `.`/`..` segments. Pure decision logic is unit-tested in `live_webdav_logic_test.go` (default `go test`) (never a stand-in, section 11.4.289). Run: `go test -tags live -run TestLiveWebDAV -v ./filesystem/` from `catalog-api`.
