@@ -177,6 +177,69 @@ func (r *ConversionRepository) GetDueJobs(now time.Time, limit int) ([]models.Co
 	return r.scanJobs(rows)
 }
 
+// NormalizeLegacyScheduledFor rewrites pending rows whose scheduled_for text still carries a
+// non-UTC offset (written before CreateJob normalised to UTC) to the UTC form. SQLite only: the
+// stored text holds the original offset, so the rewrite is exact. On Postgres (TIMESTAMP without
+// zone) the offset was dropped at write time and cannot be recovered, so nothing is done there.
+// Idempotent: a second run finds nothing to rewrite. Rows whose text cannot be parsed are left
+// alone and counted in skipped.
+func (r *ConversionRepository) NormalizeLegacyScheduledFor() (rewritten, skipped int, err error) {
+	if d := r.db.Dialect(); d == nil || !d.IsSQLite() {
+		return 0, 0, nil
+	}
+	rows, err := r.db.Query(`SELECT id, CAST(scheduled_for AS TEXT) FROM conversion_jobs
+		WHERE status = ? AND scheduled_for IS NOT NULL
+		  AND CAST(scheduled_for AS TEXT) NOT LIKE '%+00:00' AND CAST(scheduled_for AS TEXT) NOT LIKE '%Z'`,
+		models.ConversionStatusPending)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to scan legacy scheduled_for: %w", err)
+	}
+	type legacy struct {
+		id  int
+		txt string
+	}
+	var found []legacy
+	for rows.Next() {
+		var l legacy
+		if err := rows.Scan(&l.id, &l.txt); err != nil {
+			rows.Close()
+			return 0, 0, err
+		}
+		found = append(found, l)
+	}
+	if err := rows.Err(); err != nil {
+		rows.Close()
+		return 0, 0, err
+	}
+	rows.Close()
+	layouts := []string{"2006-01-02 15:04:05.999999999-07:00", "2006-01-02T15:04:05.999999999-07:00",
+		"2006-01-02 15:04:05.999999999 -0700 MST", "2006-01-02 15:04:05.999999999 -0700 -0700"}
+	for _, l := range found {
+		var t time.Time
+		ok := false
+		for _, layout := range layouts {
+			if p, perr := time.Parse(layout, l.txt); perr == nil {
+				t, ok = p, true
+				break
+			}
+		}
+		if !ok {
+			skipped++
+			continue
+		}
+		// conditional on the text still being what we read: a concurrent writer wins
+		res, uerr := r.db.Exec(`UPDATE conversion_jobs SET scheduled_for = ? WHERE id = ? AND CAST(scheduled_for AS TEXT) = ?`,
+			t.UTC(), l.id, l.txt)
+		if uerr != nil {
+			return rewritten, skipped, uerr
+		}
+		if n, _ := res.RowsAffected(); n == 1 {
+			rewritten++
+		}
+	}
+	return rewritten, skipped, nil
+}
+
 // ClaimJob atomically moves a pending job to running. It reports whether THIS caller won the
 // claim, so two workers (or a worker and a retry) can never run one job twice.
 func (r *ConversionRepository) ClaimJob(jobID int, startedAt time.Time) (bool, error) {

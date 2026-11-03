@@ -268,6 +268,14 @@ func (s *ConversionService) RunWorker(ctx context.Context, interval time.Duratio
 	s.workerCtx = ctx
 	s.ctxMu.Unlock()
 
+	if n, skipped, err := s.conversionRepo.NormalizeLegacyScheduledFor(); err != nil {
+		if logging.Logger != nil {
+			logging.With(logging.ErrorField(err)).Warn("Conversion worker could not normalise legacy scheduled_for values")
+		}
+	} else if (n > 0 || skipped > 0) && logging.Logger != nil {
+		logging.With(logging.Int("rewritten", n), logging.Int("unparseable", skipped)).Info("Conversion worker normalised legacy scheduled_for values to UTC")
+	}
+
 	if n, err := s.conversionRepo.RequeueRunning(); err != nil {
 		if logging.Logger != nil {
 			logging.With(logging.ErrorField(err)).Warn("Conversion worker could not requeue interrupted jobs")

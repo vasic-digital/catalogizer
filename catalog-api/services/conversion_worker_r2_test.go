@@ -8,10 +8,15 @@ import (
 	"testing"
 	"time"
 
+	"catalogizer/internal/logging"
 	"catalogizer/models"
+	"catalogizer/repository"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest/observer"
 )
 
 // UNIT-CLASS (fake `convert` on PATH; direct repository writes stand in for "the owner cancelled
@@ -36,18 +41,27 @@ func waitRunsEmpty(t *testing.T, svc *ConversionService) {
 	}, 20*time.Second, 10*time.Millisecond)
 }
 
+// waitToolStarted waits for the marker the fake converter writes as its first action, i.e. for
+// executeJob to have passed its re-read and registered the run (status `running` alone is
+// visible from the claim on, before that).
+func waitToolStarted(t *testing.T, marker string) {
+	t.Helper()
+	require.Eventually(t, func() bool {
+		_, err := os.Stat(marker)
+		return err == nil
+	}, 10*time.Second, 5*time.Millisecond, "the fake converter never started")
+}
+
 // leg 1: the tool SUCCEEDS after the row was cancelled: the success write must not overwrite it.
 func TestExecute_SuccessDoesNotOverwriteCancelled(t *testing.T) {
 	svc, repo, dir := newWorkerSvc(t)
-	fakeConvertOnPath(t, `sleep 1; for last; do :; done; : > "$last"`)
+	started := filepath.Join(dir, "started")
+	fakeConvertOnPath(t, `: > "`+started+`"; sleep 1; for last; do :; done; : > "$last"`)
 	id := addImageJob(t, repo, dir, "ok")
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
 	go func() { svc.RunWorker(ctx, 20*time.Millisecond); close(done) }()
-	require.Eventually(t, func() bool {
-		j, err := repo.GetJob(id)
-		return err == nil && j.Status == models.ConversionStatusRunning
-	}, 10*time.Second, 10*time.Millisecond)
+	waitToolStarted(t, started)
 	markCancelled(t, svc, id)
 	waitRunsEmpty(t, svc) // the tool finished and the worker did its finishing write
 	j, err := repo.GetJob(id)
@@ -60,15 +74,13 @@ func TestExecute_SuccessDoesNotOverwriteCancelled(t *testing.T) {
 // leg 2: worker shutdown while the row is cancelled: the requeue must not resurrect it.
 func TestShutdownRequeue_DoesNotResurrectCancelled(t *testing.T) {
 	svc, repo, dir := newWorkerSvc(t)
-	fakeConvertOnPath(t, `exec sleep 60`)
+	started := filepath.Join(dir, "started")
+	fakeConvertOnPath(t, `: > "`+started+`"; exec sleep 60`)
 	id := addImageJob(t, repo, dir, "rq")
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
 	go func() { svc.RunWorker(ctx, 20*time.Millisecond); close(done) }()
-	require.Eventually(t, func() bool {
-		j, err := repo.GetJob(id)
-		return err == nil && j.Status == models.ConversionStatusRunning
-	}, 10*time.Second, 10*time.Millisecond)
+	waitToolStarted(t, started)
 	markCancelled(t, svc, id) // tool still running; no kill
 	cancel()                  // shutdown kills the tool; the worker would requeue a running job
 	<-done
@@ -198,4 +210,143 @@ func TestGroupKillTarget_RefusesPidsAtOrBelowOne(t *testing.T) {
 	pg, ok := groupKillTarget(4242)
 	assert.True(t, ok)
 	assert.Equal(t, -4242, pg)
+}
+
+// C1 (review r3): CancelJob must write `cancelled` BEFORE it kills the run. If the kill came
+// first, the worker's error path could win its conditional write (`failed: signal: killed`) and
+// the owner's cancel would answer 409. The fake run records the stored status the first time it
+// is cancelled.
+func TestCancelJob_WritesCancelledBeforeKillingTheRun(t *testing.T) {
+	svc, repo, dir := newWorkerSvc(t)
+	id := addImageJob(t, repo, dir, "order")
+	j, err := repo.GetJob(id)
+	require.NoError(t, err)
+	require.NoError(t, svc.claim(j))
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	var mu sync.Mutex
+	seen, calls := "", 0
+	svc.registerRun(id, &jobRun{ctx: ctx, cancel: func() {
+		mu.Lock()
+		defer mu.Unlock()
+		calls++
+		if calls == 1 {
+			cur, gerr := repo.GetJob(id)
+			if gerr == nil {
+				seen = cur.Status
+			}
+		}
+		cancel()
+	}})
+	require.NoError(t, svc.CancelJob(id, 1))
+	mu.Lock()
+	defer mu.Unlock()
+	assert.Equal(t, 1, calls, "CancelJob must cancel the run")
+	assert.Equal(t, models.ConversionStatusCancelled, seen, "the row must already be cancelled when the run is killed")
+}
+
+// C3 (review r3): rows written before scheduled_for was normalised to UTC carry their original
+// offset in the stored SQLite text; the worker start rewrites them exactly (idempotent).
+func TestNormalizeLegacyScheduledFor_RewritesOffsetRowsToUTC(t *testing.T) {
+	db := setupTestDB(t)
+	repo := repository.NewConversionRepository(db)
+	insert := func(status string, at time.Time) int {
+		res, err := db.Exec(`INSERT INTO conversion_jobs (user_id, source_path, target_path, source_format,
+			target_format, conversion_type, quality, settings, priority, status, created_at, scheduled_for)
+			VALUES (1, 's', 't', 'png', 'jpg', 'image', 'high', '', 0, ?, ?, ?)`, status, time.Now().UTC(), at)
+		require.NoError(t, err)
+		id, err := res.LastInsertId()
+		require.NoError(t, err)
+		return int(id)
+	}
+	now := time.Now()
+	dueEast := now.Add(-30 * time.Minute).In(time.FixedZone("p14", 14*3600)) // legacy form, due
+	futureWest := now.Add(30 * time.Minute).In(time.FixedZone("m12", -12*3600))
+	idDue := insert(models.ConversionStatusPending, dueEast)
+	idFut := insert(models.ConversionStatusPending, futureWest)
+	idUTC := insert(models.ConversionStatusPending, now.Add(-time.Hour).UTC())
+
+	// RED baseline (the bug): the legacy +14:00 row is due but the SQL text compare misses it
+	due, err := repo.GetDueJobs(now, 10)
+	require.NoError(t, err)
+	ids := func(js []models.ConversionJob) map[int]bool {
+		m := map[int]bool{}
+		for _, j := range js {
+			m[j.ID] = true
+		}
+		return m
+	}
+	require.False(t, ids(due)[idDue], "precondition: the legacy +14:00 row is mis-ordered before normalisation")
+
+	n, skipped, err := repo.NormalizeLegacyScheduledFor()
+	require.NoError(t, err)
+	assert.Equal(t, 2, n, "the two offset rows are rewritten, the UTC row is not")
+	assert.Equal(t, 0, skipped)
+
+	due, err = repo.GetDueJobs(now, 10)
+	require.NoError(t, err)
+	got := ids(due)
+	assert.True(t, got[idDue], "after normalisation the due +14:00 row is returned")
+	assert.True(t, got[idUTC])
+	assert.False(t, got[idFut], "the future -12:00 row stays not due")
+	for _, id := range []int{idDue, idFut} {
+		j, err := repo.GetJob(id)
+		require.NoError(t, err)
+		require.NotNil(t, j.ScheduledFor)
+		_, off := j.ScheduledFor.Zone()
+		assert.Equal(t, 0, off, "job %d is stored in UTC", id)
+	}
+	// the instant is preserved exactly
+	j, err := repo.GetJob(idDue)
+	require.NoError(t, err)
+	assert.WithinDuration(t, dueEast, *j.ScheduledFor, time.Millisecond)
+
+	n, skipped, err = repo.NormalizeLegacyScheduledFor()
+	require.NoError(t, err)
+	assert.Equal(t, 0, n+skipped, "idempotent: a second run has nothing to do")
+}
+
+// N5 (review r3 nit): an invalid timeout is not only ignored, it is reported.
+func TestConversionTimeoutFromEnv_WarnsOnInvalidValue(t *testing.T) {
+	core, logs := observer.New(zapcore.WarnLevel)
+	prev := logging.Logger
+	logging.Logger = zap.New(core)
+	t.Cleanup(func() { logging.Logger = prev })
+
+	t.Setenv("CATALOGIZER_CONVERSION_TIMEOUT", "garbage")
+	assert.Equal(t, DefaultConversionTimeout, conversionTimeoutFromEnv())
+	require.Equal(t, 1, logs.Len(), "an invalid value must log one warning")
+	assert.Contains(t, logs.All()[0].Message, "CATALOGIZER_CONVERSION_TIMEOUT")
+
+	logs.TakeAll()
+	t.Setenv("CATALOGIZER_CONVERSION_TIMEOUT", "45m")
+	assert.Equal(t, 45*time.Minute, conversionTimeoutFromEnv())
+	assert.Equal(t, 0, logs.Len(), "a valid value logs nothing")
+}
+
+// the worker start runs the normalisation (wiring, not only the repository method)
+func TestRunWorker_NormalizesLegacyScheduledForAtStart(t *testing.T) {
+	db := setupTestDB(t)
+	repo := repository.NewConversionRepository(db)
+	userRepo := repository.NewUserRepository(db)
+	svc := NewConversionService(repo, userRepo, NewAuthService(userRepo, "k"))
+	at := time.Now().Add(2 * time.Hour).In(time.FixedZone("p5", 5*3600))
+	res, err := db.Exec(`INSERT INTO conversion_jobs (user_id, source_path, target_path, source_format,
+		target_format, conversion_type, quality, settings, priority, status, created_at, scheduled_for)
+		VALUES (1, 's', 't', 'png', 'jpg', 'image', 'high', '', 0, 'pending', ?, ?)`, time.Now().UTC(), at)
+	require.NoError(t, err)
+	id, _ := res.LastInsertId()
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan struct{})
+	go func() { svc.RunWorker(ctx, 20*time.Millisecond); close(done) }()
+	require.Eventually(t, func() bool {
+		j, err := repo.GetJob(int(id))
+		if err != nil || j.ScheduledFor == nil {
+			return false
+		}
+		_, off := j.ScheduledFor.Zone()
+		return off == 0
+	}, 10*time.Second, 10*time.Millisecond, "worker start must rewrite the legacy offset row to UTC")
+	cancel()
+	<-done
 }

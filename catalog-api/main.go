@@ -1918,10 +1918,10 @@ func main() {
 	defer shutdownCancel()
 
 	// Stop the conversion worker: running converter tools are killed, their jobs go back to
-	// `pending`, and we wait (bounded by the shutdown context) for the job goroutines to finish.
-	// The wait has its own short budget (10s of the 30s shutdown context are spent at most); if the worker
-	// has not stopped, the database is NOT closed below (job goroutines may still write), and the
-	// process exit ends the rest. Converter tools are killed by process group on cancel, so this
+	// `pending`, and we wait for the job goroutines to finish.
+	// The wait is bounded by its own 10s timer (not by the shutdown context; at most 10s of the
+	// 30s shutdown budget are spent). If the worker has not stopped, the database is NOT closed
+	// below (job goroutines may still write), and the process exit ends the rest. Converter tools are killed by process group on cancel, so this
 	// normally takes milliseconds.
 	conversionWorkerCancel()
 	conversionWorkerStopped := false
