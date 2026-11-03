@@ -4036,7 +4036,7 @@ Media collection endpoints for organizing media items into user-defined collecti
 
 List all media collections.
 
-**Description:** Returns user's media collections.
+**Description:** Returns user's media collections. For smart collections each list item also carries `total_items_status`: `exact`, `capped` (`total_items` is a lower bound) or `stored` (not evaluated in this page; budget or rule failure).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -4062,7 +4062,7 @@ List all media collections.
 
 Create a new media collection.
 
-**Description:** Creates an empty collection for the user. Smart collections are not supported: a body with `is_smart: true` or a non-empty `smart_rules` is answered with **501** and nothing is created (the rules are neither stored nor evaluated).
+**Description:** Creates a collection owned by the caller. With `is_smart: true` (or a non-empty `smart_rules`) it creates a smart collection: the rules are validated (400 on any unknown field, operator or value, nothing is created), stored, and evaluated at read time. See the [Smart collections guide](../guides/SMART_COLLECTIONS_GUIDE.md). Smart collections need an authenticated user (401 otherwise).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -4080,9 +4080,9 @@ Create a new media collection.
 
 ### GET /api/v1/collections/:id
 
-Get a specific collection with its items.
+Get a specific collection.
 
-**Description:** Returns collection details and contained media items.
+**Description:** Returns the collection; for a smart collection `total_items` is its current size and `smart_rules` its rules. A collection that is private and owned by someone else answers 404. Items: `GET /api/v1/collections/:id/items`.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -4092,7 +4092,17 @@ Get a specific collection with its items.
 
 Update a collection's name or description.
 
-**Description:** Modifies collection metadata. `is_smart: true` is answered with **501** (smart collections are not supported); nothing is changed.
+**Description:** Modifies collection metadata and, for a smart collection, `smart_rules` (validated like on create). Only the owner or an administrator may edit (403 for a visible collection of someone else, 404 for an invisible one). A smart collection cannot become manual and a manual one cannot become smart (400).
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+---
+
+### GET /api/v1/collections/:id/items
+
+List the items of a collection.
+
+**Description:** A smart collection is evaluated now against the catalogue, so it is always live; a manual collection lists its stored members. Query: `limit` (default 50, max 500), `offset`, or 1-based `page`. Response: `{items, total, page, limit, offset, is_smart}`; each item is `{id, title, media_type, year, rating, genre, added_at}`.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -4898,7 +4908,7 @@ List the current user's playlists.
 
 Create a new playlist.
 
-**Description:** Creates an empty playlist. A body with `is_smart: true` or `smart_rules` is answered with **501** and nothing is created (smart rules are neither stored nor evaluated).
+**Description:** Creates a playlist. With `is_smart: true` and `smart_rules` it creates a smart playlist whose items are the media matching the rules, evaluated each time the playlist is read (`GET /api/v1/playlists/:id` returns one page in `items` and the size in `items_total`; `limit` and `offset` apply). Invalid rules answer 400 and nothing is created. Adding or removing items of a smart playlist answers 409. See the [Smart collections guide](../guides/SMART_COLLECTIONS_GUIDE.md).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -4918,7 +4928,7 @@ Create a new playlist.
 
 Get a specific playlist with its items.
 
-**Description:** Returns playlist details and ordered items.
+**Description:** Returns playlist details and ordered items. A smart playlist is evaluated now; query `limit` (default 50, max 500) and `offset` page its items, each carrying `title`. Errors: 404 for an unknown playlist and for another user's private playlist, 504 when evaluation times out. PUT, DELETE and the item routes answer 404 for a foreign private playlist and 403 for a foreign public one on write; creating beyond the per-user smart-playlist cap answers 409.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 

@@ -96,6 +96,18 @@ describe('collectionsApi', () => {
       expect(mockApi.post).toHaveBeenCalledWith('/collections', newCollection)
       expect(result).toEqual(created)
     })
+
+    it('sends the smart rules to the server unchanged', async () => {
+      const rules = [
+        { field: 'genre', operator: 'contains', value: 'Sci-Fi' },
+        { field: 'added', operator: 'in_last_days', value: 30, condition: 'and' },
+      ]
+      mockApi.post.mockResolvedValue({ data: { id: 7, name: 'S', is_smart: true, smart_rules: rules } })
+
+      await collectionsApi.createCollection({ name: 'S', is_smart: true, smart_rules: rules } as never)
+
+      expect(mockApi.post).toHaveBeenCalledWith('/collections', { name: 'S', is_smart: true, smart_rules: rules })
+    })
   })
 
   describe('updateCollection', () => {

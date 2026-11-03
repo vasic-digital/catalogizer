@@ -5,9 +5,18 @@ Behaviour changes an operator must know about when upgrading. Newest first.
 ## Known limitations and pending removals (docs sync C4, 2026-11-03)
 
 - **Collection sharing is not available.** The server has no `/collections/:id/share*` routes, so the web UI's Create Share Link, Send Invitations, QR Code and Copy Embed Code controls are disabled with a stated reason (`catalog-web/src/components/collections/CollectionSharing.tsx`, `SHARE_API_AVAILABLE`).
-- **Smart playlists and smart collections answer 501.** `POST /api/v1/playlists` with `is_smart` or `smart_rules` is refused and nothing is created (`catalog-api/handlers/playlist_handler.go:86-91`); see `docs/api/API_DOCUMENTATION.md`.
+- **Smart playlists and smart collections are available** (see `docs/guides/SMART_COLLECTIONS_GUIDE.md`); they replace the former 501.
 - **Conversion tools are part of the API image.** `ffmpeg` and `imagemagick` are installed in the runtime image; see `docs/deployment/DOCKER_SETUP.md`.
 - **go-fitz (AGPL) removal is pending.** The operator decision of 2026-11-03 is to keep poppler only and drop `github.com/gen2brain/go-fitz` (MuPDF, AGPL). It is still imported (`catalog-api/handlers/pdf_pages_handler.go:19`, `catalog-api/go.mod:84`), so the removal has not happened yet; track it in `docs/FOLLOW_UPS_NEXT_PHASE.md`.
+
+---
+
+## Smart collections and playlists (2026-11)
+
+- Rules are evaluated at read time; per-user caps: smart collections and smart playlists each answer **409** when the cap is reached.
+- **Collections without an owner (`created_by` NULL) are now editable by administrators only.** Before, any user could edit them.
+- Foreign **private playlists answer 404** on GET, PUT, DELETE and item routes (no longer 403/unauthorized), so existence is not leaked; a foreign *public* playlist answers 403 on write.
+- Smart rule `favorite` reads the `favorites` table (the store the UI writes), per viewer.
 
 ---
 
@@ -35,3 +44,11 @@ register page, integration tests) must either handle the pending state or run ag
 `REGISTRATION_MODE=open`. An unrecognised `REGISTRATION_MODE` value falls back to `approval` and is
 logged. No database migration is needed (the pending marker lives in the user's settings JSON).
 Reference: `docs/ENV_VARIABLES.md`, `docs/architecture/AUTH_FLOW.md`, `docs/api/openapi.yaml`.
+
+## Smart collections: legacy collections become admin-edit-only
+
+Migration 23 adds `owner_user_id` and `is_public` to `media_collections`. Collections created before it
+have no owner (`owner_user_id` NULL). They stay readable by every authenticated user, but only an
+administrator can edit or delete them; an owned collection is editable by its owner and by administrators.
+To hand a legacy collection to a user, set its `owner_user_id` (administrator action). Covered by
+`catalog-api/handlers/collection_ownerless_test.go`.

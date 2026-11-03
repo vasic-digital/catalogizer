@@ -43,10 +43,12 @@ interface CollectionTemplate {
   };
 }
 
-// CAT-001 (R5): every template is a smart collection and the server answers 501 for those (rules are neither
-// stored nor evaluated), so applying is disabled with a reason instead of offering a button that always fails.
+// Smart collections now work on the server, but the server's rule language is closed (title, genre, media_type,
+// year, rating, size, tags, path, added, ...). The templates below use fields it does not have (category,
+// ai_score, trending_score, ...) and values it rejects (30_days_ago, audio), so the server would answer 400.
+// Applying stays disabled with a reason until the templates are rewritten in the supported language.
 const TEMPLATE_APPLY_AVAILABLE = false;
-const TEMPLATE_APPLY_REASON = 'Creating from a template is not available: templates are smart collections, which the server does not support yet. Nothing was created.';
+const TEMPLATE_APPLY_REASON = 'Creating from a template is not available: the templates use rule fields the smart rule language does not have yet. Build a smart collection with the Smart Collections builder instead. Nothing was created.';
 
 interface CollectionTemplatesProps {
   onClose: () => void;

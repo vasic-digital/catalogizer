@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -180,17 +179,11 @@ func TestRoutePerms_RealBinary_AnalyticsWritesCannotForgeUserID(t *testing.T) {
 	assert.Equal(t, vE, nE)
 }
 
-// N2: a collection created by an administrator is global (no owner column yet), and a
-// non-admin must be able neither to change nor to delete it. Skipped until the pending
-// feat-smart-collections branch (migration 23: owner and is_public, writes need the owner
-// or an admin) lands; set CATALOGIZER_RUN_N2=1 to run it today (it is RED on this branch:
-// bob's PUT and DELETE answer 200). Remove the skip when that branch merges.
+// N2: a collection created by an administrator must be neither changeable nor deletable
+// by a non-admin (migration 23: owner and is_public; writes need the owner or an admin).
 func TestRoutePerms_RealBinary_CollectionOwnership(t *testing.T) {
 	if testing.Short() {
 		t.Skip("builds and runs the server binary")
-	}
-	if os.Getenv("CATALOGIZER_RUN_N2") != "1" {
-		t.Skip("N2 is closed by the pending feat-smart-collections branch (owner column); see docs/FOLLOW_UPS_NEXT_PHASE.md")
 	}
 	c, adm, stop := startPermServer(t, t.TempDir())
 	defer stop()

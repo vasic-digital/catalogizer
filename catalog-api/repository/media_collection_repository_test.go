@@ -27,6 +27,7 @@ func newMockCollRepo(t *testing.T) (*MediaCollectionRepository, sqlmock.Sqlmock)
 var collCols = []string{
 	"id", "name", "collection_type", "description", "total_items",
 	"external_ids", "cover_url", "created_at", "updated_at",
+	"is_smart", "smart_rules", "owner_user_id", "is_public",
 }
 
 func sampleCollRow(now time.Time) []driver.Value {
@@ -35,6 +36,7 @@ func sampleCollRow(now time.Time) []driver.Value {
 	return []driver.Value{
 		int64(1), "Test Collection", "playlist", &desc, 10,
 		`{"imdb":"tt123","tmdb":"456"}`, &coverURL, now, now,
+		false, nil, nil, false,
 	}
 }
 
@@ -42,6 +44,7 @@ func sampleCollRowMinimal(id int64, name string, now time.Time) []driver.Value {
 	return []driver.Value{
 		id, name, "series", nil, 0,
 		`null`, nil, now, now,
+		false, nil, nil, false,
 	}
 }
 
@@ -269,7 +272,7 @@ func TestMediaCollectionRepo_GetByID(t *testing.T) {
 					WithArgs(int64(3)).
 					WillReturnRows(sqlmock.NewRows(collCols).
 						AddRow(int64(3), "Empty ExtIDs", "playlist", nil, 0,
-							`{}`, nil, now, now))
+							`{}`, nil, now, now, false, nil, nil, false))
 			},
 			check: func(t *testing.T, coll *models.MediaCollection) {
 				assert.Equal(t, int64(3), coll.ID)
@@ -307,7 +310,7 @@ func TestMediaCollectionRepo_GetByID(t *testing.T) {
 					WithArgs(int64(4)).
 					WillReturnRows(sqlmock.NewRows(collCols).
 						AddRow(int64(4), "Bad JSON", "playlist", nil, 0,
-							`{invalid json}`, nil, now, now))
+							`{invalid json}`, nil, now, now, false, nil, nil, false))
 			},
 			wantErr: true,
 			errMsg:  "failed to unmarshal external_ids",
@@ -725,7 +728,7 @@ func TestMediaCollectionRepo_ScanCollection_ExternalIDsVariants(t *testing.T) {
 				WithArgs(int64(1)).
 				WillReturnRows(sqlmock.NewRows(collCols).
 					AddRow(int64(1), "Test", "playlist", nil, 0,
-						tt.externalIDsVal, nil, now, now))
+						tt.externalIDsVal, nil, now, now, false, nil, nil, false))
 
 			coll, err := repo.GetByID(context.Background(), 1)
 			require.NoError(t, err)
@@ -811,8 +814,8 @@ func TestMediaCollectionRepo_List_SkipsBadRows(t *testing.T) {
 	mock.ExpectQuery("SELECT .+ FROM media_collections ORDER BY").
 		WithArgs(10, 0).
 		WillReturnRows(sqlmock.NewRows(collCols).
-			AddRow(int64(1), "Good", "playlist", nil, 0, `null`, nil, now, now).
-			AddRow(int64(2), "Also Good", "series", nil, 5, `{"k":"v"}`, nil, now, now))
+			AddRow(int64(1), "Good", "playlist", nil, 0, `null`, nil, now, now, false, nil, nil, false).
+			AddRow(int64(2), "Also Good", "series", nil, 5, `{"k":"v"}`, nil, now, now, false, nil, nil, false))
 
 	colls, total, err := repo.List(context.Background(), 10, 0)
 	require.NoError(t, err)
@@ -1077,7 +1080,7 @@ func TestMediaCollectionRepo_GetByID_AllFieldsRoundTrip(t *testing.T) {
 		WithArgs(int64(77)).
 		WillReturnRows(sqlmock.NewRows(collCols).
 			AddRow(int64(77), "Full Collection", "franchise", &desc, 42,
-				`{"imdb":"tt555","tmdb":"888"}`, &coverURL, created, updated))
+				`{"imdb":"tt555","tmdb":"888"}`, &coverURL, created, updated, false, nil, nil, false))
 
 	coll, err := repo.GetByID(context.Background(), 77)
 	require.NoError(t, err)

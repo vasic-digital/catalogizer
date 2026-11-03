@@ -23,7 +23,7 @@ import { playlistsApi } from '../lib/playlistsApi';
 import { mediaApi } from '../lib/mediaApi';
 import { usePlaylists } from '../hooks/usePlaylists';
 import type { MediaItem } from '../types/media';
-import { Playlist, PlaylistItem, CreatePlaylistRequest, UpdatePlaylistRequest, flattenPlaylistItem, getMediaIconWithMap, PlaylistCreateRequest } from '../types/playlists';
+import { Playlist, PlaylistItem, CreatePlaylistRequest, UpdatePlaylistRequest, flattenPlaylistItem, getMediaIconWithMap, PlaylistCreateRequest, SmartPlaylistRule } from '../types/playlists';
 import { toast } from 'react-hot-toast';
 
 const MEDIA_TYPE_OPTIONS = [
@@ -91,6 +91,30 @@ export const PlaylistsPage: React.FC = () => {
     } catch (error) {
       console.error('Failed to create playlist:', error);
       toast.error('Failed to create playlist');
+    }
+  };
+
+  // Smart playlists: the server validates and stores the rules and evaluates them on every read.
+  const handleCreateSmartPlaylist = async (
+    name: string,
+    description: string,
+    rules: SmartPlaylistRule[]
+  ) => {
+    try {
+      const created = await playlistsApi.createPlaylist({
+        name,
+        description,
+        is_smart: true,
+        smart_rules: rules,
+      });
+      toast.success(`Created smart playlist: ${created.name}`);
+      setActiveTab('all');
+      refetchPlaylists();
+    } catch (error) {
+      console.error('Failed to create smart playlist:', error);
+      const detail =
+        (error as { response?: { data?: { error?: string; message?: string } } })?.response?.data;
+      toast.error(detail?.error || detail?.message || 'Failed to create smart playlist');
     }
   };
 
@@ -504,10 +528,7 @@ export const PlaylistsPage: React.FC = () => {
         <div className="mt-8">
           {activeTab === 'smart' ? (
             <SmartPlaylistBuilder
-              // CAT-001 (R5): the server stores no smart rules (POST /playlists answers 501 for them),
-              // so Save is disabled with a reason instead of creating an empty plain playlist.
-              saveDisabledReason="Smart playlists are not available: the server cannot store or evaluate smart rules yet. Nothing was created."
-              onSave={() => undefined}
+              onSave={handleCreateSmartPlaylist}
               onCancel={() => setActiveTab('all')}
               className="w-full"
             />

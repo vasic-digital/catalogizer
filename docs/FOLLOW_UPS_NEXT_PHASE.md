@@ -863,6 +863,16 @@ Closes F1, F2, F4, F5, F6, F7 of the scaling/chaos review (details in `docs/TEST
 - F7 (UNCONFIRMED, pre-existing): under lib/pq RefreshSmartPlaylist runs tx.ExecContext with a tx cursor open; not run on Postgres.
 - F8 (nit): RED signature in TESTING_GUIDE is "12 of 12"; aggregation/admin/playlist show "11 of 12".
 - HOST: root filesystem reached 100% during review (go-build cache 63 GB); cleared with `go clean -cache` (63 GB free afterwards). Needs a periodic cache cap.
+
+## Smart collections and smart playlists (feat-smart-collections)
+- Implemented: closed rule language `internal/smartrules` (parameterised SQL only), evaluation at read time, `GET /collections/:id/items`, smart playlists, owner/admin authz, migration 23. Guide: docs/guides/SMART_COLLECTIONS_GUIDE.md.
+- UNVERIFIED (no `node_modules` in the scratch clone or the live checkout, so vitest and `tsc --noEmit` were not run): the catalog-web edits (Playlists.tsx smart save, SmartPlaylistBuilder.tsx, CollectionTemplates.tsx text, the three updated/added test files).
+- Postgres: tested against a real postgres:15-alpine (rootless podman) by `internal/smartrules/smartrules_pg_test.go` (edge cases and a field x operator parity matrix); see docs/SMART_COLLECTION_RULES.md. The migration `ADD COLUMN IF NOT EXISTS` itself is exercised by `RunMigrations` in that run.
+- Open: collection templates (CollectionTemplates.tsx) use fields and values the rule language rejects (category, ai_score, trending_score, user_preference_match, `30_days_ago`, media type `audio`, `is_not_empty`); applying stays disabled with a reason until they are rewritten.
+- Open: the Collections page does not show smart items yet (the page lists collections; the items endpoint exists and `collectionsApi.getCollectionItems` already targets it).
+- Open: `image` media type matches nothing (the catalogue has no image media type); `tags` supports only contains / not_contains (comma-separated text column).
+- Per-user caps: 50 smart collections (`MaxSmartCollectionsPerUser`) and 50 smart playlists (`MaxSmartPlaylistsPerUser`); each read evaluates the rules (bounded by the 500-item page cap, list count cap 1000 and rule limits, no timing benchmark taken).
+
 ## Registration approval + converter tools in the API image (2026-11-03, branch `feat-registration-approval-ffmpeg`)
 
 - Registration is now OPEN WITH ADMIN APPROVAL (`REGISTRATION_MODE`: `approval` default, `open`, `disabled`). Real-binary test `catalog-api/registration_approval_binary_test.go` (RED first: register answered an active user plus a session on login). Behaviour change documented in `docs/UPGRADE_NOTES.md`. This also narrows P2 above (a self-registered user can no longer act before an admin approves); P2 itself (no permission check on storage roots / SMB / scans) is NOT fixed by this change.
@@ -941,6 +951,12 @@ Found by `scripts/docs/check_doc_coverage.py` (guide `docs/scripts/check_doc_cov
 - F-R2/F-R3/F-R5 closed with tests in `services/sync_service_netguard_test.go`; the webdav client cache is guarded by `webdavMu`, and a rejected URL update no longer leaves a client for the rejected URL cached.
 - F-R6 (nits, open): (a) a redirect to another allow-listed host fails TLS because the transport uses a fixed `ServerName`; (b) netguard ignores `HTTP_PROXY`/`HTTPS_PROXY` on purpose (`Transport().Proxy` is nil): behind a mandatory egress proxy sync endpoints cannot connect, and any future proxy support would bypass the dial-time address check because the proxy resolves the host; decide the policy before adding it; (c) a trailing-dot host (`example.com.`) is refused by `CheckURL`, which is stricter than DNS requires.
 
+## Smart collections round 1 follow-ups
+- SC1 (resolved): the Postgres jsonb branches (genre, quality) now run against a real Postgres in `smartrules_pg_test.go`; tags are comma-separated text and use the text path.
+- SC2 (F7): case-insensitive matching is ASCII-only on SQLite; non-ASCII folding is not done.
+- SC3 (F10): SmartCollectionBuilder still offers options the server rejects (artist, album, decade, play_count, last_played, file_extension, bitrate, resolution, fps, channels, subtitles, is_empty, last_N_days); aliases were added for is_favorite/file_size/duration/date_modified only. catalog-web edits are UNVERIFIED (no node_modules).
+- SC4: control characters (\x01-\x03) are rejected in values; values with control characters never match JSON-encoded columns.
+- SC5: the list-count cache is a 30 s TTL per process, not shared between instances; `total_items_status` reports exact/capped/stored.
 ## QA consumers of the honest-501 and registration-approval behaviours (branch fix-qa-consumers, 2026-11-03)
 
 Status: F1 (endpoints that answer an honest 501), F2 (self-registered users inactive under `REGISTRATION_MODE=approval`) and F6 (the 200..399 acceptance and the `000000` status artefact in the QA runners) are FIXED on the branch for every consumer found by the sweep below. Open items are listed at the end.
@@ -978,6 +994,11 @@ Open / not fixed (reason):
 - QC6 (nit): `personalized/${ME_ID:-0}` cannot detect a failed id lookup when run as admin.
 - QC7 (nit): qa_registration.sh header names docker-compose.qa.yml; the setting is in docker-compose.test.yml.
 - QC8 (gap): the docker-compose.qa.yml helixqa-api loop was read, not executed.
+- SC6 (review round 3, finding 4): Postgres `::jsonb` casts run on text that may not be valid JSON (a legacy plain-text genre, malformed quality_info) and can raise an error for the whole query; the guards only test the first character.
+- SC7 (review round 3, finding 5): the per-user cap check (count then insert) is not atomic; concurrent creates can exceed the cap by a few.
+- SC8 (review round 3, finding 6): `fillLiveCounts` shares one per-request deadline, so a slow early collection starves the later ones in a list.
+- SC9 (review round 3, finding 7): error mapping of rule/evaluation failures to HTTP statuses is coarse (some evaluation errors surface as 500).
+
 
 ## Route permissions review (round 4 findings N1-N6)
 - N1 closed: `POST /analytics/access` and `POST /analytics/event` attribute the write to the token's user id (`bindWriteUserID` in `handlers/service_handlers.go`); a body `user_id` naming another account answers 403, an absent one is replaced by the caller's id (before: user_id 0 rows, or forged rows that raised the admin's `GET /analytics/user/1` counts). Real-binary test `TestRoutePerms_RealBinary_AnalyticsWritesCannotForgeUserID` (RED before) and mutations (see the round report). Control-needled census of handlers reading a user or owner id from body, query or path: mounted routes read the id from the token (`c.Get("user_id")`, `r.Context().Value("user_id")`) except `Param("user_id")` in `GetUserAnalytics` and `recommendations/personalized/:user_id`, both behind `RequireSelfOrAdmin`. No other mounted handler binds a user id from the body. UNMOUNTED, not reachable today: `internal/handlers/media_player_handlers.go` binds `services.UpdatePositionRequest`, `BookmarkRequest`, `ReorderPlaylistRequest` and others that carry `user_id` in the body, and `internal/handlers/localization_handlers.go` `SetupWizardLocalization` accepts a body `UserID`; their constructors (`NewMediaPlayerHandlers`, `NewLocalizationHandlers`) are called only from tests. Whoever mounts them must take the user id from the token first (P2-u).
@@ -1003,3 +1024,8 @@ Open / not fixed (reason):
 
 ### P2 round-4 review follow-up (GO-with-follow-ups)
 - R4-1 (test-instrumentation, minor): reviewer mutation dropping the username comparison in `getWebDAVClient` survives; add a username-rotation test whose fixture server also checks the username. Also untested: end-to-end `UpdateEndpoint` concurrent with `StartSync`.
+
+### Smart collections round-4 review follow-ups (GO-with-follow-ups)
+- SC10 (test-instrumentation, minor): reviewer mutation dropping the viewer uid from `countKey` (collection_handler.go ~193) survives; add a two-viewer test (different favorites, same smart collection within the 30 s TTL, different `total_items`).
+- SC11 (process-doc, nit): UPGRADE_NOTES says an admin sets `owner_user_id` for a legacy collection, but `UpdateCollection` does not accept it; say it needs direct SQL on the SQLCipher DB or add an API.
+- N2 is closed: `TestRoutePerms_RealBinary_CollectionOwnership` ran GREEN against the real binary and its skip gate is removed in the landing merge.

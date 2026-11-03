@@ -195,6 +195,14 @@ type MediaCollection struct {
 	CreatedAt      time.Time             `json:"created_at" db:"created_at"`
 	UpdatedAt      time.Time             `json:"updated_at" db:"updated_at"`
 	Items          []MediaCollectionItem `json:"items,omitempty"`
+	// IsSmart collections have no stored members: SmartRules are evaluated at read time.
+	IsSmart bool `json:"is_smart" db:"is_smart"`
+	// SmartRules is the validated rule document (JSON array) of a smart collection.
+	SmartRules json.RawMessage `json:"smart_rules,omitempty" db:"smart_rules"`
+	// OwnerUserID is the creating user; nil for legacy shared collections.
+	OwnerUserID *int64 `json:"owner_id,omitempty" db:"owner_user_id"`
+	// IsPublic makes the collection readable by every authenticated user (never editable).
+	IsPublic bool `json:"is_public" db:"is_public"`
 }
 
 // MediaCollectionItem represents an item within a collection

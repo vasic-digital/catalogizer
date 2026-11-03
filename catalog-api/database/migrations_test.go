@@ -271,12 +271,13 @@ func TestMigrationSequence_AllVersionsApplied(t *testing.T) {
 	err := db.RunMigrations(ctx)
 	require.NoError(t, err)
 
-	// Verify all 22 migrations were recorded
+	// Verify all 23 migrations were recorded
 	// (v17 adds image_quality_assessments; v18 adds media_items.is_favorite + updated_at;
 	//  v19 adds share_identity_bindings; v20 adds external_metadata unique index;
 	//  v21 adds storage_roots.allow_empty; v22 adds the runtime tables behind
-	//  system_configuration, wizard_*, log_entries, favorite_shares, ...).
-	const latestVersion = 22
+	//  system_configuration, wizard_*, log_entries, favorite_shares, ...;
+	//  v23 adds the smart collection/playlist columns).
+	const latestVersion = 23
 	var count int
 	err = db.QueryRowContext(ctx, "SELECT COUNT(*) FROM migrations").Scan(&count)
 	assert.NoError(t, err)
