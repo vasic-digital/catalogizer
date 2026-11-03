@@ -3157,17 +3157,17 @@ Body: object
 
 All user management endpoints require a JWT token and appropriate permissions.
 
-**Permission behaviour of the `/users/:id` operations** (from `handlers/user_handler.go`; every row measured on the
-real binary by `catalog-api/openapi_contract_binary_test.go`):
+**Permission behaviour of the `/users/:id` operations** (from `handlers/user_handler.go`; every cell measured on the
+real binary and asserted by `catalog-api/openapi_contract_binary_test.go`):
 
 | Operation | Needs | Self (caller's own id) | Admin target |
 |---|---|---|---|
 | `GET /users/:id` | `user.view` for another id | allowed without permission | readable with `user.view` |
-| `PUT /users/:id` | `user.update` for another id; `role_id` / `is_active` applied only with `user.manage` | 200, profile fields applied, `role_id` and `is_active` silently ignored (also for an admin) | 403 unless the caller has `system.admin` |
+| `PUT /users/:id` | `user.update` for another id; `is_active` is applied only with `user.manage`; `role_id` is checked (with `user.manage`, and `system.admin` for an admin role) but never saved, see Known defects | 200, profile fields applied, `role_id` and `is_active` silently ignored (also for an admin) | 403 unless the caller has `system.admin` |
 | `DELETE /users/:id` | `user.delete` (checked first) | 400 `Cannot delete your own account` (403 without `user.delete`) | 403 unless `system.admin` |
-| `POST /users/:id/reset-password` | `user.manage` | allowed | 403 unless `system.admin` |
+| `POST /users/:id/reset-password` | `user.manage` | allowed with `user.manage` (403 without it) | 403 unless `system.admin` |
 | `POST /users/:id/lock` | `user.manage` (checked first) | 400 `Cannot lock your own account` (403 without `user.manage`) | 403 unless `system.admin` |
-| `POST /users/:id/unlock` | `user.manage` | allowed | 403 unless `system.admin` |
+| `POST /users/:id/unlock` | `user.manage` | allowed with `user.manage` (403 without it) | 403 unless `system.admin` |
 
 An "admin target" is an account whose role carries `system.admin`; a target whose role cannot be resolved is treated
 the same way (403). A caller without `system.admin` may not assign a role that carries `system.admin` (403). The
@@ -3176,7 +3176,9 @@ the same way (403). A caller without `system.admin` may not assign a role that c
 **Known defects (measured 2026-11-03, open follow-ups):** a user created with `POST /api/v1/users` cannot log in with
 the password given at creation (stored as SHA-256 while login verifies bcrypt) until a password is set with
 `POST /api/v1/users/:id/reset-password`; `POST /api/v1/users/:id/unlock` with an empty body is rejected by the request
-validation middleware (400 `invalid JSON format`), send `{}`.
+validation middleware (400 `invalid JSON format`), send `{}`; `PUT /api/v1/users/:id` never saves `role_id`: the
+response is 200 and echoes the requested `role_id`, but `UserRepository.Update` has no `role_id` column, so a later
+`GET` shows the old role (changing a user's role through the API does not work); `is_active` is saved.
 
 ### POST /api/v1/users
 
@@ -3253,7 +3255,7 @@ Get a specific user by ID.
 
 Update a user's information.
 
-**Description:** Updates user fields. Users can update their own profile without a permission, but `role_id` and `is_active` are ignored on a self-update (also for an admin). Updating another user needs `user.update`; `role_id` / `is_active` are applied only when the caller also has `user.manage`. See the permission table above.
+**Description:** Updates user fields. Users can update their own profile without a permission, but `role_id` and `is_active` are ignored on a self-update (also for an admin). Updating another user needs `user.update`; `is_active` is applied only when the caller also has `user.manage`. `role_id` is validated and permission-checked (`user.manage`, and `system.admin` to assign an admin role) and echoed in the response, but it is never saved (known defect, see the note at the top of this section). See the permission table above.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 

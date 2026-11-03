@@ -20,8 +20,9 @@ import (
 //     x-currently-broken reach their handler with the path parameter (the
 //     gin -> mux.Vars fix in handlers/gin_adapter.go), and answer the status
 //     codes the spec now documents;
-//  2. the 403 / self-action 400 / self-update behaviour of the 9
-//     /users/{id} and /roles/{id} operations documented in the spec.
+//  2. the 403 / self-action / self-update behaviour of the 9 /users/{id}
+//     and /roles/{id} operations documented in the spec, including the known
+//     defect that PUT /users/{id} does not persist role_id.
 // Runs the real server binary on SQLite; skipped under -short.
 
 type apiClient struct {
@@ -222,6 +223,33 @@ func TestOpenAPIContract_RealBinary_PathParamsAndUserRolePermissions(t *testing.
 	// A non-admin manager may not assign the admin role to another user.
 	code, _ = c.do("PUT", fmt.Sprintf("/api/v1/users/%d", victimID), mgr, map[string]int{"role_id": 1})
 	assert.Equal(t, 403, code)
+
+	// Self GET needs no permission; self reset-password and self unlock need
+	// user.manage (403 without it, 200 with it; there is no self-action refusal).
+	code, raw = c.do("GET", fmt.Sprintf("/api/v1/users/%d", plainID), plain, nil)
+	assert.Equal(t, 200, code, "self GET: %s", raw)
+	code, _ = c.do("POST", fmt.Sprintf("/api/v1/users/%d/reset-password", plainID), plain, map[string]string{"new_password": "Another-Strong-Pass-91"})
+	assert.Equal(t, 403, code)
+	code, _ = c.do("POST", fmt.Sprintf("/api/v1/users/%d/unlock", plainID), plain, map[string]string{})
+	assert.Equal(t, 403, code)
+	code, raw = c.do("POST", fmt.Sprintf("/api/v1/users/%d/unlock", mgrID), mgr, map[string]string{})
+	assert.Equal(t, 200, code, "manager self unlock: %s", raw)
+	code, raw = c.do("POST", fmt.Sprintf("/api/v1/users/%d/reset-password", mgrID), mgr, map[string]string{"new_password": "Another-Strong-Pass-91"})
+	assert.Equal(t, 200, code, "manager self reset-password: %s", raw)
+
+	// KNOWN DEFECT (pinned on purpose): an admin PUT with role_id on another
+	// user answers 200 and echoes the new role_id, but UserRepository.Update
+	// has no role_id column, so the role is never saved; is_active is saved.
+	// When the repository is fixed this assertion fails, and the openapi.yaml
+	// and API_DOCUMENTATION.md "Known defects" text must be updated with it.
+	code, raw = c.do("PUT", fmt.Sprintf("/api/v1/users/%d", victimID), adm, map[string]interface{}{"role_id": mrole, "is_active": false})
+	require.Equal(t, 200, code, "%s", raw)
+	var echoed map[string]interface{}
+	require.NoError(t, json.Unmarshal(raw, &echoed))
+	assert.Equal(t, float64(mrole), echoed["role_id"], "the PUT response echoes the requested role_id")
+	v := c.user(adm, victimID)
+	assert.Equal(t, float64(2), v["role_id"], "role_id is not persisted (known defect)")
+	assert.Equal(t, false, v["is_active"], "is_active is persisted")
 	code, _ = c.do("GET", "/api/v1/users/1", "", nil)
 	assert.Equal(t, 401, code)
 }
