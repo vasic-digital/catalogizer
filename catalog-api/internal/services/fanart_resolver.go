@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/netguard"
 	"context"
 	"errors"
 	"fmt"
@@ -41,7 +42,7 @@ func NewFanartTVResolver(priority int) *FanartTVResolver {
 	return &FanartTVResolver{
 		apiKey:   key,
 		priority: priority,
-		client:   &http.Client{Timeout: 10 * time.Second},
+		client:   netguard.StrictClient(10*time.Second, 3, netguard.HTTPOrHTTPS), // third-party image URLs: dial-time check, no allow-list
 		fanart:   client,
 	}
 }

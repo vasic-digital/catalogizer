@@ -200,11 +200,16 @@ describe('EntityHero', () => {
   it('renders Refresh button and calls onRefresh', async () => {
     const user = userEvent.setup()
     const handleRefresh = vi.fn()
-    render(<EntityHero {...defaultProps} onRefresh={handleRefresh} />)
+    render(<EntityHero {...defaultProps} canRefresh onRefresh={handleRefresh} />)
 
     const refreshButton = screen.getByText('Refresh').closest('button')!
     await user.click(refreshButton)
     expect(handleRefresh).toHaveBeenCalledTimes(1)
+  })
+
+  it('hides the Refresh button by default (canRefresh defaults to false)', () => {
+    render(<EntityHero {...defaultProps} />)
+    expect(screen.queryByText('Refresh')).not.toBeInTheDocument()
   })
 
   it('hides the Refresh button when canRefresh is false (non-admin)', () => {
@@ -214,7 +219,7 @@ describe('EntityHero', () => {
   })
 
   it('disables Refresh button when refreshPending is true', () => {
-    render(<EntityHero {...defaultProps} refreshPending={true} />)
+    render(<EntityHero {...defaultProps} canRefresh refreshPending={true} />)
     const refreshButton = screen.getByText('Refresh').closest('button')!
     expect(refreshButton).toBeDisabled()
   })

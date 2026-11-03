@@ -232,3 +232,32 @@ func TestRoutePerms_RealBinary_Round2_ShortScrapeTokenIgnored(t *testing.T) {
 	code, _ := c.do("GET", "/metrics", short, nil)
 	assert.Equal(t, 401, code, "a token under 32 characters must not be accepted")
 }
+
+// AZ2-R2: the scrape credential opens GET /metrics only; it must not open any pprof
+// route (heap/goroutine/allocs/cmdline expose memory contents and the command line).
+// pprof is enabled here so a 401 is the gate answering, not a missing route.
+func TestRoutePerms_RealBinary_Round2_ScrapeTokenDoesNotOpenPprof(t *testing.T) {
+	if testing.Short() {
+		t.Skip("builds and runs the server binary")
+	}
+	const tok = "scrape-token-0123456789abcdefghijKLMN"
+	c, adm, _, stop := startPermServerDir(t, t.TempDir(), t.TempDir(), "HELIX_PPROF_ENABLED=true", "METRICS_SCRAPE_TOKEN="+tok)
+	defer stop()
+	// controls: the token opens /metrics, the admin JWT opens pprof (the routes exist)
+	code, _ := c.do("GET", "/metrics", tok, nil)
+	require.Equal(t, 200, code, "control: scrape token reads /metrics")
+	code, _ = c.do("GET", "/debug/pprof/heap", adm, nil)
+	require.Equal(t, 200, code, "control: admin reaches /debug/pprof/heap (route is enabled)")
+	for _, r := range []permCase{
+		{"GET", "/debug/pprof/", ""},
+		{"GET", "/debug/pprof/heap", ""},
+		{"GET", "/debug/pprof/goroutine", ""},
+		{"GET", "/debug/pprof/allocs", ""},
+		{"GET", "/debug/pprof/cmdline", ""},
+		{"GET", "/debug/pprof/symbol", ""},
+		{"POST", "/debug/pprof/symbol", ""},
+	} {
+		code, _ = c.do(r.method, r.path, tok, map[string]interface{}{})
+		assert.Equal(t, 401, code, "scrape token must not authenticate "+r.method+" "+r.path)
+	}
+}

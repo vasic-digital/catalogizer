@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"catalogizer/internal/netguard"
 	"context"
 	"encoding/json"
 	"errors"
@@ -31,7 +32,8 @@ type IGDBResolver struct {
 	clientID string
 	token    string
 	priority int
-	http     *http.Client
+	http     *http.Client // IGDB API (vendor base URL)
+	dl       *http.Client // image downloads: URLs come from provider data
 	baseURL  string
 }
 
@@ -44,6 +46,7 @@ func NewIGDBResolver(priority int) *IGDBResolver {
 		token:    strings.TrimSpace(envFirstNonEmpty("IGDB_APP_ACCESS_TOKEN", "IGDB_BEARER_TOKEN")),
 		priority: priority,
 		http:     &http.Client{Timeout: 10 * time.Second},
+		dl:       netguard.StrictClient(10*time.Second, 3, netguard.HTTPOrHTTPS),
 		baseURL:  "https://api.igdb.com/v4",
 	}
 }
@@ -191,7 +194,7 @@ func (r *IGDBResolver) download(ctx context.Context, url string) (*resolver.Reso
 	if err != nil {
 		return nil, err
 	}
-	resp, err := r.http.Do(req)
+	resp, err := r.dl.Do(req)
 	if err != nil {
 		return nil, err
 	}

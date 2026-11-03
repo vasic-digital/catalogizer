@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"catalogizer/internal/netguard"
 	"context"
 	"crypto/sha256"
 	"database/sql"
@@ -153,7 +154,7 @@ func NewCoverArtService(db *database.DB, logger *zap.Logger) *CoverArtService {
 	return &CoverArtService{
 		db:         db,
 		logger:     logger,
-		httpClient: &http.Client{Timeout: 30 * time.Second},
+		httpClient: netguard.StrictClient(30*time.Second, 3, netguard.HTTPOrHTTPS), // image URLs come from provider data
 		apiKeys:    make(map[string]string),
 		cacheDir:   "./cache/cover_art",
 	}
@@ -521,7 +522,7 @@ func (s *CoverArtService) downloadImage(ctx context.Context, imageURL string) ([
 					transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 						return SOCKS5Dialer.Dial(network, addr)
 					}
-					client = &http.Client{Timeout: 30 * time.Second, Transport: transport}
+					client = &http.Client{Timeout: 30 * time.Second, Transport: transport, CheckRedirect: guardedRedirect}
 				}
 			}
 		}
@@ -529,7 +530,7 @@ func (s *CoverArtService) downloadImage(ctx context.Context, imageURL string) ([
 			parsedHTTPProxy, err := url.Parse(s.proxyCfg.GetHTTPURL())
 			if err == nil {
 				transport.Proxy = http.ProxyURL(parsedHTTPProxy)
-				client = &http.Client{Timeout: 30 * time.Second, Transport: transport}
+				client = &http.Client{Timeout: 30 * time.Second, Transport: transport, CheckRedirect: guardedRedirect}
 			}
 		}
 	}
@@ -1646,4 +1647,17 @@ func GeneratePlaceholderSVG(mediaType string) []byte {
 </svg>`, g[0], g[1], accent, accent, accent, icon, accent, label)
 
 	return []byte(svg)
+}
+
+// guardedRedirect re-checks every redirect hop with the string-level SSRF guard. It is
+// used for the operator-proxy clients, where the proxy (not this process) resolves and
+// dials the destination so the dial-time check of netguard cannot be applied.
+func guardedRedirect(req *http.Request, via []*http.Request) error {
+	if len(via) > 3 {
+		return http.ErrUseLastResponse
+	}
+	if err := GuardProviderURL(req.URL.String(), SSRFGuardConfig{}); err != nil {
+		return err
+	}
+	return nil
 }
