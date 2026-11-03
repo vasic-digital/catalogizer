@@ -1,4 +1,5 @@
 import api from './api'
+import { asList } from './apiShapes'
 import type {
   SubtitleSearchRequest,
   SubtitleSearchResponse,
@@ -37,11 +38,11 @@ export const subtitleApi = {
 
   // Get supported languages
   getSupportedLanguages: (): Promise<SupportedLanguage[]> =>
-    api.get('/subtitles/languages').then(res => res.data),
+    api.get('/subtitles/languages').then(res => asList<SupportedLanguage>(res.data, 'languages')),
 
   // Get supported providers
   getSupportedProviders: (): Promise<SupportedProvider[]> =>
-    api.get('/subtitles/providers').then(res => res.data),
+    api.get('/subtitles/providers').then(res => asList<SupportedProvider>(res.data, 'providers')),
 
   // Delete a subtitle track
   deleteSubtitle: (subtitleId: string): Promise<{ success: boolean }> =>

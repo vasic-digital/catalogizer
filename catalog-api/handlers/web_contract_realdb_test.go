@@ -7,6 +7,7 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -91,4 +92,38 @@ func TestRecommendationsSimilar_UnknownItemIs404(t *testing.T) {
 	defer cleanup()
 	code, _ := getJSON(t, r, "/api/v1/recommendations/similar/987654")
 	assert.Equal(t, http.StatusNotFound, code)
+}
+
+// getMediaMetadata must select exactly the requested row: with several items
+// present the right one comes back, and an unknown id is sql.ErrNoRows even
+// though the table is non-empty (a widened WHERE such as "OR mi.id > 0"
+// would return an arbitrary row instead).
+func TestGetMediaMetadata_SelectsRequestedRowOnly(t *testing.T) {
+	db, cleanup := setupMediaQueryTestDB(t)
+	defer cleanup()
+	ctx := context.Background()
+	itemRepo := repository.NewMediaItemRepository(db)
+	_, typeID, err := itemRepo.GetMediaTypeByName(ctx, "movie")
+	require.NoError(t, err)
+
+	var ids []int64
+	for _, title := range []string{"First", "Second", "Third"} {
+		id, err := itemRepo.Create(ctx, &mediaModels.MediaItem{MediaTypeID: typeID, Title: title, Status: "detected"})
+		require.NoError(t, err)
+		ids = append(ids, id)
+	}
+
+	svc := services.NewRecommendationService(nil, nil, repository.NewFileRepository(db), db)
+	h := NewRecommendationHandler(svc)
+
+	for i, want := range []string{"First", "Second", "Third"} {
+		md, err := h.getMediaMetadata(ctx, ids[i])
+		require.NoError(t, err)
+		assert.Equal(t, want, md.Title)
+		assert.Equal(t, ids[i], md.ID)
+		assert.Equal(t, "movie", md.MediaType)
+	}
+
+	_, err = h.getMediaMetadata(ctx, 987654)
+	assert.ErrorIs(t, err, sql.ErrNoRows)
 }

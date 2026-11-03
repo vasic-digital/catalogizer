@@ -432,3 +432,36 @@ Tracked follow-ups (status OPEN):
 - F3: "851 pages in ~4 s" holds for the generated fixture only; real very large PDFs (e.g. 851 and 570 pages) cannot be extracted by the pure-Go engine (>120 s) and rely on poppler.
 - F5: limits are sized from host MemAvailable, not the container memory limit; three children at their ceilings could exceed a container limit. No compose file limits catalog-api memory today.
 - UNCONFIRMED: image build and in-container extraction; real 64-CPU host.
+
+
+---
+
+## Crash-pages fix, round 2 follow-ups
+
+Minor or out-of-scope items found while fixing the four crashing pages
+(`/analytics`, `/collections`, `/admin`, `/settings`) and the class-exhaustive
+sweep of the api modules. Each is a tracked item for the next iteration; none
+blocks the crash fix.
+
+| ID | Item | Where | Why deferred |
+|----|------|-------|--------------|
+| WEB-F4 | Favorites are always created with `entity_type: 'movie'` (`DEFAULT_ENTITY`) | `catalog-web/src/lib/favoritesApi.ts` | Needs the page to pass the real entity type; UI change |
+| WEB-F5 | `addToFavorites` returns a synthesised, not the stored, `Favorite` | `favoritesApi.ts` | Backend returns no row; needs a backend contract decision |
+| WEB-F6 | Favorites stats are derived client side from at most 200 rows | `favoritesApi.ts` | Needs a backend stats endpoint |
+| WEB-F7 | Favorites tab is unfiltered by type and sort is always ascending | `pages/Favorites*` | Product decision on filter/sort semantics |
+| WEB-F12 | `useOptimizedData` has a global cache keyed off its inputs and is unused by `Collections` now | `components/performance/MemoCache.tsx` | Do not delete without a §11.4.124 history investigation |
+| SMB | `POST /smb/discover` needs a JSON body with `host` (400 without), so the Settings "Discover Shares" button cannot work; the client is now null-safe but the button needs a host input | `lib/smbApi.ts`, `pages/Settings.tsx`, backend `SMBDiscoveryHandler` | Product decision: scan a subnet server side, or add a host field |
+| COL | `collectionsApi` still calls routes the backend does not serve (smart-rule preview, templates, automation, integrations) | `lib/collectionsApi.ts` | Backend features absent; pages should hide or label them |
+| ID | identities/discovery endpoints answer 404 | catalog-api routes | Feature not implemented |
+| SIM | `getSimilar` shows owned (local) similar items only; `external_items` are not rendered | `lib/recommendationsApi.ts`, `pages/EntityDetail.tsx` | UI for external suggestions not designed |
+| MET | `/admin` performance counters are cumulative since process start and `error_rate` is already a percentage; uptime and total requests are not in the report | `reporting_service.go` | Needs a report schema extension |
+
+## Production mock data (§11.4.289)
+
+These ship canned data in production paths and must be removed or clearly
+labelled; they are listed so they are tracked, not because this change touches
+them:
+
+- `catalog-api/handlers/recommendation_handler.go` lines ~231-275
+- `catalog-api/internal/services/recommendation_service.go` lines ~229-234, 713, 751, 1220-1290
+- `catalog-web/src/lib/adminApi.ts` lines ~4-75 (mock fallbacks used on 404 around lines 89, 101, 113, 125)

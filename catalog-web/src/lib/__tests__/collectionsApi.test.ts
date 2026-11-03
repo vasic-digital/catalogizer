@@ -67,7 +67,7 @@ describe('collectionsApi', () => {
       const result = await collectionsApi.getCollection('1')
 
       expect(mockApi.get).toHaveBeenCalledWith('/collections/1')
-      expect(result).toEqual(mockCollection)
+      expect(result).toMatchObject({ id: '1', name: 'Test Collection', item_count: 5 })
     })
 
     it('propagates 404 errors', async () => {

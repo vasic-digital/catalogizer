@@ -59,7 +59,7 @@ describe('reportsApi', () => {
       const result = await reportsApi.getPerformanceReport()
 
       expect(mockApi.get).toHaveBeenCalledWith('/reports/performance', { params: undefined })
-      expect(result).toMatchObject({ avg_response_time_ms: 45, error_rate: 0.02, total_requests: null, p95_response_time_ms: null, uptime_percentage: null })
+      expect(result).toMatchObject({ avg_response_time_ms: null, p95_response_time_ms: 45, error_rate: 0.02, total_requests: null, uptime_percentage: null })
       expect(result.slowest_endpoints).toEqual([])
     })
 

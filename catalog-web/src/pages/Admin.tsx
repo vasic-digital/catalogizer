@@ -185,12 +185,6 @@ export const Admin: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
-                      {fmtNum(performanceReport.avg_response_time_ms, 'ms')}
-                    </div>
-                    <div className="text-xs text-gray-500">Avg Response</div>
-                  </div>
-                  <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-                    <div className="text-xl font-bold text-gray-900 dark:text-white">
                       {fmtNum(performanceReport.p95_response_time_ms, 'ms')}
                     </div>
                     <div className="text-xs text-gray-500">P95 Response</div>

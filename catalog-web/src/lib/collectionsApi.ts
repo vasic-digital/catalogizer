@@ -1,6 +1,6 @@
 import { SmartCollection, CollectionRule, CreateCollectionRequest, UpdateCollectionRequest, CollectionAnalytics, ShareCollectionRequest, CollectionShareInfo, CollectionTemplate } from '../types/collections';
 import { api } from './api';
-import { asList } from './apiShapes';
+import { asList, unwrapData } from './apiShapes';
 
 export interface CollectionItem {
   id: string;
@@ -59,7 +59,7 @@ class CollectionsApi {
 
   async getCollection(id: string): Promise<SmartCollection> {
     const response = await api.get(`${this.baseUrl}/${id}`);
-    return response.data;
+    return normalizeCollection(unwrapData<Record<string, unknown>>(response.data) ?? {});
   }
 
   async createCollection(collection: CreateCollectionRequest): Promise<SmartCollection> {

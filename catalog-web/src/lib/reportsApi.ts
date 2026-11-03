@@ -72,8 +72,10 @@ function toPerformanceReport(payload: unknown): PerformanceReport {
     : {}) as Record<string, unknown>
   return {
     period: period(doc, env),
-    avg_response_time_ms: numOrNull(perf.response_time),
-    p95_response_time_ms: null,
+    // reporting_service.go reports `response_time` as the P95 (snap.P95Seconds*1000),
+    // not an average: map it truthfully and leave the average unknown.
+    avg_response_time_ms: null,
+    p95_response_time_ms: numOrNull(perf.response_time),
     p99_response_time_ms: null,
     total_requests: null,
     error_rate: numOrNull(perf.error_rate),

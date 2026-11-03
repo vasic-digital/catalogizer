@@ -9,9 +9,9 @@ import { ConnectionStatus } from '@/components/ui/ConnectionStatus'
 const states = { value: 'disconnected' as string, connects: 0 }
 vi.mock('@vasic-digital/websocket-client', () => ({
   WebSocketClient: class {
-    on() {}
-    sendJSON() {}
-    dispose() {}
+    on() { return undefined }
+    sendJSON() { return undefined }
+    dispose() { return undefined }
     connect() { states.connects += 1; states.value = 'connected' }
     getState() { return states.value }
   },

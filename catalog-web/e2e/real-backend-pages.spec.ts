@@ -31,12 +31,18 @@ async function navigate(page: Page, path: string) {
 test.describe('catalog-web pages against a real backend', () => {
   test.skip(!user || !pass, 'E2E_ADMIN_USER / E2E_ADMIN_PASSWORD not set (honest SKIP, not a pass)');
 
-  for (const path of ['/analytics', '/collections', '/admin', '/settings', '/favorites']) {
+  for (const path of ['/analytics', '/collections', '/admin', '/settings', '/favorites', '/subtitles']) {
     test(`${path} renders without hitting the ErrorBoundary`, async ({ page }) => {
       const pageErrors: string[] = [];
       page.on('pageerror', (e) => pageErrors.push(e.message));
       await login(page);
       await navigate(page, path);
+      if (path === '/subtitles') {
+        // the language/provider lists are only rendered once the filter panel is open
+        await page.getByRole('button', { name: /filters/i }).click();
+        await expect(page.getByText('Providers', { exact: true })).toBeVisible();
+        await page.waitForTimeout(1000);
+      }
       // not vacuous: we must still be ON the page (not bounced to the login form)
       await expect(page).toHaveURL((u) => u.pathname === path);
       await expect(page.locator('input[placeholder*="password" i]')).toHaveCount(0);
