@@ -366,10 +366,8 @@ func (c *PrometheusMetricsEndpointChallenge) Execute(
 	assertions := []challenge.AssertionResult{}
 	outputs := map[string]string{"api_url": c.config.BaseURL}
 
-	client := httpclient.NewAPIClient(c.config.BaseURL)
-
 	c.ReportProgress("fetching-metrics", nil)
-	code, body, err := client.GetRaw(ctx, "/metrics")
+	code, body, err := fetchMetrics(ctx, c.config)
 
 	codeOK := err == nil && code == 200
 	assertions = append(assertions, challenge.AssertionResult{
@@ -453,7 +451,7 @@ func (c *HTTPRequestMetricsIncrementChallenge) Execute(
 
 	// Check metrics
 	c.ReportProgress("checking-metrics", nil)
-	code, body, err := client.GetRaw(ctx, "/metrics")
+	code, body, err := fetchMetrics(ctx, c.config)
 
 	codeOK := err == nil && code == 200
 	assertions = append(assertions, challenge.AssertionResult{
@@ -529,10 +527,8 @@ func (c *RuntimeMetricsCurrentChallenge) Execute(
 	assertions := []challenge.AssertionResult{}
 	outputs := map[string]string{"api_url": c.config.BaseURL}
 
-	client := httpclient.NewAPIClient(c.config.BaseURL)
-
 	c.ReportProgress("fetching-metrics", nil)
-	code, body, err := client.GetRaw(ctx, "/metrics")
+	code, body, err := fetchMetrics(ctx, c.config)
 
 	codeOK := err == nil && code == 200
 	assertions = append(assertions, challenge.AssertionResult{

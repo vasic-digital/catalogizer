@@ -610,7 +610,7 @@
       "name": "Prometheus Metrics Endpoint",
       "category": "monitoring",
       "severity": "high",
-      "description": "Validates Prometheus metrics endpoint exposes custom metrics"
+      "description": "Validates the admin-only Prometheus metrics endpoint (scrape token or admin login) exposes custom metrics"
     },
     {
       "id": "CH-085",
@@ -1506,7 +1506,7 @@
       "name": "Metrics Endpoint Performance",
       "category": "performance",
       "severity": "low",
-      "description": "Validates metrics endpoint itself responds quickly"
+      "description": "Validates the admin-only metrics endpoint (scrape token or admin login) responds quickly"
     },
     {
       "id": "CH-214",

@@ -583,6 +583,12 @@ func getProviderDescription(provider services.SubtitleProvider) string {
 	}
 }
 
+// Upload bounds: a text subtitle is well under 2 MiB; the request limit leaves room for the form fields.
+const (
+	maxSubtitleUploadBytes        = 2 << 20
+	maxSubtitleUploadRequestBytes = 3 << 20
+)
+
 // UploadSubtitle handles subtitle upload requests
 // @Summary Upload subtitle
 // @Description Upload a subtitle file for a media item
@@ -600,6 +606,16 @@ func getProviderDescription(provider services.SubtitleProvider) string {
 // @Router /api/v1/subtitles/upload [post]
 func (h *SubtitleHandler) UploadSubtitle(c *gin.Context) {
 	h.logger.Info("Subtitle upload request received")
+
+	// Authz round 2: any authenticated user may upload, so the request is bounded before it is parsed.
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxSubtitleUploadRequestBytes)
+	if perr := c.Request.ParseMultipartForm(1 << 20); perr != nil {
+		var tooBig *http.MaxBytesError
+		if errors.As(perr, &tooBig) {
+			c.JSON(http.StatusRequestEntityTooLarge, ErrorResponse{Success: false, Error: "subtitle file is too large", Code: "FILE_TOO_LARGE"})
+			return
+		}
+	}
 
 	// Get form values
 	mediaIDStr := c.PostForm("media_item_id")
@@ -633,6 +649,15 @@ func (h *SubtitleHandler) UploadSubtitle(c *gin.Context) {
 			Success: false,
 			Error:   "file is required",
 			Code:    "MISSING_FILE",
+		})
+		return
+	}
+
+	if file.Size > maxSubtitleUploadBytes {
+		c.JSON(http.StatusRequestEntityTooLarge, ErrorResponse{
+			Success: false,
+			Error:   "subtitle file is too large",
+			Code:    "FILE_TOO_LARGE",
 		})
 		return
 	}

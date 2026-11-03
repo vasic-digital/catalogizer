@@ -207,6 +207,12 @@ describe('EntityHero', () => {
     expect(handleRefresh).toHaveBeenCalledTimes(1)
   })
 
+  it('hides the Refresh button when canRefresh is false (non-admin)', () => {
+    render(<EntityHero {...defaultProps} canRefresh={false} />)
+    expect(screen.queryByText('Refresh')).not.toBeInTheDocument()
+    expect(screen.getByText('Favorite')).toBeInTheDocument()
+  })
+
   it('disables Refresh button when refreshPending is true', () => {
     render(<EntityHero {...defaultProps} refreshPending={true} />)
     const refreshButton = screen.getByText('Refresh').closest('button')!

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -1158,6 +1159,16 @@ func (c *MetricsEndpointPerfChallenge) Execute(
 		ctx, http.MethodGet,
 		c.config.BaseURL+"/metrics", nil,
 	)
+	// /metrics is admin-only: send the dedicated scrape credential when configured,
+	// otherwise an admin JWT obtained by login.
+	if tok := os.Getenv("METRICS_SCRAPE_TOKEN"); tok != "" {
+		req.Header.Set("Authorization", "Bearer "+tok)
+	} else {
+		lc := httpclient.NewAPIClient(c.config.BaseURL)
+		if _, lerr := lc.LoginWithRetry(ctx, c.config.Username, c.config.Password, 3); lerr == nil && lc.Token() != "" {
+			req.Header.Set("Authorization", "Bearer "+lc.Token())
+		}
+	}
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		challengeResult := c.CreateResult(
