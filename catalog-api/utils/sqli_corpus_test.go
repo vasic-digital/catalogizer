@@ -58,3 +58,29 @@ func TestContainsSQLInjection_CorpusNegativeControls(t *testing.T) {
 		}
 	}
 }
+
+// Review r1 additions: attacks the first detector missed ...
+func TestContainsSQLInjection_ReviewR1Attacks(t *testing.T) {
+	for _, p := range []string{
+		`1 and substr(version(),1,1)='5'`, `1 AND randomblob(500000000)`, `1 AND load_extension('x')`,
+		`' || '1'='1`, `1 order by 5`, `1' order by 3--`, `admin' #`, `1' ORDER BY 1#`, `1) --`, `x' -- `,
+		`1 UNION SELECT NULL`, `1 UNION SELECT user()`, `1 AND SLEEP(5)`, `1;SELECT pg_sleep(10)`, `1 AND ASCII(SUBSTRING((SELECT 1),1,1))>1`,
+	} {
+		if !ContainsSQLInjection(p) {
+			t.Errorf("missed: %q", p)
+		}
+	}
+}
+
+// ... and legitimate text it blocked.
+func TestContainsSQLInjection_ReviewR1Legit(t *testing.T) {
+	for _, p := range []string{
+		"Ep. 7 #", "Season 2 #", "Episode 3 -- The Return", "Best of 2020 -- 2021", "Back in Black (live) -- remaster",
+		"Chapter 1 -- intro", "Movie (1999) -- director's cut", `"Quoted" -- review`, "Price: $10 -- sale",
+		"the union select committee", "Sleep (2010 film)", "sleep(well) song", "Please order by popularity",
+	} {
+		if ContainsSQLInjection(p) {
+			t.Errorf("false positive: %q", p)
+		}
+	}
+}

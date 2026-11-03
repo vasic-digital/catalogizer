@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -377,6 +378,17 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		}
 		http.Error(w, "Failed to update user", http.StatusInternalServerError)
 		return
+	}
+
+	// Second revoke: a login that landed between the first revoke and the update
+	// read the OLD row and holds a token with the old role claim. The user is
+	// already updated, so a retry of this request is idempotent.
+	if user.RoleID != oldRoleID || user.IsActive != oldActive {
+		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
+			log.Printf("handlers: user %d updated but the post-update session revoke failed: %v", user.ID, err)
+			http.Error(w, "User updated but revoking the user's sessions failed; repeat the request", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	role, err := h.userRepo.GetRole(user.RoleID)

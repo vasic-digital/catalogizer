@@ -196,8 +196,9 @@ func EscapeHTML(input string) string {
 // capability on its own: injection needs a statement, an operator expression or
 // a terminator around it, so those are what is matched now.
 var sqlInjectionPatterns = []*regexp.Regexp{
-	// UNION [ALL] SELECT
-	regexp.MustCompile(`(?i)\bUNION\b(\s+(ALL|DISTINCT))?\s+SELECT\b`),
+	// UNION [ALL] SELECT followed by something that looks like a select list
+	// (so the prose "the union select committee" is not injection).
+	regexp.MustCompile(`(?i)\bUNION\b(\s+(ALL|DISTINCT))?\s+SELECT\b(\s*(\*|\d|NULL\b|@@|['"(\x60])|\s+[\w.\x60]+\s*(,|\(|\bFROM\b|--|#|/\*|;)|\s*(--|#|/\*|;))`),
 	// SELECT <list> FROM <source>
 	regexp.MustCompile(`(?i)\bSELECT\s+(\*|[\w.` + "`" + `"'(),\s]+?)\s+FROM\s+[\w.` + "`" + `"\[]+`),
 	// INSERT INTO, DELETE FROM, UPDATE <t> SET
@@ -226,20 +227,22 @@ var sqlInjectionPatterns = []*regexp.Regexp{
 	regexp.MustCompile(`(?i)(['"]\s*;\s*(SELECT|INSERT|UPDATE|DELETE|DROP))`),
 	// Comment terminators / inline comments
 	regexp.MustCompile(`(?i)(/\*.*\*/)`),
-	// A "--" comment needs a SQL context before it (quote, paren, digit,
-	// semicolon, back-tick or the start of input); prose such as "a -- b" is
-	// an ordinary dash.
-	regexp.MustCompile(`(?m)(^\s*--|['")\x60;\d]\s*--)`),
-	// Unterminated block comment right after a quote/paren ("admin'/*"), and a
-	// MySQL "#" comment that ends the input right after a quote, paren or digit
-	// ("admin' #", "1' ORDER BY 1#"). "C# in depth", "Tag #1" and "AC/DC" stay legal.
+	// "--" / "#" comment terminators are judged by hasSQLCommentTerminator
+	// (context-aware), not by a regexp. Unterminated block comment right after a
+	// quote/paren ("admin'/*") stays a regexp.
 	regexp.MustCompile(`['")]\s*/\*`),
-	regexp.MustCompile(`['")\d]\s*#\s*$`),
+	// ORDER BY <column number>: column-count probing ("1 order by 5").
+	regexp.MustCompile(`(?i)['")\d]\s+ORDER\s+BY\s+\d+\s*(--|#|;|/\*|$)`),
+	// Boolean/blind-extraction helpers and file/blob primitives
+	regexp.MustCompile(`(?i)\b(SUBSTR|SUBSTRING|MID|ASCII|ORD|LENGTH)\s*\(\s*\(?\s*(SELECT|VERSION|USER|DATABASE|CURRENT_USER|@@)`),
+	regexp.MustCompile(`(?i)\b(RANDOMBLOB|LOAD_EXTENSION|ZEROBLOB)\s*\(`),
+	// String concatenation tautology: ' || '1'='1
+	regexp.MustCompile(`['"]\s*(\|\||&&)\s*['"\w(]`),
 	// MySQL PROCEDURE ANALYSE() information disclosure
 	regexp.MustCompile(`(?i)\bPROCEDURE\s+ANALYSE\s*\(`),
 	// Time delay / stored procedures / dangerous functions (call syntax)
 	regexp.MustCompile(`(?i)\bWAITFOR\s+DELAY\b`),
-	regexp.MustCompile(`(?i)\b(PG_)?SLEEP\s*\(`),
+	regexp.MustCompile(`(?i)\b(PG_)?SLEEP\s*\(\s*(\d+(\.\d+)?\s*[)*+\-]|\(?\s*SELECT\b|@)`),
 	regexp.MustCompile(`(?i)\bBENCHMARK\s*\(`),
 	regexp.MustCompile(`(?i)\bEXEC(UTE)?\s*\(`),
 	regexp.MustCompile(`(?i)\bEXEC(UTE)?\s+(sp_|xp_|master\b)`),
@@ -249,6 +252,9 @@ var sqlInjectionPatterns = []*regexp.Regexp{
 // ContainsSQLInjection checks for SQL injection by statement structure. It is
 // the single implementation shared with the HTTP input-validation middleware.
 func ContainsSQLInjection(input string) bool {
+	if hasSQLCommentTerminator(input) {
+		return true
+	}
 	for _, re := range sqlInjectionPatterns {
 		if re.MatchString(input) {
 			return true
@@ -341,4 +347,63 @@ func RemoveWhitespace(input string) string {
 // CompactWhitespace replaces multiple whitespace with single space
 func CompactWhitespace(input string) string {
 	return strings.Join(strings.Fields(input), " ")
+}
+
+// hasSQLCommentTerminator reports a "--" or "#" comment used as a terminator.
+// Prose uses both ("Episode 3 -- The Return", "Ep. 7 #", "Tag #1"), so the
+// character before the marker decides:
+//   - start of input, or ';'             -> terminator ("-- x", "1; -- x")
+//   - quote, back-tick                   -> terminator only when that quote is
+//     unbalanced before it (odd count): "admin' --" yes, "\"Quoted\" -- review" no
+//   - ')'                                -> terminator only when nothing follows
+//     the marker ("1) --"); "(live) -- remaster" is prose
+//   - digit (only for "--")              -> terminator only when nothing follows
+//     ("1 --", "1-- -"); "Episode 3 -- The Return" is prose
+//
+// For '#', a quote or ')' counts only when the marker ends the input
+// ("admin' #"); a digit never counts ("Ep. 7 #").
+func hasSQLCommentTerminator(s string) bool {
+	for _, marker := range []string{"--", "#"} {
+		from := 0
+		for {
+			i := strings.Index(s[from:], marker)
+			if i < 0 {
+				break
+			}
+			i += from
+			from = i + len(marker)
+			rest := strings.TrimSpace(s[from:])
+			if marker == "--" {
+				rest = strings.TrimLeft(rest, "- ")
+			}
+			j := i
+			for j > 0 && (s[j-1] == ' ' || s[j-1] == '\t') {
+				j--
+			}
+			if j == 0 {
+				if marker == "--" {
+					return true
+				}
+				continue
+			}
+			c := s[j-1]
+			switch {
+			case c == ';':
+				return true
+			case c == '\'' || c == '"' || c == '`':
+				if strings.Count(s[:j], string(c))%2 == 1 && (marker == "--" || rest == "") {
+					return true
+				}
+			case c == ')':
+				if rest == "" {
+					return true
+				}
+			case c >= '0' && c <= '9' && marker == "--":
+				if rest == "" {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }

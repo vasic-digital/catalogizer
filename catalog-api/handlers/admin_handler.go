@@ -3,6 +3,7 @@ package handlers
 import (
 	"catalogizer/internal/pathguard"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -245,6 +246,15 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 	if err := h.userRepo.Update(user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return
+	}
+	// Second revoke closes the window for a login between the first revoke and
+	// the update (that session carries the old claims).
+	if wasActive && !user.IsActive {
+		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
+			log.Printf("handlers: user %d updated but the post-update session revoke failed: %v", user.ID, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User updated but revoking sessions failed; repeat the request"})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})

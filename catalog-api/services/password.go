@@ -72,6 +72,10 @@ func CheckPassword(password, salt, hash string) (ok bool, needsUpgrade bool) {
 	}
 }
 
+// IsLegacySHA256Hex is the exported form of isLegacySHA256Hex, for the startup
+// sunset counter, so it counts exactly the shapes CheckPassword accepts.
+func IsLegacySHA256Hex(s string) bool { return isLegacySHA256Hex(s) }
+
 // isLegacySHA256Hex reports whether s has the exact shape the old CreateUser
 // wrote: 64 lowercase hex characters.
 func isLegacySHA256Hex(s string) bool {

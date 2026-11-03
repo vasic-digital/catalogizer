@@ -27,9 +27,13 @@ it('a successful password change signs the user out locally and clears the store
   vi.mocked(authApi.changePassword).mockResolvedValue(undefined as never)
   mount()
   await waitFor(() => expect(screen.getByText('IN')).toBeInTheDocument())
+  localStorage.setItem('user', '{"id":1}')
   vi.mocked(authApi.getAuthStatus).mockResolvedValue({ authenticated: false } as never)
   await act(async () => { await ctx.changePassword({ current_password: 'a', new_password: 'b' } as never) })
   await waitFor(() => expect(screen.getByText('OUT')).toBeInTheDocument())
+  expect(ctx.user).toBeNull()
+  expect(ctx.permissions).toEqual([])
+  expect(localStorage.getItem('user')).toBeNull()
   expect(localStorage.getItem('auth_token')).toBeNull()
   expect(authApi.logout).not.toHaveBeenCalled()
 })
@@ -44,4 +48,17 @@ it('a FAILED password change keeps the session', async () => {
   await act(async () => { try { await ctx.changePassword({ current_password: 'x', new_password: 'y' } as never) } catch { /* expected */ } })
   expect(screen.getByText('IN')).toBeInTheDocument()
   expect(localStorage.getItem('auth_token')).toBe('old-token')
+})
+
+// The local state reset must not depend on the auth-status refetch: even when the
+// status endpoint still (wrongly) reports a session, change-password clears user.
+it('clears user and permissions immediately, independent of the auth-status refetch', async () => {
+  vi.mocked(authApi.getAuthStatus).mockResolvedValue(authedStatus as never)
+  vi.mocked(authApi.getPermissions).mockResolvedValue({ permissions: ['*'] } as never)
+  vi.mocked(authApi.changePassword).mockResolvedValue(undefined as never)
+  mount()
+  await waitFor(() => expect(screen.getByText('IN')).toBeInTheDocument())
+  vi.mocked(authApi.getAuthStatus).mockImplementation(() => new Promise(() => {}) as never)
+  await act(async () => { await ctx.changePassword({ current_password: 'a', new_password: 'b' } as never) })
+  expect(ctx.user).toBeNull()
 })

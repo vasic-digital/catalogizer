@@ -539,3 +539,30 @@ func TestRT_RevocationFailureFailsClosed(t *testing.T) {
 		_ = tok
 	}
 }
+
+// F1: a login that lands BETWEEN the first revoke and the update gets a session
+// whose token carries the old role. A BEFORE UPDATE trigger on users inserts an
+// active session at exactly that moment (real SQLite); the handler must still
+// end with zero active sessions (revoke, update, revoke again).
+func TestRT_SessionCreatedBetweenRevokeAndUpdateIsRevoked(t *testing.T) {
+	e := newRTEnv(t)
+	for _, tc := range []struct{ name, path, body string }{
+		{"jack", "/api/v1/users/", `{"is_active":false}`},
+		{"kim", "/api/v1/admin/users/", `{"status":"inactive"}`},
+	} {
+		require.Equal(t, 201, e.do(e.adminTok, "POST", "/api/v1/users", createUserBody(tc.name)).Code)
+		_ = e.tokenFor(t, tc.name, rtUserPass)
+		u, _ := e.repo.GetByUsername(tc.name)
+		_, err := e.db.Exec(`CREATE TRIGGER racing_login BEFORE UPDATE ON users WHEN NEW.id = ` + rtItoa(u.ID) + `
+			BEGIN INSERT INTO user_sessions (user_id, session_token, refresh_token, device_info, ip_address, user_agent, is_active, expires_at, created_at, last_activity_at)
+			VALUES (NEW.id, 'racing-` + tc.name + `', 'racing-r-` + tc.name + `', '{}', '', '', 1, datetime('now','+1 day'), datetime('now'), datetime('now')); END`)
+		require.NoError(t, err)
+		w := e.do(e.adminTok, "PUT", tc.path+rtItoa(u.ID), tc.body)
+		require.Equal(t, 200, w.Code, w.Body.String())
+		var active int
+		require.NoError(t, e.db.QueryRow("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND is_active = 1", u.ID).Scan(&active))
+		assert.Equal(t, 0, active, tc.name+": session created between revoke and update must be revoked")
+		_, err = e.db.Exec(`DROP TRIGGER racing_login`)
+		require.NoError(t, err)
+	}
+}

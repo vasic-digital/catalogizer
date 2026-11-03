@@ -103,8 +103,6 @@ func BenchmarkGenerateJWT(b *testing.B) {
 	}
 }
 
-// --- HashData benchmark ---
-
 // --- GenerateSecureToken benchmark ---
 
 func BenchmarkGenerateSecureToken(b *testing.B) {

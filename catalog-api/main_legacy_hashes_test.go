@@ -21,6 +21,14 @@ func TestReportLegacyPasswordHashes_CountsOnlyLegacyRows(t *testing.T) {
 	_, err := db.Exec(`INSERT INTO users (username,email,password_hash,salt,role_id,first_name,last_name,display_name,is_active) VALUES ('v1user','v1@x','$2a$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ0123','s',2,'a','b','c',1)`)
 	require.NoError(t, err)
 
+	// 64-character values that are NOT legacy hashes: a '$'-prefixed one and an
+	// uppercase-hex one. CheckPassword rejects both, so the gauge must not count them.
+	for i, h := range []string{"$" + strings.Repeat("a", 63), strings.Repeat("A", 64)} {
+		_, err := db.Exec(`INSERT INTO users (username,email,password_hash,salt,role_id,first_name,last_name,display_name,is_active) VALUES (?,?,?,'s',2,'a','b','c',1)`,
+			"odd"+string(rune('0'+i)), "odd"+string(rune('0'+i))+"@x", h)
+		require.NoError(t, err)
+	}
+
 	var lines []string
 	n, err := reportLegacyPasswordHashes(db, func(f string, a ...any) { lines = append(lines, f) })
 	require.NoError(t, err)

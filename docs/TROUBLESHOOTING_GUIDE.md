@@ -749,9 +749,12 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/user/profile
 echo $TOKEN | cut -d. -f2 | base64 -d | jq .exp
 
 # Generate new token
+# The admin account is created at first start from ADMIN_USERNAME / ADMIN_PASSWORD
+# (set both in .env; known placeholder passwords are refused). There is no default login.
+# Forgot it? Stop the server, set ADMIN_NEW_PASSWORD, run `catalog-api admin-reset-password`.
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"password"}'
+  -d "{\"username\":\"$ADMIN_USERNAME\",\"password\":\"$ADMIN_PASSWORD\"}"
 ```
 
 ### User Access Issues

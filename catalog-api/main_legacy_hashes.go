@@ -5,12 +5,16 @@ import (
 
 	"catalogizer/database"
 	"catalogizer/internal/metrics"
+	root_services "catalogizer/services"
 )
 
-// legacyHashWhere selects rows still in the legacy hex SHA-256 shape written by
-// the old POST /users: exactly 64 characters and no '$' prefix. bcrypt (v1) rows
-// are 60 characters and v2 rows start with "$cz1$", so neither matches.
-const legacyHashWhere = "LENGTH(password_hash) = 64 AND password_hash NOT LIKE '$%'"
+// Candidate rows are those with a 64-character hash (bcrypt rows are 60
+// characters, v2 rows start with "$cz1$"); the exact shape (64 LOWERCASE hex,
+// which already excludes any '$'-prefixed value) is then checked in Go with the
+// same function CheckPassword uses, so the gauge counts exactly the rows the
+// verifier would accept as legacy. The length filter is portable SQL
+// (SQLite and Postgres); hex matching is not.
+const legacyCandidateSQL = "SELECT password_hash FROM users WHERE LENGTH(password_hash) = 64"
 
 // reportLegacyPasswordHashes counts the remaining legacy-hash rows, publishes the
 // count as the catalogizer_auth_legacy_password_hashes gauge and, when it is
@@ -18,8 +22,22 @@ const legacyHashWhere = "LENGTH(password_hash) = 64 AND password_hash NOT LIKE '
 // verifying and keep being upgraded at login. It exists so the sunset of the
 // legacy verify path can be decided on a measured number.
 func reportLegacyPasswordHashes(db *database.DB, warnf func(format string, args ...any)) (int, error) {
-	var n int
-	if err := db.QueryRow("SELECT COUNT(*) FROM users WHERE " + legacyHashWhere).Scan(&n); err != nil {
+	rows, err := db.Query(legacyCandidateSQL)
+	if err != nil {
+		return 0, fmt.Errorf("count legacy password hashes: %w", err)
+	}
+	defer rows.Close()
+	n := 0
+	for rows.Next() {
+		var h string
+		if err := rows.Scan(&h); err != nil {
+			return 0, fmt.Errorf("count legacy password hashes: %w", err)
+		}
+		if root_services.IsLegacySHA256Hex(h) {
+			n++
+		}
+	}
+	if err := rows.Err(); err != nil {
 		return 0, fmt.Errorf("count legacy password hashes: %w", err)
 	}
 	metrics.LegacyPasswordHashes.Set(float64(n))

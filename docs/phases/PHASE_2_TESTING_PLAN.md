@@ -289,7 +289,7 @@ fun `login saves token and user info on success`() = runTest {
 
 **Manual Test Steps:**
 1. Open Android TV app
-2. Enter credentials: username="admin", password="password"
+2. Enter the admin credentials created at first start from ADMIN_USERNAME / ADMIN_PASSWORD in .env (there is no default login; see docs/guides/TROUBLESHOOTING.md for the reset procedure)
 3. Click "Sign In"
 4. Verify navigation to home screen
 5. Close app completely

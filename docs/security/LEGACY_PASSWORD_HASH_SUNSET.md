@@ -17,7 +17,7 @@ user's next successful login. Users who never log in keep the weak hash.
 ## What is measured now
 
 At startup (after the admin seed) catalog-api counts the rows still in the legacy shape
-(`LENGTH(password_hash) = 64 AND password_hash NOT LIKE '$%'`), sets the Prometheus gauge
+(64-character candidates, then the exact lowercase-hex check that `CheckPassword` uses, done in Go), sets the Prometheus gauge
 `catalogizer_auth_legacy_password_hashes`, and logs one warning when the count is above 0
 (`main_legacy_hashes.go`, covered by `main_legacy_hashes_test.go` on a real SQLite DB).
 The gauge is a startup snapshot; restart the service to refresh it.
