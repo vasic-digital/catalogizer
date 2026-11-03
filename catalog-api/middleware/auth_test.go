@@ -495,3 +495,18 @@ func TestRequireAdmin_AdminCheckerOverridesClaim(t *testing.T) {
 	assert.Equal(t, http.StatusForbidden, run(no, RoleAdminID), "checker says not admin: claim role_id 1 does not matter")
 	assert.Equal(t, http.StatusServiceUnavailable, run(boom, RoleAdminID), "undeterminable must fail closed")
 }
+
+// N3: a non-integer user_id in the context (token subject not numeric) must
+// fail closed when an AdminChecker is installed.
+func TestRequireAdmin_NonIntUserIDFailsClosed(t *testing.T) {
+	mw := setupJWTMiddleware()
+	mw.SetAdminChecker(func(context.Context, int) (bool, error) { return true, nil })
+	router := gin.New()
+	router.GET("/admin/x", func(c *gin.Context) {
+		c.Set("role_id", RoleAdminID)
+		c.Set("user_id", "not-a-number")
+	}, mw.RequireAdmin(), func(c *gin.Context) { c.Status(http.StatusOK) })
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/admin/x", nil))
+	assert.Equal(t, http.StatusForbidden, w.Code)
+}

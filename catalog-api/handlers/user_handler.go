@@ -385,7 +385,8 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// A role or activation change must take effect now: access tokens carry
-	// role_id and live for hours (RequireAdmin trusts the claim), so revoke every
+	// role_id and live for hours (RequireAdmin now reads the live role from the
+	// database, but other consumers still read the claim), so revoke every
 	// session of the target; the user logs in again and gets a fresh claim.
 	if user.RoleID != oldRoleID || user.IsActive != oldActive {
 		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {

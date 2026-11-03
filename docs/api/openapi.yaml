@@ -4270,6 +4270,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '503':
+          description: The caller's admin status could not be determined (fail closed)
 
   /api/v1/admin/users:
     get:
@@ -4294,6 +4296,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden (admin role required)
+        '503':
+          description: The caller's admin status could not be determined (fail closed)
 
   /api/v1/admin/users/{id}:
     put:
@@ -4364,6 +4368,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden (admin role required)
+        '503':
+          description: The caller's admin status could not be determined (fail closed)
 
   /api/v1/admin/storage/scan:
     post:
@@ -4404,6 +4410,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden (admin role required)
+        '503':
+          description: The caller's admin status could not be determined (fail closed)
 
   /api/v1/admin/backups:
     get:
@@ -4427,6 +4435,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden (admin role required)
+        '503':
+          description: The caller's admin status could not be determined (fail closed)
     post:
       tags: [admin]
       summary: Create database backup
@@ -4453,6 +4463,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '503':
+          description: The caller's admin status could not be determined (fail closed)
 
   /api/v1/admin/backups/{id}/restore:
     post:
@@ -4492,6 +4504,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '503':
+          description: The caller's admin status could not be determined (fail closed)
 
   /api/v1/users:
     post:
@@ -4511,6 +4525,8 @@ paths:
           description: User created
         '400':
           description: Validation error
+        '403':
+          description: Missing user.create, or assigning an admin role / a role stronger than the caller's own permissions without system.admin
         '409':
           description: Username/email conflict
     get:
@@ -6924,6 +6940,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '503':
+          description: The caller's admin status could not be determined (fail closed)
   /api/v1/admin/errors:
     get:
       tags:
@@ -6952,6 +6970,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '503':
+          description: The caller's admin status could not be determined (fail closed)
   /api/v1/admin/health:
     get:
       tags:
@@ -6980,6 +7000,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '503':
+          description: The caller's admin status could not be determined (fail closed)
   /api/v1/admin/logs:
     get:
       tags:
@@ -7008,6 +7030,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '503':
+          description: The caller's admin status could not be determined (fail closed)
   /api/v1/admin/covers/generate-thumbnails:
     post:
       tags:
@@ -7052,6 +7076,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '503':
+          description: The caller's admin status could not be determined (fail closed)
   /api/v1/admin/image-quality/revalidate:
     post:
       tags:
@@ -7110,6 +7136,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '503':
+          description: The caller's admin status could not be determined (fail closed)
   /api/v1/analytics/access:
     post:
       tags:

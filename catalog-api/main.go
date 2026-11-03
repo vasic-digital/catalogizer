@@ -916,11 +916,8 @@ func main() {
 	mediaQueryHandler := root_handlers.NewMediaQueryHandler(databaseDB, mediaItemRepo, userRepo)
 
 	// Initialize JWT middleware
-	jwtMiddleware := root_middleware.NewJWTMiddleware(jwtSecret)
-	jwtMiddleware.SetSessionChecker(newSessionChecker(databaseDB))
-	// The admin gate reads the caller's CURRENT role permissions from the
-	// database (CAT-051 F4); the token's role_id claim is not trusted for it.
-	jwtMiddleware.SetAdminChecker(userRepo.IsAdmin)
+	// Session revocation + live admin check are installed together (main_jwtwire.go).
+	jwtMiddleware := newAuthMiddleware(jwtSecret, databaseDB, userRepo)
 
 	// Initialize tiered rate limiters using internal auth middleware.
 	// Constitution Article V §5.1 category 7 (DDoS/rate-limit) requires

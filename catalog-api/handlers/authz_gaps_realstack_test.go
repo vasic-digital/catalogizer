@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"sync"
 	"testing"
 
@@ -215,4 +214,47 @@ func TestAZ_CAT052_FakeGetRoleMatchesRealRepositoryForUnknownRole(t *testing.T) 
 	assert.Error(t, fakeErr, "memStore.GetRole must fail for an unknown role like the real repository")
 }
 
-var _ = strings.TrimSpace
+// B2: a strong custom role without system.admin is refused at the admin gate.
+func TestAZ_F4_StrongNonAdminRoleRefusedAtAdminGate(t *testing.T) {
+	e := newRTEnv(t)
+	strong := e.azRole(t, "Strong", models.PermissionSystemConfig, models.PermissionUserManage, models.PermissionUserDelete)
+	_, tok := e.azUser(t, "strong1", strong)
+	assert.Equal(t, http.StatusForbidden, e.ping(tok))
+	prefixish := e.azRole(t, "Sysish", "system.administrator", "system.admin.extra")
+	_, tok = e.azUser(t, "strong2", prefixish)
+	assert.Equal(t, http.StatusForbidden, e.ping(tok), "near-miss permission names must not grant admin")
+}
+
+// N2: a prefix wildcard without a segment boundary ("sys*") must not grant system.admin.
+func TestAZ_N2_WildcardWithoutSegmentBoundaryDoesNotGrantAdmin(t *testing.T) {
+	e := newRTEnv(t)
+	for i, perm := range []string{"sys*", "s*", "system*"} {
+		r := e.azRole(t, "Wild"+rtItoa(i), perm)
+		_, tok := e.azUser(t, "wild"+rtItoa(i), r)
+		assert.Equal(t, http.StatusForbidden, e.ping(tok), perm)
+	}
+	ok := e.azRole(t, "WildOK", "system.*")
+	_, tok := e.azUser(t, "wildok", ok)
+	assert.Equal(t, http.StatusOK, e.ping(tok), "system.* is a real segment wildcard")
+}
+
+// B3: the REAL IsAdmin error paths fail closed with 503 through the router.
+func TestAZ_F4_IsAdminLookupErrorFailsClosed(t *testing.T) {
+	t.Run("corrupt permissions JSON", func(t *testing.T) {
+		e := newRTEnv(t)
+		role := e.azRole(t, "Soon-corrupt", models.PermissionSystemAdmin)
+		_, tok := e.azUser(t, "corrupt1", role)
+		require.Equal(t, http.StatusOK, e.ping(tok))
+		_, err := e.db.Exec(`UPDATE roles SET permissions = '{not json' WHERE id = ?`, role)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusServiceUnavailable, e.ping(tok))
+	})
+	t.Run("roles table unavailable", func(t *testing.T) {
+		e := newRTEnv(t)
+		_, tok := e.azUser(t, "gone1", 1)
+		require.Equal(t, http.StatusOK, e.ping(tok))
+		_, err := e.db.Exec(`ALTER TABLE roles RENAME TO roles_gone`)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusServiceUnavailable, e.ping(tok))
+	})
+}
