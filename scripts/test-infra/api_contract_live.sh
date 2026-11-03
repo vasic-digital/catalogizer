@@ -53,7 +53,7 @@ set +e
 systemd-run --user --scope -q -p MemoryMax="${API_CONTRACT_MEMMAX:-5G}" -p MemorySwapMax=0 \
   go test -tags live -count=1 -timeout 40m -v -run '^TestLiveAPIContract$' . 2>&1 | tee "$LOG"
 rc=${PIPESTATUS[0]}
-for f in summary.json operations.json go-test.log; do [ -f "$SCRATCH/$f" ] && cp "$SCRATCH/$f" "$EVIDENCE/$f"; done
+for f in summary.json operations.json go-test.log trace-run*.log; do [ -f "$SCRATCH/$f" ] && cp "$SCRATCH/$f" "$EVIDENCE/$f"; done
 echo "artifacts: $EVIDENCE"
 classify "$LOG" "$rc"
 v=$?

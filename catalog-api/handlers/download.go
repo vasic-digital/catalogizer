@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"catalogizer/internal/services"
@@ -102,6 +103,11 @@ func (h *DownloadHandler) DownloadFile(c *gin.Context) {
 
 	if smbRoot == nil {
 		utils.SendErrorResponse(c, http.StatusNotFound, "SMB root not found", nil)
+		return
+	}
+
+	if !strings.EqualFold(smbRoot.Protocol, "smb") {
+		utils.SendErrorResponse(c, http.StatusNotImplemented, "Download is only implemented for SMB storage roots (protocol: "+smbRoot.Protocol+")", nil)
 		return
 	}
 
@@ -226,6 +232,11 @@ func (h *DownloadHandler) DownloadDirectory(c *gin.Context) {
 
 	if smbRoot == nil {
 		utils.SendErrorResponse(c, http.StatusNotFound, "SMB root not found", nil)
+		return
+	}
+
+	if !strings.EqualFold(smbRoot.Protocol, "smb") {
+		utils.SendErrorResponse(c, http.StatusNotImplemented, "Download is only implemented for SMB storage roots (protocol: "+smbRoot.Protocol+")", nil)
 		return
 	}
 

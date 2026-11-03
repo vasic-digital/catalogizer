@@ -257,6 +257,15 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
+	// An administrator must not lock themselves out by deactivating or
+	// suspending their own account (found by the live contract sweep: a
+	// generated happy-path PUT on the admin's own id revoked every admin
+	// session and every later admin call returned 403).
+	if updates.Status != nil && id == admin.ID && *updates.Status != "active" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Administrators cannot deactivate or suspend their own account"})
+		return
+	}
+
 	wasActive := user.IsActive
 	wasPending := user.IsRegistrationPending()
 	if updates.Status != nil {

@@ -99,7 +99,7 @@ func (s *AnalyticsService) GetSystemAnalytics(startDate, endDate time.Time) (*mo
 		TotalMediaAccesses:     totalMediaAccesses,
 		TotalEvents:            totalEvents,
 		TopAccessedMedia:       topMedia,
-		UserGrowthData:         userGrowth,
+		UserGrowthData:         nonNilGrowth(userGrowth),
 		AverageSessionDuration: s.calculateAverageSessionDuration(startDate, endDate),
 		PeakUsageHours:         s.analyzePeakUsageHours(startDate, endDate),
 		PopularFileTypes:       s.analyzePopularFileTypes(startDate, endDate),
@@ -318,7 +318,7 @@ func (s *AnalyticsService) findMostAccessedMedia(logs []models.MediaAccessLog) [
 		counts[log.MediaID]++
 	}
 
-	var results []models.MediaAccessCount
+	results := []models.MediaAccessCount{}
 	for mediaID, count := range counts {
 		results = append(results, models.MediaAccessCount{
 			MediaID:     mediaID,
@@ -660,4 +660,13 @@ func (s *AnalyticsService) extractDateRange(params map[string]interface{}) (time
 	}
 
 	return startDate, endDate, nil
+}
+
+// nonNilGrowth keeps the JSON contract (an array, never null) when there are
+// no growth points in the window.
+func nonNilGrowth(p []models.UserGrowthPoint) []models.UserGrowthPoint {
+	if p == nil {
+		return []models.UserGrowthPoint{}
+	}
+	return p
 }

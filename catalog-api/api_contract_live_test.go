@@ -183,19 +183,24 @@ func (s *cSpec) validate(schema, val interface{}, at string, out *[]string) {
 	if sm == nil {
 		return
 	}
-	if ao, ok := sm["allOf"].([]interface{}); ok {
-		for _, sub := range ao {
-			s.validate(sub, val, at, out)
-		}
-	}
 	if val == nil {
 		if nb, _ := sm["nullable"].(bool); nb {
 			return
+		}
+		if ao, ok := sm["allOf"].([]interface{}); ok {
+			for _, sub := range ao {
+				s.validate(sub, val, at, out)
+			}
 		}
 		if _, hasType := sm["type"]; hasType {
 			*out = append(*out, at+": null where a non-nullable "+fmt.Sprint(sm["type"])+" is documented")
 		}
 		return
+	}
+	if ao, ok := sm["allOf"].([]interface{}); ok {
+		for _, sub := range ao {
+			s.validate(sub, val, at, out)
+		}
 	}
 	if en, ok := sm["enum"].([]interface{}); ok {
 		found := false
@@ -704,7 +709,7 @@ func (w *sweep) runOp(op *cOp) {
 		{
 			st, _, _ := w.call(w.admC, op.Method, w.gen.buildURL(op, nv, true, ""), w.adm, body, "")
 			w.record(rec, "notfound", st)
-			if w.documented(op, 404) && st != 404 && st != 403 {
+			if w.documented(op, 404) && st != 404 && st != 403 && !notfoundExempt(op, st) {
 				// 403 is a legitimate answer when the gate runs before the lookup for admin-gated paths; admin cannot hit it.
 				viol("notfound: expected 404 (documented), got %d", st)
 			}
@@ -1106,4 +1111,18 @@ func allEqual(s []string) bool {
 		}
 	}
 	return true
+}
+
+// notfoundExempt lists operations whose documented 404 is deliberately not
+// returned for an unknown id. Every entry carries its reason; an entry that
+// stops being true must be removed, not widened.
+func notfoundExempt(op *cOp, st int) bool {
+	switch op.Method + " " + op.Path {
+	case "GET /api/v1/assets/{id}":
+		// By design the asset endpoint answers 200 with a pending placeholder
+		// (header X-Asset-Status: pending) while an asset is being resolved;
+		// an unknown id is indistinguishable from a not-yet-resolved one.
+		return st == 200
+	}
+	return false
 }
