@@ -1,0 +1,69 @@
+--- PASS: TestLiveYandex_Suite (393.53s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (0.53s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (0.20s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (0.86s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (194.61s)
+    --- PASS: TestLiveYandex_Suite/05_list_sizes_mtimes (0.37s)
+    --- PASS: TestLiveYandex_Suite/06_download_sha256_and_stat (2.00s)
+    --- PASS: TestLiveYandex_Suite/07_range_partial_read (0.24s)
+    --- PASS: TestLiveYandex_Suite/08_copy_rename_move (29.23s)
+    --- PASS: TestLiveYandex_Suite/09_overwrite (2.93s)
+    --- PASS: TestLiveYandex_Suite/10_nonexistent_errors (1.12s)
+    --- PASS: TestLiveYandex_Suite/11_unicode_and_special_names (7.19s)
+    --- PASS: TestLiveYandex_Suite/12_large_listing_200 (53.89s)
+    --- PASS: TestLiveYandex_Suite/13_concurrent_uploads_4 (51.97s)
+    --- PASS: TestLiveYandex_Suite/14_unsized_reader_upload (7.01s)
+    --- PASS: TestLiveYandex_Suite/15_timeout_and_cancel (1.86s)
+    --- PASS: TestLiveYandex_Suite/16_delete (8.96s)
+    --- PASS: TestLiveYandex_Suite/17_guard_refuses_outside_sandbox (0.64s)
+PASS
+ok  	catalogizer/filesystem	393.540s
+RUN 1 GO_RC=0
+--- PASS: TestLiveYandex_Suite (409.34s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (0.46s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (0.20s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (0.81s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (195.25s)
+    --- PASS: TestLiveYandex_Suite/05_list_sizes_mtimes (0.18s)
+    --- PASS: TestLiveYandex_Suite/06_download_sha256_and_stat (1.44s)
+    --- PASS: TestLiveYandex_Suite/07_range_partial_read (0.16s)
+    --- PASS: TestLiveYandex_Suite/08_copy_rename_move (30.33s)
+    --- PASS: TestLiveYandex_Suite/09_overwrite (3.19s)
+    --- PASS: TestLiveYandex_Suite/10_nonexistent_errors (0.85s)
+    --- PASS: TestLiveYandex_Suite/11_unicode_and_special_names (7.06s)
+    --- PASS: TestLiveYandex_Suite/12_large_listing_200 (56.76s)
+    --- PASS: TestLiveYandex_Suite/13_concurrent_uploads_4 (53.47s)
+    --- PASS: TestLiveYandex_Suite/14_unsized_reader_upload (7.07s)
+    --- PASS: TestLiveYandex_Suite/15_timeout_and_cancel (1.74s)
+    --- PASS: TestLiveYandex_Suite/16_delete (29.51s)
+    --- PASS: TestLiveYandex_Suite/17_guard_refuses_outside_sandbox (0.53s)
+PASS
+ok  	catalogizer/filesystem	409.344s
+RUN 2 GO_RC=0
+--- PASS: TestLiveYandex_Suite (357.82s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (5.04s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (0.20s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (1.13s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (194.15s)
+    --- PASS: TestLiveYandex_Suite/05_list_sizes_mtimes (0.19s)
+    --- PASS: TestLiveYandex_Suite/06_download_sha256_and_stat (1.80s)
+    --- PASS: TestLiveYandex_Suite/07_range_partial_read (0.13s)
+    --- PASS: TestLiveYandex_Suite/08_copy_rename_move (31.80s)
+    --- PASS: TestLiveYandex_Suite/09_overwrite (3.10s)
+    --- PASS: TestLiveYandex_Suite/10_nonexistent_errors (1.34s)
+    --- PASS: TestLiveYandex_Suite/11_unicode_and_special_names (7.96s)
+    --- PASS: TestLiveYandex_Suite/12_large_listing_200 (46.82s)
+    --- PASS: TestLiveYandex_Suite/13_concurrent_uploads_4 (35.70s)
+    --- PASS: TestLiveYandex_Suite/14_unsized_reader_upload (7.20s)
+    --- PASS: TestLiveYandex_Suite/15_timeout_and_cancel (1.63s)
+    --- PASS: TestLiveYandex_Suite/16_delete (9.29s)
+    --- PASS: TestLiveYandex_Suite/17_guard_refuses_outside_sandbox (0.62s)
+PASS
+ok  	catalogizer/filesystem	357.830s
+RUN 3 GO_RC=0
+RUNS=3 PASSED=3 SKIPPED=0 FAILED=0 EVIDENCE_DIR=/home/milosvasic/.cache/claude-tmp/claude-1000/-home-milosvasic-Projects-catalogizer/261db589-353c-4105-9405-009dbfe0bd33/scratchpad/evH
+run1: requests=498 p50=280ms p95=1954ms max=128787ms up=7631477B status={'0': 3, '200': 232, '201': 228, '202': 1, '204': 5, '206': 1, '207': 9, '401': 1, '404': 15, '405': 1, '409': 2}
+run2: requests=503 p50=270ms p95=2577ms max=129147ms up=7893669B status={'0': 7, '200': 232, '201': 228, '202': 1, '204': 5, '206': 1, '207': 9, '401': 1, '404': 15, '405': 1, '409': 2, '500': 1}
+run3: requests=497 p50=233ms p95=2010ms max=128625ms up=7369333B status={'0': 2, '200': 232, '201': 228, '202': 1, '204': 5, '206': 1, '207': 9, '401': 1, '404': 15, '405': 1, '409': 2}
+SIGNATURES IDENTICAL across 3 runs
+VERDICT=PASS
