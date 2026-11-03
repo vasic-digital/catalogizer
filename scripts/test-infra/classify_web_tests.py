@@ -191,6 +191,16 @@ def classify_spec(path, rel):
             if hs <= m.start() <= he: continue
             sigs.append((m.start(), "mock-helper:" + name))
     imports_mocks = bool(MOCK_IMPORT.search(keep))
+    # module-/describe-level doubles (msw server, jest/vi mock, fake HTTP server) outside any test, hook or helper apply to every test in their scope
+    describes = [n for n in nodes if n["kind"] == "describe"]
+    helper_spans = list(helpers.values())
+    wide = []
+    for p, lab in sigs:
+        if lab not in ("msw", "vi/jest.mock", "fake-server"): continue
+        if any(n["start"] <= p <= n["end"] for n in nodes if n["kind"] in ("test", "hook")): continue
+        if any(hs <= p <= he for hs, he in helper_spans): continue
+        encl = [d for d in describes if d["start"] < p < d["end"]]
+        wide.append((p, lab, min(encl, key=lambda d: d["end"] - d["start"]) if encl else None))
     results = []
     for t in tests:
         reasons = []
@@ -209,6 +219,9 @@ def classify_spec(path, rel):
                             break
             if inside or inherited:
                 reasons.append((line_of(src, p), lab))
+        for p, lab, scope in wide:
+            if scope is None or (scope["start"] < t["start"] < scope["end"]):
+                reasons.append((line_of(src, p), lab + "(module-level)"))
         body = blank[t["start"]:t["end"]]
         keep_body = keep[t["start"]:t["end"]]
         real_hits = []
@@ -304,7 +317,9 @@ def process(path, root):
     src, keep, blank, results, imports_mocks, sigs = classify_spec(path, rel)
     nm = sum(1 for r in results if r["class"] == "MOCKED")
     nr = len(results) - nm
-    if not results: cls = "NOTESTS"
+    if not results and re.search(r"\b(?:test|it)(?:\.(?:only|skip|fixme|slow|fail))?\s*\(", blank):
+        cls = "BLIND"   # a test( call exists but no test node was parsed (dynamic title, unknown shape): never report it as having no tests
+    elif not results: cls = "NOTESTS"
     elif nm and nr: cls = "MIXED"
     elif nm: cls = "MOCKED"
     else: cls = "REAL"
@@ -318,6 +333,8 @@ def process(path, root):
         "api_touched_by_real_tests": sorted({io for r in results if r["class"] == "REAL" for io in r["io"]}),
         "domains": domains_for(rel, results, keep),
     }
+    if cls == "BLIND":
+        out["error"] = "BLIND: file contains test( calls but the parser found no test node (dynamic title or unsupported shape); classification impossible"
     if cls in ("MOCKED", "MIXED"):
         out["make_live"] = make_live_plan(rel, out, keep, labs, src)
     if cls == "REAL" and not any("page.goto" in r["io"] or "direct API request (request.*)" in r["io"] for r in results):
@@ -368,14 +385,17 @@ def main():
         "MIXED": sum(f["class"] == "MIXED" for f in files), "other": other,
         "tests_total": sum(f["tests_total"] for f in files), "tests_real": sum(f["tests_real"] for f in files),
         "tests_mocked": sum(f["tests_mocked"] for f in files)}}
+    blind = [f["path"] for f in files if f["class"] == "BLIND"]
+    for b in blind: print(f"BLIND: {b}: test( calls present but no test parsed", file=sys.stderr)
+    rc = 2 if blind else 0
     if a.json_only:
-        print(json.dumps(data, indent=1)); return 0
+        print(json.dumps(data, indent=1)); return rc
     if a.out_json:
         pathlib.Path(a.out_json).write_text(json.dumps(data, indent=1) + "\n")
     if a.out_md and a.out_md != os.devnull:
         pathlib.Path(a.out_md).write_text(to_md(data))
     print(json.dumps(data["counts"]))
-    return 0
+    return rc
 
 
 if __name__ == "__main__":
