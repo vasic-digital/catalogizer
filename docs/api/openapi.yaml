@@ -4255,6 +4255,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '403':
+          description: The job belongs to another user (without media.view), or the output lies outside the conversion roots
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
           description: Job not found
           content:

@@ -18,8 +18,8 @@ func setProcessGroup(cmd *exec.Cmd) {
 		if cmd.Process == nil {
 			return nil
 		}
-		if pgid := cmd.Process.Pid; pgid > 1 {
-			if err := syscall.Kill(-pgid, syscall.SIGKILL); err != nil && err != syscall.ESRCH {
+		if target, ok := groupKillTarget(cmd.Process.Pid); ok {
+			if err := syscall.Kill(target, syscall.SIGKILL); err != nil && err != syscall.ESRCH {
 				return cmd.Process.Kill()
 			}
 			return nil
@@ -27,4 +27,14 @@ func setProcessGroup(cmd *exec.Cmd) {
 		return cmd.Process.Kill()
 	}
 	cmd.WaitDelay = 5 * time.Second
+}
+
+// groupKillTarget returns the argument for kill(2) that signals the whole process group of pid,
+// or false when pid is not a safe group id: kill(-1, sig) signals every process of the user and
+// kill(0/-0, sig) the caller's own group (constitution 11.4.263).
+func groupKillTarget(pid int) (int, bool) {
+	if pid <= 1 {
+		return 0, false
+	}
+	return -pid, true
 }

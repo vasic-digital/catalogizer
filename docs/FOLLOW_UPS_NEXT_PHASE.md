@@ -539,5 +539,9 @@ Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/ap
 - F4: a foreign job id answers 403 while an unknown id answers 404, so ids are probeable (ids are sequential); consider 404 for non-owners without permission (decision pending).
 - F6: `RunWorker` refuses a second start in one process, but two API instances on one database still requeue each other's running jobs; needs the lease column (`claimed_by`, `claimed_until`).
 - F10: `TestClaimJob_ExactlyOneWinner` runs on a single-connection in-memory SQLite; it is a logic check, not a concurrency proof against Postgres.
-- F11: `ClaimJob`, `RequeueJob`-style conditional updates, `GetDueJobs` and `UpdateJobIf` have no live Postgres run (SKIP, tracked: needs a Postgres test DSN in the suite).
+- F11: `ClaimJob`, `RequeueRunning`, `GetDueJobs` and `UpdateJobIf` have no Postgres run in the committed suite (SKIP, tracked: needs a Postgres test DSN in the suite). The R2 reviewer ran them once against a throwaway postgres:16 with the production migrations and they passed; that run is not committed.
 - Per-job timeout default is 2h (`CATALOGIZER_CONVERSION_TIMEOUT`, Go duration); no per-type limits (ffmpeg vs image).
+- R2-N2 residual: `scheduled_for` is normalised to UTC on write, but rows written before this change keep their original offset; on SQLite their text compare can still mis-order by the offset (the dispatcher's Go-side check only skips, never adds). Backfill with `UPDATE conversion_jobs SET scheduled_for = <UTC form>` or compare through `datetime()` on SQLite.
+- R2-N7 (= F4): 403 vs 404 for another user's job id stays an operator decision.
+- Pre-existing, not from this branch: `GOOS=windows go vet ./services/` fails on older test files that use `syscall.Mkfifo`/unix helpers (`pathconfine_*`, `converter_private_dir_rv7`, `pdf_text_*`); the conversion worker tests are split so they add no new windows failure (`conversion_worker_unix_test.go`). The non-test package builds for windows.
+- The `pgid > 1` guard is pinned by `TestGroupKillTarget_RefusesPidsAtOrBelowOne` (pure function); the surrounding `Cancel` closure is not exercised with a faked pid.

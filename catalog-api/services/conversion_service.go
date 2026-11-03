@@ -39,8 +39,9 @@ type ConversionService struct {
 	workerRunning atomic.Bool   // guards against a second RunWorker on this service
 	jobTimeout    time.Duration // per-job wall-clock limit (CATALOGIZER_CONVERSION_TIMEOUT, default 2h)
 
-	runsMu sync.Mutex
-	runs   map[int]*jobRun // running jobs by id: lets CancelJob kill the tool
+	runsMu  sync.Mutex
+	runs    map[int]*jobRun // running jobs by id: lets CancelJob kill the tool
+	jobCtxs sync.Map        // *models.ConversionJob -> context.Context of that execution
 }
 
 // jobRun is the cancellation handle of one running job.
@@ -57,6 +58,10 @@ func conversionTimeoutFromEnv() time.Duration {
 	if v := os.Getenv("CATALOGIZER_CONVERSION_TIMEOUT"); v != "" {
 		if d, err := time.ParseDuration(v); err == nil && d > 0 {
 			return d
+		}
+		if logging.Logger != nil {
+			logging.With(logging.String("value", v), logging.String("used", DefaultConversionTimeout.String())).
+				Warn("Invalid CATALOGIZER_CONVERSION_TIMEOUT (need a positive Go duration such as 30m); using the default")
 		}
 	}
 	return DefaultConversionTimeout
@@ -166,8 +171,11 @@ func (s *ConversionService) executeJob(job *models.ConversionJob) {
 	// the tool's process group through it.
 	runCtx, cancelRun := context.WithTimeout(s.toolContext(), s.jobTimeout)
 	defer cancelRun()
-	s.registerRun(job.ID, &jobRun{ctx: runCtx, cancel: cancelRun})
-	defer s.unregisterRun(job.ID)
+	run := &jobRun{ctx: runCtx, cancel: cancelRun}
+	s.registerRun(job.ID, run)
+	defer s.unregisterRun(job.ID, run)
+	s.jobCtxs.Store(job, runCtx) // the tools of THIS execution run under this context
+	defer s.jobCtxs.Delete(job)
 
 	// cancelled between the claim and now: nothing to run
 	if cur, gerr := s.conversionRepo.GetJob(job.ID); gerr == nil && cur.Status != models.ConversionStatusRunning {
@@ -210,9 +218,13 @@ func (s *ConversionService) registerRun(id int, r *jobRun) {
 	s.runsMu.Unlock()
 }
 
-func (s *ConversionService) unregisterRun(id int) {
+// unregisterRun removes the entry only if it is still this run's: a stale run must not
+// unregister a newer run of the same job id (retry + re-claim).
+func (s *ConversionService) unregisterRun(id int, r *jobRun) {
 	s.runsMu.Lock()
-	delete(s.runs, id)
+	if s.runs[id] == r {
+		delete(s.runs, id)
+	}
 	s.runsMu.Unlock()
 }
 
@@ -226,12 +238,11 @@ func (s *ConversionService) killRun(id int) {
 	}
 }
 
-func (s *ConversionService) runCtxFor(jobID int) context.Context {
-	s.runsMu.Lock()
-	r := s.runs[jobID]
-	s.runsMu.Unlock()
-	if r != nil {
-		return r.ctx
+// runCtxFor is the context of this execution of the job (per job pointer, so a stale run of the
+// same id can never lend or lose its context); outside an execution it is the worker's.
+func (s *ConversionService) runCtxFor(job *models.ConversionJob) context.Context {
+	if v, ok := s.jobCtxs.Load(job); ok {
+		return v.(context.Context)
 	}
 	return s.toolContext()
 }
@@ -331,7 +342,7 @@ func (s *ConversionService) toolContext() context.Context {
 }
 
 func (s *ConversionService) runTool(job *models.ConversionJob, name string, args []string) error {
-	return runConverterToolCtx(s.runCtxFor(job.ID), name, args)
+	return runConverterToolCtx(s.runCtxFor(job), name, args)
 }
 
 func (s *ConversionService) convertVideo(job *models.ConversionJob) error {
@@ -930,8 +941,17 @@ func (s *ConversionService) RetryJob(jobID int, userID int) error {
 	job.Duration = nil
 	job.ErrorMessage = nil
 
-	// The job goes back to the queue; the worker (RunWorker) claims and runs it.
-	return s.conversionRepo.UpdateJob(job)
+	// The job goes back to the queue; the worker (RunWorker) claims and runs it. Only from
+	// `failed`: two concurrent retries (double click) must not rewrite a job a worker already
+	// claimed.
+	written, err := s.conversionRepo.UpdateJobIf(job, models.ConversionStatusFailed)
+	if err != nil {
+		return err
+	}
+	if !written {
+		return fmt.Errorf("%w: can only retry failed jobs", models.ErrConversionJobState)
+	}
+	return nil
 }
 
 func (s *ConversionService) GetJobStatistics(userID *int, startDate, endDate time.Time) (*models.ConversionStatistics, error) {

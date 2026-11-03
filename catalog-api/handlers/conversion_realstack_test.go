@@ -332,11 +332,35 @@ func TestConversionRealStack_OwnershipIsolation(t *testing.T) {
 	s.router.ServeHTTP(w, req)
 	assert.JSONEq(t, `[]`, w.Body.String())
 
-	// the owner succeeds on the same routes
+	// the non-admin custom-role OWNER succeeds on his own jobs (separates owner from admin)
+	bobUID, _ := s.userRepoLookup(t, "bob")
+	bobFailed := insertJobFor(t, s, bobUID, models.ConversionStatusFailed, src, filepath.Join(s.dataDir, "b1.jpg"))
+	bobPending := insertJobFor(t, s, bobUID, models.ConversionStatusPending, src, filepath.Join(s.dataDir, "b2.jpg"))
+	assert.Equal(t, http.StatusOK, s.doAs(t, tokB, "GET", "/jobs/"+convItoa(bobFailed)))
+	assert.Equal(t, http.StatusOK, s.doAs(t, tokB, "POST", "/jobs/"+convItoa(bobFailed)+"/retry"))
+	assert.Equal(t, http.StatusOK, s.doAs(t, tokB, "POST", "/jobs/"+convItoa(bobPending)+"/cancel"))
+
+	// the admin owner succeeds on the same routes
 	assert.Equal(t, http.StatusOK, s.doAs(t, s.token, "GET", "/jobs/"+convItoa(failed)))
 	assert.Equal(t, http.StatusOK, s.doAs(t, s.token, "GET", "/jobs/"+convItoa(completed)+"/download"))
 	assert.Equal(t, http.StatusOK, s.doAs(t, s.token, "POST", "/jobs/"+convItoa(failed)+"/retry"))
 	assert.Equal(t, http.StatusOK, s.doAs(t, s.token, "POST", "/jobs/"+convItoa(pending)+"/cancel"))
+}
+
+func (s *convStack) userRepoLookup(t *testing.T, name string) (int, error) {
+	t.Helper()
+	u, err := s.userRepo.GetByUsernameOrEmail(name)
+	require.NoError(t, err)
+	return u.ID, nil
+}
+
+func insertJobFor(t *testing.T, s *convStack, uid int, status, src, dst string) int {
+	t.Helper()
+	id, err := s.repo.CreateJob(&models.ConversionJob{UserID: uid, SourcePath: src, TargetPath: dst,
+		SourceFormat: "png", TargetFormat: "jpg", ConversionType: "image", Quality: "high",
+		Status: status, CreatedAt: time.Now()})
+	require.NoError(t, err)
+	return id
 }
 
 func TestConversionRealStack_PlainUserRoleHasNoConversionAccess(t *testing.T) {

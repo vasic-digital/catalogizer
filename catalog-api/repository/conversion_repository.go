@@ -26,10 +26,17 @@ func (r *ConversionRepository) CreateJob(job *models.ConversionJob) (int, error)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
+	// scheduled_for is stored in UTC (and GetDueJobs compares in UTC): SQLite compares the text
+	// form including the offset, and Postgres TIMESTAMP (no zone) drops the offset, so a value in
+	// another zone would otherwise be compared as the wrong instant.
+	var scheduled interface{}
+	if job.ScheduledFor != nil {
+		scheduled = job.ScheduledFor.UTC()
+	}
 	id, err := r.db.InsertReturningID(context.Background(), query,
 		job.UserID, job.SourcePath, job.TargetPath, job.SourceFormat, job.TargetFormat,
 		job.ConversionType, job.Quality, job.Settings, job.Priority, job.Status,
-		job.CreatedAt, job.ScheduledFor)
+		job.CreatedAt, scheduled)
 
 	if err != nil {
 		return 0, fmt.Errorf("failed to create conversion job: %w", err)
@@ -162,7 +169,7 @@ func (r *ConversionRepository) GetDueJobs(now time.Time, limit int) ([]models.Co
 		FROM conversion_jobs
 		WHERE status = ? AND (scheduled_for IS NULL OR scheduled_for <= ?)
 		ORDER BY priority DESC, created_at ASC
-		LIMIT ?`, models.ConversionStatusPending, now, limit)
+		LIMIT ?`, models.ConversionStatusPending, now.UTC(), limit)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get due jobs: %w", err)
 	}
