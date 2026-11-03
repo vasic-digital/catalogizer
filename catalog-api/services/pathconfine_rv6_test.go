@@ -250,9 +250,8 @@ func TestRV6_ConversionDerivedWritesRefusePlantedSymlinks(t *testing.T) {
 		require.NoError(t, os.Symlink(filepath.Join(outside, "pwn_html"), tgt))
 		err := (&ConversionService{}).convertPDFToHTML(&models.ConversionJob{SourcePath: src, TargetPath: tgt})
 		t.Logf("convertPDFToHTML err=%v", err)
-		// The text fallback cannot reach its final write in this environment (unipdf text
-		// extraction needs a licence), and pandoc / LibreOffice would write through the link
-		// themselves, so the refusal must come from the pre-check before any tool runs.
+		// The refusal must come from the pre-check before any tool runs: pandoc / LibreOffice
+		// would write through the link themselves.
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "not a regular file")
 		_, serr := os.Lstat(filepath.Join(outside, "pwn_html"))

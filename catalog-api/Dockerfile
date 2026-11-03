@@ -59,9 +59,11 @@ RUN go build -a -ldflags="-w -s" -o catalogizer-api .
 # Stage 2: Runtime (must match builder's glibc version — both use trixie)
 FROM docker.io/library/debian:trixie-slim
 
-# Install runtime dependencies
+# Install runtime dependencies. poppler-utils (pdftotext, pdfinfo) is the primary PDF text engine
+# (CAT-002); util-linux provides prlimit, which caps every PDF parser child. Without prlimit the
+# service refuses to parse PDFs.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates tzdata wget && rm -rf /var/lib/apt/lists/*
+    ca-certificates tzdata wget poppler-utils util-linux && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
