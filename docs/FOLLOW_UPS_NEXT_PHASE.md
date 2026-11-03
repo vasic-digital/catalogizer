@@ -622,3 +622,13 @@ Found by `scripts/docs/check_md_links.py` (links to documents or assets that do 
 - `docs/deployment/DEPLOYMENT.md`: the table of contents had no dedicated "Environment Configuration" and "SMB Configuration" sections; both entries point to "Production Environment Variables" (the nearest real section). A dedicated SMB configuration section is still unwritten.
 - `README.md` table of contents: "Frontend Documentation", "Media Detection Engine" and "External Providers" had no section in the README; they now point to `docs/architecture/REACT_FRONTEND_GUIDE.md`, `docs/architecture/MEDIA_RECOGNITION_PIPELINE.md` and `docs/ENV_VARIABLES.md` (nearest real documents; a dedicated external-providers guide is not written yet).
 - `docs/CONTRIBUTING.md` had a stray code fence that hid the "Pull Request Process" heading; removed. The issue-template block near "Logs" nests a fence inside a fence and will still render early on GitHub (use a four-backtick outer fence); not changed here.
+
+## Docs link checker review follow-ups (review GO-with-follow-ups, 2026-11-03)
+
+Source: independent Opus review of `scripts/docs/check_md_links.py` (merge 71ab088e). All minor.
+
+1. test-instrumentation: `scripts/docs/tests/test_check_md_links.py` does not cover duplicate-heading `-N` suffixes, emoji/punctuation slugs, reference-style link definitions, setext headings, `--alt-root`, or the BLIND control path. Reviewer mutations M1, M2, M5, M6, M7 survived the tests (M5 only the real scan catches). Add one fixture per case plus a test that a blinded `controls()` exits 2.
+2. test-instrumentation: `CHECK_MD_LINKS_NO_EXISTENCE` is a mutation switch built into the shipped checker; with it set in the environment the pre-flight check passes silently because `controls()` ignores it. Remove the switch (mutate a test copy instead) or make `controls()` refuse when it is set.
+3. process-doc: `scripts/pre-flight-check.sh` hides the BROKEN rows (output to /dev/null) and runs without `--alt-root`, so in a checkout without initialised submodules it fails on 11 submodule-path links. Print the BROKEN rows on failure.
+4. nit: `check_md_links.py` anchor lookup falls back to case-insensitive match; UNCONFIRMED whether GitHub resolves mixed-case fragments that way.
+5. nit: setext heading underline requires `-{2,}`; CommonMark accepts a single `-`.
