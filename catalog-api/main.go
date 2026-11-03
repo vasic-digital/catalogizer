@@ -1263,7 +1263,8 @@ func main() {
 	// revalidate route at 6 requests/minute per client IP so a
 	// runaway operator (or an attacker who bypassed auth) cannot
 	// stampede the provider chain.
-	api.POST("/admin/image-quality/revalidate", root_middleware.RateLimiter(6), func(c *gin.Context) {
+	// Admin-only (review R2 D1/P1): these were reachable by any authenticated user.
+	api.POST("/admin/image-quality/revalidate", jwtMiddleware.RequireAdmin(), root_middleware.RateLimiter(6), func(c *gin.Context) {
 			var req struct {
 				StaleAgeSeconds int `json:"stale_age_seconds"`
 				Limit           int `json:"limit"`
@@ -1304,7 +1305,7 @@ func main() {
 	// Cover art batch generation — creates video-frame thumbnails for items
 	// that don't have cover art yet.  This is useful when external CDNs are
 	// unreachable and the backend must generate its own covers.
-	api.POST("/admin/covers/generate-thumbnails", func(c *gin.Context) {
+	api.POST("/admin/covers/generate-thumbnails", jwtMiddleware.RequireAdmin(), func(c *gin.Context) {
 			var req struct {
 				Limit int `json:"limit" binding:"min=1,max=500"`
 			}

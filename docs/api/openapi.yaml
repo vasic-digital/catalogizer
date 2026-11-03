@@ -4138,7 +4138,7 @@ paths:
             type: integer
       responses:
         '200':
-          description: Job cancelled (body `{"message": "Job deleted successfully"}`)
+          description: 'Job cancelled (body `{"message": "Job deleted successfully"}`)'
           content:
             application/json:
               schema:
@@ -4205,7 +4205,7 @@ paths:
             type: integer
       responses:
         '200':
-          description: Job reset to pending (body `{"message": "Job retry started"}`)
+          description: 'Job reset to pending (body `{"message": "Job retry started"}`)'
         '403':
           description: Not the job owner and no manage permission
           content:
@@ -7107,6 +7107,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden (admin role required)
         '500':
           description: Internal server error
           content:
@@ -7167,6 +7169,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden (admin role required)
         '500':
           description: Internal server error
           content:
