@@ -407,3 +407,15 @@ Tracked follow-ups (status OPEN):
   not trivial and out of scope here; needs its own investigation (§11.4.102). Also pre-existing: 3 eslint warnings in
   `catalog-web/src/e2e-env.test.ts` fail `--max-warnings 0`.
 - `tests/responsive-audit/run.mjs` still hardcodes port 18400 and local paths and is not wired into any gate (F8 rest).
+
+## Runner scripts (CAT-013/014/016) review round 3 follow-ups (GO-with-follow-ups, all minor)
+
+- N1: `go fmt` failure is silent and `go fmt` rewrites files instead of checking (use `gofmt -l`).
+- N2: phase 4 leaves no note when `SKIP_E2E_TESTS=true`.
+- N3: phase 9 failed API-client copy is only a warning.
+- N4: phases 5 and 6 pass when the build copied zero artifacts.
+- T1: report fixture has one pass/skip/fail, so swapped counters in JSON/HTML go unnoticed.
+- T2: no test covers `skipped_list` for SEC, E2E, PERF.
+- T3: no test covers the phase 7 path where the dumpsys call itself fails.
+- Nits: unguarded `cd` in the E2E branch; `redis | grep -q` has the F2 shape (low risk).
+- UNCONFIRMED: adb connect exit semantics. ESLint findings stay non-fatal by policy.
