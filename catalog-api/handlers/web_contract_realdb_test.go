@@ -107,8 +107,9 @@ func TestGetMediaMetadata_SelectsRequestedRowOnly(t *testing.T) {
 	require.NoError(t, err)
 
 	var ids []int64
+	director := "Ridley Scott"
 	for _, title := range []string{"First", "Second", "Third"} {
-		id, err := itemRepo.Create(ctx, &mediaModels.MediaItem{MediaTypeID: typeID, Title: title, Status: "detected"})
+		id, err := itemRepo.Create(ctx, &mediaModels.MediaItem{MediaTypeID: typeID, Title: title, Status: "detected", Genre: []string{"Sci-Fi"}, Director: &director})
 		require.NoError(t, err)
 		ids = append(ids, id)
 	}
@@ -122,6 +123,9 @@ func TestGetMediaMetadata_SelectsRequestedRowOnly(t *testing.T) {
 		assert.Equal(t, want, md.Title)
 		assert.Equal(t, ids[i], md.ID)
 		assert.Equal(t, "movie", md.MediaType)
+		assert.Equal(t, "Ridley Scott", md.Director)
+		assert.Contains(t, md.Genre, "Sci-Fi", "genre must come from the genre column, not director")
+		assert.NotContains(t, md.Genre, "Ridley")
 	}
 
 	_, err = h.getMediaMetadata(ctx, 987654)

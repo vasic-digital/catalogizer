@@ -491,3 +491,13 @@ Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/ap
 
 - R6: docs say every cell of the user/role permission table is "asserted by" the binary contract test; the test only uses `user.*` roles, so single-permission cells (`user.view` only, `user.manage` only) are measured live but not asserted. Add those two roles to the test or soften the wording.
 - R7 (measured): the input validator pattern list is `catalog-api/middleware/input_validation.go:57-66`. On POST /api/v1/users it rejects whole words CREATE, AND, OR, FROM, SLEEP and `--` in ANY string field (password, display_name "Rock and Roll"); `Selection` and `Order-By` pass. Permission names `user.create` fail for the same reason. Under investigation in the login/validator fix.
+
+### Crash-pages fix, round 3 follow-ups
+
+| ID | Item | Where | Why deferred |
+|----|------|-------|--------------|
+| WEB-N3 | Similar items carry a file id built by `generateMediaID` but `EntityDetail` uses it to navigate to `/entity/:id`: it may open the wrong entity. UNCONFIRMED latent | `recommendation_service.go`, `pages/EntityDetail.tsx`, `lib/recommendationsApi.ts` | Needs a reproduction with real media rows; scratch DB has none |
+| WEB-N4 | No test asserts the `genre` field of `getMediaMetadata`; a mutant mapping genre from the director column survives | `handlers/web_contract_realdb_test.go` | Add a seeded-genre assertion |
+| WEB-N5 | `SubtitleService.SearchSubtitles` returns canned "Sample Movie (2024)" results in production (§11.4.289 production mock data) | `internal/services/subtitle_service.go:~485` | Needs real provider integration or removal |
+| WEB-N6 | Subtitle page sends `query`, `limit`, `offset` that the search handler ignores; `/subtitles/media/:id` carries no title/year so the client fills blanks | `handlers/subtitle_handler.go`, `lib/subtitleApi.ts` | Backend contract extension |
+| WEB-N7 | Remaining `omitempty` list/map fields were swept: the unguarded ones consumed by catalog-web were the two subtitle lists (fixed); the others (`audio_tracks`, `chapters`, `cast`, `external_ids`, `metadata`, wizard `fields`) are read behind `x && x.length` guards or are not consumed | `catalog-api/**` | Keep the sweep in the review checklist |

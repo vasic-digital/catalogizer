@@ -24,10 +24,11 @@ describe('subtitles: {success, languages|providers, count}', () => {
 
   it('providers are returned as an array', async () => {
     restore = installRealApi({
-      '/subtitles/providers': { success: true, count: 1, providers: [{ name: 'opensubtitles' }] },
+      '/subtitles/providers': { success: true, count: 1, providers: [{ provider: 'opensubtitles', name: 'OpenSubtitles', description: 'd', supported: true }] },
     })
     const p = await subtitleApi.getSupportedProviders()
-    expect(p.map((x) => x.name)).toEqual(['opensubtitles'])
+    // page keys/toggles by `name`, labels with `display_name`, disables when !enabled
+    expect(p).toMatchObject([{ name: 'opensubtitles', display_name: 'OpenSubtitles', enabled: true }])
   })
 
   it('null lists become []', async () => {
@@ -94,5 +95,56 @@ describe('smb: null / non-array 200', () => {
     expect(await smbApi.discover()).toEqual([])
     expect(await smbApi.discoverGet()).toEqual([])
     expect(await smbApi.browse({ host: 'h', share: 's' })).toEqual([])
+  })
+})
+
+describe('subtitles: omitted empty lists and field names (round 3)', () => {
+  it('getMediaSubtitles: omitted `subtitles` becomes [] and media_id is mapped', async () => {
+    restore = installRealApi({ '/subtitles/media/7': { success: true, media_item_id: 7 } })
+    const info = await subtitleApi.getMediaSubtitles(7)
+    expect(info.subtitles).toEqual([])
+    expect(info.media_id).toBe(7)
+  })
+
+  it('getMediaSubtitles keeps real tracks', async () => {
+    restore = installRealApi({ '/subtitles/media/7': { success: true, media_item_id: 7, subtitles: [{ id: 's1', language: 'en' }] } })
+    const info = await subtitleApi.getMediaSubtitles(7)
+    expect(info.subtitles.map((s) => s.id)).toEqual(['s1'])
+  })
+
+  it('searchSubtitles: omitted `results` becomes [] and `count` maps to total', async () => {
+    restore = installRealApi({ '/subtitles/search': { success: true, count: 0 } })
+    const r = await subtitleApi.searchSubtitles({ media_path: '/x' } as never)
+    expect(r.results).toEqual([])
+    expect(r.total).toBe(0)
+  })
+
+  it('searchSubtitles: count wins when present, results kept', async () => {
+    restore = installRealApi({ '/subtitles/search': { success: true, count: 2, results: [{ id: 'a' }, { id: 'b' }] } })
+    const r = await subtitleApi.searchSubtitles({ media_path: '/x' } as never)
+    expect(r.results).toHaveLength(2)
+    expect(r.total).toBe(2)
+  })
+
+  it('searchSubtitles: total is the backend count even when it exceeds the page', async () => {
+    restore = installRealApi({ '/subtitles/search': { success: true, count: 5, results: [{ id: 'a' }, { id: 'b' }] } })
+    const r = await subtitleApi.searchSubtitles({ media_path: '/x' } as never)
+    expect(r.total).toBe(5)
+  })
+
+  it('search results: language_code/language map to language/language_name', async () => {
+    restore = installRealApi({
+      '/subtitles/search': { success: true, count: 1, results: [{ id: 'o1', provider: 'opensubtitles', language: 'English', language_code: 'en', title: 'T', download_url: 'u' }] },
+    })
+    const r = await subtitleApi.searchSubtitles({ media_path: '/x' } as never)
+    expect(r.results[0]).toMatchObject({ id: 'o1', language: 'en', language_name: 'English', hearing_impaired: false })
+  })
+
+  it('media tracks: language_code/language/source map to language/language_name/provider', async () => {
+    restore = installRealApi({
+      '/subtitles/media/7': { success: true, media_item_id: 7, subtitles: [{ id: 't1', language: 'English', language_code: 'en', source: 'downloaded', format: 'srt', encoding: 'utf-8', sync_offset: 0 }] },
+    })
+    const info = await subtitleApi.getMediaSubtitles(7)
+    expect(info.subtitles[0]).toMatchObject({ id: 't1', language: 'en', language_name: 'English', provider: 'downloaded', format: 'srt' })
   })
 })

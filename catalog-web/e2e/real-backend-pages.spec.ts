@@ -52,6 +52,37 @@ test.describe('catalog-web pages against a real backend', () => {
     });
   }
 
+  // Hybrid: only GET /media/search is answered in the browser (the scratch DB has no
+  // media rows); every /subtitles/* call goes to the real catalog-api, which omits
+  // empty lists ({"success":true,"media_item_id":7} / {"success":true,"count":0}).
+  test('/subtitles: media without subtitles and a zero-result search do not crash', async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (e) => pageErrors.push(e.message));
+    await page.route('**/api/v1/media/search*', (route) =>
+      route.fulfill({
+        json: {
+          items: [{ id: 7, title: 'Blade Runner', media_type: 'movie', year: 1982, directory_path: '/x/blade', quality: '1080p' }],
+          total: 1, limit: 10, offset: 0,
+        },
+      }));
+    await login(page);
+    await navigate(page, '/subtitles');
+    await page.getByRole('button', { name: /select media/i }).click();
+    await page.getByPlaceholder(/search for movies/i).fill('blade');
+    await page.getByText('Blade Runner').first().click();
+    await expect(page.getByText('Something went wrong')).toHaveCount(0);
+    await expect(page.getByText(/Subtitles for/)).toBeVisible();
+    await expect(page.getByText('No subtitles found for this media item')).toBeVisible();
+    // zero-result search through the real backend (provider with no results)
+    await page.getByRole('button', { name: /filters/i }).click();
+    await page.getByRole('button', { name: 'SubDB' }).click();
+    await page.getByPlaceholder(/search subtitles for/i).fill('blade');
+    await page.getByRole('button', { name: /^search$/i }).click();
+    await expect(page.getByText(/Search Results \(0 found\)/)).toBeVisible();
+    await expect(page.getByText('Something went wrong')).toHaveCount(0);
+    expect(pageErrors).toEqual([]);
+  });
+
   test('a hard reload of a protected page keeps the session (no bounce to /login)', async ({ page }) => {
     await login(page);
     await page.goto('/collections');
