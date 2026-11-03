@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -165,6 +166,11 @@ func TestRoutePerms_RealBinary_LocalRootConfinement(t *testing.T) {
 	}
 	for i, bad := range []string{"/etc", "/", filepath.Join(media, "..", "etc"), "relative/dir", filepath.Join(media, "movies") + "/../../.."} {
 		code, raw := create(fmt.Sprintf("p2out%d", i), bad)
+		if strings.Contains(bad, "..") {
+			// the input-validation middleware rejects ".." in a path field before the handler (400); either way it is refused
+			assert.Contains(t, []int{400, 403}, code, "local root %q must be refused: %s", bad, raw)
+			continue
+		}
 		assert.Equal(t, 403, code, "local root %q outside the configured base must be refused: %s", bad, raw)
 	}
 	// a symlink inside the base that points outside must be refused too

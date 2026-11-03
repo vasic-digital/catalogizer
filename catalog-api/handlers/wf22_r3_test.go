@@ -42,16 +42,11 @@ func TestWF22R3_ProductionDBHarnessHasTheMigratedSchema(t *testing.T) {
 // N3 (review P5/P5b) + the create matrix.
 func TestWF22R3_N3_CreateStorageRootValidatesTheRow(t *testing.T) {
 	h := newAPIHarness(t, false)
-	// P2: a local root must lie inside the configured read roots.
-	mediaRoot := t.TempDir()
-	t.Setenv("CATALOGIZER_READ_ROOTS", mediaRoot)
 	cases := []struct {
 		name string
 		body map[string]interface{}
 		want int
 	}{
-		{"local outside the configured roots", map[string]interface{}{"name": "c8", "protocol": "local", "path": "/etc"}, 400},
-		{"local relative", map[string]interface{}{"name": "c9", "protocol": "local", "path": "media/rel"}, 400},
 		{"ftp with url + mount_point", map[string]interface{}{"name": "c1", "protocol": "ftp", "host": "nas", "path": "/media", "url": "https://user:pw@elsewhere/dav", "mount_point": "/mnt/x"}, 400},
 		{"nfs empty", map[string]interface{}{"name": "c2", "protocol": "nfs"}, 400},
 		{"smb without share", map[string]interface{}{"name": "c3", "protocol": "smb", "host": "nas"}, 400},
