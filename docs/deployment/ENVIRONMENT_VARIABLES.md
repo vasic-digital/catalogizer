@@ -69,6 +69,17 @@ These variables are read by the Go backend via `os.Getenv()` calls in the source
 | `CATALOG_CONFIG_PATH` | Path to `config.json` file | `config.json` | No | `internal/config/config.go` |
 | `CONFIG_PATH` | Configuration file path (wizard service) | (empty) | No | `services/configuration_wizard_service.go` |
 
+### Path confinement and outbound destinations
+
+| Variable | Description | Default | Required | Source File |
+|----------|-------------|---------|----------|-------------|
+| `CATALOGIZER_READ_ROOTS` | Colon-separated absolute directories the server may read from request-named paths (local storage roots, sync upload sources, conversion input). Replaces the default when set | `MEDIA_ROOT_PATH` + `./data` | No | `internal/pathguard/roots.go` |
+| `CATALOGIZER_SYNC_ROOTS` | Directories sync downloads / destinations may write to | `./data` | No | `internal/pathguard/roots.go` |
+| `CATALOGIZER_CONVERSION_ROOTS` | Directories conversion output may be written to | `./data` | No | `internal/pathguard/roots.go` |
+| `CATALOGIZER_OUTBOUND_ALLOW_CIDRS` | Comma-separated networks (e.g. `192.168.1.0/24`) the server may connect to even though they are private or loopback, for sync endpoints on a LAN NAS. Link-local / metadata addresses are never admitted. Invalid entries allow nothing | (empty: private ranges refused) | No | `internal/netguard/netguard.go` |
+
+See `docs/security/PATH_CONFINEMENT.md`.
+
 ### SMB and Media
 
 | Variable | Description | Default | Required | Source File |

@@ -114,7 +114,7 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 	// MEDIA_ROOT_PATH, ./data), symlinks resolved, or it is refused (P2). The check
 	// runs after ValidateRoot so a missing path is already a 400 of its own.
 	if req.Protocol == "local" && req.Path != nil {
-		resolved, cerr := pathguard.Confine(*req.Path, pathguard.ReadRoots())
+		resolved, cerr := pathguard.ConfineData(*req.Path, pathguard.ReadRoots())
 		if cerr != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "local storage root must be an absolute path inside the configured media roots (set MEDIA_ROOT_PATH or CATALOGIZER_READ_ROOTS)",

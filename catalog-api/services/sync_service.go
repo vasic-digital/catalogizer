@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"catalogizer/internal/logging"
+	"catalogizer/internal/netguard"
 	"catalogizer/internal/pathguard"
 	"catalogizer/models"
 	"catalogizer/repository"
@@ -120,6 +121,7 @@ func (s *SyncService) UpdateEndpoint(endpointID int, userID int, updates *models
 
 	if updates.URL != "" {
 		endpoint.URL = updates.URL
+		delete(s.webdavClients, endpoint.ID) // never keep a client built for the old URL
 	}
 
 	if updates.Username != "" {
@@ -1268,6 +1270,16 @@ func (s *SyncService) validateSyncEndpoint(endpoint *models.SyncEndpoint) error 
 		return fmt.Errorf("invalid sync type: %s", endpoint.Type)
 	}
 
+	// The server connects to this URL: refuse loopback, private, link-local and other
+	// internal destinations, checked after name resolution (review round 1, F3).
+	if endpoint.Type == models.SyncTypeWebDAV || endpoint.Type == models.SyncTypeCloudStorage {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if _, err := netguard.CheckURL(ctx, endpoint.URL, "http", "https"); err != nil {
+			return fmt.Errorf("invalid endpoint URL: %w", err)
+		}
+	}
+
 	validDirections := []string{models.SyncDirectionUpload, models.SyncDirectionDownload, models.SyncDirectionBidirectional}
 	if !s.isValidType(endpoint.SyncDirection, validDirections) {
 		return fmt.Errorf("invalid sync direction: %s", endpoint.SyncDirection)
@@ -1304,7 +1316,12 @@ func (s *SyncService) getWebDAVClient(endpoint *models.SyncEndpoint) (*WebDAVCli
 	}
 
 	client := NewWebDAVClient(endpoint.URL, endpoint.Username, endpoint.Password)
-	s.webdavClients[endpoint.ID] = client
+	// Every WebDAV request is dialled through the SSRF guard (resolved address checked
+	// and pinned), also for endpoints stored before the URL validation existed.
+	client.client.SetTransport(netguard.Transport())
+	if endpoint.ID != 0 { // a not-yet-stored endpoint (ID 0) must never be cached under 0
+		s.webdavClients[endpoint.ID] = client
+	}
 
 	return client, nil
 }

@@ -349,6 +349,30 @@ error (`webdav listing exceeded its limit: ...`); a partial listing is never ret
 bounded only the depth and swallowed sub-listing errors: a server reporting two sub-collections per collection
 could still force about 2^33 requests, so the round-1 commit message's "bounded" was not true for breadth.
 
+## Local storage roots and outbound destinations (fix-p2-route-perms, review round 1)
+
+* `POST /api/v1/storage/roots` with `protocol: local` accepts only an absolute path that resolves, after symlinks,
+  inside `CATALOGIZER_READ_ROOTS` (`MEDIA_ROOT_PATH`, `./data` by default) and is not a protected application file:
+  the handler uses `pathguard.ConfineData`, so the database, its SQLite companions (`-wal`, `-shm`, `-journal`), the
+  key file and any directory that contains one of them are refused with 400. `/etc`, `/`, relative paths and symlink
+  escapes are refused with 400 as well. Real-binary tests:
+  `TestRoutePerms_RealBinary_LocalRootConfinement`, `TestRoutePerms_RealBinary_LocalRootRefusesProtectedFiles`.
+  Roots stored before this fix are not re-validated at scan time (tracked follow-up P2-f).
+* Server-side requests to a URL a caller names (sync endpoints of type `webdav` / `cloud_storage`, the public image
+  proxy) go through `internal/netguard`: the host is resolved, loopback / private / link-local (cloud metadata) /
+  carrier-grade-NAT / unspecified / multicast / reserved addresses are refused, and the connection is dialled to the
+  address that was checked (pinned), so a name that resolves differently a second time cannot reach an internal
+  service. A sync endpoint URL that fails the check is refused with 400 (`invalid endpoint URL`), and every WebDAV
+  request of a stored endpoint uses the same guarded transport. Environment proxies are not used.
+* Operators who sync to a NAS on their LAN list the networks they accept in `CATALOGIZER_OUTBOUND_ALLOW_CIDRS`
+  (comma separated, for example `192.168.1.0/24`). That list can re-admit loopback, private and carrier-grade-NAT
+  ranges only; link-local (the metadata address 169.254.169.254), unspecified, multicast and broadcast addresses
+  stay refused whatever it says. An invalid entry allows nothing.
+* The image proxy accepts `https` URLs only, with no credentials, port 443 only, whose parsed host is EXACTLY
+  `image.tmdb.org`, `img.omdbapi.com` or `images.igdb.com`; a redirect is followed only to another URL that passes
+  the same test. Honest limit: when a SOCKS5 or HTTP proxy is configured in `proxy.*`, the proxy resolves the
+  target and the private-address check cannot see it; the exact host allow-list still applies.
+
 ## Upgrade impact
 
 * Sync endpoints and pending conversion jobs stored before this change are re-checked when they RUN

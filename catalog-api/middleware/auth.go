@@ -264,6 +264,28 @@ func (m *JWTMiddleware) RequirePermission(permission string) gin.HandlerFunc {
 	}
 }
 
+// RequireSelfOrAdmin admits the caller when the URL parameter param names their
+// own user id, or when they are an administrator (decided like RequireAdmin). Any
+// other caller gets 403 so that /analytics/user/:id style routes cannot be used to
+// read another account's data (review round 1, F5). MUST be installed AFTER RequireAuth.
+func (m *JWTMiddleware) RequireSelfOrAdmin(param string) gin.HandlerFunc {
+	admin := m.RequireAdmin()
+	return func(c *gin.Context) {
+		if _, exists := c.Get("role_id"); !exists {
+			utils.SendErrorResponse(c, http.StatusUnauthorized, "Authentication required", nil)
+			c.Abort()
+			return
+		}
+		if uid, ok := c.Get("user_id"); ok {
+			if userID, isInt := uid.(int); isInt && c.Param(param) == strconv.Itoa(userID) {
+				c.Next()
+				return
+			}
+		}
+		admin(c)
+	}
+}
+
 // GenerateToken generates a new JWT token
 func (m *JWTMiddleware) GenerateToken(username, userID string, expirationHours int) (string, error) {
 	claims := &Claims{

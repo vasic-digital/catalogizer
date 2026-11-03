@@ -21,6 +21,7 @@ import (
 	"catalogizer/internal/pathguard"
 	"catalogizer/internal/services"
 	root_middleware "catalogizer/middleware"
+	"catalogizer/internal/netguard"
 	"catalogizer/models"
 	root_repository "catalogizer/repository"
 	root_services "catalogizer/services"
@@ -1140,21 +1141,17 @@ func main() {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "url parameter required"})
 			return
 	}
-	// Only allow known image CDN domains
-	allowed := false
-	for _, domain := range []string{"image.tmdb.org", "img.omdbapi.com", "images.igdb.com"} {
-			if strings.Contains(imageURL, domain) {
-				allowed = true
-				break
-			}
-	}
-	if !allowed {
+	// Exact parsed-host match, https only (review round 1, F4): a substring test let
+	// http://127.0.0.1/internal?x=image.tmdb.org through.
+	parsedImage, perr := validateImageProxyURL(imageURL)
+	if perr != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": "domain not allowed"})
 			return
 	}
+	imageURL = parsedImage.String()
 
 	// Build a proxy client that can work around DNS hijacking.
-	proxyClient := buildImageProxyClient(imageURL, cfg.Proxy)
+	proxyClient := newImageProxyClient(imageURL, cfg.Proxy)
 	resp, err := proxyClient.Get(imageURL)
 	if err != nil || resp.StatusCode != http.StatusOK {
 			if resp != nil && resp.Body != nil {
@@ -1338,7 +1335,7 @@ func main() {
 	{
 			recGroup.GET("/similar/:media_id", func(c *gin.Context) { getRecommendationHandler().GetSimilarItems(c) })
 			recGroup.GET("/trending", func(c *gin.Context) { getRecommendationHandler().GetTrendingItems(c) })
-			recGroup.GET("/personalized/:user_id", func(c *gin.Context) { getRecommendationHandler().GetPersonalizedRecommendations(c) })
+			recGroup.GET("/personalized/:user_id", jwtMiddleware.RequireSelfOrAdmin("user_id"), func(c *gin.Context) { getRecommendationHandler().GetPersonalizedRecommendations(c) })
 	}
 
 	// Subtitle endpoints (lazy — handler initialized on first request)
@@ -1481,16 +1478,18 @@ func main() {
 	}
 
 	// Configuration endpoints
+	// Wizard writes reach config.json and probe hosts: system.configure (or admin) only.
+	configGate := jwtMiddleware.RequirePermission(models.PermissionSystemConfig)
 	configGroup := api.Group("/configuration")
 	{
 			configGroup.GET("", wrap(configurationHandler.GetConfiguration))
 			configGroup.POST("/test", wrap(configurationHandler.TestConfiguration))
 			configGroup.GET("/status", wrap(configurationHandler.GetSystemStatus))
 			configGroup.GET("/wizard/step/:step_id", wrap(configurationHandler.GetWizardStep))
-			configGroup.POST("/wizard/step/:step_id/validate", wrap(configurationHandler.ValidateWizardStep))
-			configGroup.POST("/wizard/step/:step_id/save", wrap(configurationHandler.SaveWizardProgress))
+			configGroup.POST("/wizard/step/:step_id/validate", configGate, wrap(configurationHandler.ValidateWizardStep))
+			configGroup.POST("/wizard/step/:step_id/save", configGate, wrap(configurationHandler.SaveWizardProgress))
 			configGroup.GET("/wizard/progress", wrap(configurationHandler.GetWizardProgress))
-			configGroup.POST("/wizard/complete", wrap(configurationHandler.CompleteWizard))
+			configGroup.POST("/wizard/complete", configGate, wrap(configurationHandler.CompleteWizard))
 	}
 
 	// Error reporting endpoints
@@ -1595,8 +1594,8 @@ func main() {
 	{
 			analyticsGroup.POST("/access", analyticsHandler.LogMediaAccess)
 			analyticsGroup.POST("/event", analyticsHandler.LogEvent)
-			analyticsGroup.GET("/user/:user_id", analyticsHandler.GetUserAnalytics)
-			analyticsGroup.GET("/system", analyticsHandler.GetSystemAnalytics)
+			analyticsGroup.GET("/user/:user_id", jwtMiddleware.RequireSelfOrAdmin("user_id"), analyticsHandler.GetUserAnalytics)
+			analyticsGroup.GET("/system", jwtMiddleware.RequireAdmin(), analyticsHandler.GetSystemAnalytics)
 			analyticsGroup.GET("/media/:media_id", analyticsHandler.GetMediaAnalytics)
 			analyticsGroup.POST("/reports", analyticsHandler.CreateReport)
 	}
@@ -1604,8 +1603,8 @@ func main() {
 	// Reporting endpoints
 	reportingGroup := api.Group("/reports")
 	{
-			reportingGroup.GET("/usage", reportingHandler.GetUsageReport)
-			reportingGroup.GET("/performance", reportingHandler.GetPerformanceReport)
+			reportingGroup.GET("/usage", jwtMiddleware.RequireAdmin(), reportingHandler.GetUsageReport)
+			reportingGroup.GET("/performance", jwtMiddleware.RequireAdmin(), reportingHandler.GetPerformanceReport)
 	}
 
 	// Favorites endpoints
@@ -1642,17 +1641,17 @@ func main() {
 	// Sync endpoints (lazy — handler initialized on first request)
 	syncGroup := api.Group("/sync")
 	{
-			syncGroup.POST("/endpoints", func(c *gin.Context) { getSyncHandler().CreateEndpoint(c) })
+			syncGroup.POST("/endpoints", storageGate, func(c *gin.Context) { getSyncHandler().CreateEndpoint(c) })
 			syncGroup.GET("/endpoints", func(c *gin.Context) { getSyncHandler().GetUserEndpoints(c) })
 			syncGroup.GET("/endpoints/:id", func(c *gin.Context) { getSyncHandler().GetEndpoint(c) })
-			syncGroup.PUT("/endpoints/:id", func(c *gin.Context) { getSyncHandler().UpdateEndpoint(c) })
-			syncGroup.DELETE("/endpoints/:id", func(c *gin.Context) { getSyncHandler().DeleteEndpoint(c) })
-			syncGroup.POST("/endpoints/:id/sync", func(c *gin.Context) { getSyncHandler().StartSync(c) })
+			syncGroup.PUT("/endpoints/:id", storageGate, func(c *gin.Context) { getSyncHandler().UpdateEndpoint(c) })
+			syncGroup.DELETE("/endpoints/:id", storageGate, func(c *gin.Context) { getSyncHandler().DeleteEndpoint(c) })
+			syncGroup.POST("/endpoints/:id/sync", storageGate, func(c *gin.Context) { getSyncHandler().StartSync(c) })
 			syncGroup.GET("/sessions", func(c *gin.Context) { getSyncHandler().GetUserSessions(c) })
 			syncGroup.GET("/sessions/:id", func(c *gin.Context) { getSyncHandler().GetSession(c) })
-			syncGroup.POST("/schedules", func(c *gin.Context) { getSyncHandler().ScheduleSync(c) })
+			syncGroup.POST("/schedules", storageGate, func(c *gin.Context) { getSyncHandler().ScheduleSync(c) })
 			syncGroup.GET("/statistics", func(c *gin.Context) { getSyncHandler().GetSyncStatistics(c) })
-			syncGroup.POST("/cleanup", func(c *gin.Context) { getSyncHandler().CleanupOldSessions(c) })
+			syncGroup.POST("/cleanup", jwtMiddleware.RequireAdmin(), func(c *gin.Context) { getSyncHandler().CleanupOldSessions(c) })
 	}
 
 	// Challenge endpoints
@@ -2260,6 +2259,7 @@ func buildImageProxyClient(imageURL string, proxyCfg root_config.ProxyConfig) *h
 
 	ips := resolveHostDynamic(host)
 	if len(ips) == 0 {
+	transport.DialContext = netguard.DialContext // checked + pinned
 	return &http.Client{Timeout: 15 * time.Second, Transport: transport}
 	}
 
@@ -2271,6 +2271,10 @@ func buildImageProxyClient(imageURL string, proxyCfg root_config.ProxyConfig) *h
 	}
 	var lastErr error
 	for _, ip := range ips {
+			if netguard.IsBlockedIP(net.ParseIP(ip)) {
+				lastErr = fmt.Errorf("%w: %s", netguard.ErrBlocked, ip)
+				continue
+			}
 			conn, err := dialer.DialContext(ctx, network, net.JoinHostPort(ip, port))
 			if err == nil {
 				return conn, nil
@@ -2280,4 +2284,43 @@ func buildImageProxyClient(imageURL string, proxyCfg root_config.ProxyConfig) *h
 	return nil, lastErr
 	}
 	return &http.Client{Timeout: 15 * time.Second, Transport: transport}
+}
+
+// imageProxyHosts is the exact set of CDN hosts the public image proxy may fetch from.
+var imageProxyHosts = map[string]bool{"image.tmdb.org": true, "img.omdbapi.com": true, "images.igdb.com": true}
+
+// validateImageProxyURL accepts only https://<allow-listed host>[:443]/... with no
+// credentials: the host is compared as parsed, never as a substring of the raw string.
+func validateImageProxyURL(raw string) (*url.URL, error) {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return nil, err
+	}
+	if u.Scheme != "https" || u.User != nil || !imageProxyHosts[strings.ToLower(u.Hostname())] {
+		return nil, fmt.Errorf("image proxy: destination not allowed")
+	}
+	if port := u.Port(); port != "" && port != "443" {
+		return nil, fmt.Errorf("image proxy: destination not allowed")
+	}
+	u.Host = strings.ToLower(u.Host)
+	return u, nil
+}
+
+// imageRedirectOK allows a redirect only to another allow-listed https URL.
+func imageRedirectOK(u *url.URL) bool {
+	_, err := validateImageProxyURL(u.String())
+	return err == nil
+}
+
+// newImageProxyClient is buildImageProxyClient plus a redirect policy: a response from
+// an allow-listed host may only redirect to another allow-listed https URL.
+func newImageProxyClient(imageURL string, proxyCfg root_config.ProxyConfig) *http.Client {
+	cl := buildImageProxyClient(imageURL, proxyCfg)
+	cl.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if len(via) > 3 || !imageRedirectOK(req.URL) {
+			return http.ErrUseLastResponse
+		}
+		return nil
+	}
+	return cl
 }

@@ -53,7 +53,14 @@ var storageRoutes = []permRoute{
 
 func startPermServer(t *testing.T, readRoot string) (*apiClient, string, func()) {
 	t.Helper()
-	dir := t.TempDir()
+	c, adm, _, stop := startPermServerDir(t, t.TempDir(), readRoot)
+	return c, adm, stop
+}
+
+// startPermServerDir runs the server with cwd == dir (so ./data/catalogizer.db and
+// keys/db.key live below dir) and returns dir for tests that aim at those files.
+func startPermServerDir(t *testing.T, dir, readRoot string, extraEnv ...string) (*apiClient, string, string, func()) {
+	t.Helper()
 	bin := filepath.Join(dir, "catalog-api")
 	if out, err := exec.Command("go", "build", "-buildvcs=false", "-o", bin, ".").CombinedOutput(); err != nil {
 		t.Fatalf("build failed: %v\n%s", err, out)
@@ -64,10 +71,10 @@ func startPermServer(t *testing.T, readRoot string) (*apiClient, string, func())
 	ln.Close()
 	b := &binEnv{t: t, bin: bin, dir: dir, port: port}
 	const adminPw = "Op3rator-Supplied-Value-9x"
-	cmd, done, out := b.start("GIN_MODE=release", "ADMIN_PASSWORD="+adminPw, "CATALOGIZER_READ_ROOTS="+readRoot)
+	cmd, done, out := b.start(append([]string{"GIN_MODE=release", "ADMIN_PASSWORD=" + adminPw, "CATALOGIZER_READ_ROOTS=" + readRoot}, extraEnv...)...)
 	require.True(t, b.waitHealthy(done), "server must come up:\n%s", out.String())
 	c := &apiClient{t: t, base: fmt.Sprintf("http://127.0.0.1:%d", port)}
-	return c, c.login("admin", adminPw), func() { b.stop(cmd, done) }
+	return c, c.login("admin", adminPw), dir, func() { b.stop(cmd, done) }
 }
 
 func selfRegister(t *testing.T, c *apiClient, name string) string {
@@ -175,4 +182,56 @@ func TestRoutePerms_RealBinary_LocalRootConfinement(t *testing.T) {
 	assert.Equal(t, 201, code, "%s", raw)
 	var m map[string]interface{}
 	require.NoError(t, json.Unmarshal([]byte(raw), &m))
+
+	// N2: the stored path is the RESOLVED one. A symlink inside the base that points at
+	// another directory inside the base is accepted, but the database holds the target, so
+	// swapping the link afterwards cannot redirect the scanner (F8).
+	real := filepath.Join(media, "real")
+	require.NoError(t, os.MkdirAll(real, 0o755))
+	require.NoError(t, os.Symlink(real, filepath.Join(media, "link")))
+	code, raw = create("p2link", filepath.Join(media, "link"))
+	require.Equal(t, 201, code, "%s", raw)
+	code, raw2 := c.do("GET", "/api/v1/storage/roots", adm, nil)
+	require.Equal(t, 200, code, "%s", raw2)
+	var listed map[string]interface{}
+	require.NoError(t, json.Unmarshal(raw2, &listed))
+	var stored string
+	for _, r := range listed["roots"].([]interface{}) {
+		if rm := r.(map[string]interface{}); rm["name"] == "p2link" {
+			stored, _ = rm["path"].(string)
+		}
+	}
+	resolvedReal, err := filepath.EvalSymlinks(real)
+	require.NoError(t, err)
+	assert.Equal(t, resolvedReal, stored, "the resolved path, not the symlink, must be stored: %s", raw2)
+}
+
+// F2: a local storage root must not be (or contain, or lie under) the application database,
+// its SQLite companions or the key file, even when it is inside an allowed read root.
+func TestRoutePerms_RealBinary_LocalRootRefusesProtectedFiles(t *testing.T) {
+	if testing.Short() {
+		t.Skip("builds and runs the server binary")
+	}
+	dir := t.TempDir()
+	c, adm, _, stop := startPermServerDir(t, dir, dir)
+	defer stop()
+	require.FileExists(t, filepath.Join(dir, "catalog.db"), "server must have created its database")
+	cases := map[string]string{
+		"dir containing the db":      dir,
+		"db file":                    filepath.Join(dir, "catalog.db"),
+		"wal companion":              filepath.Join(dir, "catalog.db-wal"),
+		"shm companion":              filepath.Join(dir, "catalog.db-shm"),
+		"key dir (contains the key)": filepath.Join(dir, "keys"),
+		"key file":                   filepath.Join(dir, "keys", "db.key"),
+	}
+	i := 0
+	for name, p := range cases {
+		i++
+		code, raw := c.do("POST", "/api/v1/storage/roots", adm, map[string]interface{}{"name": fmt.Sprintf("prot%d", i), "protocol": "local", "path": p})
+		assert.Equal(t, 400, code, "%s (%s) must be refused: %s", name, p, raw)
+	}
+	other := filepath.Join(dir, "movies")
+	require.NoError(t, os.MkdirAll(other, 0o755))
+	code, raw := c.do("POST", "/api/v1/storage/roots", adm, map[string]interface{}{"name": "okroot", "protocol": "local", "path": other})
+	assert.Equal(t, 201, code, "an ordinary directory must still be accepted: %s", raw)
 }

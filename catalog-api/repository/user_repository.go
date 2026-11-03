@@ -245,18 +245,23 @@ func (r *UserRepository) livePermissions(ctx context.Context, userID int) (perms
 	var (
 		isActive        bool
 		permissionsJSON sql.NullString
+		isLocked        bool
+		lockedUntil     *time.Time
 	)
 	qerr := r.db.QueryRowContext(ctx, `
-		SELECT u.is_active, ro.permissions
+		SELECT u.is_active, ro.permissions, u.is_locked, u.locked_until
 		FROM users u JOIN roles ro ON ro.id = u.role_id
-		WHERE u.id = ?`, userID).Scan(&isActive, &permissionsJSON)
+		WHERE u.id = ?`, userID).Scan(&isActive, &permissionsJSON, &isLocked, &lockedUntil)
 	if qerr != nil {
 		if qerr == sql.ErrNoRows {
 			return nil, false, nil // unknown user or dangling role
 		}
 		return nil, false, fmt.Errorf("failed to resolve permissions: %w", qerr)
 	}
-	if !isActive || !permissionsJSON.Valid {
+	// A locked account (permanent, or with an unexpired locked_until) is as unentitled as
+	// a deactivated one, exactly as at login (User.CanLogin) - review round 1, F11.
+	locked := (&models.User{IsLocked: isLocked, LockedUntil: lockedUntil}).IsAccountLocked()
+	if !isActive || locked || !permissionsJSON.Valid {
 		return nil, false, nil
 	}
 	if uerr := json.Unmarshal([]byte(permissionsJSON.String), &perms); uerr != nil {

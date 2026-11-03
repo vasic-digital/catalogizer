@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
@@ -32,7 +33,7 @@ func TestUserRepository_HasPermission(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			repo, mock := newMockUserRepo(t)
-			mock.ExpectQuery(permQuery).WithArgs(7).WillReturnRows(sqlmock.NewRows([]string{"is_active", "permissions"}).AddRow(c.active, c.perms))
+			mock.ExpectQuery(permQuery).WithArgs(7).WillReturnRows(sqlmock.NewRows([]string{"is_active", "permissions", "is_locked", "locked_until"}).AddRow(c.active, c.perms, false, nil))
 			got, err := repo.HasPermission(context.Background(), 7, c.permission)
 			require.NoError(t, err)
 			assert.Equal(t, c.want, got)
@@ -43,7 +44,7 @@ func TestUserRepository_HasPermission(t *testing.T) {
 
 func TestUserRepository_HasPermission_UnknownUserAndFailuresFailClosed(t *testing.T) {
 	repo, mock := newMockUserRepo(t)
-	mock.ExpectQuery(permQuery).WithArgs(9).WillReturnRows(sqlmock.NewRows([]string{"is_active", "permissions"}))
+	mock.ExpectQuery(permQuery).WithArgs(9).WillReturnRows(sqlmock.NewRows([]string{"is_active", "permissions", "is_locked", "locked_until"}))
 	got, err := repo.HasPermission(context.Background(), 9, "storage.manage")
 	require.NoError(t, err)
 	assert.False(t, got, "unknown user or dangling role is not entitled")
@@ -55,8 +56,42 @@ func TestUserRepository_HasPermission_UnknownUserAndFailuresFailClosed(t *testin
 	assert.False(t, got)
 
 	repo, mock = newMockUserRepo(t)
-	mock.ExpectQuery(permQuery).WithArgs(9).WillReturnRows(sqlmock.NewRows([]string{"is_active", "permissions"}).AddRow(true, `not json`))
+	mock.ExpectQuery(permQuery).WithArgs(9).WillReturnRows(sqlmock.NewRows([]string{"is_active", "permissions", "is_locked", "locked_until"}).AddRow(true, `not json`, false, nil))
 	got, err = repo.HasPermission(context.Background(), 9, "storage.manage")
 	assert.Error(t, err)
 	assert.False(t, got)
+}
+
+// F11: a locked account is refused like a deactivated one (permanent lock, or lock with an
+// unexpired locked_until); an expired lock no longer blocks. Applies to IsAdmin too.
+func TestUserRepository_HasPermission_LockedAccount(t *testing.T) {
+	future := time.Now().Add(time.Hour)
+	past := time.Now().Add(-time.Hour)
+	cases := []struct {
+		name   string
+		locked bool
+		until  interface{}
+		want   bool
+	}{
+		{"permanent lock", true, nil, false},
+		{"lock not yet expired", true, future, false},
+		{"lock expired", true, past, true},
+		{"not locked, stale locked_until", false, future, true},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			repo, mock := newMockUserRepo(t)
+			rows := func() *sqlmock.Rows {
+				return sqlmock.NewRows([]string{"is_active", "permissions", "is_locked", "locked_until"}).AddRow(true, `["*"]`, c.locked, c.until)
+			}
+			mock.ExpectQuery(permQuery).WithArgs(7).WillReturnRows(rows())
+			got, err := repo.HasPermission(context.Background(), 7, "storage.manage")
+			require.NoError(t, err)
+			assert.Equal(t, c.want, got)
+			mock.ExpectQuery(permQuery).WithArgs(7).WillReturnRows(rows())
+			adm, err := repo.IsAdmin(context.Background(), 7)
+			require.NoError(t, err)
+			assert.Equal(t, c.want, adm, "IsAdmin must agree")
+		})
+	}
 }
