@@ -30,6 +30,10 @@ var round1Cases = []permCase{
 	{"POST", "/api/v1/sync/schedules", ""},
 	// F6, F7: system-wide data and maintenance: admin only.
 	{"GET", "/api/v1/analytics/system", ""},
+	// F-R1: report generation and per-media aggregates reach the same
+	// system-wide aggregates (GetSystemAnalytics, top media, device mix).
+	{"POST", "/api/v1/analytics/reports", ""},
+	{"GET", "/api/v1/analytics/media/1", ""},
 	{"GET", "/api/v1/reports/usage", ""},
 	{"GET", "/api/v1/reports/performance", ""},
 	{"POST", "/api/v1/sync/cleanup", ""},

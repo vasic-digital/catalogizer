@@ -1589,8 +1589,8 @@ func main() {
 			analyticsGroup.POST("/event", analyticsHandler.LogEvent)
 			analyticsGroup.GET("/user/:user_id", jwtMiddleware.RequireSelfOrAdmin("user_id"), analyticsHandler.GetUserAnalytics)
 			analyticsGroup.GET("/system", jwtMiddleware.RequireAdmin(), analyticsHandler.GetSystemAnalytics)
-			analyticsGroup.GET("/media/:media_id", analyticsHandler.GetMediaAnalytics)
-			analyticsGroup.POST("/reports", analyticsHandler.CreateReport)
+			analyticsGroup.GET("/media/:media_id", jwtMiddleware.RequireAdmin(), analyticsHandler.GetMediaAnalytics)
+			analyticsGroup.POST("/reports", jwtMiddleware.RequireAdmin(), analyticsHandler.CreateReport)
 	}
 
 	// Reporting endpoints
