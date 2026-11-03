@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"net/http"
+	"os/exec"
 	"sync"
 	"time"
 
@@ -32,6 +33,25 @@ type HealthCheckResponse struct {
 	Version    string                     `json:"version"`
 	Uptime     string                     `json:"uptime"`
 	Components map[string]ComponentHealth `json:"components"`
+	// Converters reports, from real PATH lookups at request time, which external
+	// converter tools the conversion worker needs are installed on this server.
+	Converters map[string]bool `json:"converters"`
+}
+
+// ConverterTools are the external tools the conversion/PDF features exec:
+// ffmpeg (audio/video), convert (ImageMagick: images, PDF rasterising) and
+// pdftotext (poppler: PDF text extraction).
+var ConverterTools = []string{"ffmpeg", "convert", "pdftotext"}
+
+// ProbeConverters looks every ConverterTools entry up on PATH (exec.LookPath,
+// the same resolution the conversion worker uses when it runs the tool).
+func ProbeConverters() map[string]bool {
+	out := make(map[string]bool, len(ConverterTools))
+	for _, t := range ConverterTools {
+		_, err := exec.LookPath(t)
+		out[t] = err == nil
+	}
+	return out
 }
 
 // HealthChecker performs health checks on various components
@@ -92,6 +112,7 @@ func (hc *HealthChecker) Check(ctx context.Context) HealthCheckResponse {
 		Version:    hc.version,
 		Uptime:     time.Since(hc.startTime).String(),
 		Components: components,
+		Converters: ProbeConverters(),
 	}
 }
 

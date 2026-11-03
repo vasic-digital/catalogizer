@@ -21,7 +21,7 @@ export interface User {
   username: string;
   email: string;
   role: 'admin' | 'user' | 'viewer';
-  status: 'active' | 'inactive' | 'suspended';
+  status: 'active' | 'inactive' | 'suspended' | 'pending';
   lastLogin?: string;
   createdAt: string;
 }

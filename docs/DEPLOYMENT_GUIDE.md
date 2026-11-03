@@ -472,6 +472,24 @@ EXPOSE 8080
 CMD ["./catalogizer"]
 ```
 
+### Converter tools in the runtime image
+
+The `catalog-api` runtime image (`catalog-api/Dockerfile` and `catalog-api/Dockerfile.runtime`, Debian
+trixie-slim base, non-root `appuser`) installs the external tools the conversion worker executes:
+
+| Tool | Package | Used for |
+|---|---|---|
+| `ffmpeg` | `ffmpeg` | audio and video conversion |
+| `convert` | `imagemagick` | image conversion, PDF rasterising fallback |
+| `pdftotext` | `poppler-utils` | PDF text extraction (primary engine) |
+
+`GET /health/deep` reports which of them the running server can find (`"converters":
+{"ffmpeg":true,"convert":true,"pdftotext":true}`), from real `PATH` lookups on every request. If a tool is
+missing, a conversion job that needs it ends `failed` within seconds with the reason
+`converter tool "ffmpeg" is not installed on this server (not found on PATH)`, it is not left `pending`.
+Bare-metal installs need the same three packages on the service user's `PATH`. Build the image with
+`podman build --network host -f catalog-api/Dockerfile -t catalogizer-api .` from the repository root.
+
 ### Docker Compose Production
 
 ```yaml

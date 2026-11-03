@@ -111,6 +111,20 @@ SVC_QDRANT_REMOTE / HOST                                   # ✅
 BOOT_STRICT_MODE=false                                     # ✅
 ```
 
+### Self-registration policy
+
+```bash
+REGISTRATION_MODE=approval   # 🟢 default. approval | open | disabled
+```
+
+- `approval` (or unset): `POST /api/v1/auth/register` creates an INACTIVE, pending user at the
+  minimal role and issues no session; an administrator approves it
+  (`PUT /api/v1/admin/users/{id}` `{"status":"active"}`) after listing
+  `GET /api/v1/admin/users?status=pending`. Until then login answers 403 "account pending approval".
+- `open`: explicit opt-in to instant-active self-registration (the pre-2026-11 behaviour).
+- `disabled`: registration answers 403.
+- An unrecognised value falls back to `approval` (fail closed) and is logged.
+
 ## 5. 🔴 Server binding — MANDATORY
 
 ```bash

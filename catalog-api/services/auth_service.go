@@ -81,6 +81,10 @@ type AuthResult struct {
 	ExpiresAt    time.Time    `json:"expires_at"`
 }
 
+// ErrAccountPending is returned by Login when the credentials are correct but
+// the account is a self-registration still waiting for administrator approval.
+var ErrAccountPending = errors.New("account pending approval")
+
 // Login authenticates a user and creates a session
 func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent string) (*AuthResult, error) {
 	// Find user by username or email
@@ -98,6 +102,15 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 		s.auditEvent(user.ID, "failed_login_inactive", ipAddress, userAgent, "account locked or disabled")
 		if user.IsLocked {
 			return nil, errors.New("account is temporarily locked")
+		}
+		if user.IsRegistrationPending() {
+			// Reveal the pending state only to someone who knows the password,
+			// so it cannot be used to probe which usernames are registered.
+			if ok, _ := CheckPassword(req.Password, user.Salt, user.PasswordHash); ok {
+				return nil, ErrAccountPending
+			}
+			s.userRepo.IncrementFailedLoginAttempts(user.ID)
+			return nil, errors.New("invalid credentials")
 		}
 		return nil, errors.New("account is disabled")
 	}

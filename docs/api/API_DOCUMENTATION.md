@@ -412,7 +412,11 @@ Authenticate a user and receive JWT tokens.
 
 Register a new user account.
 
-**Description:** Creates a new user and returns the user object.
+**Description:** Self-registration. By default (`REGISTRATION_MODE` unset or `approval`) the user is created
+inactive and PENDING administrator approval at the minimal role; no session is issued and login answers
+403 `account pending approval` until an admin approves via `PUT /api/v1/admin/users/{id}` `{"status":"active"}`
+(list pending: `GET /api/v1/admin/users?status=pending`). `REGISTRATION_MODE=open` activates instantly;
+`REGISTRATION_MODE=disabled` answers 403.
 **Auth:** None
 **Rate Limit:** Strict (30/min)
 
@@ -436,7 +440,7 @@ Register a new user account.
 | `first_name` | string | Yes | - |
 | `last_name` | string | Yes | - |
 
-**Response:** 201 Created (User object)
+**Response:** 201 Created (User object plus `registration_status` `pending`|`active` and `message`); 403 when disabled
 
 **Errors:** 400 (validation failure), 409 (duplicate username or email)
 
