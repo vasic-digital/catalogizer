@@ -106,7 +106,7 @@ type ExternalMetadataResolver struct {
 func NewExternalMetadataResolver(db *database.DB, priority int) *ExternalMetadataResolver {
 	return &ExternalMetadataResolver{
 		db:       db,
-		client:   netguard.Client(30*time.Second, 3, netguard.HTTPOrHTTPS),
+		client:   netguard.StrictClient(30*time.Second, 3, netguard.HTTPOrHTTPS),
 		priority: priority,
 	}
 }

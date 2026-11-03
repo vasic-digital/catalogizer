@@ -94,7 +94,13 @@ func alwaysBlocked(ip net.IP) bool {
 }
 
 // IsBlockedIP reports whether the server must not connect to ip.
-func IsBlockedIP(ip net.IP) bool {
+func IsBlockedIP(ip net.IP) bool { return isBlocked(ip, true) }
+
+// IsBlockedIPStrict is IsBlockedIP that ignores the operator allow-list: loopback,
+// private, CGNAT, link-local, metadata and reserved addresses are always blocked.
+func IsBlockedIPStrict(ip net.IP) bool { return isBlocked(ip, false) }
+
+func isBlocked(ip net.IP, honorAllow bool) bool {
 	if ip == nil {
 		return true
 	}
@@ -110,12 +116,14 @@ func IsBlockedIP(ip net.IP) bool {
 		}
 	}
 	if v4 := embeddedV4(ip); v4 != nil {
-		return IsBlockedIP(v4)
+		return isBlocked(v4, honorAllow)
 	}
 	if ip.IsLoopback() || ip.IsPrivate() || cgnat.Contains(ip) {
-		for _, n := range allowedNets() {
-			if n.Contains(ip) {
-				return false
+		if honorAllow {
+			for _, n := range allowedNets() {
+				if n.Contains(ip) {
+					return false
+				}
 			}
 		}
 		return true
@@ -127,12 +135,12 @@ func IsBlockedIP(ip net.IP) bool {
 }
 
 // resolve returns the checked addresses of host (an IP literal or a name).
-func resolve(ctx context.Context, host string) ([]net.IP, error) {
+func resolve(ctx context.Context, host string, honorAllow bool) ([]net.IP, error) {
 	if host == "" {
 		return nil, fmt.Errorf("%w: empty host", ErrBlocked)
 	}
 	if ip := net.ParseIP(strings.Trim(host, "[]")); ip != nil {
-		if IsBlockedIP(ip) {
+		if isBlocked(ip, honorAllow) {
 			return nil, fmt.Errorf("%w: %s is a loopback, private, link-local or reserved address", ErrBlocked, host)
 		}
 		return []net.IP{ip}, nil
@@ -143,7 +151,7 @@ func resolve(ctx context.Context, host string) ([]net.IP, error) {
 	}
 	var ok []net.IP
 	for _, a := range addrs {
-		if IsBlockedIP(a.IP) {
+		if isBlocked(a.IP, honorAllow) {
 			return nil, fmt.Errorf("%w: %s resolves to %s (loopback, private, link-local or reserved)", ErrBlocked, host, a.IP)
 		}
 		ok = append(ok, a.IP)
@@ -174,7 +182,7 @@ func CheckURL(ctx context.Context, raw string, schemes ...string) (*url.URL, err
 	if u.User != nil {
 		return nil, fmt.Errorf("%w: credentials in the URL are not permitted", ErrBlocked)
 	}
-	if _, err := resolve(ctx, u.Hostname()); err != nil {
+	if _, err := resolve(ctx, u.Hostname(), true); err != nil {
 		// A name that does not resolve (yet) is not an internal destination; it cannot be
 		// connected to, and DialContext resolves and checks again at every connection, so
 		// accepting it here cannot open a path to the local network. Everything else
@@ -190,11 +198,20 @@ func CheckURL(ctx context.Context, raw string, schemes ...string) (*url.URL, err
 // DialContext resolves the address, refuses blocked results and dials the checked
 // IP itself (pinned), never the name.
 func DialContext(ctx context.Context, network, addr string) (net.Conn, error) {
+	return dial(ctx, network, addr, true)
+}
+
+// StrictDialContext is DialContext that ignores CATALOGIZER_OUTBOUND_ALLOW_CIDRS.
+func StrictDialContext(ctx context.Context, network, addr string) (net.Conn, error) {
+	return dial(ctx, network, addr, false)
+}
+
+func dial(ctx context.Context, network, addr string, honorAllow bool) (net.Conn, error) {
 	host, port, err := net.SplitHostPort(addr)
 	if err != nil {
 		return nil, err
 	}
-	ips, err := resolve(ctx, host)
+	ips, err := resolve(ctx, host, honorAllow)
 	if err != nil {
 		return nil, err
 	}
@@ -230,6 +247,16 @@ func Client(timeout time.Duration, maxRedirects int, redirectOK func(*url.URL) b
 			return nil
 		},
 	}
+}
+
+// StrictClient is Client for fetches of URLs that come from third-party data (provider
+// responses, subtitle/cover links): it ignores the operator allow-list, so loopback,
+// private, link-local and metadata destinations are blocked on every hop whatever
+// CATALOGIZER_OUTBOUND_ALLOW_CIDRS says. Environment proxies are ignored.
+func StrictClient(timeout time.Duration, maxRedirects int, redirectOK func(*url.URL) bool) *http.Client {
+	c := Client(timeout, maxRedirects, redirectOK)
+	c.Transport = &http.Transport{DialContext: StrictDialContext, Proxy: nil, TLSHandshakeTimeout: 10 * time.Second}
+	return c
 }
 
 // HTTPOrHTTPS is a redirectOK for Client that follows a redirect only to an http or

@@ -8,7 +8,9 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
+	"catalogizer/internal/netguard"
 	"catalogizer/internal/pathguard"
 	"digital.vasic.assets/pkg/asset"
 	"digital.vasic.assets/pkg/resolver"
@@ -97,6 +99,9 @@ func TestExternalMetadataResolver_Resolve(t *testing.T) {
 	// the fetch goes through internal/netguard, which refuses loopback unless the operator allows it
 	t.Setenv("CATALOGIZER_OUTBOUND_ALLOW_CIDRS", "127.0.0.0/8")
 	r := NewExternalMetadataResolver(nil, 2)
+	// the production client is strict (ignores the allow-list); the fetch/response path is
+	// tested through the allow-list-aware seam, strictness in outbound_redirect_round2_test.go
+	r.client = netguard.Client(5*time.Second, 3, netguard.HTTPOrHTTPS)
 
 	req := &resolver.ResolveRequest{
 		AssetID:    asset.NewID(),

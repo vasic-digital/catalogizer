@@ -160,7 +160,7 @@ func NewSubtitleService(db *database.DB, logger *zap.Logger, cacheService CacheS
 		logger:             logger,
 		translationService: NewTranslationService(logger),
 		cacheService:       cacheService,
-		httpClient:         netguard.Client(30*time.Second, 3, netguard.HTTPOrHTTPS),
+		httpClient:         netguard.StrictClient(30*time.Second, 3, netguard.HTTPOrHTTPS),
 		apiKeys:            make(map[string]string),
 		cacheDir:           "./cache/subtitles",
 		shutdown:           make(chan struct{}),
@@ -514,6 +514,9 @@ func (s *SubtitleService) searchYifySubtitles(ctx context.Context, request *Subt
 }
 
 // Helper functions
+// maxSubtitleDownloadBytes caps a downloaded subtitle body (real subtitle files are well below 2 MiB).
+const maxSubtitleDownloadBytes = 2 << 20
+
 func (s *SubtitleService) downloadContent(ctx context.Context, url string) (string, string, error) {
 	if err := GuardProviderURL(url, SSRFGuardConfig{}); err != nil {
 		return "", "", fmt.Errorf("subtitle: unsafe URL: %w", err)
@@ -530,9 +533,18 @@ func (s *SubtitleService) downloadContent(ctx context.Context, url string) (stri
 	}
 	defer resp.Body.Close()
 
-	content, err := io.ReadAll(resp.Body)
+	// A non-2xx answer (error page, 3xx not followed) is never subtitle content.
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return "", "", fmt.Errorf("subtitle: download failed: HTTP %d", resp.StatusCode)
+	}
+
+	// Bound the read: one byte over the cap is an error, never a silent truncation.
+	content, err := io.ReadAll(io.LimitReader(resp.Body, maxSubtitleDownloadBytes+1))
 	if err != nil {
 		return "", "", err
+	}
+	if len(content) > maxSubtitleDownloadBytes {
+		return "", "", fmt.Errorf("subtitle: download exceeds %d bytes", maxSubtitleDownloadBytes)
 	}
 
 	// Detect encoding
