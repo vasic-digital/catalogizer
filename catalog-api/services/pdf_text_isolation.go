@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -29,12 +30,32 @@ const (
 	// pdfConcurrentSlots is the number of conversions the service runs at once (semaphore of 3 in
 	// ConversionService); limits are sized so all slots together stay within half of MemAvailable.
 	pdfConcurrentSlots = 3
-	// Address-space ceilings and floors per child (bytes).
-	pdfChildMaxAS   = 1 << 30
+	// Poppler tools: address-space (RLIMIT_AS) ceiling and floor per child (bytes). poppler is C++
+	// and reserves little virtual memory, so RLIMIT_AS bounds it well (measured by the review: it
+	// works at 512 MiB).
 	pdfPopplerMaxAS = 4 << 30
 	pdfMinAS        = 512 << 20
-	// pdfToolCPUSeconds is the CPU-time limit (RLIMIT_CPU) of a child.
-	pdfToolCPUSeconds = 100
+	// Pure-Go child: RLIMIT_DATA (private writable memory) instead of RLIMIT_AS. A cgo Go program
+	// reserves several hundred MiB of address space at start (page summary, arena map, one stack
+	// per thread, jemalloc) that is never touched, so RLIMIT_AS cannot be set low enough to bound
+	// a hostile file without also stopping the runtime from starting (CAT-002 round 4, F-A:
+	// ~1008 MiB needed just to start, 0/15 successes at GOMAXPROCS=64). RLIMIT_DATA counts only
+	// memory that can actually be written, so it bounds what a parser can use. Measured minimum
+	// to start and extract an ordinary 146-page document with the pinned runtime: about 192 MiB
+	// (128 MiB fails); the floor leaves a 2x margin. See docs/guides/pdf_text_extraction.md.
+	pdfChildMaxData = 1 << 30
+	pdfChildMinData = 384 << 20
+	// The child's Go runtime is pinned: two Ps (parallelism is useless for one document and each
+	// extra P costs thread stacks) and a soft heap limit at three quarters of the hard limit so the
+	// collector works before the kernel kills the process.
+	pdfChildGOMAXPROCS = "2"
+	// pdfToolCPUSeconds is the CPU-time limit (RLIMIT_CPU) of a child. Measured CPU for an ordinary
+	// 851-page document: about 4 s (pure Go) and 2.5 s (poppler); 20 s keeps a hostile file that
+	// loops (CMap bomb fallback) from holding a conversion slot for minutes (round 4, F-D: 100 s).
+	pdfToolCPUSeconds = 20
+	// pdfChildStartedMarker is the first line the child writes to stderr, from the init hook, once
+	// the Go runtime is up. Its absence on a failed run means the child never started.
+	pdfChildStartedMarker = "pdftext-child-started\n"
 	// pdfWaitDelay is how long after a kill os/exec waits for the child's pipes before closing them.
 	pdfWaitDelay = 2 * time.Second
 	// pdfStderrMax bounds the stderr kept for an error message.
@@ -42,6 +63,9 @@ const (
 )
 
 var (
+	// ErrPDFChildStart means the pure-Go child process could not start at all (its runtime died
+	// before running our code, the binary is gone, ...). It is NOT a verdict on the document.
+	ErrPDFChildStart  = errors.New("built-in PDF extractor could not start")
 	errPrlimitMissing = errors.New("refusing to run a PDF parser without prlimit (install util-linux): " +
 		"an uncapped parser could exhaust host memory or CPU")
 	// lookPath and memAvailable are variables so tests can simulate a host without a tool.
@@ -70,8 +94,23 @@ func readMemAvailable() (uint64, bool) {
 
 // pdfLimits are the prlimit values of one child.
 type pdfLimits struct {
-	addressSpace uint64
-	cpuSeconds   int
+	addressSpace uint64   // RLIMIT_AS in bytes; 0 means not set
+	dataSpace    uint64   // RLIMIT_DATA in bytes; 0 means not set
+	cpuSeconds   int      // RLIMIT_CPU
+	env          []string // extra environment of the tool (after the allowlisted base)
+	marker       string   // when set, stderr of a successful start begins with it (see child)
+}
+
+// pdfBaseEnv is the environment every tool gets: a fixed allowlist, never the full environment
+// of the API process (which carries secrets). Nothing the tools do needs more.
+func pdfBaseEnv() []string {
+	var env []string
+	for _, k := range []string{"PATH", "LANG", "LC_ALL", "LC_CTYPE", "TZ", "TMPDIR"} {
+		if v, ok := os.LookupEnv(k); ok {
+			env = append(env, k+"="+v)
+		}
+	}
+	return env
 }
 
 // pdfToolLimits sizes the address-space limit to the host (§12.11): MemAvailable divided by twice
@@ -91,6 +130,41 @@ func pdfToolLimits(ceiling uint64) pdfLimits {
 	return pdfLimits{addressSpace: as, cpuSeconds: pdfToolCPUSeconds}
 }
 
+// pdfChildLimits sizes the pure-Go child: RLIMIT_DATA = MemAvailable / (2 * slots), clamped to
+// [pdfChildMinData, pdfChildMaxData] (floor when MemAvailable cannot be read), a pinned Go runtime
+// and a minimal environment.
+func pdfChildLimits() pdfLimits {
+	d := uint64(pdfChildMinData)
+	if avail, ok := memAvailable(); ok {
+		d = avail / (2 * pdfConcurrentSlots)
+		if d > pdfChildMaxData {
+			d = pdfChildMaxData
+		}
+		if d < pdfChildMinData {
+			d = pdfChildMinData
+		}
+	}
+	env := []string{
+		"GOMAXPROCS=" + pdfChildGOMAXPROCS,
+		"GOMEMLIMIT=" + strconv.FormatUint(d/4*3, 10),
+	}
+	// The only knob a caller may pass: it can lower the child's text cap, never raise it (tests).
+	if v, ok := os.LookupEnv(pdfChildMaxTextEnv); ok {
+		env = append(env, pdfChildMaxTextEnv+"="+v)
+	}
+	return pdfLimits{dataSpace: d, cpuSeconds: pdfToolCPUSeconds, env: env, marker: pdfChildStartedMarker}
+}
+
+// childTextCap returns the total-text cap the child uses: the compiled maximum, lowered (never
+// raised) by the environment value when that is a positive integer below it.
+func childTextCap(envValue string) int {
+	max := pdfTextMaxBytes
+	if v, err := strconv.Atoi(envValue); err == nil && v > 0 && v < max {
+		max = v
+	}
+	return max
+}
+
 // runLimited runs bin with args under prlimit (no shell), kills it when ctx ends or its stdout
 // exceeds outMax, bounds stderr, and returns stdout. Without prlimit it refuses.
 func runLimited(ctx context.Context, bin string, args []string, lim pdfLimits, outMax int) ([]byte, error) {
@@ -98,16 +172,20 @@ func runLimited(ctx context.Context, bin string, args []string, lim pdfLimits, o
 	if err != nil {
 		return nil, errPrlimitMissing
 	}
-	full := append([]string{
-		"--as=" + strconv.FormatUint(lim.addressSpace, 10),
-		"--cpu=" + strconv.Itoa(lim.cpuSeconds),
-		"--core=0", "--fsize=0",
-		"--", bin,
-	}, args...)
+	var full []string
+	if lim.addressSpace > 0 {
+		full = append(full, "--as="+strconv.FormatUint(lim.addressSpace, 10))
+	}
+	if lim.dataSpace > 0 {
+		full = append(full, "--data="+strconv.FormatUint(lim.dataSpace, 10))
+	}
+	full = append(full, "--cpu="+strconv.Itoa(lim.cpuSeconds), "--core=0", "--fsize=0", "--", bin)
+	full = append(full, args...)
 	inner, cancel := context.WithCancel(ctx)
 	defer cancel()
 	cmd := exec.CommandContext(inner, pl, full...)
 	cmd.WaitDelay = pdfWaitDelay
+	cmd.Env = append(pdfBaseEnv(), lim.env...)
 	var stdout, stderr limitedBuffer
 	stdout.max, stderr.max = outMax, pdfStderrMax
 	stdout.onOver = cancel
@@ -119,8 +197,17 @@ func runLimited(ctx context.Context, bin string, args []string, lim pdfLimits, o
 	if stdout.over {
 		return nil, fmt.Errorf("output exceeds %d bytes", outMax)
 	}
+	msg := stderr.String()
+	started := true
+	if lim.marker != "" {
+		started = strings.HasPrefix(msg, lim.marker)
+		msg = strings.TrimPrefix(msg, lim.marker)
+	}
 	if runErr != nil {
-		return nil, fmt.Errorf("%w: %s", runErr, strings.TrimSpace(stderr.String()))
+		if !started {
+			return nil, fmt.Errorf("%w: %v: %s", ErrPDFChildStart, runErr, strings.TrimSpace(msg))
+		}
+		return nil, fmt.Errorf("%w: %s", runErr, strings.TrimSpace(msg))
 	}
 	return stdout.Bytes(), nil
 }
@@ -135,9 +222,8 @@ func (r refusingPDFExtractor) ExtractPages(context.Context, string, int, int) ([
 
 // isolatedExtractor runs the pure-Go extractor in a prlimit-capped child process.
 type isolatedExtractor struct {
-	exe  string   // binary to run; the production value is this very executable
-	pre  []string // arguments before the sentinel (none in production)
-	maxA uint64   // address-space ceiling; 0 means pdfChildMaxAS
+	exe string   // binary to run; the production value is this very executable
+	pre []string // arguments before the sentinel (none in production)
 }
 
 func newIsolatedExtractor() (isolatedExtractor, error) {
@@ -145,16 +231,20 @@ func newIsolatedExtractor() (isolatedExtractor, error) {
 	if err != nil {
 		return isolatedExtractor{}, fmt.Errorf("cannot locate own executable for the PDF child: %w", err)
 	}
+	return newIsolatedExtractorFor(exe)
+}
+
+// newIsolatedExtractorFor validates the executable path. After an in-place upgrade of the binary
+// Linux reports the old file as "<path> (deleted)"; children cannot be started from it until the
+// service restarts, which is said plainly instead of surfacing as an exec failure per document.
+func newIsolatedExtractorFor(exe string) (isolatedExtractor, error) {
+	if strings.HasSuffix(exe, " (deleted)") {
+		return isolatedExtractor{}, fmt.Errorf("%w: the API binary was replaced while running (%s); restart the service", ErrPDFChildStart, exe)
+	}
 	return isolatedExtractor{exe: exe}, nil
 }
 
-func (e isolatedExtractor) limits() pdfLimits {
-	c := e.maxA
-	if c == 0 {
-		c = pdfChildMaxAS
-	}
-	return pdfToolLimits(c)
-}
+func (e isolatedExtractor) limits() pdfLimits { return pdfChildLimits() }
 
 func (e isolatedExtractor) child(ctx context.Context, outMax int, op string, args ...string) ([]byte, error) {
 	a := append(append([]string{}, e.pre...), pdfChildSentinel, op)
@@ -208,6 +298,7 @@ func (e isolatedExtractor) ExtractPages(ctx context.Context, path string, start,
 
 func init() {
 	if len(os.Args) >= 2 && os.Args[1] == pdfChildSentinel {
+		os.Stderr.WriteString(pdfChildStartedMarker)
 		os.Exit(pdfChildMain(os.Args[2:], os.Stdout, os.Stderr))
 	}
 }
@@ -232,10 +323,11 @@ func pdfChildMain(args []string, stdout, stderr io.Writer) (code int) {
 	case "limits":
 		b, _ := os.ReadFile("/proc/self/limits")
 		for _, l := range strings.Split(string(b), "\n") {
-			if strings.HasPrefix(l, "Max address space") {
+			if strings.HasPrefix(l, "Max address space") || strings.HasPrefix(l, "Max data size") || strings.HasPrefix(l, "Max cpu time") {
 				fmt.Fprintln(stdout, l)
 			}
 		}
+		fmt.Fprintf(stdout, "GOMAXPROCS %d\n", runtime.GOMAXPROCS(0))
 		return 0
 	case "pages":
 		if len(args) != 2 {
@@ -260,10 +352,7 @@ func pdfChildMain(args []string, stdout, stderr io.Writer) (code int) {
 			fmt.Fprintln(stderr, "pdf child: bad page range")
 			return 2
 		}
-		max := pdfTextMaxBytes
-		if v, err := strconv.Atoi(os.Getenv(pdfChildMaxTextEnv)); err == nil && v > 0 && v < max {
-			max = v
-		}
+		max := childTextCap(os.Getenv(pdfChildMaxTextEnv))
 		pages, err := le.extractPages(ctx, args[1], start, end, max)
 		if err != nil {
 			fmt.Fprintln(stderr, err)

@@ -157,14 +157,16 @@ func TestCAT002_Iso_ContentsPastLimitRefused(t *testing.T) {
 	assert.Less(t, d, 30*time.Second)
 }
 
-// F2: ToUnicode CMap bomb (20 KB file allocated 1.5 GB in-process). The child hits its address
-// space limit; the parent sees a bounded error.
+// F2: ToUnicode CMap bomb (20 KB file allocated 1.5 GB in-process). The child hits its data-size
+// limit; the parent sees a bounded error. The bomb is sized well past the 1 GiB ceiling: with the
+// soft GOMEMLIMIT the collector keeps a 10M-token CMap (the original bomb) under the cap, which is
+// still bounded and is not what this test is about.
 func TestCAT002_Iso_CMapBombContained(t *testing.T) {
 	e := needChildRuntime(t)
-	p := writeTmp(t, cmapBombPDF(10_000_000, []byte("BT /F1 12 Tf 10 700 Td (a) Tj ET"), 1))
+	p := writeTmp(t, cmapBombPDF(80_000_000, []byte("BT /F1 12 Tf 10 700 Td (a) Tj ET"), 1))
 	var err error
 	alloc, d := parentCost(func() { _, err = e.ExtractPages(context.Background(), p, 1, 1) })
-	require.Error(t, err, "the bomb must not yield a result inside the address-space cap")
+	require.Error(t, err, "the bomb must not yield a result inside the data-size cap")
 	assert.Less(t, len(err.Error()), 8192, "error message is bounded")
 	assert.Less(t, alloc, uint64(16<<20), "parent allocation")
 	assert.Less(t, d, 90*time.Second)
@@ -298,9 +300,11 @@ func TestCAT002_Iso_LimitsAppliedToChildren(t *testing.T) {
 	fixMemAvailable(t)
 	out, err := e.child(context.Background(), 4096, "limits")
 	require.NoError(t, err)
-	want := e.limits().addressSpace
-	assert.Contains(t, string(out), strconv.FormatUint(want, 10), "child address-space limit")
-	assert.NotContains(t, string(out), "unlimited")
+	want := e.limits().dataSpace
+	require.NotZero(t, want)
+	assert.Contains(t, string(out), "Max data size             "+strconv.FormatUint(want, 10), "child data-size limit")
+	assert.Contains(t, string(out), "GOMAXPROCS "+pdfChildGOMAXPROCS, "pinned Go runtime")
+	assert.NotContains(t, string(out), "Max cpu time              unlimited")
 	// poppler side: a fake pdftotext prints its own ulimit -v (KiB)
 	fake := filepath.Join(t.TempDir(), "pdftotext")
 	require.NoError(t, os.WriteFile(fake, []byte("#!/bin/sh\nulimit -v\n"), 0o755))
@@ -313,13 +317,16 @@ func TestCAT002_Iso_LimitsAreHostAdaptiveAndBounded(t *testing.T) {
 	old := memAvailable
 	defer func() { memAvailable = old }()
 	memAvailable = func() (uint64, bool) { return 600 << 30, true }
-	assert.EqualValues(t, pdfChildMaxAS, pdfToolLimits(pdfChildMaxAS).addressSpace, "ceiling")
-	memAvailable = func() (uint64, bool) { return 3 << 30, true }
-	assert.EqualValues(t, (3<<30)/(2*pdfConcurrentSlots), pdfToolLimits(pdfChildMaxAS).addressSpace, "MemAvailable/(2*slots)")
+	assert.EqualValues(t, pdfChildMaxData, pdfChildLimits().dataSpace, "ceiling")
+	assert.EqualValues(t, pdfPopplerMaxAS, pdfToolLimits(pdfPopplerMaxAS).addressSpace, "poppler ceiling")
+	memAvailable = func() (uint64, bool) { return 4 << 30, true }
+	assert.EqualValues(t, (4<<30)/(2*pdfConcurrentSlots), pdfChildLimits().dataSpace, "MemAvailable/(2*slots)")
 	memAvailable = func() (uint64, bool) { return 1 << 30, true }
-	assert.EqualValues(t, pdfMinAS, pdfToolLimits(pdfChildMaxAS).addressSpace, "floor")
+	assert.EqualValues(t, pdfChildMinData, pdfChildLimits().dataSpace, "floor")
+	assert.EqualValues(t, pdfMinAS, pdfToolLimits(pdfPopplerMaxAS).addressSpace, "poppler floor")
 	memAvailable = func() (uint64, bool) { return 0, false }
-	assert.EqualValues(t, pdfMinAS, pdfToolLimits(pdfChildMaxAS).addressSpace, "unreadable meminfo")
+	assert.EqualValues(t, pdfChildMinData, pdfChildLimits().dataSpace, "unreadable meminfo")
+	assert.Zero(t, pdfChildLimits().addressSpace, "the Go child is bounded by RLIMIT_DATA, not RLIMIT_AS")
 }
 
 // Without prlimit nothing is run: honest refusal (also logged by the caller through the error).
