@@ -105,28 +105,6 @@ func BenchmarkGenerateJWT(b *testing.B) {
 
 // --- HashData benchmark ---
 
-func BenchmarkHashData(b *testing.B) {
-	svc := newBenchAuthService()
-
-	benchmarks := []struct {
-		name string
-		data string
-	}{
-		{"short", "hello"},
-		{"medium", "user:123:session:456:timestamp:1234567890"},
-		{"long", fmt.Sprintf("%01000d", 0)}, // 1000 character string
-	}
-
-	for _, bm := range benchmarks {
-		b.Run(bm.name, func(b *testing.B) {
-			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				_ = svc.HashData(bm.data)
-			}
-		})
-	}
-}
-
 // --- GenerateSecureToken benchmark ---
 
 func BenchmarkGenerateSecureToken(b *testing.B) {

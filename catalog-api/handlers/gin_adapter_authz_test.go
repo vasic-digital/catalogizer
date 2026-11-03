@@ -368,7 +368,6 @@ func (s *memStore) Create(u *models.User) (int, error) {
 
 func (a *permAuth) HashPassword(p string) (string, error)   { return p, nil }
 func (a *permAuth) GenerateSecureToken(int) (string, error) { return "t", nil }
-func (a *permAuth) HashData(d string) string                { return d }
 
 // S1: a non-admin with user.manage must not act on an Admin user nor mint an
 // admin. Admin callers and plain-user targets are the positive controls.

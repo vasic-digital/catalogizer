@@ -459,45 +459,6 @@ func TestAuthService_GenerateSecureToken(t *testing.T) {
 	}
 }
 
-func TestAuthService_HashData(t *testing.T) {
-	svc := &AuthService{}
-
-	tests := []struct {
-		name string
-		data string
-	}{
-		{
-			name: "simple string",
-			data: "hello world",
-		},
-		{
-			name: "empty string",
-			data: "",
-		},
-		{
-			name: "complex data",
-			data: "user:123:password:salt:extra",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			hash := svc.HashData(tt.data)
-			assert.NotEmpty(t, hash)
-			assert.Len(t, hash, 64) // SHA-256 produces 64 hex characters
-
-			// Same input should produce same hash
-			hash2 := svc.HashData(tt.data)
-			assert.Equal(t, hash, hash2, "same data should produce same hash")
-		})
-	}
-
-	// Different inputs should produce different hashes
-	hash1 := svc.HashData("input1")
-	hash2 := svc.HashData("input2")
-	assert.NotEqual(t, hash1, hash2, "different data should produce different hashes")
-}
-
 func TestAuthService_GenerateSessionToken(t *testing.T) {
 	svc := &AuthService{}
 

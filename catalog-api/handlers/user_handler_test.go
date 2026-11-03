@@ -112,11 +112,6 @@ func (m *MockUserAuthService) UnlockAccount(userID int) error {
 	return args.Error(0)
 }
 
-func (m *MockUserAuthService) HashData(data string) string {
-	args := m.Called(data)
-	return args.String(0)
-}
-
 // TestUserHandler_NewUserHandler
 func TestUserHandler_NewUserHandler(t *testing.T) {
 	mockUserService := new(MockUserService)

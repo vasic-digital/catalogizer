@@ -2,7 +2,6 @@ package services
 
 import (
 	"crypto/rand"
-	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
 	"errors"
@@ -487,12 +486,6 @@ func (s *AuthService) GenerateSecureToken(length int) (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(bytes), nil
-}
-
-// HashData creates a SHA-256 hash of the given data
-func (s *AuthService) HashData(data string) string {
-	hash := sha256.Sum256([]byte(data))
-	return hex.EncodeToString(hash[:])
 }
 
 // HashPasswordForUser hashes a password with a generated salt (public method for registration)

@@ -33,7 +33,6 @@ type UserAuthServiceInterface interface {
 	ResetPassword(userID int, newPassword string) error
 	LockAccount(userID int, lockUntil time.Time) error
 	UnlockAccount(userID int) error
-	HashData(data string) string
 }
 
 type UserHandler struct {
