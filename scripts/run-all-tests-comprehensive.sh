@@ -22,6 +22,25 @@ REPORTS_DIR="reports/tests"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 OVERALL_EXIT_CODE=0
 E2E_STATUS="not-run"   # PASSED | FAILED | SKIPPED (credentials_absent)
+PERF_STATUS="not-run"  # PASSED | FAILED | SKIPPED (reason: ...)
+SEC_STATUS="not-run"   # PASSED | FAILED | SKIPPED (reason: ...)
+GO_STATUS="not-run"; INT_STATUS="not-run"; TS_STATUS="not-run"; CONTRACT_STATUS="not-run"; LINT_STATUS="not-run"; BUILD_STATUS="not-run"   # same vocabulary
+
+# is_skipped STATUS: true when STATUS starts with SKIPPED
+is_skipped() { [ "${1#SKIPPED}" != "$1" ]; }
+# status_mark STATUS: tick / skip / cross glyph for the summary
+status_mark() { if [ "${1#PASSED}" != "$1" ]; then echo "✅"; elif is_skipped "$1"; then echo "⏭️"; else echo "❌"; fi; }
+# any_skipped: true when a skip-capable stage was skipped
+# skipped_list: names the skipped stages
+skipped_list() {
+    local out="" n v
+    for n in E2E PERF SEC CONTRACT; do
+        v="${n}_STATUS"; v="${!v}"
+        if is_skipped "$v"; then out="${out:+$out; }$n: $v"; fi
+    done
+    echo "$out"
+}
+any_skipped() { is_skipped "$E2E_STATUS" || is_skipped "$PERF_STATUS" || is_skipped "$SEC_STATUS" || is_skipped "$CONTRACT_STATUS"; }
 
 mkdir -p "${REPORTS_DIR}/${TIMESTAMP}"
 
@@ -49,8 +68,10 @@ run_go_unit_tests() {
     
     if GOMAXPROCS=3 go test ./... -race -coverprofile=coverage.out -p 2 -parallel 2 > "../${REPORTS_DIR}/${TIMESTAMP}/go-unit-tests.log" 2>&1; then
         log_success "Go unit tests passed"
+        GO_STATUS="PASSED"
     else
         log_error "Go unit tests failed"
+        GO_STATUS="FAILED"
         OVERALL_EXIT_CODE=1
     fi
     
@@ -83,8 +104,12 @@ run_go_integration_tests() {
     
     if go test ./... -tags=integration -v > "../${REPORTS_DIR}/${TIMESTAMP}/go-integration-tests.log" 2>&1; then
         log_success "Go integration tests passed"
+        INT_STATUS="PASSED"
     else
-        log_warning "Some integration tests failed or not found (expected if none exist)"
+        # go test exits 0 when no package has integration tests, so a non-zero exit is a real failure
+        log_error "Go integration tests failed (see go-integration-tests.log)"
+        INT_STATUS="FAILED"
+        OVERALL_EXIT_CODE=1
     fi
     
     cd ..
@@ -102,8 +127,10 @@ run_ts_unit_tests() {
     
     if npm run test -- --run > "../${REPORTS_DIR}/${TIMESTAMP}/ts-unit-tests.log" 2>&1; then
         log_success "TypeScript unit tests passed"
+        TS_STATUS="PASSED"
     else
         log_error "TypeScript unit tests failed"
+        TS_STATUS="FAILED"
         OVERALL_EXIT_CODE=1
     fi
     
@@ -150,13 +177,17 @@ run_contract_tests() {
         
         if go test ./... > "../${REPORTS_DIR}/${TIMESTAMP}/contract-tests.log" 2>&1; then
             log_success "Contract tests passed"
+            CONTRACT_STATUS="PASSED"
         else
-            log_warning "Contract tests not configured or failed"
+            log_error "Contract tests failed (see contract-tests.log)"
+            CONTRACT_STATUS="FAILED"
+            OVERALL_EXIT_CODE=1
         fi
         
         cd ..
     else
-        log_warning "Contract tests directory not found"
+        log_warning "Contract tests SKIPPED reason=script_not_found (contracts/ directory; not counted as passed)"
+        CONTRACT_STATUS="SKIPPED (reason: script_not_found)"
     fi
 }
 
@@ -171,13 +202,21 @@ run_performance_tests() {
     # Check if k6 is installed
     if command -v k6 &> /dev/null; then
         if [ -f "tests/performance/load-test.js" ]; then
-            k6 run --out json="${REPORTS_DIR}/${TIMESTAMP}/performance-results.json" tests/performance/load-test.js 2>&1 || true
-            log_success "Performance tests completed"
+            if k6 run --out json="${REPORTS_DIR}/${TIMESTAMP}/performance-results.json" tests/performance/load-test.js > "${REPORTS_DIR}/${TIMESTAMP}/performance-tests.log" 2>&1; then
+                log_success "Performance tests passed"
+                PERF_STATUS="PASSED"
+            else
+                log_error "Performance tests failed"
+                PERF_STATUS="FAILED"
+                OVERALL_EXIT_CODE=1
+            fi
         else
-            log_warning "Performance test scripts not found"
+            log_warning "Performance tests SKIPPED reason=script_not_found (tests/performance/load-test.js)"
+            PERF_STATUS="SKIPPED (reason: script_not_found)"
         fi
     else
-        log_warning "k6 not installed, skipping performance tests"
+        log_warning "Performance tests SKIPPED reason=tool_absent (k6 not installed; not counted as passed)"
+        PERF_STATUS="SKIPPED (reason: tool_absent)"
     fi
 }
 
@@ -196,10 +235,14 @@ run_linting() {
         log_success "Go formatting passed"
     fi
     
+    local vet_failed=0 eslint_issues=0
     if go vet ./... > "../${REPORTS_DIR}/${TIMESTAMP}/go-vet.log" 2>&1; then
         log_success "Go vet passed"
     else
-        log_warning "Go vet found issues"
+        # project rule: go vet ./... must pass with zero warnings
+        log_error "Go vet failed"
+        vet_failed=1
+        OVERALL_EXIT_CODE=1
     fi
     
     cd ..
@@ -212,15 +255,21 @@ run_linting() {
     if npm run lint > "../${REPORTS_DIR}/${TIMESTAMP}/eslint.log" 2>&1; then
         log_success "ESLint passed"
     else
+        # policy (unchanged): ESLint findings are surfaced, not fatal; the row says so
         log_warning "ESLint found issues"
+        eslint_issues=1
     fi
     
     log_info "Running TypeScript type check..."
     
     if npm run type-check > "../${REPORTS_DIR}/${TIMESTAMP}/tsc.log" 2>&1; then
         log_success "TypeScript type check passed"
+        if [ "$vet_failed" = 1 ]; then LINT_STATUS="FAILED (go vet)"
+        elif [ "$eslint_issues" = 1 ]; then LINT_STATUS="PASSED (eslint issues)"
+        else LINT_STATUS="PASSED"; fi
     else
         log_error "TypeScript type check failed"
+        LINT_STATUS="FAILED"
         OVERALL_EXIT_CODE=1
     fi
     
@@ -236,10 +285,17 @@ run_security_tests() {
     log_info "Running security test suite..."
     
     if [ -f "scripts/security-scan-comprehensive.sh" ]; then
-        ./scripts/security-scan-comprehensive.sh 2>&1 || true
-        log_success "Security tests completed"
+        if ./scripts/security-scan-comprehensive.sh > "${REPORTS_DIR}/${TIMESTAMP}/security-tests.log" 2>&1; then
+            log_success "Security tests passed"
+            SEC_STATUS="PASSED"
+        else
+            log_error "Security tests failed (see security-tests.log)"
+            SEC_STATUS="FAILED"
+            OVERALL_EXIT_CODE=1
+        fi
     else
-        log_warning "Security scan script not found"
+        log_warning "Security tests SKIPPED reason=script_not_found (scripts/security-scan-comprehensive.sh)"
+        SEC_STATUS="SKIPPED (reason: script_not_found)"
     fi
 }
 
@@ -256,9 +312,11 @@ run_build_tests() {
     
     if go build -o catalog-api-test . > "../${REPORTS_DIR}/${TIMESTAMP}/go-build.log" 2>&1; then
         log_success "Go build passed"
+        BUILD_STATUS="PASSED"
         rm -f catalog-api-test
     else
         log_error "Go build failed"
+        BUILD_STATUS="FAILED"
         OVERALL_EXIT_CODE=1
     fi
     
@@ -271,8 +329,10 @@ run_build_tests() {
     
     if npm run build > "../${REPORTS_DIR}/${TIMESTAMP}/ts-build.log" 2>&1; then
         log_success "TypeScript build passed"
+        [ "$BUILD_STATUS" = FAILED ] || BUILD_STATUS="PASSED"
     else
         log_error "TypeScript build failed"
+        BUILD_STATUS="FAILED"
         OVERALL_EXIT_CODE=1
     fi
     
@@ -292,19 +352,19 @@ generate_test_summary() {
 
 **Date:** $(date)
 **Test Run ID:** ${TIMESTAMP}
-**Status:** $(if [ $OVERALL_EXIT_CODE -ne 0 ]; then echo "❌ FAILED"; elif [ "${E2E_STATUS#SKIPPED}" != "$E2E_STATUS" ]; then echo "⚠️ PASSED WITH SKIPS (E2E ${E2E_STATUS})"; else echo "✅ PASSED"; fi)
+**Status:** $(if [ $OVERALL_EXIT_CODE -ne 0 ]; then echo "❌ FAILED"; elif any_skipped; then echo "⚠️ PASSED WITH SKIPS ($(skipped_list))"; else echo "✅ PASSED"; fi)
 
 ## Tests Executed
 
-1. ✅ Go Unit Tests (with race detection)
-2. ✅ Go Integration Tests
-3. ✅ TypeScript Unit Tests
-4. $([ "$E2E_STATUS" = PASSED ] && echo "✅" || { [ "${E2E_STATUS#SKIPPED}" != "$E2E_STATUS" ] && echo "⏭️"; } || echo "❌") E2E Tests (Playwright): ${E2E_STATUS}
-5. ✅ Contract Tests
-6. ✅ Performance Tests
-7. ✅ Linting and Static Analysis
-8. ✅ Security Tests
-9. ✅ Build Verification
+1. $(status_mark "$GO_STATUS") Go Unit Tests (with race detection)
+2. $(status_mark "$INT_STATUS") Go Integration Tests: ${INT_STATUS}
+3. $(status_mark "$TS_STATUS") TypeScript Unit Tests: ${TS_STATUS}
+4. $(status_mark "$E2E_STATUS") E2E Tests (Playwright): ${E2E_STATUS}
+5. $(status_mark "$CONTRACT_STATUS") Contract Tests: ${CONTRACT_STATUS}
+6. $(status_mark "$PERF_STATUS") Performance Tests (k6): ${PERF_STATUS}
+7. $(status_mark "$LINT_STATUS") Linting and Static Analysis: ${LINT_STATUS}
+8. $(status_mark "$SEC_STATUS") Security Tests: ${SEC_STATUS}
+9. $(status_mark "$BUILD_STATUS") Build Verification: ${BUILD_STATUS}
 
 ## Results
 
@@ -367,8 +427,8 @@ main() {
     # Final status
     print_header "TEST EXECUTION COMPLETE"
     
-    if [ $OVERALL_EXIT_CODE -eq 0 ] && [ "${E2E_STATUS#SKIPPED}" != "$E2E_STATUS" ]; then
-        log_warning "Tests passed, but E2E was SKIPPED (${E2E_STATUS}); this is not a full pass"
+    if [ $OVERALL_EXIT_CODE -eq 0 ] && any_skipped; then
+        log_warning "Tests passed, but a stage was SKIPPED ($(skipped_list)); this is not a full pass"
         log_info "Review detailed reports at: ${REPORTS_DIR}/${TIMESTAMP}/"
     elif [ $OVERALL_EXIT_CODE -eq 0 ]; then
         log_success "All tests passed successfully!"
