@@ -161,7 +161,8 @@ run_api_session() {
                 -H 'Content-Type: application/json' \
                 -d "{\"username\":\"admin\",\"password\":\"${ADMIN_PASSWORD}\"}" 2>/dev/null || echo "000")
         else
-            status=$(curl -sf -o /dev/null -w '%{http_code}' \
+            # No -f: a 501 must be read as 501 (curl -f would append the fallback "000" to it).
+            status=$(curl -s -o /dev/null -w '%{http_code}' \
                 -X "$method" "${API_URL}${path}" \
                 -H "Authorization: Bearer $TOKEN" \
                 -H 'Content-Type: application/json' 2>/dev/null || echo "000")
@@ -171,7 +172,9 @@ run_api_session() {
         local duration_ms=$(( (t_end - t_start) / 1000000 ))
 
         local result="FAIL"
-        if [[ "$status" -ge 200 && "$status" -lt 400 ]]; then
+        # CAT-001: these two endpoints answer an honest 501 (no health source / not implemented), which is their expected result.
+        if [[ "$status" -ge 200 && "$status" -lt 400 ]] || \
+           [[ "$status" == "501" && ( "$path" == "/api/v1/configuration/status" || "$path" == "/api/v1/recommendations/trending" ) ]]; then
             result="PASS"
             pass=$((pass + 1))
             ok "  $method $path → $status (${duration_ms}ms)"

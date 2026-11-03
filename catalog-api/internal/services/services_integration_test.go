@@ -1669,8 +1669,10 @@ func TestRecommendationService_ParseLastFmMatch(t *testing.T) {
 	// Empty string returns 0.5
 	assert.Equal(t, 0.5, svc.parseLastFmMatch(""))
 
-	// Non-empty returns 0.7 (mock implementation)
-	assert.Equal(t, 0.7, svc.parseLastFmMatch("0.85"))
+	// CAT-001: the value is parsed, not replaced by a constant.
+	assert.Equal(t, 0.85, svc.parseLastFmMatch("0.85"))
+	assert.Equal(t, 0.2, svc.parseLastFmMatch("0.2"))
+	assert.Equal(t, 0.5, svc.parseLastFmMatch("not-a-number"))
 }
 
 func TestRecommendationService_PassesFilters_NilFilters(t *testing.T) {

@@ -215,22 +215,12 @@ export const CollectionExport: React.FC<CollectionExportProps> = ({
   const handleExport = useCallback(async () => {
     setIsExporting(true)
     setExportProgress({
-      stage: 'Preparing export',
+      stage: 'Generating export',
       progress: 0,
       total: items.length
     })
 
     try {
-      // Simulate export process
-      for (let i = 0; i <= 100; i += 10) {
-        await new Promise(resolve => setTimeout(resolve, 200))
-        setExportProgress(prev => prev ? {
-          ...prev,
-          progress: Math.floor((items.length * i) / 100),
-          stage: i < 30 ? 'Preparing files' : i < 70 ? 'Processing items' : i < 90 ? 'Generating export' : 'Finalizing'
-        } : null)
-      }
-
       // Generate actual export data
       const exportData = {
         collection: {
@@ -363,23 +353,9 @@ export const CollectionExport: React.FC<CollectionExportProps> = ({
   const handleImport = useCallback(async () => {
     if (!importFile || !importPreview) return
     
-    setIsImporting(true)
-    
-    try {
-      // Simulate import process
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      toast.success(`Successfully imported ${importPreview.newItems} items`)
-      setImportFile(null)
-      setImportPreview(null)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
-    } catch (error) {
-      toast.error('Import failed')
-    } finally {
-      setIsImporting(false)
-    }
+    // The server has no collection import endpoint. The earlier version waited two
+    // seconds and reported a successful import without importing anything (CAT-001).
+    toast.error('Import is not available: the server has no collection import endpoint. Nothing was imported.')
   }, [importFile, importPreview])
 
   const formatFileSize = (bytes: number): string => {

@@ -57,21 +57,8 @@ const AIDashboard: React.FC = () => {
     automation: false
   });
 
-  // Update metrics periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setState(prev => ({
-        ...prev,
-        metrics: {
-          ...prev.metrics,
-          processedItems: prev.metrics.processedItems + Math.floor(Math.random() * 5),
-          lastUpdate: new Date().toISOString()
-        }
-      }));
-    }, 30000); // Update every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
+  // The processed-items counter used to be bumped by a random number every 30 seconds.
+  // Nothing measures it, so it no longer changes on its own (CAT-001).
 
   // Handle section navigation
   const handleSectionChange = useCallback((section: AIDashboardState['activeSection']) => {
@@ -301,7 +288,7 @@ const AIDashboard: React.FC = () => {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">Processed Items</p>
-              <p className="text-2xl font-bold text-gray-900">{state.metrics.processedItems.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900">Unavailable</p>
             </div>
           </div>
         </div>
@@ -313,7 +300,7 @@ const AIDashboard: React.FC = () => {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">AI Accuracy</p>
-              <p className="text-2xl font-bold text-gray-900">{state.metrics.accuracyScore}%</p>
+              <p className="text-2xl font-bold text-gray-900">Unavailable</p>
             </div>
           </div>
         </div>
@@ -325,7 +312,7 @@ const AIDashboard: React.FC = () => {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">Time Saved</p>
-              <p className="text-2xl font-bold text-gray-900">{state.metrics.timeSaved}</p>
+              <p className="text-2xl font-bold text-gray-900">Unavailable</p>
             </div>
           </div>
         </div>
@@ -346,16 +333,16 @@ const AIDashboard: React.FC = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Automation Rules</span>
-                <span className="text-sm font-medium">{state.metrics.automationRules} active</span>
+                <span className="text-sm font-medium">Unavailable</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Active Predictions</span>
-                <span className="text-sm font-medium">{state.metrics.predictionsActive}</span>
+                <span className="text-sm font-medium">Unavailable</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Last Update</span>
                 <span className="text-sm text-gray-600">
-                  {new Date(state.metrics.lastUpdate).toLocaleTimeString()}
+                  Unavailable
                 </span>
               </div>
             </div>
@@ -506,7 +493,7 @@ const AIDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-900">AI Automation</h2>
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">{state.metrics.automationRules} rules active</span>
+                <span className="text-sm text-gray-600">Automation unavailable</span>
                 <button
                   onClick={() => toggleSectionExpansion('automation')}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors"

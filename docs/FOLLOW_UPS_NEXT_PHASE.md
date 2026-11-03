@@ -351,6 +351,18 @@ Source: independent Opus review (round 9) of the gate (fixture suite 276/276, fu
 - Wrapper review (716d36fb, Opus): open, not done by operator decision: m1, m3, m4 (minor findings of that review), t2 (test gap), d2 (doc gap), and the question whether BLIND should be split by reason (for example missing object store versus missing gate versus no remote tip) so that only some reasons are deferrals; all need the reviewer's text and an operator decision before work. Done in the follow-up commit: gate exit 1 with no `NONFF own` line is now a refusal 10 (was read as pass); `SUBFF_RANGE_BUDGET` clamped to at most 100.
 - C1 (wrapper review round 3, not done): a remote whose name contains a slash is not matched by the `refs/remotes/*/main` glob in `check_submodule_ff_range.sh`, so its main tip is not checked; enumerate remotes with `git remote` and `refs/remotes/<name>/main` instead.
 
+## CAT-001 follow-ups (tracked; not fixed in the CAT-001 remediation)
+These are NOT claimed benign. Line numbers are as of the CAT-001 round-1 remediation commits in `catalog-api`.
+- `internal/services/translation_service.go` (~223-229): language detection returns a fixed mock confidence of 0.8 instead of a measured value.
+- `internal/services/music_recognition_provider.go`: chroma/MFCC features are derived from file bytes (pseudo features), not from decoded audio.
+- `internal/services/deep_linking_service.go` `GetAppConfiguration`: returns a static default configuration, not stored/queried config.
+- `internal/services/lyrics_service.go`: `getCachedLyrics` / `getCachedTranslation` are always-nil cache stubs; `detectConcertSetlist` (~830) returns an empty list.
+- `internal/services/recommendation_service.go` `findSimilarGames`: swallows provider errors (returns fewer results with no error).
+- `internal/services/game_software_recognition_provider.go` `recognizeSoftware` GitHub/SourceForge paths: not audited in CAT-001.
+- `tests/mocks/smb_mock_server.go`: test-only mock server (legal only for unit-class use per section 11.4.289).
+- `handlers/sysmetrics_cpu_linux.go` `hostCPUPercent`: samples /proc/stat over a deliberate 200ms window (a real measurement, not a stub; kept on purpose, adds 200ms to the system-info call).
+- `GetCoverURL` goroutine panic seen once during CAT-001 work: UNCONFIRMED, see the investigation note below if present.
+- Live OCR.space call (book OCR) was not exercised; only the not-configured and tesseract paths are tested.
 - CAT-021 tracked follow-ups (review rounds 1-2, low): M2 the startup hash check costs one bcrypt compare per denylist candidate per admin account (about 11 x cost) - cache or short-circuit if admin counts grow; M6 the template rule (`<...>`, `${`, `$(`, `{{`) also rejects strong passwords that legitimately contain those sequences - document or add an operator override; N2 `internal/auth` `AuthService.Initialize` (plain-bcrypt schema) is unused outside tests, so only `main.go` seedDefaultAdmin/`admin-reset-password` protect the real schema - remove or unify; the JSON bank FQA-ATV-141 and the YAML banks type the literal `${ADMIN_PASSWORD}` until HelixQA expands env in step text (CAT-021-F4).
 
 - CAT-021 round 5 (review round 4 findings): FIXED F1 (every `/api/v1` request now verifies the token's session is active, owned by the subject and unexpired; fails closed on DB error or missing `session_id` claim; one primary-key read per request, not cached), F2 (compose gate mutations M7/M8), F3 (shape regex anchored on both halves), F4, F5, F6, F7. NOT FIXED / honest limits: F8 the `admin-reset-password` path was only run against SQLite; the Postgres reset path and the container form (`docker compose run ... admin-reset-password`) were NEVER run. Strong passphrases containing a marker substring (for example `My-Secure-Passphrase-2026!xQ` contains `securepass`) are still refused by the substring marker list; making the markers exact would weaken the compromised-value list, so it stays a known limitation (operator decision needed). Session lookup per request adds one indexed read; a short TTL cache would trade revocation latency for load and was not added. Tokens issued by `GenerateToken` (no `session_id`) are rejected once a checker is installed; no production path mints them.
@@ -578,6 +590,42 @@ Status: OPEN until a commit on `main` closes the item.
 - Link-check false positives to exclude when the checker lands: backticked code such as `NewValue[T](loader)` in `docs/architecture/LAZY_LOADING.md` and spec 001 doc 19, and links into submodules that are not checked out.
 
 
+## CAT-001 review R1 deferrals (2026-11-03)
+
+Status: OPEN until a commit on `main` closes the item.
+
+- F10 (latent source-defect, round 2 corrected): `ConfigurationWizardService.testNetworkDatabaseConnection` dials a user-supplied host:port. `NewConfigurationWizardService` is never constructed in production code today, so the probe is unreachable now; it becomes an SSRF-shaped probe the moment the service is wired. Before wiring it, add an allow-list or private-range policy and a test through the real router.
+- F2 follow-up: `POST /api/v1/copy/storage`, `POST /api/v1/admin/storage/scan` (use `POST /api/v1/scans`), `POST /api/v1/admin/backups/{id}/restore`, `GET /api/v1/sync/devices`, `/sync/conflicts`, `/translations`, `/localization/*` and `/recommendations*` now answer 501 because no engine exists. Building a real copy-to-storage engine, restore, recommendation engine, device registry and localization catalog is feature work, not done here.
+- F2 web follow-up: `CollectionAutomation`, `AIUserBehaviorAnalytics`, `AIPredictions`, `AISmartOrganization` show an "unavailable" state; the collection-analytics usage tabs and the dashboard activity feed need a server-side events source before they can show data.
+- F3 follow-up: no subtitle provider client is implemented; `GET /subtitles/providers` is an empty list and `POST /subtitles/search` is 501 until at least one client (for example OpenSubtitles) is written and live-tested.
+
+## CAT-001 review R2 residual fake-data inventory (2026-11-03)
+
+Converted to an honest unavailable state with vitest tests: CollectionExport import, SmartCollectionBuilder test-rules, CollectionRealTime, AIMetadata, AIComponents, AIAnalytics, CollectionAutomation, CollectionAnalytics, ActivityFeed, AIDashboard metrics and random counter, Dashboard user statistics, Analytics random growth chart fallback.
+
+Remaining, deliberately not changed (reason in each):
+
+- `pages/AIDashboard.tsx` and `pages/Collections.tsx` pass literal "Sample Content" items to the AI panels. The panels are unavailable placeholders that ignore their props, so nothing invented is displayed; remove the literals when the panels are rebuilt on a real engine.
+- `components/collections/AdvancedSearch.tsx:199`, `SmartCollectionBuilder.tsx:100` and `components/upload/UploadManager.tsx:50` use `Math.random` only to mint client-side ids, not displayed data.
+- "Sample Items" headings in CollectionExport and SmartCollectionBuilder label real parsed or matched items, not invented ones; SubtitleSyncModal "Sample Duration" is a real input label.
+- `lib/adminApi.ts` and `lib/identitiesApi.ts` mention "mock" only in comments saying they never fake a response.
+- Test-only helpers (`test-setup.ts`, `src/test/`) are not user reachable.
+
+## CAT-001 review R3 class inventory (2026-11-03)
+
+Class: user-reachable UI or API output that is not derived from real data or a real action (invented numbers, timer-driven progress or status, canned arrays, "queued"/"started"/"success" answers with no side effect).
+Instrument: `sweep.sh` (grep over `catalog-web/src` non-test for Math.random, simulate/mock/fake wording, setTimeout/setInterval, trend and delta strings, 'connected'/'Live' literals, count/size/popularity literals; plus a grep for StatusAccepted/"queued"/"accepted"/"started" over `catalog-api` non-test Go). Control needles found by it: UploadManager "Simulate", Analytics "+12% from last", CollectionSharing 'connected', CollectionTemplates size '45.2 GB', CollectionExport "Simulate export", stub_handler.go "Metadata refresh queued"; a fabricated needle returned 0 hits.
+
+Fixed in R3 (with tests): UploadManager (no timers; "not available" without an upload handler, success only after the handler resolves); MediaBrowser (no fake onUpload); DashboardStats (trends removed, quality from real counts); Analytics (change/trend props removed; W4 test added, mutation dies); CollectionTemplates (popularity, counts, sizes, estimated items and the "Most Popular" sort removed); CollectionSharing (fake "Live" status removed); CollectionExport (timed fake progress removed); ExternalIntegrations (test, sync, toggle and delete report the server's real answer; no success toast on 404); Admin (restore/scan show the server's 501 guidance); `POST /api/v1/media/:id/refresh` (501, no row change); `POST /api/v1/entities/:id/metadata/refresh` with no database (501); openapi and API_DOCUMENTATION (refresh, trending summary); CH-145 challenge (501 or 404).
+
+Reviewed, real, not changed: `POST /scans` (202 after a real `QueueScan`); `POST /admin/backups` (real file written; 202 with status "completed"); `POST /media/analyze` (a DB lookup via `mediaQueryHandler.AnalyzeMedia`, stub_handler.go:418; it analyses nothing, it reads stored rows); `EnrichAllEntities` (real background goroutine); `ConnectionStatus` interval (reads the real WebSocket state); `SplashScreen`, `PlaylistPlayer`, `MediaPlayer`, `PerformanceOptimizer`, `Collections.tsx` debounce, `lib/utils.ts`, `useDebounce`, `SubtitleUploadModal` form reset (UI timing, no invented data); Math.random id minting (AdvancedSearch, SmartCollectionBuilder, UploadManager).
+
+Listed, not fixed (reason):
+- `pages/AIDashboard.tsx` setTimeout alert handlers and "Sample Content" literals: the panels are unavailable placeholders that ignore their props, so the handlers cannot fire.
+- `components/performance/MemoCache.tsx` "for now" measurement stubs: performance utility, shows no user data.
+- `ExternalIntegrations` create/save are local-only because the server has no `/integrations` API; the toasts now say so. A backend integrations API is the real fix.
+- Admin storage "Scan" cannot start a real scan from a path: `POST /scans` needs a `storage_root_id`. The UI shows the server's guidance.
+
 
 ## Authorization gaps (branch fix-authz-gaps, CAT-049/050/051/052)
 
@@ -645,6 +693,29 @@ Source: independent Opus review of `scripts/docs/check_md_links.py` (merge 71ab0
 4. nit: `check_md_links.py` anchor lookup falls back to case-insensitive match; UNCONFIRMED whether GitHub resolves mixed-case fragments that way.
 5. nit: setext heading underline requires `-{2,}`; CommonMark accepts a single `-`.
 
+## CAT-001 review R4 class inventory (2026-11-03)
+
+Class: user-reachable output that is not derived from real data or a real action.
+Instruments (independent of `sweep.sh`): the reviewer's `sweep4.py` (web and API pattern sweep), `toasts.py` (every `toast.success(` in catalog-web non-test code, flagged when no `await`/`onSuccess`/`mutateAsync` precedes it in the enclosing function) and `goerr.py` (Go `if err != nil` blocks that answer 200/201/202). Control needles: `sweep4.py` negative control 0 hits, positive controls found Math.random / StatusAccepted / `"success": true` sites; `toasts.py` found the known `useFavorites.tsx:61` and `Collections.tsx:417-453` sites; `goerr.py` found the known `admin_handler.go` storage-list site before the fix and none after (remaining hits reviewed below).
+
+Fixed in R4 (RED test first, mutation killed): R4-1 Dashboard system status (real `/admin/system-info` figures or "Unavailable", no invented Online/Network); R4-2 Dashboard quick actions (real navigation; Scan Library disabled with a reason); R4-3 `GET /configuration/status` (501, no invented health); R4-4 template apply (real create call, success only after the server answers; the server refuses smart collections with 501, so a template apply fails honestly); smart collections: `POST/PUT /collections` answer 501 for `is_smart` / `smart_rules` instead of silently dropping them; R4-5 AdvancedSearch (Search disabled with a reason, "Search saved for this session only"), CollectionPreview (no fake "Playing/Previewing/Downloading" toasts, no Download button); R4-7 media refresh test (snapshot taken before any call; constant-write mutation dies); N4/N5 ExternalIntegrations toggle and delete failure tests; R4-9a `GET /admin/storage` DB error is 500, not 200 `[]`; sweep finds: CollectionSharing "QR Code" (copied an invented `catalogizer.app/shared/<id>/qr-<ts>` URL and said a QR code was copied: now disabled with a stated reason) and `copyToClipboard` (success toast before the write resolved: now awaited, error toast on rejection); `download.go` directory `estimated_archive_size` (was the directory entry's own size, labelled "Placeholder": now omitted).
+
+Remaining members, with disposition (nothing below is silently accepted):
+- R4-6 `catalog-web/src/pages/Collections.tsx:411-453`: nine AI handlers toast success ("AI suggestion applied", "AI rule executed", ...) for actions they do not perform; they cannot fire today because the AI components ignore these props. Disposition: remove the handlers or wire real actions when the AI components get real props.
+- R4-9b `SmartCollectionBuilder` save: now shows the server's 501 as a generic mutation error ("Request failed with status code 501"); an explicit message is a UI follow-up. Smart collection storage and evaluation (tables, rule evaluator, endpoint) is the real fix.
+- `catalog-web/src/hooks/useFavorites.tsx:61`: "Added to favorites" is toasted in `onMutate`, before the server answers (the optimistic update is rolled back on error, but the success toast is not retracted). Disposition: move the toast to `onSuccess`.
+- `catalog-api/handlers/localization_handlers.go:423`: constant `confidence: 1.0` in a response. Disposition: derive or drop.
+- `mediaApi.analyzeDirectory` (`catalog-web/src/services/mediaApi.ts`) sends `directory_path`, the handler reads `path` or `id`; no caller remains after R4-2. Disposition: fix or delete when a scan-from-dashboard feature is built.
+- Admin `POST /admin/storage/scan` is 501 by design (use `POST /api/v1/scans`).
+- `catalog-web/src/pages/Dashboard.tsx:371` "Files This Week" sums `growthTrends[*].files_added`; UNCONFIRMED that the server returns exactly seven days. Disposition: label from the returned range or request a 7-day window.
+- `catalog-web/src/components/collections/CollectionSharing.tsx` embed tab: the iframe points at `/embed/<id>`; UNCONFIRMED that route exists (no server or SPA route was found by name in this review).
+- `catalog-web/src/components/collections/ExternalIntegrations.tsx:820,924`: success toasts for local-only add/update state; they say "added locally ... not saved on the server", which is honest. Disposition: remove with the integrations stub UI.
+- `catalog-web/src/pages/Playlists.tsx:197`, `AdvancedSearch.tsx:279,285,290`, `SmartCollectionBuilder.tsx:216`: toasts for in-page state changes (form items, presets); the state change is real and visible, so they are accurate.
+- `Favorites.tsx:36` export toast follows a real Blob download; `EntityDetail.tsx:60` is `onSuccess` of the download mutation (it reports "started" after the request resolved).
+- `catalog-api/handlers/media_handler.go:211` "Watch progress accepted" is honest (`persisted: false` with the reason).
+- `catalog-api/handlers/admin_handler.go:365` (backup list) returns `[]` when the backup directory cannot be read; a missing directory means no backups, but a permission error is indistinguishable; left for the next iteration.
+- Pre-existing gofmt diffs in `download.go` (indentation near `ResolveSMBIdentity`), `media_entity_handler.go` and its test; not reformatted here.
+
 Authz round-2 additions (landed with fix-authz-gaps):
 
 - R2 (authz): `/admin/image-quality/revalidate` and `/admin/covers/generate-thumbnails` were registered on the plain API group (any authenticated user could trigger the sweeps); they now carry `RequireAdmin` per route. They were NOT moved into `adminGroup`, because that group also installs the CSRF guard and existing bearer-token clients of these two POSTs send no CSRF token; moving them is an operator decision. `TestAdminGate_RealBinary` pins the gate on the real binary; the group's `RequireAdmin` is distinguishable from the handlers' own permission checks only by a `system.configure`-only role (handlers of /admin/config etc. check their own permission).
@@ -681,3 +752,12 @@ Source fix (SearchFiles pool deadlock) confirmed correct (RED reproduced, semant
 - F6 (minor): SIGKILL integrity oracle has no golden-bad (corrupt DB) control.
 - F7 (source-defect, minor): `services/conversion_proc_unix.go:16` converter children have Setpgid but no Pdeathsig; after a server SIGKILL a running `convert` can orphan and race the requeued job on the same output file.
 - F8 (nit): about 424 MB left under `.scaling-live-artifacts/` per run, no rotation. F9 (nit): factor 25 and RSS bounds are chosen, not measured (disclosed); `go build` runs on the bare host, not in a container (11.4.173 exception for local containerised builds not applied to test builds).
+
+## CAT-001 review R5 (2026-11-03, extra operator-approved round)
+
+Fixed (RED test first, mutation killed): R5-1 CollectionSharing (no `/collections/:id/share*` routes exist on the server): Create Share Link, Send Invitations and Copy Embed Code are disabled with a stated reason, no URL is invented, the embed iframe for the non-existent `/embed/<id>` route is no longer shown, and the (currently unreachable) create/revoke/delete/email handlers now treat anything but `response.ok` as failure; R5-2 smart playlists: `POST /playlists` answers 501 for `is_smart` / `smart_rules` (nothing stored) and the Smart Builder's Save is disabled with the reason; R5-3 `scripts/run-full-qa.sh`, `scripts/run-helixqa.sh` and `docker-compose.qa.yml` now expect 501 for `/configuration/status` and `/recommendations/trending` (run-helixqa also drops `curl -f`, which appended "000" to the status); R5-4 template "Create Collection" is disabled with a reason (templates are smart collections, always 501); R5-5 "Memory Usage" is relabelled "API Process Memory (heap in use / reserved)" in Dashboard and AdminPanel (the figure is the Go heap ratio, not host memory); R5-6 openapi: 501 on PUT `/collections/{id}`, 500 on GET `/admin/storage`, 501 on POST `/playlists`; `useFavorites`: "Added to favorites" is now toasted in `onSuccess` (and the optimistic updater no longer wipes the cache on add).
+
+Remaining, listed for the next iteration:
+- R5-7 `GET /auth/init-status` (`stub_handler.go:631`, `MediaQueryHandler.GetInitStatus`) always answers `{"initialized": true}` without looking at the database. Disposition: derive from the user count or document it as a constant.
+- `CollectionSharing` handlers (create/revoke/delete/email) are strict but unreachable behind `SHARE_API_AVAILABLE = false`; no test drives them until the server grows the routes. Same for `TEMPLATE_APPLY_AVAILABLE`.
+- `localization_handlers.go:423` constant `confidence: 1.0`, Collections.tsx:411-453 AI toasts, `mediaApi.analyzeDirectory` payload: unchanged from the R4 inventory above.

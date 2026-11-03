@@ -62,32 +62,36 @@ export const UploadManager: React.FC<UploadManagerProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // The upload is whatever the host's onUpload does. There is no timer-driven progress and
+  // success is shown only after onUpload resolves. Without onUpload nothing can be sent, so
+  // each file is marked failed with that reason (CAT-001: the old version simulated progress
+  // and showed a green success for a file that was never sent).
   const startUploads = useCallback(async (items: UploadItem[]) => {
     for (const item of items) {
+      if (!onUpload) {
+        setUploadQueue(prev =>
+          prev.map(i => i.id === item.id ? {
+            ...i,
+            status: 'error',
+            error: 'Upload is not available: the server has no upload endpoint. The file was not sent.'
+          } : i)
+        );
+        continue;
+      }
       try {
-        setUploadQueue(prev => 
+        setUploadQueue(prev =>
           prev.map(i => i.id === item.id ? { ...i, status: 'uploading' } : i)
         );
-
-        // Simulate upload progress
-        for (let progress = 0; progress <= 100; progress += 10) {
-          await new Promise(resolve => setTimeout(resolve, 200));
-          setUploadQueue(prev => 
-            prev.map(i => i.id === item.id ? { ...i, progress } : i)
-          );
-        }
-
-        setUploadQueue(prev => 
-          prev.map(i => i.id === item.id ? { ...i, status: 'success' } : i)
+        await onUpload([item.file]);
+        setUploadQueue(prev =>
+          prev.map(i => i.id === item.id ? { ...i, status: 'success', progress: 100 } : i)
         );
-
-        onUpload?.([item.file]);
       } catch (error) {
-        setUploadQueue(prev => 
-          prev.map(i => i.id === item.id ? { 
-            ...i, 
-            status: 'error', 
-            error: error instanceof Error ? error.message : 'Upload failed' 
+        setUploadQueue(prev =>
+          prev.map(i => i.id === item.id ? {
+            ...i,
+            status: 'error',
+            error: error instanceof Error ? error.message : 'Upload failed'
           } : i)
         );
       }

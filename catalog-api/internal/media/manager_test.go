@@ -1093,9 +1093,8 @@ func TestGetMediaTypeDistribution_WithItems(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 func TestGetQualityDistribution_ReturnsExpectedKeys(t *testing.T) {
-	mm := &MediaManager{
-		logger: zap.NewNop(),
-	}
+	mm := buildTestManager(t)
+	defer mm.mediaDB.Close()
 
 	distribution, err := mm.getQualityDistribution()
 	assert.NoError(t, err)
@@ -1113,9 +1112,8 @@ func TestGetQualityDistribution_ReturnsExpectedKeys(t *testing.T) {
 }
 
 func TestGetQualityDistribution_HasFiveEntries(t *testing.T) {
-	mm := &MediaManager{
-		logger: zap.NewNop(),
-	}
+	mm := buildTestManager(t)
+	defer mm.mediaDB.Close()
 
 	distribution, err := mm.getQualityDistribution()
 	assert.NoError(t, err)
@@ -2236,8 +2234,9 @@ func TestGetStatistics_PartialResults_OnDBErrors(t *testing.T) {
 	assert.Contains(t, stats, "timestamp")
 	assert.Contains(t, stats, "uptime")
 
-	// Quality distribution is hardcoded and doesn't use DB
-	assert.Contains(t, stats, "quality")
+	// Quality distribution is read from the DB; with the DB closed it is
+	// absent (an honest gap), not fabricated zeros.
+	assert.NotContains(t, stats, "quality")
 }
 
 // ---------------------------------------------------------------------------

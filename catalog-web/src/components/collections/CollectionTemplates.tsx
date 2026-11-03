@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
-  Star,
   TrendingUp,
   Folder,
   FileText,
@@ -35,18 +34,19 @@ interface CollectionTemplate {
   rules?: Array<Record<string, unknown>>;
   settings?: Record<string, unknown>;
   metrics?: {
-    popularity: number;
     complexity: 'simple' | 'medium' | 'advanced';
-    estimatedItems?: string;
     lastUpdated?: string;
   };
   tags: string[];
   preview?: {
     type: string;
-    count: number;
-    size: string;
   };
 }
+
+// CAT-001 (R5): every template is a smart collection and the server answers 501 for those (rules are neither
+// stored nor evaluated), so applying is disabled with a reason instead of offering a button that always fails.
+const TEMPLATE_APPLY_AVAILABLE = false;
+const TEMPLATE_APPLY_REASON = 'Creating from a template is not available: templates are smart collections, which the server does not support yet. Nothing was created.';
 
 interface CollectionTemplatesProps {
   onClose: () => void;
@@ -81,15 +81,11 @@ const COLLECTION_TEMPLATES: CollectionTemplate[] = [
       { field: 'rating', operator: 'greater_than', value: 4.0 }
     ],
     metrics: {
-      popularity: 95,
-      complexity: 'simple',
-      estimatedItems: '~50-200'
+      complexity: 'simple'
     },
     tags: ['movies', 'recent', 'high-rated'],
     preview: {
-      type: 'Video',
-      count: 127,
-      size: '45.2 GB'
+      type: 'Video'
     }
   },
   {
@@ -109,15 +105,11 @@ const COLLECTION_TEMPLATES: CollectionTemplate[] = [
       includePlaylists: false
     },
     metrics: {
-      popularity: 88,
-      complexity: 'medium',
-      estimatedItems: '~1000-5000'
+      complexity: 'medium'
     },
     tags: ['music', 'genres', 'organized'],
     preview: {
-      type: 'Audio',
-      count: 2847,
-      size: '12.8 GB'
+      type: 'Audio'
     }
   },
   {
@@ -137,15 +129,11 @@ const COLLECTION_TEMPLATES: CollectionTemplate[] = [
       faceDetection: true
     },
     metrics: {
-      popularity: 92,
-      complexity: 'advanced',
-      estimatedItems: '~5000-20000'
+      complexity: 'advanced'
     },
     tags: ['photos', 'images', 'library'],
     preview: {
-      type: 'Images',
-      count: 8472,
-      size: '67.3 GB'
+      type: 'Images'
     }
   },
   // Workflow Templates
@@ -166,15 +154,11 @@ const COLLECTION_TEMPLATES: CollectionTemplate[] = [
       progressTracking: true
     },
     metrics: {
-      popularity: 85,
-      complexity: 'medium',
-      estimatedItems: '~25-100'
+      complexity: 'medium'
     },
     tags: ['watchlist', 'tracking', 'workflow'],
     preview: {
-      type: 'Mixed',
-      count: 43,
-      size: '156 GB'
+      type: 'Mixed'
     }
   },
   {
@@ -194,15 +178,11 @@ const COLLECTION_TEMPLATES: CollectionTemplate[] = [
       notificationEnabled: true
     },
     metrics: {
-      popularity: 72,
-      complexity: 'advanced',
-      estimatedItems: '~10-50'
+      complexity: 'advanced'
     },
     tags: ['review', 'quality', 'workflow'],
     preview: {
-      type: 'Mixed',
-      count: 18,
-      size: '4.2 GB'
+      type: 'Mixed'
     }
   },
   // Organization Templates
@@ -221,15 +201,11 @@ const COLLECTION_TEMPLATES: CollectionTemplate[] = [
       createSubCollections: true
     },
     metrics: {
-      popularity: 78,
-      complexity: 'simple',
-      estimatedItems: '~3000-15000'
+      complexity: 'simple'
     },
     tags: ['organization', 'timeline', 'decades'],
     preview: {
-      type: 'Mixed',
-      count: 5934,
-      size: '892.4 GB'
+      type: 'Mixed'
     }
   },
   {
@@ -248,15 +224,11 @@ const COLLECTION_TEMPLATES: CollectionTemplate[] = [
       includeCollaborative: true
     },
     metrics: {
-      popularity: 65,
-      complexity: 'medium',
-      estimatedItems: '~200-1000'
+      complexity: 'medium'
     },
     tags: ['work', 'projects', 'organization'],
     preview: {
-      type: 'Documents',
-      count: 342,
-      size: '23.8 GB'
+      type: 'Documents'
     }
   },
   // Automation Templates
@@ -277,15 +249,11 @@ const COLLECTION_TEMPLATES: CollectionTemplate[] = [
       maxItems: 100
     },
     metrics: {
-      popularity: 91,
-      complexity: 'advanced',
-      estimatedItems: '~50-100'
+      complexity: 'advanced'
     },
     tags: ['ai', 'suggestions', 'automation'],
     preview: {
-      type: 'Mixed',
-      count: 87,
-      size: '45.2 GB'
+      type: 'Mixed'
     }
   },
   {
@@ -304,15 +272,11 @@ const COLLECTION_TEMPLATES: CollectionTemplate[] = [
       includeSocialSignals: true
     },
     metrics: {
-      popularity: 96,
-      complexity: 'medium',
-      estimatedItems: '~25-75'
+      complexity: 'medium'
     },
     tags: ['trending', 'popular', 'automation'],
     preview: {
-      type: 'Mixed',
-      count: 34,
-      size: '28.7 GB'
+      type: 'Mixed'
     }
   }
 ];
@@ -327,7 +291,7 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
   const [selectedTemplate, setSelectedTemplate] = useState<CollectionTemplate | null>(null);
   const [collectionName, setCollectionName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const [sortBy, setSortBy] = useState<'popularity' | 'name' | 'complexity' | 'updated'>('popularity');
+  const [sortBy, setSortBy] = useState<'name' | 'complexity' | 'updated'>('name');
 
   const filteredTemplates = useMemo(() => {
     const filtered = COLLECTION_TEMPLATES.filter(template => {
@@ -343,8 +307,6 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
     // Sort templates
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'popularity':
-          return (b.metrics?.popularity || 0) - (a.metrics?.popularity || 0);
         case 'name':
           return a.name.localeCompare(b.name);
         case 'complexity': {
@@ -440,9 +402,8 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
             
             <Select
               value={sortBy}
-              onChange={(value) => setSortBy(value as 'popularity' | 'name' | 'complexity' | 'updated')}
+              onChange={(value) => setSortBy(value as 'name' | 'complexity' | 'updated')}
               options={[
-                { value: 'popularity', label: 'Most Popular' },
                 { value: 'name', label: 'Name' },
                 { value: 'complexity', label: 'Complexity' },
                 { value: 'updated', label: 'Recently Updated' }
@@ -500,10 +461,6 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                      <span className="text-xs text-gray-600 dark:text-gray-400">{template.metrics?.popularity || 0}%</span>
-                    </div>
                   </div>
                   
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
@@ -514,16 +471,12 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
                     <Badge className={COMPLEXITY_COLORS[template.metrics?.complexity || 'simple']}>
                       {getComplexityLabel(template.metrics?.complexity || 'simple')}
                     </Badge>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {template.metrics?.estimatedItems || 'N/A'}
-                    </span>
                   </div>
                   
                   {template.preview && (
                     <div className="text-xs text-gray-600 dark:text-gray-400">
                       <div className="flex items-center justify-between">
                         <span>{template.preview.type}</span>
-                        <span>{template.preview.count} items</span>
                       </div>
                     </div>
                   )}
@@ -549,16 +502,10 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
                           <Badge className={COMPLEXITY_COLORS[template.metrics?.complexity || 'simple']}>
                             {getComplexityLabel(template.metrics?.complexity || 'simple')}
                           </Badge>
-                          <div className="flex items-center gap-1">
-                            <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                            <span className="text-xs text-gray-600 dark:text-gray-400">{template.metrics?.popularity || 0}%</span>
-                          </div>
                         </div>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-300">{template.description}</p>
                       <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                        <span>{template.metrics?.estimatedItems || 'N/A'}</span>
-                        {template.preview && <span>{template.preview.count} items</span>}
                         {template.metrics?.lastUpdated && <span>Updated {template.metrics.lastUpdated}</span>}
                       </div>
                     </div>
@@ -620,21 +567,10 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
                         <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Metrics</h4>
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600 dark:text-gray-400">Popularity</span>
-                            <div className="flex items-center gap-1">
-                              <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                              <span className="text-sm font-medium">{selectedTemplate.metrics?.popularity || 0}%</span>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-600 dark:text-gray-400">Complexity</span>
                             <Badge className={COMPLEXITY_COLORS[selectedTemplate.metrics?.complexity || 'simple']}>
                               {getComplexityLabel(selectedTemplate.metrics?.complexity || 'simple')}
                             </Badge>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600 dark:text-gray-400">Estimated Items</span>
-                            <span className="text-sm font-medium">{selectedTemplate.metrics?.estimatedItems || 'N/A'}</span>
                           </div>
                         </div>
                       </div>
@@ -653,18 +589,10 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
                       <div>
                         <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Preview</h4>
                         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                          <div className="grid grid-cols-3 gap-4 text-center">
-                            <div>
-                              <div className="text-2xl font-bold text-gray-900 dark:text-white">{selectedTemplate.preview.count}</div>
-                              <div className="text-sm text-gray-600 dark:text-gray-400">Items</div>
-                            </div>
+                          <div className="grid grid-cols-1 gap-4 text-center">
                             <div>
                               <div className="text-2xl font-bold text-gray-900 dark:text-white">{selectedTemplate.preview.type}</div>
                               <div className="text-sm text-gray-600 dark:text-gray-400">Type</div>
-                            </div>
-                            <div>
-                              <div className="text-2xl font-bold text-gray-900 dark:text-white">{selectedTemplate.preview.size}</div>
-                              <div className="text-sm text-gray-600 dark:text-gray-400">Size</div>
                             </div>
                           </div>
                         </div>
@@ -724,10 +652,14 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
                     </Button>
                     <Button
                       onClick={() => handleApplyTemplate(selectedTemplate)}
-                      disabled={!collectionName.trim() || isCreating}
+                      disabled={!TEMPLATE_APPLY_AVAILABLE || !collectionName.trim() || isCreating}
+                      title={TEMPLATE_APPLY_AVAILABLE ? undefined : TEMPLATE_APPLY_REASON}
                     >
                       {isCreating ? 'Creating...' : 'Create Collection'}
                     </Button>
+                    {!TEMPLATE_APPLY_AVAILABLE && (
+                      <p data-testid="template-apply-unavailable" className="text-sm text-gray-500">{TEMPLATE_APPLY_REASON}</p>
+                    )}
                   </div>
                 </div>
               </motion.div>

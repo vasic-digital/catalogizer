@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"catalogizer/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -250,8 +251,10 @@ func (suite *SubtitleHandlerTestSuite) TestGetSupportedProviders_Success() {
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.NoError(suite.T(), err)
 	assert.True(suite.T(), resp.Success)
-	assert.Equal(suite.T(), 5, resp.Count)
-	assert.Len(suite.T(), resp.Providers, 5)
+	// CAT-001: only providers with a working client are listed; none of the five has one yet.
+	assert.Equal(suite.T(), 0, resp.Count)
+	assert.NotNil(suite.T(), resp.Providers)
+	assert.Len(suite.T(), resp.Providers, 0)
 }
 
 func (suite *SubtitleHandlerTestSuite) TestGetSupportedProviders_AllSupported() {
@@ -267,6 +270,23 @@ func (suite *SubtitleHandlerTestSuite) TestGetSupportedProviders_AllSupported() 
 		assert.True(suite.T(), provider.Supported, "All providers should be marked as supported")
 		assert.NotEmpty(suite.T(), provider.Name, "Provider name should not be empty")
 		assert.NotEmpty(suite.T(), provider.Description, "Provider description should not be empty")
+	}
+}
+
+// CAT-001 F3: with no working provider client, a search is 501 NOT_IMPLEMENTED, not a 500 SEARCH_FAILED.
+func TestCAT001_F3_SearchWithoutWorkingProviderIs501(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	h := NewSubtitleHandler(services.NewSubtitleService(nil, zap.NewNop(), nil), zap.NewNop())
+	r := gin.New()
+	r.GET("/api/v1/subtitles/search", h.SearchSubtitles)
+	for _, q := range []string{"", "&providers=subscene", "&providers=addic7ed,opensubtitles"} {
+		req := httptest.NewRequest("GET", "/api/v1/subtitles/search?media_path=/m/x.mkv"+q, nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusNotImplemented, w.Code, q)
+		var resp ErrorResponse
+		assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+		assert.Equal(t, "NOT_IMPLEMENTED", resp.Code)
 	}
 }
 

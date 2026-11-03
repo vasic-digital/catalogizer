@@ -112,6 +112,32 @@ func (suite *CollectionHandlerTestSuite) TestCreateCollection_MissingName() {
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
 }
 
+// CAT-001 (R4-4/R4-9): is_smart / smart_rules were silently dropped and the collection was created
+// as a plain one. The nil repo means any path that reaches repo.Create panics, so these tests
+// also prove the request is refused before storage.
+func (suite *CollectionHandlerTestSuite) TestCreateCollection_SmartIsRefusedNotSilentlyDropped() {
+	for _, body := range []string{
+		`{"name":"S","is_smart":true,"smart_rules":[{"field":"genre"}]}`,
+		`{"name":"S","is_smart":true}`,
+		`{"name":"S","smart_rules":[{"field":"genre"}]}`,
+	} {
+		req := httptest.NewRequest("POST", "/api/v1/collections", bytes.NewBufferString(body))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		assert.NotPanics(suite.T(), func() { suite.router.ServeHTTP(w, req) }, body)
+		assert.Equal(suite.T(), http.StatusNotImplemented, w.Code, body)
+		assert.Contains(suite.T(), w.Body.String(), "Nothing was created")
+	}
+}
+
+func (suite *CollectionHandlerTestSuite) TestUpdateCollection_SmartIsRefused() {
+	req := httptest.NewRequest("PUT", "/api/v1/collections/1", bytes.NewBufferString(`{"is_smart":true}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	assert.NotPanics(suite.T(), func() { suite.router.ServeHTTP(w, req) })
+	assert.Equal(suite.T(), http.StatusNotImplemented, w.Code)
+}
+
 func (suite *CollectionHandlerTestSuite) TestCreateCollection_EmptyBody() {
 	req := httptest.NewRequest("POST", "/api/v1/collections", bytes.NewBufferString("{}"))
 	req.Header.Set("Content-Type", "application/json")

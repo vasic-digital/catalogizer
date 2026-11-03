@@ -258,7 +258,7 @@ const AdvancedSearch: React.FC = () => {
       setSavedSearches([...savedSearches, newSavedSearch]);
       setShowSaveDialog(false);
       setSaveName('');
-      toast.success('Search saved successfully');
+      toast.success('Search saved for this session only. It is not stored on the server.');
     } catch (error) {
       toast.error('Failed to save search');
     } finally {
@@ -283,17 +283,6 @@ const AdvancedSearch: React.FC = () => {
     setRules([...search.rules]);
     setSearchSettings({ ...search.settings });
     toast.success(`Loaded search: ${search.name}`);
-  };
-
-  const executeSearch = () => {
-    const enabledRules = rules.filter(rule => rule.enabled);
-    if (enabledRules.length === 0) {
-      toast.error('Please enable at least one search rule');
-      return;
-    }
-
-    // In a real implementation, this would execute the search
-    toast.success(`Searching with ${enabledRules.length} rules...`);
   };
 
   const clearRules = () => {
@@ -575,7 +564,11 @@ const AdvancedSearch: React.FC = () => {
               Save Search
             </Button>
             
-            <Button onClick={executeSearch} disabled={rules.filter(rule => rule.enabled).length === 0}>
+            {/* CAT-001: the server has no rule-based search endpoint, so no search can be run. */}
+            <Button
+              disabled
+              title="Rule-based search is not available: the server has no endpoint that evaluates these rules."
+            >
               <Search className="w-4 h-4 mr-2" />
               Search
             </Button>

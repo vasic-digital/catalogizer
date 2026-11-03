@@ -1,4 +1,6 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { toast } from 'react-hot-toast'
 import { CollectionPreview } from '../CollectionPreview'
 
 // Mock framer-motion
@@ -118,5 +120,33 @@ describe('CollectionPreview', () => {
     }
     render(<CollectionPreview collection={differentCollection as any} onClose={vi.fn()} />)
     expect(screen.getByText('Another Collection')).toBeInTheDocument()
+  })
+
+  describe('CAT-001: no success claim without an action', () => {
+    beforeEach(() => { vi.mocked(toast.success).mockClear(); vi.mocked(toast.error).mockClear() })
+
+    it('has no Download button that claims a download it does not perform', () => {
+      render(<CollectionPreview collection={mockCollection as any} onClose={vi.fn()} />)
+      expect(screen.queryAllByTitle('Download')).toHaveLength(0)
+    })
+
+    it('without handlers, previewing says it is unavailable instead of "Previewing item"', async () => {
+      const user = userEvent.setup()
+      const { container } = render(<CollectionPreview collection={mockCollection as any} onClose={vi.fn()} />)
+      const row = screen.getByText('Song A')
+      await user.click(row)
+      void container
+      expect(toast.success).not.toHaveBeenCalledWith('Previewing item')
+      expect(toast.success).not.toHaveBeenCalledWith('Playing item')
+    })
+
+    it('with a handler, previewing calls it and does not toast on its behalf', async () => {
+      const onPreviewItem = vi.fn()
+      const user = userEvent.setup()
+      render(<CollectionPreview collection={mockCollection as any} onClose={vi.fn()} onPreviewItem={onPreviewItem} />)
+      await user.click(screen.getByText('Song A'))
+      expect(onPreviewItem).toHaveBeenCalledWith('1')
+      expect(toast.success).not.toHaveBeenCalled()
+    })
   })
 })

@@ -1,100 +1,51 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { CollectionAnalytics } from '../CollectionAnalytics'
 
-// Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, className, onClick, ...props }: any) => (
-      <div className={className} onClick={onClick} {...props}>{children}</div>
-    ),
+    div: ({ children, className }: any) => <div className={className}>{children}</div>,
   },
   AnimatePresence: ({ children }: any) => <>{children}</>,
 }))
 
+const items = [
+  { id: 'a', title: 'Alpha', media_type: 'video', size: 2048, rating: 8, duration: 3600 },
+  { id: 'b', title: 'Beta', media_type: 'music', size: 1024, rating: 6, duration: 60 },
+  { id: 'c', title: 'Gamma', media_type: 'video', size: 0 },
+]
+
 vi.mock('../../../hooks/useCollections', () => ({
-  useCollection: vi.fn(() => ({
-    collectionItems: [],
-    isLoading: false,
-    isLoadingItems: true,
-  })),
+  useCollection: () => ({ collectionItems: { items }, isLoading: false }),
 }))
 
-const mockCollection = {
-  id: '1',
-  name: 'Test Collection',
-  description: 'A test collection',
-  is_smart: true,
-  smart_rules: [],
-  item_count: 2,
-  created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z',
-  is_public: false,
-  primary_media_type: 'music',
-  owner_id: 'user1',
-}
+const collection = { id: '1', name: 'Mine' } as any
 
-describe('CollectionAnalytics', () => {
-  it('exports CollectionAnalytics component', async () => {
-    const mod = await import('../CollectionAnalytics')
-    expect(mod.CollectionAnalytics).toBeDefined()
-    expect(typeof mod.CollectionAnalytics).toBe('function')
+describe('CollectionAnalytics (CAT-001: no fabricated analytics)', () => {
+  it('shows only figures derived from the real items', () => {
+    render(<CollectionAnalytics collection={collection} />)
+    expect(screen.getByText('3')).toBeInTheDocument() // total items
+    expect(screen.getByText('3 KB')).toBeInTheDocument() // 2048 + 1024 bytes
+    expect(screen.getByText('7.0')).toBeInTheDocument() // mean of the two rated items
+    expect(screen.getByText('Alpha')).toBeInTheDocument()
   })
 
-  it('component is a valid React function component', async () => {
-    const mod = await import('../CollectionAnalytics')
-    const Component = mod.CollectionAnalytics
-    expect(typeof Component).toBe('function')
+  it('renders identical output twice (nothing random)', () => {
+    const first = render(<CollectionAnalytics collection={collection} />).container.innerHTML
+    const second = render(<CollectionAnalytics collection={collection} />).container.innerHTML
+    expect(second).toBe(first)
   })
 
-  it('renders without initialization errors', async () => {
-    const mod = await import('../CollectionAnalytics')
-    const CollectionAnalytics = mod.CollectionAnalytics
-
-    expect(() => {
-      render(<CollectionAnalytics collection={mockCollection as any} />)
-    }).not.toThrow()
+  it('shows Unavailable for plays, downloads, shares and views instead of numbers or trend percentages', () => {
+    render(<CollectionAnalytics collection={collection} />)
+    expect(screen.getAllByText('Unavailable').length).toBeGreaterThanOrEqual(4)
+    expect(screen.queryByText(/vs last period/)).not.toBeInTheDocument()
   })
 
-  it('renders the collection analytics heading', async () => {
-    const mod = await import('../CollectionAnalytics')
-    const CollectionAnalytics = mod.CollectionAnalytics
-
-    render(<CollectionAnalytics collection={mockCollection as any} />)
-    expect(screen.getByText('Collection Analytics')).toBeInTheDocument()
-  })
-
-  it('renders the collection name', async () => {
-    const mod = await import('../CollectionAnalytics')
-    const CollectionAnalytics = mod.CollectionAnalytics
-
-    render(<CollectionAnalytics collection={mockCollection as any} />)
-    expect(screen.getByText('Test Collection')).toBeInTheDocument()
-  })
-
-  it('renders overview stats section', async () => {
-    const mod = await import('../CollectionAnalytics')
-    const CollectionAnalytics = mod.CollectionAnalytics
-
-    render(<CollectionAnalytics collection={mockCollection as any} />)
-    expect(screen.getByText('Overview')).toBeInTheDocument()
-  })
-
-  it('renders with onClose prop', async () => {
-    const mod = await import('../CollectionAnalytics')
-    const CollectionAnalytics = mod.CollectionAnalytics
-
-    const handleClose = vi.fn()
-    expect(() => {
-      render(<CollectionAnalytics collection={mockCollection as any} onClose={handleClose} />)
-    }).not.toThrow()
-  })
-
-  it('renders time range selector', async () => {
-    const mod = await import('../CollectionAnalytics')
-    const CollectionAnalytics = mod.CollectionAnalytics
-
-    render(<CollectionAnalytics collection={mockCollection as any} />)
-    // Should render a select/dropdown for time range
-    const selects = document.querySelectorAll('select')
-    expect(selects.length).toBeGreaterThanOrEqual(0)
+  it.each(['Activity', 'Sharing', 'Engagement'])('the %s tab says the statistics are not recorded', async (tab) => {
+    const user = userEvent.setup()
+    render(<CollectionAnalytics collection={collection} />)
+    await user.click(screen.getByText(tab))
+    expect(screen.getByTestId('usage-unavailable')).toBeInTheDocument()
   })
 })

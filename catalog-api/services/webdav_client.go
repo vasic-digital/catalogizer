@@ -1,11 +1,14 @@
 package services
 
 import (
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -223,18 +226,86 @@ func (c *WebDAVClient) GetFileSize(remotePath string) (int64, error) {
 	return info.Size(), nil
 }
 
+// ErrWebDAVQuotaUnavailable is returned by GetQuota when the server does not report RFC 4331 quota properties.
+var ErrWebDAVQuotaUnavailable = errors.New("WebDAV server does not report quota")
+
+// GetQuota asks the server for its RFC 4331 quota properties (PROPFIND, Depth 0). A server that reports none yields
+// ErrWebDAVQuotaUnavailable: "no quota information" is never presented as "unlimited" (CAT-001).
 func (c *WebDAVClient) GetQuota() (*WebDAVQuota, error) {
-	// This would require parsing PROPFIND response for quota information
-	// For now, return a placeholder
-	return &WebDAVQuota{
-		Used:      0,
-		Available: -1, // Unlimited
-	}, nil
+	body := `<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:"><d:prop><d:quota-used-bytes/><d:quota-available-bytes/></d:prop></d:propfind>`
+	req, err := http.NewRequest("PROPFIND", c.baseURL, strings.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("quota request: %w", err)
+	}
+	req.SetBasicAuth(c.username, c.password)
+	req.Header.Set("Depth", "0")
+	req.Header.Set("Content-Type", "application/xml")
+	httpClient := &http.Client{Timeout: 30 * time.Second}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("quota request: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusMultiStatus {
+		return nil, fmt.Errorf("quota request: unexpected status %s", resp.Status)
+	}
+	var ms struct {
+		Responses []struct {
+			Propstats []struct {
+				Status string `xml:"status"`
+				Prop   struct {
+					Used      *string `xml:"quota-used-bytes"`
+					Available *string `xml:"quota-available-bytes"`
+				} `xml:"prop"`
+			} `xml:"propstat"`
+		} `xml:"response"`
+	}
+	if err := xml.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&ms); err != nil {
+		return nil, fmt.Errorf("quota response: %w", err)
+	}
+	// Each property counts only from a propstat whose <status> is 2xx (RFC 4918: an unsupported property sits in a 404 propstat as an empty
+	// element) and only with a numeric value. Both must be reported: a missing one is unknown, never 0 and never "unlimited".
+	var used, avail *int64
+	for _, r := range ms.Responses {
+		for _, ps := range r.Propstats {
+			if !propstatOK(ps.Status) {
+				continue
+			}
+			if v, ok := parseQuotaBytes(ps.Prop.Used); ok {
+				used = &v
+			}
+			if v, ok := parseQuotaBytes(ps.Prop.Available); ok {
+				avail = &v
+			}
+		}
+	}
+	if used == nil || avail == nil {
+		return nil, ErrWebDAVQuotaUnavailable
+	}
+	return &WebDAVQuota{Used: *used, Available: *avail}, nil
+}
+
+// propstatOK reports whether a propstat status line ("HTTP/1.1 200 OK") is a 2xx; an empty or unparsable status is not trusted.
+func propstatOK(status string) bool {
+	f := strings.Fields(status)
+	if len(f) < 2 {
+		return false
+	}
+	code, err := strconv.Atoi(f[1])
+	return err == nil && code >= 200 && code < 300
+}
+
+func parseQuotaBytes(s *string) (int64, bool) {
+	if s == nil {
+		return 0, false
+	}
+	v, err := strconv.ParseInt(strings.TrimSpace(*s), 10, 64)
+	return v, err == nil && v >= 0
 }
 
 type WebDAVQuota struct {
 	Used      int64 `json:"used"`
-	Available int64 `json:"available"` // -1 for unlimited
+	Available int64 `json:"available"`
 }
 
 // Batch operations for efficiency

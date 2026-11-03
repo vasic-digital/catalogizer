@@ -120,10 +120,8 @@ func TestMediaHandler_GetMediaStats_MethodExists(t *testing.T) {
 }
 
 func TestMediaHandler_getQualityDistribution(t *testing.T) {
-	logger, _ := zap.NewDevelopment()
-	mediaDB := &database.MediaDatabase{}
-	analyzer := &analyzer.MediaAnalyzer{}
-	handler := NewMediaHandler(mediaDB, analyzer, logger)
+	handler, cleanup := setupMediaHandlerWithDB(t)
+	defer cleanup()
 
 	distribution, err := handler.getQualityDistribution()
 	assert.NoError(t, err)

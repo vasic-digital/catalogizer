@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SmartCollectionBuilder } from '../SmartCollectionBuilder'
+import { toast } from 'react-hot-toast'
 
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
@@ -259,5 +260,16 @@ describe('SmartCollectionBuilder', () => {
       <SmartCollectionBuilder {...defaultProps} className="custom-class" />
     )
     expect(container.firstChild).toBeTruthy()
+  })
+
+  it('CAT-001: Test Rules reports unavailable and shows no canned results', async () => {
+    const user = userEvent.setup()
+    render(<SmartCollectionBuilder {...defaultProps} />)
+    await user.click(screen.getByText('Test Rules'))
+    expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('not available'))
+    expect(toast.success).not.toHaveBeenCalled()
+    for (const invented of [/1234/, /Sample Song 1/, /Sample Movie 1/, /245/]) {
+      expect(screen.queryByText(invented)).not.toBeInTheDocument()
+    }
   })
 })

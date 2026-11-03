@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	neturl "net/url"
 	"strings"
@@ -499,23 +500,13 @@ func (dls *DeepLinkingService) TrackLinkEvent(ctx context.Context, event *LinkTr
 	return nil
 }
 
+// ErrLinkAnalyticsNotImplemented is returned because TrackLinkEvent does not
+// persist events, so there is nothing real to aggregate (CAT-001: the former
+// implementation returned invented click counts).
+var ErrLinkAnalyticsNotImplemented = errors.New("link analytics not implemented: link events are not stored")
+
 func (dls *DeepLinkingService) GetLinkAnalytics(ctx context.Context, trackingID string) (*LinkAnalytics, error) {
-	// This would normally retrieve analytics from storage
-	// Mock implementation
-	return &LinkAnalytics{
-		TrackingID:   trackingID,
-		TotalClicks:  45,
-		UniqueClicks: 32,
-		PlatformBreakdown: map[string]int{
-			"web":     20,
-			"android": 15,
-			"ios":     8,
-			"desktop": 2,
-		},
-		ConversionRate: 0.71, // 71% opened the app
-		FirstClickAt:   time.Now().Add(-24 * time.Hour),
-		LastClickAt:    time.Now().Add(-1 * time.Hour),
-	}, nil
+	return nil, ErrLinkAnalyticsNotImplemented
 }
 
 type LinkAnalytics struct {

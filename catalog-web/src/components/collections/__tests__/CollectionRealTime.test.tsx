@@ -1,123 +1,38 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import { CollectionRealTime } from '../CollectionRealTime'
 
-// Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, className, onClick, ..._props }: any) => (
+    div: ({ children, className, onClick }: any) => (
       <div className={className} onClick={onClick}>{children}</div>
     ),
   },
   AnimatePresence: ({ children }: any) => <>{children}</>,
 }))
+vi.mock('react-hot-toast', () => ({ toast: vi.fn(), default: vi.fn() }))
 
-vi.mock('../../../hooks/useCollections', () => ({
-  useCollection: vi.fn(() => ({
-    collectionItems: [],
-    refetchItems: vi.fn(),
-  })),
-}))
-
-vi.mock('react-hot-toast', () => ({
-  toast: vi.fn(),
-  default: vi.fn(),
-}))
-
-const mockCollection = {
-  id: '1',
-  name: 'Test Collection',
-  description: 'A test collection',
-  is_smart: true,
-  smart_rules: [],
-  item_count: 5,
-  created_at: '2024-01-01T00:00:00Z',
-  updated_at: '2024-01-01T00:00:00Z',
-  is_public: false,
-  primary_media_type: 'music',
-  owner_id: 'user1',
+const collection = {
+  id: '1', name: 'Test Collection', description: '', is_smart: false, smart_rules: [],
+  item_count: 5, created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z',
+  is_public: false, primary_media_type: 'music', owner_id: 'user1',
 }
 
-describe('CollectionRealTime', () => {
-  beforeEach(() => {
-    vi.useFakeTimers({ shouldAdvanceTime: true })
+describe('CollectionRealTime (CAT-001: no simulated users or events)', () => {
+  beforeEach(() => { vi.useFakeTimers({ shouldAdvanceTime: true }) })
+  afterEach(() => { vi.useRealTimers() })
+
+  it('says real-time is unavailable instead of faking a connection', () => {
+    render(<CollectionRealTime collection={collection as any} />)
+    expect(screen.getByTestId('realtime-unavailable')).toBeInTheDocument()
+    expect(screen.queryByText('Connected')).not.toBeInTheDocument()
   })
 
-  afterEach(() => {
-    vi.useRealTimers()
-  })
-
-  it('renders heading', () => {
-    render(<CollectionRealTime collection={mockCollection as any} />)
-    expect(screen.getByText('Real-time Collection')).toBeInTheDocument()
-  })
-
-  it('displays collection name', () => {
-    render(<CollectionRealTime collection={mockCollection as any} />)
-    expect(screen.getByText('Test Collection')).toBeInTheDocument()
-  })
-
-  it('shows connection status', async () => {
-    render(<CollectionRealTime collection={mockCollection as any} />)
-    // Initially connecting
-    expect(screen.getByText('Connecting')).toBeInTheDocument()
-  })
-
-  it('renders activity stats section', async () => {
-    render(<CollectionRealTime collection={mockCollection as any} />)
-
-    await waitFor(() => {
-      expect(screen.getByText('Activity Stats')).toBeInTheDocument()
-    })
-    expect(screen.getByText('Active Users')).toBeInTheDocument()
-    expect(screen.getByText('Total Interactions')).toBeInTheDocument()
-  })
-
-  it('renders notifications section', () => {
-    render(<CollectionRealTime collection={mockCollection as any} />)
-    expect(screen.getByText('Notifications')).toBeInTheDocument()
-  })
-
-  it('shows online users heading', () => {
-    render(<CollectionRealTime collection={mockCollection as any} />)
-    // Initially shows 0 online users before connection
-    expect(screen.getByText(/Online Users/)).toBeInTheDocument()
-  })
-
-  it('shows recent events heading', () => {
-    render(<CollectionRealTime collection={mockCollection as any} />)
-    expect(screen.getByText('Recent Events')).toBeInTheDocument()
-  })
-
-  it('renders connection panel', () => {
-    render(<CollectionRealTime collection={mockCollection as any} />)
-    expect(screen.getByText('Connection')).toBeInTheDocument()
-  })
-
-  it('reuses audio element via ref instead of creating new Audio on each notification', async () => {
-    const audioInstances: any[] = []
-    const OriginalAudio = globalThis.Audio
-
-    // Track Audio constructor calls
-    globalThis.Audio = class MockAudio {
-      src: string
-      volume = 1
-      currentTime = 0
-      play = vi.fn().mockResolvedValue(undefined)
-      constructor(src?: string) {
-        this.src = src ?? ''
-        audioInstances.push(this)
-      }
-    } as any
-
-    render(<CollectionRealTime collection={mockCollection as any} />)
-
-    // Advance timers to trigger connection and potential notification sounds
-    await vi.advanceTimersByTimeAsync(20000)
-
-    // The component should create at most one Audio instance (via audioRef)
-    // rather than creating a new Audio for each notification event
-    expect(audioInstances.length).toBeLessThanOrEqual(1)
-
-    globalThis.Audio = OriginalAudio
+  it('never shows invented users or events, even after time passes', () => {
+    render(<CollectionRealTime collection={collection as any} />)
+    act(() => { vi.advanceTimersByTime(60000) })
+    for (const invented of [/John Doe/, /Jane Smith/, /Bob Wilson/, /Summer Mix 2024/, /Presentation Video/]) {
+      expect(screen.queryByText(invented)).not.toBeInTheDocument()
+    }
+    expect(screen.getAllByText('Unavailable').length).toBeGreaterThan(0)
   })
 })

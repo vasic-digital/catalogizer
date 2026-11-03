@@ -5,9 +5,12 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"catalogizer/database"
+	"catalogizer/filesystem"
 	"catalogizer/internal/services"
 	"catalogizer/internal/tests"
 
@@ -65,6 +68,7 @@ func (suite *ScanHandlerTestSuite) SetupSuite() {
 }
 
 func (suite *ScanHandlerTestSuite) SetupTest() {
+	suite.T().Setenv(filesystem.AllowedLocalBasesEnv, os.TempDir()) // local roots are denied unless under an allowed base
 	// Create in-memory test database
 	sqlDB := tests.SetupTestDB(suite.T())
 	suite.db = &database.DB{DB: sqlDB}
@@ -233,7 +237,7 @@ func (suite *ScanHandlerTestSuite) TestCreateStorageRoot_AllSupportedProtocolsAc
 		case "webdav":
 			req0["url"] = "http://nas.example/dav"
 		case "local":
-			req0["path"] = "/data/local"
+			req0["path"] = filepath.Join(os.TempDir(), "data-local")
 		case "smb":
 			req0["host"], req0["path"] = "nas.example", "share"
 		case "ftp":

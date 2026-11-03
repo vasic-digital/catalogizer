@@ -113,14 +113,38 @@ func (h *AdminHandler) GetSystemInfo(c *gin.Context) {
 		memoryUsage = float64(memStats.HeapInuse) / float64(memStats.Sys) * 100
 	}
 
+	// Measured where the host can provide the figure; JSON null plus the "unavailable" list otherwise (never a fabricated 0, CAT-001).
+	var unavailable []string
+	var cpuUsage interface{}
+	if v, ok := hostCPUPercent(); ok {
+		cpuUsage = v
+	} else {
+		unavailable = append(unavailable, "cpuUsage")
+	}
+	var diskUsage interface{}
+	// The disk that holds the data, not whatever the process cwd happens to be.
+	var diskOK bool
+	var dTotal, dUsed, dAvail int64
+	if dir := h.db.DataDir(); dir != "" {
+		dTotal, dUsed, dAvail, diskOK = diskUsageOf(dir)
+	}
+	if total, used, avail, ok := dTotal, dUsed, dAvail, diskOK; ok {
+		diskUsage = gin.H{"total": total, "used": used, "free": avail}
+	} else {
+		unavailable = append(unavailable, "diskUsage")
+	}
+	// No request counter exists in this process.
+	unavailable = append(unavailable, "totalRequests")
+
 	c.JSON(http.StatusOK, gin.H{
 		"version":           h.version,
 		"uptime":            uptimeSeconds,
-		"cpuUsage":          0, // CPU usage requires OS-specific sampling; return 0 for now
+		"cpuUsage":          cpuUsage,
 		"memoryUsage":       memoryUsage,
-		"diskUsage":         gin.H{"total": 0, "used": 0, "free": 0},
+		"diskUsage":         diskUsage,
 		"activeConnections": runtime.NumGoroutine(),
-		"totalRequests":     0,
+		"totalRequests":     nil,
+		"unavailable":       unavailable,
 	})
 }
 
@@ -269,9 +293,9 @@ func (h *AdminHandler) GetStorageInfo(c *gin.Context) {
 
 	type storageInfo struct {
 		Path           string  `json:"path"`
-		TotalSpace     int64   `json:"totalSpace"`
-		UsedSpace      int64   `json:"usedSpace"`
-		AvailableSpace int64   `json:"availableSpace"`
+		TotalSpace     *int64  `json:"totalSpace"` // nil = not measurable (remote protocols), never a fake 0
+		UsedSpace      *int64  `json:"usedSpace"`
+		AvailableSpace *int64  `json:"availableSpace"`
 		MediaCount     int     `json:"mediaCount"`
 		LastScan       *string `json:"lastScan,omitempty"`
 	}
@@ -283,8 +307,9 @@ func (h *AdminHandler) GetStorageInfo(c *gin.Context) {
 		ORDER BY name
 	`)
 	if err != nil {
-		// Table may not exist yet; return empty array.
-		c.JSON(http.StatusOK, []storageInfo{})
+		// CAT-001 (R4-9): a database failure is not "no storage". Answering 200 [] made the
+		// UI show an empty, healthy-looking list; report the failure instead.
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read storage roots"})
 		return
 	}
 	defer rows.Close()
@@ -304,11 +329,14 @@ func (h *AdminHandler) GetStorageInfo(c *gin.Context) {
 		_ = h.db.QueryRow(`SELECT COUNT(*) FROM files WHERE storage_root_id = ?`, id).Scan(&mediaCount)
 
 		si := storageInfo{
-			Path:           fmt.Sprintf("%s://%s", protocol, path),
-			TotalSpace:     0, // Disk space query depends on protocol; 0 for now
-			UsedSpace:      0,
-			AvailableSpace: 0,
-			MediaCount:     mediaCount,
+			Path:       fmt.Sprintf("%s://%s", protocol, path),
+			MediaCount: mediaCount,
+		}
+		// Space is measured for a local root (statfs of its directory); the capacity of a remote share is not known here.
+		if protocol == "local" {
+			if total, used, avail, ok := diskUsageOf(path); ok {
+				si.TotalSpace, si.UsedSpace, si.AvailableSpace = &total, &used, &avail
+			}
 		}
 
 		if lastScan != nil {
@@ -459,7 +487,7 @@ func (h *AdminHandler) CreateBackup(c *gin.Context) {
 	})
 }
 
-// RestoreBackup validates a backup and queues it for restore on next restart.
+// RestoreBackup validates the backup id and answers 501: no restore is implemented.
 // POST /api/v1/admin/backups/:id/restore
 func (h *AdminHandler) RestoreBackup(c *gin.Context) {
 	if h.requireAdmin(c) == nil {
@@ -493,14 +521,16 @@ func (h *AdminHandler) RestoreBackup(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{
-		"id":      id,
-		"status":  "queued",
-		"message": "Restore queued - will take effect on restart",
+	// No restore is queued anywhere: nothing reads a restore marker on
+	// restart. Answering 202 "queued" would be a fabricated success (CAT-001),
+	// so say so, consistent with DeleteBackup.
+	c.JSON(http.StatusNotImplemented, gin.H{
+		"id":    id,
+		"error": "restoring a backup through the API is not implemented; restore offline with the database restore tooling",
 	})
 }
 
-// ScanStorage triggers a storage scan for the given path.
+// ScanStorage validates the request and answers 501: the real trigger is POST /api/v1/scans.
 // POST /api/v1/admin/storage/scan
 func (h *AdminHandler) ScanStorage(c *gin.Context) {
 	if h.requireAdmin(c) == nil {
@@ -531,9 +561,10 @@ func (h *AdminHandler) ScanStorage(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{
-		"status":  "accepted",
-		"message": "Scan initiated",
-		"path":    req.Path,
+	// This endpoint never started a scan (CAT-001). The real, admin-gated
+	// scan trigger is POST /api/v1/scans.
+	c.JSON(http.StatusNotImplemented, gin.H{
+		"error": "this endpoint does not start a scan; use POST /api/v1/scans",
+		"path":  req.Path,
 	})
 }

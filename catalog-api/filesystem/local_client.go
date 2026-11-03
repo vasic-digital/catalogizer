@@ -2,10 +2,12 @@ package filesystem
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // LocalConfig contains local filesystem configuration
@@ -69,12 +71,56 @@ func (c *LocalClient) resolvePath(path string) string {
 	return filepath.Join(c.basePath, filepath.FromSlash(ConfinePath(filepath.ToSlash(path))))
 }
 
+// ErrPathEscapesRoot is returned when a path, after symbolic links are resolved, lies outside the storage root.
+// ErrRefuseDeleteRoot is returned when a delete would remove the storage root itself.
+var ErrRefuseDeleteRoot = errors.New("refusing to delete the storage root")
+
+var ErrPathEscapesRoot = errors.New("path resolves outside the storage root")
+
+// resolveConfined is resolvePath plus the symlink check: ConfinePath is lexical, so a link inside the root that points outside
+// would otherwise be followed. The deepest existing ancestor of the target is resolved with EvalSymlinks and must stay inside the
+// resolved base directory (a path that does not exist yet is judged by its existing parent, so WriteFile/CreateDirectory still work).
+func (c *LocalClient) resolveConfined(path string) (string, error) {
+	full := c.resolvePath(path)
+	base, err := filepath.EvalSymlinks(c.basePath)
+	if err != nil {
+		return "", fmt.Errorf("resolve base path %s: %w", c.basePath, err)
+	}
+	probe := full
+	for {
+		real, err := filepath.EvalSymlinks(probe)
+		if err == nil {
+			if !withinDir(base, real) {
+				return "", fmt.Errorf("%w: %s", ErrPathEscapesRoot, path)
+			}
+			return full, nil
+		}
+		if !errors.Is(err, os.ErrNotExist) {
+			return "", err
+		}
+		parent := filepath.Dir(probe)
+		if parent == probe {
+			return full, nil
+		}
+		probe = parent
+	}
+}
+
+// withinDir reports whether target is dir or lies below it (both already symlink-resolved).
+func withinDir(dir, target string) bool {
+	rel, err := filepath.Rel(dir, target)
+	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
+}
+
 // ReadFile reads a file from the local filesystem
 func (c *LocalClient) ReadFile(ctx context.Context, path string) (io.ReadCloser, error) {
 	if !c.IsConnected() {
 		return nil, fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return nil, rerr
+	}
 	file, err := os.Open(fullPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open local file %s: %w", fullPath, err)
@@ -88,7 +134,10 @@ func (c *LocalClient) OpenSeekable(ctx context.Context, path string) (ReadSeekCl
 	if !c.IsConnected() {
 		return nil, fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return nil, rerr
+	}
 	file, err := os.Open(fullPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open local file %s: %w", fullPath, err)
@@ -102,7 +151,10 @@ func (c *LocalClient) WriteFile(ctx context.Context, path string, data io.Reader
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return rerr
+	}
 
 	// Ensure the directory exists
 	dir := filepath.Dir(fullPath)
@@ -129,7 +181,10 @@ func (c *LocalClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, 
 	if !c.IsConnected() {
 		return nil, fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return nil, rerr
+	}
 	stat, err := os.Stat(fullPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to stat local file %s: %w", fullPath, err)
@@ -150,14 +205,21 @@ func (c *LocalClient) ListDirectory(ctx context.Context, path string) ([]*FileIn
 	if !c.IsConnected() {
 		return nil, fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return nil, rerr
+	}
 	entries, err := os.ReadDir(fullPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list local directory %s: %w", fullPath, err)
 	}
 
+	limit, limited := ListLimit(ctx)
 	var files []*FileInfo
 	for _, entry := range entries {
+		if limited && len(files) >= limit {
+			break
+		}
 		info, err := entry.Info()
 		if err != nil {
 			continue // Skip files we can't get info for
@@ -180,7 +242,10 @@ func (c *LocalClient) FileExists(ctx context.Context, path string) (bool, error)
 	if !c.IsConnected() {
 		return false, fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return false, rerr
+	}
 	_, err := os.Stat(fullPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -196,7 +261,10 @@ func (c *LocalClient) CreateDirectory(ctx context.Context, path string) error {
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return rerr
+	}
 	err := os.MkdirAll(fullPath, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to create local directory %s: %w", fullPath, err)
@@ -209,7 +277,15 @@ func (c *LocalClient) DeleteDirectory(ctx context.Context, path string) error {
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return rerr
+	}
+	if baseReal, berr := filepath.EvalSymlinks(c.basePath); berr == nil {
+		if real, rerr := filepath.EvalSymlinks(fullPath); rerr == nil && filepath.Clean(real) == filepath.Clean(baseReal) {
+			return ErrRefuseDeleteRoot
+		}
+	}
 	err := os.RemoveAll(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to delete local directory %s: %w", fullPath, err)
@@ -222,7 +298,10 @@ func (c *LocalClient) DeleteFile(ctx context.Context, path string) error {
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return rerr
+	}
 	err := os.Remove(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to delete local file %s: %w", fullPath, err)
@@ -235,8 +314,14 @@ func (c *LocalClient) CopyFile(ctx context.Context, srcPath, dstPath string) err
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	srcFullPath := c.resolvePath(srcPath)
-	dstFullPath := c.resolvePath(dstPath)
+	srcFullPath, rerr := c.resolveConfined(srcPath)
+	if rerr != nil {
+		return rerr
+	}
+	dstFullPath, rerr := c.resolveConfined(dstPath)
+	if rerr != nil {
+		return rerr
+	}
 
 	// Ensure destination directory exists
 	dstDir := filepath.Dir(dstFullPath)

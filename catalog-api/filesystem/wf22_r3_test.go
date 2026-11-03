@@ -107,7 +107,7 @@ func TestWF22R3_A_WebDAVAndSMBConfine(t *testing.T) {
 var pathParamNames = map[string]bool{"path": true, "srcPath": true, "dstPath": true, "src": true, "dst": true, "p": true}
 
 // resolverNames are the confining resolvers: a path parameter must be an argument of one of these calls.
-var resolverNames = map[string]bool{"resolvePath": true, "resolveURL": true, "smbPath": true, "ConfinePath": true, "JoinConfined": true}
+var resolverNames = map[string]bool{"resolvePath": true, "resolveConfined": true, "resolveURL": true, "smbPath": true, "ConfinePath": true, "JoinConfined": true}
 
 // unconfinedPathMethods is the class-A classifier: for every method of the client types in src, every string parameter that looks like a path
 // and is used in the body must be passed to a confining resolver. It returns "Type.Method(param)" for each violation.

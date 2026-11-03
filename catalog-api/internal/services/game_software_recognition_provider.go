@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -640,20 +641,13 @@ func (p *GameSoftwareRecognitionProvider) convertIGDBGame(game IGDBGame) *MediaR
 	return result
 }
 
-func (p *GameSoftwareRecognitionProvider) searchSteam(ctx context.Context, name string) (*MediaRecognitionResult, error) {
-	// Steam doesn't have a direct search API, so we need to use app details
-	// This is a simplified implementation - in practice, you'd maintain a database of Steam app IDs
+// ErrGameProviderNotImplemented marks game lookups with no real API client.
+var ErrGameProviderNotImplemented = errors.New("game provider lookup not implemented")
 
-	// For demonstration, we'll generate a mock Steam result
-	return &MediaRecognitionResult{
-		MediaID:           fmt.Sprintf("steam_%s", p.generateID(name)),
-		MediaType:         MediaTypeGame,
-		Title:             name,
-		Confidence:        0.6,
-		RecognitionMethod: "steam_lookup",
-		APIProvider:       "Steam",
-		ExternalIDs:       make(map[string]string),
-	}, nil
+func (p *GameSoftwareRecognitionProvider) searchSteam(ctx context.Context, name string) (*MediaRecognitionResult, error) {
+	// Steam has no search API and no app-id database is maintained here, so
+	// there is nothing real to look up. Never fabricate a match (CAT-001).
+	return nil, fmt.Errorf("%w: steam", ErrGameProviderNotImplemented)
 }
 
 func (p *GameSoftwareRecognitionProvider) recognizeSoftware(ctx context.Context, name, version, platform string, req *MediaRecognitionRequest) (*MediaRecognitionResult, error) {

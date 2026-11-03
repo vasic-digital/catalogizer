@@ -184,6 +184,55 @@ describe('AdminPanel', () => {
     // Second backup is in-progress, so its restore button should be disabled
     expect(restoreButtons[1].closest('button')).toBeDisabled()
   })
+
+  describe('unmeasured figures render as Unavailable (CAT-001)', () => {
+    it('does not crash and shows Unavailable for null CPU, disk and request count', () => {
+      const props = {
+        ...defaultProps,
+        systemInfo: {
+          ...defaultProps.systemInfo,
+          cpuUsage: null,
+          diskUsage: null,
+          totalRequests: null,
+          unavailable: ['cpuUsage', 'diskUsage', 'totalRequests'],
+        },
+      }
+      render(<AdminPanel {...props} />)
+      expect(screen.getAllByText('Unavailable').length).toBeGreaterThanOrEqual(3)
+      expect(screen.queryByText('0%')).not.toBeInTheDocument()
+    })
+
+    it('shows Unavailable (not 0%, 0 or 0d 0h 0m) for null memory, uptime and connections (review F4)', () => {
+      const props = {
+        ...defaultProps,
+        systemInfo: {
+          ...defaultProps.systemInfo,
+          cpuUsage: null,
+          memoryUsage: null,
+          uptime: null,
+          activeConnections: null,
+          diskUsage: null,
+          totalRequests: null,
+        },
+      }
+      render(<AdminPanel {...props} />)
+      expect(screen.queryByText('0%')).not.toBeInTheDocument()
+      expect(screen.queryByText('0d 0h 0m')).not.toBeInTheDocument()
+      expect(screen.queryByText('0')).not.toBeInTheDocument()
+      expect(screen.getAllByText('Unavailable').length).toBeGreaterThanOrEqual(6)
+    })
+
+    it('shows Unavailable for null storage capacity instead of 0 B', async () => {
+      const user = userEvent.setup()
+      const props = {
+        ...defaultProps,
+        storageInfo: [{ ...defaultProps.storageInfo[0], totalSpace: null, usedSpace: null, availableSpace: null }],
+      }
+      render(<AdminPanel {...props} />)
+      await user.click(screen.getByText('Storage'))
+      expect(screen.getAllByText('Unavailable').length).toBeGreaterThanOrEqual(3)
+    })
+  })
 })
 
 // Responsive contract (11.4.190): four 44px-high tab triggers do not fit a 360px screen, so the strip must scroll

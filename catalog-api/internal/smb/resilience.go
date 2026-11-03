@@ -359,7 +359,7 @@ func (m *ResilientSMBManager) connectSource(source *SMBSource) error {
 		Timestamp: time.Now(),
 	})
 
-	// Simulate connection attempt (replace with actual SMB connection logic)
+	// Real TCP reachability probe of the SMB port (not an SMB session/auth check)
 	ctx, cancel := context.WithTimeout(context.Background(), source.ConnectionTimeout)
 	defer cancel()
 
@@ -523,7 +523,7 @@ func (m *ResilientSMBManager) monitorSource(source *SMBSource) {
 
 // checkSourceHealth performs a health check on an SMB source
 func (m *ResilientSMBManager) checkSourceHealth(source *SMBSource) {
-	// Simulate health check (replace with actual SMB operation)
+	// Real TCP reachability probe of the SMB port (not an SMB session/auth check)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

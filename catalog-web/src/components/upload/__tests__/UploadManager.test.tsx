@@ -206,4 +206,32 @@ describe('UploadManager', () => {
       expect(screen.getByText(/Upload Queue \(2 items\)/)).toBeInTheDocument()
     })
   })
+
+  const dropOne = (container: HTMLElement) => {
+    const dropZone = container.querySelector('.border-dashed')!
+    const file = createMockFile('real.mp4', 1024, 'video/mp4')
+    fireEvent.drop(dropZone, { dataTransfer: { files: [file], items: [], types: ['Files'] } })
+  }
+
+  it('CAT-001: without an upload handler a dropped file is reported as not sent, never as success', async () => {
+    const { container } = render(<UploadManager />)
+    dropOne(container)
+    expect(await screen.findByText(/Upload is not available/)).toBeInTheDocument()
+    expect(container.querySelector('.text-green-500, .text-green-600')).toBeNull()
+  })
+
+  it('CAT-001: success is shown only after onUpload resolves, and failure when it rejects', async () => {
+    const fail = vi.fn().mockRejectedValue(new Error('server said no'))
+    const { container, unmount } = render(<UploadManager onUpload={fail} />)
+    dropOne(container)
+    expect(await screen.findByText('server said no')).toBeInTheDocument()
+    expect(fail).toHaveBeenCalledTimes(1)
+    unmount()
+
+    const ok = vi.fn().mockResolvedValue(undefined)
+    const r2 = render(<UploadManager onUpload={ok} />)
+    dropOne(r2.container)
+    await waitFor(() => expect(ok).toHaveBeenCalledTimes(1))
+    expect(screen.queryByText(/Upload is not available/)).not.toBeInTheDocument()
+  })
 })

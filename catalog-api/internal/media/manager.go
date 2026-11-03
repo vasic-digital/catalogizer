@@ -495,15 +495,7 @@ func (mm *MediaManager) getMediaTypeDistribution() (map[string]int, error) {
 }
 
 func (mm *MediaManager) getQualityDistribution() (map[string]int, error) {
-	// This would analyze quality_info JSON fields in media_files
-	// Simplified implementation for now
-	return map[string]int{
-		"4K/UHD": 0,
-		"1080p":  0,
-		"720p":   0,
-		"DVD":    0,
-		"Other":  0,
-	}, nil
+	return models.QualityDistribution(mm.mediaDB.GetDB(), true)
 }
 
 func (mm *MediaManager) getMetadataCoverage() (map[string]interface{}, error) {

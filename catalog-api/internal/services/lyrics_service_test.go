@@ -155,33 +155,6 @@ func TestLyricsService_SortLyricsResults(t *testing.T) {
 	}
 }
 
-func TestGenerateSampleLyrics(t *testing.T) {
-	tests := []struct {
-		name   string
-		title  string
-		artist string
-	}{
-		{
-			name:   "standard song",
-			title:  "Bohemian Rhapsody",
-			artist: "Queen",
-		},
-		{
-			name:   "empty title and artist",
-			title:  "",
-			artist: "",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := generateSampleLyrics(tt.title, tt.artist)
-			assert.NotEmpty(t, result)
-			assert.Contains(t, result, "[Verse 1]")
-			assert.Contains(t, result, "[Chorus]")
-		})
-	}
-}
 
 func TestGenerateLyricsID(t *testing.T) {
 	id1 := generateLyricsID()

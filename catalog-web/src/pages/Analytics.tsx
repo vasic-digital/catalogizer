@@ -134,28 +134,21 @@ export const Analytics: React.FC = () => {
     count
   })) : []
 
-  // Use real growth trends from API, with fallback to generated data
+  // Use real growth trends from API; with none, the charts are empty
   const growthTrend = apiGrowthTrends && apiGrowthTrends.length > 0
     ? apiGrowthTrends.map((t, i) => ({
         day: i + 1,
         items: t.cumulative_files,
         size: Math.round(t.cumulative_size / (1024 ** 2)),
       }))
-    : Array.from({ length: 30 }, (_, i) => ({
-        day: i + 1,
-        items: Math.floor(Math.random() * 50) + (stats?.total_items || 0) - 1000 + i * 10,
-        size: Math.floor(Math.random() * 100) + 500 + i * 20,
-      }))
+    : [] // no growth data from the API: show an empty chart, never invented points (CAT-001)
 
   const weeklyAdditions = apiGrowthTrends && apiGrowthTrends.length >= 7
     ? apiGrowthTrends.slice(-7).map((t, i) => ({
         day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
         additions: t.files_added,
       }))
-    : Array.from({ length: 7 }, (_, i) => ({
-        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
-        additions: Math.floor(Math.random() * 20) + 5,
-      }))
+    : []
 
   // File type chart data from API
   const fileTypeChartData = fileTypeStats
@@ -204,33 +197,21 @@ export const Analytics: React.FC = () => {
             title="Total Media Items"
             value={stats?.total_items?.toLocaleString() || '0'}
             icon={<Database className="h-8 w-8" />}
-            change="+12% from last month"
-            changeType="positive"
-            trend={[45, 52, 48, 61, 67, 73, 82]}
           />
           <StatCard
             title="Storage Used"
             value={`${((stats?.total_size || 0) / (1024 ** 3)).toFixed(1)} GB`}
             icon={<HardDrive className="h-8 w-8" />}
-            change="+8.2 GB this week"
-            changeType="positive"
-            trend={[120, 125, 128, 135, 142, 148, 155]}
           />
           <StatCard
             title="Recent Additions"
             value={stats?.recent_additions?.toString() || '0'}
             icon={<TrendingUp className="h-8 w-8" />}
-            change="+5 from yesterday"
-            changeType="positive"
-            trend={[8, 12, 15, 11, 18, 22, 25]}
           />
           <StatCard
             title="Media Types"
             value={Object.keys(stats?.by_type || {}).length.toString()}
             icon={<Star className="h-8 w-8" />}
-            change="2 new types detected"
-            changeType="positive"
-            trend={[6, 7, 7, 8, 8, 9, 10]}
           />
         </div>
 

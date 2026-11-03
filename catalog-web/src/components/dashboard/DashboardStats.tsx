@@ -98,6 +98,13 @@ interface DashboardStatsProps {
  * DashboardStats displays an overview of media library and user statistics
  * as a row of StatCard components.
  */
+// Most common quality bucket from real counts; 'Unavailable' when none are known.
+function dominantQuality(byQuality?: Record<string, number>): string {
+  const entries = Object.entries(byQuality ?? {}).filter(([, n]) => n > 0)
+  if (entries.length === 0) return 'Unavailable'
+  return entries.sort((a, b) => b[1] - a[1])[0][0]
+}
+
 export const DashboardStats: React.FC<DashboardStatsProps> = ({
   mediaStats,
   userStats,
@@ -124,11 +131,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         title="Total Media"
         value={mediaStats?.total_items?.toLocaleString() ?? '0'}
         icon={Database}
-        trend={{
-          value: 12.5,
-          isPositive: true
-        }}
-        description="vs last month"
         loading={loading}
       />
       
@@ -137,11 +139,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         title="Storage Used"
         value={formatBytes(mediaStats?.total_size || 0)}
         icon={HardDrive}
-        trend={{
-          value: 8.2,
-          isPositive: true
-        }}
-        description="vs last month"
         loading={loading}
       />
       
@@ -150,10 +147,6 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         title="Recent Additions"
         value={mediaStats?.recent_additions || 0}
         icon={PlusCircle}
-        trend={{
-          value: 15.3,
-          isPositive: true
-        }}
         description="last 7 days"
         loading={loading}
       />
@@ -161,12 +154,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* Average Quality Score */}
       <StatCard
         title="Quality Score"
-        value="HD"
+        value={dominantQuality(mediaStats?.by_quality)}
         icon={Zap}
-        trend={{
-          value: 5.7,
-          isPositive: true
-        }}
         description="average quality"
         loading={loading}
       />
@@ -174,12 +163,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* Active Users */}
       <StatCard
         title="Active Users"
-        value={userStats?.active_users?.toLocaleString() ?? '0'}
+        value={userStats?.active_users?.toLocaleString() ?? 'Unavailable'}
         icon={Users}
-        trend={{
-          value: 3.2,
-          isPositive: true
-        }}
         description="online now"
         loading={loading}
       />
@@ -187,12 +172,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* Total Users */}
       <StatCard
         title="Total Users"
-        value={userStats?.total_users?.toLocaleString() ?? '0'}
+        value={userStats?.total_users?.toLocaleString() ?? 'Unavailable'}
         icon={Users}
-        trend={{
-          value: 18.7,
-          isPositive: true
-        }}
         description="registered users"
         loading={loading}
       />
@@ -200,12 +181,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* Sessions Today */}
       <StatCard
         title="Sessions Today"
-        value={userStats?.sessions_today?.toLocaleString() ?? '0'}
+        value={userStats?.sessions_today?.toLocaleString() ?? 'Unavailable'}
         icon={PlayCircle}
-        trend={{
-          value: 22.1,
-          isPositive: true
-        }}
         description="viewing sessions"
         loading={loading}
       />
@@ -213,12 +190,8 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* Avg Session Duration */}
       <StatCard
         title="Avg Session"
-        value={formatDuration(userStats?.avg_session_duration || 0)}
+        value={userStats?.avg_session_duration != null ? formatDuration(userStats.avg_session_duration) : 'Unavailable'}
         icon={Clock}
-        trend={{
-          value: 7.5,
-          isPositive: false
-        }}
         description="viewing duration"
         loading={loading}
       />

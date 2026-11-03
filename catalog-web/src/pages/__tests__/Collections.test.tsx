@@ -114,9 +114,10 @@ vi.mock('../../components/collections/CollectionRealTime', () => ({
 vi.mock('../../components/performance/LazyComponents', () => ({
   ComponentLoader: ({ children }: any) => <>{children}</>,
   preloadComponent: vi.fn(),
-  CollectionTemplates: ({ onClose }: any) => (
+  CollectionTemplates: ({ onClose, onApplyTemplate }: any) => (
     <div data-testid="collection-templates">
       Collection Templates
+      <button onClick={() => onApplyTemplate({ id: 't1', name: 'Recent Movies', description: 'tdesc', rules: [{ field: 'rating', operator: 'greater_than', value: 4 }] }, 'My Movies').catch(() => undefined)}>Apply Template</button>
       <button onClick={onClose}>Close Templates</button>
     </div>
   ),
@@ -380,6 +381,32 @@ describe('Collections Page', () => {
     expect(templateBtn).toBeTruthy()
     await user.click(templateBtn!)
 
+    expect(screen.getByTestId('collection-templates')).toBeInTheDocument()
+  })
+
+  it('CAT-001: applying a template creates the collection via the API and toasts nothing itself', async () => {
+    const user = userEvent.setup()
+    vi.mocked(toast.success).mockClear()
+    render(<Collections />)
+    const templateBtn = screen.getAllByText('Templates').find(el => el.closest('button')?.classList.contains('gap-2'))
+    await user.click(templateBtn!)
+    await user.click(screen.getByText('Apply Template'))
+    await waitFor(() => expect(mockCreateCollection).toHaveBeenCalledWith({
+      collection: expect.objectContaining({ name: 'My Movies', description: 'tdesc', is_smart: true, smart_rules: [expect.objectContaining({ field: 'rating' })] }),
+    }))
+    expect(toast.success).not.toHaveBeenCalledWith(expect.stringContaining('applied'))
+  })
+
+  it('CAT-001: a failed template creation is not reported as applied and keeps the view open', async () => {
+    const user = userEvent.setup()
+    vi.mocked(toast.success).mockClear()
+    mockCreateCollection.mockRejectedValueOnce(new Error('smart collections are not supported'))
+    render(<Collections />)
+    const templateBtn = screen.getAllByText('Templates').find(el => el.closest('button')?.classList.contains('gap-2'))
+    await user.click(templateBtn!)
+    await user.click(screen.getByText('Apply Template'))
+    await waitFor(() => expect(mockCreateCollection).toHaveBeenCalled())
+    expect(toast.success).not.toHaveBeenCalled()
     expect(screen.getByTestId('collection-templates')).toBeInTheDocument()
   })
 

@@ -750,12 +750,8 @@ func (p *MusicRecognitionProvider) generateAudioFingerprint(audioSample []byte) 
 		Duration:   analysis.Duration,
 		SampleRate: analysis.SampleRate,
 		Channels:   analysis.Channels,
-		Features: map[string]float64{
-			"energy":  analysis.Energy,
-			"tempo":   analysis.Tempo,
-			"valence": analysis.Valence,
-		},
-		Segments: p.generateFingerprintSegments(audioSample, analysis),
+		Features:   map[string]float64{},
+		Segments:   p.generateFingerprintSegments(audioSample, analysis),
 	}
 
 	return fingerprint, nil
@@ -769,13 +765,13 @@ func (p *MusicRecognitionProvider) analyzeAudioFeatures(audioSample []byte) *Aud
 		Duration:   float64(len(audioSample)) / 44100.0 / 2.0, // Assume 44.1kHz stereo
 		SampleRate: 44100,
 		Channels:   2,
-		BitRate:    1411,                                      // CD quality
-		Tempo:      120.0 + float64(len(audioSample)%60),      // Mock tempo
-		Energy:     0.5 + float64(len(audioSample)%100)/200.0, // Mock energy
-		Valence:    0.5 + float64(len(audioSample)%50)/100.0,  // Mock valence
+		BitRate:    1411, // CD quality
+		// Tempo, Energy and Valence need real signal analysis; they stay zero
+		// (unmeasured) instead of being derived from len(audioSample).
 	}
 
-	// Generate mock features
+	// Byte-derived pseudo features (tracked CAT-001 follow-up: replace with
+	// real chroma/MFCC extraction).
 	analysis.ChromaFeatures = make([]float64, 12)
 	analysis.MFCCFeatures = make([]float64, 13)
 
@@ -818,10 +814,7 @@ func (p *MusicRecognitionProvider) generateFingerprintSegments(audioSample []byt
 			StartTime: startTime,
 			EndTime:   endTime,
 			Hash:      segmentHash,
-			Features: map[string]float64{
-				"energy": analysis.Energy * (0.8 + 0.4*float64(i%3)/2.0),
-				"tempo":  analysis.Tempo * (0.9 + 0.2*float64(i%5)/4.0),
-			},
+			Features:  map[string]float64{},
 		}
 
 		segments = append(segments, segment)

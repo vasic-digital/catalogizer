@@ -13,6 +13,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
+	"catalogizer/database"
 	"catalogizer/models"
 	"catalogizer/repository"
 )
@@ -23,6 +24,8 @@ type AuthService struct {
 	jwtSecret  []byte
 	jwtExpiry  time.Duration
 	refreshExp time.Duration
+	// audit receives security events (login success/failure); nil disables auditing.
+	audit func(userID int, eventType, ipAddress, userAgent, details string)
 }
 
 // NewAuthService creates a new authentication service
@@ -32,6 +35,32 @@ func NewAuthService(userRepo *repository.UserRepository, jwtSecret string) *Auth
 		jwtSecret:  []byte(jwtSecret),
 		jwtExpiry:  24 * time.Hour,     // 24 hours
 		refreshExp: 7 * 24 * time.Hour, // 7 days
+	}
+}
+
+// NewAuthServiceWithAudit creates the authentication service the production binary uses.
+// Login successes and failures are written to auth_audit_log, the table the security audit report (ReportingService) reads. Events carry
+// no password and no login name: only the event type, the user id when one exists, the client address and the user agent.
+func NewAuthServiceWithAudit(userRepo *repository.UserRepository, jwtSecret string, db *database.DB) *AuthService {
+	s := NewAuthService(userRepo, jwtSecret)
+	if db != nil {
+		s.audit = func(userID int, eventType, ipAddress, userAgent, details string) {
+			var uid interface{}
+			if userID > 0 {
+				uid = userID // user_id references users(id): an unknown user is stored as NULL
+			}
+			if _, err := db.Exec(`INSERT INTO auth_audit_log (user_id, event_type, ip_address, user_agent, details) VALUES (?, ?, ?, ?, ?)`,
+				uid, eventType, ipAddress, userAgent, details); err != nil {
+				log.Printf("auth audit: write %s failed: %v", eventType, err)
+			}
+		}
+	}
+	return s
+}
+
+func (s *AuthService) auditEvent(userID int, eventType, ipAddress, userAgent, details string) {
+	if s.audit != nil {
+		s.audit(userID, eventType, ipAddress, userAgent, details)
 	}
 }
 
@@ -58,6 +87,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	user, err := s.userRepo.GetByUsernameOrEmail(req.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			s.auditEvent(0, "failed_login", ipAddress, userAgent, "unknown user")
 			return nil, errors.New("invalid credentials")
 		}
 		return nil, fmt.Errorf("failed to get user: %w", err)
@@ -65,6 +95,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 
 	// Check if user can login
 	if !user.CanLogin() {
+		s.auditEvent(user.ID, "failed_login_inactive", ipAddress, userAgent, "account locked or disabled")
 		if user.IsLocked {
 			return nil, errors.New("account is temporarily locked")
 		}
@@ -76,6 +107,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	if !ok {
 		// Increment failed login attempts
 		s.userRepo.IncrementFailedLoginAttempts(user.ID)
+		s.auditEvent(user.ID, "failed_login", ipAddress, userAgent, "invalid password")
 		return nil, errors.New("invalid credentials")
 	}
 	acceptableHashes := []string{user.PasswordHash}
@@ -136,6 +168,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 		return nil, fmt.Errorf("failed to update session tokens: %w", err)
 	}
 
+	s.auditEvent(user.ID, "login_success", ipAddress, userAgent, "")
 	return &AuthResult{
 		User:         user,
 		SessionToken: token,

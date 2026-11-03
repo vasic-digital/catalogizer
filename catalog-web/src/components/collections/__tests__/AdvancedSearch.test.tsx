@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import AdvancedSearch from '../AdvancedSearch'
+import { toast } from 'react-hot-toast'
 
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
@@ -94,5 +95,29 @@ describe('AdvancedSearch', () => {
 
     expect(screen.getByText('Search Settings')).toBeInTheDocument()
     expect(screen.getByText('Sort By')).toBeInTheDocument()
+  })
+
+  describe('CAT-001: no success claim without an action', () => {
+    beforeEach(() => { vi.mocked(toast.success).mockClear(); vi.mocked(toast.error).mockClear() })
+
+    it('the Search button stays disabled with a reason and never toasts "Searching"', async () => {
+      const user = userEvent.setup()
+      render(<AdvancedSearch />)
+      await user.click(screen.getByText('Add First Rule'))
+      const btn = screen.getByText('Search').closest('button')!
+      expect(btn).toBeDisabled()
+      expect(btn.getAttribute('title') || '').toMatch(/not available/i)
+      await user.click(btn)
+      expect(toast.success).not.toHaveBeenCalledWith(expect.stringMatching(/Searching with/))
+    })
+
+    it('Save Search says the search is kept for this session only', async () => {
+      const user = userEvent.setup()
+      render(<AdvancedSearch />)
+      await user.click(screen.getByText('Add First Rule'))
+      await user.click(screen.getByText('Save Search').closest('button')!)
+      expect(toast.success).not.toHaveBeenCalledWith('Search saved successfully')
+      expect(toast.success).toHaveBeenCalledWith(expect.stringMatching(/this session only/i))
+    })
   })
 })

@@ -148,7 +148,7 @@ api PUT "/api/v1/users/1" "200|400" '{"email":"admin@catalogizer.local"}'
 # ==================== SECTION 10: CONFIGURATION ====================
 echo ""; echo "=== 10. CONFIGURATION (5 tests) ==="
 api GET "/api/v1/configuration" "200"
-api GET "/api/v1/configuration/status" "200"
+api GET "/api/v1/configuration/status" "501"
 api GET "/api/v1/configuration/wizard/progress" "200|404"
 api POST "/api/v1/configuration/test" "200|400" '{}'
 api POST "/api/v1/configuration/wizard/complete" "200|400|500" '{}'
@@ -202,7 +202,7 @@ api POST "/api/v1/smb/browse" "200|400" '{"host":"localhost","share":"test"}'
 
 # ==================== SECTION 16: RECOMMENDATIONS ====================
 echo ""; echo "=== 16. RECOMMENDATIONS (3 tests) ==="
-api GET "/api/v1/recommendations/trending" "200"
+api GET "/api/v1/recommendations/trending" "501"
 api GET "/api/v1/recommendations/similar/1" "200|500"
 api GET "/api/v1/recommendations/personalized/1" "200"
 
