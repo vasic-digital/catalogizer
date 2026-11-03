@@ -3,6 +3,7 @@ package handlers
 import (
 	"catalogizer/internal/pathguard"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -37,6 +38,7 @@ type AdminUserRepoInterface interface {
 	GetByID(id int) (*models.User, error)
 	Update(user *models.User) error
 	Count() (int, error)
+	DeactivateAllUserSessions(userID int) error
 }
 
 // AdminHandler provides administrative API endpoints for system info,
@@ -257,13 +259,24 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 		user.Email = *updates.Email
 	}
 
+	// Revoke first (fail closed): a failed revocation leaves the user unchanged,
+	// so a retry still revokes.
+	if wasActive && !user.IsActive || (updates.Status != nil && !user.IsActive) {
+		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke sessions; user not updated"})
+			return
+		}
+	}
 	if err := h.userRepo.Update(user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return
 	}
-	if wasActive && !user.IsActive {
+	// Second revoke closes the window for a login between the first revoke and
+	// the update (that session carries the old claims).
+	if wasActive && !user.IsActive || (updates.Status != nil && !user.IsActive) {
 		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "User updated but revoking sessions failed"})
+			log.Printf("handlers: user %d updated but the post-update session revoke failed: %v", user.ID, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User updated but revoking sessions failed; repeat the request"})
 			return
 		}
 	}

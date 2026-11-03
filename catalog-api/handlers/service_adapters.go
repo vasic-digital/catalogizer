@@ -55,11 +55,6 @@ func (a *AuthServiceAdapter) UnlockAccount(userID int) error {
 	return a.Inner.UnlockAccount(userID)
 }
 
-// HashData satisfies UserAuthServiceInterface
-func (a *AuthServiceAdapter) HashData(data string) string {
-	return a.Inner.HashData(data)
-}
-
 // ValidateToken satisfies ConfigurationAuthServiceInterface
 func (a *AuthServiceAdapter) ValidateToken(tokenString string) (*models.User, error) {
 	return a.Inner.GetCurrentUser(tokenString)

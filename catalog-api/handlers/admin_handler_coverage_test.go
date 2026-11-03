@@ -41,6 +41,8 @@ type mockAdminUserRepo struct {
 	getByIDFn func(id int) (*models.User, error)
 	updateFn  func(user *models.User) error
 	countFn   func() (int, error)
+	revoked   []int
+	revokeErr error
 }
 
 func (m *mockAdminUserRepo) List(limit, offset int) ([]models.User, error) {
@@ -69,6 +71,12 @@ func (m *mockAdminUserRepo) Count() (int, error) {
 		return m.countFn()
 	}
 	return 0, nil
+}
+
+// DeactivateAllUserSessions records the revocation (the handlers require it).
+func (m *mockAdminUserRepo) DeactivateAllUserSessions(userID int) error {
+	m.revoked = append(m.revoked, userID)
+	return m.revokeErr
 }
 
 func newTestAdminHandler(auth AdminAuthServiceInterface, userRepo AdminUserRepoInterface) *AdminHandler {

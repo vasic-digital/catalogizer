@@ -2766,7 +2766,7 @@ Create a new media format conversion job.
 }
 ```
 
-**Response:** 200 OK (ConversionJob object)
+**Response:** 200 OK (ConversionJob object, status `pending`; the background worker then runs it: `running`, then `completed` or `failed`). 400 for a malformed body, an unsupported type or format, or a path outside the roots.
 
 **Path confinement:** `source_path` must be absolute and lie in the read roots (`CATALOGIZER_READ_ROOTS`, default `MEDIA_ROOT_PATH` + `./data`) or the conversion roots; `target_path` must lie in `CATALOGIZER_CONVERSION_ROOTS` (default `./data`). So with `MEDIA_ROOT_PATH=/media` the example above needs a `target_path` under the conversion root (e.g. `./data/video.mp3` as an absolute path). Neither path may be the application database (`./data/catalogizer.db` by default), a SQLite companion of it, its key file, or a directory containing one of them. A `..` is resolved after the symlinks before it, as the kernel does. Violations return 400. Pending jobs stored earlier are re-checked on start and fail if outside the roots. See [PATH_CONFINEMENT](../security/PATH_CONFINEMENT.md).
 
@@ -2776,7 +2776,7 @@ Create a new media format conversion job.
 
 List conversion jobs for the current user.
 
-**Description:** Returns conversion jobs with optional status filtering.
+**Description:** Returns conversion jobs with optional status filtering. An empty result is `[]`, never `null`.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -2800,7 +2800,7 @@ Get a specific conversion job by ID.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
-**Errors:** 400 (invalid ID), 404 (not found)
+**Errors:** 400 (invalid ID), 403 (another user's job), 404 (not found)
 
 ---
 
@@ -2808,7 +2808,7 @@ Get a specific conversion job by ID.
 
 Cancel a running conversion job.
 
-**Description:** Cancels an in-progress or queued conversion.
+**Description:** Cancels a pending or running conversion. A running job's converter process group is killed; the job ends as `cancelled` and stays so. Errors: 403 (another user's job), 404, 409 (job already finished).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -2826,11 +2826,11 @@ Cancel a running conversion job.
 
 Delete a conversion job record.
 
-**Description:** Removes a completed or cancelled conversion job from history.
+**Description:** Same as cancel (the row is kept with status `cancelled`). Errors: 403, 404, 409 (job not pending or running).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
-**Response:** 204 No Content
+**Response:** 200 OK (`{"message": "Job deleted successfully"}`)
 
 ---
 
@@ -2842,7 +2842,7 @@ Retry a failed conversion job.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
-**Response:** 200 OK (ConversionJob object with status reset)
+**Response:** 200 OK (`{"message": "Job retry started"}`; the job is back in `pending` and the worker runs it again). 409 if the job is not in status `failed`, 403 if it belongs to another user without manage permission, 404 if unknown.
 
 ---
 

@@ -611,7 +611,7 @@ describe('AuthContext Integration Tests', () => {
         })
       })
 
-      expect(mockToast.success).toHaveBeenCalledWith('Password changed successfully!')
+      expect(mockToast.success).toHaveBeenCalledWith('Password changed. Please log in again.')
     })
 
     it('handles password change failure', async () => {

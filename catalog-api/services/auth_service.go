@@ -2,7 +2,6 @@ package services
 
 import (
 	"crypto/rand"
-	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
 	"errors"
@@ -111,8 +110,11 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 		s.auditEvent(user.ID, "failed_login", ipAddress, userAgent, "invalid password")
 		return nil, errors.New("invalid credentials")
 	}
+	acceptableHashes := []string{user.PasswordHash}
 	if needsUpgrade {
-		s.upgradeLegacyHash(user, req.Password)
+		if upgraded := s.upgradeLegacyHash(user, req.Password); upgraded != "" {
+			acceptableHashes = append(acceptableHashes, upgraded)
+		}
 	}
 
 	// Reset failed login attempts on successful login
@@ -122,6 +124,20 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	session, err := s.createSession(user, req.DeviceInfo, ipAddress, userAgent, req.RememberMe)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create session: %w", err)
+	}
+
+	// The user row was read before bcrypt ran. A role change, deactivation, lock,
+	// password change or admin reset that landed since has already revoked the
+	// sessions that existed THEN, but not this one, which is created after. Re-read
+	// the row now and refuse to hand out a session minted from stale state.
+	if loginPostSessionHook != nil {
+		loginPostSessionHook()
+	}
+	if err := s.verifyUserUnchanged(user, acceptableHashes); err != nil {
+		if derr := s.userRepo.DeactivateSession(session.ID); derr != nil {
+			log.Printf("auth: could not deactivate session %d after concurrent user change: %v", session.ID, derr)
+		}
+		return nil, err
 	}
 
 	// Update last login information
@@ -461,6 +477,35 @@ func (s *AuthService) verifyPassword(password, salt, hash string) bool {
 	return ok
 }
 
+// loginPostSessionHook, when non-nil, runs between session creation and the
+// stale-state re-check in Login. Tests use it to land a role change, deactivation
+// or password change inside that window deterministically.
+var loginPostSessionHook func()
+
+// errUserChangedDuringLogin is returned when the account changed while the login
+// was in flight; the freshly created session is deactivated.
+var errUserChangedDuringLogin = errors.New("account changed during login, please retry")
+
+// verifyUserUnchanged re-reads the user and compares the fields a session or
+// token embeds or depends on (role, active, locked, password hash and salt).
+func (s *AuthService) verifyUserUnchanged(orig *models.User, acceptableHashes []string) error {
+	cur, err := s.userRepo.GetByID(orig.ID)
+	if err != nil {
+		// Fail closed: cannot prove the account is unchanged.
+		return fmt.Errorf("failed to re-verify user: %w", err)
+	}
+	hashOK := false
+	for _, h := range acceptableHashes {
+		if cur.PasswordHash == h {
+			hashOK = true
+		}
+	}
+	if cur.RoleID != orig.RoleID || cur.IsActive != orig.IsActive || cur.IsLocked != orig.IsLocked || !hashOK {
+		return errUserChangedDuringLogin
+	}
+	return nil
+}
+
 // legacyUpgradeHook, when non-nil, runs between hashing and the compare-and-swap
 // write of a legacy hash upgrade. Tests use it to land a concurrent password
 // change inside that window.
@@ -470,11 +515,11 @@ var legacyUpgradeHook func()
 // hash. The write is a compare-and-swap on the legacy value, so a password
 // change that landed since the row was read is never reverted. Failures are
 // logged (never silent) and leave the legacy row, which still verifies.
-func (s *AuthService) upgradeLegacyHash(user *models.User, password string) {
+func (s *AuthService) upgradeLegacyHash(user *models.User, password string) string {
 	newHash, err := HashPasswordWithSalt(password, user.Salt)
 	if err != nil {
 		log.Printf("auth: legacy password hash upgrade for user %d failed: %v", user.ID, err)
-		return
+		return ""
 	}
 	if legacyUpgradeHook != nil {
 		legacyUpgradeHook()
@@ -482,11 +527,13 @@ func (s *AuthService) upgradeLegacyHash(user *models.User, password string) {
 	swapped, err := s.userRepo.UpdatePasswordIfHash(user.ID, newHash, user.Salt, user.PasswordHash)
 	if err != nil {
 		log.Printf("auth: legacy password hash upgrade for user %d failed: %v", user.ID, err)
-		return
+		return ""
 	}
 	if !swapped {
 		log.Printf("auth: legacy password hash for user %d changed concurrently; upgrade skipped", user.ID)
+		return ""
 	}
+	return newHash
 }
 
 // Session management methods
@@ -520,12 +567,6 @@ func (s *AuthService) GenerateSecureToken(length int) (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(bytes), nil
-}
-
-// HashData creates a SHA-256 hash of the given data
-func (s *AuthService) HashData(data string) string {
-	hash := sha256.Sum256([]byte(data))
-	return hex.EncodeToString(hash[:])
 }
 
 // HashPasswordForUser hashes a password with a generated salt (public method for registration)

@@ -199,7 +199,7 @@ func TestConversionRepository_UpdateJob(t *testing.T) {
 			},
 			setup: func(mock sqlmock.Sqlmock) {
 				mock.ExpectExec("UPDATE conversion_jobs").
-					WithArgs("completed", sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), 1).
+					WithArgs("completed", sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), 1).
 					WillReturnResult(sqlmock.NewResult(0, 1))
 			},
 		},
