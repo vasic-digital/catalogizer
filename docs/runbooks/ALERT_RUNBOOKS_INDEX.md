@@ -25,17 +25,17 @@ This directory contains runbooks for responding to alerts and incidents in the C
 ### Application Issues
 - [API_UNRESPONSIVE.md](API_UNRESPONSIVE.md) - API downtime and performance
 - [DATABASE_CONNECTION.md](DATABASE_CONNECTION.md) - Database connectivity issues
-- [SLOW_QUERIES.md](SLOW_QUERIES.md) - Database performance issues
+- SLOW_QUERIES - Database performance issues (no runbook written yet; see docs/FOLLOW_UPS_NEXT_PHASE.md "Documentation follow-ups")
 
 ### Security Incidents
 - [SECURITY_BREACH.md](SECURITY_BREACH.md) - Security breach response
-- [BRUTE_FORCE.md](BRUTE_FORCE.md) - Brute force attack response
-- [DOS_ATTACK.md](DOS_ATTACK.md) - Denial of service response
+- BRUTE_FORCE - (no runbook written yet) Brute force attack response
+- DOS_ATTACK - (no runbook written yet) Denial of service response
 
 ### Infrastructure
-- [NODE_DOWN.md](NODE_DOWN.md) - Node/Host failures
-- [NETWORK_ISSUES.md](NETWORK_ISSUES.md) - Network connectivity
-- [CERTIFICATE_EXPIRY.md](CERTIFICATE_EXPIRY.md) - SSL certificate issues
+- NODE_DOWN - (no runbook written yet) Node/Host failures
+- NETWORK_ISSUES - (no runbook written yet) Network connectivity
+- CERTIFICATE_EXPIRY - (no runbook written yet) SSL certificate issues
 
 ## Escalation Matrix
 

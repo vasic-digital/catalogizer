@@ -282,7 +282,7 @@ echo "192.168.0.214" > .devconnect
 **Solutions:**
 - Ensure Podman is running
 - Check builder image exists: `podman images | grep catalogizer-builder`
-- Build manually if needed: See [Android Build Guide](./ANDROID_BUILD_GUIDE.md)
+- Build manually if needed: See [Build container auto-dispatch](../BUILD_CONTAINER_AUTO_DISPATCH.md)
 
 ### HelixQA Fails
 
@@ -434,7 +434,7 @@ cat qa-results/session-*/report.md
 
 - [Device Connect Guide](./DEVCONNECT_GUIDE.md) - `.devconnect` documentation
 - [Testing Guide](./TESTING_GUIDE.md) - General testing procedures
-- [HelixQA Documentation](../../HelixQA/README.md) - HelixQA reference
+- [HelixQA Documentation](../../submodules/helix_qa/README.md) - HelixQA reference
 - [AGENTS.md](../../AGENTS.md) - Agent constraints and guidelines
 
 ## Support

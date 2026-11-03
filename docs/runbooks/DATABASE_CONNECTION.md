@@ -258,5 +258,5 @@ If database remains inaccessible after 5 minutes:
 
 **Related Runbooks:**
 - [API_UNRESPONSIVE.md](API_UNRESPONSIVE.md)
-- [SLOW_QUERIES.md](SLOW_QUERIES.md)
+- SLOW_QUERIES (no runbook written yet)
 - [HIGH_CPU.md](HIGH_CPU.md)

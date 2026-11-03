@@ -1388,4 +1388,4 @@ If the server does not shut down gracefully, check for hung requests or long-run
 
 ---
 
-*For developer-oriented information, see the [Developer Guide](DEVELOPER_GUIDE.md). For end-user documentation, see the [User Guide](USER_GUIDE.md). For quick reference on API endpoints and configuration, see the [Quick Reference](QUICK_REFERENCE.md).*
+*For developer-oriented information, see the [Developer Guide](DEVELOPER_GUIDE.md). For end-user documentation, see the [User Guide](USER_GUIDE.md). For quick reference on API endpoints and configuration, see the [Quick Reference](../QUICK_REFERENCE.md).*

@@ -935,4 +935,4 @@ go tool pprof http://localhost:6060/debug/pprof/heap
 - [UnifiedClient Interface Documentation](../architecture/FILESYSTEM_INTERFACE.md)
 - [Configuration Reference](CONFIGURATION_REFERENCE.md)
 - [API Documentation](../api/API_DOCUMENTATION.md)
-- [Testing Guide](../testing/TESTING_GUIDE.md)
+- [Testing Guide](../TESTING_GUIDE.md)

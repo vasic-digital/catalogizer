@@ -514,5 +514,5 @@ const bufferSize = 64 * 1024 // 64KB buffer
 
 - [API Documentation](./README.md)
 - [Testing Guide](./TESTING.md)
-- [Configuration Guide](../config.example.json)
+- [Configuration Guide](../config.json.example)
 - [Examples](./examples.md)

@@ -2,7 +2,7 @@
 
 This document is the single source of truth for the comprehensive completion initiative started on 2026-04-11. It summarizes every phase's deliverables, exit-criteria status, before/after metrics, and links to the evidence.
 
-**Master roadmap**: [`docs/plans/2026-04-11-comprehensive-completion-audit-and-roadmap.md`](../plans/2026-04-11-comprehensive-completion-audit-and-roadmap.md)
+**Master roadmap**: [`docs/plans/archive/2026-04-11-comprehensive-completion-audit-and-roadmap.md`](../plans/archive/2026-04-11-comprehensive-completion-audit-and-roadmap.md)
 
 **Session range on main**: `9d9a4957..41039a4f` — **18 commits** on the superproject plus full submodule sync (20 fast-forward pushes + 4 merge commits).
 
@@ -10,7 +10,7 @@ This document is the single source of truth for the comprehensive completion ini
 
 ## Phase 0 — Audit & Baseline ✅
 
-**Deliverable**: [`docs/plans/2026-04-11-comprehensive-completion-audit-and-roadmap.md`](../plans/2026-04-11-comprehensive-completion-audit-and-roadmap.md)
+**Deliverable**: [`docs/plans/archive/2026-04-11-comprehensive-completion-audit-and-roadmap.md`](../plans/archive/2026-04-11-comprehensive-completion-audit-and-roadmap.md)
 
 60+ concrete findings across code completeness (CC-*), concurrency safety (CS-*), database dialect (DB-*), documentation (DOC-*), security (SEC-*), performance (PO-*).
 
@@ -18,7 +18,7 @@ This document is the single source of truth for the comprehensive completion ini
 
 ## Phase 1 — Concurrency Safety & Data-Race Hardening ✅
 
-**Sub-plan**: [`docs/plans/2026-04-11-phase-1-concurrency-hardening.md`](../plans/2026-04-11-phase-1-concurrency-hardening.md)
+**Sub-plan**: [`docs/plans/archive/2026-04-11-phase-1-concurrency-hardening.md`](../plans/archive/2026-04-11-phase-1-concurrency-hardening.md)
 
 | Commit | Fix |
 |---|---|

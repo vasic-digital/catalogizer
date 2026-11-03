@@ -361,8 +361,8 @@ grep "authentication.*success.*$SOURCE_IP" /var/log/catalogizer/auth.log
 ---
 
 **Related Runbooks:**
-- [BRUTE_FORCE.md](BRUTE_FORCE.md)
-- [DOS_ATTACK.md](DOS_ATTACK.md)
+- BRUTE_FORCE (no runbook written yet)
+- DOS_ATTACK (no runbook written yet)
 
 **External Resources:**
 - NIST Incident Response Guide

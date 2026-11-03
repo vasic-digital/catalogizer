@@ -537,3 +537,22 @@ Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/ap
 - XSS rule nits: `behavior:url(...)` (old Internet Explorer only) is not detected; the open-tag rule's `<\s*` also flags prose such as "x < link y" (browsers do not parse `< tag` as a tag); drop the `\s*` after `<`.
 - catalog-web: after change-password the success toast is followed by a redirect to /login on the next 401; log out explicitly or keep the caller's own session.
 - Pre-existing on main (not caused by this branch): admin "suspended" status sets IsLocked but `UserRepository.Update` does not persist `is_locked` and no sessions are revoked; `tests/stress` CacheWriteThroughput and middleware TestTokenBucketRedisRateLimit_Unit_Miniredis_RefillAfterEmpty are flaky under load (section 11.4.248 quarantine candidates).
+
+## WebDAV live-test gap (recorded 2026-11-03)
+
+- Status: SKIP(service_unavailable). The Synology NAS answers on 445/80/443/5000/5001 only; WebDAV ports 5005/5006 refuse connections and DSM web ports answer PROPFIND with 405 or the login page (200, no DAV header). No WebDAV stand-in was used (section 11.4.289).
+- OPERATOR ACTION: DSM > Package Center > install and enable "WebDAV Server" (enable HTTPS, port 5006), allow the test user on the share, then run `LIVE_WEBDAV_URL=https://<nas>:5006 LIVE_WEBDAV_USER=... LIVE_WEBDAV_PASSWORD=... LIVE_WEBDAV_SANDBOX=/work20/Testing LIVE_WEBDAV_INSECURE=1 go test -tags live -run TestLiveWebDAV -v ./filesystem/` in `catalog-api`.
+- UNCONFIRMED: the positive legs (connect, list, write, read-back sha256, delete, 404, wrong-credential 401) of `catalog-api/filesystem/live_webdav_test.go` have never run against a real server; only the SKIP paths are proven. Re-run 3 times once the service is enabled and capture redacted output.
+- Add a paired mutation (wrong password via env, wrong sandbox) to the WebDAV live test as the SMB/FTP live tests have (`LIVE_MUTATE`).
+- Pin the Synology certificate instead of `LIVE_WEBDAV_INSECURE=1` (as `submodules/filesystem/pkg/ftp/tls.go` pins per host; confirmed).
+- Review R1 F12/F13 (deferred): IPv6 literal hosts are mangled by the redaction host extraction; the probe URL escaping should reuse the client's URL builder. Positive-leg assertion that `ReadFile` error text contains `404` depends on the client's message format and is UNCONFIRMED live.
+- Review R2 F-R2-5 (note): Go follows 301/302 on PROPFIND by switching to GET, so a redirect to a login page is SKIPped as non-WebDAV; acceptable.
+
+## Documentation follow-ups (docs link audit, 2026-11-03)
+
+Status: OPEN until a commit on `main` closes the item.
+
+- Six runbooks named by `docs/runbooks/ALERT_RUNBOOKS_INDEX.md` do not exist and were un-linked, not invented: SLOW_QUERIES, BRUTE_FORCE, DOS_ATTACK, NODE_DOWN, NETWORK_ISSUES, CERTIFICATE_EXPIRY. Each needs a real runbook written from the alert rules and the code, then re-linked from the index, `DATABASE_CONNECTION.md`, `HIGH_CPU.md` and `SECURITY_BREACH.md`.
+- Link-checker weaknesses (T1, test-instrumentation, the checker is not in the repository yet; the audit copy lives in the session scratchpad): (a) its control check ended in `or True`, so a broken control could never fail; (b) it ignores `#anchors`, so a link to a heading that does not exist passes (the spec 001 crawl found 83 broken anchors); (c) it had no VitePress site-root mode, so 37 `Website/` links such as `/download` were reported broken. The scratchpad copy now asserts a positive and a negative control and resolves `Website/` root links against `Website/` (`.md` and `index.md` forms); anchors are still unchecked. Land a checker in `scripts/` with these three properties plus a gate before relying on its counts.
+- Link-check false positives to exclude when the checker lands: backticked code such as `NewValue[T](loader)` in `docs/architecture/LAZY_LOADING.md` and spec 001 doc 19, and links into submodules that are not checked out.
+
