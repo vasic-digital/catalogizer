@@ -112,7 +112,7 @@ describe('Admin Page', () => {
     await waitFor(() => {
       expect(screen.getByText('System Resources')).toBeInTheDocument()
       expect(screen.getByText('CPU Usage')).toBeInTheDocument()
-      expect(screen.getByText('Memory Usage')).toBeInTheDocument()
+      expect(screen.getByText('API Process Memory (heap in use / reserved)')).toBeInTheDocument()
     })
   })
 
@@ -186,7 +186,7 @@ describe('Admin Page', () => {
     render(<Admin />, { wrapper: createWrapper() })
     await waitFor(() => {
       expect(screen.getByText('CPU Usage')).toBeInTheDocument()
-      expect(screen.getByText('Memory Usage')).toBeInTheDocument()
+      expect(screen.getByText('API Process Memory (heap in use / reserved)')).toBeInTheDocument()
     })
   })
 

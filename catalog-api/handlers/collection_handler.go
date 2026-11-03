@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"encoding/json"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -259,17 +259,17 @@ func isNotFoundError(err error) bool {
 // verification: GET /favorites/check/invalid_type/1 returned
 // HTTP 200 {"is_favorite":true}.
 var validEntityTypes = map[string]struct{}{
-	"movie":         {},
-	"tv_show":       {},
-	"tv_season":     {},
-	"tv_episode":    {},
-	"music_artist":  {},
-	"music_album":   {},
-	"song":          {},
-	"game":          {},
-	"software":      {},
-	"book":          {},
-	"comic":         {},
+	"movie":        {},
+	"tv_show":      {},
+	"tv_season":    {},
+	"tv_episode":   {},
+	"music_artist": {},
+	"music_album":  {},
+	"song":         {},
+	"game":         {},
+	"software":     {},
+	"book":         {},
+	"comic":        {},
 }
 
 // isValidEntityType returns true iff the entity_type is one of the

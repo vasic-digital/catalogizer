@@ -166,6 +166,12 @@ const SHARE_METHODS = [
   }
 ]
 
+// CAT-001 (R5): the server has no /collections/:id/share* routes. Every share control is disabled with this
+// reason; the handlers below are also strict (success only on response.ok, nothing invented) so they stay
+// honest if the routes are added and this flag is flipped.
+const SHARE_API_AVAILABLE = false
+const SHARE_UNAVAILABLE_REASON = 'Sharing is not available: the server has no collection share API yet. Nothing was shared or sent.'
+
 export const CollectionSharing: React.FC<CollectionSharingProps> = ({
   collection,
   onClose,
@@ -245,16 +251,21 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
         }),
       })
 
-      let shareData: Record<string, unknown> = {}
-      if (response.ok) {
-        shareData = await response.json()
+      if (!response.ok) {
+        toast.error('Failed to create share link: the server refused it. Nothing was shared.')
+        return
+      }
+      const shareData: Record<string, unknown> = await response.json()
+      if (!shareData.share_id || !shareData.share_url) {
+        toast.error('Failed to create share link: the server returned no link.')
+        return
       }
 
       const newLink: ShareLink = {
-        id: String(shareData.share_id || Date.now()),
+        id: String(shareData.share_id),
         title: `Share Link ${shareLinks.length + 1}`,
-        url: String(shareData.share_url || `${window.location.origin}/shared/${collection.id}/${shareData.share_id || Date.now()}`),
-        token: String(shareData.share_id || ''),
+        url: String(shareData.share_url),
+        token: String(shareData.share_id),
         permissions: selectedPermission.permissions,
         expires_in: expiryTime,
         created_at: String(shareData.created_at || new Date().toISOString()),
@@ -293,13 +304,16 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
 
   const revokeShare = useCallback(async (shareId: string) => {
     try {
-      await fetch(`/api/v1/collections/${collection.id}/shares/${shareId}/revoke`, {
+      const res = await fetch(`/api/v1/collections/${collection.id}/shares/${shareId}/revoke`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
         },
       })
-      // Update local state regardless of response — the endpoint may not exist yet
+      if (!res.ok) {
+        toast.error('Share link was not revoked: the server refused it.')
+        return
+      }
       setShareLinks(prev => prev.map(link =>
         link.id === shareId ? { ...link, is_active: false } : link
       ))
@@ -311,13 +325,16 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
 
   const deleteShare = useCallback(async (shareId: string) => {
     try {
-      await fetch(`/api/v1/collections/${collection.id}/shares/${shareId}`, {
+      const res = await fetch(`/api/v1/collections/${collection.id}/shares/${shareId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
         },
       })
-      // Update local state regardless of response — the endpoint may not exist yet
+      if (!res.ok) {
+        toast.error('Share link was not deleted: the server refused it.')
+        return
+      }
       setShareLinks(prev => prev.filter(link => link.id !== shareId))
       toast.success('Share link deleted')
     } catch {
@@ -347,7 +364,7 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
         }),
       })
 
-      if (!response.ok && response.status !== 404) {
+      if (!response.ok) {
         throw new Error('Send failed')
       }
 
@@ -623,7 +640,8 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
 
                     <Button
                       onClick={generateShareLink}
-                      disabled={isCreating}
+                      disabled={isCreating || !SHARE_API_AVAILABLE}
+                      title={SHARE_API_AVAILABLE ? undefined : SHARE_UNAVAILABLE_REASON}
                       className="w-full"
                     >
                       {isCreating ? (
@@ -638,6 +656,9 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
                         </>
                       )}
                     </Button>
+                    {!SHARE_API_AVAILABLE && (
+                      <p data-testid="share-unavailable" className="text-sm text-gray-500 mt-2">{SHARE_UNAVAILABLE_REASON}</p>
+                    )}
                   </div>
                 </Card>
 
@@ -705,11 +726,16 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
                     
                     <Button
                       onClick={sendEmailInvites}
+                      disabled={!SHARE_API_AVAILABLE}
+                      title={SHARE_API_AVAILABLE ? undefined : SHARE_UNAVAILABLE_REASON}
                       className="w-full"
                     >
                       <Mail className="w-4 h-4 mr-2" />
                       Send Invitations
                     </Button>
+                    {!SHARE_API_AVAILABLE && (
+                      <p data-testid="share-unavailable" className="text-sm text-gray-500 mt-2">{SHARE_UNAVAILABLE_REASON}</p>
+                    )}
                   </div>
                 </Card>
               </motion.div>
@@ -761,18 +787,24 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
                       <textarea
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white font-mono text-sm"
                         rows={4}
-                        value={getEmbedCode()}
+                        value={SHARE_API_AVAILABLE ? getEmbedCode() : ''}
+                        placeholder={SHARE_API_AVAILABLE ? undefined : 'No embed code: the server has no embed route.'}
                         readOnly
                       />
                     </div>
                     
                     <Button
                       onClick={() => copyToClipboard(getEmbedCode())}
+                      disabled={!SHARE_API_AVAILABLE}
+                      title={SHARE_API_AVAILABLE ? undefined : SHARE_UNAVAILABLE_REASON}
                       className="w-full"
                     >
                       <Copy className="w-4 h-4 mr-2" />
                       Copy Embed Code
                     </Button>
+                    {!SHARE_API_AVAILABLE && (
+                      <p data-testid="share-unavailable" className="text-sm text-gray-500 mt-2">{SHARE_UNAVAILABLE_REASON}</p>
+                    )}
                   </div>
                 </Card>
               </motion.div>

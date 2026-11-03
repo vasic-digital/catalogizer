@@ -266,7 +266,9 @@ describe('Dashboard', () => {
       render(<Dashboard />, { wrapper: createWrapper() })
 
       expect(screen.getByText('CPU Usage')).toBeInTheDocument()
-      expect(screen.getByText('Memory Usage')).toBeInTheDocument()
+      expect(screen.getByText('API Process Memory (heap in use / reserved)')).toBeInTheDocument()
+      // CAT-001 R5: the figure is the API process heap ratio, not host memory; the label must not say otherwise
+      expect(screen.queryByText('Memory Usage')).not.toBeInTheDocument()
       expect(screen.getByText('Disk Usage')).toBeInTheDocument()
     })
 

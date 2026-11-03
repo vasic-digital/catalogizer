@@ -118,7 +118,7 @@ func (h *DownloadHandler) DownloadFile(c *gin.Context) {
 	if smbRoot.Path != nil {
 		share = *smbRoot.Path
 	}
-		user, pass, dom := services.ResolveSMBIdentity(smbRoot)
+	user, pass, dom := services.ResolveSMBIdentity(smbRoot)
 	if smbRoot.Username != nil {
 		user = *smbRoot.Username
 	}
@@ -242,7 +242,7 @@ func (h *DownloadHandler) DownloadDirectory(c *gin.Context) {
 	if smbRoot.Path != nil {
 		share = *smbRoot.Path
 	}
-		user, pass, dom := services.ResolveSMBIdentity(smbRoot)
+	user, pass, dom := services.ResolveSMBIdentity(smbRoot)
 	if smbRoot.Username != nil {
 		user = *smbRoot.Username
 	}

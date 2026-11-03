@@ -4885,7 +4885,7 @@ List the current user's playlists.
 
 Create a new playlist.
 
-**Description:** Creates an empty playlist.
+**Description:** Creates an empty playlist. A body with `is_smart: true` or `smart_rules` is answered with **501** and nothing is created (smart rules are neither stored nor evaluated).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 

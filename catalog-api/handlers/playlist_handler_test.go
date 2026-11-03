@@ -278,6 +278,27 @@ func TestCreatePlaylist_Success(t *testing.T) {
 	assert.NotZero(t, resp["id"])
 }
 
+// CAT-001 R5: is_smart / smart_rules used to be dropped by the request model and a plain empty playlist was
+// created and returned 201. A smart playlist is refused honestly and nothing is stored.
+func TestCreatePlaylist_SmartIsRefusedNotSilentlyDropped(t *testing.T) {
+	handler, db := newPlaylistHandler(t)
+	router := playlistRouterWithAuth(handler, 1)
+	for _, raw := range []string{
+		`{"name":"S","is_smart":true}`,
+		`{"name":"S","smart_rules":[{"field":"genre","operator":"equals","value":"rock"}]}`,
+	} {
+		req := httptest.NewRequest(http.MethodPost, "/playlists", bytes.NewBufferString(raw))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusNotImplemented, w.Code, raw)
+		assert.Contains(t, w.Body.String(), "Nothing was created")
+	}
+	var n int
+	require.NoError(t, db.QueryRow(`SELECT COUNT(*) FROM playlists WHERE name = 'S'`).Scan(&n))
+	assert.Equal(t, 0, n, "no playlist may be stored for a refused smart request")
+}
+
 // ---------------------------------------------------------------------------
 // GetPlaylist
 // ---------------------------------------------------------------------------

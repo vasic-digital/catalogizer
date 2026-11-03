@@ -1829,6 +1829,10 @@ type PlaylistItem struct {
 type CreatePlaylistRequest struct {
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description"`
+	// IsSmart / SmartRules are accepted only so a smart-playlist request can be refused honestly
+	// (501) instead of being silently dropped. They are neither stored nor evaluated.
+	IsSmart    *bool             `json:"is_smart,omitempty"`
+	SmartRules []json.RawMessage `json:"smart_rules,omitempty"`
 }
 
 // UpdatePlaylistRequest represents a request to update an existing playlist.
@@ -1854,7 +1858,7 @@ var (
 	ErrConversionJobNotFound    = errors.New("job not found")
 	ErrConversionJobState       = errors.New("conversion job is not in a state that allows this operation")
 	ErrConversionForbidden      = errors.New("unauthorized to access this conversion job")
-	ErrForbidden    = errors.New("forbidden")
-	ErrNotFound     = errors.New("not found")
-	ErrConflict     = errors.New("conflict")
+	ErrForbidden                = errors.New("forbidden")
+	ErrNotFound                 = errors.New("not found")
+	ErrConflict                 = errors.New("conflict")
 )

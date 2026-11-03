@@ -83,6 +83,14 @@ func (h *PlaylistHandler) CreatePlaylist(c *gin.Context) {
 		return
 	}
 
+	// CAT-001 (R5): smart playlists are not stored or evaluated; refuse instead of creating a plain empty one.
+	if (req.IsSmart != nil && *req.IsSmart) || len(req.SmartRules) > 0 {
+		c.JSON(http.StatusNotImplemented, gin.H{
+			"error": "smart playlists are not supported: is_smart and smart_rules are neither stored nor evaluated. Nothing was created.",
+		})
+		return
+	}
+
 	playlist, err := h.service.CreatePlaylist(uid, &req)
 	if err != nil {
 		h.logger.Error("Failed to create playlist", zap.Error(err))

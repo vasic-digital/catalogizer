@@ -54,10 +54,11 @@ vi.mock('../../components/playlists/PlaylistItem', () => ({
 }))
 
 vi.mock('../../components/playlists/SmartPlaylistBuilder', () => ({
-  SmartPlaylistBuilder: ({ onSave, onCancel }: any) => (
+  SmartPlaylistBuilder: ({ onSave, onCancel, saveDisabledReason }: any) => (
     <div data-testid="smart-builder">
       Smart Playlist Builder
-      <button onClick={() => onSave('Smart PL', 'Smart desc', [{ field: 'genre', operator: 'equals', value: 'rock' }])}>Save Smart</button>
+      {saveDisabledReason && <p data-testid="smart-reason">{saveDisabledReason}</p>}
+      <button disabled={!!saveDisabledReason} onClick={() => onSave('Smart PL', 'Smart desc', [{ field: 'genre', operator: 'equals', value: 'rock' }])}>Save Smart</button>
       <button onClick={onCancel}>Cancel Smart</button>
     </div>
   ),
@@ -475,35 +476,20 @@ describe('Playlists Page', () => {
     expect(mockSearchMedia).not.toHaveBeenCalled()
   })
 
-  it('saves a smart playlist via the Smart Builder', async () => {
+  it('CAT-001 R5: the Smart Builder cannot save - the server stores no smart rules - and says why', async () => {
     const user = userEvent.setup()
     render(<PlaylistsPage />)
+    mockCreatePlaylist.mockClear()
+    vi.mocked(toast.success).mockClear()
 
     await user.click(screen.getByText('Smart Builder'))
-    expect(screen.getByTestId('smart-builder')).toBeInTheDocument()
+    expect(screen.getByTestId('smart-reason')).toHaveTextContent(/not available/i)
+    const save = screen.getByText('Save Smart')
+    expect(save).toBeDisabled()
+    await user.click(save)
 
-    await user.click(screen.getByText('Save Smart'))
-
-    await waitFor(() => {
-      expect(mockCreatePlaylist).toHaveBeenCalledWith(expect.objectContaining({
-        name: 'Smart PL',
-        description: 'Smart desc',
-        is_smart: true,
-      }))
-    })
-  })
-
-  it('shows error toast when smart playlist creation fails', async () => {
-    mockCreatePlaylist.mockRejectedValue(new Error('Smart create failed'))
-    const user = userEvent.setup()
-    render(<PlaylistsPage />)
-
-    await user.click(screen.getByText('Smart Builder'))
-    await user.click(screen.getByText('Save Smart'))
-
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Failed to create smart playlist')
-    })
+    expect(mockCreatePlaylist).not.toHaveBeenCalled()
+    expect(toast.success).not.toHaveBeenCalled()
   })
 
   it('disables Create button when playlist name is empty', async () => {

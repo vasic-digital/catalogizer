@@ -467,7 +467,7 @@ func TestMediaEntityHandler_MarkEnrichmentAttemptedAdvancesQueue(t *testing.T) {
 
 // TestMediaEntityHandler_EnrichmentAttemptedSentinelHasNoCover proves the
 // sentinel does NOT masquerade as a real cover. cover_art_service.GetCoverURL
-// selects `WHERE cover_url IS NOT NULL AND cover_url != ''`; the sentinel row
+// selects `WHERE cover_url IS NOT NULL AND cover_url != ”`; the sentinel row
 // carries a NULL cover_url, so that lookup finds nothing and falls through to
 // the placeholder — no false cover is ever shown for an unmatchable item.
 func TestMediaEntityHandler_EnrichmentAttemptedSentinelHasNoCover(t *testing.T) {

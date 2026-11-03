@@ -151,7 +151,7 @@ const SystemStatus: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {([['CPU Usage', status.cpu], ['Memory Usage', status.memory], ['Disk Usage', status.disk]] as const).map(([label, value]) => (
+          {([['CPU Usage', status.cpu], ['API Process Memory (heap in use / reserved)', status.memory], ['Disk Usage', status.disk]] as const).map(([label, value]) => (
             <div key={label} className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>{label}</span>

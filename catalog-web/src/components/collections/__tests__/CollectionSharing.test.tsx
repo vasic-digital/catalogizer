@@ -163,16 +163,51 @@ describe('CollectionSharing', () => {
       expect(toast.success).not.toHaveBeenCalled()
       expect(screen.getByTestId('qr-unavailable')).toHaveTextContent(/not available/i)
     })
+  })
 
-    it('a rejected clipboard write is an error toast, not "Copied"', async () => {
-      const user = userEvent.setup() // user-event installs its own clipboard stub; override it afterwards
-      const writeText = vi.fn().mockRejectedValue(new Error('denied'))
-      Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+  describe('CAT-001 R5: the server has no collection share routes, so nothing may pretend to share', () => {
+    const REASON = /sharing is not available/i
+    let fetchMock: ReturnType<typeof vi.fn>
+    beforeEach(() => {
+      vi.mocked(toast.success).mockClear(); vi.mocked(toast.error).mockClear()
+      fetchMock = vi.fn().mockResolvedValue({ ok: false, status: 404, json: async () => ({}) })
+      globalThis.fetch = fetchMock as any
+    })
+
+    // the mount-time GET of existing shares is a read; only state-changing calls count
+    const writes = () => fetchMock.mock.calls.filter(c => (c[1]?.method || 'GET') !== 'GET')
+
+    it('Create Share Link is disabled with a stated reason; clicking calls nothing, toasts nothing, invents no URL', async () => {
+      const user = userEvent.setup()
+      render(<CollectionSharing collection={mockCollection as any} onClose={vi.fn()} />)
+      const btn = screen.getAllByText('Create Share Link').map(e => e.closest('button')).filter(Boolean).pop()!
+      expect(btn).toBeDisabled()
+      await user.click(btn)
+      expect(writes()).toHaveLength(0)
+      expect(toast.success).not.toHaveBeenCalled()
+      expect(screen.getAllByTestId('share-unavailable')[0]).toHaveTextContent(REASON)
+      expect(document.body.innerHTML).not.toMatch(/\/shared\/1\/\d+/)
+    })
+
+    it('Send Invitations is disabled and sends nothing', async () => {
+      const user = userEvent.setup()
+      render(<CollectionSharing collection={mockCollection as any} onClose={vi.fn()} />)
+      await user.click(screen.getByText('Email Invite'))
+      const btn = screen.getByText('Send Invitations').closest('button')!
+      expect(btn).toBeDisabled()
+      await user.click(btn)
+      expect(writes()).toHaveLength(0)
+      expect(toast.success).not.toHaveBeenCalled()
+      expect(screen.getByTestId('share-unavailable')).toHaveTextContent(REASON)
+    })
+
+    it('Embed shows no iframe pointing at a route that does not exist, and Copy is disabled', async () => {
+      const user = userEvent.setup()
       render(<CollectionSharing collection={mockCollection as any} onClose={vi.fn()} />)
       await user.click(screen.getByText('Embed'))
-      await user.click(screen.getByRole('button', { name: /Copy/i }))
-      await waitFor(() => expect(toast.error).toHaveBeenCalled())
-      expect(toast.success).not.toHaveBeenCalledWith('Copied to clipboard')
+      expect(document.body.innerHTML).not.toContain('/embed/1')
+      expect(screen.getByRole('button', { name: /Copy Embed Code/ })).toBeDisabled()
+      expect(screen.getByTestId('share-unavailable')).toHaveTextContent(REASON)
     })
   })
 })

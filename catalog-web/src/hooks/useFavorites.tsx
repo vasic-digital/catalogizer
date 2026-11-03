@@ -57,8 +57,9 @@ export const useFavorites = (params?: {
         if (!old?.items) return old
         
         if (request.is_favorite) {
-          // Add to favorites (would need full media item in real implementation)
-          toast.success('Added to favorites')
+          // Add to favorites: the full media item is not available here, so leave the cache as it is.
+          // CAT-001 (R5): the success toast is shown in onSuccess, after the server accepted the add.
+          return old
         } else {
           // Remove from favorites
           return {
@@ -69,6 +70,9 @@ export const useFavorites = (params?: {
       })
       
       return { previousFavorites }
+    },
+    onSuccess: (_data, request) => {
+      if (request.is_favorite) toast.success('Added to favorites')
     },
     onError: (error, variables, context) => {
       // Revert optimistic update

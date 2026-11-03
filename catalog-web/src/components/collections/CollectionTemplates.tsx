@@ -43,6 +43,11 @@ interface CollectionTemplate {
   };
 }
 
+// CAT-001 (R5): every template is a smart collection and the server answers 501 for those (rules are neither
+// stored nor evaluated), so applying is disabled with a reason instead of offering a button that always fails.
+const TEMPLATE_APPLY_AVAILABLE = false;
+const TEMPLATE_APPLY_REASON = 'Creating from a template is not available: templates are smart collections, which the server does not support yet. Nothing was created.';
+
 interface CollectionTemplatesProps {
   onClose: () => void;
   onApplyTemplate: (template: CollectionTemplate, collectionName: string) => Promise<void>;
@@ -647,10 +652,14 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
                     </Button>
                     <Button
                       onClick={() => handleApplyTemplate(selectedTemplate)}
-                      disabled={!collectionName.trim() || isCreating}
+                      disabled={!TEMPLATE_APPLY_AVAILABLE || !collectionName.trim() || isCreating}
+                      title={TEMPLATE_APPLY_AVAILABLE ? undefined : TEMPLATE_APPLY_REASON}
                     >
                       {isCreating ? 'Creating...' : 'Create Collection'}
                     </Button>
+                    {!TEMPLATE_APPLY_AVAILABLE && (
+                      <p data-testid="template-apply-unavailable" className="text-sm text-gray-500">{TEMPLATE_APPLY_REASON}</p>
+                    )}
                   </div>
                 </div>
               </motion.div>

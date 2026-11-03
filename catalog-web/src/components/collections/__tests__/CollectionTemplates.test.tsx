@@ -193,41 +193,19 @@ describe('CollectionTemplates', () => {
     expect(createBtn.closest('button')).toBeDisabled()
   })
 
-  it('calls onApplyTemplate and shows success toast with valid name', async () => {
+  it('CAT-001 R5: Create Collection stays disabled with a stated reason even with a valid name (templates are smart collections, which the server refuses)', async () => {
     const user = userEvent.setup()
     render(<CollectionTemplates {...defaultProps} />)
 
     await user.click(screen.getByText('Recent Movies'))
+    await user.type(screen.getByPlaceholderText('Enter collection name...'), 'My Movies')
+    const btn = screen.getByText('Create Collection').closest('button')!
+    expect(btn).toBeDisabled()
+    await user.click(btn)
 
-    const nameInput = screen.getByPlaceholderText('Enter collection name...')
-    await user.type(nameInput, 'My Movies')
-    await user.click(screen.getByText('Create Collection'))
-
-    await waitFor(() => {
-      expect(defaultProps.onApplyTemplate).toHaveBeenCalled()
-      expect(toast.success).toHaveBeenCalledWith(
-        'Collection "My Movies" created from template'
-      )
-    })
-  })
-
-  it('shows error toast when onApplyTemplate fails', async () => {
-    const failProps = {
-      ...defaultProps,
-      onApplyTemplate: vi.fn().mockRejectedValue(new Error('Server error')),
-    }
-    const user = userEvent.setup()
-    render(<CollectionTemplates {...failProps} />)
-
-    await user.click(screen.getByText('Recent Movies'))
-
-    const nameInput = screen.getByPlaceholderText('Enter collection name...')
-    await user.type(nameInput, 'My Movies')
-    await user.click(screen.getByText('Create Collection'))
-
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Server error')
-    })
+    expect(defaultProps.onApplyTemplate).not.toHaveBeenCalled()
+    expect(toast.success).not.toHaveBeenCalled()
+    expect(screen.getByTestId('template-apply-unavailable')).toHaveTextContent(/not available/i)
   })
 
   it('closes template preview when Cancel is clicked', async () => {
@@ -298,19 +276,6 @@ describe('CollectionTemplates', () => {
 
     const createBtn = screen.getByText('Create Collection')
     expect(createBtn.closest('button')).toBeDisabled()
-  })
-
-  it('enables Create Collection button when name is provided', async () => {
-    const user = userEvent.setup()
-    render(<CollectionTemplates {...defaultProps} />)
-
-    await user.click(screen.getByText('Recent Movies'))
-
-    const nameInput = screen.getByPlaceholderText('Enter collection name...')
-    await user.type(nameInput, 'Test')
-
-    const createBtn = screen.getByText('Create Collection')
-    expect(createBtn.closest('button')).not.toBeDisabled()
   })
 
   it('shows no invented estimated item ranges (CAT-001)', () => {

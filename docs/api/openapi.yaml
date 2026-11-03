@@ -4479,6 +4479,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden (admin role required)
+        '500':
+          description: The storage roots could not be read from the database (never a 200 with an empty list)
         '503':
           description: The caller's admin status could not be determined (fail closed)
 
@@ -5529,6 +5531,8 @@ paths:
       responses:
         '200':
           description: Collection updated
+        '501':
+          description: is_smart true is not supported; nothing was changed
     delete:
       tags: [collections]
       summary: Delete collection
@@ -8945,6 +8949,8 @@ paths:
             schema:
               $ref: '#/components/schemas/CreatePlaylistRequest'
       responses:
+        '501':
+          description: is_smart true or smart_rules present - smart playlists are not supported; nothing was created
         '201':
           description: Created
           content:

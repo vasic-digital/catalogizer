@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 func newCfgHandlerNoService() *ConfigurationHandler {
 	return NewConfigurationHandler(&MockConfigurationService{}, &MockAuthService{})
 }

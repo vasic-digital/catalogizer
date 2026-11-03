@@ -910,7 +910,7 @@ const enrichmentAttemptedProvider = "enrichment_attempted"
 // markEnrichmentAttempted writes the sentinel external_metadata row for an item
 // whose enrichment found nothing. The row carries a NULL cover_url, so the
 // cover lookup in cover_art_service.GetCoverURL (which filters `cover_url IS NOT
-// NULL AND cover_url != ''`) never mistakes it for a real cover and still falls
+// NULL AND cover_url != ”`) never mistakes it for a real cover and still falls
 // through to the type placeholder. The successful enrichment paths (local_scan,
 // tmdb) are unaffected — they keep writing their own real rows.
 func (h *MediaEntityHandler) markEnrichmentAttempted(ctx context.Context, itemID int64) error {
@@ -1579,8 +1579,8 @@ func (h *MediaEntityHandler) lazyEnrichEntities(entityIDs []int64) {
 					Rating:      result.rating,
 				}
 				if err := h.extMetaRepo.Upsert(ctx, meta); err != nil {
-				// Log but continue
-			}
+					// Log but continue
+				}
 				if result.overview != "" {
 					if _, execErr := h.db.ExecContext(ctx,
 						`UPDATE media_items SET description = ? WHERE id = ? AND (description IS NULL OR description = '')`,

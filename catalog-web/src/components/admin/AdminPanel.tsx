@@ -205,7 +205,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
-                    <span className="text-sm font-medium">Memory Usage</span>
+                    <span className="text-sm font-medium">API Process Memory (heap in use / reserved)</span>
                     <span className="text-sm text-gray-600">{formatPercentOrUnavailable(systemInfo.memoryUsage)}</span>
                   </div>
                   <Progress value={systemInfo.memoryUsage ?? 0} />

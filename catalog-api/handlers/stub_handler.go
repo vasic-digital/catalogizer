@@ -633,4 +633,3 @@ func (h *MediaQueryHandler) GetInitStatus(c *gin.Context) {
 		"initialized": true,
 	})
 }
-
