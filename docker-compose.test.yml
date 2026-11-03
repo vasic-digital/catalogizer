@@ -57,6 +57,14 @@ services:
       - GOTOOLCHAIN=local
       - PORT=8080
       - WRITE_TIMEOUT=900
+      # Registration policy for the QA stack. The server default is "approval" (a self-registered
+      # account is inactive until an admin approves it). QA suites whose subject is NOT the
+      # registration policy need accounts that can log in straight away, so the QA stack opts
+      # into "open"; override with REGISTRATION_MODE=approval to exercise the approval path
+      # (scripts/run-full-qa.sh is mode-agnostic: it approves through the admin API when the
+      # account comes back pending). The policy itself is covered against the real binary by
+      # catalog-api/registration_approval_binary_test.go. Never use "open" outside QA.
+      - REGISTRATION_MODE=${REGISTRATION_MODE:-open}
     volumes:
       - api-data:/app/data
       - api-keys:/app/keys

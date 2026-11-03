@@ -1,11 +1,21 @@
 #!/bin/bash
 
 # Test script for subtitle endpoints
-# Usage: ./test_subtitles.sh
+# Usage: BASE_URL=http://127.0.0.1:8080 ADMIN_PASSWORD=... ./tests/test_subtitles.sh
+#
+# Registration policy: under the default REGISTRATION_MODE=approval a self-registered account is
+# created inactive and cannot log in (HTTP 403) until an admin approves it. This script
+# registers its test user if needed and, when the account comes back pending, approves it
+# through the admin API using ADMIN_PASSWORD (ADMIN_USERNAME defaults to admin). Without
+# ADMIN_PASSWORD it fails with an explicit message instead of continuing unauthenticated.
 
-BASE_URL="http://localhost:8080"
-USERNAME="testuser"
-PASSWORD="testpass"
+BASE_URL="${BASE_URL:-http://localhost:8080}"
+USERNAME="${QA_TEST_USERNAME:-testuser}"
+# The server requires >= 8 characters (the former "testpass" was rejected with 400).
+PASSWORD="${QA_TEST_PASSWORD:-TestPass123!x}"
+
+# shellcheck source=../scripts/lib/qa_registration.sh
+. "$(cd "$(dirname "$0")" && pwd)/../scripts/lib/qa_registration.sh"
 
 echo "Testing subtitle endpoints..."
 
@@ -25,29 +35,29 @@ echo "Login response: $LOGIN_RESPONSE"
 TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.session_token // .token // empty')
 
 if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
-  echo "Failed to get authentication token. Trying to register user first..."
-  
-  # Try to register the user first
-  REGISTER_REQUEST='{
-    "username": "'$USERNAME'",
-    "password": "'$PASSWORD'",
-    "email": "test@example.com",
-    "first_name": "Test",
-    "last_name": "User"
-  }'
-  REGISTER_RESPONSE=$(curl -s -X POST "$BASE_URL/api/v1/auth/register" \
-    -H "Content-Type: application/json" \
-    -d "$REGISTER_REQUEST")
-  
-  echo "Register response: $REGISTER_RESPONSE"
-  
-  # Try login again
+  echo "Failed to get authentication token. Registering the test user (and approving it if pending)..."
+  if [ -z "${ADMIN_PASSWORD:-}" ]; then
+    echo "ERROR: ADMIN_PASSWORD is not set, so a pending self-registered account cannot be approved." >&2
+    echo "       Set ADMIN_PASSWORD, or start the API with REGISTRATION_MODE=open." >&2
+    exit 1
+  fi
+  ADMIN_CODE=$(qa_curl_code -X POST -H "Content-Type: application/json" \
+    -d "{\"username\":\"${ADMIN_USERNAME:-admin}\",\"password\":\"$ADMIN_PASSWORD\"}" "$BASE_URL/api/v1/auth/login")
+  ADMIN_TOKEN=$(jq -r '.session_token // empty' "$QA_BODY_FILE")
+  if [ "$ADMIN_CODE" != "200" ] || [ -z "$ADMIN_TOKEN" ]; then
+    echo "ERROR: admin login failed (HTTP $ADMIN_CODE)" >&2
+    exit 1
+  fi
+  if ! qa_register_and_activate "$BASE_URL" "$ADMIN_TOKEN" "$USERNAME" "${USERNAME}@example.invalid" "$PASSWORD" >/dev/null; then
+    echo "ERROR: could not register + activate $USERNAME (it may already exist inactive; approve it or use another QA_TEST_USERNAME)" >&2
+    exit 1
+  fi
+
   LOGIN_RESPONSE=$(curl -s -X POST "$BASE_URL/api/v1/auth/login" \
     -H "Content-Type: application/json" \
     -d "{\"username\": \"$USERNAME\", \"password\": \"$PASSWORD\"}")
-  
   echo "Second login response: $LOGIN_RESPONSE"
-  TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.token // empty')
+  TOKEN=$(echo $LOGIN_RESPONSE | jq -r '.session_token // .token // empty')
 fi
 
 if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then

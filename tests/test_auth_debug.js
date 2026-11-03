@@ -1,3 +1,8 @@
+// NOTE (registration policy): the server defaults to REGISTRATION_MODE=approval - a self-registered
+// account is created inactive and the login that follows returns 403 "account pending approval"
+// until an admin approves it. This ad-hoc debug script registers and then logs in, so it needs an
+// API started with REGISTRATION_MODE=open (or the account approved by hand through
+// PUT /api/v1/admin/users/:id {"status":"active"}). It is not part of any automated suite.
 // Debug authentication by checking detailed error responses
 const API_BASE = 'http://localhost:8080/api/v1';
 

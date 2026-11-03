@@ -59,7 +59,7 @@ for sc in run-full-qa run-api-validation run-helixqa run-helixqa-web run-helixqa
 scan_out="$(python3 "$SCAN" "$tmp/empty_allow" "${qa_files[@]}" 2>&1)"; scan_rc=$?
 if [ "$scan_rc" -eq 0 ]; then echo "ok   - scanner finds no literal secrets in QA compose/scripts"; else echo "FAIL - literal secrets in QA compose/scripts (file:line:KEY):"; echo "$scan_out"; fail=1; fi
 # PD-1: the QA user must not reuse the admin password; it needs its own required QA_USER_PASSWORD.
-if grep 'auth/register.*testuser_qa' "$ROOT/scripts/run-full-qa.sh" | grep -q 'ADMIN_PASSWORD'; then echo "FAIL - run-full-qa.sh registers testuser_qa with ADMIN_PASSWORD"; fail=1; else echo "ok   - testuser_qa does not reuse ADMIN_PASSWORD"; fi
+if grep -E 'qa_register |auth/register.*testuser_qa' "$ROOT/scripts/run-full-qa.sh" | grep -q 'ADMIN_PASSWORD'; then echo "FAIL - run-full-qa.sh registers testuser_qa with ADMIN_PASSWORD"; fail=1; else echo "ok   - testuser_qa does not reuse ADMIN_PASSWORD"; fi
 out3="$(env -u QA_USER_PASSWORD ADMIN_PASSWORD=x bash "$ROOT/scripts/run-full-qa.sh" 2>&1 </dev/null)"; r3=$?
 { [ "$r3" -ne 0 ] && grep -q 'QA_USER_PASSWORD' <<<"$out3"; } && echo "ok   - run-full-qa.sh refuses to run without QA_USER_PASSWORD" || { echo "FAIL - run-full-qa.sh runs without QA_USER_PASSWORD (rc=$r3)"; fail=1; }
 for sc in run-full-qa run-api-validation run-helixqa run-helixqa-web run-helixqa-androidtv; do
