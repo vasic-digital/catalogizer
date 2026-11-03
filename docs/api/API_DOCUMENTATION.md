@@ -3157,6 +3157,27 @@ Body: object
 
 All user management endpoints require a JWT token and appropriate permissions.
 
+**Permission behaviour of the `/users/:id` operations** (from `handlers/user_handler.go`; every row measured on the
+real binary by `catalog-api/openapi_contract_binary_test.go`):
+
+| Operation | Needs | Self (caller's own id) | Admin target |
+|---|---|---|---|
+| `GET /users/:id` | `user.view` for another id | allowed without permission | readable with `user.view` |
+| `PUT /users/:id` | `user.update` for another id; `role_id` / `is_active` applied only with `user.manage` | 200, profile fields applied, `role_id` and `is_active` silently ignored (also for an admin) | 403 unless the caller has `system.admin` |
+| `DELETE /users/:id` | `user.delete` (checked first) | 400 `Cannot delete your own account` (403 without `user.delete`) | 403 unless `system.admin` |
+| `POST /users/:id/reset-password` | `user.manage` | allowed | 403 unless `system.admin` |
+| `POST /users/:id/lock` | `user.manage` (checked first) | 400 `Cannot lock your own account` (403 without `user.manage`) | 403 unless `system.admin` |
+| `POST /users/:id/unlock` | `user.manage` | allowed | 403 unless `system.admin` |
+
+An "admin target" is an account whose role carries `system.admin`; a target whose role cannot be resolved is treated
+the same way (403). A caller without `system.admin` may not assign a role that carries `system.admin` (403). The
+`403` body is `Insufficient permissions`. `400` is also returned for a non-integer id.
+
+**Known defects (measured 2026-11-03, open follow-ups):** a user created with `POST /api/v1/users` cannot log in with
+the password given at creation (stored as SHA-256 while login verifies bcrypt) until a password is set with
+`POST /api/v1/users/:id/reset-password`; `POST /api/v1/users/:id/unlock` with an empty body is rejected by the request
+validation middleware (400 `invalid JSON format`), send `{}`.
+
 ### POST /api/v1/users
 
 Create a new user.
@@ -3184,7 +3205,9 @@ Create a new user.
 
 **Response:** 201 Created (User object)
 
-**Errors:** 400 (password validation), 409 (duplicate username/email)
+**Errors:** 400 (password validation), 403 (no `user.create`, or assigning an admin role without `system.admin`), 409 (duplicate username/email)
+
+**Known defect:** the created user cannot log in until a password is set through `POST /api/v1/users/:id/reset-password` (see the note at the top of this section).
 
 ---
 
@@ -3230,7 +3253,7 @@ Get a specific user by ID.
 
 Update a user's information.
 
-**Description:** Updates user fields. Users can update own profile; changing `role_id` or `is_active` requires `user.manage`.
+**Description:** Updates user fields. Users can update their own profile without a permission, but `role_id` and `is_active` are ignored on a self-update (also for an admin). Updating another user needs `user.update`; `role_id` / `is_active` are applied only when the caller also has `user.manage`. See the permission table above.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -3264,7 +3287,7 @@ Delete a user account.
 
 **Response:** 204 No Content
 
-**Errors:** 400 (cannot delete own account)
+**Errors:** 400 (non-integer id, or own account), 403 (no `user.delete`, or admin target without `system.admin`)
 
 ---
 
@@ -3358,6 +3381,10 @@ Content-Type: `application/json`
 ## Role Management
 
 All role management endpoints require `system.admin` permission.
+
+Every other caller gets 403 `Insufficient permissions`, including a holder of all `user.*` permissions (measured on the real binary). `GET/PUT/DELETE /roles/:id` answer 400 for a non-integer id and 404 for an unknown id; `PUT` and `DELETE` answer 404 for a system role and 409 for a duplicate name (`PUT`) or a role still assigned to users (`DELETE`).
+
+**Known defect (measured 2026-11-03, open follow-up):** `POST /api/v1/roles` with `user.create`, `user.update` or `user.delete` in `permissions` is rejected by the request validation middleware (400 `potential SQL injection detected`); `user.view`, `user.manage` and `user.*` are accepted.
 
 ### POST /api/v1/roles
 
@@ -3540,7 +3567,7 @@ Get system component health status.
 
 ### GET /api/v1/configuration/wizard/step/:step_id
 
-**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler runs with an empty `step_id`; the intended behaviour is unreachable today. See the `x-currently-broken` responses in `openapi.yaml`.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 step definition; 404 unknown step id; 401.
 
 
 Get a specific setup wizard step definition.
@@ -3553,7 +3580,7 @@ Get a specific setup wizard step definition.
 
 ### POST /api/v1/configuration/wizard/step/:step_id/validate
 
-**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler runs with an empty `step_id`; the intended behaviour is unreachable today. See the `x-currently-broken` responses in `openapi.yaml`.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 `{"is_valid": ...}`; 400 invalid JSON body; 500 service error; 401.
 
 
 Validate data for a specific wizard step.
@@ -3566,7 +3593,7 @@ Validate data for a specific wizard step.
 
 ### POST /api/v1/configuration/wizard/step/:step_id/save
 
-**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler runs with an empty `step_id`; the intended behaviour is unreachable today. See the `x-currently-broken` responses in `openapi.yaml`.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 `{"message":"Progress saved successfully"}`; 400 invalid JSON body; 500; 401.
 
 
 Save progress for a specific wizard step.
@@ -3671,7 +3698,7 @@ List error reports with filtering.
 
 ### GET /api/v1/errors/reports/:id
 
-**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 report; 400 non-integer id; 403 without `report.view`; 404 unknown id (or any service error); 401.
 
 
 Get a specific error report.
@@ -3684,7 +3711,7 @@ Get a specific error report.
 
 ### PUT /api/v1/errors/reports/:id/status
 
-**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 204; 400 non-integer id or invalid body; 403 without `report.create`; 500; 401.
 
 
 Update error report status.
@@ -3715,7 +3742,7 @@ List crash reports with filtering.
 
 ### GET /api/v1/errors/crashes/:id
 
-**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 crash report; 400 non-integer id; 403 without `report.view`; 404 unknown id (or any service error); 401.
 
 
 Get a specific crash report.
@@ -3728,7 +3755,7 @@ Get a specific crash report.
 
 ### PUT /api/v1/errors/crashes/:id/status
 
-**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 204; 400 non-integer id or invalid body; 403 without `report.create`; 500; 401.
 
 
 Update crash report status.
@@ -3837,7 +3864,7 @@ List log collections.
 
 ### GET /api/v1/logs/collections/:id
 
-**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 collection; 400 non-integer id; 403 without `system.admin`; 404 unknown id (or any service error); 401.
 
 
 Get a specific log collection.
@@ -3850,7 +3877,7 @@ Get a specific log collection.
 
 ### GET /api/v1/logs/collections/:id/entries
 
-**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 `{"entries": [...], "filters": {...}}`; 400; 403 without `system.admin`; 500; 401.
 
 
 Get log entries for a collection.
@@ -3875,7 +3902,7 @@ Get log entries for a collection.
 
 ### POST /api/v1/logs/collections/:id/export
 
-**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 file download (`?format=json|csv|txt|zip`, default json, other values `application/octet-stream`; the body is not read); 400; 403 without `system.admin`; 500; 401.
 
 
 Export log collection data.
@@ -3894,7 +3921,7 @@ Export log collection data.
 
 ### GET /api/v1/logs/collections/:id/analyze
 
-**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 analysis; 400; 403 without `system.admin`; 500; 401.
 
 
 Analyze a log collection for patterns and insights.
@@ -3943,20 +3970,20 @@ Create a shareable link for a log collection.
 
 ### GET /api/v1/logs/share/:token
 
-**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler runs with an empty `token`; the intended behaviour is unreachable today. See the `x-currently-broken` responses in `openapi.yaml`.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 shared collection; 403 when the share lacks the `read` permission; 404 unknown, expired or revoked token; 401. No permission check beyond the JWT middleware.
 
 
 Access a shared log collection via share token.
 
 **Description:** Retrieves log collection data using a share token.
-**Auth:** Required (`system.admin`)
+**Auth:** Required (JWT only; the share must carry `read`)
 **Rate Limit:** Standard (2000/min)
 
 ---
 
 ### DELETE /api/v1/logs/share/:id
 
-**CURRENTLY BROKEN (tracked defect):** wrapped with `WrapHTTPHandler`, which does not copy gin path parameters into `mux.Vars`, so the handler never sees the ID and an authenticated caller always gets `400`; no success response is documented because none can be produced today. See the `x-currently-broken` responses in `openapi.yaml`.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 204; 400 non-integer id; 403 without `system.admin`; 500 service error, including an unknown id (measured: 500, not 404); 401.
 
 
 Revoke a log share.

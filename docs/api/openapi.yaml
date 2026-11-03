@@ -4490,6 +4490,7 @@ paths:
     post:
       tags: [users]
       summary: Create user
+      description: "Needs `user.create`; a caller without `system.admin` may not assign a role that carries `system.admin` (403). KNOWN DEFECT (measured 2026-11-03 on the real binary, open follow-up): the handler stores a SHA-256 hash of password+salt while login verifies a bcrypt hash, so the created user gets 401 `invalid credentials` until a password is set through POST /api/v1/users/{id}/reset-password."
       security:
         - BearerAuth: []
       requestBody:
@@ -4526,11 +4527,20 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Returns one user (password hash and salt removed). Reading your own account needs no permission; reading another account needs `user.view`."
       responses:
         '200':
-          description: User details
+          description: "User (JSON) with its role."
+        '400':
+          description: "Non-integer id (`Invalid user ID`)."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Another user's id without `user.view` (`Insufficient permissions`)."
         '404':
-          description: User not found
+          description: "No such user."
+        '500':
+          description: "Repository or permission-check error."
     put:
       tags: [users]
       summary: Update user
@@ -4547,9 +4557,22 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateUserRequest'
+      description: "Updates profile fields (username, email, first/last/display name, avatar_url, time_zone, language, settings). Self-update: allowed without any permission and returns 200, but `role_id` and `is_active` in the body are silently ignored, also for an administrator updating their own account (measured on the real binary). Updating another user needs `user.update`; `role_id` and `is_active` are applied only when the caller also has `user.manage`, and a caller without `system.admin` may not assign a role that carries `system.admin`. Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved)."
       responses:
         '200':
-          description: User updated
+          description: "Updated user (JSON)."
+        '400':
+          description: "Non-integer id, invalid JSON body, or `role_id` <= 0."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Another user without `user.update`, an admin target for a non-admin caller, or assigning an admin role without `system.admin`."
+        '404':
+          description: "No such user."
+        '409':
+          description: "Username or email already exists."
+        '500':
+          description: "Repository or permission-check error."
     delete:
       tags: [users]
       summary: Delete user
@@ -4561,10 +4584,20 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Deletes a user. Needs `user.delete` (checked first, also for your own id). Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved). Deleting your own account is refused with 400."
       responses:
-        '200':
-          description: User deleted
-
+        '204':
+          description: "User deleted (no body)."
+        '400':
+          description: "Non-integer id, or the id is the caller's own (`Cannot delete your own account`)."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Caller lacks `user.delete`, or an admin target for a non-admin caller."
+        '404':
+          description: "No such user, reported to a caller without `system.admin` (the admin-target check looks the user up). For a `system.admin` caller the operation runs without that lookup; its outcome for an unknown id is not measured."
+        '500':
+          description: "Repository or permission-check error."
   /api/v1/users/{id}/reset-password:
     post:
       tags: [users]
@@ -4577,10 +4610,20 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Sets a new password from the JSON body `{\"new_password\": \"...\"}` (validated by the password policy). Needs `user.manage`. Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved)."
       responses:
         '200':
-          description: Password reset
-
+          description: "`{\"message\":\"Password reset successfully\"}`."
+        '400':
+          description: "Non-integer id, invalid JSON body, or the password fails the policy (body is the policy message)."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Caller lacks `user.manage`, or an admin target for a non-admin caller."
+        '404':
+          description: "No such user, reported to a caller without `system.admin` (the admin-target check looks the user up). For a `system.admin` caller the operation runs without that lookup; its outcome for an unknown id is not measured."
+        '500':
+          description: "Service error."
   /api/v1/users/{id}/lock:
     post:
       tags: [users]
@@ -4593,10 +4636,20 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Locks an account until the RFC 3339 time in the JSON body `{\"lock_until\": \"...\"}`. Needs `user.manage` (checked first, also for your own id). Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved). Locking your own account is refused with 400."
       responses:
         '200':
-          description: Account locked
-
+          description: "`{\"message\":\"Account locked successfully\"}`."
+        '400':
+          description: "Non-integer id, the caller's own id (`Cannot lock your own account`), invalid JSON body, or `lock_until` not RFC 3339."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Caller lacks `user.manage`, or an admin target for a non-admin caller."
+        '404':
+          description: "No such user, reported to a caller without `system.admin` (the admin-target check looks the user up). For a `system.admin` caller the operation runs without that lookup; its outcome for an unknown id is not measured."
+        '500':
+          description: "Service error."
   /api/v1/users/{id}/unlock:
     post:
       tags: [users]
@@ -4609,14 +4662,25 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Unlocks an account. Needs `user.manage`. Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved). The request validation middleware rejects an empty body on this POST (measured: 400 `invalid JSON format`), so send `{}`."
       responses:
         '200':
-          description: Account unlocked
-
+          description: "`{\"message\":\"Account unlocked successfully\"}`."
+        '400':
+          description: "Non-integer id, or an empty (non-JSON) body rejected by the request validation middleware."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Caller lacks `user.manage`, or an admin target for a non-admin caller."
+        '404':
+          description: "No such user, reported to a caller without `system.admin` (the admin-target check looks the user up). For a `system.admin` caller the operation runs without that lookup; its outcome for an unknown id is not measured."
+        '500':
+          description: "Service error."
   /api/v1/roles:
     post:
       tags: [roles]
       summary: Create role
+      description: "Needs `system.admin`. KNOWN DEFECT (measured 2026-11-03 on the real binary, open follow-up): the request validation middleware rejects the permission names `user.create`, `user.update` and `user.delete` with 400 `potential SQL injection detected` (`user.view`, `user.manage` and the wildcard `user.*` are accepted)."
       security:
         - BearerAuth: []
       requestBody:
@@ -4649,9 +4713,20 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Returns one role. Needs `system.admin`; every other caller gets 403, including holders of all `user.*` permissions (measured)."
       responses:
         '200':
-          description: Role details
+          description: "Role (JSON)."
+        '400':
+          description: "Non-integer id."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Caller lacks `system.admin`."
+        '404':
+          description: "No such role."
+        '500':
+          description: "Repository or permission-check error."
     put:
       tags: [roles]
       summary: Update role
@@ -4668,9 +4743,22 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateRoleRequest'
+      description: "Updates a role (name required). System roles cannot be updated. Needs `system.admin`; every other caller gets 403, including holders of all `user.*` permissions (measured)."
       responses:
         '200':
-          description: Role updated
+          description: "Updated role (JSON)."
+        '400':
+          description: "Non-integer id, invalid JSON body, or empty name."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Caller lacks `system.admin`."
+        '404':
+          description: "No such role, or a system role."
+        '409':
+          description: "Role name already exists."
+        '500':
+          description: "Repository or permission-check error."
     delete:
       tags: [roles]
       summary: Delete role
@@ -4682,10 +4770,22 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Deletes a role. System roles and roles assigned to users cannot be deleted. Needs `system.admin`; every other caller gets 403, including holders of all `user.*` permissions (measured)."
       responses:
-        '200':
-          description: Role deleted
-
+        '204':
+          description: "Role deleted (no body)."
+        '400':
+          description: "Non-integer id."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Caller lacks `system.admin`."
+        '404':
+          description: "No such role, or a system role."
+        '409':
+          description: "The role is assigned to users."
+        '500':
+          description: "Repository or permission-check error."
   /api/v1/roles/permissions:
     get:
       tags: [roles]
@@ -4738,14 +4838,14 @@ paths:
           required: true
           schema:
             type: string
-      x-currently-broken: true
-      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. The handler runs with an empty path parameter, so it cannot do what the summary says."
+      description: "Returns the definition of one setup-wizard step (for example `welcome`, `database`, `storage`). No permission check beyond the JWT middleware. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
+        '200':
+          description: "Wizard step definition (JSON)."
         '404':
-          description: Unknown wizard step (the lookup runs with an empty step id). The intended success response is unreachable until the adapter is fixed.
+          description: "Unknown step id (body is the service error text, for example `wizard step not found: <id>`)."
         '401':
-          description: Unauthenticated (JWT middleware).
-
+          description: "Unauthenticated (JWT middleware)."
   /api/v1/configuration/wizard/step/{step_id}/validate:
     post:
       tags: [configuration]
@@ -4758,14 +4858,16 @@ paths:
           required: true
           schema:
             type: string
-      x-currently-broken: true
-      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. The handler runs with an empty path parameter, so it cannot do what the summary says."
+      description: "Validates a JSON object of step data for one wizard step without saving it. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
+        '200':
+          description: "Validation result, for example `{\"is_valid\":true}`."
         '400':
-          description: "Invalid request body. Other outcomes depend on how the service treats an empty step id: UNCONFIRMED, not documented."
+          description: "Invalid JSON request body."
+        '500':
+          description: "Service error while validating."
         '401':
-          description: Unauthenticated (JWT middleware).
-
+          description: "Unauthenticated (JWT middleware)."
   /api/v1/configuration/wizard/step/{step_id}/save:
     post:
       tags: [configuration]
@@ -4778,14 +4880,16 @@ paths:
           required: true
           schema:
             type: string
-      x-currently-broken: true
-      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. The handler runs with an empty path parameter, so it cannot do what the summary says."
+      description: "Saves the caller's progress for one wizard step. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
+        '200':
+          description: "`{\"message\":\"Progress saved successfully\"}`."
         '400':
-          description: "Invalid request body. Other outcomes depend on how the service treats an empty step id: UNCONFIRMED, not documented."
+          description: "Invalid JSON request body."
         '401':
-          description: Unauthenticated (JWT middleware).
-
+          description: "Unauthenticated, or no integer user_id in the request context."
+        '500':
+          description: "Service error while saving."
   /api/v1/configuration/wizard/progress:
     get:
       tags: [configuration]
@@ -4818,8 +4922,8 @@ paths:
             schema:
               type: object
       responses:
-        '201':
-          description: Error reported
+        '200':
+          description: "Error report stored; body is the stored report (JSON, with `id`). Measured on the real binary: 200, not 201."
 
   /api/v1/errors/crash:
     post:
@@ -4833,8 +4937,8 @@ paths:
             schema:
               type: object
       responses:
-        '201':
-          description: Crash reported
+        '200':
+          description: "Crash report stored; body is the stored report (JSON, with `id`). Measured on the real binary: 200, not 201."
 
   /api/v1/errors/reports:
     get:
@@ -4858,18 +4962,18 @@ paths:
           required: true
           schema:
             type: integer
-      x-currently-broken: true
-      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
+      description: "Returns one error report. Requires the `report.view` permission. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
+        '200':
+          description: "Error report (JSON)."
         '400':
-          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+          description: "Non-integer id (`Invalid report ID`)."
         '401':
-          description: Missing or non-integer user_id in the request context.
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
-          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
-        '500':
-          description: Service error (not reachable today for the same reason).
-
+          description: "Caller lacks `report.view` (or the permission check failed)."
+        '404':
+          description: "No such report, or any other service error (the body carries the service error text)."
   /api/v1/errors/reports/{id}/status:
     put:
       tags: [errors]
@@ -4882,18 +4986,18 @@ paths:
           required: true
           schema:
             type: integer
-      x-currently-broken: true
-      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
+      description: "Sets the triage status of an error report from a JSON body `{\"status\": \"...\"}`. Requires the `report.create` permission. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
+        '204':
+          description: "Status updated (no body)."
         '400':
-          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+          description: "Non-integer id, or invalid JSON body."
         '401':
-          description: Missing or non-integer user_id in the request context.
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
-          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+          description: "Caller lacks `report.create` (or the permission check failed)."
         '500':
-          description: Service error (not reachable today for the same reason).
-
+          description: "Service error while updating."
   /api/v1/errors/crashes:
     get:
       tags: [errors]
@@ -4916,18 +5020,18 @@ paths:
           required: true
           schema:
             type: integer
-      x-currently-broken: true
-      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
+      description: "Returns one crash report. Requires the `report.view` permission. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
+        '200':
+          description: "Crash report (JSON)."
         '400':
-          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+          description: "Non-integer id."
         '401':
-          description: Missing or non-integer user_id in the request context.
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
-          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
-        '500':
-          description: Service error (not reachable today for the same reason).
-
+          description: "Caller lacks `report.view` (or the permission check failed)."
+        '404':
+          description: "No such crash report, or any other service error (the body carries the service error text)."
   /api/v1/errors/crashes/{id}/status:
     put:
       tags: [errors]
@@ -4940,18 +5044,18 @@ paths:
           required: true
           schema:
             type: integer
-      x-currently-broken: true
-      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
+      description: "Sets the triage status of a crash report from a JSON body `{\"status\": \"...\"}`. Requires the `report.create` permission. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
+        '204':
+          description: "Status updated (no body)."
         '400':
-          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+          description: "Non-integer id, or invalid JSON body."
         '401':
-          description: Missing or non-integer user_id in the request context.
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
-          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+          description: "Caller lacks `report.create` (or the permission check failed)."
         '500':
-          description: Service error (not reachable today for the same reason).
-
+          description: "Service error while updating."
   /api/v1/errors/statistics:
     get:
       tags: [errors]
@@ -4994,8 +5098,8 @@ paths:
             schema:
               type: object
       responses:
-        '201':
-          description: Collection created
+        '200':
+          description: "Collection created; body is the collection (JSON, with `id`). Measured on the real binary: 200, not 201."
 
   /api/v1/logs/collections:
     get:
@@ -5019,18 +5123,18 @@ paths:
           required: true
           schema:
             type: integer
-      x-currently-broken: true
-      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
+      description: "Returns one log collection of the caller. Requires `system.admin`. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
+        '200':
+          description: "Log collection (JSON)."
         '400':
-          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+          description: "Non-integer id."
         '401':
-          description: Missing or non-integer user_id in the request context.
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
-          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
-        '500':
-          description: Service error (not reachable today for the same reason).
-
+          description: "Caller lacks `system.admin`."
+        '404':
+          description: "No such collection, or any other service error (the body carries the service error text)."
   /api/v1/logs/collections/{id}/entries:
     get:
       tags: [logs]
@@ -5043,18 +5147,18 @@ paths:
           required: true
           schema:
             type: integer
-      x-currently-broken: true
-      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
+      description: "Returns the entries of one log collection, optionally filtered. Requires `system.admin`. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
+        '200':
+          description: "`{\"entries\": [...], \"filters\": {...}}`."
         '400':
-          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+          description: "Non-integer id."
         '401':
-          description: Missing or non-integer user_id in the request context.
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
-          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+          description: "Caller lacks `system.admin`."
         '500':
-          description: Service error (not reachable today for the same reason).
-
+          description: "Service error."
   /api/v1/logs/collections/{id}/export:
     post:
       tags: [logs]
@@ -5067,18 +5171,25 @@ paths:
           required: true
           schema:
             type: integer
-      x-currently-broken: true
-      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            default: json
+          description: "`json`, `csv`, `txt` or `zip`; any other value is served as `application/octet-stream`."
+      description: "Exports one log collection as a download. The `format` query parameter selects `json` (default), `csv`, `txt` or `zip`; any other value is served as `application/octet-stream` (`logs.bin`). The request body is not read. Requires `system.admin`. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
+        '200':
+          description: "File download (Content-Disposition attachment). For an empty collection exported as json the body is `null`."
         '400':
-          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+          description: "Non-integer id."
         '401':
-          description: Missing or non-integer user_id in the request context.
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
-          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+          description: "Caller lacks `system.admin`."
         '500':
-          description: Service error (not reachable today for the same reason).
-
+          description: "Service error while exporting."
   /api/v1/logs/collections/{id}/analyze:
     get:
       tags: [logs]
@@ -5091,18 +5202,18 @@ paths:
           required: true
           schema:
             type: integer
-      x-currently-broken: true
-      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
+      description: "Returns an analysis (counts by level and component, error patterns, time range) of one log collection. Requires `system.admin`. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
+        '200':
+          description: "Log analysis (JSON)."
         '400':
-          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+          description: "Non-integer id."
         '401':
-          description: Missing or non-integer user_id in the request context.
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
-          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+          description: "Caller lacks `system.admin`."
         '500':
-          description: Service error (not reachable today for the same reason).
-
+          description: "Service error while analysing."
   /api/v1/logs/share:
     post:
       tags: [logs]
@@ -5115,8 +5226,8 @@ paths:
             schema:
               type: object
       responses:
-        '201':
-          description: Share created
+        '200':
+          description: "Share created; body carries `id` and `share_token`. Measured on the real binary: 200, not 201."
 
   /api/v1/logs/share/{token}:
     get:
@@ -5130,20 +5241,23 @@ paths:
           required: true
           schema:
             type: string
-      x-currently-broken: true
-      description: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. The handler runs with an empty path parameter, so it cannot do what the summary says."
+      description: "Returns a shared log collection by its share token. No permission check beyond the JWT middleware; the share itself must carry the `read` permission. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
+        '200':
+          description: "`{\"collection\": {...}, ...}` for the shared collection."
+        '403':
+          description: "The share does not carry the `read` permission (`Access denied`)."
         '404':
-          description: Unknown share (the lookup runs with an empty token). The intended success response is unreachable until the adapter is fixed.
+          description: "Unknown, expired or revoked token, or the shared collection cannot be loaded (the body carries the service error text)."
         '401':
-          description: Unauthenticated (JWT middleware).
+          description: "Unauthenticated (JWT middleware)."
     delete:
       tags: [logs]
       summary: Revoke log share
       description: |
-        Revokes a log share. The route shares its path segment with the GET above
+        Revokes a log share. Requires `system.admin`. The route shares its path segment with the GET above
         (the router registers GET :token and DELETE :id on the same segment), so the
-        segment is the share id here.
+        segment is the share id here (an integer). Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go.
       security:
         - BearerAuth: []
       parameters:
@@ -5153,17 +5267,17 @@ paths:
           description: Share id (DELETE) or share token (GET)
           schema:
             type: string
-      x-currently-broken: "CURRENTLY BROKEN (tracked defect, not fixed by this documentation change): this route is wrapped with WrapHTTPHandler, which does not copy gin path parameters into gorilla mux.Vars, so the handler never sees the path parameter. Until fixed it always answers 400 for an authenticated caller; no success response is documented because none can currently be produced."
       responses:
+        '204':
+          description: "Share revoked (no body)."
         '400':
-          description: "Always returned today: the path ID is never seen by the handler (invalid ID). The intended success response is unreachable until the adapter is fixed."
+          description: "Non-integer id."
         '401':
-          description: Missing or non-integer user_id in the request context.
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
-          description: Insufficient permission (only reachable after the path ID is parsed, so not reachable today).
+          description: "Caller lacks `system.admin`."
         '500':
-          description: Service error (not reachable today for the same reason).
-
+          description: "Service error. An unknown share id is reported here too (measured: `500` with `failed to get log share ... no rows`), not as 404."
   /api/v1/logs/stream:
     get:
       tags: [logs]

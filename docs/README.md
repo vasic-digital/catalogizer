@@ -217,7 +217,7 @@ Every directory under `docs/`, with its entry point. A directory with its own `R
 | `audits/` | [audits/README.md](audits/README.md) |  |
 | `courses/` | [courses/README.md](courses/README.md) |  |
 | `database/` | [SQL_MIGRATION_REFERENCE.md](database/SQL_MIGRATION_REFERENCE.md) | small directory, files listed below |
-| `decisions/` | [llms_verifier_reconciliation.md](decisions/llms_verifier_reconciliation.md) | small directory, files listed below |
+| `decisions/` | [llms_verifier_reconciliation.md](decisions/llms_verifier_reconciliation.md), [decision_log_2026-11-02.md](decisions/decision_log_2026-11-02.md) | small directory, files listed below |
 | `deployment/` | [deployment/README.md](deployment/README.md) |  |
 | `design/` | [design/README.md](design/README.md) |  |
 | `diagrams/` | [diagrams/README.md](diagrams/README.md) |  |
