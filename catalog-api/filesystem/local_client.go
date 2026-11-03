@@ -286,9 +286,6 @@ func (c *LocalClient) DeleteDirectory(ctx context.Context, path string) error {
 			return ErrRefuseDeleteRoot
 		}
 	}
-	if filepath.Clean(fullPath) == filepath.Clean(c.basePath) {
-		return ErrRefuseDeleteRoot
-	}
 	err := os.RemoveAll(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to delete local directory %s: %w", fullPath, err)

@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"catalogizer/middleware"
+	"catalogizer/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -150,4 +151,74 @@ func decodeBody(b []byte) map[string]interface{} {
 	var out map[string]interface{}
 	_ = json.Unmarshal(b, &out)
 	return out
+}
+
+// R2-3: another user's sync rows must never be returned (reviewer mutation M2 drops the user_id scope).
+func TestCAT001_R2_SyncProvidersAreScopedToTheCaller(t *testing.T) {
+	r, h := newAliasRouter(t)
+	for _, id := range []int{5, 6} {
+		_, err := h.db.Exec(`INSERT INTO users (id, username, email, password_hash, salt, role_id, is_active) VALUES (?, ?, ?, 'h', 's', 2, 1)`,
+			id, "u"+string(rune('0'+id)), "u"+string(rune('0'+id))+"@x")
+		require.NoError(t, err)
+	}
+	_, err := h.db.Exec(`INSERT INTO sync_endpoints (id, user_id, name, type, url) VALUES (1, 5, 'mine', 'webdav', 'https://x'), (2, 6, 'theirs', 'ftp', 'ftp://y')`)
+	require.NoError(t, err)
+	_, err = h.db.Exec(`INSERT INTO sync_sessions (endpoint_id, user_id, status) VALUES (2, 6, 'running')`)
+	require.NoError(t, err)
+
+	_, body := aliasGet(r, cat001Token(t, 2, "5"), "/sync/providers")
+	provs := body["providers"].([]interface{})
+	require.Len(t, provs, 1, "control: the caller's own endpoint is listed")
+	assert.Equal(t, "webdav", provs[0].(map[string]interface{})["id"])
+	_, body = aliasGet(r, cat001Token(t, 2, "5"), "/sync/status")
+	assert.Equal(t, "idle", body["status"], "user 6's running session must not show for user 5")
+	assert.EqualValues(t, 0, body["active_sessions"])
+
+	_, body = aliasGet(r, cat001Token(t, 2, "6"), "/sync/providers")
+	provs = body["providers"].([]interface{})
+	require.Len(t, provs, 1)
+	assert.Equal(t, "ftp", provs[0].(map[string]interface{})["id"])
+}
+
+// R2-8: NULL integer/text columns are rendered as JSON null, not a 500.
+func TestCAT001_R2_ScanHistoryWithNullColumnsIsNot500(t *testing.T) {
+	r, h := newAliasRouter(t)
+	_, err := h.db.Exec(`INSERT INTO storage_roots (id, name, protocol, path, enabled) VALUES (1, 'r', 'local', '/x', 1)`)
+	require.NoError(t, err)
+	_, err = h.db.Exec(`INSERT INTO scan_history (storage_root_id, scan_type, status, start_time) VALUES (1, 'full', 'completed', CURRENT_TIMESTAMP)`)
+	require.NoError(t, err)
+	_, err = h.db.Exec(`UPDATE scan_history SET files_processed = NULL, error_count = NULL`)
+	if err != nil {
+		t.Skipf("columns are NOT NULL in this schema, so the NULL case cannot occur: %v", err)
+	}
+	code, body := aliasGet(r, cat001Token(t, 2, "5"), "/stats/scan-history")
+	require.Equal(t, 200, code, "%v", body)
+	row := body["history"].([]interface{})[0].(map[string]interface{})
+	assert.Nil(t, row["files_processed"])
+	assert.Nil(t, row["error_count"])
+}
+
+// R2-4: /files requires storage_root (400), is 501 without a browse handler, and forwards to the real browser otherwise.
+func TestCAT001_R2_FilesForwardingContract(t *testing.T) {
+	h := newAPIHarness(t, false)
+	build := func(browse *BrowseHandler) *gin.Engine {
+		r := gin.New()
+		api := r.Group("/api/v1")
+		api.Use(middleware.NewJWTMiddleware(accessSecret).RequireAuth())
+		NewAliasHandler(h.db, browse).RegisterAliasRoutes(api)
+		return r
+	}
+	tok := cat001Token(t, 2, "5")
+
+	code, _ := aliasGet(build(nil), tok, "/files?storage_root=x")
+	assert.Equal(t, 501, code, "no browse handler wired")
+
+	with := build(NewBrowseHandler(repository.NewFileRepository(h.db)))
+	code, body := aliasGet(with, tok, "/files")
+	assert.Equal(t, 400, code, "storage_root is required: %v", body)
+
+	code, body = aliasGet(with, tok, "/files?storage_root=no-such-root")
+	assert.NotEqual(t, 501, code, "forwarded to the real browser, which answers for itself: %v", body)
+	assert.NotEqual(t, 400, code, "storage_root was supplied: %v", body)
+	t.Logf("forwarded response: %d %v", code, body)
 }

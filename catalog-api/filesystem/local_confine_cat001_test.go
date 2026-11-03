@@ -83,3 +83,26 @@ func TestCAT001_LocalClient_DeleteDirectoryRefusesTheStorageRoot(t *testing.T) {
 	_, statErr := os.Stat(filepath.Join(base, "sub"))
 	assert.True(t, os.IsNotExist(statErr))
 }
+
+// R2-5: the root may itself be reached through a symlink; deleting "/" must still be refused, and a path that lands on
+// the root through a link inside it as well.
+func TestCAT001_LocalClient_DeleteDirectoryRefusesASymlinkedStorageRoot(t *testing.T) {
+	real := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(real, "keep.txt"), []byte("k"), 0o644))
+	require.NoError(t, os.MkdirAll(filepath.Join(real, "sub"), 0o755))
+	linkDir := t.TempDir()
+	link := filepath.Join(linkDir, "root-link")
+	require.NoError(t, os.Symlink(real, link))
+	require.NoError(t, os.Symlink(real, filepath.Join(real, "self")))
+	c := NewLocalClient(&LocalConfig{BasePath: link})
+	ctx := context.Background()
+	require.NoError(t, c.Connect(ctx))
+
+	for _, p := range []string{"/", "", "/sub/..", "/self"} {
+		err := c.DeleteDirectory(ctx, p)
+		assert.True(t, errors.Is(err, ErrRefuseDeleteRoot), "path %q: %v", p, err)
+		_, statErr := os.Stat(filepath.Join(real, "keep.txt"))
+		assert.NoError(t, statErr, "path %q must not delete content", p)
+	}
+	require.NoError(t, c.DeleteDirectory(ctx, "/sub"))
+}

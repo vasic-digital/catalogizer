@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { CollectionExport } from '../CollectionExport'
+import { toast } from 'react-hot-toast'
 
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
@@ -171,5 +172,17 @@ describe('CollectionExport', () => {
   it('renders collection summary section', () => {
     render(<CollectionExport {...defaultProps} />)
     expect(screen.getByText('Collection Summary')).toBeInTheDocument()
+  })
+
+  it('CAT-001: Import reports unavailable and never claims success', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<CollectionExport collection={mockCollection as any} onClose={() => {}} />)
+    await user.click(screen.getByText('Import'))
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement
+    const file = new File([JSON.stringify({ items: [{ id: 'a' }, { id: 'b' }] })], 'c.json', { type: 'application/json' })
+    await user.upload(input, file)
+    await user.click(await screen.findByText('Import Collection'))
+    expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('not available'))
+    expect(toast.success).not.toHaveBeenCalled()
   })
 })

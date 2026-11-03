@@ -3477,11 +3477,14 @@ paths:
     get:
       tags: [recommendations]
       summary: Get trending items
+      description: Not implemented. There is no trending-analytics source, so the handler answers 501 instead of inventing titles.
       security:
         - BearerAuth: []
       responses:
-        '200':
-          description: Trending items
+        '401':
+          description: Missing or invalid token
+        '501':
+          description: Not implemented; nothing is fabricated
 
   /api/v1/recommendations/personalized/{user_id}:
     get:
@@ -3519,8 +3522,10 @@ paths:
           schema:
             type: string
       responses:
-        '200':
-          description: Subtitle search results
+        '401':
+          description: Missing or invalid token
+        '501':
+          description: Not implemented. No subtitle provider client exists, so a search cannot be answered (code NOT_IMPLEMENTED).
 
   /api/v1/subtitles/download:
     post:
@@ -4093,6 +4098,10 @@ paths:
                     type: string
                   message:
                     type: string
+        '401':
+          description: Missing or invalid token
+        '403':
+          description: Admin role required
         '404':
           description: Storage root not found
         '503':
@@ -9124,7 +9133,7 @@ paths:
       tags:
       - recommendations
       summary: List recommendations (trending default)
-      description: Alias of GET /api/v1/recommendations/trending.
+      description: Alias of GET /api/v1/recommendations/trending, which is not implemented (501).
       security:
       - BearerAuth: []
       parameters:
@@ -9149,12 +9158,12 @@ paths:
           - year
           default: week
       responses:
-        '200':
-          description: Trending items
+        '501':
+          description: Not implemented. Forwards to the trending handler, which has no analytics source; nothing is fabricated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrendingResponse'
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:

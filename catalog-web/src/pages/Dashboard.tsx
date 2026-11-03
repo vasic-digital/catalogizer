@@ -31,7 +31,7 @@ import {
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
-import type { UserStats, QuickAction } from '@/types/dashboard'
+import type { QuickAction } from '@/types/dashboard'
 
 const QuickActions: React.FC = () => {
   const handleUploadMedia = () => {
@@ -262,13 +262,8 @@ export const Dashboard: React.FC = () => {
     staleTime: 30000,
   })
 
-  // Fetch user statistics (mock for now)
-  const userStats: UserStats = {
-    active_users: 3,
-    total_users: 12,
-    sessions_today: 24,
-    avg_session_duration: 45
-  }
+  // The server has no user/session statistics endpoint; the old hard-coded numbers
+  // (12 users, 24 sessions) were invented, so none are passed (CAT-001).
 
   // Handle errors
   useEffect(() => {
@@ -310,7 +305,6 @@ export const Dashboard: React.FC = () => {
       >
         <DashboardStats
           mediaStats={mediaStats}
-          userStats={userStats}
           loading={mediaLoading}
         />
       </motion.div>

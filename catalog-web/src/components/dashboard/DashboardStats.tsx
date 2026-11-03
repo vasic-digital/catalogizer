@@ -174,7 +174,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* Active Users */}
       <StatCard
         title="Active Users"
-        value={userStats?.active_users?.toLocaleString() ?? '0'}
+        value={userStats?.active_users?.toLocaleString() ?? 'Unavailable'}
         icon={Users}
         trend={{
           value: 3.2,
@@ -187,7 +187,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* Total Users */}
       <StatCard
         title="Total Users"
-        value={userStats?.total_users?.toLocaleString() ?? '0'}
+        value={userStats?.total_users?.toLocaleString() ?? 'Unavailable'}
         icon={Users}
         trend={{
           value: 18.7,
@@ -200,7 +200,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* Sessions Today */}
       <StatCard
         title="Sessions Today"
-        value={userStats?.sessions_today?.toLocaleString() ?? '0'}
+        value={userStats?.sessions_today?.toLocaleString() ?? 'Unavailable'}
         icon={PlayCircle}
         trend={{
           value: 22.1,
@@ -213,7 +213,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
       {/* Avg Session Duration */}
       <StatCard
         title="Avg Session"
-        value={formatDuration(userStats?.avg_session_duration || 0)}
+        value={userStats?.avg_session_duration != null ? formatDuration(userStats.avg_session_duration) : 'Unavailable'}
         icon={Clock}
         trend={{
           value: 7.5,

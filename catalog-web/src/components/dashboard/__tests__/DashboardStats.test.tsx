@@ -153,3 +153,10 @@ describe('DashboardStats', () => {
     expect(screen.getAllByText('0').length).toBeGreaterThan(0)
   })
 })
+
+describe('DashboardStats without user statistics (CAT-001)', () => {
+  it('shows Unavailable rather than zeros when no userStats are supplied', () => {
+    render(<DashboardStats mediaStats={{ total_items: 3 } as any} />)
+    expect(screen.getAllByText('Unavailable').length).toBe(4)
+  })
+})

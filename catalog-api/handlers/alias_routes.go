@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"database/sql"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -52,8 +53,8 @@ func (h *AliasHandler) notImplemented(reason string) gin.HandlerFunc {
 }
 
 func (h *AliasHandler) fail(c *gin.Context, err error) {
+	log.Printf("alias route %s %s: database error: %v", c.Request.Method, c.FullPath(), err)
 	c.JSON(http.StatusInternalServerError, gin.H{"error": "database query failed"})
-	_ = err
 }
 
 // MediaTypes lists the rows of the media_types table.
@@ -120,16 +121,17 @@ func (h *AliasHandler) ScanHistory(c *gin.Context) {
 	defer rows.Close()
 	out := []gin.H{}
 	for rows.Next() {
-		var id, root, processed, errs int
-		var typ, status string
+		var id int
+		var root, processed, errs sql.NullInt64
+		var typ, status sql.NullString
 		var start interface{}
 		var end interface{}
 		if err := rows.Scan(&id, &root, &typ, &status, &start, &end, &processed, &errs); err != nil {
 			h.fail(c, err)
 			return
 		}
-		out = append(out, gin.H{"id": id, "storage_root_id": root, "scan_type": typ, "status": status,
-			"start_time": start, "end_time": end, "files_processed": processed, "error_count": errs})
+		out = append(out, gin.H{"id": id, "storage_root_id": nullInt(root), "scan_type": nullStr(typ), "status": nullStr(status),
+			"start_time": start, "end_time": end, "files_processed": nullInt(processed), "error_count": nullInt(errs)})
 	}
 	if err := rows.Err(); err != nil {
 		h.fail(c, err)
@@ -225,17 +227,33 @@ func (h *AliasHandler) Subtitles(c *gin.Context) {
 	defer rows.Close()
 	out := []gin.H{}
 	for rows.Next() {
-		var id, media int
-		var lang, format, source string
+		var id int
+		var media sql.NullInt64
+		var lang, format, source sql.NullString
 		if err := rows.Scan(&id, &media, &lang, &format, &source); err != nil {
 			h.fail(c, err)
 			return
 		}
-		out = append(out, gin.H{"id": id, "media_item_id": media, "language_code": lang, "format": format, "source": source})
+		out = append(out, gin.H{"id": id, "media_item_id": nullInt(media), "language_code": nullStr(lang), "format": nullStr(format), "source": nullStr(source)})
 	}
 	if err := rows.Err(); err != nil {
 		h.fail(c, err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"subtitles": out, "count": len(out)})
+}
+
+// nullInt and nullStr render a possibly-NULL column as JSON null instead of failing the request.
+func nullInt(v sql.NullInt64) interface{} {
+	if v.Valid {
+		return v.Int64
+	}
+	return nil
+}
+
+func nullStr(v sql.NullString) interface{} {
+	if v.Valid {
+		return v.String
+	}
+	return nil
 }

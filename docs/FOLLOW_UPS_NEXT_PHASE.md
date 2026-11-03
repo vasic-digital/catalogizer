@@ -561,7 +561,19 @@ Status: OPEN until a commit on `main` closes the item.
 
 Status: OPEN until a commit on `main` closes the item.
 
-- F10 (latent, test-instrumentation class): `ConfigurationWizardService.testNetworkDatabaseConnection` dials a user-supplied host:port. It is reachable only from the setup wizard, which is admin-gated, but it is an SSRF-shaped probe. Add an allow-list or a private-range policy plus a test through the real router.
+- F10 (latent source-defect, round 2 corrected): `ConfigurationWizardService.testNetworkDatabaseConnection` dials a user-supplied host:port. `NewConfigurationWizardService` is never constructed in production code today, so the probe is unreachable now; it becomes an SSRF-shaped probe the moment the service is wired. Before wiring it, add an allow-list or private-range policy and a test through the real router.
 - F2 follow-up: `POST /api/v1/copy/storage`, `POST /api/v1/admin/storage/scan` (use `POST /api/v1/scans`), `POST /api/v1/admin/backups/{id}/restore`, `GET /api/v1/sync/devices`, `/sync/conflicts`, `/translations`, `/localization/*` and `/recommendations*` now answer 501 because no engine exists. Building a real copy-to-storage engine, restore, recommendation engine, device registry and localization catalog is feature work, not done here.
 - F2 web follow-up: `CollectionAutomation`, `AIUserBehaviorAnalytics`, `AIPredictions`, `AISmartOrganization` show an "unavailable" state; the collection-analytics usage tabs and the dashboard activity feed need a server-side events source before they can show data.
 - F3 follow-up: no subtitle provider client is implemented; `GET /subtitles/providers` is an empty list and `POST /subtitles/search` is 501 until at least one client (for example OpenSubtitles) is written and live-tested.
+
+## CAT-001 review R2 residual fake-data inventory (2026-11-03)
+
+Converted to an honest unavailable state with vitest tests: CollectionExport import, SmartCollectionBuilder test-rules, CollectionRealTime, AIMetadata, AIComponents, AIAnalytics, CollectionAutomation, CollectionAnalytics, ActivityFeed, AIDashboard metrics and random counter, Dashboard user statistics, Analytics random growth chart fallback.
+
+Remaining, deliberately not changed (reason in each):
+
+- `pages/AIDashboard.tsx` and `pages/Collections.tsx` pass literal "Sample Content" items to the AI panels. The panels are unavailable placeholders that ignore their props, so nothing invented is displayed; remove the literals when the panels are rebuilt on a real engine.
+- `components/collections/AdvancedSearch.tsx:199`, `SmartCollectionBuilder.tsx:100` and `components/upload/UploadManager.tsx:50` use `Math.random` only to mint client-side ids, not displayed data.
+- "Sample Items" headings in CollectionExport and SmartCollectionBuilder label real parsed or matched items, not invented ones; SubtitleSyncModal "Sample Duration" is a real input label.
+- `lib/adminApi.ts` and `lib/identitiesApi.ts` mention "mock" only in comments saying they never fake a response.
+- Test-only helpers (`test-setup.ts`, `src/test/`) are not user reachable.

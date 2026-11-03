@@ -1476,7 +1476,7 @@ Get media items similar to a given media item.
 
 Get trending media items based on recent activity.
 
-**Description:** Returns media items trending in a given time window.
+**Description:** Not implemented. There is no trending-analytics source, so the endpoint answers 501 instead of inventing titles.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -1488,25 +1488,10 @@ Get trending media items based on recent activity.
 | `limit` | int | `20` | Max results |
 | `time_range` | string | `week` | Time range: `day`, `week`, `month`, `year` |
 
-**Response:** 200 OK
+**Response:** 501 Not Implemented
 
 ```json
-{
-  "items": [
-    {
-      "id": 100,
-      "title": "Trending Movie 1",
-      "media_type": "video",
-      "rating": 8.2,
-      "is_favorite": false,
-      "watch_progress": 0,
-      "is_downloaded": true
-    }
-  ],
-  "media_type": "video",
-  "time_range": "week",
-  "generated_at": "2024-01-20T12:00:00Z"
-}
+{ "error": "..." }
 ```
 
 ---
@@ -1555,7 +1540,7 @@ List recommendations (trending default).
 | `limit` | integer | (default: 20) |
 | `time_range` | string | (default: week) |
 
-**Response:** 200 — Trending items
+**Response:** 501 — Not implemented (alias of the trending endpoint, which has no data source)
 
 Content-Type: `application/json`
 
@@ -1566,7 +1551,7 @@ Content-Type: `application/json`
 | `time_range` | string |
 | `generated_at` | string |
 
-**Errors:** 401 (unauthorized), 500 (internal server error)
+**Errors:** 401 (unauthorized), 501 (not implemented)
 
 ---
 ### GET /api/v1/recommendations/by-type

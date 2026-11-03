@@ -134,28 +134,21 @@ export const Analytics: React.FC = () => {
     count
   })) : []
 
-  // Use real growth trends from API, with fallback to generated data
+  // Use real growth trends from API; with none, the charts are empty
   const growthTrend = apiGrowthTrends && apiGrowthTrends.length > 0
     ? apiGrowthTrends.map((t, i) => ({
         day: i + 1,
         items: t.cumulative_files,
         size: Math.round(t.cumulative_size / (1024 ** 2)),
       }))
-    : Array.from({ length: 30 }, (_, i) => ({
-        day: i + 1,
-        items: Math.floor(Math.random() * 50) + (stats?.total_items || 0) - 1000 + i * 10,
-        size: Math.floor(Math.random() * 100) + 500 + i * 20,
-      }))
+    : [] // no growth data from the API: show an empty chart, never invented points (CAT-001)
 
   const weeklyAdditions = apiGrowthTrends && apiGrowthTrends.length >= 7
     ? apiGrowthTrends.slice(-7).map((t, i) => ({
         day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
         additions: t.files_added,
       }))
-    : Array.from({ length: 7 }, (_, i) => ({
-        day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
-        additions: Math.floor(Math.random() * 20) + 5,
-      }))
+    : []
 
   // File type chart data from API
   const fileTypeChartData = fileTypeStats
