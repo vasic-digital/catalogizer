@@ -41,7 +41,7 @@ func TestLegacyUpgrade_DoesNotRevertConcurrentReset(t *testing.T) {
 	t.Cleanup(func() { legacyUpgradeHook = nil })
 
 	_, err = svc.Login(models.LoginRequest{Username: "racer", Password: oldPw}, "127.0.0.1", "test")
-	require.NoError(t, err, "the login itself succeeded on the legacy hash")
+	require.Error(t, err, "the password changed mid-login, so the login must not hand out a session")
 	legacyUpgradeHook = nil
 
 	u, err := repo.GetByID(id)

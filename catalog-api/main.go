@@ -437,6 +437,9 @@ func main() {
 	handleSeedAdminError(seedDefaultAdmin(databaseDB, cfg.Auth.AdminUsername, cfg.Auth.AdminPassword),
 	func(m string, e error) { logging.Fatal(m, logging.ErrorField(e)) },
 	func(m string, e error) { logging.Warnf("%s: %v", m, e) })
+	if _, err := reportLegacyPasswordHashes(databaseDB, logging.Warnf); err != nil {
+		logging.Warnf("legacy password hash count unavailable: %v", err)
+	}
 
 	// Initialize services
 	// Convert config to internal format

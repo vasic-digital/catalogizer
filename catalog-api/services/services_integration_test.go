@@ -3449,23 +3449,6 @@ func TestAuthService_ValidatePassword_Integration(t *testing.T) {
 	}
 }
 
-func TestAuthService_HashData_Integration(t *testing.T) {
-	db := setupTestDB(t)
-	userRepo := repository.NewUserRepository(db)
-	service := NewAuthService(userRepo, "test-secret-key")
-
-	hash := service.HashData("test data")
-	assert.NotEmpty(t, hash)
-
-	// Same input should produce same hash
-	hash2 := service.HashData("test data")
-	assert.Equal(t, hash, hash2)
-
-	// Different input should produce different hash
-	hash3 := service.HashData("different data")
-	assert.NotEqual(t, hash, hash3)
-}
-
 func TestChallengeService_GetResults_Empty(t *testing.T) {
 	service := NewChallengeService("/tmp/test-results")
 

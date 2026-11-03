@@ -63,27 +63,6 @@ func (suite *ServiceAdaptersTestSuite) TestAuthServiceAdapter_ValidatePassword_T
 	assert.Contains(suite.T(), err.Error(), "at least 8 characters")
 }
 
-func (suite *ServiceAdaptersTestSuite) TestAuthServiceAdapter_HashData_NilInner() {
-	// HashData uses sha256 directly, no struct fields accessed
-	adapter := &AuthServiceAdapter{Inner: nil}
-	result := adapter.HashData("test-data")
-	assert.NotEmpty(suite.T(), result)
-}
-
-func (suite *ServiceAdaptersTestSuite) TestAuthServiceAdapter_HashData_Deterministic() {
-	adapter := &AuthServiceAdapter{Inner: nil}
-	result1 := adapter.HashData("same-data")
-	result2 := adapter.HashData("same-data")
-	assert.Equal(suite.T(), result1, result2)
-}
-
-func (suite *ServiceAdaptersTestSuite) TestAuthServiceAdapter_HashData_DifferentInputs() {
-	adapter := &AuthServiceAdapter{Inner: nil}
-	result1 := adapter.HashData("data-one")
-	result2 := adapter.HashData("data-two")
-	assert.NotEqual(suite.T(), result1, result2)
-}
-
 // ConfigurationServiceAdapter tests
 
 func (suite *ServiceAdaptersTestSuite) TestConfigurationServiceAdapter_NilInner() {

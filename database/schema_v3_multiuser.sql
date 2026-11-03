@@ -57,11 +57,11 @@ CREATE TABLE IF NOT EXISTS users (
     FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
--- Create default admin user (password should be changed on first login)
-INSERT OR IGNORE INTO users (username, email, password_hash, salt, role_id, display_name) VALUES
-('admin', 'admin@catalogizer.local',
- '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', -- password: "password"
- 'default_salt_change_me', 1, 'System Administrator');
+-- No default user is created here. An earlier revision seeded an 'admin' row
+-- carrying a published password hash; applying this file by hand therefore
+-- created a login anyone could use. The first admin is created by catalog-api
+-- itself at startup from ADMIN_USERNAME / ADMIN_PASSWORD (placeholder and
+-- published default passwords are refused).
 
 -- User Sessions
 CREATE TABLE IF NOT EXISTS user_sessions (

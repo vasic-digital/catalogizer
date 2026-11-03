@@ -10,6 +10,17 @@ import (
 )
 
 var (
+	// LegacyPasswordHashes is the number of user rows whose stored password hash
+	// is still the legacy hex SHA-256 shape. It is set at startup; the sunset
+	// plan (docs/security/LEGACY_PASSWORD_HASH_SUNSET.md) retires the legacy
+	// verify path once it stays at 0.
+	LegacyPasswordHashes = promauto.NewGauge(prometheus.GaugeOpts{
+		Namespace: "catalogizer",
+		Subsystem: "auth",
+		Name:      "legacy_password_hashes",
+		Help:      "User rows whose password hash is still the legacy hex SHA-256 shape.",
+	})
+
 	// HTTPRequestDuration tracks the duration of HTTP requests.
 	HTTPRequestDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
 		Namespace: "catalogizer",
