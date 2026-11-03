@@ -101,6 +101,7 @@ GET	/api/v1/logs/stream	401	403	skip
 GET	/api/v1/logs/statistics	401	403	200
 GET	/api/v1/collections	401	200	200
 GET	/api/v1/collections/:id	401	404	404
+GET	/api/v1/collections/:id/items	401	404	404
 GET	/api/v1/assets/by-entity/:type/:id	401	200	200
 GET	/api/v1/entities	401	200	200
 GET	/api/v1/entities/search	401	200	200
@@ -252,9 +253,9 @@ POST	/api/v1/favorites	401	400	skip
 DELETE	/api/v1/favorites/:entity_type/:entity_id	401	400	skip
 POST	/api/v1/playlists	401	400	skip
 PUT	/api/v1/playlists/:id	401	404	skip
-DELETE	/api/v1/playlists/:id	401	500	skip
+DELETE	/api/v1/playlists/:id	401	404	skip
 POST	/api/v1/playlists/:id/items	401	400	skip
-DELETE	/api/v1/playlists/:id/items/:item_id	401	500	skip
+DELETE	/api/v1/playlists/:id/items/:item_id	401	404	skip
 POST	/api/v1/sync/endpoints	401	403	skip
 PUT	/api/v1/sync/endpoints/:id	401	403	skip
 DELETE	/api/v1/sync/endpoints/:id	401	403	skip
