@@ -993,6 +993,7 @@ func TestLiveAPIContract(t *testing.T) {
 	}
 	var sigs []string
 	var firstRecs []*opRecord
+	var firstSigText string
 	var identity map[string]interface{}
 	var builtSha string
 	totalReqs := 0
@@ -1010,8 +1011,33 @@ func TestLiveAPIContract(t *testing.T) {
 		for _, op := range w.order() {
 			w.runOp(op)
 		}
-		sig, _ := w.signature()
+		sig, sigText := w.signature()
 		sigs = append(sigs, sig)
+		if run == 1 {
+			firstSigText = string(sigText)
+		} else if sig != sigs[0] {
+			// name the operations whose signature line differs, then fail below
+			a := strings.Split(firstSigText, "\n")
+			b := strings.Split(string(sigText), "\n")
+			seen := map[string]bool{}
+			for _, l := range a {
+				seen[l] = true
+			}
+			for _, l := range b {
+				if !seen[l] {
+					t.Logf("DIFF run %d only: %s", run, l)
+				}
+			}
+			seenB := map[string]bool{}
+			for _, l := range b {
+				seenB[l] = true
+			}
+			for _, l := range a {
+				if !seenB[l] {
+					t.Logf("DIFF run 1 only: %s", l)
+				}
+			}
+		}
 		totalReqs += w.reqs
 		id := srv.identity()
 		if run == 1 {
