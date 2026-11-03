@@ -94,6 +94,8 @@ func TestExternalMetadataResolver_Resolve(t *testing.T) {
 	}))
 	defer server.Close()
 
+	// the fetch goes through internal/netguard, which refuses loopback unless the operator allows it
+	t.Setenv("CATALOGIZER_OUTBOUND_ALLOW_CIDRS", "127.0.0.0/8")
 	r := NewExternalMetadataResolver(nil, 2)
 
 	req := &resolver.ResolveRequest{

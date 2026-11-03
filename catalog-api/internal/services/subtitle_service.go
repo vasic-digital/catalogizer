@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/netguard"
 	"context"
 	"database/sql"
 	"errors"
@@ -159,7 +160,7 @@ func NewSubtitleService(db *database.DB, logger *zap.Logger, cacheService CacheS
 		logger:             logger,
 		translationService: NewTranslationService(logger),
 		cacheService:       cacheService,
-		httpClient:         &http.Client{Timeout: 30 * time.Second},
+		httpClient:         netguard.Client(30*time.Second, 3, netguard.HTTPOrHTTPS),
 		apiKeys:            make(map[string]string),
 		cacheDir:           "./cache/subtitles",
 		shutdown:           make(chan struct{}),

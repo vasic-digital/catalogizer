@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/netguard"
 	"catalogizer/internal/pathguard"
 	"context"
 	"fmt"
@@ -105,7 +106,7 @@ type ExternalMetadataResolver struct {
 func NewExternalMetadataResolver(db *database.DB, priority int) *ExternalMetadataResolver {
 	return &ExternalMetadataResolver{
 		db:       db,
-		client:   &http.Client{Timeout: 30 * time.Second},
+		client:   netguard.Client(30*time.Second, 3, netguard.HTTPOrHTTPS),
 		priority: priority,
 	}
 }

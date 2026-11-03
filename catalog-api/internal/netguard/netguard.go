@@ -231,3 +231,9 @@ func Client(timeout time.Duration, maxRedirects int, redirectOK func(*url.URL) b
 		},
 	}
 }
+
+// HTTPOrHTTPS is a redirectOK for Client that follows a redirect only to an http or
+// https URL; the dialer still checks the destination of every hop.
+func HTTPOrHTTPS(u *url.URL) bool {
+	return strings.EqualFold(u.Scheme, "http") || strings.EqualFold(u.Scheme, "https")
+}

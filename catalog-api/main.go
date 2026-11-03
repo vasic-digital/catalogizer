@@ -1043,7 +1043,10 @@ func main() {
 	metrics.StartRuntimeCollector(15 * time.Second)
 
 	// Prometheus metrics endpoint
-	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	// Authz round 2: the exposition lists routes, hosts, runtime internals and
+	// per-endpoint traffic, so it is administrator-only (a scraper presents an
+	// administrator bearer token). /health and /health/deep stay public.
+	router.GET("/metrics", jwtMiddleware.RequireAuth(), jwtMiddleware.RequireAdmin(), gin.WrapH(promhttp.Handler()))
 
 	// pprof endpoints — OPT-IN via HELIX_PPROF_ENABLED=true.
 	//
@@ -1056,6 +1059,10 @@ func main() {
 	// accident — operators flip it on, capture profiles, flip it off.
 	if os.Getenv("HELIX_PPROF_ENABLED") == "true" {
 	pprofGroup := router.Group("/debug/pprof")
+	// Authz round 2: heap/goroutine/cmdline output exposes memory contents and
+	// process arguments; the flag turns the routes on, the admin gate decides who
+	// may read them.
+	pprofGroup.Use(jwtMiddleware.RequireAuth(), jwtMiddleware.RequireAdmin())
 	pprofGroup.GET("/", gin.WrapF(pprof.Index))
 	pprofGroup.GET("/cmdline", gin.WrapF(pprof.Cmdline))
 	pprofGroup.GET("/profile", gin.WrapF(pprof.Profile))
@@ -1340,11 +1347,11 @@ func main() {
 	// Subtitle endpoints (lazy — handler initialized on first request)
 	subGroup := api.Group("/subtitles")
 	{
-			subGroup.GET("/search", func(c *gin.Context) { getSubtitleHandler().SearchSubtitles(c) })
-			subGroup.POST("/download", func(c *gin.Context) { getSubtitleHandler().DownloadSubtitle(c) })
+			subGroup.GET("/search", adminGate, func(c *gin.Context) { getSubtitleHandler().SearchSubtitles(c) })
+			subGroup.POST("/download", adminGate, func(c *gin.Context) { getSubtitleHandler().DownloadSubtitle(c) })
 			subGroup.GET("/media/:media_id", func(c *gin.Context) { getSubtitleHandler().GetSubtitles(c) })
 			subGroup.GET("/:subtitle_id/verify-sync/:media_id", func(c *gin.Context) { getSubtitleHandler().VerifySubtitleSync(c) })
-			subGroup.POST("/translate", func(c *gin.Context) { getSubtitleHandler().TranslateSubtitle(c) })
+			subGroup.POST("/translate", adminGate, func(c *gin.Context) { getSubtitleHandler().TranslateSubtitle(c) })
 			subGroup.POST("/upload", func(c *gin.Context) { getSubtitleHandler().UploadSubtitle(c) })
 			subGroup.GET("/languages", func(c *gin.Context) { getSubtitleHandler().GetSupportedLanguages(c) })
 			subGroup.GET("/providers", func(c *gin.Context) { getSubtitleHandler().GetSupportedProviders(c) })
@@ -1530,7 +1537,7 @@ func main() {
 	// Asset management endpoints (authenticated)
 	assetsGroup := api.Group("/assets")
 	{
-			assetsGroup.POST("/request", assetHandler.RequestAsset)
+			assetsGroup.POST("/request", adminGate, assetHandler.RequestAsset)
 			assetsGroup.GET("/by-entity/:type/:id", assetHandler.GetByEntity)
 	}
 
@@ -1562,10 +1569,10 @@ func main() {
 			entityGroup.GET("/:id/pdf-pages", pdfPagesHandler.ListPdfPages)
 			entityGroup.GET("/:id/pdf-pages/:n", pdfPagesHandler.GetPdfPage)
 			entityGroup.GET("/:id/install-info", mediaEntityHandler.GetInstallInfo)
-			entityGroup.POST("/:id/metadata/refresh", mediaEntityHandler.RefreshEntityMetadata)
+			entityGroup.POST("/:id/metadata/refresh", adminGate, mediaEntityHandler.RefreshEntityMetadata)
 			entityGroup.PUT("/:id/user-metadata", mediaEntityHandler.UpdateUserMetadata)
 			entityGroup.POST("/:id/user-metadata", mediaEntityHandler.UpdateUserMetadata)
-			entityGroup.POST("/enrich", mediaEntityHandler.EnrichAllEntities)
+			entityGroup.POST("/enrich", adminGate, mediaEntityHandler.EnrichAllEntities)
 
 			// Playback session tracking: per-entity progress
 			// summary (used by the card badge) and full history
