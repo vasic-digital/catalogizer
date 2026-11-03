@@ -186,12 +186,19 @@ func registerUserFlowAPIChallenges() []challenge.Challenge {
 						Name:   "register-user",
 						Method: "POST",
 						Path:   "/api/v1/auth/register",
+						// first_name/last_name are required by the server. Under the default
+						// REGISTRATION_MODE=approval the account is created PENDING (201); in
+						// open mode it is active (201); a re-run on a persistent stack gets 409.
+						// A 400 (invalid body) or any 5xx must FAIL - the old "ExpectedStatus: 0"
+						// checked nothing and let a 400 pass.
 						Body: `{` +
 							`"username":"uf_test_user",` +
 							`"password":"TestPass123!",` +
-							`"email":"uf_test@example.com"` +
+							`"email":"uf_test@example.com",` +
+							`"first_name":"UF",` +
+							`"last_name":"Test"` +
 							`}`,
-						ExpectedStatus: 0, // accept 200 or 201 or 409
+						AcceptedStatuses: []int{201, 409},
 						Assertions: []userflow.StepAssertion{
 							{
 								Type:    "not_empty",
@@ -1049,8 +1056,10 @@ func registerUserFlowAPIChallenges() []challenge.Challenge {
 						Name:   "config-status",
 						Method: "GET",
 						Path:   "/api/v1/configuration/status",
-						// Accept any status — the wrapped handler
-						// may return 500 due to context bridging.
+						// CAT-001: no health source is wired to this route, so it answers an
+						// honest 501 ("nothing was checked"; use /health). Pin exactly 501 so
+						// a regression to an invented 200 - or a 500 - FAILs.
+						ExpectedStatus: 501,
 					},
 				},
 			},

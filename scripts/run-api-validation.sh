@@ -21,7 +21,8 @@ check() {
     args+=("${API_URL}${path}")
 
     local code
-    code=$(curl "${args[@]}" 2>/dev/null || echo "000")
+    code=$(curl "${args[@]}" 2>/dev/null) || true   # no "|| echo 000": curl -w already prints 000 on failure
+    [[ "$code" =~ ^[0-9]{3}$ ]] || code="000"
 
     if [ "$code" = "$expected_code" ]; then
         PASS=$((PASS+1))

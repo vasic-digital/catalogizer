@@ -1715,12 +1715,15 @@ test_cases:
   - name: Register with role field included
     action: '# TODO: Convert to executable - post /api/v1/auth/register with {"username":
       "hacker", "password": "pass123", "role": "admin", "is_admin": true}'
-    expected: 201 with default role (not admin), extra fields must be ignored. User
-      must not gain admin privileges
+    expected: 201 with default role (role_id 2, not admin), extra fields must be ignored.
+      User must not gain admin privileges (under the default approval policy the body also
+      shows is_active false and registration_status pending)
     timeout: 10
   - name: Verify created user is not admin
     action: '# TODO: Convert to executable - login as the new user and get /api/v1/auth/permissions'
-    expected: Response shows regular user permissions, not admin
+    expected: Response shows regular user permissions, not admin. Under the default
+      REGISTRATION_MODE=approval the new user cannot log in until approved (403
+      account_pending_approval) - run on a REGISTRATION_MODE=open stack or approve the user first
     timeout: 10
 - id: neg-api-error-graceful-500-handling
   name: Internal server errors handled gracefully

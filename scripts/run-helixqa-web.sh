@@ -154,9 +154,12 @@ else
     )
 
     for endpoint in "${ENDPOINTS[@]}"; do
-        status=$(curl -sf -o /dev/null -w "%{http_code}" \
+        # No -f and no "|| echo 000": -f + fallback printed "501000" for an honest 501 (CAT-001
+        # endpoints such as recommendations/trending) and "000000" on a connection failure.
+        status=$(curl -s -o /dev/null -w "%{http_code}" \
             -H "Authorization: Bearer $TOKEN" \
-            "$API_URL$endpoint" 2>/dev/null || echo "000")
+            "$API_URL$endpoint" 2>/dev/null) || true
+        [[ "$status" =~ ^[0-9]{3}$ ]] || status="000"
         echo "  $endpoint -> $status"
     done > "$OUTPUT_DIR/evidence/api-exploration.txt"
     ok "API exploration: ${#ENDPOINTS[@]} endpoints tested"
