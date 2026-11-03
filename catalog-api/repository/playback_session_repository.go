@@ -116,13 +116,16 @@ func (r *PlaybackSessionRepository) Start(ctx context.Context, s PlaybackStart) 
 // caller already has start/end so an orphaned progress call is
 // not fatal.
 func (r *PlaybackSessionRepository) Progress(ctx context.Context, p PlaybackProgress) error {
-	_, err := r.db.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`UPDATE playback_sessions
 		 SET end_position = ?, total_amount = ?
 		 WHERE id = ?`,
 		p.EndPosition, p.TotalAmount, p.SessionID)
 	if err != nil {
 		return fmt.Errorf("playback progress: %w", err)
+	}
+	if n, rerr := res.RowsAffected(); rerr == nil && n == 0 {
+		return ErrPlaybackSessionNotFound
 	}
 	return nil
 }

@@ -204,3 +204,16 @@ func TestPlaybackSessionRepository_ListHistoryEmpty(t *testing.T) {
 	require.NoError(t, err)
 	require.Empty(t, hist)
 }
+
+// Contract sweep finding: an unknown session id must be reported as
+// ErrPlaybackSessionNotFound (HTTP 404), not a generic error (HTTP 500).
+func TestPlaybackSessionRepository_UnknownSessionIsNotFound(t *testing.T) {
+	repo := NewPlaybackSessionRepository(newPlaybackTestDB(t))
+	ctx := context.Background()
+
+	err := repo.End(ctx, PlaybackEnd{SessionID: 987654})
+	require.ErrorIs(t, err, ErrPlaybackSessionNotFound)
+
+	err = repo.Progress(ctx, PlaybackProgress{SessionID: 987654})
+	require.ErrorIs(t, err, ErrPlaybackSessionNotFound)
+}
