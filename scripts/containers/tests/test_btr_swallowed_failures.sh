@@ -145,6 +145,8 @@ expect "R3-F4 phase 0: signing script absent -> SKIP (not PASS)" "$(phasex phase
 mv "$P/catalog-web/dist" "$T/dist.bak"
 expect "R3-F5 phase 4: npm install failing and no dist -> FAIL" "$(phasex phase_4_web_frontend SHIM_NPM_FAIL_ON=install)" "FAIL:Web Frontend" 1
 mv "$T/dist.bak" "$P/catalog-web/dist"
+expect "R3-F5b phase 4: npm install failing with dist present (only install fails) -> FAIL" "$(phasex phase_4_web_frontend SHIM_NPM_FAIL_ON=install)" "FAIL:Web Frontend" 1
+expect "R3-F5c phase 4: golden-good -> PASS" "$(phasex phase_4_web_frontend)" "PASS:Web Frontend" 0
 # F1 + F6: reports render SKIP distinctly and the Passed count excludes skips
 reports() { ( cd "$T" && env PATH="$SH:$PATH" BTR_PROJECT_DIR="$P" "$BASH_BIN" -c '
     source "$1/scripts/build-test-release.sh" >/dev/null 2>&1
