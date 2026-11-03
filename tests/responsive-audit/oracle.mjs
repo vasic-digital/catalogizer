@@ -12,6 +12,8 @@ export const oracleFn = (opts) => {
   };
   const sel = (el) => { let s=el.tagName.toLowerCase(); if(el.id) s+='#'+el.id; else if(typeof el.className==='string'&&el.className.trim()) s+='.'+el.className.trim().split(/\s+/).slice(0,3).join('.'); const t=(el.getAttribute('aria-label')||el.textContent||'').trim().replace(/\s+/g,' ').slice(0,30); return s+(t?` "${t}"`:''); };
   const scrollAncestor = (el) => { for (let p=el.parentElement;p&&p!==document.body&&p!==document.documentElement;p=p.parentElement){ const cs=getComputedStyle(p); if(/(auto|scroll|hidden|clip)/.test(cs.overflowX)) { const pr=p.getBoundingClientRect(); return {p,pr}; } } return null; };
+  const scrolledOutOfClip = (el, x, y) => { // point lies outside a scroll/hidden ancestor's visible box: the element is clipped (reachable by scrolling), not occluded
+    for (let p=el.parentElement;p&&p!==document.documentElement&&p!==document.body;p=p.parentElement){ const cs=getComputedStyle(p); if(/(auto|scroll|hidden|clip)/.test(cs.overflowX+cs.overflowY)){ const pr=p.getBoundingClientRect(); if(x<pr.left||x>pr.right||y<pr.top||y>pr.bottom) return true; } } return false; };
   const hiddenByAncestor = (el, r) => { // clipped intentionally by an overflow ancestor (scroll/hidden) -> not an off-screen control
     for (let p=el.parentElement;p&&p!==document.documentElement;p=p.parentElement){ const cs=getComputedStyle(p); if(/(auto|scroll|hidden|clip)/.test(cs.overflowX)&&p!==document.body){ const pr=p.getBoundingClientRect(); if(r.right>pr.right+1||r.left<pr.left-1) return true; } } return false; };
   const out = { vw, vh, docScrollWidth: Math.max(document.documentElement.scrollWidth, window.innerWidth), bodyScrollWidth: document.body.scrollWidth, textLen:(document.body.innerText||'').trim().length, findings: [] };
@@ -42,7 +44,7 @@ export const oracleFn = (opts) => {
     }
     // 4 occlusion: centre of control hit-test (only when within the viewport)
     const cx=Math.min(Math.max(r.left+r.width/2,0),vw-1), cy=r.top+r.height/2;
-    if (cy>=0 && cy<vh && r.width>2 && r.height>2) { const top=document.elementFromPoint(cx,cy); if(top && top!==el && !el.contains(top) && !top.contains(el)) { const tr=top.getBoundingClientRect(); add('occluded_control', el, {by: sel(top)}); } }
+    if (cy>=0 && cy<vh && r.width>2 && r.height>2) { const top=document.elementFromPoint(cx,cy); if(top && top!==el && !el.contains(top) && !top.contains(el) && !scrolledOutOfClip(el,cx,cy)) { const tr=top.getBoundingClientRect(); add('occluded_control', el, {by: sel(top)}); } }
   }
   // 5 small text, 6 clipped text, 7 overlapping text
   const textEls = []; 

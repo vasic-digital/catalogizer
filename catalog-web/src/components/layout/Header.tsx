@@ -45,7 +45,7 @@ export const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 dark:bg-gray-900/80 dark:border-gray-700">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl 2xl:max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link
@@ -110,7 +110,7 @@ export const Header: React.FC = () => {
 
           {/* Search Bar */}
           {isAuthenticated && (
-            <div className="hidden md:flex items-center flex-1 min-w-[10rem] max-w-md mx-4 2xl:mx-8">
+            <div className="hidden md:flex items-center flex-none w-40 lg:w-44 xl:w-56 mx-3">
               <div className="relative w-full">
                 <label htmlFor="header-search" className="sr-only">Search media</label>
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500 dark:text-gray-400" />
