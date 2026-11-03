@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"catalogizer/internal/media/models"
+	"catalogizer/internal/smartrules"
 	"catalogizer/repository"
 	"catalogizer/utils"
 
@@ -18,6 +20,103 @@ import (
 // CollectionHandler handles media collection CRUD endpoints.
 type CollectionHandler struct {
 	repo *repository.MediaCollectionRepository
+	// isAdmin decides, from the database, whether a user is an administrator.
+	// Without it the role_id claim in the request context is used.
+	isAdmin func(ctx context.Context, userID int) (bool, error)
+}
+
+// WithAdminChecker installs the live admin check (production wires UserRepository.IsAdmin).
+func (h *CollectionHandler) WithAdminChecker(f func(ctx context.Context, userID int) (bool, error)) *CollectionHandler {
+	h.isAdmin = f
+	return h
+}
+
+// actor returns the authenticated user id (0, false when the request carries none).
+func actor(c *gin.Context) (int64, bool) {
+	v, ok := c.Get("user_id")
+	if !ok {
+		return 0, false
+	}
+	switch id := v.(type) {
+	case int:
+		return int64(id), id > 0
+	case int64:
+		return id, id > 0
+	}
+	return 0, false
+}
+
+// admin reports whether the caller is an administrator; an undeterminable answer is "no".
+func (h *CollectionHandler) admin(c *gin.Context, uid int64) bool {
+	if uid <= 0 {
+		return false
+	}
+	if h.isAdmin != nil {
+		ok, err := h.isAdmin(c.Request.Context(), int(uid))
+		return err == nil && ok
+	}
+	if r, ok := c.Get("role_id"); ok {
+		if id, isInt := r.(int); isInt {
+			return id == 1 // seeded admin role
+		}
+	}
+	return false
+}
+
+// canRead: admin, the owner, a public collection, or a legacy shared (ownerless) one.
+func (h *CollectionHandler) canRead(c *gin.Context, coll *models.MediaCollection, uid int64) bool {
+	if coll.OwnerUserID == nil || coll.IsPublic || (uid > 0 && *coll.OwnerUserID == uid) {
+		return true
+	}
+	return h.admin(c, uid)
+}
+
+// canEdit: the owner or an administrator. Ownerless legacy collections are admin-only.
+func (h *CollectionHandler) canEdit(c *gin.Context, coll *models.MediaCollection, uid int64) bool {
+	if coll.OwnerUserID != nil && uid > 0 && *coll.OwnerUserID == uid {
+		return true
+	}
+	return h.admin(c, uid)
+}
+
+// loadAccessible loads a collection and answers 404 (not visible / missing)
+// without revealing that a private collection of another user exists.
+func (h *CollectionHandler) loadAccessible(c *gin.Context, edit bool) (*models.MediaCollection, int64, bool) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid collection ID", err)
+		return nil, 0, false
+	}
+	coll, err := h.repo.GetByID(c.Request.Context(), id)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusNotFound, "Collection not found", err)
+		return nil, 0, false
+	}
+	uid, _ := actor(c)
+	if !h.canRead(c, coll, uid) {
+		utils.SendErrorResponse(c, http.StatusNotFound, "Collection not found", nil)
+		return nil, 0, false
+	}
+	if edit && !h.canEdit(c, coll, uid) {
+		utils.SendErrorResponse(c, http.StatusForbidden, "Only the owner or an administrator can change this collection", nil)
+		return nil, 0, false
+	}
+	return coll, uid, true
+}
+
+// evalOpts builds the rule-evaluation options for the viewer.
+func (h *CollectionHandler) evalOpts(uid int64) smartrules.Options {
+	return smartrules.Options{Postgres: h.repo.IsPostgres(), UserID: uid}
+}
+
+// liveCount evaluates a smart collection and returns its current size.
+func (h *CollectionHandler) liveCount(c *gin.Context, coll *models.MediaCollection, uid int64) (int, error) {
+	rs, err := smartrules.ParseStored(string(coll.SmartRules))
+	if err != nil {
+		return 0, err
+	}
+	_, total, err := smartrules.Evaluate(c.Request.Context(), h.repo.Querier(), rs, h.evalOpts(uid), 1, 0)
+	return total, err
 }
 
 // NewCollectionHandler creates a new collection handler.
@@ -25,7 +124,8 @@ func NewCollectionHandler(repo *repository.MediaCollectionRepository) *Collectio
 	return &CollectionHandler{repo: repo}
 }
 
-// ListCollections handles GET /api/v1/collections.
+// ListCollections handles GET /api/v1/collections. Only collections the caller
+// may see are returned (own, public, legacy shared; everything for an admin).
 func (h *CollectionHandler) ListCollections(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -41,11 +141,13 @@ func (h *CollectionHandler) ListCollections(c *gin.Context) {
 		offset = 0
 	}
 
-	collections, total, err := h.repo.List(ctx, limit, offset)
+	uid, _ := actor(c)
+	collections, total, err := h.repo.ListVisible(ctx, uid, h.admin(c, uid), limit, offset)
 	if err != nil {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to list collections", err)
 		return
 	}
+	h.fillLiveCounts(c, collections, uid)
 
 	c.JSON(http.StatusOK, gin.H{
 		"items":  collectionsToJSON(collections),
@@ -55,23 +157,116 @@ func (h *CollectionHandler) ListCollections(c *gin.Context) {
 	})
 }
 
+// fillLiveCounts sets TotalItems of smart collections to their current size.
+// A collection whose rules cannot be evaluated keeps the stored count.
+func (h *CollectionHandler) fillLiveCounts(c *gin.Context, collections []*models.MediaCollection, uid int64) {
+	for _, coll := range collections {
+		if !coll.IsSmart {
+			continue
+		}
+		if n, err := h.liveCount(c, coll, uid); err == nil {
+			coll.TotalItems = n
+		}
+	}
+}
+
 // GetCollection handles GET /api/v1/collections/:id.
 func (h *CollectionHandler) GetCollection(c *gin.Context) {
-	ctx := c.Request.Context()
-
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil {
-		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid collection ID", err)
+	coll, uid, ok := h.loadAccessible(c, false)
+	if !ok {
 		return
 	}
-
-	coll, err := h.repo.GetByID(ctx, id)
-	if err != nil {
-		utils.SendErrorResponse(c, http.StatusNotFound, "Collection not found", err)
-		return
+	if coll.IsSmart {
+		n, err := h.liveCount(c, coll, uid)
+		if err != nil {
+			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to evaluate smart collection", err)
+			return
+		}
+		coll.TotalItems = n
 	}
-
 	c.JSON(http.StatusOK, coll)
+}
+
+// ListCollectionItems handles GET /api/v1/collections/:id/items.
+// A smart collection is evaluated NOW against the catalogue (it is always live);
+// a manual collection lists its stored members. Paging: limit (default 50, max
+// 500) with offset, or page (1-based).
+func (h *CollectionHandler) ListCollectionItems(c *gin.Context) {
+	coll, uid, ok := h.loadAccessible(c, false)
+	if !ok {
+		return
+	}
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
+	limit, offset = smartrules.NormalizePage(limit, offset)
+	page := 1
+	if p, err := strconv.Atoi(c.Query("page")); err == nil && p >= 1 && c.Query("offset") == "" {
+		if p > 1_000_000 {
+			p = 1_000_000
+		}
+		page = p
+		offset = (p - 1) * limit
+	} else {
+		page = offset/limit + 1
+	}
+
+	var (
+		items []smartrules.Item
+		total int
+		err   error
+	)
+	if coll.IsSmart {
+		var rs *smartrules.RuleSet
+		rs, err = smartrules.ParseStored(string(coll.SmartRules))
+		if err == nil {
+			items, total, err = smartrules.Evaluate(c.Request.Context(), h.repo.Querier(), rs, h.evalOpts(uid), limit, offset)
+		}
+	} else {
+		items, total, err = h.repo.ListManualItems(c.Request.Context(), coll.ID, limit, offset)
+	}
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to list collection items", err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"items":    items,
+		"total":    total,
+		"page":     page,
+		"limit":    limit,
+		"offset":   offset,
+		"is_smart": coll.IsSmart,
+	})
+}
+
+const maxCollectionNameLen = 200
+
+// parseSmartRules validates the rule list of a request and answers 400 itself.
+func parseSmartRules(c *gin.Context, raws []json.RawMessage) (*smartrules.RuleSet, bool) {
+	rs, err := smartrules.Parse(raws)
+	if err != nil {
+		if smartrules.IsValidation(err) {
+			utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid smart_rules: "+err.Error(), nil)
+		} else {
+			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to process smart_rules", err)
+		}
+		return nil, false
+	}
+	return rs, true
+}
+
+// verifyRules runs the rules once: a rule set that cannot be evaluated is
+// refused instead of being stored and failing at every read.
+func (h *CollectionHandler) verifyRules(c *gin.Context, rs *smartrules.RuleSet, uid int64) (int, bool) {
+	_, total, err := smartrules.Evaluate(c.Request.Context(), h.repo.Querier(), rs, h.evalOpts(uid), 1, 0)
+	if err != nil {
+		status := http.StatusInternalServerError
+		if smartrules.IsValidation(err) {
+			status = http.StatusBadRequest
+		}
+		utils.SendErrorResponse(c, status, "Smart collection rules could not be evaluated", err)
+		return 0, false
+	}
+	return total, true
 }
 
 // CreateCollection handles POST /api/v1/collections.
@@ -93,21 +288,11 @@ func (h *CollectionHandler) CreateCollection(c *gin.Context) {
 		return
 	}
 
-	// CAT-001 (R4-4/R4-9): smart collections are not stored or evaluated. Creating a plain
-	// collection and answering 201 would silently drop the rules, so refuse honestly.
-	if (req.IsSmart != nil && *req.IsSmart) || len(req.SmartRules) > 0 {
-		c.JSON(http.StatusNotImplemented, gin.H{
-			"error": "smart collections are not supported: is_smart and smart_rules are neither stored nor evaluated. Nothing was created.",
-		})
-		return
-	}
-
 	// Article XI §11.5: enforce a sane upper bound on the collection
 	// name. Without it, a 500-character or 5000-character name is
 	// accepted and stored — a UI rendering / database-index hazard.
 	// 200 chars is well above the longest legitimate movie/album/
 	// series name on TMDB, OMDB or MusicBrainz. Caught by FQA-API-171.
-	const maxCollectionNameLen = 200
 	if len(req.Name) > maxCollectionNameLen {
 		utils.SendErrorResponse(c, http.StatusBadRequest,
 			fmt.Sprintf("name too long (max %d characters)", maxCollectionNameLen),
@@ -115,21 +300,49 @@ func (h *CollectionHandler) CreateCollection(c *gin.Context) {
 		return
 	}
 
-	// Set default collection type if empty
-	collectionType := req.CollectionType
-	if collectionType == "" {
-		collectionType = "custom"
+	if req.IsSmart != nil && !*req.IsSmart && len(req.SmartRules) > 0 {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "smart_rules given but is_smart is false", nil)
+		return
 	}
-	// Map request to model
+	wantSmart := (req.IsSmart != nil && *req.IsSmart) || len(req.SmartRules) > 0
+
+	uid, authed := actor(c)
 	coll := &models.MediaCollection{
-		Name:           req.Name,
-		CollectionType: collectionType,
-		Description:    req.Description,
-		ExternalIDs:    req.ExternalIDs,
-		CoverURL:       req.CoverURL,
-		TotalItems:     0,
+		Name:        req.Name,
+		Description: req.Description,
+		ExternalIDs: req.ExternalIDs,
+		CoverURL:    req.CoverURL,
+		IsPublic:    req.IsPublic != nil && *req.IsPublic,
 	}
-	// is_public and is_smart are not stored in current schema; ignore for now
+	if authed {
+		coll.OwnerUserID = &uid
+	}
+
+	if wantSmart {
+		if !authed {
+			utils.SendErrorResponse(c, http.StatusUnauthorized, "Authentication required for smart collections", nil)
+			return
+		}
+		rs, ok := parseSmartRules(c, req.SmartRules)
+		if !ok {
+			return
+		}
+		total, ok := h.verifyRules(c, rs, uid)
+		if !ok {
+			return
+		}
+		coll.IsSmart = true
+		coll.SmartRules = json.RawMessage(rs.Raw)
+		coll.TotalItems = total
+		coll.CollectionType = "smart"
+	}
+
+	// Set default collection type if empty
+	if req.CollectionType != "" {
+		coll.CollectionType = req.CollectionType
+	} else if coll.CollectionType == "" {
+		coll.CollectionType = "custom"
+	}
 
 	id, err := h.repo.Create(ctx, coll)
 	if err != nil {
@@ -145,38 +358,58 @@ func (h *CollectionHandler) CreateCollection(c *gin.Context) {
 func (h *CollectionHandler) UpdateCollection(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil {
-		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid collection ID", err)
-		return
-	}
-
 	var req struct {
 		Name           *string           `json:"name,omitempty"`
 		CollectionType *string           `json:"collection_type,omitempty"`
 		Description    *string           `json:"description,omitempty"`
 		IsPublic       *bool             `json:"is_public,omitempty"`
 		IsSmart        *bool             `json:"is_smart,omitempty"`
+		SmartRules     []json.RawMessage `json:"smart_rules,omitempty"`
 		ExternalIDs    map[string]string `json:"external_ids,omitempty"`
 		CoverURL       *string           `json:"cover_url,omitempty"`
+	}
+	// An invalid id is answered before the body is read.
+	if _, err := strconv.ParseInt(c.Param("id"), 10, 64); err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid collection ID", err)
+		return
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
-	if req.IsSmart != nil && *req.IsSmart {
-		c.JSON(http.StatusNotImplemented, gin.H{
-			"error": "smart collections are not supported: is_smart is neither stored nor evaluated. Nothing was changed.",
-		})
+	existing, uid, ok := h.loadAccessible(c, true)
+	if !ok {
 		return
 	}
 
-	// Fetch existing collection
-	existing, err := h.repo.GetByID(ctx, id)
-	if err != nil {
-		utils.SendErrorResponse(c, http.StatusNotFound, "Collection not found", err)
+	if req.Name != nil && len(*req.Name) > maxCollectionNameLen {
+		utils.SendErrorResponse(c, http.StatusBadRequest,
+			fmt.Sprintf("name too long (max %d characters)", maxCollectionNameLen), nil)
 		return
+	}
+	// A collection is smart or manual for its whole life: converting loses either
+	// the rules or the members, so it is refused instead of guessed.
+	if existing.IsSmart {
+		if req.IsSmart != nil && !*req.IsSmart {
+			utils.SendErrorResponse(c, http.StatusBadRequest, "a smart collection cannot be converted to a manual one; create a new collection", nil)
+			return
+		}
+	} else if (req.IsSmart != nil && *req.IsSmart) || len(req.SmartRules) > 0 {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "a manual collection cannot become smart; create a new smart collection", nil)
+		return
+	}
+	if existing.IsSmart && req.SmartRules != nil {
+		rs, ok := parseSmartRules(c, req.SmartRules)
+		if !ok {
+			return
+		}
+		total, ok := h.verifyRules(c, rs, uid)
+		if !ok {
+			return
+		}
+		existing.SmartRules = json.RawMessage(rs.Raw)
+		existing.TotalItems = total
 	}
 
 	// Apply updates
@@ -195,7 +428,9 @@ func (h *CollectionHandler) UpdateCollection(c *gin.Context) {
 	if req.CoverURL != nil {
 		existing.CoverURL = req.CoverURL
 	}
-	// is_public and is_smart ignored
+	if req.IsPublic != nil {
+		existing.IsPublic = *req.IsPublic
+	}
 
 	if err := h.repo.Update(ctx, existing); err != nil {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update collection", err)
@@ -209,13 +444,12 @@ func (h *CollectionHandler) UpdateCollection(c *gin.Context) {
 func (h *CollectionHandler) DeleteCollection(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-	if err != nil {
-		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid collection ID", err)
+	coll, _, ok := h.loadAccessible(c, true)
+	if !ok {
 		return
 	}
 
-	if err := h.repo.Delete(ctx, id); err != nil {
+	if err := h.repo.Delete(ctx, coll.ID); err != nil {
 		// Article XI §11.5: distinguish "not found" from real
 		// internal errors so DELETE on a missing ID returns 404, not
 		// 500. Caught by FQA-API-168 in the 2026-04-29 real-binary
@@ -291,9 +525,21 @@ func collectionsToJSON(collections []*models.MediaCollection) []gin.H {
 			"total_items":     coll.TotalItems,
 			"external_ids":    coll.ExternalIDs,
 			"cover_url":       coll.CoverURL,
+			"is_smart":        coll.IsSmart,
+			"smart_rules":     smartRulesJSON(coll.SmartRules),
+			"is_public":       coll.IsPublic,
+			"owner_id":        coll.OwnerUserID,
 			"created_at":      coll.CreatedAt,
 			"updated_at":      coll.UpdatedAt,
 		})
 	}
 	return result
+}
+
+// smartRulesJSON returns the stored rules as raw JSON, or an empty list.
+func smartRulesJSON(raw json.RawMessage) json.RawMessage {
+	if len(raw) == 0 {
+		return json.RawMessage("[]")
+	}
+	return raw
 }

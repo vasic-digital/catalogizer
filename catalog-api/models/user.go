@@ -1813,6 +1813,12 @@ type Playlist struct {
 	CreatedAt   time.Time      `json:"created_at" db:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at" db:"updated_at"`
 	Items       []PlaylistItem `json:"items,omitempty"`
+	// IsSmart playlists have no stored members: SmartRules are evaluated at read time.
+	IsSmart bool `json:"is_smart" db:"is_smart"`
+	// SmartRules is the validated rule document (JSON array) of a smart playlist.
+	SmartRules json.RawMessage `json:"smart_rules,omitempty" db:"smart_rules"`
+	// ItemsTotal is the total number of members (all pages); set by GET /playlists/:id.
+	ItemsTotal *int `json:"items_total,omitempty"`
 }
 
 // PlaylistItem represents a single item within a playlist.
@@ -1829,10 +1835,11 @@ type PlaylistItem struct {
 type CreatePlaylistRequest struct {
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description"`
-	// IsSmart / SmartRules are accepted only so a smart-playlist request can be refused honestly
-	// (501) instead of being silently dropped. They are neither stored nor evaluated.
+	// IsSmart / SmartRules create a smart playlist: the rules are validated, stored and
+	// evaluated at read time (see internal/smartrules).
 	IsSmart    *bool             `json:"is_smart,omitempty"`
 	SmartRules []json.RawMessage `json:"smart_rules,omitempty"`
+	IsPublic   *bool             `json:"is_public,omitempty"`
 }
 
 // UpdatePlaylistRequest represents a request to update an existing playlist.
@@ -1840,6 +1847,10 @@ type UpdatePlaylistRequest struct {
 	Name        *string `json:"name,omitempty"`
 	Description *string `json:"description,omitempty"`
 	IsPublic    *bool   `json:"is_public,omitempty"`
+	// IsSmart may only repeat the playlist's current kind; SmartRules replaces the
+	// rules of a smart playlist.
+	IsSmart    *bool             `json:"is_smart,omitempty"`
+	SmartRules []json.RawMessage `json:"smart_rules,omitempty"`
 }
 
 // AddPlaylistItemRequest represents a request to add an item to a playlist.

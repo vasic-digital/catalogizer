@@ -54,11 +54,10 @@ vi.mock('../../components/playlists/PlaylistItem', () => ({
 }))
 
 vi.mock('../../components/playlists/SmartPlaylistBuilder', () => ({
-  SmartPlaylistBuilder: ({ onSave, onCancel, saveDisabledReason }: any) => (
+  SmartPlaylistBuilder: ({ onSave, onCancel }: any) => (
     <div data-testid="smart-builder">
       Smart Playlist Builder
-      {saveDisabledReason && <p data-testid="smart-reason">{saveDisabledReason}</p>}
-      <button disabled={!!saveDisabledReason} onClick={() => onSave('Smart PL', 'Smart desc', [{ field: 'genre', operator: 'equals', value: 'rock' }])}>Save Smart</button>
+      <button onClick={() => onSave('Smart PL', 'Smart desc', [{ field: 'genre', operator: 'equals', value: 'rock' }])}>Save Smart</button>
       <button onClick={onCancel}>Cancel Smart</button>
     </div>
   ),
@@ -476,20 +475,43 @@ describe('Playlists Page', () => {
     expect(mockSearchMedia).not.toHaveBeenCalled()
   })
 
-  it('CAT-001 R5: the Smart Builder cannot save - the server stores no smart rules - and says why', async () => {
+  it('Smart Builder save creates a smart playlist through the API with the rules', async () => {
     const user = userEvent.setup()
     render(<PlaylistsPage />)
     mockCreatePlaylist.mockClear()
+    mockCreatePlaylist.mockResolvedValueOnce({ id: 9, name: 'Smart PL' })
     vi.mocked(toast.success).mockClear()
 
     await user.click(screen.getByText('Smart Builder'))
-    expect(screen.getByTestId('smart-reason')).toHaveTextContent(/not available/i)
-    const save = screen.getByText('Save Smart')
-    expect(save).toBeDisabled()
-    await user.click(save)
+    await user.click(screen.getByText('Save Smart'))
 
-    expect(mockCreatePlaylist).not.toHaveBeenCalled()
-    expect(toast.success).not.toHaveBeenCalled()
+    await waitFor(() => {
+      expect(mockCreatePlaylist).toHaveBeenCalledWith({
+        name: 'Smart PL',
+        description: 'Smart desc',
+        is_smart: true,
+        smart_rules: [{ field: 'genre', operator: 'equals', value: 'rock' }],
+      })
+    })
+    expect(toast.success).toHaveBeenCalledWith('Created smart playlist: Smart PL')
+    // back on the list
+    expect(screen.getByTestId('playlist-grid')).toBeInTheDocument()
+  })
+
+  it('Smart Builder save shows the server validation message and stays on the builder', async () => {
+    const user = userEvent.setup()
+    render(<PlaylistsPage />)
+    mockCreatePlaylist.mockClear()
+    mockCreatePlaylist.mockRejectedValueOnce({ response: { data: { error: 'Invalid smart_rules: unknown field' } } })
+    vi.mocked(toast.error).mockClear()
+
+    await user.click(screen.getByText('Smart Builder'))
+    await user.click(screen.getByText('Save Smart'))
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Invalid smart_rules: unknown field')
+    })
+    expect(screen.getByTestId('smart-builder')).toBeInTheDocument()
   })
 
   it('disables Create button when playlist name is empty', async () => {

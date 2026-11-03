@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
+	"catalogizer/internal/smartrules"
 	"catalogizer/models"
 	"catalogizer/services"
 
@@ -83,16 +85,12 @@ func (h *PlaylistHandler) CreatePlaylist(c *gin.Context) {
 		return
 	}
 
-	// CAT-001 (R5): smart playlists are not stored or evaluated; refuse instead of creating a plain empty one.
-	if (req.IsSmart != nil && *req.IsSmart) || len(req.SmartRules) > 0 {
-		c.JSON(http.StatusNotImplemented, gin.H{
-			"error": "smart playlists are not supported: is_smart and smart_rules are neither stored nor evaluated. Nothing was created.",
-		})
-		return
-	}
-
 	playlist, err := h.service.CreatePlaylist(uid, &req)
 	if err != nil {
+		if smartrules.IsValidation(err) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid smart_rules: " + err.Error()})
+			return
+		}
 		h.logger.Error("Failed to create playlist", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create playlist"})
 		return
@@ -121,7 +119,10 @@ func (h *PlaylistHandler) GetPlaylist(c *gin.Context) {
 		return
 	}
 
-	playlist, err := h.service.GetPlaylist(uid, playlistID)
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	offset, _ := strconv.Atoi(c.Query("offset"))
+	limit, offset = smartrules.NormalizePage(limit, offset)
+	playlist, err := h.service.GetPlaylistPage(uid, playlistID, limit, offset)
 	if err != nil {
 		h.logger.Error("Failed to get playlist", zap.Error(err))
 		c.JSON(http.StatusNotFound, gin.H{"error": "playlist not found"})
@@ -167,6 +168,14 @@ func (h *PlaylistHandler) UpdatePlaylist(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "playlist not found"})
 			return
 		}
+		if smartrules.IsValidation(err) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: " + err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrPlaylistForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "only the owner can change this playlist"})
+			return
+		}
 		h.logger.Error("Failed to update playlist", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update playlist"})
 		return
@@ -196,6 +205,10 @@ func (h *PlaylistHandler) DeletePlaylist(c *gin.Context) {
 	}
 
 	if err := h.service.DeletePlaylist(uid, playlistID); err != nil {
+		if errors.Is(err, services.ErrPlaylistForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "only the owner can change this playlist"})
+			return
+		}
 		h.logger.Error("Failed to delete playlist", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete playlist"})
 		return
@@ -232,6 +245,14 @@ func (h *PlaylistHandler) AddItem(c *gin.Context) {
 
 	item, err := h.service.AddItem(uid, playlistID, &req)
 	if err != nil {
+		if errors.Is(err, services.ErrSmartPlaylistItems) {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrPlaylistForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "only the owner can change this playlist"})
+			return
+		}
 		h.logger.Error("Failed to add item to playlist", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to add item to playlist"})
 		return
@@ -267,6 +288,14 @@ func (h *PlaylistHandler) RemoveItem(c *gin.Context) {
 	}
 
 	if err := h.service.RemoveItem(uid, playlistID, itemID); err != nil {
+		if errors.Is(err, services.ErrSmartPlaylistItems) {
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
+		}
+		if errors.Is(err, services.ErrPlaylistForbidden) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "only the owner can change this playlist"})
+			return
+		}
 		h.logger.Error("Failed to remove item from playlist", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to remove item from playlist"})
 		return

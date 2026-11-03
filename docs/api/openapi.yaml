@@ -607,12 +607,72 @@ components:
             type: string
         cover_url:
           type: string
+        is_smart:
+          type: boolean
+        smart_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/SmartRule'
+        is_public:
+          type: boolean
+        owner_id:
+          type: integer
+          nullable: true
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
+
+    SmartRule:
+      type: object
+      description: |
+        One rule. field is one of title, genre, language, country, path, quality, media_type, year, rating,
+        runtime, size, added (aliases created_at, added_at), updated, tags, favorite. Each field accepts a fixed
+        set of operators (text: equals, not_equals, contains, not_contains, starts_with, ends_with, in, not_in;
+        number: equals, not_equals, greater_than, greater_or_equal, less_than, less_or_equal, between, in, not_in;
+        date: equals, greater_than, greater_or_equal, less_than, less_or_equal, between, in_last_days;
+        bool: equals, not_equals; tags: contains, not_contains). Unknown field, operator or key answers 400.
+        Limits: 25 rules, depth 3, 256 bytes per value, 50 values per list, 64 KB of rules.
+        A rule joins the previous sibling with condition (and by default); AND binds tighter than OR;
+        nested_rules are ANDed with their parent rule. tags and favorite are evaluated against the caller's own data.
+      required: [field, operator]
+      properties:
+        field:
+          type: string
+        operator:
+          type: string
+        value: {}
+        condition:
+          type: string
+          enum: [and, or]
+        nested_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/SmartRule'
+
+    SmartItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        media_type:
+          type: string
+        year:
+          type: integer
+          nullable: true
+        rating:
+          type: number
+          nullable: true
+        genre:
+          type: string
+          nullable: true
+        added_at:
+          type: string
 
     CreateCollectionRequest:
       type: object
@@ -630,6 +690,10 @@ components:
           type: boolean
         is_smart:
           type: boolean
+        smart_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/SmartRule'
         external_ids:
           type: object
           additionalProperties:
@@ -1583,6 +1647,15 @@ components:
           type: string
         is_public:
           type: boolean
+        is_smart:
+          type: boolean
+        smart_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/SmartRule'
+        items_total:
+          type: integer
+          description: Size of a smart playlist (items is one page of it)
         created_at:
           type: string
           format: date-time
@@ -1600,6 +1673,14 @@ components:
           type: string
         description:
           type: string
+        is_public:
+          type: boolean
+        is_smart:
+          type: boolean
+        smart_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/SmartRule'
       required:
       - name
     UpdatePlaylistRequest:
@@ -1611,6 +1692,10 @@ components:
           type: string
         is_public:
           type: boolean
+        smart_rules:
+          type: array
+          items:
+            $ref: '#/components/schemas/SmartRule'
     AddPlaylistItemRequest:
       type: object
       properties:
@@ -5488,8 +5573,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MediaCollection'
-        '501':
-          description: Smart collections (is_smart true or non-empty smart_rules) are not supported; nothing was created
+        '400':
+          description: Invalid body or invalid smart_rules (unknown field/operator, bad value, limits exceeded); nothing was created
+        '401':
+          description: Smart collections need an authenticated user
 
   /api/v1/collections/{id}:
     get:
@@ -5527,12 +5614,16 @@ paths:
         content:
           application/json:
             schema:
-              type: object
+              $ref: '#/components/schemas/CreateCollectionRequest'
       responses:
         '200':
           description: Collection updated
-        '501':
-          description: is_smart true is not supported; nothing was changed
+        '400':
+          description: Invalid body or smart_rules, or an attempt to convert smart to manual or manual to smart
+        '403':
+          description: Visible but not editable (only the owner or an administrator edits)
+        '404':
+          description: Collection not found or not visible to the caller
     delete:
       tags: [collections]
       summary: Delete collection
@@ -5547,6 +5638,68 @@ paths:
       responses:
         '200':
           description: Collection deleted
+        '403':
+          description: Visible but not editable
+        '404':
+          description: Collection not found or not visible to the caller
+
+  /api/v1/collections/{id}/items:
+    get:
+      tags: [collections]
+      summary: List collection items
+      description: |
+        A smart collection is evaluated at read time against the catalogue, so it is always live
+        (rules are AND/OR groups over media_type, genre, year, rating, size, tags, path and added-since;
+        tags and favorite are scoped to the caller). A manual collection lists its stored members.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 500
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: page
+          in: query
+          description: 1-based page, used when offset is absent
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SmartItem'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+                  is_smart:
+                    type: boolean
+        '404':
+          description: Collection not found or not visible to the caller
 
   /api/v1/assets/{id}:
     get:
@@ -8949,8 +9102,6 @@ paths:
             schema:
               $ref: '#/components/schemas/CreatePlaylistRequest'
       responses:
-        '501':
-          description: is_smart true or smart_rules present - smart playlists are not supported; nothing was created
         '201':
           description: Created
           content:

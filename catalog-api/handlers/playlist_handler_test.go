@@ -53,6 +53,8 @@ func setupPlaylistTestDB(t *testing.T) *database.DB {
 			name TEXT NOT NULL,
 			description TEXT DEFAULT '',
 			is_public INTEGER DEFAULT 0,
+			is_smart INTEGER NOT NULL DEFAULT 0,
+			smart_rules TEXT,
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (user_id) REFERENCES users(id)
@@ -278,21 +280,22 @@ func TestCreatePlaylist_Success(t *testing.T) {
 	assert.NotZero(t, resp["id"])
 }
 
-// CAT-001 R5: is_smart / smart_rules used to be dropped by the request model and a plain empty playlist was
-// created and returned 201. A smart playlist is refused honestly and nothing is stored.
-func TestCreatePlaylist_SmartIsRefusedNotSilentlyDropped(t *testing.T) {
+// Smart playlists are real now (end-to-end proof: TestSmartCollectionsAndPlaylists_RealBinary). The
+// handler test DB has no media tables, so only the refusal paths run here: rules the closed language
+// does not accept answer 400 and nothing is stored.
+func TestCreatePlaylist_InvalidSmartRulesAreRefusedAndNotStored(t *testing.T) {
 	handler, db := newPlaylistHandler(t)
 	router := playlistRouterWithAuth(handler, 1)
 	for _, raw := range []string{
 		`{"name":"S","is_smart":true}`,
-		`{"name":"S","smart_rules":[{"field":"genre","operator":"equals","value":"rock"}]}`,
+		`{"name":"S","is_smart":true,"smart_rules":[{"field":"password_hash","operator":"equals","value":"x"}]}`,
+		`{"name":"S","smart_rules":[{"field":"genre","operator":"drop_table","value":"rock"}]}`,
 	} {
 		req := httptest.NewRequest(http.MethodPost, "/playlists", bytes.NewBufferString(raw))
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		router.ServeHTTP(w, req)
-		assert.Equal(t, http.StatusNotImplemented, w.Code, raw)
-		assert.Contains(t, w.Body.String(), "Nothing was created")
+		assert.Equal(t, http.StatusBadRequest, w.Code, raw+" -> "+w.Body.String())
 	}
 	var n int
 	require.NoError(t, db.QueryRow(`SELECT COUNT(*) FROM playlists WHERE name = 'S'`).Scan(&n))

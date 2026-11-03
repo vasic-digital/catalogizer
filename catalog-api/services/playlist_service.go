@@ -1,12 +1,22 @@
 package services
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
+	"catalogizer/internal/smartrules"
 	"catalogizer/models"
 	"catalogizer/repository"
 )
+
+// ErrSmartPlaylistItems is returned when a manual item operation targets a smart playlist.
+var ErrSmartPlaylistItems = errors.New("smart playlists have no manual items: their members come from the rules")
+
+// ErrPlaylistForbidden is returned when the caller may not change the playlist.
+var ErrPlaylistForbidden = errors.New("unauthorized: only the owner can change this playlist")
 
 // PlaylistService provides business logic for playlist operations.
 type PlaylistService struct {
@@ -30,6 +40,11 @@ func (s *PlaylistService) CreatePlaylist(userID int, req *models.CreatePlaylistR
 		return nil, fmt.Errorf("playlist name is required")
 	}
 
+	if req.IsSmart != nil && !*req.IsSmart && len(req.SmartRules) > 0 {
+		return nil, &smartrules.ValidationError{Msg: "smart_rules given but is_smart is false"}
+	}
+	wantSmart := (req.IsSmart != nil && *req.IsSmart) || len(req.SmartRules) > 0
+
 	now := time.Now()
 	playlist := &models.Playlist{
 		UserID:      userID,
@@ -37,6 +52,19 @@ func (s *PlaylistService) CreatePlaylist(userID int, req *models.CreatePlaylistR
 		Description: req.Description,
 		CreatedAt:   now,
 		UpdatedAt:   now,
+		IsPublic:    req.IsPublic != nil && *req.IsPublic,
+	}
+	if wantSmart {
+		rs, err := smartrules.Parse(req.SmartRules)
+		if err != nil {
+			return nil, err
+		}
+		// run the rules once: rules that cannot be evaluated are refused, not stored
+		if _, _, err := s.playlistRepo.EvaluateSmart(context.Background(), 0, rs, int64(userID), 1, 0); err != nil {
+			return nil, fmt.Errorf("smart playlist rules could not be evaluated: %w", err)
+		}
+		playlist.IsSmart = true
+		playlist.SmartRules = json.RawMessage(rs.Raw)
 	}
 
 	id, err := s.playlistRepo.CreatePlaylist(playlist)
@@ -49,7 +77,14 @@ func (s *PlaylistService) CreatePlaylist(userID int, req *models.CreatePlaylistR
 }
 
 // GetPlaylist returns a playlist by ID, verifying the user has access.
+// A smart playlist's members are evaluated now (first default page).
 func (s *PlaylistService) GetPlaylist(userID int, playlistID int) (*models.Playlist, error) {
+	return s.GetPlaylistPage(userID, playlistID, smartrules.MaxLimit, 0)
+}
+
+// GetPlaylistPage is GetPlaylist with an explicit page for smart playlists
+// (limit is capped at smartrules.MaxLimit). Manual playlists return all items.
+func (s *PlaylistService) GetPlaylistPage(userID int, playlistID int, limit, offset int) (*models.Playlist, error) {
 	if s.playlistRepo == nil {
 		return nil, fmt.Errorf("playlist repository not configured")
 	}
@@ -63,12 +98,29 @@ func (s *PlaylistService) GetPlaylist(userID int, playlistID int) (*models.Playl
 		return nil, fmt.Errorf("unauthorized to access this playlist")
 	}
 
+	if playlist.IsSmart {
+		rs, err := smartrules.ParseStored(string(playlist.SmartRules))
+		if err != nil {
+			return nil, fmt.Errorf("stored smart rules are invalid: %w", err)
+		}
+		// user-scoped fields (tags, favorite) are evaluated for the VIEWER
+		items, total, err := s.playlistRepo.EvaluateSmart(context.Background(), playlistID, rs, int64(userID), limit, offset)
+		if err != nil {
+			return nil, fmt.Errorf("failed to evaluate smart playlist: %w", err)
+		}
+		playlist.Items = items
+		playlist.ItemsTotal = &total
+		return playlist, nil
+	}
+
 	// Load items
 	items, err := s.playlistRepo.GetPlaylistItems(playlistID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load playlist items: %w", err)
 	}
 	playlist.Items = items
+	n := len(items)
+	playlist.ItemsTotal = &n
 
 	return playlist, nil
 }
@@ -94,7 +146,25 @@ func (s *PlaylistService) UpdatePlaylist(userID int, playlistID int, req *models
 	}
 
 	if playlist.UserID != userID {
-		return nil, fmt.Errorf("unauthorized to update this playlist")
+		return nil, fmt.Errorf("%w (update)", ErrPlaylistForbidden)
+	}
+
+	if playlist.IsSmart {
+		if req.IsSmart != nil && !*req.IsSmart {
+			return nil, &smartrules.ValidationError{Msg: "a smart playlist cannot be converted to a manual one; create a new playlist"}
+		}
+		if req.SmartRules != nil {
+			rs, err := smartrules.Parse(req.SmartRules)
+			if err != nil {
+				return nil, err
+			}
+			if _, _, err := s.playlistRepo.EvaluateSmart(context.Background(), playlistID, rs, int64(userID), 1, 0); err != nil {
+				return nil, fmt.Errorf("smart playlist rules could not be evaluated: %w", err)
+			}
+			playlist.SmartRules = json.RawMessage(rs.Raw)
+		}
+	} else if (req.IsSmart != nil && *req.IsSmart) || len(req.SmartRules) > 0 {
+		return nil, &smartrules.ValidationError{Msg: "a manual playlist cannot become smart; create a new smart playlist"}
 	}
 
 	if req.Name != nil {
@@ -127,7 +197,7 @@ func (s *PlaylistService) DeletePlaylist(userID int, playlistID int) error {
 	}
 
 	if playlist.UserID != userID {
-		return fmt.Errorf("unauthorized to delete this playlist")
+		return fmt.Errorf("%w (delete)", ErrPlaylistForbidden)
 	}
 
 	return s.playlistRepo.DeletePlaylist(playlistID)
@@ -145,7 +215,10 @@ func (s *PlaylistService) AddItem(userID int, playlistID int, req *models.AddPla
 	}
 
 	if playlist.UserID != userID {
-		return nil, fmt.Errorf("unauthorized to modify this playlist")
+		return nil, fmt.Errorf("%w (modify)", ErrPlaylistForbidden)
+	}
+	if playlist.IsSmart {
+		return nil, ErrSmartPlaylistItems
 	}
 
 	item := &models.PlaylistItem{
@@ -180,7 +253,10 @@ func (s *PlaylistService) RemoveItem(userID int, playlistID int, itemID int) err
 	}
 
 	if playlist.UserID != userID {
-		return fmt.Errorf("unauthorized to modify this playlist")
+		return fmt.Errorf("%w (modify)", ErrPlaylistForbidden)
+	}
+	if playlist.IsSmart {
+		return ErrSmartPlaylistItems
 	}
 
 	item, err := s.playlistRepo.GetPlaylistItemByID(itemID)

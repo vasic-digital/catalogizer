@@ -805,3 +805,12 @@ Closes F1, F2, F4, F5, F6, F7 of the scaling/chaos review (details in `docs/TEST
 - F7 (UNCONFIRMED, pre-existing): under lib/pq RefreshSmartPlaylist runs tx.ExecContext with a tx cursor open; not run on Postgres.
 - F8 (nit): RED signature in TESTING_GUIDE is "12 of 12"; aggregation/admin/playlist show "11 of 12".
 - HOST: root filesystem reached 100% during review (go-build cache 63 GB); cleared with `go clean -cache` (63 GB free afterwards). Needs a periodic cache cap.
+
+## Smart collections and smart playlists (feat-smart-collections)
+- Implemented: closed rule language `internal/smartrules` (parameterised SQL only), evaluation at read time, `GET /collections/:id/items`, smart playlists, owner/admin authz, migration 23. Guide: docs/guides/SMART_COLLECTIONS_GUIDE.md.
+- UNVERIFIED (no `node_modules` in the scratch clone or the live checkout, so vitest and `tsc --noEmit` were not run): the catalog-web edits (Playlists.tsx smart save, SmartPlaylistBuilder.tsx, CollectionTemplates.tsx text, the three updated/added test files).
+- UNCONFIRMED: Postgres. The migration (ADD COLUMN IF NOT EXISTS) and the compiled SQL for the Postgres dialect were not run against a real Postgres.
+- Open: collection templates (CollectionTemplates.tsx) use fields and values the rule language rejects (category, ai_score, trending_score, user_preference_match, `30_days_ago`, media type `audio`, `is_not_empty`); applying stays disabled with a reason until they are rewritten.
+- Open: the Collections page does not show smart items yet (the page lists collections; the items endpoint exists and `collectionsApi.getCollectionItems` already targets it).
+- Open: `image` media type matches nothing (the catalogue has no image media type); `tags` supports only contains / not_contains (comma-separated text column).
+- Open: no per-user cap on the number of smart collections; each read evaluates the rules (bounded by the 500-item page cap and rule limits, no timing benchmark taken).

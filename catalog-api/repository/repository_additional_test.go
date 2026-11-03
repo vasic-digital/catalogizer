@@ -902,6 +902,7 @@ func newMockMediaCollectionRepo(t *testing.T) (*MediaCollectionRepository, sqlmo
 var collectionColumns = []string{
 	"id", "name", "collection_type", "description", "total_items",
 	"external_ids", "cover_url", "created_at", "updated_at",
+	"is_smart", "smart_rules", "owner_user_id", "is_public",
 }
 
 // ---------------------------------------------------------------------------
@@ -983,7 +984,7 @@ func TestMediaCollectionRepository_GetByID(t *testing.T) {
 					WithArgs(int64(1)).
 					WillReturnRows(sqlmock.NewRows(collectionColumns).
 						AddRow(int64(1), "My Collection", "playlist", "A desc", 10,
-							`{"imdb":"tt123"}`, nil, now, now))
+							`{"imdb":"tt123"}`, nil, now, now, false, nil, nil, false))
 			},
 			check: func(t *testing.T, coll *mediamodels.MediaCollection) {
 				assert.Equal(t, int64(1), coll.ID)
@@ -1179,7 +1180,7 @@ func TestMediaCollectionRepository_List(t *testing.T) {
 					WithArgs(10, 0).
 					WillReturnRows(sqlmock.NewRows(collectionColumns).
 						AddRow(int64(1), "Coll1", "playlist", nil, 5,
-							`null`, nil, now, now))
+							`null`, nil, now, now, false, nil, nil, false))
 			},
 			wantCount: 1,
 			wantTotal: 1,

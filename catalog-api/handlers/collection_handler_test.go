@@ -112,10 +112,10 @@ func (suite *CollectionHandlerTestSuite) TestCreateCollection_MissingName() {
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
 }
 
-// CAT-001 (R4-4/R4-9): is_smart / smart_rules were silently dropped and the collection was created
-// as a plain one. The nil repo means any path that reaches repo.Create panics, so these tests
-// also prove the request is refused before storage.
-func (suite *CollectionHandlerTestSuite) TestCreateCollection_SmartIsRefusedNotSilentlyDropped() {
+// Smart collections are real now (see TestSmartCollectionsAndPlaylists_RealBinary for the
+// end-to-end proof). With a nil repo any path that reaches storage panics, so these tests also
+// prove that an anonymous caller and a malformed id are refused before storage is touched.
+func (suite *CollectionHandlerTestSuite) TestCreateCollection_SmartNeedsAuthentication() {
 	for _, body := range []string{
 		`{"name":"S","is_smart":true,"smart_rules":[{"field":"genre"}]}`,
 		`{"name":"S","is_smart":true}`,
@@ -125,17 +125,24 @@ func (suite *CollectionHandlerTestSuite) TestCreateCollection_SmartIsRefusedNotS
 		req.Header.Set("Content-Type", "application/json")
 		w := httptest.NewRecorder()
 		assert.NotPanics(suite.T(), func() { suite.router.ServeHTTP(w, req) }, body)
-		assert.Equal(suite.T(), http.StatusNotImplemented, w.Code, body)
-		assert.Contains(suite.T(), w.Body.String(), "Nothing was created")
+		assert.Equal(suite.T(), http.StatusUnauthorized, w.Code, body)
 	}
 }
 
-func (suite *CollectionHandlerTestSuite) TestUpdateCollection_SmartIsRefused() {
-	req := httptest.NewRequest("PUT", "/api/v1/collections/1", bytes.NewBufferString(`{"is_smart":true}`))
+func (suite *CollectionHandlerTestSuite) TestCreateCollection_SmartFalseWithRulesIsRefused() {
+	req := httptest.NewRequest("POST", "/api/v1/collections", bytes.NewBufferString(`{"name":"S","is_smart":false,"smart_rules":[{"field":"genre"}]}`))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	assert.NotPanics(suite.T(), func() { suite.router.ServeHTTP(w, req) })
-	assert.Equal(suite.T(), http.StatusNotImplemented, w.Code)
+	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+}
+
+func (suite *CollectionHandlerTestSuite) TestUpdateCollection_InvalidIDIsRefusedBeforeStorage() {
+	req := httptest.NewRequest("PUT", "/api/v1/collections/abc", bytes.NewBufferString(`{"is_smart":true}`))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	assert.NotPanics(suite.T(), func() { suite.router.ServeHTTP(w, req) })
+	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
 }
 
 func (suite *CollectionHandlerTestSuite) TestCreateCollection_EmptyBody() {

@@ -3,10 +3,12 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"catalogizer/database"
+	"catalogizer/internal/smartrules"
 	"catalogizer/models"
 )
 
@@ -23,13 +25,18 @@ func NewPlaylistRepository(db *database.DB) *PlaylistRepository {
 // CreatePlaylist inserts a new playlist and returns its ID.
 func (r *PlaylistRepository) CreatePlaylist(playlist *models.Playlist) (int, error) {
 	query := `
-		INSERT INTO playlists (user_id, name, description, is_public, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?)
+		INSERT INTO playlists (user_id, name, description, is_public, created_at, updated_at, is_smart, smart_rules)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`
 
+	var rules interface{}
+	if len(playlist.SmartRules) > 0 {
+		rules = string(playlist.SmartRules)
+	}
 	id, err := r.db.InsertReturningID(context.Background(), query,
 		playlist.UserID, playlist.Name, playlist.Description,
-		playlist.IsPublic, playlist.CreatedAt, playlist.UpdatedAt)
+		playlist.IsPublic, playlist.CreatedAt, playlist.UpdatedAt,
+		playlist.IsSmart, rules)
 	if err != nil {
 		return 0, fmt.Errorf("failed to create playlist: %w", err)
 	}
@@ -40,15 +47,19 @@ func (r *PlaylistRepository) CreatePlaylist(playlist *models.Playlist) (int, err
 // GetPlaylistByID returns a playlist by its ID.
 func (r *PlaylistRepository) GetPlaylistByID(playlistID int) (*models.Playlist, error) {
 	query := `
-		SELECT id, user_id, name, description, is_public, created_at, updated_at
+		SELECT id, user_id, name, description, is_public, created_at, updated_at, is_smart, smart_rules
 		FROM playlists
 		WHERE id = ?
 	`
 
 	playlist := &models.Playlist{}
+	var rules sql.NullString
 	err := r.db.QueryRow(query, playlistID).Scan(
 		&playlist.ID, &playlist.UserID, &playlist.Name, &playlist.Description,
-		&playlist.IsPublic, &playlist.CreatedAt, &playlist.UpdatedAt)
+		&playlist.IsPublic, &playlist.CreatedAt, &playlist.UpdatedAt, &playlist.IsSmart, &rules)
+	if rules.Valid && rules.String != "" {
+		playlist.SmartRules = json.RawMessage(rules.String)
+	}
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("playlist not found")
@@ -62,7 +73,7 @@ func (r *PlaylistRepository) GetPlaylistByID(playlistID int) (*models.Playlist, 
 // GetUserPlaylists returns all playlists for a given user.
 func (r *PlaylistRepository) GetUserPlaylists(userID int, limit, offset int) ([]models.Playlist, error) {
 	query := `
-		SELECT id, user_id, name, description, is_public, created_at, updated_at
+		SELECT id, user_id, name, description, is_public, created_at, updated_at, is_smart, smart_rules
 		FROM playlists
 		WHERE user_id = ?
 		ORDER BY updated_at DESC
@@ -82,13 +93,17 @@ func (r *PlaylistRepository) GetUserPlaylists(userID int, limit, offset int) ([]
 func (r *PlaylistRepository) UpdatePlaylist(playlist *models.Playlist) error {
 	query := `
 		UPDATE playlists
-		SET name = ?, description = ?, is_public = ?, updated_at = ?
+		SET name = ?, description = ?, is_public = ?, updated_at = ?, smart_rules = ?
 		WHERE id = ?
 	`
 
+	var rules interface{}
+	if len(playlist.SmartRules) > 0 {
+		rules = string(playlist.SmartRules)
+	}
 	_, err := r.db.Exec(query,
 		playlist.Name, playlist.Description, playlist.IsPublic,
-		playlist.UpdatedAt, playlist.ID)
+		playlist.UpdatedAt, rules, playlist.ID)
 	return err
 }
 
@@ -219,14 +234,43 @@ func (r *PlaylistRepository) scanPlaylists(rows *sql.Rows) ([]models.Playlist, e
 
 	for rows.Next() {
 		var playlist models.Playlist
+		var rules sql.NullString
 		err := rows.Scan(
 			&playlist.ID, &playlist.UserID, &playlist.Name, &playlist.Description,
-			&playlist.IsPublic, &playlist.CreatedAt, &playlist.UpdatedAt)
+			&playlist.IsPublic, &playlist.CreatedAt, &playlist.UpdatedAt, &playlist.IsSmart, &rules)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan playlist: %w", err)
+		}
+		if rules.Valid && rules.String != "" {
+			playlist.SmartRules = json.RawMessage(rules.String)
 		}
 		playlists = append(playlists, playlist)
 	}
 
 	return playlists, nil
+}
+
+// EvaluateSmart evaluates a smart playlist's rules now against the catalogue
+// and returns one page of members as playlist items, plus the total match count.
+func (r *PlaylistRepository) EvaluateSmart(ctx context.Context, playlistID int, rs *smartrules.RuleSet, viewerID int64, limit, offset int) ([]models.PlaylistItem, int, error) {
+	limit, offset = smartrules.NormalizePage(limit, offset)
+	found, total, err := smartrules.Evaluate(ctx, r.db, rs, smartrules.Options{Postgres: r.db.Dialect().IsPostgres(), UserID: viewerID}, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	items := make([]models.PlaylistItem, 0, len(found))
+	for i, f := range found {
+		it := models.PlaylistItem{
+			ID:         int(f.ID),
+			PlaylistID: playlistID,
+			EntityID:   int(f.ID),
+			EntityType: f.MediaType,
+			Position:   offset + i,
+		}
+		if f.AddedAt != nil {
+			it.AddedAt = *f.AddedAt
+		}
+		items = append(items, it)
+	}
+	return items, total, nil
 }

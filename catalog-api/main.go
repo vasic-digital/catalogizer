@@ -687,7 +687,7 @@ func main() {
 	androidTVMediaHandler := root_handlers.NewAndroidTVMediaHandler(databaseDB)
 
 	// Collection handler
-	collectionHandler := root_handlers.NewCollectionHandler(mediaCollectionRepo)
+	collectionHandler := root_handlers.NewCollectionHandler(mediaCollectionRepo).WithAdminChecker(userRepo.IsAdmin)
 
 	// Challenge handler
 	challengeHandler := root_handlers.NewChallengeHandler(challengeService)
@@ -1515,6 +1515,7 @@ func main() {
 			collectionsGroup.GET("", collectionHandler.ListCollections)
 			collectionsGroup.POST("", collectionHandler.CreateCollection)
 			collectionsGroup.GET("/:id", collectionHandler.GetCollection)
+			collectionsGroup.GET("/:id/items", collectionHandler.ListCollectionItems)
 			collectionsGroup.PUT("/:id", collectionHandler.UpdateCollection)
 			collectionsGroup.DELETE("/:id", collectionHandler.DeleteCollection)
 	}
