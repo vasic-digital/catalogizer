@@ -271,13 +271,15 @@ func (s *ReportingService) generateSecurityAuditData(params map[string]interface
 		return nil, err
 	}
 
-	// For now, return basic security metrics
-	// In a full implementation, this would analyze login attempts, failed authentications, etc.
+	failed, succeeded, err := s.loginCounts(context.Background(), startDate, endDate)
+	if err != nil {
+		return nil, err
+	}
 	audit := &models.SecurityAuditReport{
 		StartDate:           startDate,
 		EndDate:             endDate,
-		FailedLoginAttempts: 0, // Would be calculated from actual data
-		SuccessfulLogins:    0, // Would be calculated from actual data
+		FailedLoginAttempts: failed,
+		SuccessfulLogins:    succeeded,
 		SuspiciousActivity:  []models.SecurityIncident{},
 		SecurityMetrics:     s.calculateSecurityMetrics(startDate, endDate),
 	}
@@ -1367,29 +1369,55 @@ func (s *ReportingService) generateActivitySummary(activities []models.UserActiv
 	}
 }
 
+// loginCounts reads failed and successful logins in [startDate, endDate] from
+// auth_audit_log, the table internal/auth writes ("failed_login",
+// "failed_login_inactive", "login_success"). An unreadable audit trail is an
+// error: it must never be reported as zero failed logins.
+func (s *ReportingService) loginCounts(ctx context.Context, startDate, endDate time.Time) (failed, succeeded int, err error) {
+	if s.db == nil {
+		return 0, 0, fmt.Errorf("read auth_audit_log: database not initialized")
+	}
+	const layout = "2006-01-02 15:04:05" // the CURRENT_TIMESTAMP format the column holds
+	err = s.db.QueryRowContext(ctx, `SELECT
+		COALESCE(SUM(CASE WHEN event_type LIKE 'failed_login%' THEN 1 ELSE 0 END), 0),
+		COALESCE(SUM(CASE WHEN event_type = 'login_success' THEN 1 ELSE 0 END), 0)
+		FROM auth_audit_log WHERE created_at BETWEEN ? AND ?`,
+		startDate.UTC().Format(layout), endDate.UTC().Format(layout)).Scan(&failed, &succeeded)
+	if err != nil {
+		return 0, 0, fmt.Errorf("read auth_audit_log: %w", err)
+	}
+	return failed, succeeded, nil
+}
+
 func (s *ReportingService) calculateSecurityMetrics(startDate, endDate time.Time) models.SecurityMetrics {
 	ctx := context.Background()
+	var unavailable []string
 
-	// Query actual failed login attempts from database
-	failedLogins := 0
-	if s.db != nil {
-		row := s.db.QueryRowContext(ctx, 
-			"SELECT COUNT(*) FROM login_attempts WHERE success = false AND created_at BETWEEN ? AND ?",
-			startDate, endDate)
-		_ = row.Scan(&failedLogins)
+	failedLogins, _, err := s.loginCounts(ctx, startDate, endDate)
+	failedKnown := err == nil
+	if !failedKnown {
+		unavailable = append(unavailable, "failed_logins")
 	}
 
-	// Count active system alerts of severity >= "high" as the current
-	// vulnerability signal. Falls back to 0 if the system_alerts table is
-	// absent (e.g., in tests with a minimal schema).
+	// High/critical unresolved alerts are the vulnerability signal. Nothing in
+	// this codebase writes system_alerts, so the count is usually unmeasurable;
+	// that is reported as unavailable, never as a clean zero.
 	vulnerabilityCount := 0
+	vulnKnown := false
 	if s.db != nil {
 		row := s.db.QueryRowContext(ctx,
 			"SELECT COUNT(*) FROM system_alerts WHERE severity IN ('high','critical') AND resolved = false AND created_at BETWEEN ? AND ?",
 			startDate, endDate)
-		// Swallow schema-missing errors — analytics must still degrade
-		// gracefully if the operator hasn't created the table yet.
-		_ = row.Scan(&vulnerabilityCount)
+		vulnKnown = row.Scan(&vulnerabilityCount) == nil
+	}
+	if !vulnKnown {
+		vulnerabilityCount = 0
+		unavailable = append(unavailable, "vulnerability_count")
+	}
+
+	if !failedKnown {
+		// The main input is unmeasurable: no score, no threat verdict.
+		return models.SecurityMetrics{ThreatLevel: "unknown", Unavailable: append(unavailable, "security_score")}
 	}
 
 	// Calculate security score based on actual metrics
@@ -1417,6 +1445,7 @@ func (s *ReportingService) calculateSecurityMetrics(startDate, endDate time.Time
 		ThreatLevel:        threatLevel,
 		VulnerabilityCount: vulnerabilityCount,
 		SecurityScore:      score,
+		Unavailable:        unavailable,
 	}
 }
 

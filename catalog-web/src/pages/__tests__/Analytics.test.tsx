@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Analytics } from '../Analytics'
 import { mediaApi } from '@/lib/mediaApi'
+import { statsApi } from '@/lib/statsApi'
 
 // Mock dependencies
 vi.mock('@/lib/mediaApi', async () => ({
@@ -55,11 +56,11 @@ vi.mock('recharts', async () => ({
   PieChart: ({ children }: any) => <div data-testid="pie-chart">{children}</div>,
   Pie: ({ children }: any) => <div data-testid="pie">{children}</div>,
   Cell: () => <div data-testid="cell" />,
-  BarChart: ({ children }: any) => <div data-testid="bar-chart">{children}</div>,
+  BarChart: ({ children, data }: any) => <div data-testid="bar-chart" data-points={JSON.stringify(data ?? null)}>{children}</div>,
   Bar: () => <div data-testid="bar" />,
   LineChart: ({ children }: any) => <div data-testid="line-chart">{children}</div>,
   Line: () => <div data-testid="line" />,
-  AreaChart: ({ children }: any) => <div data-testid="area-chart">{children}</div>,
+  AreaChart: ({ children, data }: any) => <div data-testid="area-chart" data-points={JSON.stringify(data ?? null)}>{children}</div>,
   Area: () => <div data-testid="area" />,
   CartesianGrid: () => <div data-testid="cartesian-grid" />,
   XAxis: () => <div data-testid="x-axis" />,
@@ -202,23 +203,6 @@ describe('Analytics', () => {
       expect(screen.getByText('5.0 GB')).toBeInTheDocument() // Storage used
       expect(screen.getByText('25')).toBeInTheDocument() // Recent additions
       expect(screen.getByText('5')).toBeInTheDocument() // Media types count
-    })
-
-    it('displays stat card changes and trends', async () => {
-      const TestWrapper = createTestWrapper()
-      render(
-        <TestWrapper>
-          <Analytics />
-        </TestWrapper>
-      )
-
-      await waitFor(() => {
-        expect(screen.getByText('+12% from last month')).toBeInTheDocument()
-      })
-
-      expect(screen.getByText('+8.2 GB this week')).toBeInTheDocument()
-      expect(screen.getByText('+5 from yesterday')).toBeInTheDocument()
-      expect(screen.getByText('2 new types detected')).toBeInTheDocument()
     })
 
     it('renders chart containers', async () => {
@@ -424,6 +408,36 @@ describe('Analytics', () => {
 
       expect(screen.getByText('1.0 GB')).toBeInTheDocument()
       expect(screen.getByTestId('icon-database')).toBeInTheDocument()
+    })
+  })
+
+  describe('CAT-001: no invented figures', () => {
+    const stats = { total_items: 10, total_size: 1024 ** 3, recent_additions: 2, by_type: { movie: 10 }, by_quality: { '1080p': 10 } }
+
+    it('draws no growth points when the API returns no growth trends (never random ones)', async () => {
+      mockMediaApi.getMediaStats.mockResolvedValue(stats as any)
+      mockMediaApi.getRecentMedia.mockResolvedValue([])
+      vi.mocked(statsApi.getGrowthTrends).mockResolvedValue([] as any)
+      const Wrapper = createTestWrapper()
+      render(<Wrapper><Analytics /></Wrapper>)
+      await waitFor(() => expect(screen.getAllByTestId('area-chart').length).toBeGreaterThan(0))
+      // run twice: random data would differ between renders and would be non-empty
+      for (const el of screen.getAllByTestId('area-chart')) expect(el.getAttribute('data-points')).toBe('[]')
+      for (const el of screen.getAllByTestId('bar-chart')) {
+        const pts = JSON.parse(el.getAttribute('data-points') || 'null')
+        if (Array.isArray(pts) && pts.length && 'additions' in pts[0]) throw new Error('weekly additions were invented')
+      }
+    })
+
+    it('shows no hard-coded change strings under the key metrics', async () => {
+      mockMediaApi.getMediaStats.mockResolvedValue(stats as any)
+      mockMediaApi.getRecentMedia.mockResolvedValue([])
+      const Wrapper = createTestWrapper()
+      render(<Wrapper><Analytics /></Wrapper>)
+      await waitFor(() => expect(screen.getByText('Total Media Items')).toBeInTheDocument())
+      for (const invented of [/from last month/, /\+[\d.]+ (GB|TB|MB) this week/, /from yesterday/, /new types detected/]) {
+        expect(screen.queryByText(invented)).not.toBeInTheDocument()
+      }
     })
   })
 })

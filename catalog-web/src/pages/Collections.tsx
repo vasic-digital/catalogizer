@@ -707,8 +707,17 @@ export const Collections: React.FC = () => {
         <CollectionTemplates 
           onClose={() => setShowTemplates(false)}
           onApplyTemplate={async (template, collectionName) => {
-            // Implementation for applying template
-            toast.success(`Template "${template.name}" applied to "${collectionName}"`);
+            // CAT-001 (R4-4): really create the collection; a rejection propagates to the
+            // template dialog, which reports it. Nothing is announced before the server answers.
+            await createCollection({
+              collection: {
+                name: collectionName,
+                description: template.description,
+                is_public: false,
+                is_smart: true,
+                smart_rules: (template.rules || []) as unknown as CollectionRule[],
+              }
+            });
             setShowTemplates(false);
           }}
         />

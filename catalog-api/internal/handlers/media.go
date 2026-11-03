@@ -621,14 +621,7 @@ func (h *MediaHandler) getMediaTypeDistribution() (map[string]int, error) {
 }
 
 func (h *MediaHandler) getQualityDistribution() (map[string]int, error) {
-	// This would analyze the quality_info JSON fields
-	// Simplified implementation for now
-	return map[string]int{
-		"4K/UHD": 0,
-		"1080p":  0,
-		"720p":   0,
-		"Other":  0,
-	}, nil
+	return models.QualityDistribution(h.mediaDB.GetDB(), false)
 }
 
 func (h *MediaHandler) getRecentActivity() (map[string]interface{}, error) {

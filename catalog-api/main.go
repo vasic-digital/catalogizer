@@ -562,7 +562,7 @@ func main() {
 	jwtSecret = hex.EncodeToString(secretBytes)
 	logging.Warn("No JWT secret configured. Generated ephemeral secret. Set Auth.JWTSecret in config for persistent sessions across restarts.")
 	}
-	authService := root_services.NewAuthService(userRepo, jwtSecret)
+	authService := root_services.NewAuthServiceWithAudit(userRepo, jwtSecret, databaseDB)
 	analyticsService := root_services.NewAnalyticsService(analyticsRepo)
 	reportingService := root_services.NewReportingService(analyticsRepo, userRepo, databaseDB)
 	configurationService := root_services.NewConfigurationService(configurationRepo, "./config.json")
@@ -1233,17 +1233,16 @@ func main() {
 	api.GET("/stream/:id", streamHandler.StreamFile)
 
 	// Storage-operator routes (P2, authz review r3): creating storage roots,
-	// listing them, queueing scans, SMB discovery/probe/ingest and server-side
-	// copy act on the host's storage and network, so they need the
-	// storage.manage permission (system.admin also passes). Decided live from
-	// the database, like RequireAdmin: a stale token claim never grants, and a
-	// self-registered role-2 user (media.view/media.download) is refused.
-	storageGate := jwtMiddleware.RequirePermission(models.PermissionStorageManage)
+	// listing their directories, queueing scans, SMB discovery/probe/ingest,
+	// server-side copy and sync-endpoint mutation act on the host's storage and
+	// network, so they are admin-only (RequireAdmin: live DB decision, a stale
+	// token claim never grants, a self-registered role-2 user is refused).
+	adminGate := jwtMiddleware.RequireAdmin()
 
 	// File operations
-	api.POST("/copy/storage", storageGate, copyHandler.CopyToStorage)
-	api.POST("/copy/local", storageGate, copyHandler.CopyToLocal)
-	api.POST("/copy/upload", storageGate, copyHandler.CopyFromLocal)
+	api.POST("/copy/storage", adminGate, copyHandler.CopyToStorage)
+	api.POST("/copy/local", adminGate, copyHandler.CopyToLocal)
+	api.POST("/copy/upload", adminGate, copyHandler.CopyFromLocal)
 
 	// Media browsing endpoints (must be before :id to prevent route conflict)
 	api.GET("/media/search", mediaBrowseHandler.SearchMedia)
@@ -1350,11 +1349,7 @@ func main() {
 			subGroup.GET("/languages", func(c *gin.Context) { getSubtitleHandler().GetSupportedLanguages(c) })
 			subGroup.GET("/providers", func(c *gin.Context) { getSubtitleHandler().GetSupportedProviders(c) })
 	}
-	api.GET("/storage/list/*path", storageGate, copyHandler.ListStoragePath)
-	api.GET("/storage/roots", storageGate, scanHandler.GetStorageRoots)
-	api.POST("/storage/roots", storageGate, scanHandler.CreateStorageRoot)
-	api.GET("/storage-roots", storageGate, scanHandler.GetStorageRoots)
-	api.GET("/storage-roots/:id/status", storageGate, scanHandler.GetStorageRootStatus)
+	root_handlers.RegisterStorageRoutes(api, scanHandler, jwtMiddleware)
 
 	// Statistics and sorting
 	api.GET("/stats/directories/by-size", catalogHandler.GetDirectoriesBySize)
@@ -1377,7 +1372,7 @@ func main() {
 
 	// SMB Discovery endpoints
 	smbGroup := api.Group("/smb")
-	smbGroup.Use(storageGate) // P2: every /smb/* route needs storage.manage
+	smbGroup.Use(adminGate) // P2: every /smb/* route is admin-only
 	{
 			smbGroup.POST("/discover", smbDiscoveryHandler.DiscoverShares)
 			smbGroup.GET("/discover", smbDiscoveryHandler.DiscoverSharesGET)
@@ -1392,9 +1387,7 @@ func main() {
 	// Scan endpoints
 	scanGroup := api.Group("/scans")
 	{
-			scanGroup.POST("", storageGate, scanHandler.QueueScan)
-			scanGroup.GET("", scanHandler.ListScans)
-			scanGroup.GET("/:job_id", scanHandler.GetScanStatus)
+			root_handlers.RegisterScanRoutes(scanGroup, scanHandler, jwtMiddleware)
 	}
 
 	// Conversion endpoints (lazy — handler initialized on first request)
@@ -1641,15 +1634,15 @@ func main() {
 	// Sync endpoints (lazy — handler initialized on first request)
 	syncGroup := api.Group("/sync")
 	{
-			syncGroup.POST("/endpoints", storageGate, func(c *gin.Context) { getSyncHandler().CreateEndpoint(c) })
+			syncGroup.POST("/endpoints", adminGate, func(c *gin.Context) { getSyncHandler().CreateEndpoint(c) })
 			syncGroup.GET("/endpoints", func(c *gin.Context) { getSyncHandler().GetUserEndpoints(c) })
 			syncGroup.GET("/endpoints/:id", func(c *gin.Context) { getSyncHandler().GetEndpoint(c) })
-			syncGroup.PUT("/endpoints/:id", storageGate, func(c *gin.Context) { getSyncHandler().UpdateEndpoint(c) })
-			syncGroup.DELETE("/endpoints/:id", storageGate, func(c *gin.Context) { getSyncHandler().DeleteEndpoint(c) })
-			syncGroup.POST("/endpoints/:id/sync", storageGate, func(c *gin.Context) { getSyncHandler().StartSync(c) })
+			syncGroup.PUT("/endpoints/:id", adminGate, func(c *gin.Context) { getSyncHandler().UpdateEndpoint(c) })
+			syncGroup.DELETE("/endpoints/:id", adminGate, func(c *gin.Context) { getSyncHandler().DeleteEndpoint(c) })
+			syncGroup.POST("/endpoints/:id/sync", adminGate, func(c *gin.Context) { getSyncHandler().StartSync(c) })
 			syncGroup.GET("/sessions", func(c *gin.Context) { getSyncHandler().GetUserSessions(c) })
 			syncGroup.GET("/sessions/:id", func(c *gin.Context) { getSyncHandler().GetSession(c) })
-			syncGroup.POST("/schedules", storageGate, func(c *gin.Context) { getSyncHandler().ScheduleSync(c) })
+			syncGroup.POST("/schedules", adminGate, func(c *gin.Context) { getSyncHandler().ScheduleSync(c) })
 			syncGroup.GET("/statistics", func(c *gin.Context) { getSyncHandler().GetSyncStatistics(c) })
 			syncGroup.POST("/cleanup", jwtMiddleware.RequireAdmin(), func(c *gin.Context) { getSyncHandler().CleanupOldSessions(c) })
 	}
@@ -1698,140 +1691,24 @@ func main() {
 			getSubtitleHandler().GetSupportedLanguages(c)
 	})
 
-	// /api/v1/translations → empty list; this is a future feature
-	// that the bank anticipates. Returning [] keeps the JSON shape
-	// predictable so parsers don't fail.
-	api.GET("/translations", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"translations": []interface{}{}, "count": 0})
-	})
-
-	// /api/v1/subtitles → empty list root. The per-media endpoint
-	// lives at /subtitles/media/:media_id; without a media_id the
-	// only meaningful response is an empty catalogue.
-	api.GET("/subtitles", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"subtitles": []interface{}{}, "count": 0})
-	})
-
 	// /api/v1/recommendations → trending items as the default list.
 	// The per-target endpoints live under /recommendations/{similar,
 	// trending, personalized}; the bank expects a list on the root.
 	api.GET("/recommendations", func(c *gin.Context) {
 			getRecommendationHandler().GetTrendingItems(c)
 	})
-	// /api/v1/recommendations/by-type — empty, categorised shell.
-	api.GET("/recommendations/by-type", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"recommendations": gin.H{
-					"movie": []interface{}{},
-					"tv":    []interface{}{},
-					"music": []interface{}{},
-					"book":  []interface{}{},
-				},
-			})
-	})
-
-	// /api/v1/media-types → the 11 canonical media types seeded
-	// in the media_types table.
-	api.GET("/media-types", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"media_types": []gin.H{
-					{"id": 1, "name": "movie"},
-					{"id": 2, "name": "tv_show"},
-					{"id": 3, "name": "tv_season"},
-					{"id": 4, "name": "tv_episode"},
-					{"id": 5, "name": "music_artist"},
-					{"id": 6, "name": "music_album"},
-					{"id": 7, "name": "song"},
-					{"id": 8, "name": "game"},
-					{"id": 9, "name": "software"},
-					{"id": 10, "name": "book"},
-					{"id": 11, "name": "comic"},
-				},
-			})
-	})
-
-	// /api/v1/sync/status → high-level sync overview (the bank
-	// bank uses this as a health probe; the canonical route
-	// is /sync/statistics).
-	api.GET("/sync/status", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"status":  "idle",
-				"active_sessions": 0,
-				"last_sync": nil,
-			})
-	})
 	// /api/v1/sync/history → wraps /sync/sessions.
 	api.GET("/sync/history", func(c *gin.Context) {
 			getSyncHandler().GetUserSessions(c)
 	})
-	// /api/v1/sync/providers → enumerate supported backends.
-	api.GET("/sync/providers", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"providers": []gin.H{
-					{"id": "s3", "name": "Amazon S3", "enabled": true},
-					{"id": "gcs", "name": "Google Cloud Storage", "enabled": true},
-					{"id": "local", "name": "Local Folder", "enabled": true},
-				},
-			})
-	})
-
-	// /api/v1/files?path=... → the challenge bank's alternate name
-	// for /browse/directory. Wrapper reads path from query and
-	// returns an empty listing when no files are present.
-	api.GET("/files", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"files": []interface{}{},
-				"path":  c.Query("path"),
-				"count": 0,
-			})
-	})
-
-	// /api/v1/stats/media-types → alias to the global media-types
-	// list so the analytics-api challenge can find its expected
-	// "distribution by type" data.
-	api.GET("/stats/media-types", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"distribution": gin.H{
-					"movie": 0, "tv_show": 0, "music_album": 0,
-					"book": 0, "game": 0, "comic": 0, "software": 0,
-				},
-				"total": 0,
-			})
-	})
-
-	// /api/v1/stats/scan-history → alias to /stats/scans.
-	api.GET("/stats/scan-history", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"history": []interface{}{}, "count": 0})
-	})
-
-	// Localization API stubs — the bank probes these to verify the
-	// localization subsystem is reachable. Real localization lives
-	// in the subtitles stack today.
+	// /localization/languages proxies the real subtitle language list.
 	api.GET("/localization/languages", func(c *gin.Context) {
 			getSubtitleHandler().GetSupportedLanguages(c)
 	})
-	api.GET("/localization/translations", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"locale":       c.DefaultQuery("locale", "en"),
-				"translations": gin.H{},
-			})
-	})
-	api.GET("/localization/stats", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{
-				"supported_locales": 1,
-				"default_locale":    "en",
-				"coverage":          100.0,
-			})
-	})
-
-	// /api/v1/sync/devices → enrolled devices for the current user.
-	api.GET("/sync/devices", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"devices": []interface{}{}, "count": 0})
-	})
-	// /api/v1/sync/conflicts → outstanding sync conflicts.
-	api.GET("/sync/conflicts", func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"conflicts": []interface{}{}, "count": 0})
-	})
+	// Derived-from-real-state alias routes (media-types, stats, scan history,
+	// sync status/providers, files, subtitles). Routes with no real source
+	// answer 501 instead of canned data (CAT-001, §11.4.289). See handlers/alias_routes.go.
+	root_handlers.NewAliasHandler(databaseDB, browseHandler).RegisterAliasRoutes(api)
 	}
 
 	// Find available port for HTTP server

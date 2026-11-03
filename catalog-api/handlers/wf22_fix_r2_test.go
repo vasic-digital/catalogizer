@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -38,7 +39,8 @@ type apiHarness struct {
 func newAPIHarness(t *testing.T, withScanner bool) *apiHarness {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
-	db := openProductionFileDB(t) // the production open path + the production migrations (owner decision OD-23), not a hand-written schema
+	t.Setenv(filesystem.AllowedLocalBasesEnv, os.TempDir()) // local roots are denied by default; tests live under the temp dir
+	db := openProductionFileDB(t)                           // the production open path + the production migrations (owner decision OD-23), not a hand-written schema
 	h := &apiHarness{t: t, db: db, r: gin.New()}
 	var sc scannerInterface
 	if withScanner {

@@ -23,15 +23,20 @@ func NewUserRepository(db *database.DB) *UserRepository {
 func (r *UserRepository) Create(user *models.User) (int, error) {
 	query := `
 		INSERT INTO users (username, email, password_hash, salt, role_id, first_name, last_name,
-						  display_name, avatar_url, time_zone, language, is_active, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+						  display_name, avatar_url, time_zone, language, is_active, created_at, updated_at, settings)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
+	// An empty Settings keeps the column default ('{}').
+	settings := user.Settings
+	if settings == "" {
+		settings = "{}"
+	}
 
 	now := time.Now()
 	id, err := r.db.InsertReturningID(context.Background(), query,
 		user.Username, user.Email, user.PasswordHash, user.Salt, user.RoleID,
 		user.FirstName, user.LastName, user.DisplayName, user.AvatarURL,
-		user.TimeZone, user.Language, user.IsActive, now, now)
+		user.TimeZone, user.Language, user.IsActive, now, now, settings)
 
 	if err != nil {
 		return 0, fmt.Errorf("failed to create user: %w", err)

@@ -504,27 +504,10 @@ export const PlaylistsPage: React.FC = () => {
         <div className="mt-8">
           {activeTab === 'smart' ? (
             <SmartPlaylistBuilder
-              onSave={(name, description, rules) => {
-                // Convert smart playlist rules to actual playlist data
-                const playlistData: PlaylistCreateRequest = {
-                  name,
-                  description,
-                  is_public: false,
-                  is_smart: true,
-                  smart_rules: rules,
-                  items: [] // Will be populated based on rules by backend
-                };
-                
-                playlistsApi.createPlaylist(playlistData)
-                  .then((newPlaylist) => {
-                    toast.success(`Created smart playlist: ${newPlaylist.name}`);
-                    setActiveTab('my'); // Switch to My Playlists to see the result
-                    refetchPlaylists();
-                  })
-                  .catch(() => {
-                    toast.error('Failed to create smart playlist');
-                  });
-              }}
+              // CAT-001 (R5): the server stores no smart rules (POST /playlists answers 501 for them),
+              // so Save is disabled with a reason instead of creating an empty plain playlist.
+              saveDisabledReason="Smart playlists are not available: the server cannot store or evaluate smart rules yet. Nothing was created."
+              onSave={() => undefined}
               onCancel={() => setActiveTab('all')}
               className="w-full"
             />

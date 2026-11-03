@@ -267,7 +267,7 @@ Source: `catalog-api/database/migrations.go` -- `createAuthTables()`
 
 - `*` grants every permission. A prefix wildcard must end at a segment boundary: `system.*` (dot form) and `admin:*` (colon form) are valid; `sys*`, `s*` and `system*` are NOT treated as wildcards and grant nothing beyond a literal match (`Permissions.HasPermission`).
 - `/api/v1/admin/*` (and the two admin routes registered on the API group, `image-quality/revalidate` and `covers/generate-thumbnails`) are gated by `RequireAdmin`, which reads the caller's CURRENT role from the database on every request (`UserRepository.IsAdmin`: active user whose role holds `system.admin`, `*` or a covering wildcard). The `role_id` claim in the access token is not trusted for this decision, so demotions, role permission edits and deactivations apply on the next request. A lookup failure answers 503 (fail closed).
-- The storage-operator routes (`/storage/roots`, `/storage-roots*`, `/storage/list/*`, `POST /scans`, all `/smb/*`, `/copy/*`) are gated by `RequirePermission("storage.manage")`, also decided live from the database (`UserRepository.HasPermission`: an active user whose role holds the permission, `system.admin`, `*` or a covering wildcard); a stale `role_id` claim never grants and a lookup failure answers 503. The standard user role (id 2) does not hold it, so open self-registration cannot reach these routes. `POST /challenges/*/run` needs the admin role (`RequireAdmin`). Review round 1 added: the sync endpoint mutations (`POST/PUT/DELETE /sync/endpoints*`, `POST /sync/endpoints/:id/sync`, `POST /sync/schedules`) need `storage.manage`; the configuration wizard writes (`/configuration/wizard/step/:id/{validate,save}`, `/configuration/wizard/complete`) need `system.configure` (admin also passes); `GET /analytics/system`, `GET /reports/{usage,performance}` and `POST /sync/cleanup` are admin only; `GET /analytics/user/:user_id` and `GET /recommendations/personalized/:user_id` need the caller to be that user or an admin (`RequireSelfOrAdmin`, 403 otherwise). Near-miss permission strings such as `storage.managex` never admit (exact match or a segment-boundary wildcard only). Deny by default: a middleware built without the checker admits only the token's admin role.
+- The storage-operator routes (`POST /storage/roots`, `/storage/list/*`, `POST /scans`, all `/smb/*`, `/copy/*`) are admin only (`RequireAdmin`, live DB decision, 503 on lookup failure); `GET /storage/roots`, `/storage-roots`, `/storage-roots/:id/status` and the scan progress reads stay open to any authenticated user. Local roots are confined by `CATALOGIZER_LOCAL_ROOT_BASES` (`filesystem.ResolveLocalRoot`, re-checked at use) and may not hold the database or key files. `POST /challenges/*/run` needs the admin role. Review round 1 added: the sync endpoint mutations (`POST/PUT/DELETE /sync/endpoints*`, `POST /sync/endpoints/:id/sync`, `POST /sync/schedules`) are admin only and outbound sync/image-proxy URLs go through `internal/netguard`; the configuration wizard writes need `system.configure` (admin also passes); `GET /analytics/system`, `GET /reports/{usage,performance}` and `POST /sync/cleanup` are admin only; `GET /analytics/user/:user_id` and `GET /recommendations/personalized/:user_id` need the caller to be that user or an admin (`RequireSelfOrAdmin`, 403 otherwise). Near-miss permission strings such as `system.configurex` never admit. A locked account (`is_locked`) is refused by the live permission lookup like an inactive one.
 - A non-admin with `user.manage`/`user.create` may assign only roles whose every permission it holds itself (the standard user role, id 2, is always assignable).
 
 ### Permission Categories
@@ -400,9 +400,23 @@ Source: `catalog-api/internal/auth/middleware.go` -- `RateLimitByUser()`
 | Method | Path | Auth Required | Description |
 |--------|------|---------------|-------------|
 | POST | `/api/v1/auth/login` | No | Authenticate and get tokens |
-| POST | `/api/v1/auth/register` | No | Create new user account |
+| POST | `/api/v1/auth/register` | No | Self-register; account is created PENDING admin approval by default (`REGISTRATION_MODE`: `approval` default, `open`, `disabled`), no session issued |
 | POST | `/api/v1/auth/refresh` | No | Refresh access token |
 | POST | `/api/v1/auth/logout` | No | Invalidate session |
 | GET | `/api/v1/auth/me` | Yes | Get current user info |
+
+### Registration and approval
+
+`REGISTRATION_MODE` selects the policy (`approval` is the default):
+
+1. `POST /api/v1/auth/register` creates the user at role 2 (minimal) with `is_active=false` and a
+   `registration_status: pending` marker in the user's settings; the response is 201 with the user
+   and no session token. (`open`: active at once; `disabled`: 403.)
+2. `POST /api/v1/auth/login` for a pending user with the correct password answers
+   **403** `account pending approval` (`code: account_pending_approval`); with a wrong password it
+   answers the usual 401 so the pending state cannot be probed.
+3. An administrator lists `GET /api/v1/admin/users?status=pending` and decides with
+   `PUT /api/v1/admin/users/{id}` (`status: active` approves; `inactive` rejects). Either decision
+   clears the pending marker; deactivation revokes sessions as before.
 
 All other `/api/v1/*` routes require a valid JWT in the `Authorization: Bearer <token>` header.

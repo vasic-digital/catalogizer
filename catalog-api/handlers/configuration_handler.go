@@ -83,7 +83,7 @@ func (h *ConfigurationHandler) ValidateWizardStep(w http.ResponseWriter, r *http
 }
 
 func (h *ConfigurationHandler) SaveWizardProgress(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("user_id").(int)
+	userID, ok := configUserID(r)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -110,7 +110,7 @@ func (h *ConfigurationHandler) SaveWizardProgress(w http.ResponseWriter, r *http
 }
 
 func (h *ConfigurationHandler) GetWizardProgress(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("user_id").(int)
+	userID, ok := configUserID(r)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -127,7 +127,7 @@ func (h *ConfigurationHandler) GetWizardProgress(w http.ResponseWriter, r *http.
 }
 
 func (h *ConfigurationHandler) CompleteWizard(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("user_id").(int)
+	userID, ok := configUserID(r)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -179,7 +179,7 @@ func (h *ConfigurationHandler) GetConfiguration(w http.ResponseWriter, r *http.R
 }
 
 func (h *ConfigurationHandler) TestConfiguration(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("user_id").(int)
+	userID, ok := configUserID(r)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -209,7 +209,7 @@ func (h *ConfigurationHandler) TestConfiguration(w http.ResponseWriter, r *http.
 }
 
 func (h *ConfigurationHandler) DeleteBackup(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("user_id").(int)
+	userID, ok := configUserID(r)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -227,17 +227,15 @@ func (h *ConfigurationHandler) DeleteBackup(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// This would delete the backup through the service
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"message": "Backup deleted successfully",
-	})
+	// No backup store sits behind this endpoint, so nothing was deleted;
+	// reporting success would be a lie (CAT-001).
+	http.Error(w, "Backup deletion is not implemented", http.StatusNotImplemented)
 }
 
 // Health check endpoint
 
 func (h *ConfigurationHandler) GetSystemStatus(w http.ResponseWriter, r *http.Request) {
-	userID, ok := r.Context().Value("user_id").(int)
+	userID, ok := configUserID(r)
 	if !ok {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -249,19 +247,20 @@ func (h *ConfigurationHandler) GetSystemStatus(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	status := map[string]interface{}{
-		"status":  "healthy",
-		"version": "3.0.0",
-		"uptime":  "24h 30m",
-		"components": map[string]string{
-			"database":         "healthy",
-			"storage":          "healthy",
-			"authentication":   "healthy",
-			"media_conversion": "healthy",
-			"sync":             "healthy",
-		},
-	}
-
+	// CAT-001 (R4-3): this endpoint used to answer 200 with status "healthy", a fixed
+	// version, a fixed uptime and five components it never checked. No component health
+	// source sits behind this handler, so it answers 501 instead of inventing one. The real,
+	// measured health endpoint is GET /api/v1/health.
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(status)
+	w.WriteHeader(http.StatusNotImplemented)
+	json.NewEncoder(w).Encode(map[string]string{
+		"error": "component health is not reported by this endpoint: no health source is wired to it. Nothing was checked. Use GET /api/v1/health.",
+	})
+}
+
+// configUserID reads the authenticated user id placed in the request context.
+// A missing or wrongly typed value is "not authenticated", never a panic.
+func configUserID(r *http.Request) (int, bool) {
+	id, ok := r.Context().Value("user_id").(int)
+	return id, ok
 }

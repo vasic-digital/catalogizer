@@ -1040,6 +1040,11 @@ func runConverterToolCtx(ctx context.Context, name string, args []string) error 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
+		if errors.Is(err, exec.ErrNotFound) {
+			// An honest, actionable reason instead of the bare exec error: the job ends
+			// `failed` naming the missing tool (the runtime image must ship it).
+			return &converterToolError{fmt.Errorf("converter tool %q is not installed on this server (not found on PATH): %w", name, err)}
+		}
 		return &converterToolError{fmt.Errorf("%s: %w", name, err)}
 	}
 	return nil

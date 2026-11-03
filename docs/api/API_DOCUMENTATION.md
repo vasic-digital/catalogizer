@@ -412,7 +412,11 @@ Authenticate a user and receive JWT tokens.
 
 Register a new user account.
 
-**Description:** Creates a new user and returns the user object.
+**Description:** Self-registration. By default (`REGISTRATION_MODE` unset or `approval`) the user is created
+inactive and PENDING administrator approval at the minimal role; no session is issued and login answers
+403 `account pending approval` until an admin approves via `PUT /api/v1/admin/users/{id}` `{"status":"active"}`
+(list pending: `GET /api/v1/admin/users?status=pending`). `REGISTRATION_MODE=open` activates instantly;
+`REGISTRATION_MODE=disabled` answers 403.
 **Auth:** None
 **Rate Limit:** Strict (30/min)
 
@@ -436,7 +440,7 @@ Register a new user account.
 | `first_name` | string | Yes | - |
 | `last_name` | string | Yes | - |
 
-**Response:** 201 Created (User object)
+**Response:** 201 Created (User object plus `registration_status` `pending`|`active` and `message`); 403 when disabled
 
 **Errors:** 400 (validation failure), 409 (duplicate username or email)
 
@@ -954,7 +958,7 @@ Content-Length: 4294967296
 
 ## File Copy Operations
 
-> **Permission:** requires `storage.manage` (a user whose role holds `system.admin` or `*` also passes). It is checked against the caller's CURRENT role in the database on every request, so a token claim never grants. Anonymous callers get `401`, authenticated callers without the permission get `403`; a failed lookup answers `503`. Self-registered users (role 2: `media.view`, `media.download`) are refused.
+> **Permission:** admin only (`RequireAdmin`), decided from the database on every request, so a token claim never grants. Anonymous callers get `401`, non-admin callers get `403`; a failed lookup answers `503`. Self-registered users (role 2) are refused. (`storage.manage` alone does not open these routes.)
 
 ### POST /api/v1/copy/storage
 
@@ -1293,17 +1297,16 @@ Update the favorite status for a media item.
 
 ### POST /api/v1/media/:id/refresh
 
-Refresh metadata for a specific media item from external providers.
+Not implemented. No component re-fetches metadata for a media item, so nothing is queued or changed.
 
-**Description:** Re-fetches metadata from TMDB, OMDB, MusicBrainz, etc.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
-**Response:** 200 OK
+**Response:** 501 Not Implemented for a valid media item (400 for an invalid id, 404 for an unknown item)
 
 ```json
 {
-  "message": "Metadata refresh initiated"
+  "error": "metadata refresh is not implemented: no component re-fetches metadata for a media item. Nothing was queued or changed. Use POST /api/v1/entities/:id/metadata/refresh for entity cover discovery."
 }
 ```
 
@@ -1476,9 +1479,9 @@ Get media items similar to a given media item.
 
 ### GET /api/v1/recommendations/trending
 
-Get trending media items based on recent activity.
+Not implemented: there is no trending-analytics source (see below).
 
-**Description:** Returns media items trending in a given time window.
+**Description:** Not implemented. There is no trending-analytics source, so the endpoint answers 501 instead of inventing titles.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -1490,25 +1493,10 @@ Get trending media items based on recent activity.
 | `limit` | int | `20` | Max results |
 | `time_range` | string | `week` | Time range: `day`, `week`, `month`, `year` |
 
-**Response:** 200 OK
+**Response:** 501 Not Implemented
 
 ```json
-{
-  "items": [
-    {
-      "id": 100,
-      "title": "Trending Movie 1",
-      "media_type": "video",
-      "rating": 8.2,
-      "is_favorite": false,
-      "watch_progress": 0,
-      "is_downloaded": true
-    }
-  ],
-  "media_type": "video",
-  "time_range": "week",
-  "generated_at": "2024-01-20T12:00:00Z"
-}
+{ "error": "..." }
 ```
 
 ---
@@ -1517,8 +1505,8 @@ Get trending media items based on recent activity.
 
 Get personalized recommendations based on viewing history.
 
-**Description:** ML-based recommendations tailored to user preferences.
-**Auth:** Required
+**Description:** Not implemented. The server has no recommendation engine and returns 501 instead of invented items.
+**Auth:** Required (401 without a token; 403 when `user_id` is not the caller and the caller is not an admin)
 **Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
@@ -1533,14 +1521,10 @@ Get personalized recommendations based on viewing history.
 |---|---|---|---|
 | `limit` | int | `20` | Max results |
 
-**Response:** 200 OK
+**Response:** 501 Not Implemented
 
 ```json
-{
-  "user_id": 1,
-  "items": [...],
-  "generated_at": "2024-01-20T12:00:00Z"
-}
+{ "error": "..." }
 ```
 
 ---
@@ -1561,7 +1545,7 @@ List recommendations (trending default).
 | `limit` | integer | (default: 20) |
 | `time_range` | string | (default: week) |
 
-**Response:** 200 — Trending items
+**Response:** 501 — Not implemented (alias of the trending endpoint, which has no data source)
 
 Content-Type: `application/json`
 
@@ -1572,7 +1556,7 @@ Content-Type: `application/json`
 | `time_range` | string |
 | `generated_at` | string |
 
-**Errors:** 401 (unauthorized), 500 (internal server error)
+**Errors:** 401 (unauthorized), 501 (not implemented)
 
 ---
 ### GET /api/v1/recommendations/by-type
@@ -1967,8 +1951,8 @@ Content-Type: `application/json`
 
 ## Storage and Storage Roots
 
-> **Permission:** requires `storage.manage` (a user whose role holds `system.admin` or `*` also passes). It is checked against the caller's CURRENT role in the database on every request, so a token claim never grants. Anonymous callers get `401`, authenticated callers without the permission get `403`; a failed lookup answers `503`. Self-registered users (role 2: `media.view`, `media.download`) are refused.
-> A `local` storage root must be an absolute path inside the configured media roots (`MEDIA_ROOT_PATH`, `CATALOGIZER_READ_ROOTS`, `./data`), symlinks resolved; any other path is refused with `400`.
+> **Permission:** admin only (`RequireAdmin`), decided from the database on every request, so a token claim never grants. Anonymous callers get `401`, non-admin callers get `403`; a failed lookup answers `503`. Self-registered users (role 2) are refused. (`storage.manage` alone does not open these routes.)
+> A `local` storage root must be an absolute path inside a directory listed in `CATALOGIZER_LOCAL_ROOT_BASES` (deny by default), symlinks resolved; any other path, and any directory that is or contains the application database, its SQLite companions or the key file, is refused with `403`. The resolved path is stored.
 
 ### GET /api/v1/storage/list/{path}
 
@@ -2459,7 +2443,7 @@ Content-Type: `application/json`
 
 ## SMB Discovery
 
-> **Permission:** requires `storage.manage` (a user whose role holds `system.admin` or `*` also passes). It is checked against the caller's CURRENT role in the database on every request, so a token claim never grants. Anonymous callers get `401`, authenticated callers without the permission get `403`; a failed lookup answers `503`. Self-registered users (role 2: `media.view`, `media.download`) are refused.
+> **Permission:** admin only (`RequireAdmin`), decided from the database on every request, so a token claim never grants. Anonymous callers get `401`, non-admin callers get `403`; a failed lookup answers `503`. Self-registered users (role 2) are refused. (`storage.manage` alone does not open these routes.)
 
 ### POST /api/v1/smb/discover
 
@@ -2674,7 +2658,7 @@ Content-Type: `application/json`
 
 ### POST /api/v1/scans
 
-> **Permission:** `storage.manage` (see Storage and Storage Roots). `GET /api/v1/scans` and `GET /api/v1/scans/:job_id` stay available to any authenticated user (progress only).
+> **Permission:** admin only (see Storage and Storage Roots). `GET /api/v1/scans` and `GET /api/v1/scans/:job_id` stay available to any authenticated user (progress only).
 
 Queue a new scan job for a storage root.
 
@@ -3550,26 +3534,16 @@ Test a configuration without applying it.
 
 ### GET /api/v1/configuration/status
 
-Get system component health status.
+Not implemented. No component health source is wired to this endpoint, so it answers 501 and reports nothing as healthy. Use `GET /api/v1/health` for the measured health.
 
-**Description:** Returns health status of all system components.
 **Auth:** Required (`system.configure`)
 **Rate Limit:** Standard (2000/min)
 
-**Response:** 200 OK
+**Response:** 501 Not Implemented
 
 ```json
 {
-  "status": "healthy",
-  "version": "3.0.0",
-  "uptime": "24h 30m",
-  "components": {
-    "database": "healthy",
-    "storage": "healthy",
-    "authentication": "healthy",
-    "media_conversion": "healthy",
-    "sync": "healthy"
-  }
+  "error": "component health is not reported by this endpoint: no health source is wired to it. Nothing was checked. Use GET /api/v1/health."
 }
 ```
 
@@ -4088,7 +4062,7 @@ List all media collections.
 
 Create a new media collection.
 
-**Description:** Creates an empty collection for the user.
+**Description:** Creates an empty collection for the user. Smart collections are not supported: a body with `is_smart: true` or a non-empty `smart_rules` is answered with **501** and nothing is created (the rules are neither stored nor evaluated).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -4118,7 +4092,7 @@ Get a specific collection with its items.
 
 Update a collection's name or description.
 
-**Description:** Modifies collection metadata.
+**Description:** Modifies collection metadata. `is_smart: true` is answered with **501** (smart collections are not supported); nothing is changed.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -4924,7 +4898,7 @@ List the current user's playlists.
 
 Create a new playlist.
 
-**Description:** Creates an empty playlist.
+**Description:** Creates an empty playlist. A body with `is_smart: true` or `smart_rules` is answered with **501** and nothing is created (smart rules are neither stored nor evaluated).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 

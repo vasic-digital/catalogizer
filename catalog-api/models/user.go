@@ -511,6 +511,44 @@ func (u *User) IsAccountLocked() bool {
 	return u.LockedUntil.After(time.Now())
 }
 
+// RegistrationPendingSettings is the settings JSON stored on a self-registered
+// user that is waiting for administrator approval. The marker lives in the
+// existing settings column (no schema change) and is cleared by any explicit
+// administrator status decision (approve or reject).
+const RegistrationPendingSettings = `{"registration_status":"pending"}`
+
+// IsRegistrationPending reports whether the user self-registered and has not
+// yet been approved or rejected: inactive AND carrying the pending marker.
+func (u *User) IsRegistrationPending() bool {
+	if u.IsActive || u.Settings == "" {
+		return false
+	}
+	var m map[string]interface{}
+	if err := json.Unmarshal([]byte(u.Settings), &m); err != nil {
+		return false
+	}
+	return m["registration_status"] == "pending"
+}
+
+// ClearRegistrationPending removes the pending marker from the settings JSON,
+// leaving every other key untouched.
+func (u *User) ClearRegistrationPending() {
+	if u.Settings == "" {
+		return
+	}
+	var m map[string]interface{}
+	if err := json.Unmarshal([]byte(u.Settings), &m); err != nil {
+		return
+	}
+	if _, ok := m["registration_status"]; !ok {
+		return
+	}
+	delete(m, "registration_status")
+	if raw, err := json.Marshal(m); err == nil {
+		u.Settings = string(raw)
+	}
+}
+
 // CanLogin checks if the user can login (active and not locked)
 func (u *User) CanLogin() bool {
 	return u.IsActive && !u.IsAccountLocked()
@@ -1012,6 +1050,9 @@ type SecurityMetrics struct {
 	ThreatLevel        string  `json:"threat_level"`
 	VulnerabilityCount int     `json:"vulnerability_count"`
 	SecurityScore      float64 `json:"security_score"`
+	// Unavailable names inputs that could not be measured; a metric listed
+	// here is unknown, not zero.
+	Unavailable []string `json:"unavailable,omitempty"`
 }
 
 type ResponseTimes struct {
@@ -1831,6 +1872,10 @@ type PlaylistItem struct {
 type CreatePlaylistRequest struct {
 	Name        string `json:"name" binding:"required"`
 	Description string `json:"description"`
+	// IsSmart / SmartRules are accepted only so a smart-playlist request can be refused honestly
+	// (501) instead of being silently dropped. They are neither stored nor evaluated.
+	IsSmart    *bool             `json:"is_smart,omitempty"`
+	SmartRules []json.RawMessage `json:"smart_rules,omitempty"`
 }
 
 // UpdatePlaylistRequest represents a request to update an existing playlist.
@@ -1856,7 +1901,7 @@ var (
 	ErrConversionJobNotFound    = errors.New("job not found")
 	ErrConversionJobState       = errors.New("conversion job is not in a state that allows this operation")
 	ErrConversionForbidden      = errors.New("unauthorized to access this conversion job")
-	ErrForbidden    = errors.New("forbidden")
-	ErrNotFound     = errors.New("not found")
-	ErrConflict     = errors.New("conflict")
+	ErrForbidden                = errors.New("forbidden")
+	ErrNotFound                 = errors.New("not found")
+	ErrConflict                 = errors.New("conflict")
 )

@@ -14,6 +14,8 @@ import (
 // (constitution 11.4.263: kill(-1, ...) would signal every process of the user).
 func setProcessGroup(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	// On Linux the child also dies when the server itself is killed abruptly (see setParentDeathSignal).
+	setParentDeathSignal(cmd.SysProcAttr)
 	cmd.Cancel = func() error {
 		if cmd.Process == nil {
 			return nil

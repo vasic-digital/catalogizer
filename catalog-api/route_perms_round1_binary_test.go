@@ -22,12 +22,12 @@ var round1Cases = []permCase{
 	{"POST", "/api/v1/configuration/wizard/complete", "system.configure"},
 	{"POST", "/api/v1/configuration/wizard/step/x/save", "system.configure"},
 	{"POST", "/api/v1/configuration/wizard/step/x/validate", "system.configure"},
-	// F3 (gate half): sync endpoint mutation: storage.manage or admin.
-	{"POST", "/api/v1/sync/endpoints", "storage.manage"},
-	{"PUT", "/api/v1/sync/endpoints/1", "storage.manage"},
-	{"DELETE", "/api/v1/sync/endpoints/1", "storage.manage"},
-	{"POST", "/api/v1/sync/endpoints/1/sync", "storage.manage"},
-	{"POST", "/api/v1/sync/schedules", "storage.manage"},
+	// F3 (gate half): sync endpoint mutation reaches outbound networks: admin only (same gate as storage roots, scans, smb, copy).
+	{"POST", "/api/v1/sync/endpoints", ""},
+	{"PUT", "/api/v1/sync/endpoints/1", ""},
+	{"DELETE", "/api/v1/sync/endpoints/1", ""},
+	{"POST", "/api/v1/sync/endpoints/1/sync", ""},
+	{"POST", "/api/v1/sync/schedules", ""},
 	// F6, F7: system-wide data and maintenance: admin only.
 	{"GET", "/api/v1/analytics/system", ""},
 	{"GET", "/api/v1/reports/usage", ""},

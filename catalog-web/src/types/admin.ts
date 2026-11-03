@@ -1,15 +1,19 @@
 export interface SystemInfo {
   version: string;
-  uptime: number;
-  cpuUsage: number;
-  memoryUsage: number;
+  /** null when not measured (never a fabricated 0). */
+  uptime: number | null;
+  /** null when the host cannot measure it (never a fabricated 0); see `unavailable`. */
+  cpuUsage: number | null;
+  memoryUsage: number | null;
   diskUsage: {
     total: number;
     used: number;
     free: number;
-  };
-  activeConnections: number;
-  totalRequests: number;
+  } | null;
+  activeConnections: number | null;
+  totalRequests: number | null;
+  /** Names of the figures above that the server could not measure. */
+  unavailable?: string[];
 }
 
 export interface User {
@@ -17,16 +21,17 @@ export interface User {
   username: string;
   email: string;
   role: 'admin' | 'user' | 'viewer';
-  status: 'active' | 'inactive' | 'suspended';
+  status: 'active' | 'inactive' | 'suspended' | 'pending';
   lastLogin?: string;
   createdAt: string;
 }
 
 export interface StorageInfo {
   path: string;
-  totalSpace: number;
-  usedSpace: number;
-  availableSpace: number;
+  /** null for storage whose capacity is not measurable from here (remote protocols). */
+  totalSpace: number | null;
+  usedSpace: number | null;
+  availableSpace: number | null;
   mediaCount: number;
   lastScan?: string;
 }

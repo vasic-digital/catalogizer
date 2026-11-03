@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +14,7 @@ import (
 type AuthMiddleware struct {
 	authService *AuthService
 	logger      *zap.Logger
+	limiter     *slidingWindowLimiter // last limiter built by RateLimitByUser (test introspection only)
 }
 
 // NewAuthMiddleware creates a new auth middleware
@@ -284,13 +284,8 @@ func (m *AuthMiddleware) RateLimitByUser(requests int, window string) gin.Handle
 		windowDuration = time.Minute // Default to 1 minute
 	}
 
-	// In-memory rate limiter (can be upgraded to Redis for distributed systems)
-	type rateLimitEntry struct {
-		timestamps []time.Time
-		mu         sync.Mutex
-	}
-
-	rateLimiters := &sync.Map{}
+	limiter := newSlidingWindowLimiter(requests, windowDuration)
+	m.limiter = limiter // exposed for tests (introspection of retained keys)
 
 	return func(c *gin.Context) {
 		// Get client identifier (IP address for unauthenticated, user ID for authenticated)
@@ -307,32 +302,11 @@ func (m *AuthMiddleware) RateLimitByUser(requests int, window string) gin.Handle
 			key = fmt.Sprintf("ratelimit:ip:%s", clientIP)
 		}
 
-		// Get or create rate limiter for this client
-		val, _ := rateLimiters.LoadOrStore(key, &rateLimitEntry{
-			timestamps: make([]time.Time, 0, requests),
-		})
-		entry := val.(*rateLimitEntry)
-
-		entry.mu.Lock()
-		defer entry.mu.Unlock()
-
-		now := time.Now()
-		cutoff := now.Add(-windowDuration)
-
-		// Remove timestamps outside the window
-		validTimestamps := make([]time.Time, 0, len(entry.timestamps))
-		for _, ts := range entry.timestamps {
-			if ts.After(cutoff) {
-				validTimestamps = append(validTimestamps, ts)
-			}
-		}
-		entry.timestamps = validTimestamps
-
-		// Check if rate limit exceeded
-		if len(entry.timestamps) >= requests {
+		allowed, current := limiter.allow(key, time.Now())
+		if !allowed {
 			logFields := []zap.Field{
 				zap.String("key", key),
-				zap.Int("requests", len(entry.timestamps)),
+				zap.Int("requests", current),
 				zap.Int("limit", requests),
 				zap.String("window", window),
 			}
@@ -352,9 +326,6 @@ func (m *AuthMiddleware) RateLimitByUser(requests int, window string) gin.Handle
 			c.Abort()
 			return
 		}
-
-		// Add current request timestamp
-		entry.timestamps = append(entry.timestamps, now)
 
 		c.Next()
 	}

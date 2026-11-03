@@ -227,32 +227,11 @@ export const SmartCollectionBuilder: React.FC<SmartCollectionBuilderProps> = ({
     }
   };
 
+  // The server has no endpoint that evaluates smart-collection rules against the library.
+  // The earlier version returned canned counts and sample items (CAT-001); it now says so.
   const testRules = async () => {
-    setIsTesting(true);
     setTestResults(null);
-
-    try {
-      // Simulate testing the rules against the library
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock test results
-      setTestResults({
-        total_items: 1234,
-        matched_items: 87,
-        sample_items: [
-          { id: '1', title: 'Sample Song 1', artist: 'Artist A', media_type: 'music' },
-          { id: '2', title: 'Sample Movie 1', artist: 'Director B', media_type: 'video' },
-          { id: '3', title: 'Sample Image 1', artist: 'image.jpg', media_type: 'image' },
-        ],
-        performance_ms: 245,
-      });
-      
-      toast.success('Rules tested successfully');
-    } catch (error) {
-      toast.error('Failed to test rules');
-    } finally {
-      setIsTesting(false);
-    }
+    toast.error('Rule testing is not available: the server cannot evaluate rules against the library.');
   };
 
   const handleSave = () => {

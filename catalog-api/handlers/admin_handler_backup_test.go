@@ -165,12 +165,13 @@ func TestRestoreBackup_ValidFile(t *testing.T) {
 
 	h.RestoreBackup(c)
 
-	assert.Equal(t, http.StatusAccepted, w.Code)
+	// CAT-001: nothing is queued anywhere; a validated backup gets an honest 501 (same as DeleteBackup).
+	assert.Equal(t, http.StatusNotImplemented, w.Code)
 
 	var body map[string]interface{}
 	err = json.Unmarshal(w.Body.Bytes(), &body)
 	require.NoError(t, err)
-	assert.Equal(t, "queued", body["status"])
+	assert.NotEqual(t, "queued", body["status"])
 }
 
 func TestScanStorage(t *testing.T) {
@@ -182,9 +183,9 @@ func TestScanStorage(t *testing.T) {
 		expectedStatus int
 	}{
 		{
-			name:           "valid path returns 202",
+			name:           "valid path returns 501 (no scan is started here)",
 			body:           `{"path": "/media/movies"}`,
-			expectedStatus: http.StatusAccepted,
+			expectedStatus: http.StatusNotImplemented,
 		},
 		{
 			name:           "empty path returns 400",

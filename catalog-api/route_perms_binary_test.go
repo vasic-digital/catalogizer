@@ -23,16 +23,17 @@ import (
 
 type permRoute struct {
 	method, path string
-	// adminOnly: needs system.admin (storage.manage alone must NOT pass).
-	adminOnly bool
+	// open: reachable by any authenticated user (read-only listing / status, as on main). Every other route is admin-only
+	// (a holder of storage.manage alone must NOT pass).
+	open bool
 }
 
-// storageRoutes are gated by storage.manage (system.admin and "*" also pass).
+// storageRoutes: admin-only except the read-only root listing / status.
 var storageRoutes = []permRoute{
-	{"GET", "/api/v1/storage/roots", false},
+	{"GET", "/api/v1/storage/roots", true},
 	{"POST", "/api/v1/storage/roots", false},
-	{"GET", "/api/v1/storage-roots", false},
-	{"GET", "/api/v1/storage-roots/1/status", false},
+	{"GET", "/api/v1/storage-roots", true},
+	{"GET", "/api/v1/storage-roots/1/status", true},
 	{"GET", "/api/v1/storage/list/x", false},
 	{"POST", "/api/v1/scans", false},
 	{"POST", "/api/v1/smb/discover", false},
@@ -47,8 +48,8 @@ var storageRoutes = []permRoute{
 	{"POST", "/api/v1/copy/local", false},
 	{"POST", "/api/v1/copy/upload", false},
 	// challenge execution runs server-side code paths: admin only.
-	{"POST", "/api/v1/challenges/nope/run", true},
-	{"POST", "/api/v1/challenges/run/category/zz-none", true},
+	{"POST", "/api/v1/challenges/nope/run", false},
+	{"POST", "/api/v1/challenges/run/category/zz-none", false},
 }
 
 func startPermServer(t *testing.T, readRoot string) (*apiClient, string, func()) {
@@ -71,7 +72,7 @@ func startPermServerDir(t *testing.T, dir, readRoot string, extraEnv ...string) 
 	ln.Close()
 	b := &binEnv{t: t, bin: bin, dir: dir, port: port}
 	const adminPw = "Op3rator-Supplied-Value-9x"
-	cmd, done, out := b.start(append([]string{"GIN_MODE=release", "ADMIN_PASSWORD=" + adminPw, "CATALOGIZER_READ_ROOTS=" + readRoot}, extraEnv...)...)
+	cmd, done, out := b.start(append([]string{"GIN_MODE=release", "ADMIN_PASSWORD=" + adminPw, "CATALOGIZER_READ_ROOTS=" + readRoot, "CATALOGIZER_LOCAL_ROOT_BASES=" + readRoot, "REGISTRATION_MODE=open"}, extraEnv...)...)
 	require.True(t, b.waitHealthy(done), "server must come up:\n%s", out.String())
 	c := &apiClient{t: t, base: fmt.Sprintf("http://127.0.0.1:%d", port)}
 	return c, c.login("admin", adminPw), dir, func() { b.stop(cmd, done) }
@@ -107,20 +108,13 @@ func TestRoutePerms_RealBinary_StorageScanSMBCopy(t *testing.T) {
 		name := r.method + " " + r.path
 		code, _ := c.do(r.method, r.path, "", map[string]interface{}{})
 		assert.Equal(t, 401, code, "anonymous "+name)
-		assert.Equal(t, 403, status(r, plain), "self-registered user must be refused on "+name)
 		assert.NotContains(t, []int{401, 403, 503}, status(r, adm), "admin must reach "+name)
-		if r.adminOnly {
-			assert.Equal(t, 403, status(r, stor), "storage.manage alone must not run challenges: "+name)
-		} else {
-			assert.NotContains(t, []int{401, 403, 503}, status(r, stor), "storage.manage holder must reach "+name)
+		if r.open {
+			assert.NotContains(t, []int{401, 403}, status(r, plain), "read-only listing stays open to authenticated users: "+name)
+			continue
 		}
-	}
-
-	// Live decision: the role loses storage.manage, the SAME token is refused at once.
-	code, raw := c.do("PUT", fmt.Sprintf("/api/v1/roles/%d", storRole), adm, map[string]interface{}{"name": "p2-storage", "permissions": []string{"media.view"}})
-	require.Equal(t, 200, code, "%s", raw)
-	for _, r := range storageRoutes {
-		assert.Equal(t, 403, status(r, stor), "stale claim after the role lost storage.manage: "+r.method+" "+r.path)
+		assert.Equal(t, 403, status(r, plain), "self-registered user must be refused on "+name)
+		assert.Equal(t, 403, status(r, stor), "storage.manage alone must not open the admin-only route "+name)
 	}
 }
 
@@ -156,7 +150,7 @@ func TestRoutePerms_RealBinary_ScanProgressStaysAuthOnly(t *testing.T) {
 }
 
 // Local storage roots: the path must lie inside the configured read roots
-// (CATALOGIZER_READ_ROOTS / MEDIA_ROOT_PATH / ./data); anything else is refused.
+// (CATALOGIZER_LOCAL_ROOT_BASES); anything else is refused.
 func TestRoutePerms_RealBinary_LocalRootConfinement(t *testing.T) {
 	if testing.Short() {
 		t.Skip("builds and runs the server binary")
@@ -171,12 +165,12 @@ func TestRoutePerms_RealBinary_LocalRootConfinement(t *testing.T) {
 	}
 	for i, bad := range []string{"/etc", "/", filepath.Join(media, "..", "etc"), "relative/dir", filepath.Join(media, "movies") + "/../../.."} {
 		code, raw := create(fmt.Sprintf("p2out%d", i), bad)
-		assert.Equal(t, 400, code, "local root %q outside the configured base must be refused: %s", bad, raw)
+		assert.Equal(t, 403, code, "local root %q outside the configured base must be refused: %s", bad, raw)
 	}
 	// a symlink inside the base that points outside must be refused too
 	require.NoError(t, os.Symlink("/etc", filepath.Join(media, "escape")))
 	code, raw := create("p2sym", filepath.Join(media, "escape"))
-	assert.Equal(t, 400, code, "symlink escape must be refused: %s", raw)
+	assert.Equal(t, 403, code, "symlink escape must be refused: %s", raw)
 	// inside the base is accepted (admin flow intact)
 	code, raw = create("p2in", filepath.Join(media, "movies"))
 	assert.Equal(t, 201, code, "%s", raw)
@@ -228,7 +222,7 @@ func TestRoutePerms_RealBinary_LocalRootRefusesProtectedFiles(t *testing.T) {
 	for name, p := range cases {
 		i++
 		code, raw := c.do("POST", "/api/v1/storage/roots", adm, map[string]interface{}{"name": fmt.Sprintf("prot%d", i), "protocol": "local", "path": p})
-		assert.Equal(t, 400, code, "%s (%s) must be refused: %s", name, p, raw)
+		assert.Equal(t, 403, code, "%s (%s) must be refused: %s", name, p, raw)
 	}
 	other := filepath.Join(dir, "movies")
 	require.NoError(t, os.MkdirAll(other, 0o755))

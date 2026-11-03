@@ -183,35 +183,13 @@ func TestBookRecognitionProvider_RecognizeMedia_WithTextSample(t *testing.T) {
 // performOCR — OCR pipeline coverage
 // =============================================================================
 
-func TestBookRecognitionProvider_PerformOCR(t *testing.T) {
-	logger := zap.NewNop()
-	provider := NewBookRecognitionProvider(logger)
-
+// CAT-001: the former tests asserted the canned OCR text. OCR behaviour is now covered by book_ocr_cat001_test.go (real tesseract,
+// honest errors); here only the pipeline's refusal on an unreadable image is kept.
+func TestBookRecognitionProvider_PerformOCR_UnreadableImageIsAnError(t *testing.T) {
+	provider := NewBookRecognitionProvider(zap.NewNop())
 	result, err := provider.performOCR(context.Background(), []byte("fake image"))
-	require.NoError(t, err)
-	require.NotNil(t, result)
-	assert.NotEmpty(t, result.Text)
-	assert.Greater(t, result.Confidence, 0.0)
-}
-
-func TestBookRecognitionProvider_PerformOCRSpace(t *testing.T) {
-	logger := zap.NewNop()
-	provider := NewBookRecognitionProvider(logger)
-
-	result, err := provider.performOCRSpace(context.Background(), []byte("fake"))
-	require.NoError(t, err)
-	require.NotNil(t, result)
-	assert.NotEmpty(t, result.Text)
-}
-
-func TestBookRecognitionProvider_PerformTesseract(t *testing.T) {
-	logger := zap.NewNop()
-	provider := NewBookRecognitionProvider(logger)
-
-	result, err := provider.performTesseract(context.Background(), []byte("fake"))
-	require.NoError(t, err)
-	require.NotNil(t, result)
-	assert.Equal(t, "Tesseract OCR result", result.Text)
+	require.Error(t, err)
+	assert.Nil(t, result)
 }
 
 // =============================================================================

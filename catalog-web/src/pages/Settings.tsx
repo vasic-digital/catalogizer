@@ -30,6 +30,13 @@ import {
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 
+// Storage, scan, SMB and sync-endpoint actions are administrator-only on the server (403 for everyone else): say so instead of
+// reporting a generic failure.
+const failureMessage = (err: unknown, fallback: string): string =>
+  (err as { response?: { status?: number } } | null)?.response?.status === 403
+    ? 'Administrator access required'
+    : fallback
+
 // --- Scans Section ---
 const ScansSection: React.FC = () => {
   const queryClient = useQueryClient()
@@ -52,7 +59,7 @@ const ScansSection: React.FC = () => {
       toast.success('Scan queued successfully')
       queryClient.invalidateQueries({ queryKey: ['scans'] })
     },
-    onError: () => toast.error('Failed to queue scan'),
+    onError: (err) => toast.error(failureMessage(err, 'Failed to queue scan')),
   })
 
   const handleStartScan = () => {
@@ -173,7 +180,7 @@ const SmbDiscoverySection: React.FC = () => {
     onSuccess: (data) => {
       toast.success(`Discovered ${data.length} SMB shares`)
     },
-    onError: () => toast.error('SMB discovery failed'),
+    onError: (err) => toast.error(failureMessage(err, 'SMB discovery failed')),
   })
 
   const testMutation = useMutation({
@@ -185,7 +192,7 @@ const SmbDiscoverySection: React.FC = () => {
         toast.error(`Connection failed: ${data.message}`)
       }
     },
-    onError: () => toast.error('Connection test failed'),
+    onError: (err) => toast.error(failureMessage(err, 'Connection test failed')),
   })
 
   return (
@@ -317,7 +324,7 @@ const SyncSection: React.FC = () => {
       setForm({ name: '', url: '' })
       queryClient.invalidateQueries({ queryKey: ['sync-endpoints'] })
     },
-    onError: () => toast.error('Failed to create endpoint'),
+    onError: (err) => toast.error(failureMessage(err, 'Failed to create endpoint')),
   })
 
   const syncMutation = useMutation({
@@ -326,7 +333,7 @@ const SyncSection: React.FC = () => {
       toast.success('Sync started')
       queryClient.invalidateQueries({ queryKey: ['sync-sessions'] })
     },
-    onError: () => toast.error('Failed to start sync'),
+    onError: (err) => toast.error(failureMessage(err, 'Failed to start sync')),
   })
 
   const deleteMutation = useMutation({
@@ -335,7 +342,7 @@ const SyncSection: React.FC = () => {
       toast.success('Endpoint deleted')
       queryClient.invalidateQueries({ queryKey: ['sync-endpoints'] })
     },
-    onError: () => toast.error('Failed to delete endpoint'),
+    onError: (err) => toast.error(failureMessage(err, 'Failed to delete endpoint')),
   })
 
   return (

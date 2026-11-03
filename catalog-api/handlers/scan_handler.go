@@ -3,14 +3,16 @@ package handlers
 import (
 	"catalogizer/database"
 	"catalogizer/filesystem"
-	"catalogizer/internal/pathguard"
 	"catalogizer/internal/services"
 	"catalogizer/models"
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,12 +31,55 @@ type scannerInterface interface {
 type ScanHandler struct {
 	scanner scannerInterface
 	db      *database.DB
+	// clientFactory builds the real protocol client used to probe a storage root's connectivity (GetStorageRootStatus).
+	clientFactory filesystem.ClientFactory
+	// listMaxEntries bounds one /storage/list response (0 = defaultListMaxEntries).
+	listMaxEntries int
+}
+
+// defaultListMaxEntries bounds the entries one /storage/list call may return; more are reported with "truncated": true.
+const defaultListMaxEntries = 1000
+
+// storageDisconnectTimeout bounds the Disconnect of a probe/list client so a hung server cannot hold the request goroutine.
+const storageDisconnectTimeout = 5 * time.Second
+
+// disconnectBounded closes client under storageDisconnectTimeout.
+func disconnectBounded(client filesystem.FileSystemClient) {
+	dctx, cancel := context.WithTimeout(context.Background(), storageDisconnectTimeout)
+	defer cancel()
+	_ = client.Disconnect(dctx)
 }
 
 // NewScanHandler creates a new ScanHandler.
 func NewScanHandler(scanner scannerInterface, db *database.DB) *ScanHandler {
-	return &ScanHandler{scanner: scanner, db: db}
+	return &ScanHandler{scanner: scanner, db: db, clientFactory: filesystem.NewDefaultClientFactory()}
 }
+
+// clientForRoot builds the real protocol client of a storage root: the same settings mapping (filesystem.SettingsFromRoot) and factory the
+// scanner uses, so a probe or listing meets exactly what a scan would meet.
+func (h *ScanHandler) clientForRoot(root *models.StorageRoot) (filesystem.FileSystemClient, error) {
+	// A local root is re-checked on every use: the allowed bases (or a symlink on disk) may have changed since it was stored.
+	if root.Protocol == "local" {
+		if err := filesystem.CheckLocalRoot(derefString(root.Path), filesystem.AllowedLocalBases()); err != nil {
+			return nil, err
+		}
+	}
+	settings, err := filesystem.SettingsFromRoot(root, services.ResolveSMBIdentity)
+	if err != nil {
+		return nil, err
+	}
+	return h.clientFactory.CreateClient(&filesystem.StorageConfig{ID: root.Name, Name: root.Name, Protocol: root.Protocol, Settings: settings})
+}
+
+func derefString(p *string) string {
+	if p == nil {
+		return ""
+	}
+	return *p
+}
+
+// storageRootProbeTimeout bounds one connectivity probe so a black-holed host cannot hold a status request open.
+const storageRootProbeTimeout = 10 * time.Second
 
 // createStorageRootRequest is the JSON body for POST /storage/roots.
 type createStorageRootRequest struct {
@@ -109,19 +154,13 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 		return
 	}
 
-	// A local root is a directory of THIS host the scanner will read and the API
-	// will list: it must lie inside the configured read roots (CATALOGIZER_READ_ROOTS,
-	// MEDIA_ROOT_PATH, ./data), symlinks resolved, or it is refused (P2). The check
-	// runs after ValidateRoot so a missing path is already a 400 of its own.
-	if req.Protocol == "local" && req.Path != nil {
-		resolved, cerr := pathguard.ConfineData(*req.Path, pathguard.ReadRoots())
-		if cerr != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "local storage root must be an absolute path inside the configured media roots (set MEDIA_ROOT_PATH or CATALOGIZER_READ_ROOTS)",
-			})
+	if req.Protocol == "local" {
+		resolved, err := filesystem.ResolveLocalRoot(derefString(req.Path), filesystem.AllowedLocalBases())
+		if err != nil {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 			return
 		}
-		req.Path = &resolved
+		req.Path = &resolved // the resolved path is stored, not the symlink the caller named
 	}
 
 	if req.MaxDepth <= 0 {
@@ -239,22 +278,104 @@ func (h *ScanHandler) GetStorageRootStatus(c *gin.Context) {
 		return
 	}
 
-	// Check if storage root exists
-	var exists bool
-	err = h.db.QueryRowContext(c.Request.Context(),
-		"SELECT 1 FROM storage_roots WHERE id = ?", id).Scan(&exists)
+	root, err := h.loadStorageRoot(c.Request.Context(), id)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Storage root not found"})
 		return
 	}
 
-	// For now, return dummy connectivity status
-	c.JSON(http.StatusOK, gin.H{
-		"id":         id,
-		"connected":  true,
-		"status":     "online",
-		"checked_at": time.Now().Format(time.RFC3339),
-	})
+	resp := gin.H{"id": id, "checked_at": time.Now().Format(time.RFC3339)}
+	if !root.Enabled {
+		// A disabled root is never scanned or probed: it is reported as such, not as online.
+		resp["connected"], resp["status"] = false, "disabled"
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+
+	// Probe the root with the same settings mapping and client factory the scanner uses, so the answer is the one a scan would meet.
+	fsClient, err := h.clientForRoot(root)
+	if err != nil {
+		resp["connected"], resp["status"], resp["error"] = false, "misconfigured", services.ScrubErrorFor(err, root)
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+	ctx, cancel := context.WithTimeout(c.Request.Context(), storageRootProbeTimeout)
+	defer cancel()
+	if err := fsClient.Connect(ctx); err != nil {
+		resp["connected"], resp["status"], resp["error"] = false, "offline", services.ScrubErrorFor(err, root)
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+	defer disconnectBounded(fsClient)
+	if err := fsClient.TestConnection(ctx); err != nil {
+		resp["connected"], resp["status"], resp["error"] = false, "offline", services.ScrubErrorFor(err, root)
+		c.JSON(http.StatusOK, resp)
+		return
+	}
+	resp["connected"], resp["status"] = true, "online"
+	c.JSON(http.StatusOK, resp)
+}
+
+// ListStoragePath handles GET /api/v1/storage/list/*path?storage_id=<storage root id>.
+// Lists the directory through the same settings mapping and real protocol client the scanner uses; it never answers with a fabricated listing
+// (CAT-001: the former handler returned an always-empty "mock" list).
+func (h *ScanHandler) ListStoragePath(c *gin.Context) {
+	idStr := c.Query("storage_id")
+	if idStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "storage_id is required"})
+		return
+	}
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "storage_id must be a storage root id"})
+		return
+	}
+	root, err := h.loadStorageRoot(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Storage root not found"})
+		return
+	}
+	if !root.Enabled {
+		c.JSON(http.StatusConflict, gin.H{"error": "storage root is disabled"})
+		return
+	}
+	fsClient, err := h.clientForRoot(root)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": services.ScrubErrorFor(err, root)})
+		return
+	}
+	ctx, cancel := context.WithTimeout(c.Request.Context(), storageRootProbeTimeout)
+	defer cancel()
+	if err := fsClient.Connect(ctx); err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": services.ScrubErrorFor(err, root)})
+		return
+	}
+	defer disconnectBounded(fsClient)
+
+	dir := "/" + strings.TrimLeft(c.Param("path"), "/")
+	limit := h.listMaxEntries
+	if limit < 1 {
+		limit = defaultListMaxEntries
+	}
+	// Ask for limit+1 so that "more than the bound" stays detectable (the client may stop reading early).
+	entries, err := fsClient.ListDirectory(filesystem.WithListLimit(ctx, limit+1), dir)
+	if err != nil {
+		status := http.StatusBadGateway
+		if errors.Is(err, os.ErrNotExist) {
+			status = http.StatusNotFound
+		}
+		c.JSON(status, gin.H{"error": services.ScrubErrorFor(err, root)})
+		return
+	}
+	truncated := len(entries) > limit
+	if truncated {
+		entries = entries[:limit]
+	}
+	files := make([]gin.H, 0, len(entries))
+	for _, e := range entries {
+		files = append(files, gin.H{"name": e.Name, "path": e.Path, "size": e.Size, "is_dir": e.IsDir, "modified_at": e.ModTime.Format(time.RFC3339)})
+	}
+	c.JSON(http.StatusOK, gin.H{"path": dir, "storage_id": id, "files": files, "truncated": truncated})
 }
 
 // queueScanRequest is the JSON body for POST /scans.
@@ -286,6 +407,13 @@ func (h *ScanHandler) QueueScan(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("storage root not found: %v", err)})
 		return
+	}
+
+	if root.Protocol == "local" {
+		if err := filesystem.CheckLocalRoot(derefString(root.Path), filesystem.AllowedLocalBases()); err != nil {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	jobID := uuid.New().String()

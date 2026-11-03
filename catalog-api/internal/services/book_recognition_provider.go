@@ -1,13 +1,18 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -519,51 +524,106 @@ func (p *BookRecognitionProvider) RecognizeMedia(ctx context.Context, req *Media
 }
 
 func (p *BookRecognitionProvider) performOCR(ctx context.Context, imageData []byte) (*OCRResponse, error) {
-	// Try OCR.space API first (free tier)
-	if result, err := p.performOCRSpace(ctx, imageData); err == nil {
+	var errs []error
+
+	// Try OCR.space API first
+	result, err := p.performOCRSpace(ctx, imageData)
+	if err == nil {
 		return result, nil
 	}
+	errs = append(errs, err)
 
 	// Try Tesseract via local processing
-	if result, err := p.performTesseract(ctx, imageData); err == nil {
+	result, err = p.performTesseract(ctx, imageData)
+	if err == nil {
 		return result, nil
 	}
+	errs = append(errs, err)
 
-	return nil, fmt.Errorf("OCR processing failed")
+	// Every engine unconfigured: say so, so callers can tell "not set up" from "tried and failed".
+	allUnconfigured := true
+	for _, e := range errs {
+		if !errors.Is(e, ErrOCRNotConfigured) {
+			allUnconfigured = false
+		}
+	}
+	if allUnconfigured {
+		return nil, fmt.Errorf("OCR processing failed: %w", ErrOCRNotConfigured)
+	}
+	return nil, fmt.Errorf("OCR processing failed: %w", errors.Join(errs...))
 }
 
+// ErrOCRNotConfigured is returned when an OCR engine has no usable credential or binary. OCR output is never fabricated (CAT-001).
+var ErrOCRNotConfigured = errors.New("OCR engine not configured")
+
+// performOCRSpace sends the image to OCR.space. The built-in key value "free_api_key" is a placeholder, not a credential: without a real
+// key (set in apiKeys["ocr_space"]) the engine is reported as not configured instead of returning canned text. NOTE: the request/response
+// handling below follows the OCR.space documentation and was NOT exercised against the live service (no key available in this session).
 func (p *BookRecognitionProvider) performOCRSpace(ctx context.Context, imageData []byte) (*OCRResponse, error) {
-	// OCR.space API implementation
-	// This would encode the image and send it to OCR.space
-
-	// Mock OCR result for demonstration
-	return &OCRResponse{
-		Text:       "Sample OCR text from book cover or page",
-		Confidence: 0.85,
-		Language:   "en",
-		Blocks: []OCRTextBlock{
-			{
-				Text:        "Book Title",
-				Confidence:  0.9,
-				BoundingBox: OCRBoundingBox{X: 50, Y: 100, Width: 200, Height: 30},
-			},
-			{
-				Text:        "Author Name",
-				Confidence:  0.8,
-				BoundingBox: OCRBoundingBox{X: 50, Y: 150, Width: 150, Height: 25},
-			},
-		},
-	}, nil
+	key := p.apiKeys["ocr_space"]
+	if key == "" || key == "free_api_key" {
+		return nil, fmt.Errorf("OCR.space: %w (no API key)", ErrOCRNotConfigured)
+	}
+	form := url.Values{}
+	form.Set("base64Image", "data:image/png;base64,"+base64.StdEncoding.EncodeToString(imageData))
+	form.Set("language", "eng")
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, p.baseURLs["tesseract"], strings.NewReader(form.Encode()))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("apikey", key)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	resp, err := p.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("OCR.space request: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("OCR.space: unexpected status %s", resp.Status)
+	}
+	var out struct {
+		ParsedResults []struct {
+			ParsedText string `json:"ParsedText"`
+		} `json:"ParsedResults"`
+		IsErroredOnProcessing bool `json:"IsErroredOnProcessing"`
+	}
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 10<<20)).Decode(&out); err != nil {
+		return nil, fmt.Errorf("OCR.space response: %w", err)
+	}
+	if out.IsErroredOnProcessing || len(out.ParsedResults) == 0 || strings.TrimSpace(out.ParsedResults[0].ParsedText) == "" {
+		return nil, errors.New("OCR.space returned no text")
+	}
+	return &OCRResponse{Text: out.ParsedResults[0].ParsedText, Language: "en"}, nil
 }
 
+// performTesseract runs the local tesseract binary on the image (stdin -> stdout). A missing binary, an unreadable image or empty output is
+// an error, never canned text.
 func (p *BookRecognitionProvider) performTesseract(ctx context.Context, imageData []byte) (*OCRResponse, error) {
-	// Local Tesseract processing would go here
-	// For now, return a mock result
-	return &OCRResponse{
-		Text:       "Tesseract OCR result",
-		Confidence: 0.75,
-		Language:   "en",
-	}, nil
+	bin, err := exec.LookPath("tesseract")
+	if err != nil {
+		return nil, fmt.Errorf("tesseract: %w (binary not found)", ErrOCRNotConfigured)
+	}
+	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, bin, "stdin", "stdout", "-l", "eng")
+	cmd.Stdin = bytes.NewReader(imageData)
+	var stdout, stderr bytes.Buffer
+	bounded := &boundedWriter{w: &stdout, remaining: maxTesseractOutputBytes}
+	cmd.Stdout, cmd.Stderr = bounded, &limitedStderr{w: &stderr, remaining: 64 << 10}
+	if err := cmd.Run(); err != nil {
+		if bounded.exceeded {
+			return nil, ErrOCROutputTooLarge
+		}
+		return nil, fmt.Errorf("tesseract failed: %w: %s", err, strings.TrimSpace(stderr.String()))
+	}
+	if bounded.exceeded {
+		return nil, ErrOCROutputTooLarge
+	}
+	text := strings.TrimSpace(stdout.String())
+	if text == "" {
+		return nil, errors.New("tesseract found no text")
+	}
+	return &OCRResponse{Text: text, Language: "en"}, nil
 }
 
 func (p *BookRecognitionProvider) extractBookInfoFromOCR(ocrResult *OCRResponse) *BookMetadata {
@@ -1524,4 +1584,44 @@ func (p *BookRecognitionProvider) SupportsMediaType(mediaType MediaType) bool {
 
 func (p *BookRecognitionProvider) GetConfidenceThreshold() float64 {
 	return 0.4
+}
+
+// maxTesseractOutputBytes bounds how much recognised text is kept in memory.
+const maxTesseractOutputBytes = 4 << 20
+
+// ErrOCROutputTooLarge is returned when the OCR process writes more than maxTesseractOutputBytes.
+var ErrOCROutputTooLarge = errors.New("OCR output exceeds size limit")
+
+// boundedWriter stops the child (write error) once the limit is passed instead of buffering without bound.
+type boundedWriter struct {
+	w         *bytes.Buffer
+	remaining int
+	exceeded  bool
+}
+
+func (b *boundedWriter) Write(p []byte) (int, error) {
+	if len(p) > b.remaining {
+		b.exceeded = true
+		return 0, ErrOCROutputTooLarge
+	}
+	b.remaining -= len(p)
+	return b.w.Write(p)
+}
+
+// limitedStderr keeps only the first bytes of stderr but never fails the child.
+type limitedStderr struct {
+	w         *bytes.Buffer
+	remaining int
+}
+
+func (l *limitedStderr) Write(p []byte) (int, error) {
+	n := len(p)
+	if l.remaining > 0 {
+		if len(p) > l.remaining {
+			p = p[:l.remaining]
+		}
+		l.remaining -= len(p)
+		l.w.Write(p)
+	}
+	return n, nil
 }

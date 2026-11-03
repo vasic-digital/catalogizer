@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { CollectionExport } from '../CollectionExport'
+import { toast } from 'react-hot-toast'
 
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
@@ -171,5 +172,38 @@ describe('CollectionExport', () => {
   it('renders collection summary section', () => {
     render(<CollectionExport {...defaultProps} />)
     expect(screen.getByText('Collection Summary')).toBeInTheDocument()
+  })
+
+  it('CAT-001: Import reports unavailable and never claims success', async () => {
+    const user = userEvent.setup()
+    const { container } = render(<CollectionExport collection={mockCollection as any} onClose={() => {}} />)
+    await user.click(screen.getByText('Import'))
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement
+    const file = new File([JSON.stringify({ items: [{ id: 'a' }, { id: 'b' }] })], 'c.json', { type: 'application/json' })
+    await user.upload(input, file)
+    await user.click(await screen.findByText('Import Collection'))
+    expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('not available'))
+    expect(toast.success).not.toHaveBeenCalled()
+  })
+
+  it('CAT-001: export finishes without a timed fake progress phase', async () => {
+    const created: Blob[] = []
+    const origCreate = URL.createObjectURL
+    const origRevoke = URL.revokeObjectURL
+    URL.createObjectURL = vi.fn((b: Blob) => { created.push(b); return 'blob:x' }) as any
+    URL.revokeObjectURL = vi.fn() as any
+    try {
+      const user = userEvent.setup()
+      render(<CollectionExport {...defaultProps} />)
+      await user.click(screen.getByText('Export Collection'))
+      // The old code slept 11 x 200 ms before generating; now the file is produced at once.
+      await vi.waitFor(() => expect(toast.success).toHaveBeenCalledWith('Collection exported successfully'), { timeout: 1000 })
+      expect(created.length).toBe(1)
+      expect(JSON.parse(await new Promise<string>((res) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.readAsText(created[0]) })).collection.id).toBe('1')
+      expect(screen.queryByText('Processing items')).not.toBeInTheDocument()
+    } finally {
+      URL.createObjectURL = origCreate
+      URL.revokeObjectURL = origRevoke
+    }
   })
 })

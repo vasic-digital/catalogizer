@@ -109,8 +109,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const registerMutation = useMutation({
     mutationFn: authApi.register,
-    onSuccess: () => {
-      toast.success('Registration successful! Please log in.')
+    onSuccess: (data: unknown) => {
+      // The server creates self-registered accounts PENDING administrator approval by default
+      // (REGISTRATION_MODE); only REGISTRATION_MODE=open accounts can log in straight away.
+      const pending = (data as { registration_status?: string } | undefined)?.registration_status === 'pending'
+      toast.success(
+        pending
+          ? 'Registration received. An administrator must approve your account before you can log in.'
+          : 'Registration successful! Please log in.'
+      )
     },
     onError: (error: unknown) => {
       if (isNetworkError(error)) {

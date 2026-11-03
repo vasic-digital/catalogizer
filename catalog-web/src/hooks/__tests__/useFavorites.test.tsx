@@ -234,6 +234,31 @@ describe('useFavorites', () => {
       })
     })
 
+    it('CAT-001 R5: a rejected add shows only the error toast, never "Added to favorites"', async () => {
+      mockToast.success.mockClear(); mockToast.error.mockClear()
+      mockFavoritesApi.toggleFavorite.mockRejectedValue(new Error('nope'))
+      const { Wrapper } = createWrapper()
+      const { result } = renderHook(() => useFavorites(), { wrapper: Wrapper })
+      await waitFor(() => { expect(result.current.isLoading).toBe(false) })
+      act(() => { result.current.toggleFavorite(999) })
+      await waitFor(() => { expect(mockToast.error).toHaveBeenCalledWith('Failed to update favorite status') })
+      expect(mockToast.success).not.toHaveBeenCalledWith('Added to favorites')
+    })
+
+    it('CAT-001 R5: "Added to favorites" is toasted only after the server accepted the add', async () => {
+      mockToast.success.mockClear()
+      let release: (v: unknown) => void = () => {}
+      mockFavoritesApi.toggleFavorite.mockReturnValue(new Promise(r => { release = r }) as any)
+      const { Wrapper } = createWrapper()
+      const { result } = renderHook(() => useFavorites(), { wrapper: Wrapper })
+      await waitFor(() => { expect(result.current.isLoading).toBe(false) })
+      act(() => { result.current.toggleFavorite(999) })
+      await waitFor(() => { expect(mockFavoritesApi.toggleFavorite).toHaveBeenCalled() })
+      expect(mockToast.success).not.toHaveBeenCalled()
+      release({ is_favorite: true })
+      await waitFor(() => { expect(mockToast.success).toHaveBeenCalledWith('Added to favorites') })
+    })
+
     it('respects explicit currentStatus parameter', async () => {
       mockFavoritesApi.toggleFavorite.mockResolvedValue({ is_favorite: false })
 

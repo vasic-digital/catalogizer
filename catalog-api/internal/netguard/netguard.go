@@ -34,6 +34,35 @@ var ErrBlocked = errors.New("outbound destination not allowed")
 
 var cgnat = mustCIDR("100.64.0.0/10")
 
+// lookupIPAddr is the resolver; tests replace it to prove the dial is pinned to the checked address.
+var lookupIPAddr = func(ctx context.Context, host string) ([]net.IPAddr, error) {
+	return net.DefaultResolver.LookupIPAddr(ctx, host)
+}
+
+// reservedNets are blocked and never re-admitted by the allow-list: benchmarking (198.18.0.0/15), IETF protocol
+// assignments (192.0.0.0/24), deprecated IPv6 site-local (fec0::/10) and the local-use NAT64 prefix (64:ff9b:1::/48).
+var reservedNets = []*net.IPNet{
+	mustCIDR("198.18.0.0/15"), mustCIDR("192.0.0.0/24"), mustCIDR("fec0::/10"), mustCIDR("64:ff9b:1::/48"),
+}
+
+// embeddedV4 returns the IPv4 address an IPv6 address carries in an IPv4-compatible (::/96), NAT64 (64:ff9b::/96) or
+// 6to4 (2002::/16) form, so it is judged as that IPv4 address (a loopback hidden in ::7f00:1 must not pass).
+func embeddedV4(ip net.IP) net.IP {
+	ip16 := ip.To16()
+	if ip16 == nil || ip.To4() != nil {
+		return nil
+	}
+	switch {
+	case mustCIDR("::/96").Contains(ip16):
+		return net.IP{ip16[12], ip16[13], ip16[14], ip16[15]}
+	case mustCIDR("64:ff9b::/96").Contains(ip16):
+		return net.IP{ip16[12], ip16[13], ip16[14], ip16[15]}
+	case ip16[0] == 0x20 && ip16[1] == 0x02:
+		return net.IP{ip16[2], ip16[3], ip16[4], ip16[5]}
+	}
+	return nil
+}
+
 func mustCIDR(s string) *net.IPNet {
 	_, n, err := net.ParseCIDR(s)
 	if err != nil {
@@ -75,6 +104,14 @@ func IsBlockedIP(ip net.IP) bool {
 	if alwaysBlocked(ip) {
 		return true
 	}
+	for _, n := range reservedNets {
+		if n.Contains(ip) {
+			return true
+		}
+	}
+	if v4 := embeddedV4(ip); v4 != nil {
+		return IsBlockedIP(v4)
+	}
 	if ip.IsLoopback() || ip.IsPrivate() || cgnat.Contains(ip) {
 		for _, n := range allowedNets() {
 			if n.Contains(ip) {
@@ -100,7 +137,7 @@ func resolve(ctx context.Context, host string) ([]net.IP, error) {
 		}
 		return []net.IP{ip}, nil
 	}
-	addrs, err := net.DefaultResolver.LookupIPAddr(ctx, host)
+	addrs, err := lookupIPAddr(ctx, host)
 	if err != nil {
 		return nil, fmt.Errorf("resolve %q: %w", host, err)
 	}

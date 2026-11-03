@@ -326,15 +326,22 @@ func TestRefreshMediaMetadata(t *testing.T) {
 		MediaTypeID: typeID, Title: "Refreshable Movie", Status: "detected",
 	})
 
+	// R4-7: pin a known value and snapshot BEFORE any subtest calls the handler, so a handler
+	// that writes any constant (not only a time.Now()) is caught.
+	_, err = db.Exec(`UPDATE media_items SET last_updated = ? WHERE id = ?`, "2001-02-03 04:05:06", itemID)
+	require.NoError(t, err)
+	var before string
+	require.NoError(t, db.QueryRow(`SELECT CAST(last_updated AS TEXT) FROM media_items WHERE id = ?`, itemID).Scan(&before))
+
 	tests := []struct {
 		name           string
 		paramID        string
 		expectedStatus int
 	}{
 		{
-			name:           "valid ID returns 202",
+			name:           "valid ID returns 501 (no refresher exists; CAT-001)",
 			paramID:        fmt.Sprintf("%d", itemID),
-			expectedStatus: http.StatusAccepted,
+			expectedStatus: http.StatusNotImplemented,
 		},
 		{
 			name:           "non-existent ID returns 404",
@@ -359,8 +366,18 @@ func TestRefreshMediaMetadata(t *testing.T) {
 			handler.RefreshMediaMetadata(c)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
+			if tt.expectedStatus == http.StatusNotImplemented {
+				assert.NotContains(t, w.Body.String(), "queued\"")
+				assert.NotContains(t, w.Body.String(), "accepted")
+			}
 		})
 	}
+
+	// The 501 must not touch the row: no fake "refresh" side effect.
+	var after string
+	require.NoError(t, db.QueryRow(`SELECT CAST(last_updated AS TEXT) FROM media_items WHERE id = ?`, itemID).Scan(&after))
+	assert.Equal(t, before, after, "a 501 refresh must not modify the media row")
+	assert.Contains(t, after, "2001-02-03")
 }
 
 func TestGetMediaQuality(t *testing.T) {

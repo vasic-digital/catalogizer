@@ -9,6 +9,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -62,7 +63,7 @@ func TestWF22R3_N3_CreateStorageRootValidatesTheRow(t *testing.T) {
 		{"nfs ok", map[string]interface{}{"name": "ok-nfs", "protocol": "nfs", "host": "nas", "path": "/export", "mount_point": "/mnt/nas", "options": "vers=4"}, 201},
 		{"webdav ok", map[string]interface{}{"name": "ok-dav", "protocol": "webdav", "url": "https://nas/dav", "username": "u", "password": "p"}, 201},
 		{"smb ok with identity", map[string]interface{}{"name": "ok-smb", "protocol": "smb", "host": "nas", "path": "media", "options": `{"identity_index": 1}`}, 201},
-		{"local ok", map[string]interface{}{"name": "ok-local", "protocol": "local", "path": mediaRoot}, 201},
+		{"local ok", map[string]interface{}{"name": "ok-local", "protocol": "local", "path": filepath.Join(os.TempDir(), "data")}, 201},
 	}
 	for _, c := range cases {
 		code, body := h.do("POST", "/storage/roots", c.body)

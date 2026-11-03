@@ -241,8 +241,10 @@ func TestCoverArtService_SearchCoverArt_CacheMiss(t *testing.T) {
 
 	// Should fall through to providers (mock results)
 	results, err := service.SearchCoverArt(ctx, request)
-	require.NoError(t, err)
-	assert.Greater(t, len(results), 0, "should have results from mock providers")
+	// CAT-001: no provider client exists, so the search reports failure
+	// honestly instead of returning invented results.
+	assert.ErrorIs(t, err, ErrCoverArtProviderNotImplemented)
+	assert.Empty(t, results)
 }
 
 func TestCoverArtService_SearchCoverArt_WithSpecificProviders(t *testing.T) {
@@ -263,9 +265,10 @@ func TestCoverArtService_SearchCoverArt_WithSpecificProviders(t *testing.T) {
 	}
 
 	results, err := service.SearchCoverArt(ctx, request)
-	require.NoError(t, err)
-	assert.Equal(t, 1, len(results))
-	assert.Equal(t, CoverArtProviderITunes, results[0].Provider)
+	// CAT-001: no provider client exists, so the search reports failure
+	// honestly instead of returning invented results.
+	assert.ErrorIs(t, err, ErrCoverArtProviderNotImplemented)
+	assert.Empty(t, results)
 }
 
 func TestCoverArtService_SearchCoverArt_AllDefaultProviders(t *testing.T) {
@@ -285,9 +288,10 @@ func TestCoverArtService_SearchCoverArt_AllDefaultProviders(t *testing.T) {
 	}
 
 	results, err := service.SearchCoverArt(ctx, request)
-	require.NoError(t, err)
-	// Default providers: MusicBrainz, LastFM, iTunes — 3 results
-	assert.Equal(t, 3, len(results))
+	// CAT-001: no provider client exists, so the search reports failure
+	// honestly instead of returning invented results.
+	assert.ErrorIs(t, err, ErrCoverArtProviderNotImplemented)
+	assert.Empty(t, results)
 }
 
 // ---------------------------------------------------------------------------

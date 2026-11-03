@@ -1,164 +1,62 @@
 import { adminApi } from '../adminApi'
+import { api } from '../api'
 
-// Mock the api module so axios does not make real HTTP requests.
-// All calls reject with a 404-like error, triggering adminApi's fallback mock data.
-vi.mock('../api', async () => {
-  const notFoundError = { response: { status: 404 } }
+vi.mock('../api', () => {
   const mockApi = {
-    get: vi.fn().mockRejectedValue(notFoundError),
-    post: vi.fn().mockRejectedValue(notFoundError),
-    put: vi.fn().mockRejectedValue(notFoundError),
-    delete: vi.fn().mockRejectedValue(notFoundError),
+    get: vi.fn(),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
   }
-  return {
-    __esModule: true,
-    default: mockApi,
-    api: mockApi,
-  }
+  return { __esModule: true, default: mockApi, api: mockApi }
 })
 
-describe('adminApi', () => {
+const notFound = { response: { status: 404 } }
+const mocked = api as unknown as Record<'get' | 'post' | 'put', ReturnType<typeof vi.fn>>
+
+describe('adminApi (no fabricated fallbacks)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  describe('getSystemInfo', () => {
-    it('returns system information with expected fields', async () => {
-      const result = await adminApi.getSystemInfo()
-
-      expect(result).toHaveProperty('version')
-      expect(result).toHaveProperty('uptime')
-      expect(result).toHaveProperty('cpuUsage')
-      expect(result).toHaveProperty('memoryUsage')
-      expect(result).toHaveProperty('diskUsage')
-      expect(result).toHaveProperty('activeConnections')
-      expect(result).toHaveProperty('totalRequests')
-    })
-
-    it('returns disk usage with total, used, and free', async () => {
-      const result = await adminApi.getSystemInfo()
-
-      expect(result.diskUsage).toHaveProperty('total')
-      expect(result.diskUsage).toHaveProperty('used')
-      expect(result.diskUsage).toHaveProperty('free')
-      expect(result.diskUsage.total).toBe(result.diskUsage.used + result.diskUsage.free)
-    })
-
-    it('returns numeric values for CPU and memory usage', async () => {
-      const result = await adminApi.getSystemInfo()
-
-      expect(typeof result.cpuUsage).toBe('number')
-      expect(typeof result.memoryUsage).toBe('number')
-      expect(result.cpuUsage).toBeGreaterThanOrEqual(0)
-      expect(result.cpuUsage).toBeLessThanOrEqual(100)
-    })
+  it('passes server data through unchanged, including nulls', async () => {
+    const payload = {
+      version: '2.1.0',
+      uptime: 5,
+      cpuUsage: null,
+      memoryUsage: 3,
+      diskUsage: null,
+      activeConnections: 0,
+      totalRequests: null,
+      unavailable: ['cpuUsage', 'diskUsage', 'totalRequests'],
+    }
+    mocked.get.mockResolvedValue({ data: payload })
+    await expect(adminApi.getSystemInfo()).resolves.toEqual(payload)
   })
 
-  describe('getUsers', () => {
-    it('returns an array of users', async () => {
-      const result = await adminApi.getUsers()
-
-      expect(Array.isArray(result)).toBe(true)
-      expect(result.length).toBeGreaterThan(0)
-    })
-
-    it('returns users with required fields', async () => {
-      const result = await adminApi.getUsers()
-      const user = result[0]
-
-      expect(user).toHaveProperty('id')
-      expect(user).toHaveProperty('username')
-      expect(user).toHaveProperty('email')
-      expect(user).toHaveProperty('role')
-      expect(user).toHaveProperty('status')
-      expect(user).toHaveProperty('createdAt')
-    })
-
-    it('includes an admin user', async () => {
-      const result = await adminApi.getUsers()
-      const admin = result.find(u => u.role === 'admin')
-
-      expect(admin).toBeDefined()
-      expect(admin!.username).toBe('admin')
-    })
+  it.each([
+    ['getSystemInfo', () => adminApi.getSystemInfo()],
+    ['getUsers', () => adminApi.getUsers()],
+    ['getStorageInfo', () => adminApi.getStorageInfo()],
+    ['getBackups', () => adminApi.getBackups()],
+  ])('%s propagates a 404 instead of returning mock data', async (_n, call) => {
+    mocked.get.mockRejectedValue(notFound)
+    await expect(call()).rejects.toBe(notFound)
   })
 
-  describe('getStorageInfo', () => {
-    it('returns an array of storage info objects', async () => {
-      const result = await adminApi.getStorageInfo()
-
-      expect(Array.isArray(result)).toBe(true)
-      expect(result.length).toBeGreaterThan(0)
-    })
-
-    it('returns storage info with space metrics', async () => {
-      const result = await adminApi.getStorageInfo()
-      const storage = result[0]
-
-      expect(storage).toHaveProperty('path')
-      expect(storage).toHaveProperty('totalSpace')
-      expect(storage).toHaveProperty('usedSpace')
-      expect(storage).toHaveProperty('availableSpace')
-      expect(storage).toHaveProperty('mediaCount')
-      expect(typeof storage.totalSpace).toBe('number')
-    })
+  it.each([
+    ['createBackup', () => adminApi.createBackup('full'), 'post'],
+    ['restoreBackup', () => adminApi.restoreBackup('1'), 'post'],
+    ['scanStorage', () => adminApi.scanStorage('/x'), 'post'],
+    ['updateUser', () => adminApi.updateUser('1', {}), 'put'],
+  ] as const)('%s does not report success when the API answers 404', async (_n, call, verb) => {
+    mocked[verb].mockRejectedValue(notFound)
+    await expect(call()).rejects.toBe(notFound)
   })
 
-  describe('getBackups', () => {
-    it('returns an array of backup objects', async () => {
-      const result = await adminApi.getBackups()
-
-      expect(Array.isArray(result)).toBe(true)
-      expect(result.length).toBeGreaterThan(0)
-    })
-
-    it('returns backups with required fields', async () => {
-      const result = await adminApi.getBackups()
-      const backup = result[0]
-
-      expect(backup).toHaveProperty('id')
-      expect(backup).toHaveProperty('filename')
-      expect(backup).toHaveProperty('size')
-      expect(backup).toHaveProperty('createdAt')
-      expect(backup).toHaveProperty('type')
-      expect(backup).toHaveProperty('status')
-    })
-
-    it('returns backups with valid type values', async () => {
-      const result = await adminApi.getBackups()
-      result.forEach(backup => {
-        expect(['full', 'incremental']).toContain(backup.type)
-      })
-    })
-  })
-
-  describe('createBackup', () => {
-    it('completes without error for full backup', async () => {
-      await expect(adminApi.createBackup('full')).resolves.toBeUndefined()
-    })
-
-    it('completes without error for incremental backup', async () => {
-      await expect(adminApi.createBackup('incremental')).resolves.toBeUndefined()
-    })
-  })
-
-  describe('restoreBackup', () => {
-    it('completes without error', async () => {
-      await expect(adminApi.restoreBackup('1')).resolves.toBeUndefined()
-    })
-  })
-
-  describe('scanStorage', () => {
-    it('completes without error', async () => {
-      await expect(adminApi.scanStorage('/media/movies')).resolves.toBeUndefined()
-    })
-  })
-
-  describe('updateUser', () => {
-    it('completes without error', async () => {
-      await expect(
-        adminApi.updateUser('1', { role: 'admin' } as any)
-      ).resolves.toBeUndefined()
-    })
+  it('sends the documented requests', async () => {
+    mocked.post.mockResolvedValue({ data: {} })
+    await adminApi.createBackup('incremental')
+    expect(mocked.post).toHaveBeenCalledWith('/admin/backups', { type: 'incremental' })
   })
 })

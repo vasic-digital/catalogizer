@@ -149,10 +149,12 @@ describe('CollectionTemplates', () => {
     expect(advancedBadges.length).toBeGreaterThan(0)
   })
 
-  it('shows popularity percentage', () => {
+  it('shows no invented popularity percentages or sort option (CAT-001)', () => {
     render(<CollectionTemplates {...defaultProps} />)
-    expect(screen.getByText('95%')).toBeInTheDocument() // Recent Movies
-    expect(screen.getByText('96%')).toBeInTheDocument() // Trending Now
+    for (const invented of ['95%', '96%', '88%', '92%', '85%']) {
+      expect(screen.queryByText(invented)).not.toBeInTheDocument()
+    }
+    expect(screen.queryByText('Most Popular')).not.toBeInTheDocument()
   })
 
   it('opens template detail when clicked', async () => {
@@ -191,41 +193,19 @@ describe('CollectionTemplates', () => {
     expect(createBtn.closest('button')).toBeDisabled()
   })
 
-  it('calls onApplyTemplate and shows success toast with valid name', async () => {
+  it('CAT-001 R5: Create Collection stays disabled with a stated reason even with a valid name (templates are smart collections, which the server refuses)', async () => {
     const user = userEvent.setup()
     render(<CollectionTemplates {...defaultProps} />)
 
     await user.click(screen.getByText('Recent Movies'))
+    await user.type(screen.getByPlaceholderText('Enter collection name...'), 'My Movies')
+    const btn = screen.getByText('Create Collection').closest('button')!
+    expect(btn).toBeDisabled()
+    await user.click(btn)
 
-    const nameInput = screen.getByPlaceholderText('Enter collection name...')
-    await user.type(nameInput, 'My Movies')
-    await user.click(screen.getByText('Create Collection'))
-
-    await waitFor(() => {
-      expect(defaultProps.onApplyTemplate).toHaveBeenCalled()
-      expect(toast.success).toHaveBeenCalledWith(
-        'Collection "My Movies" created from template'
-      )
-    })
-  })
-
-  it('shows error toast when onApplyTemplate fails', async () => {
-    const failProps = {
-      ...defaultProps,
-      onApplyTemplate: vi.fn().mockRejectedValue(new Error('Server error')),
-    }
-    const user = userEvent.setup()
-    render(<CollectionTemplates {...failProps} />)
-
-    await user.click(screen.getByText('Recent Movies'))
-
-    const nameInput = screen.getByPlaceholderText('Enter collection name...')
-    await user.type(nameInput, 'My Movies')
-    await user.click(screen.getByText('Create Collection'))
-
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Server error')
-    })
+    expect(defaultProps.onApplyTemplate).not.toHaveBeenCalled()
+    expect(toast.success).not.toHaveBeenCalled()
+    expect(screen.getByTestId('template-apply-unavailable')).toHaveTextContent(/not available/i)
   })
 
   it('closes template preview when Cancel is clicked', async () => {
@@ -254,19 +234,20 @@ describe('CollectionTemplates', () => {
     expect(defaultProps.onClose).toHaveBeenCalled()
   })
 
-  it('shows preview data for templates with preview', async () => {
+  it('shows only the template type in the preview, never invented counts or sizes (CAT-001)', async () => {
     const user = userEvent.setup()
     render(<CollectionTemplates {...defaultProps} />)
 
-    // Recent Movies has preview with 127 items, Video type, 45.2 GB
     await user.click(screen.getByText('Recent Movies'))
 
     expect(screen.getByText('Preview')).toBeInTheDocument()
-    expect(screen.getByText('127')).toBeInTheDocument()
+    for (const invented of ['127', '2847', '8472', '45.2 GB', '12.8 GB', '67.3 GB', '892.4 GB']) {
+      expect(screen.queryByText(invented)).not.toBeInTheDocument()
+    }
+    expect(screen.queryByText(/\d+ items$/)).not.toBeInTheDocument()
     // "Video" appears both in the grid template preview and detail modal preview
     const videoElements = screen.getAllByText('Video')
     expect(videoElements.length).toBeGreaterThanOrEqual(1)
-    expect(screen.getByText('45.2 GB')).toBeInTheDocument()
   })
 
   it('shows rules in template detail', async () => {
@@ -297,22 +278,8 @@ describe('CollectionTemplates', () => {
     expect(createBtn.closest('button')).toBeDisabled()
   })
 
-  it('enables Create Collection button when name is provided', async () => {
-    const user = userEvent.setup()
+  it('shows no invented estimated item ranges (CAT-001)', () => {
     render(<CollectionTemplates {...defaultProps} />)
-
-    await user.click(screen.getByText('Recent Movies'))
-
-    const nameInput = screen.getByPlaceholderText('Enter collection name...')
-    await user.type(nameInput, 'Test')
-
-    const createBtn = screen.getByText('Create Collection')
-    expect(createBtn.closest('button')).not.toBeDisabled()
-  })
-
-  it('shows estimated items for templates', () => {
-    render(<CollectionTemplates {...defaultProps} />)
-    expect(screen.getByText('~50-200')).toBeInTheDocument()
-    expect(screen.getByText('~1000-5000')).toBeInTheDocument()
+    expect(screen.queryByText('~50-200')).not.toBeInTheDocument()
   })
 })

@@ -472,3 +472,83 @@ reports/
 ## Live WebDAV test (real server only)
 
 `catalog-api/filesystem/live_webdav_test.go` (build tag `live`) drives the real `WebDAVClient` against a real WebDAV server: connect, list, write a uniquely named file inside the sandbox, read back and compare sha256, HTTP 404 on a missing file (asserted as a status), rejection of a deliberately wrong password, delete only its own file. Environment: `LIVE_WEBDAV_URL`, `LIVE_WEBDAV_USER`, `LIVE_WEBDAV_PASSWORD`, `LIVE_WEBDAV_SANDBOX` (at least share/folder deep), optional `LIVE_WEBDAV_INSECURE=1` for a self-signed certificate. Without the tag the test is not compiled; with the tag and no environment it SKIPs `credentials_absent`; a dial/TLS failure or a non-WebDAV answer (405, 501, or 200 without a DAV header) SKIPs `service_unavailable`, while a WebDAV server answering 401/403/404 FAILs with the status; the sandbox is cleaned and must be a rooted path of at least share/folder with no `.`/`..` segments. Pure decision logic is unit-tested in `live_webdav_logic_test.go` (default `go test`) (never a stand-in, section 11.4.289). Run: `go test -tags live -run TestLiveWebDAV -v ./filesystem/` from `catalog-api`, or `scripts/test-infra/webdav_live.sh` for a redacted run with a machine-readable verdict (PASS only when both live tests passed and none skipped; exit 3 for SKIPPED or PARTIAL).
+
+## Scaling and chaos (live)
+
+LIVE-class suite (section 11.4.289) for `catalog-api`: `catalog-api/scaling_live_test.go` (build tag `live`, excluded from `go test ./...`) with pure helpers in `scalinglive_helpers_test.go` and their unit tests in `scalinglive_helpers_unit_test.go` (default `go test`). Runner: `scripts/test-infra/scaling_live.sh`.
+
+What is real: the `catalog-api` binary built by `go build` from the tree under test, running against a real SQLCipher SQLite file created by the production migrations, on `127.0.0.1` with an ephemeral port (re-checked against the forbidden ports 38080/33000/33001/38081/33010/33011), real HTTP, real JWT login through the seeded-admin path (random secrets generated at runtime, never printed). The only fixture inputs are 20 000 synthetic `files` rows inserted through the real database layer (`database.NewConnection`) and a noise PNG for the real ImageMagick converter. No mock, stub, fixture server or recorder is in the path. Clients use distinct loopback source IPs (`127.0.x.y`) because the API rate limiter keys on client IP (a single IP is capped at 2000 requests/min, 30 logins/min).
+
+Run: `scripts/test-infra/scaling_live.sh` (all four live tests, about 3 minutes plus any wait for host load). Exit codes: `0` PASS, `1` FAIL (a test failed, `go test` exited non-zero, nothing ran, or the tree under test does not build: a failed `go build` is a FAIL, never a SKIP), `77` SKIP (no go toolchain, no `systemd-run`, ImageMagick missing so every live test skipped, or host load stays above `SCALING_LIVE_MAX_LOAD`, default 14), `78` PARTIAL (at least one live test passed and at least one skipped, none failed: not a full PASS, the skipped legs are unproven); a SKIP or PARTIAL is never a PASS. `scaling_live.sh --classify <log> <rc>` prints the verdict for an existing log (tested by `scripts/test-infra/test_scaling_live_classify.sh`). A round also fails when more than `SCALING_MAX_CLIENT_ERR_SHARE` (default 0) of its responses are 401/403/404, or when a status key is malformed or any 5xx (500 to 599) appears. It runs under `systemd-run --user --scope -p MemoryMax=4G -p MemorySwapMax=0`. `SCALING_LIVE_RUN=TestLiveStress` selects one test. Evidence (JSON, one file per phase, plus the binary, per-run DB and server log) goes to `SCALING_LIVE_ARTIFACT_DIR` (default `.scaling-live-artifacts/<utc>/`, gitignored). Every evidence file carries the binary sha256, the endpoint (`host:port`), pid, executable path and `/health` build info, request counts, status histograms, p50/p95/p99, RSS/fds/threads/goroutines.
+
+| Test | What it does | Pass criteria |
+|---|---|---|
+| `TestLiveScaling` | 20k rows; 8 candidate read endpoints probed, those answering 200 are loaded; calibration 3 x 6 s at 8 clients, then 8/32/64 clients x 3 identical rounds x 10 s | zero 5xx, zero transport errors, at least 200 x 200 per round, p99 (of 200 responses) at most the derived threshold, RSS growth first-to-last round at most 128 MiB (`SCALING_RSS_GROWTH_KB`), pass/fail verdict identical across the 3 rounds |
+| `TestLiveStress` | 320 wrong-password logins from one IP; two 128 MiB request bodies (login, authenticated `search/advanced`); 500 idle keep-alive connections then close | login: only 401/429, at least one 429, burst IP still 429 afterwards; bodies: no 5xx, RSS delta under 256 MiB; storm: fds rise by about 500 and return to baseline (+10) within 40 s; server alive after each |
+| `TestLiveChaosKillRestart` | 40 real conversion jobs + 16 clients of read load, `SIGKILL` once the worker has a job in `running`, offline `PRAGMA integrity_check`, restart on the same DB | integrity `ok`, 40 rows (none lost/duplicated), healthy again within 60 s (`CHAOS_RESTART_BOUND_S`), restart logs the requeue, all 40 jobs reach `completed` with a non-empty output file |
+| `TestLiveChaosGracefulShutdown` | a genuinely long in-flight request (`/debug/pprof/profile?seconds=4`), `SIGTERM` after 1.2 s | the in-flight response completes with 200 and a body, exit status 0, exit within 35 s (`CHAOS_SHUTDOWN_BOUND_S`; the code's own bound is 30 s) |
+
+Threshold derivation (measure first, then bound): the p99 threshold is the largest p99 measured in the three calibration rounds at 8 clients times `SCALING_P99_FACTOR` (default 25), never below `SCALING_P99_FLOOR_MS` (default 250); `SCALING_P99_MS` overrides it. The factor is a deliberately generous host-dependent choice, not a service-level objective: it exists to catch collapse (the finding below), not 2x regressions. All numbers below are host-dependent.
+
+Measured on this host (shared dev workstation, load average 9 to 19 during the runs), 2026-11-03, binary `scaling-live-52cd3174` plus the fix below, one full run (`scripts/test-infra/scaling_live.sh`, exit 0, 4 of 4 live tests passed, 0 skipped):
+
+| Clients | Requests (3 rounds) | Status | p50 / p95 / p99 ms per round | RSS after rounds (MiB) |
+|---|---|---|---|---|
+| calibration 8 | 3 rounds | all 200 | baseline p99 447 ms (max of 3) | |
+| 8 | 548 / 544 / 531 | all 200 | 158/346/376, 161/353/384, 161/348/417 | 145.6, 145.6, 154.5 |
+| 32 | 785 / 725 / 677 | all 200 | 420/995/1218, 431/1097/1319, 467/1187/1380 | 202.2, 216.8, 233.2 |
+| 64 | 762 / 782 / 571 | all 200 | 874/1881/2305, 839/1859/2244, 1149/2872/3316 | 242.8, 253.1, 257.3 |
+
+Derived threshold in that run: 447 ms x 25 = 11 176 ms; 5 925 requests, all 200, zero 5xx, zero transport errors, verdicts identical across rounds at every level. Throughput stays near 55 to 80 requests/s at every level (the host and the single SQLite file are the limit), so latency rises about linearly with clients. Server threads 24 to 46, fds 25 to 41 after load, goroutines 30 after load.
+
+Stress, same run: login burst 320 attempts from one IP gave 30 x 401 and 290 x 429, the correct password from the burst IP was 429, from a clean IP 200 (no lockout of the admin account). 128 MiB bodies: both answered 400, RSS delta 40 kB. Storm: 500 of 500 connections established, server fds 33 to 533 to 33 after close. Chaos kill: at `SIGKILL` the DB held `completed=3, pending=34, running=3`; integrity_check `ok`; restart healthy in 2.2 s; the log line `Conversion worker requeued interrupted jobs` (requeued 3); final `completed=40`, 40 non-empty output files. SIGTERM: the 4.0 s in-flight request returned 200 (584 bytes), process exit status 0, 3.2 s after the signal.
+
+Defect found and fixed by this suite (RED first): before the fix, 32 clients got 19 x 200 in 10 s with 25 transport errors (client timeout 30 s), p99 about 29.9 s, and some authenticated requests answered 401 with latency exactly 3.000 s (the session checker times out against the DB and fails closed). Root cause: `FileRepository.SearchFiles` ran the per-row metadata query while its own result cursor was still open, so each in-flight search held one pooled connection and waited for a second; with more concurrent searches than the pool (25) every search waited on another (pool deadlock, ended only by the client giving up). Reproduced at repository level with a pool of 3 and 12 concurrent searches against a real SQLite file (`repository/file_repository_pool_test.go`: RED, `context deadline exceeded`, then GREEN after buffering the page and closing the cursor before the metadata queries). Mutation check of the unit helpers: forcing `evaluateRound` to return no violations makes 4 unit tests fail.
+
+Honest limits: the workload is read-only browse/search; write paths, SMB/WebDAV backends, Postgres and TLS are not exercised. The suite never goes above 64 clients and ran on a shared host, so absolute numbers are not capacity claims. The 401s seen before the fix show that under DB starvation the session check fails closed after 3 s (by design); no 5xx was observed in any run. The RSS rise and the monitor alert seen in the 9-round run are explained by the soak below (S1).
+
+### Memory soak (S1)
+
+`TestLiveSoak` (`catalog-api/scaling_soak_live_test.go`, tag `live`, skipped unless `SCALING_SOAK_ROUNDS=N` is set) repeats ONE identical load round N times against one real server and records per round: RSS (`RssAnon`/`RssFile`), Go `HeapInuse`/`HeapSys`, post-GC `HeapAlloc` and `HeapObjects` (from `/debug/pprof/heap?debug=1&gc=1`), goroutines (after the round and peak during it), fds, threads, status histogram; heap profiles at selected rounds and `/proc/<pid>/smaps` at the last round. Env: `SCALING_SOAK_MODES` (`distinct32` one source IP per client, `fewips` 4 IPs shared, `manyips` a fresh IP set every round), `SCALING_SOAK_CLIENTS` (default 32), `SCALING_SOAK_ROUND_SECS` (10), `SCALING_SOAK_PROFILE_ROUNDS`, `SCALING_SOAK_SERVER_ENV` (comma list of `KEY=VAL` for the server, diagnostics only). Run: `SCALING_LIVE_RUN=TestLiveSoak SCALING_SOAK_ROUNDS=30 SCALING_SOAK_ROUND_SECS=6 scripts/test-infra/scaling_live.sh`.
+
+What was measured (2026-11-03, shared host, host-dependent; 32 clients, 6 s rounds, 20k rows):
+
+| Build / setting | Rounds | RSS round 1 -> last (MiB) | Notes |
+|---|---|---|---|
+| before the fix, default env | 30 | 183 -> 298 (+115) | 54 glibc malloc arenas hold about 190 MiB of anonymous memory in the process; Go `HeapSys` flat at 44 -> 52 MiB; Go heap objects flat at about 24k |
+| before the fix, `MALLOC_ARENA_MAX=2` | 16 | 183 -> 195 (+12) | one arena of about 48 MiB; same Go heap |
+| after the fix (arena cap at load), default env | 30 | 168 -> 196 (+28) | 6 arenas |
+| after the fix (arena cap + limiter sweep), long run | 70 | 162 -> 167 (mean of rounds 1-10 158, 21-30 165, 51-60 173, 61-70 172) | plateau: slope about 0 MiB/round over the last 20 rounds (-0.11, -0.03); post-GC heap objects 22.5k -> 23.4k; goroutines 28, fds 40 |
+
+Root cause of the RSS ramp: SQLCipher is linked through cgo; each OS thread that calls into C gets its own glibc malloc arena (cap 8 x cores) and freed C memory stays in the arenas. This is arena retention, not a Go-heap leak. Fix: `catalog-api/main_malloc_glibc.go` caps the arenas at 2 in a load-time C constructor (calling `mallopt` from a Go `init()` was measured to be too late: 54 arenas remained). An explicit `MALLOC_ARENA_MAX` in the environment wins. The steady-state bound to expect for this workload is about 170 to 200 MiB RSS (measured 172 MiB mean over rounds 51-70); without the cap about 300 MiB.
+
+The `MEMORY ALERT: potential leak detected` line was a false positive of the goroutine criterion (`goroutines > 1.5 x start-up baseline`, the heap threshold of 10x was not reached: ratio 1.45). Goroutines are 29 to 30 when idle or between rounds and peak at 207 to 256 during 64 concurrent clients (one goroutine per live connection). The monitor now reports a goroutine-only trigger as `MEMORY NOTICE ... (load-correlated)` at info level with a `trigger` field; only a heap ratio above the threshold is an `ALERT`.
+
+Rate limiter: `RateLimitByUser` kept one entry per distinct client forever. That is real unbounded growth with client cardinality (about 6 heap objects per client in the `manyips` run: 24.2k -> 28.2k objects over 640 IPs) but it is NOT the cause of the RSS ramp (the `fewips` run with 4 IPs ramps the same way). Fixed: idle keys are swept at most once per window (`internal/auth/ratelimit.go`).
+
+Honest limits (UNCONFIRMED where stated): RSS rose monotonically across the 9 load rounds (from 146 to 257 MiB, about 111 MiB) and the process's own memory monitor logged `MEMORY ALERT: potential leak detected` (heap ratio 1.45, 205 goroutines) once at 64 clients; the 128 MiB per-level bound passes, but whether RSS plateaus is UNCONFIRMED (a longer soak is needed, see `docs/FOLLOW_UPS_NEXT_PHASE.md`). The workload is read-only browse/search; write paths, SMB/WebDAV backends, Postgres and TLS are not exercised. The suite never goes above 64 clients and ran on a shared host, so absolute numbers are not capacity claims. The 401s seen before the fix show that under DB starvation the session check fails closed after 3 s (by design); no 5xx was observed in any run.
+
+### Pool-deadlock class guard (nested query while a rows cursor is open)
+
+A function that runs a pooled query or exec inside a `for rows.Next()` loop holds one pooled connection for the cursor and asks for a second; with more concurrent callers than pool connections every caller waits for a connection only another waiter can free (a pool deadlock; queries without a deadline never end). Code that writes while its own SELECT cursor is open can also lose the write in rollback-journal mode (busy timeout, then "database is locked").
+
+- Guard: `catalog-api/internal/poolguard` (`go test ./internal/poolguard`). A `go/parser` scan of the non-test Go files of `catalog-api` fails on a pooled call (`Query`, `QueryRow`, `Exec`, their `*Context` forms, `Prepare`, `InsertReturningID`) inside a `for X.Next()` body, directly or through same-package helpers up to three calls deep. Exceptions go in the justified allowlist in `guard_test.go` (today only `RefreshSmartPlaylist`, one `*sql.Tx` = one pinned connection); a stale allowlist entry also fails. Control needles: `testdata/positive` must be found (direct, indirect, exec-per-row), `testdata/negative` (buffered shape, non-cursor loop) must not.
+- Fix pattern: scan the page into a slice, close the cursor (`rows.Close()`), then run the per-row queries.
+- Per-member regression tests (real SQLite file, production migrations, pool of 3, 12 concurrent callers, shared helper `internal/pooltest`; RED signature `pool deadlock: 12 of 12 callers still blocked`): `repository/pool_class_test.go`, `handlers/pool_class_test.go`, `internal/services/pool_class_test.go`, `internal/media/realtime/pool_class_test.go`.
+## Registration approval and converter tools (real binary)
+
+Two real-binary tests in `catalog-api/` (they build and start the server on SQLite; skipped under `-short`):
+
+```bash
+cd catalog-api
+go test -run TestRegistrationApproval_RealBinary -count=1 .   # register -> pending -> login 403 -> admin approves -> login 200; open/disabled modes
+go test -run TestConversionToolsMissing_RealBinary -count=1 . # PATH without ffmpeg: job ends failed naming the tool; /health/deep converters all false
+```
+
+To verify the runtime image end to end: build it locally with rootless podman
+(`podman build --network host -f catalog-api/Dockerfile -t localhost/<name>:test <context>`), run it on an
+ephemeral loopback port with a throwaway `ADMIN_PASSWORD`/`JWT_SECRET`, check `GET /health/deep` shows
+`ffmpeg`, `convert` and `pdftotext` as `true`, and submit a real conversion job through
+`POST /api/v1/conversion/jobs` (source and target under the container's `/app/data`). Remove only the
+container and image you created. Tests that register a user and log in straight away must run the server
+with `REGISTRATION_MODE=open` (see `docs/UPGRADE_NOTES.md`).

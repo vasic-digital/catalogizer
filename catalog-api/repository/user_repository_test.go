@@ -210,6 +210,7 @@ func TestUserRepository_Create(t *testing.T) {
 						sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(),
 						sqlmock.AnyArg(), sqlmock.AnyArg(), true,
 						sqlmock.AnyArg(), sqlmock.AnyArg(),
+						"{}", // settings: empty keeps the column default
 					).
 					WillReturnResult(sqlmock.NewResult(42, 1))
 			},

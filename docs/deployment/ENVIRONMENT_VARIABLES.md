@@ -73,7 +73,8 @@ These variables are read by the Go backend via `os.Getenv()` calls in the source
 
 | Variable | Description | Default | Required | Source File |
 |----------|-------------|---------|----------|-------------|
-| `CATALOGIZER_READ_ROOTS` | Colon-separated absolute directories the server may read from request-named paths (local storage roots, sync upload sources, conversion input). Replaces the default when set | `MEDIA_ROOT_PATH` + `./data` | No | `internal/pathguard/roots.go` |
+| `CATALOGIZER_READ_ROOTS` | Colon-separated absolute directories the server may read from request-named paths (sync upload sources, conversion input; local storage roots are governed by `CATALOGIZER_LOCAL_ROOT_BASES`). Replaces the default when set | `MEDIA_ROOT_PATH` + `./data` | No | `internal/pathguard/roots.go` |
+| `CATALOGIZER_LOCAL_ROOT_BASES` | Colon-separated absolute directories under which a `local` storage root may live (symlinks resolved, re-checked at every use; the database and key files are always refused). Unset = no local root allowed | unset (deny) | No | `filesystem/local_policy.go` |
 | `CATALOGIZER_SYNC_ROOTS` | Directories sync downloads / destinations may write to | `./data` | No | `internal/pathguard/roots.go` |
 | `CATALOGIZER_CONVERSION_ROOTS` | Directories conversion output may be written to | `./data` | No | `internal/pathguard/roots.go` |
 | `CATALOGIZER_OUTBOUND_ALLOW_CIDRS` | Comma-separated networks (e.g. `192.168.1.0/24`) the server may connect to even though they are private or loopback, for sync endpoints on a LAN NAS. Link-local / metadata addresses are never admitted. Invalid entries allow nothing | (empty: private ranges refused) | No | `internal/netguard/netguard.go` |

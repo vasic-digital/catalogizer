@@ -1309,8 +1309,11 @@ func (s *SyncService) testConnection(endpoint *models.SyncEndpoint) error {
 			return err
 		}
 		return client.TestConnection()
+	case models.SyncTypeLocal:
+		return nil // a local endpoint has no remote side to reach; its paths are confined and checked by validateSyncEndpoint
 	default:
-		return nil // Skip test for other types for now
+		// No connectivity test exists for this type (cloud storage sync cannot run either, see performCloudSync): never report it reachable.
+		return fmt.Errorf("connection test is not supported for sync type %q", endpoint.Type)
 	}
 }
 

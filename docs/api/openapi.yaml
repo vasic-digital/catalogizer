@@ -1300,34 +1300,50 @@ components:
 
     SystemInfo:
       type: object
-      description: System runtime information for admin dashboard
+      description: |
+        Runtime information for the admin dashboard. A figure the host cannot
+        measure is JSON null and its name is listed in `unavailable`; it is never
+        a fabricated 0.
+      required: [version, uptime, memoryUsage, activeConnections, unavailable]
       properties:
         version:
           type: string
-        build_number:
-          type: string
-        build_date:
-          type: string
-        uptime_seconds:
+        uptime:
+          type: integer
+          description: Seconds since the process started
+        cpuUsage:
+          type: number
+          nullable: true
+          description: Host CPU busy percentage sampled over ~200 ms from /proc/stat; null when not measurable
+        memoryUsage:
+          type: number
+          description: Go heap in use as a percentage of memory obtained from the OS
+        diskUsage:
+          type: object
+          nullable: true
+          description: File system holding the local database; null without a local data directory
+          properties:
+            total:
+              type: integer
+              format: int64
+            used:
+              type: integer
+              format: int64
+            free:
+              type: integer
+              format: int64
+        activeConnections:
+          type: integer
+        totalRequests:
           type: integer
           format: int64
-        goroutines:
-          type: integer
-        memory_alloc_mb:
-          type: number
-          format: float
-        memory_sys_mb:
-          type: number
-          format: float
-        gc_cycles:
-          type: integer
-        db_open_connections:
-          type: integer
-        db_idle_connections:
-          type: integer
-        db_wait_count:
-          type: integer
-          format: int64
+          nullable: true
+          description: Always null today (no request counter exists)
+        unavailable:
+          type: array
+          items:
+            type: string
+          description: Names of the figures above that could not be measured
 
     AdminUserUpdate:
       type: object
@@ -2220,6 +2236,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '403':
+          description: 'Credentials are correct but the account is pending administrator approval (code account_pending_approval)'
         '401':
           description: Invalid credentials
           content:
@@ -2231,7 +2249,16 @@ paths:
     post:
       tags: [auth]
       summary: User registration
-      description: Registers a new user account.
+      description: |
+        Self-registration. Behaviour depends on the server setting `REGISTRATION_MODE`:
+
+        - unset / `approval` (default): the account is created INACTIVE and PENDING
+          administrator approval, at the minimal role; no session is issued and
+          the user cannot log in until an administrator approves the account
+          (`PUT /api/v1/admin/users/{id}` with `status: active`). Pending accounts
+          are listed by `GET /api/v1/admin/users?status=pending`.
+        - `open` (explicit opt-in): the account is active immediately.
+        - `disabled`: registration is refused with 403.
       requestBody:
         required: true
         content:
@@ -2240,13 +2267,30 @@ paths:
               $ref: '#/components/schemas/RegisterRequest'
       responses:
         '201':
-          description: User created
+          description: |
+            User created. The user object plus `registration_status` (`pending` or
+            `active`) and a human-readable `message`. In the default mode
+            `is_active` is false and no session token is returned.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                allOf:
+                  - $ref: '#/components/schemas/User'
+                  - type: object
+                    properties:
+                      registration_status:
+                        type: string
+                        enum: [pending, active]
+                      message:
+                        type: string
         '400':
           description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Registration is disabled (`REGISTRATION_MODE=disabled`)
           content:
             application/json:
               schema:
@@ -2866,12 +2910,12 @@ paths:
             schema:
               type: object
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
-        '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
-        '200':
-          description: Copy initiated
+        '501':
+          description: Not implemented. Copying to a storage root is not wired to any copy engine; nothing is copied. Use POST /api/v1/copy/local or /api/v1/copy/upload.
 
   /api/v1/copy/local:
     post:
@@ -2889,7 +2933,7 @@ paths:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Copy initiated
 
@@ -2909,7 +2953,7 @@ paths:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Upload initiated
 
@@ -3286,13 +3330,11 @@ paths:
   /api/v1/media/{id}/refresh:
     post:
       tags: [media]
-      summary: Trigger metadata refresh
+      summary: Trigger metadata refresh (not implemented)
       description: |
-        Triggers a metadata refresh for the specified media item by updating
-        its last_updated timestamp. This causes the enrichment pipeline to
-        re-fetch metadata from configured providers on its next pass.
-        Returns 202 Accepted immediately; the actual refresh happens
-        asynchronously.
+        Not implemented: no refresher exists, so a valid request answers 501
+        and nothing is queued or modified. An invalid id answers 400 and an
+        unknown item 404.
       security:
         - BearerAuth: []
       parameters:
@@ -3304,22 +3346,12 @@ paths:
             type: integer
             format: int64
       responses:
-        '202':
-          description: Metadata refresh accepted and queued
+        '501':
+          description: Not implemented. No component re-fetches metadata for a media item, so nothing is queued or changed. Use POST /api/v1/entities/{id}/metadata/refresh for entity cover discovery.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: accepted
-                  message:
-                    type: string
-                    example: Metadata refresh queued
-                  id:
-                    type: integer
-                    format: int64
+                $ref: '#/components/schemas/Error'
         '400':
           description: Invalid media item ID
           content:
@@ -3473,11 +3505,14 @@ paths:
     get:
       tags: [recommendations]
       summary: Get trending items
+      description: Not implemented. There is no trending-analytics source, so the handler answers 501 instead of inventing titles.
       security:
         - BearerAuth: []
       responses:
-        '200':
-          description: Trending items
+        '401':
+          description: Missing or invalid token
+        '501':
+          description: Not implemented; nothing is fabricated
 
   /api/v1/recommendations/personalized/{user_id}:
     get:
@@ -3492,12 +3527,14 @@ paths:
           schema:
             type: integer
       responses:
+        '401':
+          description: Missing or invalid token
         '403':
-          description: Caller is neither the requested user nor an administrator
+          description: The path user_id is not the caller (and the caller is not an admin)
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
-        '200':
-          description: Personalized recommendations
+        '501':
+          description: Not implemented. The server has no recommendation engine; no recommendations are fabricated.
 
   /api/v1/subtitles/search:
     get:
@@ -3515,8 +3552,10 @@ paths:
           schema:
             type: string
       responses:
-        '200':
-          description: Subtitle search results
+        '401':
+          description: Missing or invalid token
+        '501':
+          description: Not implemented. No subtitle provider client exists, so a search cannot be answered (code NOT_IMPLEMENTED).
 
   /api/v1/subtitles/download:
     post:
@@ -3618,12 +3657,17 @@ paths:
         - BearerAuth: []
       responses:
         '200':
-          description: Supported providers list
+          description: Providers that have a working client. Currently an empty list, because no provider client is implemented.
 
   /api/v1/storage/list/{path}:
     get:
       tags: [storage]
       summary: List storage path
+      description: |
+        Lists a directory of a configured storage root. Admin only. Local roots
+        are confined to the directories named in CATALOGIZER_LOCAL_ROOT_BASES
+        (default: none) and symlinks are resolved before the check. At most 1000
+        entries are returned; `truncated` is true when more exist.
       security:
         - BearerAuth: []
       parameters:
@@ -3632,13 +3676,62 @@ paths:
           required: true
           schema:
             type: string
+        - name: storage_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
       responses:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Storage path listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                  storage_id:
+                    type: integer
+                    format: int64
+                  truncated:
+                    type: boolean
+                  files:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        path:
+                          type: string
+                        size:
+                          type: integer
+                          format: int64
+                        is_dir:
+                          type: boolean
+                        modified_at:
+                          type: string
+                          format: date-time
+        '400':
+          description: Missing or invalid storage_id
+        '401':
+          description: Unauthorized
+        '403':
+          description: Admin role required
+        '404':
+          description: Storage root not found, or the directory does not exist
+        '409':
+          description: Storage root is disabled
+        '422':
+          description: Root configuration cannot be used to connect, or the local path is outside the allowed bases (CATALOGIZER_LOCAL_ROOT_BASES)
+        '502':
+          description: The storage backend could not be reached
 
   /api/v1/storage/roots:
     get:
@@ -3651,7 +3744,7 @@ paths:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Storage roots list
           content:
@@ -3667,9 +3760,11 @@ paths:
       tags: [storage]
       summary: Create storage root
       description: |
-        Creates a storage root. Requires the storage.manage permission (or system.admin).
-        A protocol `local` root must be an absolute path inside the configured media roots
-        (MEDIA_ROOT_PATH, CATALOGIZER_READ_ROOTS, ./data), symlinks resolved; anything else is refused with 400.
+        Creates or updates a storage root configuration. Admin only. A local
+        root must lie inside one of the directories in CATALOGIZER_LOCAL_ROOT_BASES
+        (default deny) or the request fails with 403.
+        A root that is, contains or aliases the application database, its SQLite companions or the key file/directory is refused
+        with 403, and the symlink-resolved path is what is stored.
       security:
         - BearerAuth: []
       requestBody:
@@ -3682,7 +3777,7 @@ paths:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '201':
           description: Storage root created
           content:
@@ -3716,7 +3811,7 @@ paths:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Storage roots list
           content:
@@ -3745,7 +3840,7 @@ paths:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Connectivity status
           content:
@@ -3978,7 +4073,7 @@ paths:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Discovered shares
     get:
@@ -3990,7 +4085,7 @@ paths:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Discovered shares
 
@@ -4009,7 +4104,7 @@ paths:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Connection test result
     get:
@@ -4021,7 +4116,7 @@ paths:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Connection test result
 
@@ -4040,7 +4135,7 @@ paths:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Share contents
 
@@ -4059,7 +4154,7 @@ paths:
               $ref: '#/components/schemas/QueueScanRequest'
       responses:
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '202':
           description: Scan job queued
           content:
@@ -4077,6 +4172,10 @@ paths:
                     type: string
                   message:
                     type: string
+        '401':
+          description: Missing or invalid token
+        '403':
+          description: Admin role required
         '404':
           description: Storage root not found
         '503':
@@ -4379,8 +4478,17 @@ paths:
         Returns all users with their roles, login history, and account status.
         Unlike the standard /users endpoint, this includes locked/inactive users
         and detailed security fields. Requires admin role.
+        The optional `status` query parameter filters by account status;
+        `pending` lists self-registrations waiting for approval.
       security:
         - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [active, inactive, suspended, pending]
       responses:
         '200':
           description: All users with admin-level detail
@@ -4466,6 +4574,8 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden (admin role required)
+        '500':
+          description: The storage roots could not be read from the database (never a 200 with an empty list)
         '503':
           description: The caller's admin status could not be determined (fail closed)
 
@@ -4491,16 +4601,16 @@ paths:
                   type: integer
                   format: int64
       responses:
-        '200':
-          description: Scan initiated
+        '501':
+          description: Not implemented. This endpoint starts nothing; use POST /api/v1/scans (admin).
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
+                  error:
                     type: string
-                  job_id:
+                  path:
                     type: string
         '400':
           description: Invalid storage root
@@ -4581,14 +4691,14 @@ paths:
           schema:
             type: string
       responses:
-        '200':
-          description: Restore initiated
+        '501':
+          description: Not implemented. Nothing is restored or queued; restore a backup by replacing the database file while the service is stopped.
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
+                  error:
                     type: string
         '401':
           description: Unauthorized
@@ -4940,12 +5050,13 @@ paths:
   /api/v1/configuration/status:
     get:
       tags: [configuration]
-      summary: Get system status
+      summary: Get system status (not implemented)
+      description: No component health source is wired to this endpoint, so it answers 501 and reports nothing as healthy. Use GET /api/v1/health.
       security:
         - BearerAuth: []
       responses:
-        '200':
-          description: System status
+        '501':
+          description: Not implemented. Nothing was checked.
 
   /api/v1/configuration/wizard/step/{step_id}:
     get:
@@ -5484,6 +5595,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MediaCollection'
+        '501':
+          description: Smart collections (is_smart true or non-empty smart_rules) are not supported; nothing was created
 
   /api/v1/collections/{id}:
     get:
@@ -5525,6 +5638,8 @@ paths:
       responses:
         '200':
           description: Collection updated
+        '501':
+          description: is_smart true is not supported; nothing was changed
     delete:
       tags: [collections]
       summary: Delete collection
@@ -6477,7 +6592,7 @@ paths:
               $ref: '#/components/schemas/CreateSyncEndpointRequest'
       responses:
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '201':
@@ -7707,32 +7822,27 @@ paths:
     get:
       tags:
       - browse
-      summary: List files (placeholder)
-      description: 'Placeholder: always returns an empty listing and echoes the requested path. Use GET /api/v1/browse/directory/{path} for real listings.'
+      summary: List files of a storage root
+      description: 'Forwards to the storage browser. Requires the storage_root query parameter (400 otherwise).'
       security:
       - BearerAuth: []
       parameters:
-      - name: path
+      - name: storage_root
         in: query
+        required: true
         schema:
           type: string
-        description: Path echoed back
       responses:
         '200':
-          description: Empty listing
+          description: Directory listing
+        '400':
+          description: storage_root is missing
+        '501':
+          description: Not implemented (no file browser is wired); nothing is fabricated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  files:
-                    type: array
-                    items:
-                      type: object
-                  path:
-                    type: string
-                  count:
-                    type: integer
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -7744,7 +7854,7 @@ paths:
       tags:
       - media
       summary: List media types
-      description: Returns the 11 canonical media types as a static list.
+      description: 'Rows of the media_types table (id, name).'
       security:
       - BearerAuth: []
       responses:
@@ -7757,13 +7867,6 @@ paths:
                 properties:
                   media_types:
                     type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: integer
-                        name:
-                          type: string
         '401':
           description: Unauthorized
           content:
@@ -7774,13 +7877,13 @@ paths:
     get:
       tags:
       - stats
-      summary: Media-type distribution (placeholder)
-      description: 'Placeholder: returns a zeroed distribution. Real counts are available from GET /api/v1/entities/types.'
+      summary: Media-type distribution
+      description: 'Counts of media_items per media type, computed from the database.'
       security:
       - BearerAuth: []
       responses:
         '200':
-          description: Zeroed distribution
+          description: Distribution
           content:
             application/json:
               schema:
@@ -7788,8 +7891,6 @@ paths:
                 properties:
                   distribution:
                     type: object
-                    additionalProperties:
-                      type: integer
                   total:
                     type: integer
         '401':
@@ -7802,13 +7903,13 @@ paths:
     get:
       tags:
       - stats
-      summary: Scan history (placeholder)
-      description: 'Placeholder: returns an empty history. Real history is available from GET /api/v1/stats/scans.'
+      summary: Scan history
+      description: 'Rows of scan_history, newest first. An empty list means no scan has run.'
       security:
       - BearerAuth: []
       responses:
         '200':
-          description: Empty history
+          description: History
           content:
             application/json:
               schema:
@@ -7816,8 +7917,6 @@ paths:
                 properties:
                   history:
                     type: array
-                    items:
-                      type: object
                   count:
                     type: integer
         '401':
@@ -8709,29 +8808,17 @@ paths:
     get:
       tags:
       - subtitles
-      summary: Get translations (placeholder)
-      description: 'Placeholder: returns an empty translation map for the requested locale.'
+      summary: Get translations
+      description: 'No localization catalog exists.'
       security:
       - BearerAuth: []
-      parameters:
-      - name: locale
-        in: query
-        schema:
-          type: string
-          default: en
       responses:
-        '200':
-          description: Empty map
+        '501':
+          description: Not implemented (no localization catalog exists); nothing is fabricated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  locale:
-                    type: string
-                  translations:
-                    type: object
-                    additionalProperties: true
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -8742,24 +8829,17 @@ paths:
     get:
       tags:
       - subtitles
-      summary: Localization statistics (placeholder)
-      description: 'Placeholder: returns static values.'
+      summary: Localization statistics
+      description: 'No localization catalog exists.'
       security:
       - BearerAuth: []
       responses:
-        '200':
-          description: Static stats
+        '501':
+          description: Not implemented (no localization catalog exists); nothing is fabricated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  supported_locales:
-                    type: integer
-                  default_locale:
-                    type: string
-                  coverage:
-                    type: number
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -8770,24 +8850,17 @@ paths:
     get:
       tags:
       - subtitles
-      summary: List translations (placeholder)
-      description: 'Placeholder: always returns an empty list.'
+      summary: List translations
+      description: 'No translation catalog exists.'
       security:
       - BearerAuth: []
       responses:
-        '200':
-          description: Empty list
+        '501':
+          description: Not implemented (no translation catalog exists); nothing is fabricated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  translations:
-                    type: array
-                    items:
-                      type: object
-                  count:
-                    type: integer
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -8798,13 +8871,13 @@ paths:
     get:
       tags:
       - subtitles
-      summary: List subtitles (placeholder)
-      description: 'Placeholder: always returns an empty list. Per-media subtitles are at GET /api/v1/subtitles/media/{media_id}.'
+      summary: List stored subtitle tracks
+      description: 'Rows of subtitle_tracks. Does not search providers.'
       security:
       - BearerAuth: []
       responses:
         '200':
-          description: Empty list
+          description: Tracks
           content:
             application/json:
               schema:
@@ -8812,8 +8885,6 @@ paths:
                 properties:
                   subtitles:
                     type: array
-                    items:
-                      type: object
                   count:
                     type: integer
         '401':
@@ -9015,6 +9086,8 @@ paths:
             schema:
               $ref: '#/components/schemas/CreatePlaylistRequest'
       responses:
+        '501':
+          description: is_smart true or smart_rules present - smart playlists are not supported; nothing was created
         '201':
           description: Created
           content:
@@ -9268,7 +9341,7 @@ paths:
       tags:
       - recommendations
       summary: List recommendations (trending default)
-      description: Alias of GET /api/v1/recommendations/trending.
+      description: Alias of GET /api/v1/recommendations/trending, which is not implemented (501).
       security:
       - BearerAuth: []
       parameters:
@@ -9293,12 +9366,12 @@ paths:
           - year
           default: week
       responses:
-        '200':
-          description: Trending items
+        '501':
+          description: Not implemented. Forwards to the trending handler, which has no analytics source; nothing is fabricated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrendingResponse'
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -9315,37 +9388,17 @@ paths:
     get:
       tags:
       - recommendations
-      summary: Recommendations by type (placeholder)
-      description: 'Placeholder: returns empty lists for movie, tv, music and book.'
+      summary: Recommendations by type
+      description: 'The server has no recommendation engine.'
       security:
       - BearerAuth: []
       responses:
-        '200':
-          description: Empty shell
+        '501':
+          description: Not implemented (no recommendation engine is wired); nothing is fabricated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  recommendations:
-                    type: object
-                    properties:
-                      movie:
-                        type: array
-                        items:
-                          type: object
-                      tv:
-                        type: array
-                        items:
-                          type: object
-                      music:
-                        type: array
-                        items:
-                          type: object
-                      book:
-                        type: array
-                        items:
-                          type: object
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -9464,7 +9517,7 @@ paths:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Identities
           content:
@@ -9497,7 +9550,7 @@ paths:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Probe result
           content:
@@ -9540,7 +9593,7 @@ paths:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
-          description: Caller lacks the storage.manage permission (system.admin also passes; decided from the database on every request)
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Probe and ingest result
           content:
@@ -9569,24 +9622,17 @@ paths:
     get:
       tags:
       - sync
-      summary: List sync conflicts (placeholder)
-      description: 'Placeholder: always returns an empty list.'
+      summary: List sync conflicts
+      description: 'No sync conflict store exists.'
       security:
       - BearerAuth: []
       responses:
-        '200':
-          description: Empty list
+        '501':
+          description: Not implemented (no sync conflict store exists); nothing is fabricated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  conflicts:
-                    type: array
-                    items:
-                      type: object
-                  count:
-                    type: integer
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -9597,24 +9643,17 @@ paths:
     get:
       tags:
       - sync
-      summary: List sync devices (placeholder)
-      description: 'Placeholder: always returns an empty list.'
+      summary: List sync devices
+      description: 'No device registry exists.'
       security:
       - BearerAuth: []
       responses:
-        '200':
-          description: Empty list
+        '501':
+          description: Not implemented (no device registry exists); nothing is fabricated
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  devices:
-                    type: array
-                    items:
-                      type: object
-                  count:
-                    type: integer
+                $ref: '#/components/schemas/Error'
         '401':
           description: Unauthorized
           content:
@@ -9625,13 +9664,13 @@ paths:
     get:
       tags:
       - sync
-      summary: Sync status (placeholder)
-      description: 'Placeholder: always reports idle with no active sessions. Real figures are at GET /api/v1/sync/statistics.'
+      summary: Sync status
+      description: 'Derived from the caller sync_sessions rows (status, active_sessions, last_sync).'
       security:
       - BearerAuth: []
       responses:
         '200':
-          description: Static status
+          description: Status
           content:
             application/json:
               schema:
@@ -9639,12 +9678,10 @@ paths:
                 properties:
                   status:
                     type: string
-                    example: idle
                   active_sessions:
                     type: integer
                   last_sync:
                     type: string
-                    nullable: true
         '401':
           description: Unauthorized
           content:
@@ -9656,7 +9693,7 @@ paths:
       tags:
       - sync
       summary: List sync providers
-      description: Static list of the supported sync backends.
+      description: 'Endpoint types the caller has configured in sync_endpoints, with endpoint counts.'
       security:
       - BearerAuth: []
       responses:
@@ -9669,15 +9706,6 @@ paths:
                 properties:
                   providers:
                     type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        name:
-                          type: string
-                        enabled:
-                          type: boolean
         '401':
           description: Unauthorized
           content:

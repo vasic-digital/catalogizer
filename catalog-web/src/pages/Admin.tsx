@@ -6,13 +6,34 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { FileBarChart, Gauge } from 'lucide-react';
 import toast from 'react-hot-toast';
-import type { User } from '@/types/admin';
+import type { User, SystemInfo } from '@/types/admin';
+
+// Shown only while the system-info request is loading or has failed. Every
+// figure is null and renders as "Unavailable", never an invented healthy-looking value.
+const UNAVAILABLE_SYSTEM_INFO: SystemInfo = {
+  version: 'Unavailable',
+  uptime: null,
+  cpuUsage: null,
+  memoryUsage: null,
+  diskUsage: null,
+  activeConnections: null,
+  totalRequests: null,
+  unavailable: ['all'],
+};
 
 /** Format a metric the backend may not measure: null/undefined/NaN render as an em dash, never a crash. */
 const fmtNum = (v: number | null | undefined, unit = '', digits?: number): string => {
   if (typeof v !== 'number' || !Number.isFinite(v)) return '—';
   const text = digits === undefined ? v.toLocaleString() : v.toFixed(digits);
   return `${text}${unit}`;
+};
+
+// Prefer the server's own explanation (e.g. the 501 guidance) over a generic axios message.
+const serverMessage = (error: unknown): string => {
+  const data = (error as { response?: { data?: { error?: string; message?: string } } })?.response?.data;
+  if (data?.error) return data.error;
+  if (data?.message) return data.message;
+  return error instanceof Error ? error.message : 'Unknown error';
 };
 
 export const Admin: React.FC = () => {
@@ -23,7 +44,7 @@ export const Admin: React.FC = () => {
     refetchInterval: 1000 * 30, // Refresh every 30 seconds
   });
 
-  const { data: users, isLoading: _usersLoading } = useQuery({
+  const { data: users, isLoading: _usersLoading, refetch: refetchUsers } = useQuery({
     queryKey: ['admin-users'],
     queryFn: () => adminApi.getUsers(),
     staleTime: 1000 * 60 * 5,
@@ -58,7 +79,7 @@ export const Admin: React.FC = () => {
       await adminApi.createBackup(type);
       toast.success(`${type === 'full' ? 'Full' : 'Incremental'} backup started successfully`);
     } catch (error) {
-      toast.error(`Failed to create backup: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error(`Failed to create backup: ${serverMessage(error)}`);
     }
   };
 
@@ -67,7 +88,7 @@ export const Admin: React.FC = () => {
       await adminApi.restoreBackup(id);
       toast.success('Backup restore initiated successfully');
     } catch (error) {
-      toast.error(`Failed to restore backup: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error(`Failed to restore backup: ${serverMessage(error)}`);
     }
   };
 
@@ -76,7 +97,7 @@ export const Admin: React.FC = () => {
       await adminApi.scanStorage(path);
       toast.success(`Storage scan initiated for ${path}`);
     } catch (error) {
-      toast.error(`Failed to scan storage: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error(`Failed to scan storage: ${serverMessage(error)}`);
     }
   };
 
@@ -84,6 +105,7 @@ export const Admin: React.FC = () => {
     try {
       await adminApi.updateUser(id, updates);
       toast.success('User updated successfully');
+      refetchUsers();
     } catch (error) {
       toast.error(`Failed to update user: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
@@ -92,19 +114,7 @@ export const Admin: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <AdminPanel
-        systemInfo={systemInfo || {
-          version: '1.0.0',
-          uptime: 86400,
-          cpuUsage: 45,
-          memoryUsage: 62,
-          diskUsage: {
-            total: 1073741824000,
-            used: 536870912000,
-            free: 536870912000
-          },
-          activeConnections: 12,
-          totalRequests: 15420
-        }}
+        systemInfo={systemInfo || UNAVAILABLE_SYSTEM_INFO}
         users={users || []}
         storageInfo={storageInfo || []}
         backups={backups || []}

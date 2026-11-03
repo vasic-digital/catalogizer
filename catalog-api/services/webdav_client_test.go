@@ -1,6 +1,8 @@
 package services
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
@@ -403,31 +405,14 @@ func TestSyncResult_Initialization(t *testing.T) {
 	}
 }
 
-func TestWebDAVClient_GetQuota(t *testing.T) {
-	client := NewWebDAVClient("https://dav.example.com", "user", "pass")
-
-	quota, err := client.GetQuota()
-
-	require.NoError(t, err)
-	require.NotNil(t, quota)
-
-	// GetQuota returns placeholder values
-	assert.Equal(t, int64(0), quota.Used)
-	assert.Equal(t, int64(-1), quota.Available, "available should be -1 for unlimited")
-}
-
-func TestWebDAVClient_GetQuota_ReturnsConsistentDefaults(t *testing.T) {
-	// Verify that multiple calls return the same defaults
-	client := NewWebDAVClient("https://dav.example.com", "user", "pass")
-
-	quota1, err1 := client.GetQuota()
-	quota2, err2 := client.GetQuota()
-
-	require.NoError(t, err1)
-	require.NoError(t, err2)
-
-	assert.Equal(t, quota1.Used, quota2.Used)
-	assert.Equal(t, quota1.Available, quota2.Available)
+func TestWebDAVClient_GetQuota_UnreachableServerIsAnError(t *testing.T) {
+	// CAT-001: GetQuota used to return placeholder values (used 0 / unlimited) whatever the server said or whether it answered at all.
+	srv := httptest.NewServer(http.NotFoundHandler())
+	url := srv.URL
+	srv.Close()
+	quota, err := NewWebDAVClient(url, "user", "pass").GetQuota()
+	require.Error(t, err)
+	assert.Nil(t, quota)
 }
 
 func TestWebDAVClient_BaseURLPreserved(t *testing.T) {

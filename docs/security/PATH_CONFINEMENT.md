@@ -90,7 +90,7 @@ The effective roots are logged once at boot (`Filesystem path confinement roots:
 Everything under a write root is also readable. `local_path` of a sync endpoint is READ for
 `sync_direction: upload`, WRITTEN for `download` / `bidirectional`. `source_directory` / `destination_directory`
 in `sync_settings` are checked for every endpoint type; `sync_mode: bidirectional` treats the source side as written.
-Storage roots registered in the database are NOT added automatically; list their directories in `CATALOGIZER_READ_ROOTS`
+Storage roots registered in the database are NOT added automatically; local storage roots are governed separately by `CATALOGIZER_LOCAL_ROOT_BASES` (see below); for sync/conversion paths list their directories in `CATALOGIZER_READ_ROOTS`
 (UNCONFIRMED whether a dynamic provider is wanted - see "Follow-up: dynamic storage-root provider" below).
 
 A local endpoint (`type: local`) with no `source_directory` uses `local_path` as its source, but `local_path` is
@@ -352,12 +352,12 @@ could still force about 2^33 requests, so the round-1 commit message's "bounded"
 ## Local storage roots and outbound destinations (fix-p2-route-perms, review round 1)
 
 * `POST /api/v1/storage/roots` with `protocol: local` accepts only an absolute path that resolves, after symlinks,
-  inside `CATALOGIZER_READ_ROOTS` (`MEDIA_ROOT_PATH`, `./data` by default) and is not a protected application file:
-  the handler uses `pathguard.ConfineData`, so the database, its SQLite companions (`-wal`, `-shm`, `-journal`), the
-  key file and any directory that contains one of them are refused with 400. `/etc`, `/`, relative paths and symlink
-  escapes are refused with 400 as well. Real-binary tests:
+  inside a directory listed in `CATALOGIZER_LOCAL_ROOT_BASES` (the single local-root policy; unset = deny all) and is not a
+  protected application file: `filesystem.ResolveLocalRoot` refuses the database, its SQLite companions (`-wal`, `-shm`,
+  `-journal`), the key file and any directory that contains one of them. All refusals are `403`. The symlink-resolved
+  path is what is stored, and the same check is repeated every time the root is used (scan, listing), so a directory
+  swapped for a symlink after creation is refused at scan time. Real-binary tests:
   `TestRoutePerms_RealBinary_LocalRootConfinement`, `TestRoutePerms_RealBinary_LocalRootRefusesProtectedFiles`.
-  Roots stored before this fix are not re-validated at scan time (tracked follow-up P2-f).
 * Server-side requests to a URL a caller names (sync endpoints of type `webdav` / `cloud_storage`, the public image
   proxy) go through `internal/netguard`: the host is resolved, loopback / private / link-local (cloud metadata) /
   carrier-grade-NAT / unspecified / multicast / reserved addresses are refused, and the connection is dialled to the

@@ -140,102 +140,15 @@ export const CollectionRealTime: React.FC<CollectionRealTimeProps> = ({
   const connectionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
-  // Simulate WebSocket connection
+  // The server has no real-time channel (no WebSocket or SSE endpoint for collections), so
+  // there is nothing to connect to. The earlier version faked a connection with invented
+  // users and events (CAT-001); it now reports the real state instead.
   const connectWebSocket = useCallback(() => {
-    setConnectionStatus({ status: 'connecting' })
-    
-    // Simulate connection delay
-    if (connectionTimeoutRef.current) clearTimeout(connectionTimeoutRef.current);
-    connectionTimeoutRef.current = setTimeout(() => {
-      setIsConnected(true)
-      setConnectionStatus({
-        status: 'connected',
-        latency: Math.floor(Math.random() * 50) + 20,
-        messageCount: 0,
-        lastConnected: new Date().toISOString()
-      })
-      
-      // Simulate initial online users
-      const mockUsers: OnlineUser[] = [
-        {
-          id: '1',
-          name: 'You',
-          avatar: undefined,
-          status: 'active',
-          lastSeen: new Date().toISOString(),
-          isCurrentUser: true
-        },
-        {
-          id: '2',
-          name: 'John Doe',
-          avatar: undefined,
-          status: 'active',
-          lastSeen: new Date().toISOString(),
-          currentActivity: 'Browsing items'
-        },
-        {
-          id: '3',
-          name: 'Jane Smith',
-          avatar: undefined,
-          status: 'away',
-          lastSeen: new Date(Date.now() - 300000).toISOString(),
-          currentActivity: 'Away'
-        }
-      ]
-      setOnlineUsers(mockUsers)
-      
-      // Generate some mock events
-      const mockEvents: RealtimeEvent[] = [
-        {
-          id: '1',
-          type: 'user_joined',
-          timestamp: new Date(Date.now() - 300000).toISOString(),
-          userId: '2',
-          userName: 'John Doe',
-          data: {},
-          collectionId: collection.id,
-          collectionName: collection.name
-        },
-        {
-          id: '2',
-          type: 'item_added',
-          timestamp: new Date(Date.now() - 180000).toISOString(),
-          userId: '2',
-          userName: 'John Doe',
-          data: {
-            itemId: 'item123',
-            itemTitle: 'Summer Mix 2024',
-            itemType: 'music'
-          },
-          collectionId: collection.id,
-          collectionName: collection.name
-        },
-        {
-          id: '3',
-          type: 'playback_started',
-          timestamp: new Date(Date.now() - 60000).toISOString(),
-          userId: '3',
-          userName: 'Jane Smith',
-          data: {
-            itemId: 'item456',
-            itemTitle: 'Presentation Video',
-            itemType: 'video'
-          },
-          collectionId: collection.id,
-          collectionName: collection.name
-        }
-      ]
-      setRecentEvents(mockEvents)
-      
-      setActivityStats({
-        activeUsers: mockUsers.length,
-        totalInteractions: mockEvents.length,
-        recentActivity: 3,
-        peakConcurrent: 5
-      })
-      
-    }, 1000)
-  }, [collection.id, collection.name])
+    setIsConnected(false)
+    setOnlineUsers([])
+    setRecentEvents([])
+    setConnectionStatus({ status: 'error' })
+  }, [])
 
   const disconnectWebSocket = useCallback(() => {
     setIsConnected(false)
@@ -271,66 +184,6 @@ export const CollectionRealTime: React.FC<CollectionRealTimeProps> = ({
       disconnectWebSocket()
     }
   }, [connectWebSocket, disconnectWebSocket])
-
-  // Simulate real-time updates
-  useEffect(() => {
-    if (!isConnected) return
-    
-    const interval = setInterval(() => {
-      // Simulate random events
-      const eventTypes = Object.keys(EVENT_ICONS) as Array<keyof typeof EVENT_ICONS>
-      const randomType = eventTypes[Math.floor(Math.random() * eventTypes.length)]
-      
-      const newEvent: RealtimeEvent = {
-        id: Date.now().toString(),
-        type: randomType,
-        timestamp: new Date().toISOString(),
-        userId: Math.random().toString(),
-        userName: ['John Doe', 'Jane Smith', 'Bob Wilson'][Math.floor(Math.random() * 3)],
-        data: {
-          itemId: Math.random().toString(),
-          itemTitle: `Item ${Math.floor(Math.random() * 100)}`,
-          itemType: ['music', 'video', 'image'][Math.floor(Math.random() * 3)]
-        },
-        collectionId: collection.id,
-        collectionName: collection.name
-      }
-      
-      setRecentEvents(prev => [newEvent, ...prev.slice(0, 49)])
-      
-      // Update activity stats
-      setActivityStats(prev => ({
-        ...prev,
-        totalInteractions: prev.totalInteractions + 1,
-        recentActivity: prev.recentActivity + 1
-      }))
-      
-      // Show notification if enabled
-      if (notificationsEnabled && notificationSettings[getEventCategory(randomType) as keyof NotificationSettings]) {
-        const description = getEventDescription(newEvent)
-        
-        if (notificationSettings.desktopNotifications && 'Notification' in window) {
-          new Notification(description, {
-            body: collection.name,
-            icon: '/favicon.ico'
-          })
-        }
-        
-        if (notificationSettings.soundEnabled) {
-          if (!audioRef.current) {
-            audioRef.current = new Audio('/notification.mp3')
-            audioRef.current.volume = 0.3
-          }
-          audioRef.current.currentTime = 0
-          audioRef.current.play().catch(() => { /* Audio play failed - ignore */ })
-        }
-        
-        toast(description)
-      }
-    }, Math.random() * 10000 + 5000) // Random interval between 5-15 seconds
-    
-    return () => clearInterval(interval)
-  }, [isConnected, collection, notificationsEnabled, notificationSettings])
 
   const getEventCategory = (eventType: string): string => {
     if (['user_joined', 'user_left'].includes(eventType)) return 'userActivity'
@@ -543,29 +396,34 @@ export const CollectionRealTime: React.FC<CollectionRealTimeProps> = ({
               {/* Activity Stats */}
               <Card className="p-4">
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Activity Stats</h3>
+                {connectionStatus.status === 'error' && (
+                  <p className="text-sm text-gray-500 mb-3" data-testid="realtime-unavailable">
+                    Real-time updates are not available: the server has no real-time channel.
+                  </p>
+                )}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Active Users</span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {activityStats.activeUsers}
+                      {connectionStatus.status === 'error' ? 'Unavailable' : activityStats.activeUsers}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Total Interactions</span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {activityStats.totalInteractions}
+                      {connectionStatus.status === 'error' ? 'Unavailable' : activityStats.totalInteractions}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Recent Activity</span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {activityStats.recentActivity}
+                      {connectionStatus.status === 'error' ? 'Unavailable' : activityStats.recentActivity}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Peak Concurrent</span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {activityStats.peakConcurrent}
+                      {connectionStatus.status === 'error' ? 'Unavailable' : activityStats.peakConcurrent}
                     </span>
                   </div>
                 </div>

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -392,16 +393,7 @@ func NewGoogleTranslateFreeProvider(httpClient *http.Client, logger *zap.Logger)
 }
 
 func (p *GoogleTranslateFreeProvider) Translate(ctx context.Context, request *TranslationRequest) (*TranslationResult, error) {
-	// Implementation would make HTTP request to Google Translate
-	// This is a mock implementation
-	return &TranslationResult{
-		OriginalText:   request.Text,
-		TranslatedText: "[GT] " + request.Text, // Mock translation
-		SourceLanguage: request.SourceLanguage,
-		TargetLanguage: request.TargetLanguage,
-		Provider:       "google_translate_free",
-		Confidence:     0.9,
-	}, nil
+	return nil, fmt.Errorf("%w: GoogleTranslateFree", ErrTranslationProviderNotImplemented)
 }
 
 func (p *GoogleTranslateFreeProvider) GetName() string {
@@ -413,7 +405,7 @@ func (p *GoogleTranslateFreeProvider) GetSupportedLanguages() []string {
 }
 
 func (p *GoogleTranslateFreeProvider) IsAvailable() bool {
-	return true // Would check actual availability
+	return false // no HTTP client implemented
 }
 
 // LibreTranslateProvider implements LibreTranslate
@@ -432,15 +424,7 @@ func NewLibreTranslateProvider(httpClient *http.Client, logger *zap.Logger) *Lib
 }
 
 func (p *LibreTranslateProvider) Translate(ctx context.Context, request *TranslationRequest) (*TranslationResult, error) {
-	// Mock implementation
-	return &TranslationResult{
-		OriginalText:   request.Text,
-		TranslatedText: "[LT] " + request.Text, // Mock translation
-		SourceLanguage: request.SourceLanguage,
-		TargetLanguage: request.TargetLanguage,
-		Provider:       "libre_translate",
-		Confidence:     0.85,
-	}, nil
+	return nil, fmt.Errorf("%w: LibreTranslate", ErrTranslationProviderNotImplemented)
 }
 
 func (p *LibreTranslateProvider) GetName() string {
@@ -452,7 +436,7 @@ func (p *LibreTranslateProvider) GetSupportedLanguages() []string {
 }
 
 func (p *LibreTranslateProvider) IsAvailable() bool {
-	return true
+	return false // no HTTP client implemented
 }
 
 // MyMemoryProvider implements MyMemory translation
@@ -471,15 +455,7 @@ func NewMyMemoryProvider(httpClient *http.Client, logger *zap.Logger) *MyMemoryP
 }
 
 func (p *MyMemoryProvider) Translate(ctx context.Context, request *TranslationRequest) (*TranslationResult, error) {
-	// Mock implementation
-	return &TranslationResult{
-		OriginalText:   request.Text,
-		TranslatedText: "[MM] " + request.Text, // Mock translation
-		SourceLanguage: request.SourceLanguage,
-		TargetLanguage: request.TargetLanguage,
-		Provider:       "mymemory",
-		Confidence:     0.8,
-	}, nil
+	return nil, fmt.Errorf("%w: MyMemory", ErrTranslationProviderNotImplemented)
 }
 
 func (p *MyMemoryProvider) GetName() string {
@@ -491,5 +467,9 @@ func (p *MyMemoryProvider) GetSupportedLanguages() []string {
 }
 
 func (p *MyMemoryProvider) IsAvailable() bool {
-	return true
+	return false // no HTTP client implemented
 }
+
+// ErrTranslationProviderNotImplemented marks built-in translation providers
+// that have no real API client. They replaced fabricated "[GT] text" output.
+var ErrTranslationProviderNotImplemented = errors.New("translation provider client not implemented")

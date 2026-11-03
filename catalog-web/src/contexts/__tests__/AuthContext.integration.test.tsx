@@ -407,6 +407,20 @@ describe('AuthContext Integration Tests', () => {
       expect(mockToast.success).toHaveBeenCalledWith('Registration successful! Please log in.')
     })
 
+    it('tells the user an administrator must approve a pending registration', async () => {
+      const user = userEvent.setup()
+      mockAuthApi.register.mockResolvedValue({ ...mockUser, is_active: false, registration_status: 'pending' })
+
+      renderWithProviders(<RegisterTrigger />)
+      await user.click(screen.getByTestId('register-btn'))
+
+      await waitFor(() => {
+        expect(mockToast.success).toHaveBeenCalledWith(
+          'Registration received. An administrator must approve your account before you can log in.'
+        )
+      })
+    })
+
     it('handles registration failure', async () => {
       const user = userEvent.setup()
       const registerError = {

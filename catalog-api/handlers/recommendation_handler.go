@@ -4,7 +4,7 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -110,28 +110,9 @@ func (h *RecommendationHandler) GetSimilarItems(c *gin.Context) {
 // @Failure 500 {object} utils.ErrorResponse
 // @Router /api/v1/recommendations/trending [get]
 func (h *RecommendationHandler) GetTrendingItems(c *gin.Context) {
-	ctx := c.Request.Context()
-
-	// Parse query parameters
-	mediaType := c.Query("media_type")
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-	timeRange := c.DefaultQuery("time_range", "week")
-
-	// Get trending items
-	trending, err := h.getTrendingItems(ctx, mediaType, limit, timeRange)
-	if err != nil {
-		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to get trending items", err)
-		return
-	}
-
-	response := TrendingResponse{
-		Items:       trending,
-		MediaType:   mediaType,
-		TimeRange:   timeRange,
-		GeneratedAt: time.Now(),
-	}
-
-	c.JSON(http.StatusOK, response)
+	// No trending-analytics source exists yet. Say so instead of inventing
+	// titles (CAT-001): an honest 501 beats fabricated catalogue items.
+	utils.SendErrorResponse(c, http.StatusNotImplemented, "Trending recommendations are not implemented", ErrRecommendationsNotImplemented)
 }
 
 // PersonalizedRecommendations retrieves personalized recommendations for a user
@@ -147,8 +128,6 @@ func (h *RecommendationHandler) GetTrendingItems(c *gin.Context) {
 // @Failure 500 {object} utils.ErrorResponse
 // @Router /api/v1/recommendations/personalized/{user_id} [get]
 func (h *RecommendationHandler) GetPersonalizedRecommendations(c *gin.Context) {
-	ctx := c.Request.Context()
-
 	// Get user ID from URL
 	userIDStr := c.Param("user_id")
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
@@ -157,23 +136,51 @@ func (h *RecommendationHandler) GetPersonalizedRecommendations(c *gin.Context) {
 		return
 	}
 
-	// Parse query parameters
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
-
-	// Get personalized recommendations
-	recommendations, err := h.getPersonalizedRecommendations(ctx, userID, limit)
-	if err != nil {
-		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to get personalized recommendations", err)
+	// IDOR guard: only the account owner (or an admin) may ask for a user's
+	// recommendations.
+	callerID, ok := callerUserID(c)
+	if !ok {
+		utils.SendErrorResponse(c, http.StatusUnauthorized, "Authentication required", nil)
+		return
+	}
+	if callerID != userID && !callerIsAdmin(c) {
+		utils.SendErrorResponse(c, http.StatusForbidden, "Cannot access another user's recommendations", nil)
 		return
 	}
 
-	response := PersonalizedResponse{
-		UserID:      userID,
-		Items:       recommendations,
-		GeneratedAt: time.Now(),
-	}
+	// No personalisation engine is wired yet; never invent titles (CAT-001).
+	utils.SendErrorResponse(c, http.StatusNotImplemented, "Personalized recommendations are not implemented", ErrRecommendationsNotImplemented)
+}
 
-	c.JSON(http.StatusOK, response)
+// ErrRecommendationsNotImplemented marks recommendation endpoints that have no
+// real data source behind them yet.
+var ErrRecommendationsNotImplemented = errors.New("recommendation source not implemented")
+
+// callerUserID reads the authenticated user id set by the JWT middleware.
+func callerUserID(c *gin.Context) (int64, bool) {
+	v, exists := c.Get("user_id")
+	if !exists {
+		return 0, false
+	}
+	switch id := v.(type) {
+	case int:
+		return int64(id), true
+	case int64:
+		return id, true
+	case string:
+		n, err := strconv.ParseInt(id, 10, 64)
+		return n, err == nil
+	}
+	return 0, false
+}
+
+func callerIsAdmin(c *gin.Context) bool {
+	v, exists := c.Get("role_id")
+	if !exists {
+		return false
+	}
+	id, ok := v.(int)
+	return ok && id == 1 // middleware.RoleAdminID
 }
 
 // getMediaMetadata retrieves media metadata from database
@@ -225,52 +232,6 @@ func (h *RecommendationHandler) getMediaMetadata(ctx context.Context, mediaID in
 	}
 
 	return &metadata, nil
-}
-
-// getTrendingItems retrieves trending items based on recent activity
-func (h *RecommendationHandler) getTrendingItems(ctx context.Context, mediaType string, limit int, timeRange string) ([]*models.MediaCatalogItem, error) {
-	// For testing, return mock trending items
-	var items []*models.MediaCatalogItem
-	for i := int64(1); i <= int64(limit) && i <= 5; i++ {
-		item := &models.MediaCatalogItem{
-			ID:            i * 100,
-			Title:         fmt.Sprintf("Trending %s %d", mediaType, i),
-			MediaType:     mediaType,
-			Description:   &[]string{fmt.Sprintf("Trending description for %d", i)}[0],
-			Rating:        &[]float64{8.0 + float64(i)*0.2}[0],
-			DirectoryPath: "/trending/path",
-			CreatedAt:     time.Now().Format("2006-01-02 15:04:05"),
-			UpdatedAt:     time.Now().Format("2006-01-02 15:04:05"),
-			IsFavorite:    i%3 == 0,
-			WatchProgress: float64(i * 20),
-			IsDownloaded:  i%2 == 0,
-		}
-		items = append(items, item)
-	}
-	return items, nil
-}
-
-// getPersonalizedRecommendations retrieves personalized recommendations for a user
-func (h *RecommendationHandler) getPersonalizedRecommendations(ctx context.Context, userID int64, limit int) ([]*models.MediaCatalogItem, error) {
-	// For testing, return mock data
-	var items []*models.MediaCatalogItem
-	for i := int64(1); i <= int64(limit) && i <= 3; i++ {
-		item := &models.MediaCatalogItem{
-			ID:            userID*10 + i,
-			Title:         fmt.Sprintf("Personalized Media %d for User %d", i, userID),
-			MediaType:     "video",
-			Description:   &[]string{fmt.Sprintf("Personalized description %d", i)}[0],
-			Rating:        &[]float64{7.5 + float64(i)*0.1}[0],
-			DirectoryPath: "/test/path",
-			CreatedAt:     time.Now().Format("2006-01-02 15:04:05"),
-			UpdatedAt:     time.Now().Format("2006-01-02 15:04:05"),
-			IsFavorite:    i%2 == 0,
-			WatchProgress: float64(i * 25),
-			IsDownloaded:  i%3 == 0,
-		}
-		items = append(items, item)
-	}
-	return items, nil
 }
 
 // TrendingResponse represents the response for trending items

@@ -598,8 +598,9 @@ func TestReportingService_CalculateSecurityMetrics(t *testing.T) {
 	endDate := time.Date(2025, 1, 31, 0, 0, 0, 0, time.UTC)
 
 	metrics := service.calculateSecurityMetrics(startDate, endDate)
-	assert.NotEmpty(t, metrics.ThreatLevel)
-	assert.Greater(t, metrics.SecurityScore, 0.0)
+	// No database: the metrics are unmeasurable, not "low threat, score 100".
+	assert.Equal(t, "unknown", metrics.ThreatLevel)
+	assert.Contains(t, metrics.Unavailable, "failed_logins")
 }
 
 func TestReportingService_CalculateAverageSessionDuration(t *testing.T) {
@@ -1758,7 +1759,10 @@ func TestReportingService_FormatReport_JSON_SystemOverview(t *testing.T) {
 // ===========================================================================
 
 func TestReportingService_GenerateReport_UnsupportedFormat(t *testing.T) {
-	service := NewReportingService(nil, nil, nil)
+	db := setupTestDB(t)
+	_, err := db.Exec(authAuditDDL)
+	assert.NoError(t, err)
+	service := NewReportingService(nil, nil, db)
 
 	report, err := service.GenerateReport("security_audit", "xml", map[string]interface{}{
 		"start_date": "2025-01-01",
@@ -2031,8 +2035,8 @@ func TestReportingService_CalculateSecurityMetrics_LongPeriod(t *testing.T) {
 	start := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 	end := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
 	metrics := service.calculateSecurityMetrics(start, end)
-	assert.NotEmpty(t, metrics.ThreatLevel)
-	assert.GreaterOrEqual(t, metrics.SecurityScore, 50.0)
+	assert.Equal(t, "unknown", metrics.ThreatLevel)
+	assert.Contains(t, metrics.Unavailable, "failed_logins")
 }
 
 func TestReportingService_CalculateSecurityMetrics_SameDay(t *testing.T) {
@@ -2040,8 +2044,8 @@ func TestReportingService_CalculateSecurityMetrics_SameDay(t *testing.T) {
 
 	sameDate := time.Date(2025, 1, 15, 0, 0, 0, 0, time.UTC)
 	metrics := service.calculateSecurityMetrics(sameDate, sameDate)
-	assert.NotEmpty(t, metrics.ThreatLevel)
-	assert.Greater(t, metrics.SecurityScore, 0.0)
+	assert.Equal(t, "unknown", metrics.ThreatLevel)
+	assert.Contains(t, metrics.Unavailable, "failed_logins")
 }
 
 // ===========================================================================

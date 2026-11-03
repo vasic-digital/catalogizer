@@ -77,16 +77,10 @@ func TestCoverArtService_SearchCoverArt_DefaultProviders(t *testing.T) {
 	}
 
 	results, err := service.SearchCoverArt(context.Background(), request)
-	require.NoError(t, err)
-
-	// Default providers: MusicBrainz, LastFM, iTunes = 3 results
-	assert.Equal(t, 3, len(results))
-
-	// Results should be sorted by match score
-	for i := 1; i < len(results); i++ {
-		assert.GreaterOrEqual(t, results[i-1].MatchScore, results[i].MatchScore,
-			"results should be sorted by match score descending")
-	}
+	// CAT-001: no provider client exists, so the search reports failure
+	// honestly instead of returning invented results.
+	assert.ErrorIs(t, err, ErrCoverArtProviderNotImplemented)
+	assert.Empty(t, results)
 }
 
 func TestCoverArtService_SearchCoverArt_SpecificProviders(t *testing.T) {
@@ -103,9 +97,10 @@ func TestCoverArtService_SearchCoverArt_SpecificProviders(t *testing.T) {
 	}
 
 	results, err := service.SearchCoverArt(context.Background(), request)
-	require.NoError(t, err)
-	assert.Len(t, results, 1)
-	assert.Equal(t, CoverArtProviderITunes, results[0].Provider)
+	// CAT-001: no provider client exists, so the search reports failure
+	// honestly instead of returning invented results.
+	assert.ErrorIs(t, err, ErrCoverArtProviderNotImplemented)
+	assert.Empty(t, results)
 }
 
 func TestCoverArtService_SearchCoverArt_UnsupportedProvider(t *testing.T) {
@@ -123,7 +118,7 @@ func TestCoverArtService_SearchCoverArt_UnsupportedProvider(t *testing.T) {
 
 	// Unsupported providers are logged and skipped, not errors
 	results, err := service.SearchCoverArt(context.Background(), request)
-	require.NoError(t, err)
+	assert.Error(t, err) // the only provider failed, so nothing was searched
 	assert.Empty(t, results)
 }
 
@@ -143,71 +138,38 @@ func TestCoverArtService_SearchCoverArt_WithAlbum(t *testing.T) {
 	}
 
 	results, err := service.SearchCoverArt(context.Background(), request)
-	require.NoError(t, err)
-	assert.NotEmpty(t, results)
-	assert.NotNil(t, results[0].Album)
-	assert.Equal(t, album, *results[0].Album)
+	// CAT-001: no provider client exists, so the search reports failure
+	// honestly instead of returning invented results.
+	assert.ErrorIs(t, err, ErrCoverArtProviderNotImplemented)
+	assert.Empty(t, results)
 }
 
 // ---------------------------------------------------------------------------
 // searchProvider — individual providers
 // ---------------------------------------------------------------------------
 
-func TestCoverArtService_SearchMusicBrainz(t *testing.T) {
-	mockDB := database.WrapDB(nil, database.DialectSQLite)
-	logger := zap.NewNop()
-	service := NewCoverArtService(mockDB, logger)
-
-	request := &CoverArtSearchRequest{
-		Title:   "Test Title",
-		Artist:  "Test Artist",
-		Quality: QualityHigh,
-	}
-
-	results, err := service.searchMusicBrainz(context.Background(), request)
-	require.NoError(t, err)
-	require.Len(t, results, 1)
-	assert.Equal(t, CoverArtProviderMusicBrainz, results[0].Provider)
-	assert.Equal(t, "mb_1", results[0].ID)
-	assert.NotEmpty(t, results[0].URL)
-	assert.Equal(t, 500, results[0].Width)
-	assert.Equal(t, 500, results[0].Height)
+// CAT-001: no cover-art provider client exists; results must not be invented.
+func TestCoverArtService_SearchMusicBrainz_NotFabricated(t *testing.T) {
+	service := NewCoverArtService(database.WrapDB(nil, database.DialectSQLite), zap.NewNop())
+	results, err := service.searchMusicBrainz(context.Background(), &CoverArtSearchRequest{Title: "T", Artist: "A", Quality: QualityHigh})
+	assert.ErrorIs(t, err, ErrCoverArtProviderNotImplemented)
+	assert.Empty(t, results)
 }
 
-func TestCoverArtService_SearchLastFM(t *testing.T) {
-	mockDB := database.WrapDB(nil, database.DialectSQLite)
-	logger := zap.NewNop()
-	service := NewCoverArtService(mockDB, logger)
-
-	request := &CoverArtSearchRequest{
-		Title:   "Test Title",
-		Artist:  "Test Artist",
-		Quality: QualityMedium,
-	}
-
-	results, err := service.searchLastFM(context.Background(), request)
-	require.NoError(t, err)
-	require.Len(t, results, 1)
-	assert.Equal(t, CoverArtProviderLastFM, results[0].Provider)
-	assert.Equal(t, 300, results[0].Width)
+// CAT-001: no cover-art provider client exists; results must not be invented.
+func TestCoverArtService_SearchLastFM_NotFabricated(t *testing.T) {
+	service := NewCoverArtService(database.WrapDB(nil, database.DialectSQLite), zap.NewNop())
+	results, err := service.searchLastFM(context.Background(), &CoverArtSearchRequest{Title: "T", Artist: "A", Quality: QualityHigh})
+	assert.ErrorIs(t, err, ErrCoverArtProviderNotImplemented)
+	assert.Empty(t, results)
 }
 
-func TestCoverArtService_SearchITunes(t *testing.T) {
-	mockDB := database.WrapDB(nil, database.DialectSQLite)
-	logger := zap.NewNop()
-	service := NewCoverArtService(mockDB, logger)
-
-	request := &CoverArtSearchRequest{
-		Title:   "Test Title",
-		Artist:  "Test Artist",
-		Quality: QualityHigh,
-	}
-
-	results, err := service.searchITunes(context.Background(), request)
-	require.NoError(t, err)
-	require.Len(t, results, 1)
-	assert.Equal(t, CoverArtProviderITunes, results[0].Provider)
-	assert.Equal(t, 600, results[0].Width)
+// CAT-001: no cover-art provider client exists; results must not be invented.
+func TestCoverArtService_SearchITunes_NotFabricated(t *testing.T) {
+	service := NewCoverArtService(database.WrapDB(nil, database.DialectSQLite), zap.NewNop())
+	results, err := service.searchITunes(context.Background(), &CoverArtSearchRequest{Title: "T", Artist: "A", Quality: QualityHigh})
+	assert.ErrorIs(t, err, ErrCoverArtProviderNotImplemented)
+	assert.Empty(t, results)
 }
 
 // ---------------------------------------------------------------------------
@@ -593,4 +555,11 @@ func TestCoverArtProcessingOptions_Fields(t *testing.T) {
 	assert.True(t, opts.Crop)
 	assert.False(t, opts.PreserveAspect)
 	assert.NotNil(t, opts.BackgroundColor)
+}
+
+func TestCoverArtService_SearchCoverArt_AllProvidersFailIsError(t *testing.T) {
+	service := NewCoverArtService(database.WrapDB(nil, database.DialectSQLite), zap.NewNop())
+	results, err := service.SearchCoverArt(context.Background(), &CoverArtSearchRequest{Title: "T", Artist: "A"})
+	assert.ErrorIs(t, err, ErrCoverArtProviderNotImplemented)
+	assert.Empty(t, results)
 }

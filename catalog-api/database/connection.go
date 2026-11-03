@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"catalogizer/config"
@@ -303,4 +305,26 @@ func (db *DB) createContext() (context.Context, context.CancelFunc) {
 		timeout = 5 * time.Second
 	}
 	return context.WithTimeout(context.Background(), timeout)
+}
+
+// DataDir returns the directory holding the database file for a local SQLite
+// database, or "" when there is no local data directory (PostgreSQL, in-memory,
+// unset path, nil receiver). Callers use it to measure the disk the data lives
+// on instead of guessing from the process working directory.
+func (d *DB) DataDir() string {
+	if d == nil || d.config == nil {
+		return ""
+	}
+	if t := d.config.Type; t != "" && t != "sqlite" {
+		return ""
+	}
+	p := d.config.Path
+	if p == "" || p == ":memory:" || strings.HasPrefix(p, "file::memory:") {
+		return ""
+	}
+	abs, err := filepath.Abs(p)
+	if err != nil {
+		return ""
+	}
+	return filepath.Dir(abs)
 }

@@ -72,11 +72,12 @@ describe('AIDashboard Page', () => {
     expect(screen.getByText('Time Saved')).toBeInTheDocument()
   })
 
-  it('displays metrics values', () => {
+  it('CAT-001: shows no invented metric values', () => {
     render(<AIDashboard />)
-    expect(screen.getByText('2,847')).toBeInTheDocument()
-    expect(screen.getByText('92%')).toBeInTheDocument()
-    expect(screen.getByText('12.5 hours')).toBeInTheDocument()
+    for (const invented of ['2,847', '92%', '12.5 hours']) {
+      expect(screen.queryByText(invented)).not.toBeInTheDocument()
+    }
+    expect(screen.getAllByText('Unavailable').length).toBeGreaterThanOrEqual(3)
   })
 
   it('switches to suggestions tab on click', async () => {

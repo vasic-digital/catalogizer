@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -977,15 +979,40 @@ func (s *ConfigurationWizardService) testSQLiteConnection(dbPath string) error {
 }
 
 func (s *ConfigurationWizardService) testNetworkDatabaseConnection(config map[string]interface{}) error {
-	// This would contain actual database connection testing logic
-	// For now, just validate required fields are present
+	// Validate the required fields, then really dial the server: a configuration whose host:port nothing answers on must not pass the
+	// test (CAT-001). Authentication is not attempted here (no driver is linked for the network engines); the check is reachability.
 	requiredFields := []string{"db_host", "db_port", "db_name", "db_username", "db_password"}
 	for _, field := range requiredFields {
 		if _, exists := config[field]; !exists {
 			return fmt.Errorf("missing required database field: %s", field)
 		}
 	}
-	return nil
+	host := fmt.Sprint(config["db_host"])
+	var port int
+	switch v := config["db_port"].(type) {
+	case int:
+		port = v
+	case int64:
+		port = int(v)
+	case float64:
+		port = int(v)
+	case string:
+		n, err := strconv.Atoi(strings.TrimSpace(v))
+		if err != nil {
+			return fmt.Errorf("invalid db_port %q", v)
+		}
+		port = n
+	default:
+		return fmt.Errorf("invalid db_port type %T", v)
+	}
+	if port < 1 || port > 65535 {
+		return fmt.Errorf("invalid db_port %d", port)
+	}
+	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, strconv.Itoa(port)), 5*time.Second)
+	if err != nil {
+		return fmt.Errorf("database server %s:%d is not reachable: %w", host, port, err)
+	}
+	return conn.Close()
 }
 
 func (s *ConfigurationWizardService) testMediaStorage(config map[string]interface{}) error {
@@ -1233,9 +1260,7 @@ func (s *ConfigurationWizardService) detectInstalledTools() []string {
 	toolsToCheck := []string{"go", "git", "docker", "make", "npm", "node", "python", "sqlite3"}
 
 	for _, tool := range toolsToCheck {
-		// This would check if tool is installed
-		// For now, just assume go is installed since we're running
-		if tool == "go" {
+		if _, err := exec.LookPath(tool); err == nil {
 			tools = append(tools, tool)
 		}
 	}

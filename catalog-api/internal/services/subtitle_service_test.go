@@ -66,49 +66,26 @@ func TestNewSubtitleService(t *testing.T) {
 	assert.Equal(t, "./cache/subtitles", service.cacheDir)
 }
 
-func TestSubtitleService_SearchSubtitles(t *testing.T) {
-	mockDB := database.WrapDB(nil, database.DialectSQLite)
-	mockLogger := zap.NewNop()
-	mockCache := &MockCacheService{}
+// CAT-001: no provider has a real client yet, so a search must surface an
+// honest error, never invented subtitle results.
+func TestSubtitleService_SearchSubtitles_NoFabricatedResults(t *testing.T) {
+	service := NewSubtitleService(database.WrapDB(nil, database.DialectSQLite), zap.NewNop(), &MockCacheService{})
 
-	service := NewSubtitleService(mockDB, mockLogger, mockCache)
-
-	request := &SubtitleSearchRequest{
-		MediaPath: "/path/to/movie.mp4",
-		Title:     stringPtr("Test Movie"),
-		Year:      intPtr(2023),
-		Languages: []string{"en", "es"},
+	for _, providers := range [][]SubtitleProvider{
+		nil,
+		{ProviderOpenSubtitles},
+		{ProviderOpenSubtitles, ProviderSubDB},
+	} {
+		results, err := service.SearchSubtitles(context.Background(), &SubtitleSearchRequest{
+			MediaPath: "/path/to/movie.mp4",
+			Title:     stringPtr("Test Movie"),
+			Languages: []string{"en"},
+			Providers: providers,
+		})
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, ErrSubtitleProviderNotImplemented)
+		assert.Empty(t, results)
 	}
-
-	results, err := service.SearchSubtitles(context.Background(), request)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, results)
-	// Should return results from OpenSubtitles (mock data)
-	assert.Greater(t, len(results), 0)
-	assert.Equal(t, "opensubtitles_1", results[0].ID)
-	assert.Equal(t, ProviderOpenSubtitles, results[0].Provider)
-}
-
-func TestSubtitleService_SearchSubtitles_MultipleProviders(t *testing.T) {
-	mockDB := database.WrapDB(nil, database.DialectSQLite)
-	mockLogger := zap.NewNop()
-	mockCache := &MockCacheService{}
-
-	service := NewSubtitleService(mockDB, mockLogger, mockCache)
-
-	request := &SubtitleSearchRequest{
-		MediaPath: "/path/to/movie.mp4",
-		Languages: []string{"en"},
-		Providers: []SubtitleProvider{ProviderOpenSubtitles, ProviderSubDB},
-	}
-
-	results, err := service.SearchSubtitles(context.Background(), request)
-
-	assert.NoError(t, err)
-	assert.NotNil(t, results)
-	// Should have results from OpenSubtitles
-	assert.Greater(t, len(results), 0)
 }
 
 func TestSubtitleService_ParseSRT(t *testing.T) {
@@ -228,26 +205,22 @@ func TestSubtitleService_SortSubtitleResults(t *testing.T) {
 }
 
 func TestSubtitleService_GetDownloadInfo_OpenSubtitles(t *testing.T) {
-	mockDB := database.WrapDB(nil, database.DialectSQLite)
-	mockLogger := zap.NewNop()
 	mockCache := &MockCacheService{}
-
-	service := NewSubtitleService(mockDB, mockLogger, mockCache)
-
-	// Mock cache miss
+	service := NewSubtitleService(database.WrapDB(nil, database.DialectSQLite), zap.NewNop(), mockCache)
 	mockCache.On("Get", mock.Anything, "subtitle_download_info:opensubtitles_123", mock.AnythingOfType("*services.SubtitleSearchResult")).Return(false, nil)
-	mockCache.On("Set", mock.Anything, "subtitle_download_info:opensubtitles_123", mock.AnythingOfType("services.SubtitleSearchResult"), mock.AnythingOfType("time.Duration")).Return(nil)
 
+	// CAT-001: no OpenSubtitles client exists, so an uncached id must not be
+	// turned into an invented "Unknown Title" result with a fixed URL.
 	result, err := service.getDownloadInfo(context.Background(), "opensubtitles_123")
+	assert.ErrorIs(t, err, ErrSubtitleProviderNotImplemented)
+	assert.Nil(t, result)
+}
 
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.Equal(t, "opensubtitles_123", result.ID)
-	assert.Equal(t, ProviderOpenSubtitles, result.Provider)
-	assert.Equal(t, "English", result.Language)
-	assert.Equal(t, "en", result.LanguageCode)
-	assert.Contains(t, result.DownloadURL, "dl.opensubtitles.org")
-	assert.Equal(t, "srt", result.Format)
+func TestSubtitleService_DownloadContent_NoCannedBody(t *testing.T) {
+	service := NewSubtitleService(database.WrapDB(nil, database.DialectSQLite), zap.NewNop(), &MockCacheService{})
+	content, _, err := service.downloadContent(context.Background(), "https://dl.opensubtitles.org/1.srt")
+	assert.NotContains(t, content, "Test subtitle line")
+	_ = err // network/SSRF outcome is irrelevant; only canned content is forbidden
 }
 
 func TestSubtitleService_GetDownloadInfo_SubDB(t *testing.T) {
@@ -259,15 +232,13 @@ func TestSubtitleService_GetDownloadInfo_SubDB(t *testing.T) {
 
 	// Mock cache miss
 	mockCache.On("Get", mock.Anything, "subtitle_download_info:subdb_abc123", mock.AnythingOfType("*services.SubtitleSearchResult")).Return(false, nil)
-	mockCache.On("Set", mock.Anything, "subtitle_download_info:subdb_abc123", mock.AnythingOfType("services.SubtitleSearchResult"), mock.AnythingOfType("time.Duration")).Return(nil)
 
+	// CAT-001: no provider client exists, so a result id cannot be reconstructed into invented
+	// language/score/URL data; the honest outcome is ErrSubtitleProviderNotImplemented.
 	result, err := service.getDownloadInfo(context.Background(), "subdb_abc123")
 
-	assert.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.Equal(t, "subdb_abc123", result.ID)
-	assert.Equal(t, ProviderSubDB, result.Provider)
-	assert.Contains(t, result.DownloadURL, "api.thesubdb.com")
+	assert.ErrorIs(t, err, ErrSubtitleProviderNotImplemented)
+	assert.Nil(t, result)
 }
 
 func TestSubtitleService_GetDownloadInfo_InvalidFormat(t *testing.T) {
