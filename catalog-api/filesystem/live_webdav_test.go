@@ -10,7 +10,8 @@
 //	LIVE_WEBDAV_SANDBOX   collection under the URL in which the test may write, e.g. /work20/Testing  (required)
 //	LIVE_WEBDAV_INSECURE  "1" accepts a self-signed certificate (the NAS default)
 //
-// The service not answering PROPFIND with 207 is an honest SKIP(service_unavailable), never a stand-in. The test creates ONE uniquely named
+// A dial/TLS failure or a non-WebDAV answer (405, or 200 without a DAV header) is an honest SKIP(service_unavailable), never a stand-in; a WebDAV server that
+// rejects the credential or lacks the sandbox (401/403/404) FAILs. The test creates ONE uniquely named
 // file inside the sandbox, reads it back, compares sha256, deletes only that file, and never touches anything outside the sandbox.
 package filesystem
 
@@ -24,6 +25,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -43,10 +45,11 @@ func loadLiveDAV(t *testing.T) liveDAV {
 		h := d.url[i+3:]
 		liveSecrets = append(liveSecrets, strings.SplitN(strings.SplitN(h, "/", 2)[0], ":", 2)[0])
 	}
-	// the sandbox must be a real sub-collection; never the share root
-	if strings.Count(strings.Trim(d.sandbox, "/"), "/") < 1 {
-		t.Fatalf("LIVE_WEBDAV_SANDBOX must be at least two segments deep (share/Testing), got a shallower path")
+	sb, err := validateSandbox(d.sandbox)
+	if err != nil {
+		t.Fatalf("LIVE_WEBDAV_SANDBOX invalid: %v", err)
 	}
+	d.sandbox = sb
 	return d
 }
 
@@ -68,7 +71,7 @@ func (d liveDAV) requireService(t *testing.T) {
 	c := d.newClient(t, d.pass)
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	req, _ := http.NewRequestWithContext(ctx, "PROPFIND", strings.TrimRight(d.url, "/")+d.sandbox, nil)
+	req, _ := http.NewRequestWithContext(ctx, "PROPFIND", strings.TrimRight(d.url, "/")+(&url.URL{Path: d.sandbox}).EscapedPath(), nil)
 	req.SetBasicAuth(d.user, d.pass)
 	req.Header.Set("Depth", "0")
 	resp, err := c.client.Do(req)
@@ -76,9 +79,28 @@ func (d liveDAV) requireService(t *testing.T) {
 		t.Skipf("SKIP(service_unavailable): WebDAV endpoint unreachable (%s); enable the WebDAV Server package on the NAS (DSM > Package Center > WebDAV Server, ports 5005/5006)", rd(err))
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusMultiStatus {
-		t.Skipf("SKIP(service_unavailable): endpoint answered PROPFIND with %d, not 207; it is not a WebDAV service for this sandbox", resp.StatusCode)
+	switch classifyProbe(resp.StatusCode, resp.Header.Get("DAV")) {
+	case probeNotDAV:
+		t.Skipf("SKIP(service_unavailable): endpoint answered PROPFIND with %d and no DAV header; it is not a WebDAV service (enable the WebDAV Server package)", resp.StatusCode)
+	case probeFail:
+		t.Fatalf("WebDAV endpoint is present but PROPFIND on the sandbox answered %d (401/403: credential or share rights; 404: sandbox missing)", resp.StatusCode)
 	}
+}
+
+// rawStatus issues one authenticated request and returns the HTTP status, so absence is asserted as a real 404, not as "any non-200".
+func (d liveDAV) rawStatus(t *testing.T, method, p string) int {
+	t.Helper()
+	c := d.newClient(t, d.pass)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	req, _ := http.NewRequestWithContext(ctx, method, strings.TrimRight(d.url, "/")+(&url.URL{Path: p}).EscapedPath(), nil)
+	req.SetBasicAuth(d.user, d.pass)
+	resp, err := c.client.Do(req)
+	if err != nil {
+		t.Fatalf("%s: %s", method, rd(err))
+	}
+	resp.Body.Close()
+	return resp.StatusCode
 }
 
 func TestLiveWebDAV_RoundTripAndFailurePaths(t *testing.T) {
@@ -119,10 +141,10 @@ func TestLiveWebDAV_RoundTripAndFailurePaths(t *testing.T) {
 			}
 		}
 	}()
+	created = true // set before the PUT: deleting a never-created unique name is harmless, a half-created file must not leak
 	if err := c.WriteFile(ctx, p, bytes.NewReader(payload)); err != nil {
 		t.Fatalf("write: %s", rd(err))
 	}
-	created = true
 	if ok, err := c.FileExists(ctx, p); err != nil || !ok {
 		t.Fatalf("exists after write: ok=%v err=%s", ok, rd(err))
 	}
@@ -158,11 +180,14 @@ func TestLiveWebDAV_RoundTripAndFailurePaths(t *testing.T) {
 
 	// failure path: missing path inside the sandbox is a clean not-found
 	missing := strings.TrimRight(d.sandbox, "/") + "/" + name + ".does-not-exist"
+	if st := d.rawStatus(t, "HEAD", missing); st != 404 {
+		t.Fatalf("missing file: want HTTP 404, got %d", st)
+	}
 	if ok, err := c.FileExists(ctx, missing); err != nil || ok {
 		t.Fatalf("missing file: want exists=false err=nil, got ok=%v err=%s", ok, rd(err))
 	}
-	if _, err := c.ReadFile(ctx, missing); err == nil {
-		t.Fatalf("reading a missing file must fail")
+	if _, err := c.ReadFile(ctx, missing); err == nil || !strings.Contains(err.Error(), "404") {
+		t.Fatalf("reading a missing file must fail with status 404, got %v", err)
 	}
 
 	// delete the file and prove it is gone
@@ -170,8 +195,11 @@ func TestLiveWebDAV_RoundTripAndFailurePaths(t *testing.T) {
 		t.Fatalf("delete: %s", rd(err))
 	}
 	created = false
-	if ok, _ := c.FileExists(ctx, p); ok {
-		t.Fatalf("file still present after delete")
+	if st := d.rawStatus(t, "HEAD", p); st != 404 {
+		t.Fatalf("after delete: want HTTP 404 from the server, got %d", st)
+	}
+	if ok, err := c.FileExists(ctx, p); err != nil || ok {
+		t.Fatalf("file still present after delete (ok=%v err=%s)", ok, rd(err))
 	}
 }
 
