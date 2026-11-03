@@ -69,6 +69,35 @@ These variables are read by the Go backend via `os.Getenv()` calls in the source
 | `CATALOG_CONFIG_PATH` | Path to `config.json` file | `config.json` | No | `internal/config/config.go` |
 | `CONFIG_PATH` | Configuration file path (wizard service) | (empty) | No | `services/configuration_wizard_service.go` |
 
+### Additional catalog-api variables (docs sync C4, 2026-11-03)
+
+Variables the Go code reads that the tables above did not list. Defaults and behaviour are taken from the cited source line; none of this is new behaviour.
+
+| Variable | Description | Default | Source File |
+|----------|-------------|---------|-------------|
+| `REGISTRATION_MODE` | Self-registration policy: `approval` (new users inactive until an admin approves), `open` (instantly active), `disabled` (registration answers 403). Unknown values fall back to `approval`. See `docs/UPGRADE_NOTES.md` | `approval` | `handlers/auth_handler.go:172` |
+| `ADMIN_NEW_PASSWORD` | Replacement password read (by name, never printed) by the offline `admin-reset-password` subcommand; the subcommand exits 2 when it is unset or invalid | (empty) | `main_adminreset.go:37`, `main.go:376` |
+| `CATALOGIZER_ALLOW_INSECURE_DEFAULTS` | Only the exact value `true` allows insecure development defaults; ignored when `GIN_MODE=release` | unset | `config/config.go:487` |
+| `HELIX_PPROF_ENABLED` | `true` mounts the `/debug/pprof/*` handlers (operator-only, off by default) | unset (off) | `main.go:1055` |
+| `TRUSTED_PROXIES` | Unset: trust no proxy header; `auto`: trust loopback and RFC-1918/ULA ranges; otherwise a comma-separated CIDR allow-list | unset | `main.go:974` |
+| `REDIS_RATE_LIMIT` | `true` (with Redis available) switches the auth rate limiter to the Redis-backed distributed one | unset | `main.go:953` |
+| `MALLOC_ARENA_MAX` | glibc malloc arena cap. An explicit value always wins; when unset the API caps arenas at 2 at load time | 2 (applied by the binary) | `main_malloc_glibc.go:15-20` |
+| `STORAGE_TYPE` | Cover/asset storage backend override | `local` | `config/config.go:208,266` |
+| `STORAGE_ENDPOINT`, `STORAGE_ACCESS_KEY`, `STORAGE_SECRET_KEY`, `STORAGE_BUCKET`, `STORAGE_REGION`, `STORAGE_USE_SSL` | Object-storage overrides; bucket default `catalogizer-covers`, region default `us-east-1`; `STORAGE_USE_SSL` is `true` or `1` | see left | `config/config.go:266-285` |
+| `CATALOGIZER_IDENTITY_COUNT` | Number of SMB identities to read; identity N uses `CATALOGIZER_IDENTITY_N_TYPE` (only `credentials` is used), `_USERNAME`, `_PASSWORD`, optional `_DOMAIN` | 0 | `internal/services/smb_probe.go:48-70` |
+| `CATALOGIZER_LLM_IMAGE_SEARCH_ENABLED`, `CATALOGIZER_LLM_IMAGE_SEARCH_ENDPOINT`, `CATALOGIZER_LLM_IMAGE_SEARCH_API_KEY` | Last-resort LLM image-search resolver; enabled only when `ENABLED` is `true` and an endpoint is set | disabled | `internal/services/llm_image_resolver.go:45-51` |
+| `CAA_USER_AGENT` (fallback `MUSICBRAINZ_USER_AGENT`) | User-Agent sent to Cover Art Archive / MusicBrainz | `Catalogizer/nexus (+https://catalogizer.vasic.digital)` | `internal/services/cover_art_archive_resolver.go:37-39` |
+| `IGDB_APP_ACCESS_TOKEN` (alias `IGDB_BEARER_TOKEN`) | Pre-exchanged IGDB token; used with `IGDB_CLIENT_ID` | (empty) | `internal/services/igdb_resolver.go:43-44` |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Firebase service-account file when none is configured explicitly; unset disables Firebase (Crashlytics, Analytics) | unset | `internal/firebase/firebase.go:244-248` |
+| `FIREBASE_MEASUREMENT_ID`, `FIREBASE_MEASUREMENT_API_SECRET` | Both required to enable the Firebase Measurement Protocol analytics client | unset | `internal/firebase/firebase.go:303-305` |
+| `CHALLENGE_CONFIG_PATH` | Path of the challenge endpoints config | `config/endpoints.json` next to the source, then relative to the working directory | `challenges/config.go:58-60` |
+| `INFRA_PROVISION_ENABLED`, `INFRA_PROVISION_REQUIRED` | Enable the test-infrastructure provisioner / make a failure fatal | `false`, `false` | `internal/infra/provisioner.go:109-110` |
+| `INFRA_TARGET_HOST`, `INFRA_REMOTE_HOST_NAME`, `INFRA_COMPOSE_FILE`, `INFRA_REMOTE_COMPOSE_FILE`, `INFRA_STAGE_COMPOSE` | Provisioning target and compose files; local compose default `deploy/infra-compose.yml`, `INFRA_STAGE_COMPOSE` default `true` | see left | `internal/infra/provisioner.go:111-115` |
+| `INFRA_POSTGRES_PORT`, `INFRA_REDIS_PORT`, `INFRA_MINIO_PORT` | Provisioned service ports | `25432`, `26379`, `29000` | `internal/infra/provisioner.go:52-54,116-118` |
+| `INFRA_HEALTH_TIMEOUT_SECONDS`, `INFRA_DISCOVERY_TIMEOUT_SECONDS`, `INFRA_BOOT_TIMEOUT_SECONDS` | Provisioner timeouts in seconds | `5`, `3`, `600` | `internal/infra/provisioner.go:56-58,119-121` |
+
+Test-only helper variables (`TI_*`, `FTP_TEST_*`, `WEBDAV_TEST_*` in `catalog-api/tests/infra_helper.go`) are not read by the server and are listed as exemptions in `scripts/docs/doc_coverage_exempt.tsv`.
+
 ### SMB and Media
 
 | Variable | Description | Default | Required | Source File |
