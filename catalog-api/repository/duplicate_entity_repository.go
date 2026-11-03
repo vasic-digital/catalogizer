@@ -56,13 +56,24 @@ func (r *DuplicateEntityRepository) GetDuplicateGroups(ctx context.Context, limi
 	}
 	defer rows.Close()
 
-	var groups []DuplicateEntityGroup
+	// Buffer the page and release the cursor (and its pooled connection) BEFORE the per-group
+	// id queries: a query issued while this cursor is open needs a second pooled connection, so
+	// concurrent calls exceeding the pool would all hold one and wait for another (pool deadlock).
+	var page []DuplicateEntityGroup
 	for rows.Next() {
 		var g DuplicateEntityGroup
 		if err := rows.Scan(&g.Title, &g.MediaType, &g.Year, &g.Count); err != nil {
 			return nil, 0, fmt.Errorf("failed to scan duplicate group: %w", err)
 		}
+		page = append(page, g)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, 0, err
+	}
+	rows.Close()
 
+	var groups []DuplicateEntityGroup
+	for _, g := range page {
 		// Get entity IDs for this group
 		idQuery := `SELECT mi.id FROM media_items mi
 			JOIN media_types mt ON mi.media_type_id = mt.id
@@ -91,7 +102,7 @@ func (r *DuplicateEntityRepository) GetDuplicateGroups(ctx context.Context, limi
 		groups = append(groups, g)
 	}
 
-	return groups, total, rows.Err()
+	return groups, total, nil
 }
 
 // CountDuplicates returns the total number of entities that have duplicates.

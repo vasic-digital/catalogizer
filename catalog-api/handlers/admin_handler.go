@@ -289,15 +289,28 @@ func (h *AdminHandler) GetStorageInfo(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	var result []storageInfo
+	// Buffer the roots and release the cursor (and its pooled connection) BEFORE the per-root
+	// COUNT queries: a query issued while this cursor is open needs a second pooled connection,
+	// so concurrent requests exceeding the pool would all hold one and wait for another forever
+	// (these queries carry no deadline).
+	type rootRow struct {
+		id                   int
+		name, path, protocol string
+		lastScan             *time.Time
+	}
+	var roots []rootRow
 	for rows.Next() {
-		var id int
-		var name, path, protocol string
-		var lastScan *time.Time
-
-		if err := rows.Scan(&id, &name, &path, &protocol, &lastScan); err != nil {
+		var r rootRow
+		if err := rows.Scan(&r.id, &r.name, &r.path, &r.protocol, &r.lastScan); err != nil {
 			continue
 		}
+		roots = append(roots, r)
+	}
+	rows.Close()
+
+	var result []storageInfo
+	for _, r := range roots {
+		id, path, protocol, lastScan := r.id, r.path, r.protocol, r.lastScan
 
 		// Count files for this storage root.
 		var mediaCount int

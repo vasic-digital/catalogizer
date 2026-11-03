@@ -270,7 +270,10 @@ func (s *PlaylistService) GetUserPlaylists(ctx context.Context, userID int64, in
 	}
 	defer rows.Close()
 
-	var playlists []Playlist
+	// Buffer the page and release the cursor (and its pooled connection) BEFORE the per-playlist
+	// tag/collaborator queries: a query issued while this cursor is open needs a second pooled
+	// connection, so concurrent calls exceeding the pool would all hold one and wait for another.
+	var page []Playlist
 	for rows.Next() {
 		var playlist Playlist
 		err := rows.Scan(
@@ -283,7 +286,12 @@ func (s *PlaylistService) GetUserPlaylists(ctx context.Context, userID int64, in
 			s.logger.Error("Failed to scan playlist", zap.Error(err))
 			continue
 		}
+		page = append(page, playlist)
+	}
+	rows.Close()
 
+	var playlists []Playlist
+	for _, playlist := range page {
 		playlist.Tags, _ = s.getPlaylistTags(ctx, playlist.ID)
 		playlist.CollaboratorIDs, _ = s.getPlaylistCollaborators(ctx, playlist.ID)
 

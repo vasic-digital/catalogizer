@@ -691,17 +691,15 @@ func TestSMBChangeWatcher_ProcessPendingChanges(t *testing.T) {
 
 	ctx := context.Background()
 	err := w.ProcessPendingChanges(ctx)
-	// The production query uses "processed = false" which may fail on raw SQLite.
-	// If it returns an error, that's the expected behavior on SQLite.
-	if err != nil {
-		t.Logf("ProcessPendingChanges returned error (expected on raw SQLite): %v", err)
-	} else {
-		// If it succeeds, verify all entries were marked processed.
-		var unprocessedCount int
-		scanErr := db.QueryRow(`SELECT COUNT(*) FROM change_log WHERE processed = 0`).Scan(&unprocessedCount)
-		require.NoError(t, scanErr)
-		assert.Equal(t, 0, unprocessedCount)
-	}
+	// The pending query now uses integer booleans (SQLite has no `false` column literal in the
+	// bundled version), so the call succeeds and must mark every SEEDED entry processed.
+	// (processChange logs each change again as a new, still-unprocessed row: those audit rows
+	// have ids above the seeded ones and are not part of this assertion.)
+	require.NoError(t, err)
+	var unprocessedCount int
+	scanErr := db.QueryRow(`SELECT COUNT(*) FROM change_log WHERE processed = 0 AND id <= 3`).Scan(&unprocessedCount)
+	require.NoError(t, scanErr)
+	assert.Equal(t, 0, unprocessedCount)
 }
 
 func TestSMBChangeWatcher_ProcessPendingChanges_Empty(t *testing.T) {

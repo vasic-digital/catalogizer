@@ -5,8 +5,16 @@
 # Builds the REAL catalog-api binary and runs it against a REAL SQLCipher SQLite file on loopback
 # (ephemeral port). Excluded from the default `go test ./...` by the `live` build tag.
 #
-# Exit codes: 0 PASS | 1 FAIL | 77 SKIP (real dependency absent: no go toolchain / cannot build /
-# no systemd-run / host load too high) - SKIP is never PASS.
+# Exit codes (all distinct, none is ever read as another):
+#   0   PASS     every selected live test passed, none skipped
+#   1   FAIL     a test failed, `go test` exited non-zero, no test ran, or the tree under test does
+#               not build (a failed `go build` is a FAIL of the tree, never a SKIP)
+#   77  SKIP     a real dependency is absent: no go toolchain / no systemd-run / host load too high,
+#               or every live test skipped (e.g. no ImageMagick converter) - SKIP is never PASS
+#   78  PARTIAL  at least one live test PASSed and at least one SKIPped, none failed: the run is NOT
+#               a full PASS (the skipped legs are unproven) and callers must not treat it as one
+# `scaling_live.sh --classify <go-test-log> <go-test-exit-code>` prints the verdict for an existing
+# log and exits with the code above (used by scripts/test-infra/test_scaling_live_classify.sh).
 #
 # Env: SCALING_LIVE_ARTIFACT_DIR (default: <repo>/.scaling-live-artifacts/<utc-ts>)
 #      SCALING_LIVE_RUN (go test -run regex, default TestLive)
@@ -14,6 +22,21 @@
 #      SCALING_LIVE_MAX_LOAD (default 14), SCALING_LIVE_MEMMAX (default 4G)
 set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+classify() { # $1 = log file, $2 = go test exit code; prints the summary line, returns the verdict code
+  local log="$1" rc="$2" npass nskip nfail
+  npass=$(grep -c -- '^--- PASS: TestLive' "$log" || true)
+  nskip=$(grep -c -- '^--- SKIP: TestLive' "$log" || true)
+  nfail=$(grep -c -- '^--- FAIL: TestLive' "$log" || true)
+  echo "live tests: pass=$npass skip=$nskip fail=$nfail rc=$rc"
+  if [ "$rc" -ne 0 ] || [ "$nfail" -gt 0 ]; then return 1; fi
+  if [ "$npass" -eq 0 ]; then [ "$nskip" -gt 0 ] && return 77; return 1; fi
+  if [ "$nskip" -gt 0 ]; then echo "PARTIAL: some live tests SKIPped (not counted as PASS)" >&2; return 78; fi
+  return 0
+}
+if [ "${1:-}" = "--classify" ]; then
+  [ $# -eq 3 ] || { echo "usage: $0 --classify <go-test-log> <go-test-exit-code>" >&2; exit 64; }
+  classify "$2" "$3"; exit $?
+fi
 skip() { echo "SKIP: $*" >&2; exit 77; }
 command -v go >/dev/null 2>&1 || skip "go toolchain not found"
 command -v systemd-run >/dev/null 2>&1 || skip "systemd-run not found (memory-capped scope required)"
@@ -35,13 +58,6 @@ set +e
 systemd-run --user --scope -q -p MemoryMax="${SCALING_LIVE_MEMMAX:-4G}" -p MemorySwapMax=0 \
   go test -tags live -count=1 -timeout 25m -v -run "$RUN" . 2>&1 | tee "$LOG"
 rc=${PIPESTATUS[0]}
-set -e
 echo "artifacts: $SCALING_LIVE_ARTIFACT_DIR"
-npass=$(grep -c -- '^--- PASS: TestLive' "$LOG" || true)
-nskip=$(grep -c -- '^--- SKIP: TestLive' "$LOG" || true)
-nfail=$(grep -c -- '^--- FAIL: TestLive' "$LOG" || true)
-echo "live tests: pass=$npass skip=$nskip fail=$nfail rc=$rc"
-if [ "$rc" -ne 0 ] || [ "$nfail" -gt 0 ]; then exit 1; fi
-if [ "$npass" -eq 0 ]; then [ "$nskip" -gt 0 ] && exit 77; exit 1; fi
-if [ "$nskip" -gt 0 ]; then echo "partial: some live tests SKIPped (not counted as PASS)" >&2; fi
-exit 0
+classify "$LOG" "$rc"
+exit $?

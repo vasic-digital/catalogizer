@@ -90,7 +90,9 @@ func buildBinary(t *testing.T) string {
 		buildInfo = map[string]interface{}{"binary": bin, "sha256": hex.EncodeToString(sum[:]), "version_ldflag": ver, "size_bytes": len(f), "go": runtime.Version()}
 	})
 	if buildErr != nil {
-		t.Skipf("SKIP: real dependency unavailable - cannot build catalog-api: %v", buildErr)
+		// The go toolchain is present (this test is running under it); a build that fails is a
+		// defect of the tree under test, not an absent dependency: it must FAIL, never SKIP.
+		t.Fatalf("FAIL: cannot build catalog-api (the tree under test does not compile): %v", buildErr)
 	}
 	return builtBin
 }
@@ -480,7 +482,7 @@ func TestLiveScaling(t *testing.T) {
 	if v := envFloat("SCALING_P99_MS", 0); v > 0 {
 		threshold = v
 	}
-	th := thresholds{MaxP99Ms: threshold, MinOK: 200}
+	th := thresholds{MaxP99Ms: threshold, MinOK: 200, MaxClientErrShare: envFloat("SCALING_MAX_CLIENT_ERR_SHARE", 0)}
 	rssBoundKB := int64(envFloat("SCALING_RSS_GROWTH_KB", 131072)) // 128 MiB across 3 identical rounds
 
 	type level struct {
@@ -805,7 +807,11 @@ func TestLiveChaosKillRestart(t *testing.T) {
 	ev["status_counts_at_kill"] = statusAtKill
 
 	// offline integrity of the DB left behind by SIGKILL
-	integrity := s.dbScalar(`PRAGMA integrity_check`)
+	dbp, keyp := dbPaths(s.dir)
+	integrityIsOK, integrity := sigkillIntegrityOK(dbp, keyp)
+	if integrityIsOK {
+		integrity = "ok"
+	}
 	statusAfterKill := s.dbScalar(`SELECT group_concat(status||'='||c) FROM (SELECT status, COUNT(*) c FROM conversion_jobs GROUP BY status)`)
 	totalAfterKill := s.dbScalar(`SELECT COUNT(*) FROM conversion_jobs`)
 	ev["integrity_check"], ev["status_counts_after_kill_offline"], ev["jobs_after_kill"] = integrity, statusAfterKill, totalAfterKill
@@ -847,7 +853,8 @@ func TestLiveChaosKillRestart(t *testing.T) {
 	ev["completed"], ev["output_files_nonempty"] = completed, valid
 	require.Equal(t, njobs, completed, "not all jobs completed after restart: %s", final)
 	require.Equal(t, njobs, valid, "completed jobs without a real output file")
-	require.Equal(t, "ok", s.dbScalar(`PRAGMA integrity_check`))
+	finalOK, finalDetail := sigkillIntegrityOK(dbp, keyp)
+	require.True(t, finalOK, "integrity after restart: %s", finalDetail)
 	ev["integrity_check_final"] = "ok"
 	ev["pass"] = true
 	writeEvidence(t, "chaos_kill_restart.json", ev)
