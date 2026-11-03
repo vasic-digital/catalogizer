@@ -10,7 +10,7 @@
 //	LIVE_WEBDAV_SANDBOX   collection under the URL in which the test may write, e.g. /work20/Testing  (required)
 //	LIVE_WEBDAV_INSECURE  "1" accepts a self-signed certificate (the NAS default)
 //
-// A dial/TLS failure or a non-WebDAV answer (405, or 200 without a DAV header) is an honest SKIP(service_unavailable), never a stand-in; a WebDAV server that
+// A dial/TLS failure or a non-WebDAV answer (405, 501, or 200 without a DAV header) is an honest SKIP(service_unavailable), never a stand-in; a WebDAV server that
 // rejects the credential or lacks the sandbox (401/403/404) FAILs. The test creates ONE uniquely named
 // file inside the sandbox, reads it back, compares sha256, deletes only that file, and never touches anything outside the sandbox.
 package filesystem
@@ -79,12 +79,7 @@ func (d liveDAV) requireService(t *testing.T) {
 		t.Skipf("SKIP(service_unavailable): WebDAV endpoint unreachable (%s); enable the WebDAV Server package on the NAS (DSM > Package Center > WebDAV Server, ports 5005/5006)", rd(err))
 	}
 	defer resp.Body.Close()
-	switch classifyProbe(resp.StatusCode, resp.Header.Get("DAV")) {
-	case probeNotDAV:
-		t.Skipf("SKIP(service_unavailable): endpoint answered PROPFIND with %d and no DAV header; it is not a WebDAV service (enable the WebDAV Server package)", resp.StatusCode)
-	case probeFail:
-		t.Fatalf("WebDAV endpoint is present but PROPFIND on the sandbox answered %d (401/403: credential or share rights; 404: sandbox missing)", resp.StatusCode)
-	}
+	applyProbe(t, resp.StatusCode, resp.Header.Get("DAV"))
 }
 
 // rawStatus issues one authenticated request and returns the HTTP status, so absence is asserted as a real 404, not as "any non-200".
@@ -186,7 +181,7 @@ func TestLiveWebDAV_RoundTripAndFailurePaths(t *testing.T) {
 	if ok, err := c.FileExists(ctx, missing); err != nil || ok {
 		t.Fatalf("missing file: want exists=false err=nil, got ok=%v err=%s", ok, rd(err))
 	}
-	if _, err := c.ReadFile(ctx, missing); err == nil || !strings.Contains(err.Error(), "404") {
+	if _, err := c.ReadFile(ctx, missing); err == nil || !strings.Contains(err.Error(), "status 404 ") {
 		t.Fatalf("reading a missing file must fail with status 404, got %v", err)
 	}
 
