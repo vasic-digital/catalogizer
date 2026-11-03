@@ -5,11 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	pathpkg "path"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -32,6 +35,102 @@ type WebDAVClient struct {
 // MaxPropfindBytes bounds the size of one PROPFIND answer. An answer above it is an ERROR (the listing would be incomplete), never a truncation.
 // A variable so tests can lower it.
 var MaxPropfindBytes int64 = 64 << 20
+
+// WebDAV timeouts. A transfer (ReadFile / WriteFile) has NO overall cap: a whole-request http.Client.Timeout also covers the body, so a file that
+// takes longer than the cap to move is cut even while it makes progress (LIVE RED, committed as
+// docs/qa/webdav-yandex-live-20261103/run_RED_pre_fix_client_base05709505.log: the pre-fix client from commit 05709505 failed the 1 MiB upload of step
+// 04 with "Client.Timeout exceeded" against the real service; every video streamed through ReadFile would be cut the same way). A transfer is bounded by the caller's context and by an
+// IDLE timeout instead: it fails only when no byte moves for webdavIdleTimeout. Metadata operations (PROPFIND, HEAD, MKCOL, DELETE, COPY) are
+// bounded as a whole by webdavOpTimeout. Variables so tests can lower them.
+var (
+	webdavOpTimeout   = 30 * time.Second
+	webdavIdleTimeout = 60 * time.Second
+	// webdavResponseWait is how long the server may take to answer an upload after its last body byte was handed to the transport. Socket
+	// buffers can hold seconds to minutes of a throttled upload (the real Yandex service accepts about 16 KiB/s), so the idle timeout cannot
+	// apply there; only a server that never answers is cut.
+	webdavResponseWait = 10 * time.Minute
+)
+
+// newWebDAVHTTPClient builds the client: connection-phase timeouts on the transport, no whole-request Timeout.
+func newWebDAVHTTPClient() *http.Client {
+	return &http.Client{Transport: &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
+		DialContext:           (&net.Dialer{Timeout: 15 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
+		TLSHandshakeTimeout:   15 * time.Second,
+		MaxIdleConns:          16,
+		MaxIdleConnsPerHost:   8,
+		IdleConnTimeout:       90 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+		ForceAttemptHTTP2:     true,
+	}}
+}
+
+// opContext bounds one metadata operation as a whole.
+func opContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(ctx, webdavOpTimeout)
+}
+
+// idleGuard cancels ctx when no activity was reported for d.
+type idleGuard struct {
+	mu     sync.Mutex
+	t      *time.Timer
+	d      time.Duration
+	cancel context.CancelFunc
+	fired  atomic.Bool // set only by the timer: the idle period elapsed (as opposed to a caller cancel or a normal stop)
+}
+
+// idleErr turns a transport/body error into a diagnosable one when the idle timer, not the caller, ended the transfer.
+func (g *idleGuard) idleErr(err error, phase string) error {
+	if err == nil || err == io.EOF || !g.fired.Load() {
+		return err
+	}
+	g.mu.Lock()
+	d := g.d
+	g.mu.Unlock()
+	return fmt.Errorf("webdav idle timeout: no data for %v (%s): %w", d, phase, err)
+}
+
+func newIdleGuard(ctx context.Context, d time.Duration) (context.Context, *idleGuard) {
+	c, cancel := context.WithCancel(ctx)
+	g := &idleGuard{d: d, cancel: cancel}
+	g.t = time.AfterFunc(d, func() { g.fired.Store(true); cancel() })
+	return c, g
+}
+
+func (g *idleGuard) touch() { g.mu.Lock(); g.t.Reset(g.d); g.mu.Unlock() }
+
+// rearm switches the idle period (the body is finished, the response is awaited).
+func (g *idleGuard) rearm(d time.Duration) { g.mu.Lock(); g.d = d; g.t.Reset(d); g.mu.Unlock() }
+func (g *idleGuard) stop()                 { g.mu.Lock(); g.t.Stop(); g.mu.Unlock(); g.cancel() }
+
+// idleBody reports every read to the guard and stops the guard on Close (download and upload bodies).
+type idleBody struct {
+	rc          io.ReadCloser
+	g           *idleGuard
+	want        int64 // upload: the declared Content-Length (0: unknown, the end is the EOF)
+	read        int64
+	stopOnClose bool // download: closing the body ends the guard; upload: the request body is closed before the response arrives, the guard must live on
+}
+
+func (b *idleBody) Read(p []byte) (int, error) {
+	b.g.touch()
+	n, err := b.rc.Read(p)
+	b.read += int64(n)
+	err = b.g.idleErr(err, fmt.Sprintf("body, %d bytes transferred", b.read))
+	// the transport reads exactly Content-Length bytes and may never ask for the EOF: the last byte is the end of the body
+	if !b.stopOnClose && (err == io.EOF || (b.want > 0 && b.read >= b.want)) {
+		b.g.rearm(webdavResponseWait)
+	} else {
+		b.g.touch()
+	}
+	return n, err
+}
+func (b *idleBody) Close() error {
+	if b.stopOnClose {
+		b.g.stop()
+	}
+	return b.rc.Close()
+}
 
 // redactURL renders raw for an error message WITHOUT its credentials: a URL userinfo password becomes "xxxxx" (url.URL.Redacted). An
 // unparsable value is not echoed at all (it may be a credential-bearing string that failed to parse).
@@ -62,13 +161,18 @@ func NewWebDAVClient(config *WebDAVConfig) (*WebDAVClient, error) {
 
 	return &WebDAVClient{
 		config:  config,
-		client:  &http.Client{Timeout: 30 * time.Second},
+		client:  newWebDAVHTTPClient(),
 		baseURL: baseURL,
 	}, nil
 }
 
+// SetHTTPTransport replaces the HTTP transport (instrumentation: request counting, outbound guards in live tests). It must be called before Connect.
+func (c *WebDAVClient) SetHTTPTransport(rt http.RoundTripper) { c.client.Transport = rt }
+
 // Connect establishes the WebDAV connection
 func (c *WebDAVClient) Connect(ctx context.Context) error {
+	ctx, cancel := opContext(ctx)
+	defer cancel()
 	// Test the connection with a PROPFIND request
 	req, err := http.NewRequestWithContext(ctx, "PROPFIND", c.baseURL.String(), nil)
 	if err != nil {
@@ -131,8 +235,10 @@ func (c *WebDAVClient) ReadFile(ctx context.Context, path string) (io.ReadCloser
 	}
 
 	fullURL := c.resolveURL(path)
+	ctx, guard := newIdleGuard(ctx, webdavIdleTimeout)
 	req, err := http.NewRequestWithContext(ctx, "GET", fullURL, nil)
 	if err != nil {
+		guard.stop()
 		return nil, fmt.Errorf("failed to create GET request: %w", err)
 	}
 
@@ -142,15 +248,19 @@ func (c *WebDAVClient) ReadFile(ctx context.Context, path string) (io.ReadCloser
 
 	resp, err := c.client.Do(req)
 	if err != nil {
+		err = guard.idleErr(err, "waiting for response headers")
+		guard.stop()
 		return nil, fmt.Errorf("failed to retrieve WebDAV file %s: %w", redactURL(fullURL), err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
+		guard.stop()
 		return nil, fmt.Errorf("WebDAV server returned status %d for file %s", resp.StatusCode, redactURL(fullURL))
 	}
 
-	return resp.Body, nil
+	guard.touch()
+	return &idleBody{rc: resp.Body, g: guard, stopOnClose: true}, nil
 }
 
 // WriteFile writes a file to the WebDAV server
@@ -160,9 +270,20 @@ func (c *WebDAVClient) WriteFile(ctx context.Context, path string, data io.Reade
 	}
 
 	fullURL := c.resolveURL(path)
+	ctx, guard := newIdleGuard(ctx, webdavIdleTimeout)
+	defer guard.stop()
 	req, err := http.NewRequestWithContext(ctx, "PUT", fullURL, data)
 	if err != nil {
 		return fmt.Errorf("failed to create PUT request: %w", err)
+	}
+	// Wrap AFTER NewRequest so that Content-Length and GetBody it derived from the concrete reader type are kept (a wrapped reader passed in
+	// would make the upload chunked); every body read feeds the idle timer.
+	if req.Body != nil && req.Body != http.NoBody {
+		req.Body = &idleBody{rc: req.Body, g: guard, want: req.ContentLength}
+	} else {
+		// An empty body: nothing is read, so the guard would never leave the idle period; the response is awaited at once. NoBody is left
+		// unwrapped so the request stays a sized zero-length one (a wrapped NoBody goes out chunked with ContentLength -1).
+		guard.rearm(webdavResponseWait)
 	}
 
 	if c.config.Username != "" {
@@ -171,6 +292,7 @@ func (c *WebDAVClient) WriteFile(ctx context.Context, path string, data io.Reade
 
 	resp, err := c.client.Do(req)
 	if err != nil {
+		err = guard.idleErr(err, "upload, waiting for the server")
 		return fmt.Errorf("failed to upload WebDAV file %s: %w", redactURL(fullURL), err)
 	}
 	defer resp.Body.Close()
@@ -188,6 +310,8 @@ func (c *WebDAVClient) GetFileInfo(ctx context.Context, path string) (*FileInfo,
 		return nil, fmt.Errorf("not connected")
 	}
 
+	ctx, cancel := opContext(ctx)
+	defer cancel()
 	fullURL := c.resolveURL(path)
 	req, err := http.NewRequestWithContext(ctx, "HEAD", fullURL, nil)
 	if err != nil {
@@ -243,6 +367,8 @@ func (c *WebDAVClient) ListDirectory(ctx context.Context, path string) ([]*FileI
 		return nil, fmt.Errorf("not connected")
 	}
 
+	ctx, cancel := opContext(ctx)
+	defer cancel()
 	fullURL := c.resolveURL(path)
 	// A collection URL without a trailing slash makes servers answer 301 to the slash form, and the Go client then replays the PROPFIND as a GET
 	// (status 200 with an HTML page). Ask for the slash form directly.
@@ -304,6 +430,8 @@ func (c *WebDAVClient) FileExists(ctx context.Context, path string) (bool, error
 		return false, fmt.Errorf("not connected")
 	}
 
+	ctx, cancel := opContext(ctx)
+	defer cancel()
 	fullURL := c.resolveURL(path)
 	req, err := http.NewRequestWithContext(ctx, "HEAD", fullURL, nil)
 	if err != nil {
@@ -329,6 +457,8 @@ func (c *WebDAVClient) CreateDirectory(ctx context.Context, path string) error {
 		return fmt.Errorf("not connected")
 	}
 
+	ctx, cancel := opContext(ctx)
+	defer cancel()
 	fullURL := c.resolveURL(path)
 	req, err := http.NewRequestWithContext(ctx, "MKCOL", fullURL, nil)
 	if err != nil {
@@ -358,6 +488,8 @@ func (c *WebDAVClient) DeleteDirectory(ctx context.Context, path string) error {
 		return fmt.Errorf("not connected")
 	}
 
+	ctx, cancel := opContext(ctx)
+	defer cancel()
 	fullURL := c.resolveURL(path)
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fullURL, nil)
 	if err != nil {
@@ -387,6 +519,8 @@ func (c *WebDAVClient) DeleteFile(ctx context.Context, path string) error {
 		return fmt.Errorf("not connected")
 	}
 
+	ctx, cancel := opContext(ctx)
+	defer cancel()
 	fullURL := c.resolveURL(path)
 	req, err := http.NewRequestWithContext(ctx, "DELETE", fullURL, nil)
 	if err != nil {
@@ -416,6 +550,8 @@ func (c *WebDAVClient) CopyFile(ctx context.Context, srcPath, dstPath string) er
 		return fmt.Errorf("not connected")
 	}
 
+	ctx, cancel := opContext(ctx)
+	defer cancel()
 	srcURL := c.resolveURL(srcPath)
 	dstURL := c.resolveURL(dstPath)
 

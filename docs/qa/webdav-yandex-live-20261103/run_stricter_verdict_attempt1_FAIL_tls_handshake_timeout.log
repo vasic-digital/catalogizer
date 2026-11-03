@@ -1,0 +1,68 @@
+--- PASS: TestLiveYandex_Suite (356.56s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (3.99s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (0.20s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (0.78s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (194.99s)
+    --- PASS: TestLiveYandex_Suite/05_list_sizes_mtimes (0.23s)
+    --- PASS: TestLiveYandex_Suite/06_download_sha256_and_stat (1.97s)
+    --- PASS: TestLiveYandex_Suite/07_range_partial_read (0.16s)
+    --- PASS: TestLiveYandex_Suite/08_copy_rename_move (32.42s)
+    --- PASS: TestLiveYandex_Suite/09_overwrite (4.22s)
+    --- PASS: TestLiveYandex_Suite/10_nonexistent_errors (1.38s)
+    --- PASS: TestLiveYandex_Suite/11_unicode_and_special_names (7.50s)
+    --- PASS: TestLiveYandex_Suite/12_large_listing_200 (41.80s)
+    --- PASS: TestLiveYandex_Suite/13_concurrent_uploads_4 (36.00s)
+    --- PASS: TestLiveYandex_Suite/14_unsized_reader_upload (7.15s)
+    --- PASS: TestLiveYandex_Suite/15_timeout_and_cancel (1.65s)
+    --- PASS: TestLiveYandex_Suite/16_delete (7.89s)
+    --- PASS: TestLiveYandex_Suite/17_guard_refuses_outside_sandbox (0.63s)
+PASS
+ok  	catalogizer/filesystem	356.573s
+RUN 1 GO_RC=0
+    live_webdav_yandex_test.go:514: mkdir sub: failed to create WebDAV directory https://<redacted>/Testing/catalogizer-live-1793739064/sub: Mkcol "https://<redacted>/Testing/catalogizer-live-1793739064/sub": net/http: TLS handshake timeout
+    live_webdav_yandex_test.go:577: sub directory missing or not a directory in listing
+--- FAIL: TestLiveYandex_Suite (426.57s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (6.10s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (5.32s)
+    --- FAIL: TestLiveYandex_Suite/03_mkdir (25.49s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (194.30s)
+    --- FAIL: TestLiveYandex_Suite/05_list_sizes_mtimes (0.19s)
+    --- PASS: TestLiveYandex_Suite/06_download_sha256_and_stat (1.38s)
+    --- PASS: TestLiveYandex_Suite/07_range_partial_read (0.11s)
+    --- PASS: TestLiveYandex_Suite/08_copy_rename_move (33.65s)
+    --- PASS: TestLiveYandex_Suite/09_overwrite (3.13s)
+    --- PASS: TestLiveYandex_Suite/10_nonexistent_errors (0.80s)
+    --- PASS: TestLiveYandex_Suite/11_unicode_and_special_names (6.41s)
+    --- PASS: TestLiveYandex_Suite/12_large_listing_200 (71.58s)
+    --- PASS: TestLiveYandex_Suite/13_concurrent_uploads_4 (36.02s)
+    --- PASS: TestLiveYandex_Suite/14_unsized_reader_upload (6.64s)
+    --- PASS: TestLiveYandex_Suite/15_timeout_and_cancel (1.70s)
+    --- PASS: TestLiveYandex_Suite/16_delete (12.80s)
+    --- PASS: TestLiveYandex_Suite/17_guard_refuses_outside_sandbox (0.47s)
+FAIL
+FAIL	catalogizer/filesystem	426.582s
+FAIL
+RUN 2 GO_RC=1
+--- PASS: TestLiveYandex_Suite (418.56s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (0.48s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (0.19s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (1.17s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (194.24s)
+    --- PASS: TestLiveYandex_Suite/05_list_sizes_mtimes (0.26s)
+    --- PASS: TestLiveYandex_Suite/06_download_sha256_and_stat (1.44s)
+    --- PASS: TestLiveYandex_Suite/07_range_partial_read (0.11s)
+    --- PASS: TestLiveYandex_Suite/08_copy_rename_move (34.13s)
+    --- PASS: TestLiveYandex_Suite/09_overwrite (2.30s)
+    --- PASS: TestLiveYandex_Suite/10_nonexistent_errors (0.98s)
+    --- PASS: TestLiveYandex_Suite/11_unicode_and_special_names (7.37s)
+    --- PASS: TestLiveYandex_Suite/12_large_listing_200 (83.62s)
+    --- PASS: TestLiveYandex_Suite/13_concurrent_uploads_4 (54.17s)
+    --- PASS: TestLiveYandex_Suite/14_unsized_reader_upload (6.77s)
+    --- PASS: TestLiveYandex_Suite/15_timeout_and_cancel (1.69s)
+    --- PASS: TestLiveYandex_Suite/16_delete (7.60s)
+    --- PASS: TestLiveYandex_Suite/17_guard_refuses_outside_sandbox (0.93s)
+PASS
+ok  	catalogizer/filesystem	418.568s
+RUN 3 GO_RC=0
+RUNS=3 PASSED=2 SKIPPED=0 FAILED=1 EVIDENCE_DIR=<scratch>/evI
+VERDICT=FAIL
