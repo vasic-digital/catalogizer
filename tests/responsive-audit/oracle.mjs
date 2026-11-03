@@ -47,7 +47,7 @@ export const oracleFn = (opts) => {
     if (cy>=0 && cy<vh && r.width>2 && r.height>2) { const top=document.elementFromPoint(cx,cy); if(top && top!==el && !el.contains(top) && !top.contains(el) && !scrolledOutOfClip(el,cx,cy)) { const tr=top.getBoundingClientRect(); add('occluded_control', el, {by: sel(top)}); } }
   }
   // 5 small text, 6 clipped text, 7 overlapping text
-  const textEls = []; 
+  const textEls = [];
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const seen = new Set();
   for (let n=walker.nextNode(); n; n=walker.nextNode()) { if(!n.nodeValue.trim()) continue; const el=n.parentElement; if(!el||seen.has(el)) continue; if(['SCRIPT','STYLE','NOSCRIPT'].includes(el.tagName)) continue; const r=vis(el); if(!r) continue; seen.add(el); textEls.push([el,r]); }
