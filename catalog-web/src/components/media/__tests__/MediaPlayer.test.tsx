@@ -43,14 +43,25 @@ describe('MediaPlayer', () => {
     expect(screen.getByText('Unknown Title')).toBeInTheDocument()
   })
 
-  it('renders video element with source', () => {
+  it('renders video element fed from the real stream endpoint, never the storage-relative path', () => {
+    localStorage.removeItem('auth_token')
     const { container } = render(<MediaPlayer media={mockMedia as any} />)
-    const video = container.querySelector('video')
-    expect(video).toBeInTheDocument()
-
+    expect(container.querySelector('video')).toBeInTheDocument()
     const source = container.querySelector('source')
-    expect(source).toHaveAttribute('src', '/videos/test.mp4')
-    expect(source).toHaveAttribute('type', 'video/mp4')
+    expect(source).toHaveAttribute('src', '/api/v1/stream/1')
+    expect(source).not.toHaveAttribute('type')
+  })
+
+  it('carries the session token as the query fallback because <video> cannot send headers', () => {
+    localStorage.setItem('auth_token', 'a.b+c')
+    const { container } = render(<MediaPlayer media={mockMedia as any} />)
+    expect(container.querySelector('source')).toHaveAttribute('src', '/api/v1/stream/1?access_token=a.b%2Bc')
+    localStorage.removeItem('auth_token')
+  })
+
+  it('an explicit entity stream URL takes priority', () => {
+    const { container } = render(<MediaPlayer media={mockMedia as any} entityStreamUrl="/api/v1/entities/9/stream" />)
+    expect(container.querySelector('source')).toHaveAttribute('src', '/api/v1/entities/9/stream')
   })
 
   it('renders play button initially', () => {

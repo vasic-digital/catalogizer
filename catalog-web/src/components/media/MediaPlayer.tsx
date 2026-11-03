@@ -27,6 +27,13 @@ interface MediaPlayerProps {
   onNavigate?: (entityId: number) => void
 }
 
+const streamUrlFor = (id: number): string => {
+  let token = ''
+  try { token = localStorage.getItem('auth_token') || '' } catch { /* storage blocked: the request will 401 visibly */ }
+  const base = (import.meta.env.VITE_API_BASE_URL || '') + `/api/v1/stream/${id}`
+  return token ? `${base}?access_token=${encodeURIComponent(token)}` : base
+}
+
 /**
  * MediaPlayer renders an HTML5 video/audio player with transport controls,
  * volume, subtitles, fullscreen, and sibling navigation support.
@@ -186,8 +193,10 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
     if (nextSibling && onNavigate) onNavigate(nextSibling.id)
   }, [nextSibling, onNavigate])
 
-  // Determine video source: entity stream URL takes priority over file path
-  const videoSrc = entityStreamUrl || media.directory_path
+  // Determine the media source: an entity stream URL takes priority; otherwise the real range-capable stream endpoint
+  // of the catalogued item. A <video>/<audio> request cannot carry an Authorization header, so the session token travels as
+  // the documented query fallback (middleware/auth.go). directory_path is a storage-relative path, never a playable URL.
+  const videoSrc = entityStreamUrl || streamUrlFor(media.id)
 
   // Auto-hide controls
   useEffect(() => {
@@ -229,7 +238,7 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
           >
-            <source src={videoSrc} type={media.media_type} />
+            <source src={videoSrc} />
             Your browser does not support the video tag.
           </video>
 

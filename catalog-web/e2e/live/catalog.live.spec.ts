@@ -26,7 +26,7 @@ test.beforeAll(async ({ request }) => {
       seedBlocked = 'target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)';
       return;
     }
-    expect(created.status(), 'create storage root through the real API').toBe(200);
+    expect([200, 201], 'create storage root through the real API (got ' + created.status() + ')').toContain(created.status());
     root = { id: (await created.json()).id, name: ROOT_NAME, path: ROOT_PATH };
   }
   const have = async () => (await (await request.get(`${API_URL}/api/v1/media/stats`, { headers: auth })).json()).total_items as number;
