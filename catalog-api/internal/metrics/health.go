@@ -43,14 +43,25 @@ type HealthCheckResponse struct {
 // pdftotext (poppler: PDF text extraction).
 var ConverterTools = []string{"ffmpeg", "convert", "pdftotext"}
 
+// ConverterPDFRaster is the extra capability key reported next to the tools:
+// ImageMagick rasterises a PDF (bmp/tiff/gif/webp output) only through
+// Ghostscript, so it is true only when both `convert` and `gs` are on PATH.
+// `convert: true` alone means images, never PDF rasterising. The values are
+// booleans only: no paths or versions are disclosed on this unauthenticated
+// endpoint.
+const ConverterPDFRaster = "convert_pdf"
+
 // ProbeConverters looks every ConverterTools entry up on PATH (exec.LookPath,
-// the same resolution the conversion worker uses when it runs the tool).
+// the same resolution the conversion worker uses when it runs the tool) and
+// derives ConverterPDFRaster.
 func ProbeConverters() map[string]bool {
-	out := make(map[string]bool, len(ConverterTools))
+	out := make(map[string]bool, len(ConverterTools)+1)
 	for _, t := range ConverterTools {
 		_, err := exec.LookPath(t)
 		out[t] = err == nil
 	}
+	_, gsErr := exec.LookPath("gs")
+	out[ConverterPDFRaster] = out["convert"] && gsErr == nil
 	return out
 }
 

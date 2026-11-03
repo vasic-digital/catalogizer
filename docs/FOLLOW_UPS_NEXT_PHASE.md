@@ -826,3 +826,21 @@ Closes F1, F2, F4, F5, F6, F7 of the scaling/chaos review (details in `docs/TEST
 - F7: no audit record for registration/approval/rejection.
 - Nits: pending list filtered inside List(1000,0); registration response echoes the raw settings marker; /health/deep unauthenticated discloses installed tools; auth_handler.go imports unsorted.
 - Operator decision: API image grew ~300 MB -> 761 MB (ffmpeg deps libLLVM/Mesa); accept, use a static ffmpeg, or slim. catalog-web changes UNVERIFIED (no node_modules).
+
+## Converter hardening + registration follow-ups (2026-11-03, branch `fix-converter-hardening`)
+Fixed (RED first, real binaries; see the commit message for the evidence list):
+- F1: ffmpeg runs with `-nostdin`, `-protocol_whitelist file,pipe` and a demuxer allowlist (`-format_whitelist`, so HLS/concat/dash playlists are refused); ImageMagick runs under an embedded `policy.xml` (`MAGICK_CONFIGURE_PATH`, dangerous coders and delegates denied, resource limits), the coder is forced from the file extension, SVG is sanitised and rendered from a private copy; every tool is wrapped in `prlimit` (as, cpu, fsize, nofile, core=0) with a hard timeout and a process-group kill that refuses pgid <= 1.
+- F2: ghostscript is deliberately NOT added (the image is 761 MB; go-fitz already rasterises PDF pages). The ImageMagick PDF fallback now returns a specific "needs ghostscript" error and `/health/deep` reports `convert_pdf` only when `convert` and `gs` are both present. Dockerfile comments and the deployment guide say so.
+- F3: `ProbeConverters` is tested on both sides with stub executables on a temp PATH.
+- F4: `PUT /users/:id` with `is_active` clears the pending marker. F5: admin `PUT /admin/users/:id` rejects a `status` outside active/inactive/suspended with 400 before touching the marker (`suspended` is stored as inactive, as before).
+- F7: `registration_created`, `registration_approved`, `registration_rejected`, `admin_user_status_changed` go to `auth_audit_log` through `AuthService.RecordAuditEvent` (no login name, e-mail or password in details).
+- N1 gofmt of auth_handler.go imports; N2 the registration response no longer echoes the settings marker; N3 decided: `/health/deep` stays boolean-only and unauthenticated (names which tools exist, nothing else); documented here.
+- F6 (partial): `docker-compose.test.yml` sets `REGISTRATION_MODE=open` by default; QA note added to `docs/guides/TESTING_GUIDE.md`.
+
+Still open / UNCONFIRMED:
+- F6: the comprehensive bank (`api-flow-login-registered-user`) and the `UF-API-AUTH-*` challenge were NOT inspected or changed; they need `REGISTRATION_MODE=open` or an approve step on whichever stack runs them.
+- N4: the pending-users list is still filtered inside `List(1000,0)` (users beyond the first 1000 are invisible to the filter).
+- ffmpeg network-protocol reachability (http/tcp) could not be reproduced on this ffmpeg build (the default whitelist already blocks it): the protocol allowlist is defensive, UNCONFIRMED as a fix for a reproduced hole.
+- This host's ghostscript is broken (`convert pdf:x.pdf` fails with `/undefinedfilename`), so the live ImageMagick-PDF test SKIPs here with a reason; it did not run on a working gs.
+- `prlimit --as` uses a host-adaptive value; its fit for very large legitimate media is UNCONFIRMED (no large-file run).
+- Image size decision (761 MB) and catalog-web changes remain as listed in the review round above.

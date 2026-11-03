@@ -19,6 +19,11 @@ func (a *AuthServiceAdapter) CheckPermission(userID int, permission string) (boo
 	return a.Inner.CheckPermission(userID, permission)
 }
 
+// RecordAuditEvent forwards to the audit trail of the wrapped service (see recordAuth).
+func (a *AuthServiceAdapter) RecordAuditEvent(userID int, eventType, ipAddress, userAgent, details string) {
+	a.Inner.RecordAuditEvent(userID, eventType, ipAddress, userAgent, details)
+}
+
 // GetCurrentUser satisfies UserAuthServiceInterface
 func (a *AuthServiceAdapter) GetCurrentUser(token string) (*models.User, error) {
 	return a.Inner.GetCurrentUser(token)
