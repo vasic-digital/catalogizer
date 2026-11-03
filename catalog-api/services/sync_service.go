@@ -1275,7 +1275,11 @@ func (s *SyncService) validateSyncEndpoint(endpoint *models.SyncEndpoint) error 
 	if endpoint.Type == models.SyncTypeWebDAV || endpoint.Type == models.SyncTypeCloudStorage {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		if _, err := netguard.CheckURL(ctx, endpoint.URL, "http", "https"); err != nil {
+		// cloud_storage endpoints name a bucket (s3://bucket, gs://bucket): no host is
+		// dialled from that string, so only http(s) URLs are network-checked there.
+		if endpoint.Type == models.SyncTypeCloudStorage && bucketURL(endpoint.URL) {
+			// nothing to resolve
+		} else if _, err := netguard.CheckURL(ctx, endpoint.URL, "http", "https"); err != nil {
 			return fmt.Errorf("invalid endpoint URL: %w", err)
 		}
 	}
@@ -1453,4 +1457,14 @@ func (s *SyncService) calculateChecksum(filePath string) (string, error) {
 
 func (s *SyncService) CleanupOldSessions(olderThan time.Time) error {
 	return s.syncRepo.CleanupSessions(olderThan)
+}
+
+// bucketURL reports whether raw is an object-store bucket reference (s3://, gs://, gcs://).
+func bucketURL(raw string) bool {
+	for _, p := range []string{"s3://", "gs://", "gcs://"} {
+		if strings.HasPrefix(strings.ToLower(raw), p) {
+			return true
+		}
+	}
+	return false
 }

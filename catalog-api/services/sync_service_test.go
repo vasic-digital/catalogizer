@@ -1345,12 +1345,14 @@ func TestSyncService_ValidateEndpoint_AllTypes(t *testing.T) {
 
 	t.Run("webdav type valid", func(t *testing.T) {
 		ep := base
+		ep.URL = "https://dav.example.invalid/dav"
 		ep.Type = models.SyncTypeWebDAV
 		assert.NoError(t, service.validateSyncEndpoint(&ep))
 	})
 
 	t.Run("cloud_storage type valid", func(t *testing.T) {
 		ep := base
+		ep.URL = "s3://my-bucket"
 		ep.Type = models.SyncTypeCloudStorage
 		assert.NoError(t, service.validateSyncEndpoint(&ep))
 	})
