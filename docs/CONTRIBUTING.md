@@ -906,7 +906,6 @@ and generate custom reports.
   }
 }
 ```
-```
 
 ## Pull Request Process
 

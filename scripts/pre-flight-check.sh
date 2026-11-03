@@ -70,6 +70,8 @@ echo ""
 echo "Docs HTML..."
 rc=0; python3 scripts/docs/check_html_viewport.py > /dev/null 2>&1 || rc=$?
 check $rc "docs/*.html declare <meta name=viewport> (scripts/docs/check_html_viewport.py)"
+rc=0; python3 scripts/docs/check_md_links.py > /dev/null 2>&1 || rc=$?
+check $rc "tracked docs markdown relative links and #anchors resolve (scripts/docs/check_md_links.py)"
 rc=0; bash scripts/docs/render_md_to_html.sh --check \
     docs/decisions/llms_verifier_reconciliation.md \
     docs/design/identity_share_discovery/RECON_RESULTS.md \

@@ -611,3 +611,14 @@ Status: OPEN until a commit on `main` closes the item.
 - R2-N7 (= F4): 403 vs 404 for another user's job id stays an operator decision.
 - Pre-existing, not from this branch: `GOOS=windows go vet ./services/` fails on older test files that use `syscall.Mkfifo`/unix helpers (`pathconfine_*`, `converter_private_dir_rv7`, `pdf_text_*`); the conversion worker tests are split so they add no new windows failure (`conversion_worker_unix_test.go`). The non-test package builds for windows.
 - The `pgid > 1` guard is pinned by `TestGroupKillTarget_RefusesPidsAtOrBelowOne` (pure function); the surrounding `Cancel` closure is not exercised with a faked pid.
+
+## Documentation follow-ups 3
+
+Found by `scripts/docs/check_md_links.py` (links to documents or assets that do not exist; nothing was invented, the links were turned into plain text):
+
+- `docs/COMPREHENSIVE_IMPLEMENTATION_PLAN.md`: the table of contents lists "Appendices" but the document has no such section; the entry is marked "not written yet".
+- `docs/diagrams/SEQUENCE_DIAGRAMS.md`: `images/sequence-diagrams-11.svg`, `-12.svg`, `-13.svg` (Admin System Info, Lazy Provider Search, Non-Blocking Health Check) were never generated; the table cells say "not generated yet".
+- `docs/INSTALLATION_GUIDE.md`: 28 screenshots under `docs/screenshots/` (wizard, docker, admin, troubleshooting, dashboard) were never captured; each image is replaced by "screenshot not captured yet" with its caption. Capturing them needs a real wizard run (HelixQA recording), not mock images.
+- `docs/deployment/DEPLOYMENT.md`: the table of contents had no dedicated "Environment Configuration" and "SMB Configuration" sections; both entries point to "Production Environment Variables" (the nearest real section). A dedicated SMB configuration section is still unwritten.
+- `README.md` table of contents: "Frontend Documentation", "Media Detection Engine" and "External Providers" had no section in the README; they now point to `docs/architecture/REACT_FRONTEND_GUIDE.md`, `docs/architecture/MEDIA_RECOGNITION_PIPELINE.md` and `docs/ENV_VARIABLES.md` (nearest real documents; a dedicated external-providers guide is not written yet).
+- `docs/CONTRIBUTING.md` had a stray code fence that hid the "Pull Request Process" heading; removed. The issue-template block near "Logs" nests a fence inside a fence and will still render early on GitHub (use a four-backtick outer fence); not changed here.

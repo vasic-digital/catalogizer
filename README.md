@@ -61,18 +61,19 @@ Catalogizer is a comprehensive media collection management system that automatic
 - [Installation & Setup](#installation--setup)
 - [Configuration](#configuration)
 - [SMB Resilience & Offline Handling](#smb-resilience--offline-handling)
-- [API Documentation](#api-documentation)
-- [Frontend Documentation](#frontend-documentation)
-- [Database Schema](#database-schema)
-- [Media Detection Engine](#media-detection-engine)
-- [External Providers](#external-providers)
-- [Real-time Monitoring](#real-time-monitoring)
-- [Security & Authentication](#security--authentication)
+- [API Documentation](docs/api/API_DOCUMENTATION.md)
+- [Frontend Documentation](docs/architecture/REACT_FRONTEND_GUIDE.md)
+- [Database Schema](docs/architecture/DATABASE_SCHEMA.md)
+- [Media Detection Engine](docs/architecture/MEDIA_RECOGNITION_PIPELINE.md)
+- [External Providers](docs/ENV_VARIABLES.md)
+- [Real-time Monitoring](#monitoring--health-checks)
+- [Security & Authentication](#security-configuration)
 - [Security Testing](#security-testing)
-- [Deployment](#deployment)
-- [Troubleshooting](#troubleshooting)
+- [Deployment](#deployment-strategies)
+- [Troubleshooting](#support--troubleshooting)
 - [Contributing](#contributing)
 
+<a id="architecture-overview"></a>
 ## 🏗️ Architecture Overview
 
 ```
@@ -186,6 +187,7 @@ Catalogizer supports multiple file system protocols for maximum flexibility:
 
 Each protocol is abstracted through a common interface, allowing seamless switching and future protocol additions.
 
+<a id="governance-and-the-constitution"></a>
 ## 🏛️ Governance and the Constitution
 
 Catalogizer is governed by three nested layers; a lower layer may tighten a higher one and never weakens it:
@@ -219,6 +221,7 @@ git -C constitution submodule update --init submodules/llmctl submodules/claude_
 
 **Submodule-dependency manifest.** The root [`helix-deps.yaml`](helix-deps.yaml) (constitution §11.4.31) declares every own-org dependency; verify all manifests with `scripts/verify_helix_deps_manifests.sh` (guide: [docs/scripts/verify_helix_deps_manifests.md](docs/scripts/verify_helix_deps_manifests.md)). Third-party tool submodules are tracked in [docs/dependency_existence_register.md](docs/dependency_existence_register.md), not in the manifest.
 
+<a id="installation--setup"></a>
 ## 🛠️ Installation & Setup
 
 ### Prerequisites
@@ -351,6 +354,7 @@ VITE_ENABLE_EXTERNAL_METADATA=true
 VITE_ENABLE_OFFLINE_MODE=true
 ```
 
+<a id="smb-resilience--offline-handling"></a>
 ## 🔌 SMB Resilience & Offline Handling
 
 Catalogizer is designed to handle temporary SMB source disconnections gracefully, ensuring uninterrupted service even when network storage becomes unavailable.
@@ -459,7 +463,7 @@ curl -X POST -H "Authorization: Bearer $TOKEN" \
 ✅ **Performance**: Circuit breaker prevents slowdowns from failed connection attempts
 ✅ **Monitoring**: Real-time visibility into connection health and recovery status
 
-For detailed technical documentation, see [SMB Resilience Architecture](docs/architecture/ARCHITECTURE.md#smb-resilience-layer).
+For detailed technical documentation, see [SMB Resilience Architecture](docs/architecture/ARCHITECTURE.md#3-smb-resilience-layer).
 
 ## 📱 Client Applications
 
@@ -709,6 +713,7 @@ cd catalogizer-api-client
 npm run dev
 ```
 
+<a id="monitoring--health-checks"></a>
 ## 📊 Monitoring & Health Checks
 
 ### Built-in Health Endpoints
@@ -746,6 +751,7 @@ podman compose logs --tail=100 -f web
 docker exec catalogizer-server tail -f /app/logs/catalogizer.log
 ```
 
+<a id="security-configuration"></a>
 ## 🔐 Security Configuration
 
 ### SSL/TLS Setup
@@ -769,6 +775,7 @@ docker exec catalogizer-server tail -f /app/logs/catalogizer.log
 - Automated backups with encryption
 - Point-in-time recovery support
 
+<a id="deployment-strategies"></a>
 ## 🚀 Deployment Strategies
 
 ### Rolling Deployment
@@ -809,6 +816,7 @@ docker exec catalogizer-server tail -f /app/logs/catalogizer.log
 | Feature Status | 2026-06-29T10:00:00Z | 1 | [MD](docs/features/Status.md) | — | — |
 <!-- doc-link-section:end -->
 
+<a id="support--troubleshooting"></a>
 ## 🆘 Support & Troubleshooting
 
 ### Common Issues
@@ -931,6 +939,7 @@ All test results are stored in the `reports/` directory:
 - **Test Coverage**: Minimum 80% for all modules
 - **Zero Defects**: All tests must pass with 100% success rate
 
+<a id="contributing"></a>
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](docs/CONTRIBUTING.md) for details.

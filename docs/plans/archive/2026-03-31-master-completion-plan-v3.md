@@ -10,7 +10,7 @@
 ## Table of Contents
 
 1. [Executive Summary](#1-executive-summary)
-2. [Full Audit Report — Remaining Gaps](#2-full-audit-report)
+2. [Full Audit Report — Remaining Gaps](#2-full-audit-report--remaining-gaps)
 3. [Phase 1: Concurrency Safety & Memory Leak Hardening](#phase-1)
 4. [Phase 2: Security Scanning Execution & Remediation](#phase-2)
 5. [Phase 3: Go Backend Test Coverage to 95%+](#phase-3)
