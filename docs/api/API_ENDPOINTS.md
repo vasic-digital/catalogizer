@@ -58,7 +58,7 @@ Rate limited per client IP: login and register 30 requests per minute, other ses
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | POST | `/api/v1/auth/login` | No | Authenticate with username and password; returns JWT tokens |
-| POST | `/api/v1/auth/register` | No | Create a new user account |
+| POST | `/api/v1/auth/register` | No | Self-register (pending admin approval by default; see `REGISTRATION_MODE`) |
 | POST | `/api/v1/auth/refresh` | No | Refresh an expired access token using a refresh token |
 | POST | `/api/v1/auth/logout` | No | Invalidate the current session |
 | GET | `/api/v1/auth/me` | Yes | Get the current authenticated user profile |

@@ -22,7 +22,7 @@ import (
 // =============================================================================
 
 func TestAuthIntegration_LoginFlowViaHTTP(t *testing.T) {
-	sb := spawnBinary(t)
+	sb := spawnBinary(t, "REGISTRATION_MODE=open")
 	defer sb.Close()
 
 	client := &http.Client{Timeout: 10 * time.Second}

@@ -48,3 +48,5 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [helixqa-androidtv-20260629/qa-report.md](helixqa-androidtv-20260629/qa-report.md) | HelixQA Android TV Autonomous QA Report |
 | [helixqa-androidtv-20260629/run2_episodes_list_100items.png](helixqa-androidtv-20260629/run2_episodes_list_100items.png) | (PNG image; not read, listed by name only) |
 | [provision-when-down-20260630/Status.md](provision-when-down-20260630/Status.md) | §11.4.76 / Boot-provisioning — provision-when-DOWN PROVEN - the digital.vasic.containers submodule (remote compose-up over SSH), SAFELY proven against a |
+
+- [Docs sync C4 audit (2026-11-03)](docs_sync_c4.md): documentation-vs-reality coverage matrix, gap counts before/after, machine evidence.

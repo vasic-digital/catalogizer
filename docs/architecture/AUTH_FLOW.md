@@ -399,9 +399,23 @@ Source: `catalog-api/internal/auth/middleware.go` -- `RateLimitByUser()`
 | Method | Path | Auth Required | Description |
 |--------|------|---------------|-------------|
 | POST | `/api/v1/auth/login` | No | Authenticate and get tokens |
-| POST | `/api/v1/auth/register` | No | Create new user account |
+| POST | `/api/v1/auth/register` | No | Self-register; account is created PENDING admin approval by default (`REGISTRATION_MODE`: `approval` default, `open`, `disabled`), no session issued |
 | POST | `/api/v1/auth/refresh` | No | Refresh access token |
 | POST | `/api/v1/auth/logout` | No | Invalidate session |
 | GET | `/api/v1/auth/me` | Yes | Get current user info |
+
+### Registration and approval
+
+`REGISTRATION_MODE` selects the policy (`approval` is the default):
+
+1. `POST /api/v1/auth/register` creates the user at role 2 (minimal) with `is_active=false` and a
+   `registration_status: pending` marker in the user's settings; the response is 201 with the user
+   and no session token. (`open`: active at once; `disabled`: 403.)
+2. `POST /api/v1/auth/login` for a pending user with the correct password answers
+   **403** `account pending approval` (`code: account_pending_approval`); with a wrong password it
+   answers the usual 401 so the pending state cannot be probed.
+3. An administrator lists `GET /api/v1/admin/users?status=pending` and decides with
+   `PUT /api/v1/admin/users/{id}` (`status: active` approves; `inactive` rejects). Either decision
+   clears the pending marker; deactivation revokes sessions as before.
 
 All other `/api/v1/*` routes require a valid JWT in the `Authorization: Bearer <token>` header.

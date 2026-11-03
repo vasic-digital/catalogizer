@@ -2,6 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
+	"log"
+	"os"
 	"net/http"
 	"strconv"
 	"strings"
@@ -29,6 +32,10 @@ func (h *AuthHandler) LoginGin(c *gin.Context) {
 
 	result, err := h.authService.Login(req, ipAddress, userAgent)
 	if err != nil {
+		if errors.Is(err, services.ErrAccountPending) {
+			c.JSON(http.StatusForbidden, gin.H{"error": err.Error(), "code": "account_pending_approval"})
+			return
+		}
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
@@ -152,8 +159,38 @@ func (h *AuthHandler) GetPermissionsGin(c *gin.Context) {
 	})
 }
 
-// RegisterGin handles user registration with gin
+// Registration modes (REGISTRATION_MODE).
+const (
+	RegistrationModeApproval = "approval" // default: account is created pending, an admin approves it
+	RegistrationModeOpen     = "open"     // explicit opt-in: account is active immediately
+	RegistrationModeDisabled = "disabled" // self-registration is refused
+)
+
+// RegistrationMode resolves REGISTRATION_MODE. Unset or empty means approval.
+// An unrecognised value fails closed to approval (and is logged), never to open.
+func RegistrationMode() string {
+	switch v := strings.ToLower(strings.TrimSpace(os.Getenv("REGISTRATION_MODE"))); v {
+	case "", RegistrationModeApproval:
+		return RegistrationModeApproval
+	case RegistrationModeOpen:
+		return RegistrationModeOpen
+	case RegistrationModeDisabled:
+		return RegistrationModeDisabled
+	default:
+		log.Printf("auth: unknown REGISTRATION_MODE %q, using %q", v, RegistrationModeApproval)
+		return RegistrationModeApproval
+	}
+}
+
+// RegisterGin handles user registration with gin.
+// Default: the user is created inactive (pending administrator approval), at
+// the minimal role, and no session is issued. See REGISTRATION_MODE.
 func (h *AuthHandler) RegisterGin(c *gin.Context, userRepo *repository.UserRepository) {
+	mode := RegistrationMode()
+	if mode == RegistrationModeDisabled {
+		c.JSON(http.StatusForbidden, gin.H{"error": "registration is disabled"})
+		return
+	}
 	var req struct {
 		Username  string `json:"username" binding:"required"`
 		Email     string `json:"email" binding:"required,email"`
@@ -197,7 +234,10 @@ func (h *AuthHandler) RegisterGin(c *gin.Context, userRepo *repository.UserRepos
 		LastName:     &req.LastName,
 		RoleID:       2,   // Default user role
 		Role:         nil, // Will be loaded after creation
-		IsActive:     true,
+		IsActive:     mode == RegistrationModeOpen,
+	}
+	if mode != RegistrationModeOpen {
+		user.Settings = models.RegistrationPendingSettings
 	}
 
 	userID, err := userRepo.Create(user)
@@ -213,7 +253,16 @@ func (h *AuthHandler) RegisterGin(c *gin.Context, userRepo *repository.UserRepos
 		return
 	}
 
-	c.JSON(http.StatusCreated, createdUser)
+	resp := struct {
+		*models.User
+		RegistrationStatus string `json:"registration_status"`
+		Message            string `json:"message"`
+	}{User: createdUser, RegistrationStatus: "active", Message: "Account created."}
+	if !createdUser.IsActive {
+		resp.RegistrationStatus = "pending"
+		resp.Message = "Account created and pending administrator approval. You cannot log in until it is approved."
+	}
+	c.JSON(http.StatusCreated, resp)
 }
 
 // Helper function to extract token from gin context
