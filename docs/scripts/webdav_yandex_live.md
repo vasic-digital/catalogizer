@@ -29,12 +29,16 @@ YANDEX_RUNS=1 YANDEX_EVIDENCE_DIR=/path/to/dir YANDEX_WEBDAV_ENV_FILE=... script
 cd catalog-api && go test -tags live -count=1 -v -run TestLiveYandexScan ./internal/services/
 ```
 
-Heavy runs are wrapped in `systemd-run --user --scope -p MemoryMax=5G -p MemorySwapMax=0` when `systemd-run` exists. Run it in the background: a run takes several minutes because the service throttles uploads (see TESTING_GUIDE "Live Yandex WebDAV suite").
+Heavy runs are wrapped in `systemd-run --user --scope -p MemoryMax=5G -p MemorySwapMax=0` when `systemd-run` exists. Run it in the background: a run takes several minutes because the service throttles uploads (see [TESTING_GUIDE](../TESTING_GUIDE.md), section "Live Yandex WebDAV suite (real service, `/Testing` only)").
 
 ## Exit codes
 
-0 `VERDICT=PASS` (every run passed, signatures identical); 1 `VERDICT=FAIL`; 2 usage (env file not mode 0600); 3 `VERDICT=SKIPPED` / `PARTIAL` (no env file, credentials absent, service unreachable).
+0 `VERDICT=PASS` or `VERDICT=PASS_WITH_ANOMALIES` (every run passed, signatures identical, integrity fields as above; the latter when transient retries occurred); 1 `VERDICT=FAIL`; 2 `VERDICT=ERROR` (env file not mode 0600); 3 `VERDICT=SKIPPED` / `PARTIAL` (no env file, credentials absent, service unreachable).
 
 ## Evidence
 
-Per run `runN.json` under `YANDEX_EVIDENCE_DIR`: request count by method and status, bytes uploaded, latency p50/p95/max, guard violations (must be 0 for the guard to have been the only thing between the test and the outside), per-step results and notes (sha256 values, mtime skew, per-operation timings), and a `signature` object that must be identical in all runs. The final comparison prints `SIGNATURES IDENTICAL`.
+Per run `runN.json` under `YANDEX_EVIDENCE_DIR`: request count by method and status, bytes uploaded, latency p50/p95/max, guard violations (exactly 2: the two deliberate out-of-sandbox probes of step 17; the script FAILs on any other value), `transient_retries` and `transient_retry_classes` (service resets/5xx/stalls, printed and summarised as ANOMALIES), `lost_acked_writes` (any value above 0 FAILs: a write the service acknowledged was absent on read-back) and `idle_cancel_errors` (any value above 0 FAILs: `context canceled` is never retried), per-step results and notes (sha256 values, mtime skew, per-operation timings), and a `signature` object that must be identical in all runs. The final comparison prints `SIGNATURES IDENTICAL`.
+
+## Honest scope
+
+The scan leg (`TestLiveYandexScan_RemoteTreeIsCatalogued`) uses the real remote tree and the real scanner; the database record sink is an in-memory collector (FOLLOW_UPS W8). The live tests replace the client transport with a guard transport (FOLLOW_UPS WD-F3). See `docs/FOLLOW_UPS_NEXT_PHASE.md` WD-F1 (possible lost acknowledged write, UNCONFIRMED).

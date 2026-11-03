@@ -114,6 +114,7 @@ type yRun struct {
 	retries      int
 	retryClasses map[string]int
 	lostWrites   int
+	idleCancels  int
 	steps        []stepRes
 	notes        map[string]any
 	t0           time.Time
@@ -224,7 +225,7 @@ func (r *yRun) writeEvidence() {
 		"service": "webdav.yandex.ru", "sandbox": yandexSandboxRoot, "run_dir": r.run, "date_utc": time.Now().UTC().Format(time.RFC3339),
 		"total_ms": time.Since(r.t0).Milliseconds(), "requests_total": len(reqs), "requests_by_method": byM, "requests_by_status": byS,
 		"bytes_uploaded": up, "latency_ms_p50": pct(50), "latency_ms_p95": pct(95), "latency_ms_max": pct(100),
-		"guard_violations": viol, "transient_retries": r.retries, "lost_acked_writes": r.lostWrites, "transient_retry_classes": r.retryClasses, "steps": r.steps, "notes": r.notes, "signature": sig, "credentials_in_evidence": false,
+		"guard_violations": viol, "transient_retries": r.retries, "lost_acked_writes": r.lostWrites, "idle_cancel_errors": r.idleCancels, "transient_retry_classes": r.retryClasses, "steps": r.steps, "notes": r.notes, "signature": sig, "credentials_in_evidence": false,
 	}
 	b, _ := json.MarshalIndent(ev, "", "  ")
 	if err := os.WriteFile(path, b, 0o600); err != nil {
@@ -239,12 +240,17 @@ func (r *yRun) ctx(d time.Duration) (context.Context, context.CancelFunc) {
 // transient reports whether err is the kind of failure the real service produces under load (observed 2026-11-03: HTTP 500 on single PUTs, TCP resets,
 // one mid-body idle cancel): the client has no retry of its own, so the live suite retries a bounded number of times and RECORDS every retry in the
 // evidence. A failure that persists after the retries FAILs the step.
+//
+// "context canceled" is NOT transient: the client raises it when its idle guard fires (no byte moved for the idle timeout), and retrying it would mask
+// a false idle-cancel in the code under test. It is counted as its own class (idleCancels) that FAILs the run.
+var transientKeys = []string{"connection reset", "status 500", "status 502", "status 503", "status 504", "status 429", "unexpected EOF", "Client.Timeout", "i/o timeout", "context deadline exceeded"}
+
 func transient(err error) bool {
 	if err == nil {
 		return false
 	}
 	m := err.Error()
-	for _, k := range []string{"connection reset", "status 500", "status 502", "status 503", "status 504", "status 429", "unexpected EOF", "context canceled", "Client.Timeout", "i/o timeout", "context deadline exceeded"} {
+	for _, k := range transientKeys {
 		if strings.Contains(m, k) {
 			return true
 		}
@@ -256,13 +262,23 @@ func transient(err error) bool {
 func (r *yRun) retry(what string, fn func() error) error {
 	var err error
 	for attempt := 1; attempt <= 4; attempt++ {
-		if err = fn(); err == nil || !transient(err) {
+		if err = fn(); err == nil {
+			return nil
+		}
+		if strings.Contains(err.Error(), "context canceled") {
+			r.mu.Lock()
+			r.idleCancels++
+			r.mu.Unlock()
+			r.t.Errorf("%s: context canceled (idle-guard cancel or unexpected cancel) is never retried and fails the run: %s", what, rd(err))
+			return err
+		}
+		if !transient(err) {
 			return err
 		}
 		r.mu.Lock()
 		r.retries++
 		cls := "other"
-		for _, k := range []string{"connection reset", "status 500", "status 502", "status 503", "status 504", "status 429", "unexpected EOF", "context canceled", "Client.Timeout", "i/o timeout", "context deadline exceeded"} {
+		for _, k := range transientKeys {
 			if strings.Contains(err.Error(), k) {
 				cls = k
 				break
@@ -275,10 +291,11 @@ func (r *yRun) retry(what string, fn func() error) error {
 	return err
 }
 
-// writeVerified uploads and then reads the size back (HEAD). Measured on the live service: after a PUT that was cut by "connection reset by peer"
-// the retried PUT answered success once but the file was absent from the directory (and stayed absent for 55 s), i.e. an ACKNOWLEDGED WRITE WAS LOST
-// server-side (1 of 7 probe runs, 1 of 3 suite runs). The client cannot see that, so the test confirms the write and re-uploads a lost one; every lost
-// acknowledged write is counted in the evidence (lost_acked_writes) and more than 3 per run FAIL the step.
+// writeVerified uploads and then reads the size back (HEAD). UNCONFIRMED hypothesis from one throwaway probe whose output is NOT committed: after a
+// PUT cut by "connection reset by peer" the retried PUT returned success once but the file was absent from the directory for at least 55 s, i.e. an
+// acknowledged write may be lost server-side. No committed run shows it (all committed runs have lost_acked_writes=0). The client cannot see that, so
+// the test confirms the write and re-uploads a lost one; every lost acknowledged write is counted in the evidence (lost_acked_writes), the live script
+// FAILs the verdict on any, and more than 3 per run FAIL the step.
 func (r *yRun) writeVerified(ctx context.Context, name string, data []byte) error {
 	for attempt := 1; attempt <= 3; attempt++ {
 		if err := r.retry("write", func() error { return r.c.WriteFile(ctx, r.rel(name), bytes.NewReader(data)) }); err != nil {
@@ -317,13 +334,13 @@ func (r *yRun) retryIdem(what string, fn func() error, benign string) error {
 }
 
 func (r *yRun) mkdir(ctx context.Context, p string) error {
-	return r.retryIdem("mkdir", func() error { return r.c.CreateDirectory(ctx, p) }, "status 405")
+	return r.retryIdem("mkdir", func() error { return r.c.CreateDirectory(ctx, p) }, "status 405 for directory")
 }
 func (r *yRun) delFile(ctx context.Context, p string) error {
-	return r.retryIdem("delete", func() error { return r.c.DeleteFile(ctx, p) }, "404")
+	return r.retryIdem("delete", func() error { return r.c.DeleteFile(ctx, p) }, "status 404")
 }
 func (r *yRun) delDir(ctx context.Context, p string) error {
-	return r.retryIdem("delete_dir", func() error { return r.c.DeleteDirectory(ctx, p) }, "404")
+	return r.retryIdem("delete_dir", func() error { return r.c.DeleteDirectory(ctx, p) }, "status 404")
 }
 func (r *yRun) copy(ctx context.Context, a, b string) error {
 	return r.retry("copy", func() error { return r.c.CopyFile(ctx, a, b) })
@@ -910,6 +927,12 @@ func TestLiveYandex_Suite(t *testing.T) {
 		dst := r.d.url + "/Other/x"
 		if _, err := r.raw(ctx, "MOVE", r.rel("conc-none"), map[string]string{"Destination": dst}, nil); err == nil || !strings.Contains(err.Error(), "GUARD") {
 			t.Fatalf("MOVE with a Destination outside the sandbox must be refused by the guard, got %v", err)
+		}
+		r.gt.mu.Lock()
+		tv := r.gt.violations
+		r.gt.mu.Unlock()
+		if tv != 2 {
+			t.Fatalf("guard violations after step 17 = %d, want exactly 2 (the two deliberate probes); any other value means an escaping request was attempted", tv)
 		}
 	})
 

@@ -207,15 +207,23 @@ func TestLiveYandexScan_RemoteTreeIsCatalogued(t *testing.T) {
 	// SSRF policy, evaluated by the canonical guard itself (digital.vasic.security/pkg/ssrf, real DNS, no resolver stub): a legitimate public https
 	// WebDAV host must pass, loopback must still be refused. (This package's TestMain may relax services.GuardProviderURL for httptest loopback
 	// servers, so the canonical guard is called directly; the services adapter is checked for the public host only.) On main the WebDAV storage-root
-	// path itself has no outbound guard; that is recorded in docs/FOLLOW_UPS_NEXT_PHASE.md.
+	// path itself has no outbound guard; that is OPEN W5 in docs/FOLLOW_UPS_NEXT_PHASE.md (section "Live Yandex WebDAV suite").
+	publicAllowed, loopbackRefused, adapterAllowed := true, true, true
 	if err := ssrf.Validate(strings.TrimRight(base, "/"), ssrf.Config{}); err != nil {
+		publicAllowed = false
 		t.Errorf("SSRF guard blocked a legitimate public https WebDAV host: %v", err)
 	}
 	if err := ssrf.Validate("https://127.0.0.1/Testing", ssrf.Config{}); err == nil {
+		loopbackRefused = false
 		t.Errorf("SSRF guard must still refuse loopback")
 	}
 	if err := GuardProviderURL(strings.TrimRight(base, "/"), SSRFGuardConfig{}); err != nil {
+		adapterAllowed = false
 		t.Errorf("services.GuardProviderURL blocked the public host: %v", err)
+	}
+	// The sandbox guard transport must never have refused a request of the scan itself (the scan only touches /Testing/<run dir>).
+	if gt.viol != 0 {
+		t.Errorf("sandbox guard violations during the scan = %d, want 0", gt.viol)
 	}
 
 	if path := os.Getenv("LIVE_YANDEX_SCAN_EVIDENCE"); path != "" {
@@ -225,7 +233,8 @@ func TestLiveYandexScan_RemoteTreeIsCatalogued(t *testing.T) {
 		}
 		ev := map[string]any{"service": "webdav.yandex.ru", "run_dir": run, "date_utc": time.Now().UTC().Format(time.RFC3339), "scan_ms": scanMs,
 			"entries_catalogued": len(got), "names": names, "sha256": sums, "http_requests": gt.n, "guard_violations": gt.viol,
-			"scan_errors": snap.ErrorCount, "ssrf_public_https_allowed": true, "credentials_in_evidence": false}
+			"scan_errors": snap.ErrorCount, "ssrf_public_https_allowed": publicAllowed, "ssrf_loopback_refused": loopbackRefused, "ssrf_adapter_public_allowed": adapterAllowed,
+			"seam": "remote tree is live; the database record sink is an in-memory collector (insertFileRecord DB path and UniversalScanner job path not exercised, FOLLOW_UPS W8)", "credentials_in_evidence": false}
 		b, _ := json.MarshalIndent(ev, "", "  ")
 		if err := os.WriteFile(path, b, 0o600); err != nil {
 			t.Errorf("evidence: %v", err)

@@ -61,7 +61,7 @@ RUN 2 GO_RC=0
 PASS
 ok  	catalogizer/filesystem	357.830s
 RUN 3 GO_RC=0
-RUNS=3 PASSED=3 SKIPPED=0 FAILED=0 EVIDENCE_DIR=/home/milosvasic/.cache/claude-tmp/claude-1000/-home-milosvasic-Projects-catalogizer/261db589-353c-4105-9405-009dbfe0bd33/scratchpad/evH
+RUNS=3 PASSED=3 SKIPPED=0 FAILED=0 EVIDENCE_DIR=<scratch>/evH
 run1: requests=498 p50=280ms p95=1954ms max=128787ms up=7631477B status={'0': 3, '200': 232, '201': 228, '202': 1, '204': 5, '206': 1, '207': 9, '401': 1, '404': 15, '405': 1, '409': 2}
 run2: requests=503 p50=270ms p95=2577ms max=129147ms up=7893669B status={'0': 7, '200': 232, '201': 228, '202': 1, '204': 5, '206': 1, '207': 9, '401': 1, '404': 15, '405': 1, '409': 2, '500': 1}
 run3: requests=497 p50=233ms p95=2010ms max=128625ms up=7369333B status={'0': 2, '200': 232, '201': 228, '202': 1, '204': 5, '206': 1, '207': 9, '401': 1, '404': 15, '405': 1, '409': 2}

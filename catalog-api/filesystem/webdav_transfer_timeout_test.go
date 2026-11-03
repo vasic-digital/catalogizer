@@ -2,14 +2,16 @@ package filesystem
 
 // Unit tests (httptest, section 11.4.289(C)(1)) for the transfer-timeout contract of WebDAVClient: a transfer that keeps moving bytes is never cut
 // by the metadata cap; a transfer that stalls is cut by the idle timeout; a metadata operation is bounded as a whole. The LIVE counterpart is
-// TestLiveYandex_Suite (a 1 MiB upload took 67 s against the real service and failed under the former 30 s whole-request cap).
+// TestLiveYandex_Suite (the pre-fix client failed its 1 MiB upload with Client.Timeout; evidence docs/qa/webdav-yandex-live-20261103/run_RED_pre_fix_client_base05709505.log).
 
 import (
 	"bytes"
 	"context"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -136,4 +138,75 @@ func TestWebDAVClient_DefaultHTTPClientHasNoWholeRequestTimeout(t *testing.T) {
 	require.True(t, ok)
 	require.NotZero(t, tr.TLSHandshakeTimeout)
 	require.NotNil(t, tr.DialContext)
+}
+
+// F1: an empty upload must stay an empty sized upload (Content-Length 0, no chunked encoding) and must still be bounded by the response wait.
+func TestWebDAVTransfer_EmptyUploadIsSizedZeroNotChunked(t *testing.T) {
+	var cl int64 = -2
+	var te []string
+	_, c := newTestWebDAVServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "PUT" {
+			cl, te = r.ContentLength, r.TransferEncoding
+			w.WriteHeader(201)
+			return
+		}
+		w.WriteHeader(207)
+	}))
+	require.NoError(t, c.WriteFile(context.Background(), "/empty.bin", bytes.NewReader(nil)))
+	require.Equal(t, int64(0), cl, "an empty body must be sent with Content-Length 0")
+	require.Empty(t, te, "an empty body must not go out chunked")
+}
+
+// F8 / mutant M2: closing a download body must stop its idle guard.
+func TestWebDAVTransfer_DownloadCloseStopsIdleGuard(t *testing.T) {
+	_, c := newTestWebDAVServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "PROPFIND" {
+			w.WriteHeader(207)
+			return
+		}
+		_, _ = w.Write([]byte("x"))
+	}))
+	rc, err := c.ReadFile(context.Background(), "/f")
+	require.NoError(t, err)
+	ib, ok := rc.(*idleBody)
+	require.True(t, ok)
+	_, _ = io.ReadAll(rc)
+	require.NoError(t, rc.Close())
+	require.False(t, ib.g.t.Stop(), "Close must have stopped the idle timer (Stop reports false for an already stopped timer)")
+}
+
+// F8 / mutants M3 and M6: ListDirectory and Connect are bounded as a whole by the metadata cap.
+func TestWebDAVTransfer_ListDirectoryAndConnectBoundedAsAWhole(t *testing.T) {
+	lowerTimeouts(t, 300*time.Millisecond, 5*time.Second)
+	var hang bool
+	var mu sync.Mutex
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		h := hang
+		mu.Unlock()
+		if h {
+			select {
+			case <-r.Context().Done():
+			case <-time.After(5 * time.Second):
+			}
+			return
+		}
+		w.WriteHeader(207)
+	}))
+	t.Cleanup(srv.Close)
+	c, err := NewWebDAVClient(&WebDAVConfig{URL: srv.URL, Username: "u", Password: "p"})
+	require.NoError(t, err)
+	require.NoError(t, c.Connect(context.Background()))
+	mu.Lock()
+	hang = true
+	mu.Unlock()
+	t0 := time.Now()
+	_, err = c.ListDirectory(context.Background(), "/d")
+	require.Error(t, err)
+	require.Less(t, time.Since(t0), 2*time.Second, "ListDirectory must be bounded by the metadata cap")
+	c2, err := NewWebDAVClient(&WebDAVConfig{URL: srv.URL, Username: "u", Password: "p"})
+	require.NoError(t, err)
+	t0 = time.Now()
+	require.Error(t, c2.Connect(context.Background()))
+	require.Less(t, time.Since(t0), 2*time.Second, "Connect must be bounded by the metadata cap")
 }

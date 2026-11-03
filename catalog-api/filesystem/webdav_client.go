@@ -36,8 +36,9 @@ type WebDAVClient struct {
 var MaxPropfindBytes int64 = 64 << 20
 
 // WebDAV timeouts. A transfer (ReadFile / WriteFile) has NO overall cap: a whole-request http.Client.Timeout also covers the body, so a file that
-// takes longer than the cap to move is cut even while it makes progress (the LIVE Yandex run uploaded 1 MiB in 67 s against the former 30 s cap and
-// failed, and every video streamed through ReadFile would have been cut after 30 s). A transfer is bounded by the caller's context and by an
+// takes longer than the cap to move is cut even while it makes progress (LIVE RED, committed as
+// docs/qa/webdav-yandex-live-20261103/run_RED_pre_fix_client_base05709505.log: the pre-fix client from commit 05709505 failed the 1 MiB upload of step
+// 04 with "Client.Timeout exceeded" against the real service; every video streamed through ReadFile would be cut the same way). A transfer is bounded by the caller's context and by an
 // IDLE timeout instead: it fails only when no byte moves for webdavIdleTimeout. Metadata operations (PROPFIND, HEAD, MKCOL, DELETE, COPY) are
 // bounded as a whole by webdavOpTimeout. Variables so tests can lower them.
 var (
@@ -262,8 +263,12 @@ func (c *WebDAVClient) WriteFile(ctx context.Context, path string, data io.Reade
 	}
 	// Wrap AFTER NewRequest so that Content-Length and GetBody it derived from the concrete reader type are kept (a wrapped reader passed in
 	// would make the upload chunked); every body read feeds the idle timer.
-	if req.Body != nil {
+	if req.Body != nil && req.Body != http.NoBody {
 		req.Body = &idleBody{rc: req.Body, g: guard, want: req.ContentLength}
+	} else {
+		// An empty body: nothing is read, so the guard would never leave the idle period; the response is awaited at once. NoBody is left
+		// unwrapped so the request stays a sized zero-length one (a wrapped NoBody goes out chunked with ContentLength -1).
+		guard.rearm(webdavResponseWait)
 	}
 
 	if c.config.Username != "" {
