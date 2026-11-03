@@ -7,6 +7,8 @@ Comprehensive documentation for the Catalogizer multi-platform media collection 
 | Document | Description |
 |----------|-------------|
 | [Changelog](CHANGELOG.md) | Release notes and version history |
+| [Upgrade Notes](UPGRADE_NOTES.md) | Behaviour changes an operator must know about when upgrading (registration approval, known limitations) |
+| [Legacy Password Hash Sunset](security/LEGACY_PASSWORD_HASH_SUNSET.md) | Sunset plan for the legacy SHA-256 password hash shape (plan; verify path not removed) |
 | [Installation Guide](INSTALLATION_GUIDE.md) | Getting started with Catalogizer |
 | [User Guide](USER_GUIDE.md) | End-user documentation |
 | [Configuration Guide](CONFIGURATION_GUIDE.md) | Application configuration options |

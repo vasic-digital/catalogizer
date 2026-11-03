@@ -412,7 +412,11 @@ Authenticate a user and receive JWT tokens.
 
 Register a new user account.
 
-**Description:** Creates a new user and returns the user object.
+**Description:** Self-registration. By default (`REGISTRATION_MODE` unset or `approval`) the user is created
+inactive and PENDING administrator approval at the minimal role; no session is issued and login answers
+403 `account pending approval` until an admin approves via `PUT /api/v1/admin/users/{id}` `{"status":"active"}`
+(list pending: `GET /api/v1/admin/users?status=pending`). `REGISTRATION_MODE=open` activates instantly;
+`REGISTRATION_MODE=disabled` answers 403.
 **Auth:** None
 **Rate Limit:** Strict (30/min)
 
@@ -436,7 +440,7 @@ Register a new user account.
 | `first_name` | string | Yes | - |
 | `last_name` | string | Yes | - |
 
-**Response:** 201 Created (User object)
+**Response:** 201 Created (User object plus `registration_status` `pending`|`active` and `message`); 403 when disabled
 
 **Errors:** 400 (validation failure), 409 (duplicate username or email)
 
@@ -953,6 +957,8 @@ Content-Length: 4294967296
 ---
 
 ## File Copy Operations
+
+> **Permission:** admin only (`RequireAdmin`), decided from the database on every request, so a token claim never grants. Anonymous callers get `401`, non-admin callers get `403`; a failed lookup answers `503`. Self-registered users (role 2) are refused. (`storage.manage` alone does not open these routes.)
 
 ### POST /api/v1/copy/storage
 
@@ -1945,6 +1951,9 @@ Content-Type: `application/json`
 
 ## Storage and Storage Roots
 
+> **Permission:** admin only (`RequireAdmin`), decided from the database on every request, so a token claim never grants. Anonymous callers get `401`, non-admin callers get `403`; a failed lookup answers `503`. Self-registered users (role 2) are refused. (`storage.manage` alone does not open these routes.)
+> A `local` storage root must be an absolute path inside a directory listed in `CATALOGIZER_LOCAL_ROOT_BASES` (deny by default), symlinks resolved; any other path, and any directory that is or contains the application database, its SQLite companions or the key file, is refused with `403`. The resolved path is stored.
+
 ### GET /api/v1/storage/list/{path}
 
 List files in a storage path.
@@ -2434,6 +2443,8 @@ Content-Type: `application/json`
 
 ## SMB Discovery
 
+> **Permission:** admin only (`RequireAdmin`), decided from the database on every request, so a token claim never grants. Anonymous callers get `401`, non-admin callers get `403`; a failed lookup answers `503`. Self-registered users (role 2) are refused. (`storage.manage` alone does not open these routes.)
+
 ### POST /api/v1/smb/discover
 
 Discover available SMB shares on a host.
@@ -2646,6 +2657,8 @@ Content-Type: `application/json`
 ## Scanning
 
 ### POST /api/v1/scans
+
+> **Permission:** admin only (see Storage and Storage Roots). `GET /api/v1/scans` and `GET /api/v1/scans/:job_id` stay available to any authenticated user (progress only).
 
 Queue a new scan job for a storage root.
 
@@ -4682,8 +4695,8 @@ Get system-wide analytics.
 
 Get analytics data for a specific media item.
 
-**Description:** Returns access counts, popularity metrics, and engagement data for a media item.
-**Auth:** Required
+**Description:** Returns access counts, popularity metrics, and engagement data for a media item, computed from every user's access logs.
+**Auth:** Admin only (`RequireAdmin`; other users get 403)
 **Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
@@ -4698,8 +4711,8 @@ Get analytics data for a specific media item.
 
 Create an analytics report.
 
-**Description:** Generates a custom analytics report based on specified criteria.
-**Auth:** Required
+**Description:** Generates a custom analytics report based on specified criteria. Every report type aggregates system-wide data.
+**Auth:** Admin only (`RequireAdmin`; other users get 403)
 **Rate Limit:** Standard (2000/min)
 
 ---
@@ -5322,6 +5335,8 @@ Content-Type: `application/json`
 ---
 
 ## Challenges
+
+> **Permission:** the three `POST .../run` operations execute server-side code paths and need the administrator role (`system.admin`, decided from the database on every request): `403` otherwise.
 
 Challenge system endpoints for running validation and testing challenges.
 

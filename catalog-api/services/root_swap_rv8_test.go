@@ -184,9 +184,9 @@ func TestRV8_PublishIsAllOrNothing(t *testing.T) {
 func TestRV8_PrivateDirIsOwnerOnly(t *testing.T) {
 	root, _, src := rv6ConvFixture(t)
 	rec := filepath.Join(t.TempDir(), "rec")
-	t.Setenv("REC", rec)
+	// the hardened launcher gives tools a scrubbed environment, so the record path is baked in
 	bin := t.TempDir()
-	script := "#!/bin/sh\nfor a in \"$@\"; do out=\"$a\"; done\nstat -c '%a' \"$(dirname \"$out\")\" > \"$REC\"\nprintf OUT > \"$out\"\n"
+	script := "#!/bin/sh\nfor a in \"$@\"; do out=\"$a\"; done\nstat -c '%a' \"$(dirname \"$out\")\" > '" + rec + "'\nprintf OUT > \"$out\"\n"
 	require.NoError(t, os.WriteFile(filepath.Join(bin, "ffmpeg"), []byte(script), 0o755))
 	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
 	require.NoError(t, (&ConversionService{}).convertVideo(&models.ConversionJob{SourcePath: src, TargetPath: filepath.Join(root, "o.mp4")}))

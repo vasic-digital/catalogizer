@@ -141,13 +141,13 @@ export const LoginForm: React.FC = () => {
                     type="checkbox"
                     className="h-4 w-4 text-blue-600 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 border-gray-300 rounded"
                   />
-                  <label htmlFor="remember-me" className="ml-2 flex items-center [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px] text-sm text-gray-900 dark:text-gray-300">
+                  <label htmlFor="remember-me" className="ml-2 flex items-center [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px] [@media(pointer:fine)]:min-h-6 text-sm text-gray-900 dark:text-gray-300">
                     Remember me
                   </label>
                 </div>
                 <Link
                   to="/forgot-password"
-                  className="inline-flex items-center [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px] text-sm text-blue-600 hover:text-blue-500 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                  className="inline-flex items-center [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px] [@media(pointer:fine)]:min-h-6 text-sm text-blue-600 hover:text-blue-500 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
                 >
                   Forgot password?
                 </Link>

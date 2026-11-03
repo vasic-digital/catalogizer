@@ -514,11 +514,15 @@ func setupCH059MockServer() *httptest.Server {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Fprint(w, `{"session_token":"test-jwt-token"}`)
 	})
-	mux.HandleFunc("/recommendations", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"recommendations":[]}`)
-	})
-	mux.HandleFunc("/entities/99999999/similar", func(w http.ResponseWriter, r *http.Request) {
+	// Mirrors the real server (CAT-001): recommendation routes answer an honest 501.
+	for _, p := range []string{"/api/v1/recommendations", "/api/v1/recommendations/trending"} {
+		mux.HandleFunc(p, func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotImplemented)
+			fmt.Fprint(w, `{"error":"not implemented"}`)
+		})
+	}
+	mux.HandleFunc("/api/v1/entities/99999999/similar", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprint(w, `{"error":"entity not found"}`)
 	})
@@ -540,6 +544,42 @@ func TestRecommendationAPIChallenge_Execute_MockServer(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.NotEmpty(t, result.Assertions)
+	for _, a := range result.Assertions {
+		assert.True(t, a.Passed, "%s: expected %s got %s", a.Target, a.Expected, a.Actual)
+	}
+}
+
+// A server that regresses to an invented 200 for the recommendation routes must FAIL the
+// challenge (gate-logic test with a double, §11.4.289(C)(2): proves the check decides
+// correctly; the live proof is the real-binary run recorded in the QA evidence).
+func TestRecommendationAPIChallenge_Execute_Invented200Fails(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/v1/auth/login", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `{"session_token":"test-jwt-token"}`)
+	})
+	mux.HandleFunc("/api/v1/recommendations", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `{"items":[{"title":"invented"}]}`)
+	})
+	mux.HandleFunc("/api/v1/recommendations/trending", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `{"items":[{"title":"invented"}]}`)
+	})
+	mux.HandleFunc("/api/v1/entities/99999999/similar", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNotFound)
+	})
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	ch := NewRecommendationAPIChallenge()
+	ch.config = &BrowsingConfig{BaseURL: server.URL, Username: "admin", Password: testAdminPassword}
+	result, err := ch.Execute(context.Background())
+	require.NoError(t, err)
+	failed := 0
+	for _, a := range result.Assertions {
+		if !a.Passed {
+			failed++
+		}
+	}
+	assert.Equal(t, 3, failed, "all three 501 pins must fail against an invented 200")
 }
 
 func TestRecommendationAPIChallenge_Execute_Unreachable(t *testing.T) {

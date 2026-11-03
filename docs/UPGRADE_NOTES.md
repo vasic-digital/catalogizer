@@ -1,0 +1,37 @@
+# Upgrade Notes
+
+Behaviour changes an operator must know about when upgrading. Newest first.
+
+## Known limitations and pending removals (docs sync C4, 2026-11-03)
+
+- **Collection sharing is not available.** The server has no `/collections/:id/share*` routes, so the web UI's Create Share Link, Send Invitations, QR Code and Copy Embed Code controls are disabled with a stated reason (`catalog-web/src/components/collections/CollectionSharing.tsx`, `SHARE_API_AVAILABLE`).
+- **Smart playlists and smart collections answer 501.** `POST /api/v1/playlists` with `is_smart` or `smart_rules` is refused and nothing is created (`catalog-api/handlers/playlist_handler.go:86-91`); see `docs/api/API_DOCUMENTATION.md`.
+- **Conversion tools are part of the API image.** `ffmpeg` and `imagemagick` are installed in the runtime image; see `docs/deployment/DOCKER_SETUP.md`.
+- **go-fitz (AGPL) removal is pending.** The operator decision of 2026-11-03 is to keep poppler only and drop `github.com/gen2brain/go-fitz` (MuPDF, AGPL). It is still imported (`catalog-api/handlers/pdf_pages_handler.go:19`, `catalog-api/go.mod:84`), so the removal has not happened yet; track it in `docs/FOLLOW_UPS_NEXT_PHASE.md`.
+
+---
+
+## Self-registration now requires administrator approval (2026-11)
+
+**Breaking behaviour change.** Before, `POST /api/v1/auth/register` created an active user who could
+log in at once. Now, by default (`REGISTRATION_MODE` unset or `approval`):
+
+- the user is created **inactive and pending approval**, at the minimal role (role 2); no session is issued;
+- `POST /api/v1/auth/login` with the right password answers **403** `account pending approval`
+  (`code: account_pending_approval`), with a wrong password the usual 401;
+- an administrator lists pending users with `GET /api/v1/admin/users?status=pending` and approves with
+  `PUT /api/v1/admin/users/{id}` `{"status":"active"}` (or rejects with `"inactive"`).
+
+What to do:
+
+| You want | Set |
+|---|---|
+| New behaviour (default) | nothing |
+| The old instant-active registration | `REGISTRATION_MODE=open` (explicit opt-in) |
+| No self-registration at all | `REGISTRATION_MODE=disabled` (registration answers 403) |
+
+Existing users are unaffected. Clients that registered and logged in straight away (scripts, the web
+register page, integration tests) must either handle the pending state or run against
+`REGISTRATION_MODE=open`. An unrecognised `REGISTRATION_MODE` value falls back to `approval` and is
+logged. No database migration is needed (the pending marker lives in the user's settings JSON).
+Reference: `docs/ENV_VARIABLES.md`, `docs/architecture/AUTH_FLOW.md`, `docs/api/openapi.yaml`.

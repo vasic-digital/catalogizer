@@ -44,7 +44,7 @@ export const Admin: React.FC = () => {
     refetchInterval: 1000 * 30, // Refresh every 30 seconds
   });
 
-  const { data: users, isLoading: _usersLoading } = useQuery({
+  const { data: users, isLoading: _usersLoading, refetch: refetchUsers } = useQuery({
     queryKey: ['admin-users'],
     queryFn: () => adminApi.getUsers(),
     staleTime: 1000 * 60 * 5,
@@ -105,6 +105,7 @@ export const Admin: React.FC = () => {
     try {
       await adminApi.updateUser(id, updates);
       toast.success('User updated successfully');
+      refetchUsers();
     } catch (error) {
       toast.error(`Failed to update user: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }

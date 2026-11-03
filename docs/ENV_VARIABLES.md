@@ -111,6 +111,20 @@ SVC_QDRANT_REMOTE / HOST                                   # ✅
 BOOT_STRICT_MODE=false                                     # ✅
 ```
 
+### Self-registration policy
+
+```bash
+REGISTRATION_MODE=approval   # 🟢 default. approval | open | disabled
+```
+
+- `approval` (or unset): `POST /api/v1/auth/register` creates an INACTIVE, pending user at the
+  minimal role and issues no session; an administrator approves it
+  (`PUT /api/v1/admin/users/{id}` `{"status":"active"}`) after listing
+  `GET /api/v1/admin/users?status=pending`. Until then login answers 403 "account pending approval".
+- `open`: explicit opt-in to instant-active self-registration (the pre-2026-11 behaviour).
+- `disabled`: registration answers 403.
+- An unrecognised value falls back to `approval` (fail closed) and is logged.
+
 ## 5. 🔴 Server binding — MANDATORY
 
 ```bash
@@ -371,6 +385,15 @@ CATALOGIZER_CONVERSION_TIMEOUT=2h   # 🟢 per-job wall-clock limit (Go duration
 A conversion that runs longer is killed (whole process group) and the job ends `failed` with
 "conversion timed out". An invalid, zero or negative value is ignored with a warning in the log
 and the default is used; "unlimited" is not supported.
+
+```bash
+CATALOGIZER_CONVERSION_MAX_OUTPUT_BYTES=34359738368   # 🟢 per-tool output size cap (RLIMIT_FSIZE, bytes); default 32 GiB
+```
+
+ffmpeg and ImageMagick run under `prlimit` (CPU, address space, open files, no core dump) and this
+output cap. A tool that tries to write more is stopped by the kernel and the job ends `failed`.
+Raise it only for very large video outputs; an invalid, zero or negative value is ignored and the
+default is used.
 
 ---
 

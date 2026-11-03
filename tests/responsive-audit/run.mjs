@@ -87,7 +87,7 @@ for (const c of cases) {
       const f = path.join(dir,`${name}__${c.w}x${c.h}__dpr${c.dpr}__${c.theme}__${c.motion}.png`);
       await page.screenshot({path:f});
       rec.tag = args.tag||'baseline'; rec.finalUrl = page.url().replace(app.base,''); rec.shot = path.relative(W,f); rec.sha256 = sha(f);
-      const types = ['h_overflow','offscreen_control','occluded_control','tap_target_small','small_text','clipped_text','text_off_viewport','overlapping_text','no_gutter'];
+      const types = ['h_overflow','offscreen_control','occluded_control','tap_target_small','tap_target_small_desktop','small_text','clipped_text','text_off_viewport','overlapping_text','no_gutter'];
       rec.counts = Object.fromEntries(Object.entries(res).filter(([k])=>k.startsWith('n_')).map(([k,v])=>[k.slice(2),v]));
       rec.findings = res.findings; rec.docScrollWidth=res.docScrollWidth; rec.textLen=res.textLen;
       rec.errors = errs.slice(0,6); rec.nErrors = errs.length;

@@ -1,0 +1,1389 @@
+{
+ "browser": "chromium",
+ "cases": 60,
+ "violations": 0,
+ "unobserved": 0,
+ "pass": 60,
+ "results": [
+  {
+   "page": "dashboard",
+   "vp": "320x568",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 202,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "collections",
+   "vp": "320x568",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 202,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "media",
+   "vp": "320x568",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 202,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "320x568",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 202,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "admin",
+   "vp": "320x568",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 202,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "settings",
+   "vp": "320x568",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 202,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "320x568",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 202,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "collections",
+   "vp": "320x568",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 202,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "media",
+   "vp": "320x568",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 202,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "320x568",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 202,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "admin",
+   "vp": "320x568",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 202,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "settings",
+   "vp": "320x568",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 202,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "375x812",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 229.5,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "collections",
+   "vp": "375x812",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 229.5,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "media",
+   "vp": "375x812",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 229.5,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "375x812",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 229.5,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "admin",
+   "vp": "375x812",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 229.5,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "settings",
+   "vp": "375x812",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 229.5,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "375x812",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 229.5,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "collections",
+   "vp": "375x812",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 229.5,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "media",
+   "vp": "375x812",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 229.5,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "375x812",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 229.5,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "admin",
+   "vp": "375x812",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 229.5,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "settings",
+   "vp": "375x812",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 229.5,
+     "y": 18,
+     "w": 32,
+     "h": 28
+    },
+    "position": "static",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "768x1024",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 604,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "collections",
+   "vp": "768x1024",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 604,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "media",
+   "vp": "768x1024",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 604,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "768x1024",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 604,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "admin",
+   "vp": "768x1024",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 604,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "settings",
+   "vp": "768x1024",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 604,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "768x1024",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 604,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "collections",
+   "vp": "768x1024",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 604,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "media",
+   "vp": "768x1024",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 604,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "768x1024",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 604,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "admin",
+   "vp": "768x1024",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 604,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "settings",
+   "vp": "768x1024",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 604,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "1024x768",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 852,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "collections",
+   "vp": "1024x768",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 852,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "media",
+   "vp": "1024x768",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 852,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "1024x768",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 852,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "admin",
+   "vp": "1024x768",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 852,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "settings",
+   "vp": "1024x768",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 852,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "1024x768",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 852,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "collections",
+   "vp": "1024x768",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 852,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "media",
+   "vp": "1024x768",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 852,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "1024x768",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 852,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "admin",
+   "vp": "1024x768",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 852,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "settings",
+   "vp": "1024x768",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 852,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "1440x900",
+   "theme": "light",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1188,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "collections",
+   "vp": "1440x900",
+   "theme": "light",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1188,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "media",
+   "vp": "1440x900",
+   "theme": "light",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1188,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "1440x900",
+   "theme": "light",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1188,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "admin",
+   "vp": "1440x900",
+   "theme": "light",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1188,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "settings",
+   "vp": "1440x900",
+   "theme": "light",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1188,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "1440x900",
+   "theme": "dark",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1188,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "collections",
+   "vp": "1440x900",
+   "theme": "dark",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1188,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "media",
+   "vp": "1440x900",
+   "theme": "dark",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1188,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "1440x900",
+   "theme": "dark",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1188,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "admin",
+   "vp": "1440x900",
+   "theme": "dark",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1188,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "settings",
+   "vp": "1440x900",
+   "theme": "dark",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1188,
+     "y": 16,
+     "w": 140,
+     "h": 32
+    },
+    "position": "static",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  }
+ ]
+}

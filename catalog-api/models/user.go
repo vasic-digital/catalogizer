@@ -429,6 +429,11 @@ const (
 	PermissionSystemAdmin  = "system.admin"
 	PermissionSystemConfig = "system.configure"
 
+	// Storage permissions: creating/inspecting storage roots, queueing scans,
+	// SMB discovery/probe/ingest and server-side copy. system.admin and "*"
+	// also pass (see middleware.RequirePermission).
+	PermissionStorageManage = "storage.manage"
+
 	// User management permissions
 	PermissionUserView   = "user.view"
 	PermissionUserCreate = "user.create"
@@ -504,6 +509,44 @@ func (u *User) IsAccountLocked() bool {
 	}
 	// If locked with expiry, check if lock has expired
 	return u.LockedUntil.After(time.Now())
+}
+
+// RegistrationPendingSettings is the settings JSON stored on a self-registered
+// user that is waiting for administrator approval. The marker lives in the
+// existing settings column (no schema change) and is cleared by any explicit
+// administrator status decision (approve or reject).
+const RegistrationPendingSettings = `{"registration_status":"pending"}`
+
+// IsRegistrationPending reports whether the user self-registered and has not
+// yet been approved or rejected: inactive AND carrying the pending marker.
+func (u *User) IsRegistrationPending() bool {
+	if u.IsActive || u.Settings == "" {
+		return false
+	}
+	var m map[string]interface{}
+	if err := json.Unmarshal([]byte(u.Settings), &m); err != nil {
+		return false
+	}
+	return m["registration_status"] == "pending"
+}
+
+// ClearRegistrationPending removes the pending marker from the settings JSON,
+// leaving every other key untouched.
+func (u *User) ClearRegistrationPending() {
+	if u.Settings == "" {
+		return
+	}
+	var m map[string]interface{}
+	if err := json.Unmarshal([]byte(u.Settings), &m); err != nil {
+		return
+	}
+	if _, ok := m["registration_status"]; !ok {
+		return
+	}
+	delete(m, "registration_status")
+	if raw, err := json.Marshal(m); err == nil {
+		u.Settings = string(raw)
+	}
 }
 
 // CanLogin checks if the user can login (active and not locked)

@@ -547,3 +547,20 @@ A function that runs a pooled query or exec inside a `for rows.Next()` loop hold
 - Guard: `catalog-api/internal/poolguard` (`go test ./internal/poolguard`). A `go/parser` scan of the non-test Go files of `catalog-api` fails on a pooled call (`Query`, `QueryRow`, `Exec`, their `*Context` forms, `Prepare`, `InsertReturningID`) inside a `for X.Next()` body, directly or through same-package helpers up to three calls deep. Exceptions go in the justified allowlist in `guard_test.go` (today only `RefreshSmartPlaylist`, one `*sql.Tx` = one pinned connection); a stale allowlist entry also fails. Control needles: `testdata/positive` must be found (direct, indirect, exec-per-row), `testdata/negative` (buffered shape, non-cursor loop) must not.
 - Fix pattern: scan the page into a slice, close the cursor (`rows.Close()`), then run the per-row queries.
 - Per-member regression tests (real SQLite file, production migrations, pool of 3, 12 concurrent callers, shared helper `internal/pooltest`; RED signature `pool deadlock: 12 of 12 callers still blocked`): `repository/pool_class_test.go`, `handlers/pool_class_test.go`, `internal/services/pool_class_test.go`, `internal/media/realtime/pool_class_test.go`.
+## Registration approval and converter tools (real binary)
+
+Two real-binary tests in `catalog-api/` (they build and start the server on SQLite; skipped under `-short`):
+
+```bash
+cd catalog-api
+go test -run TestRegistrationApproval_RealBinary -count=1 .   # register -> pending -> login 403 -> admin approves -> login 200; open/disabled modes
+go test -run TestConversionToolsMissing_RealBinary -count=1 . # PATH without ffmpeg: job ends failed naming the tool; /health/deep converters all false
+```
+
+To verify the runtime image end to end: build it locally with rootless podman
+(`podman build --network host -f catalog-api/Dockerfile -t localhost/<name>:test <context>`), run it on an
+ephemeral loopback port with a throwaway `ADMIN_PASSWORD`/`JWT_SECRET`, check `GET /health/deep` shows
+`ffmpeg`, `convert` and `pdftotext` as `true`, and submit a real conversion job through
+`POST /api/v1/conversion/jobs` (source and target under the container's `/app/data`). Remove only the
+container and image you created. Tests that register a user and log in straight away must run the server
+with `REGISTRATION_MODE=open` (see `docs/UPGRADE_NOTES.md`).

@@ -61,9 +61,13 @@ FROM docker.io/library/debian:trixie-slim
 
 # Install runtime dependencies. poppler-utils (pdftotext, pdfinfo) is the primary PDF text engine
 # (CAT-002); util-linux provides prlimit, which caps every PDF parser child. Without prlimit the
-# service refuses to parse PDFs.
+# service refuses to parse PDFs. ffmpeg (audio/video) and imagemagick (`convert`: images; PDF
+# pages are rasterised by go-fitz, ghostscript is deliberately NOT installed, so the ImageMagick PDF fallback
+# reports a specific error and /health/deep does not claim convert_pdf) are the converter tools the conversion worker execs; without them every conversion
+# job fails with "converter tool ... is not installed" (GET /health/deep -> converters shows what is present).
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates tzdata wget poppler-utils util-linux && rm -rf /var/lib/apt/lists/*
+    ca-certificates tzdata wget poppler-utils util-linux ffmpeg imagemagick \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 WORKDIR /app
 

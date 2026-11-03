@@ -64,6 +64,14 @@ func (s *AuthService) auditEvent(userID int, eventType, ipAddress, userAgent, de
 	}
 }
 
+// RecordAuditEvent writes an event to the audit trail (auth_audit_log) when the service was built
+// with NewAuthServiceWithAudit; otherwise it is a no-op. Callers pass the event type, the subject
+// user id (0 = none), the client address and user agent, and details that carry no password, login
+// name or e-mail address.
+func (s *AuthService) RecordAuditEvent(userID int, eventType, ipAddress, userAgent, details string) {
+	s.auditEvent(userID, eventType, ipAddress, userAgent, details)
+}
+
 // JWTClaims represents the claims in our JWT tokens
 type JWTClaims struct {
 	UserID    int    `json:"user_id"`
@@ -80,6 +88,10 @@ type AuthResult struct {
 	RefreshToken string       `json:"refresh_token"`
 	ExpiresAt    time.Time    `json:"expires_at"`
 }
+
+// ErrAccountPending is returned by Login when the credentials are correct but
+// the account is a self-registration still waiting for administrator approval.
+var ErrAccountPending = errors.New("account pending approval")
 
 // Login authenticates a user and creates a session
 func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent string) (*AuthResult, error) {
@@ -98,6 +110,15 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 		s.auditEvent(user.ID, "failed_login_inactive", ipAddress, userAgent, "account locked or disabled")
 		if user.IsLocked {
 			return nil, errors.New("account is temporarily locked")
+		}
+		if user.IsRegistrationPending() {
+			// Reveal the pending state only to someone who knows the password,
+			// so it cannot be used to probe which usernames are registered.
+			if ok, _ := CheckPassword(req.Password, user.Salt, user.PasswordHash); ok {
+				return nil, ErrAccountPending
+			}
+			s.userRepo.IncrementFailedLoginAttempts(user.ID)
+			return nil, errors.New("invalid credentials")
 		}
 		return nil, errors.New("account is disabled")
 	}

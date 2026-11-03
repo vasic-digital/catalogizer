@@ -119,6 +119,7 @@ export const Analytics: React.FC = () => {
     queryKey: ['analytics-system'],
     queryFn: () => analyticsApi.getSystemAnalytics(),
     staleTime: 1000 * 60 * 5,
+    retry: false, // admin-only endpoint: a non-admin gets 403 and the panel stays hidden (no retries)
   })
 
   // Transform stats data for charts

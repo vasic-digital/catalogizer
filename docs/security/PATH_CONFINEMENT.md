@@ -90,7 +90,7 @@ The effective roots are logged once at boot (`Filesystem path confinement roots:
 Everything under a write root is also readable. `local_path` of a sync endpoint is READ for
 `sync_direction: upload`, WRITTEN for `download` / `bidirectional`. `source_directory` / `destination_directory`
 in `sync_settings` are checked for every endpoint type; `sync_mode: bidirectional` treats the source side as written.
-Storage roots registered in the database are NOT added automatically; list their directories in `CATALOGIZER_READ_ROOTS`
+Storage roots registered in the database are NOT added automatically; local storage roots are governed separately by `CATALOGIZER_LOCAL_ROOT_BASES` (see below); for sync/conversion paths list their directories in `CATALOGIZER_READ_ROOTS`
 (UNCONFIRMED whether a dynamic provider is wanted - see "Follow-up: dynamic storage-root provider" below).
 
 A local endpoint (`type: local`) with no `source_directory` uses `local_path` as its source, but `local_path` is
@@ -348,6 +348,30 @@ entries (200000). Exceeding any of them, or failing to list any sub-collection, 
 error (`webdav listing exceeded its limit: ...`); a partial listing is never returned as complete. Review round 1
 bounded only the depth and swallowed sub-listing errors: a server reporting two sub-collections per collection
 could still force about 2^33 requests, so the round-1 commit message's "bounded" was not true for breadth.
+
+## Local storage roots and outbound destinations (fix-p2-route-perms, review round 1)
+
+* `POST /api/v1/storage/roots` with `protocol: local` accepts only an absolute path that resolves, after symlinks,
+  inside a directory listed in `CATALOGIZER_LOCAL_ROOT_BASES` (the single local-root policy; unset = deny all) and is not a
+  protected application file: `filesystem.ResolveLocalRoot` refuses the database, its SQLite companions (`-wal`, `-shm`,
+  `-journal`), the key file and any directory that contains one of them. All refusals are `403`. The symlink-resolved
+  path is what is stored, and the same check is repeated every time the root is used (scan, listing), so a directory
+  swapped for a symlink after creation is refused at scan time. Real-binary tests:
+  `TestRoutePerms_RealBinary_LocalRootConfinement`, `TestRoutePerms_RealBinary_LocalRootRefusesProtectedFiles`.
+* Server-side requests to a URL a caller names (sync endpoints of type `webdav` / `cloud_storage`, the public image
+  proxy) go through `internal/netguard`: the host is resolved, loopback / private / link-local (cloud metadata) /
+  carrier-grade-NAT / unspecified / multicast / reserved addresses are refused, and the connection is dialled to the
+  address that was checked (pinned), so a name that resolves differently a second time cannot reach an internal
+  service. A sync endpoint URL that fails the check is refused with 400 (`invalid endpoint URL`), and every WebDAV
+  request of a stored endpoint uses the same guarded transport. Environment proxies are not used.
+* Operators who sync to a NAS on their LAN list the networks they accept in `CATALOGIZER_OUTBOUND_ALLOW_CIDRS`
+  (comma separated, for example `192.168.1.0/24`). That list can re-admit loopback, private and carrier-grade-NAT
+  ranges only; link-local (the metadata address 169.254.169.254), unspecified, multicast and broadcast addresses
+  stay refused whatever it says. An invalid entry allows nothing.
+* The image proxy accepts `https` URLs only, with no credentials, port 443 only, whose parsed host is EXACTLY
+  `image.tmdb.org`, `img.omdbapi.com` or `images.igdb.com`; a redirect is followed only to another URL that passes
+  the same test. Honest limit: when a SOCKS5 or HTTP proxy is configured in `proxy.*`, the proxy resolves the
+  target and the private-address check cannot see it; the exact host allow-list still applies.
 
 ## Upgrade impact
 

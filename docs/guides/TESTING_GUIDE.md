@@ -500,3 +500,15 @@ jobs:
 - [Architecture Guide](../architecture/ARCHITECTURE.md)
 - [Deployment Guide](../DEPLOYMENT_GUIDE.md)
 - [Troubleshooting Guide](./TROUBLESHOOTING.md)
+
+
+## QA notes: self-registration mode
+
+The API decides what happens to `POST /api/v1/auth/register` with `REGISTRATION_MODE`:
+`approval` (default; the account is created inactive and pending until an administrator approves it
+through `PUT /api/v1/admin/users/:id` with `{"status":"active"}`), `open` (active at once) or `disabled`.
+`docker-compose.test.yml` sets `open` by default (override with the `REGISTRATION_MODE` variable)
+because `tests/test_subtitles.sh` and similar scripts register a user and log in immediately.
+`scripts/run-full-qa.sh` only checks the register response (201/409/400/429) and does not log in as
+the new user, so it works in every mode. A QA flow that needs a working second account on a stack in
+`approval` mode must call the admin approve step after registering.

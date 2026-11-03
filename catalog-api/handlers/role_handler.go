@@ -332,6 +332,8 @@ func (h *RoleHandler) GetPermissions(w http.ResponseWriter, r *http.Request) {
 			"edit_shares":   models.PermissionShareEdit,
 			"delete_shares": models.PermissionShareDelete,
 		},
+		// storage.manage is deliberately not offered: no route is gated by it (storage, scan,
+		// SMB, copy and sync-endpoint routes are admin only), so granting it would change nothing.
 		"system": map[string]string{
 			"system_admin":    models.PermissionSystemAdmin,
 			"view_analytics":  models.PermissionAnalyticsView,
