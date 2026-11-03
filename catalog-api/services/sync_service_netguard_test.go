@@ -167,3 +167,25 @@ func TestSyncService_WebDAVClientCacheIsRaceFree(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+// N3: a not-yet-stored endpoint (ID 0) must never be cached, or the next create with a
+// different URL would silently reuse the first one's client.
+func TestSyncService_CreateEndpointDoesNotShareClientAcrossURLs(t *testing.T) {
+	svc, _, root := newGuardedSyncService(t)
+	urlA, hitsA := countingListener(t)
+	urlB, hitsB := countingListener(t)
+	t.Setenv("CATALOGIZER_OUTBOUND_ALLOW_CIDRS", "127.0.0.0/8")
+	for _, u := range []string{urlA, urlB} {
+		_, err := svc.CreateSyncEndpoint(1, &models.SyncEndpoint{
+			Name: "n3", Type: models.SyncTypeWebDAV, URL: u,
+			SyncDirection: models.SyncDirectionDownload, LocalPath: root,
+		})
+		require.NoError(t, err)
+	}
+	assert.Greater(t, atomic.LoadInt64(hitsA), int64(0), "first URL contacted")
+	assert.Greater(t, atomic.LoadInt64(hitsB), int64(0), "second URL must be contacted by its own client")
+	svc.webdavMu.Lock()
+	_, cachedZero := svc.webdavClients[0]
+	svc.webdavMu.Unlock()
+	assert.False(t, cachedZero, "nothing may be cached under id 0")
+}

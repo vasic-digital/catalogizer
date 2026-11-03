@@ -1,8 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -106,4 +109,91 @@ func TestRoutePerms_RealBinary_SelfOrAdmin(t *testing.T) {
 		assert.NotContains(t, []int{401, 403, 503}, code, "admin must reach "+other)
 	}
 	require.NotEqual(t, aID, bID)
+}
+
+// N1: analytics writes are attributed to the caller (the token), never to a user id taken
+// from the request body: forged rows would feed the admin-only reports.
+func TestRoutePerms_RealBinary_AnalyticsWritesCannotForgeUserID(t *testing.T) {
+	if testing.Short() {
+		t.Skip("builds and runs the server binary")
+	}
+	c, adm, stop := startPermServer(t, t.TempDir())
+	defer stop()
+	mk := func(name string) (int, string) {
+		id := c.id("POST", "/api/v1/users", adm, map[string]interface{}{"username": name, "email": name + "@example.invalid", "password": "Contract-Value-Strong-77", "role_id": 2}, 201)
+		return id, c.login(name, "Contract-Value-Strong-77")
+	}
+	victim, _ := mk("n1victim")
+	attacker, aTok := mk("n1attacker")
+	counts := func(id int) (int, int) {
+		code, raw := c.do("GET", fmt.Sprintf("/api/v1/analytics/user/%d?end_date=%s", id, time.Now().AddDate(0, 0, 2).Format("2006-01-02")), adm, nil)
+		require.Equal(t, 200, code, "%s", raw)
+		var out struct {
+			Accesses int `json:"total_media_accesses"`
+			Events   int `json:"total_events"`
+		}
+		require.NoError(t, json.Unmarshal(raw, &out))
+		return out.Accesses, out.Events
+	}
+	vA, vE := counts(victim)
+	aA, aE := counts(attacker)
+
+	forgedAccess := map[string]interface{}{"user_id": victim, "media_id": 1, "action": "view"}
+	forgedEvent := map[string]interface{}{"user_id": victim, "event_type": "x", "event_category": "y", "data": "{}"}
+	code, _ := c.do("POST", "/api/v1/analytics/access", aTok, forgedAccess)
+	assert.Equal(t, 403, code, "forged user_id on /analytics/access")
+	code, _ = c.do("POST", "/api/v1/analytics/event", aTok, forgedEvent)
+	assert.Equal(t, 403, code, "forged user_id on /analytics/event")
+	nA, nE := counts(victim)
+	assert.Equal(t, vA, nA, "victim access count must not change")
+	assert.Equal(t, vE, nE, "victim event count must not change")
+
+	// Own id, or no id at all: accepted and attributed to the caller.
+	for _, body := range []map[string]interface{}{
+		{"user_id": attacker, "media_id": 1, "action": "view"},
+		{"media_id": 1, "action": "view"},
+	} {
+		code, raw := c.do("POST", "/api/v1/analytics/access", aTok, body)
+		assert.Equal(t, 200, code, "%s", raw)
+	}
+	code, raw := c.do("POST", "/api/v1/analytics/event", aTok, map[string]interface{}{"event_type": "x", "event_category": "y", "data": "{}"})
+	assert.Equal(t, 200, code, "%s", raw)
+	nA2, nE2 := counts(attacker)
+	assert.Equal(t, aA+2, nA2, "own accesses are attributed to the caller")
+	assert.Equal(t, aE+1, nE2, "own event is attributed to the caller")
+	nA, nE = counts(victim)
+	assert.Equal(t, vA, nA)
+	assert.Equal(t, vE, nE)
+}
+
+// N2: a collection created by an administrator is global (no owner column yet), and a
+// non-admin must be able neither to change nor to delete it. Skipped until the pending
+// feat-smart-collections branch (migration 23: owner and is_public, writes need the owner
+// or an admin) lands; set CATALOGIZER_RUN_N2=1 to run it today (it is RED on this branch:
+// bob's PUT and DELETE answer 200). Remove the skip when that branch merges.
+func TestRoutePerms_RealBinary_CollectionOwnership(t *testing.T) {
+	if testing.Short() {
+		t.Skip("builds and runs the server binary")
+	}
+	if os.Getenv("CATALOGIZER_RUN_N2") != "1" {
+		t.Skip("N2 is closed by the pending feat-smart-collections branch (owner column); see docs/FOLLOW_UPS_NEXT_PHASE.md")
+	}
+	c, adm, stop := startPermServer(t, t.TempDir())
+	defer stop()
+	bob := selfRegister(t, c, "n2bob")
+	id := c.id("POST", "/api/v1/collections", adm, map[string]interface{}{"name": "global-n2"}, 201)
+	path := fmt.Sprintf("/api/v1/collections/%d", id)
+
+	code, raw := c.do("PUT", path, bob, map[string]interface{}{"name": "hijacked"})
+	assert.Contains(t, []int{403, 404}, code, "non-admin must not rename a global collection: %s", raw)
+	code, raw = c.do("DELETE", path, bob, nil)
+	assert.Contains(t, []int{403, 404}, code, "non-admin must not delete a global collection: %s", raw)
+
+	// The collection is untouched, and the administrator can still change it.
+	code, raw = c.do("GET", path, adm, nil)
+	require.Equal(t, 200, code, "%s", raw)
+	assert.Contains(t, string(raw), "global-n2")
+	assert.NotContains(t, string(raw), "hijacked")
+	code, raw = c.do("PUT", path, adm, map[string]interface{}{"name": "renamed-by-admin"})
+	assert.Equal(t, 200, code, "%s", raw)
 }
