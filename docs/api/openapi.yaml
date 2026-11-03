@@ -7600,7 +7600,7 @@ paths:
       tags:
       - analytics
       summary: Get analytics for a media item
-      description: Aggregated analytics for one media item over a date range.
+      description: Aggregated analytics for one media item over a date range, computed from every user's access logs. Admin only (answers 403 to other users).
       security:
       - BearerAuth: []
       parameters:
@@ -7651,7 +7651,7 @@ paths:
       tags:
       - analytics
       summary: Create an analytics report
-      description: Creates a report of the requested type.
+      description: Creates a report of the requested type. Every report type aggregates system-wide data, so the route is admin only (answers 403 to other users).
       security:
       - BearerAuth: []
       requestBody:

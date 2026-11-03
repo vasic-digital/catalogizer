@@ -32,6 +32,7 @@ type SyncService struct {
 	syncRepo      *repository.SyncRepository
 	userRepo      *repository.UserRepository
 	authService   *AuthService
+	webdavMu      sync.Mutex // guards webdavClients (request goroutines and sync workers share it)
 	webdavClients map[int]*WebDAVClient
 	wg            sync.WaitGroup
 	ctx           context.Context
@@ -102,7 +103,7 @@ func (s *SyncService) GetEndpoint(endpointID int, userID int) (*models.SyncEndpo
 	return endpoint, nil
 }
 
-func (s *SyncService) UpdateEndpoint(endpointID int, userID int, updates *models.UpdateSyncEndpointRequest) (*models.SyncEndpoint, error) {
+func (s *SyncService) UpdateEndpoint(endpointID int, userID int, updates *models.UpdateSyncEndpointRequest) (_ *models.SyncEndpoint, retErr error) {
 	endpoint, err := s.syncRepo.GetEndpoint(endpointID)
 	if err != nil {
 		return nil, err
@@ -121,7 +122,14 @@ func (s *SyncService) UpdateEndpoint(endpointID int, userID int, updates *models
 
 	if updates.URL != "" {
 		endpoint.URL = updates.URL
-		delete(s.webdavClients, endpoint.ID) // never keep a client built for the old URL
+		s.evictWebDAVClient(endpoint.ID) // never keep a client built for the old URL
+		// The connection test below caches a client for the NEW URL; if the update is then
+		// rejected the stored URL is unchanged, so that client must not outlive the attempt.
+		defer func() {
+			if retErr != nil {
+				s.evictWebDAVClient(endpoint.ID)
+			}
+		}()
 	}
 
 	if updates.Username != "" {
@@ -1317,7 +1325,16 @@ func (s *SyncService) testConnection(endpoint *models.SyncEndpoint) error {
 	}
 }
 
+// evictWebDAVClient drops the cached client of an endpoint.
+func (s *SyncService) evictWebDAVClient(id int) {
+	s.webdavMu.Lock()
+	defer s.webdavMu.Unlock()
+	delete(s.webdavClients, id)
+}
+
 func (s *SyncService) getWebDAVClient(endpoint *models.SyncEndpoint) (*WebDAVClient, error) {
+	s.webdavMu.Lock()
+	defer s.webdavMu.Unlock()
 	if client, exists := s.webdavClients[endpoint.ID]; exists {
 		return client, nil
 	}

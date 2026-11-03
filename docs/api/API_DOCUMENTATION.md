@@ -4695,8 +4695,8 @@ Get system-wide analytics.
 
 Get analytics data for a specific media item.
 
-**Description:** Returns access counts, popularity metrics, and engagement data for a media item.
-**Auth:** Required
+**Description:** Returns access counts, popularity metrics, and engagement data for a media item, computed from every user's access logs.
+**Auth:** Admin only (`RequireAdmin`; other users get 403)
 **Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
@@ -4711,8 +4711,8 @@ Get analytics data for a specific media item.
 
 Create an analytics report.
 
-**Description:** Generates a custom analytics report based on specified criteria.
-**Auth:** Required
+**Description:** Generates a custom analytics report based on specified criteria. Every report type aggregates system-wide data.
+**Auth:** Admin only (`RequireAdmin`; other users get 403)
 **Rate Limit:** Standard (2000/min)
 
 ---
