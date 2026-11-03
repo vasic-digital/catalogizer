@@ -17,12 +17,25 @@ check() { if [ "$2" = "$3" ]; then ok "$1"; else bad "$1 (got '$2' want '$3')"; 
 BASH_BIN="$(command -v bash)"
 SH="$T/shims"; mkdir -p "$SH"
 printf '#!/usr/bin/env bash\nexit "${SHIM_K6_RC:-0}"\n' >"$SH/k6"; chmod +x "$SH/k6"
-# minimal PATH without k6 for the tool_absent case
-NOK6="$T/nok6"; mkdir -p "$NOK6"; for t in mkdir date cat; do ln -s "$(command -v $t)" "$NOK6/$t"; done
+# PATH without k6: the real PATH with every directory that holds k6 replaced by a symlink mirror without it (robust against
+# what the script sources: dirname, readlink, ...)
+NOK6="$T/nok6"; mkdir -p "$NOK6"; NOK6_PATH=""
+_i=0
+IFS=: read -ra _dirs <<<"$PATH"
+for _d in "${_dirs[@]}"; do
+  [ -d "$_d" ] || continue
+  if [ -e "$_d/k6" ]; then
+    _i=$((_i+1)); _m="$NOK6/d$_i"; mkdir -p "$_m"
+    for _f in "$_d"/*; do [ "${_f##*/}" = k6 ] || ln -s "$_f" "$_m/${_f##*/}" 2>/dev/null; done
+    _d="$_m"
+  fi
+  NOK6_PATH="${NOK6_PATH:+$NOK6_PATH:}$_d"
+done
 C="$T/cwd"; mkdir -p "$C/tests/performance" "$C/scripts"; : >"$C/tests/performance/load-test.js"
 
 # stage: run one stage function; prints "OVERALL=<n> STATUS=<s>"
 stage() { # $1 = function, $2 = status var, rest = env
+  rm -f -- "${T:?}/stage.out"
   local fn=$1 var=$2; shift 2
   ( cd "$C" && env "$@" "$BASH_BIN" -c 'source "$1/scripts/run-all-tests-comprehensive.sh" >/dev/null 2>&1; '"$fn"' >"$2/stage.out" 2>&1; echo "OVERALL=$OVERALL_EXIT_CODE STATUS=${'"$var"'}"' _ "$REPO" "$T" )
 }
@@ -30,7 +43,7 @@ P="PATH=$SH:$PATH"
 check "perf: failing k6 sets OVERALL=1 and FAILED" "$(stage run_performance_tests PERF_STATUS "$P" SHIM_K6_RC=1)" "OVERALL=1 STATUS=FAILED"
 grep -q 'Performance tests passed' "$T/stage.out" && bad "perf: printed passed for failing k6" || ok "perf: no green message for failing k6"
 check "perf: passing k6 keeps OVERALL=0 and PASSED" "$(stage run_performance_tests PERF_STATUS "$P" SHIM_K6_RC=0)" "OVERALL=0 STATUS=PASSED"
-check "perf: k6 absent is SKIPPED tool_absent" "$(stage run_performance_tests PERF_STATUS PATH="$NOK6")" "OVERALL=0 STATUS=SKIPPED (reason: tool_absent)"
+check "perf: k6 absent is SKIPPED tool_absent" "$(stage run_performance_tests PERF_STATUS PATH="$NOK6_PATH")" "OVERALL=0 STATUS=SKIPPED (reason: tool_absent)"
 grep -q 'Performance tests passed' "$T/stage.out" && bad "perf: printed passed on skip" || ok "perf: skip prints no passed message"
 
 printf '#!/usr/bin/env bash\nexit 1\n' >"$C/scripts/security-scan-comprehensive.sh"; chmod +x "$C/scripts/security-scan-comprehensive.sh"
@@ -43,7 +56,6 @@ check "sec: missing scan script is SKIPPED" "$(stage run_security_tests SEC_STAT
 
 # summary honesty
 sumry() { ( cd "$C" && env "$@" "$BASH_BIN" -c 'source "$1/scripts/run-all-tests-comprehensive.sh" >/dev/null 2>&1; generate_test_summary >/dev/null 2>&1; cat "${REPORTS_DIR}/${TIMESTAMP}/TEST_SUMMARY.md"' _ "$REPO" ); }
-S="$(sumry PERF_STATUS=x)"; : "$S"
 S="$( cd "$C" && bash -c 'source "$1/scripts/run-all-tests-comprehensive.sh" >/dev/null 2>&1; E2E_STATUS=PASSED; PERF_STATUS="SKIPPED (reason: tool_absent)"; SEC_STATUS=FAILED; OVERALL_EXIT_CODE=1; generate_test_summary >/dev/null 2>&1; cat "${REPORTS_DIR}/${TIMESTAMP}/TEST_SUMMARY.md"' _ "$REPO" )"
 grep -q '✅ Performance Tests' <<<"$S" && bad "summary ticks skipped perf" || ok "summary does not tick skipped perf"
 grep -q '✅ Security Tests' <<<"$S" && bad "summary ticks failed security" || ok "summary does not tick failed security"
@@ -65,5 +77,26 @@ O="$(mainrun 'SKIPPED (reason: credentials_absent)' PASSED PASSED 0)"
 grep -q 'not a full pass' <<<"$O" && ok "main: e2e skipped -> pass-with-skips message" || bad "main: e2e skip branch: $O"
 O="$(mainrun PASSED PASSED FAILED 1)"
 grep -q 'Some tests failed!' <<<"$O" && ! grep -q 'All tests passed successfully' <<<"$O" && grep -q '^RC=1' <<<"$O" && ok "main: failure -> failed message, rc 1" || bad "main: fail branch: $O"
+
+# F4: integration / contract failures are failures, not warnings; their summary lines are not ticked
+G="$T/gobin"; mkdir -p "$G"
+printf '#!/usr/bin/env bash\n[ "${SHIM_GO_FAIL_ON:-}" = "$*" ] && exit 1\nexit 0\n' >"$G/go"; chmod +x "$G/go"
+mkdir -p "$C/catalog-api" "$C/contracts"
+check "F4 integration: failing go test -tags=integration sets OVERALL=1 and FAILED" "$(stage run_go_integration_tests INT_STATUS PATH="$G:$PATH" SHIM_GO_FAIL_ON='test ./... -tags=integration -v')" "OVERALL=1 STATUS=FAILED"
+check "F4 integration: passing run is PASSED" "$(stage run_go_integration_tests INT_STATUS PATH="$G:$PATH")" "OVERALL=0 STATUS=PASSED"
+check "F4 contract: failing contract tests set OVERALL=1 and FAILED" "$(stage run_contract_tests CONTRACT_STATUS PATH="$G:$PATH" SHIM_GO_FAIL_ON='test ./...')" "OVERALL=1 STATUS=FAILED"
+check "F4 contract: passing run is PASSED" "$(stage run_contract_tests CONTRACT_STATUS PATH="$G:$PATH")" "OVERALL=0 STATUS=PASSED"
+rm -rf -- "${C:?}/contracts"
+check "F4 contract: missing contracts/ is SKIPPED, not passed" "$(stage run_contract_tests CONTRACT_STATUS PATH="$G:$PATH")" "OVERALL=0 STATUS=SKIPPED (reason: script_not_found)"
+S="$( cd "$C" && bash -c 'source "$1/scripts/run-all-tests-comprehensive.sh" >/dev/null 2>&1; GO_STATUS=PASSED; INT_STATUS=FAILED; TS_STATUS=PASSED; E2E_STATUS=PASSED; CONTRACT_STATUS="SKIPPED (reason: script_not_found)"; PERF_STATUS=PASSED; LINT_STATUS=PASSED; SEC_STATUS=PASSED; BUILD_STATUS=PASSED; OVERALL_EXIT_CODE=1; generate_test_summary >/dev/null 2>&1; cat "${REPORTS_DIR}/${TIMESTAMP}/TEST_SUMMARY.md"' _ "$REPO" )"
+grep -q '✅ Go Integration' <<<"$S" && bad "F4 summary ticks a failed integration stage" || ok "F4 summary does not tick a failed integration stage"
+grep -q '✅ Contract' <<<"$S" && bad "F4 summary ticks a skipped contract stage" || ok "F4 summary does not tick a skipped contract stage"
+grep -q '✅ Go Unit' <<<"$S" && grep -q '✅ Build Verification' <<<"$S" && ok "F4 golden-good rows still ticked" || bad "F4 golden-good rows lost their tick"
+S="$( cd "$C" && bash -c 'source "$1/scripts/run-all-tests-comprehensive.sh" >/dev/null 2>&1; GO_STATUS=FAILED; OVERALL_EXIT_CODE=1; generate_test_summary >/dev/null 2>&1; cat "${REPORTS_DIR}/${TIMESTAMP}/TEST_SUMMARY.md"' _ "$REPO" )"
+grep -q '✅ Go Unit' <<<"$S" && bad "F4 summary ticks failed Go unit tests" || ok "F4 summary does not tick failed Go unit tests"
+
+# F5: a skipped security stage alone is pass-with-skips in main()
+O="$(mainrun PASSED PASSED 'SKIPPED (reason: script_not_found)' 0)"
+grep -q 'not a full pass' <<<"$O" && grep -q '^RC=0' <<<"$O" && ok "F5 main: security skipped -> pass-with-skips message, rc 0" || bad "F5 main: sec skip branch: $O"
 
 echo "failures: $FAILS"; [ "$FAILS" -eq 0 ]
