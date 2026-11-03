@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -53,34 +54,17 @@ func (suite *RecommendationTestSuite) SetupSuite() {
 	// Don't close the database here - it will be closed in TearDownSuite
 	suite.db = db
 
-	// Create the media_items table for tests
+	// Use the canonical (migrated) schema, the one the real pipeline writes.
+	// The handler reads media_items joined to media_types; a hand-made legacy
+	// table makes the query fail with HTTP 500 (regression after the
+	// recommendations fix moved the handler to the canonical schema).
+	suite.Require().NoError(db.RunMigrations(context.Background()))
+	var movieTypeID int
+	suite.Require().NoError(db.DB.QueryRow(`SELECT id FROM media_types WHERE name = 'movie'`).Scan(&movieTypeID))
 	_, err = db.DB.Exec(`
-		CREATE TABLE IF NOT EXISTS media_items (
-			id INTEGER PRIMARY KEY,
-			title TEXT,
-			media_type TEXT,
-			year INTEGER,
-			description TEXT,
-			rating REAL,
-			duration INTEGER,
-			language TEXT,
-			country TEXT,
-			director TEXT,
-			producer TEXT,
-			"cast" TEXT,
-			resolution TEXT,
-			file_size INTEGER,
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-		)
-	`)
-	suite.Require().NoError(err)
-
-	// Insert test data
-	_, err = db.DB.Exec(`
-		INSERT INTO media_items (id, title, media_type, year, description, rating, duration, language, country, director, producer, "cast", resolution, file_size)
-		VALUES (123, 'Test Movie', 'movie', 2023, 'A test movie', 8.5, 120, 'en', 'US', 'Test Director', 'Test Producer', 'Actor1, Actor2', '1080p', 1000000)
-	`)
+		INSERT INTO media_items (id, media_type_id, title, year, description, rating, runtime, language, country, director, genre, cast_crew)
+		VALUES (123, ?, 'Test Movie', 2023, 'A test movie', 8.5, 120, 'en', 'US', 'Test Director', 'Drama', 'Actor1, Actor2')
+	`, movieTypeID)
 	suite.Require().NoError(err)
 
 	// Create test logger
@@ -114,6 +98,13 @@ func (suite *RecommendationTestSuite) SetupSuite() {
 	recGroup.GET("/personalized/:user_id", suite.recommendationHandler.GetPersonalizedRecommendations)
 }
 
+func (suite *RecommendationTestSuite) TestSimilarItemsUnknownIDIs404() {
+	req, _ := http.NewRequest("GET", "/api/v1/recommendations/similar/999999", nil)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, req)
+	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+}
+
 func (suite *RecommendationTestSuite) TestSimilarItemsEndpoint() {
 	req, _ := http.NewRequest("GET", "/api/v1/recommendations/similar/123", nil)
 	w := httptest.NewRecorder()
@@ -128,8 +119,9 @@ func (suite *RecommendationTestSuite) TestTrendingItemsEndpoint() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, req)
 
-	// Should return 200 even if no trending items found
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
+	// CAT-001: no trending source exists; the endpoint says so (501) instead
+	// of inventing catalogue items.
+	assert.Equal(suite.T(), http.StatusNotImplemented, w.Code)
 }
 
 func (suite *RecommendationTestSuite) TestPersonalizedRecommendationsEndpoint() {
@@ -137,8 +129,22 @@ func (suite *RecommendationTestSuite) TestPersonalizedRecommendationsEndpoint() 
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, req)
 
-	// Should return 200 even if no recommendations found
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
+	// Unauthenticated callers are refused (IDOR guard), never served data.
+	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
+
+	serve := func(callerID int64, path string) int {
+		r := gin.New()
+		r.Use(func(c *gin.Context) { c.Set("user_id", callerID); c.Next() })
+		r.GET("/api/v1/recommendations/personalized/:user_id", suite.recommendationHandler.GetPersonalizedRecommendations)
+		rq, _ := http.NewRequest("GET", path, nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, rq)
+		return rec.Code
+	}
+	// Owner: honest 501 (no engine wired), not fabricated titles.
+	assert.Equal(suite.T(), http.StatusNotImplemented, serve(456, "/api/v1/recommendations/personalized/456"))
+	// Another non-admin user's id: 403.
+	assert.Equal(suite.T(), http.StatusForbidden, serve(7, "/api/v1/recommendations/personalized/456"))
 }
 
 func TestRecommendationSuite(t *testing.T) {

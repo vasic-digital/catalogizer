@@ -1,4 +1,5 @@
 import api from './api'
+import { asList } from './apiShapes'
 
 export interface ScanJob {
   job_id: string
@@ -22,7 +23,7 @@ export interface QueueScanRequest {
 
 export const scansApi = {
   listScans: (): Promise<ScanJob[]> =>
-    api.get('/scans').then((res) => res.data),
+    api.get('/scans').then((res) => asList<ScanJob>(res.data, 'scans')),
 
   queueScan: (body: QueueScanRequest): Promise<ScanJob> =>
     api.post('/scans', body).then((res) => res.data),

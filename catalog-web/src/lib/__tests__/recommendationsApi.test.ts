@@ -23,17 +23,22 @@ describe('recommendationsApi', () => {
   })
 
   describe('getSimilar', () => {
-    it('calls GET /recommendations/similar/:mediaId and returns data', async () => {
-      const mockItems = [
-        { id: 2, title: 'Similar Movie', media_type: 'movie', similarity_score: 0.85, reason: 'Same genre' },
-        { id: 3, title: 'Another Movie', media_type: 'movie', similarity_score: 0.72 },
-      ]
-      mockApi.get.mockResolvedValue({ data: mockItems })
+    it('calls GET /recommendations/similar/:mediaId and flattens local_items', async () => {
+      mockApi.get.mockResolvedValue({
+        data: {
+          local_items: [
+            { media_id: '2', media_metadata: { id: 2, title: 'Similar Movie', media_type: 'movie' }, similarity_score: 0.85, similarity_reasons: ['Same genre'] },
+          ],
+          external_items: [],
+        },
+      })
 
       const result = await recommendationsApi.getSimilar(1)
 
       expect(mockApi.get).toHaveBeenCalledWith('/recommendations/similar/1')
-      expect(result).toEqual(mockItems)
+      expect(result).toEqual([
+        { id: 2, title: 'Similar Movie', media_type: 'movie', similarity_score: 0.85, reason: 'Same genre' },
+      ])
     })
 
     it('propagates errors', async () => {

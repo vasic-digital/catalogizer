@@ -30,7 +30,7 @@ let sessionToken = '';
 export function setup() {
   const res = http.post(
     `${BASE_URL}/api/v1/auth/login`,
-    JSON.stringify({ username: 'admin', password: 'admin123' }),
+    JSON.stringify({ username: 'admin', password: __ENV.API_PASS || '' }),
     { headers: { 'Content-Type': 'application/json' } }
   );
   if (res.status !== 200) {

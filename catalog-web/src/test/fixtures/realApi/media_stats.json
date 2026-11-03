@@ -1,0 +1,15 @@
+{
+  "by_quality": {
+    "mp3": 1,
+    "mp4": 1,
+    "txt": 1
+  },
+  "by_type": {
+    "audio": 1,
+    "document": 1,
+    "video": 1
+  },
+  "recent_additions": 3,
+  "total_items": 3,
+  "total_size": 133046
+}

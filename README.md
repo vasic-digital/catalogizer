@@ -791,6 +791,7 @@ docker exec catalogizer-server tail -f /app/logs/catalogizer.log
 
 ## 📚 Documentation
 
+- [Documentation index](docs/README.md)
 - **[API Documentation](docs/api/API_DOCUMENTATION.md)**: Complete REST API reference
 - **[Deployment Guide](docs/deployment/DEPLOYMENT.md)**: Production deployment
 - **[Architecture Overview](docs/architecture/ARCHITECTURE.md)**: System design
@@ -914,7 +915,7 @@ export SNYK_ORG="catalogizer"
 
 # Application secrets
 export JWT_SECRET="your-jwt-secret-here"
-export ADMIN_PASSWORD="your-admin-password-here"
+export ADMIN_PASSWORD="<your-admin-password>"
 ```
 
 #### Test Reports

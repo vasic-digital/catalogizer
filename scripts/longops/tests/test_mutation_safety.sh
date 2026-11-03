@@ -30,7 +30,7 @@ mk g2 lib.sh '[[ "$pid" =~ ^[0-9]+$ && "$pid" -gt 1 ]] || return "$RC_UNSAFE"
 # lo_kill_child'
 ms_scan "$PR" "$FX/m-g2" >/dev/null; assert_rc "S2 golden-true: the M04 shape (guards removed, the kill replaced by a no-op) carries no signal line and runs" $? 0
 mk g3 lib.sh 'flock -w 15' 'flock -w 1'; ms_scan "$PR" "$FX/m-g3" >/dev/null; assert_rc "S3 golden-true: an edit of a line without any signal token runs" $? 0
-mk g4; app g4 '# kill -9 -1 would be a comment, not a command'; ms_scan "$PR" "$FX/m-g4" >/dev/null; assert_rc "S4 golden-true: a COMMENT that names kill cannot execute and is allowed" $? 0 # killpg-gate:allow textual mutant fixture: this line is DATA the containment scanner must refuse; it is never executed
+mk g4; app g4 '# kill -9 -1 would be a comment, not a command'; ms_scan "$PR" "$FX/m-g4" >/dev/null; assert_rc "S4 golden-true: a COMMENT that names kill cannot execute and is allowed" $? 0 # killpg-gate:allow textual fixture: a COMMENT naming kill is DATA the containment scanner must ALLOW (golden-true); it is never executed
 mk g5 lib.sh '  kill -s "$sig" -- "$pid" 2>/dev/null
 }
 # lo_kill_child' '  kill -s "$sig" -- "$pid" 2>/dev/null
@@ -82,7 +82,7 @@ mk hd2; app hd2 'echo "x # y"; kill -9 -1'; ms_scan "$PR" "$FX/m-hd2" >/dev/null
 for spec in '"$PODMAN" stop -t 5 "$(podman ps -q | head -1)"' 'podman rm -f x' '/usr/bin/podman stop x' 'podman system prune -af'; do
   mk he; app he "$spec"; ms_scan "$PR" "$FX/m-he" >/dev/null 2>&1; assert_rc "S32 WF14 R2-T2 a new podman side effect [$spec] is aborted" $? 1
 done
-mk hg; app hg '# podman stop x, kill -9 -1 : comments never execute'; ms_scan "$PR" "$FX/m-hg" >/dev/null 2>&1; assert_rc "S33 golden-true: a pure comment naming podman stop and kill is allowed" $? 0 # killpg-gate:allow textual mutant fixture: this line is DATA the containment scanner must refuse; it is never executed
+mk hg; app hg '# podman stop x, kill -9 -1 : comments never execute'; ms_scan "$PR" "$FX/m-hg" >/dev/null 2>&1; assert_rc "S33 golden-true: a pure comment naming podman stop and kill is allowed" $? 0 # killpg-gate:allow textual fixture: a pure COMMENT naming podman stop and kill is DATA the containment scanner must ALLOW (golden-true); it is never executed
 mk hh lib.sh 'flock -w 15' 'flock -w 2'; ms_scan "$PR" "$FX/m-hh" >/dev/null 2>&1; assert_rc "S34 golden-true: an ordinary edit still runs after the token set grew" $? 0
 # round 5 (WF17 F7, CONS LO-T3 b): a computed absolute path or a quote-split word is refused when it is a NEW line; a pristine line, an ordinary edit and an empty-quote argument are not
 mk hj; app hj 'b=/usr/bin; "$b/k""ill" -0 2'; ms_scan "$PR" "$FX/m-hj" >/dev/null 2>&1; assert_rc "S35 WF17 F7 the computed-path line b=/usr/bin; \"\$b/k\"\"ill\" is aborted (golden-bad)" $? 1

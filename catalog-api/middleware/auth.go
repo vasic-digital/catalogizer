@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -16,7 +17,23 @@ import (
 // JWTMiddleware handles JWT authentication
 type JWTMiddleware struct {
 	secretKey []byte
+	// sessionCheck, when set, is consulted on every authenticated request to
+	// confirm the session the token was minted for is still active. It makes
+	// server-side revocation (admin-reset-password, logout, deactivation)
+	// effective for stateless access tokens. See SetSessionChecker.
+	sessionCheck SessionChecker
 }
+
+// SessionChecker reports whether the session identified by sessionID (the
+// "session_id" claim) is still active and belongs to userID (the token
+// subject). A non-nil error means "not active OR could not be determined";
+// RequireAuth fails closed on any error.
+type SessionChecker func(ctx context.Context, sessionID, userID string) error
+
+// SetSessionChecker installs the revocation check. Tokens issued by the auth
+// service always carry a session_id; once a checker is installed a token
+// without one is rejected (fail closed).
+func (m *JWTMiddleware) SetSessionChecker(c SessionChecker) { m.sessionCheck = c }
 
 // Claims represents JWT claims.
 // RoleID is populated by the auth service (services/auth_service.go) at
@@ -25,8 +42,9 @@ type JWTMiddleware struct {
 // read here so RequireAdmin() can gate the /api/v1/admin/* group
 // without bouncing through the heavier internal/auth middleware.
 type Claims struct {
-	Username string `json:"username"`
-	RoleID   int    `json:"role_id"`
+	Username  string `json:"username"`
+	RoleID    int    `json:"role_id"`
+	SessionID string `json:"session_id,omitempty"`
 	jwt.RegisteredClaims
 }
 
@@ -84,6 +102,19 @@ func (m *JWTMiddleware) RequireAuth() gin.HandlerFunc {
 			utils.SendErrorResponse(c, http.StatusUnauthorized, "Invalid token", nil)
 			c.Abort()
 			return
+		}
+
+		if m.sessionCheck != nil {
+			if claims.SessionID == "" {
+				utils.SendErrorResponse(c, http.StatusUnauthorized, "Invalid token", nil)
+				c.Abort()
+				return
+			}
+			if err := m.sessionCheck(c.Request.Context(), claims.SessionID, claims.Subject); err != nil {
+				utils.SendErrorResponse(c, http.StatusUnauthorized, "Session expired or revoked", nil)
+				c.Abort()
+				return
+			}
 		}
 
 		// Set user info in context — convert user_id to int for handler compatibility

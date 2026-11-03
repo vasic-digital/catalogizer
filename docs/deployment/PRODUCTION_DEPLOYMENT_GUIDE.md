@@ -754,7 +754,7 @@ REDIS_DB=0
 # Authentication
 JWT_SECRET=your_256_bit_secret_here
 JWT_EXPIRATION=24h
-ADMIN_PASSWORD=your_admin_password_here
+ADMIN_PASSWORD=<your-admin-password>
 
 # External APIs
 TMDB_API_KEY=your_tmdb_api_key

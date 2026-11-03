@@ -31,8 +31,25 @@ func NewSubtitleHandler(subtitleService *services.SubtitleService, logger *zap.L
 type SubtitleSearchResponse struct {
 	Success bool                            `json:"success"`
 	Message string                          `json:"message,omitempty"`
-	Results []services.SubtitleSearchResult `json:"results,omitempty"`
+	Results []services.SubtitleSearchResult `json:"results"`
 	Count   int                             `json:"count"`
+}
+
+// newSubtitleSearchResponse builds the search body. The list is always a JSON
+// array (never omitted, never null): catalog-web iterates it unguarded.
+func newSubtitleSearchResponse(results []services.SubtitleSearchResult) SubtitleSearchResponse {
+	if results == nil {
+		results = []services.SubtitleSearchResult{}
+	}
+	return SubtitleSearchResponse{Success: true, Results: results, Count: len(results)}
+}
+
+// newSubtitleListResponse builds the per-media list body (always an array).
+func newSubtitleListResponse(mediaID int64, subtitles []services.SubtitleTrack) SubtitleListResponse {
+	if subtitles == nil {
+		subtitles = []services.SubtitleTrack{}
+	}
+	return SubtitleListResponse{Success: true, Subtitles: subtitles, MediaItemID: mediaID}
 }
 
 // SubtitleDownloadResponse represents the response for subtitle download
@@ -53,7 +70,7 @@ type SubtitleUploadResponse struct {
 type SubtitleListResponse struct {
 	Success     bool                     `json:"success"`
 	Message     string                   `json:"message,omitempty"`
-	Subtitles   []services.SubtitleTrack `json:"subtitles,omitempty"`
+	Subtitles   []services.SubtitleTrack `json:"subtitles"`
 	MediaItemID int64                    `json:"media_item_id"`
 }
 
@@ -161,11 +178,7 @@ func (h *SubtitleHandler) SearchSubtitles(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, SubtitleSearchResponse{
-		Success: true,
-		Results: results,
-		Count:   len(results),
-	})
+	c.JSON(http.StatusOK, newSubtitleSearchResponse(results))
 }
 
 // DownloadSubtitle handles subtitle download requests
@@ -279,11 +292,7 @@ func (h *SubtitleHandler) GetSubtitles(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, SubtitleListResponse{
-		Success:     true,
-		Subtitles:   subtitles,
-		MediaItemID: mediaID,
-	})
+	c.JSON(http.StatusOK, newSubtitleListResponse(mediaID, subtitles))
 }
 
 // VerifySubtitleSync handles requests to verify subtitle synchronization

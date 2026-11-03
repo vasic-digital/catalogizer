@@ -9,6 +9,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"catalogizer/utils"
+
 	obslogging "digital.vasic.observability/pkg/logging"
 	"digital.vasic.security/pkg/guardrails"
 	"github.com/gin-gonic/gin"
@@ -48,33 +50,22 @@ func DefaultInputValidationConfig() InputValidationConfig {
 
 // Pre-compiled injection detection patterns
 var (
-	sqlInjectionRegexes  []*regexp.Regexp
 	xssRegexes           []*regexp.Regexp
 	pathTraversalRegexes []*regexp.Regexp
 )
 
 func init() {
-	// SQL Injection patterns
-	for _, p := range []string{
-		`(?i)(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION|SCRIPT|OR)\b)`,
-		`(?i)(\b(FROM|WHERE|AND|OR|HAVING|GROUP BY|ORDER BY)\b)`,
-		`(?i)(['"]\s*;\s*(SELECT|INSERT|UPDATE|DELETE|DROP))`,
-		`(?i)(/\*.*\*/)`,
-		`(?i)(--.*$)`,
-		`(?i)(\bWAITFOR\s+DELAY\b)`,
-		`(?i)(\bBENCHMARK\b)`,
-		`(?i)(\bSLEEP\b)`,
-		`(?i)(\bEXEC\b\s*\(|\bXP_\w+\b)`,
-	} {
-		sqlInjectionRegexes = append(sqlInjectionRegexes, regexp.MustCompile(p))
-	}
-
 	// XSS patterns
 	for _, p := range []string{
-		`(?i)(<script[^>]*>.*?</script>)`,
-		`(?i)(<iframe[^>]*>.*?</iframe>)`,
-		`(?i)(<object[^>]*>.*?</object>)`,
-		`(?i)(<embed[^>]*>.*?</embed>)`,
+		`(?is)(<script[^>]*>.*?</script>)`,
+		`(?is)(<iframe[^>]*>.*?</iframe>)`,
+		`(?is)(<object[^>]*>.*?</object>)`,
+		`(?is)(<embed[^>]*>.*?</embed>)`,
+		// Open tags that load or execute content never need a closing tag or a
+		// single-line body: an unclosed <script src=...>, a multi-line <script>
+		// body, <base href>, <link>, <style>@import. Formerly caught only by
+		// accident, through the bare word SCRIPT in the SQL keyword list.
+		`(?i)<\s*/?\s*(script|iframe|object|embed|applet|base|meta|link|style|svg|math|frameset|form)\b`,
 		`(?i)(javascript\s*:|vbscript\s*:|data\s*:|onload\s*=|onerror\s*=)`,
 		`(?i)(on\w+\s*=)`,
 		`(?i)(eval\s*\(|alert\s*\(|confirm\s*\(|prompt\s*\()`,
@@ -133,13 +124,11 @@ func SanitizeInput(input string) string {
 }
 
 // DetectSQLInjection checks for common SQL injection patterns
+// Detection is structural (see utils.ContainsSQLInjection): bare SQL keywords
+// such as the "create"/"update"/"delete" in the permission names
+// "user.create"/"user.update"/"user.delete" are not injection.
 func DetectSQLInjection(input string) bool {
-	for _, re := range sqlInjectionRegexes {
-		if re.MatchString(input) {
-			return true
-		}
-	}
-	return false
+	return utils.ContainsSQLInjection(input)
 }
 
 // DetectXSS checks for common XSS patterns
@@ -215,25 +204,83 @@ func ValidateRequestBody(config InputValidationConfig, c *gin.Context) error {
 
 // validateJSONValues recursively validates all string values in JSON
 func validateJSONValues(config InputValidationConfig, data map[string]interface{}) error {
+	return validateJSONValuesAt(config, data, true)
+}
+
+// validateJSONValuesAt walks the JSON object. topLevel is true only for the
+// request body's own keys: credential fields (secretFieldNames) are exempt from
+// pattern checks there and nowhere deeper, so a nested "password" key (for
+// example inside a storage-root config echoed back to the admin UI) is checked.
+func validateJSONValuesAt(config InputValidationConfig, data map[string]interface{}, topLevel bool) error {
 	for key, value := range data {
 		switch v := value.(type) {
 		case string:
+			if topLevel && isSecretField(key) {
+				if err := validateSecretValue(config, key, v); err != nil {
+					return err
+				}
+				continue
+			}
 			if err := validateStringValue(config, key, v); err != nil {
 				return err
 			}
 		case map[string]interface{}:
-			if err := validateJSONValues(config, v); err != nil {
+			if err := validateJSONValuesAt(config, v, false); err != nil {
 				return err
 			}
 		case []interface{}:
 			for i, item := range v {
 				if str, ok := item.(string); ok {
-					if err := validateStringValue(config, fmt.Sprintf("%s[%d]", key, i), str); err != nil {
+					ik := fmt.Sprintf("%s[%d]", key, i)
+					// Only a scalar string credential is exempt; a password
+					// sent as an array is not a credential shape any handler
+					// reads, so it gets the full checks.
+					if err := validateStringValue(config, ik, str); err != nil {
 						return err
 					}
 				}
 			}
 		}
+	}
+	return nil
+}
+
+// secretFieldNames are JSON keys whose values are credentials. They are hashed
+// (bcrypt) and never interpolated into SQL, HTML or a file path, and a strong
+// password legitimately contains any character or word ("Create", "Select-1",
+// "a--b", "x=1"). Pattern-checking them can only reject valid passwords, so they
+// are exempt from the injection pattern checks (length is bounded by the body
+// limit and by AuthService.ValidatePassword). All other fields keep the checks.
+var secretFieldNames = map[string]struct{}{
+	"password":         {},
+	"new_password":     {},
+	"current_password": {},
+	"old_password":     {},
+	"confirm_password": {},
+}
+
+// isSecretField reports whether the (possibly "name[3]"-indexed) key is a credential field.
+func isSecretField(key string) bool {
+	if i := strings.IndexByte(key, '['); i >= 0 {
+		key = key[:i]
+	}
+	_, ok := secretFieldNames[strings.ToLower(key)]
+	return ok
+}
+
+// validateSecretValue applies only the operator-configured rule (if any) to a
+// credential value; no pattern check (see secretFieldNames).
+func validateSecretValue(config InputValidationConfig, key, value string) error {
+	pattern, exists := config.CustomRules[key]
+	if !exists {
+		return nil
+	}
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return fmt.Errorf("invalid validation pattern for field %s", key)
+	}
+	if !re.MatchString(value) {
+		return fmt.Errorf("field %s does not match required pattern", key)
 	}
 	return nil
 }

@@ -467,8 +467,21 @@ func (s *SyncHandlerTestSuite) TestGetUserEndpoints_Empty() {
 	assert.Equal(s.T(), http.StatusOK, w.Code)
 	resp := s.parseResponse(w)
 	assert.Equal(s.T(), true, resp["success"])
-	// When no endpoints exist, the repo returns nil which serializes as JSON null.
-	// We only verify the request succeeds and the success flag is true.
+	// Contract: a list endpoint with no rows answers an empty JSON array, never
+	// null (catalog-web iterates the payload; null broke the Settings page).
+	data, isArray := resp["data"].([]interface{})
+	assert.True(s.T(), isArray, "data must be a JSON array, got %T (%v)", resp["data"], resp["data"])
+	assert.Len(s.T(), data, 0)
+}
+
+func (s *SyncHandlerTestSuite) TestGetUserSessions_Empty_IsEmptyArrayNotNull() {
+	w := s.doRequest("GET", "/sync/sessions", nil, true)
+
+	assert.Equal(s.T(), http.StatusOK, w.Code)
+	resp := s.parseResponse(w)
+	data, isArray := resp["data"].([]interface{})
+	assert.True(s.T(), isArray, "data must be a JSON array, got %T (%v)", resp["data"], resp["data"])
+	assert.Len(s.T(), data, 0)
 }
 
 func (s *SyncHandlerTestSuite) TestGetUserEndpoints_WithEndpoints() {

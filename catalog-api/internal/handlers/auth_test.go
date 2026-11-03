@@ -62,7 +62,7 @@ func setupAuthHandlerWithDB(t *testing.T) (*AuthHandler, *gin.Engine) {
 	wrappedDB := database.WrapDB(sqlDB, database.DialectSQLite)
 	logger := zap.NewNop()
 
-	os.Setenv("ADMIN_PASSWORD", "admin123")
+	os.Setenv("ADMIN_PASSWORD", "Test-Admin-Pw-9xK2-local")
 	defer os.Unsetenv("ADMIN_PASSWORD")
 
 	authService := auth.NewAuthService(wrappedDB, "test-jwt-secret", logger)

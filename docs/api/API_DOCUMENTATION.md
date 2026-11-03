@@ -2,7 +2,7 @@
 
 Complete REST API documentation for the Catalogizer backend (`catalog-api`). All endpoints are served under the base URL `http://localhost:8080`.
 
-**Total registered endpoints: 208**
+**Total registered endpoints: 247** (HTTP method + path pairs registered by `catalog-api/main.go`, excluding the 12 operator-only `/debug/pprof/*` routes that exist only when the server runs with `HELIX_PPROF_ENABLED=true`). The machine-readable contract is [`openapi.yaml`](openapi.yaml); the local gate `scripts/check_api_route_vs_spec.py` fails when the router and that file drift apart.
 
 ## Table of Contents
 
@@ -151,11 +151,34 @@ Prometheus metrics endpoint. Returns metrics in Prometheus exposition format. No
 
 ---
 
+### GET /api/v1/health
+
+Health check (alias).
+
+**Description:** Public alias of GET /health, registered because test banks and monitors probe this path.
+**Auth:** None
+**Rate Limit:** None
+
+**Response:** 200 — Service is healthy
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `status` | string |
+| `time` | string |
+| `version` | string |
+| `build_number` | string |
+| `build_date` | string |
+
+
+---
+
 ## Service Discovery
 
 ### GET /discovery
 
-Service discovery endpoint for LAN clients to find the API. Cached for 60 seconds.
+Service discovery endpoint for LAN clients to find the API. Public, registered before the middleware chain so it answers quickly (no cache headers). There is no `/api/v1/discovery` or `/api/v1/discovery/announce` route.
 
 **Description:** Returns service connection info including WebSocket URL and API base URL.
 **Auth:** None
@@ -181,26 +204,6 @@ Service discovery endpoint for LAN clients to find the API. Cached for 60 second
   "uptime_seconds": 3600
 }
 ```
-
----
-
-### GET /api/v1/discovery
-
-Alias for `/discovery` under the API path. Same response. Cached for 60 seconds.
-
-**Description:** Service discovery under the API prefix.
-**Auth:** None
-**Rate Limit:** None
-
----
-
-### GET /api/v1/discovery/announce
-
-Alias for `/discovery` under the announce path. Same response. Cached for 60 seconds.
-
-**Description:** Service announcement endpoint.
-**Auth:** None
-**Rate Limit:** None
 
 ---
 
@@ -352,7 +355,7 @@ Serve an asset by ID. Static cache headers (immutable, 1 year).
 
 ## Authentication
 
-Authentication endpoints are under `/api/v1/auth`. Write operations (login, register) have strict rate limiting (5/min). Read operations use standard rate limiting (100/min).
+Authentication endpoints are under `/api/v1/auth`. Login and register have strict rate limiting (30/min). The other session endpoints (refresh, logout, me, status, permissions, profile) allow 600/min; init-status and change-password use the standard limit (2000/min).
 
 ### POST /api/v1/auth/login
 
@@ -360,7 +363,7 @@ Authenticate a user and receive JWT tokens.
 
 **Description:** Validates credentials and returns session + refresh tokens.
 **Auth:** None
-**Rate Limit:** Strict (5/min)
+**Rate Limit:** Strict (30/min)
 
 **Request Body:**
 
@@ -411,7 +414,7 @@ Register a new user account.
 
 **Description:** Creates a new user and returns the user object.
 **Auth:** None
-**Rate Limit:** Strict (5/min)
+**Rate Limit:** Strict (30/min)
 
 **Request Body:**
 
@@ -445,7 +448,7 @@ Refresh an expired access token using a refresh token.
 
 **Description:** Issues new session and refresh tokens.
 **Auth:** None
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Auth session (600/min)
 
 **Request Body:**
 
@@ -475,7 +478,7 @@ Invalidate the current session token.
 
 **Description:** Logs out the current session.
 **Auth:** None (token optional)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Auth session (600/min)
 
 **Response:** 200 OK
 
@@ -493,7 +496,7 @@ Get the currently authenticated user's profile.
 
 **Description:** Returns the user object for the JWT bearer.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Auth session (600/min)
 
 **Response:** 200 OK (User object)
 
@@ -505,7 +508,7 @@ Get authentication system status (whether auth is configured, if initial setup i
 
 **Description:** Returns auth system status without requiring authentication.
 **Auth:** None
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Auth session (600/min)
 
 **Response:** 200 OK
 
@@ -525,7 +528,7 @@ Get the permissions for the current user.
 
 **Description:** Returns the permission set granted to the authenticated user's role.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Auth session (600/min)
 
 **Response:** 200 OK
 
@@ -543,7 +546,7 @@ Alias for `/api/v1/auth/me`. Returns the current user profile.
 
 **Description:** Same as GET /api/v1/auth/me.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Auth session (600/min)
 
 ---
 
@@ -553,7 +556,7 @@ Get initialization status (whether the system has been set up).
 
 **Description:** Returns whether the system needs initial configuration.
 **Auth:** None
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -572,9 +575,9 @@ Get initialization status (whether the system has been set up).
 
 Change the password for the currently authenticated user.
 
-**Description:** Updates the user's password after verifying the current password.
+**Description:** Updates the user's password after verifying the current password. On success every session of the user ends, including the caller's own; the client must log in again.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -607,7 +610,7 @@ List all available storage root directories.
 
 **Description:** Returns the list of configured storage root names.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -629,7 +632,7 @@ List files and directories at the specified path.
 
 **Description:** Browse files and subdirectories within a storage root.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -672,7 +675,7 @@ Get detailed information about a specific file or directory.
 
 **Description:** Returns file metadata including size, type, timestamps.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK (FileInfo object)
 
@@ -688,7 +691,7 @@ Search for files and directories using various criteria (catalog-level search).
 
 **Description:** Full-text search across the file catalog with filtering.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -729,7 +732,7 @@ Find groups of duplicate files within a storage root (catalog-level).
 
 **Description:** Detects duplicate files based on content hashing.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -764,7 +767,7 @@ Search files in the database (file-level search handler).
 
 **Description:** Database-level file search with advanced filtering.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -797,7 +800,7 @@ Find duplicate files via the file-level search handler.
 
 **Description:** Detects duplicate files using the database search handler.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -817,7 +820,7 @@ Advanced multi-criteria search with structured query body.
 
 **Description:** Accepts a JSON body with complex search criteria.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -854,7 +857,7 @@ Download a single file by its database ID.
 
 **Description:** Streams the file binary data for download.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -880,7 +883,7 @@ Download a directory as a compressed archive.
 
 **Description:** Compresses and streams a directory for download.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -898,7 +901,7 @@ Create and download an archive from multiple specified file paths.
 
 **Description:** Bundles selected files into an archive for download.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -929,7 +932,7 @@ Stream a file from any storage backend (SMB, FTP, NFS, WebDAV, local).
 
 **Description:** Proxies file data for real-time streaming/playback. Supports range requests.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -957,7 +960,7 @@ Copy a file to a storage location.
 
 **Description:** Copies a file between storage locations.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -994,7 +997,7 @@ Copy a file from a remote storage (SMB) to local filesystem.
 
 **Description:** Downloads a file from remote storage to a local path.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -1022,7 +1025,7 @@ Upload a file from local filesystem to SMB storage.
 
 **Description:** Uploads a file to remote storage via multipart form data.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Content-Type:** `multipart/form-data`
 
@@ -1057,7 +1060,7 @@ Search media items in the database.
 
 **Description:** Full-text search across scanned media items.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -1087,7 +1090,7 @@ Get aggregate media statistics.
 
 **Description:** Returns counts and size totals grouped by media type.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -1110,7 +1113,7 @@ Get recently added or accessed media items.
 
 **Description:** Returns media items sorted by recency.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -1129,7 +1132,7 @@ Get most popular/frequently accessed media items.
 
 **Description:** Returns media items sorted by popularity/access count.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -1148,7 +1151,7 @@ Look up a media item by its file path.
 
 **Description:** Resolves a file path to a media entity.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -1166,7 +1169,7 @@ Analyze a media file for metadata extraction.
 
 **Description:** Triggers media analysis pipeline for a specific file.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -1189,7 +1192,7 @@ Get detailed media item information by ID.
 
 **Description:** Returns full media metadata including external metadata, versions, and user-specific data.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -1234,7 +1237,7 @@ Update watch progress for a media item.
 
 **Description:** Saves the playback position for continue-watching functionality.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -1265,7 +1268,7 @@ Update the favorite status for a media item.
 
 **Description:** Toggles the favorite flag on a media item.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -1292,7 +1295,7 @@ Refresh metadata for a specific media item from external providers.
 
 **Description:** Re-fetches metadata from TMDB, OMDB, MusicBrainz, etc.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -1310,7 +1313,7 @@ Get quality information for a media item (resolution, codec, bitrate).
 
 **Description:** Returns technical quality details for the media file.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -1326,6 +1329,110 @@ Get quality information for a media item (resolution, codec, bitrate).
 
 ---
 
+### GET /api/v1/media-types
+
+List media types.
+
+**Description:** Returns the 11 canonical media types as a static list.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Media types
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `media_types` | array of object |
+
+**Errors:** 401 (unauthorized)
+
+---
+### POST /api/v1/playback/sessions/end
+
+End a playback session.
+
+**Description:** Closes a session and rolls it into the media progress summary.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Request Body** (`EndPlaybackRequest`):
+
+| Field | Type | Required |
+|---|---|---|
+| `session_id` | integer | yes |
+| `end_position` | integer | no |
+| `total_amount` | integer | no |
+| `duration_total` | integer | no |
+| `completed` | boolean | no |
+
+**Response:** 200 — Recorded
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `ok` | boolean |
+
+**Errors:** 400 (invalid request), 401 (unauthorized), 500 (internal server error)
+
+---
+### POST /api/v1/playback/sessions/progress
+
+Report playback progress.
+
+**Description:** Updates the end position and amount of an open session.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Request Body** (`ProgressPlaybackRequest`):
+
+| Field | Type | Required |
+|---|---|---|
+| `session_id` | integer | yes |
+| `end_position` | integer | no |
+| `total_amount` | integer | no |
+
+**Response:** 200 — Recorded
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `ok` | boolean |
+
+**Errors:** 400 (invalid request), 401 (unauthorized), 500 (internal server error)
+
+---
+### POST /api/v1/playback/sessions/start
+
+Start a playback session.
+
+**Description:** Opens a playback session for the authenticated user.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Request Body** (`StartPlaybackRequest`):
+
+| Field | Type | Required |
+|---|---|---|
+| `media_item_id` | integer | yes |
+| `file_id` | integer | no |
+| `position_unit` | string | yes |
+| `start_position` | integer | no |
+
+**Response:** 200 — Session started
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `session_id` | integer |
+
+**Errors:** 400 (invalid request), 401 (unauthorized), 500 (internal server error)
+
+---
+
 ## Recommendations
 
 ### GET /api/v1/recommendations/similar/:media_id
@@ -1334,7 +1441,7 @@ Get media items similar to a given media item.
 
 **Description:** Uses content-based and collaborative filtering to find similar items.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -1371,7 +1478,7 @@ Get trending media items based on recent activity.
 
 **Description:** Returns media items trending in a given time window.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -1410,7 +1517,7 @@ Get personalized recommendations based on viewing history.
 
 **Description:** ML-based recommendations tailored to user preferences.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -1436,6 +1543,56 @@ Get personalized recommendations based on viewing history.
 
 ---
 
+### GET /api/v1/recommendations
+
+List recommendations (trending default).
+
+**Description:** Alias of GET /api/v1/recommendations/trending.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `media_type` | string | Filter by media type |
+| `limit` | integer | (default: 20) |
+| `time_range` | string | (default: week) |
+
+**Response:** 200 — Trending items
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `items` | array of MediaCatalogItem |
+| `media_type` | string |
+| `time_range` | string |
+| `generated_at` | string |
+
+**Errors:** 401 (unauthorized), 500 (internal server error)
+
+---
+### GET /api/v1/recommendations/by-type
+
+Recommendations by type (placeholder).
+
+**Description:** Placeholder: returns empty lists for movie, tv, music and book.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Empty shell
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `recommendations` | object |
+
+**Errors:** 401 (unauthorized)
+
+---
+
 ## Subtitles
 
 ### GET /api/v1/subtitles/search
@@ -1444,7 +1601,7 @@ Search for subtitles across multiple providers.
 
 **Description:** Queries subtitle databases for matching subtitles.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -1489,7 +1646,7 @@ Download a specific subtitle by result ID.
 
 **Description:** Downloads and saves a subtitle file for a media item.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -1525,7 +1682,7 @@ Get all subtitle tracks for a media item.
 
 **Description:** Lists available subtitles associated with a media file.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -1552,7 +1709,7 @@ Verify if a subtitle is properly synchronized with its media.
 
 **Description:** Checks subtitle timing alignment against the media file.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -1575,7 +1732,7 @@ Translate a subtitle to another language.
 
 **Description:** Machine-translates subtitle content between languages.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -1609,7 +1766,7 @@ Upload a subtitle file for a media item.
 
 **Description:** Uploads a custom subtitle file.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Content-Type:** `multipart/form-data`
 
@@ -1630,7 +1787,7 @@ Get the list of supported subtitle languages.
 
 **Description:** Returns all languages available for subtitle operations.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -1656,7 +1813,7 @@ Get the list of supported subtitle providers.
 
 **Description:** Returns available subtitle provider configurations.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -1676,6 +1833,136 @@ Get the list of supported subtitle providers.
 
 ---
 
+### GET /api/v1/languages
+
+List supported languages.
+
+**Description:** Same payload as GET /api/v1/subtitles/languages.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Languages
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `success` | boolean |
+| `languages` | array of SubtitleLanguage |
+| `count` | integer |
+
+**Errors:** 401 (unauthorized)
+
+---
+### GET /api/v1/localization/languages
+
+List supported languages (localization alias).
+
+**Description:** Same payload as GET /api/v1/subtitles/languages.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Languages
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `success` | boolean |
+| `languages` | array of SubtitleLanguage |
+| `count` | integer |
+
+**Errors:** 401 (unauthorized)
+
+---
+### GET /api/v1/localization/stats
+
+Localization statistics (placeholder).
+
+**Description:** Placeholder: returns static values.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Static stats
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `supported_locales` | integer |
+| `default_locale` | string |
+| `coverage` | number |
+
+**Errors:** 401 (unauthorized)
+
+---
+### GET /api/v1/localization/translations
+
+Get translations (placeholder).
+
+**Description:** Placeholder: returns an empty translation map for the requested locale.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `locale` | string | (default: en) |
+
+**Response:** 200 — Empty map
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `locale` | string |
+| `translations` | object |
+
+**Errors:** 401 (unauthorized)
+
+---
+### GET /api/v1/subtitles
+
+List subtitles (placeholder).
+
+**Description:** Placeholder: always returns an empty list. Per-media subtitles are at GET /api/v1/subtitles/media/{media_id}.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Empty list
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `subtitles` | array of object |
+| `count` | integer |
+
+**Errors:** 401 (unauthorized)
+
+---
+### GET /api/v1/translations
+
+List translations (placeholder).
+
+**Description:** Placeholder: always returns an empty list.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Empty list
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `translations` | array of object |
+| `count` | integer |
+
+**Errors:** 401 (unauthorized)
+
+---
+
 ## Storage and Storage Roots
 
 ### GET /api/v1/storage/list/{path}
@@ -1684,7 +1971,7 @@ List files in a storage path.
 
 **Description:** Browse files within a specific storage backend.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -1710,7 +1997,7 @@ Get all available storage root configurations.
 
 **Description:** Lists configured storage roots (SMB, FTP, NFS, WebDAV, local).
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -1736,7 +2023,7 @@ Create a new storage root configuration.
 
 **Description:** Registers a new storage location for scanning.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -1768,7 +2055,7 @@ Alias for GET /api/v1/storage/roots. Returns same response.
 
 **Description:** Alternative path for listing storage roots.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -1778,7 +2065,7 @@ Get the current status of a specific storage root (online/offline, last scan tim
 
 **Description:** Checks connectivity and returns scan status for a storage root.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -1811,7 +2098,7 @@ Get directories sorted by total size.
 
 **Description:** Returns the largest directories across storage roots.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -1845,7 +2132,7 @@ Get statistics about duplicate files.
 
 **Description:** Returns aggregate duplicate file counts and wasted space.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -1872,7 +2159,7 @@ Get comprehensive catalog statistics.
 
 **Description:** Returns total files, directories, sizes, duplicates, and storage root counts.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -1900,7 +2187,7 @@ Get statistics for a specific storage root.
 
 **Description:** Returns file counts, sizes, and scan info for one storage root.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -1928,7 +2215,7 @@ Get file type distribution statistics.
 
 **Description:** Returns file counts and sizes grouped by extension/type.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -1957,7 +2244,7 @@ Get file size distribution.
 
 **Description:** Returns file counts bucketed by size range.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -1991,7 +2278,7 @@ Get duplicate file statistics.
 
 **Description:** Returns aggregate duplicate stats across the catalog.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -2016,7 +2303,7 @@ Get the largest duplicate groups.
 
 **Description:** Lists duplicate file groups sorted by count or size.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -2034,7 +2321,7 @@ Get file access pattern statistics.
 
 **Description:** Analyzes file access patterns over a time period.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -2051,7 +2338,7 @@ Get storage growth trends over time.
 
 **Description:** Returns monthly file and size growth data.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -2084,7 +2371,7 @@ Get scan operation history.
 
 **Description:** Returns historical scan results with pagination.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -2124,6 +2411,47 @@ Get scan operation history.
 
 ---
 
+### GET /api/v1/stats/media-types
+
+Media-type distribution (placeholder).
+
+**Description:** Placeholder: returns a zeroed distribution. Real counts are available from GET /api/v1/entities/types.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Zeroed distribution
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `distribution` | map of integer |
+| `total` | integer |
+
+**Errors:** 401 (unauthorized)
+
+---
+### GET /api/v1/stats/scan-history
+
+Scan history (placeholder).
+
+**Description:** Placeholder: returns an empty history. Real history is available from GET /api/v1/stats/scans.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Empty history
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `history` | array of object |
+| `count` | integer |
+
+**Errors:** 401 (unauthorized)
+
+---
+
 ## SMB Discovery
 
 ### POST /api/v1/smb/discover
@@ -2132,7 +2460,7 @@ Discover available SMB shares on a host.
 
 **Description:** Scans an SMB host for available shares.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -2162,7 +2490,7 @@ Discover SMB shares using query parameters (convenience endpoint for testing).
 
 **Description:** Same as POST but with query string parameters.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -2181,7 +2509,7 @@ Test connectivity to an SMB share.
 
 **Description:** Verifies that the API server can reach and authenticate to an SMB share.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -2216,7 +2544,7 @@ Test SMB connection using query parameters.
 
 **Description:** Same as POST but with query string parameters.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -2237,7 +2565,7 @@ Browse files and directories in an SMB share.
 
 **Description:** Lists contents of a remote SMB share directory.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -2257,6 +2585,84 @@ Browse files and directories in an SMB share.
 
 ---
 
+### GET /api/v1/smb/identities
+
+List configured SMB identities.
+
+**Description:** Labels of the SMB identities loaded from the server environment. Secrets are never returned.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Identities
+
+Content-Type: `application/json`
+
+Body: array of SMBIdentityInfo
+
+**Errors:** 401 (unauthorized)
+
+---
+### POST /api/v1/smb/probe
+
+Probe an SMB host.
+
+**Description:** Probes the host as guest first, then with each configured identity, and returns the binding identity and the real shares. Hosts that are loopback, link-local, multicast or cloud-metadata addresses are refused.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Request Body** (`SMBProbeRequest`):
+
+| Field | Type | Required |
+|---|---|---|
+| `host` | string | yes |
+
+**Response:** 200 — Probe result
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `host` | string |
+| `authenticated` | boolean |
+| `identity_index` | integer |
+| `identity_label` | string |
+| `shares` | array of SMBShareInfo |
+
+**Errors:** 400 (invalid request or disallowed host), 401 (unauthorized), 500 (internal server error)
+
+---
+### POST /api/v1/smb/probe-and-ingest
+
+Probe an SMB host and persist the bindings.
+
+**Description:** Probes the host with the identities loaded from the server environment and, if one authenticates, stores the discovered storage roots and share-identity bindings. The body carries only the host name, never credentials.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Request Body** (`SMBProbeRequest`):
+
+| Field | Type | Required |
+|---|---|---|
+| `host` | string | yes |
+
+**Response:** 200 — Probe and ingest result
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `host` | string |
+| `authenticated` | boolean |
+| `identity_label` | string |
+| `shares` | integer |
+| `bound_shares` | integer |
+| `new_roots` | integer |
+| `message` | string |
+
+**Errors:** 400 (invalid request or disallowed host), 401 (unauthorized), 500 (internal server error)
+
+---
+
 ## Scanning
 
 ### POST /api/v1/scans
@@ -2265,7 +2671,7 @@ Queue a new scan job for a storage root.
 
 **Description:** Initiates a file system scan on a configured storage root.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -2299,7 +2705,7 @@ List all scan jobs with their status.
 
 **Description:** Returns recent and active scan operations.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -2326,7 +2732,7 @@ Get the status of a specific scan job.
 
 **Description:** Returns detailed progress for a scan operation.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -2362,7 +2768,7 @@ Create a new media format conversion job.
 
 **Description:** Queues a media file for format conversion.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -2392,7 +2798,7 @@ List conversion jobs for the current user.
 
 **Description:** Returns conversion jobs with optional status filtering.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -2412,7 +2818,7 @@ Get a specific conversion job by ID.
 
 **Description:** Returns full details for a conversion job.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Errors:** 400 (invalid ID), 404 (not found)
 
@@ -2424,7 +2830,7 @@ Cancel a running conversion job.
 
 **Description:** Cancels an in-progress or queued conversion.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -2442,7 +2848,7 @@ Delete a conversion job record.
 
 **Description:** Removes a completed or cancelled conversion job from history.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 204 No Content
 
@@ -2454,7 +2860,7 @@ Retry a failed conversion job.
 
 **Description:** Re-queues a previously failed conversion job.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK (ConversionJob object with status reset)
 
@@ -2466,7 +2872,7 @@ Download the output file of a completed conversion job.
 
 **Description:** Streams the converted file for download.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** Binary file download with appropriate Content-Type.
 
@@ -2480,7 +2886,7 @@ Get all supported conversion formats.
 
 **Description:** Lists input and output formats by media type.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -2517,7 +2923,7 @@ Get system information (OS, CPU, memory, disk, Go runtime).
 
 **Description:** Returns detailed system metrics and runtime info.
 **Auth:** Required (admin)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -2543,7 +2949,7 @@ List all users (admin view with additional fields).
 
 **Description:** Returns user list with admin-level detail.
 **Auth:** Required (admin)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -2553,7 +2959,7 @@ Update a user via admin interface.
 
 **Description:** Admin-level user update (can change role, active status).
 **Auth:** Required (admin)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -2563,7 +2969,7 @@ Get storage utilization info across all backends.
 
 **Description:** Returns disk space usage for all configured storage roots.
 **Auth:** Required (admin)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -2573,7 +2979,7 @@ List available backups.
 
 **Description:** Returns database and configuration backup history.
 **Auth:** Required (admin)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -2583,7 +2989,7 @@ Create a new backup.
 
 **Description:** Triggers a database and/or configuration backup.
 **Auth:** Required (admin)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -2603,7 +3009,7 @@ Restore from a backup.
 
 **Description:** Restores the system from a specified backup.
 **Auth:** Required (admin)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -2619,7 +3025,131 @@ Trigger a storage scan via admin interface.
 
 **Description:** Admin-level scan trigger (can scan all roots).
 **Auth:** Required (admin)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
+
+---
+
+### GET /api/v1/admin/config
+
+Get system configuration (admin alias).
+
+**Description:** Same handler as GET /api/v1/configuration, mounted under the admin group. Requires the admin role (JWT) and, when the CSRF guard is enabled, a valid CSRF token on state-changing calls.
+**Auth:** Required (admin role)
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Configuration data
+
+Content-Type: `application/json`
+
+Body: object
+
+**Errors:** 401 (unauthorized), 403 (admin role required)
+
+---
+### POST /api/v1/admin/covers/generate-thumbnails
+
+Generate missing video thumbnails.
+
+**Description:** Creates video-frame thumbnails for media items that have no cover art. A missing or invalid body falls back to limit 50. Registered on the authenticated API group; the handler does not itself check for the admin role.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Request Body** (`object`):
+
+| Field | Type | Required |
+|---|---|---|
+| `limit` | integer | no |
+
+**Response:** 200 — Generation finished
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `generated` | integer |
+| `message` | string |
+
+**Errors:** 401 (unauthorized), 500 (internal server error)
+
+---
+### GET /api/v1/admin/errors
+
+List error reports (admin alias).
+
+**Description:** Same handler as GET /api/v1/errors/reports, mounted under the admin group. Requires the admin role (JWT) and, when the CSRF guard is enabled, a valid CSRF token on state-changing calls.
+**Auth:** Required (admin role)
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Error reports list
+
+Content-Type: `application/json`
+
+Body: object
+
+**Errors:** 401 (unauthorized), 403 (admin role required)
+
+---
+### GET /api/v1/admin/health
+
+Get system health (admin alias).
+
+**Description:** Same handler as GET /api/v1/errors/health, mounted under the admin group. Requires the admin role (JWT) and, when the CSRF guard is enabled, a valid CSRF token on state-changing calls.
+**Auth:** Required (admin role)
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — System health
+
+Content-Type: `application/json`
+
+Body: object
+
+**Errors:** 401 (unauthorized), 403 (admin role required)
+
+---
+### POST /api/v1/admin/image-quality/revalidate
+
+Revalidate stale image-quality records.
+
+**Description:** Samples image-quality rows whose last check is older than the cutoff and touches their last-checked time so the validator re-evaluates them. An empty or malformed body uses the defaults. Rate limited to 6 requests per minute.
+**Auth:** Required
+**Rate Limit:** 6/min per client IP, in addition to the Standard (2000/min) group limit
+
+**Request Body** (`object`):
+
+| Field | Type | Required |
+|---|---|---|
+| `stale_age_seconds` | integer | no |
+| `limit` | integer | no |
+
+**Response:** 200 — Sweep summary
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `sampled` | integer |
+| `touched` | integer |
+| `stale_age_seconds` | integer |
+| `limit` | integer |
+
+**Errors:** 401 (unauthorized), 429 (rate limit exceeded), 500 (internal server error)
+
+---
+### GET /api/v1/admin/logs
+
+List log collections (admin alias).
+
+**Description:** Same handler as GET /api/v1/logs/collections, mounted under the admin group. Requires the admin role (JWT) and, when the CSRF guard is enabled, a valid CSRF token on state-changing calls.
+**Auth:** Required (admin role)
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Log collections list
+
+Content-Type: `application/json`
+
+Body: object
+
+**Errors:** 401 (unauthorized), 403 (admin role required)
 
 ---
 
@@ -2627,13 +3157,35 @@ Trigger a storage scan via admin interface.
 
 All user management endpoints require a JWT token and appropriate permissions.
 
+**Permission behaviour of the `/users/:id` operations** (from `handlers/user_handler.go`; every cell measured on the
+real binary and asserted by `catalog-api/openapi_contract_binary_test.go`):
+
+| Operation | Needs | Self (caller's own id) | Admin target |
+|---|---|---|---|
+| `GET /users/:id` | `user.view` for another id | allowed without permission | readable with `user.view` |
+| `PUT /users/:id` | `user.update` for another id; `is_active` is applied only with `user.manage`; `role_id` is checked (with `user.manage`, and `system.admin` for an admin role) and saved; a change of `role_id` or `is_active` revokes the target's sessions | 200, profile fields applied, `role_id` and `is_active` silently ignored on a self-update (also for an admin) | 403 unless the caller has `system.admin` |
+| `DELETE /users/:id` | `user.delete` (checked first) | 400 `Cannot delete your own account` (403 without `user.delete`) | 403 unless `system.admin` |
+| `POST /users/:id/reset-password` | `user.manage` | allowed with `user.manage` (403 without it) | 403 unless `system.admin` |
+| `POST /users/:id/lock` | `user.manage` (checked first) | 400 `Cannot lock your own account` (403 without `user.manage`) | 403 unless `system.admin` |
+| `POST /users/:id/unlock` | `user.manage` | allowed with `user.manage` (403 without it) | 403 unless `system.admin` |
+
+An "admin target" is an account whose role carries `system.admin`; a target whose role cannot be resolved is treated
+the same way (403). A caller without `system.admin` may not assign a role that carries `system.admin` (403). The
+`403` body is `Insufficient permissions`. `400` is also returned for a non-integer id.
+
+**Fixed (2026-11-03 login/validator fix):** a user created with `POST /api/v1/users` now logs in with the password given at creation
+(one shared password hasher; a row written earlier by the old SHA-256 code is accepted once and upgraded at that login);
+`PUT /api/v1/users/:id` saves `role_id` and revokes the target's sessions when `role_id` or `is_active` changes; the permission
+names `user.create`, `user.update`, `user.delete` and passwords containing SQL words are accepted. Still open: `POST /api/v1/users/:id/unlock`
+with an empty body is rejected by the request validation middleware (400 `invalid JSON format`), send `{}`.
+
 ### POST /api/v1/users
 
 Create a new user.
 
 **Description:** Creates a user account with role assignment.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -2654,7 +3206,9 @@ Create a new user.
 
 **Response:** 201 Created (User object)
 
-**Errors:** 400 (password validation), 409 (duplicate username/email)
+**Errors:** 400 (password validation), 403 (no `user.create`, or assigning an admin role without `system.admin`), 409 (duplicate username/email)
+
+**Known defect:** the created user cannot log in until a password is set through `POST /api/v1/users/:id/reset-password` (see the note at the top of this section).
 
 ---
 
@@ -2664,7 +3218,7 @@ List all users with pagination.
 
 **Description:** Returns paginated user list.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -2692,7 +3246,7 @@ Get a specific user by ID.
 
 **Description:** Returns user profile. Users can view their own profile; viewing others requires `user.view` permission.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -2700,9 +3254,9 @@ Get a specific user by ID.
 
 Update a user's information.
 
-**Description:** Updates user fields. Users can update own profile; changing `role_id` or `is_active` requires `user.manage`.
+**Description:** Updates user fields. Users can update their own profile without a permission, but `role_id` and `is_active` are ignored on a self-update (also for an admin). Updating another user needs `user.update`; `is_active` is applied only when the caller also has `user.manage`. `role_id` is validated and permission-checked (`user.manage`, and `system.admin` to assign an admin role) saved and echoed in the response; changing `role_id` or `is_active` revokes the target user's sessions (the old token stops working). See the permission table above.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body (all fields optional):**
 
@@ -2730,11 +3284,11 @@ Delete a user account.
 
 **Description:** Permanently removes a user. Cannot delete own account.
 **Auth:** Required (`user.delete`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 204 No Content
 
-**Errors:** 400 (cannot delete own account)
+**Errors:** 400 (non-integer id, or own account), 403 (no `user.delete`, or admin target without `system.admin`)
 
 ---
 
@@ -2744,7 +3298,7 @@ Reset a user's password (admin operation).
 
 **Description:** Admin-level forced password reset.
 **Auth:** Required (`user.manage`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -2762,7 +3316,7 @@ Lock a user account until a specified time.
 
 **Description:** Temporarily disables a user account.
 **Auth:** Required (`user.manage`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -2780,7 +3334,7 @@ Unlock a locked user account.
 
 **Description:** Re-enables a previously locked account.
 **Auth:** Required (`user.manage`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -2792,9 +3346,46 @@ Unlock a locked user account.
 
 ---
 
+### GET /api/v1/users/me
+
+Get the current user (alias).
+
+**Description:** Alias of GET /api/v1/auth/me.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Current user
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `id` | integer |
+| `username` | string |
+| `email` | string |
+| `role_id` | integer |
+| `role` | Role |
+| `first_name` | string |
+| `last_name` | string |
+| `display_name` | string |
+| `avatar_url` | string |
+| `is_active` | boolean |
+| `is_locked` | boolean |
+| `last_login_at` | string |
+| `created_at` | string |
+| `updated_at` | string |
+
+**Errors:** 401 (unauthorized)
+
+---
+
 ## Role Management
 
 All role management endpoints require `system.admin` permission.
+
+Every other caller gets 403 `Insufficient permissions`, including a holder of all `user.*` permissions (measured on the real binary). `GET/PUT/DELETE /roles/:id` answer 400 for a non-integer id and 404 for an unknown id; `PUT` and `DELETE` answer 404 for a system role and 409 for a duplicate name (`PUT`) or a role still assigned to users (`DELETE`).
+
+**Known defect (measured 2026-11-03, open follow-up):** `POST /api/v1/roles` with `user.create`, `user.update` or `user.delete` in `permissions` is rejected by the request validation middleware (400 `potential SQL injection detected`); `user.view`, `user.manage` and `user.*` are accepted.
 
 ### POST /api/v1/roles
 
@@ -2802,7 +3393,7 @@ Create a new role.
 
 **Description:** Defines a new role with a set of permissions.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -2824,7 +3415,7 @@ List all roles.
 
 **Description:** Returns all defined roles with their permissions.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK (array of Role objects)
 
@@ -2836,7 +3427,7 @@ Get a specific role by ID.
 
 **Description:** Returns role details including permissions.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -2846,7 +3437,7 @@ Update a role. System roles cannot be modified.
 
 **Description:** Modifies role name, description, or permissions.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -2866,7 +3457,7 @@ Delete a role. System roles and roles assigned to users cannot be deleted.
 
 **Description:** Removes a custom role definition.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 204 No Content
 
@@ -2878,7 +3469,7 @@ Get the complete permission catalog organized by category.
 
 **Description:** Lists all available permissions that can be assigned to roles.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -2922,7 +3513,7 @@ Get the current system configuration schema.
 
 **Description:** Returns the configuration schema and current values.
 **Auth:** Required (`system.configure`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -2932,7 +3523,7 @@ Test a configuration without applying it.
 
 **Description:** Validates a configuration object and reports errors/warnings.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:** A Configuration object.
 
@@ -2954,7 +3545,7 @@ Get system component health status.
 
 **Description:** Returns health status of all system components.
 **Auth:** Required (`system.configure`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -2977,31 +3568,40 @@ Get system component health status.
 
 ### GET /api/v1/configuration/wizard/step/:step_id
 
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 step definition; 404 unknown step id; 401.
+
+
 Get a specific setup wizard step definition.
 
 **Description:** Returns the step configuration including fields, validation rules, and defaults.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
 ### POST /api/v1/configuration/wizard/step/:step_id/validate
 
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 `{"is_valid": ...}`; 400 invalid JSON body; 500 service error; 401.
+
+
 Validate data for a specific wizard step.
 
 **Description:** Validates user input for a wizard step without saving.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
 ### POST /api/v1/configuration/wizard/step/:step_id/save
 
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 `{"message":"Progress saved successfully"}`; 400 invalid JSON body; 500; 401.
+
+
 Save progress for a specific wizard step.
 
 **Description:** Persists the user's input for a wizard step.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3011,7 +3611,7 @@ Get the current wizard progress for the authenticated user.
 
 **Description:** Returns which steps are completed and the current step.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3021,7 +3621,7 @@ Complete the setup wizard and apply the configuration.
 
 **Description:** Finalizes wizard setup, applying all saved step data as the active configuration.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3033,7 +3633,7 @@ Submit an error report.
 
 **Description:** Logs an application error with stack trace and context.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -3060,7 +3660,7 @@ Submit a crash report.
 
 **Description:** Logs a crash event with signal and stack trace.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -3081,7 +3681,7 @@ List error reports with filtering.
 
 **Description:** Returns paginated error reports with optional filters.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -3099,21 +3699,27 @@ List error reports with filtering.
 
 ### GET /api/v1/errors/reports/:id
 
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 report; 400 non-integer id; 403 without `report.view`; 404 unknown id (or any service error); 401.
+
+
 Get a specific error report.
 
 **Description:** Returns full details of an error report.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
 ### PUT /api/v1/errors/reports/:id/status
 
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 204; 400 non-integer id or invalid body; 403 without `report.create`; 500; 401.
+
+
 Update error report status.
 
 **Description:** Changes the triage status of an error report.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -3131,27 +3737,33 @@ List crash reports with filtering.
 
 **Description:** Returns paginated crash reports (same parameters as error reports, with `signal` instead of `level`/`component`).
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
 ### GET /api/v1/errors/crashes/:id
 
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 crash report; 400 non-integer id; 403 without `report.view`; 404 unknown id (or any service error); 401.
+
+
 Get a specific crash report.
 
 **Description:** Returns full details of a crash report.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
 ### PUT /api/v1/errors/crashes/:id/status
 
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 204; 400 non-integer id or invalid body; 403 without `report.create`; 500; 401.
+
+
 Update crash report status.
 
 **Description:** Changes the triage status of a crash report.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -3169,7 +3781,7 @@ Get error reporting statistics.
 
 **Description:** Returns aggregate error counts by level, component, and resolution status.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -3192,7 +3804,7 @@ Get crash reporting statistics.
 
 **Description:** Returns aggregate crash counts by signal and resolution status.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3202,7 +3814,7 @@ Get system health based on error and crash data.
 
 **Description:** Evaluates system health by analyzing recent error and crash trends.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3216,7 +3828,7 @@ Create a new log collection.
 
 **Description:** Initiates log collection from specified components and time range.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -3240,7 +3852,7 @@ List log collections.
 
 **Description:** Returns paginated list of log collections.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -3253,21 +3865,27 @@ List log collections.
 
 ### GET /api/v1/logs/collections/:id
 
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 collection; 400 non-integer id; 403 without `system.admin`; 404 unknown id (or any service error); 401.
+
+
 Get a specific log collection.
 
 **Description:** Returns metadata for a log collection.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
 ### GET /api/v1/logs/collections/:id/entries
 
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 `{"entries": [...], "filters": {...}}`; 400; 403 without `system.admin`; 500; 401.
+
+
 Get log entries for a collection.
 
 **Description:** Returns individual log entries with filtering.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -3285,11 +3903,14 @@ Get log entries for a collection.
 
 ### POST /api/v1/logs/collections/:id/export
 
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 file download (`?format=json|csv|txt|zip`, default json, other values `application/octet-stream`; the body is not read); 400; 403 without `system.admin`; 500; 401.
+
+
 Export log collection data.
 
 **Description:** Exports a log collection in the specified format.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -3301,11 +3922,14 @@ Export log collection data.
 
 ### GET /api/v1/logs/collections/:id/analyze
 
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 analysis; 400; 403 without `system.admin`; 500; 401.
+
+
 Analyze a log collection for patterns and insights.
 
 **Description:** Runs pattern analysis on log entries and returns insights.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -3329,7 +3953,7 @@ Create a shareable link for a log collection.
 
 **Description:** Generates a time-limited sharing token for a log collection.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -3347,21 +3971,27 @@ Create a shareable link for a log collection.
 
 ### GET /api/v1/logs/share/:token
 
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 shared collection; 403 when the share lacks the `read` permission; 404 unknown, expired or revoked token; 401. No permission check beyond the JWT middleware.
+
+
 Access a shared log collection via share token.
 
 **Description:** Retrieves log collection data using a share token.
-**Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Auth:** Required (JWT only; the share must carry `read`)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
 ### DELETE /api/v1/logs/share/:id
 
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 204; 400 non-integer id; 403 without `system.admin`; 500 service error, including an unknown id (measured: 500, not 404); 401.
+
+
 Revoke a log share.
 
 **Description:** Invalidates a sharing token.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3371,7 +4001,7 @@ Stream live logs via Server-Sent Events (SSE).
 
 **Description:** Opens a persistent SSE connection for real-time log streaming.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Content-Type:** `text/event-stream`
 
@@ -3399,7 +4029,7 @@ Get log management statistics.
 
 **Description:** Returns aggregate log collection and entry statistics.
 **Auth:** Required (`system.admin`)
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -3425,7 +4055,7 @@ List all media collections.
 
 **Description:** Returns user's media collections.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -3451,7 +4081,7 @@ Create a new media collection.
 
 **Description:** Creates an empty collection for the user.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -3471,7 +4101,7 @@ Get a specific collection with its items.
 
 **Description:** Returns collection details and contained media items.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3481,7 +4111,7 @@ Update a collection's name or description.
 
 **Description:** Modifies collection metadata.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3491,7 +4121,7 @@ Delete a collection.
 
 **Description:** Removes the collection (does not delete the media items).
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3505,7 +4135,7 @@ Request an asset to be resolved and cached.
 
 **Description:** Triggers async asset resolution (cover art, thumbnails) via the asset pipeline.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -3534,7 +4164,7 @@ Get the asset for a specific entity type and ID.
 
 **Description:** Returns the resolved asset URL/data for an entity.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -3557,7 +4187,7 @@ List media entities with filtering and pagination.
 
 **Description:** Returns paginated media entities with optional type and search filters.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -3588,7 +4218,7 @@ Get all media entity types.
 
 **Description:** Returns the list of media types with counts.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -3618,7 +4248,7 @@ Get aggregate entity statistics.
 
 **Description:** Returns counts and totals grouped by entity type.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3628,7 +4258,7 @@ List groups of duplicate media entities.
 
 **Description:** Finds entities that may be duplicates based on title, type, and year.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3638,7 +4268,7 @@ Browse entities by media type.
 
 **Description:** Returns entities of a specific type with type-appropriate sorting and filtering.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -3663,7 +4293,7 @@ Get a specific media entity by ID.
 
 **Description:** Returns full entity details including metadata and hierarchy info.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -3691,7 +4321,7 @@ Get child entities of a parent entity (e.g., seasons of a TV show, albums of an 
 
 **Description:** Returns the entity hierarchy children.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -3713,7 +4343,7 @@ Get files associated with a media entity.
 
 **Description:** Returns the file records linked to this entity via the media_files junction table.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3723,7 +4353,7 @@ Get external metadata for a media entity.
 
 **Description:** Returns metadata from external providers (TMDB, OMDB, MusicBrainz, OpenLibrary).
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3733,7 +4363,7 @@ Get potential duplicates of a specific entity.
 
 **Description:** Finds entities that may be duplicates of this one.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3743,7 +4373,7 @@ Stream the primary file of a media entity.
 
 **Description:** Proxies the main media file for playback. Supports range requests.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3753,7 +4383,7 @@ Download the primary file of a media entity.
 
 **Description:** Downloads the main media file as an attachment.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3763,7 +4393,7 @@ Get installation information for a software or game entity.
 
 **Description:** Returns install instructions, requirements, and file details for software/game entities.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3773,7 +4403,7 @@ Refresh external metadata for a specific entity.
 
 **Description:** Re-fetches metadata from all configured providers.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3783,7 +4413,7 @@ Update user-specific metadata for an entity (e.g., personal rating, notes).
 
 **Description:** Saves user-provided metadata that augments the entity.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -3803,7 +4433,7 @@ Alias for PUT /api/v1/entities/:id/user-metadata. Same behavior.
 
 **Description:** Alternative method for updating user metadata.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3813,7 +4443,7 @@ Trigger bulk metadata enrichment for all entities.
 
 **Description:** Starts background enrichment from external providers for entities missing metadata.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -3826,6 +4456,191 @@ Trigger bulk metadata enrichment for all entities.
 
 ---
 
+### GET /api/v1/entities/search
+
+Search media entities.
+
+**Description:** Title search over media entities. A missing query returns an empty result.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `q` | string | Search text (also accepted as query or search) |
+| `type` | string | Media type filter |
+| `limit` | integer | (default: 24) |
+| `offset` | integer | (default: 0) |
+
+**Response:** 200 — Search results
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `items` | array of MediaEntity |
+| `total` | integer |
+| `limit` | integer |
+| `offset` | integer |
+| `query` | string |
+
+**Errors:** 400 (invalid media type), 401 (unauthorized), 500 (internal server error)
+
+---
+### GET /api/v1/entities/:id/history
+
+List playback history of an entity.
+
+**Description:** Playback sessions of the authenticated user for one media item.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `id` | integer |  |
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `limit` | integer | (default: 50) |
+
+**Response:** 200 — Sessions
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `sessions` | array of PlaybackSession |
+| `count` | integer |
+
+**Errors:** 400 (invalid request), 401 (unauthorized), 500 (internal server error)
+
+---
+### GET /api/v1/entities/:id/pages
+
+List comic pages.
+
+**Description:** Lists the image pages of a .cbz/.cbr comic entity.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `id` | integer |  |
+
+**Response:** 200 — Pages
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `total_pages` | integer |
+| `pages` | array of object |
+
+**Errors:** 400 (invalid entity id or not a comic archive), 401 (unauthorized), 404 (no file available for this entity), 500 (internal server error)
+
+---
+### GET /api/v1/entities/:id/pages/:n
+
+Get a comic page.
+
+**Description:** Returns page n (zero-based) of a .cbz/.cbr comic entity as an image.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `id` | integer |  |
+| `n` | integer | Zero-based page index |
+
+**Response:** 200 — Page image
+
+Content-Type: `image/*`
+
+**Errors:** 400 (invalid entity id, page index, or not a comic archive), 401 (unauthorized), 404 (no file for this entity or page index out of range), 500 (internal server error)
+
+---
+### GET /api/v1/entities/:id/pdf-pages
+
+Get the PDF page count.
+
+**Description:** Returns the number of pages of a PDF entity.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `id` | integer |  |
+
+**Response:** 200 — Page count
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `total_pages` | integer |
+
+**Errors:** 400 (invalid entity id or not a pdf), 401 (unauthorized), 404 (no file available for this entity), 500 (internal server error)
+
+---
+### GET /api/v1/entities/:id/pdf-pages/:n
+
+Render a PDF page.
+
+**Description:** Renders page n (zero-based) of a PDF entity as a PNG image.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `id` | integer |  |
+| `n` | integer | Zero-based page index |
+
+**Response:** 200 — PNG page image
+
+Content-Type: `image/png`
+
+**Errors:** 400 (invalid entity id or page index), 401 (unauthorized), 404 (no file for this entity or page index out of range), 500 (internal server error)
+
+---
+### GET /api/v1/entities/:id/progress
+
+Get playback progress of an entity.
+
+**Description:** Progress summary of the authenticated user for one media item; progress is null when nothing was played yet.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Path Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `id` | integer |  |
+
+**Response:** 200 — Progress
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `progress` | MediaProgress |
+
+**Errors:** 400 (invalid request), 401 (unauthorized), 500 (internal server error)
+
+---
+
 ## Analytics
 
 ### POST /api/v1/analytics/access
@@ -3834,7 +4649,7 @@ Log a media access event.
 
 **Description:** Records that a user accessed/viewed a media item.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -3854,7 +4669,7 @@ Log a generic analytics event.
 
 **Description:** Records a custom analytics event with arbitrary context.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -3873,7 +4688,7 @@ Get analytics data for a specific user.
 
 **Description:** Returns user engagement metrics and activity history.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -3889,7 +4704,7 @@ Get system-wide analytics.
 
 **Description:** Returns aggregate system usage metrics.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3899,7 +4714,7 @@ Get analytics data for a specific media item.
 
 **Description:** Returns access counts, popularity metrics, and engagement data for a media item.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -3915,7 +4730,54 @@ Create an analytics report.
 
 **Description:** Generates a custom analytics report based on specified criteria.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
+
+---
+
+### GET /api/v1/analytics/duplicates
+
+Duplicate statistics (alias).
+
+**Description:** Alias of GET /api/v1/stats/duplicates kept for the challenge test banks.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `smb_root` | string | Restrict to one SMB root |
+
+**Response:** 200 — Duplicate stats
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `success` | boolean |
+| `data` | object |
+
+**Errors:** 401 (unauthorized), 500 (internal server error)
+
+---
+### GET /api/v1/analytics/stats
+
+Overall statistics (alias).
+
+**Description:** Alias of GET /api/v1/stats/overall kept for the challenge test banks.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Overall stats
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `success` | boolean |
+| `data` | OverallStats |
+
+**Errors:** 401 (unauthorized), 500 (internal server error)
 
 ---
 
@@ -3927,7 +4789,7 @@ Get a usage report.
 
 **Description:** Returns system usage metrics over a time period.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
 
@@ -3945,7 +4807,7 @@ Get a performance report.
 
 **Description:** Returns API performance metrics (response times, error rates, throughput).
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -3957,7 +4819,7 @@ List the current user's favorites.
 
 **Description:** Returns all entities the user has marked as favorite.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -3982,7 +4844,7 @@ Add an entity to favorites.
 
 **Description:** Marks an entity as a favorite for the current user.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -4001,7 +4863,7 @@ Remove an entity from favorites.
 
 **Description:** Removes the favorite mark from an entity.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -4018,7 +4880,7 @@ Check if an entity is in the user's favorites.
 
 **Description:** Returns whether the entity is favorited by the current user.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -4043,9 +4905,9 @@ Check if an entity is in the user's favorites.
 
 List the current user's playlists.
 
-**Description:** Returns all playlists owned by the user.
+**Description:** Returns all playlists owned by the user. Query `limit` (default 50) outside 1..200 is reset to 50 (not rejected, not clamped); a negative `offset` is reset to 0.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4055,7 +4917,7 @@ Create a new playlist.
 
 **Description:** Creates an empty playlist.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -4075,7 +4937,7 @@ Get a specific playlist with its items.
 
 **Description:** Returns playlist details and ordered items.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4085,7 +4947,7 @@ Update a playlist's metadata.
 
 **Description:** Modifies playlist name, description, or visibility.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4095,7 +4957,7 @@ Delete a playlist.
 
 **Description:** Removes the playlist (does not delete the media items).
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4105,7 +4967,7 @@ Add an item to a playlist.
 
 **Description:** Appends a media entity to the playlist.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -4125,7 +4987,7 @@ Remove an item from a playlist.
 
 **Description:** Removes a specific item from the playlist.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4139,7 +5001,7 @@ Get all storage roots available for browsing.
 
 **Description:** Lists storage roots with browse-relevant metadata.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4149,7 +5011,7 @@ Browse a directory and list its contents from the database.
 
 **Description:** Returns files and subdirectories at the specified path.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4159,7 +5021,7 @@ Get detailed file information from the database.
 
 **Description:** Returns metadata for a specific file path.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4169,7 +5031,7 @@ Get subdirectory sizes for a given path.
 
 **Description:** Returns the total size of each subdirectory.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4179,7 +5041,55 @@ Get duplicate files within a directory.
 
 **Description:** Finds duplicates under the specified directory path.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
+
+---
+
+### GET /api/v1/browse
+
+List storage roots (alias).
+
+**Description:** Alias of GET /api/v1/browse/roots, the entry point the test banks use.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Storage roots list
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `success` | boolean |
+| `data` | array of StorageRoot |
+
+**Errors:** 401 (unauthorized), 500 (internal server error)
+
+---
+### GET /api/v1/files
+
+List files (placeholder).
+
+**Description:** Placeholder: always returns an empty listing and echoes the requested path. Use GET /api/v1/browse/directory/{path} for real listings.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `path` | string | Path echoed back |
+
+**Response:** 200 — Empty listing
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `files` | array of object |
+| `path` | string |
+| `count` | integer |
+
+**Errors:** 401 (unauthorized)
 
 ---
 
@@ -4193,7 +5103,7 @@ Create a sync endpoint configuration.
 
 **Description:** Registers a remote sync destination.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -4220,7 +5130,7 @@ List the user's sync endpoints.
 
 **Description:** Returns all configured sync destinations for the user.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4230,7 +5140,7 @@ Get a specific sync endpoint.
 
 **Description:** Returns endpoint configuration details.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4240,7 +5150,7 @@ Update a sync endpoint configuration.
 
 **Description:** Modifies sync endpoint settings.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4250,7 +5160,7 @@ Delete a sync endpoint.
 
 **Description:** Removes a sync destination configuration.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4260,7 +5170,7 @@ Start a sync operation on an endpoint.
 
 **Description:** Triggers immediate synchronization.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 202 Accepted
 
@@ -4279,7 +5189,7 @@ List the user's sync sessions.
 
 **Description:** Returns sync operation history for the user.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4289,7 +5199,7 @@ Get a specific sync session.
 
 **Description:** Returns detailed sync session status and progress.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4299,7 +5209,7 @@ Create a sync schedule.
 
 **Description:** Sets up automatic recurring synchronization.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Request Body:**
 
@@ -4319,7 +5229,7 @@ Get sync statistics.
 
 **Description:** Returns aggregate sync metrics (bytes transferred, sessions, errors).
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4329,7 +5239,115 @@ Clean up old sync sessions.
 
 **Description:** Removes completed sync session records older than a threshold.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
+
+---
+
+### GET /api/v1/sync/conflicts
+
+List sync conflicts (placeholder).
+
+**Description:** Placeholder: always returns an empty list.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Empty list
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `conflicts` | array of object |
+| `count` | integer |
+
+**Errors:** 401 (unauthorized)
+
+---
+### GET /api/v1/sync/devices
+
+List sync devices (placeholder).
+
+**Description:** Placeholder: always returns an empty list.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Empty list
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `devices` | array of object |
+| `count` | integer |
+
+**Errors:** 401 (unauthorized)
+
+---
+### GET /api/v1/sync/history
+
+List sync history.
+
+**Description:** Alias of GET /api/v1/sync/sessions.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|---|---|---|
+| `limit` | integer | Maximum sessions (max 200) (default: 50) |
+| `offset` | integer | (default: 0) |
+
+**Response:** 200 — User sync sessions
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `success` | boolean |
+| `data` | array of SyncSession |
+
+**Errors:** 401 (unauthorized), 500 (internal server error)
+
+---
+### GET /api/v1/sync/providers
+
+List sync providers.
+
+**Description:** Static list of the supported sync backends.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Providers
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `providers` | array of object |
+
+**Errors:** 401 (unauthorized)
+
+---
+### GET /api/v1/sync/status
+
+Sync status (placeholder).
+
+**Description:** Placeholder: always reports idle with no active sessions. Real figures are at GET /api/v1/sync/statistics.
+**Auth:** Required
+**Rate Limit:** Standard (2000/min)
+
+**Response:** 200 — Static status
+
+Content-Type: `application/json`
+
+| Field | Type |
+|---|---|
+| `status` | string |
+| `active_sessions` | integer |
+| `last_sync` | string (nullable) |
+
+**Errors:** 401 (unauthorized)
 
 ---
 
@@ -4343,7 +5361,7 @@ List all registered challenges.
 
 **Description:** Returns the full challenge catalog with status.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -4370,7 +5388,7 @@ Get a specific challenge by ID.
 
 **Description:** Returns challenge details and last run result.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4380,7 +5398,7 @@ Run a specific challenge.
 
 **Description:** Executes a single challenge and returns the result.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -4403,7 +5421,7 @@ Run all challenges (synchronous, blocking).
 
 **Description:** Executes the entire challenge suite sequentially. WARNING: This is blocking -- no other challenge can run until it finishes. Can take 25+ minutes for NAS scans.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
 
@@ -4426,7 +5444,7 @@ Run all challenges in a specific category.
 
 **Description:** Executes challenges filtered by category.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 **Path Parameters:**
 
@@ -4442,7 +5460,7 @@ Get the results from the most recent challenge run.
 
 **Description:** Returns cached results from the last challenge execution.
 **Auth:** Required
-**Rate Limit:** Standard (100/min)
+**Rate Limit:** Standard (2000/min)
 
 ---
 
@@ -4510,14 +5528,18 @@ Or the structured format used by subtitle and recommendation handlers:
 
 ## Rate Limiting
 
-Rate limiting is applied per-user based on the JWT token. Two tiers are used:
+Rate limiting is applied per-user based on the JWT token. The tiers are:
 
 | Endpoint Group | Limit | Description |
 |---|---|---|
-| `POST /api/v1/auth/login` | 5 requests/minute | Brute-force protection |
-| `POST /api/v1/auth/register` | 5 requests/minute | Brute-force protection |
-| All other `/api/v1/*` | 100 requests/minute | Standard rate limit |
+| `POST /api/v1/auth/login`, `POST /api/v1/auth/register` | 30 requests/minute | Brute-force protection |
+| Other `/api/v1/auth/*` session endpoints | 600 requests/minute | Authenticated session management |
+| All other authenticated `/api/v1/*` | 2000 requests/minute | Standard rate limit |
+| `POST /api/v1/admin/image-quality/revalidate` | 6 requests/minute | Per client IP, protects the provider chain |
+| Public routes (`/health`, `/discovery`, covers, image-proxy, assets) | None | |
+
+The limits are the values wired in `catalog-api/main.go`.
 
 When rate limited, the server returns `429 Too Many Requests`.
 
-Optional Redis-based distributed rate limiting is available when a Redis instance is configured. Supports both fixed-window and sliding-window algorithms.
+Optional Redis-based distributed rate limiting replaces the in-memory limiters only when a Redis client exists AND `REDIS_RATE_LIMIT=true` (otherwise per-process in-memory limiting). With it on, the limits change: the group listed above as 600/min (other `/api/v1/auth/*` session endpoints) becomes 5/min and the 2000/min group becomes 100/min, both fixed-window and keyed per client IP (auth: username plus IP when a username is in the context); login/register stay on the in-memory 30/min limiter, keyed per IP when unauthenticated. If Redis errors, the middleware fails closed with 503.

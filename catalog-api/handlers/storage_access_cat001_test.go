@@ -44,7 +44,7 @@ func newAccessHarness(t *testing.T, bases string) *accessHarness {
 	return &accessHarness{t: t, r: r, h: h}
 }
 
-func token(t *testing.T, role int, sub string) string {
+func cat001Token(t *testing.T, role int, sub string) string {
 	t.Helper()
 	claims := &middleware.Claims{Username: "u" + sub, RoleID: role, RegisteredClaims: jwt.RegisteredClaims{
 		Subject: sub, ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour))}}
@@ -75,7 +75,7 @@ func idOf(body map[string]interface{}) string {
 
 func TestCAT001_F1_NormalUserCannotCreateStorageRoot(t *testing.T) {
 	a := newAccessHarness(t, os.TempDir())
-	user := token(t, 2, "2")
+	user := cat001Token(t, 2, "2")
 	code, body := a.do(user, "POST", "/storage/roots", map[string]interface{}{"name": "slash", "protocol": "local", "path": "/"})
 	assert.Equal(t, http.StatusForbidden, code, "role 2 must not create roots: %v", body)
 }
@@ -84,7 +84,7 @@ func TestCAT001_F1_NormalUserCannotListEvenAnAdminsRoot(t *testing.T) {
 	base := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(base, "a.txt"), []byte("x"), 0o644))
 	a := newAccessHarness(t, base)
-	admin, user := token(t, 1, "1"), token(t, 2, "2")
+	admin, user := cat001Token(t, 1, "1"), cat001Token(t, 2, "2")
 	code, body := a.do(admin, "POST", "/storage/roots", map[string]interface{}{"name": "ok", "protocol": "local", "path": base})
 	require.Equal(t, http.StatusCreated, code, "%v", body)
 	code, _ = a.do(user, "GET", "/storage/list/?storage_id="+idOf(body), nil)
@@ -97,14 +97,14 @@ func TestCAT001_F1_NormalUserCannotListEvenAnAdminsRoot(t *testing.T) {
 func TestCAT001_F1_RP1_AdminCannotRegisterHostRoot(t *testing.T) {
 	base := t.TempDir()
 	a := newAccessHarness(t, base)
-	admin := token(t, 1, "1")
+	admin := cat001Token(t, 1, "1")
 	code, body := a.do(admin, "POST", "/storage/roots", map[string]interface{}{"name": "slash", "protocol": "local", "path": "/"})
 	assert.Equal(t, http.StatusForbidden, code, "a root outside the allowed bases is refused: %v", body)
 }
 
 func TestCAT001_F1_LocalRootsAreDeniedByDefault(t *testing.T) {
 	a := newAccessHarness(t, "") // no allowed base configured
-	code, body := a.do(token(t, 1, "1"), "POST", "/storage/roots", map[string]interface{}{"name": "any", "protocol": "local", "path": t.TempDir()})
+	code, body := a.do(cat001Token(t, 1, "1"), "POST", "/storage/roots", map[string]interface{}{"name": "any", "protocol": "local", "path": t.TempDir()})
 	assert.Equal(t, http.StatusForbidden, code, "%v", body)
 }
 
@@ -113,7 +113,7 @@ func TestCAT001_F1_RootThatIsASymlinkOutOfTheBaseIsRefused(t *testing.T) {
 	outside := t.TempDir()
 	require.NoError(t, os.Symlink(outside, filepath.Join(base, "lnk")))
 	a := newAccessHarness(t, base)
-	code, body := a.do(token(t, 1, "1"), "POST", "/storage/roots", map[string]interface{}{"name": "lnk", "protocol": "local", "path": filepath.Join(base, "lnk")})
+	code, body := a.do(cat001Token(t, 1, "1"), "POST", "/storage/roots", map[string]interface{}{"name": "lnk", "protocol": "local", "path": filepath.Join(base, "lnk")})
 	assert.Equal(t, http.StatusForbidden, code, "%v", body)
 }
 
@@ -124,7 +124,7 @@ func TestCAT001_F1_RP4_SymlinkInsideRootDoesNotEscape(t *testing.T) {
 	base := t.TempDir()
 	require.NoError(t, os.Symlink(outside, filepath.Join(base, "link")))
 	a := newAccessHarness(t, base)
-	admin := token(t, 1, "1")
+	admin := cat001Token(t, 1, "1")
 	code, body := a.do(admin, "POST", "/storage/roots", map[string]interface{}{"name": "sl", "protocol": "local", "path": base})
 	require.Equal(t, http.StatusCreated, code, "%v", body)
 	code, out := a.do(admin, "GET", "/storage/list/link?storage_id="+idOf(body), nil)
@@ -152,13 +152,13 @@ func TestCAT001_F1_ScanTriggerIsAdminOnlyOnTheStorageRoutes(t *testing.T) {
 func TestCAT001_F1_NormalUserCannotCreateRootEvenInsideAllowedBase(t *testing.T) {
 	base := t.TempDir()
 	a := newAccessHarness(t, base)
-	user := token(t, 2, "2")
+	user := cat001Token(t, 2, "2")
 	code, body := a.do(user, "POST", "/storage/roots", map[string]interface{}{"name": "inside", "protocol": "local", "path": base})
 	assert.Equal(t, http.StatusForbidden, code, "role 2 must be refused by the role gate, not only by path policy: %v", body)
 	var n int
 	require.NoError(t, a.h.db.QueryRow(`SELECT COUNT(*) FROM storage_roots WHERE name = 'inside'`).Scan(&n))
 	assert.Equal(t, 0, n, "no root row may be created for a refused caller")
-	admin := token(t, 1, "1")
+	admin := cat001Token(t, 1, "1")
 	code, body = a.do(admin, "POST", "/storage/roots", map[string]interface{}{"name": "inside", "protocol": "local", "path": base})
 	assert.Equal(t, http.StatusCreated, code, "control: admin can create the same root: %v", body)
 }
@@ -167,7 +167,7 @@ func TestCAT001_F1_StoredRootIsRecheckedOnEveryUse(t *testing.T) {
 	base := t.TempDir()
 	a := newAccessHarness(t, base)
 	a.r.POST("/api/v1/scans", a.h.handle.QueueScan)
-	admin := token(t, 1, "1")
+	admin := cat001Token(t, 1, "1")
 	code, body := a.do(admin, "POST", "/storage/roots", map[string]interface{}{"name": "r", "protocol": "local", "path": base})
 	require.Equal(t, http.StatusCreated, code, "%v", body)
 	id := idOf(body)

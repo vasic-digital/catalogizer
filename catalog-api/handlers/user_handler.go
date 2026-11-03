@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"catalogizer/models"
+	"catalogizer/services"
 )
 
 // UserServiceInterface defines interface for user repository operations
@@ -95,10 +97,18 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	if req.RoleID == 0 {
 		missing = append(missing, "role_id")
 	}
+	if req.RoleID < 0 {
+		http.Error(w, "role_id must be a positive integer", http.StatusBadRequest)
+		return
+	}
 	if len(missing) > 0 {
 		http.Error(w,
 			`{"error":"missing required fields","details":"required: `+strings.Join(missing, ", ")+`"}`,
 			http.StatusBadRequest)
+		return
+	}
+
+	if !h.allowedToAssignRole(w, currentUser, req.RoleID) {
 		return
 	}
 
@@ -113,7 +123,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passwordHash, err := h.hashPassword(req.Password, salt)
+	passwordHash, err := services.HashPasswordWithSalt(req.Password, salt)
 	if err != nil {
 		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
 		return
@@ -185,7 +195,7 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userIDStr := strings.TrimPrefix(r.URL.Path, "/api/users/")
+	userIDStr := routedID(r, "users")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
@@ -241,7 +251,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userIDStr := strings.TrimPrefix(r.URL.Path, "/api/users/")
+	userIDStr := routedID(r, "users")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
@@ -267,6 +277,11 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.RoleID != nil && *req.RoleID <= 0 {
+		http.Error(w, "role_id must be a positive integer", http.StatusBadRequest)
+		return
+	}
+
 	user, err := h.userRepo.GetByID(userID)
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
@@ -276,6 +291,12 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to get user", http.StatusInternalServerError)
 		return
 	}
+
+	if currentUser.ID != userID && !h.allowedToActOn(w, currentUser, userID) {
+		return
+	}
+
+	oldRoleID, oldActive := user.RoleID, user.IsActive
 
 	if req.Username != nil {
 		user.Username = *req.Username
@@ -311,6 +332,9 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 		if hasAdminPermission {
 			if req.RoleID != nil {
+				if !h.allowedToAssignRole(w, currentUser, *req.RoleID) {
+					return
+				}
 				user.RoleID = *req.RoleID
 			}
 			if req.IsActive != nil {
@@ -338,6 +362,16 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		}
 		http.Error(w, "Failed to update user", http.StatusInternalServerError)
 		return
+	}
+
+	// A role or activation change must take effect now: access tokens carry
+	// role_id and live for hours (RequireAdmin trusts the claim), so revoke every
+	// session of the target; the user logs in again and gets a fresh claim.
+	if user.RoleID != oldRoleID || user.IsActive != oldActive {
+		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
+			http.Error(w, "User updated but revoking the user's sessions failed", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	role, err := h.userRepo.GetRole(user.RoleID)
@@ -377,10 +411,14 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userIDStr := strings.TrimPrefix(r.URL.Path, "/api/users/")
+	userIDStr := routedID(r, "users")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	if !h.allowedToActOn(w, currentUser, userID) {
 		return
 	}
 
@@ -495,11 +533,14 @@ func (h *UserHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userIDStr := strings.TrimPrefix(r.URL.Path, "/api/users/")
-	userIDStr = strings.TrimSuffix(userIDStr, "/reset-password")
+	userIDStr := routedID(r, "users")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	if !h.allowedToActOn(w, currentUser, userID) {
 		return
 	}
 
@@ -550,11 +591,14 @@ func (h *UserHandler) LockAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userIDStr := strings.TrimPrefix(r.URL.Path, "/api/users/")
-	userIDStr = strings.TrimSuffix(userIDStr, "/lock")
+	userIDStr := routedID(r, "users")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	if !h.allowedToActOn(w, currentUser, userID) {
 		return
 	}
 
@@ -611,11 +655,14 @@ func (h *UserHandler) UnlockAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userIDStr := strings.TrimPrefix(r.URL.Path, "/api/users/")
-	userIDStr = strings.TrimSuffix(userIDStr, "/unlock")
+	userIDStr := routedID(r, "users")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	if !h.allowedToActOn(w, currentUser, userID) {
 		return
 	}
 
@@ -641,8 +688,7 @@ func (h *UserHandler) UpdateUserSettings(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userIDStr := strings.TrimPrefix(r.URL.Path, "/api/users/")
-	userIDStr = strings.TrimSuffix(userIDStr, "/settings")
+	userIDStr := routedID(r, "users")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
@@ -709,12 +755,87 @@ func (h *UserHandler) getCurrentUser(r *http.Request) (*models.User, error) {
 	return h.authService.GetCurrentUser(token)
 }
 
-func (h *UserHandler) hashPassword(password, salt string) (string, error) {
-	combined := password + salt
-	hash := h.authService.HashData(combined)
-	return hash, nil
-}
-
 func parseTime(timeStr string) (time.Time, error) {
 	return time.Parse(time.RFC3339, timeStr)
+}
+
+// roleIsAdmin reports whether a role carries system administration rights.
+func roleIsAdmin(role *models.Role) bool {
+	// HasPermission honours "*" and prefix wildcards such as "system.*".
+	return role != nil && role.Permissions.HasPermission(models.PermissionSystemAdmin)
+}
+
+// callerIsAdmin reports whether the caller holds system.admin. On error it has
+// already written a 500 and returns ok=false.
+func (h *UserHandler) callerIsAdmin(w http.ResponseWriter, caller *models.User) (admin, ok bool) {
+	admin, err := h.authService.CheckPermission(caller.ID, models.PermissionSystemAdmin)
+	if err != nil {
+		http.Error(w, "Failed to check permissions", http.StatusInternalServerError)
+		return false, false
+	}
+	return admin, true
+}
+
+// allowedToActOn enforces: only an admin may act on an admin account
+// (reset/lock/unlock/delete/update). Fails closed (403) when the target's role
+// cannot be resolved. It writes the error response itself and returns false
+// when the action must stop.
+func (h *UserHandler) allowedToActOn(w http.ResponseWriter, caller *models.User, targetID int) bool {
+	admin, ok := h.callerIsAdmin(w, caller)
+	if !ok {
+		return false
+	}
+	if admin {
+		return true
+	}
+	target, err := h.userRepo.GetByID(targetID)
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			http.Error(w, "User not found", http.StatusNotFound)
+			return false
+		}
+		http.Error(w, "Failed to get user", http.StatusInternalServerError)
+		return false
+	}
+	role, err := h.userRepo.GetRole(target.RoleID)
+	if err != nil || roleIsAdmin(role) {
+		http.Error(w, "Insufficient permissions", http.StatusForbidden)
+		return false
+	}
+	return true
+}
+
+// allowedToAssignRole: a non-admin may not assign an admin role (or a role
+// that cannot be resolved).
+func (h *UserHandler) allowedToAssignRole(w http.ResponseWriter, caller *models.User, roleID int) bool {
+	admin, ok := h.callerIsAdmin(w, caller)
+	if !ok {
+		return false
+	}
+	if admin {
+		return true
+	}
+	role, err := h.userRepo.GetRole(roleID)
+	if err != nil || roleIsAdmin(role) {
+		http.Error(w, "Insufficient permissions", http.StatusForbidden)
+		return false
+	}
+	return true
+}
+
+// sessionRevoker is implemented by the production user repository.
+type sessionRevoker interface {
+	DeactivateAllUserSessions(userID int) error
+}
+
+// revokeUserSessions deactivates every session of userID when the repository
+// supports it (the production repository does; in-memory test doubles that
+// keep no sessions have nothing to revoke).
+func revokeUserSessions(repo interface{}, userID int) error {
+	if r, ok := repo.(sessionRevoker); ok {
+		return r.DeactivateAllUserSessions(userID)
+	}
+	// Not silent: a repository that cannot revoke leaves old tokens valid.
+	log.Printf("handlers: repository %T cannot revoke sessions; user %d keeps existing sessions", repo, userID)
+	return nil
 }

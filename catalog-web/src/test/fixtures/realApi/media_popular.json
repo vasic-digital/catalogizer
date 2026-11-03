@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "favorite_count": 0,
+      "id": 2,
+      "last_updated": "2026-11-02T22:22:08.819526Z",
+      "media_type_id": 6,
+      "status": "detected",
+      "title": "Test Song",
+      "type_name": "music_album"
+    },
+    {
+      "favorite_count": 0,
+      "id": 1,
+      "last_updated": "2026-11-02T22:22:08.792326Z",
+      "media_type_id": 1,
+      "status": "detected",
+      "title": "Test Movie",
+      "type_name": "movie",
+      "year": 2020
+    }
+  ],
+  "total": 2
+}

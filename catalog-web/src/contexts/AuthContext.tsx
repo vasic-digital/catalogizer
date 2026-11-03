@@ -183,7 +183,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
-    isLoading,
+    // Stay in the loading state until the effect above has copied the fetched
+    // user into local state; otherwise ProtectedRoute sees one render with
+    // isLoading=false && user=null and redirects a valid session to /login.
+    isLoading: isLoading || (!!authStatus?.authenticated && !!authStatus.user && !user),
     permissions,
     isAdmin: isUserAdmin,
     login: loginMutation.mutateAsync,

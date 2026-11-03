@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bring up the catalogizer stack on amber.local (rootless Docker, no podman).
+# Bring up the catalogizer stack on amber.local (rootless podman; was plain docker until the 2026-11-02 decision).
 #
 # Reads deployment/amber.local.env and launches postgres, redis, and
 # catalog-api with the dev overlay image. Idempotent: recreates containers
@@ -45,7 +45,7 @@ WEB_IMAGE="${WEB_IMAGE:-localhost/catalogizer-web:latest}"
 : "${POSTGRES_PASSWORD:=catalogizer}"
 : "${POSTGRES_DB:=catalogizer}"
 : "${JWT_SECRET:=dev-secret-for-operational-run-needs-32-plus-chars-to-be-valid}"
-: "${ADMIN_PASSWORD:=admin123}"
+: "${ADMIN_PASSWORD:?set ADMIN_PASSWORD (no default; CAT-021)}"
 : "${GIN_MODE:=release}"
 : "${DB_TYPE:=postgres}"
 
@@ -56,18 +56,18 @@ echo "==> Target host: $(hostname)"
 echo "==> API image: ${API_IMAGE}"
 echo "==> Network: ${CZ_AMBER_NETWORK}"
 
-docker network inspect "${CZ_AMBER_NETWORK}" >/dev/null 2>&1 \
-    || docker network create "${CZ_AMBER_NETWORK}"
+podman network inspect "${CZ_AMBER_NETWORK}" >/dev/null 2>&1 \
+    || podman network create "${CZ_AMBER_NETWORK}"
 
 for name in "${CZ_AMBER_WEB_NAME}" "${CZ_AMBER_API_NAME}" "${CZ_AMBER_REDIS_NAME}" "${CZ_AMBER_POSTGRES_NAME}"; do
-    if docker ps -a --format '{{.Names}}' | grep -qx "${name}"; then
+    if podman ps -a --format '{{.Names}}' | grep -qx "${name}"; then
         echo "==> removing stale ${name}"
-        docker rm -f "${name}" >/dev/null
+        podman rm -f "${name}" >/dev/null
     fi
 done
 
 echo "==> starting postgres"
-docker run -d \
+podman run -d \
     --name "${CZ_AMBER_POSTGRES_NAME}" \
     --network "${CZ_AMBER_NETWORK}" \
     -p "127.0.0.1:${CZ_AMBER_POSTGRES_PORT}:5432" \
@@ -81,7 +81,7 @@ docker run -d \
 
 echo "==> waiting for postgres to accept connections"
 for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
-    if docker exec "${CZ_AMBER_POSTGRES_NAME}" pg_isready -U "${POSTGRES_USER}" >/dev/null 2>&1; then
+    if podman exec "${CZ_AMBER_POSTGRES_NAME}" pg_isready -U "${POSTGRES_USER}" >/dev/null 2>&1; then
         echo "==> postgres ready (after ${i}s)"
         break
     fi
@@ -89,7 +89,7 @@ for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
 done
 
 echo "==> starting redis"
-docker run -d \
+podman run -d \
     --name "${CZ_AMBER_REDIS_NAME}" \
     --network "${CZ_AMBER_NETWORK}" \
     -p "127.0.0.1:${CZ_AMBER_REDIS_PORT}:6379" \
@@ -104,7 +104,7 @@ if [[ -f "${API_CONFIG}" ]]; then
 fi
 
 echo "==> starting catalog-api"
-docker run -d \
+podman run -d \
     --name "${CZ_AMBER_API_NAME}" \
     --network "${CZ_AMBER_NETWORK}" \
     -p "127.0.0.1:${CZ_AMBER_API_PORT}:8080" \
@@ -129,7 +129,7 @@ docker run -d \
     "${API_IMAGE}" >/dev/null
 
 echo "==> starting catalog-web"
-docker run -d \
+podman run -d \
     --name "${CZ_AMBER_WEB_NAME}" \
     --network "${CZ_AMBER_NETWORK}" \
     -p "127.0.0.1:${CZ_AMBER_WEB_PORT}:3000" \
@@ -163,6 +163,6 @@ done
 if [[ "$api_ok" == "1" && "$web_ok" == "1" ]]; then
     exit 0
 fi
-[[ "$api_ok" != "1" ]] && { echo "!! catalog-api unhealthy"; docker logs --tail 30 "${CZ_AMBER_API_NAME}" || true; }
-[[ "$web_ok" != "1" ]] && { echo "!! catalog-web not serving"; docker logs --tail 30 "${CZ_AMBER_WEB_NAME}" || true; }
+[[ "$api_ok" != "1" ]] && { echo "!! catalog-api unhealthy"; podman logs --tail 30 "${CZ_AMBER_API_NAME}" || true; }
+[[ "$web_ok" != "1" ]] && { echo "!! catalog-web not serving"; podman logs --tail 30 "${CZ_AMBER_WEB_NAME}" || true; }
 exit 1

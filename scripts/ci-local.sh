@@ -320,7 +320,7 @@ phase_go_backend() {
 
     # go build
     log_step "Running go build..."
-    if GOTOOLCHAIN=local go build ./... >> "$LOG_FILE" 2>&1; then
+    if CGO_CPPFLAGS=-DHAVE_USLEEP=1 GOTOOLCHAIN=local go build ./... >> "$LOG_FILE" 2>&1; then
         log_info "go build: PASSED"
     else
         log_error "go build: FAILED"
@@ -332,7 +332,7 @@ phase_go_backend() {
         log_step "Running go test ${go_test_flags[*]} ./..."
         local test_output
         local test_rc=0
-        test_output="$(GOTOOLCHAIN=local go test "${go_test_flags[@]}" ./... 2>&1)" || test_rc=$?
+        test_output="$(CGO_CPPFLAGS=-DHAVE_USLEEP=1 GOTOOLCHAIN=local go test "${go_test_flags[@]}" ./... 2>&1)" || test_rc=$?
         printf '%s\n' "$test_output" >> "$LOG_FILE"
 
         # Count pass/fail from output

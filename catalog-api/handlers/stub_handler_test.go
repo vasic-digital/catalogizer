@@ -272,6 +272,9 @@ func TestMediaQueryHandler_ChangePassword_Success(t *testing.T) {
 	// Setup mock for password update - match the actual query
 	mock.ExpectExec("UPDATE users SET password_hash").
 		WillReturnResult(sqlmock.NewResult(0, 1))
+	// session revocation after a password change (F3)
+	mock.ExpectExec("UPDATE user_sessions").
+		WillReturnResult(sqlmock.NewResult(0, 1))
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)

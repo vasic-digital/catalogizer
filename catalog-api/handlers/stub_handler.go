@@ -10,9 +10,9 @@ import (
 
 	"catalogizer/database"
 	"catalogizer/repository"
+	"catalogizer/services"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // MediaQueryHandler provides media query and auth endpoints that were previously stubs.
@@ -592,7 +592,7 @@ func (h *MediaQueryHandler) ChangePassword(c *gin.Context) {
 	}
 
 	// Verify current password: bcrypt(password + salt)
-	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.CurrentPassword+user.Salt)); err != nil {
+	if ok, _ := services.CheckPassword(req.CurrentPassword, user.Salt, user.PasswordHash); !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "current password is incorrect"})
 		return
 	}
@@ -606,15 +606,21 @@ func (h *MediaQueryHandler) ChangePassword(c *gin.Context) {
 	newSalt := hex.EncodeToString(saltBytes)
 
 	// Hash new password with new salt
-	newHash, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword+newSalt), bcrypt.DefaultCost)
+	newHash, err := services.HashPasswordWithSalt(req.NewPassword, newSalt)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to hash new password"})
 		return
 	}
 
 	// Update password in DB
-	if err := h.userRepo.UpdatePassword(uid, string(newHash), newSalt); err != nil {
+	if err := h.userRepo.UpdatePassword(uid, newHash, newSalt); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update password"})
+		return
+	}
+	// Same as AuthService.ChangePassword: sessions issued under the old
+	// password are revoked (the user logs in again with the new one).
+	if err := h.userRepo.DeactivateAllUserSessions(uid); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "password changed but revoking sessions failed"})
 		return
 	}
 

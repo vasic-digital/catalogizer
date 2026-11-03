@@ -1,11 +1,13 @@
 ARG GO_IMAGE=docker.io/library/golang:1.25-alpine
 FROM ${GO_IMAGE}
 
-RUN apk add --no-cache git make libffi mupdf-dev
+RUN apk add --no-cache git make libffi mupdf-dev poppler-utils util-linux
 
 # Non-root: a dedicated dev user owns /app and its own Go caches. The user and GOPATH/GOMODCACHE are set BEFORE `go mod download`
 # so the modules are downloaded as that user into the cache the running container (and the api_cache volume) really uses.
 RUN adduser -D -u 1000 dev && mkdir -p /app /home/dev/go /home/dev/.cache && chown -R dev:dev /app /home/dev
+# 2026-11-02 decision: go-sqlcipher built with -DHAVE_USLEEP=1 (CPPFLAGS keeps go default -O2 -g)
+ENV CGO_CPPFLAGS=-DHAVE_USLEEP=1
 ENV HOME=/home/dev GOPATH=/home/dev/go GOMODCACHE=/home/dev/go/pkg/mod GOCACHE=/home/dev/.cache/go-build
 
 WORKDIR /app

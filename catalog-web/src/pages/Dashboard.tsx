@@ -278,7 +278,7 @@ export const Dashboard: React.FC = () => {
   }, [mediaError])
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -440,7 +440,7 @@ export const Dashboard: React.FC = () => {
       )}
 
       {/* Charts and Activity Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 [overflow-x:clip]">
         {/* Media Distribution Chart */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}

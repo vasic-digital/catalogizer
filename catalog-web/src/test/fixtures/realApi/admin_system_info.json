@@ -1,0 +1,13 @@
+{
+  "activeConnections": 34,
+  "cpuUsage": 0,
+  "diskUsage": {
+    "free": 0,
+    "total": 0,
+    "used": 0
+  },
+  "memoryUsage": 43.588605008672104,
+  "totalRequests": 0,
+  "uptime": 7573,
+  "version": "dev"
+}

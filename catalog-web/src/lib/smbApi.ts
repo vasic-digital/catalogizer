@@ -1,4 +1,5 @@
 import api from './api'
+import { asList } from './apiShapes'
 
 export interface SmbShare {
   name: string
@@ -40,14 +41,14 @@ export interface SmbBrowseRequest {
 
 export const smbApi = {
   discover: (): Promise<SmbShare[]> =>
-    api.post('/smb/discover').then((res) => res.data),
+    api.post('/smb/discover').then((res) => asList<SmbShare>(res.data, 'shares')),
 
   discoverGet: (): Promise<SmbShare[]> =>
-    api.get('/smb/discover').then((res) => res.data),
+    api.get('/smb/discover').then((res) => asList<SmbShare>(res.data, 'shares')),
 
   testConnection: (body: SmbTestRequest): Promise<SmbTestResult> =>
     api.post('/smb/test', body).then((res) => res.data),
 
   browse: (body: SmbBrowseRequest): Promise<SmbBrowseEntry[]> =>
-    api.post('/smb/browse', body).then((res) => res.data),
+    api.post('/smb/browse', body).then((res) => asList<SmbBrowseEntry>(res.data, 'entries')),
 }

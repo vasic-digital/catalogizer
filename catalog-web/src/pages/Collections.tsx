@@ -1,3 +1,4 @@
+import { filterCollections } from '../lib/collectionFilter';
 import React, { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -47,7 +48,7 @@ import {
   ExternalIntegrations,
 } from '../components/performance/LazyComponents';
 
-import { useMemoized, useOptimizedData, usePagination } from '../components/performance/MemoCache';
+import { usePagination } from '../components/performance/MemoCache';
 
 import { 
   AICollectionSuggestions,
@@ -182,17 +183,12 @@ export const Collections: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Performance optimized collection filtering
-  const filters = useMemoized(() => ({
-    activeTab,
-    searchQuery: debouncedSearch,
-    filterMediaType
-  }), [activeTab, debouncedSearch, filterMediaType]);
-
-  const filteredCollections = useOptimizedData(
-    collections,
-    filters,
-    sortBy
+  // The generic useOptimizedData() filter matches filter KEYS against item
+  // FIELDS; activeTab / filterMediaType are not collection fields, so with
+  // real data it filtered every collection out. Filter on the real semantics.
+  const filteredCollections = React.useMemo(
+    () => filterCollections(collections, { tab: activeTab, mediaType: filterMediaType, search: debouncedSearch, sortBy }),
+    [collections, activeTab, filterMediaType, debouncedSearch, sortBy],
   );
 
   // Pagination for large collections

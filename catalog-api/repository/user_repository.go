@@ -172,14 +172,14 @@ func (r *UserRepository) Update(user *models.User) error {
 		UPDATE users SET
 			username = ?, email = ?, first_name = ?, last_name = ?, display_name = ?,
 			avatar_url = ?, time_zone = ?, language = ?, is_active = ?, settings = ?,
-			updated_at = ?
+			role_id = ?, updated_at = ?
 		WHERE id = ?
 	`
 
 	_, err := r.db.Exec(query,
 		user.Username, user.Email, user.FirstName, user.LastName, user.DisplayName,
 		user.AvatarURL, user.TimeZone, user.Language, user.IsActive, user.Settings,
-		time.Now(), user.ID)
+		user.RoleID, time.Now(), user.ID)
 
 	return err
 }
@@ -188,6 +188,20 @@ func (r *UserRepository) UpdatePassword(userID int, passwordHash, salt string) e
 	query := `UPDATE users SET password_hash = ?, salt = ?, updated_at = ? WHERE id = ?`
 	_, err := r.db.Exec(query, passwordHash, salt, time.Now(), userID)
 	return err
+}
+
+// UpdatePasswordIfHash is a compare-and-swap: it rewrites the hash only while
+// the stored hash still equals oldHash, so a background rewrite (legacy hash
+// upgrade) can never revert a password changed in the meantime. It reports
+// whether a row was updated.
+func (r *UserRepository) UpdatePasswordIfHash(userID int, newHash, salt, oldHash string) (bool, error) {
+	query := `UPDATE users SET password_hash = ?, salt = ?, updated_at = ? WHERE id = ? AND password_hash = ?`
+	res, err := r.db.Exec(query, newHash, salt, time.Now(), userID, oldHash)
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	return n > 0, err
 }
 
 func (r *UserRepository) UpdateLastLogin(userID int, ipAddress string) error {

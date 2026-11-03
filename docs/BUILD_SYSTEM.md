@@ -252,3 +252,18 @@ bash tests/test_build_system.sh
 ```
 
 Tests cover: version management, hash computation, change detection, directory structure, BUILD_INFO.json generation, checksum verification, and CLI parsing.
+
+## Runner exit-status semantics (build-test-release.sh, run-all-tests-comprehensive.sh)
+
+- Every phase or stage now ends PASS, FAIL or SKIP (reason recorded). A SKIP is never counted as passed: the summary prints a
+  Skipped count, `build-report.json` has `skipped_phases`, `build-report.html` renders SKIP rows distinctly, and the final line says
+  "not a full pass" when anything was skipped.
+- Behaviour change: Tauri desktop/installer builds, Android unit tests and APK builds, `go vet`, integration tests and contract
+  tests now FAIL the run (exit 1) when they fail. They used to print a warning. A builder image that lacks the platform libraries
+  for Tauri or the Android SDK will therefore exit 1 instead of reporting success; provide the libraries, or the phase is reported
+  FAIL honestly.
+- Skips: no signing script, no `gradlew`, no `validate-coverage.sh`, `SKIP_EMULATOR_TESTS=true`, no APK to install, no `k6`,
+  no `contracts/` directory, missing `ADMIN_PASSWORD` (E2E).
+- ESLint findings stay non-fatal (shown as `PASSED (eslint issues)` / a phase note); type-check errors and `go vet` findings fail.
+- Phase 7 `adb connect` exit status for "failed to connect" depends on the platform-tools version (UNCONFIRMED); the app-launch
+  check is the deciding evidence, and `wait-for-device` is bounded to 300 s.

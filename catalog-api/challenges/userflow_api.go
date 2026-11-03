@@ -21,6 +21,13 @@ func userFlowAPIAdapter() *userflow.HTTPAPIAdapter {
 	return userflow.NewHTTPAPIAdapter(baseURL)
 }
 
+// adminPasswordFromEnv returns the operator-supplied admin password (read by
+// variable NAME, no default: CAT-021). Empty when ADMIN_PASSWORD is unset, in
+// which case the login step fails honestly instead of using a published value.
+func adminPasswordFromEnv() string {
+	return env.GetOrDefault("ADMIN_PASSWORD", "")
+}
+
 // userFlowCredentials returns the default admin credentials
 // sourced from environment variables.
 func userFlowCredentials() userflow.Credentials {
@@ -29,7 +36,7 @@ func userFlowCredentials() userflow.Credentials {
 			"ADMIN_USERNAME", "admin",
 		),
 		Password: env.GetOrDefault(
-			"ADMIN_PASSWORD", "admin123",
+			"ADMIN_PASSWORD", "",
 		),
 	}
 }

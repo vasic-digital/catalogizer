@@ -24,17 +24,30 @@ describe('collectionsApi', () => {
   })
 
   describe('getCollections', () => {
-    it('calls GET /api/collections and returns collections array', async () => {
-      const mockCollectionsList = [
-        { id: '1', name: 'Test Collection', item_count: 5 },
-        { id: '2', name: 'Second Collection', item_count: 10 },
-      ]
-      mockApi.get.mockResolvedValue({ data: mockCollectionsList })
+    it('unwraps the {items,total} envelope and normalises backend collections', async () => {
+      // wire shape captured from catalog-api GET /collections
+      mockApi.get.mockResolvedValue({
+        data: {
+          items: [
+            { id: 1, name: 'Test Collection', collection_type: 'custom', total_items: 5, cover_url: null,
+              created_at: '2026-11-03T00:00:00Z', updated_at: '2026-11-03T00:00:00Z' },
+          ],
+          total: 1, limit: 24, offset: 0,
+        },
+      })
 
       const result = await collectionsApi.getCollections()
 
       expect(mockApi.get).toHaveBeenCalledWith('/collections')
-      expect(result).toEqual(mockCollectionsList)
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({ id: '1', name: 'Test Collection', item_count: 5, is_smart: false, smart_rules: [], primary_media_type: 'mixed' })
+    })
+
+    it('returns [] for the empty envelope and for a null body', async () => {
+      mockApi.get.mockResolvedValue({ data: { items: [], total: 0, limit: 24, offset: 0 } })
+      expect(await collectionsApi.getCollections()).toEqual([])
+      mockApi.get.mockResolvedValue({ data: null })
+      expect(await collectionsApi.getCollections()).toEqual([])
     })
 
     it('propagates errors on failure', async () => {
@@ -54,7 +67,7 @@ describe('collectionsApi', () => {
       const result = await collectionsApi.getCollection('1')
 
       expect(mockApi.get).toHaveBeenCalledWith('/collections/1')
-      expect(result).toEqual(mockCollection)
+      expect(result).toMatchObject({ id: '1', name: 'Test Collection', item_count: 5 })
     })
 
     it('propagates 404 errors', async () => {

@@ -3,6 +3,7 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"net/http"
 	"strconv"
@@ -184,28 +185,44 @@ func callerIsAdmin(c *gin.Context) bool {
 
 // getMediaMetadata retrieves media metadata from database
 func (h *RecommendationHandler) getMediaMetadata(ctx context.Context, mediaID int64) (*models.MediaMetadata, error) {
-	// Query the database for media item
+	// Query the canonical media_items schema (identical on SQLite and
+	// PostgreSQL). The legacy columns this handler used to select
+	// (media_type, producer, "cast", resolution, file_size) only exist on
+	// PostgreSQL via best-effort ALTERs and are NULL for every row written by
+	// the real pipeline, which made every request fail with
+	// "converting NULL to string is unsupported" (HTTP 500). The type name
+	// comes from media_types; every nullable column is COALESCEd.
 	query := `
-		SELECT 
-			id, title, media_type, year, description, rating, 
-			duration, language, country, director, producer, 
-			"cast", resolution, file_size, created_at, updated_at
-		FROM media_items
-		WHERE id = ?
+		SELECT
+			mi.id, mi.title, COALESCE(mt.name, ''), mi.year,
+			COALESCE(mi.description, ''), mi.rating, mi.runtime,
+			COALESCE(mi.language, ''), COALESCE(mi.country, ''),
+			COALESCE(mi.director, ''), COALESCE(mi.genre, ''),
+			COALESCE(mi.cast_crew, ''),
+			mi.first_detected, mi.last_updated
+		FROM media_items mi
+		LEFT JOIN media_types mt ON mt.id = mi.media_type_id
+		WHERE mi.id = ?
 	`
 
 	var metadata models.MediaMetadata
 	var castStr string
+	var firstDetected, lastUpdated sql.NullTime
 	err := h.recommendationService.GetDB().QueryRowContext(ctx, query, mediaID).Scan(
 		&metadata.ID, &metadata.Title, &metadata.MediaType, &metadata.Year,
 		&metadata.Description, &metadata.Rating, &metadata.Duration,
 		&metadata.Language, &metadata.Country, &metadata.Director,
-		&metadata.Producer, &castStr, &metadata.Resolution,
-		&metadata.FileSize, &metadata.CreatedAt, &metadata.UpdatedAt,
+		&metadata.Genre, &castStr, &firstDetected, &lastUpdated,
 	)
 
 	if err != nil {
 		return nil, err
+	}
+	if firstDetected.Valid {
+		metadata.CreatedAt = firstDetected.Time
+	}
+	if lastUpdated.Valid {
+		metadata.UpdatedAt = lastUpdated.Time
 	}
 
 	// Parse cast array if present

@@ -58,7 +58,7 @@ go build -o catalog-api
 # Required environment variables
 export JWT_SECRET="your-secret-key-minimum-32-characters-long"
 export ADMIN_USERNAME="admin"
-export ADMIN_PASSWORD="your-secure-admin-password"
+export ADMIN_PASSWORD="<your-admin-password>"
 
 # Optional environment variables
 export PORT=8080
@@ -1216,7 +1216,7 @@ StandardError=journal
 Environment=GIN_MODE=release
 Environment=JWT_SECRET=your-production-secret-here
 Environment=ADMIN_USERNAME=admin
-Environment=ADMIN_PASSWORD=your-admin-password
+Environment=ADMIN_PASSWORD=<your-admin-password>
 EnvironmentFile=-/etc/catalogizer/env
 
 # Security hardening

@@ -1,4 +1,6 @@
 #!/bin/bash
+# shellcheck source=/dev/null
+. "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")/../../scripts/lib/cgo_flags.sh" || { echo "FATAL: ../../scripts/lib/cgo_flags.sh missing (cgo define for go-sqlcipher)" >&2; exit 1; }   # 2026-11-02 decision; scripts/lib/cgo_flags.sh
 
 # Catalogizer Quick QA - Fast Development Validation
 # Provides rapid feedback for developers during active development

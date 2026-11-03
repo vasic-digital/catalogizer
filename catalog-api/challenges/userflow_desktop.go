@@ -248,7 +248,7 @@ func registerUserFlowDesktopChallenges() []challenge.Challenge {
 						Name:     "fill-password",
 						Action:   "fill",
 						Selector: "input[name='password']",
-						Value:    "admin123",
+						Value:    adminPasswordFromEnv(),
 					},
 					{
 						Name:     "click-login",
@@ -299,7 +299,7 @@ func registerUserFlowDesktopChallenges() []challenge.Challenge {
 						Name:     "fill-password",
 						Action:   "fill",
 						Selector: "input[name='password']",
-						Value:    "admin123",
+						Value:    adminPasswordFromEnv(),
 					},
 					{
 						Name:     "click-login",
@@ -356,7 +356,7 @@ func registerUserFlowDesktopChallenges() []challenge.Challenge {
 						Name:     "fill-password",
 						Action:   "fill",
 						Selector: "input[name='password']",
-						Value:    "admin123",
+						Value:    adminPasswordFromEnv(),
 					},
 					{
 						Name:     "click-login",

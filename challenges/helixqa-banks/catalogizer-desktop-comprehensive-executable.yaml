@@ -76,7 +76,7 @@ test_cases:
   - desktop
   steps:
   - name: Enter credentials
-    action: '# TODO: Convert to executable - type server url, admin/admin123'
+    action: '# TODO: Convert to executable - type server url, admin/${ADMIN_PASSWORD}'
     expected: Fields accept keyboard input
     timeout: 10
   - name: Click login

@@ -132,7 +132,7 @@ func TestAuthIntegration_TokenUniqueness(t *testing.T) {
 	for i := 0; i < loginCount; i++ {
 		loginData := map[string]interface{}{
 			"username": "admin",
-			"password": "admin123",
+			"password": testAdminPassword,
 		}
 		body, _ := json.Marshal(loginData)
 		resp, err := client.Post(sb.baseURL+"/api/v1/auth/login", "application/json", bytes.NewReader(body))
@@ -208,7 +208,7 @@ func TestAuthIntegration_ConcurrentLogins(t *testing.T) {
 			defer wg.Done()
 			loginData := map[string]interface{}{
 				"username": "admin",
-				"password": "admin123",
+				"password": testAdminPassword,
 			}
 			body, _ := json.Marshal(loginData)
 			resp, err := client.Post(sb.baseURL+"/api/v1/auth/login", "application/json", bytes.NewReader(body))

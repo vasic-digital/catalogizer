@@ -132,7 +132,7 @@ func TestUserRepositoryExample(t *testing.T) {
 		mock.ExpectExec(`UPDATE users SET`).
 			WithArgs(
 				"testuser", "updated@example.com", "Test", "User", "Test User",
-				nil, nil, nil, true, "{}", sqlmock.AnyArg(), 1,
+				nil, nil, nil, true, "{}", 0, sqlmock.AnyArg(), 1,
 			).
 			WillReturnResult(sqlmock.NewResult(0, 1))
 

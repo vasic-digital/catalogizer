@@ -701,7 +701,7 @@ func testConfig(serverURL string) *BrowsingConfig {
 	return &BrowsingConfig{
 		BaseURL:   serverURL,
 		Username:  "admin",
-		Password:  "admin123",
+		Password:  testAdminPassword,
 		WebAppURL: serverURL,
 		WebAppDir: "/tmp/catalog-web-test",
 	}

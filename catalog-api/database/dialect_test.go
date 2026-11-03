@@ -419,3 +419,17 @@ func TestDialectType_Constants(t *testing.T) {
 	assert.Equal(t, DialectType("sqlite"), DialectSQLite)
 	assert.Equal(t, DialectType("postgres"), DialectPostgres)
 }
+
+func TestUpsertSQL(t *testing.T) {
+	cols := []string{"id", "a", "b"}
+	pg := Dialect{Type: DialectPostgres}
+	sl := Dialect{Type: DialectSQLite}
+
+	assert.Equal(t, "INSERT OR REPLACE INTO t (id, a, b) VALUES (?, ?, ?)", sl.UpsertSQL("t", cols, []string{"id"}))
+	assert.Equal(t,
+		"INSERT INTO t (id, a, b) VALUES (?, ?, ?) ON CONFLICT (id) DO UPDATE SET a = EXCLUDED.a, b = EXCLUDED.b",
+		pg.UpsertSQL("t", cols, []string{"id"}))
+	assert.Equal(t,
+		"INSERT INTO t (a, b) VALUES (?, ?) ON CONFLICT (a, b) DO NOTHING",
+		pg.UpsertSQL("t", []string{"a", "b"}, []string{"a", "b"}))
+}

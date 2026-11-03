@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { useWebSocket } from '@/lib/websocket'
+import { useWebSocketContext } from '@/contexts/WebSocketContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { Wifi, WifiOff, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export const ConnectionStatus: React.FC = () => {
-  const { getConnectionState } = useWebSocket()
+  // Must read the SAME connection the provider opened. Calling useWebSocket()
+  // here created a second, never-connected client (own ref) and the banner
+  // read 'Disconnected' forever while the real socket was open.
+  const { getConnectionState } = useWebSocketContext()
   const { isAuthenticated } = useAuth()
   const [connectionState, setConnectionState] = useState<'connecting' | 'open' | 'closing' | 'closed'>('closed')
   const [showStatus, setShowStatus] = useState(false)
@@ -76,7 +79,7 @@ export const ConnectionStatus: React.FC = () => {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="fixed top-4 right-4 z-50"
+          className="fixed top-20 right-4 z-50 pointer-events-none max-w-[calc(100vw-2rem)]"
         >
           <div className={`${config.color} ${config.textColor} px-3 py-2 rounded-lg shadow-lg flex items-center space-x-2 text-sm font-medium`}>
             {config.icon}

@@ -42,7 +42,7 @@ compose shapes skipped silently), so those claims were wrong. Status after the r
 Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser coverage").
 
 ## Operator decisions pending (process-doc)
-- `deployment/amber-up.sh` runs plain `docker` (allowlisted R6): keep or migrate to podman.
+- `deployment/amber-up.sh` now uses rootless `podman` (operator decision 2026-11-02; the R6 allowlist row is removed). UNCONFIRMED on amber.local (not contacted): podman installed, cgroup delegation for `--cpus`/`--memory`, and the image store (images built with docker must be rebuilt or loaded into podman).
 - `scripts/deploy-vision-hosts.sh` default host `thinker.local` (allowlisted R4): the operator
   said it is obsolete, but constitution §11.4.173 still names it as the build host; needs a
   recorded decision.
@@ -58,7 +58,7 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
 - TI-2 (DONE, scripts/tests/generator_scan_test_roots.txt): generator scan skips every path containing `/tests/`; use an explicit list of test roots.
 - TI-3 (DONE: scanner now also runs over the QA compose/scripts): the stack-boot test greps only the literal `admin123`; broaden or rely on the scanner.
 - PD-1 (DONE: separate required `QA_USER_PASSWORD`, documented in `.env.example`): `run-full-qa.sh` registers `testuser_qa` with `ADMIN_PASSWORD`; use a separate value.
-- Tracked follow-ups from the TI-1..PD-1 review: `catalog-api/run_challenges_robust.sh:14` still hard-codes `admin123`
+- Tracked follow-ups from the TI-1..PD-1 review: `catalog-api/run_challenges_robust.sh:14` previously hard-coded the published default (fixed by CAT-021: `${ADMIN_PASSWORD:?}`)
   and its `grep -o '"session_token":"[^"]*"'` regex is a scanner false positive (the `[` value prefix); the gate was
   deliberately not widened. Residual scanner limits: a secret shaped like a plain lowercase multi-segment path
   (`/ab/cd/ef`) is treated as a path; a keyword-led `<your-...>` value is treated as a placeholder; the PD-1 alias check
@@ -68,14 +68,14 @@ Remaining gaps: `docs/scripts/container_local.md` (section "Hygiene guard parser
   - Unclosed `<secret_…` style placeholders (any keyword) are accepted as placeholders; hex or no-digit slash secrets (`/ab/cd/ef`) are treated as paths.
   - URL-embedded credentials (`postgres://u:pw@h`) are not seen (the scanner is name-keyed); `.env` `export` lines, lowercase `-e db_password=`, `env K=v cmd`, and k8s `name:`/`value:` pairs are not matched.
   - `DB_PASSWORD: |` (YAML block scalar) is a false positive.
-  - `catalog-api/start_server.sh:4` still carries a `JWT_SECRET` literal.
+  - `catalog-api/start_server.sh:4` JWT_SECRET literal: removed by CAT-021 (now `${JWT_SECRET:?}`).
   - F9: the generator scan covers only `scripts/*.sh`; the other tracked `.sh` files (about 184) are unscanned.
   - The PD-1 alias guard sees only direct `VAR=...$ADMIN_PASSWORD...` assignments, not `eval` or `printf -v`.
   - Further scanner residuals (re-review round): `${A}/secret` (a `/`-led tail after an expansion is treated as a path suffix); a 4-digit-or-less value for a secret-named key in shell (`DB_PASSWORD=1234` in a `.sh`) is exempt as a counter; bare keys `PASS`/`PASSES`/`TOKEN`/`TOKENS` with a digit value in YAML are exempt (`PASS: 1234`); in shell only the first command of a `;` chain is checked (`DB_PASSWORD="$X"; DB_PASSWORD=hunter2`); known pre-existing false positives `PGPASSWORD="$PGPW"`, `${A:-}${B}` and `${DB_PASSWORD:-${OTHER}}`; the alias guard does not see assignments through `eval`, `printf -v`, `declare -n`, or `read`.
   - The `fail` initialisation guard in `test_no_default_secrets.sh` is textual: a late reset written in an obfuscated form (`fail=$((0))`) after the compose gate is not detected; a real fix is to run the gate in a subshell and propagate its exit status.
 - Round-4 review leftovers (test-instrumentation, low): FU-1 the fail-init guard is textual, so `fail=$((0))`, `(( fail = 0 ))`, a backgrounded `compose_gate &` and a subshell call `( compose_gate )` get past it; replace it with an end-to-end meta-test that injects a literal into a fixture compose file and requires rc!=0.
   FU-2 the `run-full-qa.sh` alias guard misses `typeset`, `export -n`, `local -r` and env-prefixed `A=1 QPW=$ADMIN_PASSWORD`. FU-3 unbraced `$NAME<literal>` tails are not flagged. FU-4 a symlinked call from outside the repo exits 2 ("cd: null directory", fails closed); derive the repo top from the script's own directory.
-- Out of scope but real: `admin123` still appears in `catalog-api/challenges/*`, `start_server.sh`,
+- Out of scope but real (CAT-021 removed the literal from all of these except the helixqa bank steps that type it on-device: HelixQA does no env expansion in step text, so those `${ADMIN_PASSWORD}` placeholders are non-functional until HelixQA supports it; banks now declare `requires_env: [ADMIN_PASSWORD]` so they SKIP when unset; tracked: CAT-021-F4): it appeared in `catalog-api/challenges/*`, `start_server.sh`,
   `run_challenges*.sh`, `check_scans.sh`, `catalog-web/e2e/fixtures/auth.ts`, the Android and
   Android TV `MainActivity.kt` (production app source: own item), and the helixqa banks.
 
@@ -363,3 +363,177 @@ These are NOT claimed benign. Line numbers are as of the CAT-001 round-1 remedia
 - `handlers/sysmetrics_cpu_linux.go` `hostCPUPercent`: samples /proc/stat over a deliberate 200ms window (a real measurement, not a stub; kept on purpose, adds 200ms to the system-info call).
 - `GetCoverURL` goroutine panic seen once during CAT-001 work: UNCONFIRMED, see the investigation note below if present.
 - Live OCR.space call (book OCR) was not exercised; only the not-configured and tesseract paths are tested.
+- CAT-021 tracked follow-ups (review rounds 1-2, low): M2 the startup hash check costs one bcrypt compare per denylist candidate per admin account (about 11 x cost) - cache or short-circuit if admin counts grow; M6 the template rule (`<...>`, `${`, `$(`, `{{`) also rejects strong passwords that legitimately contain those sequences - document or add an operator override; N2 `internal/auth` `AuthService.Initialize` (plain-bcrypt schema) is unused outside tests, so only `main.go` seedDefaultAdmin/`admin-reset-password` protect the real schema - remove or unify; the JSON bank FQA-ATV-141 and the YAML banks type the literal `${ADMIN_PASSWORD}` until HelixQA expands env in step text (CAT-021-F4).
+
+- CAT-021 round 5 (review round 4 findings): FIXED F1 (every `/api/v1` request now verifies the token's session is active, owned by the subject and unexpired; fails closed on DB error or missing `session_id` claim; one primary-key read per request, not cached), F2 (compose gate mutations M7/M8), F3 (shape regex anchored on both halves), F4, F5, F6, F7. NOT FIXED / honest limits: F8 the `admin-reset-password` path was only run against SQLite; the Postgres reset path and the container form (`docker compose run ... admin-reset-password`) were NEVER run. Strong passphrases containing a marker substring (for example `My-Secure-Passphrase-2026!xQ` contains `securepass`) are still refused by the substring marker list; making the markers exact would weaken the compromised-value list, so it stays a known limitation (operator decision needed). Session lookup per request adds one indexed read; a short TTL cache would trade revocation latency for load and was not added. Tokens issued by `GenerateToken` (no `session_id`) are rejected once a checker is installed; no production path mints them.
+
+## WrapHTTPHandler path-param fix (catalog-api/handlers) — follow-ups (review rounds 1-3)
+Source: independent Opus review rounds 1 and 2 of commits c567caca, b328d027, b339ce88 and the round-3 commit. Status: OPEN.
+- S3 (minor, design): wizard step routes have no permission check while GetConfiguration requires system.config and TestConfiguration requires system.admin; ValidateWizardStep returns err.Error() to the client.
+- S4 (minor, design): UpdateRole PUT replaces permissions, so a body with only `name` empties a custom role's permissions; system roles are protected by `is_system = 0` (user_repository.go).
+- T1 (minor, test-instrumentation): the fallback branch of routedID (handlers/path_params.go) is not exercised by any test; no routed path reaches it today.
+- T6 (minor, test-instrumentation): ValidateWizardStep and SaveWizardProgress have no authz or behaviour test. Also (round 5): the memStore.GetRole fake invents an empty role for unknown ids, unlike the real repository; RequireAdmin gates /api/v1/admin by role_id == 1 while the UserHandler guards use the system.admin permission (agree today because role 1 is seeded ["*"]); a self-update carrying role_id is silently ignored with 200.
+- Config wizard (`ConfigurationHandler.GetWizardStep`, `ValidateWizardStep`, `SaveWizardProgress`, `GetWizardProgress`, `CompleteWizard`) has no permission check: any authenticated user can call it. Decide whether wizard steps should require `system.config` or `system.admin`. `ValidateWizardStep` and `GetWizardStep` were not given a `user_id` check (they do not read `user_id`).
+- Admin-over-admin rule (S1 fix) is conservative: a non-admin is refused for any target whose role carries `system.admin` or `*`, and for assigning such a role. It does not model role hierarchies ("at least as privileged as the caller's own role" for non-admin roles); a non-admin can still assign a non-admin role that is more privileged than their own.
+- The new gates use fakes for services and repositories (real handlers, real router, real adapter). No live-server run exists for these 22 routes.
+- `GetLogShare` is token-gated only (RequireAuth at the `/api/v1` group is the single authentication layer); share tokens are not rate limited separately.
+- R3-M1: the admin-over-admin checks are check-then-write (target role read, then update): a concurrent role change can produce a lost update or a stale decision. Needs a transactional or compare-and-set update in the repository.
+- R3-M2: a non-admin with user.manage / user.create may assign ANY non-admin role, including a role more privileged than their own (only roles that carry `system.admin`, `*` or a matching prefix wildcard are refused).
+- Other writers of users.role / role_id found in the R3-S1 sweep: `repository.UserRepository.Create/Update` (reached only via UserHandler, now guarded); `handlers/auth_handler.go` RegisterGin (fixed `RoleID: 2`); `internal/auth` `CreateUser` (fixed role 'user') and `UpdateUser` (sets `role` from request) are reachable only through `internal/handlers.AuthHandler`, which no code constructs (`NewAuthHandler` is never called outside its definition), so they are not exposed under /api/v1 today; if that handler is ever wired, `UpdateUser` must drop `Role` for non-admins. No bulk import, invite or signup flow writing roles was found in handlers/, services/, internal/, repository/.
+
+## Responsive audit series (commits `responsive audit fixes ...` and `header nav keeps priority ...`)
+Independent review round 1 returned GO-with-follow-ups. Corrections to the two commit messages (history is not rewritten):
+- Commit 1 says requests "were 404ing at /api/v1/api/v1/...". Correction (F4): only the doubled PREFIX is fixed in the
+  favorites and playlists client calls. Most of those endpoints still have no server route (item F3 below) and still 404,
+  now at the right path.
+- Commits 1 and 2 do not mention that the header greeting "Welcome, {name}" is now `hidden 2xl:inline` (not shown below
+  1536px) (F9). Nit: the password eye button is `h-11` inside an `h-10` input (2px overhang each side).
+- Both commits' evidence is a PARTIAL re-run of the browser harness (`fixedE` runs of 28 and 8 cases), not one full
+  matrix per browser on the final tree.
+
+Landing-blocker items closed in the landing-prep commit: F1 (8 Button snapshots updated; diff is only the two added
+`[@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px]` classes), F2 (`AuthRace.test.tsx`, RED on
+the pre-fix `AuthContext.tsx`, GREEN after), F7 (Tabs overflow class guards, RED on pre-fix `Tabs.tsx`), F8 (oracle
+needle cases for the scroll-container exemption, both directions mutation-killed), trailing whitespace in `oracle.mjs`.
+
+Tracked follow-ups (status OPEN):
+- F3 (source-defect, important, pre-existing): client calls with no route in `catalog-api/main.go`: `/favorites/stats`,
+  `/favorites/toggle`, `/favorites/bulk` (POST and DELETE), `/favorites/check/:mediaId` and `DELETE /favorites/:mediaId`
+  (shape differs from the server's `:entity_type/:entity_id`); playlists `GET /:id/items`, `items/reorder`, `share`,
+  `shared/:token`, `analytics`, `duplicate`, `export`, `play`, `shuffle`, `reorder`, `import`, `validate-smart-rules`.
+  `Favorites.tsx` uses `getFavoriteStats` and `bulkRemoveFromFavorites`, so that page still gets 404s. Needs a
+  client/server contract reconciliation plus a contract test (§11.4.244).
+- F5 (process-doc, important): residual browser-audit failures after both patches, from the author's verdict files:
+  catalog-web chromium 101 of 133 cases FAIL, webkit 123 of 152 FAIL, firefox only a pre-fix run exists (162 of 171
+  FAIL); website 35 of 35 FAIL on tap_target_small (VitePress hero buttons 40px). Needs one full-matrix run per browser on
+  the final tree and a tracked item per remaining finding class (tap_target_small, occluded_control, h_overflow,
+  offscreen_control, no_gutter, text_off_viewport, overlapping_text).
+- F6 (source-defect, minor, UNCONFIRMED): header nav `overflow-x-auto` may clip the `focus-visible:ring-2 ring-offset-2`
+  focus ring of nav links (top/bottom, and left of the first link). Found by reading CSS only; confirm in a browser,
+  then add `py-1 px-1` to the nav.
+- F7 design item (source-defect, minor): links overflowing the header nav at 768-1535px have no visible cue and the
+  harness no longer reports them; consider a "More" menu or an edge fade.
+- Open tap-target items from the audit (see F5) and the "More" menu decision above.
+- Pre-existing, not caused by this series: 7 failures in `catalog-web/src/contexts/__tests__/AuthContext.integration.test.tsx`
+  on `main` (localStorage `auth_token`/`user` `setItem`/`removeItem` assertions not met; login/logout cycle). Root cause
+  not trivial and out of scope here; needs its own investigation (§11.4.102). Also pre-existing: 3 eslint warnings in
+  `catalog-web/src/e2e-env.test.ts` fail `--max-warnings 0`.
+- `tests/responsive-audit/run.mjs` still hardcodes port 18400 and local paths and is not wired into any gate (F8 rest).
+
+## Runner scripts (CAT-013/014/016) review round 3 follow-ups (GO-with-follow-ups, all minor)
+
+- N1: `go fmt` failure is silent and `go fmt` rewrites files instead of checking (use `gofmt -l`).
+- N2: phase 4 leaves no note when `SKIP_E2E_TESTS=true`.
+- N3: phase 9 failed API-client copy is only a warning.
+- N4: phases 5 and 6 pass when the build copied zero artifacts.
+- T1: report fixture has one pass/skip/fail, so swapped counters in JSON/HTML go unnoticed.
+- T2: no test covers `skipped_list` for SEC, E2E, PERF.
+- T3: no test covers the phase 7 path where the dumpsys call itself fails.
+- Nits: unguarded `cd` in the E2E branch; `redis | grep -q` has the F2 shape (low risk).
+- UNCONFIRMED: adb connect exit semantics. ESLint findings stay non-fatal by policy.
+## CAT-002 PDF text isolation - follow-ups (review round 5)
+- F-E3: the pure-Go child re-runs all package `init`s of the API binary (about 80 MB RSS, 0.1-0.2 s) on every call; a small dedicated child binary or lazy init would cut this.
+- The hostile fallback chain (poppler killed by the 20 s CPU limit, then the Go child) measured 20.7 s total; a stricter bound would need a shared per-file budget across the two engines.
+- A genuinely large legitimate document (more than roughly 4000 pages of pure-Go extraction) can now exceed the 20 s CPU limit; poppler handles about 8000 pages in the same budget. Make the CPU limit page-count aware if such inputs are expected.
+- Measurements were taken on a 16-CPU host; GOMAXPROCS=64 is simulated by environment, not run on 64 CPUs. A full catalog-api image build and a container run of the extractor were not done in this round.
+
+## CAT-002 review round 5 follow-ups (GO-with-follow-ups, all minor)
+
+- F1: the child env allowlist is tested only on the poppler path; a mutation giving the Go child the full environment survives.
+- F2: mutations dropping GOMEMLIMIT and raising the child ceiling to 4 GiB survive (ceiling assertion compares against its own constant); marker check HasPrefix vs Contains (nit).
+- F3: "851 pages in ~4 s" holds for the generated fixture only; real very large PDFs (e.g. 851 and 570 pages) cannot be extracted by the pure-Go engine (>120 s) and rely on poppler.
+- F5: limits are sized from host MemAvailable, not the container memory limit; three children at their ceilings could exceed a container limit. No compose file limits catalog-api memory today.
+- UNCONFIRMED: image build and in-container extraction; real 64-CPU host.
+
+
+---
+
+## Crash-pages fix, round 2 follow-ups
+
+Minor or out-of-scope items found while fixing the four crashing pages
+(`/analytics`, `/collections`, `/admin`, `/settings`) and the class-exhaustive
+sweep of the api modules. Each is a tracked item for the next iteration; none
+blocks the crash fix.
+
+| ID | Item | Where | Why deferred |
+|----|------|-------|--------------|
+| WEB-F4 | Favorites are always created with `entity_type: 'movie'` (`DEFAULT_ENTITY`) | `catalog-web/src/lib/favoritesApi.ts` | Needs the page to pass the real entity type; UI change |
+| WEB-F5 | `addToFavorites` returns a synthesised, not the stored, `Favorite` | `favoritesApi.ts` | Backend returns no row; needs a backend contract decision |
+| WEB-F6 | Favorites stats are derived client side from at most 200 rows | `favoritesApi.ts` | Needs a backend stats endpoint |
+| WEB-F7 | Favorites tab is unfiltered by type and sort is always ascending | `pages/Favorites*` | Product decision on filter/sort semantics |
+| WEB-F12 | `useOptimizedData` has a global cache keyed off its inputs and is unused by `Collections` now | `components/performance/MemoCache.tsx` | Do not delete without a §11.4.124 history investigation |
+| SMB | `POST /smb/discover` needs a JSON body with `host` (400 without), so the Settings "Discover Shares" button cannot work; the client is now null-safe but the button needs a host input | `lib/smbApi.ts`, `pages/Settings.tsx`, backend `SMBDiscoveryHandler` | Product decision: scan a subnet server side, or add a host field |
+| COL | `collectionsApi` still calls routes the backend does not serve (smart-rule preview, templates, automation, integrations) | `lib/collectionsApi.ts` | Backend features absent; pages should hide or label them |
+| ID | identities/discovery endpoints answer 404 | catalog-api routes | Feature not implemented |
+| SIM | `getSimilar` shows owned (local) similar items only; `external_items` are not rendered | `lib/recommendationsApi.ts`, `pages/EntityDetail.tsx` | UI for external suggestions not designed |
+| MET | `/admin` performance counters are cumulative since process start and `error_rate` is already a percentage; uptime and total requests are not in the report | `reporting_service.go` | Needs a report schema extension |
+
+## Production mock data (§11.4.289)
+
+These ship canned data in production paths and must be removed or clearly
+labelled; they are listed so they are tracked, not because this change touches
+them:
+
+- `catalog-api/handlers/recommendation_handler.go` lines ~231-275
+- `catalog-api/internal/services/recommendation_service.go` lines ~229-234, 713, 751, 1220-1290
+- `catalog-web/src/lib/adminApi.ts` lines ~4-75 (mock fallbacks used on 404 around lines 89, 101, 113, 125)
+
+## Docs C2/C5 landing (openapi.yaml re-verification) - source defects found (review round 1)
+
+Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/api/openapi.yaml` and
+`docs/api/API_DOCUMENTATION.md` as known defects. The fixes belong to a separate fix work item.
+
+- R2 (important, FIXED in the login/validator fix, branch fix-user-login-validator): `PUT /api/v1/users/{id}` never saved `role_id`. The response is 200 and echoes the requested
+  `role_id`, but `UserRepository.Update` (`catalog-api/repository/user_repository.go`) has no `role_id` column, so a
+  later GET shows the old role; `is_active` is saved. Changing a user's role through the API does not work. The defect
+  is pinned by `catalog-api/openapi_contract_binary_test.go` (assertion "role_id is not persisted"); the fix must flip
+  that assertion and update both docs.
+- R5 (important, FIXED: passwords are exempt from pattern checks): the request validation middleware rejects passwords that contain SQL keywords (for example a word
+  such as `Create`) as potential SQL injection. Reported by review round 1; the exact keyword list is UNCONFIRMED here.
+- F1 (important, FIXED): users created with `POST /api/v1/users` cannot log in until an admin runs reset-password (password
+  stored as SHA-256, login verifies bcrypt).
+- F2 (important, FIXED): the same validator rejects the permission names `user.create`, `user.update`, `user.delete` on
+  `POST /api/v1/roles`; only `user.view`, `user.manage` and `user.*` pass.
+- F3 (minor): `DELETE /api/v1/logs/share/{id}` with an unknown id answers 500, not 404; several 404/500 bodies echo
+  raw service or SQL error text; error reports store the server host name in `system_info`.
+- F4 (minor): an empty body on `POST /api/v1/users/{id}/unlock` is rejected (400 `invalid JSON format`).
+- F6 (minor): `scripts/check_doc_reachability.py` does not require a direct README to `docs/README.md` link.
+
+## Docs C2/C5 review round 2 follow-ups (GO-with-follow-ups, process-doc minor)
+
+- R6: docs say every cell of the user/role permission table is "asserted by" the binary contract test; the test only uses `user.*` roles, so single-permission cells (`user.view` only, `user.manage` only) are measured live but not asserted. Add those two roles to the test or soften the wording.
+- R7 (measured): the input validator pattern list is `catalog-api/middleware/input_validation.go:57-66`. On POST /api/v1/users it rejects whole words CREATE, AND, OR, FROM, SLEEP and `--` in ANY string field (password, display_name "Rock and Roll"); `Selection` and `Order-By` pass. Permission names `user.create` fail for the same reason. FIXED in the login/validator fix (structural SQL-injection detection).
+
+## Login/validator fix (branch fix-user-login-validator) follow-ups
+
+- SQL-injection detector (`utils.ContainsSQLInjection`) is a heuristic defence in depth; values reach parameterised queries. The review measured 12 of 51 payloads passing before round 2 (subselects `1 AND (SELECT COUNT(*) FROM users)>0`, `1 OR TRUE`, `') OR ('1'='1`, `SELECT*FROM users`, `1 AND extractvalue(...)`, `1' GROUP BY 1,2 HAVING 1=1`, URL-encoded forms, `1'||(SELECT 1)||'`); round 2 closed the cheap ones. Remaining misses are tracked, not claimed solved. Prose such as "Select items from list" is still flagged.
+- Password-field exemption is keyed on the leaf field name at the TOP level of the JSON body only (nested `password` keys are checked). Credentials nested deeper in future endpoints would be pattern-checked.
+- Legacy SHA-256 password rows have no sunset: they are crackable offline until each user logs in. Add a forced reset or expiry for rows still in that shape, and log counts of remaining legacy rows.
+- `UserAuthServiceInterface.HashData` and `AuthServiceAdapter.HashData` are no longer used by production code (dead since the shared hasher); investigate history before removing (section 11.4.124).
+- `database/schema_v3_multiuser.sql` seeds a published default admin hash (password `password`). Checked 2026-11-03: no Go code, script, Makefile, compose or Dockerfile references it and `scripts/register/root_dispositions.yaml` records it as not loaded; consider deleting or neutralising the seed row (investigate history first, section 11.4.124).
+- The access-token `role_id` claim is trusted by `RequireAdmin` until expiry. Session revocation on role change closes the gap while the session checker is installed; a DB re-check of the role in `RequireAdmin` was considered and not done.
+
+- R7 (measured): the input validator pattern list is `catalog-api/middleware/input_validation.go:57-66`. On POST /api/v1/users it rejects whole words CREATE, AND, OR, FROM, SLEEP and `--` in ANY string field (password, display_name "Rock and Roll"); `Selection` and `Order-By` pass. Permission names `user.create` fail for the same reason. Under investigation in the login/validator fix.
+
+### Crash-pages fix, round 3 follow-ups
+
+| ID | Item | Where | Why deferred |
+|----|------|-------|--------------|
+| WEB-N3 | Similar items carry a file id built by `generateMediaID` but `EntityDetail` uses it to navigate to `/entity/:id`: it may open the wrong entity. UNCONFIRMED latent | `recommendation_service.go`, `pages/EntityDetail.tsx`, `lib/recommendationsApi.ts` | Needs a reproduction with real media rows; scratch DB has none |
+| WEB-N4 | No test asserts the `genre` field of `getMediaMetadata`; a mutant mapping genre from the director column survives | `handlers/web_contract_realdb_test.go` | Add a seeded-genre assertion |
+| WEB-N5 | `SubtitleService.SearchSubtitles` returns canned "Sample Movie (2024)" results in production (§11.4.289 production mock data) | `internal/services/subtitle_service.go:~485` | Needs real provider integration or removal |
+| WEB-N6 | Subtitle page sends `query`, `limit`, `offset` that the search handler ignores; `/subtitles/media/:id` carries no title/year so the client fills blanks | `handlers/subtitle_handler.go`, `lib/subtitleApi.ts` | Backend contract extension |
+| WEB-N7 | Remaining `omitempty` list/map fields were swept: the unguarded ones consumed by catalog-web were the two subtitle lists (fixed); the others (`audio_tracks`, `chapters`, `cast`, `external_ids`, `metadata`, wizard `fields`) are read behind `x && x.length` guards or are not consumed | `catalog-api/**` | Keep the sweep in the review checklist |
+
+## Crash-pages review round 3 follow-ups (GO-with-follow-ups, test-instrumentation minor)
+
+- R3-1: add a subtitles fixture where `media_item_id` differs from the requested id (removing the `media_item_id` -> `media_id` mapping survives today).
+- R3-2: the Go wire test calls the response builders directly; add a handler-level test so a handler that stops using them is caught.
+- UNCONFIRMED: live subtitle flow on a populated DB; recommendations query on Postgres; Playwright suite not re-run by the reviewer.
+
+## Login/validator fix round 3 follow-ups (GO-with-follow-ups, minor)
+
+- `revokeUserSessions` now logs when the repository lacks `DeactivateAllUserSessions` instead of staying silent, but still does not fail closed (in-memory test doubles keep no sessions); consider a compile-time requirement on the production handler constructors.
+- XSS rule nits: `behavior:url(...)` (old Internet Explorer only) is not detected; the open-tag rule's `<\s*` also flags prose such as "x < link y" (browsers do not parse `< tag` as a tag); drop the `\s*` after `<`.
+- catalog-web: after change-password the success toast is followed by a redirect to /login on the next 401; log out explicitly or keep the caller's own session.
+- Pre-existing on main (not caused by this branch): admin "suspended" status sets IsLocked but `UserRepository.Update` does not persist `is_locked` and no sessions are revoked; `tests/stress` CacheWriteThroughput and middleware TestTokenBucketRedisRateLimit_Unit_Miniredis_RefillAfterEmpty are flaky under load (section 11.4.248 quarantine candidates).

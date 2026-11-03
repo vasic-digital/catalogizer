@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 
 	"catalogizer/database"
 	"catalogizer/models"
@@ -105,11 +104,15 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	}
 
 	// Verify password
-	if !s.verifyPassword(req.Password, user.Salt, user.PasswordHash) {
+	ok, needsUpgrade := CheckPassword(req.Password, user.Salt, user.PasswordHash)
+	if !ok {
 		// Increment failed login attempts
 		s.userRepo.IncrementFailedLoginAttempts(user.ID)
 		s.auditEvent(user.ID, "failed_login", ipAddress, userAgent, "invalid password")
 		return nil, errors.New("invalid credentials")
+	}
+	if needsUpgrade {
+		s.upgradeLegacyHash(user, req.Password)
 	}
 
 	// Reset failed login attempts on successful login
@@ -450,25 +453,40 @@ func (s *AuthService) generateSalt() (string, error) {
 }
 
 func (s *AuthService) hashPassword(password, salt string) (string, error) {
-	// Combine password and salt
-	combined := password + salt
-
-	// Use bcrypt for additional security
-	hash, err := bcrypt.GenerateFromPassword([]byte(combined), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-
-	return string(hash), nil
+	return HashPasswordWithSalt(password, salt)
 }
 
 func (s *AuthService) verifyPassword(password, salt, hash string) bool {
-	// Combine password and salt
-	combined := password + salt
+	ok, _ := CheckPassword(password, salt, hash)
+	return ok
+}
 
-	// Compare with bcrypt
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(combined))
-	return err == nil
+// legacyUpgradeHook, when non-nil, runs between hashing and the compare-and-swap
+// write of a legacy hash upgrade. Tests use it to land a concurrent password
+// change inside that window.
+var legacyUpgradeHook func()
+
+// upgradeLegacyHash rewrites a verified legacy SHA-256 row as the canonical
+// hash. The write is a compare-and-swap on the legacy value, so a password
+// change that landed since the row was read is never reverted. Failures are
+// logged (never silent) and leave the legacy row, which still verifies.
+func (s *AuthService) upgradeLegacyHash(user *models.User, password string) {
+	newHash, err := HashPasswordWithSalt(password, user.Salt)
+	if err != nil {
+		log.Printf("auth: legacy password hash upgrade for user %d failed: %v", user.ID, err)
+		return
+	}
+	if legacyUpgradeHook != nil {
+		legacyUpgradeHook()
+	}
+	swapped, err := s.userRepo.UpdatePasswordIfHash(user.ID, newHash, user.Salt, user.PasswordHash)
+	if err != nil {
+		log.Printf("auth: legacy password hash upgrade for user %d failed: %v", user.ID, err)
+		return
+	}
+	if !swapped {
+		log.Printf("auth: legacy password hash for user %d changed concurrently; upgrade skipped", user.ID)
+	}
 }
 
 // Session management methods

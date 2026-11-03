@@ -34,12 +34,12 @@ export function EntityHero({
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
       <Card>
         <CardContent className="p-6">
-          <div className="flex items-start gap-6">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
             <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
               <Icon className="h-10 w-10 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white break-words">
                 {entity.title}
               </h1>
               {entity.original_title && entity.original_title !== entity.title && (
@@ -97,7 +97,7 @@ export function EntityHero({
               )}
             </div>
 
-            <div className="flex flex-col gap-2 flex-shrink-0">
+            <div className="flex flex-row flex-wrap sm:flex-col gap-2 flex-shrink-0">
               <Button variant="outline" size="sm" onClick={onFavorite}>
                 <Heart className="h-4 w-4 mr-1" /> Favorite
               </Button>

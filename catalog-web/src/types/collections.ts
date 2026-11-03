@@ -17,7 +17,7 @@ export interface SmartCollection {
   id: string;
   name: string;
   description?: string;
-  is_smart: true;
+  is_smart: boolean;
   smart_rules: CollectionRule[];
   item_count: number;
   last_updated: string;

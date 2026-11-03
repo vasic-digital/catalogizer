@@ -16,6 +16,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Prevent Go from auto-downloading newer toolchain
 ENV GOTOOLCHAIN=local
 ENV CGO_ENABLED=1
+# 2026-11-02 decision: SQLite busy handler sleeps in ms (go-sqlcipher); CPPFLAGS keeps go's default -O2 -g CFLAGS
+ENV CGO_CPPFLAGS=-DHAVE_USLEEP=1
 
 WORKDIR /build
 
@@ -57,9 +59,11 @@ RUN go build -a -ldflags="-w -s" -o catalogizer-api .
 # Stage 2: Runtime (must match builder's glibc version — both use trixie)
 FROM docker.io/library/debian:trixie-slim
 
-# Install runtime dependencies
+# Install runtime dependencies. poppler-utils (pdftotext, pdfinfo) is the primary PDF text engine
+# (CAT-002); util-linux provides prlimit, which caps every PDF parser child. Without prlimit the
+# service refuses to parse PDFs.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates tzdata wget && rm -rf /var/lib/apt/lists/*
+    ca-certificates tzdata wget poppler-utils util-linux && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -84,6 +88,9 @@ RUN mkdir -p /app/data /app/logs /app/temp /app/keys && \
 # Bind address/port for containers: the app defaults to localhost:28080 (unreachable from outside the container, and not the
 # EXPOSEd/health-checked 8080); main.go honours HOST and SERVER_PORT as overrides.
 ENV HOST=0.0.0.0 SERVER_PORT=8080
+# CAT-021: release mode by default in every image built from this Dockerfile (disables
+# CATALOGIZER_ALLOW_INSECURE_DEFAULTS); dev uses Dockerfile.dev.
+ENV GIN_MODE=release
 
 # Expose API port
 # CAT-001: the SQLCipher key lives in its own 0700 volume, separate from the
