@@ -3,58 +3,204 @@
   "$id": "catalogizer.live-evidence/1",
   "title": "Catalogizer LIVE-EVIDENCE record (constitution 11.4.289(D))",
   "type": "object",
-  "required": ["schema", "test_id", "class", "verdict", "timestamp", "command", "runs"],
+  "required": [
+    "schema",
+    "test_id",
+    "class",
+    "verdict",
+    "timestamp",
+    "command",
+    "runs"
+  ],
   "properties": {
-    "schema": {"const": "catalogizer.live-evidence/1"},
-    "test_id": {"type": "string", "minLength": 1},
-    "class": {"enum": ["LIVE", "UNIT"], "description": "Declared class. The verifier (scripts/test-infra/verify_live_evidence.sh) RECLASSIFIES a LIVE claim to UNIT when the answering identity is a registered double, mismatched or missing."},
-    "verdict": {"enum": ["PASS", "FAIL", "SKIP"]},
-    "skip_reason": {"enum": ["hardware_not_present", "credentials_absent", "topology_unsupported", "operator_attended", "structurally_impossible", "feature_disabled_by_config", "artifact_not_yet_built"], "description": "Closed set (11.4.69). Required when verdict is SKIP."},
-    "timestamp": {"type": "string", "format": "date-time"},
-    "command": {"type": "string", "description": "The producing command."},
+    "schema": {
+      "const": "catalogizer.live-evidence/1"
+    },
+    "test_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "class": {
+      "enum": [
+        "LIVE",
+        "UNIT"
+      ],
+      "description": "Declared class. The verifier (scripts/test-infra/verify_live_evidence.sh) RECLASSIFIES a LIVE claim to UNIT when the answering identity is a registered double, mismatched or missing."
+    },
+    "verdict": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "SKIP"
+      ]
+    },
+    "skip_reason": {
+      "enum": [
+        "hardware_not_present",
+        "credentials_absent",
+        "topology_unsupported",
+        "operator_attended",
+        "structurally_impossible",
+        "feature_disabled_by_config",
+        "artifact_not_yet_built"
+      ],
+      "description": "Closed set (11.4.69). Required when verdict is SKIP."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    },
+    "command": {
+      "type": "string",
+      "description": "The producing command."
+    },
     "artifact": {
       "type": "object",
       "properties": {
-        "fingerprint": {"type": "string", "description": "Read FROM THE TARGET at run time (version endpoint, binary hash, image id)."},
-        "source": {"type": "string", "description": "Where the fingerprint was read from, e.g. target."}
+        "fingerprint": {
+          "type": "string",
+          "description": "Read FROM THE TARGET at run time (version endpoint, binary hash, image id)."
+        },
+        "source": {
+          "type": "string",
+          "description": "Where the fingerprint was read from, e.g. target."
+        }
       }
     },
     "endpoint": {
       "type": "object",
       "properties": {
-        "host": {"type": "string"}, "port": {"type": "integer"}, "resolved_ip": {"type": "string"},
-        "url": {"type": "string"}
+        "host": {
+          "type": "string"
+        },
+        "port": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "resolved_ip": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
       }
     },
     "answering": {
       "description": "What actually answered. null only for SKIP.",
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
-        "kind": {"enum": ["process", "container", "socket"]},
-        "pid": {"type": "integer"},
-        "exe_path": {"type": "string"},
-        "exe_sha256": {"type": "string"},
-        "cmdline": {"type": "string"},
-        "image": {"type": "string"},
-        "image_digest": {"type": "string"},
-        "container_id": {"type": "string"}
+        "kind": {
+          "enum": [
+            "process",
+            "container",
+            "socket"
+          ]
+        },
+        "pid": {
+          "type": "integer"
+        },
+        "exe_path": {
+          "type": "string"
+        },
+        "exe_sha256": {
+          "type": "string"
+        },
+        "cmdline": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "image_digest": {
+          "type": "string"
+        },
+        "container_id": {
+          "type": "string"
+        },
+        "script_path": {
+          "type": "string",
+          "description": "Interpreter-hosted servers: the script that answers (required with script_sha256 when exe is python, node, java, ...)."
+        },
+        "script_sha256": {
+          "type": "string"
+        }
       }
     },
     "expected": {
       "description": "The real artifact the claim names: exe_sha256 (process) or image_digest (container). Mismatch reclassifies to UNIT.",
-      "type": ["object", "null"],
-      "properties": {"exe_sha256": {"type": "string"}, "image_digest": {"type": "string"}}
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "exe_sha256": {
+          "type": "string"
+        },
+        "image_digest": {
+          "type": "string"
+        },
+        "script_sha256": {
+          "type": "string",
+          "description": "Required for interpreter-hosted servers; must equal answering.script_sha256 and, when the fingerprint is a sha256, the fingerprint."
+        }
+      }
     },
-    "requests": {"type": "object", "properties": {"total": {"type": "integer"}, "methods": {"type": "object", "additionalProperties": {"type": "integer"}}}},
-    "responses": {"type": "object", "properties": {"status_histogram": {"type": "object", "additionalProperties": {"type": "integer"}}}},
+    "requests": {
+      "type": "object",
+      "properties": {
+        "total": {
+          "type": "integer"
+        },
+        "methods": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "responses": {
+      "type": "object",
+      "properties": {
+        "status_histogram": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      }
+    },
     "runs": {
       "type": "object",
-      "required": ["n", "identical", "signature"],
+      "required": [
+        "n",
+        "identical",
+        "signature"
+      ],
       "properties": {
-        "n": {"type": "integer", "minimum": 1, "description": "11.4.50 asks for N>=3 for a PASS."},
-        "identical": {"type": "boolean", "description": "Must be true for PASS/FAIL records."},
-        "signature": {"type": "string", "description": "sha256 over the canonical per-run verdict."}
+        "n": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "11.4.50 asks for N>=3 for a PASS."
+        },
+        "identical": {
+          "type": "boolean",
+          "description": "Must be true for PASS/FAIL records."
+        },
+        "signature": {
+          "type": "string",
+          "description": "sha256 over the canonical per-run verdict."
+        }
       }
+    },
+    "resolve_error": {
+      "type": "string",
+      "description": "Listener unresolved or ambiguous (several pids hold the LISTEN socket): the verifier reclassifies UNIT."
     }
   }
 }

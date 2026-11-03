@@ -50,8 +50,22 @@ func freePort(t *testing.T) int {
 	return p
 }
 
-// startRealServer starts a REAL separate process (python3 http.server) on loopback.
+const serverPy = `import http.server, sys, os
+srv = http.server.HTTPServer(("127.0.0.1", int(sys.argv[1])), http.server.SimpleHTTPRequestHandler)
+if len(sys.argv) > 2 and sys.argv[2] == "fork":
+    if os.fork() == 0:
+        pass  # child keeps the inherited LISTEN socket open: two pids hold it
+srv.serve_forever()
+`
+
+// startRealServer starts a REAL separate process (python3 running a script file) on loopback.
 func startRealServer(t *testing.T) (port int, exe string, cmd *exec.Cmd) {
+	port, exe, _, cmd = startScriptServer(t, "")
+	return
+}
+
+// startScriptServer writes serverPy to a temp dir and runs it; extra is an optional 2nd argument ("fork").
+func startScriptServer(t *testing.T, extra string) (port int, exe, script string, cmd *exec.Cmd) {
 	t.Helper()
 	py, err := exec.LookPath("python3")
 	if err != nil {
@@ -59,8 +73,15 @@ func startRealServer(t *testing.T) (port int, exe string, cmd *exec.Cmd) {
 	}
 	exe, _ = filepath.EvalSymlinks(py)
 	port = freePort(t)
-	cmd = exec.Command(py, "-m", "http.server", fmt.Sprint(port), "--bind", "127.0.0.1")
+	cmd = exec.Command(py, "server.py", fmt.Sprint(port))
+	if extra != "" {
+		cmd.Args = append(cmd.Args, extra)
+	}
 	cmd.Dir = t.TempDir()
+	script = filepath.Join(cmd.Dir, "server.py")
+	if err := os.WriteFile(script, []byte(serverPy), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	if err := cmd.Start(); err != nil {
 		t.Fatal(err)
 	}
@@ -103,11 +124,15 @@ func TestResolveListenerControlNeedleNoListener(t *testing.T) {
 }
 
 func TestCarrierRealLoopbackServiceStaysLive(t *testing.T) {
-	port, exe, _ := startRealServer(t)
+	port, exe, script, _ := startScriptServer(t, "")
 	r := NewRecord("go-carrier", "go test ./internal/liveevidence")
-	r.SetArtifact("sha256:"+fileSHA(t, exe), "target")
+	r.SetArtifact("sha256:"+fileSHA(t, script), "target")
 	if err := r.ResolveAnswering(fmt.Sprintf("127.0.0.1:%d", port), fileSHA(t, exe)); err != nil {
 		t.Fatal(err)
+	}
+	r.SetExpectedScript(fileSHA(t, script))
+	if r.Answering.ScriptPath != script || r.Answering.ScriptSHA256 != fileSHA(t, script) {
+		t.Fatalf("script not recorded: %+v", r.Answering)
 	}
 	for i := 0; i < 3; i++ {
 		resp, err := http.Get(fmt.Sprintf("http://127.0.0.1:%d/", port))
@@ -201,5 +226,64 @@ func TestFinishIdenticalOnlyWhenAllEqual(t *testing.T) {
 	r.Finish("PASS", nil)
 	if r.Runs.Identical {
 		t.Fatal("zero runs must not be identical")
+	}
+}
+
+// An interpreter-hosted server whose expected script is NOT named must not be LIVE (the exe hash only proves python).
+func TestInterpreterWithoutExpectedScriptIsUnit(t *testing.T) {
+	port, exe, script, _ := startScriptServer(t, "")
+	r := NewRecord("go-interp-unbound", "x")
+	r.SetArtifact("sha256:"+fileSHA(t, script), "target")
+	if err := r.ResolveAnswering(fmt.Sprintf("127.0.0.1:%d", port), fileSHA(t, exe)); err != nil {
+		t.Fatal(err)
+	}
+	r.Finish("PASS", []string{"a", "a", "a"})
+	p, _ := r.Write(t.TempDir())
+	rc, out := verify(t, p)
+	if rc != 1 || !strings.Contains(out, "interpreter_script_unbound") {
+		t.Fatalf("rc=%d %s", rc, out)
+	}
+}
+
+// Fingerprint that is not the expected artifact's hash reclassifies UNIT.
+func TestFingerprintMismatchIsUnit(t *testing.T) {
+	port, exe, script, _ := startScriptServer(t, "")
+	r := NewRecord("go-fp-mismatch", "x")
+	r.SetArtifact("sha256:"+strings.Repeat("1", 64), "target")
+	if err := r.ResolveAnswering(fmt.Sprintf("127.0.0.1:%d", port), fileSHA(t, exe)); err != nil {
+		t.Fatal(err)
+	}
+	r.SetExpectedScript(fileSHA(t, script))
+	r.Finish("PASS", []string{"a", "a", "a"})
+	p, _ := r.Write(t.TempDir())
+	rc, out := verify(t, p)
+	if rc != 1 || !strings.Contains(out, "fingerprint_mismatch") {
+		t.Fatalf("rc=%d %s", rc, out)
+	}
+}
+
+// Two pids holding the same LISTEN socket: ambiguity is flagged, the first pid is never picked.
+func TestAmbiguousListenerIsFlaggedNotPicked(t *testing.T) {
+	port, _, _, _ := startScriptServer(t, "fork")
+	time.Sleep(500 * time.Millisecond)
+	a, err := ResolveListenerAddr("127.0.0.1", port)
+	if err == nil || a != nil || !strings.Contains(err.Error(), "ambiguous") {
+		t.Fatalf("want ambiguity error, got a=%+v err=%v", a, err)
+	}
+	r := NewRecord("go-ambiguous", "x")
+	_ = r.ResolveAnswering(fmt.Sprintf("127.0.0.1:%d", port), "abc")
+	if r.Answering != nil || r.ResolveError == "" {
+		t.Fatalf("record must carry no answering and a resolve_error: %+v", r)
+	}
+}
+
+// A socket bound to another address is not the listener of 127.0.0.1:port.
+func TestBoundAddressMustCoverHost(t *testing.T) {
+	port, _, _, _ := startScriptServer(t, "")
+	if _, err := ResolveListenerAddr("127.0.0.1", port); err != nil {
+		t.Fatalf("loopback bound listener must resolve: %v", err)
+	}
+	if _, err := ResolveListenerAddr("10.255.255.1", port); err == nil {
+		t.Fatal("a listener bound to 127.0.0.1 must not satisfy 10.255.255.1:port")
 	}
 }

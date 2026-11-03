@@ -15,18 +15,40 @@ const verify = (p, extra = []) => spawnSync(verifier, [...extra, p], { encoding:
 const wait = async (port) => { for (let i = 0; i < 50; i++) { try { await get(port); return; } catch { await new Promise((r) => setTimeout(r, 100)); } } throw new Error('server not up'); };
 
 const port = 20000 + Math.floor(Math.random() * 20000);
-const srv = spawn(py, ['-m', 'http.server', String(port), '--bind', '127.0.0.1'], { cwd: tmp, stdio: 'ignore' });
+const script = path.join(tmp, 'server.py');
+fs.writeFileSync(script, 'import http.server, sys, os\nsrv = http.server.HTTPServer(("127.0.0.1", int(sys.argv[1])), http.server.SimpleHTTPRequestHandler)\nif len(sys.argv) > 2 and sys.argv[2] == "fork":\n    os.fork()\nsrv.serve_forever()\n');
+const srv = spawn(py, ['server.py', String(port)], { cwd: tmp, stdio: 'ignore' });
+const port2 = port + 1;
+const srv2 = spawn(py, ['server.py', String(port2), 'fork'], { cwd: tmp, stdio: 'ignore' });
 try {
   await wait(port);
   await t('findListener resolves the real server pid/exe/hash', () => {
     const a = findListener(port);
     assert.equal(a.pid, srv.pid); assert.equal(a.exe_path, py); assert.equal(a.exe_sha256, sha256File(py));
   });
+  await t('script of an interpreter-hosted server is recorded', () => {
+    const a = findListener(port); assert.equal(a.script_path, script); assert.equal(a.script_sha256, sha256File(script));
+  });
+  await t('interpreter without expected script is UNIT', () => {
+    const r = new Recorder({ testId: 'unbound', command: 'x' });
+    r.setArtifact('sha256:' + sha256File(script));
+    r.resolveAnswering(`127.0.0.1:${port}`, { expectedExeSha256: sha256File(py) });
+    r.finish('PASS', ['ok', 'ok', 'ok']);
+    const v = verify(r.write(tmp)); assert.equal(v.status, 1); assert.match(v.stdout, /interpreter_script_unbound/);
+  });
+  await t('ambiguous listener (forked, two pids) is flagged, not picked', async () => {
+    await wait(port2); await new Promise((r) => setTimeout(r, 500));
+    const a = findListener(port2, '127.0.0.1'); assert.match(a.error, /ambiguous/);
+    const r = new Recorder({ testId: 'ambig', command: 'x' }); r.resolveAnswering(`127.0.0.1:${port2}`);
+    assert.equal(r.rec.answering, null); assert.match(r.rec.resolve_error, /ambiguous/);
+  });
+  await t('bound address must cover host', () => assert.equal(findListener(port, '10.255.255.1'), null));
   await t('control needle: a port nobody listens on resolves to null', () => assert.equal(findListener(port === 65000 ? 65001 : 65000), null));
   await t('carrier: real loopback service stays LIVE', async () => {
     const r = new Recorder({ testId: 'carrier', command: 'node test_recorder.mjs' });
-    r.setArtifact('sha256:' + sha256File(py));
+    r.setArtifact('sha256:' + sha256File(script));
     r.resolveAnswering(`127.0.0.1:${port}`, { expectedExeSha256: sha256File(py) });
+    r.setExpectedScript(sha256File(script));
     for (let i = 0; i < 3; i++) r.observe('GET', await get(port));
     r.finish('PASS', ['ok', 'ok', 'ok']);
     const v = verify(r.write(tmp)); assert.equal(v.status, 0, v.stdout + v.stderr); assert.match(v.stdout, /class=LIVE/);
@@ -34,8 +56,9 @@ try {
   });
   await t('registered double (command line) is reclassified UNIT', async () => {
     const r = new Recorder({ testId: 'double', command: 'x' });
-    r.setArtifact('sha256:' + sha256File(py));
+    r.setArtifact('sha256:' + sha256File(script));
     r.resolveAnswering(`127.0.0.1:${port}`, { expectedExeSha256: sha256File(py) });
+    r.setExpectedScript(sha256File(script));
     r.rec.answering.cmdline += ' tests/jev/fixtures/jev_server.py';
     r.finish('PASS', ['ok', 'ok', 'ok']);
     const v = verify(r.write(tmp)); assert.equal(v.status, 1); assert.match(v.stdout, /registered_double/);
@@ -52,6 +75,6 @@ try {
     const v = verify(r.write(tmp)); assert.equal(v.status, 0); assert.match(v.stdout, /class=SKIP/);
     assert.throws(() => r.skip('lazy'));
   });
-} finally { srv.kill(); fs.rmSync(tmp, { recursive: true, force: true }); }
+} finally { srv.kill(); srv2.kill(); fs.rmSync(tmp, { recursive: true, force: true }); }
 console.log(fails ? `node recorder tests: ${fails} FAILED` : 'node recorder tests: all passed');
 process.exit(fails ? 1 : 0);

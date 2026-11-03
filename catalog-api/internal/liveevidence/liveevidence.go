@@ -43,10 +43,15 @@ type Answering struct {
 	Image       string `json:"image,omitempty"`
 	ImageDigest string `json:"image_digest,omitempty"`
 	ContainerID string `json:"container_id,omitempty"`
+	// ScriptPath/ScriptSHA256: for interpreter-hosted servers (python, node, java ...) the executable hash only proves the interpreter;
+	// the script that actually answers is recorded here (heuristic: first non-option argument; never for -c/-e/-m code, which stays unbound).
+	ScriptPath   string `json:"script_path,omitempty"`
+	ScriptSHA256 string `json:"script_sha256,omitempty"`
 }
 type Expected struct {
-	ExeSHA256   string `json:"exe_sha256,omitempty"`
-	ImageDigest string `json:"image_digest,omitempty"`
+	ExeSHA256    string `json:"exe_sha256,omitempty"`
+	ImageDigest  string `json:"image_digest,omitempty"`
+	ScriptSHA256 string `json:"script_sha256,omitempty"`
 }
 type Requests struct {
 	Total   int            `json:"total"`
@@ -76,6 +81,8 @@ type Record struct {
 	Requests   Requests   `json:"requests"`
 	Responses  Responses  `json:"responses"`
 	Runs       Runs       `json:"runs"`
+	// ResolveError is set when the listener could not be resolved or was ambiguous (several pids hold the same LISTEN socket); the verifier then reclassifies UNIT.
+	ResolveError string `json:"resolve_error,omitempty"`
 }
 
 // NewRecord starts a record claiming class LIVE with verdict FAIL until Finish/Skip says otherwise.
@@ -102,7 +109,17 @@ func (r *Record) SetAnsweringContainer(image, imageDigest, containerID string) {
 }
 
 // SetExpected names the real artifact the claim is about (executable sha256 or image digest).
-func (r *Record) SetExpected(exeSHA256, imageDigest string) { r.Expected = &Expected{ExeSHA256: exeSHA256, ImageDigest: imageDigest} }
+func (r *Record) SetExpected(exeSHA256, imageDigest string) {
+	r.Expected = &Expected{ExeSHA256: exeSHA256, ImageDigest: imageDigest}
+}
+
+// SetExpectedScript names the real script an interpreter-hosted server must be running (sha256 hex of the script file).
+func (r *Record) SetExpectedScript(scriptSHA256 string) {
+	if r.Expected == nil {
+		r.Expected = &Expected{}
+	}
+	r.Expected.ScriptSHA256 = scriptSHA256
+}
 
 // ResolveAnswering resolves host:port to the LISTENing process. On failure Answering stays nil (the verifier then reclassifies the record UNIT).
 func (r *Record) ResolveAnswering(hostport, expectedExeSHA256 string) error {
@@ -118,9 +135,10 @@ func (r *Record) ResolveAnswering(hostport, expectedExeSHA256 string) error {
 	if expectedExeSHA256 != "" {
 		r.SetExpected(expectedExeSHA256, "")
 	}
-	a, err := ResolveListener(port)
+	a, err := ResolveListenerAddr(host, port)
 	if err != nil {
 		r.Answering = nil
+		r.ResolveError = err.Error()
 		return err
 	}
 	r.Answering = a
@@ -176,8 +194,35 @@ func FileSHA256(p string) (string, error) {
 	return hex.EncodeToString(s[:]), nil
 }
 
-func listenInodes(port int) map[string]bool {
+// procAddr decodes a /proc/net/tcp{,6} hex local address ("0100007F" or 32 hex chars, each 32-bit word little-endian).
+func procAddr(h string) net.IP {
+	b, err := hex.DecodeString(h)
+	if err != nil || (len(b) != 4 && len(b) != 16) {
+		return nil
+	}
+	for w := 0; w+4 <= len(b); w += 4 {
+		b[w], b[w+1], b[w+2], b[w+3] = b[w+3], b[w+2], b[w+1], b[w]
+	}
+	return net.IP(b)
+}
+
+// hostIPs resolves the host of the claimed endpoint; "" or a wildcard host matches every bound address.
+func hostIPs(host string) []net.IP {
+	if host == "" {
+		return nil
+	}
+	if ip := net.ParseIP(host); ip != nil {
+		return []net.IP{ip}
+	}
+	ips, _ := net.LookupIP(host)
+	return ips
+}
+
+// listenInodes returns the inodes of LISTEN sockets on port whose bound address covers host (a socket bound to a wildcard address covers every host;
+// a socket bound to another address does NOT, so a listener on 10.0.0.5:port is never reported for 127.0.0.1:port).
+func listenInodes(host string, port int) map[string]bool {
 	in := map[string]bool{}
+	want := hostIPs(host)
 	for _, f := range []string{"/proc/net/tcp", "/proc/net/tcp6"} {
 		b, err := os.ReadFile(f)
 		if err != nil {
@@ -189,26 +234,83 @@ func listenInodes(port int) map[string]bool {
 				continue
 			}
 			lp := strings.SplitN(c[1], ":", 2)
-			if len(lp) == 2 {
-				if p, err := strconv.ParseInt(lp[1], 16, 32); err == nil && int(p) == port {
-					in[c[9]] = true
+			if len(lp) != 2 {
+				continue
+			}
+			p, err := strconv.ParseInt(lp[1], 16, 32)
+			if err != nil || int(p) != port {
+				continue
+			}
+			bound := procAddr(lp[0])
+			covers := bound != nil && bound.IsUnspecified() || want == nil
+			for _, w := range want {
+				if bound != nil && bound.Equal(w) {
+					covers = true
 				}
+			}
+			if covers {
+				in[c[9]] = true
 			}
 		}
 	}
 	return in
 }
 
-// ResolveListener finds the process holding the LISTEN socket on port (same-user processes only; never guessed).
-func ResolveListener(port int) (*Answering, error) {
-	inodes := listenInodes(port)
+var interpreterRE = regexp.MustCompile(`(?i)^(python[0-9.]*|pypy[0-9.]*|node|nodejs|deno|bun|java|ruby[0-9.]*|perl[0-9.]*|php[0-9.]*|lua[0-9.]*|bash|sh|dash|zsh|ksh|fish)$`)
+
+// scriptOf returns the script file an interpreter process runs (first non-option argument that is a readable file, relative paths resolved against the
+// process cwd; for java, the argument of -jar). Inline code (-c, -e) and modules (-m) yield "" so the verifier reports interpreter_script_missing.
+func scriptOf(pid int, exe string, args []string) (string, string) {
+	if !interpreterRE.MatchString(filepath.Base(exe)) {
+		return "", ""
+	}
+	cand := ""
+	for i := 1; i < len(args); i++ {
+		a := args[i]
+		switch {
+		case a == "-c" || a == "-e" || a == "-m" || a == "-p" || a == "-r":
+			return "", ""
+		case a == "-jar" && i+1 < len(args):
+			cand = args[i+1]
+		case strings.HasPrefix(a, "-"):
+			continue
+		default:
+			cand = a
+		}
+		if cand != "" {
+			break
+		}
+	}
+	if cand == "" {
+		return "", ""
+	}
+	if !filepath.IsAbs(cand) {
+		if cwd, err := os.Readlink(fmt.Sprintf("/proc/%d/cwd", pid)); err == nil {
+			cand = filepath.Join(cwd, cand)
+		}
+	}
+	sum, err := FileSHA256(cand)
+	if err != nil {
+		return "", ""
+	}
+	return cand, sum
+}
+
+// ResolveListener finds the process holding the LISTEN socket on port on any address (same-user processes only; never guessed).
+func ResolveListener(port int) (*Answering, error) { return ResolveListenerAddr("", port) }
+
+// ResolveListenerAddr finds the process holding the LISTEN socket on host:port. If more than one distinct pid holds a matching socket the
+// result is ambiguous: an error naming the pids is returned and NO answering identity (the first pid is never picked).
+func ResolveListenerAddr(host string, port int) (*Answering, error) {
+	inodes := listenInodes(host, port)
 	if len(inodes) == 0 {
-		return nil, fmt.Errorf("nothing listens on port %d", port)
+		return nil, fmt.Errorf("nothing listens on %s:%d", host, port)
 	}
 	procs, err := os.ReadDir("/proc")
 	if err != nil {
 		return nil, err
 	}
+	var holders []int
 	for _, d := range procs {
 		pid, err := strconv.Atoi(d.Name())
 		if err != nil {
@@ -223,20 +325,30 @@ func ResolveListener(port int) (*Answering, error) {
 			if err != nil || !strings.HasPrefix(l, "socket:[") {
 				continue
 			}
-			if !inodes[strings.TrimSuffix(strings.TrimPrefix(l, "socket:["), "]")] {
-				continue
+			if inodes[strings.TrimSuffix(strings.TrimPrefix(l, "socket:["), "]")] {
+				holders = append(holders, pid)
+				break
 			}
-			exe, err := filepath.EvalSymlinks(fmt.Sprintf("/proc/%d/exe", pid))
-			if err != nil {
-				return nil, fmt.Errorf("pid %d exe unreadable: %w", pid, err)
-			}
-			sum, err := FileSHA256(exe)
-			if err != nil {
-				return nil, err
-			}
-			cl, _ := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
-			return &Answering{Kind: "process", PID: pid, ExePath: exe, ExeSHA256: sum, Cmdline: strings.Join(strings.FieldsFunc(string(cl), func(r rune) bool { return r == 0 }), " ")}, nil
 		}
 	}
-	return nil, errors.New("listener process not found among readable processes")
+	switch len(holders) {
+	case 0:
+		return nil, errors.New("listener process not found among readable processes")
+	case 1:
+	default:
+		return nil, fmt.Errorf("ambiguous listener: pids %v hold the same LISTEN socket (or several sockets match); not choosing one", holders)
+	}
+	pid := holders[0]
+	exe, err := filepath.EvalSymlinks(fmt.Sprintf("/proc/%d/exe", pid))
+	if err != nil {
+		return nil, fmt.Errorf("pid %d exe unreadable: %w", pid, err)
+	}
+	sum, err := FileSHA256(exe)
+	if err != nil {
+		return nil, err
+	}
+	cl, _ := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
+	args := strings.FieldsFunc(string(cl), func(r rune) bool { return r == 0 })
+	sp, ss := scriptOf(pid, exe, args)
+	return &Answering{Kind: "process", PID: pid, ExePath: exe, ExeSHA256: sum, Cmdline: strings.Join(args, " "), ScriptPath: sp, ScriptSHA256: ss}, nil
 }

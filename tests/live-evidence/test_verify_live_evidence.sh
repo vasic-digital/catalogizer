@@ -39,8 +39,31 @@ expect bad_skip_reason 2 INVALID skip_reason
 expect bad_skip_no_reason 2 INVALID skip_reason
 expect invalid_not_identical 2 INVALID runs
 expect invalid_json 2 INVALID
+expect bad_no_endpoint 1 UNIT endpoint_identity_missing
+expect bad_no_expected 1 UNIT expected_identity_missing
+expect bad_schema 2 INVALID schema
+expect bad_class 2 INVALID class
+expect bad_verdict 2 INVALID verdict
+expect bad_empty_signature 2 INVALID runs_not_identical
+expect bad_socket_no_hash 1 UNIT answering_identity_missing
+expect bad_socket_no_pid 1 UNIT answering_identity_missing
+expect golden_socket 0 LIVE
+expect bad_fp_mismatch 1 UNIT fingerprint_mismatch
+expect bad_no_cmdline 1 UNIT endpoint_identity_incomplete
+expect bad_runs_below_3 1 UNIT runs_below_3
+expect bad_port_string 2 INVALID port_not_integer
+expect bad_timestamp 2 INVALID timestamp_not_rfc3339
+expect bad_resolve_error 1 UNIT listener_unresolved_or_ambiguous
+expect bad_skip_no_runs 2 INVALID runs_missing
+expect golden_interp_script 0 LIVE
+expect bad_interp_no_script 1 UNIT interpreter_script_missing
+expect bad_interp_unbound 1 UNIT interpreter_script_unbound
+expect bad_multi_value 2 INVALID not_exactly_one_json_value
 # --require-live turns a declared UNIT record into a failure
 "$VERIFIER" --require-live "$FX/declared_unit.json" >/dev/null 2>&1; [ $? = 1 ] && ok || no "require-live on UNIT must exit 1"
+# --require-live: a SKIP is never live proof
+"$VERIFIER" --require-live "$FX/skip_good.json" >/dev/null 2>&1; [ $? = 1 ] && ok || no "require-live on SKIP must exit 1"
+"$VERIFIER" --require-live "$FX/golden_good.json" >/dev/null 2>&1; [ $? = 0 ] && ok || no "require-live on LIVE must exit 0"
 # directory mode: worst exit wins, every file reported
 out=$("$VERIFIER" "$FX" 2>&1); rc=$?
 [ "$rc" = 2 ] && ok || no "dir mode exit=$rc want 2"
