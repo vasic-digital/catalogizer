@@ -1,6 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Admin } from '../Admin'
+import toast from 'react-hot-toast'
+import { adminApi } from '@/lib/adminApi'
 
 // Mock the adminApi
 vi.mock('@/lib/adminApi', () => ({
@@ -186,5 +188,25 @@ describe('Admin Page', () => {
       expect(screen.getByText('CPU Usage')).toBeInTheDocument()
       expect(screen.getByText('Memory Usage')).toBeInTheDocument()
     })
+  })
+
+  it('CAT-001: restore and scan show the server 501 guidance, not a success toast', async () => {
+    const { default: userEvent } = await import('@testing-library/user-event')
+    const user = userEvent.setup()
+    const restoreMsg = 'restoring a backup through the API is not implemented; restore offline with the database restore tooling'
+    const scanMsg = 'this endpoint does not start a scan; use POST /api/v1/scans'
+    vi.mocked(adminApi.restoreBackup).mockRejectedValueOnce({ response: { status: 501, data: { error: restoreMsg } } })
+    vi.mocked(adminApi.scanStorage).mockRejectedValueOnce({ response: { status: 501, data: { error: scanMsg } } })
+    render(<Admin />, { wrapper: createWrapper() })
+
+    await waitFor(() => expect(screen.getByText('Backups')).toBeInTheDocument())
+    await user.click(screen.getByText('Backups'))
+    await user.click(await screen.findByRole('button', { name: /Restore/ }))
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringContaining(restoreMsg)))
+
+    await user.click(screen.getByText('Storage'))
+    await user.click(await screen.findByRole('button', { name: /Scan/ }))
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringContaining(scanMsg)))
+    expect(toast.success).not.toHaveBeenCalledWith(expect.stringMatching(/restore initiated|scan initiated/i))
   })
 })

@@ -28,6 +28,14 @@ const fmtNum = (v: number | null | undefined, unit = '', digits?: number): strin
   return `${text}${unit}`;
 };
 
+// Prefer the server's own explanation (e.g. the 501 guidance) over a generic axios message.
+const serverMessage = (error: unknown): string => {
+  const data = (error as { response?: { data?: { error?: string; message?: string } } })?.response?.data;
+  if (data?.error) return data.error;
+  if (data?.message) return data.message;
+  return error instanceof Error ? error.message : 'Unknown error';
+};
+
 export const Admin: React.FC = () => {
   const { data: systemInfo, isLoading: _systemLoading } = useQuery({
     queryKey: ['admin-system-info'],
@@ -71,7 +79,7 @@ export const Admin: React.FC = () => {
       await adminApi.createBackup(type);
       toast.success(`${type === 'full' ? 'Full' : 'Incremental'} backup started successfully`);
     } catch (error) {
-      toast.error(`Failed to create backup: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error(`Failed to create backup: ${serverMessage(error)}`);
     }
   };
 
@@ -80,7 +88,7 @@ export const Admin: React.FC = () => {
       await adminApi.restoreBackup(id);
       toast.success('Backup restore initiated successfully');
     } catch (error) {
-      toast.error(`Failed to restore backup: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error(`Failed to restore backup: ${serverMessage(error)}`);
     }
   };
 
@@ -89,7 +97,7 @@ export const Admin: React.FC = () => {
       await adminApi.scanStorage(path);
       toast.success(`Storage scan initiated for ${path}`);
     } catch (error) {
-      toast.error(`Failed to scan storage: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error(`Failed to scan storage: ${serverMessage(error)}`);
     }
   };
 

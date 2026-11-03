@@ -11,7 +11,6 @@ import {
   Plus,
   X,
   RefreshCw,
-  Wifi,
   WifiOff,
   Link
 } from 'lucide-react'
@@ -184,8 +183,6 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
   const [emailRecipients, setEmailRecipients] = useState('')
   const [customMessage, setCustomMessage] = useState('')
   const [embedSize, setEmbedSize] = useState({ width: 800, height: 600 })
-  const [isRealTimeEnabled, setIsRealTimeEnabled] = useState(false)
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'connecting'>('disconnected')
 
   // Load existing share links from the API
   useEffect(() => {
@@ -224,20 +221,6 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
     loadShares()
     return () => { cancelled = true }
   }, [collection.id])
-
-  // Simulate real-time connection
-  useEffect(() => {
-    if (isRealTimeEnabled) {
-      setConnectionStatus('connecting')
-      const timer = setTimeout(() => {
-        setConnectionStatus('connected')
-      }, 1000)
-      
-      return () => clearTimeout(timer)
-    } else {
-      setConnectionStatus('disconnected')
-    }
-  }, [isRealTimeEnabled])
 
   const generateShareLink = useCallback(async () => {
     setIsCreating(true)
@@ -498,27 +481,12 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
             <p className="text-gray-600 dark:text-gray-400">{collection.name}</p>
           </div>
           <div className="flex items-center gap-3">
-            {/* Real-time Connection Status */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsRealTimeEnabled(!isRealTimeEnabled)}
-                className={`flex items-center gap-2 ${
-                  isRealTimeEnabled ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'
-                }`}
-              >
-                {connectionStatus === 'connected' ? (
-                  <Wifi className="w-4 h-4" />
-                ) : connectionStatus === 'connecting' ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <WifiOff className="w-4 h-4" />
-                )}
-                {isRealTimeEnabled ? 'Live' : 'Offline'}
-              </Button>
-            </div>
-            
+            {/* The server has no real-time share channel, so no connection status is shown (CAT-001) */}
+            <span className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400" data-testid="share-realtime-unavailable">
+              <WifiOff className="w-4 h-4" />
+              Real-time updates unavailable
+            </span>
+
             <Button
               variant="ghost"
               size="sm"

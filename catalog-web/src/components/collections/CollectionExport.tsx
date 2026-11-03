@@ -215,22 +215,12 @@ export const CollectionExport: React.FC<CollectionExportProps> = ({
   const handleExport = useCallback(async () => {
     setIsExporting(true)
     setExportProgress({
-      stage: 'Preparing export',
+      stage: 'Generating export',
       progress: 0,
       total: items.length
     })
 
     try {
-      // Simulate export process
-      for (let i = 0; i <= 100; i += 10) {
-        await new Promise(resolve => setTimeout(resolve, 200))
-        setExportProgress(prev => prev ? {
-          ...prev,
-          progress: Math.floor((items.length * i) / 100),
-          stage: i < 30 ? 'Preparing files' : i < 70 ? 'Processing items' : i < 90 ? 'Generating export' : 'Finalizing'
-        } : null)
-      }
-
       // Generate actual export data
       const exportData = {
         collection: {

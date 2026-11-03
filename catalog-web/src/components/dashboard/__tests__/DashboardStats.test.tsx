@@ -157,6 +157,17 @@ describe('DashboardStats', () => {
 describe('DashboardStats without user statistics (CAT-001)', () => {
   it('shows Unavailable rather than zeros when no userStats are supplied', () => {
     render(<DashboardStats mediaStats={{ total_items: 3 } as any} />)
-    expect(screen.getAllByText('Unavailable').length).toBe(4)
+    // 4 user-stat cards + the Quality Score card (no by_quality data)
+    expect(screen.getAllByText('Unavailable').length).toBe(5)
+  })
+
+  it('shows no invented month-over-month trends and derives quality from real counts', () => {
+    render(<DashboardStats mediaStats={{ total_items: 3, by_quality: { '4K': 2, '720p': 1 } } as any} />)
+    expect(screen.queryByText(/vs last month/)).not.toBeInTheDocument()
+    for (const invented of ['12.5%', '8.2%', '15.3%', '5.7%', '3.2%', '18.7%', '22.1%', '7.5%']) {
+      expect(screen.queryByText(invented)).not.toBeInTheDocument()
+    }
+    expect(screen.getByText('4K')).toBeInTheDocument()
+    expect(screen.queryByText('HD')).not.toBeInTheDocument()
   })
 })

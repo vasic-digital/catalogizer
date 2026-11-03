@@ -133,4 +133,16 @@ describe('CollectionSharing', () => {
     render(<CollectionSharing collection={mockCollection as any} onClose={vi.fn()} />)
     expect(screen.getByText('Expires In')).toBeInTheDocument()
   })
+
+  it('never shows a fake Live connection status (CAT-001)', async () => {
+    vi.useFakeTimers()
+    try {
+      render(<CollectionSharing collection={mockCollection as any} onClose={vi.fn()} />)
+      vi.advanceTimersByTime(5000)
+      expect(screen.queryByText('Live')).not.toBeInTheDocument()
+      expect(screen.getByTestId('share-realtime-unavailable')).toHaveTextContent('Real-time updates unavailable')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })

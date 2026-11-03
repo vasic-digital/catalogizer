@@ -332,9 +332,9 @@ func TestRefreshMediaMetadata(t *testing.T) {
 		expectedStatus int
 	}{
 		{
-			name:           "valid ID returns 202",
+			name:           "valid ID returns 501 (no refresher exists; CAT-001)",
 			paramID:        fmt.Sprintf("%d", itemID),
-			expectedStatus: http.StatusAccepted,
+			expectedStatus: http.StatusNotImplemented,
 		},
 		{
 			name:           "non-existent ID returns 404",
@@ -359,8 +359,23 @@ func TestRefreshMediaMetadata(t *testing.T) {
 			handler.RefreshMediaMetadata(c)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
+			if tt.expectedStatus == http.StatusNotImplemented {
+				assert.NotContains(t, w.Body.String(), "queued\"")
+				assert.NotContains(t, w.Body.String(), "accepted")
+			}
 		})
 	}
+
+	// The 501 must not touch the row: no fake "refresh" side effect.
+	var before, after string
+	require.NoError(t, db.QueryRow(`SELECT COALESCE(last_updated,'') FROM media_items WHERE id = ?`, itemID).Scan(&before))
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("POST", "/api/v1/media/x/refresh", nil)
+	c.Params = gin.Params{{Key: "id", Value: fmt.Sprintf("%d", itemID)}}
+	handler.RefreshMediaMetadata(c)
+	require.NoError(t, db.QueryRow(`SELECT COALESCE(last_updated,'') FROM media_items WHERE id = ?`, itemID).Scan(&after))
+	assert.Equal(t, before, after, "a 501 refresh must not modify the media row")
 }
 
 func TestGetMediaQuality(t *testing.T) {

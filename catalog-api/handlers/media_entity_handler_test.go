@@ -759,3 +759,22 @@ func TestCleanTitleForSearch(t *testing.T) {
 		})
 	}
 }
+
+// CAT-001: with no database the refresh must answer 501, never 202 "queued".
+func TestMediaEntityHandler_RefreshEntityMetadata_NoDBIsNotQueued(t *testing.T) {
+	db, cleanup := setupEntityTestDB(t)
+	defer cleanup()
+	handler, _ := setupEntityHandler(t, db)
+	handler.db = nil
+
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("POST", "/api/v1/entities/5/metadata/refresh", nil)
+	c.Params = gin.Params{{Key: "id", Value: "5"}}
+	handler.RefreshEntityMetadata(c)
+
+	assert.Equal(t, http.StatusNotImplemented, w.Code)
+	assert.NotContains(t, w.Body.String(), `"message"`)
+	assert.Contains(t, w.Body.String(), "Nothing was queued")
+}

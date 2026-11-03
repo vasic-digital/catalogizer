@@ -1,5 +1,7 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { toast } from 'react-hot-toast'
 
 // Mock framer-motion
 vi.mock('framer-motion', () => {
@@ -85,5 +87,38 @@ describe('ExternalIntegrations', () => {
   it('renders without crashing', () => {
     const { container } = render(<ExternalIntegrations />)
     expect(container.firstChild).toBeTruthy()
+  })
+
+  describe('CAT-001: no success claims the server did not make', () => {
+    const item = { id: 'i1', name: 'My Plex', provider: 'Plex', type: 'sharing', status: 'connected', description: 'd', enabled: true }
+    const mockFetch = (postStatus: number) => {
+      ;(global.fetch as any) = vi.fn(async (url: string, init?: RequestInit) => {
+        const method = init?.method || 'GET'
+        if (method === 'GET') return { ok: true, status: 200, json: async () => [item] }
+        return { ok: false, status: postStatus, json: async () => ({}) }
+      })
+    }
+
+    beforeEach(() => { vi.mocked(toast.success).mockClear(); vi.mocked(toast.error).mockClear() })
+
+    it('a 404 connection test is an error toast, not "completed"', async () => {
+      mockFetch(404)
+      const user = userEvent.setup()
+      render(<ExternalIntegrations />)
+      await screen.findByText('My Plex')
+      await user.click(screen.getByTestId('icon-TestTube').closest('button')!)
+      await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('not tested')))
+      expect(toast.success).not.toHaveBeenCalled()
+    })
+
+    it('a failed sync is not counted or reported as success', async () => {
+      mockFetch(404)
+      const user = userEvent.setup()
+      render(<ExternalIntegrations />)
+      await screen.findByText('My Plex')
+      await user.click(screen.getByTestId('icon-RefreshCw').closest('button')!)
+      await waitFor(() => expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Nothing was synced')))
+      expect(toast.success).not.toHaveBeenCalledWith(expect.stringMatching(/Sync completed/))
+    })
   })
 })

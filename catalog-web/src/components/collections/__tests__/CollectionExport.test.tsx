@@ -185,4 +185,25 @@ describe('CollectionExport', () => {
     expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('not available'))
     expect(toast.success).not.toHaveBeenCalled()
   })
+
+  it('CAT-001: export finishes without a timed fake progress phase', async () => {
+    const created: Blob[] = []
+    const origCreate = URL.createObjectURL
+    const origRevoke = URL.revokeObjectURL
+    URL.createObjectURL = vi.fn((b: Blob) => { created.push(b); return 'blob:x' }) as any
+    URL.revokeObjectURL = vi.fn() as any
+    try {
+      const user = userEvent.setup()
+      render(<CollectionExport {...defaultProps} />)
+      await user.click(screen.getByText('Export Collection'))
+      // The old code slept 11 x 200 ms before generating; now the file is produced at once.
+      await vi.waitFor(() => expect(toast.success).toHaveBeenCalledWith('Collection exported successfully'), { timeout: 1000 })
+      expect(created.length).toBe(1)
+      expect(JSON.parse(await new Promise<string>((res) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.readAsText(created[0]) })).collection.id).toBe('1')
+      expect(screen.queryByText('Processing items')).not.toBeInTheDocument()
+    } finally {
+      URL.createObjectURL = origCreate
+      URL.revokeObjectURL = origRevoke
+    }
+  })
 })

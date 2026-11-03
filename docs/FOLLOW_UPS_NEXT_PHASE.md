@@ -610,3 +610,18 @@ Remaining, deliberately not changed (reason in each):
 - "Sample Items" headings in CollectionExport and SmartCollectionBuilder label real parsed or matched items, not invented ones; SubtitleSyncModal "Sample Duration" is a real input label.
 - `lib/adminApi.ts` and `lib/identitiesApi.ts` mention "mock" only in comments saying they never fake a response.
 - Test-only helpers (`test-setup.ts`, `src/test/`) are not user reachable.
+
+## CAT-001 review R3 class inventory (2026-11-03)
+
+Class: user-reachable UI or API output that is not derived from real data or a real action (invented numbers, timer-driven progress or status, canned arrays, "queued"/"started"/"success" answers with no side effect).
+Instrument: `sweep.sh` (grep over `catalog-web/src` non-test for Math.random, simulate/mock/fake wording, setTimeout/setInterval, trend and delta strings, 'connected'/'Live' literals, count/size/popularity literals; plus a grep for StatusAccepted/"queued"/"accepted"/"started" over `catalog-api` non-test Go). Control needles found by it: UploadManager "Simulate", Analytics "+12% from last", CollectionSharing 'connected', CollectionTemplates size '45.2 GB', CollectionExport "Simulate export", stub_handler.go "Metadata refresh queued"; a fabricated needle returned 0 hits.
+
+Fixed in R3 (with tests): UploadManager (no timers; "not available" without an upload handler, success only after the handler resolves); MediaBrowser (no fake onUpload); DashboardStats (trends removed, quality from real counts); Analytics (change/trend props removed; W4 test added, mutation dies); CollectionTemplates (popularity, counts, sizes, estimated items and the "Most Popular" sort removed); CollectionSharing (fake "Live" status removed); CollectionExport (timed fake progress removed); ExternalIntegrations (test, sync, toggle and delete report the server's real answer; no success toast on 404); Admin (restore/scan show the server's 501 guidance); `POST /api/v1/media/:id/refresh` (501, no row change); `POST /api/v1/entities/:id/metadata/refresh` with no database (501); openapi and API_DOCUMENTATION (refresh, trending summary); CH-145 challenge (501 or 404).
+
+Reviewed, real, not changed: `POST /scans` (202 after a real `QueueScan`); `POST /admin/backups` (real file written; 202 with status "completed"); `POST /media/analyze` (real analyzer call); `EnrichAllEntities` (real background goroutine); `ConnectionStatus` interval (reads the real WebSocket state); `SplashScreen`, `PlaylistPlayer`, `MediaPlayer`, `PerformanceOptimizer`, `Collections.tsx` debounce, `lib/utils.ts`, `useDebounce`, `SubtitleUploadModal` form reset (UI timing, no invented data); Math.random id minting (AdvancedSearch, SmartCollectionBuilder, UploadManager).
+
+Listed, not fixed (reason):
+- `pages/AIDashboard.tsx` setTimeout alert handlers and "Sample Content" literals: the panels are unavailable placeholders that ignore their props, so the handlers cannot fire.
+- `components/performance/MemoCache.tsx` "for now" measurement stubs: performance utility, shows no user data.
+- `ExternalIntegrations` create/save are local-only because the server has no `/integrations` API; the toasts now say so. A backend integrations API is the real fix.
+- Admin storage "Scan" cannot start a real scan from a path: `POST /scans` needs a `storage_root_id`. The UI shows the server's guidance.

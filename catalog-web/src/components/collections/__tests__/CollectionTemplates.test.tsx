@@ -149,10 +149,12 @@ describe('CollectionTemplates', () => {
     expect(advancedBadges.length).toBeGreaterThan(0)
   })
 
-  it('shows popularity percentage', () => {
+  it('shows no invented popularity percentages or sort option (CAT-001)', () => {
     render(<CollectionTemplates {...defaultProps} />)
-    expect(screen.getByText('95%')).toBeInTheDocument() // Recent Movies
-    expect(screen.getByText('96%')).toBeInTheDocument() // Trending Now
+    for (const invented of ['95%', '96%', '88%', '92%', '85%']) {
+      expect(screen.queryByText(invented)).not.toBeInTheDocument()
+    }
+    expect(screen.queryByText('Most Popular')).not.toBeInTheDocument()
   })
 
   it('opens template detail when clicked', async () => {
@@ -254,19 +256,20 @@ describe('CollectionTemplates', () => {
     expect(defaultProps.onClose).toHaveBeenCalled()
   })
 
-  it('shows preview data for templates with preview', async () => {
+  it('shows only the template type in the preview, never invented counts or sizes (CAT-001)', async () => {
     const user = userEvent.setup()
     render(<CollectionTemplates {...defaultProps} />)
 
-    // Recent Movies has preview with 127 items, Video type, 45.2 GB
     await user.click(screen.getByText('Recent Movies'))
 
     expect(screen.getByText('Preview')).toBeInTheDocument()
-    expect(screen.getByText('127')).toBeInTheDocument()
+    for (const invented of ['127', '2847', '8472', '45.2 GB', '12.8 GB', '67.3 GB', '892.4 GB']) {
+      expect(screen.queryByText(invented)).not.toBeInTheDocument()
+    }
+    expect(screen.queryByText(/\d+ items$/)).not.toBeInTheDocument()
     // "Video" appears both in the grid template preview and detail modal preview
     const videoElements = screen.getAllByText('Video')
     expect(videoElements.length).toBeGreaterThanOrEqual(1)
-    expect(screen.getByText('45.2 GB')).toBeInTheDocument()
   })
 
   it('shows rules in template detail', async () => {
@@ -310,9 +313,8 @@ describe('CollectionTemplates', () => {
     expect(createBtn.closest('button')).not.toBeDisabled()
   })
 
-  it('shows estimated items for templates', () => {
+  it('shows no invented estimated item ranges (CAT-001)', () => {
     render(<CollectionTemplates {...defaultProps} />)
-    expect(screen.getByText('~50-200')).toBeInTheDocument()
-    expect(screen.getByText('~1000-5000')).toBeInTheDocument()
+    expect(screen.queryByText('~50-200')).not.toBeInTheDocument()
   })
 })

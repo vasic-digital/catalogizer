@@ -197,33 +197,21 @@ export const Analytics: React.FC = () => {
             title="Total Media Items"
             value={stats?.total_items?.toLocaleString() || '0'}
             icon={<Database className="h-8 w-8" />}
-            change="+12% from last month"
-            changeType="positive"
-            trend={[45, 52, 48, 61, 67, 73, 82]}
           />
           <StatCard
             title="Storage Used"
             value={`${((stats?.total_size || 0) / (1024 ** 3)).toFixed(1)} GB`}
             icon={<HardDrive className="h-8 w-8" />}
-            change="+8.2 GB this week"
-            changeType="positive"
-            trend={[120, 125, 128, 135, 142, 148, 155]}
           />
           <StatCard
             title="Recent Additions"
             value={stats?.recent_additions?.toString() || '0'}
             icon={<TrendingUp className="h-8 w-8" />}
-            change="+5 from yesterday"
-            changeType="positive"
-            trend={[8, 12, 15, 11, 18, 22, 25]}
           />
           <StatCard
             title="Media Types"
             value={Object.keys(stats?.by_type || {}).length.toString()}
             icon={<Star className="h-8 w-8" />}
-            change="2 new types detected"
-            changeType="positive"
-            trend={[6, 7, 7, 8, 8, 9, 10]}
           />
         </div>
 

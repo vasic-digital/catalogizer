@@ -392,7 +392,7 @@ func (c *MediaAnalysisChallenge) Execute(
 }
 
 // MetadataRefreshChallenge validates POST /api/v1/media/1/refresh
-// returns 202 (accepted) or 404 (no such item).
+// returns 501 (not implemented) or 404 (no such item); 202 is never valid because nothing is queued (CAT-001).
 type MetadataRefreshChallenge struct {
 	challenge.BaseChallenge
 	config *BrowsingConfig
@@ -405,7 +405,7 @@ func NewMetadataRefreshChallenge() *MetadataRefreshChallenge {
 			"metadata-refresh-api",
 			"Metadata Refresh API",
 			"Validates POST /api/v1/media/1/refresh returns "+
-				"202 (accepted) or 404 (no such item).",
+				"501 (not implemented) or 404 (no such item).",
 			"api",
 			[]challenge.ID{"browsing-api-health"},
 		),
@@ -441,11 +441,11 @@ func (c *MetadataRefreshChallenge) Execute(
 		ctx, "/api/v1/media/1/refresh", "{}",
 	)
 
-	codeOK := err == nil && (code == 202 || code == 404)
+	codeOK := err == nil && (code == 501 || code == 404)
 	assertions = append(assertions, challenge.AssertionResult{
 		Type:     "status_code",
 		Target:   "metadata_refresh_status",
-		Expected: "202 or 404",
+		Expected: "501 or 404",
 		Actual:   fmt.Sprintf("%d", code),
 		Passed:   codeOK,
 		Message: challenge.Ternary(codeOK,

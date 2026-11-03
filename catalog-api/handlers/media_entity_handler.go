@@ -498,7 +498,8 @@ func (h *MediaEntityHandler) RefreshEntityMetadata(c *gin.Context) {
 	}
 
 	if h.db == nil {
-		c.JSON(http.StatusAccepted, gin.H{"message": "Metadata refresh queued", "entity_id": id})
+		// CAT-001: without a database nothing can be refreshed; never answer 202 "queued".
+		c.JSON(http.StatusNotImplemented, gin.H{"error": "metadata refresh is unavailable: no database is configured. Nothing was queued.", "entity_id": id})
 		return
 	}
 

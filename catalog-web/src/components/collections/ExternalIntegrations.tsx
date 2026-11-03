@@ -204,8 +204,10 @@ const ExternalIntegrations: React.FC = () => {
         : integration
     ));
 
+    // CAT-001: report the server's real answer; never claim a save that did not happen.
+    let saved = false;
     try {
-      await fetch(`/api/v1/integrations/${integrationId}`, {
+      const res = await fetch(`/api/v1/integrations/${integrationId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -213,10 +215,18 @@ const ExternalIntegrations: React.FC = () => {
         },
         body: JSON.stringify({ enabled: newEnabled }),
       });
+      saved = res.ok;
     } catch {
-      // Endpoint may not exist yet; local state update is sufficient
+      saved = false;
     }
-    toast.success('Integration status updated');
+    if (saved) {
+      toast.success('Integration status updated');
+    } else {
+      setIntegrations(prev => prev.map(integration =>
+        integration.id === integrationId ? { ...integration, enabled: target.enabled } : integration
+      ));
+      toast.error('Integration status was not changed: the server has no integrations API.');
+    }
   };
 
   // Test integration connection
@@ -245,7 +255,13 @@ const ExternalIntegrations: React.FC = () => {
           ? { ...integration, status: newStatus, lastSync: new Date().toISOString() }
           : integration
       ));
-      toast.success('Connection test completed');
+      if (newStatus === 'connected') {
+        toast.success('Connection test succeeded');
+      } else if (newStatus === 'disconnected') {
+        toast.error('Connection test unavailable: the server has no integration test endpoint. The connection was not tested.');
+      } else {
+        toast.error('Connection test failed');
+      }
     } catch {
       setIntegrations(prev => prev.map(integration =>
         integration.id === integrationId
@@ -282,13 +298,19 @@ const ExternalIntegrations: React.FC = () => {
         },
       });
 
-      let itemsProcessedDelta = 0;
-      let syncStatus: 'success' | 'error' = 'success';
-      if (response.ok) {
-        const data = await response.json();
-        itemsProcessedDelta = Number(data.items_processed || 0);
-        syncStatus = data.success === false ? 'error' : 'success';
+      if (!response.ok) {
+        // CAT-001: no sync happened; do not count it or report success.
+        setIntegrations(prev => prev.map(i =>
+          i.id === integrationId
+            ? { ...i, lastSync: integration.lastSync, statistics: { ...i.statistics, lastSyncStatus: integration.statistics.lastSyncStatus } }
+            : i
+        ));
+        toast.error('Sync unavailable: the server has no integration sync endpoint. Nothing was synced.');
+        return;
       }
+      const data = await response.json();
+      const itemsProcessedDelta = Number(data.items_processed || 0);
+      const syncStatus: 'success' | 'error' = data.success === false ? 'error' : 'success';
 
       setIntegrations(prev => prev.map(i =>
         i.id === integrationId
@@ -326,19 +348,28 @@ const ExternalIntegrations: React.FC = () => {
 
   // Delete integration
   const deleteIntegration = async (integrationId: string) => {
+    const removed = integrations.find(i => i.id === integrationId);
     setIntegrations(prev => prev.filter(integration => integration.id !== integrationId));
 
+    let deleted = false;
     try {
-      await fetch(`/api/v1/integrations/${integrationId}`, {
+      const res = await fetch(`/api/v1/integrations/${integrationId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`,
         },
       });
+      deleted = res.ok;
     } catch {
-      // Endpoint may not exist yet; local state update is sufficient
+      deleted = false;
     }
-    toast.success('Integration deleted successfully');
+    if (deleted) {
+      toast.success('Integration deleted successfully');
+    } else {
+      // CAT-001: the server did not delete it; put it back instead of claiming success.
+      if (removed) setIntegrations(prev => [...prev, removed]);
+      toast.error('Integration was not deleted: the server has no integrations API.');
+    }
   };
 
   // Get status icon and color
@@ -786,7 +817,7 @@ const ExternalIntegrations: React.FC = () => {
                         setIntegrations(prev => [...prev, newIntegration])
                         setIsCreateModalOpen(false)
                         setEditingIntegration(newIntegration)
-                        toast.success(`${example.name} integration added. Configure credentials to connect.`)
+                        toast.success(`${example.name} integration added locally. It is not saved on the server (no integrations API).`)
                       }}
                       className="p-4 border rounded-lg hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-left transition-colors"
                     >
@@ -890,7 +921,7 @@ const ExternalIntegrations: React.FC = () => {
               <Button onClick={() => {
                 setIntegrations(prev => prev.map(i => i.id === editingIntegration.id ? editingIntegration : i))
                 setEditingIntegration(null)
-                toast.success('Integration updated')
+                toast.success('Integration updated locally. It is not saved on the server (no integrations API).')
               }}>Save Changes</Button>
             </div>
           </div>

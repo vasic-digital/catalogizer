@@ -310,8 +310,13 @@ func (h *MediaQueryHandler) GetMediaByPath(c *gin.Context) {
 	})
 }
 
-// RefreshMediaMetadata triggers a metadata refresh for a media item by updating its timestamp.
+// RefreshMediaMetadata answers 501: no metadata refresher exists for media items.
 // POST /api/v1/media/:id/refresh
+//
+// CAT-001: this handler used to bump last_updated and answer 202 "Metadata
+// refresh queued", but nothing reads last_updated to re-enrich, so no refresh
+// was ever queued. The id is still validated (400/404) so callers get the real
+// error for a bad request; a valid request gets an honest 501.
 func (h *MediaQueryHandler) RefreshMediaMetadata(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -322,25 +327,15 @@ func (h *MediaQueryHandler) RefreshMediaMetadata(c *gin.Context) {
 		return
 	}
 
-	// Check if the media item exists
 	item, err := h.itemRepo.GetByID(ctx, id)
 	if err != nil || item == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "media item not found"})
 		return
 	}
 
-	// Update last_updated to trigger re-enrichment
-	now := time.Now()
-	updateQuery := `UPDATE media_items SET last_updated = ? WHERE id = ?`
-	if _, err := h.db.ExecContext(ctx, updateQuery, now, id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to refresh metadata"})
-		return
-	}
-
-	c.JSON(http.StatusAccepted, gin.H{
-		"status":  "accepted",
-		"message": "Metadata refresh queued",
-		"id":      id,
+	c.JSON(http.StatusNotImplemented, gin.H{
+		"error": "metadata refresh is not implemented: no component re-fetches metadata for a media item. " +
+			"Nothing was queued or changed. Use POST /api/v1/entities/:id/metadata/refresh for entity cover discovery.",
 	})
 }
 

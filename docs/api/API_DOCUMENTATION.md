@@ -1291,17 +1291,16 @@ Update the favorite status for a media item.
 
 ### POST /api/v1/media/:id/refresh
 
-Refresh metadata for a specific media item from external providers.
+Not implemented. No component re-fetches metadata for a media item, so nothing is queued or changed.
 
-**Description:** Re-fetches metadata from TMDB, OMDB, MusicBrainz, etc.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
-**Response:** 200 OK
+**Response:** 501 Not Implemented for a valid media item (400 for an invalid id, 404 for an unknown item)
 
 ```json
 {
-  "message": "Metadata refresh initiated"
+  "error": "metadata refresh is not implemented: no component re-fetches metadata for a media item. Nothing was queued or changed. Use POST /api/v1/entities/:id/metadata/refresh for entity cover discovery."
 }
 ```
 
@@ -1474,7 +1473,7 @@ Get media items similar to a given media item.
 
 ### GET /api/v1/recommendations/trending
 
-Get trending media items based on recent activity.
+Not implemented: there is no trending-analytics source (see below).
 
 **Description:** Not implemented. There is no trending-analytics source, so the endpoint answers 501 instead of inventing titles.
 **Auth:** Required

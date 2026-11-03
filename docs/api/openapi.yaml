@@ -3290,13 +3290,11 @@ paths:
   /api/v1/media/{id}/refresh:
     post:
       tags: [media]
-      summary: Trigger metadata refresh
+      summary: Trigger metadata refresh (not implemented)
       description: |
-        Triggers a metadata refresh for the specified media item by updating
-        its last_updated timestamp. This causes the enrichment pipeline to
-        re-fetch metadata from configured providers on its next pass.
-        Returns 202 Accepted immediately; the actual refresh happens
-        asynchronously.
+        Not implemented: no refresher exists, so a valid request answers 501
+        and nothing is queued or modified. An invalid id answers 400 and an
+        unknown item 404.
       security:
         - BearerAuth: []
       parameters:
@@ -3308,22 +3306,12 @@ paths:
             type: integer
             format: int64
       responses:
-        '202':
-          description: Metadata refresh accepted and queued
+        '501':
+          description: Not implemented. No component re-fetches metadata for a media item, so nothing is queued or changed. Use POST /api/v1/entities/{id}/metadata/refresh for entity cover discovery.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: accepted
-                  message:
-                    type: string
-                    example: Metadata refresh queued
-                  id:
-                    type: integer
-                    format: int64
+                $ref: '#/components/schemas/Error'
         '400':
           description: Invalid media item ID
           content:
