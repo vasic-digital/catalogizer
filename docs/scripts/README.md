@@ -83,6 +83,7 @@ One guide per script (constitution 11.4.18). Every page of this directory is lis
 | [check_doc_reachability.md](check_doc_reachability.md) | `scripts/docs/check_doc_reachability.py` |
 | [check_doc_reachability.md](check_doc_reachability.md) (section on index regeneration) | `scripts/docs/gen_dir_indexes.py` |
 | [check_html_viewport.md](check_html_viewport.md) | `scripts/docs/check_html_viewport.py` |
+| [check_doc_coverage.md](check_doc_coverage.md) | `scripts/docs/check_doc_coverage.py` |
 | [check_md_links.md](check_md_links.md) | `scripts/docs/check_md_links.py` |
 | [render_md_to_html.md](render_md_to_html.md) | `scripts/docs/render_md_to_html.sh` |
 

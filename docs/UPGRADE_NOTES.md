@@ -2,6 +2,15 @@
 
 Behaviour changes an operator must know about when upgrading. Newest first.
 
+## Known limitations and pending removals (docs sync C4, 2026-11-03)
+
+- **Collection sharing is not available.** The server has no `/collections/:id/share*` routes, so the web UI's Create Share Link, Send Invitations, QR Code and Copy Embed Code controls are disabled with a stated reason (`catalog-web/src/components/collections/CollectionSharing.tsx`, `SHARE_API_AVAILABLE`).
+- **Smart playlists and smart collections answer 501.** `POST /api/v1/playlists` with `is_smart` or `smart_rules` is refused and nothing is created (`catalog-api/handlers/playlist_handler.go:86-91`); see `docs/api/API_DOCUMENTATION.md`.
+- **Conversion tools are part of the API image.** `ffmpeg` and `imagemagick` are installed in the runtime image; see `docs/deployment/DOCKER_SETUP.md`.
+- **go-fitz (AGPL) removal is pending.** The operator decision of 2026-11-03 is to keep poppler only and drop `github.com/gen2brain/go-fitz` (MuPDF, AGPL). It is still imported (`catalog-api/handlers/pdf_pages_handler.go:19`, `catalog-api/go.mod:84`), so the removal has not happened yet; track it in `docs/FOLLOW_UPS_NEXT_PHASE.md`.
+
+---
+
 ## Self-registration now requires administrator approval (2026-11)
 
 **Breaking behaviour change.** Before, `POST /api/v1/auth/register` created an active user who could
