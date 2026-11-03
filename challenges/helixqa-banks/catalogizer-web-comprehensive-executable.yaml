@@ -153,7 +153,10 @@ test_cases:
   steps:
   - name: Register new user
     action: '# TODO: Convert to executable - fill all fields with valid data and submit'
-    expected: Registration succeeds, redirect to dashboard or login page
+    expected: Registration succeeds. Default REGISTRATION_MODE=approval - a toast says an
+      administrator must approve the account before login, no session is created, and the
+      user returns to the login page; REGISTRATION_MODE=open - 'Registration successful'
+      toast and the login page (the new account can log in immediately)
     timeout: 10
 - id: web-register-duplicate
   name: Duplicate Username Rejected

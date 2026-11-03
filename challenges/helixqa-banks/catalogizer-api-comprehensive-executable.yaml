@@ -1,5 +1,10 @@
 version: '2.0'
 name: Test Suite - EXECUTABLE
+# Registration policy: REGISTRATION_MODE defaults to "approval" (self-registered users are inactive
+# until an admin approves them). The user-flow cases that log in as a freshly registered user
+# (api-flow-*) therefore need a stack started with REGISTRATION_MODE=open (the QA compose stack does
+# this) or an explicit admin approval step; the registration policy itself is covered against the
+# real binary by catalog-api/registration_approval_binary_test.go.
 description: Executable test suite - converted from /run/media/milosvasic/DATA4TB/Projects/Catalogizer/challenges/helixqa-banks/catalogizer-api-comprehensive.json
 test_cases:
 - id: api-health
@@ -67,8 +72,10 @@ test_cases:
   steps:
   - name: POST /api/v1/auth/register
     action: '# TODO: Convert to executable - post /api/v1/auth/register with username,
-      email, password'
-    expected: 201 with new user object, or 409 if duplicate username/email
+      email, password, first_name, last_name (all required)'
+    expected: 201 with new user object (REGISTRATION_MODE=approval default - is_active
+      false and registration_status pending, no session; open mode - is_active true), or
+      409 if duplicate username/email
     timeout: 10
 - id: api-auth-refresh
   name: Token Refresh
@@ -384,7 +391,8 @@ test_cases:
   - name: GET /api/v1/recommendations/trending
     action: '# TODO: Convert to executable - get /api/v1/recommendations/trending
       with auth'
-    expected: 200 with array of trending media items
+    expected: 501 Not Implemented with an error body and NO items array (CAT-001, no
+      trending source exists; a 200 with invented titles is a regression and must FAIL)
     timeout: 10
 - id: api-recommendations-personalized
   name: Personalized Recommendations
@@ -394,9 +402,10 @@ test_cases:
   - api
   steps:
   - name: GET /api/v1/recommendations/personalized/:user_id
-    action: '# TODO: Convert to executable - get /api/v1/recommendations/personalized/1
-      with auth'
-    expected: 200 with personalized media recommendations for user
+    action: '# TODO: Convert to executable - get /api/v1/recommendations/personalized/<own
+      user id from /api/v1/auth/me> with auth'
+    expected: 501 Not Implemented (CAT-001, no personalisation engine; owner-or-admin
+      only, so use the caller's own id; a 200 with invented titles must FAIL)
     timeout: 10
 - id: api-subtitles-search
   name: Subtitle Search
@@ -1020,7 +1029,8 @@ test_cases:
   - name: GET /api/v1/configuration/status
     action: '# TODO: Convert to executable - get /api/v1/configuration/status with
       auth'
-    expected: 200 with configuration health status (db connected, services ok)
+    expected: 501 Not Implemented (CAT-001, no health source is wired to this route and
+      nothing is checked; use GET /health; a 200 claiming healthy components must FAIL)
     timeout: 10
 - id: api-config-wizard-step
   name: Wizard Step
@@ -2295,7 +2305,7 @@ test_cases:
   steps:
   - name: Register user
     action: '# TODO: Convert to executable - post /api/v1/auth/register with username=flowuser,
-      email=flow@test.com, password=flowpass123'
+      email=flow@test.com, password=flowpass123, first_name=Flow, last_name=User'
     expected: 201 with new user object containing id, username, email
     timeout: 10
 - id: api-flow-login-registered-user
@@ -2307,7 +2317,10 @@ test_cases:
   steps:
   - name: Login as new user
     action: '# TODO: Convert to executable - post /api/v1/auth/login with flowuser/flowpass123'
-    expected: 200 with session_token and refresh_token
+    expected: 200 with session_token and refresh_token. PRECONDITION - the flow user must be
+      active - run the QA stack with REGISTRATION_MODE=open (docker-compose.test.yml
+      default) or approve flowuser first with PUT /api/v1/admin/users/<id> status active;
+      under the default approval policy this login is 403 account_pending_approval
     timeout: 10
 - id: api-flow-browse-entities
   name: 'User Flow: Browse Entities'

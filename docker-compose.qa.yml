@@ -279,16 +279,24 @@ services:
           "/api/v1/conversion/formats" "/api/v1/roles" "/api/v1/users" \
           "/api/v1/browse/roots" "/api/v1/sync/statistics" \
           "/api/v1/reports/performance" "/api/v1/analytics/system" \
-          "/api/v1/recommendations/trending" "/api/v1/scans"; do
+          "/api/v1/recommendations/trending" "/api/v1/recommendations" "/api/v1/scans"; do
 
           TOTAL=$$((TOTAL+1))
-          STATUS=$$(curl -sf -o /dev/null -w '%{http_code}' \
+          # No -f (it would hide the code semantics); curl -w prints 000 on a connection failure.
+          STATUS=$$(curl -s -o /dev/null -w '%{http_code}' \
             "http://localhost:8080$$ep" \
-            -H "Authorization: Bearer $$TOKEN" 2>/dev/null)
+            -H "Authorization: Bearer $$TOKEN" 2>/dev/null) || true
+          case "$$STATUS" in [0-9][0-9][0-9]) ;; *) STATUS=000 ;; esac
 
-          # CAT-001: these two answer an honest 501 (no health source / not implemented); that is their expected result.
-          if { [ "$$STATUS" -ge 200 ] && [ "$$STATUS" -lt 400 ]; } || \
-             { [ "$$STATUS" = "501" ] && { [ "$$ep" = "/api/v1/configuration/status" ] || [ "$$ep" = "/api/v1/recommendations/trending" ]; }; }; then
+          # CAT-001: these answer an honest 501 (no health source / no recommendation engine);
+          # for them the expected result is EXACTLY 501 (a regression to an invented 200 must
+          # FAIL, so 200-399 is NOT accepted for them). Everything else must be 2xx/3xx.
+          EXPECT_501=0
+          case "$$ep" in
+            /api/v1/configuration/status|/api/v1/recommendations/trending|/api/v1/recommendations) EXPECT_501=1 ;;
+          esac
+          if { [ "$$EXPECT_501" = "1" ] && [ "$$STATUS" = "501" ]; } || \
+             { [ "$$EXPECT_501" = "0" ] && [ "$$STATUS" -ge 200 ] && [ "$$STATUS" -lt 400 ]; }; then
             echo "  PASS: $$ep ($$STATUS)"
             echo "| $$TOTAL | $$ep | $$STATUS | PASS |" >> "$$REPORT"
             PASS=$$((PASS+1))
