@@ -1,0 +1,43 @@
+{
+  "advisories": 242,
+  "binary_exe_sha256": "8dee40e1c76d605d55b4b98c201ed782788db5f74620a967b8953503c85b935a",
+  "binary_sha256": "8dee40e1c76d605d55b4b98c201ed782788db5f74620a967b8953503c85b935a",
+  "build": {
+    "binary": "/home/milosvasic/.cache/claude-tmp/api-contract-live.uouJSx/catalog-api-live",
+    "go": "go1.26.8",
+    "sha256": "8dee40e1c76d605d55b4b98c201ed782788db5f74620a967b8953503c85b935a",
+    "size_bytes": 128947056,
+    "version_ldflag": "scaling-live-e1695dfd"
+  },
+  "endpoint_run1": "127.0.0.1:35985",
+  "generated_utc": "2026-11-03T22:11:40Z",
+  "happy_2xx_reached": 154,
+  "happy_skipped": 5,
+  "operations": 248,
+  "operations_per_status_code": {
+    "200": 147,
+    "201": 6,
+    "202": 1,
+    "204": 1,
+    "400": 133,
+    "401": 232,
+    "403": 60,
+    "404": 66,
+    "409": 2,
+    "500": 3,
+    "501": 11
+  },
+  "operations_with_violations": 25,
+  "pid_run1": 2534457,
+  "requests_total_all_runs": 791,
+  "runs": 1,
+  "schema_invalid": 16,
+  "schema_valid": 83,
+  "signature_sha256": "20aa44e100f59a5f0b9c1c1e3c3ee21d2a145df1cfa1ab6593d3936d6276f861",
+  "signatures": [
+    "20aa44e100f59a5f0b9c1c1e3c3ee21d2a145df1cfa1ab6593d3936d6276f861"
+  ],
+  "signatures_identical": true,
+  "spec": "docs/api/openapi.yaml",
+  "violations": 29
+}

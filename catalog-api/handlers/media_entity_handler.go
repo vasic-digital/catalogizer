@@ -497,6 +497,10 @@ func (h *MediaEntityHandler) RefreshEntityMetadata(c *gin.Context) {
 		return
 	}
 
+	if !h.entityMustExist(c, id) {
+		return
+	}
+
 	if h.db == nil {
 		// CAT-001: without a database nothing can be refreshed; never answer 202 "queued".
 		c.JSON(http.StatusNotImplemented, gin.H{"error": "metadata refresh is unavailable: no database is configured. Nothing was queued.", "entity_id": id})
@@ -1142,6 +1146,24 @@ func (h *MediaEntityHandler) EnrichAllEntities(c *gin.Context) {
 	}(limit)
 }
 
+// entityMustExist answers 404 (and returns false) when no entity has the id, so a write aimed at an unknown entity is
+// reported as such instead of surfacing a foreign-key failure as 500. It returns true when the repository is not wired
+// (those handlers are exercised without one) or the entity exists; a lookup failure other than "not found" is a 500.
+func (h *MediaEntityHandler) entityMustExist(c *gin.Context, id int64) bool {
+	if h.itemRepo == nil {
+		return true
+	}
+	if _, err := h.itemRepo.GetByID(c.Request.Context(), id); err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			utils.SendErrorResponse(c, http.StatusNotFound, "Entity not found", err)
+		} else {
+			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to look up entity", err)
+		}
+		return false
+	}
+	return true
+}
+
 // UpdateUserMetadata handles PUT /api/v1/entities/:id/user-metadata.
 func (h *MediaEntityHandler) UpdateUserMetadata(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -1188,6 +1210,9 @@ func (h *MediaEntityHandler) UpdateUserMetadata(c *gin.Context) {
 		um.Favorite = *req.Favorite
 	}
 
+	if !h.entityMustExist(c, id) {
+		return
+	}
 	if err := h.userMetaRepo.Upsert(ctx, um); err != nil {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update user metadata", err)
 		return

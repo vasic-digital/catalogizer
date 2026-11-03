@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -194,6 +195,10 @@ func (h *AnalyticsHandler) CreateReport(c *gin.Context) {
 
 	report, err := h.service.CreateReport(req.ReportType, req.Params)
 	if err != nil {
+		if errors.Is(err, services.ErrUnsupportedReportType) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		h.logger.Error("Failed to create report", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create report"})
 		return

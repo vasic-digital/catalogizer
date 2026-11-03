@@ -111,6 +111,10 @@ func (h *PlaybackHandler) ProgressSession(c *gin.Context) {
 		EndPosition: req.EndPosition,
 		TotalAmount: req.TotalAmount,
 	}); err != nil {
+		if errors.Is(err, repository.ErrPlaybackSessionNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "playback session not found"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

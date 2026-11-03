@@ -3799,8 +3799,6 @@ paths:
       responses:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
-        '403':
-          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Storage path listing
           content:
@@ -4267,8 +4265,6 @@ paths:
             schema:
               $ref: '#/components/schemas/QueueScanRequest'
       responses:
-        '403':
-          description: Caller is not an administrator (decided from the database on every request)
         '202':
           description: Scan job queued
           content:

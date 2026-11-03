@@ -1,0 +1,6056 @@
+[
+  {
+    "method": "DELETE",
+    "path": "/api/v1/collections/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "404"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/conversion/jobs/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "404",
+      "409"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/favorites/{entity_type}/{entity_id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/logs/share/{token}",
+    "public": false,
+    "documented_statuses": [
+      "204",
+      "400",
+      "401",
+      "403",
+      "500"
+    ],
+    "probes": {
+      "happy": 400,
+      "nonadmin": 403,
+      "notfound": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/playlists/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/playlists/{id}/items/{item_id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/roles/{id}",
+    "public": false,
+    "documented_statuses": [
+      "204",
+      "400",
+      "401",
+      "403",
+      "404",
+      "409",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 409,
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403,
+      404,
+      409
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/sync/endpoints/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/users/{id}",
+    "public": false,
+    "documented_statuses": [
+      "204",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 204,
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      204,
+      400,
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "non-json-or-empty"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/admin/backups",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/admin/config",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/admin/errors",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/admin/health",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/admin/logs",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/admin/storage",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/admin/system-info",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/admin/users",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$[0].id: expected integer, got 4 (string)",
+      "$[0].role: expected object, got string",
+      "$[1].id: expected integer, got 3 (string)",
+      "$[1].role: expected object, got string",
+      "$[2].id: expected integer, got 2 (string)",
+      "$[2].role: expected object, got string",
+      "$[3].id: expected integer, got 1 (string)",
+      "$[3].role: expected object, got string"
+    ],
+    "violations": [
+      "response body does not match the documented schema (8+ problems): $[0].id: expected integer, got 4 (string)"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/duplicates",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/media/{media_id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/stats",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/system",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.user_growth_data: null where a non-nullable array is documented"
+    ],
+    "violations": [
+      "response body does not match the documented schema (1+ problems): $.user_growth_data: null where a non-nullable array is documented"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/analytics/user/{user_id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "nonadmin": 403,
+      "notfound": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.most_accessed_media: null where a non-nullable array is documented"
+    ],
+    "violations": [
+      "response body does not match the documented schema (1+ problems): $.most_accessed_media: null where a non-nullable array is documented"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/assets/by-entity/{type}/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "notfound": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/assets/{id}",
+    "public": true,
+    "documented_statuses": [
+      "200",
+      "404"
+    ],
+    "probes": {
+      "happy": 200,
+      "notfound": 200,
+      "unauth": 200
+    },
+    "status_codes_observed": [
+      200
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "non-json-or-empty",
+    "violations": [
+      "notfound: expected 404 (documented), got 200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/init-status",
+    "public": true,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 200
+    },
+    "status_codes_observed": [
+      200
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/me",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.avatar_url: null where a non-nullable string is documented"
+    ],
+    "violations": [
+      "response body does not match the documented schema (1+ problems): $.avatar_url: null where a non-nullable string is documented"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/permissions",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/profile",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.avatar_url: null where a non-nullable string is documented"
+    ],
+    "violations": [
+      "response body does not match the documented schema (1+ problems): $.avatar_url: null where a non-nullable string is documented"
+    ],
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/status",
+    "public": true,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 200
+    },
+    "status_codes_observed": [
+      200
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.user.avatar_url: null where a non-nullable string is documented"
+    ],
+    "violations": [
+      "response body does not match the documented schema (1+ problems): $.user.avatar_url: null where a non-nullable string is documented"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/browse",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.data[0].last_scan_at: null where a non-nullable string is documented"
+    ],
+    "violations": [
+      "response body does not match the documented schema (1+ problems): $.data[0].last_scan_at: null where a non-nullable string is documented"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/browse/directory-sizes/{path}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 400,
+      "notfound": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/browse/directory/{path}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 400,
+      "notfound": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/browse/duplicates/{path}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 400,
+      "notfound": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/browse/file-info/{path}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "happy": 400,
+      "notfound": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "violations": [
+      "notfound: expected 404 (documented), got 400"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/browse/roots",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.data[0].last_scan_at: null where a non-nullable string is documented"
+    ],
+    "violations": [
+      "response body does not match the documented schema (1+ problems): $.data[0].last_scan_at: null where a non-nullable string is documented"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/catalog",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/catalog-info/{path}",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "status 401 observed but not documented in the spec",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/catalog/{path}",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "status 401 observed but not documented in the spec",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/challenges",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/challenges/results",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/challenges/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "404"
+    ],
+    "probes": {
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/collections",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/collections/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "404"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/collections/{id}/items",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "404"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/configuration",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/configuration/status",
+    "public": false,
+    "documented_statuses": [
+      "501"
+    ],
+    "probes": {
+      "happy": 501,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      501
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/configuration/wizard/progress",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/configuration/wizard/step/{step_id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "404"
+    ],
+    "probes": {
+      "happy": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/conversion/formats",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/conversion/jobs",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/conversion/jobs/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "404"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 404,
+      "nonadmin": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/conversion/jobs/{id}/download",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "403",
+      "404"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 404,
+      "nonadmin": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/cover/placeholder/{type}",
+    "public": true,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "notfound": 200,
+      "unauth": 200
+    },
+    "status_codes_observed": [
+      200
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "non-json-or-empty"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/cover/url/{id}",
+    "public": true,
+    "documented_statuses": [
+      "200",
+      "400"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 200,
+      "unauth": 200
+    },
+    "status_codes_observed": [
+      200,
+      400
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/cover/{id}",
+    "public": true,
+    "documented_statuses": [
+      "200",
+      "302",
+      "400"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 200,
+      "unauth": 200
+    },
+    "status_codes_observed": [
+      200,
+      400
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "non-json-or-empty"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/download/directory/{path}",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 500,
+      "notfound": 500,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      500
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "violations": [
+      "server error 500 observed",
+      "status 500 observed but not documented"
+    ],
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/download/file/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "404"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 500,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404,
+      500
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "violations": [
+      "server error 500 observed",
+      "status 500 observed but not documented"
+    ],
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/browse/{type}",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 400,
+      "notfound": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/duplicates",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/search",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/stats",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/types",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "404"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/{id}/children",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/{id}/download",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/{id}/duplicates",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/{id}/files",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/{id}/history",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/{id}/install-info",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 400,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "status 401 observed but not documented in the spec",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/{id}/metadata",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/{id}/pages",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 400,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/{id}/pages/{n}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 400,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/{id}/pdf-pages",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 400,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/{id}/pdf-pages/{n}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 400,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/{id}/progress",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.progress: null where a non-nullable object is documented"
+    ],
+    "violations": [
+      "response body does not match the documented schema (1+ problems): $.progress: null where a non-nullable object is documented"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/entities/{id}/stream",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "404"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/errors/crash-statistics",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/errors/crashes",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/errors/crashes/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 404,
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/errors/health",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/errors/reports",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/errors/reports/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 404,
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/errors/statistics",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/favorites",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/favorites/check/{entity_type}/{entity_id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/files",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "501"
+    ],
+    "probes": {
+      "happy": 200,
+      "missingq:storage_root": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/health",
+    "public": true,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 200
+    },
+    "status_codes_observed": [
+      200
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/image-proxy",
+    "public": true,
+    "documented_statuses": [
+      "200",
+      "400",
+      "403"
+    ],
+    "probes": {
+      "happy": 403,
+      "missingq:url": 400,
+      "unauth": 403
+    },
+    "status_codes_observed": [
+      400,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/languages",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/localization/languages",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/localization/stats",
+    "public": false,
+    "documented_statuses": [
+      "401",
+      "501"
+    ],
+    "probes": {
+      "happy": 501,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      501
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/localization/translations",
+    "public": false,
+    "documented_statuses": [
+      "401",
+      "501"
+    ],
+    "probes": {
+      "happy": 501,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      501
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/logs/collections",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/logs/collections/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/logs/collections/{id}/analyze",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/logs/collections/{id}/entries",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/logs/share/{token}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "404"
+    ],
+    "probes": {
+      "happy": 404,
+      "nonadmin": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/logs/statistics",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/logs/stream",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "non-json-or-empty",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/media-types",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/media/by-path",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "missingq:path": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/media/popular",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/media/recent",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/media/search",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/media/stats",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/media/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/media/{id}/quality",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/playlists",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.playlists: null where a non-nullable array is documented"
+    ],
+    "violations": [
+      "response body does not match the documented schema (1+ problems): $.playlists: null where a non-nullable array is documented"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/playlists/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "500",
+      "504"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/recommendations",
+    "public": false,
+    "documented_statuses": [
+      "401",
+      "500",
+      "501"
+    ],
+    "probes": {
+      "happy": 501,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      501
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/recommendations/by-type",
+    "public": false,
+    "documented_statuses": [
+      "401",
+      "501"
+    ],
+    "probes": {
+      "happy": 501,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      501
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/recommendations/personalized/{user_id}",
+    "public": false,
+    "documented_statuses": [
+      "401",
+      "403",
+      "501",
+      "503"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 501,
+      "nonadmin": 403,
+      "notfound": 501,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403,
+      501
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/recommendations/similar/{media_id}",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/recommendations/trending",
+    "public": false,
+    "documented_statuses": [
+      "401",
+      "501"
+    ],
+    "probes": {
+      "happy": 501,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      501
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/performance",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/usage",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/roles",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/roles/permissions",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/roles/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/scans",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/scans/{job_id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "404"
+    ],
+    "probes": {
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/search",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/search/duplicates",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/search/files",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/search/files/duplicates",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.data.files: null where a non-nullable array is documented"
+    ],
+    "violations": [
+      "response body does not match the documented schema (1+ problems): $.data.files: null where a non-nullable array is documented"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/smb/discover",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/smb/identities",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/smb/test",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stats/access",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stats/directories/by-size",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stats/duplicates",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stats/duplicates/count",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stats/duplicates/groups",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stats/filetypes",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stats/growth",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stats/media-types",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stats/overall",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stats/scan-history",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stats/scans",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stats/sizes",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stats/smb/{smb_root}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "404"
+    ],
+    "probes": {
+      "happy": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/storage-roots",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "nonadmin": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.roots[0].domain: null where a non-nullable string is documented",
+      "$.roots[0].host: null where a non-nullable string is documented",
+      "$.roots[0].last_scan_at: null where a non-nullable string is documented",
+      "$.roots[0].mount_point: null where a non-nullable string is documented",
+      "$.roots[0].port: null where a non-nullable integer is documented",
+      "$.roots[0].url: null where a non-nullable string is documented",
+      "$.roots[0].username: null where a non-nullable string is documented"
+    ],
+    "violations": [
+      "nonadmin: expected 403 (spec: \"Caller is not an administrator (decided from the database on every request)\"), got 200",
+      "response body does not match the documented schema (7+ problems): $.roots[0].domain: null where a non-nullable string is documented"
+    ],
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/storage-roots/{id}/status",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "404",
+      "503"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "nonadmin": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "violations": [
+      "nonadmin: expected 403 (spec: \"Caller is not an administrator (decided from the database on every request)\"), got 200"
+    ],
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/storage/list/{path}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "409",
+      "422",
+      "502",
+      "503"
+    ],
+    "probes": {
+      "happy": 404,
+      "missingq:storage_id": 400,
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/storage/roots",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "nonadmin": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.roots[0].domain: null where a non-nullable string is documented",
+      "$.roots[0].host: null where a non-nullable string is documented",
+      "$.roots[0].last_scan_at: null where a non-nullable string is documented",
+      "$.roots[0].mount_point: null where a non-nullable string is documented",
+      "$.roots[0].port: null where a non-nullable integer is documented",
+      "$.roots[0].url: null where a non-nullable string is documented",
+      "$.roots[0].username: null where a non-nullable string is documented"
+    ],
+    "violations": [
+      "nonadmin: expected 403 (spec: \"Caller is not an administrator (decided from the database on every request)\"), got 200",
+      "response body does not match the documented schema (7+ problems): $.roots[0].domain: null where a non-nullable string is documented"
+    ],
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/stream/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "206",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "non-json-or-empty"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/subtitles",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/subtitles/languages",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/subtitles/media/{media_id}",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/subtitles/providers",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/subtitles/search",
+    "public": false,
+    "documented_statuses": [
+      "401",
+      "501"
+    ],
+    "probes": {
+      "happy": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/subtitles/{subtitle_id}/verify-sync/{media_id}",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sync/conflicts",
+    "public": false,
+    "documented_statuses": [
+      "401",
+      "501"
+    ],
+    "probes": {
+      "happy": 501,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      501
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sync/devices",
+    "public": false,
+    "documented_statuses": [
+      "401",
+      "501"
+    ],
+    "probes": {
+      "happy": 501,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      501
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sync/endpoints",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sync/endpoints/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 404,
+      "nonadmin": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sync/history",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sync/providers",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sync/sessions",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sync/sessions/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 404,
+      "nonadmin": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sync/statistics",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/sync/status",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.last_sync: null where a non-nullable string is documented"
+    ],
+    "violations": [
+      "response body does not match the documented schema (1+ problems): $.last_sync: null where a non-nullable string is documented"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/translations",
+    "public": false,
+    "documented_statuses": [
+      "401",
+      "501"
+    ],
+    "probes": {
+      "happy": 501,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      501
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/users",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/users/me",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.avatar_url: null where a non-nullable string is documented"
+    ],
+    "violations": [
+      "response body does not match the documented schema (1+ problems): $.avatar_url: null where a non-nullable string is documented"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/users/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200"
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/discovery",
+    "public": true,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 200
+    },
+    "status_codes_observed": [
+      200
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "public": true,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 200
+    },
+    "status_codes_observed": [
+      200
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/health/deep",
+    "public": true,
+    "documented_statuses": [
+      "200",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 200
+    },
+    "status_codes_observed": [
+      200
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "GET",
+    "path": "/metrics",
+    "public": true,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 200
+    },
+    "status_codes_observed": [
+      200
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "non-json-or-empty"
+  },
+  {
+    "method": "GET",
+    "path": "/ws",
+    "public": true,
+    "documented_statuses": [
+      "101"
+    ],
+    "probes": {
+      "plain": 400
+    },
+    "status_codes_observed": [
+      400
+    ],
+    "happy_2xx_reached": false,
+    "happy_skipped_reason": "websocket upgrade is not driven by the HTTP sweep (status of the plain GET is still recorded as the 'plain' probe)",
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/admin/backups",
+    "public": false,
+    "documented_statuses": [
+      "201",
+      "401",
+      "403",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "happy": 403,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/admin/backups/{id}/restore",
+    "public": false,
+    "documented_statuses": [
+      "401",
+      "403",
+      "404",
+      "500",
+      "501",
+      "503"
+    ],
+    "probes": {
+      "nonadmin": 403,
+      "notfound": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "happy_skipped_reason": "restores the live database over the running server; gate and unknown-id behaviour are still probed",
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/admin/covers/generate-thumbnails",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 400 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/admin/image-quality/revalidate",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "429",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 400 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/admin/storage/scan",
+    "public": false,
+    "documented_statuses": [
+      "400",
+      "401",
+      "403",
+      "501",
+      "503"
+    ],
+    "probes": {
+      "happy": 403,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/analytics/access",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/analytics/event",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/analytics/reports",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/assets/request",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/change-password",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "happy": 200
+    },
+    "status_codes_observed": [
+      200
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "public": true,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403"
+    ],
+    "probes": {
+      "happy": 200,
+      "malformed": 400,
+      "unauth": 200
+    },
+    "status_codes_observed": [
+      200,
+      400
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "invalid",
+    "schema_errors": [
+      "$.user.avatar_url: null where a non-nullable string is documented"
+    ],
+    "violations": [
+      "response body does not match the documented schema (1+ problems): $.user.avatar_url: null where a non-nullable string is documented"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/logout",
+    "public": true,
+    "documented_statuses": [
+      "200",
+      "401"
+    ],
+    "probes": {
+      "happy": 401
+    },
+    "status_codes_observed": [
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/refresh",
+    "public": true,
+    "documented_statuses": [
+      "200",
+      "401"
+    ],
+    "probes": {
+      "happy": 401
+    },
+    "status_codes_observed": [
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/register",
+    "public": true,
+    "documented_statuses": [
+      "201",
+      "400",
+      "403",
+      "409"
+    ],
+    "probes": {
+      "happy": 409,
+      "malformed": 400,
+      "unauth": 201
+    },
+    "status_codes_observed": [
+      201,
+      400,
+      409
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/challenges/run",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403"
+    ],
+    "probes": {
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "happy_skipped_reason": "executes server-side challenge suites (heavy, side-effecting); gate and unknown-target behaviour are still probed",
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/challenges/run/category/{category}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403"
+    ],
+    "probes": {
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "happy_skipped_reason": "executes server-side challenge suites (heavy, side-effecting); gate and unknown-target behaviour are still probed",
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "status 401 observed but not documented in the spec",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/challenges/{id}/run",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403"
+    ],
+    "probes": {
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "happy_skipped_reason": "executes server-side challenge suites (heavy, side-effecting); gate and unknown-target behaviour are still probed",
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "status 401 observed but not documented in the spec",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/collections",
+    "public": false,
+    "documented_statuses": [
+      "201",
+      "400",
+      "401"
+    ],
+    "probes": {
+      "happy": 201,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      201,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/configuration/test",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/configuration/wizard/complete",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/configuration/wizard/step/{step_id}/save",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "nonadmin": 403,
+      "notfound": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/configuration/wizard/step/{step_id}/validate",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "nonadmin": 403,
+      "notfound": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/conversion/jobs",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/conversion/jobs/{id}/cancel",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "404",
+      "409"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/conversion/jobs/{id}/retry",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "404",
+      "409"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/copy/local",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/copy/storage",
+    "public": false,
+    "documented_statuses": [
+      "403",
+      "501",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/copy/upload",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/download/archive",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/entities/enrich",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/entities/{id}/metadata/refresh",
+    "public": false,
+    "documented_statuses": [
+      "202"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "not-applicable",
+    "violations": [
+      "status 200 observed but not documented"
+    ],
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/entities/{id}/user-metadata",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "malformed": 400,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/errors/crash",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/errors/report",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/favorites",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "409",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/logs/collect",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 200,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/logs/collections/{id}/export",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/logs/share",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 404,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/media/analyze",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/media/{id}/refresh",
+    "public": false,
+    "documented_statuses": [
+      "400",
+      "401",
+      "404",
+      "500",
+      "501"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 501,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404,
+      501
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/playback/sessions/end",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 500,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      500
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "violations": [
+      "server error 500 observed"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/playback/sessions/progress",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/playback/sessions/start",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/playlists",
+    "public": false,
+    "documented_statuses": [
+      "201",
+      "400",
+      "401",
+      "409",
+      "500"
+    ],
+    "probes": {
+      "happy": 201,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      201,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/playlists/{id}/items",
+    "public": false,
+    "documented_statuses": [
+      "201",
+      "400",
+      "401",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 201,
+      "malformed": 400,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      201,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/roles",
+    "public": false,
+    "documented_statuses": [
+      "201"
+    ],
+    "probes": {
+      "happy": 201,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      201,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 201",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/scans",
+    "public": false,
+    "documented_statuses": [
+      "202",
+      "401",
+      "403",
+      "404",
+      "503"
+    ],
+    "probes": {
+      "happy": 202,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      202,
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 400 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/search/advanced",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "500"
+    ],
+    "probes": {
+      "happy": 200,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/smb/browse",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/smb/discover",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/smb/probe",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/smb/probe-and-ingest",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/smb/test",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/storage/roots",
+    "public": false,
+    "documented_statuses": [
+      "201",
+      "400",
+      "403",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/subtitles/download",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/subtitles/translate",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/subtitles/upload",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sync/cleanup",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "happy": 200,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid",
+    "advisories": [
+      "status 400 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sync/endpoints",
+    "public": false,
+    "documented_statuses": [
+      "201",
+      "400",
+      "401",
+      "403",
+      "500",
+      "502",
+      "503"
+    ],
+    "probes": {
+      "happy": 400,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sync/endpoints/{id}/sync",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "401",
+      "403",
+      "404",
+      "409",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 404,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/sync/schedules",
+    "public": false,
+    "documented_statuses": [
+      "201",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500",
+      "503"
+    ],
+    "probes": {
+      "happy": 404,
+      "malformed": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/users",
+    "public": false,
+    "documented_statuses": [
+      "201",
+      "400",
+      "403",
+      "409"
+    ],
+    "probes": {
+      "happy": 201,
+      "malformed": 400,
+      "nonadmin": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      201,
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 201",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/users/{id}/lock",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 400,
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/users/{id}/reset-password",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 400,
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/users/{id}/unlock",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "nonadmin": 403,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      403,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "non-json-or-empty"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/admin/users/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "503"
+    ],
+    "probes": {
+      "badid": 403,
+      "happy": 403,
+      "malformed": 400,
+      "nonadmin": 403,
+      "notfound": 403,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "violations": [
+      "badid: non-numeric id for an integer parameter expected 400/404, got 403"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/collections/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "403",
+      "404"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "malformed": 400,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/entities/{id}/user-metadata",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "malformed": 400,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "notfound: 404 returned but not documented",
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec",
+      "status 404 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/errors/crashes/{id}/status",
+    "public": false,
+    "documented_statuses": [
+      "204",
+      "400",
+      "401",
+      "403",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 400,
+      "nonadmin": 403,
+      "notfound": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/errors/reports/{id}/status",
+    "public": false,
+    "documented_statuses": [
+      "204",
+      "400",
+      "401",
+      "403",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 400,
+      "nonadmin": 403,
+      "notfound": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/media/{id}/favorite",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 400,
+      "malformed": 400,
+      "notfound": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/media/{id}/progress",
+    "public": false,
+    "documented_statuses": [
+      "200"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 400,
+      "malformed": 400,
+      "notfound": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec",
+      "status 401 observed but not documented in the spec"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/playlists/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "malformed": 400,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/roles/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "409",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 400,
+      "malformed": 400,
+      "nonadmin": 403,
+      "notfound": 400,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      403
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "violations": [
+      "notfound: expected 404 (documented), got 400"
+    ]
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/sync/endpoints/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "500",
+      "502",
+      "503"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 404,
+      "malformed": 400,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/users/{id}",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "403",
+      "404",
+      "409",
+      "500"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "malformed": 400,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200"
+    ]
+  }
+]
