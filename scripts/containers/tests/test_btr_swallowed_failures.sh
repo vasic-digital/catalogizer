@@ -15,7 +15,7 @@ bad() { echo "FAIL: $1"; FAILS=$((FAILS+1)); }
 SH="$T/shims"; mkdir -p "$SH"
 printf '#!/usr/bin/env bash\n[ -n "${SHIM_NPM_FAIL_ON:-}" ] && { [ "${2:-}" = "$SHIM_NPM_FAIL_ON" ] || [ "${1:-}" = "$SHIM_NPM_FAIL_ON" ]; } && exit 1\nexit 0\n' >"$SH/npm"
 printf '#!/usr/bin/env bash\nexit 0\n' >"$SH/npx"
-printf '#!/usr/bin/env bash\n[ "${SHIM_SHA_FAIL:-0}" = 1 ] && exit 1\nexec "$SHIM_REAL_SHA" "$@"\n' >"$SH/sha256sum"
+printf '#!/usr/bin/env bash\n[ "${SHIM_SHA_FAIL:-0}" = 1 ] && exit 1\ncase "$*" in *"${SHIM_SHA_FAIL_MATCH:-@@none@@}"*) exit 1;; esac\nexec "$SHIM_REAL_SHA" "$@"\n' >"$SH/sha256sum"
 printf '#!/usr/bin/env bash\n# fails when SHIM_GO_FAIL_ON equals the go subcommand (test/build/mod)\n[ -n "${SHIM_GO_FAIL_ON:-}" ] && [ "${1:-}" = "$SHIM_GO_FAIL_ON" ] && exit 1\nexit 0\n' >"$SH/go"
 printf '#!/usr/bin/env bash\n[ "${SHIM_ADB_CONNECT_FAIL:-0}" = 1 ] && [ "${1:-}" = connect ] && exit 1\ncase "$*" in *dumpsys*) [ "${SHIM_ADB_NOLAUNCH:-0}" = 1 ] || echo catalogizer;; esac\nexit 0\n' >"$SH/adb"
 chmod +x "$SH"/*
@@ -73,6 +73,7 @@ expect "F1 phase 3: golden-good -> PASS" "$(phasex phase_3_backend_api)" "PASS:B
 # phase 5 (a successful tauri build leaves a bundle dir; the shim cannot, so the sandbox provides one)
 for d in catalogizer-desktop installer-wizard; do mkdir -p "$P/$d/src-tauri/target/release/bundle"; : >"$P/$d/src-tauri/target/release/bundle/$d.deb"; done
 expect "F1 phase 5: failing desktop npm test -> FAIL:Desktop Apps" "$(phasex phase_5_desktop_apps SHIM_NPM_FAIL_ON=run)" "FAIL:Desktop Apps" 1
+expect "F1 phase 5: only the unit-test step failing -> FAIL (not masked by the build step)" "$(phasex phase_5_desktop_apps SHIM_NPM_FAIL_ON=test)" "FAIL:Desktop Apps" 1
 expect "F1 phase 5: failing npm install -> FAIL" "$(phasex phase_5_desktop_apps SHIM_NPM_FAIL_ON=install)" "FAIL:Desktop Apps" 1
 expect "F1 phase 5: golden-good -> PASS" "$(phasex phase_5_desktop_apps)" "PASS:Desktop Apps" 0
 # phase 6: gradlew shim in both android projects
@@ -112,6 +113,13 @@ phasex phase_9_collect_artifacts SHIM_SHA_FAIL=1 >/dev/null
 rm -rf -- "${P:?}/releases"; mkdir -p "$P/releases"
 expect "F8: zero artifacts -> FAIL, not PASS" "$(phasex phase_9_collect_artifacts)" "FAIL:Artifact Collection" 1
 [ ! -e "$P/releases/SHA256SUMS.txt" ] && ok "F8: no empty SHA256SUMS.txt published" || bad "F8: empty SHA256SUMS.txt published"
+
+# one of two artifacts fails to checksum: the phase must FAIL (find -exec \; would hide it) and record FAIL exactly once
+rm -rf -- "${P:?}/releases"; mkdir -p "$P/releases"; : >"$P/releases/catalog-api-good"; : >"$P/releases/catalog-api-bad"
+O="$(phasex phase_9_collect_artifacts SHIM_SHA_FAIL_MATCH=bad)"
+expect "F8: one artifact failing to checksum -> FAIL" "$O" "FAIL:Artifact Collection" 1
+[ "$(grep -c '^RES=' <<<"$O")" = 1 ] && ok "F8: FAIL recorded exactly once (no fall-through to a second record)" || bad "F8: phase recorded more than once: $O"
+[ ! -e "$P/releases/SHA256SUMS.txt" ] && ok "F7: partial checksum list not published" || bad "F7: partial SHA256SUMS.txt published"
 
 # ---------------- F2/F9: main() still reports after a phase-9 failure ----------------
 mainx() { # $@ = env; runs main() with phases 0-8 stubbed, phase 9 and 10 real
