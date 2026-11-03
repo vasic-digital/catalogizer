@@ -3,13 +3,9 @@ package main
 import (
 	"bytes"
 	"mime/multipart"
-	"net"
 	"net/http"
-	"net/http/httptest"
 	"strings"
-	"sync/atomic"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -120,30 +116,13 @@ func TestRoutePerms_RealBinary_Round2_ScansReadStayAuthOnly(t *testing.T) {
 	assert.Equal(t, 403, code)
 }
 
-// SSRF: an admin-supplied source_hint must never make the server contact a loopback
-// listener, and nothing may be fetched through a redirect.
-func TestRoutePerms_RealBinary_Round2_AssetRequestNeverCallsInternalHosts(t *testing.T) {
-	if testing.Short() {
-		t.Skip("builds and runs the server binary")
-	}
-	var hits int32
-	internal := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		atomic.AddInt32(&hits, 1)
-		w.Header().Set("Content-Type", "image/png")
-		w.Write([]byte("internal-secret"))
-	}))
-	defer internal.Close()
-	c, adm, stop := startPermServer(t, t.TempDir())
-	defer stop()
-	for _, hint := range []string{internal.URL + "/x.png", strings.Replace(internal.URL, "127.0.0.1", "localhost", 1) + "/x.png"} {
-		code, raw := c.do("POST", "/api/v1/assets/request", adm, map[string]interface{}{
-			"type": "cover", "source_hint": hint, "entity_type": "file", "entity_id": "1"})
-		require.Equal(t, 200, code, "%s", raw)
-	}
-	time.Sleep(2 * time.Second) // resolution is asynchronous
-	assert.Zero(t, atomic.LoadInt32(&hits), "the server must not fetch an attacker-chosen loopback URL")
-	_ = net.IPv4zero
-}
+// NOTE (F5): the former binary test for POST /assets/request SSRF was removed: resolution
+// is asynchronous and the endpoint exposes no observable that proves the resolver ran, so
+// "no hit after a sleep" also passed on the unfixed code. The SSRF behaviour is covered
+// deterministically at the service layer (internal/services/outbound_redirect_round2_test.go:
+// TestExternalMetadataResolver_IgnoresOperatorAllowList and ..._RedirectToBlockedHostIsNotFollowed
+// (the latter has a positive control that the resolver fetched; internal/netguard/strict_test.go has one for the strict dialer), and the route stays admin-gated
+// in TestRoutePerms_RealBinary_Round2_OutboundTriggersAdminOnly.
 
 // Any authenticated user may upload a subtitle; the body must be bounded (the handler
 // read the whole upload into memory).
@@ -173,6 +152,41 @@ func TestRoutePerms_RealBinary_Round2_SubtitleUploadIsBounded(t *testing.T) {
 	}
 	assert.NotEqual(t, 413, post(1024), "a small subtitle is not refused for size")
 	assert.Equal(t, 413, post(6<<20), "a 6 MiB subtitle must be refused with 413")
+}
+
+// F4: the two caps are enforced independently. A 2.5 MiB file is under the 3 MiB request
+// cap but over the 2 MiB file cap (file.Size check); a 3.5 MiB non-file field is over the
+// request cap with a tiny file (http.MaxBytesReader / *http.MaxBytesError path).
+func TestRoutePerms_RealBinary_Round2_SubtitleUploadCapsAreIndependent(t *testing.T) {
+	if testing.Short() {
+		t.Skip("builds and runs the server binary")
+	}
+	c, _, stop := startPermServer(t, t.TempDir())
+	defer stop()
+	plain := selfRegister(t, c, "r2cap")
+	post := func(fileBytes, fieldBytes int) int {
+		var buf bytes.Buffer
+		mw := multipart.NewWriter(&buf)
+		mw.WriteField("media_item_id", "1")
+		mw.WriteField("language", "English")
+		mw.WriteField("language_code", "en")
+		if fieldBytes > 0 {
+			mw.WriteField("padding", strings.Repeat("p", fieldBytes))
+		}
+		fw, _ := mw.CreateFormFile("file", "s.srt")
+		fw.Write(bytes.Repeat([]byte("1\n00:00:01,000 --> 00:00:02,000\nx\n\n"), fileBytes/38+1))
+		mw.Close()
+		req, _ := http.NewRequest("POST", c.base+"/api/v1/subtitles/upload", &buf)
+		req.Header.Set("Content-Type", mw.FormDataContentType())
+		req.Header.Set("Authorization", "Bearer "+plain)
+		r, err := http.DefaultClient.Do(req)
+		require.NoError(t, err)
+		defer r.Body.Close()
+		return r.StatusCode
+	}
+	assert.NotEqual(t, 413, post(1<<20, 0), "control: a 1 MiB subtitle is not refused for size")
+	assert.Equal(t, 413, post(2<<20+512<<10, 0), "2.5 MiB file (between the caps) must be refused: file cap")
+	assert.Equal(t, 413, post(1024, 3<<20+512<<10), "3.5 MiB non-file body must be refused: request cap")
 }
 
 // F1: Prometheus cannot log in, so /metrics also accepts one dedicated scrape
