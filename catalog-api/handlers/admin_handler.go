@@ -131,6 +131,14 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 		return
 	}
 
+	wantStatus := c.Query("status")
+	switch wantStatus {
+	case "", "active", "inactive", "suspended", "pending":
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid status filter (active, inactive, suspended, pending)"})
+		return
+	}
+
 	users, err := h.userRepo.List(1000, 0)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list users"})
@@ -154,8 +162,14 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 		if !u.IsActive {
 			status = "inactive"
 		}
+		if u.IsRegistrationPending() {
+			status = "pending"
+		}
 		if u.IsLocked {
 			status = "suspended"
+		}
+		if wantStatus != "" && status != wantStatus {
+			continue
 		}
 
 		roleName := "user"
@@ -220,6 +234,9 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 
 	wasActive := user.IsActive
 	if updates.Status != nil {
+		// Any explicit administrator status decision (approve or reject) ends
+		// the pending-registration state.
+		user.ClearRegistrationPending()
 		switch *updates.Status {
 		case "active":
 			user.IsActive = true

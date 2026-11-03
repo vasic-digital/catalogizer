@@ -24,7 +24,7 @@ interface User {
   username: string;
   email: string;
   role: 'admin' | 'user' | 'viewer';
-  status: 'active' | 'inactive' | 'suspended';
+  status: 'active' | 'inactive' | 'suspended' | 'pending';
   lastLogin?: string;
   createdAt: string;
 }
@@ -70,7 +70,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onCreateBackup,
   onRestoreBackup,
   onScanStorage,
-  onUpdateUser: _onUpdateUser
+  onUpdateUser
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'storage' | 'backups'>('overview');
 
@@ -103,7 +103,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     const colors = {
       active: 'default',
       inactive: 'secondary',
-      suspended: 'destructive'
+      suspended: 'destructive',
+      pending: 'outline'
     } as const;
 
     return <Badge variant={colors[status]}>{status.toUpperCase()}</Badge>;
@@ -314,9 +315,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}
                       </td>
                       <td className="p-2">
-                        <Button variant="outline" size="sm">
-                          Edit
-                        </Button>
+                        {user.status === 'pending' ? (
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onUpdateUser?.(user.id, { status: 'active' })}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onUpdateUser?.(user.id, { status: 'inactive' })}
+                            >
+                              Reject
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button variant="outline" size="sm">
+                            Edit
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}

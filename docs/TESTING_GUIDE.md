@@ -506,3 +506,21 @@ Stress, same run: login burst 320 attempts from one IP gave 30 x 401 and 290 x 4
 Defect found and fixed by this suite (RED first): before the fix, 32 clients got 19 x 200 in 10 s with 25 transport errors (client timeout 30 s), p99 about 29.9 s, and some authenticated requests answered 401 with latency exactly 3.000 s (the session checker times out against the DB and fails closed). Root cause: `FileRepository.SearchFiles` ran the per-row metadata query while its own result cursor was still open, so each in-flight search held one pooled connection and waited for a second; with more concurrent searches than the pool (25) every search waited on another (pool deadlock, ended only by the client giving up). Reproduced at repository level with a pool of 3 and 12 concurrent searches against a real SQLite file (`repository/file_repository_pool_test.go`: RED, `context deadline exceeded`, then GREEN after buffering the page and closing the cursor before the metadata queries). Mutation check of the unit helpers: forcing `evaluateRound` to return no violations makes 4 unit tests fail.
 
 Honest limits (UNCONFIRMED where stated): RSS rose monotonically across the 9 load rounds (from 146 to 257 MiB, about 111 MiB) and the process's own memory monitor logged `MEMORY ALERT: potential leak detected` (heap ratio 1.45, 205 goroutines) once at 64 clients; the 128 MiB per-level bound passes, but whether RSS plateaus is UNCONFIRMED (a longer soak is needed, see `docs/FOLLOW_UPS_NEXT_PHASE.md`). The workload is read-only browse/search; write paths, SMB/WebDAV backends, Postgres and TLS are not exercised. The suite never goes above 64 clients and ran on a shared host, so absolute numbers are not capacity claims. The 401s seen before the fix show that under DB starvation the session check fails closed after 3 s (by design); no 5xx was observed in any run.
+
+## Registration approval and converter tools (real binary)
+
+Two real-binary tests in `catalog-api/` (they build and start the server on SQLite; skipped under `-short`):
+
+```bash
+cd catalog-api
+go test -run TestRegistrationApproval_RealBinary -count=1 .   # register -> pending -> login 403 -> admin approves -> login 200; open/disabled modes
+go test -run TestConversionToolsMissing_RealBinary -count=1 . # PATH without ffmpeg: job ends failed naming the tool; /health/deep converters all false
+```
+
+To verify the runtime image end to end: build it locally with rootless podman
+(`podman build --network host -f catalog-api/Dockerfile -t localhost/<name>:test <context>`), run it on an
+ephemeral loopback port with a throwaway `ADMIN_PASSWORD`/`JWT_SECRET`, check `GET /health/deep` shows
+`ffmpeg`, `convert` and `pdftotext` as `true`, and submit a real conversion job through
+`POST /api/v1/conversion/jobs` (source and target under the container's `/app/data`). Remove only the
+container and image you created. Tests that register a user and log in straight away must run the server
+with `REGISTRATION_MODE=open` (see `docs/UPGRADE_NOTES.md`).

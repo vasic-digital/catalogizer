@@ -2220,6 +2220,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '403':
+          description: 'Credentials are correct but the account is pending administrator approval (code account_pending_approval)'
         '401':
           description: Invalid credentials
           content:
@@ -2231,7 +2233,16 @@ paths:
     post:
       tags: [auth]
       summary: User registration
-      description: Registers a new user account.
+      description: |
+        Self-registration. Behaviour depends on the server setting `REGISTRATION_MODE`:
+
+        - unset / `approval` (default): the account is created INACTIVE and PENDING
+          administrator approval, at the minimal role; no session is issued and
+          the user cannot log in until an administrator approves the account
+          (`PUT /api/v1/admin/users/{id}` with `status: active`). Pending accounts
+          are listed by `GET /api/v1/admin/users?status=pending`.
+        - `open` (explicit opt-in): the account is active immediately.
+        - `disabled`: registration is refused with 403.
       requestBody:
         required: true
         content:
@@ -2240,13 +2251,30 @@ paths:
               $ref: '#/components/schemas/RegisterRequest'
       responses:
         '201':
-          description: User created
+          description: |
+            User created. The user object plus `registration_status` (`pending` or
+            `active`) and a human-readable `message`. In the default mode
+            `is_active` is false and no session token is returned.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                allOf:
+                  - $ref: '#/components/schemas/User'
+                  - type: object
+                    properties:
+                      registration_status:
+                        type: string
+                        enum: [pending, active]
+                      message:
+                        type: string
         '400':
           description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Registration is disabled (`REGISTRATION_MODE=disabled`)
           content:
             application/json:
               schema:
@@ -4318,8 +4346,17 @@ paths:
         Returns all users with their roles, login history, and account status.
         Unlike the standard /users endpoint, this includes locked/inactive users
         and detailed security fields. Requires admin role.
+        The optional `status` query parameter filters by account status;
+        `pending` lists self-registrations waiting for approval.
       security:
         - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [active, inactive, suspended, pending]
       responses:
         '200':
           description: All users with admin-level detail
