@@ -1045,8 +1045,8 @@ func main() {
 	// Prometheus metrics endpoint
 	// Authz round 2: the exposition lists routes, hosts, runtime internals and
 	// per-endpoint traffic, so it is administrator-only (a scraper presents an
-	// administrator bearer token). /health and /health/deep stay public.
-	router.GET("/metrics", jwtMiddleware.RequireAuth(), jwtMiddleware.RequireAdmin(), gin.WrapH(promhttp.Handler()))
+	// administrator bearer token or the dedicated METRICS_SCRAPE_TOKEN, valid on this route only). /health and /health/deep stay public.
+	router.GET("/metrics", metricsScrapeDetect(metricsScrapeToken()), metricsSkipIfScrape(jwtMiddleware.RequireAuth()), metricsSkipIfScrape(jwtMiddleware.RequireAdmin()), gin.WrapH(promhttp.Handler()))
 
 	// pprof endpoints — OPT-IN via HELIX_PPROF_ENABLED=true.
 	//

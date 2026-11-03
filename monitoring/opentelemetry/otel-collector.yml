@@ -16,6 +16,10 @@ receivers:
           static_configs:
             - targets: ['catalogizer-api:8080']
           metrics_path: /metrics
+          # /metrics requires the dedicated scrape credential (METRICS_SCRAPE_TOKEN).
+          authorization:
+            type: Bearer
+            credentials: ${env:METRICS_SCRAPE_TOKEN}
           scrape_interval: 15s
 
 processors:

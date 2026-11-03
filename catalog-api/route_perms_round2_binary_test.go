@@ -174,3 +174,47 @@ func TestRoutePerms_RealBinary_Round2_SubtitleUploadIsBounded(t *testing.T) {
 	assert.NotEqual(t, 413, post(1024), "a small subtitle is not refused for size")
 	assert.Equal(t, 413, post(6<<20), "a 6 MiB subtitle must be refused with 413")
 }
+
+// F1: Prometheus cannot log in, so /metrics also accepts one dedicated scrape
+// credential (METRICS_SCRAPE_TOKEN, at least 32 characters). It opens GET /metrics only.
+func TestRoutePerms_RealBinary_Round2_MetricsScrapeToken(t *testing.T) {
+	if testing.Short() {
+		t.Skip("builds and runs the server binary")
+	}
+	const tok = "scrape-token-0123456789abcdefghijKLMN"
+	c, adm, _, stop := startPermServerDir(t, t.TempDir(), t.TempDir(), "METRICS_SCRAPE_TOKEN="+tok)
+	defer stop()
+	plain := selfRegister(t, c, "r2scrape")
+	code, body := c.do("GET", "/metrics", tok, nil)
+	require.Equal(t, 200, code, "scrape token must read /metrics")
+	assert.Contains(t, string(body), "go_goroutines")
+	for _, r := range []permCase{{"GET", "/api/v1/catalog", ""}, {"GET", "/api/v1/auth/me", ""}, {"GET", "/api/v1/stats/overall", ""}, {"POST", "/api/v1/smb/probe", ""}, {"GET", "/health/deep", ""}} {
+		if r.path == "/health/deep" {
+			continue // public route: the token is irrelevant there
+		}
+		code, _ = c.do(r.method, r.path, tok, map[string]interface{}{})
+		assert.Equal(t, 401, code, "scrape token must not authenticate "+r.method+" "+r.path)
+	}
+	code, _ = c.do("GET", "/metrics", tok+"x", nil)
+	assert.Equal(t, 401, code, "wrong token")
+	code, _ = c.do("GET", "/metrics", tok[:len(tok)-1], nil)
+	assert.Equal(t, 401, code, "truncated token")
+	code, _ = c.do("GET", "/metrics", plain, nil)
+	assert.Equal(t, 403, code, "plain user")
+	code, _ = c.do("GET", "/metrics", adm, nil)
+	assert.Equal(t, 200, code, "admin JWT keeps working")
+	code, _ = c.do("POST", "/metrics", tok, map[string]interface{}{})
+	assert.NotEqual(t, 200, code, "token is for GET only")
+}
+
+// A configured token shorter than 32 characters is refused at start-up use: it is ignored (admin JWT only).
+func TestRoutePerms_RealBinary_Round2_ShortScrapeTokenIgnored(t *testing.T) {
+	if testing.Short() {
+		t.Skip("builds and runs the server binary")
+	}
+	const short = "short-token"
+	c, _, _, stop := startPermServerDir(t, t.TempDir(), t.TempDir(), "METRICS_SCRAPE_TOKEN="+short)
+	defer stop()
+	code, _ := c.do("GET", "/metrics", short, nil)
+	assert.Equal(t, 401, code, "a token under 32 characters must not be accepted")
+}
