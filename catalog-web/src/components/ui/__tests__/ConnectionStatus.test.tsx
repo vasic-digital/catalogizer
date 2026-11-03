@@ -300,7 +300,9 @@ describe('ConnectionStatus - placement', () => {
     mockUseWebSocket.mockReturnValue({ getConnectionState: vi.fn().mockReturnValue('closed') })
     render(<ConnectionStatus />)
     const wrapper = screen.getByText('Disconnected').closest('.fixed') as HTMLElement
-    expect(wrapper.className).toContain('bottom-4')
+    // bottom-10 (2.5rem) clears the fixed version chip in Layout (bottom-2, ~1rem tall) so the two never overlap on a phone
+    expect(wrapper.className).toMatch(/(^|\s)bottom-10(\s|$)/)
+    expect(wrapper.className).not.toMatch(/(^|\s)bottom-4(\s|$)/)
     expect(wrapper.className).toContain('left-4')
     expect(wrapper.className).toContain('right-4')
     expect(wrapper.className).toContain('sm:top-20')

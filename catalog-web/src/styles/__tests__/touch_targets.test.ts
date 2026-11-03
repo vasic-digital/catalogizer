@@ -18,6 +18,47 @@ function coarseBlock(): string {
   throw new Error('unterminated coarse block')
 }
 
+/** Every @media block in index.css as {query, body}, so the QUERY itself can be asserted exactly. */
+function mediaBlocks(): { query: string; body: string }[] {
+  const out: { query: string; body: string }[] = []
+  let at = css.indexOf('@media')
+  while (at > -1) {
+    const open = css.indexOf('{', at)
+    const query = css.slice(at + '@media'.length, open).trim()
+    let depth = 0
+    let end = open
+    for (; end < css.length; end++) {
+      if (css[end] === '{') depth++
+      if (css[end] === '}' && --depth === 0) break
+    }
+    out.push({ query, body: css.slice(open + 1, end) })
+    at = css.indexOf('@media', end)
+  }
+  return out
+}
+
+describe('touch-target media query and helper contract', () => {
+  it('the central :where() rule lives under exactly (pointer: coarse), never a widened query', () => {
+    const blocks = mediaBlocks().filter((b) => b.body.includes(':where('))
+    expect(blocks.length).toBe(1)
+    expect(blocks[0].query).toBe('(pointer: coarse)')
+  })
+
+  it('no media query in index.css applies the 44px minimum to fine pointers', () => {
+    for (const b of mediaBlocks().filter((m) => /min-(height|width):\s*44px/.test(m.body))) {
+      expect(b.query, 'a 44px minimum must be coarse-only').toBe('(pointer: coarse)')
+    }
+  })
+
+  it('.touch-target carries the 44px min-height AND min-width pair inside the coarse query', () => {
+    const blocks = mediaBlocks().filter((b) => b.body.includes('.touch-target'))
+    expect(blocks.length).toBe(1)
+    expect(blocks[0].query).toBe('(pointer: coarse)')
+    expect(blocks[0].body).toMatch(/min-height:\s*44px/)
+    expect(blocks[0].body).toMatch(/min-width:\s*44px/)
+  })
+})
+
 describe('central coarse-pointer touch targets', () => {
   const block = () => coarseBlock()
 

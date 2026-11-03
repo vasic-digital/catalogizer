@@ -45,7 +45,26 @@ def test_empty_scope_is_blind_not_pass(tmp_path):
     assert run(tmp_path).returncode == 2
 
 
-def test_viewport_inside_comment_text_only_still_matches_real_meta_form(tmp_path):
+CARRIER = (
+    '<!DOCTYPE html><html><head><meta charset="utf-8"><title>t</title></head><body>'
+    '<p>Remember the viewport meta tag and name="viewport" content="width=device-width".</p>'
+    '<!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->'
+    '<script>var m = \'<meta name="viewport" content="x">\';</script></body></html>'
+)
+
+
+def test_carrier_page_mentioning_viewport_without_a_real_tag_fails(tmp_path):
+    r = run(tree(tmp_path, {"a.html": GOOD, "carrier.html": CARRIER}))
+    assert r.returncode == 1, r.stdout + r.stderr
+    assert "MISSING docs/carrier.html" in r.stdout
+
+
+def test_meta_viewport_with_empty_content_fails(tmp_path):
+    r = run(tree(tmp_path, {"a.html": '<head><meta name="viewport" content=""></head>'}))
+    assert r.returncode == 1
+
+
+def test_single_quoted_real_meta_form_matches(tmp_path):
     r = run(tree(tmp_path, {"a.html": "<head><meta name='viewport' content='width=device-width'></head>"}))
     assert r.returncode == 0
 
@@ -58,7 +77,25 @@ def test_generator_emits_complete_page_with_viewport_and_check_mode(tmp_path):
     assert r.returncode == 0, r.stderr
     html = (tmp_path / "d.html").read_text()
     assert html.startswith("<!DOCTYPE html>") and '<meta name="viewport"' in html and "<title>Title here</title>" in html
+    assert html.count("<h1") == 1, "title must not be rendered a second time (pagetitle=, not title=)"
+    assert oct(os.stat(tmp_path / "d.html").st_mode & 0o777) == "0o644"
     assert subprocess.run(["bash", RENDER, "--check", str(md)], capture_output=True).returncode == 0
     (tmp_path / "d.html").write_text(FRAGMENT)  # drift
     c = subprocess.run(["bash", RENDER, "--check", str(md)], capture_output=True, text=True)
     assert c.returncode == 1 and "DRIFT" in c.stdout
+
+
+@pytest.mark.skipif(shutil.which("pandoc") is None, reason="pandoc absent: SKIP, tool not present")
+def test_pandoc_failure_leaves_no_temp_file(tmp_path):
+    fake = tmp_path / "bin"
+    fake.mkdir()
+    (fake / "pandoc").write_text("#!/bin/sh\nexit 3\n")
+    (fake / "pandoc").chmod(0o755)
+    md = tmp_path / "d.md"
+    md.write_text("# T\n")
+    tdir = tmp_path / "tmp"
+    tdir.mkdir()
+    env = dict(os.environ, PATH=str(fake) + os.pathsep + os.environ["PATH"], TMPDIR=str(tdir))
+    r = subprocess.run(["bash", RENDER, str(md)], capture_output=True, text=True, env=env)
+    assert r.returncode != 0
+    assert list(tdir.iterdir()) == []

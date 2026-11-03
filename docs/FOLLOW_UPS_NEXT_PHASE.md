@@ -418,12 +418,27 @@ Tracked follow-ups (status OPEN):
   shows from `lg`, a compact Search link at `md`.
 - Docs HTML without the viewport meta: generator `scripts/docs/render_md_to_html.sh` plus gate
   `scripts/docs/check_html_viewport.py` (§11.4.12); 4 files regenerated.
-- STILL OPEN: (a) the fixed "Disconnected" status badge on mobile overlaps in-flow content at the page bottom
-  (admin "0%", AI Search button, the version chip) while the WebSocket is down; needs a layout decision (reserve bottom
-  space or dock the badge in the header). (b) `tap_target_small_desktop` (mouse pointer, compact desktop controls) is
-  reported but intentionally not enforced; design decision. (c) entity-movie, entity-album, identities FAIL only on
-  404s from the audit's seeded data / missing `/api/v1/identities` route (not layout). (d) website (VitePress) was not in
-  this run.
+- Review r1 (NO-GO, F1 important) fixed in the follow-up commit: the More control is now a disclosure (list of plain links,
+  `aria-expanded` + `aria-controls`, no menu roles); Escape and item selection return focus to the trigger; tests for
+  Escape-in-list, Escape-on-trigger, Tab order, click outside, selecting an item; mutations (remove click-outside, drop
+  the focus return) die. Touch-target test now parses the media query exactly; gate parses the real meta tag with a
+  carrier fixture; regenerated docs use `pagetitle=` (one h1); search clear buttons no longer cover input text
+  (`pr-14`); gate and `--check` are run by `scripts/pre-flight-check.sh`; audit oracle records unrounded sizes and waits
+  for layout to settle (`rec.unsettled` is recorded when it never does).
+- STILL OPEN, operator decision (11.4.66) D1, "Disconnected" badge layout. It now clears the version chip on phones
+  (`bottom-10`), but a fixed overlay can still cover in-flow content at the page bottom while the WebSocket is down
+  (admin "0%", AI Search button at 390px). Options: (1) auto-dismiss after ~5s and keep a header status dot;
+  (2) dock it in the header on phones (no overlay at all); (3) reserve bottom space in Layout while it is visible.
+  Recommendation: (2), since a persistent overlay on a 360px screen always covers something.
+- STILL OPEN, operator decision (11.4.66) D2, desktop target size (`tap_target_small_desktop`, about 1280 reports per
+  browser, mouse pointer). Today 44px is enforced on coarse pointers only. Options: (a) enforce the WCAG 2.2 AA 2.5.8
+  minimum of 24x24 CSS px everywhere and keep 44 on coarse; (b) keep 44 on coarse only (status quo); (c) enforce 44
+  everywhere. Recommendation: (a). Nobody has decided this yet.
+- OPEN, UNCONFIRMED: the earlier webkit `tap_target_small` pair (register inputs, 132x44 after rounding) and the reviewer's
+  3 chromium results (ActivityFeed tabs) were not root-caused. The oracle was changed to record unrounded sizes and to wait
+  for layout to settle; the cause of the earlier values is not established.
+- entity-movie, entity-album, identities FAIL only on 404s from the audit data / missing `/api/v1/identities` route (not
+  layout). The VitePress website was not part of this run.
 
 ## Runner scripts (CAT-013/014/016) review round 3 follow-ups (GO-with-follow-ups, all minor)
 

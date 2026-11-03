@@ -8,7 +8,8 @@
 #          default  writes FILE.html next to each FILE.md (overwrites)
 #          --check  writes nothing; exit 1 if an existing FILE.html differs from what would be generated, 0 otherwise
 # Needs    pandoc >= 3 (its standard HTML5 template carries the viewport meta).
-# Output   FILE.html ; the title is the first '# ' heading of FILE.md (file name when there is none).
+# Output   FILE.html (mode 644) ; <title> comes from the first '# ' heading of FILE.md (file name when there is none) via
+#          pagetitle=, so the page's own '# ' heading is the only visible h1 (title= would add a second one).
 # Exit     0 ok, 1 drift (--check) or a generated page without viewport meta, 2 usage / missing tool or input.
 set -euo pipefail
 check=0
@@ -22,7 +23,8 @@ for md in "$@"; do
   title="$(sed -n 's/^# \(.*\)$/\1/p' "$md" | head -n1)"
   [ -n "$title" ] || title="$(basename "$md" .md)"
   tmp="$(mktemp "${TMPDIR:-/tmp}/render-md-html.XXXXXX")"
-  pandoc -f gfm -t html5 -s --metadata "title=$title" --metadata "lang=en" "$md" -o "$tmp"
+  trap 'rm -f "${tmp:?}"' EXIT   # a pandoc failure under set -e must not leave the temp file behind
+  pandoc -f gfm -t html5 -s --metadata "pagetitle=$title" --metadata "lang=en" "$md" -o "$tmp"
   if ! grep -q '<meta name="viewport"' "$tmp"; then
     echo "render_md_to_html: generated page for $md has no viewport meta" >&2; rm -f "${tmp:?}"; rc=1; continue
   fi
@@ -30,6 +32,7 @@ for md in "$@"; do
     if ! cmp -s "$tmp" "$out"; then echo "DRIFT $out"; rc=1; fi
     rm -f "${tmp:?}"
   else
+    chmod 644 "$tmp"   # mktemp creates 0600; the published page must be world-readable like every other tracked doc
     mv -f "$tmp" "$out"; echo "wrote $out"
   fi
 done

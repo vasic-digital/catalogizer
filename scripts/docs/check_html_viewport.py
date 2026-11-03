@@ -6,19 +6,39 @@ Purpose   A doc page without <meta name="viewport"> is rendered at desktop width
 Scope     git-tracked *.html under docs/ (a directory walk of docs/ when ROOT is not a git checkout).
 Usage     check_html_viewport.py [--root DIR]
 Controls  Before the scan, through the same matcher: a synthetic page WITH the meta must match (positive), one without must not
-          (negative), and the scope must be non-empty. Any control failure = BLIND (exit 2).
+          (negative), and a carrier page (the word in text and a commented-out meta) must not, and the scope must be non-empty. Any control failure = BLIND (exit 2).
 Exit      0 all pages declare a viewport, 1 one or more do not (printed as MISSING <path>), 2 BLIND / usage.
 """
 import os
-import re
 import subprocess
+from html.parser import HTMLParser
 import sys
 
-META = re.compile(r'<meta\s[^>]*name\s*=\s*["\']viewport["\'][^>]*>', re.I)
+class _Meta(HTMLParser):
+    """Finds a REAL <meta name="viewport" content=...> start tag in the parsed document.
+
+    Parsing (not a text match) means a comment, a <script>/<style> body or visible text that merely contains the words
+    cannot satisfy the gate, and the tag must carry a non-empty content attribute.
+    """
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.found = False
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "meta":
+            a = {k.lower(): (v or "") for k, v in attrs}
+            if a.get("name", "").strip().lower() == "viewport" and a.get("content", "").strip():
+                self.found = True
+
+    handle_startendtag = handle_starttag
 
 
 def has_viewport(text):
-    return bool(META.search(text))
+    p = _Meta()
+    p.feed(text)
+    p.close()
+    return p.found
 
 
 def tracked(root):
@@ -39,7 +59,8 @@ def main(argv):
     elif argv:
         print(__doc__, file=sys.stderr)
         return 2
-    if not has_viewport('<head><meta name="viewport" content="width=device-width"></head>') or has_viewport("<head></head><p>x</p>"):
+    carrier = '<head></head><body><p>set the viewport meta</p><!-- <meta name="viewport" content="width=device-width"> --></body>'
+    if not has_viewport('<head><meta name="viewport" content="width=device-width"></head>') or has_viewport("<head></head><p>x</p>") or has_viewport(carrier):
         print("BLIND: matcher controls failed", file=sys.stderr)
         return 2
     files = tracked(root)

@@ -69,11 +69,12 @@ const ALL = ['Dashboard', 'Media', 'Browse', 'Favorites', 'Playlists', 'Analytic
 describe('Header navigation overflow ("More" menu) and mobile parity', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('exposes a More menu button (aria-haspopup=menu) when authenticated', () => {
+  it('exposes a More disclosure button (aria-expanded + aria-controls, no menu role) when authenticated', () => {
     authed()
     customRender(<Header />)
     const more = screen.getByRole('button', { name: /more/i })
-    expect(more).toHaveAttribute('aria-haspopup', 'menu')
+    expect(more).not.toHaveAttribute('aria-haspopup')
+    expect(more).toHaveAttribute('aria-controls', 'header-more-list')
     expect(more).toHaveAttribute('aria-expanded', 'false')
     // the More button disappears once every item is inline (>= 2xl)
     expect(more.parentElement!.className).toContain('2xl:hidden')
@@ -105,8 +106,9 @@ describe('Header navigation overflow ("More" menu) and mobile parity', () => {
     const more = screen.getByRole('button', { name: /more/i })
     await user.click(more)
     expect(more).toHaveAttribute('aria-expanded', 'true')
-    const menu = screen.getByRole('menu')
-    const items = within(menu).getAllByRole('menuitem')
+    const menu = screen.getByRole('list', { name: 'More navigation' })
+    expect(menu.id).toBe('header-more-list')
+    const items = within(menu).getAllByRole('link')
     const labels = items.map((i) => i.textContent?.trim())
     expect(labels).toEqual(['Browse', 'Favorites', 'Playlists', 'Analytics', 'Subtitles', 'Collections', 'Convert'])
     const byLabel = Object.fromEntries(items.map((i) => [i.textContent?.trim(), i.className]))
@@ -115,7 +117,7 @@ describe('Header navigation overflow ("More" menu) and mobile parity', () => {
     expect(byLabel['Collections']).toContain('2xl:hidden')
     expect(within(menu).queryByText('Dashboard')).not.toBeInTheDocument()
     await user.keyboard('{Escape}')
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'More navigation' })).not.toBeInTheDocument()
     expect(more).toHaveAttribute('aria-expanded', 'false')
   })
 
@@ -124,12 +126,12 @@ describe('Header navigation overflow ("More" menu) and mobile parity', () => {
     authed(false)
     const r = customRender(<Header />)
     await user.click(screen.getByRole('button', { name: /more/i }))
-    expect(within(screen.getByRole('menu')).queryByText('Admin')).not.toBeInTheDocument()
+    expect(within(screen.getByRole('list', { name: 'More navigation' })).queryByText('Admin')).not.toBeInTheDocument()
     r.unmount()
     authed(true)
     customRender(<Header />)
     await user.click(screen.getByRole('button', { name: /more/i }))
-    expect(within(screen.getByRole('menu')).getByText('Admin')).toBeInTheDocument()
+    expect(within(screen.getByRole('list', { name: 'More navigation' })).getByText('Admin')).toBeInTheDocument()
   })
 
   it('menu items are touch-sized links', async () => {
@@ -137,7 +139,7 @@ describe('Header navigation overflow ("More" menu) and mobile parity', () => {
     const user = userEvent.setup()
     customRender(<Header />)
     await user.click(screen.getByRole('button', { name: /more/i }))
-    for (const i of screen.getAllByRole('menuitem')) expect(i.className).toContain('min-h-[44px]')
+    for (const i of within(screen.getByRole('list', { name: 'More navigation' })).getAllByRole('link')) expect(i.className).toContain('min-h-[44px]')
   })
 
   it('mobile menu offers every destination the desktop nav offers (Analytics was missing)', async () => {
@@ -173,5 +175,84 @@ describe('Header navigation overflow ("More" menu) and mobile parity', () => {
     expect(compact).toHaveAttribute('href', '/browse')
     expect(compact.className).toContain('lg:hidden')
     expect(compact.className).toContain('touch-target')
+  })
+
+  describe('More disclosure keyboard and dismissal behaviour (WCAG 2.4.3)', () => {
+    const list = () => screen.queryByRole('list', { name: 'More navigation' })
+
+    it('has no menu/menuitem roles', async () => {
+      authed()
+      const user = userEvent.setup()
+      customRender(<Header />)
+      await user.click(screen.getByRole('button', { name: /more/i }))
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+      expect(screen.queryAllByRole('menuitem')).toHaveLength(0)
+    })
+
+    it('Escape with focus INSIDE the list returns focus to the trigger', async () => {
+      authed()
+      const user = userEvent.setup()
+      customRender(<Header />)
+      const more = screen.getByRole('button', { name: /more/i })
+      await user.click(more)
+      await user.tab()
+      expect(within(list()!).getAllByRole('link')[0]).toHaveFocus()
+      await user.keyboard('{Escape}')
+      expect(list()).toBeNull()
+      expect(more).toHaveFocus()
+    })
+
+    it('Escape with focus on the trigger keeps focus on the trigger', async () => {
+      authed()
+      const user = userEvent.setup()
+      customRender(<Header />)
+      const more = screen.getByRole('button', { name: /more/i })
+      await user.click(more)
+      await user.keyboard('{Escape}')
+      expect(list()).toBeNull()
+      expect(more).toHaveFocus()
+    })
+
+    it('Tab order: trigger, then the list links in order', async () => {
+      authed()
+      const user = userEvent.setup()
+      customRender(<Header />)
+      await user.click(screen.getByRole('button', { name: /more/i }))
+      const links = within(list()!).getAllByRole('link')
+      for (const l of links) {
+        await user.tab()
+        expect(l).toHaveFocus()
+      }
+    })
+
+    it('click outside closes it', async () => {
+      authed()
+      const user = userEvent.setup()
+      customRender(<Header />)
+      await user.click(screen.getByRole('button', { name: /more/i }))
+      expect(list()).not.toBeNull()
+      await user.click(document.body)
+      expect(list()).toBeNull()
+    })
+
+    it('click inside the wrapper (on the list container) does not close it', async () => {
+      authed()
+      const user = userEvent.setup()
+      customRender(<Header />)
+      await user.click(screen.getByRole('button', { name: /more/i }))
+      await user.click(list()!)
+      expect(list()).not.toBeNull()
+    })
+
+    it('selecting an item closes it and returns focus to the trigger', async () => {
+      authed()
+      const user = userEvent.setup()
+      customRender(<Header />)
+      const more = screen.getByRole('button', { name: /more/i })
+      await user.click(more)
+      await user.click(within(list()!).getByRole('link', { name: 'Collections' }))
+      expect(list()).toBeNull()
+      expect(more).toHaveFocus()
+    })
   })
 })

@@ -72,6 +72,16 @@ for (const c of cases) {
           if (await nb.count() && !(await nb.isDisabled())) { await nb.click({timeout:3000}).catch(()=>{}); await page.waitForTimeout(500);} else { rec.note=`could not advance to step ${k} (reached ${i})`; break; } } }
       if (appName!=='website') { const gone = await page.waitForFunction(()=>!/Your media collection, organized|Made with/.test(document.body.innerText)||document.body.innerText.length>400,null,{timeout:15000}).then(()=>true).catch(()=>false); rec.splashCleared=gone; await page.waitForLoadState('networkidle',{timeout:5000}).catch(()=>{}); }
       await page.waitForTimeout(c.motion==='reduce'?200:700);
+      // Determinism (11.4.50): measure only once layout is at rest. Finite CSS/WAAPI animations must be finished and the
+      // geometry of every control must be identical across two samples 150ms apart (framer-motion animates via rAF, so
+      // getAnimations() alone does not see it). Gives up after 4s and records rec.unsettled instead of measuring a moving page.
+      rec.unsettled = await page.evaluate(async () => {
+        const snap = () => document.getAnimations().filter((a) => a.playState === 'running' && a.effect && a.effect.getTiming().iterations !== Infinity).length + '|' +
+          Array.from(document.querySelectorAll('a,button,input,select,textarea,[role=tab],[role=button]')).map((e) => { const r = e.getBoundingClientRect(); return [r.x, r.y, r.width, r.height].map((n) => n.toFixed(2)).join(','); }).join(';');
+        const t0 = Date.now(); let prev = snap();
+        while (Date.now() - t0 < 4000) { await new Promise((res) => setTimeout(res, 150)); const cur = snap(); if (cur === prev && !/^[1-9]/.test(cur)) return false; prev = cur; }
+        return true;
+      });
       const res = await page.evaluate(oracleFn, {touch, cap:8, vw:c.w, vh:c.h});
       const dir = path.join(OUT,appName+TAG,browserName); fs.mkdirSync(dir,{recursive:true});
       const f = path.join(dir,`${name}__${c.w}x${c.h}__dpr${c.dpr}__${c.theme}__${c.motion}.png`);

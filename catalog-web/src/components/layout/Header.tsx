@@ -71,6 +71,7 @@ export const Header: React.FC = () => {
   const [searchValue, setSearchValue] = useState('')
   const [isMoreOpen, setIsMoreOpen] = useState(false)
   const moreRef = useRef<HTMLDivElement>(null)
+  const moreButtonRef = useRef<HTMLButtonElement>(null)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -88,7 +89,10 @@ export const Header: React.FC = () => {
   // Close the overflow menu on Escape, on a click outside it and whenever the route changes.
   useEffect(() => {
     if (!isMoreOpen) return
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsMoreOpen(false) }
+    // Escape closes the disclosure and puts focus back on its trigger, so keyboard users never lose their place (WCAG 2.4.3).
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setIsMoreOpen(false); moreButtonRef.current?.focus() }
+    }
     const onDown = (e: MouseEvent) => { if (moreRef.current && !moreRef.current.contains(e.target as Node)) setIsMoreOpen(false) }
     document.addEventListener('keydown', onKey)
     document.addEventListener('mousedown', onDown)
@@ -136,8 +140,9 @@ export const Header: React.FC = () => {
               <div ref={moreRef} className="relative flex-none ml-2 2xl:hidden">
                 <button
                   type="button"
-                  aria-haspopup="menu"
+                  ref={moreButtonRef}
                   aria-expanded={isMoreOpen}
+                  aria-controls="header-more-list"
                   onClick={() => setIsMoreOpen((o) => !o)}
                   className="inline-flex items-center gap-1 px-2 min-h-[44px] rounded-md text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
@@ -145,24 +150,24 @@ export const Header: React.FC = () => {
                   <span>More</span>
                 </button>
                 {isMoreOpen && (
-                  <div
-                    role="menu"
+                  <ul
+                    id="header-more-list"
                     aria-label="More navigation"
-                    className="absolute right-0 top-full mt-2 w-56 p-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-900 dark:border-gray-700"
+                    className="absolute right-0 top-full mt-2 w-56 p-1 z-50 list-none m-0 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-900 dark:border-gray-700"
                   >
                     {navItems.filter((i) => i.tier > 0).map(({ to, label, icon: Icon, tier }) => (
-                      <Link
-                        key={to}
-                        to={to}
-                        role="menuitem"
-                        className={moreItemClass(location.pathname, to, tier)}
-                        onClick={() => setIsMoreOpen(false)}
-                      >
-                        {Icon && <Icon className="h-4 w-4" />}
-                        {label}
-                      </Link>
+                      <li key={to} className={MENU_HIDDEN_FROM_TIER[tier]}>
+                        <Link
+                          to={to}
+                          className={moreItemClass(location.pathname, to, tier)}
+                          onClick={() => { setIsMoreOpen(false); moreButtonRef.current?.focus() }}
+                        >
+                          {Icon && <Icon className="h-4 w-4" />}
+                          {label}
+                        </Link>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 )}
               </div>
             </div>
@@ -185,7 +190,7 @@ export const Header: React.FC = () => {
                     }
                   }}
                   placeholder="Search movies, shows, music..."
-                  className="w-full pl-10 pr-10 py-2 bg-gray-100 border border-gray-300 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-500"
+                  className="w-full pl-10 pr-14 py-2 bg-gray-100 border border-gray-300 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-500"
                 />
                 {searchValue && (
                   <button
@@ -201,7 +206,7 @@ export const Header: React.FC = () => {
             </div>
           )}
 
-          {/* Compact search entry for tablet widths (full box shows from lg) */}
+          {/* Compact search entry for tablet widths (full box shows from lg). No search input exists at md, so it opens Browse, which has its own search field. */}
           {isAuthenticated && (
             <Link
               to="/browse"
@@ -304,7 +309,7 @@ export const Header: React.FC = () => {
                       }
                     }}
                     placeholder="Search movies, shows, music..."
-                    className="w-full pl-10 pr-10 py-2 bg-gray-100 border border-gray-300 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-500"
+                    className="w-full pl-10 pr-14 py-2 bg-gray-100 border border-gray-300 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder:text-gray-500"
                   />
                   {searchValue && (
                     <button

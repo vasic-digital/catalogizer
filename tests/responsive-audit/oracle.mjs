@@ -40,7 +40,7 @@ export const oracleFn = (opts) => {
     if ((r.width < minPx || r.height < minPx) && !isInlineText) {
       // checkboxes/radios often wrapped by a larger <label>; measure label too
       let rr=r; const lab = el.labels&&el.labels[0]; if (lab){ const lr=lab.getBoundingClientRect(); if(lr.width*lr.height>rr.width*rr.height) rr=lr; }
-      if (rr.width < minPx || rr.height < minPx) add(touch?'tap_target_small':'tap_target_small_desktop', el, {w: Math.round(rr.width), h: Math.round(rr.height)});
+      if (rr.width < minPx || rr.height < minPx) add(touch?'tap_target_small':'tap_target_small_desktop', el, {w: +rr.width.toFixed(2), h: +rr.height.toFixed(2)});
     }
     // 4 occlusion: centre of control hit-test (only when within the viewport)
     const cx=Math.min(Math.max(r.left+r.width/2,0),vw-1), cy=r.top+r.height/2;
