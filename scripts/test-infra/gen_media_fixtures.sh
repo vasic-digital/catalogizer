@@ -2,7 +2,7 @@
 # gen_media_fixtures.sh - deterministic media/document fixture corpus for the LIVE validation matrix (chunk L1).
 # Guide: docs/scripts/gen_media_fixtures.md
 #
-#   gen_media_fixtures.sh --out DIR            generate the corpus into DIR (DIR must be OUTSIDE the repo; emptied first if it holds a previous corpus)
+#   gen_media_fixtures.sh --out DIR            generate the corpus into DIR (DIR must be OUTSIDE the repo; emptied only if absent/empty/a previous corpus, else REFUSED rc=2)
 #   gen_media_fixtures.sh --out DIR --check    generate twice (DIR/run1, DIR/run2) and compare every sha256: exit 0 identical, 1 differs
 #   gen_media_fixtures.sh --out DIR --verify   re-hash DIR against DIR/manifest.json (exit 1 on drift)
 # Env: GMF_MAX_BYTES (default 314572800 = 300 MB cap), GMF_TEST_NONDET=1 (TEST ONLY: leaves a nondeterministic flag in - used to prove --check goes RED).
@@ -27,7 +27,32 @@ case "$OUT" in /*) ;; *) echo "gen_media_fixtures: REFUSED reason=relative_out" 
 OUT="$(readlink -m -- "$OUT")"
 case "$OUT" in "$ROOT"|"$ROOT"/*) echo "gen_media_fixtures: REFUSED reason=out_inside_repo $OUT" >&2; exit 2;; esac
 [ "$(echo "$OUT" | tr -cd / | wc -c)" -ge 3 ] || { echo "gen_media_fixtures: REFUSED reason=out_too_shallow $OUT" >&2; exit 2; }
-for t in ffmpeg ffprobe python3 convert; do command -v "$t" >/dev/null || { echo "gen_media_fixtures: REFUSED reason=tool_missing $t" >&2; exit 3; }; done
+# ---- deletion guard (constitution 11.4.287): the generator empties its target, so the target must be provably ours ----
+refuse() { echo "gen_media_fixtures: REFUSED reason=$1 $OUT" >&2; exit 2; }
+SAFE_RM_LIB="$ROOT/constitution/scripts/lib/safe_rm.sh"
+[ -r "$SAFE_RM_LIB" ] || refuse safe_rm_lib_missing
+# shellcheck source=/dev/null
+. "$SAFE_RM_LIB"
+MARKER_SCHEMA="catalogizer.media-fixtures/1"
+under() { case "$2" in "$1"|"$1"/*) return 0;; esac; [ "$1" = / ]; }   # under A B: B equals A or lives below A
+homes() { local h; for h in "${HOME:-}" $(echo "${SAFE_RM_EXTRA_HOMES:-}" | tr ':' ' '); do [ -n "$h" ] && readlink -m -- "$h"; done; }
+out_guard_home() {        # refuse $HOME itself, an extra home, or any ancestor of one
+  local h; while IFS= read -r h; do under "$1" "$h" && refuse out_is_or_contains_home; done < <(homes); return 0; }
+out_guard_ancestor() {    # refuse the repo root or any ancestor of it
+  under "$1" "$ROOT" && refuse out_is_or_contains_repo; return 0; }
+out_guard_policy() {      # delete only what is absent, empty, or a previous corpus (manifest.json carrying our schema)
+  local d=$1
+  [ -e "$d" ] || [ -L "$d" ] || return 0
+  [ -d "$d" ] && [ ! -L "$d" ] || { OUT=$d; refuse out_not_a_plain_directory; }
+  [ -z "$(ls -A -- "$d")" ] && return 0
+  if [ -f "$d/manifest.json" ] && python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1])).get("schema")==sys.argv[2] else 1)' "$d/manifest.json" "$MARKER_SCHEMA" 2>/dev/null; then return 0; fi
+  OUT=$d; refuse out_has_foreign_content_no_corpus_marker
+}
+if [ "$MODE" != verify ]; then
+  out_guard_ancestor "$OUT"
+  out_guard_home "$OUT"
+fi
+for t in ffmpeg ffprobe python3; do command -v "$t" >/dev/null || { echo "gen_media_fixtures: REFUSED reason=tool_missing $t" >&2; exit 3; }; done
 MAX="${GMF_MAX_BYTES:-314572800}"
 
 FF=(ffmpeg -hide_banner -loglevel error -y -nostdin -threads 1 -filter_threads 1 -filter_complex_threads 1)
@@ -41,7 +66,10 @@ ASRC() { echo "sine=frequency=${2:-440}:sample_rate=48000:duration=$1"; }
 
 gen() {
   local D=$1
-  rm -rf -- "${D:?}"; mkdir -p "$D"/{movies,tv,music,books,photos,negative}
+  out_guard_policy "$D"
+  if [ -d "$D" ] && [ -n "$(ls -A -- "$D")" ]; then safe_rm_rf "$D" || { OUT=$D; refuse safe_rm_refused; }; fi
+  mkdir -p "$D"/{movies,tv,music,books,photos,negative}
+  printf '{"schema": "%s", "stub": true}\n' "$MARKER_SCHEMA" > "$D/manifest.json"   # marker so an interrupted run can be regenerated
   local M="$D/movies" T="$D/tv" U="$D/music" B="$D/books" P="$D/photos" N="$D/negative"
   # ---- video (5 s, 640x360, 25 fps, 440 Hz tone, burned-in testsrc timestamp counter) ----
   local V5; V5=(-f lavfi -i "$(VSRC 640x360 5)" -f lavfi -i "$(ASRC 5)")
@@ -143,7 +171,7 @@ w("negative/truncated-tail.mp4", src[: len(src)//2])
 src = open(os.path.join(D, "photos/Color Bars Gradient.png"), "rb").read()
 w("negative/truncated.png", src[:200])
 PY
-  rm -rf -- "${D:?}/.cbz"
+  safe_rm_rf "$D/.cbz"
 }
 
 manifest() {
@@ -178,7 +206,10 @@ for dp, dn, fn in os.walk(D):
         if ext in ("srt","vtt","ass") and "out-of-sync" not in f: e["expected"] = {"cues": CUES, "cue_count": 3, "start_s": [0.5, 2.0, 3.5]}
         if "out-of-sync" in f: e["expected"] = {"cues": CUES, "cue_count": 3, "start_s": [7.5, 9.0, 10.5], "note": "shifted +7 s: sync verification must flag it"}
         if rel in tags: e["expected"] = tags[rel]
-        if rel.startswith("negative/"): e["expected"] = {"must_fail_playback_or_parse": True}
+        if rel == "negative/truncated-tail.mp4":
+            e["class"] = "partial_playback"
+            e["expected"] = {"must_fail_playback_or_parse": False, "partial_playback": True, "note": "first half of Movie.Name.2020.1080p.mp4 (moov atom lost with faststart): demuxable/decodable prefix may or may not probe; consumers must not treat it as a hard parse failure"}
+        elif rel.startswith("negative/"): e["expected"] = {"must_fail_playback_or_parse": True}
         if rel == "music/Misc/Silent Control.wav": e["expected"] = {"silent": True, "note": "RMS oracle negative control"}
         if rel.startswith("music/Misc/Plain Tone") or rel.endswith("First Track.mp3"): e.setdefault("expected", {}).update({"tone_hz": 440})
         if (top in ("movies", "tv")) and ext in ("mp4", "mkv", "webm") and "Ultra.HD" not in f:
@@ -197,7 +228,9 @@ case "$MODE" in
     echo "gen_media_fixtures: OK dir=$OUT files=$(find "$OUT" -type f | wc -l) bytes=$SZ manifest=$OUT/manifest.json manifest_sha256=$(sha256sum "$OUT/manifest.json" | cut -d' ' -f1)";;
   check)
     mkdir -p "$OUT"; R1="$OUT/run1"; R2="$OUT/run2"
-    gen "$R1"; sleep 2; gen "$R2"; manifest "$R1" > "$R1/manifest.json"; manifest "$R2" > "$R2/manifest.json"
+    gen "$R1"; manifest "$R1" > "$R1/manifest.json"
+    SZ=$(size_of "$R1"); [ "$SZ" -le "$MAX" ] || { echo "gen_media_fixtures: FAIL reason=corpus_over_cap bytes=$SZ cap=$MAX" >&2; exit 1; }
+    sleep 2; gen "$R2"; manifest "$R2" > "$R2/manifest.json"
     diffs=0
     while IFS= read -r l; do echo "NONDETERMINISTIC: $l"; diffs=$((diffs+1)); done < <(diff <(cd "$R1" && find . -type f | sort | xargs -d '\n' sha256sum) <(cd "$R2" && find . -type f | sort | xargs -d '\n' sha256sum) | grep '^[<>]' || true)
     n=$(find "$R1" -type f | wc -l)
@@ -211,7 +244,11 @@ D = sys.argv[1]; m = json.load(open(os.path.join(D, "manifest.json"))); bad = 0
 for rel, e in m["files"].items():
     p = os.path.join(D, rel)
     if not os.path.exists(p) or hashlib.sha256(open(p, "rb").read()).hexdigest() != e["sha256"]: print("DRIFT", rel); bad += 1
-print("verify: %d files, %d drift" % (len(m["files"]), bad)); sys.exit(1 if bad else 0)
+have = set()
+for dp, dn, fn in os.walk(D):
+    for f in fn: have.add(os.path.relpath(os.path.join(dp, f), D))
+for rel in sorted(have - set(m["files"]) - {"manifest.json"}): print("EXTRA", rel); bad += 1
+print("verify: %d files, %d drift/extra" % (len(m["files"]), bad)); sys.exit(1 if bad else 0)
 PY
     ;;
 esac
