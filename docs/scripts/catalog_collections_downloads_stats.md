@@ -34,9 +34,9 @@ deliberately **not** tested — there are no phantom-endpoint tests (§11.4.6).
 | C2 collections unauth | `GET /api/v1/collections` (no token; group gate L1107) | 401 access-control |
 | C3 collections CRUD | `POST` / `GET /:id` / `DELETE /:id` (L1411/1412/1414) | create → get-by-id **contains** created name → delete (self-cleaning) |
 | D1 download archive | `POST /api/v1/download/archive` (L1125) | 400 + `error` for empty paths (validation proven) — or 200 reachable |
-| R1 recommendations root | `GET /api/v1/recommendations` (L1587) | 200 + `items[]` |
-| R2 recommendations trending | `GET /api/v1/recommendations/trending` (L1223) | 200 + `items[]` + `time_range` |
-| R3 recommendations by-type | `GET /api/v1/recommendations/by-type` (L1591) | 200 + `recommendations` object |
+| R1 recommendations root | `GET /api/v1/recommendations` (L1587) | honest 501 (CAT-001) + `error` body, no `items[]` |
+| R2 recommendations trending | `GET /api/v1/recommendations/trending` (L1223) | honest 501 + `error` body, no `items[]` |
+| R3 recommendations by-type | `GET /api/v1/recommendations/by-type` (L1591) | honest 501 + `error` body, no `recommendations` |
 | S1 stats overall | `GET /api/v1/stats/overall` (L1253) | 200 + `success` + `data` |
 | S2 stats scans | `GET /api/v1/stats/scans` (L1261) | 200 + `success` + `data` |
 | S3 stats scan-history | `GET /api/v1/stats/scan-history` (L1672) | 200 + `history[]` + `count` |
