@@ -446,6 +446,33 @@ Tracked follow-ups (status OPEN):
   browser, mouse pointer). Today 44px is enforced on coarse pointers only. Options: (a) enforce the WCAG 2.2 AA 2.5.8
   minimum of 24x24 CSS px everywhere and keep 44 on coarse; (b) keep 44 on coarse only (status quo); (c) enforce 44
   everywhere. Recommendation: (a). Nobody has decided this yet.
+- CLOSED on branch `fix-ui-d1-d2` (2026-11-03, operator decision: fix to spec; both recommendations applied):
+  - D1 (badge): the connection badge is no longer a fixed overlay. `ConnectionStatus` is an in-flow `role="status"` chip docked in
+    the header (`Header.tsx`), icon-only below `sm` (text stays for screen readers), icon + text from `sm`. RED (real
+    chromium, real catalog-api, `tests/responsive-audit/measure_d1_d2.mjs`, 5 viewports x 2 themes x 6 pages = 60 cases): 28 of
+    60 FAIL, the badge intersected "Smart Collection", selects, "Refresh", "Last updated", etc. at every width from 320 to 1440.
+    GREEN: 60 of 60 PASS, 0 unobserved, 0 intersections.
+  - D2 (target size): `@media (pointer: fine)` now enforces the WCAG 2.2 AA 2.5.8 floor of 24x24 CSS px (central zero-specificity
+    `:where()` rule, `.touch-target`, login "Remember me" and "Forgot password?"); 44px on coarse pointers is unchanged (touch
+    viewports measured 0 violations before and after). The audit oracle uses 24 on fine pointers and `run.mjs` now fails on
+    `tap_target_small_desktop`. RED: 8 oracle findings under 24px at login (20px) plus "Home" breadcrumb 38x20 on `/playlists`.
+  - New unit guards (RED on revert, three mutations each killed): `ConnectionStatus.test.tsx` placement, `Header.test.tsx` slot,
+    `touch_targets.test.ts` fine floor.
+  - Further defects found while measuring (NOT fixed, OPEN): (a) the fixed version chip `v1.1.0` (Layout) overlaps the primary
+    "Smart Collection" button on `/collections` at 320x568 (visible in the screenshot, the chip is `fixed` and not in the
+    oracle's overlap rule because it has no text overlap with a text box of its own); (b) on `/collections` two chevron icons
+    float right of the select boxes (detached from the controls) at 320 and 375; (c) `/collections` shows "Render: 0.0ms" and
+    "Page 1/0" developer-style stats to end users; (d) the audit harness `run.mjs` still has fixed default ports and is not
+    wired into a gate; `measure_d1_d2.mjs` needs the real API and a built dist.
+- D1/D2 review follow-ups (tracked, open; review of fix-ui-d1-d2 @7a539819, GO-with-follow-ups):
+  - F2: the connection chip's live region announces "Disconnected" for about 1.3 s on every page load before the socket opens. Show the chip only after a grace period or after the first successful open.
+  - F3: use a persistent live-region wrapper (always mounted, content changes) so assistive tech reliably announces state changes; today the `role="status"` node mounts together with its text.
+  - F4: chip contrast: red-100 text on red-500 is about 3.1:1 (below 4.5:1 AA for 14px text); check the yellow "Connecting" chip too and pick token pairs that pass in light and dark.
+  - F5: `tests/responsive-audit/measure_d1_d2.mjs` should force the socket down deterministically (`page.routeWebSocket`), include `/login`, and cover more than one fine-pointer viewport (it currently measures 1440 only for the fine floor).
+  - F7: commit the firefox and webkit evidence JSON, with an artifact fingerprint, to `docs/qa/responsive_d1_d2/` (only chromium is committed).
+  - F8: a clean `npm ci` may fail to load 4 test files for lack of the devDependency `@testing-library/dom` (pre-existing); not reproduced or changed here.
+  - Version chip overlap at 320 px, the header chevrons, and the dev stats strip still need a responsive pass.
+  - Done in this round: F1 (App.test.tsx now asserts the chip is not rendered by App) and F6 (24x24 passes / 24x23 flagged pinned in needle.mjs).
 - Oracle tolerance: webkit reported tap_target_small at exactly 44.00 x 44.00 in one of two identical runs (7 cases; r2b), i.e. a float/layout-unit error below 0.01px. The oracle now allows 0.02px (`minPx - 0.02`). Not re-proven by a full matrix run yet.
 - OPEN, UNCONFIRMED: the earlier webkit `tap_target_small` pair (register inputs, 132x44 after rounding) and the reviewer's
   3 chromium results (ActivityFeed tabs) were not root-caused. The oracle was changed to record unrounded sizes and to wait
@@ -882,3 +909,10 @@ Open / not fixed (reason):
 - QC6 (nit): `personalized/${ME_ID:-0}` cannot detect a failed id lookup when run as admin.
 - QC7 (nit): qa_registration.sh header names docker-compose.qa.yml; the setting is in docker-compose.test.yml.
 - QC8 (gap): the docker-compose.qa.yml helixqa-api loop was read, not executed.
+
+## UI D1/D2 landing follow-ups (reviewer GO-with-follow-ups, 2026-11-03)
+- UI-F5: force socket down via routeWebSocket, cover /login and more than one fine-pointer viewport.
+- UI-F7: commit firefox/webkit evidence JSON.
+- UI-F8: run clean `npm ci`; missing `@testing-library/dom` devDependency not reproduced.
+- UI-F2..F4, version chip overlap at 320, chevrons, dev stats: see UI branch notes.
+- Full vitest/eslint not run after merging main bd8e52e4.

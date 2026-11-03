@@ -34,7 +34,7 @@ export const oracleFn = (opts) => {
       add('offscreen_control', el, {left: Math.round(r.left), right: Math.round(r.right), vw});
     }
     // 3 tap targets
-    const minPx = 44;
+    const minPx = touch ? 44 : 24; // 44 on coarse pointers; WCAG 2.2 AA 2.5.8 (24x24 CSS px) on fine pointers
     const isInlineText = el.tagName==='A' && getComputedStyle(el).display==='inline' && el.closest('p,li,span,td');
     const sr = el.type==='checkbox'||el.type==='radio'||el.type==='range';
     if ((r.width < minPx || r.height < minPx) && !isInlineText) {
