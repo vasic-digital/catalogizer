@@ -26,6 +26,7 @@ Overrides (env): `STACK`, `QA_DIR` (default `~/.cache/claude-tmp/catqa3`), `MEDI
 * Storage: `STORAGE_TYPE=local`. ffmpeg + imagemagick come from the stock `catalog-api/Dockerfile` runtime stage.
 * Media corpus: generate with `scripts/test-infra/gen_media_fixtures.sh --out "$MEDIA_DIR"`; it is mounted **read-only at `/media`**
   in the API container (`MEDIA_ROOT_PATH=/media`). Create a storage root of type local with path `/media` (or a sub-directory such as `/media/movies`).
+* Local roots: `CATALOGIZER_LOCAL_ROOT_BASES=$MEDIA_MOUNT` (colon-separated absolute dirs; unset = deny every local root, see `catalog-api/filesystem/local_policy.go`). Roots must lie under `/media` after symlink resolution.
 * The only edit applied to the exported tree is the `go build -ldflags` line of `catalog-api/Dockerfile` (adds `-X main.Version=<sha>`);
   the repo itself is not modified.
 
