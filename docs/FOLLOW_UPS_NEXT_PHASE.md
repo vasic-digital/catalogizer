@@ -368,3 +368,42 @@ Source: independent Opus review rounds 1 and 2 of commits c567caca, b328d027, b3
 - R3-M1: the admin-over-admin checks are check-then-write (target role read, then update): a concurrent role change can produce a lost update or a stale decision. Needs a transactional or compare-and-set update in the repository.
 - R3-M2: a non-admin with user.manage / user.create may assign ANY non-admin role, including a role more privileged than their own (only roles that carry `system.admin`, `*` or a matching prefix wildcard are refused).
 - Other writers of users.role / role_id found in the R3-S1 sweep: `repository.UserRepository.Create/Update` (reached only via UserHandler, now guarded); `handlers/auth_handler.go` RegisterGin (fixed `RoleID: 2`); `internal/auth` `CreateUser` (fixed role 'user') and `UpdateUser` (sets `role` from request) are reachable only through `internal/handlers.AuthHandler`, which no code constructs (`NewAuthHandler` is never called outside its definition), so they are not exposed under /api/v1 today; if that handler is ever wired, `UpdateUser` must drop `Role` for non-admins. No bulk import, invite or signup flow writing roles was found in handlers/, services/, internal/, repository/.
+
+## Responsive audit series (commits `responsive audit fixes ...` and `header nav keeps priority ...`)
+Independent review round 1 returned GO-with-follow-ups. Corrections to the two commit messages (history is not rewritten):
+- Commit 1 says requests "were 404ing at /api/v1/api/v1/...". Correction (F4): only the doubled PREFIX is fixed in the
+  favorites and playlists client calls. Most of those endpoints still have no server route (item F3 below) and still 404,
+  now at the right path.
+- Commits 1 and 2 do not mention that the header greeting "Welcome, {name}" is now `hidden 2xl:inline` (not shown below
+  1536px) (F9). Nit: the password eye button is `h-11` inside an `h-10` input (2px overhang each side).
+- Both commits' evidence is a PARTIAL re-run of the browser harness (`fixedE` runs of 28 and 8 cases), not one full
+  matrix per browser on the final tree.
+
+Landing-blocker items closed in the landing-prep commit: F1 (8 Button snapshots updated; diff is only the two added
+`[@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px]` classes), F2 (`AuthRace.test.tsx`, RED on
+the pre-fix `AuthContext.tsx`, GREEN after), F7 (Tabs overflow class guards, RED on pre-fix `Tabs.tsx`), F8 (oracle
+needle cases for the scroll-container exemption, both directions mutation-killed), trailing whitespace in `oracle.mjs`.
+
+Tracked follow-ups (status OPEN):
+- F3 (source-defect, important, pre-existing): client calls with no route in `catalog-api/main.go`: `/favorites/stats`,
+  `/favorites/toggle`, `/favorites/bulk` (POST and DELETE), `/favorites/check/:mediaId` and `DELETE /favorites/:mediaId`
+  (shape differs from the server's `:entity_type/:entity_id`); playlists `GET /:id/items`, `items/reorder`, `share`,
+  `shared/:token`, `analytics`, `duplicate`, `export`, `play`, `shuffle`, `reorder`, `import`, `validate-smart-rules`.
+  `Favorites.tsx` uses `getFavoriteStats` and `bulkRemoveFromFavorites`, so that page still gets 404s. Needs a
+  client/server contract reconciliation plus a contract test (§11.4.244).
+- F5 (process-doc, important): residual browser-audit failures after both patches, from the author's verdict files:
+  catalog-web chromium 101 of 133 cases FAIL, webkit 123 of 152 FAIL, firefox only a pre-fix run exists (162 of 171
+  FAIL); website 35 of 35 FAIL on tap_target_small (VitePress hero buttons 40px). Needs one full-matrix run per browser on
+  the final tree and a tracked item per remaining finding class (tap_target_small, occluded_control, h_overflow,
+  offscreen_control, no_gutter, text_off_viewport, overlapping_text).
+- F6 (source-defect, minor, UNCONFIRMED): header nav `overflow-x-auto` may clip the `focus-visible:ring-2 ring-offset-2`
+  focus ring of nav links (top/bottom, and left of the first link). Found by reading CSS only; confirm in a browser,
+  then add `py-1 px-1` to the nav.
+- F7 design item (source-defect, minor): links overflowing the header nav at 768-1535px have no visible cue and the
+  harness no longer reports them; consider a "More" menu or an edge fade.
+- Open tap-target items from the audit (see F5) and the "More" menu decision above.
+- Pre-existing, not caused by this series: 7 failures in `catalog-web/src/contexts/__tests__/AuthContext.integration.test.tsx`
+  on `main` (localStorage `auth_token`/`user` `setItem`/`removeItem` assertions not met; login/logout cycle). Root cause
+  not trivial and out of scope here; needs its own investigation (§11.4.102). Also pre-existing: 3 eslint warnings in
+  `catalog-web/src/e2e-env.test.ts` fail `--max-warnings 0`.
+- `tests/responsive-audit/run.mjs` still hardcodes port 18400 and local paths and is not wired into any gate (F8 rest).

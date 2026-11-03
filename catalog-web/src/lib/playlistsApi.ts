@@ -24,13 +24,13 @@ export const playlistsApi = {
     if (params?.include_smart !== undefined) searchParams.append('include_smart', params.include_smart.toString())
     if (params?.type) searchParams.append('type', params.type)
 
-    const response = await api.get(`/api/v1/playlists?${searchParams}`)
+    const response = await api.get(`/playlists?${searchParams}`)
     return response.data
   },
 
   // Get playlist by ID
   async getPlaylist(playlistId: string): Promise<Playlist> {
-    const response = await api.get(`/api/v1/playlists/${playlistId}`)
+    const response = await api.get(`/playlists/${playlistId}`)
     return response.data
   },
 
@@ -47,41 +47,41 @@ export const playlistsApi = {
     if (params?.sort_by) searchParams.append('sort_by', params.sort_by)
     if (params?.sort_order) searchParams.append('sort_order', params.sort_order)
 
-    const response = await api.get(`/api/v1/playlists/${playlistId}/items?${searchParams}`)
+    const response = await api.get(`/playlists/${playlistId}/items?${searchParams}`)
     return response.data
   },
 
   // Create playlist
   async createPlaylist(request: PlaylistCreateRequest): Promise<Playlist> {
-    const response = await api.post('/api/v1/playlists', request)
+    const response = await api.post('/playlists', request)
     return response.data
   },
 
   // Update playlist
   async updatePlaylist(playlistId: string, request: PlaylistUpdateRequest): Promise<Playlist> {
-    const response = await api.put(`/api/v1/playlists/${playlistId}`, request)
+    const response = await api.put(`/playlists/${playlistId}`, request)
     return response.data
   },
 
   // Delete playlist
   async deletePlaylist(playlistId: string): Promise<void> {
-    await api.delete(`/api/v1/playlists/${playlistId}`)
+    await api.delete(`/playlists/${playlistId}`)
   },
 
   // Add items to playlist
   async addItemsToPlaylist(playlistId: string, mediaIds: number[]): Promise<{ added: number; failed: number }> {
-    const response = await api.post(`/api/v1/playlists/${playlistId}/items`, { media_ids: mediaIds })
+    const response = await api.post(`/playlists/${playlistId}/items`, { media_ids: mediaIds })
     return response.data
   },
 
   // Remove item from playlist
   async removeFromPlaylist(playlistId: string, itemId: string): Promise<void> {
-    await api.delete(`/api/v1/playlists/${playlistId}/items/${itemId}`)
+    await api.delete(`/playlists/${playlistId}/items/${itemId}`)
   },
 
   // Reorder playlist items
   async reorderPlaylistItems(playlistId: string, itemOrders: { id: string; position: number }[]): Promise<void> {
-    await api.put(`/api/v1/playlists/${playlistId}/items/reorder`, { items: itemOrders })
+    await api.put(`/playlists/${playlistId}/items/reorder`, { items: itemOrders })
   },
 
   // Share playlist
@@ -91,36 +91,36 @@ export const playlistsApi = {
     can_download?: boolean
     expires_at?: string
   }): Promise<PlaylistShareInfo> {
-    const response = await api.post(`/api/v1/playlists/${playlistId}/share`, permissions)
+    const response = await api.post(`/playlists/${playlistId}/share`, permissions)
     return response.data
   },
 
   // Get share info
   async getSharedPlaylist(shareToken: string): Promise<PlaylistItemsResponse> {
-    const response = await api.get(`/api/v1/playlists/shared/${shareToken}`)
+    const response = await api.get(`/playlists/shared/${shareToken}`)
     return response.data
   },
 
   // Unshare playlist
   async unsharePlaylist(playlistId: string): Promise<void> {
-    await api.delete(`/api/v1/playlists/${playlistId}/share`)
+    await api.delete(`/playlists/${playlistId}/share`)
   },
 
   // Get playlist analytics
   async getPlaylistAnalytics(playlistId: string): Promise<PlaylistAnalytics> {
-    const response = await api.get(`/api/v1/playlists/${playlistId}/analytics`)
+    const response = await api.get(`/playlists/${playlistId}/analytics`)
     return response.data
   },
 
   // Duplicate playlist
   async duplicatePlaylist(playlistId: string, newName?: string): Promise<Playlist> {
-    const response = await api.post(`/api/v1/playlists/${playlistId}/duplicate`, { name: newName })
+    const response = await api.post(`/playlists/${playlistId}/duplicate`, { name: newName })
     return response.data
   },
 
   // Export playlist
   async exportPlaylist(playlistId: string, format: 'json' | 'm3u' | 'csv' = 'json'): Promise<Blob> {
-    const response = await api.get(`/api/v1/playlists/${playlistId}/export?format=${format}`, {
+    const response = await api.get(`/playlists/${playlistId}/export?format=${format}`, {
       responseType: 'blob'
     })
     return response.data
@@ -128,17 +128,17 @@ export const playlistsApi = {
 
   // Play playlist
   async playPlaylist(playlistId: string): Promise<void> {
-    await api.post(`/api/v1/playlists/${playlistId}/play`)
+    await api.post(`/playlists/${playlistId}/play`)
   },
 
   // Shuffle playlist
   async shufflePlaylist(playlistId: string): Promise<void> {
-    await api.post(`/api/v1/playlists/${playlistId}/shuffle`)
+    await api.post(`/playlists/${playlistId}/shuffle`)
   },
 
   // Reorder playlist items
   async reorderPlaylist(playlistId: string, itemIds: string[]): Promise<void> {
-    await api.put(`/api/v1/playlists/${playlistId}/reorder`, { itemIds })
+    await api.put(`/playlists/${playlistId}/reorder`, { itemIds })
   },
 
   // Import playlist
@@ -147,7 +147,7 @@ export const playlistsApi = {
     formData.append('file', file)
     if (name) formData.append('name', name)
 
-    const response = await api.post('/api/v1/playlists/import', formData, {
+    const response = await api.post('/playlists/import', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -157,7 +157,7 @@ export const playlistsApi = {
 
   // Validate smart playlist rules
   async validateSmartRules(rules: SmartPlaylistRule[]): Promise<{ valid: boolean; errors: string[] }> {
-    const response = await api.post('/api/v1/playlists/validate-smart-rules', { rules })
+    const response = await api.post('/playlists/validate-smart-rules', { rules })
     return response.data
   }
 }

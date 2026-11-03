@@ -216,7 +216,7 @@ export const MediaCard: React.FC<MediaCardProps> = React.memo(({
 
         <CardContent className="p-4">
           {/* Title */}
-          <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 break-words">
             {media.title}
           </h3>
 

@@ -84,13 +84,13 @@ export default function WizardLayout() {
   const canPrevious = state.canGoPrevious && currentStepIndex > 0
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-3 pb-10 sm:p-6 sm:pb-10">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
         <div className="mb-8 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
             <Settings className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Catalogizer Installation Wizard</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 break-words">Catalogizer Installation Wizard</h1>
           </div>
           <p className="text-lg text-gray-600">
             Configure storage sources for your media collection
@@ -118,7 +118,7 @@ export default function WizardLayout() {
                     <span className="text-sm font-medium">{index + 1}</span>
                   </div>
                   <div className="mt-2 text-center">
-                    <div className={`text-sm font-medium ${
+                    <div className={`text-xs sm:text-sm font-medium ${
                       index === currentStepIndex ? 'text-blue-600' : 'text-gray-500'
                     }`}>
                       {step.title}
@@ -126,7 +126,7 @@ export default function WizardLayout() {
                   </div>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className={`flex-1 h-1 mx-4 rounded ${
+                  <div className={`flex-1 h-1 mx-1 sm:mx-4 rounded ${
                     index < currentStepIndex ? 'bg-green-600' : 'bg-gray-200'
                   }`} />
                 )}
@@ -155,7 +155,7 @@ export default function WizardLayout() {
             variant="outline"
             onClick={handlePrevious}
             disabled={!canPrevious}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 min-h-[44px]"
           >
             <ChevronLeft className="h-4 w-4" />
             Previous
@@ -168,14 +168,14 @@ export default function WizardLayout() {
           <Button
             onClick={handleNext}
             disabled={!canNext}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 min-h-[44px]"
           >
             {currentStepIndex === steps.length - 1 ? 'Finish' : 'Next'}
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
-      <span className="fixed bottom-2 left-1/2 -translate-x-1/2 text-[10px] text-slate-400/40 select-none pointer-events-none">v1.1.0</span>
+      <span className="block mt-4 text-center text-xs text-slate-500 select-none">v1.1.0</span>
     </div>
   )
 }

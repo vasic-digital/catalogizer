@@ -56,7 +56,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
       )}
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           {icon && (
             <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
               {icon}
@@ -75,7 +75,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         </div>
         
         {actions && (
-          <div className="flex items-center gap-2 mt-4 sm:mt-0">
+          <div className="flex flex-wrap items-center gap-2 mt-4 sm:mt-0">
             {actions}
           </div>
         )}

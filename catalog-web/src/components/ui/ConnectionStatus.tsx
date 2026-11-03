@@ -76,7 +76,7 @@ export const ConnectionStatus: React.FC = () => {
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -50 }}
-          className="fixed top-4 right-4 z-50"
+          className="fixed top-20 right-4 z-50 pointer-events-none max-w-[calc(100vw-2rem)]"
         >
           <div className={`${config.color} ${config.textColor} px-3 py-2 rounded-lg shadow-lg flex items-center space-x-2 text-sm font-medium`}>
             {config.icon}
