@@ -184,6 +184,64 @@ func (r *UserRepository) Update(user *models.User) error {
 	return err
 }
 
+// UpdateGuarded is a compare-and-set update: it saves user only while the
+// stored role_id and is_active still equal expectedRoleID / expectedActive,
+// the values the caller's authorization decision was based on. It closes the
+// check-then-write window in handlers.UserHandler.UpdateUser (CAT-049 R3-M1):
+// without it a save built from a stale read silently reverts a concurrent role
+// or activation change (e.g. demotes an administrator just promoted). It
+// reports whether a row was updated; (false, nil) means the guard no longer
+// holds and the caller must re-read and decide again.
+func (r *UserRepository) UpdateGuarded(user *models.User, expectedRoleID int, expectedActive bool) (bool, error) {
+	query := `
+		UPDATE users SET
+			username = ?, email = ?, first_name = ?, last_name = ?, display_name = ?,
+			avatar_url = ?, time_zone = ?, language = ?, is_active = ?, settings = ?,
+			role_id = ?, updated_at = ?
+		WHERE id = ? AND role_id = ? AND is_active = ?
+	`
+	res, err := r.db.Exec(query,
+		user.Username, user.Email, user.FirstName, user.LastName, user.DisplayName,
+		user.AvatarURL, user.TimeZone, user.Language, user.IsActive, user.Settings,
+		user.RoleID, time.Now(), user.ID, expectedRoleID, expectedActive)
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	return n > 0, err
+}
+
+// IsAdmin reports, from the database as it is NOW, whether the user is active
+// and holds system administration rights through its CURRENT role's
+// permissions ("system.admin", "*" or a covering prefix wildcard). It is the
+// source of truth for the admin gate (middleware RequireAdmin): a role_id claim
+// baked into an access token is never trusted for this decision (CAT-051 F4).
+// Any lookup problem returns an error so the caller fails closed.
+func (r *UserRepository) IsAdmin(ctx context.Context, userID int) (bool, error) {
+	var (
+		active          bool
+		permissionsJSON sql.NullString
+	)
+	err := r.db.QueryRowContext(ctx, `
+		SELECT u.is_active, ro.permissions
+		FROM users u JOIN roles ro ON ro.id = u.role_id
+		WHERE u.id = ?`, userID).Scan(&active, &permissionsJSON)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil // unknown user or dangling role: not an admin
+		}
+		return false, fmt.Errorf("failed to resolve admin status: %w", err)
+	}
+	if !active || !permissionsJSON.Valid {
+		return false, nil
+	}
+	var perms models.Permissions
+	if err := json.Unmarshal([]byte(permissionsJSON.String), &perms); err != nil {
+		return false, fmt.Errorf("failed to unmarshal permissions: %w", err)
+	}
+	return perms.HasPermission(models.PermissionSystemAdmin), nil
+}
+
 func (r *UserRepository) UpdatePassword(userID int, passwordHash, salt string) error {
 	query := `UPDATE users SET password_hash = ?, salt = ?, updated_at = ? WHERE id = ?`
 	_, err := r.db.Exec(query, passwordHash, salt, time.Now(), userID)

@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -468,4 +470,43 @@ func TestRequireAdmin_RoleZeroForbidden(t *testing.T) {
 
 	assert.Equal(t, http.StatusForbidden, w.Code,
 		"role_id == 0 must be rejected — GenerateToken doesn't mint admin tokens")
+}
+
+// CAT-051 F4: with an AdminChecker installed the gate follows the checker (the
+// database), not the role_id claim, and fails closed when it cannot decide.
+func TestRequireAdmin_AdminCheckerOverridesClaim(t *testing.T) {
+	run := func(checker AdminChecker, claimRole int) int {
+		mw := setupJWTMiddleware()
+		mw.SetAdminChecker(checker)
+		token := signTokenWithRole(t, "u", claimRole)
+		router := gin.New()
+		router.GET("/admin/x", mw.RequireAuth(), mw.RequireAdmin(), func(c *gin.Context) { c.Status(http.StatusOK) })
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest(http.MethodGet, "/admin/x", nil)
+		req.Header.Set("Authorization", "Bearer "+token)
+		router.ServeHTTP(w, req)
+		return w.Code
+	}
+	yes := func(context.Context, int) (bool, error) { return true, nil }
+	no := func(context.Context, int) (bool, error) { return false, nil }
+	boom := func(context.Context, int) (bool, error) { return false, errors.New("db down") }
+
+	assert.Equal(t, http.StatusOK, run(yes, 2), "checker says admin: claim role_id 2 does not matter")
+	assert.Equal(t, http.StatusForbidden, run(no, RoleAdminID), "checker says not admin: claim role_id 1 does not matter")
+	assert.Equal(t, http.StatusServiceUnavailable, run(boom, RoleAdminID), "undeterminable must fail closed")
+}
+
+// N3: a non-integer user_id in the context (token subject not numeric) must
+// fail closed when an AdminChecker is installed.
+func TestRequireAdmin_NonIntUserIDFailsClosed(t *testing.T) {
+	mw := setupJWTMiddleware()
+	mw.SetAdminChecker(func(context.Context, int) (bool, error) { return true, nil })
+	router := gin.New()
+	router.GET("/admin/x", func(c *gin.Context) {
+		c.Set("role_id", RoleAdminID)
+		c.Set("user_id", "not-a-number")
+	}, mw.RequireAdmin(), func(c *gin.Context) { c.Status(http.StatusOK) })
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/admin/x", nil))
+	assert.Equal(t, http.StatusForbidden, w.Code)
 }

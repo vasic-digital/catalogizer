@@ -626,6 +626,18 @@ Listed, not fixed (reason):
 - `ExternalIntegrations` create/save are local-only because the server has no `/integrations` API; the toasts now say so. A backend integrations API is the real fix.
 - Admin storage "Scan" cannot start a real scan from a path: `POST /scans` needs a `storage_root_id`. The UI shows the server's guidance.
 
+
+## Authorization gaps (branch fix-authz-gaps, CAT-049/050/051/052)
+
+- F4 / CAT-051 FIXED: `RequireAdmin` consults `UserRepository.IsAdmin` (current role permissions, active user) when `SetAdminChecker` is installed (main.go does); the role_id claim is only the fallback for stacks without the checker. Fails closed (503) when the lookup fails.
+- R3-M1 / CAT-049 FIXED for the target side: `UserRepository.UpdateGuarded` is a compare-and-set on role_id and is_active; `UpdateUser` answers 409 when they changed between the decision and the save. Other columns are still last-write-wins. A caller demoted mid-request is not re-checked (its sessions are revoked on demotion).
+- R3-M2 / CAT-050 FIXED: a non-admin may only assign roles whose every permission it holds itself (role 2, the standard user role, always assignable). OPERATOR DECISION still open: whether this subset rule is the wanted role model; acting on (not assigning to) a more privileged non-admin target is still unguarded.
+- CAT-052: `memStore.GetRole` now returns an error for unknown roles like the real repository.
+- N1 (review r1, minor): `defaultUserRoleID = 2` is hard-coded as always assignable by a user manager. If an admin later widens role 2's permissions, any user manager can hand them out. Decision needed: compare role 2 against the caller too, or keep the baseline.
+- N2 (review r1) FIXED: `Permissions.HasPermission` prefix wildcards now need a segment boundary (`.` or `:`), so `sys*`/`s*`/`system*` no longer grant `system.admin`; `*`, `system.*`, `admin:*` unchanged. Existing roles stored with such boundary-less wildcards lose that grant (none are seeded).
+- N7 (review r1, minor): the compare-and-set covers only the target's role_id/is_active; a concurrent change of the target role's permissions or of the caller's own role is not re-checked; `admin_handler.UpdateUser` still uses a plain Update.
+- B1: `newAuthMiddleware` (main_jwtwire.go) is the only constructor main.go uses; `TestMainGoWiresJWTMiddlewareThroughHelper` fails if main.go builds a bare middleware.
+
 ## Login/validator follow-ups closed (branch fix-lv-followups, 2026-11-03)
 
 - SQLi detector: 5 corpus misses closed (`admin' #`, `admin'/*`, `x';SHUTDOWN`, `1' ORDER BY 1#`, `PROCEDURE ANALYSE()`), and two prose false positives removed (`a -- b`, `Loop; sleep well`).
@@ -703,3 +715,40 @@ Remaining members, with disposition (nothing below is silently accepted):
 - `catalog-api/handlers/media_handler.go:211` "Watch progress accepted" is honest (`persisted: false` with the reason).
 - `catalog-api/handlers/admin_handler.go:365` (backup list) returns `[]` when the backup directory cannot be read; a missing directory means no backups, but a permission error is indistinguishable; left for the next iteration.
 - Pre-existing gofmt diffs in `download.go` (indentation near `ResolveSMBIdentity`), `media_entity_handler.go` and its test; not reformatted here.
+
+Authz round-2 additions (landed with fix-authz-gaps):
+
+- R2 (authz): `/admin/image-quality/revalidate` and `/admin/covers/generate-thumbnails` were registered on the plain API group (any authenticated user could trigger the sweeps); they now carry `RequireAdmin` per route. They were NOT moved into `adminGroup`, because that group also installs the CSRF guard and existing bearer-token clients of these two POSTs send no CSRF token; moving them is an operator decision. `TestAdminGate_RealBinary` pins the gate on the real binary; the group's `RequireAdmin` is distinguishable from the handlers' own permission checks only by a `system.configure`-only role (handlers of /admin/config etc. check their own permission).
+- R2: `docs/api/openapi.yaml` from main had two unquoted descriptions (conversion cancel/retry) that made the file invalid YAML; quoted them.
+
+## Authz review r3 follow-ups (GO-with-follow-ups, 2026-11-03)
+
+- T1 (test-instrumentation, minor): `catalog-api/admin_gate_binary_test.go` and the existing `binEnv` harness in `seed_admin_binary_test.go` fail under `go test -race` (stdout buffer read while the child's copier writes). `scripts/run-all-tests.sh` runs `-race ./...`, so the root package is red there. Fix: mutex-guarded writer in `binEnv`.
+- T2 (nit): comment at `admin_gate_binary_test.go:43-45` wrongly says /admin/health, /logs, /errors have no handler-level check.
+- T3 (nit): B1 line above still names the grep test as the guard; it is `TestAdminGate_RealBinary`.
+- T4 (latent, minor): `UserHandler.UpdateUserSettings` (user_handler.go ~763-781) full-row `Update` from a stale read; unrouted today; use `UpdateGuarded` or limit to the settings column before routing.
+- P2 (source-defect, pre-existing, IMPORTANT, new item): `POST /storage/roots`, `/smb/*`, `POST /scans`, `/smb/probe-and-ingest` (main.go ~1349-1388) have no permission check; registration is open, so any self-registered user can create storage roots, queue scans and probe/ingest SMB hosts. UNCONFIRMED whether a `local` root outside the configured base is accepted. Being fixed with systematic debugging.
+- P3 (minor, operator decision): `/metrics` unauthenticated; `/debug/pprof` unauthenticated when `HELIX_PPROF_ENABLED=true`.
+
+## Live scaling / stress / chaos suite (2026-11-03, branch `test-scaling-chaos`)
+
+- Added `scripts/test-infra/scaling_live.sh` and `catalog-api/scaling_live_test.go` (tag `live`); guide section "Scaling and chaos (live)" in `docs/TESTING_GUIDE.md`. Measured on a shared host, host-dependent.
+- FIXED here (RED first): `FileRepository.SearchFiles` pool deadlock (metadata query while the result cursor was open); beyond 25 concurrent searches the API stalled until clients timed out (32 clients: 19 x 200 in 10 s, p99 about 29.9 s). Test: `repository/file_repository_pool_test.go`.
+- S1 (open, UNCONFIRMED): RSS grew from 146 to 257 MiB across 9 load rounds (about 2 minutes of cumulative 8/32/64-client load is not enough to tell warm-up from a leak) and the module monitor logged `MEMORY ALERT: potential leak detected` once at 64 clients. Needs a 30 to 60 minute soak with heap profiles (`HELIX_PPROF_ENABLED=true`, `/debug/pprof/heap`); suspects to check first: the per-IP sliding-window rate limiter (`internal/auth/middleware.go`, `RateLimitByUser` rebuilds a timestamp slice per request and never evicts idle keys) and gin/zap request logging buffers.
+- S2 (open): `getFileMetadata` is still an N+1 query per result row (50 queries per `search/files` page). The pool deadlock is gone, but a single batched `WHERE file_id IN (...)` query would cut per-request latency and pool pressure; `GetFileByID` is unaffected.
+- S3 (open): `RateLimitByUser` keys on client IP (the user branch is never taken because the JWT middleware stores `user_id` under a different context key than `GetCurrentUser` reads), so all users behind one NAT share 2000 requests/min and 30 logins/min. The live suite works around it with distinct loopback source IPs and documents it.
+- S4 (open, by design today): when the DB is starved the session checker answers 401 after 3 s (fail closed). Operators see 401 instead of 503; consider 503 + `Retry-After` for a checker timeout (decision pending).
+- S5: `/debug/pprof/*` is registered on the public router when `HELIX_PPROF_ENABLED=true` (the suite relies on it for goroutine counts); confirm it is never enabled in a published configuration.
+- Not covered by the live suite: write-heavy load, SMB/WebDAV/NFS backends, Postgres, TLS listener, more than 64 clients, multi-instance on one DB (F6).
+
+## Scaling/chaos review r1 follow-ups (GO-with-follow-ups, 2026-11-03)
+
+Source fix (SearchFiles pool deadlock) confirmed correct (RED reproduced, semantics unchanged). Findings on the suite and class:
+- F1 (test-instrumentation, important): `evaluateRound` never flags 401/403/404; a round of 90% 401 passes (the pre-fix session-checker symptom). Bound non-200/non-429 share or fail on any 401/403 after login.
+- F2 (test-instrumentation, important): a `go build` failure becomes SKIP (exit 77) in `scaling_live_test.go:93`; `scaling_live.sh:46` exits 0 on partial pass+skip. Build failure must FAIL; partial run needs a distinct exit code.
+- F3 (minor): stress/chaos/sigterm evidence written only after assertions pass; `exe_sha256` never asserted equal to `buildInfo.sha256`.
+- F4 (minor): 5xx check unit-tested with "500" only (mutation 503 survives).
+- F5 (source-defect, minor, same class as the fix): nested pooled query while an outer cursor is open, same deadlock risk under concurrency: `handlers/admin_handler.go:293` GetStorageInfo; `internal/services/catalog.go:443` GetDuplicateGroups; `repository/duplicate_entity_repository.go:60` GetDuplicateGroups; `internal/services/aggregation_service.go:860` getTopLevelDirectories; `internal/services/playlist_service.go:274` GetUserPlaylists (getPlaylistTags/getPlaylistCollaborators at 757/775); `internal/media/realtime/watcher.go:455` checkMediaItemIntegrity. Mutation re-introducing the pattern in `GetDirectoryContents` survived (pool test covers SearchFiles only). Needs a pool test per member plus a class-level guard.
+- F6 (minor): SIGKILL integrity oracle has no golden-bad (corrupt DB) control.
+- F7 (source-defect, minor): `services/conversion_proc_unix.go:16` converter children have Setpgid but no Pdeathsig; after a server SIGKILL a running `convert` can orphan and race the requeued job on the same output file.
+- F8 (nit): about 424 MB left under `.scaling-live-artifacts/` per run, no rotation. F9 (nit): factor 25 and RSS bounds are chosen, not measured (disclosed); `go build` runs on the bare host, not in a container (11.4.173 exception for local containerised builds not applied to test builds).

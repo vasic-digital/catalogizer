@@ -661,3 +661,13 @@ func TestDeviceInfo_DriverValue(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, val)
 }
+
+// A prefix wildcard needs a segment boundary: "sys*" must not match "system.admin".
+func TestPermissions_HasPermission_WildcardNeedsSegmentBoundary(t *testing.T) {
+	assert.False(t, Permissions{"sys*"}.HasPermission("system.admin"))
+	assert.False(t, Permissions{"s*"}.HasPermission("system.admin"))
+	assert.False(t, Permissions{"system*"}.HasPermission("system.admin"))
+	assert.True(t, Permissions{"system.*"}.HasPermission("system.admin"))
+	assert.True(t, Permissions{"admin:*"}.HasPermission("admin:users"))
+	assert.True(t, Permissions{"*"}.HasPermission("system.admin"))
+}
