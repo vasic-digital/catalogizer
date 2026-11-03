@@ -525,3 +525,11 @@ Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/ap
 - XSS rule nits: `behavior:url(...)` (old Internet Explorer only) is not detected; the open-tag rule's `<\s*` also flags prose such as "x < link y" (browsers do not parse `< tag` as a tag); drop the `\s*` after `<`.
 - catalog-web: after change-password the success toast is followed by a redirect to /login on the next 401; log out explicitly or keep the caller's own session.
 - Pre-existing on main (not caused by this branch): admin "suspended" status sets IsLocked but `UserRepository.Update` does not persist `is_locked` and no sessions are revoked; `tests/stress` CacheWriteThroughput and middleware TestTokenBucketRedisRateLimit_Unit_Miniredis_RefillAfterEmpty are flaky under load (section 11.4.248 quarantine candidates).
+
+## WebDAV live-test gap (recorded 2026-11-03)
+
+- Status: SKIP(service_unavailable). The Synology NAS answers on 445/80/443/5000/5001 only; WebDAV ports 5005/5006 refuse connections and DSM web ports answer PROPFIND with 405 or the login page (200, no DAV header). No WebDAV stand-in was used (section 11.4.289).
+- OPERATOR ACTION: DSM > Package Center > install and enable "WebDAV Server" (enable HTTPS, port 5006), allow the test user on the share, then run `LIVE_WEBDAV_URL=https://<nas>:5006 LIVE_WEBDAV_USER=... LIVE_WEBDAV_PASSWORD=... LIVE_WEBDAV_SANDBOX=/work20/Testing LIVE_WEBDAV_INSECURE=1 go test -tags live -run TestLiveWebDAV -v ./filesystem/` in `catalog-api`.
+- UNCONFIRMED: the positive legs (connect, list, write, read-back sha256, delete, 404, wrong-credential 401) of `catalog-api/filesystem/live_webdav_test.go` have never run against a real server; only the SKIP paths are proven. Re-run 3 times once the service is enabled and capture redacted output.
+- Add a paired mutation (wrong password via env, wrong sandbox) to the WebDAV live test as the SMB/FTP live tests have (`LIVE_MUTATE`).
+- Pin the Synology certificate instead of `LIVE_WEBDAV_INSECURE=1` (as pkg/ftp pinning does).
