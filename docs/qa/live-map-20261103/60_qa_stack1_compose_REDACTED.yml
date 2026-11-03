@@ -1,0 +1,80 @@
+name: catqa
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: catqa-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: <redacted-see-qa.env>
+      POSTGRES_DB: ${POSTGRES_DB}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports: ["127.0.0.1:35432:5432"]
+    volumes:
+      - pg:/var/lib/postgresql/data
+    healthcheck: {test: ["CMD-SHELL","pg_isready -U ${POSTGRES_USER}"], interval: 10s, timeout: 5s, retries: 10}
+    mem_limit: 1g
+  redis:
+    image: redis:7-alpine
+    container_name: catqa-redis
+    ports: ["127.0.0.1:36379:6379"]
+    volumes: [rd:/data]
+    healthcheck: {test: ["CMD","redis-cli","ping"], interval: 10s, timeout: 3s, retries: 10}
+    mem_limit: 256m
+  api:
+    image: localhost/catqa-api:main
+    build:
+      context: /home/milosvasic/.cache/claude-tmp/claude-1000/-home-milosvasic-Projects-catalogizer/261db589-353c-4105-9405-009dbfe0bd33/scratchpad/qa_root.EXwhDC/src
+      dockerfile: catalog-api/Dockerfile
+    container_name: catqa-api
+    environment:
+      DATABASE_TYPE: postgres
+      DATABASE_ENCRYPTION_KEY_FILE: <redacted-see-qa.env>
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USER: ${POSTGRES_USER}
+      DATABASE_PASSWORD: <redacted-see-qa.env>
+      DATABASE_NAME: ${POSTGRES_DB}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      APP_ENV: development
+      LOG_LEVEL: info
+      JWT_SECRET: <redacted-see-qa.env>
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: <redacted-see-qa.env>
+      CORS_ENABLED: "true"
+      CORS_ORIGINS: "*"
+      SMB_ENABLED: "true"
+      MEDIA_ROOT_PATH: /media
+      STORAGE_TYPE: local
+      STORAGE_BUCKET: catalogizer-covers
+      STORAGE_USE_SSL: "false"
+      STORAGE_REGION: us-east-1
+    ports: ["0.0.0.0:38080:8080"]
+    volumes:
+      - /home/milosvasic/.cache/claude-tmp/claude-1000/-home-milosvasic-Projects-catalogizer/261db589-353c-4105-9405-009dbfe0bd33/scratchpad/qa_stack/media:/media:ro
+      - api_data:/app/data
+      - api_logs:/var/log/catalogizer
+      - api_keys:/app/keys
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    mem_limit: 2g
+  web:
+    image: localhost/catqa-web:main
+    build:
+      context: /home/milosvasic/.cache/claude-tmp/claude-1000/-home-milosvasic-Projects-catalogizer/261db589-353c-4105-9405-009dbfe0bd33/scratchpad/qa_root.EXwhDC/src
+      dockerfile: catalog-web/Dockerfile
+    container_name: catqa-web
+    ports: ["0.0.0.0:33000:3000"]
+    volumes:
+      - /home/milosvasic/.cache/claude-tmp/claude-1000/-home-milosvasic-Projects-catalogizer/261db589-353c-4105-9405-009dbfe0bd33/scratchpad/qa_stack/nginx-web.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on: [api]
+    mem_limit: 256m
+  website:
+    image: docker.io/library/nginx:alpine
+    container_name: catqa-website
+    ports: ["0.0.0.0:33001:80"]
+    volumes:
+      - /home/milosvasic/.cache/claude-tmp/claude-1000/-home-milosvasic-Projects-catalogizer/261db589-353c-4105-9405-009dbfe0bd33/scratchpad/qa_stack/website_dist:/usr/share/nginx/html:ro
+    mem_limit: 128m
+volumes: {pg: {}, rd: {}, api_data: {}, api_logs: {}, api_keys: {}}

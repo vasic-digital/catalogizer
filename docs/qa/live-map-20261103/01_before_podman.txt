@@ -1,0 +1,25 @@
+2026-11-03T22:50:55+01:00
+$ podman ps -a --filter name=catqa
+NAMES            STATUS                              IMAGE                                 PORTS
+catqa-postgres   Exited (0) 292 years ago (healthy)  docker.io/library/postgres:15-alpine  127.0.0.1:35432->5432/tcp
+catqa-redis      Exited (0) 292 years ago (healthy)  docker.io/library/redis:7-alpine      127.0.0.1:36379->6379/tcp
+catqa-website    Exited (0) 292 years ago            docker.io/library/nginx:alpine        0.0.0.0:33001->80/tcp
+catqa-api        Exited (0) 292 years ago            localhost/catqa-api:main              0.0.0.0:38080->8080/tcp
+catqa-web        Exited (0) 292 years ago            localhost/catqa-web:main              0.0.0.0:33000->3000/tcp, 80/tcp
+catqa2-website   Exited (0) 292 years ago            localhost/catqa2-website:main         0.0.0.0:33011->80/tcp
+catqa2-postgres  Exited (0) 292 years ago (healthy)  docker.io/library/postgres:15-alpine  127.0.0.1:35433->5432/tcp
+catqa2-redis     Exited (0) 292 years ago (healthy)  docker.io/library/redis:7-alpine      127.0.0.1:36380->6379/tcp
+catqa2-api       Exited (0) 292 years ago            localhost/catqa2-api:main             0.0.0.0:38081->8080/tcp
+catqa2-web       Exited (0) 292 years ago            localhost/catqa2-web:main             0.0.0.0:33010->3000/tcp, 80/tcp
+$ podman pod ps
+POD ID        NAME                     STATUS      CREATED       INFRA ID    # OF CONTAINERS
+70b537238eb2  pod_catqa2               Exited      9 hours ago               5
+fd0d3c116e63  pod_catqa                Exited      23 hours ago              5
+7fe3e6382cbf  pod_mcp                  Exited      36 hours ago              32
+1918f6c1e45c  pod_helix_agent          Exited      36 hours ago              4
+291f338eb37c  pod_lava                 Exited      36 hours ago              3
+1f3cede00ea8  pod_workshop-curriculum  Exited      5 days ago                1
+1408b503d5a4  pod_boba                 Exited      5 weeks ago               4
+e3d1660ce6fc  pod_glive1               Exited      6 weeks ago               1
+f1da9e31f0a1  pod_compose              Exited      7 weeks ago               1
+39d68cf67df8  pod_helixcode            Exited      8 weeks ago               2

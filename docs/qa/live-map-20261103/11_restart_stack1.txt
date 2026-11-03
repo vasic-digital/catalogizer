@@ -1,0 +1,18 @@
+2026-11-03T22:55:57+01:00
+80f71bd8b5e4897b64c304488ac922120a9970abae828d38d71c96b60234868c
+7246c45c5ba7563002e9fcfa46b41122022900328608c25e6b9fd93d45c86129
+f40b57abb2782c2641d7a777584b6be51de466ae2cf44996dacb80f0bb6dc795
+catqa-postgres
+catqa-redis
+db+redis ready after 3s
+e7f17a120788dc7672094adfa995afa4dc931be6bc4bfaa16fe645379d4f34cc
+dde4ac5b7922a86ea080fe68d4e64f187ef1ef1f986f96349295b30de0cd4849
+f92dacf4fe10b078f6590be2eab531ea578b5f9611ba08f778939d8e94366b8d
+catqa-postgres
+catqa-redis
+catqa-website
+catqa-api
+catqa-web
+catqa-postgres|Up 2 minutes (healthy)|127.0.0.1:35432->5432/tcp
+catqa-redis|Up 2 minutes (healthy)|127.0.0.1:36379->6379/tcp
+catqa-website|Up 2 minutes|0.0.0.0:33001->80/tcp

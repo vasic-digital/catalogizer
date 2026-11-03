@@ -1,0 +1,8 @@
+2026-11-03T22:51:36+01:00
+Error: unable to start container "a00707f8b8337ac1d7f0a6718e712683756366523abb537a1db8cb473840331b": rootlessport listen tcp 127.0.0.1:35432: bind: address already in use
+Error: unable to start container "adec1415b89578d64a2707f7745dfac09ff345c5cbb1d48d3ec9081b3f41e4f9": rootlessport listen tcp 127.0.0.1:36379: bind: address already in use
+Error: unable to start container "691ad59ae81322956abb13c93b957edafa4f60a9086f3e15e2d86deff416911c": rootlessport listen tcp 0.0.0.0:33001: bind: address already in use
+time="2026-11-03T22:51:53+01:00" level=error msg="Starting some container dependencies"
+time="2026-11-03T22:51:53+01:00" level=error msg="\"rootlessport listen tcp 127.0.0.1:36379: bind: address already in use\""
+time="2026-11-03T22:51:53+01:00" level=error msg="\"rootlessport listen tcp 127.0.0.1:35432: bind: address already in use\""
+Error: unable to start container "f998b384758b7185964d4a14e2835798700556c23915006046b5234dc856edd8": starting some containers: internal libpod error

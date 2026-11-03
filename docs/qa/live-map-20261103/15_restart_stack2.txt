@@ -1,0 +1,22 @@
+2026-11-03T23:03:48+01:00
+f57adfa9d9fc4e2b58bc83cf68403fe1e9b74738edf9782cacf6ebe0879a6285
+bcf1d0eea34a0be5ad45d7030b0dd9e36a16116bf6538972a01cc3cfe840b54e
+catqa2-postgres
+catqa2-redis
+db+redis ready after 3s
+postgres=10.89.14.13 redis=10.89.14.14
+Error: no container with name or ID "catqa2-api" found: no such container
+Error: no container with ID or name "catqa2-api" found: no such container
+af714b68383ef9a51c4e56b04d80e8e3a0cd7f47ad3638cfffa88ae0fad9f1a3
+catqa2-api
+API healthy 200 after 6s
+api=10.89.14.15
+475cf18a696a521be57229d784a13235d42c20a4207b166d4a92220eae3b142b
+52695255527f561af8a2fa637991b7d9b55ae6a6dda911085d04c03e491b0a85
+catqa2-website
+catqa2-web
+catqa2-postgres|Up 12 seconds (healthy)|127.0.0.1:35433->5432/tcp
+catqa2-redis|Up 12 seconds (healthy)|127.0.0.1:36380->6379/tcp
+catqa2-api|Up 10 seconds|0.0.0.0:38081->8080/tcp
+catqa2-website|Up 4 seconds|0.0.0.0:33011->80/tcp
+catqa2-web|Up 3 seconds|0.0.0.0:33010->3000/tcp, 80/tcp
