@@ -120,6 +120,9 @@ func (s *memStore) ListRoles() ([]models.Role, error)    { return nil, nil }
 func (s *memStore) List(int, int) ([]models.User, error) { return nil, nil }
 func (s *memStore) Count() (int, error)                  { return 0, nil }
 
+// DeactivateAllUserSessions: the handlers require it; these tests keep no sessions.
+func (s *memStore) DeactivateAllUserSessions(int) error { return nil }
+
 type authzEnv struct {
 	r     *gin.Engine
 	store *memStore

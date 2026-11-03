@@ -501,3 +501,41 @@ func TestRT_N5_AdminDeactivationRevokesSessions(t *testing.T) {
 	require.NoError(t, e.db.QueryRow("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND is_active = 1", u.ID).Scan(&after))
 	assert.Equal(t, 0, after, "admin deactivation must revoke sessions")
 }
+
+// Revocation fails closed: the production repository (real SQLite) satisfies
+// both handler interfaces at compile time, and when the revoking UPDATE itself
+// fails the handler answers 500 instead of reporting a successful demotion /
+// deactivation whose old tokens are still valid.
+var (
+	_ UserServiceInterface   = (*repository.UserRepository)(nil)
+	_ AdminUserRepoInterface = (*repository.UserRepository)(nil)
+)
+
+func TestRT_RevocationFailureFailsClosed(t *testing.T) {
+	e := newRTEnv(t)
+	for _, tc := range []struct{ name, method, path, body string }{
+		{"hank", "PUT", "/api/v1/users/", `{"is_active":false}`},
+		{"ivy", "PUT", "/api/v1/admin/users/", `{"status":"inactive"}`},
+	} {
+		require.Equal(t, 201, e.do(e.adminTok, "POST", "/api/v1/users", createUserBody(tc.name)).Code)
+		tok := e.tokenFor(t, tc.name, rtUserPass)
+		u, _ := e.repo.GetByUsername(tc.name)
+		_, err := e.db.Exec(`CREATE TRIGGER block_session_update BEFORE UPDATE ON user_sessions BEGIN SELECT RAISE(ABORT, 'revocation blocked'); END`)
+		require.NoError(t, err)
+
+		w := e.do(e.adminTok, tc.method, tc.path+rtItoa(u.ID), tc.body)
+		assert.Equal(t, 500, w.Code, tc.name+": must not report success when sessions could not be revoked: "+w.Body.String())
+		after, _ := e.repo.GetByUsername(tc.name)
+		assert.True(t, after.IsActive, tc.name+": user must be left unchanged when revocation fails")
+
+		// Retry after the fault clears: the change applies AND the old token dies.
+		_, err = e.db.Exec(`DROP TRIGGER block_session_update`)
+		require.NoError(t, err)
+		w = e.do(e.adminTok, tc.method, tc.path+rtItoa(u.ID), tc.body)
+		require.Equal(t, 200, w.Code, w.Body.String())
+		var active int
+		require.NoError(t, e.db.QueryRow("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND is_active = 1", u.ID).Scan(&active))
+		assert.Equal(t, 0, active, tc.name+": retry revokes sessions")
+		_ = tok
+	}
+}

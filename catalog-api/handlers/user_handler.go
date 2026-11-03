@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -21,6 +20,10 @@ type UserServiceInterface interface {
 	List(limit, offset int) ([]models.User, error)
 	GetRole(roleID int) (*models.Role, error)
 	Count() (int, error)
+	// DeactivateAllUserSessions is part of the interface (not an optional
+	// extra) so a repository that cannot revoke sessions fails to COMPILE
+	// instead of silently leaving old tokens valid after a role change.
+	DeactivateAllUserSessions(userID int) error
 }
 
 // UserAuthServiceInterface defines interface for authentication service operations
@@ -353,6 +356,19 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		user.Settings = string(settingsJSON)
 	}
 
+	// A role or activation change must take effect now: access tokens carry
+	// role_id and live for hours (RequireAdmin trusts the claim), so revoke every
+	// session of the target first; the user logs in again and gets a fresh claim.
+	// Revoking BEFORE the update fails closed: if revocation fails nothing is
+	// changed, so a retry still revokes (after a persisted change the retry would
+	// see no change and skip revocation).
+	if user.RoleID != oldRoleID || user.IsActive != oldActive {
+		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
+			http.Error(w, "Failed to revoke the user's sessions; user not updated", http.StatusInternalServerError)
+			return
+		}
+	}
+
 	err = h.userRepo.Update(user)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
@@ -361,16 +377,6 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		}
 		http.Error(w, "Failed to update user", http.StatusInternalServerError)
 		return
-	}
-
-	// A role or activation change must take effect now: access tokens carry
-	// role_id and live for hours (RequireAdmin trusts the claim), so revoke every
-	// session of the target; the user logs in again and gets a fresh claim.
-	if user.RoleID != oldRoleID || user.IsActive != oldActive {
-		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
-			http.Error(w, "User updated but revoking the user's sessions failed", http.StatusInternalServerError)
-			return
-		}
 	}
 
 	role, err := h.userRepo.GetRole(user.RoleID)
@@ -822,19 +828,15 @@ func (h *UserHandler) allowedToAssignRole(w http.ResponseWriter, caller *models.
 	return true
 }
 
-// sessionRevoker is implemented by the production user repository.
+// sessionRevoker is the revocation capability. UserServiceInterface and
+// AdminUserRepoInterface both embed it by method, so every repository handed to
+// these handlers must implement it: revocation cannot fail open.
 type sessionRevoker interface {
 	DeactivateAllUserSessions(userID int) error
 }
 
-// revokeUserSessions deactivates every session of userID when the repository
-// supports it (the production repository does; in-memory test doubles that
-// keep no sessions have nothing to revoke).
-func revokeUserSessions(repo interface{}, userID int) error {
-	if r, ok := repo.(sessionRevoker); ok {
-		return r.DeactivateAllUserSessions(userID)
-	}
-	// Not silent: a repository that cannot revoke leaves old tokens valid.
-	log.Printf("handlers: repository %T cannot revoke sessions; user %d keeps existing sessions", repo, userID)
-	return nil
+// revokeUserSessions deactivates every session of userID. Callers abort with an
+// error response when it fails (fail closed).
+func revokeUserSessions(repo sessionRevoker, userID int) error {
+	return repo.DeactivateAllUserSessions(userID)
 }
