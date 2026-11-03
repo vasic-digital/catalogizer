@@ -288,6 +288,9 @@ pg_dump -U catalogizer catalogizer > /backup/catalogizer-$(date +%Y%m%d).sql
 
 ## Storage Configuration
 
+> **Local roots are denied by default (CAT-001).** A `local` storage root is accepted only under a directory listed in `CATALOGIZER_LOCAL_ROOT_BASES` (colon-separated absolute paths; unset = every local root is refused). Symlinks are resolved and re-checked on every list/scan. Creating roots and `/storage/list` require the admin role.
+
+
 Catalogizer supports multiple storage protocols for scanning media files. Each storage root is configured in the `storage.roots` array.
 
 ### Local Filesystem

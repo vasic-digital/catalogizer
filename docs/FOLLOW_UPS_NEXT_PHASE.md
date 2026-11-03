@@ -350,3 +350,16 @@ Source: independent Opus review (round 9) of the gate (fixture suite 276/276, fu
 - Wiring: done as CPA stage S3 row `submodule_ff` (`scripts/repo/check_submodule_ff_range.sh`, guide `docs/scripts/check_submodule_ff_range.md`); open: owner approval of the registry row and of the manifest files (wrapper, gate, `scripts/audit/org_of.py`, `own_orgs.txt`) in the cpa-host trust file; a post-S5/pre-S6 range check (S3 sees only already-made commits); the `--repo` pending-pin rows are not covered.
 - Wrapper review (716d36fb, Opus): open, not done by operator decision: m1, m3, m4 (minor findings of that review), t2 (test gap), d2 (doc gap), and the question whether BLIND should be split by reason (for example missing object store versus missing gate versus no remote tip) so that only some reasons are deferrals; all need the reviewer's text and an operator decision before work. Done in the follow-up commit: gate exit 1 with no `NONFF own` line is now a refusal 10 (was read as pass); `SUBFF_RANGE_BUDGET` clamped to at most 100.
 - C1 (wrapper review round 3, not done): a remote whose name contains a slash is not matched by the `refs/remotes/*/main` glob in `check_submodule_ff_range.sh`, so its main tip is not checked; enumerate remotes with `git remote` and `refs/remotes/<name>/main` instead.
+
+## CAT-001 follow-ups (tracked; not fixed in the CAT-001 remediation)
+These are NOT claimed benign. Line numbers are as of the CAT-001 round-1 remediation commits in `catalog-api`.
+- `internal/services/translation_service.go` (~223-229): language detection returns a fixed mock confidence of 0.8 instead of a measured value.
+- `internal/services/music_recognition_provider.go`: chroma/MFCC features are derived from file bytes (pseudo features), not from decoded audio.
+- `internal/services/deep_linking_service.go` `GetAppConfiguration`: returns a static default configuration, not stored/queried config.
+- `internal/services/lyrics_service.go`: `getCachedLyrics` / `getCachedTranslation` are always-nil cache stubs; `detectConcertSetlist` (~830) returns an empty list.
+- `internal/services/recommendation_service.go` `findSimilarGames`: swallows provider errors (returns fewer results with no error).
+- `internal/services/game_software_recognition_provider.go` `recognizeSoftware` GitHub/SourceForge paths: not audited in CAT-001.
+- `tests/mocks/smb_mock_server.go`: test-only mock server (legal only for unit-class use per section 11.4.289).
+- `handlers/sysmetrics_cpu_linux.go` `hostCPUPercent`: samples /proc/stat over a deliberate 200ms window (a real measurement, not a stub; kept on purpose, adds 200ms to the system-info call).
+- `GetCoverURL` goroutine panic seen once during CAT-001 work: UNCONFIRMED, see the investigation note below if present.
+- Live OCR.space call (book OCR) was not exercised; only the not-configured and tesseract paths are tested.

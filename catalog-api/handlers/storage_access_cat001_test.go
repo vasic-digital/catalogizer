@@ -146,3 +146,43 @@ func TestCAT001_F1_ScanTriggerIsAdminOnlyOnTheStorageRoutes(t *testing.T) {
 	}
 	t.Fatal("POST /storage/roots not mounted")
 }
+
+// CAT-001 round 2 (mutants F1b, F1d, F1e survived round 1): the admin gate must hold even when the path is acceptable, and the
+// confinement must be re-checked on every later use of a stored root.
+func TestCAT001_F1_NormalUserCannotCreateRootEvenInsideAllowedBase(t *testing.T) {
+	base := t.TempDir()
+	a := newAccessHarness(t, base)
+	user := token(t, 2, "2")
+	code, body := a.do(user, "POST", "/storage/roots", map[string]interface{}{"name": "inside", "protocol": "local", "path": base})
+	assert.Equal(t, http.StatusForbidden, code, "role 2 must be refused by the role gate, not only by path policy: %v", body)
+	var n int
+	require.NoError(t, a.h.db.QueryRow(`SELECT COUNT(*) FROM storage_roots WHERE name = 'inside'`).Scan(&n))
+	assert.Equal(t, 0, n, "no root row may be created for a refused caller")
+	admin := token(t, 1, "1")
+	code, body = a.do(admin, "POST", "/storage/roots", map[string]interface{}{"name": "inside", "protocol": "local", "path": base})
+	assert.Equal(t, http.StatusCreated, code, "control: admin can create the same root: %v", body)
+}
+
+func TestCAT001_F1_StoredRootIsRecheckedOnEveryUse(t *testing.T) {
+	base := t.TempDir()
+	a := newAccessHarness(t, base)
+	a.r.POST("/api/v1/scans", a.h.handle.QueueScan)
+	admin := token(t, 1, "1")
+	code, body := a.do(admin, "POST", "/storage/roots", map[string]interface{}{"name": "r", "protocol": "local", "path": base})
+	require.Equal(t, http.StatusCreated, code, "%v", body)
+	id := idOf(body)
+
+	// control: while the base is allowed, list works
+	code, out := a.do(admin, "GET", "/storage/list/?storage_id="+id, nil)
+	require.Equal(t, http.StatusOK, code, "%v", out)
+
+	// the operator narrows the allowed bases: the stored root is now outside policy
+	t.Setenv(filesystem.AllowedLocalBasesEnv, t.TempDir())
+	code, out = a.do(admin, "GET", "/storage/list/?storage_id="+id, nil)
+	assert.NotEqual(t, http.StatusOK, code, "list must re-check the stored root: %v", out)
+	code, out = a.do(admin, "GET", "/storage-roots/"+id+"/status", nil)
+	assert.NotEqual(t, "online", out["status"], "status must not probe a root outside policy (code %d): %v", code, out)
+	sid, _ := strconv.ParseInt(id, 10, 64)
+	code, out = a.do(admin, "POST", "/scans", map[string]interface{}{"storage_root_id": sid})
+	assert.Equal(t, http.StatusForbidden, code, "QueueScan must re-check the stored root: %v", out)
+}
