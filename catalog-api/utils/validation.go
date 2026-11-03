@@ -217,11 +217,26 @@ var sqlInjectionPatterns = []*regexp.Regexp{
 	regexp.MustCompile(`(?i)\bHAVING\s+\d+\s*=\s*\d+`),
 	regexp.MustCompile(`(?i)\b(EXTRACTVALUE|UPDATEXML|LOAD_FILE|PG_READ_FILE|SYS_EXEC|SYS_EVAL)\s*\(`),
 	// Stacked statement: ; <statement keyword>
-	regexp.MustCompile(`(?i);\s*(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|EXECUTE|SLEEP|WAITFOR)\b`),
+	regexp.MustCompile(`(?i);\s*(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|EXECUTE)\b`),
+	// Stacked time-delay / shutdown: only in call/terminated form so prose such
+	// as "Loop; sleep well" or "Chapter 3; shutdown sequence" is not blocked.
+	regexp.MustCompile(`(?i);\s*(SLEEP|PG_SLEEP|BENCHMARK)\s*\(`),
+	regexp.MustCompile(`(?i);\s*WAITFOR\s+(DELAY|TIME)\b`),
+	regexp.MustCompile(`(?i);\s*SHUTDOWN\s*(;|--|#|/\*|$|\bWITH\s+NOWAIT\b)`),
 	regexp.MustCompile(`(?i)(['"]\s*;\s*(SELECT|INSERT|UPDATE|DELETE|DROP))`),
 	// Comment terminators / inline comments
 	regexp.MustCompile(`(?i)(/\*.*\*/)`),
-	regexp.MustCompile(`(?i)(--.*$)`),
+	// A "--" comment needs a SQL context before it (quote, paren, digit,
+	// semicolon, back-tick or the start of input); prose such as "a -- b" is
+	// an ordinary dash.
+	regexp.MustCompile(`(?m)(^\s*--|['")\x60;\d]\s*--)`),
+	// Unterminated block comment right after a quote/paren ("admin'/*"), and a
+	// MySQL "#" comment that ends the input right after a quote, paren or digit
+	// ("admin' #", "1' ORDER BY 1#"). "C# in depth", "Tag #1" and "AC/DC" stay legal.
+	regexp.MustCompile(`['")]\s*/\*`),
+	regexp.MustCompile(`['")\d]\s*#\s*$`),
+	// MySQL PROCEDURE ANALYSE() information disclosure
+	regexp.MustCompile(`(?i)\bPROCEDURE\s+ANALYSE\s*\(`),
 	// Time delay / stored procedures / dangerous functions (call syntax)
 	regexp.MustCompile(`(?i)\bWAITFOR\s+DELAY\b`),
 	regexp.MustCompile(`(?i)\b(PG_)?SLEEP\s*\(`),
