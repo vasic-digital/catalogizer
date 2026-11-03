@@ -35,22 +35,57 @@ SAFE_RM_LIB="$ROOT/constitution/scripts/lib/safe_rm.sh"
 . "$SAFE_RM_LIB"
 MARKER_SCHEMA="catalogizer.media-fixtures/1"
 under() { case "$2" in "$1"|"$1"/*) return 0;; esac; [ "$1" = / ]; }   # under A B: B equals A or lives below A
-homes() { local h; for h in "${HOME:-}" $(echo "${SAFE_RM_EXTRA_HOMES:-}" | tr ':' ' '); do [ -n "$h" ] && readlink -m -- "$h"; done; }
+homes() {  # $HOME + SAFE_RM_EXTRA_HOMES (colon list), split without word-splitting or globbing
+  local h parts=(); [ -n "${HOME:-}" ] && readlink -m -- "$HOME"
+  set -f; IFS=: read -r -a parts <<< "${SAFE_RM_EXTRA_HOMES:-}"; set +f
+  for h in "${parts[@]}"; do [ -n "$h" ] && readlink -m -- "$h"; done; return 0; }
 out_guard_home() {        # refuse $HOME itself, an extra home, or any ancestor of one
   local h; while IFS= read -r h; do under "$1" "$h" && refuse out_is_or_contains_home; done < <(homes); return 0; }
 out_guard_ancestor() {    # refuse the repo root or any ancestor of it
   under "$1" "$ROOT" && refuse out_is_or_contains_repo; return 0; }
-out_guard_policy() {      # delete only what is absent, empty, or a previous corpus (manifest.json carrying our schema)
-  local d=$1
+LAYOUT_TOP="movies tv music books photos negative .cbz .cover.png"
+POLICY_PY='
+import sys, os, json
+d, schema, mode, top = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4].split()
+ents = set()
+for dp, dn, fn in os.walk(d, followlinks=False):
+    for n in dn + fn: ents.add(os.path.relpath(os.path.join(dp, n), d))
+if mode == "check":   # the --out dir of --check may hold only run1/run2 (each is judged on its own by gen)
+    bad = sorted(e for e in ents if e.split("/")[0] not in ("run1", "run2"))
+    print("ok" if not bad else "foreign:" + bad[0]); sys.exit(0)
+m = os.path.join(d, "manifest.json")
+if os.path.islink(m) or not os.path.isfile(m): print("no_marker"); sys.exit(0)
+try: j = json.load(open(m))
+except Exception: print("no_marker"); sys.exit(0)
+if not isinstance(j, dict) or j.get("schema") != schema: print("no_marker"); sys.exit(0)
+allowed = {"manifest.json"}
+if j.get("stub") is True:   # interrupted run: only the known layout (and transient helpers) may exist
+    bad = sorted(e for e in ents if e != "manifest.json" and e.split("/")[0] not in top)
+else:
+    for rel in (j.get("files") or {}):
+        parts = rel.split("/")
+        for i in range(1, len(parts) + 1): allowed.add("/".join(parts[:i]))
+    bad = sorted(e for e in ents if e not in allowed and e.split("/")[0] not in top)
+print("ok" if not bad else "foreign:" + bad[0])
+'
+out_guard_policy() {      # $1 dir, $2 optional "check": delete only what is absent, empty, or provably OUR corpus. Any foreign entry => refuse.
+  local d=$1 r
   [ -e "$d" ] || [ -L "$d" ] || return 0
   [ -d "$d" ] && [ ! -L "$d" ] || { OUT=$d; refuse out_not_a_plain_directory; }
   [ -z "$(ls -A -- "$d")" ] && return 0
-  if [ -f "$d/manifest.json" ] && python3 -I -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1])).get("schema")==sys.argv[2] else 1)' "$d/manifest.json" "$MARKER_SCHEMA" 2>/dev/null; then return 0; fi
-  OUT=$d; refuse out_has_foreign_content_no_corpus_marker
+  r=$(python3 -I -c "$POLICY_PY" "$d" "$MARKER_SCHEMA" "${2:-gen}" "$LAYOUT_TOP") || { OUT=$d; refuse policy_check_failed; }
+  case "$r" in
+    ok) return 0;;
+    no_marker) OUT=$d; refuse out_has_foreign_content_no_corpus_marker;;
+    *) OUT=$d; refuse "out_has_entries_not_in_corpus_manifest(${r#foreign:})";;
+  esac
 }
+# control characters / newlines in --out would corrupt the line-based checks: refuse before anything is written
+case "$OUT" in *[[:cntrl:]]*) refuse out_has_control_characters;; esac
 if [ "$MODE" != verify ]; then
   out_guard_ancestor "$OUT"
   out_guard_home "$OUT"
+  [ "$MODE" != check ] || out_guard_policy "$OUT" check
 fi
 for t in ffmpeg ffprobe python3; do command -v "$t" >/dev/null || { echo "gen_media_fixtures: REFUSED reason=tool_missing $t" >&2; exit 3; }; done
 MAX="${GMF_MAX_BYTES:-314572800}"
