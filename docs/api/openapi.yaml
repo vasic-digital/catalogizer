@@ -4932,12 +4932,13 @@ paths:
   /api/v1/configuration/status:
     get:
       tags: [configuration]
-      summary: Get system status
+      summary: Get system status (not implemented)
+      description: No component health source is wired to this endpoint, so it answers 501 and reports nothing as healthy. Use GET /api/v1/health.
       security:
         - BearerAuth: []
       responses:
-        '200':
-          description: System status
+        '501':
+          description: Not implemented. Nothing was checked.
 
   /api/v1/configuration/wizard/step/{step_id}:
     get:
@@ -5464,6 +5465,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MediaCollection'
+        '501':
+          description: Smart collections (is_smart true or non-empty smart_rules) are not supported; nothing was created
 
   /api/v1/collections/{id}:
     get:

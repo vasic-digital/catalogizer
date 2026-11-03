@@ -429,11 +429,7 @@ func (h *DownloadHandler) GetDownloadInfo(c *gin.Context) {
 		Deleted:     file.Deleted,
 	}
 
-	if file.IsDirectory {
-		// For directories, we might want to calculate total size
-		// This is a simplified version - in practice you might want to cache this
-		info.EstimatedArchiveSize = file.Size // Placeholder
-	}
+	// CAT-001: no archive estimate is computed here, so none is reported (the field is omitted).
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,

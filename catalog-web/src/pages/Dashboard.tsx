@@ -9,6 +9,9 @@ const MediaDistributionChart = lazy(() => import('@/components/dashboard/MediaDi
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { mediaApi, entityApi } from '@/lib/mediaApi'
+import { adminApi } from '@/lib/adminApi'
+import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { statsApi } from '@/lib/statsApi'
 import {
   Film,
@@ -30,38 +33,17 @@ import {
   FileType,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
-import toast from 'react-hot-toast'
 import type { QuickAction } from '@/types/dashboard'
 
 const QuickActions: React.FC = () => {
-  const handleUploadMedia = () => {
-    // Navigate to upload page or open upload modal
-    toast.success('Opening upload interface...')
-  }
+  const navigate = useNavigate()
 
-  const handleScanLibrary = () => {
-    // Trigger library scan
-    toast.promise(
-      mediaApi.analyzeDirectory('/'),
-      {
-        loading: 'Scanning library...',
-        success: 'Library scan started',
-        error: 'Failed to start scan'
-      }
-    )
-  }
+  // CAT-001: each action really navigates; nothing claims success it did not achieve.
+  const handleUploadMedia = () => navigate('/media')
+  const handleSearchMedia = () => navigate('/media')
+  const handleSettings = () => navigate('/settings')
 
-  const handleSearchMedia = () => {
-    // Navigate to media browser with focus on search
-    toast.success('Opening search interface...')
-  }
-
-  const handleSettings = () => {
-    // Navigate to settings
-    toast.success('Opening settings...')
-  }
-
-  const quickActions: QuickAction[] = [
+  const quickActions: Array<QuickAction & { disabledReason?: string }> = [
     {
       id: 'upload',
       title: 'Upload Media',
@@ -75,8 +57,9 @@ const QuickActions: React.FC = () => {
       title: 'Scan Library',
       description: 'Update media library with new files',
       icon: Activity,
-      action: handleScanLibrary,
-      variant: 'outline'
+      action: () => undefined,
+      variant: 'outline',
+      disabledReason: 'A scan needs a storage root and cannot be started from here yet.'
     },
     {
       id: 'search',
@@ -106,15 +89,21 @@ const QuickActions: React.FC = () => {
           {quickActions.map(action => {
             const Icon = action.icon
             return (
-              <Button
-                key={action.id}
-                variant={action.variant}
-                onClick={action.action}
-                className="h-auto p-4 flex flex-col items-center space-y-2"
-              >
-                <Icon className="w-6 h-6" />
-                <span className="text-sm font-medium">{action.title}</span>
-              </Button>
+              <div key={action.id} className="flex flex-col">
+                <Button
+                  variant={action.variant}
+                  onClick={action.action}
+                  disabled={!!action.disabledReason}
+                  title={action.disabledReason}
+                  className="h-auto p-4 flex flex-col items-center space-y-2"
+                >
+                  <Icon className="w-6 h-6" />
+                  <span className="text-sm font-medium">{action.title}</span>
+                </Button>
+                {action.disabledReason && (
+                  <span className="mt-1 text-xs text-gray-500 dark:text-gray-400">{action.disabledReason}</span>
+                )}
+              </div>
             )
           })}
         </div>
@@ -123,14 +112,34 @@ const QuickActions: React.FC = () => {
   )
 }
 
+const formatUptime = (seconds: number | null | undefined): string => {
+  if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 0) return 'Unavailable'
+  const d = Math.floor(seconds / 86400)
+  const h = Math.floor((seconds % 86400) / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  return `${d}d ${h}h ${m}m`
+}
+
+const pct = (v: number | null | undefined): number | null =>
+  typeof v === 'number' && Number.isFinite(v) ? Math.max(0, Math.min(100, Math.round(v))) : null
+
 const SystemStatus: React.FC = () => {
-  const [status, _setStatus] = useState({
-    cpu: 45,
-    memory: 62,
-    disk: 78,
-    network: true,
-    uptime: '5d 12h 34m'
+  // CAT-001: real figures from the server (admin endpoint); Unavailable when it cannot supply them.
+  const { data: info } = useQuery({
+    queryKey: ['dashboard-system-info'],
+    queryFn: () => adminApi.getSystemInfo(),
+    retry: false,
+    staleTime: 1000 * 60,
   })
+  const disk = info?.diskUsage && info.diskUsage.total > 0 ? (info.diskUsage.used / info.diskUsage.total) * 100 : null
+  const status = {
+    cpu: pct(info?.cpuUsage),
+    memory: pct(info?.memoryUsage),
+    disk: pct(disk),
+    uptime: formatUptime(info?.uptime),
+  }
+  const show = (v: number | null) => (v === null ? 'Unavailable' : `${v}%`)
+  const color = (v: number | null) => (v === null ? 'bg-gray-300' : v > 80 ? 'bg-red-500' : v > 60 ? 'bg-yellow-500' : 'bg-green-500')
 
   return (
     <Card>
@@ -142,65 +151,18 @@ const SystemStatus: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* CPU Usage */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>CPU Usage</span>
-              <span>{status.cpu}%</span>
+          {([['CPU Usage', status.cpu], ['Memory Usage', status.memory], ['Disk Usage', status.disk]] as const).map(([label, value]) => (
+            <div key={label} className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>{label}</span>
+                <span>{show(value)}</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className={`h-2 rounded-full ${color(value)}`} style={{ width: `${value ?? 0}%` }} />
+              </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className={`h-2 rounded-full ${
-                  status.cpu > 80 ? 'bg-red-500' : 
-                  status.cpu > 60 ? 'bg-yellow-500' : 'bg-green-500'
-                }`}
-                style={{ width: `${status.cpu}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Memory Usage */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Memory Usage</span>
-              <span>{status.memory}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className={`h-2 rounded-full ${
-                  status.memory > 80 ? 'bg-red-500' : 
-                  status.memory > 60 ? 'bg-yellow-500' : 'bg-green-500'
-                }`}
-                style={{ width: `${status.memory}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Disk Usage */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span>Disk Usage</span>
-              <span>{status.disk}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className={`h-2 rounded-full ${
-                  status.disk > 80 ? 'bg-red-500' : 
-                  status.disk > 60 ? 'bg-yellow-500' : 'bg-green-500'
-                }`}
-                style={{ width: `${status.disk}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Additional Status */}
+          ))}
           <div className="flex justify-between text-sm pt-2 border-t">
-            <span>Network</span>
-            <span className={status.network ? 'text-green-600' : 'text-red-600'}>
-              {status.network ? 'Online' : 'Offline'}
-            </span>
-          </div>
-          <div className="flex justify-between text-sm">
             <span>Uptime</span>
             <span>{status.uptime}</span>
           </div>

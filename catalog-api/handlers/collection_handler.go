@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"database/sql"
 	"fmt"
 	"net/http"
@@ -83,11 +84,21 @@ func (h *CollectionHandler) CreateCollection(c *gin.Context) {
 		Description    *string           `json:"description,omitempty"`
 		IsPublic       *bool             `json:"is_public,omitempty"`
 		IsSmart        *bool             `json:"is_smart,omitempty"`
+		SmartRules     []json.RawMessage `json:"smart_rules,omitempty"`
 		ExternalIDs    map[string]string `json:"external_ids,omitempty"`
 		CoverURL       *string           `json:"cover_url,omitempty"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
+	// CAT-001 (R4-4/R4-9): smart collections are not stored or evaluated. Creating a plain
+	// collection and answering 201 would silently drop the rules, so refuse honestly.
+	if (req.IsSmart != nil && *req.IsSmart) || len(req.SmartRules) > 0 {
+		c.JSON(http.StatusNotImplemented, gin.H{
+			"error": "smart collections are not supported: is_smart and smart_rules are neither stored nor evaluated. Nothing was created.",
+		})
 		return
 	}
 
@@ -151,6 +162,13 @@ func (h *CollectionHandler) UpdateCollection(c *gin.Context) {
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid request body", err)
+		return
+	}
+
+	if req.IsSmart != nil && *req.IsSmart {
+		c.JSON(http.StatusNotImplemented, gin.H{
+			"error": "smart collections are not supported: is_smart is neither stored nor evaluated. Nothing was changed.",
+		})
 		return
 	}
 

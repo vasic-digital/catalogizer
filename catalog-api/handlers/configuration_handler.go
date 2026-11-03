@@ -247,21 +247,15 @@ func (h *ConfigurationHandler) GetSystemStatus(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	status := map[string]interface{}{
-		"status":  "healthy",
-		"version": "3.0.0",
-		"uptime":  "24h 30m",
-		"components": map[string]string{
-			"database":         "healthy",
-			"storage":          "healthy",
-			"authentication":   "healthy",
-			"media_conversion": "healthy",
-			"sync":             "healthy",
-		},
-	}
-
+	// CAT-001 (R4-3): this endpoint used to answer 200 with status "healthy", a fixed
+	// version, a fixed uptime and five components it never checked. No component health
+	// source sits behind this handler, so it answers 501 instead of inventing one. The real,
+	// measured health endpoint is GET /api/v1/health.
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(status)
+	w.WriteHeader(http.StatusNotImplemented)
+	json.NewEncoder(w).Encode(map[string]string{
+		"error": "component health is not reported by this endpoint: no health source is wired to it. Nothing was checked. Use GET /api/v1/health.",
+	})
 }
 
 // configUserID reads the authenticated user id placed in the request context.

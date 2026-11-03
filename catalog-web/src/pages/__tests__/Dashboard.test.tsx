@@ -1,7 +1,9 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { adminApi } from '@/lib/adminApi'
 import { Dashboard } from '../Dashboard'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -61,6 +63,20 @@ vi.mock('react-hot-toast', async () => ({
   },
 }))
 
+vi.mock('@/lib/adminApi', async () => ({
+  adminApi: {
+    getSystemInfo: vi.fn().mockResolvedValue({
+      version: '9.9.9',
+      uptime: 93784,
+      cpuUsage: 11,
+      memoryUsage: 23,
+      diskUsage: { total: 1000, used: 340, free: 660 },
+      activeConnections: 1,
+      totalRequests: 2,
+    }),
+  },
+}))
+
 vi.mock('@/lib/mediaApi', async () => ({
   mediaApi: {
     getMediaStats: vi.fn().mockResolvedValue({
@@ -111,7 +127,15 @@ function createWrapper() {
     },
   })
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <Routes>
+          <Route path="/dashboard" element={children} />
+          <Route path="/media" element={<div>MEDIA-ROUTE</div>} />
+          <Route path="/settings" element={<div>SETTINGS-ROUTE</div>} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>
   )
   Wrapper.displayName = 'TestWrapper'
   return Wrapper
@@ -220,7 +244,9 @@ describe('Dashboard', () => {
 
       const uploadButton = screen.getByText('Upload Media')
       await user.click(uploadButton)
-      expect(toast.success).toHaveBeenCalledWith('Opening upload interface...')
+      // CAT-001: the click really navigates; no fake "Opening..." success toast
+      expect(await screen.findByText('MEDIA-ROUTE')).toBeInTheDocument()
+      expect(toast.success).not.toHaveBeenCalled()
     })
   })
 
@@ -244,16 +270,27 @@ describe('Dashboard', () => {
       expect(screen.getByText('Disk Usage')).toBeInTheDocument()
     })
 
-    it('renders network status', () => {
+    it('renders no invented network status (CAT-001)', async () => {
       render(<Dashboard />, { wrapper: createWrapper() })
-      expect(screen.getByText('Network')).toBeInTheDocument()
-      expect(screen.getByText('Online')).toBeInTheDocument()
+      await screen.findByText('1d 2h 3m')
+      expect(screen.queryByText('Online')).not.toBeInTheDocument()
+      expect(screen.queryByText('Network')).not.toBeInTheDocument()
     })
 
-    it('renders uptime', () => {
+    it('renders the uptime the server reports', async () => {
       render(<Dashboard />, { wrapper: createWrapper() })
       expect(screen.getByText('Uptime')).toBeInTheDocument()
-      expect(screen.getByText('5d 12h 34m')).toBeInTheDocument()
+      expect(await screen.findByText('1d 2h 3m')).toBeInTheDocument() // 93784 s
+      expect(screen.queryByText('5d 12h 34m')).not.toBeInTheDocument()
+    })
+
+    it('shows Unavailable, never invented figures, when the server cannot supply system info', async () => {
+      vi.mocked(adminApi.getSystemInfo).mockRejectedValueOnce(new Error('403'))
+      render(<Dashboard />, { wrapper: createWrapper() })
+      await waitFor(() => expect(screen.getAllByText('Unavailable').length).toBeGreaterThanOrEqual(4))
+      for (const invented of ['45%', '62%', '78%', '5d 12h 34m', 'Online']) {
+        expect(screen.queryByText(invented)).not.toBeInTheDocument()
+      }
     })
   })
 
@@ -330,34 +367,39 @@ describe('Dashboard', () => {
       })
     })
 
-    it('clicking Scan Library triggers toast', async () => {
+    it('Scan Library is disabled with an honest reason and starts nothing', async () => {
       const user = userEvent.setup()
-      const toast = (await import('react-hot-toast')).default
+      const { mediaApi } = await import('@/lib/mediaApi')
 
       render(<Dashboard />, { wrapper: createWrapper() })
 
-      await user.click(screen.getByText('Scan Library'))
-      expect(toast.promise).toHaveBeenCalled()
+      const btn = screen.getByText('Scan Library').closest('button')!
+      expect(btn).toBeDisabled()
+      expect(screen.getByText(/needs a storage root/i)).toBeInTheDocument()
+      await user.click(btn)
+      expect(mediaApi.analyzeDirectory).not.toHaveBeenCalled()
     })
 
-    it('clicking Search triggers toast', async () => {
+    it('clicking Search navigates to the media browser (no fake toast)', async () => {
       const user = userEvent.setup()
       const toast = (await import('react-hot-toast')).default
 
       render(<Dashboard />, { wrapper: createWrapper() })
 
       await user.click(screen.getByText('Search'))
-      expect(toast.success).toHaveBeenCalledWith('Opening search interface...')
+      expect(await screen.findByText('MEDIA-ROUTE')).toBeInTheDocument()
+      expect(toast.success).not.toHaveBeenCalled()
     })
 
-    it('clicking Settings triggers toast', async () => {
+    it('clicking Settings navigates to settings (no fake toast)', async () => {
       const user = userEvent.setup()
       const toast = (await import('react-hot-toast')).default
 
       render(<Dashboard />, { wrapper: createWrapper() })
 
       await user.click(screen.getByText('Settings'))
-      expect(toast.success).toHaveBeenCalledWith('Opening settings...')
+      expect(await screen.findByText('SETTINGS-ROUTE')).toBeInTheDocument()
+      expect(toast.success).not.toHaveBeenCalled()
     })
   })
 
@@ -368,19 +410,14 @@ describe('Dashboard', () => {
       })
     })
 
-    it('shows CPU percentage', () => {
+    it('shows the CPU, memory and disk percentages the server reports', async () => {
       render(<Dashboard />, { wrapper: createWrapper() })
-      expect(screen.getByText('45%')).toBeInTheDocument()
-    })
-
-    it('shows Memory percentage', () => {
-      render(<Dashboard />, { wrapper: createWrapper() })
-      expect(screen.getByText('62%')).toBeInTheDocument()
-    })
-
-    it('shows Disk percentage', () => {
-      render(<Dashboard />, { wrapper: createWrapper() })
-      expect(screen.getByText('78%')).toBeInTheDocument()
+      expect(await screen.findByText('11%')).toBeInTheDocument()
+      expect(screen.getByText('23%')).toBeInTheDocument()
+      expect(screen.getByText('34%')).toBeInTheDocument() // 340 / 1000
+      for (const invented of ['45%', '62%', '78%']) {
+        expect(screen.queryByText(invented)).not.toBeInTheDocument()
+      }
     })
   })
 })

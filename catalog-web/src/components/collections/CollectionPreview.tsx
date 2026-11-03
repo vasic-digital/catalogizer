@@ -1,10 +1,9 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, Pause, Volume2, Download, Eye, MoreHorizontal, Music, Film, Image, FileText, Clock, Star, X } from 'lucide-react'
+import { Play, Pause, Volume2, Eye, MoreHorizontal, Music, Film, Image, FileText, Clock, Star, X } from 'lucide-react'
 import { SmartCollection } from '../../types/collections'
 import { useCollection } from '../../hooks/useCollections'
 import { Button } from '../ui/Button'
-import { toast } from 'react-hot-toast'
 
 interface CollectionItem {
   id: string
@@ -107,18 +106,13 @@ export const CollectionPreview: React.FC<CollectionPreviewProps> = ({
 
   const handlePlayItem = (itemId: string, event: React.MouseEvent) => {
     event.stopPropagation()
+    // CAT-001: the parent's handler does the work; no success is announced on its behalf.
     onPlayItem?.(itemId)
-    toast.success('Playing item')
   }
 
   const handlePreviewItem = (itemId: string, event: React.MouseEvent) => {
     event.stopPropagation()
     onPreviewItem?.(itemId)
-    toast.success('Previewing item')
-  }
-
-  const handleDownloadItem = (item: CollectionItem) => {
-    toast.success(`Downloading ${item.title}`)
   }
 
   if (isLoading || isLoadingItems) {
@@ -304,17 +298,6 @@ export const CollectionPreview: React.FC<CollectionPreviewProps> = ({
 
                       {/* Actions */}
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                          title="Download"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleDownloadItem(item)
-                          }}
-                        >
-                          <Download className="w-4 h-4 text-gray-500" />
-                        </button>
-                        
                         <button
                           className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                           title="More options"

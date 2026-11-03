@@ -307,8 +307,9 @@ func (h *AdminHandler) GetStorageInfo(c *gin.Context) {
 		ORDER BY name
 	`)
 	if err != nil {
-		// Table may not exist yet; return empty array.
-		c.JSON(http.StatusOK, []storageInfo{})
+		// CAT-001 (R4-9): a database failure is not "no storage". Answering 200 [] made the
+		// UI show an empty, healthy-looking list; report the failure instead.
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to read storage roots"})
 		return
 	}
 	defer rows.Close()

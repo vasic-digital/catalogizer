@@ -50,3 +50,20 @@ func TestCAT001_DeleteBackup_IsHonestlyNotImplemented(t *testing.T) {
 	assert.Equal(t, http.StatusNotImplemented, w.Code)
 	assert.NotContains(t, w.Body.String(), "deleted successfully")
 }
+
+// R4-3: GET /configuration/status used to answer 200 "healthy" for five components it never
+// checked. With no health source behind it, it must answer 501 and name nothing as healthy.
+func TestCAT001_GetSystemStatus_DoesNotInventHealth(t *testing.T) {
+	auth := &MockAuthService{}
+	auth.On("CheckPermission", 7, "system.configure").Return(true, nil)
+	h := NewConfigurationHandler(&MockConfigurationService{}, auth)
+	req := httptest.NewRequest("GET", "/status", nil)
+	req = req.WithContext(context.WithValue(req.Context(), "user_id", 7))
+	w := httptest.NewRecorder()
+	h.GetSystemStatus(w, req)
+	assert.Equal(t, http.StatusNotImplemented, w.Code)
+	for _, invented := range []string{"healthy", "3.0.0", "24h 30m", "components"} {
+		assert.NotContains(t, w.Body.String(), invented)
+	}
+	assert.Contains(t, w.Body.String(), "/api/v1/health")
+}

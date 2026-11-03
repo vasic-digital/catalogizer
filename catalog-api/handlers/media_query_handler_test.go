@@ -326,6 +326,13 @@ func TestRefreshMediaMetadata(t *testing.T) {
 		MediaTypeID: typeID, Title: "Refreshable Movie", Status: "detected",
 	})
 
+	// R4-7: pin a known value and snapshot BEFORE any subtest calls the handler, so a handler
+	// that writes any constant (not only a time.Now()) is caught.
+	_, err = db.Exec(`UPDATE media_items SET last_updated = ? WHERE id = ?`, "2001-02-03 04:05:06", itemID)
+	require.NoError(t, err)
+	var before string
+	require.NoError(t, db.QueryRow(`SELECT CAST(last_updated AS TEXT) FROM media_items WHERE id = ?`, itemID).Scan(&before))
+
 	tests := []struct {
 		name           string
 		paramID        string
@@ -367,15 +374,10 @@ func TestRefreshMediaMetadata(t *testing.T) {
 	}
 
 	// The 501 must not touch the row: no fake "refresh" side effect.
-	var before, after string
-	require.NoError(t, db.QueryRow(`SELECT COALESCE(last_updated,'') FROM media_items WHERE id = ?`, itemID).Scan(&before))
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest("POST", "/api/v1/media/x/refresh", nil)
-	c.Params = gin.Params{{Key: "id", Value: fmt.Sprintf("%d", itemID)}}
-	handler.RefreshMediaMetadata(c)
-	require.NoError(t, db.QueryRow(`SELECT COALESCE(last_updated,'') FROM media_items WHERE id = ?`, itemID).Scan(&after))
+	var after string
+	require.NoError(t, db.QueryRow(`SELECT CAST(last_updated AS TEXT) FROM media_items WHERE id = ?`, itemID).Scan(&after))
 	assert.Equal(t, before, after, "a 501 refresh must not modify the media row")
+	assert.Contains(t, after, "2001-02-03")
 }
 
 func TestGetMediaQuality(t *testing.T) {

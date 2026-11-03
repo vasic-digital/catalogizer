@@ -281,9 +281,14 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
     }
   }, [collection.id, selectedPermission, expiryTime, requirePassword, password, allowAnonymous, maxDownloads, shareLinks, onShareUpdate])
 
-  const copyToClipboard = useCallback((text: string) => {
-    navigator.clipboard.writeText(text)
-    toast.success('Copied to clipboard')
+  // CAT-001 (R4 sweep): report success only after the clipboard write actually resolved.
+  const copyToClipboard = useCallback(async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      toast.success('Copied to clipboard')
+    } catch {
+      toast.error('Could not copy to the clipboard')
+    }
   }, [])
 
   const revokeShare = useCallback(async (shareId: string) => {
@@ -358,12 +363,6 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
     return `<iframe src="${window.location.origin}/embed/${collection.id}" width="${embedSize.width}" height="${embedSize.height}" frameborder="0" allowfullscreen></iframe>`
   }, [collection.id, embedSize])
 
-  const generateQRCode = useCallback(() => {
-    // This would integrate with a QR code library
-    const shareUrl = `https://catalogizer.app/shared/${collection.id}/qr-${Date.now()}`
-    copyToClipboard(shareUrl)
-    toast.success('QR code URL copied to clipboard')
-  }, [collection.id, copyToClipboard])
 
   const ShareLinkCard = ({ link }: { link: ShareLink }) => (
     <motion.div
@@ -800,12 +799,16 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
                     </p>
                     
                     <Button
-                      onClick={generateQRCode}
+                      disabled
+                      title="QR codes are not available: no QR generator or server share route exists yet."
                       className="w-full max-w-xs"
                     >
                       <QrCode className="w-4 h-4 mr-2" />
                       Generate QR Code
                     </Button>
+                    <p data-testid="qr-unavailable" className="text-sm text-gray-500">
+                      QR codes are not available: no QR generator or server share route exists yet.
+                    </p>
                   </div>
                 </Card>
               </motion.div>

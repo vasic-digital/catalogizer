@@ -127,3 +127,18 @@ func TestCAT001_SystemInfo_DiskUsageNeedsADataDir(t *testing.T) {
 	require.True(t, ok, "%v", obj2)
 	assert.Greater(t, du["total"].(float64), 0.0)
 }
+
+// CAT-001 R4-9: a database failure while listing storage roots is a 5xx, never a healthy-looking 200 [].
+func TestCAT001_GetStorageInfo_DBErrorIsNot200Empty(t *testing.T) {
+	sqlDB, err := sql.Open("sqlite3", ":memory:") // no storage_roots table: the query fails for real
+	require.NoError(t, err)
+	defer sqlDB.Close()
+	h := NewAdminHandler(adminAuthOK(), &mockAdminUserRepo{}, database.WrapDB(sqlDB, database.DialectSQLite), "t")
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("GET", "/admin/storage", nil)
+	c.Request.Header.Set("Authorization", "Bearer token")
+	h.GetStorageInfo(c)
+	assert.Equal(t, http.StatusInternalServerError, w.Code, w.Body.String())
+	assert.NotEqual(t, "[]", w.Body.String())
+}

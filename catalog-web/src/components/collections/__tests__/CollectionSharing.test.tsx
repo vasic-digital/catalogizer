@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { CollectionSharing } from '../CollectionSharing'
+import { toast } from 'react-hot-toast'
 
 vi.mock('framer-motion', () => ({
   motion: {
@@ -144,5 +145,34 @@ describe('CollectionSharing', () => {
     } finally {
       vi.useRealTimers()
     }
+  })
+
+  describe('CAT-001 R4 sweep: no invented share artefact, no unawaited success', () => {
+    beforeEach(() => { vi.mocked(toast.success).mockClear(); vi.mocked(toast.error).mockClear() })
+
+    it('the QR tab does not copy a made-up URL or claim a QR code exists', async () => {
+      const user = userEvent.setup()
+      const writeText = vi.fn().mockResolvedValue(undefined)
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+      render(<CollectionSharing collection={mockCollection as any} onClose={vi.fn()} />)
+      await user.click(screen.getByText('QR Code'))
+      const btn = screen.getByRole('button', { name: /Generate QR Code/ })
+      expect(btn).toBeDisabled()
+      await user.click(btn)
+      expect(writeText).not.toHaveBeenCalled()
+      expect(toast.success).not.toHaveBeenCalled()
+      expect(screen.getByTestId('qr-unavailable')).toHaveTextContent(/not available/i)
+    })
+
+    it('a rejected clipboard write is an error toast, not "Copied"', async () => {
+      const user = userEvent.setup() // user-event installs its own clipboard stub; override it afterwards
+      const writeText = vi.fn().mockRejectedValue(new Error('denied'))
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+      render(<CollectionSharing collection={mockCollection as any} onClose={vi.fn()} />)
+      await user.click(screen.getByText('Embed'))
+      await user.click(screen.getByRole('button', { name: /Copy/i }))
+      await waitFor(() => expect(toast.error).toHaveBeenCalled())
+      expect(toast.success).not.toHaveBeenCalledWith('Copied to clipboard')
+    })
   })
 })
