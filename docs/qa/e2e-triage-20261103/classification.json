@@ -1,6 +1,6 @@
 {
  "constitution": "11.4.289",
- "root": "/home/milosvasic/.cache/claude-tmp/e2etriage.uHAn14/repo",
+ "root": ".",
  "files": [
   {
    "path": "catalog-web/e2e/accessibility.spec.ts",

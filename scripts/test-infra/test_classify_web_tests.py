@@ -37,6 +37,12 @@ class T(unittest.TestCase):
     def test_hook_scoped_to_its_describe(self):
         f = classify(TD / "golden_scoped_hook.spec.ts"); self.assertEqual((f["class"], f["tests_real"], f["tests_mocked"]), ("MIXED", 1, 1))
         self.assertEqual([t["class"] for t in f["tests"]], ["MOCKED", "REAL"])
+    def test_output_root_is_not_an_absolute_host_path(self):
+        p = run("--files", str(TD / "golden_real.spec.ts"), "--root", str(ROOT), "--json-only")
+        self.assertEqual(json.loads(p.stdout)["root"], ".")
+        self.assertNotIn(str(ROOT), p.stdout)
+        committed = json.loads((ROOT / "docs/qa/e2e-triage-20261103/classification.json").read_text())
+        self.assertEqual(committed["root"], ".")
     def test_notests_with_test_call_is_blind_error(self):
         p = run("--files", str(TD / "golden_blind.spec.ts"), "--root", str(ROOT), "--json-only")
         self.assertEqual(p.returncode, 2, p.stdout + p.stderr)

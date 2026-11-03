@@ -380,7 +380,7 @@ def main():
         print("BLIND: no test files found in scope", file=sys.stderr); return 2
     files = [process(p, root) for p in paths]
     other = sum(1 for f in files if f["class"] not in ("REAL", "MOCKED", "MIXED"))
-    data = {"constitution": "11.4.289", "root": root, "files": files, "counts": {
+    data = {"constitution": "11.4.289", "root": ".", "files": files, "counts": {
         "files": len(files), "REAL": sum(f["class"] == "REAL" for f in files), "MOCKED": sum(f["class"] == "MOCKED" for f in files),
         "MIXED": sum(f["class"] == "MIXED" for f in files), "other": other,
         "tests_total": sum(f["tests_total"] for f in files), "tests_real": sum(f["tests_real"] for f in files),
