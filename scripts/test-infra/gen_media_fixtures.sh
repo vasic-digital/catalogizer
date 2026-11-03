@@ -43,30 +43,50 @@ out_guard_home() {        # refuse $HOME itself, an extra home, or any ancestor 
   local h; while IFS= read -r h; do under "$1" "$h" && refuse out_is_or_contains_home; done < <(homes); return 0; }
 out_guard_ancestor() {    # refuse the repo root or any ancestor of it
   under "$1" "$ROOT" && refuse out_is_or_contains_repo; return 0; }
-LAYOUT_TOP="movies tv music books photos negative .cbz .cover.png"
+LAYOUT_TOP=".cbz .cover.png"   # fixed transient helper names only; user-looking content (movies/, tv/ ...) is never presumed ours
 POLICY_PY='
-import sys, os, json
-d, schema, mode, top = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4].split()
-ents = set()
-for dp, dn, fn in os.walk(d, followlinks=False):
-    for n in dn + fn: ents.add(os.path.relpath(os.path.join(dp, n), d))
-if mode == "check":   # the --out dir of --check may hold only run1/run2 (each is judged on its own by gen)
-    bad = sorted(e for e in ents if e.split("/")[0] not in ("run1", "run2"))
-    print("ok" if not bad else "foreign:" + bad[0]); sys.exit(0)
-m = os.path.join(d, "manifest.json")
-if os.path.islink(m) or not os.path.isfile(m): print("no_marker"); sys.exit(0)
-try: j = json.load(open(m))
-except Exception: print("no_marker"); sys.exit(0)
-if not isinstance(j, dict) or j.get("schema") != schema: print("no_marker"); sys.exit(0)
-allowed = {"manifest.json"}
-if j.get("stub") is True:   # interrupted run: only the known layout (and transient helpers) may exist
-    bad = sorted(e for e in ents if e != "manifest.json" and e.split("/")[0] not in top)
-else:
-    for rel in (j.get("files") or {}):
+import sys, os, re, json
+d, schema, mode = sys.argv[1], sys.argv[2], sys.argv[3]
+def entries(root):
+    out = set()
+    for dp, dn, fn in os.walk(root, followlinks=False):
+        for n in dn + fn: out.add(os.path.relpath(os.path.join(dp, n), root))
+    return out
+def transient_ok(e, root):   # the generator'"'"'s own scratch names: .cover.png (regular file), .cbz/page<N>.png
+    if e == ".cover.png": return os.path.isfile(os.path.join(root, e)) and not os.path.islink(os.path.join(root, e))
+    if e == ".cbz": return os.path.isdir(os.path.join(root, e)) and not os.path.islink(os.path.join(root, e))
+    return bool(re.fullmatch(r"\.cbz/page[0-9]+\.png", e)) and not os.path.islink(os.path.join(root, e))
+def judge(root):   # -> "ok" | "no_marker" | "foreign:<entry>"
+    if not os.listdir(root): return "ok"
+    m = os.path.join(root, "manifest.json")
+    if os.path.islink(m) or not os.path.isfile(m): return "no_marker"
+    try: j = json.load(open(m))
+    except Exception: return "no_marker"
+    if not isinstance(j, dict) or j.get("schema") != schema: return "no_marker"
+    ents = entries(root); ents.discard("manifest.json")
+    if j.get("stub") is True:      # interrupted run: only the transient helpers may exist
+        bad = sorted(e for e in ents if not transient_ok(e, root))
+        return "ok" if not bad else "foreign:" + bad[0]
+    files = j.get("files")
+    if isinstance(files, dict): files = list(files.keys())
+    if not isinstance(files, list) or not all(isinstance(x, str) and x for x in files): return "no_marker"
+    allowed = set()
+    for rel in files:
         parts = rel.split("/")
+        if rel.startswith("/") or ".." in parts or "" in parts: return "no_marker"
         for i in range(1, len(parts) + 1): allowed.add("/".join(parts[:i]))
-    bad = sorted(e for e in ents if e not in allowed and e.split("/")[0] not in top)
-print("ok" if not bad else "foreign:" + bad[0])
+    bad = sorted(e for e in ents if e not in allowed and not transient_ok(e, root))
+    return "ok" if not bad else "foreign:" + bad[0]
+if mode == "check":   # the --out dir of --check may hold only run1/run2, and each of those must itself be provably ours
+    ents = os.listdir(d)
+    for e in sorted(ents):
+        if e not in ("run1", "run2") or os.path.islink(os.path.join(d, e)) or not os.path.isdir(os.path.join(d, e)):
+            print("foreign:" + e); sys.exit(0)
+    for e in sorted(ents):
+        r = judge(os.path.join(d, e))
+        if r != "ok": print(("foreign:" + e + "/" + r[8:]) if r.startswith("foreign:") else "foreign:" + e); sys.exit(0)
+    print("ok"); sys.exit(0)
+print(judge(d))
 '
 out_guard_policy() {      # $1 dir, $2 optional "check": delete only what is absent, empty, or provably OUR corpus. Any foreign entry => refuse.
   local d=$1 r

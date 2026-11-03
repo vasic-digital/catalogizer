@@ -56,6 +56,22 @@ suite() {   # suite <label> <script>
   # 1f. newline in --out: refused up front, nothing created
   out=$(run "$r" --out "$SB/$label-nl/a"$'\n'"b"); rc=$?
   if [ "$rc" = 2 ] && [ ! -e "$SB/$label-nl" ]; then ok "$label control char in --out refused"; else bad "$label control char (rc=$rc)"; fi
+  # 1g. class: the policy allows ONLY manifest-listed files (+ parents) + fixed transient helpers, at ANY depth
+  o="$SB/$label-nest1/c"; marker_dir "$o" movies/a.mp4; echo precious > "$o/movies/user.txt"
+  out=$(run "$r" --out "$o"); rc=$?
+  if [ "$rc" = 2 ] && [ -f "$o/movies/user.txt" ] && [ -f "$o/movies/a.mp4" ]; then ok "$label foreign file beside a listed file under movies/ refused"; else bad "$label movies/user.txt (rc=$rc)"; fi
+  o="$SB/$label-nest2/c"; marker_dir "$o" photos/p.png; mkdir -p "$o/photos/secret/deep"; echo precious > "$o/photos/secret/deep/k.txt"
+  out=$(run "$r" --out "$o"); rc=$?
+  if [ "$rc" = 2 ] && [ -f "$o/photos/secret/deep/k.txt" ]; then ok "$label nested foreign file at depth refused"; else bad "$label nested deep (rc=$rc)"; fi
+  o="$SB/$label-stub1/c"; mkdir -p "$o/tv"; echo '{"schema":"'$SCHEMA'","stub":true}' > "$o/manifest.json"; echo precious > "$o/tv/user.txt"
+  out=$(run "$r" --out "$o"); rc=$?
+  if [ "$rc" = 2 ] && [ -f "$o/tv/user.txt" ]; then ok "$label stub marker + tv/user.txt refused"; else bad "$label stub tv (rc=$rc)"; fi
+  o="$SB/$label-chk2/c"; mkdir -p "$o/run1/movies"; echo precious > "$o/run1/movies/user.txt"
+  out=$(run "$r" --out "$o" --check); rc=$?
+  if [ "$rc" = 2 ] && [ -f "$o/run1/movies/user.txt" ]; then ok "$label --check run1/movies/user.txt refused"; else bad "$label check run1 user file (rc=$rc)"; fi
+  o="$SB/$label-fstr/c"; mkdir -p "$o"; echo precious > "$o/m"; echo '{"schema":"'$SCHEMA'","files":"m"}' > "$o/manifest.json"
+  out=$(run "$r" --out "$o"); rc=$?
+  if [ "$rc" = 2 ] && [ -f "$o/m" ]; then ok "$label manifest files as a string refused"; else bad "$label files string (rc=$rc)"; fi
   # 2b. ancestor of the repo whose manifest lists EVERYTHING under it: the policy alone would accept it, only the ancestor rule refuses
   r=$(mkrepo "$label-anc2/proj" "$script"); anc="$SB/$label-anc2"
   python3 -I - "$anc" "$SCHEMA" <<'PY2'
@@ -124,6 +140,9 @@ if [ "${1:-}" = "--mutate" ]; then
   mutate home 's/^( *)out_guard_home .*$/\1:/'
   mutate ancestor 's/^( *)out_guard_ancestor .*$/\1:/'
   mutate checkpolicy 's/^  \[ "\$MODE" != check \] \|\| out_guard_policy .*$/  :/'
+  mutate nested 's/for n in dn \+ fn: out.add/for n in (dn + fn if dp == root else []): out.add/'
+  mutate stub 's/bad = sorted\(e for e in ents if not transient_ok\(e, root\)\)$/bad = []/'
+  mutate filestype 's/if not isinstance\(files, list\) or not all\(.*\): return "no_marker"/pass/'
   mutate all 's/^( *)out_guard_(policy|home|ancestor) .*$/\1:/'
 fi
 echo "guard-test: pass=$pass fail=$fail"; [ "$fail" = 0 ]
