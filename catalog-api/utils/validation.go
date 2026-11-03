@@ -349,60 +349,101 @@ func CompactWhitespace(input string) string {
 	return strings.Join(strings.Fields(input), " ")
 }
 
-// hasSQLCommentTerminator reports a "--" or "#" comment used as a terminator.
-// Prose uses both ("Episode 3 -- The Return", "Ep. 7 #", "Tag #1"), so the
-// character before the marker decides:
-//   - start of input, or ';'             -> terminator ("-- x", "1; -- x")
-//   - quote, back-tick                   -> terminator only when that quote is
-//     unbalanced before it (odd count): "admin' --" yes, "\"Quoted\" -- review" no
-//   - ')'                                -> terminator only when nothing follows
-//     the marker ("1) --"); "(live) -- remaster" is prose
-//   - digit (only for "--")              -> terminator only when nothing follows
-//     ("1 --", "1-- -"); "Episode 3 -- The Return" is prose
+// numericLiteralPrefix matches a prefix that is only a numeric literal: optional
+// sign, optional opening parentheses, a decimal / 0x-hex number, optional closing
+// parentheses ("1", "-1", "((5", "0x1", "1.5", "1))").
+var numericLiteralPrefix = regexp.MustCompile(`^\s*[-+]?\s*\(*\s*[-+]?\s*(0[xX][0-9a-fA-F]+|\d+(\.\d+)?|\.\d+)\s*\)*$`)
+
+// hasSQLCommentTerminator reports a "--" or "#" comment used as a terminator in
+// ONE linear pass (running quote parity, no per-marker rescans: a per-marker
+// strings.Count was O(n^2), 4 MiB took 46 s). Prose uses both markers ("Episode 3
+// -- The Return", "Ep. 7 #", "Tag #1"), so the character before the marker decides:
+//   - start of input, or ';'  -> terminator ("-- x", "1; -- x")
+//   - quote / back-tick       -> terminator when that quote is unbalanced before it
+//     ("admin' -- x"), for "#" only when the marker ends the input ("admin' #")
+//   - ')' or a digit ("--")   -> terminator when nothing follows the marker, OR any
+//     quote is unbalanced before it ("admin') -- x"), OR the text before it is only
+//     a numeric literal ("1 -- x", "-1 -- x", "5--x", "0x1 -- x", "1.5 -- x",
+//     "1)) -- x"). "Season 1 -- Episode 4" and "(live) -- remaster" stay legal.
+//   - for "#": ')' counts only when the marker ends the input; a digit never counts.
 //
-// For '#', a quote or ')' counts only when the marker ends the input
-// ("admin' #"); a digit never counts ("Ep. 7 #").
+// Known, accepted false positive (security over prose, operator decision
+// candidate): a purely numeric title followed by "--", e.g. "2001 -- A Space Odyssey".
 func hasSQLCommentTerminator(s string) bool {
-	for _, marker := range []string{"--", "#"} {
-		from := 0
-		for {
-			i := strings.Index(s[from:], marker)
-			if i < 0 {
-				break
+	n := len(s)
+	// lastSigDash: last index of a char that is not whitespace and not '-'
+	// (what "--" must be followed by to count as "something follows");
+	// lastSigHash: last index of a non-whitespace char.
+	lastSigDash, lastSigHash := -1, -1
+	for i := n - 1; i >= 0 && (lastSigDash < 0 || lastSigHash < 0); i-- {
+		c := s[i]
+		ws := c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f'
+		if !ws && lastSigHash < 0 {
+			lastSigHash = i
+		}
+		if !ws && c != '-' && lastSigDash < 0 {
+			lastSigDash = i
+		}
+	}
+	var sq, dq, bq int           // quote counts so far
+	prev, prevIdx := byte(0), -1 // last non-space byte before the scan position
+	numericPossible := true
+	for i := 0; i < n; i++ {
+		c := s[i]
+		isDash := c == '-' && i+1 < n && s[i+1] == '-'
+		if isDash || c == '#' {
+			from := i + 1
+			if isDash {
+				from = i + 2
 			}
-			i += from
-			from = i + len(marker)
-			rest := strings.TrimSpace(s[from:])
-			if marker == "--" {
-				rest = strings.TrimLeft(rest, "- ")
+			restEmpty := lastSigHash < from
+			if isDash {
+				restEmpty = lastSigDash < from
 			}
-			j := i
-			for j > 0 && (s[j-1] == ' ' || s[j-1] == '\t') {
-				j--
-			}
-			if j == 0 {
-				if marker == "--" {
+			switch {
+			case prevIdx < 0:
+				if isDash {
 					return true
 				}
+			case prev == ';':
+				return true
+			case prev == '\'' || prev == '"' || prev == '`':
+				cnt := map[byte]int{'\'': sq, '"': dq, '`': bq}[prev]
+				if cnt%2 == 1 && (isDash || restEmpty) {
+					return true
+				}
+			case prev == ')' || (prev >= '0' && prev <= '9' && isDash):
+				if restEmpty {
+					return true
+				}
+				if isDash {
+					if sq%2 == 1 || dq%2 == 1 || bq%2 == 1 {
+						return true
+					}
+					if numericPossible {
+						if numericLiteralPrefix.MatchString(s[:prevIdx+1]) {
+							return true
+						}
+						numericPossible = false // any longer prefix still holds the bad part
+					}
+				}
+			}
+			if isDash {
+				i++ // skip the second '-'
+				prev, prevIdx = '-', i
 				continue
 			}
-			c := s[j-1]
-			switch {
-			case c == ';':
-				return true
-			case c == '\'' || c == '"' || c == '`':
-				if strings.Count(s[:j], string(c))%2 == 1 && (marker == "--" || rest == "") {
-					return true
-				}
-			case c == ')':
-				if rest == "" {
-					return true
-				}
-			case c >= '0' && c <= '9' && marker == "--":
-				if rest == "" {
-					return true
-				}
-			}
+		}
+		switch c {
+		case '\'':
+			sq++
+		case '"':
+			dq++
+		case '`':
+			bq++
+		}
+		if c != ' ' && c != '\t' && c != '\n' && c != '\r' && c != '\v' && c != '\f' {
+			prev, prevIdx = c, i
 		}
 	}
 	return false

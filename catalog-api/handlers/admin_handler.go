@@ -237,7 +237,7 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 
 	// Revoke first (fail closed): a failed revocation leaves the user unchanged,
 	// so a retry still revokes.
-	if wasActive && !user.IsActive {
+	if wasActive && !user.IsActive || (updates.Status != nil && !user.IsActive) {
 		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke sessions; user not updated"})
 			return
@@ -249,7 +249,7 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 	}
 	// Second revoke closes the window for a login between the first revoke and
 	// the update (that session carries the old claims).
-	if wasActive && !user.IsActive {
+	if wasActive && !user.IsActive || (updates.Status != nil && !user.IsActive) {
 		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
 			log.Printf("handlers: user %d updated but the post-update session revoke failed: %v", user.ID, err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "User updated but revoking sessions failed; repeat the request"})

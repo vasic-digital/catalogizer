@@ -566,3 +566,50 @@ func TestRT_SessionCreatedBetweenRevokeAndUpdateIsRevoked(t *testing.T) {
 		require.NoError(t, err)
 	}
 }
+
+// G4/G5: the SECOND revoke fails (a session slipped in between revoke and update,
+// then session writes start failing once the user row is already changed). Both
+// handlers must answer 500 (never 200), the user is already updated, and a
+// repeat of the SAME request must finish the revocation even though it changes
+// no value (the retry sees role/active already applied).
+func TestRT_SecondRevokeFailureReports500AndRetryRevokes(t *testing.T) {
+	e := newRTEnv(t)
+	for _, tc := range []struct{ name, path, body string }{
+		{"lena", "/api/v1/users/", `{"is_active":false}`},
+		{"mona", "/api/v1/admin/users/", `{"status":"inactive"}`},
+	} {
+		require.Equal(t, 201, e.do(e.adminTok, "POST", "/api/v1/users", createUserBody(tc.name)).Code)
+		_ = e.tokenFor(t, tc.name, rtUserPass)
+		u, _ := e.repo.GetByUsername(tc.name)
+		id := rtItoa(u.ID)
+		_, err := e.db.Exec(`CREATE TRIGGER racing_login BEFORE UPDATE ON users WHEN NEW.id = ` + id + `
+			BEGIN INSERT INTO user_sessions (user_id, session_token, refresh_token, device_info, ip_address, user_agent, is_active, expires_at, created_at, last_activity_at)
+			VALUES (NEW.id, 'racing-` + tc.name + `', 'racing-r-` + tc.name + `', '{}', '', '', 1, datetime('now','+1 day'), datetime('now'), datetime('now')); END`)
+		require.NoError(t, err)
+		// Passes the first revoke (user still active) and fails the second (user row
+		// already inactive).
+		_, err = e.db.Exec(`CREATE TRIGGER block_second_revoke BEFORE UPDATE ON user_sessions
+			WHEN NEW.user_id = ` + id + ` AND (SELECT is_active FROM users WHERE id = NEW.user_id) = 0
+			BEGIN SELECT RAISE(ABORT, 'second revoke blocked'); END`)
+		require.NoError(t, err)
+
+		w := e.do(e.adminTok, "PUT", tc.path+id, tc.body)
+		assert.Equal(t, 500, w.Code, tc.name+": must not report success when the post-update revoke failed: "+w.Body.String())
+		after, _ := e.repo.GetByUsername(tc.name)
+		assert.False(t, after.IsActive, tc.name+": the update itself was applied")
+		var active int
+		require.NoError(t, e.db.QueryRow("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND is_active = 1", u.ID).Scan(&active))
+		assert.Equal(t, 1, active, tc.name+": the racing session is still active after the failed second revoke")
+
+		_, err = e.db.Exec(`DROP TRIGGER racing_login`)
+		require.NoError(t, err)
+		_, err = e.db.Exec(`DROP TRIGGER block_second_revoke`)
+		require.NoError(t, err)
+
+		// Repeat the identical request: no value changes, but the sessions must go.
+		w = e.do(e.adminTok, "PUT", tc.path+id, tc.body)
+		require.Equal(t, 200, w.Code, w.Body.String())
+		require.NoError(t, e.db.QueryRow("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND is_active = 1", u.ID).Scan(&active))
+		assert.Equal(t, 0, active, tc.name+": the retry must finish the revocation")
+	}
+}

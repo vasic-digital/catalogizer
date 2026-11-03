@@ -443,11 +443,17 @@ npm audit fix
 ```bash
 # Refresh token or re-login
 # The admin account is created at first start from ADMIN_USERNAME / ADMIN_PASSWORD
-# (set both in .env; known placeholder passwords are refused). There is no default login.
-# Forgot it? Stop the server, set ADMIN_NEW_PASSWORD, run `catalog-api admin-reset-password`.
-curl -X POST http://localhost:8080/api/v1/auth/login \
+# (known placeholder passwords are refused). docker compose reads them from .env;
+# a binary started directly needs them as real environment variables. There is no default login.
+# Forgot the password? Stop the server, set ADMIN_NEW_PASSWORD, run
+# `catalog-api admin-reset-password <username>` (the no-argument form only rotates
+# admin accounts that still carry the published default password).
+# The JSON body is built from the environment and piped in, so the password never
+# appears on a command line (ps, shell history).
+jq -n '{username: env.ADMIN_USERNAME, password: env.ADMIN_PASSWORD}' | \
+  curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d "{\"username\": \"$ADMIN_USERNAME\", \"password\": \"$ADMIN_PASSWORD\"}"
+  -d @-
 ```
 
 #### 403 Forbidden

@@ -300,6 +300,10 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	oldRoleID, oldActive := user.RoleID, user.IsActive
+	// privilegedChangeRequested: the caller is allowed to and did name role_id or
+	// is_active. A retry after a failed post-update revoke sees no value change, so
+	// revocation is keyed on the request too, not only on the diff.
+	privilegedChangeRequested := false
 
 	if req.Username != nil {
 		user.Username = *req.Username
@@ -334,6 +338,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if hasAdminPermission {
+			privilegedChangeRequested = req.RoleID != nil || req.IsActive != nil
 			if req.RoleID != nil {
 				if !h.allowedToAssignRole(w, currentUser, *req.RoleID) {
 					return
@@ -363,7 +368,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	// Revoking BEFORE the update fails closed: if revocation fails nothing is
 	// changed, so a retry still revokes (after a persisted change the retry would
 	// see no change and skip revocation).
-	if user.RoleID != oldRoleID || user.IsActive != oldActive {
+	if privilegedChangeRequested || user.RoleID != oldRoleID || user.IsActive != oldActive {
 		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
 			http.Error(w, "Failed to revoke the user's sessions; user not updated", http.StatusInternalServerError)
 			return
@@ -383,10 +388,10 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	// Second revoke: a login that landed between the first revoke and the update
 	// read the OLD row and holds a token with the old role claim. The user is
 	// already updated, so a retry of this request is idempotent.
-	if user.RoleID != oldRoleID || user.IsActive != oldActive {
+	if privilegedChangeRequested || user.RoleID != oldRoleID || user.IsActive != oldActive {
 		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
 			log.Printf("handlers: user %d updated but the post-update session revoke failed: %v", user.ID, err)
-			http.Error(w, "User updated but revoking the user's sessions failed; repeat the request", http.StatusInternalServerError)
+			http.Error(w, "User updated but revoking the user's sessions failed; repeat the request to finish revoking", http.StatusInternalServerError)
 			return
 		}
 	}

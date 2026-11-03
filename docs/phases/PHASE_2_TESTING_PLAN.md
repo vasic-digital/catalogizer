@@ -289,7 +289,7 @@ fun `login saves token and user info on success`() = runTest {
 
 **Manual Test Steps:**
 1. Open Android TV app
-2. Enter the admin credentials created at first start from ADMIN_USERNAME / ADMIN_PASSWORD in .env (there is no default login; see docs/guides/TROUBLESHOOTING.md for the reset procedure)
+2. Enter the admin credentials created at first start from ADMIN_USERNAME / ADMIN_PASSWORD (docker compose reads them from .env; there is no default login; for a forgotten password see docs/guides/TROUBLESHOOTING.md: `catalog-api admin-reset-password <username>`)
 3. Click "Sign In"
 4. Verify navigation to home screen
 5. Close app completely
