@@ -66,6 +66,7 @@ func TestWebDAVTransfer_StalledDownloadIsCutByIdleTimeout(t *testing.T) {
 	t0 := time.Now()
 	_, err = io.ReadAll(rc)
 	require.Error(t, err, "a stalled body must fail, not hang")
+	require.Contains(t, err.Error(), "webdav idle timeout", "an idle cut must be diagnosable as such, not a bare context canceled")
 	require.Less(t, time.Since(t0), 3*time.Second)
 	_ = rc.Close()
 }

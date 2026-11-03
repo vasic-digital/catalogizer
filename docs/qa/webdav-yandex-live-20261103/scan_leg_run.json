@@ -1,0 +1,33 @@
+{
+  "credentials_in_evidence": false,
+  "date_utc": "2026-11-03T21:05:44Z",
+  "entries_catalogued": 8,
+  "guard_violations": 0,
+  "http_requests": 19,
+  "names": [
+    "a.bin",
+    "sub",
+    "sub/b.bin",
+    "sub/deep",
+    "sub/deep/c.txt",
+    "sub/日本語.bin",
+    "каталог",
+    "каталог/файл ёЖ.txt"
+  ],
+  "run_dir": "catalogizer-live-scan-1793739938",
+  "scan_errors": 0,
+  "scan_ms": 896,
+  "seam": "remote tree is live; the database record sink is an in-memory collector (insertFileRecord DB path and UniversalScanner job path not exercised, FOLLOW_UPS W8)",
+  "service": "webdav.yandex.ru",
+  "setup_retries": 0,
+  "sha256": {
+    "a.bin": "d93ca637a7b73562d029fa8c3cc9dc6c139a197d75101f6d05f6811ab4d4e2eb",
+    "sub/b.bin": "31473ba480e5efdd30890f86639de6630cb228b343eadddc15060e9a6eb723ab",
+    "sub/deep/c.txt": "8f3b4b7fe6e2f9e75d4c34bf804a7c42d43288953731ba5fd50a90cf6d912897",
+    "sub/日本語.bin": "b2fc39be2d43de329a2a7ea448ab070d16f4dfb41c131bdb1b800be7cd412ada",
+    "каталог/файл ёЖ.txt": "43877e6466fb56f1e3fcb78359f9ab4c4ecbe13cb64a00eff3dffc2609915ab0"
+  },
+  "ssrf_adapter_public_allowed": true,
+  "ssrf_loopback_refused": true,
+  "ssrf_public_https_allowed": true
+}

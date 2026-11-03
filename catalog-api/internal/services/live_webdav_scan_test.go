@@ -112,8 +112,27 @@ func TestLiveYandexScan_RemoteTreeIsCatalogued(t *testing.T) {
 	}
 	defer c.Disconnect(ctx)
 
+	// Setup calls retry a "connection reset by peer" (a service behaviour seen live, FOLLOW_UPS W9); every retry is counted in the evidence. An
+	// "already exists" (405) after a failed earlier attempt means the first attempt was applied. Scan and verification steps are NOT retried.
+	setupRetries := 0
+	setup := func(fn func() error) error {
+		var err error
+		for a := 1; a <= 4; a++ {
+			e := fn()
+			if e != nil && err != nil && strings.Contains(e.Error(), "status 405") {
+				return nil
+			}
+			err = e
+			if err == nil || !strings.Contains(err.Error(), "connection reset") {
+				return err
+			}
+			setupRetries++
+			time.Sleep(time.Duration(a) * 2 * time.Second)
+		}
+		return err
+	}
 	run := fmt.Sprintf("catalogizer-live-scan-%d", time.Now().Unix())
-	if err := c.CreateDirectory(ctx, "/"+run); err != nil {
+	if err := setup(func() error { return c.CreateDirectory(ctx, "/"+run) }); err != nil {
 		t.Fatalf("mkdir: %s", redact(err.Error()))
 	}
 	defer func() { // remove ONLY the run directory this test created
@@ -130,7 +149,7 @@ func TestLiveYandexScan_RemoteTreeIsCatalogued(t *testing.T) {
 	}
 	files := []f{{"a.bin", 3000}, {"sub/b.bin", 1500}, {"sub/deep/c.txt", 700}, {"каталог/файл ёЖ.txt", 900}, {"sub/日本語.bin", 1200}}
 	for _, d := range []string{"sub", "sub/deep", "каталог"} {
-		if err := c.CreateDirectory(ctx, "/"+run+"/"+d); err != nil {
+		if err := setup(func() error { return c.CreateDirectory(ctx, "/"+run+"/"+d) }); err != nil {
 			t.Fatalf("mkdir %s: %s", d, redact(err.Error()))
 		}
 	}
@@ -138,7 +157,7 @@ func TestLiveYandexScan_RemoteTreeIsCatalogued(t *testing.T) {
 	for _, x := range files {
 		data := det("scan:"+x.rel, x.size)
 		want[x.rel] = sha(data)
-		if err := c.WriteFile(ctx, "/"+run+"/"+x.rel, bytes.NewReader(data)); err != nil {
+		if err := setup(func() error { return c.WriteFile(ctx, "/"+run+"/"+x.rel, bytes.NewReader(data)) }); err != nil {
 			t.Fatalf("upload %s: %s", x.rel, redact(err.Error()))
 		}
 	}
@@ -233,7 +252,7 @@ func TestLiveYandexScan_RemoteTreeIsCatalogued(t *testing.T) {
 		}
 		ev := map[string]any{"service": "webdav.yandex.ru", "run_dir": run, "date_utc": time.Now().UTC().Format(time.RFC3339), "scan_ms": scanMs,
 			"entries_catalogued": len(got), "names": names, "sha256": sums, "http_requests": gt.n, "guard_violations": gt.viol,
-			"scan_errors": snap.ErrorCount, "ssrf_public_https_allowed": publicAllowed, "ssrf_loopback_refused": loopbackRefused, "ssrf_adapter_public_allowed": adapterAllowed,
+			"scan_errors": snap.ErrorCount, "setup_retries": setupRetries, "ssrf_public_https_allowed": publicAllowed, "ssrf_loopback_refused": loopbackRefused, "ssrf_adapter_public_allowed": adapterAllowed,
 			"seam": "remote tree is live; the database record sink is an in-memory collector (insertFileRecord DB path and UniversalScanner job path not exercised, FOLLOW_UPS W8)", "credentials_in_evidence": false}
 		b, _ := json.MarshalIndent(ev, "", "  ")
 		if err := os.WriteFile(path, b, 0o600); err != nil {

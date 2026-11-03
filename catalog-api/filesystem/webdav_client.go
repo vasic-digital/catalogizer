@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -75,12 +76,24 @@ type idleGuard struct {
 	t      *time.Timer
 	d      time.Duration
 	cancel context.CancelFunc
+	fired  atomic.Bool // set only by the timer: the idle period elapsed (as opposed to a caller cancel or a normal stop)
+}
+
+// idleErr turns a transport/body error into a diagnosable one when the idle timer, not the caller, ended the transfer.
+func (g *idleGuard) idleErr(err error, phase string) error {
+	if err == nil || err == io.EOF || !g.fired.Load() {
+		return err
+	}
+	g.mu.Lock()
+	d := g.d
+	g.mu.Unlock()
+	return fmt.Errorf("webdav idle timeout: no data for %v (%s): %w", d, phase, err)
 }
 
 func newIdleGuard(ctx context.Context, d time.Duration) (context.Context, *idleGuard) {
 	c, cancel := context.WithCancel(ctx)
 	g := &idleGuard{d: d, cancel: cancel}
-	g.t = time.AfterFunc(d, cancel)
+	g.t = time.AfterFunc(d, func() { g.fired.Store(true); cancel() })
 	return c, g
 }
 
@@ -103,6 +116,7 @@ func (b *idleBody) Read(p []byte) (int, error) {
 	b.g.touch()
 	n, err := b.rc.Read(p)
 	b.read += int64(n)
+	err = b.g.idleErr(err, fmt.Sprintf("body, %d bytes transferred", b.read))
 	// the transport reads exactly Content-Length bytes and may never ask for the EOF: the last byte is the end of the body
 	if !b.stopOnClose && (err == io.EOF || (b.want > 0 && b.read >= b.want)) {
 		b.g.rearm(webdavResponseWait)
@@ -234,6 +248,7 @@ func (c *WebDAVClient) ReadFile(ctx context.Context, path string) (io.ReadCloser
 
 	resp, err := c.client.Do(req)
 	if err != nil {
+		err = guard.idleErr(err, "waiting for response headers")
 		guard.stop()
 		return nil, fmt.Errorf("failed to retrieve WebDAV file %s: %w", redactURL(fullURL), err)
 	}
@@ -277,6 +292,7 @@ func (c *WebDAVClient) WriteFile(ctx context.Context, path string, data io.Reade
 
 	resp, err := c.client.Do(req)
 	if err != nil {
+		err = guard.idleErr(err, "upload, waiting for the server")
 		return fmt.Errorf("failed to upload WebDAV file %s: %w", redactURL(fullURL), err)
 	}
 	defer resp.Body.Close()

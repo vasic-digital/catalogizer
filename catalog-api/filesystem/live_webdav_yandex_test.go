@@ -243,7 +243,7 @@ func (r *yRun) ctx(d time.Duration) (context.Context, context.CancelFunc) {
 //
 // "context canceled" is NOT transient: the client raises it when its idle guard fires (no byte moved for the idle timeout), and retrying it would mask
 // a false idle-cancel in the code under test. It is counted as its own class (idleCancels) that FAILs the run.
-var transientKeys = []string{"connection reset", "status 500", "status 502", "status 503", "status 504", "status 429", "unexpected EOF", "Client.Timeout", "i/o timeout", "context deadline exceeded"}
+var transientKeys = []string{"connection reset", "status 500", "status 502", "status 503", "status 504", "status 429", "unexpected EOF", "\": EOF", "Client.Timeout", "i/o timeout", "TLS handshake timeout", "context deadline exceeded"}
 
 func transient(err error) bool {
 	if err == nil {
@@ -265,7 +265,7 @@ func (r *yRun) retry(what string, fn func() error) error {
 		if err = fn(); err == nil {
 			return nil
 		}
-		if strings.Contains(err.Error(), "context canceled") {
+		if strings.Contains(err.Error(), "context canceled") || strings.Contains(err.Error(), "webdav idle timeout") {
 			r.mu.Lock()
 			r.idleCancels++
 			r.mu.Unlock()

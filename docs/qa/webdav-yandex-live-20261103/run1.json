@@ -1,11 +1,12 @@
 {
   "bytes_uploaded": 7631477,
   "credentials_in_evidence": false,
-  "date_utc": "2026-11-03T20:12:56Z",
+  "date_utc": "2026-11-03T21:30:38Z",
   "guard_violations": 2,
-  "latency_ms_max": 128787,
-  "latency_ms_p50": 280,
-  "latency_ms_p95": 1954,
+  "idle_cancel_errors": 0,
+  "latency_ms_max": 128817,
+  "latency_ms_p50": 221,
+  "latency_ms_p95": 2553,
   "lost_acked_writes": 0,
   "notes": {
     "cleanup": "run dir removed, PROPFIND 404",
@@ -16,18 +17,18 @@
     "COPY": 3,
     "DELETE": 7,
     "GET": 27,
-    "HEAD": 216,
-    "MKCOL": 7,
+    "HEAD": 227,
+    "MKCOL": 8,
     "MOVE": 1,
     "PROPFIND": 13,
     "PUT": 224
   },
   "requests_by_status": {
-    "0": 3,
-    "200": 232,
+    "0": 4,
+    "200": 243,
     "201": 228,
-    "202": 1,
-    "204": 5,
+    "202": 2,
+    "204": 4,
     "206": 1,
     "207": 9,
     "401": 1,
@@ -35,8 +36,8 @@
     "405": 1,
     "409": 2
   },
-  "requests_total": 498,
-  "run_dir": "catalogizer-live-1793736383",
+  "requests_total": 510,
+  "run_dir": "catalogizer-live-1793741033",
   "sandbox": "/Testing",
   "service": "webdav.yandex.ru",
   "signature": {
@@ -62,7 +63,7 @@
     {
       "name": "01_connect_auth_success",
       "result": "PASS",
-      "ms": 529,
+      "ms": 445,
       "notes": {
         "protocol": "webdav"
       }
@@ -70,7 +71,7 @@
     {
       "name": "02_auth_failure_wrong_password",
       "result": "PASS",
-      "ms": 201,
+      "ms": 5774,
       "notes": {
         "status": 401
       }
@@ -78,44 +79,44 @@
     {
       "name": "03_mkdir",
       "result": "PASS",
-      "ms": 856,
+      "ms": 15061,
       "notes": {
-        "mkdir_existing_error": "WebDAV server returned status 405 for directory https://\u003credacted\u003e/Testing/catalogizer-live-1793736383/sub",
-        "mkdir_missing_parent_error": "WebDAV server returned status 409 for directory https://\u003credacted\u003e/Testing/catalogizer-live-1793736383/no/such/parent"
+        "mkdir_existing_error": "WebDAV server returned status 405 for directory https://\u003credacted\u003e/Testing/catalogizer-live-1793741033/sub",
+        "mkdir_missing_parent_error": "WebDAV server returned status 409 for directory https://\u003credacted\u003e/Testing/catalogizer-live-1793741033/no/such/parent"
       }
     },
     {
       "name": "04_upload_known_sha256",
       "result": "PASS",
-      "ms": 194613,
+      "ms": 194201,
       "notes": {
         "sha256_one_mb.bin": "c8677035733d6157b4f3145519867a5b7aef27d8a74d918e24218d7dcf462ea5",
         "sha256_small.bin": "60a70ec802793c5aabaf9b2fcfb7d064828b07686c5b92a38bd1b263d4e3dd2a",
         "sha256_two_mb.bin": "81169c9ed4e52dc9f1405a3c7f5a17467b3e44f5caaf26fdbac047011c63d44a",
-        "upload_ms_one_mb.bin": 64690,
-        "upload_ms_small.bin": 1108,
-        "upload_ms_two_mb.bin": 128814
+        "upload_ms_one_mb.bin": 64691,
+        "upload_ms_small.bin": 662,
+        "upload_ms_two_mb.bin": 128846
       }
     },
     {
       "name": "05_list_sizes_mtimes",
       "result": "PASS",
-      "ms": 365,
+      "ms": 217,
       "notes": {
         "mtime_skew_s_one_mb.bin": 129,
         "mtime_skew_s_small.bin": 194,
-        "mtime_skew_s_two_mb.bin": 0
+        "mtime_skew_s_two_mb.bin": 1
       }
     },
     {
       "name": "06_download_sha256_and_stat",
       "result": "PASS",
-      "ms": 2002
+      "ms": 1564
     },
     {
       "name": "07_range_partial_read",
       "result": "PASS",
-      "ms": 235,
+      "ms": 276,
       "notes": {
         "accept_ranges": "bytes",
         "range_status": 206,
@@ -125,7 +126,7 @@
     {
       "name": "08_copy_rename_move",
       "result": "PASS",
-      "ms": 29233,
+      "ms": 36134,
       "notes": {
         "copy_missing_error": "WebDAV server returned status 404 for copy operation",
         "copy_over_existing": "replaced",
@@ -135,34 +136,34 @@
     {
       "name": "09_overwrite",
       "result": "PASS",
-      "ms": 2931
+      "ms": 1928
     },
     {
       "name": "10_nonexistent_errors",
       "result": "PASS",
-      "ms": 1124,
+      "ms": 866,
       "notes": {
-        "write_missing_parent_error": "WebDAV server returned status 409 for file https://\u003credacted\u003e/Testing/catalogizer-live-1793736383/no-parent/x.bin"
+        "write_missing_parent_error": "WebDAV server returned status 409 for file https://\u003credacted\u003e/Testing/catalogizer-live-1793741033/no-parent/x.bin"
       }
     },
     {
       "name": "11_unicode_and_special_names",
       "result": "PASS",
-      "ms": 7193
+      "ms": 6500
     },
     {
       "name": "12_large_listing_200",
       "result": "PASS",
-      "ms": 53889,
+      "ms": 42633,
       "notes": {
         "entries": 200,
-        "list_ms": 622
+        "list_ms": 591
       }
     },
     {
       "name": "13_concurrent_uploads_4",
       "result": "PASS",
-      "ms": 51974,
+      "ms": 47195,
       "notes": {
         "files": 8,
         "max_parallel": 4
@@ -171,7 +172,7 @@
     {
       "name": "14_unsized_reader_upload",
       "result": "PASS",
-      "ms": 7008,
+      "ms": 7049,
       "notes": {
         "unsized_upload": "ok (chunked accepted)"
       }
@@ -179,7 +180,7 @@
     {
       "name": "15_timeout_and_cancel",
       "result": "PASS",
-      "ms": 1863,
+      "ms": 1657,
       "notes": {
         "deadline_return_ms": 30,
         "interrupted_upload_left_file": false,
@@ -189,17 +190,17 @@
     {
       "name": "16_delete",
       "result": "PASS",
-      "ms": 8959
+      "ms": 10510
     },
     {
       "name": "17_guard_refuses_outside_sandbox",
       "result": "PASS",
-      "ms": 639
+      "ms": 546
     }
   ],
-  "total_ms": 393531,
-  "transient_retries": 1,
+  "total_ms": 405099,
+  "transient_retries": 2,
   "transient_retry_classes": {
-    "connection reset": 1
+    "connection reset": 2
   }
 }
