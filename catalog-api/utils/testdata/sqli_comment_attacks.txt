@@ -1,0 +1,19 @@
+') -- x
+1) -- x
+1)) -- anything
+admin') -- x
+admin") -- y
+") -- z
+1 -- x
+-1 -- x
+5--x
+5 --x
+42 -- and the rest
+0x1 -- x
+1.5 -- x
+1' -- x
+admin'-- x
+x' OR 'a'='a' -- x
+1; -- x
+' /* x
+") /* comment */

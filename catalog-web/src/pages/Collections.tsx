@@ -703,7 +703,7 @@ export const Collections: React.FC = () => {
 
   if (showTemplates) {
     return (
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <CollectionTemplates 
           onClose={() => setShowTemplates(false)}
           onApplyTemplate={async (template, collectionName) => {
@@ -718,7 +718,7 @@ export const Collections: React.FC = () => {
 
   if (showAdvancedSearch) {
     return (
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <AdvancedSearch />
       </div>
     );
@@ -726,7 +726,7 @@ export const Collections: React.FC = () => {
 
   if (showAutomation) {
     return (
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <CollectionAutomation />
       </div>
     );
@@ -734,7 +734,7 @@ export const Collections: React.FC = () => {
 
   if (showIntegrations) {
     return (
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <ExternalIntegrations />
       </div>
     );
@@ -742,7 +742,7 @@ export const Collections: React.FC = () => {
 
   if (showAI) {
     return (
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="mb-8">
           <div className="flex items-center space-x-3">
             <Brain className="w-8 h-8 text-indigo-600" />
@@ -831,10 +831,10 @@ export const Collections: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               Collections
@@ -845,7 +845,7 @@ export const Collections: React.FC = () => {
           </div>
           
           {/* Performance Indicator */}
-          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-2">
               <Activity className="w-4 h-4" />
               <span>Render: {performanceMetrics.renderTime.toFixed(1)}ms</span>
@@ -906,7 +906,7 @@ export const Collections: React.FC = () => {
           />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* View Mode Toggle */}
           <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             {VIEW_OPTIONS.map((option) => {

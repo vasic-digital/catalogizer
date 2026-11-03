@@ -749,9 +749,18 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/user/profile
 echo $TOKEN | cut -d. -f2 | base64 -d | jq .exp
 
 # Generate new token
-curl -X POST http://localhost:8080/api/auth/login \
+# The admin account is created at first start from ADMIN_USERNAME / ADMIN_PASSWORD
+# (known placeholder passwords are refused). docker compose reads them from .env;
+# a binary started directly needs them as real environment variables. There is no default login.
+# Forgot the password? Stop the server, set ADMIN_NEW_PASSWORD, run
+# `catalog-api admin-reset-password <username>` (the no-argument form only rotates
+# admin accounts that still carry the published default password).
+# The JSON body is built from the environment and piped in, so the password never
+# appears on a command line (ps, shell history).
+jq -n '{username: env.ADMIN_USERNAME, password: env.ADMIN_PASSWORD}' | \
+  curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"password"}'
+  -d @-
 ```
 
 ### User Access Issues

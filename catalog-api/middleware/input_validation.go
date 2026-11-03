@@ -65,9 +65,13 @@ func init() {
 		// single-line body: an unclosed <script src=...>, a multi-line <script>
 		// body, <base href>, <link>, <style>@import. Formerly caught only by
 		// accident, through the bare word SCRIPT in the SQL keyword list.
-		`(?i)<\s*/?\s*(script|iframe|object|embed|applet|base|meta|link|style|svg|math|frameset|form)\b`,
+		// No whitespace is allowed between "<" and the tag name (or "/"): a browser
+		// does not parse "< link" as a tag, so "x < link y" is prose.
+		`(?i)</?(script|iframe|object|embed|applet|base|meta|link|style|svg|math|frameset|form)\b`,
 		`(?i)(javascript\s*:|vbscript\s*:|data\s*:|onload\s*=|onerror\s*=)`,
 		`(?i)(on\w+\s*=)`,
+		// Legacy IE CSS behaviour binding: style="behavior:url(x.htc)"
+		`(?i)\bbehavior\s*:\s*url\s*\(`,
 		`(?i)(eval\s*\(|alert\s*\(|confirm\s*\(|prompt\s*\()`,
 	} {
 		xssRegexes = append(xssRegexes, regexp.MustCompile(p))

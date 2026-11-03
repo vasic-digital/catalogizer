@@ -41,7 +41,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
               {crumb.href ? (
                 <Link
                   to={crumb.href}
-                  className="hover:text-gray-900 hover:underline dark:hover:text-white transition-colors"
+                  className="touch-target hover:text-gray-900 hover:underline dark:hover:text-white transition-colors"
                 >
                   {crumb.label}
                 </Link>

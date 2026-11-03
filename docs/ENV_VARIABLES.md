@@ -362,6 +362,18 @@ CATALOGIZER_BUILDER_AUTO=1                                      # 🟢
 
 ---
 
+## 12b. 🟢 Conversion worker — OPTIONAL
+
+```bash
+CATALOGIZER_CONVERSION_TIMEOUT=2h   # 🟢 per-job wall-clock limit (Go duration: 30m, 6h); default 2h
+```
+
+A conversion that runs longer is killed (whole process group) and the job ends `failed` with
+"conversion timed out". An invalid, zero or negative value is ignored with a warning in the log
+and the default is used; "unlimited" is not supported.
+
+---
+
 ## 13. Database / retention of existing services (reference only)
 
 These are used by service-layer integrations — typically no key needed unless you run your own cloud instance:

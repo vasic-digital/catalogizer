@@ -159,7 +159,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const changePasswordMutation = useMutation({
     mutationFn: authApi.changePassword,
     onSuccess: () => {
-      toast.success('Password changed successfully!')
+      // The server ends EVERY session of the user on a password change, this
+      // one included, so the stored token is already dead. Sign out locally
+      // (no logout API call: it would 401) instead of letting the next request
+      // fail and bounce the user to /login after a misleading success toast.
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('user')
+      setUser(null)
+      setPermissions([])
+      queryClient.clear()
+      toast.success('Password changed. Please log in again.')
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { error?: string } } }

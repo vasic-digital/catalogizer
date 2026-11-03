@@ -1,4 +1,181 @@
-<h1 id="discovered-findings-2026-06-26-during-11.4.170-work">Discovered
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.11" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Discovered Findings — 2026-06-26 (during §11.4.170
+work)</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<h1 id="discovered-findings--2026-06-26-during-114170-work">Discovered
 Findings — 2026-06-26 (during §11.4.170 work)</h1>
 <p><strong>Status:</strong> FINDING-1 <strong>RESOLVED</strong> (both
 legs fixed + guarded, 2026-06-26) · FINDING-2 <strong>OPEN</strong>
@@ -8,7 +185,7 @@ conductor-reviewed/re-validated (§11.4.142). Evidence is computed
 contrast ratios + RED→GREEN test runs + commit refs.</p>
 <hr />
 <h2
-id="finding-1-web-desktop-carry-the-same-sub-aa-error-token-as-surface-class-as-the-phone-latent-resolved">FINDING-1
+id="finding-1--web--desktop-carry-the-same-sub-aa-error-token-as-surface-class-as-the-phone-latent--resolved">FINDING-1
 — Web + desktop carry the SAME sub-AA error-token-as-surface class as
 the phone (latent) — RESOLVED</h2>
 <p><strong>Type:</strong> Bug (accessibility / WCAG).
@@ -21,16 +198,6 @@ foreground (<code>#F8FAFC</code>) → contrast <strong>3.60:1</strong>,
 below WCAG AA 4.5:1 for normal text (passes only as large text/UI
 ≥3:1).</p>
 <table>
-<colgroup>
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-<col style="width: 12%" />
-</colgroup>
 <thead>
 <tr>
 <th>Client</th>
@@ -91,13 +258,6 @@ ship.</p>
 impact-reasoned, §11.4.142 conductor-reviewed +
 re-validated):</strong></p>
 <table>
-<colgroup>
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-</colgroup>
 <thead>
 <tr>
 <th>Leg</th>
@@ -144,34 +304,39 @@ guards — vitest auto-discovers <code>*.test.ts</code>, so they run on
 every <code>npm test</code>.</p>
 <hr />
 <h2
-id="finding-2-upstream-constitution-04d71da-has-duplicate-anchor-numbers-11.4.140-and-11.4.141">FINDING-2
+id="finding-2--upstream-constitution-04d71da-has-duplicate-anchor-numbers-114140-and-114141">FINDING-2
 — Upstream constitution <code>04d71da</code> has duplicate anchor
 numbers §11.4.140 and §11.4.141</h2>
 <p><strong>Type:</strong> Task (governance integrity).
 <strong>Severity:</strong> Medium. <strong>Pre-existing upstream debt —
 NOT introduced by, and correctly NOT touched by, the §11.4.170 commit
 <code>fc84675</code>.</strong></p>
-<p>In <code>submodules/constitution/Constitution.md</code> at upstream
-HEAD <code>04d71da</code>: - <code>### §11.4.140</code> appears
-<strong>twice</strong>: “Universal action-prefix system” (~line 8996,
-2026-06-09) AND “Mandatory HelixTranslate canonical translation
-pipeline” (~line 9821, 2026-06-25, renamed from old §11.4.133 by
-<code>04d71da</code>). - <code>### §11.4.141</code> appears
-<strong>twice</strong>: “Token-efficiency mandate” (~line 9091,
-2026-06-09) AND “Mandatory independent per-language translation review”
-(~line 9851, 2026-06-25, new in <code>04d71da</code>).</p>
-<p>The <code>04d71da</code> commit (“fix §11.4.140 numbering collision”)
+<p>In <code>constitution/Constitution.md</code> at upstream HEAD
+<code>04d71da</code>:</p>
+<ul>
+<li><code>### §11.4.140</code> appears <strong>twice</strong>:
+"Universal action-prefix system" (~line 8996, 2026-06-09) AND "Mandatory
+HelixTranslate canonical translation pipeline" (~line 9821, 2026-06-25,
+renamed from old §11.4.133 by <code>04d71da</code>).</li>
+<li><code>### §11.4.141</code> appears <strong>twice</strong>:
+"Token-efficiency mandate" (~line 9091, 2026-06-09) AND "Mandatory
+independent per-language translation review" (~line 9851, 2026-06-25,
+new in <code>04d71da</code>).</li>
+</ul>
+<p>The <code>04d71da</code> commit ("fix §11.4.140 numbering collision")
 moved the translation block off the §11.4.133 collision but onto
 already-occupied 140/141.</p>
 <p><strong>Why not fixed here:</strong> renumbering an anchor changes
 its identity + every cross-reference + the propagation-gate literal
 (<code>CM-COVENANT-114-140/141-PROPAGATION</code>) across the whole
 consumer fleet — high-blast-radius, operator-gated (§11.4.101). Also the
-translation clauses are the upstream author’s; renumbering them without
+translation clauses are the upstream author's; renumbering them without
 coordination risks colliding with their next push.</p>
 <p><strong>Recommended:</strong> operator decides the free numbers for
-the translation pipeline + translation review clauses
-(e.g. §11.4.171/§11.4.172), then a dedicated commit renumbers the two
-blocks + their gate literals + carrier mirrors, with §11.4.157 lockstep
-(the carriers also lag — <code>04d71da</code> added 140/141 to
+the translation pipeline + translation review clauses (e.g.
+§11.4.171/§11.4.172), then a dedicated commit renumbers the two blocks +
+their gate literals + carrier mirrors, with §11.4.157 lockstep (the
+carriers also lag — <code>04d71da</code> added 140/141 to
 Constitution.md only, not to CLAUDE/AGENTS/QWEN/GEMINI).</p>
+</body>
+</html>

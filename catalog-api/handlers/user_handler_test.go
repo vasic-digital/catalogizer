@@ -64,6 +64,10 @@ func (m *MockUserService) Count() (int, error) {
 	return args.Int(0), args.Error(1)
 }
 
+// DeactivateAllUserSessions is required by UserServiceInterface; the mock keeps
+// no sessions and records nothing through testify's expectation list.
+func (m *MockUserService) DeactivateAllUserSessions(int) error { return nil }
+
 // MockUserAuthService for testing
 type MockUserAuthService struct {
 	mock.Mock
@@ -110,11 +114,6 @@ func (m *MockUserAuthService) LockAccount(userID int, lockUntil time.Time) error
 func (m *MockUserAuthService) UnlockAccount(userID int) error {
 	args := m.Called(userID)
 	return args.Error(0)
-}
-
-func (m *MockUserAuthService) HashData(data string) string {
-	args := m.Called(data)
-	return args.String(0)
 }
 
 // TestUserHandler_NewUserHandler

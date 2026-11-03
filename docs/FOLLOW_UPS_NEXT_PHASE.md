@@ -408,6 +408,39 @@ Tracked follow-ups (status OPEN):
   `catalog-web/src/e2e-env.test.ts` fail `--max-warnings 0`.
 - `tests/responsive-audit/run.mjs` still hardcodes port 18400 and local paths and is not wired into any gate (F8 rest).
 
+### Responsive follow-ups, closed on branch `fix-responsive-followups` (2026-11-03)
+- F5 and the open tap-target items: closed. A central `@media (pointer: coarse)` rule (zero specificity, `:where()`) plus a
+  `.touch-target` helper in `catalog-web/src/index.css`; shared Tabs, PageHeader, Header, Collections/Playlists gutters.
+  Full-matrix after-run (3 browsers x 6 viewports x 2 themes, 228 cases each): tap_target_small 1084/1084/1076 -> 0/0/2
+  (webkit 2 are 132x44 inputs, a sub-pixel rounding artefact), h_overflow 12 -> 0, offscreen_control 28 -> 0,
+  occluded_control 36 -> 0, text_off_viewport 38/32/32 -> 0, no_gutter 53/48/48 -> 0.
+- F7 design item: closed. Header nav is tiered from one `NAV_ITEMS` list; overflow goes to a "More" menu; the full search box
+  shows from `lg`, a compact Search link at `md`.
+- Docs HTML without the viewport meta: generator `scripts/docs/render_md_to_html.sh` plus gate
+  `scripts/docs/check_html_viewport.py` (§11.4.12); 4 files regenerated.
+- Review r1 (NO-GO, F1 important) fixed in the follow-up commit: the More control is now a disclosure (list of plain links,
+  `aria-expanded` + `aria-controls`, no menu roles); Escape and item selection return focus to the trigger; tests for
+  Escape-in-list, Escape-on-trigger, Tab order, click outside, selecting an item; mutations (remove click-outside, drop
+  the focus return) die. Touch-target test now parses the media query exactly; gate parses the real meta tag with a
+  carrier fixture; regenerated docs use `pagetitle=` (one h1); search clear buttons no longer cover input text
+  (`pr-14`); gate and `--check` are run by `scripts/pre-flight-check.sh`; audit oracle records unrounded sizes and waits
+  for layout to settle (`rec.unsettled` is recorded when it never does).
+- STILL OPEN, operator decision (11.4.66) D1, "Disconnected" badge layout. It now clears the version chip on phones
+  (`bottom-10`), but a fixed overlay can still cover in-flow content at the page bottom while the WebSocket is down
+  (admin "0%", AI Search button at 390px). Options: (1) auto-dismiss after ~5s and keep a header status dot;
+  (2) dock it in the header on phones (no overlay at all); (3) reserve bottom space in Layout while it is visible.
+  Recommendation: (2), since a persistent overlay on a 360px screen always covers something.
+- STILL OPEN, operator decision (11.4.66) D2, desktop target size (`tap_target_small_desktop`, about 1280 reports per
+  browser, mouse pointer). Today 44px is enforced on coarse pointers only. Options: (a) enforce the WCAG 2.2 AA 2.5.8
+  minimum of 24x24 CSS px everywhere and keep 44 on coarse; (b) keep 44 on coarse only (status quo); (c) enforce 44
+  everywhere. Recommendation: (a). Nobody has decided this yet.
+- Oracle tolerance: webkit reported tap_target_small at exactly 44.00 x 44.00 in one of two identical runs (7 cases; r2b), i.e. a float/layout-unit error below 0.01px. The oracle now allows 0.02px (`minPx - 0.02`). Not re-proven by a full matrix run yet.
+- OPEN, UNCONFIRMED: the earlier webkit `tap_target_small` pair (register inputs, 132x44 after rounding) and the reviewer's
+  3 chromium results (ActivityFeed tabs) were not root-caused. The oracle was changed to record unrounded sizes and to wait
+  for layout to settle; the cause of the earlier values is not established.
+- entity-movie, entity-album, identities FAIL only on 404s from the audit data / missing `/api/v1/identities` route (not
+  layout). The VitePress website was not part of this run.
+
 ## Runner scripts (CAT-013/014/016) review round 3 follow-ups (GO-with-follow-ups, all minor)
 
 - N1: `go fmt` failure is silent and `go fmt` rewrites files instead of checking (use `gofmt -l`).
@@ -496,9 +529,9 @@ Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/ap
 
 - SQL-injection detector (`utils.ContainsSQLInjection`) is a heuristic defence in depth; values reach parameterised queries. The review measured 12 of 51 payloads passing before round 2 (subselects `1 AND (SELECT COUNT(*) FROM users)>0`, `1 OR TRUE`, `') OR ('1'='1`, `SELECT*FROM users`, `1 AND extractvalue(...)`, `1' GROUP BY 1,2 HAVING 1=1`, URL-encoded forms, `1'||(SELECT 1)||'`); round 2 closed the cheap ones. Remaining misses are tracked, not claimed solved. Prose such as "Select items from list" is still flagged.
 - Password-field exemption is keyed on the leaf field name at the TOP level of the JSON body only (nested `password` keys are checked). Credentials nested deeper in future endpoints would be pattern-checked.
-- Legacy SHA-256 password rows have no sunset: they are crackable offline until each user logs in. Add a forced reset or expiry for rows still in that shape, and log counts of remaining legacy rows.
-- `UserAuthServiceInterface.HashData` and `AuthServiceAdapter.HashData` are no longer used by production code (dead since the shared hasher); investigate history before removing (section 11.4.124).
-- `database/schema_v3_multiuser.sql` seeds a published default admin hash (password `password`). Checked 2026-11-03: no Go code, script, Makefile, compose or Dockerfile references it and `scripts/register/root_dispositions.yaml` records it as not loaded; consider deleting or neutralising the seed row (investigate history first, section 11.4.124).
+- Legacy SHA-256 password rows: sunset plan, gauge and startup log shipped (docs/security/LEGACY_PASSWORD_HASH_SUNSET.md); the verify path is removed only once the gauge reads 0. Dormant accounts still need a forced reset.
+- CLOSED 2026-11-03: `HashData` removed (dead since c0c5ac78).
+- CLOSED 2026-11-03: `database/schema_v3_multiuser.sql` no longer seeds the published-hash admin.
 - The access-token `role_id` claim is trusted by `RequireAdmin` until expiry. Session revocation on role change closes the gap while the session checker is installed; a DB re-check of the role in `RequireAdmin` was considered and not done.
 
 - R7 (measured): the input validator pattern list is `catalog-api/middleware/input_validation.go:57-66`. On POST /api/v1/users it rejects whole words CREATE, AND, OR, FROM, SLEEP and `--` in ANY string field (password, display_name "Rock and Roll"); `Selection` and `Order-By` pass. Permission names `user.create` fail for the same reason. Under investigation in the login/validator fix.
@@ -556,3 +589,37 @@ Status: OPEN until a commit on `main` closes the item.
 - N2 (review r1) FIXED: `Permissions.HasPermission` prefix wildcards now need a segment boundary (`.` or `:`), so `sys*`/`s*`/`system*` no longer grant `system.admin`; `*`, `system.*`, `admin:*` unchanged. Existing roles stored with such boundary-less wildcards lose that grant (none are seeded).
 - N7 (review r1, minor): the compare-and-set covers only the target's role_id/is_active; a concurrent change of the target role's permissions or of the caller's own role is not re-checked; `admin_handler.UpdateUser` still uses a plain Update.
 - B1: `newAuthMiddleware` (main_jwtwire.go) is the only constructor main.go uses; `TestMainGoWiresJWTMiddlewareThroughHelper` fails if main.go builds a bare middleware.
+
+## Login/validator follow-ups closed (branch fix-lv-followups, 2026-11-03)
+
+- SQLi detector: 5 corpus misses closed (`admin' #`, `admin'/*`, `x';SHUTDOWN`, `1' ORDER BY 1#`, `PROCEDURE ANALYSE()`), and two prose false positives removed (`a -- b`, `Loop; sleep well`).
+- XSS: `behavior:url(` detected; `< tag` with a space is no longer flagged.
+- Legacy SHA-256 hash: metric `catalogizer_auth_legacy_password_hashes`, startup log, plan in docs/security/LEGACY_PASSWORD_HASH_SUNSET.md (verify path not removed).
+- `AuthService.HashData` removed (dead since c0c5ac78). `database/schema_v3_multiuser.sql` no longer seeds the published-hash admin.
+- Session revocation is interface-required and runs revoke, update, revoke (fails closed). The revoke pair alone does NOT close the login race: `AuthService.Login` reads the user, runs bcrypt (about 57 ms) and inserts the session afterwards, so that session is never revoked. Round 2 closed it in `Login` itself: after `createSession` the user row is re-read and the new session is deactivated (login refused) when role, is_active, is_locked, password hash/salt changed (tests: `services/login_stale_state_test.go`, hook `loginPostSessionHook`). Remaining window: between that re-read and the response (microseconds, a change landing there is revoked by the handler's second revoke). After a failed second revoke the handlers answer 500 and a repeat of the same request revokes again (the revoke is keyed on the request naming role_id/is_active/status inactive, not only on a value diff). catalog-web signs out locally after change-password.
+- Round-2 review (R2) records, OPEN: (a) SQLi detector `--`/`#` rule is a single linear pass with a numeric-prefix rule; KNOWN FALSE POSITIVES by operator decision (security over prose): a purely numeric title before `--` (`2001 -- A Space Odyssey`) and any text with an odd number of quotes before `--` after a digit or `)` (`Don't stop (live) -- remaster`); bare `-- ` / `---` are also blocked. Decision candidate for the operator. (b) Still-missed attack shapes: `@@version LIKE`, `sqlite_version()`, `COPY ... TO`, `DBMS_PIPE`, percent-encoded forms, `0x31=0x31`. (c) False positive `Select your favourite movies from the list`. (d) The `&&` rule against quoted prose was not probed (UNCONFIRMED). (e) catalog-web: 7 `AuthContext.integration` and 2 `WebSocketContext` tests fail on main before this branch; they blind token-storage regressions in those files.
+- SQL-injection detector, measured 2026-11-03 on the independent review corpus (72 attacks, 66 legitimate strings): the first fix missed 7 attacks and blocked 15 legitimate strings. Fixed since: substr/randomblob/load_extension probes, `' || '1'='1`, bare `1 order by N`, context-aware `--`/`#` comments ("Episode 3 -- The Return", "Ep. 7 #"), `union select committee`, `Sleep (2010 film)`. STILL OPEN (cannot be told from an attack by structure alone): percent-encoded payloads (JSON bodies are not decoded), `Delete from favourites` / `Drop table manners at dinner` (indistinguishable from `DELETE FROM users` as a bare value), `5 > 3 and 2 < 4`, `she said 'hello' and 'bye'`, `-moz-binding:url(` in the XSS rules. Real protection stays parameterised SQL.
+- `AdminHandler.UpdateUser`: "suspended" sets IsLocked but is not persisted and revokes nothing; the `role` field is parsed and ignored. Pre-existing.
+
+## Conversion worker fix follow-ups (minor)
+
+- The worker requeues `running` jobs at start, which assumes a single API instance per database; with several instances use a lease column (`claimed_by`, `claimed_until`).
+- `convertPDFToImage` reads `dpi`/`page` settings as Go `int` from decoded JSON (always `float64`), so those settings are silently ignored; same family in `start_page`/`end_page`.
+- Converter tool stdout/stderr go to the process stdout; capture a bounded tail into `error_message` for diagnosis.
+- `retry` is allowed only for `failed`; `cancelled` jobs cannot be re-queued (the openapi text used to promise it).
+- Not verified here: ffmpeg/pandoc/ebook/LibreOffice paths through the worker (only ImageMagick end to end); the Postgres dialect of `ClaimJob`/`RequeueRunning` (plain `?` placeholders, as the rest of the repository).
+
+### Review R1 deferrals (conversion worker)
+
+- F4: a foreign job id answers 403 while an unknown id answers 404, so ids are probeable (ids are sequential); consider 404 for non-owners without permission (decision pending).
+- F6: `RunWorker` refuses a second start in one process, but two API instances on one database still requeue each other's running jobs; needs the lease column (`claimed_by`, `claimed_until`).
+- F10: `TestClaimJob_ExactlyOneWinner` runs on a single-connection in-memory SQLite; it is a logic check, not a concurrency proof against Postgres.
+- F11: `ClaimJob`, `RequeueRunning`, `GetDueJobs` and `UpdateJobIf` have no Postgres run in the committed suite (SKIP, tracked: needs a Postgres test DSN in the suite). The R2 reviewer ran them once against a throwaway postgres:16 with the production migrations and they passed; that run is not committed.
+- Per-job timeout default is 2h (`CATALOGIZER_CONVERSION_TIMEOUT`, Go duration); no per-type limits (ffmpeg vs image).
+- R2-N2 / R3-C3 residual (`scheduled_for` rows written before the UTC normalisation):
+  - SQLite (measured): the stored text keeps the original offset, so the rewrite is exact. `ConversionRepository.NormalizeLegacyScheduledFor` runs at every worker start, rewrites pending rows to UTC and is idempotent (tests: `TestNormalizeLegacyScheduledFor_RewritesOffsetRowsToUTC`, `TestRunWorker_NormalizesLegacyScheduledForAtStart`; a legacy +14:00 due row was measured as NOT returned before the rewrite and returned after it). Unparseable text is left alone and logged as a count.
+  - Postgres (measured by the R3 reviewer on a throwaway postgres:16: a legacy +14:00 row that is due is NOT returned): the column is `TIMESTAMP` without zone, so the original offset was dropped at write time and cannot be recovered. By reasoning (not measured): every old scheduled pending row written in a non-UTC zone is delayed by the writer's UTC offset (jobs are delayed, never lost). Nothing is rewritten on Postgres; operators who need exact times for old rows must reschedule them. The code assumes nothing about the old zone.
+  - Reach is small: no first-party client sends `scheduled_for`.
+- R2-N7 (= F4): 403 vs 404 for another user's job id stays an operator decision.
+- Pre-existing, not from this branch: `GOOS=windows go vet ./services/` fails on older test files that use `syscall.Mkfifo`/unix helpers (`pathconfine_*`, `converter_private_dir_rv7`, `pdf_text_*`); the conversion worker tests are split so they add no new windows failure (`conversion_worker_unix_test.go`). The non-test package builds for windows.
+- The `pgid > 1` guard is pinned by `TestGroupKillTarget_RefusesPidsAtOrBelowOne` (pure function); the surrounding `Cancel` closure is not exercised with a faked pid.

@@ -197,21 +197,9 @@ describe('Header', () => {
       const user = userEvent.setup()
       customRender(<Header />)
 
-      // Find the profile button by its icon (User icon).  ThemeToggle also
-      // renders an SVG but is identified by data-testid — exclude it so the
-      // selector stays robust regardless of rendering order.
-      const themeToggle = screen.getByTestId('theme-toggle')
-      const allButtons = screen.getAllByRole('button')
-      const profileButton = allButtons.find(
-        (btn) => btn.querySelector('svg') && btn !== themeToggle,
-      )
+      await user.click(screen.getByRole('button', { name: 'Profile' }))
 
-      if (profileButton) {
-        await user.click(profileButton)
-      }
-
-      // Profile button is the first icon button (after ThemeToggle)
-      expect(mockNavigate).toHaveBeenCalled()
+      expect(mockNavigate).toHaveBeenCalledWith('/profile')
     })
 
     it('calls logout when logout button is clicked', async () => {
