@@ -23,28 +23,21 @@ describe('reportsApi', () => {
   })
 
   describe('getUsageReport', () => {
-    it('calls GET /reports/usage without params and returns data', async () => {
-      const mockReport = {
-        period: '2024-01',
-        total_users: 20,
-        active_users: 10,
-        total_media_accessed: 500,
-        total_downloads: 50,
-        storage_growth_bytes: 100000,
-        top_media: [{ id: 1, title: 'Top Movie', access_count: 100 }],
-        user_activity: [{ user_id: 1, username: 'admin', actions: 200 }],
-      }
-      mockApi.get.mockResolvedValue({ data: mockReport })
+    it('decodes the base64 report envelope; unmeasured fields are null, not invented', async () => {
+      const doc = { start_date: '2026-10-01T00:00:00Z', end_date: '2026-10-31T00:00:00Z', total_users: 3, active_users: 2, total_media_accesses: 7, popular_content: [{ media_id: 9, access_count: 4 }] }
+      mockApi.get.mockResolvedValue({ data: { type: 'user_analytics', format: 'json', content: Buffer.from(JSON.stringify(doc)).toString('base64'), generated_at: '2026-11-03T00:00:00Z', parameters: {} } })
 
       const result = await reportsApi.getUsageReport()
 
       expect(mockApi.get).toHaveBeenCalledWith('/reports/usage', { params: undefined })
-      expect(result).toEqual(mockReport)
+      expect(result).toMatchObject({ total_users: 3, active_users: 2, total_media_accessed: 7, total_downloads: null, storage_growth_bytes: null })
+      expect(result.top_media).toEqual([{ id: 9, title: 'Media #9', access_count: 4 }])
+      expect(result.user_activity).toEqual([])
     })
 
     it('calls GET /reports/usage with date range params', async () => {
       const params = { from: '2024-01-01', to: '2024-01-31' }
-      mockApi.get.mockResolvedValue({ data: { period: '2024-01' } })
+      mockApi.get.mockResolvedValue({ data: {} })
 
       await reportsApi.getUsageReport(params)
 
@@ -59,28 +52,20 @@ describe('reportsApi', () => {
   })
 
   describe('getPerformanceReport', () => {
-    it('calls GET /reports/performance without params and returns data', async () => {
-      const mockReport = {
-        period: '2024-01',
-        avg_response_time_ms: 45,
-        p95_response_time_ms: 120,
-        p99_response_time_ms: 350,
-        total_requests: 50000,
-        error_rate: 0.02,
-        uptime_percentage: 99.95,
-        slowest_endpoints: [{ path: '/api/v1/media/search', avg_ms: 200, count: 1000 }],
-      }
-      mockApi.get.mockResolvedValue({ data: mockReport })
+    it('decodes performance_metrics; missing metrics are null so the page can render a dash', async () => {
+      const doc = { performance_metrics: { response_time: 45, throughput: 10, error_rate: 0.02 } }
+      mockApi.get.mockResolvedValue({ data: { type: 'system_overview', format: 'json', content: Buffer.from(JSON.stringify(doc)).toString('base64'), generated_at: '2026-11-03T00:00:00Z', parameters: {} } })
 
       const result = await reportsApi.getPerformanceReport()
 
       expect(mockApi.get).toHaveBeenCalledWith('/reports/performance', { params: undefined })
-      expect(result).toEqual(mockReport)
+      expect(result).toMatchObject({ avg_response_time_ms: 45, error_rate: 0.02, total_requests: null, p95_response_time_ms: null, uptime_percentage: null })
+      expect(result.slowest_endpoints).toEqual([])
     })
 
     it('calls GET /reports/performance with date range params', async () => {
       const params = { from: '2024-01-01', to: '2024-01-31' }
-      mockApi.get.mockResolvedValue({ data: { period: '2024-01' } })
+      mockApi.get.mockResolvedValue({ data: {} })
 
       await reportsApi.getPerformanceReport(params)
 

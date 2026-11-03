@@ -167,13 +167,13 @@ export const usePagination = <T,>(
   currentPage = 1
 ) => {
   const [page, setPage] = useState(currentPage);
-  const cacheKey = `pagination-${page}-${itemsPerPage}`;
-
-  const paginatedData = useMemoized(() => {
+  // NOTE: this used the global TTL cache keyed only by page/size, so the first
+  // render (data = [] while loading) was cached and returned for 5 minutes
+  // regardless of the real data - list pages stayed empty. Derive from `data`.
+  const paginatedData = useMemo(() => {
     const startIndex = (page - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return data.slice(startIndex, endIndex);
-  }, [data, page, itemsPerPage], cacheKey);
+    return data.slice(startIndex, startIndex + itemsPerPage);
+  }, [data, page, itemsPerPage]);
 
   const totalPages = Math.ceil(data.length / itemsPerPage);
   const hasNextPage = page < totalPages;

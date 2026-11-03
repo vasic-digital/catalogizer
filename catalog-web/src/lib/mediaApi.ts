@@ -1,4 +1,5 @@
 import api from './api'
+import { asList } from './apiShapes'
 import type {
   MediaItem,
   MediaSearchRequest,
@@ -15,6 +16,14 @@ import type {
   EntityUserMetadata,
   EntityExternalMetadata,
 } from '@/types/media'
+
+function normalizeListedMedia(raw: Record<string, unknown>): MediaItem {
+  return {
+    ...raw,
+    media_type: (raw.media_type ?? raw.type_name ?? '') as string,
+    created_at: (raw.created_at ?? raw.last_updated) as string,
+  } as unknown as MediaItem
+}
 
 export const mediaApi = {
   searchMedia: (params: MediaSearchRequest): Promise<MediaSearchResponse> =>
@@ -47,11 +56,17 @@ export const mediaApi = {
   }> =>
     api.get('/media/stats').then((res) => res.data),
 
+  // The backend answers `{items:[…], total}` and names the type `type_name` /
+  // the timestamp `last_updated`; map to the MediaItem fields pages read.
   getRecentMedia: (limit = 10): Promise<MediaItem[]> =>
-    api.get('/media/recent', { params: { limit } }).then((res) => res.data),
+    api.get('/media/recent', { params: { limit } }).then((res) =>
+      asList<Record<string, unknown>>(res.data, 'items').map(normalizeListedMedia)
+    ),
 
   getPopularMedia: (limit = 10): Promise<MediaItem[]> =>
-    api.get('/media/popular', { params: { limit } }).then((res) => res.data),
+    api.get('/media/popular', { params: { limit } }).then((res) =>
+      asList<Record<string, unknown>>(res.data, 'items').map(normalizeListedMedia)
+    ),
 
   deleteMedia: (id: number): Promise<void> =>
     api.delete(`/media/${id}`).then(() => {/* no content */}),
@@ -61,7 +76,7 @@ export const mediaApi = {
 
   // Storage root management
   getStorageRoots: (): Promise<StorageRoot[]> =>
-    api.get('/storage/roots').then((res) => res.data.data),
+    api.get('/storage/roots').then((res) => asList<StorageRoot>(res.data, 'roots')),
 
   getStorageRoot: (id: number): Promise<StorageRoot> =>
     api.get(`/storage/roots/${id}`).then((res) => res.data),

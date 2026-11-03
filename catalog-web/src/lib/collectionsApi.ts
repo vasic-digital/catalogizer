@@ -1,5 +1,6 @@
 import { SmartCollection, CollectionRule, CreateCollectionRequest, UpdateCollectionRequest, CollectionAnalytics, ShareCollectionRequest, CollectionShareInfo, CollectionTemplate } from '../types/collections';
 import { api } from './api';
+import { asList } from './apiShapes';
 
 export interface CollectionItem {
   id: string;
@@ -19,12 +20,41 @@ export interface CollectionItemsResponse {
   limit: number;
 }
 
+function normalizeCollection(raw: Record<string, unknown>): SmartCollection {
+  const str = (v: unknown, fallback = '') => (typeof v === 'string' ? v : fallback);
+  const count = typeof raw.item_count === 'number' ? raw.item_count : typeof raw.total_items === 'number' ? raw.total_items : 0;
+  const type = str(raw.collection_type);
+  const primary = (['music', 'video', 'image', 'document'] as const).find((t) => t === type) ?? 'mixed';
+  const updated = str(raw.updated_at, str(raw.created_at));
+  return {
+    ...raw,
+    id: String(raw.id ?? ''),
+    name: str(raw.name, 'Untitled'),
+    description: typeof raw.description === 'string' ? raw.description : undefined,
+    smart_rules: Array.isArray(raw.smart_rules) ? (raw.smart_rules as CollectionRule[]) : [],
+    // A stored collection without rules is a manual collection.
+    is_smart: raw.is_smart === true || (Array.isArray(raw.smart_rules) && raw.smart_rules.length > 0),
+    item_count: count,
+    last_updated: str(raw.last_updated, updated),
+    created_at: str(raw.created_at),
+    updated_at: updated,
+    cover_image: typeof raw.cover_image === 'string' ? raw.cover_image : typeof raw.cover_url === 'string' ? raw.cover_url : undefined,
+    thumbnail_url: typeof raw.thumbnail_url === 'string' ? raw.thumbnail_url : undefined,
+    owner_id: raw.owner_id != null ? String(raw.owner_id) : '',
+    is_public: raw.is_public === true,
+    primary_media_type: (raw.primary_media_type as SmartCollection['primary_media_type']) ?? primary,
+  };
+}
+
 class CollectionsApi {
   private baseUrl = '/collections';
 
+  // Wire shape: `{items:[{id:int, name, collection_type, description, total_items,
+  // cover_url, created_at, updated_at}], total, limit, offset}` — an envelope,
+  // not an array, and not the SmartCollection shape the UI renders.
   async getCollections(): Promise<SmartCollection[]> {
     const response = await api.get(`${this.baseUrl}`);
-    return response.data;
+    return asList<Record<string, unknown>>(response.data, 'items').map(normalizeCollection);
   }
 
   async getCollection(id: string): Promise<SmartCollection> {

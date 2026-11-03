@@ -47,7 +47,7 @@ import {
   ExternalIntegrations,
 } from '../components/performance/LazyComponents';
 
-import { useMemoized, useOptimizedData, usePagination } from '../components/performance/MemoCache';
+import { usePagination } from '../components/performance/MemoCache';
 
 import { 
   AICollectionSuggestions,
@@ -182,18 +182,26 @@ export const Collections: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Performance optimized collection filtering
-  const filters = useMemoized(() => ({
-    activeTab,
-    searchQuery: debouncedSearch,
-    filterMediaType
-  }), [activeTab, debouncedSearch, filterMediaType]);
-
-  const filteredCollections = useOptimizedData(
-    collections,
-    filters,
-    sortBy
-  );
+  // The generic useOptimizedData() filter matches filter KEYS against item
+  // FIELDS; activeTab / filterMediaType are not collection fields, so with
+  // real data it filtered every collection out. Filter on the real semantics.
+  const filteredCollections = React.useMemo(() => {
+    const q = debouncedSearch.trim().toLowerCase();
+    const list = collections.filter((c) => {
+      if (activeTab === 'smart' && !c.is_smart) return false;
+      if (activeTab === 'manual' && c.is_smart) return false;
+      if (filterMediaType !== 'all' && c.primary_media_type !== filterMediaType) return false;
+      if (q && !`${c.name} ${c.description ?? ''}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+    const key = sortBy as keyof typeof list[number];
+    return [...list].sort((a, b) => {
+      const av = a[key] as unknown;
+      const bv = b[key] as unknown;
+      if (typeof av === 'number' && typeof bv === 'number') return av - bv;
+      return String(av ?? '').localeCompare(String(bv ?? ''));
+    });
+  }, [collections, activeTab, filterMediaType, debouncedSearch, sortBy]);
 
   // Pagination for large collections
   const {

@@ -53,8 +53,8 @@ interface AuthProviderProps {
  * resolution, exposing login/register/logout actions to the component tree.
  */
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
-  const [permissions, setPermissions] = useState<string[]>([])
+  const [loggedInUser, setUser] = useState<User | null>(null)
+  const [loggedInPermissions, setPermissions] = useState<string[]>([])
   const queryClient = useQueryClient()
 
   const { data: authStatus, isLoading } = useQuery({
@@ -67,6 +67,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     },
     staleTime: 1000 * 60 * 5,
   })
+
+  // Derive the session synchronously from the restored auth status. Setting
+  // `user` only inside an effect left one committed render with
+  // isLoading=false and user=null, so <ProtectedRoute> redirected a valid
+  // session to /login on every hard reload.
+  const restoredUser = authStatus?.authenticated && authStatus.user ? authStatus.user : null
+  const user = loggedInUser ?? restoredUser
+  const permissions = loggedInPermissions.length > 0 ? loggedInPermissions : (restoredUser ? authStatus?.permissions ?? [] : [])
 
   const { data: permissionsData } = useQuery({
     queryKey: ['permissions'],

@@ -8,6 +8,13 @@ import { FileBarChart, Gauge } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { User } from '@/types/admin';
 
+/** Format a metric the backend may not measure: null/undefined/NaN render as an em dash, never a crash. */
+const fmtNum = (v: number | null | undefined, unit = '', digits?: number): string => {
+  if (typeof v !== 'number' || !Number.isFinite(v)) return '—';
+  const text = digits === undefined ? v.toLocaleString() : v.toFixed(digits);
+  return `${text}${unit}`;
+};
+
 export const Admin: React.FC = () => {
   const { data: systemInfo, isLoading: _systemLoading } = useQuery({
     queryKey: ['admin-system-info'],
@@ -123,25 +130,25 @@ export const Admin: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
-                      {usageReport.active_users}
+                      {fmtNum(usageReport.active_users)}
                     </div>
                     <div className="text-xs text-gray-500">Active Users</div>
                   </div>
                   <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
-                      {usageReport.total_media_accessed}
+                      {fmtNum(usageReport.total_media_accessed)}
                     </div>
                     <div className="text-xs text-gray-500">Media Accessed</div>
                   </div>
                   <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
-                      {usageReport.total_downloads}
+                      {fmtNum(usageReport.total_downloads)}
                     </div>
                     <div className="text-xs text-gray-500">Downloads</div>
                   </div>
                   <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
-                      {((usageReport.storage_growth_bytes || 0) / (1024 ** 3)).toFixed(1)} GB
+                      {usageReport.storage_growth_bytes == null ? '—' : `${(usageReport.storage_growth_bytes / (1024 ** 3)).toFixed(1)} GB`}
                     </div>
                     <div className="text-xs text-gray-500">Storage Growth</div>
                   </div>
@@ -178,32 +185,32 @@ export const Admin: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
-                      {performanceReport.avg_response_time_ms}ms
+                      {fmtNum(performanceReport.avg_response_time_ms, 'ms')}
                     </div>
                     <div className="text-xs text-gray-500">Avg Response</div>
                   </div>
                   <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
-                      {performanceReport.p95_response_time_ms}ms
+                      {fmtNum(performanceReport.p95_response_time_ms, 'ms')}
                     </div>
                     <div className="text-xs text-gray-500">P95 Response</div>
                   </div>
                   <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
-                      {performanceReport.total_requests.toLocaleString()}
+                      {fmtNum(performanceReport.total_requests)}
                     </div>
                     <div className="text-xs text-gray-500">Total Requests</div>
                   </div>
                   <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-                    <div className={`text-xl font-bold ${performanceReport.error_rate > 5 ? 'text-red-600' : 'text-green-600'}`}>
-                      {performanceReport.error_rate.toFixed(1)}%
+                    <div className={`text-xl font-bold ${(performanceReport.error_rate ?? 0) > 5 ? 'text-red-600' : 'text-green-600'}`}>
+                      {fmtNum(performanceReport.error_rate, '%', 1)}
                     </div>
                     <div className="text-xs text-gray-500">Error Rate</div>
                   </div>
                 </div>
                 <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                   <div className="text-xl font-bold text-green-600">
-                    {performanceReport.uptime_percentage.toFixed(2)}%
+                    {fmtNum(performanceReport.uptime_percentage, '%', 2)}
                   </div>
                   <div className="text-xs text-gray-500">Uptime</div>
                 </div>

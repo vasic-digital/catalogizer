@@ -321,6 +321,11 @@ func (h *FavoritesHandler) ListFavorites(c *gin.Context) {
 		return
 	}
 
+	// No favorites must serialise as [] (not null): clients iterate it.
+	if favorites == nil {
+		favorites = []models.Favorite{}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"favorites": favorites,
 		"count":     len(favorites),

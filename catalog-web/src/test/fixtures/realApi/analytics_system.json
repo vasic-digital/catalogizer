@@ -1,0 +1,22 @@
+{
+  "active_users": 0,
+  "average_session_duration": 166000000000,
+  "end_date": "2026-11-03T00:00:00Z",
+  "geographic_distribution": {
+    "countries": {},
+    "locations": null
+  },
+  "peak_usage_hours": {},
+  "popular_file_types": {},
+  "start_date": "2026-10-03T00:00:00Z",
+  "top_accessed_media": null,
+  "total_events": 0,
+  "total_media_accesses": 0,
+  "total_users": 1,
+  "user_growth_data": [
+    {
+      "date": "2026-11-02T00:00:00Z",
+      "user_count": 1
+    }
+  ]
+}
