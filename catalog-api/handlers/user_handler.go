@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -834,5 +835,7 @@ func revokeUserSessions(repo interface{}, userID int) error {
 	if r, ok := repo.(sessionRevoker); ok {
 		return r.DeactivateAllUserSessions(userID)
 	}
+	// Not silent: a repository that cannot revoke leaves old tokens valid.
+	log.Printf("handlers: repository %T cannot revoke sessions; user %d keeps existing sessions", repo, userID)
 	return nil
 }

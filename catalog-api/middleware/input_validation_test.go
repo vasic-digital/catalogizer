@@ -662,3 +662,11 @@ func TestValidateJSONValues_SecretExemptionTopLevelOnly(t *testing.T) {
 	err := validateJSONValues(config, map[string]interface{}{"meta": map[string]interface{}{"password": "<script>alert(1)</script>"}})
 	assert.Error(t, err, "nested password-named key is not exempt")
 }
+
+// N3: arrays and objects under a secret-named key are not exempt.
+func TestValidateJSONValues_SecretKeyNestedArrayStillValidated(t *testing.T) {
+	config := DefaultInputValidationConfig()
+	assert.Error(t, validateJSONValues(config, map[string]interface{}{"password": []interface{}{"<script>alert(1)</script>"}}))
+	assert.Error(t, validateJSONValues(config, map[string]interface{}{"password": map[string]interface{}{"x": "<script>alert(1)</script>"}}))
+	assert.NoError(t, validateJSONValues(config, map[string]interface{}{"password": "Aa1!<b>ok"}))
+}

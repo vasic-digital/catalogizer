@@ -1,7 +1,9 @@
 package services
 
 import (
+	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"golang.org/x/crypto/bcrypt"
 	"strings"
@@ -74,4 +76,29 @@ func TestCheckPassword_V1BcryptRowsStillVerify(t *testing.T) {
 	// over-72-byte input can never match a v1 row (bcrypt errors) - and must not panic
 	ok, _ = CheckPassword(strings.Repeat("z", 80), "s1", string(h))
 	assert.False(t, ok)
+}
+
+// N4: known-answer pin of the stored $cz1$ format. The fixture below was
+// produced once by HashPasswordWithSalt and is hard-coded: any change to the
+// pre-hash (HMAC key/message, encoding) or the prefix makes every stored v2
+// row fail to verify, so this must fail loudly.
+const (
+	kaPassword = "Known-Answer#Throwaway1"
+	kaSalt     = "00112233445566778899aabbccddeeff"
+	kaStored   = "$cz1$$2a$10$3r2lVp9wqZX7K9oUWm31kOLuveVWnR0vwb7r5LmL6uGwziPIf/SYe"
+)
+
+func TestCheckPassword_KnownAnswerStoredFormat(t *testing.T) {
+	ok, up := CheckPassword(kaPassword, kaSalt, kaStored)
+	assert.True(t, ok, "stored $cz1$ fixture must verify")
+	assert.False(t, up)
+	ok, _ = CheckPassword(kaPassword, kaSalt+"0", kaStored)
+	assert.False(t, ok)
+	ok, _ = CheckPassword(kaSalt, kaPassword, kaStored) // swapped key/message
+	assert.False(t, ok)
+	// independent reconstruction of the documented scheme
+	mac := hmac.New(sha256.New, []byte(kaSalt))
+	mac.Write([]byte(kaPassword))
+	in := base64.StdEncoding.EncodeToString(mac.Sum(nil))
+	assert.NoError(t, bcrypt.CompareHashAndPassword([]byte(strings.TrimPrefix(kaStored, "$cz1$")), []byte(in)))
 }

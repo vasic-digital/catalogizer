@@ -575,7 +575,7 @@ Get initialization status (whether the system has been set up).
 
 Change the password for the currently authenticated user.
 
-**Description:** Updates the user's password after verifying the current password.
+**Description:** Updates the user's password after verifying the current password. On success every session of the user ends, including the caller's own; the client must log in again.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 

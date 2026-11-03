@@ -3391,7 +3391,9 @@ paths:
         Changes the authenticated user's password. Requires the current
         password for verification (bcrypt with per-user salt). The new
         password must be at least 8 characters. A new random salt is
-        generated for the updated password hash.
+        generated for the updated password hash. On success every session
+        of the user is ended, including the caller's own: the client must
+        log in again with the new password.
       security:
         - BearerAuth: []
       requestBody:

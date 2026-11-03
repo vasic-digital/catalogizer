@@ -518,3 +518,10 @@ Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/ap
 - R3-1: add a subtitles fixture where `media_item_id` differs from the requested id (removing the `media_item_id` -> `media_id` mapping survives today).
 - R3-2: the Go wire test calls the response builders directly; add a handler-level test so a handler that stops using them is caught.
 - UNCONFIRMED: live subtitle flow on a populated DB; recommendations query on Postgres; Playwright suite not re-run by the reviewer.
+
+## Login/validator fix round 3 follow-ups (GO-with-follow-ups, minor)
+
+- `revokeUserSessions` now logs when the repository lacks `DeactivateAllUserSessions` instead of staying silent, but still does not fail closed (in-memory test doubles keep no sessions); consider a compile-time requirement on the production handler constructors.
+- XSS rule nits: `behavior:url(...)` (old Internet Explorer only) is not detected; the open-tag rule's `<\s*` also flags prose such as "x < link y" (browsers do not parse `< tag` as a tag); drop the `\s*` after `<`.
+- catalog-web: after change-password the success toast is followed by a redirect to /login on the next 401; log out explicitly or keep the caller's own session.
+- Pre-existing on main (not caused by this branch): admin "suspended" status sets IsLocked but `UserRepository.Update` does not persist `is_locked` and no sessions are revoked; `tests/stress` CacheWriteThroughput and middleware TestTokenBucketRedisRateLimit_Unit_Miniredis_RefillAfterEmpty are flaky under load (section 11.4.248 quarantine candidates).

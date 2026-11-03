@@ -232,12 +232,9 @@ func validateJSONValuesAt(config InputValidationConfig, data map[string]interfac
 			for i, item := range v {
 				if str, ok := item.(string); ok {
 					ik := fmt.Sprintf("%s[%d]", key, i)
-					if topLevel && isSecretField(key) {
-						if err := validateSecretValue(config, ik, str); err != nil {
-							return err
-						}
-						continue
-					}
+					// Only a scalar string credential is exempt; a password
+					// sent as an array is not a credential shape any handler
+					// reads, so it gets the full checks.
 					if err := validateStringValue(config, ik, str); err != nil {
 						return err
 					}

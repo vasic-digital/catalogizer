@@ -100,6 +100,8 @@ func newRTEnv(t *testing.T) *rtEnv {
 		}
 		return nil
 	})
+	adm := NewAdminHandler(adapter, repo, db, "test")
+	r.PUT("/api/v1/admin/users/:id", adm.UpdateUser)
 	r.GET("/api/v1/admin/ping", jwtMW.RequireAuth(), jwtMW.RequireAdmin(), func(c *gin.Context) { c.String(200, "admin-ok") })
 	r.POST("/api/v1/roles", WrapHTTPHandler(rh.CreateRole))
 	r.PUT("/api/v1/roles/:id", WrapHTTPHandler(rh.UpdateRole))
@@ -482,4 +484,20 @@ func TestRT_F4_LongPasswordsEndToEnd(t *testing.T) {
 		assert.True(t, strings.HasPrefix(lu.PasswordHash, "$cz1$"), "legacy long-password row upgraded, len %d", n)
 		assert.Equal(t, 200, e.login(lname, pw).Code)
 	}
+}
+
+// N5: the admin endpoint's deactivation must revoke the target's sessions.
+func TestRT_N5_AdminDeactivationRevokesSessions(t *testing.T) {
+	e := newRTEnv(t)
+	require.Equal(t, 201, e.do(e.adminTok, "POST", "/api/v1/users", createUserBody("gina")).Code)
+	_ = e.tokenFor(t, "gina", rtUserPass)
+	u, _ := e.repo.GetByUsername("gina")
+	var before int
+	require.NoError(t, e.db.QueryRow("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND is_active = 1", u.ID).Scan(&before))
+	require.Equal(t, 1, before)
+	w := e.do(e.adminTok, "PUT", "/api/v1/admin/users/"+rtItoa(u.ID), `{"status":"inactive"}`)
+	require.Equal(t, 200, w.Code, w.Body.String())
+	var after int
+	require.NoError(t, e.db.QueryRow("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND is_active = 1", u.ID).Scan(&after))
+	assert.Equal(t, 0, after, "admin deactivation must revoke sessions")
 }
