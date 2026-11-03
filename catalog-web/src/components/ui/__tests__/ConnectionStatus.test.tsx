@@ -290,3 +290,21 @@ describe('ConnectionStatus', () => {
     })
   })
 })
+
+// Responsive contract (11.4.190): a top-right fixed badge covers the page title on a phone. On small screens it sits
+// at the bottom edge inside the gutters; from `sm` up it keeps the top-right position.
+describe('ConnectionStatus - placement', () => {
+  it('is bottom-anchored on phones and top-right from sm up, inside the viewport gutters', () => {
+    vi.useFakeTimers()
+    mockUseAuth.mockReturnValue({ isAuthenticated: true, user: null } as any)
+    mockUseWebSocket.mockReturnValue({ getConnectionState: vi.fn().mockReturnValue('closed') })
+    render(<ConnectionStatus />)
+    const wrapper = screen.getByText('Disconnected').closest('.fixed') as HTMLElement
+    expect(wrapper.className).toContain('bottom-4')
+    expect(wrapper.className).toContain('left-4')
+    expect(wrapper.className).toContain('right-4')
+    expect(wrapper.className).toContain('sm:top-20')
+    expect(wrapper.className).not.toMatch(/(^|\s)top-20(\s|$)/)
+    vi.useRealTimers()
+  })
+})

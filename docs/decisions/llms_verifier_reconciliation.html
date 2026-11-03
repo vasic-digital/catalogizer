@@ -1,5 +1,186 @@
-<h1 id="llmsverifier-fork-upstream-reconciliation-decision">LLMsVerifier
-— Fork ↔︎ Upstream Reconciliation Decision</h1>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.11" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>LLMsVerifier — Fork ↔ Upstream Reconciliation Decision</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">LLMsVerifier — Fork ↔︎ Upstream Reconciliation
+Decision</h1>
+</header>
+<h1
+id="llmsverifier--fork--upstream-reconciliation-decision">LLMsVerifier —
+Fork ↔︎ Upstream Reconciliation Decision</h1>
 <p><strong>Revision:</strong> 1 <strong>Last modified:</strong>
 2026-06-23T00:00:00Z <strong>Status:</strong> OPEN — operator decision
 required (merge direction) <strong>Scope:</strong>
@@ -21,11 +202,6 @@ green) stands as the current state.</p>
 <h2 id="evidence-captured-2026-06-23">Evidence (captured
 2026-06-23)</h2>
 <table>
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
 <thead>
 <tr>
 <th>Axis</th>
@@ -64,11 +240,14 @@ green) stands as the current state.</p>
 imports <code>digital.vasic.llmsverifier/pkg/helixqa</code>. The
 upstream provides <strong>neither</strong> that module name
 <strong>nor</strong> <code>pkg/helixqa</code>, so pinning a submodule at
-the upstream HEAD would: 1. <strong>Break <code>helix_qa</code>’s
-build</strong> (missing package + wrong module path), and 2.
-<strong>Delete catalogizer-specific code</strong> (the embedded
-<code>pkg/</code> incl. <code>pkg/helixqa</code>).</p>
-<h2 id="options-operator-decision-merge-direction">Options (operator
+the upstream HEAD would:</p>
+<ol type="1">
+<li><strong>Break <code>helix_qa</code>'s build</strong> (missing
+package + wrong module path), and</li>
+<li><strong>Delete catalogizer-specific code</strong> (the embedded
+<code>pkg/</code> incl. <code>pkg/helixqa</code>).</li>
+</ol>
+<h2 id="options-operator-decision--merge-direction">Options (operator
 decision — merge direction)</h2>
 <ol type="1">
 <li><strong>Keep the fork as-is (current state).</strong>
@@ -77,22 +256,24 @@ at the correct snake_case path. helix_qa builds green. No upstream
 change. <em>(Lowest risk; the fork is not shared back.)</em></li>
 <li><strong>Promote the fork upstream.</strong> Push the catalogizer
 fork (module <code>digital.vasic.llmsverifier</code> +
-<code>pkg/helixqa</code>) to upstream — e.g. to a clearly-named branch
+<code>pkg/helixqa</code>) to upstream — e.g. to a clearly-named branch
 first (non-destructive), then reconcile with <code>main</code>
 deliberately. Then convert <code>submodules/llms_verifier</code> to a
 true submodule pinned at the reconciled commit. <em>(Affects the shared
 <code>vasic-digital/LLMsVerifier</code> repo — requires explicit intent
-so other consumers’ work on the diverged upstream is not lost; §11.4.113
+so other consumers' work on the diverged upstream is not lost; §11.4.113
 no force.)</em></li>
 <li><strong>Adopt upstream + port helix_qa.</strong> Convert to the
 upstream submodule and port <code>helix_qa</code> (and any other
 consumer) off <code>pkg/helixqa</code> / the
-<code>digital.vasic.llmsverifier</code> module name onto upstream’s API.
+<code>digital.vasic.llmsverifier</code> module name onto upstream's API.
 <em>(Largest code change; only if the fork is obsolete.)</em></li>
 </ol>
 <h2 id="recommendation">Recommendation</h2>
 <p>Default to <strong>Option 1</strong> until the operator decides the
-fork’s fate. Options 2/3 mutate a shared repository / break a consumer
+fork's fate. Options 2/3 mutate a shared repository / break a consumer
 and must not be done silently (§11.4.66 / §11.4.122).</p>
 <h2 id="cross-references">Cross-references</h2>
 <p>§11.4.6 · §11.4.28 · §11.4.29 · §11.4.66 · §11.4.113 · §11.4.122</p>
+</body>
+</html>

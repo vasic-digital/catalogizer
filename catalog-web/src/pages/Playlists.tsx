@@ -284,7 +284,7 @@ export const PlaylistsPage: React.FC = () => {
                   onChange={(e) => handleFormChange('is_public', e.target.checked)}
                   className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
-                <label htmlFor="is_public" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                <label htmlFor="is_public" className="touch-target ml-2 text-sm text-gray-700 dark:text-gray-300">
                   Make this playlist public
                 </label>
               </div>
@@ -442,16 +442,18 @@ export const PlaylistsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <PageHeader
-        title="Playlists"
-        subtitle="Organize and manage your media collections"
-        breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Playlists' }
-        ]}
-      />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <PageHeader
+          title="Playlists"
+          subtitle="Organize and manage your media collections"
+          breadcrumbs={[
+            { label: 'Home', href: '/' },
+            { label: 'Playlists' }
+          ]}
+        />
+      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         {/* Tabs */}
         <Tabs
           tabs={[

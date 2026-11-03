@@ -408,6 +408,23 @@ Tracked follow-ups (status OPEN):
   `catalog-web/src/e2e-env.test.ts` fail `--max-warnings 0`.
 - `tests/responsive-audit/run.mjs` still hardcodes port 18400 and local paths and is not wired into any gate (F8 rest).
 
+### Responsive follow-ups, closed on branch `fix-responsive-followups` (2026-11-03)
+- F5 and the open tap-target items: closed. A central `@media (pointer: coarse)` rule (zero specificity, `:where()`) plus a
+  `.touch-target` helper in `catalog-web/src/index.css`; shared Tabs, PageHeader, Header, Collections/Playlists gutters.
+  Full-matrix after-run (3 browsers x 6 viewports x 2 themes, 228 cases each): tap_target_small 1084/1084/1076 -> 0/0/2
+  (webkit 2 are 132x44 inputs, a sub-pixel rounding artefact), h_overflow 12 -> 0, offscreen_control 28 -> 0,
+  occluded_control 36 -> 0, text_off_viewport 38/32/32 -> 0, no_gutter 53/48/48 -> 0.
+- F7 design item: closed. Header nav is tiered from one `NAV_ITEMS` list; overflow goes to a "More" menu; the full search box
+  shows from `lg`, a compact Search link at `md`.
+- Docs HTML without the viewport meta: generator `scripts/docs/render_md_to_html.sh` plus gate
+  `scripts/docs/check_html_viewport.py` (§11.4.12); 4 files regenerated.
+- STILL OPEN: (a) the fixed "Disconnected" status badge on mobile overlaps in-flow content at the page bottom
+  (admin "0%", AI Search button, the version chip) while the WebSocket is down; needs a layout decision (reserve bottom
+  space or dock the badge in the header). (b) `tap_target_small_desktop` (mouse pointer, compact desktop controls) is
+  reported but intentionally not enforced; design decision. (c) entity-movie, entity-album, identities FAIL only on
+  404s from the audit's seeded data / missing `/api/v1/identities` route (not layout). (d) website (VitePress) was not in
+  this run.
+
 ## Runner scripts (CAT-013/014/016) review round 3 follow-ups (GO-with-follow-ups, all minor)
 
 - N1: `go fmt` failure is silent and `go fmt` rewrites files instead of checking (use `gofmt -l`).

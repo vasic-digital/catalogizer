@@ -185,3 +185,19 @@ describe('AdminPanel', () => {
     expect(restoreButtons[1].closest('button')).toBeDisabled()
   })
 })
+
+// Responsive contract (11.4.190): four 44px-high tab triggers do not fit a 360px screen, so the strip must scroll
+// instead of overflowing the document, and the triggers must neither shrink nor wrap.
+describe('AdminPanel - responsive tab strip', () => {
+  it('scrolls horizontally and keeps triggers intact', () => {
+    render(<AdminPanel {...defaultProps} />)
+    const nav = screen.getByRole('navigation', { name: 'Admin sections' })
+    expect(nav.className).toContain('overflow-x-auto')
+    const triggers = Array.from(nav.querySelectorAll('button'))
+    expect(triggers.map((b) => b.textContent?.trim())).toEqual(['Overview', 'Users', 'Storage', 'Backups'])
+    for (const b of triggers) {
+      expect(b.className).toContain('flex-shrink-0')
+      expect(b.className).toContain('whitespace-nowrap')
+    }
+  })
+})
