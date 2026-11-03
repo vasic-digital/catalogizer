@@ -76,6 +76,28 @@
     @apply outline-none ring-2 ring-ring ring-offset-2 dark:ring-offset-gray-900;
   }
 
+
+  /*
+   * Touch targets (constitution 11.4.190; WCAG 2.5.8, 44px). On coarse-pointer devices every interactive element gets a
+   * 44x44 minimum HERE, once, instead of per component. `:where()` keeps specificity at zero so any explicit utility
+   * (h-12, min-w-[60px], ...) still wins. Checkbox/radio/range are excluded: their <label> is the touch target.
+   */
+  @media (pointer: coarse) {
+    :where(
+      button,
+      select,
+      textarea,
+      summary,
+      [role='button'],
+      [role='tab'],
+      [role='menuitem'],
+      input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='hidden'])
+    ) {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
   /* Custom scrollbar */
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
@@ -132,6 +154,20 @@
   @media (min-width: 769px) {
     .responsive-grid {
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+  }
+}
+
+@layer components {
+  /* Link that is not inline prose (breadcrumbs, standalone "Back to ..." links): a 44px target on coarse pointers. */
+  .touch-target {
+    display: inline-flex;
+    align-items: center;
+  }
+  @media (pointer: coarse) {
+    .touch-target {
+      min-height: 44px;
+      min-width: 44px;
     }
   }
 }

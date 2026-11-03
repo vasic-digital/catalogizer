@@ -65,6 +65,18 @@ check $? "Production build"
 
 cd ..
 
+# Docs HTML (constitution 11.4.190, 11.4.12): every tracked docs/*.html declares a viewport, and the generated twins are current
+echo ""
+echo "Docs HTML..."
+rc=0; python3 scripts/docs/check_html_viewport.py > /dev/null 2>&1 || rc=$?
+check $rc "docs/*.html declare <meta name=viewport> (scripts/docs/check_html_viewport.py)"
+rc=0; bash scripts/docs/render_md_to_html.sh --check \
+    docs/decisions/llms_verifier_reconciliation.md \
+    docs/design/identity_share_discovery/RECON_RESULTS.md \
+    docs/qa/findings_20260626/discovered_findings.md \
+    docs/qa/findings_20260626/ui_critical_resolution.md > /dev/null 2>&1 || rc=$?
+check $rc "generated docs HTML equals render_md_to_html.sh output (--check)"
+
 # Security checks
 echo ""
 echo "Security..."

@@ -175,3 +175,25 @@ describe('Tabs - responsive overflow contract', () => {
     expect((trigger.parentElement as HTMLElement).className).toContain('overflow-x-auto')
   })
 })
+
+// Touch-target interplay (follow-up to F7): triggers grow to 44px on coarse pointers (index.css), so a FIXED h-10
+// strip makes them overflow it and overlap/occlude each other. The strip must size to its content and the simple-mode
+// triggers must not shrink (the complex-mode ones already do not).
+describe('Tabs - strip grows with touch-sized triggers', () => {
+  it('simple mode: triggers are flex-shrink-0 and the strip has no fixed height', () => {
+    const { container } = render(
+      <Tabs tabs={[{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }]} activeTab="a" onChangeTab={vi.fn()} />
+    )
+    const strip = container.firstElementChild as HTMLElement
+    expect(strip.className).not.toMatch(/(^|\s)h-10(\s|$)/)
+    expect(strip.className).toMatch(/min-h-\[2.5rem\]/)
+    for (const b of Array.from(strip.querySelectorAll('button'))) expect(b.className).toContain('flex-shrink-0')
+  })
+
+  it('TabsList has no fixed height either', () => {
+    const { container } = render(
+      <Tabs defaultValue="a"><TabsList><TabsTrigger value="a">A</TabsTrigger></TabsList></Tabs>
+    )
+    expect((container.firstElementChild as HTMLElement).className).not.toMatch(/(^|\s)h-10(\s|$)/)
+  })
+})

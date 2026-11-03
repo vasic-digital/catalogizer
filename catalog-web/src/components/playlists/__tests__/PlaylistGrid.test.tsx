@@ -147,3 +147,22 @@ describe('PlaylistGrid', () => {
     expect(screen.getByText('My Playlist')).toBeInTheDocument()
   })
 })
+
+// Touch-target contract (11.4.190): a 16px checkbox is only usable on a phone when it sits inside a 44px label hit
+// area, and a hover-only checkbox must be visible without hover on coarse pointers (touch has no hover).
+describe('PlaylistGrid - checkbox touch targets', () => {
+  it('Select All checkbox is wrapped in a touch-sized, named label', () => {
+    render(<PlaylistGrid />)
+    const box = screen.getByLabelText(/select all/i) as HTMLInputElement
+    const label = box.closest('label')!
+    expect(label).not.toBeNull()
+    expect(label.className).toContain('touch-target')
+  })
+
+  it('per-card checkbox has an accessible name, a touch label and is shown without hover on coarse pointers', () => {
+    render(<PlaylistGrid />)
+    const box = screen.getByLabelText('Select playlist My Playlist') as HTMLInputElement
+    expect(box.closest('label')!.className).toContain('touch-target')
+    expect(box.className).toContain('[@media(pointer:coarse)]:opacity-100')
+  })
+})

@@ -502,7 +502,7 @@ interface DeleteOptionsValue {
 
 const DeleteOptions: React.FC<{ value: DeleteOptionsValue; onChange: (value: DeleteOptionsValue) => void }> = ({ value, onChange }) => (
   <div>
-    <label className="flex items-center gap-2">
+    <label className="touch-target gap-2">
       <input
         type="checkbox"
         checked={value.deleteForever ?? false}

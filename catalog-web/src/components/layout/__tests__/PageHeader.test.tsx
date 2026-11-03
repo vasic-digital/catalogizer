@@ -167,3 +167,10 @@ describe('PageHeader', () => {
     expect(container.firstChild).toHaveClass('mb-6')
   })
 })
+
+describe('PageHeader - breadcrumb touch target', () => {
+  it('breadcrumb links are touch-sized (not bare inline text)', () => {
+    renderWithRouter(<PageHeader title="Playlists" breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Playlists' }]} />)
+    expect(screen.getByRole('link', { name: 'Home' }).className).toContain('touch-target')
+  })
+})
