@@ -32,7 +32,7 @@ The generator deletes its target before writing, so it refuses (exit 2, nothing 
 | `music/` | `Misc/Plain Tone.{mp3,flac,ogg,opus,wav,m4a}` (3 s, 440 Hz), `Misc/Silent Control.wav` (RMS negative control), `Test Artist - Test Album (2020)/01 - First Track.mp3` (ID3 artist/album/title/track/date + PNG cover) |
 | `books/` | `Known Text Document.pdf` (3 pages, known text, hand-built), `Test Comic 001.cbz` (3 png pages), `Test Book.epub` (2 chapters), `Plain Notes.txt` |
 | `photos/` | png, jpg, webp, animated gif, svg, a 6000x6000 png of about 120 KB |
-| `negative/` | zero-byte mp4, garbage mp3, not-a-pdf, truncated png (must fail parse), and `truncated-tail.mp4` (first half of the movie; class `partial_playback`, `must_fail_playback_or_parse: false`: its prefix is demuxable, so it is NOT a hard-failure oracle) |
+| `negative/` | zero-byte mp4, garbage mp3, not-a-pdf, truncated png (must fail parse), and `truncated-tail.mp4` (first half of the movie; class `partial_playback`, `must_fail_playback_or_parse: false`: measured: ffprobe succeeds with duration 5.0 s, ffmpeg decoding reports `partial file` near the cut, so it is NOT a hard-failure oracle) |
 | `manifest.json` | per file: sha256, size, class, ffprobe facts (format, duration, codec, size, rate, channels) and `expected` content (cue text and starts, PDF page text, epub text, ID3 tags, tone frequency, silent flag) |
 
 Video frames carry the lavfi `testsrc` burned-in timestamp counter (a frame oracle that needs no font); the audio is a 440 Hz sine.

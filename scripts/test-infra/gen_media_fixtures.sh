@@ -208,7 +208,7 @@ for dp, dn, fn in os.walk(D):
         if rel in tags: e["expected"] = tags[rel]
         if rel == "negative/truncated-tail.mp4":
             e["class"] = "partial_playback"
-            e["expected"] = {"must_fail_playback_or_parse": False, "partial_playback": True, "note": "first half of Movie.Name.2020.1080p.mp4 (moov atom lost with faststart): demuxable/decodable prefix may or may not probe; consumers must not treat it as a hard parse failure"}
+            e["expected"] = {"must_fail_playback_or_parse": False, "partial_playback": True, "note": "first half of Movie.Name.2020.1080p.mp4 (faststart keeps moov at the front): ffprobe succeeds (duration 5.0 s) but decoding hits 'partial file' near the cut; a consumer must not treat it as a hard parse failure"}
         elif rel.startswith("negative/"): e["expected"] = {"must_fail_playback_or_parse": True}
         if rel == "music/Misc/Silent Control.wav": e["expected"] = {"silent": True, "note": "RMS oracle negative control"}
         if rel.startswith("music/Misc/Plain Tone") or rel.endswith("First Track.mp3"): e.setdefault("expected", {}).update({"tone_hz": 440})
