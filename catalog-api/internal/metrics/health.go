@@ -43,14 +43,34 @@ type HealthCheckResponse struct {
 // pdftotext (poppler: PDF text extraction).
 var ConverterTools = []string{"ffmpeg", "convert", "pdftotext"}
 
+// ConverterPDFRaster is the extra capability key reported next to the tools:
+// ImageMagick rasterises a PDF (bmp/tiff/gif/webp output) only through
+// Ghostscript, so it is true only when both `convert` and `gs` are on PATH.
+// `convert: true` alone means images, never PDF rasterising. The values are
+// booleans only: no paths or versions are disclosed on this unauthenticated
+// endpoint.
+const ConverterPDFRaster = "convert_pdf"
+
+// ConverterSVGRender is true only when `convert` AND a known SVG renderer (Inkscape or
+// rsvg-convert) are on PATH. `convert: true` alone does not mean SVG input works: ImageMagick's
+// built-in MSVG renderer is unreliable and the policy-hardened path is only exercised with an
+// external renderer. Booleans only, like the other keys.
+const ConverterSVGRender = "convert_svg"
+
 // ProbeConverters looks every ConverterTools entry up on PATH (exec.LookPath,
-// the same resolution the conversion worker uses when it runs the tool).
+// the same resolution the conversion worker uses when it runs the tool) and
+// derives ConverterPDFRaster.
 func ProbeConverters() map[string]bool {
-	out := make(map[string]bool, len(ConverterTools))
+	out := make(map[string]bool, len(ConverterTools)+2)
 	for _, t := range ConverterTools {
 		_, err := exec.LookPath(t)
 		out[t] = err == nil
 	}
+	_, gsErr := exec.LookPath("gs")
+	out[ConverterPDFRaster] = out["convert"] && gsErr == nil
+	_, inkErr := exec.LookPath("inkscape")
+	_, rsvgErr := exec.LookPath("rsvg-convert")
+	out[ConverterSVGRender] = out["convert"] && (inkErr == nil || rsvgErr == nil)
 	return out
 }
 

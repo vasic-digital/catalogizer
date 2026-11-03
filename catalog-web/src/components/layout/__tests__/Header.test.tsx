@@ -46,6 +46,11 @@ vi.mock('react-router-dom', async () => ({
   useNavigate: () => mockNavigate,
 }))
 
+// ConnectionStatus reads the WebSocket provider; it has its own tests. Here only its slot in the header is asserted.
+vi.mock('@/components/ui/ConnectionStatus', async () => ({
+  ConnectionStatus: () => <div data-testid="connection-status-slot" />,
+}))
+
 // Mock framer-motion to avoid animation issues in tests
 vi.mock('framer-motion', async () => ({
   motion: {
@@ -59,6 +64,15 @@ const mockUseAuth = vi.mocked(useAuth)
 describe('Header', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  describe('Connection status slot (D1)', () => {
+    it('docks the connection status inside the header, not as a page overlay', () => {
+      mockUseAuth.mockReturnValue({ user: null, isAuthenticated: true, logout: mockLogout })
+      customRender(<Header />)
+      const slot = screen.getByTestId('connection-status-slot')
+      expect(slot.closest('header')).not.toBeNull()
+    })
   })
 
   describe('Logo and Branding', () => {

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-	"os"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -252,6 +252,15 @@ func (h *AuthHandler) RegisterGin(c *gin.Context, userRepo *repository.UserRepos
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve created user"})
 		return
 	}
+
+	// The pending marker is internal state: it is not echoed (the response carries registration_status).
+	createdUser.Settings = ""
+	state := "active"
+	if !createdUser.IsActive {
+		state = "pending"
+	}
+	recordAuth(h.authService, createdUser.ID, "registration_created", c.ClientIP(), c.Request.UserAgent(),
+		"status="+state+" mode="+mode)
 
 	resp := struct {
 		*models.User

@@ -1,0 +1,2319 @@
+{
+ "browser": "chromium",
+ "cases": 60,
+ "violations": 28,
+ "unobserved": 0,
+ "pass": 32,
+ "results": [
+  {
+   "page": "dashboard",
+   "vp": "320x568",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 164,
+     "y": 492,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "collections",
+   "vp": "320x568",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 164,
+     "y": 492,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 320,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "select \"NameDate CreatedDate UpdatedIt\"",
+      "intersection": {
+       "w": 12,
+       "h": 9
+      }
+     },
+     {
+      "kind": "interactive",
+      "el": "button \"Smart Collection\"",
+      "intersection": {
+       "w": 122,
+       "h": 7
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "select \"NameDate CreatedDate UpdatedIt\"",
+     "intersection": {
+      "w": 12,
+      "h": 9
+     }
+    },
+    {
+     "kind": "interactive",
+     "el": "button \"Smart Collection\"",
+     "intersection": {
+      "w": 122,
+      "h": 7
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "media",
+   "vp": "320x568",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 164,
+     "y": 492,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "320x568",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 164,
+     "y": 492,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 320,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "select \"All MediaMusicVideoImagesDocum\"",
+      "intersection": {
+       "w": 12,
+       "h": 27
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "select \"All MediaMusicVideoImagesDocum\"",
+     "intersection": {
+      "w": 12,
+      "h": 27
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "admin",
+   "vp": "320x568",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 164,
+     "y": 492,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "settings",
+   "vp": "320x568",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 164,
+     "y": 492,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "320x568",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 164,
+     "y": 492,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "collections",
+   "vp": "320x568",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 164,
+     "y": 492,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 320,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "select \"NameDate CreatedDate UpdatedIt\"",
+      "intersection": {
+       "w": 12,
+       "h": 9
+      }
+     },
+     {
+      "kind": "interactive",
+      "el": "button \"Smart Collection\"",
+      "intersection": {
+       "w": 122,
+       "h": 7
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "select \"NameDate CreatedDate UpdatedIt\"",
+     "intersection": {
+      "w": 12,
+      "h": 9
+     }
+    },
+    {
+     "kind": "interactive",
+     "el": "button \"Smart Collection\"",
+     "intersection": {
+      "w": 122,
+      "h": 7
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "media",
+   "vp": "320x568",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 164,
+     "y": 492,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "320x568",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 164,
+     "y": 492,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 320,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "select \"All MediaMusicVideoImagesDocum\"",
+      "intersection": {
+       "w": 12,
+       "h": 27
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "select \"All MediaMusicVideoImagesDocum\"",
+     "intersection": {
+      "w": 12,
+      "h": 27
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "admin",
+   "vp": "320x568",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 164,
+     "y": 492,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "settings",
+   "vp": "320x568",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 164,
+     "y": 492,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 320,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "375x812",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 219,
+     "y": 736,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "collections",
+   "vp": "375x812",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 219,
+     "y": 736,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "media",
+   "vp": "375x812",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 219,
+     "y": 736,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 375,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "button \"\"",
+      "intersection": {
+       "w": 50,
+       "h": 22
+      }
+     },
+     {
+      "kind": "interactive",
+      "el": "button \"\"",
+      "intersection": {
+       "w": 50,
+       "h": 22
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "button \"\"",
+     "intersection": {
+      "w": 50,
+      "h": 22
+     }
+    },
+    {
+     "kind": "interactive",
+     "el": "button \"\"",
+     "intersection": {
+      "w": 50,
+      "h": 22
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "playlists",
+   "vp": "375x812",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 219,
+     "y": 736,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 375,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "input \"\"",
+      "intersection": {
+       "w": 140,
+       "h": 17
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "input \"\"",
+     "intersection": {
+      "w": 140,
+      "h": 17
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "admin",
+   "vp": "375x812",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 219,
+     "y": 736,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "settings",
+   "vp": "375x812",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 219,
+     "y": 736,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "375x812",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 219,
+     "y": 736,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "collections",
+   "vp": "375x812",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 219,
+     "y": 736,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "media",
+   "vp": "375x812",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 219,
+     "y": 736,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 375,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "button \"\"",
+      "intersection": {
+       "w": 50,
+       "h": 22
+      }
+     },
+     {
+      "kind": "interactive",
+      "el": "button \"\"",
+      "intersection": {
+       "w": 50,
+       "h": 22
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "button \"\"",
+     "intersection": {
+      "w": 50,
+      "h": 22
+     }
+    },
+    {
+     "kind": "interactive",
+     "el": "button \"\"",
+     "intersection": {
+      "w": 50,
+      "h": 22
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "playlists",
+   "vp": "375x812",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 219,
+     "y": 736,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 375,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "input \"\"",
+      "intersection": {
+       "w": 140,
+       "h": 17
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "input \"\"",
+     "intersection": {
+      "w": 140,
+      "h": 17
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "admin",
+   "vp": "375x812",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 219,
+     "y": 736,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "settings",
+   "vp": "375x812",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 219,
+     "y": 736,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 375,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "768x1024",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 612,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 768,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "button \"Last updated: 4:23:47 PM\"",
+      "intersection": {
+       "w": 132,
+       "h": 11
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "button \"Last updated: 4:23:47 PM\"",
+     "intersection": {
+      "w": 132,
+      "h": 11
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "collections",
+   "vp": "768x1024",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 612,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 768,
+    "hits": [
+     {
+      "kind": "text",
+      "el": "span \"Items: 0\"",
+      "intersection": {
+       "w": 34.38,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Items: 0\"",
+      "intersection": {
+       "w": 9,
+       "h": 2
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "text",
+     "el": "span \"Items: 0\"",
+     "intersection": {
+      "w": 34.38,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Items: 0\"",
+     "intersection": {
+      "w": 9,
+      "h": 2
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "media",
+   "vp": "768x1024",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 612,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "768x1024",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 612,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "admin",
+   "vp": "768x1024",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 612,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 768,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "button \"Refresh\"",
+      "intersection": {
+       "w": 109,
+       "h": 19
+      }
+     },
+     {
+      "kind": "text",
+      "el": "button \"Refresh\"",
+      "intersection": {
+       "w": 51,
+       "h": 6
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "button \"Refresh\"",
+     "intersection": {
+      "w": 109,
+      "h": 19
+     }
+    },
+    {
+     "kind": "text",
+     "el": "button \"Refresh\"",
+     "intersection": {
+      "w": 51,
+      "h": 6
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "settings",
+   "vp": "768x1024",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 612,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "768x1024",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 612,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 768,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "button \"Last updated: 4:24:14 PM\"",
+      "intersection": {
+       "w": 132,
+       "h": 11
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "button \"Last updated: 4:24:14 PM\"",
+     "intersection": {
+      "w": 132,
+      "h": 11
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "collections",
+   "vp": "768x1024",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 612,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 768,
+    "hits": [
+     {
+      "kind": "text",
+      "el": "span \"Items: 0\"",
+      "intersection": {
+       "w": 34.38,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Items: 0\"",
+      "intersection": {
+       "w": 9,
+       "h": 2
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "text",
+     "el": "span \"Items: 0\"",
+     "intersection": {
+      "w": 34.38,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Items: 0\"",
+     "intersection": {
+      "w": 9,
+      "h": 2
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "media",
+   "vp": "768x1024",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 612,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "768x1024",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 612,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "admin",
+   "vp": "768x1024",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 612,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 768,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "button \"Refresh\"",
+      "intersection": {
+       "w": 109,
+       "h": 19
+      }
+     },
+     {
+      "kind": "text",
+      "el": "button \"Refresh\"",
+      "intersection": {
+       "w": 51,
+       "h": 6
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "button \"Refresh\"",
+     "intersection": {
+      "w": 109,
+      "h": 19
+     }
+    },
+    {
+     "kind": "text",
+     "el": "button \"Refresh\"",
+     "intersection": {
+      "w": 51,
+      "h": 6
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "settings",
+   "vp": "768x1024",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 612,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 768,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "1024x768",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 868,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1024,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "button \"Last updated: 4:24:39 PM\"",
+      "intersection": {
+       "w": 124,
+       "h": 11
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "button \"Last updated: 4:24:39 PM\"",
+     "intersection": {
+      "w": 124,
+      "h": 11
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "collections",
+   "vp": "1024x768",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 868,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1024,
+    "hits": [
+     {
+      "kind": "text",
+      "el": "span \"Items: 0\"",
+      "intersection": {
+       "w": 17,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Items: 0\"",
+      "intersection": {
+       "w": 9,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 38,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 6,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 5,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 9,
+       "h": 2
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "text",
+     "el": "span \"Items: 0\"",
+     "intersection": {
+      "w": 17,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Items: 0\"",
+     "intersection": {
+      "w": 9,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 38,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 6,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 5,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 9,
+      "h": 2
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "media",
+   "vp": "1024x768",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 868,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "1024x768",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 868,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "admin",
+   "vp": "1024x768",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 868,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1024,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "button \"Refresh\"",
+      "intersection": {
+       "w": 109,
+       "h": 19
+      }
+     },
+     {
+      "kind": "text",
+      "el": "button \"Refresh\"",
+      "intersection": {
+       "w": 51,
+       "h": 6
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "button \"Refresh\"",
+     "intersection": {
+      "w": 109,
+      "h": 19
+     }
+    },
+    {
+     "kind": "text",
+     "el": "button \"Refresh\"",
+     "intersection": {
+      "w": 51,
+      "h": 6
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "settings",
+   "vp": "1024x768",
+   "theme": "light",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 868,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "1024x768",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 868,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1024,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "button \"Last updated: 4:25:03 PM\"",
+      "intersection": {
+       "w": 124,
+       "h": 11
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "button \"Last updated: 4:25:03 PM\"",
+     "intersection": {
+      "w": 124,
+      "h": 11
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "collections",
+   "vp": "1024x768",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 868,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1024,
+    "hits": [
+     {
+      "kind": "text",
+      "el": "span \"Items: 0\"",
+      "intersection": {
+       "w": 17,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Items: 0\"",
+      "intersection": {
+       "w": 9,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 38,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 6,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 5,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 9,
+       "h": 2
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "text",
+     "el": "span \"Items: 0\"",
+     "intersection": {
+      "w": 17,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Items: 0\"",
+     "intersection": {
+      "w": 9,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 38,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 6,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 5,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 9,
+      "h": 2
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "media",
+   "vp": "1024x768",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 868,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "1024x768",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 868,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "admin",
+   "vp": "1024x768",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 868,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1024,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "button \"Refresh\"",
+      "intersection": {
+       "w": 109,
+       "h": 19
+      }
+     },
+     {
+      "kind": "text",
+      "el": "button \"Refresh\"",
+      "intersection": {
+       "w": 51,
+       "h": 6
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "button \"Refresh\"",
+     "intersection": {
+      "w": 109,
+      "h": 19
+     }
+    },
+    {
+     "kind": "text",
+     "el": "button \"Refresh\"",
+     "intersection": {
+      "w": 51,
+      "h": 6
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "settings",
+   "vp": "1024x768",
+   "theme": "dark",
+   "touch": true,
+   "floor": 44,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 868,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1024,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "1440x900",
+   "theme": "light",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1284,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1440,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "button \"Last updated: 4:25:27 PM\"",
+      "intersection": {
+       "w": 44,
+       "h": 9
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "button \"Last updated: 4:25:27 PM\"",
+     "intersection": {
+      "w": 44,
+      "h": 9
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "collections",
+   "vp": "1440x900",
+   "theme": "light",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1284,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1440,
+    "hits": [
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 24,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 6,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 5,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 9,
+       "h": 2
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 24,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 6,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 5,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 9,
+      "h": 2
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "media",
+   "vp": "1440x900",
+   "theme": "light",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1284,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "1440x900",
+   "theme": "light",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1284,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [
+    {
+     "type": "tap_target_small_desktop",
+     "el": "a.touch-target.hover:text-gray-900.hover:underline \"Home\"",
+     "w": 38,
+     "h": 20
+    }
+   ],
+   "n_target_size_violations": 1,
+   "badge_overlaps": [],
+   "status": "FAIL"
+  },
+  {
+   "page": "admin",
+   "vp": "1440x900",
+   "theme": "light",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1284,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1440,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "button \"Refresh\"",
+      "intersection": {
+       "w": 44,
+       "h": 19
+      }
+     },
+     {
+      "kind": "text",
+      "el": "button \"Refresh\"",
+      "intersection": {
+       "w": 27,
+       "h": 8
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "button \"Refresh\"",
+     "intersection": {
+      "w": 44,
+      "h": 19
+     }
+    },
+    {
+     "kind": "text",
+     "el": "button \"Refresh\"",
+     "intersection": {
+      "w": 27,
+      "h": 8
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "settings",
+   "vp": "1440x900",
+   "theme": "light",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1284,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "dashboard",
+   "vp": "1440x900",
+   "theme": "dark",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1284,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1440,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "button \"Last updated: 4:25:52 PM\"",
+      "intersection": {
+       "w": 44,
+       "h": 9
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "button \"Last updated: 4:25:52 PM\"",
+     "intersection": {
+      "w": 44,
+      "h": 9
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "collections",
+   "vp": "1440x900",
+   "theme": "dark",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1284,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1440,
+    "hits": [
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 24,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 6,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 5,
+       "h": 2
+      }
+     },
+     {
+      "kind": "text",
+      "el": "span \"Page 1/0\"",
+      "intersection": {
+       "w": 9,
+       "h": 2
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 24,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 6,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 5,
+      "h": 2
+     }
+    },
+    {
+     "kind": "text",
+     "el": "span \"Page 1/0\"",
+     "intersection": {
+      "w": 9,
+      "h": 2
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "media",
+   "vp": "1440x900",
+   "theme": "dark",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1284,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  },
+  {
+   "page": "playlists",
+   "vp": "1440x900",
+   "theme": "dark",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1284,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [
+    {
+     "type": "tap_target_small_desktop",
+     "el": "a.touch-target.hover:text-gray-900.hover:underline \"Home\"",
+     "w": 38,
+     "h": 20
+    }
+   ],
+   "n_target_size_violations": 1,
+   "badge_overlaps": [],
+   "status": "FAIL"
+  },
+  {
+   "page": "admin",
+   "vp": "1440x900",
+   "theme": "dark",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1284,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1440,
+    "hits": [
+     {
+      "kind": "interactive",
+      "el": "button \"Refresh\"",
+      "intersection": {
+       "w": 44,
+       "h": 19
+      }
+     },
+     {
+      "kind": "text",
+      "el": "button \"Refresh\"",
+      "intersection": {
+       "w": 27,
+       "h": 8
+      }
+     }
+    ]
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [
+    {
+     "kind": "interactive",
+     "el": "button \"Refresh\"",
+     "intersection": {
+      "w": 44,
+      "h": 19
+     }
+    },
+    {
+     "kind": "text",
+     "el": "button \"Refresh\"",
+     "intersection": {
+      "w": 27,
+      "h": 8
+     }
+    }
+   ],
+   "status": "FAIL"
+  },
+  {
+   "page": "settings",
+   "vp": "1440x900",
+   "theme": "dark",
+   "touch": false,
+   "floor": 24,
+   "badge": {
+    "present": true,
+    "rect": {
+     "x": 1284,
+     "y": 80,
+     "w": 140,
+     "h": 36
+    },
+    "position": "fixed",
+    "vw": 1440,
+    "hits": []
+   },
+   "target_size_violations": [],
+   "n_target_size_violations": 0,
+   "badge_overlaps": [],
+   "status": "PASS"
+  }
+ ]
+}

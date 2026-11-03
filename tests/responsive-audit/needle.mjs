@@ -29,4 +29,16 @@ const out = {bad_counts:Object.fromEntries(Object.entries(r.bad).filter(([k])=>k
   out.exemption_covered_in_visible_box_flagged = !!cv.n_occluded_control;
   if (!out.exemption_scrolled_out_not_occluded || !out.exemption_covered_in_visible_box_flagged) out.verdict = 'ORACLE_BROKEN';
 }
+// Fine-pointer floor (WCAG 2.2 AA 2.5.8): 24x24 passes, 20px height fails, 44 is NOT demanded on a mouse viewport.
+{
+  const mk = (w,h) => `<body style="margin:0"><button style="width:${w}px;height:${h}px">x</button></body>`;
+  await p.setContent(mk(30,30)); const ok = await p.evaluate(oracleFn,{touch:false,cap:8});
+  await p.setContent(mk(40,20)); const small = await p.evaluate(oracleFn,{touch:false,cap:8});
+  out.desktop_24_passes = !ok.n_tap_target_small_desktop; out.desktop_20_flagged = !!small.n_tap_target_small_desktop;
+  await p.setContent(mk(24,24)); const edge = await p.evaluate(oracleFn,{touch:false,cap:8});
+  await p.setContent(mk(24,23)); const edgeLow = await p.evaluate(oracleFn,{touch:false,cap:8});
+  out.desktop_24x24_passes = !edge.n_tap_target_small_desktop; out.desktop_24x23_flagged = !!edgeLow.n_tap_target_small_desktop;
+  if (!out.desktop_24x24_passes || !out.desktop_24x23_flagged) out.verdict = 'ORACLE_BROKEN';
+  if (!out.desktop_24_passes || !out.desktop_20_flagged) out.verdict = 'ORACLE_BROKEN';
+}
 console.log(JSON.stringify(out,null,1)); if (process.env.NEEDLE_OUT) fs.writeFileSync(process.env.NEEDLE_OUT,JSON.stringify(out,null,1)); await b.close();
