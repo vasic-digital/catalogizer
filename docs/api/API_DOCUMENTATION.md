@@ -448,7 +448,7 @@ Refresh an expired access token using a refresh token.
 
 **Description:** Issues new session and refresh tokens.
 **Auth:** None
-**Rate Limit:** Standard (2000/min)
+**Rate Limit:** Auth session (600/min)
 
 **Request Body:**
 
@@ -478,7 +478,7 @@ Invalidate the current session token.
 
 **Description:** Logs out the current session.
 **Auth:** None (token optional)
-**Rate Limit:** Standard (2000/min)
+**Rate Limit:** Auth session (600/min)
 
 **Response:** 200 OK
 
@@ -496,7 +496,7 @@ Get the currently authenticated user's profile.
 
 **Description:** Returns the user object for the JWT bearer.
 **Auth:** Required
-**Rate Limit:** Standard (2000/min)
+**Rate Limit:** Auth session (600/min)
 
 **Response:** 200 OK (User object)
 
@@ -508,7 +508,7 @@ Get authentication system status (whether auth is configured, if initial setup i
 
 **Description:** Returns auth system status without requiring authentication.
 **Auth:** None
-**Rate Limit:** Standard (2000/min)
+**Rate Limit:** Auth session (600/min)
 
 **Response:** 200 OK
 
@@ -528,7 +528,7 @@ Get the permissions for the current user.
 
 **Description:** Returns the permission set granted to the authenticated user's role.
 **Auth:** Required
-**Rate Limit:** Standard (2000/min)
+**Rate Limit:** Auth session (600/min)
 
 **Response:** 200 OK
 
@@ -546,7 +546,7 @@ Alias for `/api/v1/auth/me`. Returns the current user profile.
 
 **Description:** Same as GET /api/v1/auth/me.
 **Auth:** Required
-**Rate Limit:** Standard (2000/min)
+**Rate Limit:** Auth session (600/min)
 
 ---
 
@@ -3112,7 +3112,7 @@ Revalidate stale image-quality records.
 
 **Description:** Samples image-quality rows whose last check is older than the cutoff and touches their last-checked time so the validator re-evaluates them. An empty or malformed body uses the defaults. Rate limited to 6 requests per minute.
 **Auth:** Required
-**Rate Limit:** Standard (2000/min)
+**Rate Limit:** 6/min per client IP, in addition to the Standard (2000/min) group limit
 
 **Request Body** (`object`):
 
@@ -5527,7 +5527,7 @@ Or the structured format used by subtitle and recommendation handlers:
 
 ## Rate Limiting
 
-Rate limiting is applied per-user based on the JWT token. Two tiers are used:
+Rate limiting is applied per-user based on the JWT token. The tiers are:
 
 | Endpoint Group | Limit | Description |
 |---|---|---|
