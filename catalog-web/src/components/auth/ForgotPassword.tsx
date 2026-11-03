@@ -50,7 +50,7 @@ export const ForgotPassword: React.FC = () => {
                     Request submitted. Please contact your system administrator to complete the password reset.
                   </p>
                 </div>
-                <Link to="/login">
+                <Link to="/login" className="block">
                   <Button variant="outline" className="w-full mt-4">
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Back to login

@@ -28,7 +28,7 @@ describe('playlistsApi', () => {
   })
 
   describe('getPlaylists', () => {
-    it('calls GET /api/v1/playlists with no params', async () => {
+    it('calls GET /playlists with no params', async () => {
       const mockResponse = {
         playlists: [{ id: '1', name: 'My Playlist' }],
         total: 1,
@@ -39,7 +39,7 @@ describe('playlistsApi', () => {
 
       const result = await playlistsApi.getPlaylists()
 
-      expect(mockApi.get).toHaveBeenCalledWith(expect.stringContaining('/api/v1/playlists'))
+      expect(mockApi.get).toHaveBeenCalledWith(expect.stringContaining('/playlists'))
       expect(result).toEqual(mockResponse)
     })
 
@@ -71,25 +71,25 @@ describe('playlistsApi', () => {
   })
 
   describe('getPlaylist', () => {
-    it('calls GET /api/v1/playlists/:id', async () => {
+    it('calls GET /playlists/:id', async () => {
       const mockPlaylist = { id: 'abc', name: 'Test Playlist' }
       mockApi.get.mockResolvedValue({ data: mockPlaylist })
 
       const result = await playlistsApi.getPlaylist('abc')
 
-      expect(mockApi.get).toHaveBeenCalledWith('/api/v1/playlists/abc')
+      expect(mockApi.get).toHaveBeenCalledWith('/playlists/abc')
       expect(result).toEqual(mockPlaylist)
     })
   })
 
   describe('getPlaylistItems', () => {
-    it('calls GET /api/v1/playlists/:id/items with no extra params', async () => {
+    it('calls GET /playlists/:id/items with no extra params', async () => {
       const mockItems = { items: [], total: 0, playlist: { id: 'abc' } }
       mockApi.get.mockResolvedValue({ data: mockItems })
 
       const result = await playlistsApi.getPlaylistItems('abc')
 
-      expect(mockApi.get).toHaveBeenCalledWith(expect.stringContaining('/api/v1/playlists/abc/items'))
+      expect(mockApi.get).toHaveBeenCalledWith(expect.stringContaining('/playlists/abc/items'))
       expect(result).toEqual(mockItems)
     })
 
@@ -110,37 +110,37 @@ describe('playlistsApi', () => {
   })
 
   describe('createPlaylist', () => {
-    it('calls POST /api/v1/playlists with request body', async () => {
+    it('calls POST /playlists with request body', async () => {
       const request = { name: 'New Playlist', description: 'A test playlist' }
       const created = { id: 'new-1', ...request }
       mockApi.post.mockResolvedValue({ data: created })
 
       const result = await playlistsApi.createPlaylist(request as any)
 
-      expect(mockApi.post).toHaveBeenCalledWith('/api/v1/playlists', request)
+      expect(mockApi.post).toHaveBeenCalledWith('/playlists', request)
       expect(result).toEqual(created)
     })
   })
 
   describe('updatePlaylist', () => {
-    it('calls PUT /api/v1/playlists/:id with update data', async () => {
+    it('calls PUT /playlists/:id with update data', async () => {
       const update = { name: 'Updated Name' }
       mockApi.put.mockResolvedValue({ data: { id: 'abc', ...update } })
 
       const result = await playlistsApi.updatePlaylist('abc', update)
 
-      expect(mockApi.put).toHaveBeenCalledWith('/api/v1/playlists/abc', update)
+      expect(mockApi.put).toHaveBeenCalledWith('/playlists/abc', update)
       expect(result.name).toBe('Updated Name')
     })
   })
 
   describe('deletePlaylist', () => {
-    it('calls DELETE /api/v1/playlists/:id', async () => {
+    it('calls DELETE /playlists/:id', async () => {
       mockApi.delete.mockResolvedValue({})
 
       await playlistsApi.deletePlaylist('abc')
 
-      expect(mockApi.delete).toHaveBeenCalledWith('/api/v1/playlists/abc')
+      expect(mockApi.delete).toHaveBeenCalledWith('/playlists/abc')
     })
 
     it('propagates error on delete failure', async () => {
@@ -151,12 +151,12 @@ describe('playlistsApi', () => {
   })
 
   describe('addItemsToPlaylist', () => {
-    it('calls POST /api/v1/playlists/:id/items with media IDs', async () => {
+    it('calls POST /playlists/:id/items with media IDs', async () => {
       mockApi.post.mockResolvedValue({ data: { added: 3, failed: 0 } })
 
       const result = await playlistsApi.addItemsToPlaylist('abc', [1, 2, 3])
 
-      expect(mockApi.post).toHaveBeenCalledWith('/api/v1/playlists/abc/items', {
+      expect(mockApi.post).toHaveBeenCalledWith('/playlists/abc/items', {
         media_ids: [1, 2, 3],
       })
       expect(result).toEqual({ added: 3, failed: 0 })
@@ -164,17 +164,17 @@ describe('playlistsApi', () => {
   })
 
   describe('removeFromPlaylist', () => {
-    it('calls DELETE /api/v1/playlists/:playlistId/items/:itemId', async () => {
+    it('calls DELETE /playlists/:playlistId/items/:itemId', async () => {
       mockApi.delete.mockResolvedValue({})
 
       await playlistsApi.removeFromPlaylist('abc', 'item-1')
 
-      expect(mockApi.delete).toHaveBeenCalledWith('/api/v1/playlists/abc/items/item-1')
+      expect(mockApi.delete).toHaveBeenCalledWith('/playlists/abc/items/item-1')
     })
   })
 
   describe('reorderPlaylistItems', () => {
-    it('calls PUT /api/v1/playlists/:id/items/reorder', async () => {
+    it('calls PUT /playlists/:id/items/reorder', async () => {
       const itemOrders = [
         { id: 'a', position: 0 },
         { id: 'b', position: 1 },
@@ -183,14 +183,14 @@ describe('playlistsApi', () => {
 
       await playlistsApi.reorderPlaylistItems('abc', itemOrders)
 
-      expect(mockApi.put).toHaveBeenCalledWith('/api/v1/playlists/abc/items/reorder', {
+      expect(mockApi.put).toHaveBeenCalledWith('/playlists/abc/items/reorder', {
         items: itemOrders,
       })
     })
   })
 
   describe('sharePlaylist', () => {
-    it('calls POST /api/v1/playlists/:id/share with permissions', async () => {
+    it('calls POST /playlists/:id/share with permissions', async () => {
       const permissions = { can_view: true, can_comment: false, can_download: true }
       const mockShareInfo = {
         share_url: 'http://localhost/shared/abc',
@@ -201,35 +201,35 @@ describe('playlistsApi', () => {
 
       const result = await playlistsApi.sharePlaylist('abc', permissions)
 
-      expect(mockApi.post).toHaveBeenCalledWith('/api/v1/playlists/abc/share', permissions)
+      expect(mockApi.post).toHaveBeenCalledWith('/playlists/abc/share', permissions)
       expect(result).toEqual(mockShareInfo)
     })
   })
 
   describe('getSharedPlaylist', () => {
-    it('calls GET /api/v1/playlists/shared/:token', async () => {
+    it('calls GET /playlists/shared/:token', async () => {
       const mockData = { items: [], total: 0, playlist: { id: 'abc' } }
       mockApi.get.mockResolvedValue({ data: mockData })
 
       const result = await playlistsApi.getSharedPlaylist('token123')
 
-      expect(mockApi.get).toHaveBeenCalledWith('/api/v1/playlists/shared/token123')
+      expect(mockApi.get).toHaveBeenCalledWith('/playlists/shared/token123')
       expect(result).toEqual(mockData)
     })
   })
 
   describe('unsharePlaylist', () => {
-    it('calls DELETE /api/v1/playlists/:id/share', async () => {
+    it('calls DELETE /playlists/:id/share', async () => {
       mockApi.delete.mockResolvedValue({})
 
       await playlistsApi.unsharePlaylist('abc')
 
-      expect(mockApi.delete).toHaveBeenCalledWith('/api/v1/playlists/abc/share')
+      expect(mockApi.delete).toHaveBeenCalledWith('/playlists/abc/share')
     })
   })
 
   describe('getPlaylistAnalytics', () => {
-    it('calls GET /api/v1/playlists/:id/analytics', async () => {
+    it('calls GET /playlists/:id/analytics', async () => {
       const mockAnalytics = {
         playlist_id: 'abc',
         total_plays: 100,
@@ -239,19 +239,19 @@ describe('playlistsApi', () => {
 
       const result = await playlistsApi.getPlaylistAnalytics('abc')
 
-      expect(mockApi.get).toHaveBeenCalledWith('/api/v1/playlists/abc/analytics')
+      expect(mockApi.get).toHaveBeenCalledWith('/playlists/abc/analytics')
       expect(result).toEqual(mockAnalytics)
     })
   })
 
   describe('duplicatePlaylist', () => {
-    it('calls POST /api/v1/playlists/:id/duplicate with optional name', async () => {
+    it('calls POST /playlists/:id/duplicate with optional name', async () => {
       const duplicated = { id: 'dup-1', name: 'Copy of Playlist' }
       mockApi.post.mockResolvedValue({ data: duplicated })
 
       const result = await playlistsApi.duplicatePlaylist('abc', 'Copy of Playlist')
 
-      expect(mockApi.post).toHaveBeenCalledWith('/api/v1/playlists/abc/duplicate', {
+      expect(mockApi.post).toHaveBeenCalledWith('/playlists/abc/duplicate', {
         name: 'Copy of Playlist',
       })
       expect(result).toEqual(duplicated)
@@ -262,21 +262,21 @@ describe('playlistsApi', () => {
 
       await playlistsApi.duplicatePlaylist('abc')
 
-      expect(mockApi.post).toHaveBeenCalledWith('/api/v1/playlists/abc/duplicate', {
+      expect(mockApi.post).toHaveBeenCalledWith('/playlists/abc/duplicate', {
         name: undefined,
       })
     })
   })
 
   describe('exportPlaylist', () => {
-    it('calls GET /api/v1/playlists/:id/export with format and blob responseType', async () => {
+    it('calls GET /playlists/:id/export with format and blob responseType', async () => {
       const mockBlob = new Blob(['data'])
       mockApi.get.mockResolvedValue({ data: mockBlob })
 
       const result = await playlistsApi.exportPlaylist('abc', 'm3u')
 
       expect(mockApi.get).toHaveBeenCalledWith(
-        '/api/v1/playlists/abc/export?format=m3u',
+        '/playlists/abc/export?format=m3u',
         { responseType: 'blob' }
       )
       expect(result).toEqual(mockBlob)
@@ -288,46 +288,46 @@ describe('playlistsApi', () => {
       await playlistsApi.exportPlaylist('abc')
 
       expect(mockApi.get).toHaveBeenCalledWith(
-        '/api/v1/playlists/abc/export?format=json',
+        '/playlists/abc/export?format=json',
         { responseType: 'blob' }
       )
     })
   })
 
   describe('playPlaylist', () => {
-    it('calls POST /api/v1/playlists/:id/play', async () => {
+    it('calls POST /playlists/:id/play', async () => {
       mockApi.post.mockResolvedValue({})
 
       await playlistsApi.playPlaylist('abc')
 
-      expect(mockApi.post).toHaveBeenCalledWith('/api/v1/playlists/abc/play')
+      expect(mockApi.post).toHaveBeenCalledWith('/playlists/abc/play')
     })
   })
 
   describe('shufflePlaylist', () => {
-    it('calls POST /api/v1/playlists/:id/shuffle', async () => {
+    it('calls POST /playlists/:id/shuffle', async () => {
       mockApi.post.mockResolvedValue({})
 
       await playlistsApi.shufflePlaylist('abc')
 
-      expect(mockApi.post).toHaveBeenCalledWith('/api/v1/playlists/abc/shuffle')
+      expect(mockApi.post).toHaveBeenCalledWith('/playlists/abc/shuffle')
     })
   })
 
   describe('reorderPlaylist', () => {
-    it('calls PUT /api/v1/playlists/:id/reorder with item IDs', async () => {
+    it('calls PUT /playlists/:id/reorder with item IDs', async () => {
       mockApi.put.mockResolvedValue({})
 
       await playlistsApi.reorderPlaylist('abc', ['item-1', 'item-3', 'item-2'])
 
-      expect(mockApi.put).toHaveBeenCalledWith('/api/v1/playlists/abc/reorder', {
+      expect(mockApi.put).toHaveBeenCalledWith('/playlists/abc/reorder', {
         itemIds: ['item-1', 'item-3', 'item-2'],
       })
     })
   })
 
   describe('importPlaylist', () => {
-    it('calls POST /api/v1/playlists/import with FormData', async () => {
+    it('calls POST /playlists/import with FormData', async () => {
       const mockFile = new File(['playlist data'], 'playlist.m3u', { type: 'audio/x-mpegurl' })
       const mockResult = { playlist: { id: 'imported-1' }, imported: 10, failed: 1 }
       mockApi.post.mockResolvedValue({ data: mockResult })
@@ -335,7 +335,7 @@ describe('playlistsApi', () => {
       const result = await playlistsApi.importPlaylist(mockFile, 'My Import')
 
       expect(mockApi.post).toHaveBeenCalledWith(
-        '/api/v1/playlists/import',
+        '/playlists/import',
         expect.any(FormData),
         { headers: { 'Content-Type': 'multipart/form-data' } }
       )
@@ -355,7 +355,7 @@ describe('playlistsApi', () => {
   })
 
   describe('validateSmartRules', () => {
-    it('calls POST /api/v1/playlists/validate-smart-rules', async () => {
+    it('calls POST /playlists/validate-smart-rules', async () => {
       const rules = [
         { field: 'media_type' as const, operator: 'equals' as const, value: 'movie' },
       ]
@@ -363,7 +363,7 @@ describe('playlistsApi', () => {
 
       const result = await playlistsApi.validateSmartRules(rules)
 
-      expect(mockApi.post).toHaveBeenCalledWith('/api/v1/playlists/validate-smart-rules', {
+      expect(mockApi.post).toHaveBeenCalledWith('/playlists/validate-smart-rules', {
         rules,
       })
       expect(result).toEqual({ valid: true, errors: [] })

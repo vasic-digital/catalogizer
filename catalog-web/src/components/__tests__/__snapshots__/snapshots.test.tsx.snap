@@ -43,7 +43,7 @@ exports[`Snapshot Tests > Badge > renders secondary variant 1`] = `
 exports[`Snapshot Tests > Button > renders default variant 1`] = `
 <div>
   <button
-    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-lg hover:shadow-xl h-10 px-4 py-2"
+    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px] bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-lg hover:shadow-xl h-10 px-4 py-2"
   >
     Default
   </button>
@@ -53,7 +53,7 @@ exports[`Snapshot Tests > Button > renders default variant 1`] = `
 exports[`Snapshot Tests > Button > renders destructive variant 1`] = `
 <div>
   <button
-    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-lg hover:shadow-xl h-10 px-4 py-2"
+    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px] bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-lg hover:shadow-xl h-10 px-4 py-2"
   >
     Delete
   </button>
@@ -63,7 +63,7 @@ exports[`Snapshot Tests > Button > renders destructive variant 1`] = `
 exports[`Snapshot Tests > Button > renders disabled state 1`] = `
 <div>
   <button
-    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-lg hover:shadow-xl h-10 px-4 py-2"
+    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px] bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-lg hover:shadow-xl h-10 px-4 py-2"
     disabled=""
   >
     Disabled
@@ -74,7 +74,7 @@ exports[`Snapshot Tests > Button > renders disabled state 1`] = `
 exports[`Snapshot Tests > Button > renders ghost variant 1`] = `
 <div>
   <button
-    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] text-gray-700 dark:text-gray-300 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200 dark:hover:bg-gray-700 dark:hover:text-white dark:active:bg-gray-600 h-10 px-4 py-2"
+    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px] text-gray-700 dark:text-gray-300 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200 dark:hover:bg-gray-700 dark:hover:text-white dark:active:bg-gray-600 h-10 px-4 py-2"
   >
     Ghost
   </button>
@@ -84,7 +84,7 @@ exports[`Snapshot Tests > Button > renders ghost variant 1`] = `
 exports[`Snapshot Tests > Button > renders link variant 1`] = `
 <div>
   <button
-    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] text-blue-600 underline-offset-4 hover:underline active:text-blue-800 dark:text-blue-400 dark:active:text-blue-300 h-10 px-4 py-2"
+    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px] text-blue-600 underline-offset-4 hover:underline active:text-blue-800 dark:text-blue-400 dark:active:text-blue-300 h-10 px-4 py-2"
   >
     Link
   </button>
@@ -94,7 +94,7 @@ exports[`Snapshot Tests > Button > renders link variant 1`] = `
 exports[`Snapshot Tests > Button > renders loading state 1`] = `
 <div>
   <button
-    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-lg hover:shadow-xl h-10 px-4 py-2"
+    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px] bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 shadow-lg hover:shadow-xl h-10 px-4 py-2"
     disabled=""
   >
     <svg
@@ -125,7 +125,7 @@ exports[`Snapshot Tests > Button > renders loading state 1`] = `
 exports[`Snapshot Tests > Button > renders outline variant 1`] = `
 <div>
   <button
-    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 active:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 dark:active:bg-gray-600 h-10 px-4 py-2"
+    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px] border border-gray-300 bg-white text-gray-900 hover:bg-gray-50 active:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 dark:active:bg-gray-600 h-10 px-4 py-2"
   >
     Outline
   </button>
@@ -135,7 +135,7 @@ exports[`Snapshot Tests > Button > renders outline variant 1`] = `
 exports[`Snapshot Tests > Button > renders secondary variant 1`] = `
 <div>
   <button
-    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] bg-gray-100 text-gray-900 hover:bg-gray-200 active:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:active:bg-gray-500 h-10 px-4 py-2"
+    class="inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px] bg-gray-100 text-gray-900 hover:bg-gray-200 active:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 dark:active:bg-gray-500 h-10 px-4 py-2"
   >
     Secondary
   </button>

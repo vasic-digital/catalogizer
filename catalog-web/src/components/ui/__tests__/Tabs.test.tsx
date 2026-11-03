@@ -148,3 +148,30 @@ describe('TabsList', () => {
     expect(container.firstChild).toHaveClass('custom-list')
   })
 })
+
+// Responsive guard (audit F7): the tab strip must scroll instead of overflowing the
+// viewport, and triggers must not shrink to illegible widths. Class-contract guard;
+// real layout is covered by tests/responsive-audit.
+describe('Tabs - responsive overflow contract', () => {
+  it('simple mode strip scrolls horizontally and is capped to its container', () => {
+    const { container } = render(
+      <Tabs tabs={[{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }]} activeTab="a" onChangeTab={vi.fn()} />
+    )
+    const strip = container.firstElementChild as HTMLElement
+    expect(strip.className).toContain('overflow-x-auto')
+    expect(strip.className).toContain('max-w-full')
+  })
+
+  it('TabsList scrolls horizontally and triggers do not shrink', () => {
+    render(
+      <Tabs defaultValue="a">
+        <TabsList>
+          <TabsTrigger value="a">A</TabsTrigger>
+        </TabsList>
+      </Tabs>
+    )
+    const trigger = screen.getByText('A')
+    expect(trigger.className).toContain('flex-shrink-0')
+    expect((trigger.parentElement as HTMLElement).className).toContain('overflow-x-auto')
+  })
+})

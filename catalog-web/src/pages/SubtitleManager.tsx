@@ -260,7 +260,7 @@ export const SubtitleManager: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for movies, TV shows, etc..."
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 min-w-[12rem] px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 onKeyPress={(e) => e.key === 'Enter' && searchQuery.trim() && setCurrentPage(1)}
               />
               <button
@@ -315,7 +315,7 @@ export const SubtitleManager: React.FC = () => {
           </h2>
 
           {/* Search Bar */}
-          <div className="flex gap-3 mb-4">
+          <div className="flex flex-wrap gap-3 mb-4">
             <input
               type="text"
               value={searchQuery}

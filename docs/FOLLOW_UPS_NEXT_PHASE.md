@@ -368,3 +368,67 @@ Source: independent Opus review rounds 1 and 2 of commits c567caca, b328d027, b3
 - R3-M1: the admin-over-admin checks are check-then-write (target role read, then update): a concurrent role change can produce a lost update or a stale decision. Needs a transactional or compare-and-set update in the repository.
 - R3-M2: a non-admin with user.manage / user.create may assign ANY non-admin role, including a role more privileged than their own (only roles that carry `system.admin`, `*` or a matching prefix wildcard are refused).
 - Other writers of users.role / role_id found in the R3-S1 sweep: `repository.UserRepository.Create/Update` (reached only via UserHandler, now guarded); `handlers/auth_handler.go` RegisterGin (fixed `RoleID: 2`); `internal/auth` `CreateUser` (fixed role 'user') and `UpdateUser` (sets `role` from request) are reachable only through `internal/handlers.AuthHandler`, which no code constructs (`NewAuthHandler` is never called outside its definition), so they are not exposed under /api/v1 today; if that handler is ever wired, `UpdateUser` must drop `Role` for non-admins. No bulk import, invite or signup flow writing roles was found in handlers/, services/, internal/, repository/.
+
+## Responsive audit series (commits `responsive audit fixes ...` and `header nav keeps priority ...`)
+Independent review round 1 returned GO-with-follow-ups. Corrections to the two commit messages (history is not rewritten):
+- Commit 1 says requests "were 404ing at /api/v1/api/v1/...". Correction (F4): only the doubled PREFIX is fixed in the
+  favorites and playlists client calls. Most of those endpoints still have no server route (item F3 below) and still 404,
+  now at the right path.
+- Commits 1 and 2 do not mention that the header greeting "Welcome, {name}" is now `hidden 2xl:inline` (not shown below
+  1536px) (F9). Nit: the password eye button is `h-11` inside an `h-10` input (2px overhang each side).
+- Both commits' evidence is a PARTIAL re-run of the browser harness (`fixedE` runs of 28 and 8 cases), not one full
+  matrix per browser on the final tree.
+
+Landing-blocker items closed in the landing-prep commit: F1 (8 Button snapshots updated; diff is only the two added
+`[@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px]` classes), F2 (`AuthRace.test.tsx`, RED on
+the pre-fix `AuthContext.tsx`, GREEN after), F7 (Tabs overflow class guards, RED on pre-fix `Tabs.tsx`), F8 (oracle
+needle cases for the scroll-container exemption, both directions mutation-killed), trailing whitespace in `oracle.mjs`.
+
+Tracked follow-ups (status OPEN):
+- F3 (source-defect, important, pre-existing): client calls with no route in `catalog-api/main.go`: `/favorites/stats`,
+  `/favorites/toggle`, `/favorites/bulk` (POST and DELETE), `/favorites/check/:mediaId` and `DELETE /favorites/:mediaId`
+  (shape differs from the server's `:entity_type/:entity_id`); playlists `GET /:id/items`, `items/reorder`, `share`,
+  `shared/:token`, `analytics`, `duplicate`, `export`, `play`, `shuffle`, `reorder`, `import`, `validate-smart-rules`.
+  `Favorites.tsx` uses `getFavoriteStats` and `bulkRemoveFromFavorites`, so that page still gets 404s. Needs a
+  client/server contract reconciliation plus a contract test (§11.4.244).
+- F5 (process-doc, important): residual browser-audit failures after both patches, from the author's verdict files:
+  catalog-web chromium 101 of 133 cases FAIL, webkit 123 of 152 FAIL, firefox only a pre-fix run exists (162 of 171
+  FAIL); website 35 of 35 FAIL on tap_target_small (VitePress hero buttons 40px). Needs one full-matrix run per browser on
+  the final tree and a tracked item per remaining finding class (tap_target_small, occluded_control, h_overflow,
+  offscreen_control, no_gutter, text_off_viewport, overlapping_text).
+- F6 (source-defect, minor, UNCONFIRMED): header nav `overflow-x-auto` may clip the `focus-visible:ring-2 ring-offset-2`
+  focus ring of nav links (top/bottom, and left of the first link). Found by reading CSS only; confirm in a browser,
+  then add `py-1 px-1` to the nav.
+- F7 design item (source-defect, minor): links overflowing the header nav at 768-1535px have no visible cue and the
+  harness no longer reports them; consider a "More" menu or an edge fade.
+- Open tap-target items from the audit (see F5) and the "More" menu decision above.
+- Pre-existing, not caused by this series: 7 failures in `catalog-web/src/contexts/__tests__/AuthContext.integration.test.tsx`
+  on `main` (localStorage `auth_token`/`user` `setItem`/`removeItem` assertions not met; login/logout cycle). Root cause
+  not trivial and out of scope here; needs its own investigation (§11.4.102). Also pre-existing: 3 eslint warnings in
+  `catalog-web/src/e2e-env.test.ts` fail `--max-warnings 0`.
+- `tests/responsive-audit/run.mjs` still hardcodes port 18400 and local paths and is not wired into any gate (F8 rest).
+
+## Runner scripts (CAT-013/014/016) review round 3 follow-ups (GO-with-follow-ups, all minor)
+
+- N1: `go fmt` failure is silent and `go fmt` rewrites files instead of checking (use `gofmt -l`).
+- N2: phase 4 leaves no note when `SKIP_E2E_TESTS=true`.
+- N3: phase 9 failed API-client copy is only a warning.
+- N4: phases 5 and 6 pass when the build copied zero artifacts.
+- T1: report fixture has one pass/skip/fail, so swapped counters in JSON/HTML go unnoticed.
+- T2: no test covers `skipped_list` for SEC, E2E, PERF.
+- T3: no test covers the phase 7 path where the dumpsys call itself fails.
+- Nits: unguarded `cd` in the E2E branch; `redis | grep -q` has the F2 shape (low risk).
+- UNCONFIRMED: adb connect exit semantics. ESLint findings stay non-fatal by policy.
+## CAT-002 PDF text isolation - follow-ups (review round 5)
+- F-E3: the pure-Go child re-runs all package `init`s of the API binary (about 80 MB RSS, 0.1-0.2 s) on every call; a small dedicated child binary or lazy init would cut this.
+- The hostile fallback chain (poppler killed by the 20 s CPU limit, then the Go child) measured 20.7 s total; a stricter bound would need a shared per-file budget across the two engines.
+- A genuinely large legitimate document (more than roughly 4000 pages of pure-Go extraction) can now exceed the 20 s CPU limit; poppler handles about 8000 pages in the same budget. Make the CPU limit page-count aware if such inputs are expected.
+- Measurements were taken on a 16-CPU host; GOMAXPROCS=64 is simulated by environment, not run on 64 CPUs. A full catalog-api image build and a container run of the extractor were not done in this round.
+
+## CAT-002 review round 5 follow-ups (GO-with-follow-ups, all minor)
+
+- F1: the child env allowlist is tested only on the poppler path; a mutation giving the Go child the full environment survives.
+- F2: mutations dropping GOMEMLIMIT and raising the child ceiling to 4 GiB survive (ceiling assertion compares against its own constant); marker check HasPrefix vs Contains (nit).
+- F3: "851 pages in ~4 s" holds for the generated fixture only; real very large PDFs (e.g. 851 and 570 pages) cannot be extracted by the pure-Go engine (>120 s) and rely on poppler.
+- F5: limits are sized from host MemAvailable, not the container memory limit; three children at their ceilings could exceed a container limit. No compose file limits catalog-api memory today.
+- UNCONFIRMED: image build and in-container extraction; real 64-CPU host.

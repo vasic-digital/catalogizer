@@ -66,7 +66,7 @@ const Tabs: React.FC<TabsProps> = ({
   // Support simple tabs mode
   if (tabs && activeTab && onChangeTab) {
     return (
-      <div className="inline-flex h-10 items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800 p-1 text-gray-600 dark:text-gray-400 mb-6">
+      <div className="inline-flex h-10 max-w-full overflow-x-auto items-center justify-start sm:justify-center rounded-md bg-gray-100 dark:bg-gray-800 p-1 text-gray-600 dark:text-gray-400 mb-6">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -94,7 +94,7 @@ const Tabs: React.FC<TabsProps> = ({
 
 const TabsList: React.FC<TabsListProps> = ({ children, className }) => (
   <div className={cn(
-    "inline-flex h-10 items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800 p-1 text-gray-600 dark:text-gray-400",
+    "inline-flex h-10 max-w-full overflow-x-auto items-center justify-start sm:justify-center rounded-md bg-gray-100 dark:bg-gray-800 p-1 text-gray-600 dark:text-gray-400",
     className
   )}>
     {children}
@@ -118,7 +118,7 @@ const TabsTrigger: React.FC<TabsTriggerProps> = ({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all",
+        "inline-flex flex-shrink-0 items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
         "disabled:pointer-events-none disabled:opacity-50",
         isActive 
