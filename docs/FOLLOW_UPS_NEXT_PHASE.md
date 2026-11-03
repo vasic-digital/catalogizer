@@ -534,3 +534,4 @@ Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/ap
 - Add a paired mutation (wrong password via env, wrong sandbox) to the WebDAV live test as the SMB/FTP live tests have (`LIVE_MUTATE`).
 - Pin the Synology certificate instead of `LIVE_WEBDAV_INSECURE=1` (as `submodules/filesystem/pkg/ftp/tls.go` pins per host; confirmed).
 - Review R1 F12/F13 (deferred): IPv6 literal hosts are mangled by the redaction host extraction; the probe URL escaping should reuse the client's URL builder. Positive-leg assertion that `ReadFile` error text contains `404` depends on the client's message format and is UNCONFIRMED live.
+- Review R2 F-R2-5 (note): Go follows 301/302 on PROPFIND by switching to GET, so a redirect to a login page is SKIPped as non-WebDAV; acceptable.
