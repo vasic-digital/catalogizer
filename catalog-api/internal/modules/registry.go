@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"catalogizer/internal/logging"
+	"go.uber.org/zap"
 
 	// Database module — generic connection pool, query builder, repository pattern
 	dbhelpers "digital.vasic.database/pkg/helpers"
@@ -175,14 +176,26 @@ func RegisterModules() *Registry {
 	// and fired 26 false-positive alerts, settling back under 2×
 	// within 5 minutes of the burst. 10× retains early-warning
 	// coverage while silencing legitimate burst workloads.
-	reg.MemoryMonitor = memory.NewMemoryMonitor(60*time.Second, 10.0)
+	reg.MemoryMonitor = memory.NewMemoryMonitor(60*time.Second, memoryHeapThresholdRatio)
 	reg.MemoryMonitor.SetAlertCallback(func(report memory.LeakReport) {
-		logging.Warn("MEMORY ALERT: potential leak detected",
+		trigger := classifyMemoryAlert(report, memoryHeapThresholdRatio)
+		fields := []zap.Field{
 			logging.String("component", "modules"),
+			logging.String("trigger", trigger),
 			logging.Float64("heap_growth_ratio", report.HeapGrowthRatio),
+			logging.Float64("heap_threshold_ratio", memoryHeapThresholdRatio),
 			logging.Int("goroutine_count", report.GoroutineCount),
 			logging.Int("initial_goroutines", report.InitialGoroutines),
-		)
+		}
+		if trigger == memoryTriggerHeap {
+			logging.Warn("MEMORY ALERT: potential leak detected", fields...)
+			return
+		}
+		// S1: the goroutine criterion (>50% over the baseline taken at start-up) fires on plain
+		// concurrent load - every in-flight/keep-alive connection owns a goroutine - while the heap
+		// ratio is far below its threshold. Measured: 29 goroutines idle, 207-256 during 64 clients,
+		// back to 29 afterwards. Reported as a notice, not as a leak alert.
+		logging.Info("MEMORY NOTICE: goroutine count above start-up baseline (load-correlated; heap ratio below leak threshold)", fields...)
 	})
 	reg.Modules = append(reg.Modules, ModuleInfo{
 		Name:        "digital.vasic.memory",
@@ -329,7 +342,7 @@ func (r *Registry) StartBackgroundServices(ctx context.Context) {
 				}
 			} else {
 				if logging.Logger != nil {
-					logging.With(logging.String("component", "modules")).Info("Memory monitor started", logging.String("interval", "60s"), logging.String("threshold", "3x"), logging.String("delay", "30s"))
+					logging.With(logging.String("component", "modules")).Info("Memory monitor started", logging.String("interval", "60s"), logging.String("threshold", "10x"), logging.String("delay", "30s"))
 				}
 			}
 		}()
@@ -354,4 +367,22 @@ func (r *Registry) GetModuleInfo() []ModuleInfo {
 	result := make([]ModuleInfo, len(r.Modules))
 	copy(result, r.Modules)
 	return result
+}
+
+// memoryHeapThresholdRatio is the heap-growth ratio (HeapAlloc / baseline HeapAlloc) above which the
+// memory monitor reports a potential leak.
+const memoryHeapThresholdRatio = 10.0
+
+const (
+	memoryTriggerHeap       = "heap"
+	memoryTriggerGoroutines = "goroutines"
+)
+
+// classifyMemoryAlert names the criterion that made the memory monitor flag a report: the heap ratio
+// above its threshold is a leak signal; a goroutine-only trigger is load-correlated.
+func classifyMemoryAlert(report memory.LeakReport, heapThreshold float64) string {
+	if report.HeapGrowthRatio > heapThreshold {
+		return memoryTriggerHeap
+	}
+	return memoryTriggerGoroutines
 }
