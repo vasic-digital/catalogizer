@@ -1,0 +1,12 @@
+    live_webdav_yandex_test.go:544: write /catalogizer-live-1793738327/one_mb.bin: failed to upload WebDAV file https://<redacted>/Testing/catalogizer-live-1793738327/one_mb.bin: Put "https://<redacted>/Testing/catalogizer-live-1793738327/one_mb.bin": net/http: request canceled (Client.Timeout exceeded while awaiting headers)
+--- FAIL: TestLiveYandex_Suite (156.21s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (0.48s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (0.20s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (1.03s)
+    --- FAIL: TestLiveYandex_Suite/04_upload_known_sha256 (140.90s)
+FAIL
+FAIL	catalogizer/filesystem	156.216s
+FAIL
+RUN 1 GO_RC=1
+RUNS=1 PASSED=0 SKIPPED=0 FAILED=1 EVIDENCE_DIR=<scratch>/evRED
+VERDICT=FAIL

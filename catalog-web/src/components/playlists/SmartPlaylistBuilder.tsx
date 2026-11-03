@@ -31,8 +31,6 @@ interface SmartPlaylistBuilderProps {
     description: string;
     rules: SmartPlaylistRule[];
   };
-  /** When set, Save is disabled and this reason is shown (e.g. the server cannot store smart rules). */
-  saveDisabledReason?: string;
   className?: string;
 }
 
@@ -141,7 +139,6 @@ export const SmartPlaylistBuilder: React.FC<SmartPlaylistBuilderProps> = ({
   onSave,
   onCancel,
   initialData,
-  saveDisabledReason,
   className = ''
 }) => {
   const [name, setName] = useState(initialData?.name || '');
@@ -609,13 +606,8 @@ export const SmartPlaylistBuilder: React.FC<SmartPlaylistBuilderProps> = ({
         >
           Cancel
         </Button>
-        {saveDisabledReason && (
-          <p className="text-sm text-gray-500 mr-auto">{saveDisabledReason}</p>
-        )}
         <Button
           onClick={handleSave}
-          disabled={!!saveDisabledReason}
-          title={saveDisabledReason}
           className="min-w-32"
         >
           <Save className="w-4 h-4" />

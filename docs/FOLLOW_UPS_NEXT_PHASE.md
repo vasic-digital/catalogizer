@@ -863,6 +863,34 @@ Closes F1, F2, F4, F5, F6, F7 of the scaling/chaos review (details in `docs/TEST
 - F7 (UNCONFIRMED, pre-existing): under lib/pq RefreshSmartPlaylist runs tx.ExecContext with a tx cursor open; not run on Postgres.
 - F8 (nit): RED signature in TESTING_GUIDE is "12 of 12"; aggregation/admin/playlist show "11 of 12".
 - HOST: root filesystem reached 100% during review (go-build cache 63 GB); cleared with `go clean -cache` (63 GB free afterwards). Needs a periodic cache cap.
+
+## Smart collections and smart playlists (feat-smart-collections)
+- Implemented: closed rule language `internal/smartrules` (parameterised SQL only), evaluation at read time, `GET /collections/:id/items`, smart playlists, owner/admin authz, migration 23. Guide: docs/guides/SMART_COLLECTIONS_GUIDE.md.
+- UNVERIFIED (no `node_modules` in the scratch clone or the live checkout, so vitest and `tsc --noEmit` were not run): the catalog-web edits (Playlists.tsx smart save, SmartPlaylistBuilder.tsx, CollectionTemplates.tsx text, the three updated/added test files).
+- Postgres: tested against a real postgres:15-alpine (rootless podman) by `internal/smartrules/smartrules_pg_test.go` (edge cases and a field x operator parity matrix); see docs/SMART_COLLECTION_RULES.md. The migration `ADD COLUMN IF NOT EXISTS` itself is exercised by `RunMigrations` in that run.
+- Open: collection templates (CollectionTemplates.tsx) use fields and values the rule language rejects (category, ai_score, trending_score, user_preference_match, `30_days_ago`, media type `audio`, `is_not_empty`); applying stays disabled with a reason until they are rewritten.
+- Open: the Collections page does not show smart items yet (the page lists collections; the items endpoint exists and `collectionsApi.getCollectionItems` already targets it).
+- Open: `image` media type matches nothing (the catalogue has no image media type); `tags` supports only contains / not_contains (comma-separated text column).
+- Per-user caps: 50 smart collections (`MaxSmartCollectionsPerUser`) and 50 smart playlists (`MaxSmartPlaylistsPerUser`); each read evaluates the rules (bounded by the 500-item page cap, list count cap 1000 and rule limits, no timing benchmark taken).
+## Live Yandex WebDAV suite (2026-11-03)
+- FIXED (live RED first): `WebDAVClient` used `http.Client{Timeout: 30s}`, a whole-request cap that also covers the body. The pre-fix client (commit 05709505) failed the 1 MiB upload of step 04 against the real service with `Client.Timeout exceeded` (committed RED: `docs/qa/webdav-yandex-live-20261103/run_RED_pre_fix_client_base05709505.log`, `RED_pre_fix_client_run1.json`; the service accepts about 16 KiB/s); every large `ReadFile` stream (video through the stream handler) would be cut at 30 s the same way. Now: metadata operations 30 s as a whole; transfers bounded by the caller's context, a 60 s idle timeout and a 10 min wait for the answer after the last upload byte. Unit guards `webdav_transfer_timeout_test.go`; live guard `TestLiveYandex_Suite/04_upload_known_sha256`.
+- FIXED (found while wiring the suite): `scripts/test-infra/webdav_live.sh` redacted its output with `sed -e s/<password>/...` (the password and user on a command line, readable in `/proc/<pid>/cmdline`); now `awk` reads them from the environment.
+- OPEN W1: `WebDAVClient` has no MOVE (rename); callers must COPY then DELETE (not atomic, doubles traffic on a throttled service). The live suite probes MOVE with a raw guarded request (it works on Yandex).
+- OPEN W2: `WebDAVClient` has no ranged read and does not implement `SeekableClient`, so the stream handler cannot seek in a WebDAV video; the service supports `Range` (see the `07_range_partial_read` note in the evidence).
+- OPEN W3: `FileExists` returns `(false, nil)` for every non-200 answer, including 401, 403 and 5xx, so an auth or server error reads as "file absent". 404 should be false and any other non-2xx an error. Pinned by existing unit tests, not changed here.
+- OPEN W4: `Connect` accepts a plain `200` as success, so a non-WebDAV HTTP server passes the connect check (the older live test treats that as not-a-WebDAV-service).
+- OPEN W5: no outbound SSRF/netguard policy applies to the WebDAV storage-root path on main (`services.GuardProviderURL` guards metadata providers; `isHostAllowed` guards only the SMB probe). The suite shows the canonical guard lets `webdav.yandex.ru` through and refuses loopback, but nothing calls it for a WebDAV root. Branch P2 adds netguard; re-run the live suite there to prove a public https WebDAV host still works.
+- OPEN W6: the client has no retry of its own (one `connection reset by peer` on MKCOL and one 30 s PROPFIND timeout were seen); only the scanner wraps reads with `fabric.Retrying`. Writes (PUT, MKCOL, DELETE) are never retried.
+- OPEN W7 (service fact, not a defect): the Yandex WebDAV upload rate was about 16 KiB/s, so cataloguing or copying media into it is slow by design; a collection `DELETE` can answer `202` (asynchronous), the suite polls until the directory is gone.
+- OPEN W8: the scan leg replaces only the record seam; the database-backed `insertFileRecord` path and the `UniversalScanner` job path (factory-built client with storage-root credentials) were not run against the real service, because the factory-built client has no outbound guard and its `Connect` would issue a PROPFIND on the service root, outside `/Testing`.
+
+- W9 (open): `WebDAVClient.Connect`/`TestConnection` have no retry; the live Yandex service intermittently answers the first PROPFIND with a connection reset or stalls it to the 30 s op deadline. The live test retries (counted in evidence as `transient_retries`); the production client does not (see W6).
+- W10 (UNCONFIRMED): one mid-body 60 s idle cancel was seen on a download while the service was degraded; not reproduced since.
+- OPEN WD-F1 (UNCONFIRMED cause, possible DATA LOSS): one throwaway probe (output not committed) saw an upload cut by `connection reset by peer`, a retried PUT answer success, and the file stay absent from the directory for at least 55 s, i.e. an acknowledged write may be lost by the service. No committed run shows it (all committed runs have `lost_acked_writes=0`; the live script now FAILs on any). The production `WebDAVClient.WriteFile` has no read-back and no retry, so if the loss is real Catalogizer could silently lose data written to WebDAV. Next step: repeat the probe under evidence capture (status of every attempt, HEAD/PROPFIND after), then decide on read-back verification in the client.
+- OPEN WD-F2: the idle guard counts consumer inactivity as stall: a `ReadFile` stream the caller pauses for longer than `webdavIdleTimeout` (60 s) is aborted although the server is fine (a paused video player). Not fixed; needs a producer-side stall notion or a documented caller contract.
+- OPEN WD-F3: the live tests replace the client transport with a guard transport, so `newWebDAVHTTPClient` settings (dial/TLS timeouts, HTTP/2, pooling) are NOT exercised against the real service; only the default-client shape is unit-tested.
+- NOTE W5 is the missing outbound (SSRF/netguard) guard for the WebDAV storage-root path; `live_webdav_scan_test.go` cites it.
+
 ## Registration approval + converter tools in the API image (2026-11-03, branch `feat-registration-approval-ffmpeg`)
 
 - Registration is now OPEN WITH ADMIN APPROVAL (`REGISTRATION_MODE`: `approval` default, `open`, `disabled`). Real-binary test `catalog-api/registration_approval_binary_test.go` (RED first: register answered an active user plus a session on login). Behaviour change documented in `docs/UPGRADE_NOTES.md`. This also narrows P2 above (a self-registered user can no longer act before an admin approves); P2 itself (no permission check on storage roots / SMB / scans) is NOT fixed by this change.
@@ -941,6 +969,12 @@ Found by `scripts/docs/check_doc_coverage.py` (guide `docs/scripts/check_doc_cov
 - F-R2/F-R3/F-R5 closed with tests in `services/sync_service_netguard_test.go`; the webdav client cache is guarded by `webdavMu`, and a rejected URL update no longer leaves a client for the rejected URL cached.
 - F-R6 (nits, open): (a) a redirect to another allow-listed host fails TLS because the transport uses a fixed `ServerName`; (b) netguard ignores `HTTP_PROXY`/`HTTPS_PROXY` on purpose (`Transport().Proxy` is nil): behind a mandatory egress proxy sync endpoints cannot connect, and any future proxy support would bypass the dial-time address check because the proxy resolves the host; decide the policy before adding it; (c) a trailing-dot host (`example.com.`) is refused by `CheckURL`, which is stricter than DNS requires.
 
+## Smart collections round 1 follow-ups
+- SC1 (resolved): the Postgres jsonb branches (genre, quality) now run against a real Postgres in `smartrules_pg_test.go`; tags are comma-separated text and use the text path.
+- SC2 (F7): case-insensitive matching is ASCII-only on SQLite; non-ASCII folding is not done.
+- SC3 (F10): SmartCollectionBuilder still offers options the server rejects (artist, album, decade, play_count, last_played, file_extension, bitrate, resolution, fps, channels, subtitles, is_empty, last_N_days); aliases were added for is_favorite/file_size/duration/date_modified only. catalog-web edits are UNVERIFIED (no node_modules).
+- SC4: control characters (\x01-\x03) are rejected in values; values with control characters never match JSON-encoded columns.
+- SC5: the list-count cache is a 30 s TTL per process, not shared between instances; `total_items_status` reports exact/capped/stored.
 ## QA consumers of the honest-501 and registration-approval behaviours (branch fix-qa-consumers, 2026-11-03)
 
 Status: F1 (endpoints that answer an honest 501), F2 (self-registered users inactive under `REGISTRATION_MODE=approval`) and F6 (the 200..399 acceptance and the `000000` status artefact in the QA runners) are FIXED on the branch for every consumer found by the sweep below. Open items are listed at the end.
@@ -978,6 +1012,11 @@ Open / not fixed (reason):
 - QC6 (nit): `personalized/${ME_ID:-0}` cannot detect a failed id lookup when run as admin.
 - QC7 (nit): qa_registration.sh header names docker-compose.qa.yml; the setting is in docker-compose.test.yml.
 - QC8 (gap): the docker-compose.qa.yml helixqa-api loop was read, not executed.
+- SC6 (review round 3, finding 4): Postgres `::jsonb` casts run on text that may not be valid JSON (a legacy plain-text genre, malformed quality_info) and can raise an error for the whole query; the guards only test the first character.
+- SC7 (review round 3, finding 5): the per-user cap check (count then insert) is not atomic; concurrent creates can exceed the cap by a few.
+- SC8 (review round 3, finding 6): `fillLiveCounts` shares one per-request deadline, so a slow early collection starves the later ones in a list.
+- SC9 (review round 3, finding 7): error mapping of rule/evaluation failures to HTTP statuses is coarse (some evaluation errors surface as 500).
+
 
 ## Route permissions review (round 4 findings N1-N6)
 - N1 closed: `POST /analytics/access` and `POST /analytics/event` attribute the write to the token's user id (`bindWriteUserID` in `handlers/service_handlers.go`); a body `user_id` naming another account answers 403, an absent one is replaced by the caller's id (before: user_id 0 rows, or forged rows that raised the admin's `GET /analytics/user/1` counts). Real-binary test `TestRoutePerms_RealBinary_AnalyticsWritesCannotForgeUserID` (RED before) and mutations (see the round report). Control-needled census of handlers reading a user or owner id from body, query or path: mounted routes read the id from the token (`c.Get("user_id")`, `r.Context().Value("user_id")`) except `Param("user_id")` in `GetUserAnalytics` and `recommendations/personalized/:user_id`, both behind `RequireSelfOrAdmin`. No other mounted handler binds a user id from the body. UNMOUNTED, not reachable today: `internal/handlers/media_player_handlers.go` binds `services.UpdatePositionRequest`, `BookmarkRequest`, `ReorderPlaylistRequest` and others that carry `user_id` in the body, and `internal/handlers/localization_handlers.go` `SetupWizardLocalization` accepts a body `UserID`; their constructors (`NewMediaPlayerHandlers`, `NewLocalizationHandlers`) are called only from tests. Whoever mounts them must take the user id from the token first (P2-u).
@@ -1015,4 +1054,18 @@ Open (not fixed here):
 - AZ2-5: `pprof` `profile`/`trace` hold an admin request for the sampling time (`?seconds=`) and are not rate-limited beyond the global chain.
 - AZ2-6: the route table is produced by a control-needled static extractor over `main.go` plus a live probe (`route_enumeration_probe_test.go`, env-gated); a test that fails when a NEW route is registered without a row in a checked-in table does not exist yet. Routes mounted from other files (`RegisterStorageRoutes`, `RegisterScanRoutes`, `RegisterAliasRoutes`) are added by hand to the extractor input; a route added in a fourth place would be missed.
 - AZ2-7: `POST /assets/request` still lets an admin pass `source_hint` as a server file path to the asset chain (`LocalScanResolver` confines it to the read roots); not changed here.
-- N2 and N4 above remain closed only by the pending `feat-smart-collections` branch.
+- N2 and N4 are closed on main by the smart-collections merge (e1695dfd: ownership migration 23, playlist 404).
+### Smart collections round-4 review follow-ups (GO-with-follow-ups)
+- SC10 (test-instrumentation, minor): reviewer mutation dropping the viewer uid from `countKey` (collection_handler.go ~193) survives; add a two-viewer test (different favorites, same smart collection within the 30 s TTL, different `total_items`).
+- SC11 (process-doc, nit): UPGRADE_NOTES says an admin sets `owner_user_id` for a legacy collection, but `UpdateCollection` does not accept it; say it needs direct SQL on the SQLCipher DB or add an API.
+- N2 is closed: `TestRoutePerms_RealBinary_CollectionOwnership` ran GREEN against the real binary and its skip gate is removed in the landing merge.
+- W10 update (UNCONFIRMED): under the stricter live verdict an idle-guard cancel (`context canceled` after 69 s) failed the download of `two_mb.bin` in step 06 once (log `docs/qa/webdav-yandex-live-20261103/run_stricter_verdict_attempt2_FAIL_idle_cancel_and_EOF.log`); whether the stall was in the response headers or in the body is unknown because the error was not yet diagnosable. The client now reports `webdav idle timeout: no data for <d> (<phase>)`, and the live script fails any run with such an error. The same attempt hit `Put ...: EOF` on a concurrent upload (now classed transient and counted). Not reproduced in the later N=3 run.
+
+### WebDAV live suite round-2 review follow-ups (GO-with-follow-ups)
+- R2-1 (test-instrumentation, minor): the transient classifier was widened after observed failures (TLS handshake timeout, `": EOF`) and PASS_WITH_ANOMALIES has no ceiling; cap retries per class/run and label classes unattributed (`": EOF` on PUT may be a stale keep-alive reuse, not the service).
+- R2-2 (test-instrumentation, minor): mutant removing `guard.rearm(webdavResponseWait)` on the empty-body path survives; assert the empty PUT is bounded by the response wait.
+- R2-3 (nit): mutant dropping the `want>0 && read>=want` re-arm survives, probably equivalent on HTTP/1.1; HTTP/2 not analysed.
+- R2-4 (process-doc, minor): docs/TESTING_GUIDE.md ~319-321 lacks PASS_WITH_ANOMALIES and the integrity rules, and understates observed retries.
+- R2-5 (nit): `run_N3_PASS.log` (old-verdict run) deleted without note (kept in git history); RED evidence is N=1.
+- R2-6 (nit): `transient()`/`retry()` live only in the live-tagged file, no offline mutation check.
+- Not run: merged-tree race run of ./internal/services, scan-leg test executed only live by the author.

@@ -103,14 +103,13 @@ describe('SmartPlaylistBuilder', () => {
     expect(screen.getByText('Smart Playlist Builder')).toBeInTheDocument()
   })
 
-  it('CAT-001 R5: with saveDisabledReason the Save button is disabled, shows the reason and never calls onSave', async () => {
+  it('Save is enabled and passes name, description and the rules to onSave', async () => {
     const onSave = vi.fn()
     const user = userEvent.setup()
-    render(<SmartPlaylistBuilder {...defaultProps} onSave={onSave} initialData={{ name: 'N', description: '', rules: [] }} saveDisabledReason="Smart playlists are not available." />)
+    render(<SmartPlaylistBuilder {...defaultProps} onSave={onSave} initialData={{ name: 'N', description: 'D', rules: [{ field: 'genre', operator: 'equals', value: 'rock' }] }} />)
     const btn = screen.getByText('Save Playlist').closest('button')!
-    expect(btn).toBeDisabled()
-    expect(screen.getByText('Smart playlists are not available.')).toBeInTheDocument()
+    expect(btn).toBeEnabled()
     await user.click(btn)
-    expect(onSave).not.toHaveBeenCalled()
+    expect(onSave).toHaveBeenCalledWith('N', 'D', [{ field: 'genre', operator: 'equals', value: 'rock' }])
   })
 })

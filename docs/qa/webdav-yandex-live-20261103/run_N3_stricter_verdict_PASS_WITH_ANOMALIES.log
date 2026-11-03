@@ -1,0 +1,73 @@
+--- PASS: TestLiveYandex_Suite (405.10s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (0.45s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (5.77s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (15.06s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (194.20s)
+    --- PASS: TestLiveYandex_Suite/05_list_sizes_mtimes (0.22s)
+    --- PASS: TestLiveYandex_Suite/06_download_sha256_and_stat (1.56s)
+    --- PASS: TestLiveYandex_Suite/07_range_partial_read (0.28s)
+    --- PASS: TestLiveYandex_Suite/08_copy_rename_move (36.13s)
+    --- PASS: TestLiveYandex_Suite/09_overwrite (1.93s)
+    --- PASS: TestLiveYandex_Suite/10_nonexistent_errors (0.87s)
+    --- PASS: TestLiveYandex_Suite/11_unicode_and_special_names (6.50s)
+    --- PASS: TestLiveYandex_Suite/12_large_listing_200 (42.63s)
+    --- PASS: TestLiveYandex_Suite/13_concurrent_uploads_4 (47.20s)
+    --- PASS: TestLiveYandex_Suite/14_unsized_reader_upload (7.05s)
+    --- PASS: TestLiveYandex_Suite/15_timeout_and_cancel (1.66s)
+    --- PASS: TestLiveYandex_Suite/16_delete (10.51s)
+    --- PASS: TestLiveYandex_Suite/17_guard_refuses_outside_sandbox (0.55s)
+PASS
+ok  	catalogizer/filesystem	405.109s
+RUN 1 GO_RC=0
+--- PASS: TestLiveYandex_Suite (437.06s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (0.44s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (1.61s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (20.51s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (194.53s)
+    --- PASS: TestLiveYandex_Suite/05_list_sizes_mtimes (0.19s)
+    --- PASS: TestLiveYandex_Suite/06_download_sha256_and_stat (1.86s)
+    --- PASS: TestLiveYandex_Suite/07_range_partial_read (0.21s)
+    --- PASS: TestLiveYandex_Suite/08_copy_rename_move (32.75s)
+    --- PASS: TestLiveYandex_Suite/09_overwrite (2.23s)
+    --- PASS: TestLiveYandex_Suite/10_nonexistent_errors (1.01s)
+    --- PASS: TestLiveYandex_Suite/11_unicode_and_special_names (8.09s)
+    --- PASS: TestLiveYandex_Suite/12_large_listing_200 (45.34s)
+    --- PASS: TestLiveYandex_Suite/13_concurrent_uploads_4 (35.56s)
+    --- PASS: TestLiveYandex_Suite/14_unsized_reader_upload (6.86s)
+    --- PASS: TestLiveYandex_Suite/15_timeout_and_cancel (8.96s)
+    --- PASS: TestLiveYandex_Suite/16_delete (47.64s)
+    --- PASS: TestLiveYandex_Suite/17_guard_refuses_outside_sandbox (0.57s)
+PASS
+ok  	catalogizer/filesystem	437.066s
+RUN 2 GO_RC=0
+--- PASS: TestLiveYandex_Suite (386.18s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (7.46s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (0.19s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (0.77s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (195.00s)
+    --- PASS: TestLiveYandex_Suite/05_list_sizes_mtimes (0.24s)
+    --- PASS: TestLiveYandex_Suite/06_download_sha256_and_stat (1.89s)
+    --- PASS: TestLiveYandex_Suite/07_range_partial_read (0.12s)
+    --- PASS: TestLiveYandex_Suite/08_copy_rename_move (31.29s)
+    --- PASS: TestLiveYandex_Suite/09_overwrite (2.11s)
+    --- PASS: TestLiveYandex_Suite/10_nonexistent_errors (1.06s)
+    --- PASS: TestLiveYandex_Suite/11_unicode_and_special_names (7.47s)
+    --- PASS: TestLiveYandex_Suite/12_large_listing_200 (51.62s)
+    --- PASS: TestLiveYandex_Suite/13_concurrent_uploads_4 (35.42s)
+    --- PASS: TestLiveYandex_Suite/14_unsized_reader_upload (7.06s)
+    --- PASS: TestLiveYandex_Suite/15_timeout_and_cancel (2.20s)
+    --- PASS: TestLiveYandex_Suite/16_delete (31.11s)
+    --- PASS: TestLiveYandex_Suite/17_guard_refuses_outside_sandbox (0.57s)
+PASS
+ok  	catalogizer/filesystem	386.187s
+RUN 3 GO_RC=0
+RUNS=3 PASSED=3 SKIPPED=0 FAILED=0 EVIDENCE_DIR=<scratch>/evK
+run1: requests=510 p50=221ms p95=2553ms max=128817ms up=7631477B status={'0': 4, '200': 243, '201': 228, '202': 2, '204': 4, '206': 1, '207': 9, '401': 1, '404': 15, '405': 1, '409': 2}
+run1: guard_violations=2 transient_retries=2 retry_classes={'connection reset': 2} lost_acked_writes=0 idle_cancel_errors=0
+run2: requests=503 p50=229ms p95=1783ms max=128795ms up=7369333B status={'0': 4, '200': 236, '201': 228, '202': 2, '204': 4, '206': 1, '207': 9, '401': 1, '404': 15, '405': 1, '409': 2}
+run2: guard_violations=2 transient_retries=2 retry_classes={'connection reset': 1, 'context deadline exceeded': 1} lost_acked_writes=0 idle_cancel_errors=0
+run3: requests=498 p50=237ms p95=2007ms max=128648ms up=7369349B status={'0': 3, '200': 232, '201': 228, '202': 1, '204': 5, '206': 1, '207': 9, '401': 1, '404': 15, '405': 1, '409': 2}
+run3: guard_violations=2 transient_retries=1 retry_classes={'connection reset': 1} lost_acked_writes=0 idle_cancel_errors=0
+SIGNATURES IDENTICAL across 3 runs
+ANOMALIES=5 transient retries across 3 runs (service connection resets / 5xx / stalls; see retry_classes)
+VERDICT=PASS_WITH_ANOMALIES transient_retries=5

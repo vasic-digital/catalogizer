@@ -1,0 +1,73 @@
+{
+  "bytes_uploaded": 4198400,
+  "credentials_in_evidence": false,
+  "date_utc": "2026-11-03T20:41:23Z",
+  "guard_violations": 0,
+  "idle_cancel_errors": 0,
+  "latency_ms_max": 30024,
+  "latency_ms_p50": 455,
+  "latency_ms_p95": 30007,
+  "lost_acked_writes": 0,
+  "notes": {
+    "cleanup": "run dir removed, PROPFIND 404",
+    "sandbox_preexisting": true
+  },
+  "requests_by_method": {
+    "DELETE": 1,
+    "HEAD": 1,
+    "MKCOL": 4,
+    "PROPFIND": 5,
+    "PUT": 5
+  },
+  "requests_by_status": {
+    "0": 4,
+    "201": 3,
+    "204": 1,
+    "207": 3,
+    "401": 1,
+    "404": 2,
+    "405": 1,
+    "409": 1
+  },
+  "requests_total": 16,
+  "run_dir": "catalogizer-live-1793738327",
+  "sandbox": "/Testing",
+  "service": "webdav.yandex.ru",
+  "signature": {
+    "01_connect_auth_success": "PASS",
+    "02_auth_failure_wrong_password": "PASS",
+    "03_mkdir": "PASS"
+  },
+  "steps": [
+    {
+      "name": "01_connect_auth_success",
+      "result": "PASS",
+      "ms": 484,
+      "notes": {
+        "protocol": "webdav"
+      }
+    },
+    {
+      "name": "02_auth_failure_wrong_password",
+      "result": "PASS",
+      "ms": 195,
+      "notes": {
+        "status": 401
+      }
+    },
+    {
+      "name": "03_mkdir",
+      "result": "PASS",
+      "ms": 1027,
+      "notes": {
+        "mkdir_existing_error": "WebDAV server returned status 405 for directory https://\u003credacted\u003e/Testing/catalogizer-live-1793738327/sub",
+        "mkdir_missing_parent_error": "WebDAV server returned status 409 for directory https://\u003credacted\u003e/Testing/catalogizer-live-1793738327/no/such/parent"
+      }
+    }
+  ],
+  "total_ms": 156207,
+  "transient_retries": 4,
+  "transient_retry_classes": {
+    "Client.Timeout": 4
+  }
+}

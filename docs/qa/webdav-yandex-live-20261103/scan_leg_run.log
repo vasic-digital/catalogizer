@@ -1,0 +1,4 @@
+=== RUN   TestLiveYandexScan_RemoteTreeIsCatalogued
+--- PASS: TestLiveYandexScan_RemoteTreeIsCatalogued (9.11s)
+PASS
+ok  	catalogizer/internal/services	9.126s

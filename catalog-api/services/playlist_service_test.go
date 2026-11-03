@@ -47,6 +47,8 @@ func setupPlaylistServiceDB(t *testing.T) *database.DB {
 			name TEXT NOT NULL,
 			description TEXT DEFAULT '',
 			is_public INTEGER DEFAULT 0,
+			is_smart INTEGER NOT NULL DEFAULT 0,
+			smart_rules TEXT,
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY (user_id) REFERENCES users(id)
@@ -175,7 +177,7 @@ func TestPlaylistService_GetPlaylist(t *testing.T) {
 			userID:     2,
 			playlistID: plID,
 			wantErr:    true,
-			errMsg:     "unauthorized",
+			errMsg:     "playlist not found",
 		},
 		{
 			name:       "not found",
@@ -264,7 +266,7 @@ func TestPlaylistService_UpdatePlaylist(t *testing.T) {
 			userID:     2,
 			playlistID: plID,
 			wantErr:    true,
-			errMsg:     "unauthorized",
+			errMsg:     "playlist not found",
 		},
 		{
 			name:       "not found",
@@ -330,7 +332,7 @@ func TestPlaylistService_DeletePlaylist(t *testing.T) {
 			userID:     2,
 			playlistID: plID,
 			wantErr:    true,
-			errMsg:     "unauthorized",
+			errMsg:     "playlist not found",
 		},
 		{
 			name:       "not found",
@@ -393,7 +395,7 @@ func TestPlaylistService_AddItem(t *testing.T) {
 			userID:     2,
 			playlistID: plID,
 			wantErr:    true,
-			errMsg:     "unauthorized",
+			errMsg:     "playlist not found",
 		},
 		{
 			name:       "playlist not found",
@@ -454,7 +456,7 @@ func TestPlaylistService_RemoveItem(t *testing.T) {
 			playlistID: plID,
 			itemID:     item.ID,
 			wantErr:    true,
-			errMsg:     "unauthorized",
+			errMsg:     "playlist not found",
 		},
 		{
 			name:       "playlist not found",
