@@ -15,3 +15,23 @@ Additional flags: `--tag=<name>` (suffix for verdict file / screenshot dir), `--
 Oracle rules worth knowing: visually-hidden / sr-only / aria-hidden / inert elements and controls inside a closed off-canvas fixed drawer are ignored; under mobile emulation the intended viewport width is passed in (`window.innerWidth` grows to fit overflowing content and would hide the overflow); a run is only valid after the splash screen is gone (`splash_stuck` otherwise).
 
 Scope notes: the desktop app declares `minWidth: 800` in `tauri.conf.json`, so desktop findings below 800px are outside the supported window range; the installer wizard declares a 1000x700 default window.
+
+## Running against a local build (no fixed ports or paths)
+
+`run.mjs` reads its endpoints and work directory from the environment, so it can audit any build against any real catalog-api:
+
+| Variable | Meaning | Default |
+|---|---|---|
+| `AUDIT_API_URL` | real catalog-api base URL (login + `/api` proxy target) | `http://127.0.0.1:18400` |
+| `AUDIT_WEB_URL` | base URL of the catalog-web build under test | `http://127.0.0.1:18401` |
+| `AUDIT_WORK` | work directory holding `out/` and `run/secrets.env` | parent of the working directory |
+
+`--matrix=followup` selects the 2026-11 follow-up matrix: 360x640, 390x844, 768x1024, 1024x768, 1440x900, 1920x1080, each in BOTH light and dark in every browser (the default matrix runs dark only in chromium plus a few key widths elsewhere).
+Example (build served with `serve.mjs <dist> <port> <apiPort> 1`):
+
+```
+AUDIT_WORK=/path/work AUDIT_API_URL=http://127.0.0.1:18500 AUDIT_WEB_URL=http://127.0.0.1:18502 \
+  node run.mjs --app=catalog-web --browser=firefox --matrix=followup --tag=after
+```
+
+The `website-pages.json` file is only read for `--app=website`.

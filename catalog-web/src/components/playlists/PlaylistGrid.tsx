@@ -296,17 +296,18 @@ export const PlaylistGrid: React.FC<PlaylistGridProps> = ({
         }`}
       >
         {/* Selection Checkbox */}
-        <div className="absolute top-2 left-2 z-10">
+        <label className="touch-target justify-center absolute top-0 left-0 z-10 p-2">
           <input
             type="checkbox"
+            aria-label={`Select playlist ${playlist.name}`}
             checked={isSelected}
             onChange={(e) => {
               e.stopPropagation();
               handleSelectPlaylist(playlist, e.target.checked);
             }}
-            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 [@media(pointer:coarse)]:opacity-100 transition-opacity"
           />
-        </div>
+        </label>
 
         {/* Playlist Cover */}
         <div className="aspect-video bg-gradient-to-br from-blue-500 to-purple-600 rounded-t-lg relative overflow-hidden">
@@ -659,7 +660,7 @@ export const PlaylistGrid: React.FC<PlaylistGridProps> = ({
         </div>
 
         {/* Select All */}
-        <div className="flex items-center gap-2">
+        <label className="touch-target gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={selectedItems.size === filteredAndSortedPlaylists.length && filteredAndSortedPlaylists.length > 0}
@@ -669,7 +670,7 @@ export const PlaylistGrid: React.FC<PlaylistGridProps> = ({
           <span className="text-sm text-gray-600 dark:text-gray-400">
             Select All
           </span>
-        </div>
+        </label>
       </div>
 
       {/* Playlists Grid */}
