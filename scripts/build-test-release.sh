@@ -151,7 +151,7 @@ phase_3_backend_api() {
     go mod tidy
 
     log_step "Running Go tests with coverage..."
-    go test -v -race -coverprofile="$REPORTS_DIR/go-coverage.out" -covermode=atomic ./... 2>&1 | tee "$REPORTS_DIR/go-test.log"
+    CGO_CPPFLAGS=-DHAVE_USLEEP=1 go test -v -race -coverprofile="$REPORTS_DIR/go-coverage.out" -covermode=atomic ./... 2>&1 | tee "$REPORTS_DIR/go-test.log"
 
     # Generate coverage HTML report
     go tool cover -html="$REPORTS_DIR/go-coverage.out" -o "$REPORTS_DIR/go-coverage.html" 2>/dev/null || true
@@ -160,7 +160,7 @@ phase_3_backend_api() {
     go tool cover -func="$REPORTS_DIR/go-coverage.out" > "$REPORTS_DIR/go-coverage-summary.txt" 2>/dev/null || true
 
     log_step "Building Linux AMD64 binary..."
-    GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.Version=$VERSION" \
+    CGO_CPPFLAGS=-DHAVE_USLEEP=1 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X main.Version=$VERSION" \
         -o "$RELEASES_DIR/linux/catalog-api/catalog-api-v$VERSION-linux-amd64" main.go
 
     log_step "Cross-compiling Windows AMD64..."

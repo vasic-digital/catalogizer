@@ -16,6 +16,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Prevent Go from auto-downloading newer toolchain
 ENV GOTOOLCHAIN=local
 ENV CGO_ENABLED=1
+# 2026-11-02 decision: SQLite busy handler sleeps in ms (go-sqlcipher); CPPFLAGS keeps go's default -O2 -g CFLAGS
+ENV CGO_CPPFLAGS=-DHAVE_USLEEP=1
 
 WORKDIR /build
 
@@ -86,6 +88,9 @@ RUN mkdir -p /app/data /app/logs /app/temp /app/keys && \
 # Bind address/port for containers: the app defaults to localhost:28080 (unreachable from outside the container, and not the
 # EXPOSEd/health-checked 8080); main.go honours HOST and SERVER_PORT as overrides.
 ENV HOST=0.0.0.0 SERVER_PORT=8080
+# CAT-021: release mode by default in every image built from this Dockerfile (disables
+# CATALOGIZER_ALLOW_INSECURE_DEFAULTS); dev uses Dockerfile.dev.
+ENV GIN_MODE=release
 
 # Expose API port
 # CAT-001: the SQLCipher key lives in its own 0700 volume, separate from the

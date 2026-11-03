@@ -107,7 +107,7 @@ podman run --rm --network host \
 ```bash
 podman run --rm --network host \
   -e API_URL=http://catalog-api:8080 \
-  -e API_USER=admin -e API_PASS=admin123 \
+  -e API_USER=admin -e API_PASS=<your-admin-password> \
   -v "$PWD/tests/k6:/scripts" \
   docker.io/grafana/k6:latest run /scripts/endurance_test.js
 ```

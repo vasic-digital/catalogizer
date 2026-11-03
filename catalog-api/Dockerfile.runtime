@@ -36,6 +36,9 @@ RUN groupadd --system --gid 1001 appgroup && \
 # EXPOSEd/health-checked 8080); main.go honours HOST and SERVER_PORT as overrides.
 ENV HOST=0.0.0.0 SERVER_PORT=8080
 
+# CAT-021: release mode by default (disables CATALOGIZER_ALLOW_INSECURE_DEFAULTS); dev uses Dockerfile.dev.
+ENV GIN_MODE=release
+
 # CAT-001: the SQLCipher key lives in its own 0700 volume, separate from the
 # database volume, so it survives container recreation and is not captured by
 # a plain backup of /app/data. Mount a named volume here in production.

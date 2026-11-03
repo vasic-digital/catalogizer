@@ -32,7 +32,7 @@ export function setup() {
   // Perform initial login to verify credentials work
   const loginRes = http.post(`${BASE_URL}/api/v1/auth/login`, JSON.stringify({
     username: __ENV.API_USER || 'admin',
-    password: __ENV.API_PASS || 'admin123',
+    password: __ENV.API_PASS || '',
   }), { headers: { 'Content-Type': 'application/json' } });
 
   check(loginRes, { 'setup login succeeded': (r) => r.status === 200 });
@@ -77,7 +77,7 @@ function testLogin() {
   const start = new Date();
   const res = http.post(`${BASE_URL}/api/v1/auth/login`, JSON.stringify({
     username: __ENV.API_USER || 'admin',
-    password: __ENV.API_PASS || 'admin123',
+    password: __ENV.API_PASS || '',
   }), { headers: { 'Content-Type': 'application/json' } });
 
   loginLatency.add(new Date() - start);
@@ -118,7 +118,7 @@ function testTokenRefresh() {
   // Login first to get a token
   const loginRes = http.post(`${BASE_URL}/api/v1/auth/login`, JSON.stringify({
     username: __ENV.API_USER || 'admin',
-    password: __ENV.API_PASS || 'admin123',
+    password: __ENV.API_PASS || '',
   }), { headers: { 'Content-Type': 'application/json' } });
 
   if (loginRes.status !== 200) {
@@ -161,7 +161,7 @@ function testAuthenticatedAccess(token) {
     // Re-authenticate if no setup token
     const loginRes = http.post(`${BASE_URL}/api/v1/auth/login`, JSON.stringify({
       username: __ENV.API_USER || 'admin',
-      password: __ENV.API_PASS || 'admin123',
+      password: __ENV.API_PASS || '',
     }), { headers: { 'Content-Type': 'application/json' } });
 
     if (loginRes.status === 200) {

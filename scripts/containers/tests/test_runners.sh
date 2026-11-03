@@ -184,7 +184,7 @@ done
 # run_go prefixes the user command with the Go limits of docs/16 6.2 (GOMAXPROCS=3, local toolchain, CGO for the race detector)
 resetlogs; newreg
 wr run_go --out "$T/o3" -- go test -race ./...
-call 2 | tr '\n' ' ' | grep -q 'ARG:env ARG:GOMAXPROCS=3 ARG:GOTOOLCHAIN=local ARG:CGO_ENABLED=1 ARG:go ARG:test ARG:-race ARG:\./\.\.\.' && ok "run_go: the command is prefixed env GOMAXPROCS=3 GOTOOLCHAIN=local CGO_ENABLED=1" || bad "run_go prefix: $(call 2 | tr '\n' ' ')"
+call 2 | tr '\n' ' ' | grep -q 'ARG:env ARG:GOMAXPROCS=3 ARG:GOTOOLCHAIN=local ARG:CGO_ENABLED=1 ARG:CGO_CPPFLAGS=-DHAVE_USLEEP=1 ARG:go ARG:test ARG:-race ARG:\./\.\.\.' && ok "run_go: the command is prefixed env GOMAXPROCS=3 GOTOOLCHAIN=local CGO_ENABLED=1 CGO_CPPFLAGS=-DHAVE_USLEEP=1" || bad "run_go prefix: $(call 2 | tr '\n' ' ')"
 # run_testutil adds no prefix
 resetlogs; newreg
 wr run_testutil --out "$T/o3b" -- python3 -c 'print(1)'

@@ -96,7 +96,7 @@ class MainActivity : ComponentActivity() {
         }
 
         // Auto-login via intent extras (for ADB testing / HelixQA).
-        // Usage: adb shell am start -n ... --es qa_username admin --es qa_password admin123
+        // Usage: adb shell am start -n ... --es qa_username admin --es qa_password "$ADMIN_PASSWORD"
         // The login gate ensures the splash screen stays visible until login
         // completes, preventing the empty library race condition.
         val qaUser = intent.getStringExtra("qa_username")

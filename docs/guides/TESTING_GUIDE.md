@@ -97,7 +97,7 @@ curl http://localhost:8080/api/v1/health
 # With authentication
 TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin123"}' | jq -r '.session_token')
+  -d '{"username":"admin","password":"<your-admin-password>"}' | jq -r '.session_token')
 
 curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v1/media/recent
 ```

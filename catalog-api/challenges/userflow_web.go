@@ -147,7 +147,7 @@ func registerAuthChallenges(
 						Name:     "fill-password",
 						Action:   "fill",
 						Selector: "input[name='password'], [data-testid='password-input']",
-						Value:    "admin123",
+						Value:    adminPasswordFromEnv(),
 					},
 					{
 						Name:     "click-submit",
@@ -311,7 +311,7 @@ func registerAuthChallenges(
 						Name:     "fill-password",
 						Action:   "fill",
 						Selector: "input[name='password']",
-						Value:    "admin123",
+						Value:    adminPasswordFromEnv(),
 					},
 					{
 						Name:     "click-login",
@@ -373,7 +373,7 @@ func registerAuthChallenges(
 						Name:     "fill-password",
 						Action:   "fill",
 						Selector: "input[name='password']",
-						Value:    "admin123",
+						Value:    adminPasswordFromEnv(),
 					},
 					{
 						Name:     "click-login",
@@ -2752,7 +2752,7 @@ func loginThenSteps(
 			Name:     "fill-password",
 			Action:   "fill",
 			Selector: "input[name='password']",
-			Value:    "admin123",
+			Value:    adminPasswordFromEnv(),
 		},
 		{
 			Name:     "click-login",

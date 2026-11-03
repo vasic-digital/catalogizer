@@ -61,7 +61,7 @@ git -C constitution submodule update --init submodules/llmctl submodules/claude_
 cd catalog-api
 export JWT_SECRET="dev-secret-key-at-least-32-characters"
 export ADMIN_USERNAME="admin"
-export ADMIN_PASSWORD="admin123"
+export ADMIN_PASSWORD="<generate-your-own>"
 export GIN_MODE=debug
 go run main.go
 ```
@@ -94,7 +94,7 @@ GIN_MODE=debug
 # Authentication
 JWT_SECRET=dev-secret-key-at-least-32-characters-long
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin123
+ADMIN_PASSWORD=<generate-your-own, e.g. openssl rand -base64 24>
 
 # External APIs (optional)
 TMDB_API_KEY=your_tmdb_key

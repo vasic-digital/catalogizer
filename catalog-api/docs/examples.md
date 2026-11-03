@@ -9,7 +9,7 @@ This document provides practical examples of using the Catalog API.
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "admin123"}'
+  -d '{"username": "admin", "password": "<your-admin-password>"}'
 ```
 
 Response:

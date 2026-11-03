@@ -97,6 +97,8 @@ services:
     environment:
       - NODE_ENV=production
       - VITE_API_URL=http://localhost:8080
+      # nginx upstream for /api and /ws (host networking: API on this host's :8080)
+      - API_UPSTREAM=127.0.0.1:8080
     volumes:
       - test-results:/app/test-results
     deploy:

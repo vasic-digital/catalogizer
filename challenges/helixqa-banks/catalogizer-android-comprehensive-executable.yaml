@@ -72,7 +72,7 @@ test_cases:
   - android
   steps:
   - name: Enter credentials
-    action: '# TODO: Convert to executable - type admin/admin123 in username and password
+    action: '# TODO: Convert to executable - type admin/${ADMIN_PASSWORD} in username and password
       fields'
     expected: Fields accept input and show entered text (password masked)
     timeout: 10

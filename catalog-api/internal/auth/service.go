@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"catalogizer/config"
 	"catalogizer/database"
 
 	jwtmod "digital.vasic.auth/pkg/jwt"
@@ -181,6 +182,33 @@ func (s *AuthService) createTables() error {
 	return err
 }
 
+// refuseCompromisedAdmins fails when any existing admin's stored hash matches
+// a denylisted password.
+func (s *AuthService) refuseCompromisedAdmins() error {
+	rows, err := s.db.Query("SELECT username, password_hash FROM users WHERE role = 'admin'")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	type acct struct{ user, hash string }
+	var accts []acct
+	for rows.Next() {
+		var a acct
+		if err := rows.Scan(&a.user, &a.hash); err != nil {
+			return err
+		}
+		accts = append(accts, a)
+	}
+	for _, a := range accts {
+		for _, c := range config.PlaceholderPasswordCandidates() {
+			if bcrypt.CompareHashAndPassword([]byte(a.hash), []byte(c)) == nil {
+				return fmt.Errorf("admin account %q still uses a published default password; rotate it (set a new password for this account) before starting", a.user)
+			}
+		}
+	}
+	return nil
+}
+
 // createDefaultAdmin creates a default admin user if none exists
 func (s *AuthService) createDefaultAdmin() error {
 	// Check if any admin users exist
@@ -191,6 +219,13 @@ func (s *AuthService) createDefaultAdmin() error {
 	}
 
 	if count > 0 {
+		// CAT-021: an install seeded with a published default keeps it forever
+		// unless startup checks the stored hash.
+		if !config.AllowInsecureDefaults() {
+			if err := s.refuseCompromisedAdmins(); err != nil {
+				return err
+			}
+		}
 		s.logger.Info("Admin user already exists")
 		return nil
 	}
@@ -208,11 +243,17 @@ func (s *AuthService) createDefaultAdmin() error {
 			return fmt.Errorf("failed to generate admin password: %w", err)
 		}
 		adminPassword = hex.EncodeToString(passwordBytes)
-		s.logger.Warn("No ADMIN_PASSWORD set. Generated random password. Set ADMIN_PASSWORD environment variable for production.",
-			zap.String("username", adminUsername),
-			zap.String("password", adminPassword))
-	} else if adminPassword == "admin123" {
-		s.logger.Warn("Using default password 'admin123'. Change ADMIN_PASSWORD for production security.")
+		// Shown once on stderr only; never written to the structured log.
+		fmt.Fprintf(os.Stderr, "No ADMIN_PASSWORD set. Generated one-time admin password for %q: %s\nSet ADMIN_PASSWORD to choose your own.\n", adminUsername, adminPassword)
+		s.logger.Warn("No ADMIN_PASSWORD set; generated a random admin password (printed once to stderr)",
+			zap.String("username", adminUsername))
+	} else if config.IsPlaceholderPassword(adminPassword) {
+		// Fail closed (CAT-021): a published/weak default must never become the
+		// admin credential outside explicit dev mode.
+		if !config.AllowInsecureDefaults() {
+			return fmt.Errorf("ADMIN_PASSWORD is a known placeholder/default value; set a real ADMIN_PASSWORD (or CATALOGIZER_ALLOW_INSECURE_DEFAULTS=true for local dev only)")
+		}
+		s.logger.Warn("INSECURE: placeholder ADMIN_PASSWORD accepted because CATALOGIZER_ALLOW_INSECURE_DEFAULTS=true (dev only)")
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)

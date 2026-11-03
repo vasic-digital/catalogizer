@@ -45,7 +45,7 @@ Create a `.env` file in the `catalog-api/` directory. All variables listed below
 | `JWT_EXPIRY` | `24h` | Access token expiry duration |
 | `JWT_REFRESH_EXPIRY` | `168h` | Refresh token expiry duration (default 7 days) |
 | `ADMIN_USERNAME` | `admin` | Default admin account username |
-| `ADMIN_PASSWORD` | `admin123` | Default admin account password |
+| `ADMIN_PASSWORD` | _none (required or random one-time)_ | Admin account password; published/placeholder values are refused |
 
 ### External Providers
 
@@ -98,7 +98,7 @@ The `config.json` file in `catalog-api/` provides structured configuration. Valu
     "jwt_secret": "your-secret-key",
     "jwt_expiry": "24h",
     "admin_username": "admin",
-    "admin_password": "admin123"
+    "admin_password": "<your-admin-password>"
   },
   "providers": {
     "tmdb_api_key": "",

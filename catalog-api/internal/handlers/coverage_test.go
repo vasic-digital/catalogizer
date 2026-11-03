@@ -261,7 +261,7 @@ func setupAuthHandlerFullRouter(t *testing.T) (*AuthHandler, *gin.Engine, func()
 	wrappedDB := database.WrapDB(sqlDB, database.DialectSQLite)
 	logger := zap.NewNop()
 
-	os.Setenv("ADMIN_PASSWORD", "admin123")
+	os.Setenv("ADMIN_PASSWORD", "Test-Admin-Pw-9xK2-local")
 
 	authService := auth.NewAuthService(wrappedDB, "test-jwt-secret", logger)
 	if err := authService.Initialize(); err != nil {
@@ -294,7 +294,7 @@ func TestAuth_Login_ValidCredentials(t *testing.T) {
 	_, router, cleanup := setupAuthHandlerFullRouter(t)
 	defer cleanup()
 
-	body := `{"username": "admin", "password": "admin123"}`
+	body := `{"username": "admin", "password": "Test-Admin-Pw-9xK2-local"}`
 	req := httptest.NewRequest("POST", "/api/v1/auth/login", bytes.NewBufferString(body))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
@@ -330,7 +330,7 @@ func TestAuth_Logout_WithValidToken(t *testing.T) {
 	defer cleanup()
 
 	// Login first to get a token
-	loginBody := `{"username": "admin", "password": "admin123"}`
+	loginBody := `{"username": "admin", "password": "Test-Admin-Pw-9xK2-local"}`
 	loginReq := httptest.NewRequest("POST", "/api/v1/auth/login", bytes.NewBufferString(loginBody))
 	loginReq.Header.Set("Content-Type", "application/json")
 	loginW := httptest.NewRecorder()
@@ -510,7 +510,7 @@ func TestAuth_ChangePassword_WithDB_CorrectCurrentPassword(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	body := `{"current_password": "admin123", "new_password": "newpassword123"}`
+	body := `{"current_password": "Test-Admin-Pw-9xK2-local", "new_password": "newpassword123"}`
 	c.Request = httptest.NewRequest("POST", "/api/v1/auth/change-password", bytes.NewBufferString(body))
 	c.Request.Header.Set("Content-Type", "application/json")
 	c.Set("user_id", int64(1))

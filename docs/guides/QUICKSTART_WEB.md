@@ -37,7 +37,7 @@ Navigate to **http://localhost:3000** in your browser.
 Enter the default credentials:
 
 - **Username:** `admin`
-- **Password:** `admin123`
+- **Password:** `<your-admin-password>`
 
 Click **Sign In**. You will be redirected to the dashboard.
 

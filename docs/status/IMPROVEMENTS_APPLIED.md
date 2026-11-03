@@ -84,7 +84,7 @@
    ```bash
    export JWT_SECRET="your-super-secure-jwt-secret-at-least-32-characters-long"
    export ADMIN_USERNAME="your-admin-username"
-   export ADMIN_PASSWORD="your-secure-password"
+   export ADMIN_PASSWORD="<your-admin-password>"
    ```
 
 2. Generate HTTPS certificates and update `CERT_FILE` and `KEY_FILE` variables

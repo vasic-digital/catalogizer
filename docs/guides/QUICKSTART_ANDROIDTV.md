@@ -70,7 +70,7 @@ The server URL is persisted via DataStore across restarts.
 Navigate to the username and password fields with your remote:
 
 - **Username:** `admin`
-- **Password:** `admin123`
+- **Password:** `<your-admin-password>`
 
 Press **D-pad Center** on the Sign In button.
 

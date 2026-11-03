@@ -16,7 +16,7 @@ All challenge endpoints require a valid JWT token. Obtain one first:
 # Login to get a JWT token
 TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"admin123"}' | jq -r '.token')
+  -d '{"username":"admin","password":"<your-admin-password>"}' | jq -r '.token')
 ```
 
 ## API Endpoints

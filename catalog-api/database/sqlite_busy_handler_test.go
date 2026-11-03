@@ -7,8 +7,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -234,6 +236,17 @@ func TestSQLiteBusyHandler_RuntimePragmaRestoresStockHandler(t *testing.T) {
 	require.NoError(t, <-released)
 	require.NoError(t, err)
 	afterRelease := end.Sub(time.Unix(0, commitDone.Load()))
+	if strings.Contains(os.Getenv("CGO_CPPFLAGS")+" "+os.Getenv("CGO_CFLAGS"), "-DHAVE_USLEEP=1") {
+		// Operator decision 2026-11-02: project builds compile the driver with
+		// -DHAVE_USLEEP=1, so SQLite's stock busy handler sleeps in milliseconds
+		// and the 1 s limit documented above no longer exists in such builds.
+		// Known limit: the build flag is detected from this process's environment
+		// (the env that built the test binary), not by timing a stock retry.
+		assert.Less(t, afterRelease, 500*time.Millisecond,
+			"HAVE_USLEEP=1 build: the stock handler retries at millisecond granularity (waited %v after release)",
+			afterRelease)
+		return
+	}
 	assert.Greater(t, afterRelease, 500*time.Millisecond,
 		"documented limit: a runtime PRAGMA busy_timeout restores the stock 1 s handler (waited %v after release)",
 		afterRelease)

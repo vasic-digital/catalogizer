@@ -50,10 +50,10 @@ function fail(msg) {
   try {
     loginResp = await client.connect({
       username: 'admin',
-      password: 'admin123',
+      password: process.env.ADMIN_PASSWORD,
     });
   } catch (err) {
-    fail(`connect(admin/admin123) threw: ${err && err.message ? err.message : err}`);
+    fail(`connect(admin/<ADMIN_PASSWORD>) threw: ${err && err.message ? err.message : err}`);
   }
   console.log(`✓ connect() resolved`);
 
@@ -124,7 +124,7 @@ function fail(msg) {
 
   console.log('\n✓ All Article XI §11.2 assertions passed:');
   console.log('  - CatalogizerClient exported + constructible (positive)');
-  console.log('  - connect(admin/admin123) → real login response with token + user (positive)');
+  console.log('  - connect(admin/<ADMIN_PASSWORD>) → real login response with token + user (positive)');
   console.log('  - isAuthenticated() reflects post-login state (positive outcome)');
   console.log('  - disconnect() resolves cleanly (lifecycle)');
   console.log('  - WRONG-PASSWORD connect rejects (matching negative)');

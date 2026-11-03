@@ -112,7 +112,7 @@ func (h *RoleHandler) GetRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roleIDStr := strings.TrimPrefix(r.URL.Path, "/api/roles/")
+	roleIDStr := routedID(r, "roles")
 	roleID, err := strconv.Atoi(roleIDStr)
 	if err != nil {
 		http.Error(w, "Invalid role ID", http.StatusBadRequest)
@@ -156,7 +156,7 @@ func (h *RoleHandler) UpdateRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roleIDStr := strings.TrimPrefix(r.URL.Path, "/api/roles/")
+	roleIDStr := routedID(r, "roles")
 	roleID, err := strconv.Atoi(roleIDStr)
 	if err != nil {
 		http.Error(w, "Invalid role ID", http.StatusBadRequest)
@@ -166,6 +166,11 @@ func (h *RoleHandler) UpdateRole(w http.ResponseWriter, r *http.Request) {
 	var req models.UpdateRoleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.Name == nil {
+		http.Error(w, "Role name is required", http.StatusBadRequest)
 		return
 	}
 
@@ -223,7 +228,7 @@ func (h *RoleHandler) DeleteRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roleIDStr := strings.TrimPrefix(r.URL.Path, "/api/roles/")
+	roleIDStr := routedID(r, "roles")
 	roleID, err := strconv.Atoi(roleIDStr)
 	if err != nil {
 		http.Error(w, "Invalid role ID", http.StatusBadRequest)

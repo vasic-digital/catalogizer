@@ -23,7 +23,7 @@ const BASE_URL = __ENV.API_URL || 'http://localhost:8080';
 export function setup() {
   const loginRes = http.post(`${BASE_URL}/api/v1/auth/login`, JSON.stringify({
     username: __ENV.API_USER || 'admin',
-    password: __ENV.API_PASS || 'admin123',
+    password: __ENV.API_PASS || '',
   }), { headers: { 'Content-Type': 'application/json' } });
 
   const token = loginRes.status === 200 ? (JSON.parse(loginRes.body).token || '') : '';

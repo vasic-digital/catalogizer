@@ -212,7 +212,7 @@ func setupSecurityTestRouter(t *testing.T, db *sql.DB) *httptest.Server {
 			return
 		}
 
-		if body.Username == "admin" && body.Password == "admin123" {
+		if body.Username == "admin" && body.Password == testAdminPassword {
 			token := fmt.Sprintf("valid-token-%d", time.Now().UnixNano())
 			validTokens.Store(token, true)
 			c.JSON(http.StatusOK, gin.H{
@@ -519,7 +519,7 @@ func TestSecurity_AuthBypassAttempts(t *testing.T) {
 
 	t.Run("ValidTokenWorks", func(t *testing.T) {
 		// First, login to get a valid token
-		loginBody := strings.NewReader(`{"username":"admin","password":"admin123"}`)
+		loginBody := strings.NewReader(`{"username":"admin","password":"` + testAdminPassword + `"}`)
 		loginResp, err := http.Post(ts.URL+"/api/v1/auth/login", "application/json", loginBody)
 		require.NoError(t, err)
 		defer loginResp.Body.Close()
@@ -545,7 +545,7 @@ func TestSecurity_AuthBypassAttempts(t *testing.T) {
 
 	t.Run("TokenReusedAfterRevocation", func(t *testing.T) {
 		// Login
-		loginBody := strings.NewReader(`{"username":"admin","password":"admin123"}`)
+		loginBody := strings.NewReader(`{"username":"admin","password":"` + testAdminPassword + `"}`)
 		loginResp, err := http.Post(ts.URL+"/api/v1/auth/login", "application/json", loginBody)
 		require.NoError(t, err)
 		defer loginResp.Body.Close()

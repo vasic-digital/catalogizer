@@ -309,6 +309,9 @@ func (db *DB) fixServiceTableColumns(ctx context.Context) error {
 		"ALTER TABLE favorites ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP",
 	}
 	for _, stmt := range alterStmts {
+		if db.dialect.IsPostgres() {
+			stmt = postgresAlterAddColumn(stmt)
+		}
 		if _, err := db.ExecContext(ctx, stmt); err != nil {
 			errMsg := strings.ToLower(err.Error())
 			// Ignore "duplicate column" errors — column may already exist
@@ -323,6 +326,16 @@ func (db *DB) fixServiceTableColumns(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// postgresAlterAddColumn rewrites a SQLite-flavoured "ALTER TABLE t ADD COLUMN
+// c TYPE ..." into its idempotent PostgreSQL form: ADD COLUMN IF NOT EXISTS
+// (so re-applying over columns the v11 create already made raises no server
+// error, instead of relying on swallowing "already exists") and DATETIME ->
+// TIMESTAMP (PostgreSQL has no DATETIME type).
+func postgresAlterAddColumn(stmt string) string {
+	stmt = strings.Replace(stmt, " ADD COLUMN ", " ADD COLUMN IF NOT EXISTS ", 1)
+	return strings.Replace(stmt, " DATETIME", " TIMESTAMP", 1)
 }
 
 func (db *DB) createServiceTablesPostgres(ctx context.Context) error {
