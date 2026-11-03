@@ -787,3 +787,21 @@ Remaining, listed for the next iteration:
 - F7 (minor): sweep is O(n) in the triggering request once per window; lastSweep uses wall clock (backward step delays sweeps).
 - F8/F9 (nit): arena test proves constructor ran, not the arena count; test-only limiter field on production struct.
 - UNCONFIRMED: p99 latency effect of M_ARENA_MAX=2 under 64 clients (not measured).
+## Pool-deadlock class fix + scaling-suite findings (2026-11-03, branch `fix-pool-class`)
+
+Closes F1, F2, F4, F5, F6, F7 of the scaling/chaos review (details in `docs/TESTING_GUIDE.md`, "Pool-deadlock class guard" and "Scaling and chaos (live)").
+- F5 members (RED first, each fixed by buffering the page and closing the cursor before the nested queries): `AdminHandler.GetStorageInfo`, `CatalogService.GetDuplicateGroups`, `DuplicateEntityRepository.GetDuplicateGroups`, `AggregationService.getTopLevelDirectories`, `PlaylistService.GetUserPlaylists` (pool deadlock RED); `SMBChangeWatcher.checkMediaItemIntegrity` and `ProcessPendingChanges` (no pool deadlock: the media DB has no connection cap; RED is a lost write after the busy timeout in the production rollback-journal mode). `GetDirectoryContents` has no nested query (regression test added, green). `RefreshSmartPlaylist` is single-tx (allowlisted).
+- Class guard: `internal/poolguard` (AST scan + control needles + allowlist-staleness test).
+- F7: `Pdeathsig=SIGKILL` on Linux for converter children (`services/conversion_proc_pdeathsig_linux.go`), RED/GREEN by SIGKILLing a real re-executed server. Limit: direct child only; helpers forked by the converter are not signalled.
+- Still open (new): R1 `internal/services.PlaylistService` needs `is_smart_playlist`, tags and collaborators tables that no production migration creates (only test DDL), so `GetUserPlaylists` fails on a production schema; unclear whether the service is wired in production. R2 the media DB embedded schema has no `change_log` table (only a `schema.sql` beside the DB creates it), so `SMBChangeWatcher.logChange` fails without that file. R3 `ProcessPendingChanges` used the invalid SQLite literals `false`/`true` and so always errored; changed to `0`/`1`; it now succeeds but `processChange` re-logs each change as a new unprocessed `change_log` row (self-feeding queue); it has no production caller. R4 `getTopLevelDirectories` is only reachable from the legacy aggregation path kept as a regression-guard RED leg. R5 `SearchFiles` N+1 `getFileMetadata` (S2) left as is (sqlmock unit tests pin the per-row query). R6 `database.DB.Query`/`QueryRow` use `context.Background()`, so a pool deadlock on those paths never times out. R7 `scalinglive` integrity oracle opens the DB through the production opener, which also runs migrations (it can mutate the file it checks).
+
+## Pool-class fix review (round 1, GO-with-follow-ups)
+- F1 (minor): internal/poolguard Scan misses five shapes (cross-package helper, interface call, method value/func var, BeginTx inside loop, compound `rows.Next() && ...` condition); ScanCrossPackage covers the first two. Document limits in TESTING_GUIDE.
+- F2 (minor): four guard mutations survive (for{if !rows.Next(){break}} branch, depth 3->1, removing Prepare/PrepareContext/InsertReturningID, file-wide allowlist key).
+- F3 (minor): sigkillIntegrityOK open/query/scan/rows.Err error paths turned into return true survive; golden-bad covers only non-ok rows.
+- F4 (nit): scripts/test-infra/scaling_live.sh:31 `--classify log abc` fails open (exit 0).
+- F5 (minor, pre-existing): rows.Err() unchecked after buffered loops and scan errors `continue` (catalog.go ~457, playlist_service.go ~291, admin_handler.go ~309, watcher.go) so a truncated cursor silently returns partial results.
+- F6 (nit): Pdeathsig thread-binding safe only while no dependency exits a goroutine holding LockOSThread; unguarded.
+- F7 (UNCONFIRMED, pre-existing): under lib/pq RefreshSmartPlaylist runs tx.ExecContext with a tx cursor open; not run on Postgres.
+- F8 (nit): RED signature in TESTING_GUIDE is "12 of 12"; aggregation/admin/playlist show "11 of 12".
+- HOST: root filesystem reached 100% during review (go-build cache 63 GB); cleared with `go clean -cache` (63 GB free afterwards). Needs a periodic cache cap.

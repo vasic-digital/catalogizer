@@ -452,14 +452,27 @@ func (w *SMBChangeWatcher) checkMediaItemIntegrity(ctx context.Context, filePath
 	}
 	defer rows.Close()
 
+	// Buffer the affected items and release the cursor BEFORE writing: an UPDATE issued while
+	// this SELECT cursor is open runs on a second connection and, in the rollback-journal mode the
+	// media database uses, cannot commit until the cursor's shared lock is gone -- it waits out the
+	// busy timeout and fails, and the 'missing' status update was lost (the error was discarded).
+	type affected struct {
+		id        int64
+		title     string
+		fileCount int
+	}
+	var items []affected
 	for rows.Next() {
-		var mediaItemID int64
-		var title string
-		var fileCount int
-
-		if err := rows.Scan(&mediaItemID, &title, &fileCount); err != nil {
+		var a affected
+		if err := rows.Scan(&a.id, &a.title, &a.fileCount); err != nil {
 			continue
 		}
+		items = append(items, a)
+	}
+	rows.Close()
+
+	for _, a := range items {
+		mediaItemID, title, fileCount := a.id, a.title, a.fileCount
 
 		// If media item has very few files remaining, mark for review
 		if fileCount <= 1 {
@@ -470,7 +483,10 @@ func (w *SMBChangeWatcher) checkMediaItemIntegrity(ctx context.Context, filePath
 
 			// Update media item status
 			updateQuery := `UPDATE media_items SET status = 'missing', last_updated = ? WHERE id = ?`
-			w.mediaDB.GetDB().Exec(updateQuery, time.Now(), mediaItemID)
+			if _, err := w.mediaDB.GetDB().Exec(updateQuery, time.Now(), mediaItemID); err != nil {
+				w.logger.Error("Failed to mark media item missing",
+					zap.Int64("media_item_id", mediaItemID), zap.Error(err))
+			}
 		}
 	}
 }
@@ -515,7 +531,7 @@ func (w *SMBChangeWatcher) GetChangeStatistics(since time.Time) (map[string]inte
 	// Count unprocessed changes
 	var unprocessed int
 	err = w.mediaDB.GetDB().QueryRow(
-		"SELECT COUNT(*) FROM change_log WHERE processed = false").Scan(&unprocessed)
+		"SELECT COUNT(*) FROM change_log WHERE processed = 0").Scan(&unprocessed)
 	if err == nil {
 		stats["unprocessed_changes"] = unprocessed
 	}
@@ -528,7 +544,7 @@ func (w *SMBChangeWatcher) ProcessPendingChanges(ctx context.Context) error {
 	query := `
 		SELECT id, entity_id, change_type, new_data, detected_at
 		FROM change_log
-		WHERE processed = false
+		WHERE processed = 0
 		ORDER BY detected_at ASC
 		LIMIT 100
 	`
@@ -539,16 +555,31 @@ func (w *SMBChangeWatcher) ProcessPendingChanges(ctx context.Context) error {
 	}
 	defer rows.Close()
 
-	var processedIDs []int64
-
+	// Buffer the pending rows and release the cursor BEFORE processing: processChange writes
+	// (INSERT into change_log, UPDATEs of the media tables) on a second connection, which in the
+	// rollback-journal mode cannot commit while this SELECT cursor's shared lock is held -- the
+	// writes waited out the busy timeout and were lost.
+	type pending struct {
+		id          int64
+		entityID    string
+		changeType  string
+		newDataJSON string
+		detectedAt  time.Time
+	}
+	var batch []pending
 	for rows.Next() {
-		var id int64
-		var entityID, changeType, newDataJSON string
-		var detectedAt time.Time
-
-		if err := rows.Scan(&id, &entityID, &changeType, &newDataJSON, &detectedAt); err != nil {
+		var p pending
+		if err := rows.Scan(&p.id, &p.entityID, &p.changeType, &p.newDataJSON, &p.detectedAt); err != nil {
 			continue
 		}
+		batch = append(batch, p)
+	}
+	rows.Close()
+
+	var processedIDs []int64
+
+	for _, p := range batch {
+		id, entityID, changeType, newDataJSON, detectedAt := p.id, p.entityID, p.changeType, p.newDataJSON, p.detectedAt
 
 		// Parse change data
 		var changeData map[string]interface{}
@@ -583,7 +614,7 @@ func (w *SMBChangeWatcher) ProcessPendingChanges(ctx context.Context) error {
 		placeholders := strings.Repeat("?,", len(processedIDs))
 		placeholders = placeholders[:len(placeholders)-1]
 
-		updateQuery := "UPDATE change_log SET processed = true WHERE id IN (" + placeholders + ")"
+		updateQuery := "UPDATE change_log SET processed = 1 WHERE id IN (" + placeholders + ")"
 		args := make([]interface{}, len(processedIDs))
 		for i, id := range processedIDs {
 			args[i] = id

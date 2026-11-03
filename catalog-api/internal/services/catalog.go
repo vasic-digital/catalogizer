@@ -439,14 +439,22 @@ func (s *CatalogService) GetDuplicateGroups(smbRoot string, minCount int, limit 
 	}
 	defer rows.Close()
 
-	var groups []models.DuplicateGroup
+	// Buffer the group headers and release the cursor (and its pooled connection) BEFORE the
+	// per-group file queries: a query issued while this cursor is open needs a second pooled
+	// connection, so concurrent calls exceeding the pool would all hold one and wait for another.
+	var page []models.DuplicateGroup
 	for rows.Next() {
 		var group models.DuplicateGroup
 		err := rows.Scan(&group.Hash, &group.Size, &group.Count)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan duplicate group: %w", err)
 		}
+		page = append(page, group)
+	}
+	rows.Close()
 
+	var groups []models.DuplicateGroup
+	for _, group := range page {
 		// Get files in this duplicate group
 		filesQuery := `
 			SELECT f.id, f.name, f.path, f.is_directory, f.size, f.modified_at, f.quick_hash, f.extension, f.mime_type, f.parent_id, sr.name as smb_root, f.created_at, f.last_scan_at

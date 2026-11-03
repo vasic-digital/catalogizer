@@ -856,13 +856,29 @@ func (s *AggregationService) getTopLevelDirectories(ctx context.Context, storage
 	}
 	defer rows.Close()
 
-	var dirs []directoryInfo
+	// Buffer the directory rows and release the cursor (and its pooled connection) BEFORE the
+	// per-directory child query: a query issued while this cursor is open needs a second pooled
+	// connection, so concurrent calls exceeding the pool would all hold one and wait for another.
+	type topDir struct {
+		id  int64
+		dir directoryInfo
+	}
+	var top []topDir
 	for rows.Next() {
-		var id int64
-		var dir directoryInfo
-		if err := rows.Scan(&id, &dir.path, &dir.name); err != nil {
+		var td topDir
+		if err := rows.Scan(&td.id, &td.dir.path, &td.dir.name); err != nil {
 			return nil, err
 		}
+		top = append(top, td)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	rows.Close()
+
+	var dirs []directoryInfo
+	for _, td := range top {
+		id, dir := td.id, td.dir
 
 		// Get child files for this directory
 		childQuery := `SELECT id, extension, size FROM files
@@ -897,7 +913,7 @@ func (s *AggregationService) getTopLevelDirectories(ctx context.Context, storage
 		}
 	}
 
-	return dirs, rows.Err()
+	return dirs, nil
 }
 
 // processDirectory analyzes a directory and creates/updates a media entity.
