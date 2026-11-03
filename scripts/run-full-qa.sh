@@ -7,6 +7,9 @@ ADMIN_PASSWORD="${ADMIN_PASSWORD:?set ADMIN_PASSWORD to the test-stack admin pas
 QA_USER_PASSWORD="${QA_USER_PASSWORD:?set QA_USER_PASSWORD to the password for the throwaway testuser_qa account (must differ from ADMIN_PASSWORD; never hardcoded)}"
 [ "$QA_USER_PASSWORD" != "$ADMIN_PASSWORD" ] || { echo "QA_USER_PASSWORD must differ from ADMIN_PASSWORD" >&2; exit 1; }
 
+# shellcheck source=lib/qa_registration.sh
+. "$(dirname "${BASH_SOURCE[0]}")/lib/qa_registration.sh"
+
 API="${1:-http://localhost:8085}"
 WEB="${2:-http://localhost:3000}"
 PASS=0; FAIL=0; TOTAL=0; WARN=0
@@ -21,9 +24,13 @@ api() {
     local args=(-s -o /tmp/qa_resp.txt -w "%{http_code}" -X "$method" -H "Content-Type: application/json")
     [ "$auth" = "yes" ] && [ -n "$TOKEN" ] && args+=(-H "Authorization: Bearer $TOKEN")
     [ -n "$body" ] && args+=(-d "$body")
-    local code=$(curl "${args[@]}" "${API}${path}" 2>/dev/null || echo "000")
+    # curl -w prints the code even on a connection failure (000); a "|| echo 000" fallback would
+    # append a second 000 ("000000"), so normalise instead.
+    local code; code=$(curl "${args[@]}" "${API}${path}" 2>/dev/null) || true
+    [[ "$code" =~ ^[0-9]{3}$ ]] || code="000"
     local name="$method $path"
-    if echo "$expect" | grep -q "$code"; then
+    # exact match against the |-separated alternatives (not a substring grep)
+    if [[ "|${expect}|" == *"|${code}|"* ]]; then
         ok "$name -> $code"
     elif [ "$code" = "429" ]; then
         warn "$name -> 429 (rate limited)"
@@ -34,7 +41,8 @@ api() {
 
 web() {
     local path="$1" expect="$2"
-    local code=$(curl -s -o /dev/null -w "%{http_code}" -L "${WEB}${path}" 2>/dev/null || echo "000")
+    local code; code=$(curl -s -o /dev/null -w "%{http_code}" -L "${WEB}${path}" 2>/dev/null) || true
+    [[ "$code" =~ ^[0-9]{3}$ ]] || code="000"
     if [ "$code" = "$expect" ]; then
         ok "WEB $path -> $code"
     else
@@ -80,7 +88,24 @@ TOTAL=$((TOTAL+1)); RESP=$(curl -s -H "Authorization: Bearer $TOKEN" "$API/api/v
 api POST "/api/v1/auth/login" "400" 'invalid-json' "no"
 api GET "/api/v1/auth/me" "401|429" "" "no"
 # Skip logout/re-login mid-suite to avoid rate limiting — test logout at the very end
-api POST "/api/v1/auth/register" "201|409|400|429" "{\"username\":\"testuser_qa\",\"email\":\"qa@test.com\",\"password\":\"${QA_USER_PASSWORD}\"}" "no"
+# Registration policy (REGISTRATION_MODE, default "approval"): the self-registered account is
+# created inactive and cannot log in (403) until an admin approves it through the admin API.
+# This block is mode-agnostic: it reads is_active from the 201 body and asserts the matching
+# login result, then activates through the admin API and asserts the login now succeeds.
+QA_REG_USER="testuser_qa_$$_$(date +%s)"
+TOTAL=$((TOTAL+1)); REG_CODE=$(qa_register "$API" "$QA_REG_USER" "${QA_REG_USER}@example.invalid" "$QA_USER_PASSWORD")
+if [ "$REG_CODE" = "201" ]; then ok "POST /api/v1/auth/register -> 201"; else fail "POST /api/v1/auth/register expected=201" "$REG_CODE"; fi
+REG_UID=$(python3 -c 'import sys,json; print(json.load(open(sys.argv[1])).get("id",""))' "$QA_BODY_FILE" 2>/dev/null || true)
+REG_ACTIVE=$(python3 -c 'import sys,json; print(str(json.load(open(sys.argv[1])).get("is_active")).lower())' "$QA_BODY_FILE" 2>/dev/null || true)
+if [ "$REG_CODE" = "201" ]; then
+    LOGIN_BODY="{\"username\":\"${QA_REG_USER}\",\"password\":\"${QA_USER_PASSWORD}\"}"
+    if [ "$REG_ACTIVE" = "false" ]; then
+        api POST "/api/v1/auth/login" "403" "$LOGIN_BODY" "no"   # pending approval: no session
+        TOTAL=$((TOTAL+1)); AP_CODE=$(qa_admin_approve "$API" "$TOKEN" "$REG_UID")
+        if [ "$AP_CODE" = "200" ]; then ok "PUT /api/v1/admin/users/$REG_UID approve -> 200"; else fail "PUT /api/v1/admin/users/$REG_UID approve expected=200" "$AP_CODE"; fi
+    fi
+    api POST "/api/v1/auth/login" "200" "$LOGIN_BODY" "no"       # active (open mode, or after approval)
+fi
 
 # ==================== SECTION 3: SECURITY ====================
 echo ""; echo "=== 3. SECURITY (10 tests) ==="
@@ -201,10 +226,16 @@ api GET "/api/v1/smb/test" "200|400|503"
 api POST "/api/v1/smb/browse" "200|400" '{"host":"localhost","share":"test"}'
 
 # ==================== SECTION 16: RECOMMENDATIONS ====================
-echo ""; echo "=== 16. RECOMMENDATIONS (3 tests) ==="
+echo ""; echo "=== 16. RECOMMENDATIONS (5 tests) ==="
+# CAT-001: no recommendation engine / trending source exists, so these answer an honest 501.
+# They are pinned to EXACTLY 501: a regression to an invented 200 (fabricated titles) must FAIL.
+api GET "/api/v1/recommendations" "501"
 api GET "/api/v1/recommendations/trending" "501"
 api GET "/api/v1/recommendations/similar/1" "200|500"
-api GET "/api/v1/recommendations/personalized/1" "200"
+# personalized/:user_id is owner-or-admin only; use the logged-in admin's own id (not a guessed 1).
+ME_ID=$(curl -s -H "Authorization: Bearer $TOKEN" "$API/api/v1/auth/me" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" 2>/dev/null || true)
+api GET "/api/v1/recommendations/personalized/${ME_ID:-0}" "501"
+api GET "/api/v1/recommendations/personalized/not-a-number" "400"
 
 # ==================== SECTION 17: SCANS ====================
 echo ""; echo "=== 17. SCANS (2 tests) ==="

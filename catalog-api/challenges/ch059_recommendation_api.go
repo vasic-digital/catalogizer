@@ -56,33 +56,34 @@ func (c *RecommendationAPIChallenge) Execute(
 		return challengeResult, nil
 	}
 
-	// Test 1: Recommendations list
-	c.ReportProgress("testing-recommendations", nil)
-	status, _, _ := client.Get(ctx, "/api/v1/recommendations")
+	// CAT-001: no recommendation engine / trending source exists, so the recommendation
+	// routes answer an HONEST 501. The challenge pins exactly 501: a regression to an
+	// invented 200 (fabricated titles) must FAIL it, and so must a 404/500.
+	pin501 := func(progress, target, path, okMsg, badMsg string) {
+		c.ReportProgress(progress, nil)
+		st, _, _ := client.Get(ctx, path)
+		ok := st == 501
+		assertions = append(assertions, challenge.AssertionResult{
+			Type:     "status_code",
+			Target:   target,
+			Expected: "501",
+			Actual:   fmt.Sprintf("%d", st),
+			Passed:   ok,
+			Message:  challenge.Ternary(ok, okMsg, badMsg),
+		})
+	}
 
-	recsOK := status == 200
-	assertions = append(assertions, challenge.AssertionResult{
-		Type:     "status_code",
-		Target:   "recommendations_list",
-		Expected: "200",
-		Actual:   fmt.Sprintf("%d", status),
-		Passed:   recsOK,
-		Message:  challenge.Ternary(recsOK, "Recommendations endpoint works", "Recommendations endpoint failed"),
-	})
+	// Test 1: Recommendations list (root alias)
+	pin501("testing-recommendations", "recommendations_list", "/api/v1/recommendations",
+		"Recommendations root answers an honest 501", "Recommendations root did not answer 501")
 
-	// Test 2: Recommendations by type
-	c.ReportProgress("testing-recs-by-type", nil)
-	statusType, _, _ := client.Get(ctx, "/api/v1/recommendations?type=movie&limit=5")
+	// Test 2: Recommendations by type (root alias with filters)
+	pin501("testing-recs-by-type", "recommendations_by_type", "/api/v1/recommendations?type=movie&limit=5",
+		"Recommendations by type answers an honest 501", "Recommendations by type did not answer 501")
 
-	typeOK := statusType == 200
-	assertions = append(assertions, challenge.AssertionResult{
-		Type:     "status_code",
-		Target:   "recommendations_by_type",
-		Expected: "200",
-		Actual:   fmt.Sprintf("%d", statusType),
-		Passed:   typeOK,
-		Message:  challenge.Ternary(typeOK, "Recommendations by type works", "Recommendations by type failed"),
-	})
+	// Test 2b: Trending
+	pin501("testing-recs-trending", "recommendations_trending", "/api/v1/recommendations/trending",
+		"Trending recommendations answer an honest 501", "Trending recommendations did not answer 501")
 
 	// Test 3: Similar items for non-existent entity
 	c.ReportProgress("testing-similar-not-found", nil)
