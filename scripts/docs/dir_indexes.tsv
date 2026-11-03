@@ -1,0 +1,24 @@
+# dir<TAB>title<TAB>intro<TAB>relative link to docs/README.md
+docs/manuals	Manuals index	End-user and administrator manuals.	../README.md
+docs/diagrams	Diagrams index	Architecture, component, ER and sequence diagrams with their rendered images and sources.	../README.md
+docs/testing	Testing documentation index	Test strategy, guides, plans and result reports.	../README.md
+docs/security	Security documentation index	Security guides, incident write-ups, and scan artefacts (gosec, govulncheck, nancy, npm audit, snyk).	../README.md
+docs/reports	Reports index	Audit, session and QA-session reports.	../README.md
+docs/courses	Courses index	Training course outline, exercises, assessment, module scripts and slides.	../README.md
+docs/status	Status documents index	Dated completion, status and implementation reports. These are point-in-time documents; the live tracker is docs/issues.	../README.md
+docs/video-course	Video course index	Video course outlines and per-module scripts.	../README.md
+catalogizer-androidtv/docs	Android TV module documentation index	Architecture and testing notes for the Android TV module, plus its issue tickets.	../../docs/README.md
+docs/architecture	Architecture index	Documents in this directory.	../README.md
+docs/audits	Audits index	Documents in this directory.	../README.md
+docs/design	Design index	Documents in this directory.	../README.md
+docs/guides	Guides index	Documents in this directory.	../README.md
+docs/phases	Phases index	Documents in this directory.	../README.md
+docs/plans	Plans index	Documents in this directory.	../README.md
+docs/qa	Qa index	Documents in this directory.	../README.md
+docs/research	Research index	Documents in this directory.	../README.md
+docs/runbooks	Runbooks index	Documents in this directory.	../README.md
+docs/superpowers	Superpowers index	Documents in this directory.	../README.md
+docs/tutorials	Tutorials index	Documents in this directory.	../README.md
+docs/website	Website index	Documents in this directory.	../README.md
+docs/deployment	Deployment index	Documents in this directory.	../README.md
+docs/nexus	Nexus index	Documents in this directory.	../README.md

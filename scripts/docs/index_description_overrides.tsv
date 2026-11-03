@@ -1,0 +1,3 @@
+# path<TAB>description  (replaces a mechanically extracted description that reads poorly)
+docs/qa/device_qa_androidtv_20260626.md	On-Device QA - Catalogizer Android TV (MIBOX4) - 2026-06-26: runtime-signature results for DEFECT-G, DEFECT-F and the OpenDesign palette on a clean debug APK
+docs/status/FINAL_COMPLETION_REPORT_2026-02-23.md	Final Completion Report - 2026-02-23 (historical, point-in-time report: its completion claims reflect that date only; see docs/issues for current state)

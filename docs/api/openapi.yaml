@@ -6,7 +6,13 @@ info:
     Detects, categorizes, and organizes media across SMB, FTP, NFS, WebDAV,
     and local filesystems. Provides structured media entity browsing,
     duplicate detection, collection management, and real-time scan monitoring.
-  version: 2.0.0
+
+    Not described as operations: the Go pprof profiling endpoints under
+    `/debug/pprof/` (index, cmdline, profile, symbol, trace, allocs, block,
+    goroutine, heap, mutex, threadcreate). They are served only when the server
+    runs with `HELIX_PPROF_ENABLED=true` and are meant for operators, not API
+    clients.
+  version: 2.3.0
   contact:
     name: Catalogizer Support
   license:
@@ -76,6 +82,16 @@ tags:
     description: Service discovery
   - name: admin
     description: System administration (requires admin role)
+  - name: analytics
+    description: Usage analytics and event logging
+  - name: playback
+    description: Playback sessions and progress
+  - name: playlists
+    description: User playlists
+  - name: favorites
+    description: User favorites
+  - name: reports
+    description: Generated usage and performance reports
 
 components:
   securitySchemes:
@@ -91,6 +107,7 @@ components:
       properties:
         error:
           type: string
+          description: "Human-readable message; the default error envelope is only {error: ...}"
         details:
           type: string
 
@@ -269,9 +286,37 @@ components:
     DiscoveryResponse:
       type: object
       properties:
+        service:
+          type: string
+          example: catalogizer-api
+        name:
+          type: string
+        version:
+          type: string
+        build:
+          type: string
+        build_date:
+          type: string
         host:
           type: string
         port:
+          type: integer
+        protocol:
+          type: string
+          example: http
+        websocket_url:
+          type: string
+        api_base_url:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        database:
+          type: string
+        instance_id:
+          type: string
+        uptime_seconds:
           type: integer
 
     StorageRoot:
@@ -1444,6 +1489,651 @@ components:
           type: string
           format: date-time
 
+    Favorite:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        entity_type:
+          type: string
+        entity_id:
+          type: integer
+        category:
+          type: string
+        notes:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        is_public:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    AddFavoriteRequest:
+      type: object
+      properties:
+        entity_id:
+          type: integer
+        entity_type:
+          type: string
+          enum:
+          - movie
+          - tv_show
+          - tv_season
+          - tv_episode
+          - music_artist
+          - music_album
+          - song
+          - game
+          - software
+          - book
+          - comic
+      required:
+      - entity_id
+      - entity_type
+    PlaylistItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        playlist_id:
+          type: integer
+        entity_id:
+          type: integer
+        entity_type:
+          type: string
+        position:
+          type: integer
+        added_at:
+          type: string
+          format: date-time
+    Playlist:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        is_public:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaylistItem'
+    CreatePlaylistRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+      required:
+      - name
+    UpdatePlaylistRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        is_public:
+          type: boolean
+    AddPlaylistItemRequest:
+      type: object
+      properties:
+        entity_id:
+          type: integer
+        entity_type:
+          type: string
+      required:
+      - entity_id
+      - entity_type
+    StartPlaybackRequest:
+      type: object
+      properties:
+        media_item_id:
+          type: integer
+          format: int64
+        file_id:
+          type: integer
+          format: int64
+        position_unit:
+          type: string
+          enum:
+          - seconds
+          - pages
+          - events
+        start_position:
+          type: integer
+          format: int64
+      required:
+      - media_item_id
+      - position_unit
+    ProgressPlaybackRequest:
+      type: object
+      properties:
+        session_id:
+          type: integer
+          format: int64
+        end_position:
+          type: integer
+          format: int64
+        total_amount:
+          type: integer
+          format: int64
+      required:
+      - session_id
+    EndPlaybackRequest:
+      type: object
+      properties:
+        session_id:
+          type: integer
+          format: int64
+        end_position:
+          type: integer
+          format: int64
+        total_amount:
+          type: integer
+          format: int64
+        duration_total:
+          type: integer
+          format: int64
+        completed:
+          type: boolean
+      required:
+      - session_id
+    PlaybackSession:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user_id:
+          type: integer
+          format: int64
+        media_item_id:
+          type: integer
+          format: int64
+        file_id:
+          type: integer
+          format: int64
+          nullable: true
+        started_at:
+          type: string
+          format: date-time
+        ended_at:
+          type: string
+          format: date-time
+          nullable: true
+        position_unit:
+          type: string
+        start_position:
+          type: integer
+          format: int64
+        end_position:
+          type: integer
+          format: int64
+        total_amount:
+          type: integer
+          format: int64
+        completed:
+          type: boolean
+    MediaProgress:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          format: int64
+        media_item_id:
+          type: integer
+          format: int64
+        position_unit:
+          type: string
+        duration_total:
+          type: integer
+          format: int64
+          nullable: true
+        last_position:
+          type: integer
+          format: int64
+        last_session_amount:
+          type: integer
+          format: int64
+        total_reproductions:
+          type: integer
+          format: int64
+        aggregate_amount:
+          type: integer
+          format: int64
+        last_session_ended_at:
+          type: string
+          format: date-time
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+    MediaAccessLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        media_id:
+          type: integer
+        action:
+          type: string
+        device_info:
+          $ref: '#/components/schemas/DeviceInfo'
+        location:
+          $ref: '#/components/schemas/Location'
+        ip_address:
+          type: string
+        user_agent:
+          type: string
+        playback_duration:
+          type: integer
+          format: int64
+          description: Go time.Duration, nanoseconds
+        access_time:
+          type: string
+          format: date-time
+          description: Defaults to the server time when omitted or zero
+    Location:
+      type: object
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+        country:
+          type: string
+        city:
+          type: string
+        accuracy:
+          type: number
+    AnalyticsEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        event_type:
+          type: string
+        event_category:
+          type: string
+        data:
+          type: string
+        device_info:
+          $ref: '#/components/schemas/DeviceInfo'
+        location:
+          $ref: '#/components/schemas/Location'
+        ip_address:
+          type: string
+        user_agent:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+          description: Defaults to the server time when omitted or zero
+    MediaAccessCount:
+      type: object
+      properties:
+        media_id:
+          type: integer
+        access_count:
+          type: integer
+    UserGrowthPoint:
+      type: object
+      description: One point of the user-growth series (see models.UserGrowthPoint).
+      additionalProperties: true
+    UserAnalytics:
+      type: object
+      properties:
+        user_id:
+          type: integer
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        total_media_accesses:
+          type: integer
+        total_events:
+          type: integer
+        unique_media_accessed:
+          type: integer
+        total_playback_time:
+          type: integer
+          format: int64
+          description: Go time.Duration, nanoseconds
+        most_accessed_media:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaAccessCount'
+        preferred_access_times:
+          type: object
+          additionalProperties:
+            type: integer
+        device_usage:
+          type: object
+          additionalProperties:
+            type: integer
+        location_analysis:
+          type: object
+          additionalProperties:
+            type: integer
+    SystemAnalytics:
+      type: object
+      properties:
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        total_users:
+          type: integer
+        active_users:
+          type: integer
+        total_media_accesses:
+          type: integer
+        total_events:
+          type: integer
+        top_accessed_media:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaAccessCount'
+        user_growth_data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGrowthPoint'
+        average_session_duration:
+          type: integer
+          format: int64
+          description: Go time.Duration, nanoseconds
+        peak_usage_hours:
+          type: object
+          additionalProperties:
+            type: integer
+        popular_file_types:
+          type: object
+          additionalProperties:
+            type: integer
+        geographic_distribution:
+          type: object
+          additionalProperties: true
+    MediaAnalytics:
+      type: object
+      properties:
+        media_id:
+          type: integer
+        start_date:
+          type: string
+          format: date-time
+        end_date:
+          type: string
+          format: date-time
+        total_accesses:
+          type: integer
+        unique_users:
+          type: integer
+        total_playback_time:
+          type: integer
+          format: int64
+          description: Go time.Duration, nanoseconds
+        average_playback_time:
+          type: integer
+          format: int64
+          description: Go time.Duration, nanoseconds
+        access_patterns:
+          type: object
+          additionalProperties: true
+        user_retention:
+          type: number
+        popular_time_ranges:
+          type: object
+          additionalProperties:
+            type: integer
+        device_preferences:
+          type: object
+          additionalProperties:
+            type: integer
+    AnalyticsReport:
+      type: object
+      properties:
+        type:
+          type: string
+        data:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+    CreateAnalyticsReportRequest:
+      type: object
+      properties:
+        report_type:
+          type: string
+        params:
+          type: object
+          additionalProperties: true
+      required:
+      - report_type
+    GeneratedReport:
+      type: object
+      properties:
+        type:
+          type: string
+        format:
+          type: string
+        content:
+          type: string
+          format: byte
+          description: Report body, base64 (Go []byte)
+        generated_at:
+          type: string
+          format: date-time
+        parameters:
+          type: object
+          additionalProperties: true
+    MediaCatalogItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        media_type:
+          type: string
+        year:
+          type: integer
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        cover_image:
+          type: string
+          nullable: true
+        rating:
+          type: number
+          nullable: true
+        quality:
+          type: string
+          nullable: true
+        file_size:
+          type: integer
+          format: int64
+          nullable: true
+        duration:
+          type: integer
+          format: int64
+          nullable: true
+        directory_path:
+          type: string
+        smb_path:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        external_metadata:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        versions:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        is_favorite:
+          type: boolean
+        watch_progress:
+          type: number
+        last_watched:
+          type: string
+          nullable: true
+        is_downloaded:
+          type: boolean
+    TrendingResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaCatalogItem'
+        media_type:
+          type: string
+        time_range:
+          type: string
+        generated_at:
+          type: string
+          format: date-time
+    SubtitleLanguage:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        native_name:
+          type: string
+    SubtitleLanguageListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        languages:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubtitleLanguage'
+        count:
+          type: integer
+    SMBShareInfo:
+      type: object
+      properties:
+        host:
+          type: string
+        share_name:
+          type: string
+        path:
+          type: string
+        writable:
+          type: boolean
+        description:
+          type: string
+          nullable: true
+    SMBProbeResult:
+      type: object
+      properties:
+        host:
+          type: string
+        authenticated:
+          type: boolean
+        identity_index:
+          type: integer
+          description: 0 = guest, >=1 = configured identity
+        identity_label:
+          type: string
+          description: '"guest" or a username, never a secret'
+        shares:
+          type: array
+          items:
+            $ref: '#/components/schemas/SMBShareInfo'
+    SMBIdentityInfo:
+      type: object
+      properties:
+        index:
+          type: integer
+        kind:
+          type: string
+        username:
+          type: string
+        label:
+          type: string
+    SMBProbeRequest:
+      type: object
+      properties:
+        host:
+          type: string
+      required:
+      - host
+    ProbeAndIngestResponse:
+      type: object
+      properties:
+        host:
+          type: string
+        authenticated:
+          type: boolean
+        identity_label:
+          type: string
+          description: Present only when authenticated
+        shares:
+          type: integer
+        bound_shares:
+          type: integer
+        new_roots:
+          type: integer
+        message:
+          type: string
+    ComicPageList:
+      type: object
+      properties:
+        total_pages:
+          type: integer
+        pages:
+          type: array
+          items:
+            type: object
+            properties:
+              index:
+                type: integer
+              name:
+                type: string
+
 paths:
   /health:
     get:
@@ -1682,21 +2372,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-
-  /api/v1/discovery:
-    get:
-      tags: [discovery]
-      summary: Service discovery
-      description: Returns the current host and port of the API server.
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: Service endpoint info
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DiscoveryResponse'
 
   /api/v1/catalog:
     get:
@@ -2107,322 +2782,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
-  # ── Browse API ──────────────────────────────────────────────
-
-  /api/v1/browse/roots:
-    get:
-      tags: [browse]
-      summary: List storage roots
-      description: Returns all configured storage roots the current user can access.
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: List of storage roots
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  roots:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: integer
-                        name:
-                          type: string
-                        protocol:
-                          type: string
-                        path:
-                          type: string
-        '401':
-          description: Unauthorized
-
-  /api/v1/browse/directory/{path}:
-    get:
-      tags: [browse]
-      summary: Browse directory contents
-      description: Lists files and subdirectories at the given path.
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: page
-          in: query
-          schema:
-            type: integer
-            default: 1
-        - name: page_size
-          in: query
-          schema:
-            type: integer
-            default: 50
-      responses:
-        '200':
-          description: Directory listing
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  path:
-                    type: string
-                  entries:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        name:
-                          type: string
-                        is_dir:
-                          type: boolean
-                        size:
-                          type: integer
-                          format: int64
-                        content_type:
-                          type: string
-        '404':
-          description: Directory not found
-
-  /api/v1/browse/file-info/{path}:
-    get:
-      tags: [browse]
-      summary: Get file information
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: File metadata
-        '404':
-          description: File not found
-
-  /api/v1/browse/directory-sizes/{path}:
-    get:
-      tags: [browse]
-      summary: Get directory sizes
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Directory size breakdown
-        '404':
-          description: Directory not found
-
-  /api/v1/browse/duplicates/{path}:
-    get:
-      tags: [browse]
-      summary: Find duplicates in directory
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Duplicate file groups
-        '404':
-          description: Directory not found
-
-  # ── Sync API ───────────────────────────────────────────────
-
-  /api/v1/sync/endpoints:
-    post:
-      tags: [sync]
-      summary: Create sync endpoint
-      description: Creates a new cloud or local sync endpoint configuration.
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                provider:
-                  type: string
-                  enum: [s3, gcs, local]
-                config:
-                  type: object
-      responses:
-        '201':
-          description: Endpoint created
-        '400':
-          description: Invalid configuration
-    get:
-      tags: [sync]
-      summary: List user sync endpoints
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: List of sync endpoints
-
-  /api/v1/sync/endpoints/{id}:
-    get:
-      tags: [sync]
-      summary: Get sync endpoint details
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Endpoint details
-        '404':
-          description: Endpoint not found
-    put:
-      tags: [sync]
-      summary: Update sync endpoint
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        '200':
-          description: Endpoint updated
-    delete:
-      tags: [sync]
-      summary: Delete sync endpoint
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: Endpoint deleted
-
-  /api/v1/sync/endpoints/{id}/sync:
-    post:
-      tags: [sync]
-      summary: Start sync operation
-      description: Triggers a sync for the specified endpoint. Progress via WebSocket.
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '202':
-          description: Sync started
-        '409':
-          description: Sync already in progress
-
-  /api/v1/sync/sessions:
-    get:
-      tags: [sync]
-      summary: List sync sessions
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: Recent sync sessions
-
-  /api/v1/sync/sessions/{id}:
-    get:
-      tags: [sync]
-      summary: Get sync session details
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Session details
-        '404':
-          description: Session not found
-
-  /api/v1/sync/schedules:
-    post:
-      tags: [sync]
-      summary: Schedule recurring sync
-      security:
-        - BearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                endpoint_id:
-                  type: integer
-                cron:
-                  type: string
-      responses:
-        '201':
-          description: Schedule created
-
-  /api/v1/sync/statistics:
-    get:
-      tags: [sync]
-      summary: Get sync statistics
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: Aggregate sync statistics
-
-  /api/v1/sync/cleanup:
-    post:
-      tags: [sync]
-      summary: Cleanup old sync sessions
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: Cleanup completed
-
-  # ── Download API ───────────────────────────────────────────
 
   /api/v1/download/file/{id}:
     get:
@@ -3079,16 +3438,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
-  /api/v1/recommendations/test:
-    get:
-      tags: [recommendations]
-      summary: Test recommendation endpoint
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: Test recommendation data
 
   /api/v1/recommendations/similar/{media_id}:
     get:
@@ -4141,6 +4490,7 @@ paths:
     post:
       tags: [users]
       summary: Create user
+      description: "Needs `user.create`; a caller without `system.admin` may not assign a role that carries `system.admin` (403). KNOWN DEFECT (measured 2026-11-03 on the real binary, open follow-up): the handler stores a SHA-256 hash of password+salt while login verifies a bcrypt hash, so the created user gets 401 `invalid credentials` until a password is set through POST /api/v1/users/{id}/reset-password."
       security:
         - BearerAuth: []
       requestBody:
@@ -4177,11 +4527,20 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Returns one user (password hash and salt removed). Reading your own account needs no permission; reading another account needs `user.view`."
       responses:
         '200':
-          description: User details
+          description: "User (JSON) with its role."
+        '400':
+          description: "Non-integer id (`Invalid user ID`)."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Another user's id without `user.view` (`Insufficient permissions`)."
         '404':
-          description: User not found
+          description: "No such user."
+        '500':
+          description: "Repository or permission-check error."
     put:
       tags: [users]
       summary: Update user
@@ -4198,9 +4557,22 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateUserRequest'
+      description: "Updates profile fields (username, email, first/last/display name, avatar_url, time_zone, language, settings). Self-update: allowed without any permission and returns 200, but `role_id` and `is_active` in the body are silently ignored, also for an administrator updating their own account (measured on the real binary). Updating another user needs `user.update`; `is_active` is applied only when the caller also has `user.manage`. `role_id` is validated and permission-checked (it needs `user.manage`, and a caller without `system.admin` may not assign a role that carries `system.admin`, 403) and is echoed in the 200 response, but it is NEVER saved: KNOWN DEFECT, `UserRepository.Update` has no `role_id` column, so a later GET shows the old role (measured on the real binary and pinned by catalog-api/openapi_contract_binary_test.go). Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved)."
       responses:
         '200':
-          description: User updated
+          description: "Updated user (JSON)."
+        '400':
+          description: "Non-integer id, invalid JSON body, or `role_id` <= 0."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Another user without `user.update`, an admin target for a non-admin caller, or assigning an admin role without `system.admin`."
+        '404':
+          description: "No such user."
+        '409':
+          description: "Username or email already exists."
+        '500':
+          description: "Repository or permission-check error."
     delete:
       tags: [users]
       summary: Delete user
@@ -4212,10 +4584,20 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Deletes a user. Needs `user.delete` (checked first, also for your own id). Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved). Deleting your own account is refused with 400."
       responses:
-        '200':
-          description: User deleted
-
+        '204':
+          description: "User deleted (no body)."
+        '400':
+          description: "Non-integer id, or the id is the caller's own (`Cannot delete your own account`)."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Caller lacks `user.delete`, or an admin target for a non-admin caller."
+        '404':
+          description: "No such user, reported to a caller without `system.admin` (the admin-target check looks the user up). For a `system.admin` caller the operation runs without that lookup; its outcome for an unknown id is not measured."
+        '500':
+          description: "Repository or permission-check error."
   /api/v1/users/{id}/reset-password:
     post:
       tags: [users]
@@ -4228,10 +4610,20 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Sets a new password from the JSON body `{\"new_password\": \"...\"}` (validated by the password policy). Needs `user.manage`. Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved)."
       responses:
         '200':
-          description: Password reset
-
+          description: "`{\"message\":\"Password reset successfully\"}`."
+        '400':
+          description: "Non-integer id, invalid JSON body, or the password fails the policy (body is the policy message)."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Caller lacks `user.manage`, or an admin target for a non-admin caller."
+        '404':
+          description: "No such user, reported to a caller without `system.admin` (the admin-target check looks the user up). For a `system.admin` caller the operation runs without that lookup; its outcome for an unknown id is not measured."
+        '500':
+          description: "Service error."
   /api/v1/users/{id}/lock:
     post:
       tags: [users]
@@ -4244,10 +4636,20 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Locks an account until the RFC 3339 time in the JSON body `{\"lock_until\": \"...\"}`. Needs `user.manage` (checked first, also for your own id). Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved). Locking your own account is refused with 400."
       responses:
         '200':
-          description: Account locked
-
+          description: "`{\"message\":\"Account locked successfully\"}`."
+        '400':
+          description: "Non-integer id, the caller's own id (`Cannot lock your own account`), invalid JSON body, or `lock_until` not RFC 3339."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Caller lacks `user.manage`, or an admin target for a non-admin caller."
+        '404':
+          description: "No such user, reported to a caller without `system.admin` (the admin-target check looks the user up). For a `system.admin` caller the operation runs without that lookup; its outcome for an unknown id is not measured."
+        '500':
+          description: "Service error."
   /api/v1/users/{id}/unlock:
     post:
       tags: [users]
@@ -4260,14 +4662,25 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Unlocks an account. Needs `user.manage`. Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved). The request validation middleware rejects an empty body on this POST (measured: 400 `invalid JSON format`), so send `{}`."
       responses:
         '200':
-          description: Account unlocked
-
+          description: "`{\"message\":\"Account unlocked successfully\"}`."
+        '400':
+          description: "Non-integer id, or an empty (non-JSON) body rejected by the request validation middleware."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Caller lacks `user.manage`, or an admin target for a non-admin caller."
+        '404':
+          description: "No such user, reported to a caller without `system.admin` (the admin-target check looks the user up). For a `system.admin` caller the operation runs without that lookup; its outcome for an unknown id is not measured."
+        '500':
+          description: "Service error."
   /api/v1/roles:
     post:
       tags: [roles]
       summary: Create role
+      description: "Needs `system.admin`. KNOWN DEFECT (measured 2026-11-03 on the real binary, open follow-up): the request validation middleware rejects the permission names `user.create`, `user.update` and `user.delete` with 400 `potential SQL injection detected` (`user.view`, `user.manage` and the wildcard `user.*` are accepted)."
       security:
         - BearerAuth: []
       requestBody:
@@ -4300,9 +4713,20 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Returns one role. Needs `system.admin`; every other caller gets 403, including holders of all `user.*` permissions (measured)."
       responses:
         '200':
-          description: Role details
+          description: "Role (JSON)."
+        '400':
+          description: "Non-integer id."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Caller lacks `system.admin`."
+        '404':
+          description: "No such role."
+        '500':
+          description: "Repository or permission-check error."
     put:
       tags: [roles]
       summary: Update role
@@ -4319,9 +4743,22 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateRoleRequest'
+      description: "Updates a role (name required). System roles cannot be updated. Needs `system.admin`; every other caller gets 403, including holders of all `user.*` permissions (measured)."
       responses:
         '200':
-          description: Role updated
+          description: "Updated role (JSON)."
+        '400':
+          description: "Non-integer id, invalid JSON body, or empty name."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Caller lacks `system.admin`."
+        '404':
+          description: "No such role, or a system role."
+        '409':
+          description: "Role name already exists."
+        '500':
+          description: "Repository or permission-check error."
     delete:
       tags: [roles]
       summary: Delete role
@@ -4333,10 +4770,22 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Deletes a role. System roles and roles assigned to users cannot be deleted. Needs `system.admin`; every other caller gets 403, including holders of all `user.*` permissions (measured)."
       responses:
-        '200':
-          description: Role deleted
-
+        '204':
+          description: "Role deleted (no body)."
+        '400':
+          description: "Non-integer id."
+        '401':
+          description: "Unauthenticated (JWT middleware) or the session token is not valid."
+        '403':
+          description: "Caller lacks `system.admin`."
+        '404':
+          description: "No such role, or a system role."
+        '409':
+          description: "The role is assigned to users."
+        '500':
+          description: "Repository or permission-check error."
   /api/v1/roles/permissions:
     get:
       tags: [roles]
@@ -4389,10 +4838,14 @@ paths:
           required: true
           schema:
             type: string
+      description: "Returns the definition of one setup-wizard step (for example `welcome`, `database`, `storage`). No permission check beyond the JWT middleware. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
         '200':
-          description: Wizard step data
-
+          description: "Wizard step definition (JSON)."
+        '404':
+          description: "Unknown step id (body is the service error text, for example `wizard step not found: <id>`)."
+        '401':
+          description: "Unauthenticated (JWT middleware)."
   /api/v1/configuration/wizard/step/{step_id}/validate:
     post:
       tags: [configuration]
@@ -4405,10 +4858,16 @@ paths:
           required: true
           schema:
             type: string
+      description: "Validates a JSON object of step data for one wizard step without saving it. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
         '200':
-          description: Validation result
-
+          description: "Validation result, for example `{\"is_valid\":true}`."
+        '400':
+          description: "Invalid JSON request body."
+        '500':
+          description: "Service error while validating."
+        '401':
+          description: "Unauthenticated (JWT middleware)."
   /api/v1/configuration/wizard/step/{step_id}/save:
     post:
       tags: [configuration]
@@ -4421,10 +4880,16 @@ paths:
           required: true
           schema:
             type: string
+      description: "Saves the caller's progress for one wizard step. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
         '200':
-          description: Progress saved
-
+          description: "`{\"message\":\"Progress saved successfully\"}`."
+        '400':
+          description: "Invalid JSON request body."
+        '401':
+          description: "Unauthenticated, or no integer user_id in the request context."
+        '500':
+          description: "Service error while saving."
   /api/v1/configuration/wizard/progress:
     get:
       tags: [configuration]
@@ -4457,8 +4922,8 @@ paths:
             schema:
               type: object
       responses:
-        '201':
-          description: Error reported
+        '200':
+          description: "Error report stored; body is the stored report (JSON, with `id`). Measured on the real binary: 200, not 201."
 
   /api/v1/errors/crash:
     post:
@@ -4472,8 +4937,8 @@ paths:
             schema:
               type: object
       responses:
-        '201':
-          description: Crash reported
+        '200':
+          description: "Crash report stored; body is the stored report (JSON, with `id`). Measured on the real binary: 200, not 201."
 
   /api/v1/errors/reports:
     get:
@@ -4497,10 +4962,18 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Returns one error report. Requires the `report.view` permission. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
         '200':
-          description: Error report details
-
+          description: "Error report (JSON)."
+        '400':
+          description: "Non-integer id (`Invalid report ID`)."
+        '401':
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
+        '403':
+          description: "Caller lacks `report.view` (or the permission check failed)."
+        '404':
+          description: "No such report, or any other service error (the body carries the service error text)."
   /api/v1/errors/reports/{id}/status:
     put:
       tags: [errors]
@@ -4513,10 +4986,18 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Sets the triage status of an error report from a JSON body `{\"status\": \"...\"}`. Requires the `report.create` permission. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
-        '200':
-          description: Status updated
-
+        '204':
+          description: "Status updated (no body)."
+        '400':
+          description: "Non-integer id, or invalid JSON body."
+        '401':
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
+        '403':
+          description: "Caller lacks `report.create` (or the permission check failed)."
+        '500':
+          description: "Service error while updating."
   /api/v1/errors/crashes:
     get:
       tags: [errors]
@@ -4539,10 +5020,18 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Returns one crash report. Requires the `report.view` permission. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
         '200':
-          description: Crash report details
-
+          description: "Crash report (JSON)."
+        '400':
+          description: "Non-integer id."
+        '401':
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
+        '403':
+          description: "Caller lacks `report.view` (or the permission check failed)."
+        '404':
+          description: "No such crash report, or any other service error (the body carries the service error text)."
   /api/v1/errors/crashes/{id}/status:
     put:
       tags: [errors]
@@ -4555,10 +5044,18 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Sets the triage status of a crash report from a JSON body `{\"status\": \"...\"}`. Requires the `report.create` permission. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
-        '200':
-          description: Status updated
-
+        '204':
+          description: "Status updated (no body)."
+        '400':
+          description: "Non-integer id, or invalid JSON body."
+        '401':
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
+        '403':
+          description: "Caller lacks `report.create` (or the permission check failed)."
+        '500':
+          description: "Service error while updating."
   /api/v1/errors/statistics:
     get:
       tags: [errors]
@@ -4601,8 +5098,8 @@ paths:
             schema:
               type: object
       responses:
-        '201':
-          description: Collection created
+        '200':
+          description: "Collection created; body is the collection (JSON, with `id`). Measured on the real binary: 200, not 201."
 
   /api/v1/logs/collections:
     get:
@@ -4626,10 +5123,18 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Returns one log collection of the caller. Requires `system.admin`. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
         '200':
-          description: Log collection details
-
+          description: "Log collection (JSON)."
+        '400':
+          description: "Non-integer id."
+        '401':
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
+        '403':
+          description: "Caller lacks `system.admin`."
+        '404':
+          description: "No such collection, or any other service error (the body carries the service error text)."
   /api/v1/logs/collections/{id}/entries:
     get:
       tags: [logs]
@@ -4642,10 +5147,18 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Returns the entries of one log collection, optionally filtered. Requires `system.admin`. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
         '200':
-          description: Log entries
-
+          description: "`{\"entries\": [...], \"filters\": {...}}`."
+        '400':
+          description: "Non-integer id."
+        '401':
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
+        '403':
+          description: "Caller lacks `system.admin`."
+        '500':
+          description: "Service error."
   /api/v1/logs/collections/{id}/export:
     post:
       tags: [logs]
@@ -4658,10 +5171,25 @@ paths:
           required: true
           schema:
             type: integer
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            default: json
+          description: "`json`, `csv`, `txt` or `zip`; any other value is served as `application/octet-stream`."
+      description: "Exports one log collection as a download. The `format` query parameter selects `json` (default), `csv`, `txt` or `zip`; any other value is served as `application/octet-stream` (`logs.bin`). The request body is not read. Requires `system.admin`. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
         '200':
-          description: Exported log data
-
+          description: "File download (Content-Disposition attachment). For an empty collection exported as json the body is `null`."
+        '400':
+          description: "Non-integer id."
+        '401':
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
+        '403':
+          description: "Caller lacks `system.admin`."
+        '500':
+          description: "Service error while exporting."
   /api/v1/logs/collections/{id}/analyze:
     get:
       tags: [logs]
@@ -4674,10 +5202,18 @@ paths:
           required: true
           schema:
             type: integer
+      description: "Returns an analysis (counts by level and component, error patterns, time range) of one log collection. Requires `system.admin`. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
         '200':
-          description: Log analysis results
-
+          description: "Log analysis (JSON)."
+        '400':
+          description: "Non-integer id."
+        '401':
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
+        '403':
+          description: "Caller lacks `system.admin`."
+        '500':
+          description: "Service error while analysing."
   /api/v1/logs/share:
     post:
       tags: [logs]
@@ -4690,8 +5226,8 @@ paths:
             schema:
               type: object
       responses:
-        '201':
-          description: Share created
+        '200':
+          description: "Share created; body carries `id` and `share_token`. Measured on the real binary: 200, not 201."
 
   /api/v1/logs/share/{token}:
     get:
@@ -4705,26 +5241,43 @@ paths:
           required: true
           schema:
             type: string
+      description: "Returns a shared log collection by its share token. No permission check beyond the JWT middleware; the share itself must carry the `read` permission. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
         '200':
-          description: Shared log data
-
-  /api/v1/logs/share/{id}:
+          description: "`{\"collection\": {...}, ...}` for the shared collection."
+        '403':
+          description: "The share does not carry the `read` permission (`Access denied`)."
+        '404':
+          description: "Unknown, expired or revoked token, or the shared collection cannot be loaded (the body carries the service error text)."
+        '401':
+          description: "Unauthenticated (JWT middleware)."
     delete:
       tags: [logs]
       summary: Revoke log share
+      description: |
+        Revokes a log share. Requires `system.admin`. The route shares its path segment with the GET above
+        (the router registers GET :token and DELETE :id on the same segment), so the
+        segment is the share id here (an integer). Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go.
       security:
         - BearerAuth: []
       parameters:
-        - name: id
+        - name: token
           in: path
           required: true
+          description: Share id (DELETE) or share token (GET)
           schema:
-            type: integer
+            type: string
       responses:
-        '200':
-          description: Share revoked
-
+        '204':
+          description: "Share revoked (no body)."
+        '400':
+          description: "Non-integer id."
+        '401':
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
+        '403':
+          description: "Caller lacks `system.admin`."
+        '500':
+          description: "Service error. An unknown share id is reported here too (measured: `500` with `failed to get log share ... no rows`), not as 404."
   /api/v1/logs/stream:
     get:
       tags: [logs]
@@ -6329,6 +6882,2673 @@ paths:
                 $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ── Operations added to match the router (see scripts/check_api_route_vs_spec.py) ──
+
+  /api/v1/admin/config:
+    get:
+      tags:
+      - admin
+      summary: Get system configuration (admin alias)
+      description: Same handler as GET /api/v1/configuration, mounted under the admin group. Requires the admin role (JWT) and, when the CSRF guard is enabled, a valid CSRF token on state-changing calls.
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Configuration data
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Admin role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/admin/errors:
+    get:
+      tags:
+      - admin
+      summary: List error reports (admin alias)
+      description: Same handler as GET /api/v1/errors/reports, mounted under the admin group. Requires the admin role (JWT) and, when the CSRF guard is enabled, a valid CSRF token on state-changing calls.
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Error reports list
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Admin role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/admin/health:
+    get:
+      tags:
+      - admin
+      summary: Get system health (admin alias)
+      description: Same handler as GET /api/v1/errors/health, mounted under the admin group. Requires the admin role (JWT) and, when the CSRF guard is enabled, a valid CSRF token on state-changing calls.
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: System health
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Admin role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/admin/logs:
+    get:
+      tags:
+      - admin
+      summary: List log collections (admin alias)
+      description: Same handler as GET /api/v1/logs/collections, mounted under the admin group. Requires the admin role (JWT) and, when the CSRF guard is enabled, a valid CSRF token on state-changing calls.
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Log collections list
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Admin role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/admin/covers/generate-thumbnails:
+    post:
+      tags:
+      - admin
+      summary: Generate missing video thumbnails
+      description: Creates video-frame thumbnails for media items that have no cover art. A missing or invalid body falls back to limit 50. Registered on the authenticated API group; the handler does not itself check for the admin role.
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  minimum: 1
+                  maximum: 500
+                  default: 50
+      responses:
+        '200':
+          description: Generation finished
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  generated:
+                    type: integer
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/admin/image-quality/revalidate:
+    post:
+      tags:
+      - admin
+      summary: Revalidate stale image-quality records
+      description: Samples image-quality rows whose last check is older than the cutoff and touches their last-checked time so the validator re-evaluates them. An empty or malformed body uses the defaults. Rate limited to 6 requests per minute.
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stale_age_seconds:
+                  type: integer
+                  default: 604800
+                  description: Rows older than this many seconds are sampled (default 7 days)
+                limit:
+                  type: integer
+                  minimum: 1
+                  maximum: 4096
+                  default: 256
+      responses:
+        '200':
+          description: Sweep summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sampled:
+                    type: integer
+                  touched:
+                    type: integer
+                  stale_age_seconds:
+                    type: integer
+                  limit:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/analytics/access:
+    post:
+      tags:
+      - analytics
+      summary: Log a media access
+      description: Records one media access for analytics.
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaAccessLog'
+      responses:
+        '200':
+          description: Logged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: logged
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/analytics/event:
+    post:
+      tags:
+      - analytics
+      summary: Log an analytics event
+      description: Records one general analytics event.
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyticsEvent'
+      responses:
+        '200':
+          description: Logged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: logged
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/analytics/user/{user_id}:
+    get:
+      tags:
+      - analytics
+      summary: Get analytics for a user
+      description: Aggregated analytics for one user over a date range.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: start_date
+        in: query
+        schema:
+          type: string
+          format: date
+        description: 'Start of the range, YYYY-MM-DD (default: one month before today)'
+      - name: end_date
+        in: query
+        schema:
+          type: string
+          format: date
+        description: 'End of the range, YYYY-MM-DD (default: today)'
+      responses:
+        '200':
+          description: User analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAnalytics'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/analytics/system:
+    get:
+      tags:
+      - analytics
+      summary: Get system-wide analytics
+      description: Aggregated analytics for the whole system over a date range.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: start_date
+        in: query
+        schema:
+          type: string
+          format: date
+        description: 'Start of the range, YYYY-MM-DD (default: one month before today)'
+      - name: end_date
+        in: query
+        schema:
+          type: string
+          format: date
+        description: 'End of the range, YYYY-MM-DD (default: today)'
+      responses:
+        '200':
+          description: System analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemAnalytics'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/analytics/media/{media_id}:
+    get:
+      tags:
+      - analytics
+      summary: Get analytics for a media item
+      description: Aggregated analytics for one media item over a date range.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: media_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: start_date
+        in: query
+        schema:
+          type: string
+          format: date
+        description: 'Start of the range, YYYY-MM-DD (default: one month before today)'
+      - name: end_date
+        in: query
+        schema:
+          type: string
+          format: date
+        description: 'End of the range, YYYY-MM-DD (default: today)'
+      responses:
+        '200':
+          description: Media analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaAnalytics'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/analytics/reports:
+    post:
+      tags:
+      - analytics
+      summary: Create an analytics report
+      description: Creates a report of the requested type.
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAnalyticsReportRequest'
+      responses:
+        '200':
+          description: Report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsReport'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/analytics/stats:
+    get:
+      tags:
+      - analytics
+      summary: Overall statistics (alias)
+      description: Alias of GET /api/v1/stats/overall kept for the challenge test banks.
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Overall stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/OverallStats'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/analytics/duplicates:
+    get:
+      tags:
+      - analytics
+      summary: Duplicate statistics (alias)
+      description: Alias of GET /api/v1/stats/duplicates kept for the challenge test banks.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: smb_root
+        in: query
+        schema:
+          type: string
+        description: Restrict to one SMB root
+      responses:
+        '200':
+          description: Duplicate stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    additionalProperties: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/auth/init-status:
+    get:
+      tags:
+      - auth
+      summary: Initialisation status
+      description: Public. Always reports the system as initialised.
+      responses:
+        '200':
+          description: Status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  initialized:
+                    type: boolean
+                    example: true
+  /api/v1/health:
+    get:
+      tags:
+      - health
+      summary: Health check (alias)
+      description: Public alias of GET /health, registered because test banks and monitors probe this path.
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /discovery:
+    get:
+      tags:
+      - discovery
+      summary: Service discovery
+      description: Public, registered before the middleware chain so it answers quickly to LAN discovery probes (Android TV).
+      responses:
+        '200':
+          description: Service endpoint info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryResponse'
+  /api/v1/browse:
+    get:
+      tags:
+      - browse
+      summary: List storage roots (alias)
+      description: Alias of GET /api/v1/browse/roots, the entry point the test banks use.
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Storage roots list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/StorageRoot'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/files:
+    get:
+      tags:
+      - browse
+      summary: List files (placeholder)
+      description: 'Placeholder: always returns an empty listing and echoes the requested path. Use GET /api/v1/browse/directory/{path} for real listings.'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: path
+        in: query
+        schema:
+          type: string
+        description: Path echoed back
+      responses:
+        '200':
+          description: Empty listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  files:
+                    type: array
+                    items:
+                      type: object
+                  path:
+                    type: string
+                  count:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/media-types:
+    get:
+      tags:
+      - media
+      summary: List media types
+      description: Returns the 11 canonical media types as a static list.
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Media types
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  media_types:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/stats/media-types:
+    get:
+      tags:
+      - stats
+      summary: Media-type distribution (placeholder)
+      description: 'Placeholder: returns a zeroed distribution. Real counts are available from GET /api/v1/entities/types.'
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Zeroed distribution
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  distribution:
+                    type: object
+                    additionalProperties:
+                      type: integer
+                  total:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/stats/scan-history:
+    get:
+      tags:
+      - stats
+      summary: Scan history (placeholder)
+      description: 'Placeholder: returns an empty history. Real history is available from GET /api/v1/stats/scans.'
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Empty history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  history:
+                    type: array
+                    items:
+                      type: object
+                  count:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/cover/placeholder/{type}:
+    get:
+      tags:
+      - assets
+      summary: Get a placeholder cover
+      description: Public. Returns a generated SVG placeholder for the media type.
+      parameters:
+      - name: type
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Media type, for example movie
+      responses:
+        '200':
+          description: SVG placeholder
+          content:
+            image/svg+xml:
+              schema:
+                type: string
+  /api/v1/cover/url/{id}:
+    get:
+      tags:
+      - assets
+      summary: Get the cover URL of a media item
+      description: Public. Returns the resolved cover URL for a media item.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: type
+        in: query
+        schema:
+          type: string
+          default: movie
+        description: Media type
+      responses:
+        '200':
+          description: Cover URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  media_item_id:
+                    type: integer
+                    format: int64
+                  cover_url:
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/cover/{id}:
+    get:
+      tags:
+      - assets
+      summary: Serve the cover image of a media item
+      description: 'Public. Serves the stored cover (local file, or a 302 redirect to the cover URL). Falls back to an SVG placeholder and sets X-Cover-Quality: placeholder_fallback when no cover exists. The X-Cover-Quality and X-Cover-Source headers describe the stored image.'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Cover image or SVG placeholder
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '302':
+          description: Redirect to the external cover URL
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/image-proxy:
+    get:
+      tags:
+      - assets
+      summary: Proxy an external image
+      description: Public. Fetches an image from an allowed CDN (image.tmdb.org, img.omdbapi.com, images.igdb.com) and streams it with a 24 hour cache header. When the upstream is unreachable or not 200, returns a type-specific SVG placeholder instead.
+      parameters:
+      - name: url
+        in: query
+        schema:
+          type: string
+        required: true
+        description: Image URL on an allowed domain
+      - name: type
+        in: query
+        schema:
+          type: string
+          default: movie
+        description: Media type used for the placeholder
+      responses:
+        '200':
+          description: Proxied image or SVG placeholder
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: url parameter missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Domain not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/stream/{id}:
+    get:
+      tags:
+      - download
+      summary: Stream a file
+      description: Streams a file by ID. Protocols with random access (SMB, local) support HTTP Range requests (206 Partial Content).
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: download
+        in: query
+        schema:
+          type: boolean
+        description: true sets Content-Disposition to attachment
+      - name: Range
+        in: header
+        schema:
+          type: string
+        description: Byte range, for example bytes=0-1023
+      responses:
+        '200':
+          description: File content
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '206':
+          description: Partial content (Range request)
+        '400':
+          description: Invalid file ID or the ID is a directory
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: File not found or not accessible on storage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/entities/search:
+    get:
+      tags:
+      - entities
+      summary: Search media entities
+      description: Title search over media entities. A missing query returns an empty result.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: q
+        in: query
+        schema:
+          type: string
+        description: Search text (also accepted as query or search)
+      - name: type
+        in: query
+        schema:
+          type: string
+        description: Media type filter
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 24
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MediaEntity'
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+                  query:
+                    type: string
+        '400':
+          description: Invalid media type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/entities/enrich:
+    post:
+      tags:
+      - entities
+      summary: Enrich entities in the background
+      description: Queues batch metadata enrichment for entities without external metadata. Returns immediately.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      responses:
+        '200':
+          description: Accepted, or nothing to do
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  queued:
+                    type: integer
+                    description: -1 when the batch is queued with an unknown size, 0 when nothing is pending
+                  accepted:
+                    type: boolean
+                  limit_applied:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/entities/{id}/history:
+    get:
+      tags:
+      - entities
+      summary: List playback history of an entity
+      description: Playback sessions of the authenticated user for one media item.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 50
+      responses:
+        '200':
+          description: Sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PlaybackSession'
+                  count:
+                    type: integer
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/entities/{id}/progress:
+    get:
+      tags:
+      - entities
+      summary: Get playback progress of an entity
+      description: Progress summary of the authenticated user for one media item; progress is null when nothing was played yet.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  progress:
+                    allOf:
+                    - $ref: '#/components/schemas/MediaProgress'
+                    nullable: true
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/entities/{id}/pages:
+    get:
+      tags:
+      - entities
+      summary: List comic pages
+      description: Lists the image pages of a .cbz/.cbr comic entity.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Pages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComicPageList'
+        '400':
+          description: Invalid entity ID or not a comic archive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: No file available for this entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/entities/{id}/pages/{n}:
+    get:
+      tags:
+      - entities
+      summary: Get a comic page
+      description: Returns page n (zero-based) of a .cbz/.cbr comic entity as an image.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: n
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+        description: Zero-based page index
+      responses:
+        '200':
+          description: Page image
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid entity ID, page index, or not a comic archive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: No file for this entity or page index out of range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/entities/{id}/pdf-pages:
+    get:
+      tags:
+      - entities
+      summary: Get the PDF page count
+      description: Returns the number of pages of a PDF entity.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Page count
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_pages:
+                    type: integer
+        '400':
+          description: Invalid entity ID or not a PDF
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: No file available for this entity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/entities/{id}/pdf-pages/{n}:
+    get:
+      tags:
+      - entities
+      summary: Render a PDF page
+      description: Renders page n (zero-based) of a PDF entity as a PNG image.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: n
+        in: path
+        required: true
+        schema:
+          type: integer
+          minimum: 0
+        description: Zero-based page index
+      responses:
+        '200':
+          description: PNG page image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid entity ID or page index
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: No file for this entity or page index out of range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/favorites:
+    get:
+      tags:
+      - favorites
+      summary: List favorites
+      description: Favorites of the authenticated user.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: media_type
+        in: query
+        schema:
+          type: string
+        description: Entity type filter
+      - name: category
+        in: query
+        schema:
+          type: string
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 50
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          default: 0
+      responses:
+        '200':
+          description: Favorites
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  favorites:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Favorite'
+                  count:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+      - favorites
+      summary: Add a favorite
+      description: Adds an entity to the favorites of the authenticated user.
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddFavoriteRequest'
+      responses:
+        '200':
+          description: Added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: added
+        '400':
+          description: Invalid body or entity_type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Entity not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Already in favorites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/favorites/{entity_type}/{entity_id}:
+    delete:
+      tags:
+      - favorites
+      summary: Remove a favorite
+      description: Removes an entity from the favorites of the authenticated user.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: entity_type
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - movie
+          - tv_show
+          - tv_season
+          - tv_episode
+          - music_artist
+          - music_album
+          - song
+          - game
+          - software
+          - book
+          - comic
+      - name: entity_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: removed
+        '400':
+          description: Invalid entity_type or ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Favorite not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/favorites/check/{entity_type}/{entity_id}:
+    get:
+      tags:
+      - favorites
+      summary: Check whether an entity is a favorite
+      description: Returns whether the entity is in the favorites of the authenticated user.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: entity_type
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - movie
+          - tv_show
+          - tv_season
+          - tv_episode
+          - music_artist
+          - music_album
+          - song
+          - game
+          - software
+          - book
+          - comic
+      - name: entity_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  is_favorite:
+                    type: boolean
+        '400':
+          description: Invalid entity_type or ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/languages:
+    get:
+      tags:
+      - subtitles
+      summary: List supported languages
+      description: Same payload as GET /api/v1/subtitles/languages.
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Languages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubtitleLanguageListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/localization/languages:
+    get:
+      tags:
+      - subtitles
+      summary: List supported languages (localization alias)
+      description: Same payload as GET /api/v1/subtitles/languages.
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Languages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubtitleLanguageListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/localization/translations:
+    get:
+      tags:
+      - subtitles
+      summary: Get translations (placeholder)
+      description: 'Placeholder: returns an empty translation map for the requested locale.'
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: locale
+        in: query
+        schema:
+          type: string
+          default: en
+      responses:
+        '200':
+          description: Empty map
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  locale:
+                    type: string
+                  translations:
+                    type: object
+                    additionalProperties: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/localization/stats:
+    get:
+      tags:
+      - subtitles
+      summary: Localization statistics (placeholder)
+      description: 'Placeholder: returns static values.'
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Static stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  supported_locales:
+                    type: integer
+                  default_locale:
+                    type: string
+                  coverage:
+                    type: number
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/translations:
+    get:
+      tags:
+      - subtitles
+      summary: List translations (placeholder)
+      description: 'Placeholder: always returns an empty list.'
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Empty list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  translations:
+                    type: array
+                    items:
+                      type: object
+                  count:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/subtitles:
+    get:
+      tags:
+      - subtitles
+      summary: List subtitles (placeholder)
+      description: 'Placeholder: always returns an empty list. Per-media subtitles are at GET /api/v1/subtitles/media/{media_id}.'
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Empty list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  subtitles:
+                    type: array
+                    items:
+                      type: object
+                  count:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/playback/sessions/start:
+    post:
+      tags:
+      - playback
+      summary: Start a playback session
+      description: Opens a playback session for the authenticated user.
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartPlaybackRequest'
+      responses:
+        '200':
+          description: Session started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: integer
+                    format: int64
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/playback/sessions/progress:
+    post:
+      tags:
+      - playback
+      summary: Report playback progress
+      description: Updates the end position and amount of an open session.
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgressPlaybackRequest'
+      responses:
+        '200':
+          description: Recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/playback/sessions/end:
+    post:
+      tags:
+      - playback
+      summary: End a playback session
+      description: Closes a session and rolls it into the media progress summary.
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EndPlaybackRequest'
+      responses:
+        '200':
+          description: Recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/playlists:
+    get:
+      tags:
+      - playlists
+      summary: List playlists
+      description: "Playlists of the authenticated user. A limit that is not in 1..200 is not rejected and not clamped: the handler resets it to the default 50. A negative offset is reset to 0."
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 200
+          default: 50
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+      responses:
+        '200':
+          description: Playlists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  playlists:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Playlist'
+                  count:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+      - playlists
+      summary: Create a playlist
+      description: Creates a playlist for the authenticated user.
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlaylistRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Playlist'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/playlists/{id}:
+    get:
+      tags:
+      - playlists
+      summary: Get a playlist
+      description: Returns one playlist of the authenticated user.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Playlist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Playlist'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+      - playlists
+      summary: Update a playlist
+      description: Updates the provided fields of a playlist.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePlaylistRequest'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Playlist'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+      - playlists
+      summary: Delete a playlist
+      description: Deletes a playlist.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: playlist deleted
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/playlists/{id}/items:
+    post:
+      tags:
+      - playlists
+      summary: Add an item to a playlist
+      description: Appends an entity to a playlist.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddPlaylistItemRequest'
+      responses:
+        '201':
+          description: Added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaylistItem'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/playlists/{id}/items/{item_id}:
+    delete:
+      tags:
+      - playlists
+      summary: Remove an item from a playlist
+      description: Removes one item from a playlist.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: item_id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: item removed
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/recommendations:
+    get:
+      tags:
+      - recommendations
+      summary: List recommendations (trending default)
+      description: Alias of GET /api/v1/recommendations/trending.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: media_type
+        in: query
+        schema:
+          type: string
+        description: Filter by media type
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 20
+      - name: time_range
+        in: query
+        schema:
+          type: string
+          enum:
+          - day
+          - week
+          - month
+          - year
+          default: week
+      responses:
+        '200':
+          description: Trending items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrendingResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/recommendations/by-type:
+    get:
+      tags:
+      - recommendations
+      summary: Recommendations by type (placeholder)
+      description: 'Placeholder: returns empty lists for movie, tv, music and book.'
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Empty shell
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recommendations:
+                    type: object
+                    properties:
+                      movie:
+                        type: array
+                        items:
+                          type: object
+                      tv:
+                        type: array
+                        items:
+                          type: object
+                      music:
+                        type: array
+                        items:
+                          type: object
+                      book:
+                        type: array
+                        items:
+                          type: object
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/reports/usage:
+    get:
+      tags:
+      - reports
+      summary: Usage report
+      description: Generates the user-analytics report for the authenticated user over a date range.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: start_date
+        in: query
+        schema:
+          type: string
+          format: date
+        description: 'Start of the range, YYYY-MM-DD (default: one month before today)'
+      - name: end_date
+        in: query
+        schema:
+          type: string
+          format: date
+        description: 'End of the range, YYYY-MM-DD (default: today)'
+      responses:
+        '200':
+          description: Report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneratedReport'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/reports/performance:
+    get:
+      tags:
+      - reports
+      summary: Performance report
+      description: Generates the system-overview report over a date range.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: start_date
+        in: query
+        schema:
+          type: string
+          format: date
+        description: 'Start of the range, YYYY-MM-DD (default: one month before today)'
+      - name: end_date
+        in: query
+        schema:
+          type: string
+          format: date
+        description: 'End of the range, YYYY-MM-DD (default: today)'
+      responses:
+        '200':
+          description: Report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneratedReport'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/smb/identities:
+    get:
+      tags:
+      - smb
+      summary: List configured SMB identities
+      description: Labels of the SMB identities loaded from the server environment. Secrets are never returned.
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Identities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SMBIdentityInfo'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/smb/probe:
+    post:
+      tags:
+      - smb
+      summary: Probe an SMB host
+      description: Probes the host as guest first, then with each configured identity, and returns the binding identity and the real shares. Hosts that are loopback, link-local, multicast or cloud-metadata addresses are refused.
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SMBProbeRequest'
+      responses:
+        '200':
+          description: Probe result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SMBProbeResult'
+        '400':
+          description: Invalid request or disallowed host
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/smb/probe-and-ingest:
+    post:
+      tags:
+      - smb
+      summary: Probe an SMB host and persist the bindings
+      description: Probes the host with the identities loaded from the server environment and, if one authenticates, stores the discovered storage roots and share-identity bindings. The body carries only the host name, never credentials.
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SMBProbeRequest'
+      responses:
+        '200':
+          description: Probe and ingest result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProbeAndIngestResponse'
+        '400':
+          description: Invalid request or disallowed host
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/sync/conflicts:
+    get:
+      tags:
+      - sync
+      summary: List sync conflicts (placeholder)
+      description: 'Placeholder: always returns an empty list.'
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Empty list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conflicts:
+                    type: array
+                    items:
+                      type: object
+                  count:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/sync/devices:
+    get:
+      tags:
+      - sync
+      summary: List sync devices (placeholder)
+      description: 'Placeholder: always returns an empty list.'
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Empty list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  devices:
+                    type: array
+                    items:
+                      type: object
+                  count:
+                    type: integer
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/sync/status:
+    get:
+      tags:
+      - sync
+      summary: Sync status (placeholder)
+      description: 'Placeholder: always reports idle with no active sessions. Real figures are at GET /api/v1/sync/statistics.'
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Static status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: idle
+                  active_sessions:
+                    type: integer
+                  last_sync:
+                    type: string
+                    nullable: true
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/sync/providers:
+    get:
+      tags:
+      - sync
+      summary: List sync providers
+      description: Static list of the supported sync backends.
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Providers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  providers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        enabled:
+                          type: boolean
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/sync/history:
+    get:
+      tags:
+      - sync
+      summary: List sync history
+      description: Alias of GET /api/v1/sync/sessions.
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          maximum: 200
+          default: 50
+        description: Maximum sessions (max 200)
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          default: 0
+      responses:
+        '200':
+          description: User sync sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SyncSession'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/v1/users/me:
+    get:
+      tags:
+      - users
+      summary: Get the current user (alias)
+      description: Alias of GET /api/v1/auth/me.
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
