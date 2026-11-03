@@ -2,7 +2,7 @@
 
 Documents in this directory.
 
-Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 25 entries.
+Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 26 entries.
 
 | File | Description |
 |---|---|
@@ -31,3 +31,4 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Catalogizer Troubleshooting Guide - This guide helps you diagnose and resolve common issues with the Catalogizer system, including multi-protocol storage resilience, database problems, and performance... |
 | [USER_MANUAL.md](USER_MANUAL.md) | Catalogizer User Manual v2.3.0 - A comprehensive guide to installing, configuring, and using Catalogizer -- the multi-platform media collection manager. Catalogizer detects, categorizes, and organizes... |
 | [WEB_APP_GUIDE.md](WEB_APP_GUIDE.md) | Catalogizer Web App User Guide - This guide covers the Catalogizer web application in detail, including all features accessible through the browser-based interface. |
+| [pdf_text_extraction.md](pdf_text_extraction.md) | PDF text extraction (CAT-002) - What the catalog-api service does when a PDF is converted to text (catalog-api/services/pdf_text_extractor.go, pdf_text_isolation.go). |
