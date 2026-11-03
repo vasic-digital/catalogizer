@@ -1,0 +1,26 @@
+{
+  "data": [
+    {
+      "average_size": 64591,
+      "count": 1,
+      "extension": "mp3",
+      "file_type": "audio",
+      "total_size": 64591
+    },
+    {
+      "average_size": 68429,
+      "count": 1,
+      "extension": "mp4",
+      "file_type": "video",
+      "total_size": 68429
+    },
+    {
+      "average_size": 26,
+      "count": 1,
+      "extension": "txt",
+      "file_type": "document",
+      "total_size": 26
+    }
+  ],
+  "success": true
+}

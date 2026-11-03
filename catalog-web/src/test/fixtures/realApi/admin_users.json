@@ -1,0 +1,11 @@
+[
+  {
+    "createdAt": "2026-11-02T22:21:05Z",
+    "email": "admin@catalogizer.local",
+    "id": "1",
+    "lastLogin": "2026-11-03T00:19:19Z",
+    "role": "user",
+    "status": "active",
+    "username": "admin"
+  }
+]

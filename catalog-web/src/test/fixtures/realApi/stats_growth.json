@@ -1,0 +1,15 @@
+{
+  "data": {
+    "file_growth_rate": 0,
+    "monthly_growth": [
+      {
+        "files_added": 3,
+        "month": "2026-11",
+        "size_added": 133046
+      }
+    ],
+    "size_growth_rate": 0,
+    "total_growth_rate": 0
+  },
+  "success": true
+}

@@ -1,11 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { ConnectionStatus } from '../ConnectionStatus'
-import { useWebSocket } from '@/lib/websocket'
+import { useWebSocketContext as useWebSocket } from '@/contexts/WebSocketContext'
 import { useAuth } from '@/contexts/AuthContext'
 
 // Mock the websocket hook
-vi.mock('@/lib/websocket', async () => ({
-  useWebSocket: vi.fn(),
+vi.mock('@/contexts/WebSocketContext', async () => ({
+  useWebSocketContext: vi.fn(),
 }))
 
 // Article XI §11.5: ConnectionStatus is hidden pre-auth (added

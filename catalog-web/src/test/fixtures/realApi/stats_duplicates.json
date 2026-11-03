@@ -1,0 +1,10 @@
+{
+  "data": {
+    "average_group_size": 0,
+    "duplicate_groups": 0,
+    "largest_duplicate_group": 0,
+    "total_duplicates": 0,
+    "wasted_space": 0
+  },
+  "success": true
+}

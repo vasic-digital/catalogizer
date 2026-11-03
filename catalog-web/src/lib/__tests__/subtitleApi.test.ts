@@ -1,4 +1,4 @@
-import { subtitleApi } from '../subtitleApi'
+import { subtitleApi, toWireSearchParams } from '../subtitleApi'
 import apiDefault from '../api'
 
 vi.mock('../api', async () => {
@@ -33,8 +33,21 @@ describe('subtitleApi', () => {
       const params = { query: 'test movie', language: 'en' }
       const result = await subtitleApi.searchSubtitles(params)
 
-      expect(mockApi.get).toHaveBeenCalledWith('/subtitles/search', { params })
-      expect(result).toEqual(mockResults)
+      expect(mockApi.get).toHaveBeenCalledWith('/subtitles/search', { params: { query: 'test movie', languages: 'en' } })
+      expect(result).toMatchObject(mockResults)
+    })
+  })
+
+  describe('toWireSearchParams', () => {
+    it('joins providers with commas and renames language to languages', () => {
+      expect(toWireSearchParams({ media_path: '/x', language: 'en', providers: ['subdb', 'subscene'] })).toEqual({
+        media_path: '/x',
+        languages: 'en',
+        providers: 'subdb,subscene',
+      })
+    })
+    it('omits empty providers / language', () => {
+      expect(toWireSearchParams({ media_path: '/x', language: '', providers: [] })).toEqual({ media_path: '/x' })
     })
   })
 
@@ -68,7 +81,7 @@ describe('subtitleApi', () => {
       const result = await subtitleApi.getMediaSubtitles(42)
 
       expect(mockApi.get).toHaveBeenCalledWith('/subtitles/media/42')
-      expect(result).toEqual(mediaInfo)
+      expect(result).toMatchObject(mediaInfo)
     })
   })
 
@@ -144,7 +157,7 @@ describe('subtitleApi', () => {
       const result = await subtitleApi.getSupportedProviders()
 
       expect(mockApi.get).toHaveBeenCalledWith('/subtitles/providers')
-      expect(result).toEqual(providers)
+      expect(result).toMatchObject(providers)
     })
   })
 

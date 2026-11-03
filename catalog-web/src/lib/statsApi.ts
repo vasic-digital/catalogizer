@@ -113,8 +113,25 @@ export const statsApi = {
     api.get('/stats/growth', { params: { days } }).then((res) => {
       const payload = res.data?.data || res.data
       // API returns { monthly_growth: [...] } instead of a flat array
-      const trends = payload.monthly_growth || payload
-      return Array.isArray(trends) ? trends : []
+      const trends = payload?.monthly_growth || payload
+      if (!Array.isArray(trends)) return []
+      // monthly_growth rows carry {month, files_added, size_added}; derive the
+      // cumulative series the charts plot.
+      let files = 0
+      let size = 0
+      return trends.map((t: Record<string, unknown>) => {
+        const added = typeof t.files_added === 'number' ? t.files_added : 0
+        const addedSize = typeof t.size_added === 'number' ? t.size_added : 0
+        files = typeof t.cumulative_files === 'number' ? t.cumulative_files : files + added
+        size = typeof t.cumulative_size === 'number' ? t.cumulative_size : size + addedSize
+        return {
+          date: (t.date ?? t.month ?? '') as string,
+          files_added: added,
+          size_added: addedSize,
+          cumulative_files: files,
+          cumulative_size: size,
+        }
+      })
     }),
 
   getScanHistory: (limit = 20): Promise<ScanHistoryEntry[]> =>
