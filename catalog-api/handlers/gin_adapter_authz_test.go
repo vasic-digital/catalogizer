@@ -22,12 +22,13 @@ type permAuth struct {
 	got map[string]string
 }
 
-var tokenUsers = map[string]int{"mgr2": 8, "admin": 1, "plain": 2, "viewer": 3, "updater": 4, "manager": 5, "reporter": 6, "reportviewer": 7}
+var tokenUsers = map[string]int{"creator": 12, "mgr2": 8, "admin": 1, "plain": 2, "viewer": 3, "updater": 4, "manager": 5, "reporter": 6, "reportviewer": 7}
 
 var userPerms = map[int][]string{
-	8: {models.PermissionUserManage, models.PermissionUserDelete, models.PermissionUserUpdate},
+	12: {models.PermissionUserCreate},
+	8:  {models.PermissionUserManage, models.PermissionUserDelete, models.PermissionUserUpdate},
 	1: {models.PermissionSystemAdmin, models.PermissionUserView, models.PermissionUserUpdate, models.PermissionUserDelete,
-		models.PermissionUserManage, models.PermissionReportView, models.PermissionReportCreate, models.PermissionSystemConfig},
+		models.PermissionUserManage, models.PermissionUserCreate, models.PermissionReportView, models.PermissionReportCreate, models.PermissionSystemConfig},
 	2: {},
 	3: {models.PermissionUserView},
 	4: {models.PermissionUserUpdate},
@@ -74,13 +75,18 @@ type memStore struct {
 
 func newMemStore() *memStore {
 	s := &memStore{users: map[int]*models.User{}, roles: map[int]*models.Role{}}
-	for id := 1; id <= 8; id++ {
+	for id := 1; id <= 11; id++ {
 		s.users[id] = &models.User{ID: id, Username: "u" + strconv.Itoa(id), Email: "u" + strconv.Itoa(id) + "@x.io", RoleID: 2, IsActive: true}
 	}
 	s.roles[2] = &models.Role{ID: 2, Name: "user"}
 	s.roles[1] = &models.Role{ID: 1, Name: "admin", Permissions: models.Permissions{models.PermissionSystemAdmin}}
-	s.users[1].RoleID = 1 // admin caller
-	s.users[6].RoleID = 1 // a second admin: the escalation target
+	s.users[1].RoleID = 1                                                                              // admin caller
+	s.users[6].RoleID = 1                                                                              // a second admin: the escalation target
+	s.roles[3] = &models.Role{ID: 3, Name: "seeded-admin", Permissions: models.Permissions{"*"}}       // real seed shape
+	s.roles[4] = &models.Role{ID: 4, Name: "system-wild", Permissions: models.Permissions{"system.*"}} // wildcard-pattern shape
+	s.users[9].RoleID = 3
+	s.users[10].RoleID = 4
+	s.users[11].RoleID = 666 // role that cannot be resolved
 	s.roles[9] = &models.Role{ID: 9, Name: "other"}
 	s.roles[7] = &models.Role{ID: 7, Name: "custom"}
 	return s
@@ -96,6 +102,9 @@ func (s *memStore) GetByID(id int) (*models.User, error) {
 func (s *memStore) Update(u *models.User) error { c := *u; s.users[u.ID] = &c; return nil }
 func (s *memStore) Delete(id int) error         { delete(s.users, id); return nil }
 func (s *memStore) GetRole(id int) (*models.Role, error) {
+	if id == 666 {
+		return nil, assert.AnError // unresolvable role
+	}
 	if r, ok := s.roles[id]; ok {
 		c := *r
 		return &c, nil
@@ -136,6 +145,7 @@ func newUserRoleEnv() *authzEnv {
 	rh := NewRoleHandler(e.store, auth)
 	r := gin.New()
 	r.Use(gin.Recovery())
+	r.POST("/api/v1/users", WrapHTTPHandler(uh.CreateUser))
 	r.GET("/api/v1/users/:id", WrapHTTPHandler(uh.GetUser))
 	r.PUT("/api/v1/users/:id", WrapHTTPHandler(uh.UpdateUser))
 	r.DELETE("/api/v1/users/:id", WrapHTTPHandler(uh.DeleteUser))
@@ -348,7 +358,13 @@ func TestWizardStep_AuthenticatedUserMayRead(t *testing.T) {
 	assert.Equal(t, "welcome", e.got["GetWizardStep"])
 }
 
-func (s *memStore) Create(*models.User) (int, error) { return 0, nil }
+func (s *memStore) Create(u *models.User) (int, error) {
+	id := 100 + len(s.users)
+	c := *u
+	c.ID = id
+	s.users[id] = &c
+	return id, nil
+}
 
 func (a *permAuth) HashPassword(p string) (string, error)   { return p, nil }
 func (a *permAuth) GenerateSecureToken(int) (string, error) { return "t", nil }
@@ -405,4 +421,48 @@ func TestWizardHandlers_MissingUserIDIs401(t *testing.T) {
 	}
 	assert.Equal(t, 200, do(e, "plain", "POST", "/api/v1/configuration/wizard/step/welcome/save", `{}`).Code)
 	assert.Equal(t, "welcome", e.got["SaveWizardProgress"])
+}
+
+func newUserBody(role string) string {
+	return `{"username":"newbie","email":"n@x.io","password":"Password1!","role_id":` + role + `}`
+}
+
+// R3-S1: CreateUser must not let a user.create-only caller mint an admin.
+func TestCreateUser_CannotMintAdmin(t *testing.T) {
+	for _, role := range []string{"1", "3", "4", "666"} { // Admin, ["*"], "system.*", unresolvable
+		e := newUserRoleEnv()
+		before := len(e.store.users)
+		assert.Equal(t, 403, do(e, "creator", "POST", "/api/v1/users", newUserBody(role)).Code, "role "+role)
+		assert.Equal(t, before, len(e.store.users), "nothing created for role "+role)
+	}
+	e := newUserRoleEnv()
+	assert.Equal(t, 201, do(e, "creator", "POST", "/api/v1/users", newUserBody("9")).Code, "non-admin role is fine")
+	assert.Equal(t, 201, do(e, "admin", "POST", "/api/v1/users", newUserBody("1")).Code, "admin may create an admin")
+	assert.Equal(t, 403, do(e, "plain", "POST", "/api/v1/users", newUserBody("9")).Code, "needs user.create")
+	// R3-N1: role_id must be positive
+	assert.Equal(t, 400, do(e, "admin", "POST", "/api/v1/users", newUserBody("-5")).Code)
+}
+
+// R3-T1/T2: real admin role shapes and unresolvable roles, as targets and as role_id.
+func TestUserManage_AdminShapesAndUnresolvableRoles(t *testing.T) {
+	body := `{"lock_until":"2030-01-01T00:00:00Z"}`
+	e := newUserRoleEnv()
+	for _, target := range []string{"6", "9", "10", "11"} { // Admin, ["*"], "system.*", unresolvable role
+		for _, tok := range []string{"manager", "mgr2"} {
+			assert.Equal(t, 403, do(e, tok, "POST", "/api/v1/users/"+target+"/reset-password", `{"new_password":"x"}`).Code, tok+" reset "+target)
+			assert.Equal(t, 403, do(e, tok, "POST", "/api/v1/users/"+target+"/lock", body).Code, tok+" lock "+target)
+			assert.Equal(t, 403, do(e, tok, "POST", "/api/v1/users/"+target+"/unlock", "").Code, tok+" unlock "+target)
+			assert.Equal(t, 403, do(e, tok, "PUT", "/api/v1/users/"+target, `{"email":"p@x.io"}`).Code, tok+" update "+target)
+		}
+		assert.Equal(t, 403, do(e, "mgr2", "DELETE", "/api/v1/users/"+target, "").Code, "delete "+target)
+	}
+	assert.Empty(t, e.got["ResetPassword"]+e.got["LockAccount"]+e.got["UnlockAccount"])
+	for _, role := range []string{"1", "3", "4", "666"} {
+		assert.Equal(t, 403, do(e, "manager", "PUT", "/api/v1/users/3", `{"role_id":`+role+`}`).Code, "assign role "+role)
+	}
+	assert.Equal(t, 2, e.store.users[3].RoleID)
+	// R3-N1: non-positive role ids are rejected for everyone
+	for _, role := range []string{"0", "-1"} {
+		assert.Equal(t, 400, do(e, "admin", "PUT", "/api/v1/users/3", `{"role_id":`+role+`}`).Code, "role_id "+role)
+	}
 }

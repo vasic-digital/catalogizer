@@ -152,6 +152,7 @@ func TestUserHandler_CreateUser(t *testing.T) {
 				authUser := &models.User{ID: 1, Username: "admin"}
 				authService.On("GetCurrentUser", "valid-token").Return(authUser, nil)
 				authService.On("CheckPermission", 1, models.PermissionUserCreate).Return(true, nil)
+				authService.On("CheckPermission", 1, models.PermissionSystemAdmin).Return(true, nil).Maybe()
 				authService.On("ValidatePassword", "password123").Return(nil)
 				authService.On("GenerateSecureToken", 16).Return("random-salt-123", nil)
 				authService.On("HashData", mock.AnythingOfType("string")).Return("hashed-combined")
@@ -204,6 +205,7 @@ func TestUserHandler_CreateUser(t *testing.T) {
 				authUser := &models.User{ID: 1, Username: "admin"}
 				authService.On("GetCurrentUser", "valid-token").Return(authUser, nil)
 				authService.On("CheckPermission", 1, models.PermissionUserCreate).Return(true, nil)
+				authService.On("CheckPermission", 1, models.PermissionSystemAdmin).Return(true, nil).Maybe()
 				authService.On("ValidatePassword", "123").Return(assert.AnError)
 			},
 			expectedStatusCode: http.StatusBadRequest,
@@ -223,6 +225,7 @@ func TestUserHandler_CreateUser(t *testing.T) {
 				authUser := &models.User{ID: 1, Username: "admin"}
 				authService.On("GetCurrentUser", "valid-token").Return(authUser, nil)
 				authService.On("CheckPermission", 1, models.PermissionUserCreate).Return(true, nil)
+				authService.On("CheckPermission", 1, models.PermissionSystemAdmin).Return(true, nil).Maybe()
 				authService.On("ValidatePassword", "password123").Return(nil)
 				authService.On("GenerateSecureToken", 16).Return("random-salt-123", nil)
 				authService.On("HashData", mock.AnythingOfType("string")).Return("hashed-combined")
@@ -247,6 +250,7 @@ func TestUserHandler_CreateUser(t *testing.T) {
 				authUser := &models.User{ID: 1, Username: "admin"}
 				authService.On("GetCurrentUser", "valid-token").Return(authUser, nil)
 				authService.On("CheckPermission", 1, models.PermissionUserCreate).Return(true, nil)
+				authService.On("CheckPermission", 1, models.PermissionSystemAdmin).Return(true, nil).Maybe()
 				// no ValidatePassword / Create expectations — handler
 				// must short-circuit on missing required fields.
 			},

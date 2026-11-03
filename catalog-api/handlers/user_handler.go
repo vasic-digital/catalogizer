@@ -95,10 +95,18 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	if req.RoleID == 0 {
 		missing = append(missing, "role_id")
 	}
+	if req.RoleID < 0 {
+		http.Error(w, "role_id must be a positive integer", http.StatusBadRequest)
+		return
+	}
 	if len(missing) > 0 {
 		http.Error(w,
 			`{"error":"missing required fields","details":"required: `+strings.Join(missing, ", ")+`"}`,
 			http.StatusBadRequest)
+		return
+	}
+
+	if !h.allowedToAssignRole(w, currentUser, req.RoleID) {
 		return
 	}
 
@@ -264,6 +272,11 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	var req models.UpdateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if req.RoleID != nil && *req.RoleID <= 0 {
+		http.Error(w, "role_id must be a positive integer", http.StatusBadRequest)
 		return
 	}
 
@@ -740,7 +753,8 @@ func parseTime(timeStr string) (time.Time, error) {
 
 // roleIsAdmin reports whether a role carries system administration rights.
 func roleIsAdmin(role *models.Role) bool {
-	return role != nil && role.Permissions.HasAnyPermission([]string{models.PermissionSystemAdmin, models.PermissionWildcard})
+	// HasPermission honours "*" and prefix wildcards such as "system.*".
+	return role != nil && role.Permissions.HasPermission(models.PermissionSystemAdmin)
 }
 
 // callerIsAdmin reports whether the caller holds system.admin. On error it has
