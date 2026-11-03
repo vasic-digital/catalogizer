@@ -1335,7 +1335,10 @@ func (s *SyncService) evictWebDAVClient(id int) {
 func (s *SyncService) getWebDAVClient(endpoint *models.SyncEndpoint) (*WebDAVClient, error) {
 	s.webdavMu.Lock()
 	defer s.webdavMu.Unlock()
-	if client, exists := s.webdavClients[endpoint.ID]; exists {
+	// Reuse the cached client only if it was built for exactly this URL and credentials:
+	// after a credential or URL change the stale entry is replaced, never reused.
+	if client, exists := s.webdavClients[endpoint.ID]; exists &&
+		client.baseURL == endpoint.URL && client.username == endpoint.Username && client.password == endpoint.Password {
 		return client, nil
 	}
 

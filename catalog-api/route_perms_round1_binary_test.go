@@ -109,6 +109,20 @@ func TestRoutePerms_RealBinary_SelfOrAdmin(t *testing.T) {
 		assert.NotContains(t, []int{401, 403, 503}, code, "admin must reach "+other)
 	}
 	require.NotEqual(t, aID, bID)
+
+	// F-B: an id that merely shares A's decimal prefix (A=2, other=21) is still another account.
+	prefixID := 0
+	for i := 0; i < 60 && prefixID == 0; i++ {
+		id, _ := mk(fmt.Sprintf("sapx%d", i))
+		if s, a := fmt.Sprint(id), fmt.Sprint(aID); id != aID && len(s) > len(a) && s[:len(a)] == a {
+			prefixID = id
+		}
+	}
+	require.NotZero(t, prefixID, "could not create a user whose id extends %d", aID)
+	for _, tpl := range []string{"/api/v1/analytics/user/%d", "/api/v1/recommendations/personalized/%d"} {
+		code, _ := c.do("GET", fmt.Sprintf(tpl, prefixID), aTok, nil)
+		assert.Equal(t, 403, code, "user %d must not read prefix-sharing user %d via "+tpl, aID, prefixID, prefixID)
+	}
 }
 
 // N1: analytics writes are attributed to the caller (the token), never to a user id taken
