@@ -617,6 +617,12 @@ func (h *MediaQueryHandler) ChangePassword(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update password"})
 		return
 	}
+	// Same as AuthService.ChangePassword: sessions issued under the old
+	// password are revoked (the user logs in again with the new one).
+	if err := h.userRepo.DeactivateAllUserSessions(uid); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "password changed but revoking sessions failed"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "ok",

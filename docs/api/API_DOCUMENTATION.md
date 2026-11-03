@@ -3163,7 +3163,7 @@ real binary and asserted by `catalog-api/openapi_contract_binary_test.go`):
 | Operation | Needs | Self (caller's own id) | Admin target |
 |---|---|---|---|
 | `GET /users/:id` | `user.view` for another id | allowed without permission | readable with `user.view` |
-| `PUT /users/:id` | `user.update` for another id; `is_active` is applied only with `user.manage`; `role_id` is checked (with `user.manage`, and `system.admin` for an admin role) but never saved, see Known defects | 200, profile fields applied, `role_id` and `is_active` silently ignored (also for an admin) | 403 unless the caller has `system.admin` |
+| `PUT /users/:id` | `user.update` for another id; `is_active` is applied only with `user.manage`; `role_id` is checked (with `user.manage`, and `system.admin` for an admin role) and saved; a change of `role_id` or `is_active` revokes the target's sessions | 200, profile fields applied, `role_id` and `is_active` silently ignored on a self-update (also for an admin) | 403 unless the caller has `system.admin` |
 | `DELETE /users/:id` | `user.delete` (checked first) | 400 `Cannot delete your own account` (403 without `user.delete`) | 403 unless `system.admin` |
 | `POST /users/:id/reset-password` | `user.manage` | allowed with `user.manage` (403 without it) | 403 unless `system.admin` |
 | `POST /users/:id/lock` | `user.manage` (checked first) | 400 `Cannot lock your own account` (403 without `user.manage`) | 403 unless `system.admin` |
@@ -3173,12 +3173,11 @@ An "admin target" is an account whose role carries `system.admin`; a target whos
 the same way (403). A caller without `system.admin` may not assign a role that carries `system.admin` (403). The
 `403` body is `Insufficient permissions`. `400` is also returned for a non-integer id.
 
-**Known defects (measured 2026-11-03, open follow-ups):** a user created with `POST /api/v1/users` cannot log in with
-the password given at creation (stored as SHA-256 while login verifies bcrypt) until a password is set with
-`POST /api/v1/users/:id/reset-password`; `POST /api/v1/users/:id/unlock` with an empty body is rejected by the request
-validation middleware (400 `invalid JSON format`), send `{}`; `PUT /api/v1/users/:id` never saves `role_id`: the
-response is 200 and echoes the requested `role_id`, but `UserRepository.Update` has no `role_id` column, so a later
-`GET` shows the old role (changing a user's role through the API does not work); `is_active` is saved.
+**Fixed (2026-11-03 login/validator fix):** a user created with `POST /api/v1/users` now logs in with the password given at creation
+(one shared password hasher; a row written earlier by the old SHA-256 code is accepted once and upgraded at that login);
+`PUT /api/v1/users/:id` saves `role_id` and revokes the target's sessions when `role_id` or `is_active` changes; the permission
+names `user.create`, `user.update`, `user.delete` and passwords containing SQL words are accepted. Still open: `POST /api/v1/users/:id/unlock`
+with an empty body is rejected by the request validation middleware (400 `invalid JSON format`), send `{}`.
 
 ### POST /api/v1/users
 
@@ -3255,7 +3254,7 @@ Get a specific user by ID.
 
 Update a user's information.
 
-**Description:** Updates user fields. Users can update their own profile without a permission, but `role_id` and `is_active` are ignored on a self-update (also for an admin). Updating another user needs `user.update`; `is_active` is applied only when the caller also has `user.manage`. `role_id` is validated and permission-checked (`user.manage`, and `system.admin` to assign an admin role) and echoed in the response, but it is never saved (known defect, see the note at the top of this section). See the permission table above.
+**Description:** Updates user fields. Users can update their own profile without a permission, but `role_id` and `is_active` are ignored on a self-update (also for an admin). Updating another user needs `user.update`; `is_active` is applied only when the caller also has `user.manage`. `role_id` is validated and permission-checked (`user.manage`, and `system.admin` to assign an admin role) saved and echoed in the response; changing `role_id` or `is_active` revokes the target user's sessions (the old token stops working). See the permission table above.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 

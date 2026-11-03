@@ -67,7 +67,6 @@ import (
 	"github.com/quic-go/quic-go/http3"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // Version information injected via ldflags at build time
@@ -2052,7 +2051,7 @@ func refuseCompromisedAdminHashes(db *database.DB) error {
 	}
 	for _, a := range accts {
 	for _, c := range root_config.PlaceholderPasswordCandidates() {
-		if bcrypt.CompareHashAndPassword([]byte(a.hash), []byte(c+a.salt)) == nil {
+		if ok, _ := root_services.CheckPassword(c, a.salt, a.hash); ok {
 		return fmt.Errorf("%w: account %q; run the offline recovery `catalog-api admin-reset-password` (with ADMIN_NEW_PASSWORD set) before starting", errCompromisedAdmin, a.user)
 		}
 	}

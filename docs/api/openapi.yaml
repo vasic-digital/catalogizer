@@ -4490,7 +4490,7 @@ paths:
     post:
       tags: [users]
       summary: Create user
-      description: "Needs `user.create`; a caller without `system.admin` may not assign a role that carries `system.admin` (403). KNOWN DEFECT (measured 2026-11-03 on the real binary, open follow-up): the handler stores a SHA-256 hash of password+salt while login verifies a bcrypt hash, so the created user gets 401 `invalid credentials` until a password is set through POST /api/v1/users/{id}/reset-password."
+      description: "Needs `user.create`; a caller without `system.admin` may not assign a role that carries `system.admin` (403). The password is stored with the same versioned hash the login verifies, so the created user can log in immediately (fixed; rows created earlier by the old SHA-256 code are accepted once and upgraded at that login)."
       security:
         - BearerAuth: []
       requestBody:
@@ -4557,7 +4557,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateUserRequest'
-      description: "Updates profile fields (username, email, first/last/display name, avatar_url, time_zone, language, settings). Self-update: allowed without any permission and returns 200, but `role_id` and `is_active` in the body are silently ignored, also for an administrator updating their own account (measured on the real binary). Updating another user needs `user.update`; `is_active` is applied only when the caller also has `user.manage`. `role_id` is validated and permission-checked (it needs `user.manage`, and a caller without `system.admin` may not assign a role that carries `system.admin`, 403) and is echoed in the 200 response, but it is NEVER saved: KNOWN DEFECT, `UserRepository.Update` has no `role_id` column, so a later GET shows the old role (measured on the real binary and pinned by catalog-api/openapi_contract_binary_test.go). Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved)."
+      description: "Updates profile fields (username, email, first/last/display name, avatar_url, time_zone, language, settings). Self-update: allowed without any permission and returns 200, but `role_id` and `is_active` in the body are silently ignored, also for an administrator updating their own account (measured on the real binary). Updating another user needs `user.update`; `is_active` is applied only when the caller also has `user.manage`. `role_id` is validated and permission-checked (it needs `user.manage`, and a caller without `system.admin` may not assign a role that carries `system.admin`, 403) and is saved and echoed in the 200 response, and a later GET shows it (pinned by catalog-api/openapi_contract_binary_test.go). A change of `role_id` or `is_active` revokes all of the target user's sessions, so the old access token stops working at once and the user must log in again. Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved)."
       responses:
         '200':
           description: "Updated user (JSON)."
@@ -4680,7 +4680,7 @@ paths:
     post:
       tags: [roles]
       summary: Create role
-      description: "Needs `system.admin`. KNOWN DEFECT (measured 2026-11-03 on the real binary, open follow-up): the request validation middleware rejects the permission names `user.create`, `user.update` and `user.delete` with 400 `potential SQL injection detected` (`user.view`, `user.manage` and the wildcard `user.*` are accepted)."
+      description: "Needs `system.admin`. Permission names such as `user.create`, `user.update` and `user.delete` are accepted (the request validation middleware detects SQL injection by statement structure, not by bare keywords)."
       security:
         - BearerAuth: []
       requestBody:

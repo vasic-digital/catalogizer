@@ -383,3 +383,17 @@ func TestContainsSQLInjection_PermissionNamesAndProse(t *testing.T) {
 		assert.True(t, ContainsSQLInjection(in), in)
 	}
 }
+
+func TestContainsSQLInjection_Round2Additions(t *testing.T) {
+	for _, in := range []string{
+		`1 AND (SELECT COUNT(*) FROM users) > 0`,
+		`1 OR 1=1`, `x' OR 'a'='a`, `1 GROUP BY a HAVING 1=1`,
+		`1 AND extractvalue(1,concat(0x7e,version()))`,
+		`1; DROP TABLE users`, `' UNION SELECT password FROM users --`,
+	} {
+		assert.True(t, ContainsSQLInjection(in), "must detect: %q", in)
+	}
+	for _, in := range []string{"user.create", "user.update", "having a good time", "select your plan", "Dr0p-table#Throwaway"} {
+		assert.False(t, ContainsSQLInjection(in), "must accept: %q", in)
+	}
+}

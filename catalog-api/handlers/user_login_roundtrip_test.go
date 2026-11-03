@@ -7,10 +7,12 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"catalogizer/database"
 	"catalogizer/middleware"
@@ -85,6 +87,20 @@ func newRTEnv(t *testing.T) *rtEnv {
 		}
 		mq.ChangePassword(c)
 	})
+	jwtMW := middleware.NewJWTMiddleware("test-jwt-secret-throwaway")
+	jwtMW.SetSessionChecker(func(ctx context.Context, sessionID, userID string) error {
+		var active bool
+		var owner int
+		var exp time.Time
+		if err := db.QueryRowContext(ctx, "SELECT is_active, expires_at, user_id FROM user_sessions WHERE id = ?", sessionID).Scan(&active, &exp, &owner); err != nil {
+			return err
+		}
+		if !active || exp.Before(time.Now()) || rtItoa(owner) != userID {
+			return errors.New("session inactive")
+		}
+		return nil
+	})
+	r.GET("/api/v1/admin/ping", jwtMW.RequireAuth(), jwtMW.RequireAdmin(), func(c *gin.Context) { c.String(200, "admin-ok") })
 	r.POST("/api/v1/roles", WrapHTTPHandler(rh.CreateRole))
 	r.PUT("/api/v1/roles/:id", WrapHTTPHandler(rh.UpdateRole))
 
@@ -127,7 +143,7 @@ func TestRT_D1_UserCreatedViaPostUsersCanLogin(t *testing.T) {
 	// The stored hash must be the canonical bcrypt scheme, not SHA-256 hex.
 	u, err := e.repo.GetByUsername("alice")
 	require.NoError(t, err)
-	assert.True(t, strings.HasPrefix(u.PasswordHash, "$2"), "stored hash must be bcrypt")
+	assert.True(t, strings.HasPrefix(u.PasswordHash, "$cz1$"), "stored hash must be the canonical versioned bcrypt scheme")
 
 	assert.Equal(t, 200, e.login("alice", rtUserPass).Code, "POST /users user must be able to log in")
 	assert.Equal(t, 401, e.login("alice", rtUserPass+"x").Code, "wrong password must still be rejected")
@@ -162,14 +178,14 @@ func TestRT_D1_LegacySHA256HashVerifiedAndUpgraded(t *testing.T) {
 	assert.Equal(t, 200, e.login("carol", rtUserPass).Code, "legacy SHA-256 user logs in")
 	u, err = e.repo.GetByUsername("carol")
 	require.NoError(t, err)
-	assert.True(t, strings.HasPrefix(u.PasswordHash, "$2"), "hash upgraded to bcrypt after login")
+	assert.True(t, strings.HasPrefix(u.PasswordHash, "$cz1$"), "hash upgraded to the canonical scheme after login")
 	assert.Equal(t, 200, e.login("carol", rtUserPass).Code, "still logs in after upgrade")
 }
 
 func TestRT_D1_CanonicalHasherUnit(t *testing.T) {
 	h, err := services.HashPasswordWithSalt("pw-Throwaway1!", "salt1")
 	require.NoError(t, err)
-	assert.True(t, strings.HasPrefix(h, "$2"))
+	assert.True(t, strings.HasPrefix(h, "$cz1$"))
 	ok, up := services.CheckPassword("pw-Throwaway1!", "salt1", h)
 	assert.True(t, ok)
 	assert.False(t, up)
@@ -381,4 +397,89 @@ func TestRT_D3_UpdateUserPersistsRole(t *testing.T) {
 	assert.True(t, after.IsActive, "self deactivation ignored")
 	require.NotNil(t, after.FirstName)
 	assert.Equal(t, "Tgt", *after.FirstName)
+}
+
+func (e *rtEnv) tokenFor(t *testing.T, user, pass string) string {
+	t.Helper()
+	w := e.login(user, pass)
+	require.Equal(t, 200, w.Code, w.Body.String())
+	var r struct {
+		SessionToken string `json:"session_token"`
+	}
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &r))
+	return r.SessionToken
+}
+
+// F3: a role change (now persisted) or deactivation must stop the target's
+// outstanding access token at once, not after its 24 h lifetime.
+func TestRT_F3_RoleChangeRevokesSessions(t *testing.T) {
+	e := newRTEnv(t)
+	for _, tc := range []struct{ name, body string }{
+		{"admin2", `{"role_id":2}`},
+		{"admin3", `{"is_active":false}`},
+	} {
+		require.Equal(t, 201, e.do(e.adminTok, "POST", "/api/v1/users",
+			`{"username":"`+tc.name+`","email":"`+tc.name+`@example.test","password":"`+rtUserPass+`","role_id":1}`).Code)
+		tok := e.tokenFor(t, tc.name, rtUserPass)
+		require.Equal(t, 200, e.do(tok, "GET", "/api/v1/admin/ping", "").Code, "admin token works before demotion")
+		u, _ := e.repo.GetByUsername(tc.name)
+		require.Equal(t, 200, e.do(e.adminTok, "PUT", "/api/v1/users/"+rtItoa(u.ID), tc.body).Code)
+		c := e.do(tok, "GET", "/api/v1/admin/ping", "").Code
+		assert.Equal(t, 401, c, tc.name+": old token must be rejected after "+tc.body)
+	}
+	// unrelated update does NOT revoke
+	require.Equal(t, 201, e.do(e.adminTok, "POST", "/api/v1/users", createUserBody("keep")).Code)
+	tok := e.tokenFor(t, "keep", rtUserPass)
+	u, _ := e.repo.GetByUsername("keep")
+	require.Equal(t, 200, e.do(e.adminTok, "PUT", "/api/v1/users/"+rtItoa(u.ID), `{"first_name":"K"}`).Code)
+	var active int
+	require.NoError(t, e.db.QueryRow("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND is_active = 1", u.ID).Scan(&active))
+	assert.Equal(t, 1, active, "profile-only update keeps sessions")
+	_ = tok
+}
+
+func TestRT_F3_ChangePasswordRevokesSessions(t *testing.T) {
+	e := newRTEnv(t)
+	require.Equal(t, 201, e.do(e.adminTok, "POST", "/api/v1/users", createUserBody("frank")).Code)
+	_ = e.tokenFor(t, "frank", rtUserPass)
+	u, _ := e.repo.GetByUsername("frank")
+	req := httptest.NewRequest("POST", "/api/v1/auth/change-password",
+		strings.NewReader(`{"current_password":"`+rtUserPass+`","new_password":"Ch4nged!Throwaway#4"}`))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Test-User-ID", rtItoa(u.ID))
+	w := httptest.NewRecorder()
+	e.r.ServeHTTP(w, req)
+	require.Equal(t, 200, w.Code, w.Body.String())
+	var active int
+	require.NoError(t, e.db.QueryRow("SELECT COUNT(*) FROM user_sessions WHERE user_id = ? AND is_active = 1", u.ID).Scan(&active))
+	assert.Equal(t, 0, active, "change-password must revoke existing sessions")
+}
+
+// F4: every password length ValidatePassword accepts (8..128 bytes) must be
+// storable and loginable; legacy rows with long passwords must verify AND upgrade.
+func TestRT_F4_LongPasswordsEndToEnd(t *testing.T) {
+	e := newRTEnv(t)
+	for _, n := range []int{40, 41, 55, 72, 73, 100, 128} {
+		pw := "Aa1!" + strings.Repeat("x", n-4)
+		require.Len(t, pw, n)
+		name := "long" + rtItoa(n)
+		body := `{"username":"` + name + `","email":"` + name + `@example.test","password":"` + pw + `","role_id":2}`
+		w := e.do(e.adminTok, "POST", "/api/v1/users", body)
+		require.Equal(t, 201, w.Code, rtItoa(n)+": "+w.Body.String())
+		assert.Equal(t, 200, e.login(name, pw).Code, "login len %d", n)
+		assert.Equal(t, 401, e.login(name, pw+"y").Code, "wrong long pw len %d", n)
+		assert.Equal(t, 401, e.login(name, pw[:n-1]).Code, "prefix of long pw must not log in, len %d", n)
+
+		// legacy row with the same length
+		salt := "0123456789abcdef0123456789abcdef"
+		sum := sha256.Sum256([]byte(pw + salt))
+		lname := "legacylong" + rtItoa(n)
+		_, err := e.repo.Create(&models.User{Username: lname, Email: lname + "@example.test",
+			PasswordHash: hex.EncodeToString(sum[:]), Salt: salt, RoleID: 2, IsActive: true})
+		require.NoError(t, err)
+		assert.Equal(t, 200, e.login(lname, pw).Code, "legacy login len %d", n)
+		lu, _ := e.repo.GetByUsername(lname)
+		assert.True(t, strings.HasPrefix(lu.PasswordHash, "$cz1$"), "legacy long-password row upgraded, len %d", n)
+		assert.Equal(t, 200, e.login(lname, pw).Code)
+	}
 }

@@ -159,7 +159,6 @@ func TestInputValidation_SizeLimit(t *testing.T) {
 	assert.Contains(t, w.Body.String(), "request body too large")
 }
 
-
 func TestInputValidation_Sanitization(t *testing.T) {
 	testCases := []struct {
 		input    string
@@ -601,4 +600,65 @@ func TestValidateStringValue_PathTraversalDetectionDisabled(t *testing.T) {
 	config.EnableXSSDetection = false
 	err := validateStringValue(config, "path", "../../../etc/passwd")
 	assert.NoError(t, err)
+}
+
+// F2: the XSS rules must catch tags that are not closed, span lines, and the
+// other active-content elements; benign prose must still pass.
+func TestDetectXSS_Round2Corpus(t *testing.T) {
+	bad := []string{
+		`<script>alert(1)</script>`,
+		`<script src=//evil.example/x.js>`,
+		`<script src="https://evil.example/x.js"`,
+		"<script>\nalert(1)\n</script>",
+		"<SCRIPT\n>alert(1)",
+		`<iframe src="javascript:alert(1)">`,
+		`<iframe src=//evil.example>`,
+		`<base href="//evil.example/">`,
+		`<link rel=stylesheet href=//evil.example/x.css>`,
+		`<style>@import 'https://evil.example/x.css';</style>`,
+		`<style>body{background:url(javascript:alert(1))}`,
+		`<img src=x onerror=alert(1)>`,
+		`<img src=x onerror = alert(1)`,
+		`<svg onload=alert(1)>`,
+		`<body onload=alert(1)>`,
+		`<a href="javascript:alert(1)">x</a>`,
+		`<a href="JaVaScRiPt:alert(1)">`,
+		`<a href="data:text/html;base64,PHNjcmlwdD4=">`,
+		`<object data="x.swf">`,
+		`<embed src=x.swf>`,
+		`<meta http-equiv="refresh" content="0;url=//evil.example">`,
+		`<form action=//evil.example><input type=submit>`,
+		`<math><mtext><script>alert(1)`,
+		`<div onmouseover="alert(1)">hi</div>`,
+		`<details open ontoggle=alert(1)>`,
+	}
+	for _, in := range bad {
+		assert.True(t, DetectXSS(in), "must detect: %q", in)
+	}
+	good := []string{
+		"hello world", "5 < 6 and 7 > 3", "a script for a play", "use the <b> tag sparingly",
+		"The javascript language", "onboarding steps", "I prefer base and link layouts",
+		"email me at a@b.test", "P4ss<word>Throwaway", "style guide", "iframe is a word",
+	}
+	for _, in := range good {
+		assert.False(t, DetectXSS(in), "must accept: %q", in)
+	}
+}
+
+// R10 kill test: a quote-tautology without any keyword like UNION/SELECT.
+func TestDetectSQLInjection_QuoteTautologies(t *testing.T) {
+	for _, in := range []string{`x' OR y`, `x" AND z`, `' OR '1'='1`, `admin'--`, `x' or 1=1 --`} {
+		assert.True(t, DetectSQLInjection(in), "must detect: %q", in)
+	}
+	for _, in := range []string{"Password with OR and AND words", "it's an order or an and", "select a color"} {
+		assert.False(t, DetectSQLInjection(in), "must accept: %q", in)
+	}
+}
+
+// M2: only a TOP-LEVEL secret key is exempt from the SQL/XSS value scan.
+func TestValidateJSONValues_SecretExemptionTopLevelOnly(t *testing.T) {
+	config := DefaultInputValidationConfig()
+	assert.NoError(t, validateJSONValues(config, map[string]interface{}{"password": "Pa'ss; DROP TABLE x OR 1=1"}))
+	err := validateJSONValues(config, map[string]interface{}{"meta": map[string]interface{}{"password": "<script>alert(1)</script>"}})
+	assert.Error(t, err, "nested password-named key is not exempt")
 }

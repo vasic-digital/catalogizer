@@ -438,16 +438,16 @@ Tracked follow-ups (status OPEN):
 Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/api/openapi.yaml` and
 `docs/api/API_DOCUMENTATION.md` as known defects. The fixes belong to a separate fix work item.
 
-- R2 (important): `PUT /api/v1/users/{id}` never saves `role_id`. The response is 200 and echoes the requested
+- R2 (important, FIXED in the login/validator fix, branch fix-user-login-validator): `PUT /api/v1/users/{id}` never saved `role_id`. The response is 200 and echoes the requested
   `role_id`, but `UserRepository.Update` (`catalog-api/repository/user_repository.go`) has no `role_id` column, so a
   later GET shows the old role; `is_active` is saved. Changing a user's role through the API does not work. The defect
   is pinned by `catalog-api/openapi_contract_binary_test.go` (assertion "role_id is not persisted"); the fix must flip
   that assertion and update both docs.
-- R5 (important): the request validation middleware rejects passwords that contain SQL keywords (for example a word
+- R5 (important, FIXED: passwords are exempt from pattern checks): the request validation middleware rejects passwords that contain SQL keywords (for example a word
   such as `Create`) as potential SQL injection. Reported by review round 1; the exact keyword list is UNCONFIRMED here.
-- F1 (important): users created with `POST /api/v1/users` cannot log in until an admin runs reset-password (password
+- F1 (important, FIXED): users created with `POST /api/v1/users` cannot log in until an admin runs reset-password (password
   stored as SHA-256, login verifies bcrypt).
-- F2 (important): the same validator rejects the permission names `user.create`, `user.update`, `user.delete` on
+- F2 (important, FIXED): the same validator rejects the permission names `user.create`, `user.update`, `user.delete` on
   `POST /api/v1/roles`; only `user.view`, `user.manage` and `user.*` pass.
 - F3 (minor): `DELETE /api/v1/logs/share/{id}` with an unknown id answers 500, not 404; several 404/500 bodies echo
   raw service or SQL error text; error reports store the server host name in `system_info`.
@@ -457,4 +457,13 @@ Measured on the real catalog-api binary on 2026-11-03 and documented in `docs/ap
 ## Docs C2/C5 review round 2 follow-ups (GO-with-follow-ups, process-doc minor)
 
 - R6: docs say every cell of the user/role permission table is "asserted by" the binary contract test; the test only uses `user.*` roles, so single-permission cells (`user.view` only, `user.manage` only) are measured live but not asserted. Add those two roles to the test or soften the wording.
-- R7 (measured): the input validator pattern list is `catalog-api/middleware/input_validation.go:57-66`. On POST /api/v1/users it rejects whole words CREATE, AND, OR, FROM, SLEEP and `--` in ANY string field (password, display_name "Rock and Roll"); `Selection` and `Order-By` pass. Permission names `user.create` fail for the same reason. Under investigation in the login/validator fix.
+- R7 (measured): the input validator pattern list is `catalog-api/middleware/input_validation.go:57-66`. On POST /api/v1/users it rejects whole words CREATE, AND, OR, FROM, SLEEP and `--` in ANY string field (password, display_name "Rock and Roll"); `Selection` and `Order-By` pass. Permission names `user.create` fail for the same reason. FIXED in the login/validator fix (structural SQL-injection detection).
+
+## Login/validator fix (branch fix-user-login-validator) follow-ups
+
+- SQL-injection detector (`utils.ContainsSQLInjection`) is a heuristic defence in depth; values reach parameterised queries. The review measured 12 of 51 payloads passing before round 2 (subselects `1 AND (SELECT COUNT(*) FROM users)>0`, `1 OR TRUE`, `') OR ('1'='1`, `SELECT*FROM users`, `1 AND extractvalue(...)`, `1' GROUP BY 1,2 HAVING 1=1`, URL-encoded forms, `1'||(SELECT 1)||'`); round 2 closed the cheap ones. Remaining misses are tracked, not claimed solved. Prose such as "Select items from list" is still flagged.
+- Password-field exemption is keyed on the leaf field name at the TOP level of the JSON body only (nested `password` keys are checked). Credentials nested deeper in future endpoints would be pattern-checked.
+- Legacy SHA-256 password rows have no sunset: they are crackable offline until each user logs in. Add a forced reset or expiry for rows still in that shape, and log counts of remaining legacy rows.
+- `UserAuthServiceInterface.HashData` and `AuthServiceAdapter.HashData` are no longer used by production code (dead since the shared hasher); investigate history before removing (section 11.4.124).
+- `database/schema_v3_multiuser.sql` seeds a published default admin hash (password `password`). Checked 2026-11-03: no Go code, script, Makefile, compose or Dockerfile references it and `scripts/register/root_dispositions.yaml` records it as not loaded; consider deleting or neutralising the seed row (investigate history first, section 11.4.124).
+- The access-token `role_id` claim is trusted by `RequireAdmin` until expiry. Session revocation on role change closes the gap while the session checker is installed; a DB re-check of the role in `RequireAdmin` was considered and not done.

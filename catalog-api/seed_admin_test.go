@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"catalogizer/database"
+	root_services "catalogizer/services"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -32,7 +33,8 @@ func verifyStored(t *testing.T, db *database.DB, user, password string) bool {
 	t.Helper()
 	var hash, salt string
 	require.NoError(t, db.QueryRow("SELECT password_hash, COALESCE(salt,'') FROM users WHERE username = ?", user).Scan(&hash, &salt))
-	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password+salt)) == nil
+	ok, _ := root_services.CheckPassword(password, salt, hash)
+	return ok
 }
 
 func addAdmin(t *testing.T, db *database.DB, user, password string) int64 {

@@ -21,8 +21,8 @@ import (
 //     gin -> mux.Vars fix in handlers/gin_adapter.go), and answer the status
 //     codes the spec now documents;
 //  2. the 403 / self-action / self-update behaviour of the 9 /users/{id}
-//     and /roles/{id} operations documented in the spec, including the known
-//     defect that PUT /users/{id} does not persist role_id.
+//     and /roles/{id} operations documented in the spec, including that
+//     PUT /users/{id} persists role_id (and revokes the target's sessions).
 // Runs the real server binary on SQLite; skipped under -short.
 
 type apiClient struct {
@@ -144,9 +144,9 @@ func TestOpenAPIContract_RealBinary_PathParamsAndUserRolePermissions(t *testing.
 	}
 
 	// ---- 2. /users/{id} and /roles/{id} permissions ---------------------
-	// Users created through POST /api/v1/users cannot log in with the password
-	// given at creation (tracked defect: SHA-256 vs bcrypt); a reset through
-	// POST /users/{id}/reset-password sets a bcrypt hash, so it is used here.
+	// Users created through POST /api/v1/users log in with the password given
+	// at creation (one shared hasher). The extra reset below keeps coverage of
+	// POST /users/{id}/reset-password.
 	mrole := c.id("POST", "/api/v1/roles", adm, map[string]interface{}{"name": "contract-manager", "permissions": []string{"user.*"}}, 201)
 	mk := func(name string, role int) (int, string) {
 		id := c.id("POST", "/api/v1/users", adm, map[string]interface{}{"username": name, "email": name + "@example.invalid", "password": "Contract-Value-Strong-77", "role_id": role}, 201)
@@ -237,18 +237,15 @@ func TestOpenAPIContract_RealBinary_PathParamsAndUserRolePermissions(t *testing.
 	code, raw = c.do("POST", fmt.Sprintf("/api/v1/users/%d/reset-password", mgrID), mgr, map[string]string{"new_password": "Another-Strong-Pass-91"})
 	assert.Equal(t, 200, code, "manager self reset-password: %s", raw)
 
-	// KNOWN DEFECT (pinned on purpose): an admin PUT with role_id on another
-	// user answers 200 and echoes the new role_id, but UserRepository.Update
-	// has no role_id column, so the role is never saved; is_active is saved.
-	// When the repository is fixed this assertion fails, and the openapi.yaml
-	// and API_DOCUMENTATION.md "Known defects" text must be updated with it.
+	// An admin PUT with role_id on another user persists the role (and
+	// is_active), echoed and read back identically.
 	code, raw = c.do("PUT", fmt.Sprintf("/api/v1/users/%d", victimID), adm, map[string]interface{}{"role_id": mrole, "is_active": false})
 	require.Equal(t, 200, code, "%s", raw)
 	var echoed map[string]interface{}
 	require.NoError(t, json.Unmarshal(raw, &echoed))
 	assert.Equal(t, float64(mrole), echoed["role_id"], "the PUT response echoes the requested role_id")
 	v := c.user(adm, victimID)
-	assert.Equal(t, float64(2), v["role_id"], "role_id is not persisted (known defect)")
+	assert.Equal(t, float64(mrole), v["role_id"], "role_id is persisted")
 	assert.Equal(t, false, v["is_active"], "is_active is persisted")
 	code, _ = c.do("GET", "/api/v1/users/1", "", nil)
 	assert.Equal(t, 401, code)

@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"regexp"
 	"strconv"
 	"time"
@@ -79,12 +80,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 		return nil, errors.New("invalid credentials")
 	}
 	if needsUpgrade {
-		// Legacy hex SHA-256 row (written by the old POST /users): rewrite it
-		// as the canonical bcrypt hash now that the password is known. Best
-		// effort: a failure leaves the legacy hash, which still verifies.
-		if newHash, herr := HashPasswordWithSalt(req.Password, user.Salt); herr == nil {
-			_ = s.userRepo.UpdatePassword(user.ID, newHash, user.Salt)
-		}
+		s.upgradeLegacyHash(user, req.Password)
 	}
 
 	// Reset failed login attempts on successful login
@@ -430,6 +426,34 @@ func (s *AuthService) hashPassword(password, salt string) (string, error) {
 func (s *AuthService) verifyPassword(password, salt, hash string) bool {
 	ok, _ := CheckPassword(password, salt, hash)
 	return ok
+}
+
+// legacyUpgradeHook, when non-nil, runs between hashing and the compare-and-swap
+// write of a legacy hash upgrade. Tests use it to land a concurrent password
+// change inside that window.
+var legacyUpgradeHook func()
+
+// upgradeLegacyHash rewrites a verified legacy SHA-256 row as the canonical
+// hash. The write is a compare-and-swap on the legacy value, so a password
+// change that landed since the row was read is never reverted. Failures are
+// logged (never silent) and leave the legacy row, which still verifies.
+func (s *AuthService) upgradeLegacyHash(user *models.User, password string) {
+	newHash, err := HashPasswordWithSalt(password, user.Salt)
+	if err != nil {
+		log.Printf("auth: legacy password hash upgrade for user %d failed: %v", user.ID, err)
+		return
+	}
+	if legacyUpgradeHook != nil {
+		legacyUpgradeHook()
+	}
+	swapped, err := s.userRepo.UpdatePasswordIfHash(user.ID, newHash, user.Salt, user.PasswordHash)
+	if err != nil {
+		log.Printf("auth: legacy password hash upgrade for user %d failed: %v", user.ID, err)
+		return
+	}
+	if !swapped {
+		log.Printf("auth: legacy password hash for user %d changed concurrently; upgrade skipped", user.ID)
+	}
 }
 
 // Session management methods

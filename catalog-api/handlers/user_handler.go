@@ -295,6 +295,8 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	oldRoleID, oldActive := user.RoleID, user.IsActive
+
 	if req.Username != nil {
 		user.Username = *req.Username
 	}
@@ -359,6 +361,16 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		}
 		http.Error(w, "Failed to update user", http.StatusInternalServerError)
 		return
+	}
+
+	// A role or activation change must take effect now: access tokens carry
+	// role_id and live for hours (RequireAdmin trusts the claim), so revoke every
+	// session of the target; the user logs in again and gets a fresh claim.
+	if user.RoleID != oldRoleID || user.IsActive != oldActive {
+		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
+			http.Error(w, "User updated but revoking the user's sessions failed", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	role, err := h.userRepo.GetRole(user.RoleID)
@@ -808,4 +820,19 @@ func (h *UserHandler) allowedToAssignRole(w http.ResponseWriter, caller *models.
 		return false
 	}
 	return true
+}
+
+// sessionRevoker is implemented by the production user repository.
+type sessionRevoker interface {
+	DeactivateAllUserSessions(userID int) error
+}
+
+// revokeUserSessions deactivates every session of userID when the repository
+// supports it (the production repository does; in-memory test doubles that
+// keep no sessions have nothing to revoke).
+func revokeUserSessions(repo interface{}, userID int) error {
+	if r, ok := repo.(sessionRevoker); ok {
+		return r.DeactivateAllUserSessions(userID)
+	}
+	return nil
 }

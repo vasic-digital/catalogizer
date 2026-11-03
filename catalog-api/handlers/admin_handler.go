@@ -216,6 +216,7 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
+	wasActive := user.IsActive
 	if updates.Status != nil {
 		switch *updates.Status {
 		case "active":
@@ -235,6 +236,12 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 	if err := h.userRepo.Update(user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return
+	}
+	if wasActive && !user.IsActive {
+		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User updated but revoking sessions failed"})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})

@@ -209,6 +209,13 @@ var sqlInjectionPatterns = []*regexp.Regexp{
 	// Tautologies: quote OR/AND ..., or OR/AND <literal> <comparison>
 	regexp.MustCompile(`(?i)['"]\s*(OR|AND)\s+['"\w(]`),
 	regexp.MustCompile(`(?i)\b(OR|AND)\s+(\d+|'[^']*'|"[^"]*")\s*(=|<>|!=|<|>|\bLIKE\b)`),
+	// Sub-selects, SELECT*FROM, boolean tautologies, parenthesised OR/AND, HAVING, DB error/IO functions
+	regexp.MustCompile(`(?i)\(\s*SELECT\b`),
+	regexp.MustCompile(`(?i)\bSELECT\s*\*\s*FROM\b`),
+	regexp.MustCompile(`(?i)['")\d]\s*(OR|AND)\s*\(`),
+	regexp.MustCompile(`(?i)['")\d]\s*(OR|AND)\s+(TRUE|FALSE)\b`),
+	regexp.MustCompile(`(?i)\bHAVING\s+\d+\s*=\s*\d+`),
+	regexp.MustCompile(`(?i)\b(EXTRACTVALUE|UPDATEXML|LOAD_FILE|PG_READ_FILE|SYS_EXEC|SYS_EVAL)\s*\(`),
 	// Stacked statement: ; <statement keyword>
 	regexp.MustCompile(`(?i);\s*(SELECT|INSERT|UPDATE|DELETE|DROP|ALTER|CREATE|TRUNCATE|EXEC|EXECUTE|SLEEP|WAITFOR)\b`),
 	regexp.MustCompile(`(?i)(['"]\s*;\s*(SELECT|INSERT|UPDATE|DELETE|DROP))`),

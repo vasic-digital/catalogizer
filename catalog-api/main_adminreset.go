@@ -12,7 +12,6 @@ import (
 	"catalogizer/database"
 	root_services "catalogizer/services"
 
-	"golang.org/x/crypto/bcrypt"
 )
 
 // errAdminHashCheck means the startup check of stored admin hashes could not
@@ -83,7 +82,7 @@ func runAdminReset(db *database.DB, args []string, stdout, stderr io.Writer) int
 			continue
 		}
 		for _, c := range root_config.PlaceholderPasswordCandidates() {
-			if bcrypt.CompareHashAndPassword([]byte(a.hash), []byte(c+a.salt)) == nil {
+			if ok, _ := root_services.CheckPassword(c, a.salt, a.hash); ok {
 				todo = append(todo, a)
 				break
 			}
