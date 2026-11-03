@@ -250,6 +250,13 @@ func (r *PlaylistRepository) scanPlaylists(rows *sql.Rows) ([]models.Playlist, e
 	return playlists, nil
 }
 
+// CountSmartByUser returns how many smart playlists the user owns.
+func (r *PlaylistRepository) CountSmartByUser(ctx context.Context, userID int) (int, error) {
+	var n int
+	err := r.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM playlists WHERE user_id = ? AND is_smart = ?`, userID, true).Scan(&n)
+	return n, err
+}
+
 // EvaluateSmart evaluates a smart playlist's rules now against the catalogue
 // and returns one page of members as playlist items, plus the total match count.
 func (r *PlaylistRepository) EvaluateSmart(ctx context.Context, playlistID int, rs *smartrules.RuleSet, viewerID int64, limit, offset int) ([]models.PlaylistItem, int, error) {
@@ -261,6 +268,7 @@ func (r *PlaylistRepository) EvaluateSmart(ctx context.Context, playlistID int, 
 	items := make([]models.PlaylistItem, 0, len(found))
 	for i, f := range found {
 		it := models.PlaylistItem{
+			Title:      f.Title,
 			ID:         int(f.ID),
 			PlaylistID: playlistID,
 			EntityID:   int(f.ID),

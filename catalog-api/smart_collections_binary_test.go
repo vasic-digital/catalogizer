@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -12,6 +13,9 @@ import (
 
 	"catalogizer/config"
 	"catalogizer/database"
+	mediamodels "catalogizer/internal/media/models"
+	rootmodels "catalogizer/models"
+	"catalogizer/repository"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -31,7 +35,11 @@ func seedSmartCatalogue(t *testing.T, dir string, aliceID int) smartSeed {
 		EncryptionKeyFile: filepath.Join(dir, "keys", "db.key"), MaxOpenConnections: 2})
 	require.NoError(t, err)
 	defer db.Close()
-	ts := func(d time.Duration) string { return time.Now().UTC().Add(-d).Format("2006-01-02 15:04:05") }
+	ctx := context.Background()
+	// rows are written through the PRODUCTION writers (genre and quality_info are JSON-encoded columns,
+	// favourites live in the favorites table the UI toggles, tags are a JSON array)
+	items := repository.NewMediaItemRepository(db)
+	mfiles := repository.NewMediaFileRepository(db)
 	_, err = db.Exec(`INSERT INTO storage_roots (name, protocol, path, enabled) VALUES ('smart-root','local','/smart',1)`)
 	require.NoError(t, err)
 	var root int64
@@ -41,29 +49,37 @@ func seedSmartCatalogue(t *testing.T, dir string, aliceID int) smartSeed {
 		require.NoError(t, db.QueryRow(`SELECT id FROM media_types WHERE name = ?`, name).Scan(&id))
 		return id
 	}
-	item := func(mt, title string, year interface{}, rating interface{}, genre string, age time.Duration, path string, size int64) int64 {
-		res, err := db.Exec(`INSERT INTO media_items (media_type_id, title, year, rating, genre, status, first_detected, last_updated) VALUES (?,?,?,?,?,'detected',?,?)`,
-			typeID(mt), title, year, rating, genre, ts(age), ts(age))
+	item := func(mt, title string, year int, rating *float64, genre []string, age time.Duration, path string, size int64, profile string) int64 {
+		at := time.Now().Add(-age)
+		id, err := items.Create(ctx, &mediamodels.MediaItem{MediaTypeID: typeID(mt), Title: title, Year: &year, Rating: rating, Genre: genre,
+			Status: "detected", FirstDetected: at, LastUpdated: at})
 		require.NoError(t, err)
-		id, _ := res.LastInsertId()
 		fr, err := db.Exec(`INSERT INTO files (storage_root_id, path, name, size, is_directory, modified_at) VALUES (?,?,?,?,0,?)`,
-			root, path, filepath.Base(path), size, ts(age))
+			root, path, filepath.Base(path), size, at.UTC().Format("2006-01-02 15:04:05"))
 		require.NoError(t, err)
 		fid, _ := fr.LastInsertId()
-		_, err = db.Exec(`INSERT INTO media_files (media_item_id, file_id, quality_info) VALUES (?,?,?)`, id, fid, "1080p")
+		qb, err := json.Marshal(&mediamodels.QualityInfo{QualityProfile: &profile, QualityScore: 80})
+		require.NoError(t, err)
+		q := string(qb)
+		_, err = mfiles.LinkFileToItem(ctx, id, fid, &q, nil, true)
 		require.NoError(t, err)
 		return id
 	}
+	r := func(v float64) *float64 { return &v }
 	var s smartSeed
-	s.alpha = item("movie", "Alpha", 2019, 8.5, "Action, Sci-Fi", 2*24*time.Hour, "/movies/alpha.mkv", 4_000_000_000)
-	s.beta = item("movie", "Beta", 2005, 6.0, "Comedy", 40*24*time.Hour, "/movies/old/beta.mkv", 1_000_000_000)
-	s.gamma = item("song", "Gamma", 2021, nil, "Pop", 5*24*time.Hour, "/music/gamma.mp3", 5_000_000)
-	s.delta = item("book", "Delta", 2010, 7.0, "History", 100*24*time.Hour, "/books/delta.pdf", 2_000_000)
-	s.epsilon = item("tv_show", "Epsilon", 2022, 9.0, "Drama", 1*24*time.Hour, "/tv/epsilon", 3_000_000_000)
-	s.quote = item("movie", "O'Brien; DROP TABLE media_items;--", 2000, 5.0, "Crime", 3*24*time.Hour, "/movies/100%_odd.mkv", 10)
-	_, err = db.Exec(`INSERT INTO user_metadata (media_item_id, user_id, tags, favorite) VALUES (?,?,?,1)`, s.alpha, aliceID, "weekend,fav-night")
+	s.alpha = item("movie", "Alpha", 2019, r(8.5), []string{"Action", "Sci-Fi"}, 2*24*time.Hour, "/movies/alpha.mkv", 4_000_000_000, "4K/UHD")
+	s.beta = item("movie", "Beta", 2005, r(6.0), []string{"Comedy"}, 40*24*time.Hour, "/movies/old/beta.mkv", 1_000_000_000, "1080p")
+	s.gamma = item("song", "Gamma", 2021, nil, []string{"Pop"}, 5*24*time.Hour, "/music/gamma.mp3", 5_000_000, "Audio_Lossless")
+	s.delta = item("book", "Delta", 2010, r(7.0), []string{"History"}, 100*24*time.Hour, "/books/delta.pdf", 2_000_000, "1080p")
+	s.epsilon = item("tv_show", "Epsilon", 2022, r(9.0), []string{"Drama"}, 1*24*time.Hour, "/tv/epsilon", 3_000_000_000, "1080p")
+	// 3 days minus an hour: comfortably inside "last 3 days" however long the test takes
+	s.quote = item("movie", "O'Brien; DROP TABLE media_items;--", 2000, r(5.0), []string{"Crime"}, 3*24*time.Hour-time.Hour, "/movies/100%_odd.mkv", 10, "720p")
+	um := repository.NewUserMetadataRepository(db)
+	_, err = um.Create(ctx, &mediamodels.UserMetadata{MediaItemID: s.alpha, UserID: int64(aliceID), Tags: []string{"weekend", "fav-night"}})
 	require.NoError(t, err)
-	_, err = db.Exec(`INSERT INTO user_metadata (media_item_id, user_id, tags, favorite) VALUES (?,?,?,0)`, s.beta, aliceID, "boring")
+	_, err = um.Create(ctx, &mediamodels.UserMetadata{MediaItemID: s.beta, UserID: int64(aliceID), Tags: []string{"boring"}})
+	require.NoError(t, err)
+	_, err = repository.NewFavoritesRepository(db).CreateFavorite(&rootmodels.Favorite{UserID: aliceID, EntityType: "movie", EntityID: int(s.alpha)})
 	require.NoError(t, err)
 	return s
 }
@@ -185,6 +201,10 @@ func TestSmartCollectionsAndPlaylists_RealBinary(t *testing.T) {
 	}{
 		{"year range", []interface{}{rule("year", "between", []int{2005, 2010})}, sorted(s.beta, s.delta)},
 		{"genre contains (case-insens.)", []interface{}{rule("genre", "contains", "sci-fi")}, sorted(s.alpha)},
+		{"genre equals one element of the JSON array", []interface{}{rule("genre", "equals", "action")}, sorted(s.alpha)},
+		{"genre does not equal a whole joined string", []interface{}{rule("genre", "equals", "Action, Sci-Fi")}, []int64{}},
+		{"quality equals profile", []interface{}{rule("quality", "equals", "4k/uhd")}, sorted(s.alpha)},
+		{"quality in", []interface{}{rule("quality", "in", []string{"720p", "Audio_Lossless"})}, sorted(s.gamma, s.quote)},
 		{"alias video", []interface{}{rule("media_type", "equals", "video")}, nil}, // checked separately below
 		{"size greater than 2.5e9", []interface{}{rule("size", "greater_than", 2500000000)}, sorted(s.alpha, s.epsilon)},
 		{"path prefix", []interface{}{rule("path", "starts_with", "/movies/old")}, sorted(s.beta)},
@@ -194,7 +214,7 @@ func TestSmartCollectionsAndPlaylists_RealBinary(t *testing.T) {
 		{"nested", []interface{}{map[string]interface{}{"field": "media_type", "operator": "equals", "value": "movie",
 			"nested_rules": []interface{}{rule("year", "less_than", 2010)}}}, sorted(s.beta, s.quote)},
 		{"numeric string value (UI input)", []interface{}{rule("year", "equals", "2022")}, sorted(s.epsilon)},
-		{"not_in", []interface{}{rule("genre", "not_in", []string{"Action, Sci-Fi", "Comedy", "Pop", "History", "Drama"}), rule("year", "less_than", 2001)}, sorted(s.quote)},
+		{"not_in", []interface{}{rule("genre", "not_in", []string{"Action", "Sci-Fi", "Comedy", "Pop", "History", "Drama"}), rule("year", "less_than", 2001)}, sorted(s.quote)},
 		{"SQL injection text stays text", []interface{}{rule("title", "equals", "x' OR '1'='1")}, []int64{}},
 		{"LIKE wildcards are literal", []interface{}{rule("title", "contains", "%")}, []int64{}},
 		{"underscore is literal in path", []interface{}{rule("path", "contains", "100%_odd")}, sorted(s.quote)},
@@ -281,6 +301,55 @@ func TestSmartCollectionsAndPlaylists_RealBinary(t *testing.T) {
 	require.NoError(t, json.Unmarshal(byPage, &pm))
 	assert.EqualValues(t, 3, pm["offset"], "page=2&limit=3 is offset 3: %s", byPage)
 
+	// the cap is enforced in the server, not only in the page: 1000 bulk rows, limit=100000 returns 500
+	func() {
+		db, err := database.NewConnection(&config.DatabaseConfig{Type: "sqlite", Path: filepath.Join(dir, "catalog.db"),
+			EncryptionKeyFile: filepath.Join(dir, "keys", "db.key"), MaxOpenConnections: 2})
+		require.NoError(t, err)
+		defer db.Close()
+		var mt int64
+		require.NoError(t, db.QueryRow(`SELECT id FROM media_types WHERE name='movie'`).Scan(&mt))
+		tx, err := db.Begin()
+		require.NoError(t, err)
+		for i := 0; i < 1000; i++ {
+			_, err = tx.Exec(`INSERT INTO media_items (media_type_id, title, year, status) VALUES (?, ?, 1999, 'detected')`, mt, fmt.Sprintf("Bulk-%04d", i))
+			require.NoError(t, err)
+		}
+		require.NoError(t, tx.Commit())
+	}()
+	bulk := mkColl(alice, rule("title", "starts_with", "bulk-"))
+	assert.Len(t, items(bulk, alice, "?limit=100000"), 500, "a request for 100000 returns at most 500 items")
+	assert.Len(t, items(bulk, alice, "?limit=7"), 7)
+	require.NoError(t, json.Unmarshal(get(fmt.Sprintf("/api/v1/collections/%d/items?limit=100000", bulk), alice, 200), &pm))
+	assert.EqualValues(t, 1000, pm["total"], "total counts every match, the page is capped")
+	// list view: counts are bounded and labelled (a count above the cap would read "capped")
+	var lst struct {
+		Items []map[string]interface{} `json:"items"`
+	}
+	require.NoError(t, json.Unmarshal(get("/api/v1/collections?limit=200", alice, 200), &lst))
+	seenSmart := 0
+	for _, it := range lst.Items {
+		if it["is_smart"] == true {
+			seenSmart++
+			assert.Contains(t, []interface{}{"exact", "capped", "stored"}, it["total_items_status"], "%v", it)
+		}
+	}
+	assert.Greater(t, seenSmart, 10, "more smart collections than the per-request evaluation budget")
+
+	// per-user cap on smart collections: the 51st answers 409 and creates nothing
+	for i := 0; i < 70; i++ {
+		code, raw2 = c.do("POST", "/api/v1/collections", bob, map[string]interface{}{"name": fmt.Sprintf("bobcap-%d", i), "is_smart": true,
+			"smart_rules": []interface{}{rule("year", "greater_than", 0)}})
+		if code != 201 {
+			assert.Equal(t, 50, i, "exactly 50 smart collections are allowed per user")
+			break
+		}
+	}
+	assert.Equal(t, 409, code, "%s", raw2)
+	code, _ = c.do("POST", "/api/v1/collections", adm, map[string]interface{}{"name": "admin unaffected", "is_smart": true,
+		"smart_rules": []interface{}{rule("year", "greater_than", 0)}})
+	assert.Equal(t, 201, code, "the cap is per user")
+
 	// --- authorization -------------------------------------------------------------------------
 	c.do("GET", "/api/v1/collections", "", nil)
 	code, _ = c.do("GET", fmt.Sprintf("/api/v1/collections/%d/items", smartID), "", nil)
@@ -362,11 +431,30 @@ func TestSmartCollectionsAndPlaylists_RealBinary(t *testing.T) {
 	require.NoError(t, json.Unmarshal(get(fmt.Sprintf("/api/v1/playlists/%d", plID), alice, 200), &got))
 	require.Len(t, got.Items, 1)
 	assert.EqualValues(t, s.epsilon, got.Items[0]["entity_id"])
-	// another user can neither read nor edit a private smart playlist
+	assert.Equal(t, "Epsilon", got.Items[0]["title"], "smart playlist members carry their title")
+	// another user can neither read nor edit a private smart playlist: every verb answers 404 (no existence leak)
 	code, _ = c.do("GET", fmt.Sprintf("/api/v1/playlists/%d", plID), bob, nil)
-	assert.NotEqual(t, 200, code)
+	assert.Equal(t, 404, code)
 	code, _ = c.do("PUT", fmt.Sprintf("/api/v1/playlists/%d", plID), bob, map[string]interface{}{"smart_rules": []interface{}{rule("year", "greater_than", 0)}})
-	assert.NotEqual(t, 200, code)
+	assert.Equal(t, 404, code, "PUT on a private foreign playlist must not differ from GET")
+	code, _ = c.do("DELETE", fmt.Sprintf("/api/v1/playlists/%d", plID), bob, nil)
+	assert.Equal(t, 404, code)
+	// a public playlist is readable by bob but not editable: 403
+	put(fmt.Sprintf("/api/v1/playlists/%d", plID), alice, map[string]interface{}{"is_public": true}, 200)
+	get(fmt.Sprintf("/api/v1/playlists/%d", plID), bob, 200)
+	code, _ = c.do("PUT", fmt.Sprintf("/api/v1/playlists/%d", plID), bob, map[string]interface{}{"name": "hijack"})
+	assert.Equal(t, 403, code)
+	// per-user cap on smart playlists: the limit answers 409, another user is unaffected
+	var lastCode int
+	for i := 0; i < 60; i++ {
+		lastCode, raw2 = c.do("POST", "/api/v1/playlists", bob, map[string]interface{}{"name": fmt.Sprintf("cap-%d", i), "is_smart": true,
+			"smart_rules": []interface{}{rule("year", "greater_than", 0)}})
+		if lastCode != 201 {
+			assert.Equal(t, 50, i, "the 51st smart playlist is refused")
+			break
+		}
+	}
+	assert.Equal(t, 409, lastCode, "%s", raw2)
 	// a plain playlist is unchanged
 	plain := post("/api/v1/playlists", alice, map[string]interface{}{"name": "plain pl"}, 201)
 	var pp map[string]interface{}

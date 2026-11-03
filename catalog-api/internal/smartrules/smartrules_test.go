@@ -214,9 +214,11 @@ func TestEvaluate_UserScopedFieldsAreViewerScoped(t *testing.T) {
 	seed(t, db)
 	_, err := db.Exec(`INSERT INTO users (username, email, password_hash, salt, role_id, is_active) VALUES ('u2','u2@x.invalid','h','s',2,1)`)
 	require.NoError(t, err)
-	_, err = db.Exec(`INSERT INTO user_metadata (media_item_id,user_id,tags,favorite) VALUES (1,1,'night,fav',1)`)
+	_, err = db.Exec(`INSERT INTO user_metadata (media_item_id,user_id,tags,favorite) VALUES (1,1,'night,fav',0)`)
 	require.NoError(t, err)
-	_, err = db.Exec(`INSERT INTO user_metadata (media_item_id,user_id,tags,favorite) VALUES (2,2,'night',0)`)
+	_, err = db.Exec(`INSERT INTO favorites (user_id, entity_type, entity_id) VALUES (1,'movie',1)`)
+	require.NoError(t, err)
+	_, err = db.Exec(`INSERT INTO user_metadata (media_item_id,user_id,tags,favorite) VALUES (2,2,'night',1)`)
 	require.NoError(t, err)
 	tag := `[{"field":"tags","operator":"contains","value":"night"}]`
 	assert.Equal(t, []string{"Alpha"}, titles(t, db, tag, 1))

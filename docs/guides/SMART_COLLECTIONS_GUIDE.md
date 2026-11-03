@@ -35,3 +35,14 @@ Limits: 25 rules, depth 3, 256 bytes per value, 50 values per list, 64 KB per ru
 ## Access
 
 Only the owner or an administrator edits or deletes. A private collection of someone else answers 404. A smart collection cannot be turned into a manual one, and the reverse is refused. Adding items to a smart playlist answers 409.
+
+## Semantics worth knowing
+
+- `genre` and `quality` are stored as JSON (a list, and a quality-profile object). Rules match the real values: `genre equals "Sci-Fi"` matches an item whose genres include Sci-Fi; `quality equals "1080p"` matches the quality profile. `tags` is a JSON list as well.
+- `favorite` reads the `favorites` table, which the UI favourite toggle writes, for the viewing user. The legacy `media_items.is_favorite` flag and `user_metadata.favorite` are not used.
+- Date rules compare instants, not text, so non-UTC stored values and RFC3339 values work.
+- `year`, `runtime` and `size` take whole numbers; fractional values answer 400.
+- Aliases accepted: `is_favorite`=favorite, `file_size`=size, `duration`=runtime, `date_modified`=updated; operators `after`/`before` on date fields.
+- Caps: a per-user maximum of smart collections and of smart playlists (409 beyond it). List responses carry `total_items_status` (`exact`, `capped` = lower bound, `stored` = not evaluated in this page); counts are bounded, cached about 30 s and evaluation has a query timeout (504 for a playlist read that times out).
+- Case-insensitive matching is ASCII-only on SQLite.
+- A private playlist of another user answers 404 on every route; a public one answers 403 on write.

@@ -4027,7 +4027,7 @@ Media collection endpoints for organizing media items into user-defined collecti
 
 List all media collections.
 
-**Description:** Returns user's media collections.
+**Description:** Returns user's media collections. For smart collections each list item also carries `total_items_status`: `exact`, `capped` (`total_items` is a lower bound) or `stored` (not evaluated in this page; budget or rule failure).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -4919,7 +4919,7 @@ Create a new playlist.
 
 Get a specific playlist with its items.
 
-**Description:** Returns playlist details and ordered items.
+**Description:** Returns playlist details and ordered items. A smart playlist is evaluated now; query `limit` (default 50, max 500) and `offset` page its items, each carrying `title`. Errors: 404 for an unknown playlist and for another user's private playlist, 504 when evaluation times out. PUT, DELETE and the item routes answer 404 for a foreign private playlist and 403 for a foreign public one on write; creating beyond the per-user smart-playlist cap answers 409.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 

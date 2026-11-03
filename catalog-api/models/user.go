@@ -1867,6 +1867,8 @@ type PlaylistItem struct {
 	EntityType string    `json:"entity_type" db:"entity_type"`
 	Position   int       `json:"position" db:"position"`
 	AddedAt    time.Time `json:"added_at" db:"added_at"`
+	// Title is filled for members of a smart playlist (evaluated from the catalogue); omitted for manual items.
+	Title string `json:"title,omitempty" db:"-"`
 }
 
 // CreatePlaylistRequest represents a request to create a new playlist.

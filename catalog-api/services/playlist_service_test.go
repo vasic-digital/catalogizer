@@ -177,7 +177,7 @@ func TestPlaylistService_GetPlaylist(t *testing.T) {
 			userID:     2,
 			playlistID: plID,
 			wantErr:    true,
-			errMsg:     "unauthorized",
+			errMsg:     "playlist not found",
 		},
 		{
 			name:       "not found",
@@ -266,7 +266,7 @@ func TestPlaylistService_UpdatePlaylist(t *testing.T) {
 			userID:     2,
 			playlistID: plID,
 			wantErr:    true,
-			errMsg:     "unauthorized",
+			errMsg:     "playlist not found",
 		},
 		{
 			name:       "not found",
@@ -332,7 +332,7 @@ func TestPlaylistService_DeletePlaylist(t *testing.T) {
 			userID:     2,
 			playlistID: plID,
 			wantErr:    true,
-			errMsg:     "unauthorized",
+			errMsg:     "playlist not found",
 		},
 		{
 			name:       "not found",
@@ -395,7 +395,7 @@ func TestPlaylistService_AddItem(t *testing.T) {
 			userID:     2,
 			playlistID: plID,
 			wantErr:    true,
-			errMsg:     "unauthorized",
+			errMsg:     "playlist not found",
 		},
 		{
 			name:       "playlist not found",
@@ -456,7 +456,7 @@ func TestPlaylistService_RemoveItem(t *testing.T) {
 			playlistID: plID,
 			itemID:     item.ID,
 			wantErr:    true,
-			errMsg:     "unauthorized",
+			errMsg:     "playlist not found",
 		},
 		{
 			name:       "playlist not found",

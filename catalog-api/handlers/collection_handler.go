@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"catalogizer/internal/media/models"
 	"catalogizer/internal/smartrules"
@@ -147,27 +149,101 @@ func (h *CollectionHandler) ListCollections(c *gin.Context) {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to list collections", err)
 		return
 	}
-	h.fillLiveCounts(c, collections, uid)
+	status := h.fillLiveCounts(c, collections, uid)
+	list := collectionsToJSON(collections)
+	for i, coll := range collections {
+		if st, ok := status[coll.ID]; ok {
+			list[i]["total_items_status"] = st
+		}
+	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"items":  collectionsToJSON(collections),
+		"items":  list,
 		"total":  total,
 		"limit":  limit,
 		"offset": offset,
 	})
 }
 
-// fillLiveCounts sets TotalItems of smart collections to their current size.
-// A collection whose rules cannot be evaluated keeps the stored count.
-func (h *CollectionHandler) fillLiveCounts(c *gin.Context, collections []*models.MediaCollection, uid int64) {
+// MaxSmartCollectionsPerUser bounds the rule evaluations a single user can accumulate.
+const MaxSmartCollectionsPerUser = 50
+
+const (
+	// listCountCap bounds the work of one count shown in a LIST: counts above it are reported as "N+".
+	listCountCap = 1000
+	// listCountBudget is how many smart collections one list request evaluates; the rest keep the stored count.
+	listCountBudget = 10
+	countCacheTTL   = 30 * time.Second
+	countCacheMax   = 2048
+)
+
+type cachedCount struct {
+	n      int
+	capped bool
+	at     time.Time
+}
+
+// countCache remembers recent bounded counts per (viewer, collection, last update) so repeated list
+// views do not re-run the rules; an edit changes updated_at and therefore the key.
+var countCache = struct {
+	sync.Mutex
+	m map[string]cachedCount
+}{m: map[string]cachedCount{}}
+
+func countKey(uid int64, coll *models.MediaCollection) string {
+	return fmt.Sprintf("%d/%d/%d", uid, coll.ID, coll.UpdatedAt.UnixNano())
+}
+
+// fillLiveCounts sets TotalItems of smart collections to their current size for the viewer, bounded:
+// each count stops at listCountCap, at most listCountBudget collections are evaluated per request and
+// results are cached for countCacheTTL. It returns, per collection id, "exact", "capped" (TotalItems is
+// a lower bound) or "stored" (not evaluated: budget exhausted or the rules failed).
+func (h *CollectionHandler) fillLiveCounts(c *gin.Context, collections []*models.MediaCollection, uid int64) map[int64]string {
+	status := map[int64]string{}
+	budget := listCountBudget
 	for _, coll := range collections {
 		if !coll.IsSmart {
 			continue
 		}
-		if n, err := h.liveCount(c, coll, uid); err == nil {
-			coll.TotalItems = n
+		status[coll.ID] = "stored"
+		key := countKey(uid, coll)
+		countCache.Lock()
+		hit, ok := countCache.m[key]
+		countCache.Unlock()
+		if ok && time.Since(hit.at) < countCacheTTL {
+			coll.TotalItems = hit.n
+			status[coll.ID] = countStatus(hit.capped)
+			continue
 		}
+		if budget == 0 {
+			continue
+		}
+		budget--
+		rs, err := smartrules.ParseStored(string(coll.SmartRules))
+		if err != nil {
+			continue
+		}
+		n, capped, err := smartrules.CountUpTo(c.Request.Context(), h.repo.Querier(), rs, h.evalOpts(uid), listCountCap)
+		if err != nil {
+			continue
+		}
+		coll.TotalItems = n
+		status[coll.ID] = countStatus(capped)
+		countCache.Lock()
+		if len(countCache.m) >= countCacheMax {
+			countCache.m = map[string]cachedCount{}
+		}
+		countCache.m[key] = cachedCount{n: n, capped: capped, at: time.Now()}
+		countCache.Unlock()
 	}
+	return status
+}
+
+func countStatus(capped bool) string {
+	if capped {
+		return "capped"
+	}
+	return "exact"
 }
 
 // GetCollection handles GET /api/v1/collections/:id.
@@ -325,6 +401,16 @@ func (h *CollectionHandler) CreateCollection(c *gin.Context) {
 		}
 		rs, ok := parseSmartRules(c, req.SmartRules)
 		if !ok {
+			return
+		}
+		n, err := h.repo.CountSmartByOwner(ctx, uid)
+		if err != nil {
+			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to create collection", err)
+			return
+		}
+		if n >= MaxSmartCollectionsPerUser {
+			utils.SendErrorResponse(c, http.StatusConflict,
+				fmt.Sprintf("smart collection limit reached (max %d per user)", MaxSmartCollectionsPerUser), nil)
 			return
 		}
 		total, ok := h.verifyRules(c, rs, uid)

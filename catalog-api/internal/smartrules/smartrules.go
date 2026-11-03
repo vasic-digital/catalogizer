@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 // Limits of the rule language and of one evaluation.
@@ -65,6 +66,7 @@ const (
 type fieldDef struct {
 	kind      kind
 	userScope bool // evaluated against the viewing user's own data
+	integer   bool // backed by an integer column: fractional or out-of-range values are rejected
 }
 
 var fields = map[string]fieldDef{
@@ -75,10 +77,10 @@ var fields = map[string]fieldDef{
 	"path":       {kind: kText},
 	"quality":    {kind: kText},
 	"media_type": {kind: kMediaType},
-	"year":       {kind: kNumber},
+	"year":       {kind: kNumber, integer: true},
 	"rating":     {kind: kNumber},
-	"runtime":    {kind: kNumber},
-	"size":       {kind: kNumber},
+	"runtime":    {kind: kNumber, integer: true},
+	"size":       {kind: kNumber, integer: true},
 	"added":      {kind: kDate},
 	"updated":    {kind: kDate},
 	"tags":       {kind: kText, userScope: true},
@@ -89,7 +91,13 @@ var fieldAliases = map[string]string{
 	"created_at": "added", "added_at": "added", "date_added": "added",
 	"updated_at": "updated", "last_updated": "updated",
 	"mediatype": "media_type", "type": "media_type",
+	// names the web rule builder offers for the same data
+	"is_favorite": "favorite", "file_size": "size", "filesize": "size",
+	"duration": "runtime", "date_modified": "updated", "modified_at": "updated",
 }
+
+// operatorAliases maps the builder's date wording onto the closed operator set.
+var operatorAliases = map[string]string{"after": "greater_than", "before": "less_than"}
 
 // operators allowed per kind.
 var opsByKind = map[kind][]string{
@@ -231,6 +239,11 @@ func buildRule(w wireRule, pos, depth int, count *int) (Rule, error) {
 		return Rule{}, bad("rule %d: operator and op disagree", pos)
 	}
 	op = strings.ToLower(strings.TrimSpace(op))
+	if def.kind == kDate {
+		if canon, ok := operatorAliases[op]; ok {
+			op = canon
+		}
+	}
 	allowed := opsByKind[def.kind]
 	if name == "tags" {
 		allowed = tagOps
@@ -239,6 +252,9 @@ func buildRule(w wireRule, pos, depth int, count *int) (Rule, error) {
 		return Rule{}, bad("rule %d: operator %q is not allowed for field %q (allowed: %s)", pos, truncate(op), name, strings.Join(allowed, ", "))
 	}
 	val, err := normaliseValue(def.kind, name, op, w.Value)
+	if err == nil && def.integer {
+		err = checkIntegers(val)
+	}
 	if err != nil {
 		return Rule{}, bad("rule %d (%s %s): %v", pos, name, op, err)
 	}
@@ -263,11 +279,33 @@ func buildRule(w wireRule, pos, depth int, count *int) (Rule, error) {
 	return r, nil
 }
 
+// truncate shortens s for an error message, cutting on a rune boundary so the message stays valid UTF-8.
 func truncate(s string) string {
-	if len(s) > 40 {
-		return s[:40] + "..."
+	if len(s) <= 40 {
+		return s
 	}
-	return s
+	cut := 40
+	for cut > 0 && !utf8.RuneStart(s[cut]) {
+		cut--
+	}
+	return s[:cut] + "..."
+}
+
+// checkIntegers rejects fractional or out-of-range numbers for integer-backed fields.
+func checkIntegers(v interface{}) error {
+	switch x := v.(type) {
+	case float64:
+		if x != math.Trunc(x) || math.Abs(x) > 9e15 {
+			return errors.New("value must be a whole number within range for this field")
+		}
+	case []interface{}:
+		for _, e := range x {
+			if err := checkIntegers(e); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func contains(list []string, s string) bool {
@@ -352,6 +390,13 @@ func scalar(k kind, field string, raw json.RawMessage) (interface{}, error) {
 		if strings.ContainsRune(s, 0) {
 			return nil, errors.New("value contains a NUL byte")
 		}
+		// U+0001..U+0003 are the separators the SQLite JSON-column readers use internally
+		if strings.ContainsAny(s, "\x01\x02\x03") {
+			return nil, errors.New("value contains a reserved control character")
+		}
+		if !utf8.ValidString(s) {
+			return nil, errors.New("value is not valid UTF-8")
+		}
 		return s, nil
 	case kNumber:
 		var f float64
@@ -429,6 +474,19 @@ type Options struct {
 	UserID int64
 	// Now is the clock used by in_last_days; zero means time.Now().
 	Now time.Time
+	// Timeout bounds one Evaluate/CountUpTo call; zero means DefaultTimeout.
+	Timeout time.Duration
+}
+
+// DefaultTimeout bounds a single rule evaluation (all queries of one Evaluate call together).
+const DefaultTimeout = 10 * time.Second
+
+func (o Options) bound(ctx context.Context) (context.Context, context.CancelFunc) {
+	d := o.Timeout
+	if d <= 0 {
+		d = DefaultTimeout
+	}
+	return context.WithTimeout(ctx, d)
 }
 
 // Compile turns a rule set into a parameterised WHERE fragment over the
@@ -509,13 +567,13 @@ func (c *compiler) predicate(r Rule) (string, error) {
 		}
 		return existsWrap("SELECT 1 FROM media_files mf JOIN files f ON f.id = mf.file_id WHERE mf.media_item_id = mi.id AND NOT f.deleted AND ", inner, negate), nil
 	case "quality":
-		inner, negate, err := c.text("mf.quality_info", r)
+		inner, negate, err := c.text(c.qualityExpr(), r)
 		if err != nil {
 			return "", err
 		}
 		return existsWrap("SELECT 1 FROM media_files mf WHERE mf.media_item_id = mi.id AND ", inner, negate), nil
 	case "tags":
-		inner, negate, err := c.text("um.tags", r)
+		inner, negate, err := c.arrayText("um.tags", r)
 		if err != nil {
 			return "", err
 		}
@@ -529,8 +587,7 @@ func (c *compiler) predicate(r Rule) (string, error) {
 		s, _, err := c.textDirect("mi.title", r)
 		return s, err
 	case "genre":
-		s, _, err := c.textDirect("mi.genre", r)
-		return s, err
+		return c.genre(r)
 	case "language":
 		s, _, err := c.textDirect("mi.language", r)
 		return s, err
@@ -625,20 +682,128 @@ func (c *compiler) userExists(col, inner string, negate bool, r Rule) (string, e
 
 func countPlaceholders(s string) int { return strings.Count(s, "?") }
 
+// favoriteEntityTypes is the closed set of entity types the favourites API accepts for media entities
+// (handlers.validEntityTypes). The UI stores a catalogue media id under one of them (it defaults to
+// "movie"), so the rule matches any of them by media id; a favourite of another kind (a playlist, for
+// example) with the same numeric id does not count.
+var favoriteEntityTypes = []string{"movie", "tv_show", "tv_season", "tv_episode", "music_artist", "music_album", "song", "game", "software", "book", "comic"}
+
+// favorite reads the canonical favourite store: the `favorites` table, the one the web UI toggle
+// (POST/DELETE /favorites) and the Favorites page use, scoped to the viewing user. user_metadata.favorite
+// and media_items.is_favorite are legacy flags and are NOT consulted.
 func (c *compiler) favorite(r Rule) (string, error) {
 	want := r.Value.(bool)
 	if r.Operator == "not_equals" {
 		want = !want
 	}
+	ph := make([]string, len(favoriteEntityTypes))
 	c.args = append(c.args, c.opt.UserID)
-	s := "EXISTS (SELECT 1 FROM user_metadata um WHERE um.media_item_id = mi.id AND um.user_id = ? AND um.favorite = ?)"
+	for i, t := range favoriteEntityTypes {
+		ph[i] = "?"
+		c.args = append(c.args, t)
+	}
+	s := "EXISTS (SELECT 1 FROM favorites fv WHERE fv.entity_id = mi.id AND fv.user_id = ? AND fv.entity_type IN (" + strings.Join(ph, ", ") + "))"
 	if want {
-		c.args = append(c.args, true)
 		return s, nil
 	}
-	// "not a favourite": no favourite row for this user
-	c.args = append(c.args, true)
 	return "NOT " + s, nil
+}
+
+// The SQLite build used here (go-sqlcipher) has no JSON1 extension, so JSON-encoded text columns are
+// read with plain string functions. This is sound because both columns are written by encoding/json
+// (compact, no spaces): every double quote that is syntax is unescaped, every double quote inside a value
+// is escaped as \" and every backslash as \\. Protecting the two escapes first (CHAR(2), CHAR(3)) makes the
+// remaining quotes unambiguous syntax; \u0026, \u003c and \u003e (Go escapes & < > in JSON) are decoded
+// back. Other control-character escapes are not decoded (values containing control characters never
+// match; Parse rejects the three reserved separator characters in rule values).
+const (
+	sqlSep = "CHAR(1)"
+)
+
+// protectEscapes lower-cases col and replaces the JSON escapes \\ and \" by sentinels.
+func protectEscapes(col string) string {
+	return "REPLACE(REPLACE(LOWER(" + col + "), '\\\\', CHAR(2)), '\\\"', CHAR(3))"
+}
+
+// decodeJSONText turns the protected body back into plain text.
+func decodeJSONText(expr string) string {
+	e := "REPLACE(" + expr + ", CHAR(3), '\"')"
+	e = "REPLACE(" + e + ", '\\u0026', '&')"
+	e = "REPLACE(" + e + ", '\\u003c', '<')"
+	e = "REPLACE(" + e + ", '\\u003e', '>')"
+	return "REPLACE(" + e + ", CHAR(2), '\\')"
+}
+
+// jsonArrayBody is the SQLite expression for a text column holding a JSON array of strings, decoded to
+// its elements joined by CHAR(1), lower-cased. A legacy plain-text value is a single element, a JSON null
+// or an empty array has no element, NULL stays NULL.
+func jsonArrayBody(col string) string {
+	s2 := protectEscapes(col)
+	arr := decodeJSONText("REPLACE(SUBSTR(" + s2 + ", 3, LENGTH(" + s2 + ") - 4), '\",\"', " + sqlSep + ")")
+	return "(CASE WHEN " + col + " IS NULL THEN NULL WHEN SUBSTR(" + s2 + ", 1, 2) = '[\"' AND SUBSTR(" + s2 + ", -2) = '\"]' THEN " + arr +
+		" WHEN SUBSTR(" + s2 + ", 1, 2) = '[]' OR LOWER(" + col + ") = 'null' THEN '' ELSE LOWER(" + col + ") END)"
+}
+
+// qualityExpr extracts quality_profile (lower-cased) from media_files.quality_info, a QualityInfo JSON
+// object written by the analyzer ("1080p", "4K/UHD", ...). Anything else yields NULL.
+func (c *compiler) qualityExpr() string {
+	if c.opt.Postgres {
+		return "(CASE WHEN mf.quality_info ~ '^\\s*[{]' THEN mf.quality_info::jsonb ->> 'quality_profile' END)"
+	}
+	const key = "'\"quality_profile\":\"'"
+	s2 := protectEscapes("mf.quality_info")
+	inner := "(SELECT SUBSTR(x.r, 1, INSTR(x.r, '\"') - 1) FROM (SELECT SUBSTR(y.s, INSTR(y.s, " + key + ") + 19) AS r FROM (SELECT " + s2 + " AS s) y WHERE INSTR(y.s, " + key + ") > 0) x)"
+	return decodeJSONText(inner)
+}
+
+// genre compiles a text predicate over the ELEMENTS of media_items.genre, which the repository stores as
+// a JSON array of strings (["Action","Sci-Fi"]). The positive operators mean "some element matches";
+// the negative ones mean "no element matches" (so an item without genres matches them).
+func (c *compiler) genre(r Rule) (string, error) {
+	pos, negate, err := c.arrayText("mi.genre", r)
+	if err != nil {
+		return "", err
+	}
+	if negate {
+		return "NOT COALESCE(" + pos + ", 0)", nil
+	}
+	return "COALESCE(" + pos + ", 0)", nil
+}
+
+// arrayText returns the POSITIVE predicate ("some element of the JSON-array column matches") and whether
+// the operator is negated. Elements are compared whole for equals/in, as substrings for contains, and at
+// the element boundary for starts_with/ends_with, so JSON syntax characters ([ ] , ") are never content.
+func (c *compiler) arrayText(col string, r Rule) (string, bool, error) {
+	if c.opt.Postgres {
+		inner, negate, err := c.text("je.value", r)
+		if err != nil {
+			return "", false, err
+		}
+		src := "jsonb_array_elements_text(CASE WHEN " + col + " = 'null' THEN '[]'::jsonb WHEN " + col + " ~ '^\\s*[[]' THEN " + col + "::jsonb ELSE jsonb_build_array(" + col + ") END) AS je(value)"
+		return "EXISTS (SELECT 1 FROM " + src + " WHERE " + inner + ")", negate, nil
+	}
+	body := jsonArrayBody(col)
+	one := func(format string, v string) string {
+		c.args = append(c.args, v)
+		return strings.ReplaceAll(strings.ReplaceAll(format, "B", body), "?", "LOWER(?)")
+	}
+	switch r.Operator {
+	case "equals", "not_equals":
+		return one("INSTR(CHAR(1) || B || CHAR(1), CHAR(1) || ? || CHAR(1)) > 0", r.Value.(string)), r.Operator == "not_equals", nil
+	case "in", "not_in":
+		var parts []string
+		for _, v := range r.Value.([]interface{}) {
+			parts = append(parts, one("INSTR(CHAR(1) || B || CHAR(1), CHAR(1) || ? || CHAR(1)) > 0", v.(string)))
+		}
+		return "(" + strings.Join(parts, " OR ") + ")", r.Operator == "not_in", nil
+	case "contains", "not_contains":
+		return one("INSTR(B, ?) > 0", r.Value.(string)), r.Operator == "not_contains", nil
+	case "starts_with":
+		return one("INSTR(CHAR(1) || B, CHAR(1) || ?) > 0", r.Value.(string)), false, nil
+	case "ends_with":
+		return one("INSTR(B || CHAR(1), ? || CHAR(1)) > 0", r.Value.(string)), false, nil
+	}
+	return "", false, bad("operator %q not supported for text", r.Operator)
 }
 
 func (c *compiler) mediaType(r Rule) (string, error) {
@@ -714,6 +879,11 @@ func (c *compiler) ts(v interface{}) interface{} {
 }
 
 func (c *compiler) date(col string, r Rule) (string, error) {
+	if !c.opt.Postgres {
+		// the writer stores time.Time with the host's zone offset; datetime() normalises it to UTC so the
+		// comparison is between instants, not text.
+		col = "datetime(" + col + ")"
+	}
 	switch r.Operator {
 	case "equals":
 		d, ok := r.Value.(dateOnly)
@@ -801,10 +971,34 @@ func NormalizePage(limit, offset int) (int, int) {
 
 const fromClause = " FROM media_items mi JOIN media_types mt ON mt.id = mi.media_type_id WHERE "
 
+// CountUpTo counts the matches but stops after max+1 rows, so the cost is bounded however large the
+// catalogue is. capped reports that more than max items match (n == max then).
+func CountUpTo(ctx context.Context, q Querier, rs *RuleSet, opt Options, max int) (n int, capped bool, err error) {
+	if max < 1 {
+		max = 1
+	}
+	ctx, cancel := opt.bound(ctx)
+	defer cancel()
+	where, args, err := Compile(rs, opt)
+	if err != nil {
+		return 0, false, err
+	}
+	var got int
+	if err := q.QueryRowContext(ctx, "SELECT COUNT(*) FROM (SELECT 1"+fromClause+where+" LIMIT ?) c", append(append([]interface{}{}, args...), max+1)...).Scan(&got); err != nil {
+		return 0, false, fmt.Errorf("smart rules count: %w", err)
+	}
+	if got > max {
+		return max, true, nil
+	}
+	return got, false, nil
+}
+
 // Evaluate runs the rule set and returns one page plus the total match count.
 // The page is fully read and the cursor closed before returning.
 func Evaluate(ctx context.Context, q Querier, rs *RuleSet, opt Options, limit, offset int) ([]Item, int, error) {
 	limit, offset = NormalizePage(limit, offset)
+	ctx, cancel := opt.bound(ctx)
+	defer cancel()
 	where, args, err := Compile(rs, opt)
 	if err != nil {
 		return nil, 0, err

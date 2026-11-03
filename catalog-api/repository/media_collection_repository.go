@@ -263,6 +263,13 @@ func (r *MediaCollectionRepository) ListVisible(ctx context.Context, viewerID in
 	return out, total, nil
 }
 
+// CountSmartByOwner returns how many smart collections the user owns.
+func (r *MediaCollectionRepository) CountSmartByOwner(ctx context.Context, ownerID int64) (int, error) {
+	var n int
+	err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM media_collections WHERE is_smart = ? AND owner_user_id = ?", true, ownerID).Scan(&n)
+	return n, err
+}
+
 // Querier exposes the underlying database for rule evaluation.
 func (r *MediaCollectionRepository) Querier() smartrules.Querier { return r.db }
 

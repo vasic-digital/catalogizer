@@ -854,3 +854,10 @@ Found by `scripts/docs/check_doc_coverage.py` (guide `docs/scripts/check_doc_cov
 - F6: checker guide Limits overstates PHANTOM guarantee for routes registered through an unfollowed path and absent from the spec.
 - F7 (UNCONFIRMED): DOCKER_SETUP.md claims PDF rasterising via imagemagick; ghostscript absent (see registration review F2).
 - N1-N5: MALLOC_ARENA_MAX condition (cgo && linux && !musl); scripts check covers top-level scripts/<file> only; empty/unparseable openapi exits 1 not 2/3; missing --exempt path treated as empty silently; shebang without exec bit.
+
+## Smart collections round 1 follow-ups
+- SC1: the Postgres jsonb branches (genre, quality, tags) are written but untested (no Postgres in this run); UNCONFIRMED.
+- SC2 (F7): case-insensitive matching is ASCII-only on SQLite; non-ASCII folding is not done.
+- SC3 (F10): SmartCollectionBuilder still offers options the server rejects (artist, album, decade, play_count, last_played, file_extension, bitrate, resolution, fps, channels, subtitles, is_empty, last_N_days); aliases were added for is_favorite/file_size/duration/date_modified only. catalog-web edits are UNVERIFIED (no node_modules).
+- SC4: control characters (\x01-\x03) are rejected in values; values with control characters never match JSON-encoded columns.
+- SC5: the list-count cache is a 30 s TTL per process, not shared between instances; `total_items_status` reports exact/capped/stored.

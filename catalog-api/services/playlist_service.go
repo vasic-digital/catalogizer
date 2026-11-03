@@ -18,6 +18,16 @@ var ErrSmartPlaylistItems = errors.New("smart playlists have no manual items: th
 // ErrPlaylistForbidden is returned when the caller may not change the playlist.
 var ErrPlaylistForbidden = errors.New("unauthorized: only the owner can change this playlist")
 
+// ErrPlaylistNotFound is returned when the playlist does not exist OR the caller may not even read it
+// (a private playlist of another user): both look the same, so existence is not leaked.
+var ErrPlaylistNotFound = errors.New("playlist not found")
+
+// ErrSmartLimit is returned when the user already owns MaxSmartPlaylistsPerUser smart playlists.
+var ErrSmartLimit = errors.New("smart playlist limit reached")
+
+// MaxSmartPlaylistsPerUser bounds the rule evaluations a single user can accumulate.
+const MaxSmartPlaylistsPerUser = 50
+
 // PlaylistService provides business logic for playlist operations.
 type PlaylistService struct {
 	playlistRepo *repository.PlaylistRepository
@@ -32,6 +42,11 @@ func NewPlaylistService(playlistRepo *repository.PlaylistRepository) *PlaylistSe
 
 // CreatePlaylist creates a new playlist for the given user.
 func (s *PlaylistService) CreatePlaylist(userID int, req *models.CreatePlaylistRequest) (*models.Playlist, error) {
+	return s.CreatePlaylistCtx(context.Background(), userID, req)
+}
+
+// CreatePlaylistCtx is CreatePlaylist with the request context (bounds the rule evaluation).
+func (s *PlaylistService) CreatePlaylistCtx(ctx context.Context, userID int, req *models.CreatePlaylistRequest) (*models.Playlist, error) {
 	if s.playlistRepo == nil {
 		return nil, fmt.Errorf("playlist repository not configured")
 	}
@@ -59,8 +74,15 @@ func (s *PlaylistService) CreatePlaylist(userID int, req *models.CreatePlaylistR
 		if err != nil {
 			return nil, err
 		}
+		n, err := s.playlistRepo.CountSmartByUser(ctx, userID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to count smart playlists: %w", err)
+		}
+		if n >= MaxSmartPlaylistsPerUser {
+			return nil, fmt.Errorf("%w (max %d per user)", ErrSmartLimit, MaxSmartPlaylistsPerUser)
+		}
 		// run the rules once: rules that cannot be evaluated are refused, not stored
-		if _, _, err := s.playlistRepo.EvaluateSmart(context.Background(), 0, rs, int64(userID), 1, 0); err != nil {
+		if _, _, err := s.playlistRepo.EvaluateSmart(ctx, 0, rs, int64(userID), 1, 0); err != nil {
 			return nil, fmt.Errorf("smart playlist rules could not be evaluated: %w", err)
 		}
 		playlist.IsSmart = true
@@ -85,17 +107,22 @@ func (s *PlaylistService) GetPlaylist(userID int, playlistID int) (*models.Playl
 // GetPlaylistPage is GetPlaylist with an explicit page for smart playlists
 // (limit is capped at smartrules.MaxLimit). Manual playlists return all items.
 func (s *PlaylistService) GetPlaylistPage(userID int, playlistID int, limit, offset int) (*models.Playlist, error) {
+	return s.GetPlaylistPageCtx(context.Background(), userID, playlistID, limit, offset)
+}
+
+// GetPlaylistPageCtx is GetPlaylistPage with the request context.
+func (s *PlaylistService) GetPlaylistPageCtx(ctx context.Context, userID int, playlistID int, limit, offset int) (*models.Playlist, error) {
 	if s.playlistRepo == nil {
 		return nil, fmt.Errorf("playlist repository not configured")
 	}
 
 	playlist, err := s.playlistRepo.GetPlaylistByID(playlistID)
 	if err != nil {
-		return nil, fmt.Errorf("playlist not found: %w", err)
+		return nil, fmt.Errorf("%w: %v", ErrPlaylistNotFound, err)
 	}
 
 	if playlist.UserID != userID && !playlist.IsPublic {
-		return nil, fmt.Errorf("unauthorized to access this playlist")
+		return nil, ErrPlaylistNotFound
 	}
 
 	if playlist.IsSmart {
@@ -104,7 +131,7 @@ func (s *PlaylistService) GetPlaylistPage(userID int, playlistID int, limit, off
 			return nil, fmt.Errorf("stored smart rules are invalid: %w", err)
 		}
 		// user-scoped fields (tags, favorite) are evaluated for the VIEWER
-		items, total, err := s.playlistRepo.EvaluateSmart(context.Background(), playlistID, rs, int64(userID), limit, offset)
+		items, total, err := s.playlistRepo.EvaluateSmart(ctx, playlistID, rs, int64(userID), limit, offset)
 		if err != nil {
 			return nil, fmt.Errorf("failed to evaluate smart playlist: %w", err)
 		}
@@ -136,17 +163,18 @@ func (s *PlaylistService) GetUserPlaylists(userID int, limit, offset int) ([]mod
 
 // UpdatePlaylist updates an existing playlist.
 func (s *PlaylistService) UpdatePlaylist(userID int, playlistID int, req *models.UpdatePlaylistRequest) (*models.Playlist, error) {
+	return s.UpdatePlaylistCtx(context.Background(), userID, playlistID, req)
+}
+
+// UpdatePlaylistCtx is UpdatePlaylist with the request context.
+func (s *PlaylistService) UpdatePlaylistCtx(ctx context.Context, userID int, playlistID int, req *models.UpdatePlaylistRequest) (*models.Playlist, error) {
 	if s.playlistRepo == nil {
 		return nil, fmt.Errorf("playlist repository not configured")
 	}
 
-	playlist, err := s.playlistRepo.GetPlaylistByID(playlistID)
+	playlist, err := s.ownedPlaylist(userID, playlistID, "update")
 	if err != nil {
-		return nil, fmt.Errorf("playlist not found: %w", err)
-	}
-
-	if playlist.UserID != userID {
-		return nil, fmt.Errorf("%w (update)", ErrPlaylistForbidden)
+		return nil, err
 	}
 
 	if playlist.IsSmart {
@@ -158,7 +186,7 @@ func (s *PlaylistService) UpdatePlaylist(userID int, playlistID int, req *models
 			if err != nil {
 				return nil, err
 			}
-			if _, _, err := s.playlistRepo.EvaluateSmart(context.Background(), playlistID, rs, int64(userID), 1, 0); err != nil {
+			if _, _, err := s.playlistRepo.EvaluateSmart(ctx, playlistID, rs, int64(userID), 1, 0); err != nil {
 				return nil, fmt.Errorf("smart playlist rules could not be evaluated: %w", err)
 			}
 			playlist.SmartRules = json.RawMessage(rs.Raw)
@@ -191,13 +219,8 @@ func (s *PlaylistService) DeletePlaylist(userID int, playlistID int) error {
 		return fmt.Errorf("playlist repository not configured")
 	}
 
-	playlist, err := s.playlistRepo.GetPlaylistByID(playlistID)
-	if err != nil {
-		return fmt.Errorf("playlist not found: %w", err)
-	}
-
-	if playlist.UserID != userID {
-		return fmt.Errorf("%w (delete)", ErrPlaylistForbidden)
+	if _, err := s.ownedPlaylist(userID, playlistID, "delete"); err != nil {
+		return err
 	}
 
 	return s.playlistRepo.DeletePlaylist(playlistID)
@@ -209,13 +232,9 @@ func (s *PlaylistService) AddItem(userID int, playlistID int, req *models.AddPla
 		return nil, fmt.Errorf("playlist repository not configured")
 	}
 
-	playlist, err := s.playlistRepo.GetPlaylistByID(playlistID)
+	playlist, err := s.ownedPlaylist(userID, playlistID, "modify")
 	if err != nil {
-		return nil, fmt.Errorf("playlist not found: %w", err)
-	}
-
-	if playlist.UserID != userID {
-		return nil, fmt.Errorf("%w (modify)", ErrPlaylistForbidden)
+		return nil, err
 	}
 	if playlist.IsSmart {
 		return nil, ErrSmartPlaylistItems
@@ -247,13 +266,9 @@ func (s *PlaylistService) RemoveItem(userID int, playlistID int, itemID int) err
 		return fmt.Errorf("playlist repository not configured")
 	}
 
-	playlist, err := s.playlistRepo.GetPlaylistByID(playlistID)
+	playlist, err := s.ownedPlaylist(userID, playlistID, "modify")
 	if err != nil {
-		return fmt.Errorf("playlist not found: %w", err)
-	}
-
-	if playlist.UserID != userID {
-		return fmt.Errorf("%w (modify)", ErrPlaylistForbidden)
+		return err
 	}
 	if playlist.IsSmart {
 		return ErrSmartPlaylistItems
@@ -276,4 +291,21 @@ func (s *PlaylistService) RemoveItem(userID int, playlistID int, itemID int) err
 	_ = s.playlistRepo.TouchPlaylistUpdatedAt(playlistID)
 
 	return nil
+}
+
+// ownedPlaylist loads a playlist the caller wants to CHANGE. A playlist the caller cannot read at all
+// (someone else's private one) is reported as not found, exactly like GET; a readable (public) playlist
+// of another user is forbidden.
+func (s *PlaylistService) ownedPlaylist(userID, playlistID int, verb string) (*models.Playlist, error) {
+	playlist, err := s.playlistRepo.GetPlaylistByID(playlistID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrPlaylistNotFound, err)
+	}
+	if playlist.UserID == userID {
+		return playlist, nil
+	}
+	if !playlist.IsPublic {
+		return nil, ErrPlaylistNotFound
+	}
+	return nil, fmt.Errorf("%w (%s)", ErrPlaylistForbidden, verb)
 }
