@@ -568,13 +568,20 @@ func main() {
 	logManagementService := root_services.NewLogManagementService(logManagementRepo)
 	favoritesService := root_services.NewFavoritesService(favoritesRepo, authService)
 
-	// Lazy initialization: ConversionService — only needed when conversion endpoints are hit
+	// ConversionService is eager: the background worker must run from startup so queued jobs are
+	// processed even before any conversion endpoint is hit. Only the HTTP handler is lazy.
+	conversionRepo := root_repository.NewConversionRepository(databaseDB)
+	conversionService := root_services.NewConversionService(conversionRepo, userRepo, authService)
+	conversionWorkerCtx, conversionWorkerCancel := context.WithCancel(context.Background())
+	conversionWorkerDone := make(chan struct{})
+	go func() {
+	defer close(conversionWorkerDone)
+	conversionService.RunWorker(conversionWorkerCtx, 2*time.Second)
+	}()
 	var conversionHandlerOnce sync.Once
 	var lazyConversionHandler *root_handlers.ConversionHandler
 	getConversionHandler := func() *root_handlers.ConversionHandler {
 	conversionHandlerOnce.Do(func() {
-			conversionRepo := root_repository.NewConversionRepository(databaseDB)
-			conversionService := root_services.NewConversionService(conversionRepo, userRepo, authService)
 			lazyConversionHandler = root_handlers.NewConversionHandler(conversionService, authService)
 	})
 	return lazyConversionHandler
@@ -1913,6 +1920,21 @@ func main() {
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer shutdownCancel()
 
+	// Stop the conversion worker: running converter tools are killed, their jobs go back to
+	// `pending`, and we wait for the job goroutines to finish.
+	// The wait is bounded by its own 10s timer (not by the shutdown context; at most 10s of the
+	// 30s shutdown budget are spent). If the worker has not stopped, the database is NOT closed
+	// below (job goroutines may still write), and the process exit ends the rest. Converter tools are killed by process group on cancel, so this
+	// normally takes milliseconds.
+	conversionWorkerCancel()
+	conversionWorkerStopped := false
+	select {
+	case <-conversionWorkerDone:
+	conversionWorkerStopped = true
+	case <-time.After(10 * time.Second):
+	logger.Error("Conversion worker did not stop within 10s; the database will not be closed while jobs may still write")
+	}
+
 	// Stop runtime metrics collector
 	metrics.StopRuntimeCollector()
 
@@ -1964,8 +1986,10 @@ func main() {
 	}
 	}
 
-	// Close database connection
-	if err := databaseDB.Close(); err != nil {
+	// Close database connection (never while conversion job goroutines may still write)
+	if !conversionWorkerStopped {
+	logger.Warn("Skipping database close: conversion worker still running")
+	} else if err := databaseDB.Close(); err != nil {
 	logger.Error("Database close error", zap.Error(err))
 	} else {
 	logger.Info("Database connection closed")
