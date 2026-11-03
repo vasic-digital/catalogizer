@@ -446,6 +446,24 @@ Tracked follow-ups (status OPEN):
   browser, mouse pointer). Today 44px is enforced on coarse pointers only. Options: (a) enforce the WCAG 2.2 AA 2.5.8
   minimum of 24x24 CSS px everywhere and keep 44 on coarse; (b) keep 44 on coarse only (status quo); (c) enforce 44
   everywhere. Recommendation: (a). Nobody has decided this yet.
+- CLOSED on branch `fix-ui-d1-d2` (2026-11-03, operator decision: fix to spec; both recommendations applied):
+  - D1 (badge): the connection badge is no longer a fixed overlay. `ConnectionStatus` is an in-flow `role="status"` chip docked in
+    the header (`Header.tsx`), icon-only below `sm` (text stays for screen readers), icon + text from `sm`. RED (real
+    chromium, real catalog-api, `tests/responsive-audit/measure_d1_d2.mjs`, 5 viewports x 2 themes x 6 pages = 60 cases): 28 of
+    60 FAIL, the badge intersected "Smart Collection", selects, "Refresh", "Last updated", etc. at every width from 320 to 1440.
+    GREEN: 60 of 60 PASS, 0 unobserved, 0 intersections.
+  - D2 (target size): `@media (pointer: fine)` now enforces the WCAG 2.2 AA 2.5.8 floor of 24x24 CSS px (central zero-specificity
+    `:where()` rule, `.touch-target`, login "Remember me" and "Forgot password?"); 44px on coarse pointers is unchanged (touch
+    viewports measured 0 violations before and after). The audit oracle uses 24 on fine pointers and `run.mjs` now fails on
+    `tap_target_small_desktop`. RED: 8 oracle findings under 24px at login (20px) plus "Home" breadcrumb 38x20 on `/playlists`.
+  - New unit guards (RED on revert, three mutations each killed): `ConnectionStatus.test.tsx` placement, `Header.test.tsx` slot,
+    `touch_targets.test.ts` fine floor.
+  - Further defects found while measuring (NOT fixed, OPEN): (a) the fixed version chip `v1.1.0` (Layout) overlaps the primary
+    "Smart Collection" button on `/collections` at 320x568 (visible in the screenshot, the chip is `fixed` and not in the
+    oracle's overlap rule because it has no text overlap with a text box of its own); (b) on `/collections` two chevron icons
+    float right of the select boxes (detached from the controls) at 320 and 375; (c) `/collections` shows "Render: 0.0ms" and
+    "Page 1/0" developer-style stats to end users; (d) the audit harness `run.mjs` still has fixed default ports and is not
+    wired into a gate; `measure_d1_d2.mjs` needs the real API and a built dist.
 - Oracle tolerance: webkit reported tap_target_small at exactly 44.00 x 44.00 in one of two identical runs (7 cases; r2b), i.e. a float/layout-unit error below 0.01px. The oracle now allows 0.02px (`minPx - 0.02`). Not re-proven by a full matrix run yet.
 - OPEN, UNCONFIRMED: the earlier webkit `tap_target_small` pair (register inputs, 132x44 after rounding) and the reviewer's
   3 chromium results (ActivityFeed tabs) were not root-caused. The oracle was changed to record unrounded sizes and to wait

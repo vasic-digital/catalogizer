@@ -35,3 +35,7 @@ AUDIT_WORK=/path/work AUDIT_API_URL=http://127.0.0.1:18500 AUDIT_WEB_URL=http://
 ```
 
 The `website-pages.json` file is only read for `--app=website`.
+
+## Targeted measurement: `measure_d1_d2.mjs`
+
+Real-browser check of the connection badge (must not intersect any other visible interactive element or text box) and of the target-size floor (44px coarse, 24px fine) on dashboard, collections, media, playlists, admin and settings at 320/375/768/1024/1440, light and dark. Needs the same env as `run.mjs` (`AUDIT_WORK`, `AUDIT_API_URL`, `AUDIT_WEB_URL`); `--browser=`, `--pages=`, `--shots=<dir>`, `MEASURE_OUT=<file.json>`. Exit 0 only when every case passes and the badge was observed in every case (an unobserved badge is invalid, never clean). Without a real API the badge never appears, so the run is `UNOBSERVED`.

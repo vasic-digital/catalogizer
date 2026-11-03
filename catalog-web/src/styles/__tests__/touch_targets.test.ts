@@ -38,10 +38,19 @@ function mediaBlocks(): { query: string; body: string }[] {
 }
 
 describe('touch-target media query and helper contract', () => {
-  it('the central :where() rule lives under exactly (pointer: coarse), never a widened query', () => {
+  it('the central :where() rules live under exactly (pointer: coarse) and (pointer: fine), never a widened query', () => {
     const blocks = mediaBlocks().filter((b) => b.body.includes(':where('))
-    expect(blocks.length).toBe(1)
-    expect(blocks[0].query).toBe('(pointer: coarse)')
+    expect(blocks.map((b) => b.query).sort()).toEqual(['(pointer: coarse)', '(pointer: fine)'])
+  })
+
+  it('fine pointers get the WCAG 2.2 AA 2.5.8 floor of 24px (D2), coarse keeps 44px', () => {
+    const fine = mediaBlocks().find((b) => b.query === '(pointer: fine)' && b.body.includes(':where('))!
+    expect(fine.body).toMatch(/min-height:\s*24px/)
+    expect(fine.body).toMatch(/min-width:\s*24px/)
+    expect(fine.body).not.toMatch(/44px/)
+    for (const sel of ['button', 'select', 'textarea', "[role='tab']", "[role='button']", "[role='menuitem']", 'summary']) {
+      expect(fine.body).toContain(sel)
+    }
   })
 
   it('no media query in index.css applies the 44px minimum to fine pointers', () => {
@@ -51,11 +60,19 @@ describe('touch-target media query and helper contract', () => {
   })
 
   it('.touch-target carries the 44px min-height AND min-width pair inside the coarse query', () => {
-    const blocks = mediaBlocks().filter((b) => b.body.includes('.touch-target'))
+    const blocks = mediaBlocks().filter((b) => b.body.includes('.touch-target') && /44px/.test(b.body))
     expect(blocks.length).toBe(1)
     expect(blocks[0].query).toBe('(pointer: coarse)')
     expect(blocks[0].body).toMatch(/min-height:\s*44px/)
     expect(blocks[0].body).toMatch(/min-width:\s*44px/)
+  })
+})
+
+describe('.touch-target on fine pointers (D2)', () => {
+  it('gets the 24px WCAG 2.5.8 min-height under (pointer: fine) only', () => {
+    const blocks = mediaBlocks().filter((b) => b.body.includes('.touch-target') && /24px/.test(b.body))
+    expect(blocks.length).toBe(1)
+    expect(blocks[0].query).toBe('(pointer: fine)')
   })
 })
 

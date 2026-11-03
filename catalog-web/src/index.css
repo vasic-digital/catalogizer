@@ -98,6 +98,26 @@
     }
   }
 
+  /*
+   * Fine-pointer floor (WCAG 2.2 AA 2.5.8 Target Size Minimum, 24x24 CSS px). Same zero-specificity mechanism as above, so
+   * an explicit utility still wins; the coarse-pointer 44px rule above is larger and therefore unaffected.
+   */
+  @media (pointer: fine) {
+    :where(
+      button,
+      select,
+      textarea,
+      summary,
+      [role='button'],
+      [role='tab'],
+      [role='menuitem'],
+      input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='hidden'])
+    ) {
+      min-height: 24px;
+      min-width: 24px;
+    }
+  }
+
   /* Custom scrollbar */
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
@@ -168,6 +188,11 @@
     .touch-target {
       min-height: 44px;
       min-width: 44px;
+    }
+  }
+  @media (pointer: fine) {
+    .touch-target {
+      min-height: 24px;
     }
   }
 }

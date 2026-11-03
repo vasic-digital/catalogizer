@@ -1,3 +1,4 @@
+import { ConnectionStatus } from '@/components/ui/ConnectionStatus'
 import React, { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
@@ -266,6 +267,11 @@ export const Header: React.FC = () => {
                 </Button>
               </div>
             )}
+          </div>
+
+          {/* Connection status: docked in the header (never an overlay), shown only while not connected */}
+          <div className="flex-none ml-2 md:ml-3">
+            <ConnectionStatus />
           </div>
 
           {/* Mobile Menu Button */}
