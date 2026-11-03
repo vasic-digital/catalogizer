@@ -23,8 +23,8 @@ OUTPUT_DIR="$PROJECT_ROOT/qa-results/helixqa-${TIMESTAMP}"
 BANKS_DIR="$PROJECT_ROOT/challenges/helixqa-banks"
 HELIXQA="$PROJECT_ROOT/submodules/helix_qa/helixqa"
 FFMPEG="${HELIX_RECORDING_FFMPEG_PATH:-/home/milosvasic/bin/ffmpeg}"
-API_URL="http://localhost:8080"
-WEB_URL="http://localhost:3000"
+API_URL="${API_URL:-http://localhost:8080}"
+WEB_URL="${WEB_URL:-http://localhost:3000}"
 DISPLAY="${DISPLAY:-:0}"
 
 # Colors
@@ -143,6 +143,7 @@ run_api_session() {
         "GET /api/v1/reports/performance"
         "GET /api/v1/analytics/system"
         "GET /api/v1/recommendations/trending"
+        "GET /api/v1/recommendations"
         "GET /api/v1/scans"
         "GET /api/v1/challenges/results"
         "POST /api/v1/auth/login"
@@ -159,22 +160,33 @@ run_api_session() {
             status=$(curl -sf -o /dev/null -w '%{http_code}' \
                 -X POST "${API_URL}${path}" \
                 -H 'Content-Type: application/json' \
-                -d "{\"username\":\"admin\",\"password\":\"${ADMIN_PASSWORD}\"}" 2>/dev/null || echo "000")
+                -d "{\"username\":\"admin\",\"password\":\"${ADMIN_PASSWORD}\"}" 2>/dev/null) || true
         else
             # No -f: a 501 must be read as 501 (curl -f would append the fallback "000" to it).
             status=$(curl -s -o /dev/null -w '%{http_code}' \
                 -X "$method" "${API_URL}${path}" \
                 -H "Authorization: Bearer $TOKEN" \
-                -H 'Content-Type: application/json' 2>/dev/null || echo "000")
+                -H 'Content-Type: application/json' 2>/dev/null) || true
         fi
+        # curl -w always prints the code (000 on a connection failure); "|| true" keeps set -e from
+        # aborting. Never append a fallback "000" (that produced "000000"), and never use -f
+        # (it makes a 4xx/5xx indistinguishable from a transport error). Normalise anything
+        # that is not a 3-digit code to 000.
+        [[ "$status" =~ ^[0-9]{3}$ ]] || status="000"
 
         local t_end=$(date +%s%N)
         local duration_ms=$(( (t_end - t_start) / 1000000 ))
 
         local result="FAIL"
-        # CAT-001: these two endpoints answer an honest 501 (no health source / not implemented), which is their expected result.
-        if [[ "$status" -ge 200 && "$status" -lt 400 ]] || \
-           [[ "$status" == "501" && ( "$path" == "/api/v1/configuration/status" || "$path" == "/api/v1/recommendations/trending" ) ]]; then
+        # CAT-001 (QA-consumers sweep): these endpoints answer an honest 501 (no health source /
+        # no recommendation engine). For them the expected result is EXACTLY 501 - a regression to
+        # an invented 200 (fabricated data) must FAIL, so 200-399 is NOT accepted for them.
+        local expect_501=0
+        case "$path" in
+            /api/v1/configuration/status|/api/v1/recommendations/trending|/api/v1/recommendations|/api/v1/recommendations/personalized/*) expect_501=1 ;;
+        esac
+        if { [[ "$expect_501" == "1" && "$status" == "501" ]]; } || \
+           { [[ "$expect_501" == "0" && "$status" -ge 200 && "$status" -lt 400 ]]; }; then
             result="PASS"
             pass=$((pass + 1))
             ok "  $method $path → $status (${duration_ms}ms)"

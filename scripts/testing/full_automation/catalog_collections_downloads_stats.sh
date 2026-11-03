@@ -24,11 +24,11 @@
 #     D  download archive       POST   /api/v1/download/archive       (L1125)
 #                                       -> 200 stream | 400 empty paths (validated)
 #     R  recommendations root   GET    /api/v1/recommendations        (L1587)
-#                                       -> 200, items[] (TrendingResponse)
+#                                       -> honest 501 (CAT-001), error body, no items[]
 #        recommendations trend  GET    /api/v1/recommendations/trending (L1223)
-#                                       -> 200, items[]
+#                                       -> honest 501, error body, no items[]
 #        recommendations by-type GET   /api/v1/recommendations/by-type (L1591)
-#                                       -> 200, recommendations object
+#                                       -> honest 501, error body, no recommendations
 #     S  stats overall          GET    /api/v1/stats/overall          (L1253)
 #                                       -> 200, success=true + data
 #        stats scans            GET    /api/v1/stats/scans            (L1261)
@@ -364,42 +364,39 @@ else
   fi
 
   # ----------------------------------------------------------------------------
-  # R1 — recommendations root. Real shape: items[] (TrendingResponse, L1587).
+  # R1-R3 — recommendations. CAT-001: no recommendation engine / trending source exists,
+  # so these routes answer an HONEST 501 with an error body and NO items/recommendations
+  # payload. Pinned to exactly 501: a regression to an invented 200 (fabricated titles)
+  # must FAIL these checks, as must a 501 that still carries invented data.
   # ----------------------------------------------------------------------------
   echo
-  echo "--- R1: GET /api/v1/recommendations (authenticated) ---"
+  echo "--- R1: GET /api/v1/recommendations (authenticated; honest 501) ---"
   CODE="$(http_request GET '/api/v1/recommendations?limit=10' yes - r1_recommendations)"
   EV="${RESULTS_DIR}/r1_recommendations.json"
-  if [ "${CODE}" = "200" ] && body_has_key "${EV}" items; then
-    ab_pass_with_evidence "R1 recommendations-root: 200 + items[] (trending default list)" "${EV}"
+  if [ "${CODE}" = "501" ] && body_has_key "${EV}" error && ! body_has_key "${EV}" items; then
+    ab_pass_with_evidence "R1 recommendations-root: honest 501 + error body, no fabricated items[]" "${EV}"
   else
-    ab_fail "R1 recommendations-root: expected 200 + items, got ${CODE}" "${EV}"
+    ab_fail "R1 recommendations-root: expected 501 + error and no items, got ${CODE}" "${EV}"
   fi
 
-  # ----------------------------------------------------------------------------
-  # R2 — recommendations trending. Real shape: items[] + media_type + time_range.
-  # ----------------------------------------------------------------------------
   echo
-  echo "--- R2: GET /api/v1/recommendations/trending (authenticated) ---"
+  echo "--- R2: GET /api/v1/recommendations/trending (authenticated; honest 501) ---"
   CODE="$(http_request GET '/api/v1/recommendations/trending?limit=10&time_range=week' yes - r2_rec_trending)"
   EV="${RESULTS_DIR}/r2_rec_trending.json"
-  if [ "${CODE}" = "200" ] && body_has_key "${EV}" items && body_has_key "${EV}" time_range; then
-    ab_pass_with_evidence "R2 recommendations-trending: 200 + items[] + time_range" "${EV}"
+  if [ "${CODE}" = "501" ] && body_has_key "${EV}" error && ! body_has_key "${EV}" items; then
+    ab_pass_with_evidence "R2 recommendations-trending: honest 501 + error body, no fabricated items[]" "${EV}"
   else
-    ab_fail "R2 recommendations-trending: expected 200 + items + time_range, got ${CODE}" "${EV}"
+    ab_fail "R2 recommendations-trending: expected 501 + error and no items, got ${CODE}" "${EV}"
   fi
 
-  # ----------------------------------------------------------------------------
-  # R3 — recommendations by-type. Real shape: recommendations object (L1591).
-  # ----------------------------------------------------------------------------
   echo
-  echo "--- R3: GET /api/v1/recommendations/by-type (authenticated) ---"
+  echo "--- R3: GET /api/v1/recommendations/by-type (authenticated; honest 501) ---"
   CODE="$(http_request GET '/api/v1/recommendations/by-type' yes - r3_rec_bytype)"
   EV="${RESULTS_DIR}/r3_rec_bytype.json"
-  if [ "${CODE}" = "200" ] && body_has_key "${EV}" recommendations; then
-    ab_pass_with_evidence "R3 recommendations-by-type: 200 + recommendations categorised object" "${EV}"
+  if [ "${CODE}" = "501" ] && body_has_key "${EV}" error && ! body_has_key "${EV}" recommendations; then
+    ab_pass_with_evidence "R3 recommendations-by-type: honest 501 + error body, no fabricated recommendations" "${EV}"
   else
-    ab_fail "R3 recommendations-by-type: expected 200 + recommendations, got ${CODE}" "${EV}"
+    ab_fail "R3 recommendations-by-type: expected 501 + error and no recommendations, got ${CODE}" "${EV}"
   fi
 
   # ----------------------------------------------------------------------------
