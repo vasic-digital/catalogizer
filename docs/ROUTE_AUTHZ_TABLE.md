@@ -17,7 +17,7 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | Method | Path | Gate (middleware) | Anonymous | Plain user | Admin |
 |---|---|---|---|---|---|
 | GET | `/discovery` | public | 200 | 200 | 200 |
-| GET | `/metrics` | RequireAuth+RequireAdmin | 401 | 403 | 200 |
+| GET | `/metrics` | RequireAuth+RequireAdmin (or `METRICS_SCRAPE_TOKEN` bearer, this route only) | 401 | 403 | 200 |
 | GET | `/debug/pprof/` | RequireAuth+RequireAdmin | 401 | 403 | 200 |
 | GET | `/debug/pprof/cmdline` | RequireAuth+RequireAdmin | 401 | 403 | 200 |
 | GET | `/debug/pprof/profile` | RequireAuth+RequireAdmin | 401 | 403 | ERR |

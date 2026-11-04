@@ -6,10 +6,10 @@ scrape_configs:
   - job_name: 'catalog-api'
     metrics_path: /metrics
     # /metrics is admin-only; the dedicated scrape credential (METRICS_SCRAPE_TOKEN,
-    # >= 32 chars) is mounted as a file and sent as `Authorization: Bearer`.
+    # >= 32 chars) is written to a file at container start from the METRICS_SCRAPE_TOKEN env and sent as `Authorization: Bearer`.
     authorization:
       type: Bearer
-      credentials_file: /etc/prometheus/secrets/metrics_scrape_token
+      credentials_file: /tmp/metrics_scrape_token
     static_configs:
       - targets: ['api:8080']
         labels:

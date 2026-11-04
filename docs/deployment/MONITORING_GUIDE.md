@@ -110,16 +110,53 @@ scrape_configs:
 
 ### /metrics Authentication
 
-`/metrics` (and `/debug/pprof/*`) are admin-only. Scrapers use a dedicated credential:
+`/metrics` (and `/debug/pprof/*`) are admin-only. Scrapers use a dedicated credential. Generate it
+once and put the SAME value in `.env` (the API and Prometheus both read `METRICS_SCRAPE_TOKEN`):
 
 ```bash
-openssl rand -hex 32 > monitoring/secrets/metrics_scrape_token   # gitignored
-export METRICS_SCRAPE_TOKEN=$(cat monitoring/secrets/metrics_scrape_token)
+printf 'METRICS_SCRAPE_TOKEN=%s\n' "$(openssl rand -hex 32)" >> .env   # .env is gitignored, keep it mode 0600
 ```
+
+Prometheus does NOT mount a token file from the host. Its compose entrypoint writes the value of
+`METRICS_SCRAPE_TOKEN` to `/tmp/metrics_scrape_token` inside the container (mode 0600) before starting,
+and `monitoring/prometheus.yml` reads that path (`authorization.credentials_file`). If the variable is
+unset or shorter than 32 characters the Prometheus container exits at once with
+`METRICS_SCRAPE_TOKEN must be set (>= 32 chars ...)` (previously a missing host file broke the start, or,
+under podman-compose, was silently created as a directory so every scrape failed with "is a directory").
+Rotate by changing `.env` and recreating the `prometheus` container (and the API).
 
 The API accepts it as `Authorization: Bearer <token>` on `GET /metrics` only (min 32 chars;
 constant-time compare; any other route answers 401 with it). Without the variable, only an
-admin JWT can read `/metrics`. The OpenTelemetry collector reads `${env:METRICS_SCRAPE_TOKEN}`.
+admin JWT can read `/metrics`. The OpenTelemetry collector (compose profile `otel`, root
+`docker-compose.yml`) is started with `METRICS_SCRAPE_TOKEN` and reads `${env:METRICS_SCRAPE_TOKEN}`;
+that profile is not live-verified (its config also lists jaeger and loki exporters without backends here).
+
+Regression test (real `prom/prometheus` image under rootless podman, with a paired mutation run):
+`bash scripts/monitoring/test_prometheus_token_start.sh` and `... --mutations`.
+
+### Starting the monitoring stack (QA host / any host)
+
+```bash
+# root docker-compose.yml: monitoring is the `monitoring` profile
+export METRICS_SCRAPE_TOKEN=<same value as in .env> GRAFANA_PASSWORD=<set>
+PROMETHEUS_PORT=19090 GRAFANA_PORT=13001 \
+  podman-compose -p <project> --profile monitoring up -d prometheus grafana
+# Prometheus scrapes api:8080 on the compose network; start `api` from the same compose project
+# (or give your API container the network alias `api`). Check:
+curl -s localhost:19090/api/v1/targets      # catalog-api health "up"
+# teardown by project name: podman-compose -p <project> --profile monitoring down -v
+```
+
+`deployment/docker-compose.yml` mounts `../monitoring/...` (paths are relative to that file) and its
+`catalogizer-server` service carries the network alias `api`, which `monitoring/prometheus.yml` targets.
+
+Ports (override per host; default / suggested QA-host value, pick free ports, never reuse a running stack's):
+
+| Service | Env var | Default | Suggested on a shared QA host |
+|---------|---------|---------|-------------------------------|
+| Prometheus | `PROMETHEUS_PORT` | 9090 | 19090 |
+| Grafana | `GRAFANA_PORT` | 3001 | 13001 |
+| OTel collector (profile `otel`) | none published | - | - |
 
 ### Adding Additional Scrape Targets
 

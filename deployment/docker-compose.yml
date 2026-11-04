@@ -111,7 +111,9 @@ services:
       # SMB mount points
       - /mnt/smb:/mnt/smb:ro
     networks:
-      - catalogizer-network
+      catalogizer-network:
+        aliases:
+          - api  # monitoring/prometheus.yml scrapes api:8080
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -178,6 +180,19 @@ services:
         limits:
           cpus: '0.5'
           memory: 512M
+    # AZ2-R5: the scrape token is injected from the environment into a file INSIDE the
+    # container at start. No host token file is bind-mounted, so a missing file can no
+    # longer break the start. An unset/short token fails fast with a clear message (the
+    # `:?` form is avoided: compose would then refuse every command, not only monitoring).
+    # (previously docker: error, podman-compose: silently creates a directory
+    # and every scrape then fails with "is a directory").
+    environment:
+      METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:-}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - '[ "$${#METRICS_SCRAPE_TOKEN}" -ge 32 ] || { echo "METRICS_SCRAPE_TOKEN must be set (>= 32 chars, same value as the API); see docs/deployment/MONITORING_GUIDE.md" >&2; exit 1; }; umask 077; printf %s "$$METRICS_SCRAPE_TOKEN" > /tmp/metrics_scrape_token; exec /bin/prometheus "$$@"'
+      - prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -188,8 +203,7 @@ services:
     ports:
       - "${PROMETHEUS_PORT:-9090}:9090"
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - ${METRICS_SCRAPE_TOKEN_FILE:-./monitoring/secrets/metrics_scrape_token}:/etc/prometheus/secrets/metrics_scrape_token:ro
+      - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     networks:
       - catalogizer-network
@@ -214,8 +228,9 @@ services:
       - "${GRAFANA_PORT:-3001}:3000"
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
-      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ../monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ../monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ../monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
     networks:
       - catalogizer-network
     depends_on:
