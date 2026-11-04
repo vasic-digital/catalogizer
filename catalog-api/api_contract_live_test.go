@@ -281,6 +281,13 @@ func (s *cSpec) validate(schema, val interface{}, at string, out *[]string) {
 	}
 }
 
+// nilListKeys names the collection-valued response members found by the census; extend it when a new list member is added.
+var nilListKeys = map[string]bool{
+	"sections": true, "groups": true, "files": true, "scans": true, "insights": true, "permissions": true,
+	"local_items": true, "locations": true, "exclude_patterns": true, "include_patterns": true, "items": true,
+	"results": true, "sessions": true, "users": true, "roles": true, "collections": true, "entries": true,
+}
+
 // nullScan reports JSON null values that the typed schema validation cannot see: a whole-body null, and a null object member or
 // array element where the spec gives no type (no schema, or an untyped one) and does not say nullable. A nil Go slice or map
 // serialises as null, which a client iterating a documented list cannot handle; it must be [] (or {}).
@@ -296,7 +303,11 @@ func (s *cSpec) nullScan(schema, val interface{}, at string, out *[]string) {
 				return // reported by validate
 			}
 		}
-		*out = append(*out, at+": JSON null where an empty array/object is required (nil slice or map serialised without normalisation)")
+		// A nil pointer (optional scalar/struct) is legitimately null and indistinguishable on the wire from a nil slice; only
+		// names of collection-valued members (census: docs/qa/nil-slice-null-census-20261104.md) and the body/envelope are judged.
+		if at == "$" || at == "$.data" || nilListKeys[at[strings.LastIndex(at, ".")+1:]] {
+			*out = append(*out, at+": JSON null where an empty array/object is required (nil slice or map serialised without normalisation)")
+		}
 		return
 	}
 	switch v := val.(type) {
