@@ -1,0 +1,4 @@
+ok  	catalogizer/handlers	427.857s
+ok  	catalogizer/internal/services	50.402s
+ok  	catalogizer/database	146.105s
+DONE

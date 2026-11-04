@@ -1,0 +1,8 @@
+commit-parent: cce139ad
+f262906aa7debb5fa231ff942e722b7ac2c581314afc29a8bb94c41053f767a7  docs/qa/subtitle-defects-fix-20261104/green_full.txt
+1a5a3d202bd92a84b923d872ec19e6e4c49c0b7d743274c26373353c9c424a96  docs/qa/subtitle-defects-fix-20261104/green_vet.txt
+0dc75e076459d5bacf789f1441289ef924008f344e8ff5d7d60356f03ea4747c  docs/qa/subtitle-defects-fix-20261104/MANIFEST.txt
+67ff266bb3cf1fb2fbe532b8881d910d57d5a592a3427d03fb91bbd617075805  docs/qa/subtitle-defects-fix-20261104/mutations.txt
+3d5ff471ba22e762048cdd65659f4cb62d6508401f296bcd6efe8642a4ba40d3  docs/qa/subtitle-defects-fix-20261104/pg_v24.txt
+38f4d30cb242c24578384694e66971300f0f9e10016962dbe030fabb58155cda  docs/qa/subtitle-defects-fix-20261104/red_handlers.txt
+df4628826e569578321c6d88d84a800514ce7c0adfab3d7dd59bc6a110056fbc  docs/qa/subtitle-defects-fix-20261104/red_services.txt
