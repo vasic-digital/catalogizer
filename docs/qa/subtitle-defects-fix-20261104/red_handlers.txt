@@ -1,0 +1,10 @@
+--- FAIL: TestSubtitleDelete_OwnerAdminAndAuthz (2.91s)
+        	            	--- Expected
+--- FAIL: TestSubtitleF1_ConcurrentVerifyIsBoundedAndCacheHitSpawnsNothing (3.72s)
+--- FAIL: TestSubtitleF2_RemoteProtocolAndEscapesAreNeverReadFromTheHost (4.67s)
+        	            	--- Expected
+        	            	--- Expected
+        	            	--- Expected
+FAIL
+FAIL	catalogizer/handlers	28.210s
+FAIL

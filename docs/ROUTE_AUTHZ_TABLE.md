@@ -84,9 +84,10 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/subtitles/search` | RequireAdmin (route) | 401 | 403 | 400 |
 | POST | `/api/v1/subtitles/download` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/subtitles/media/:media_id` | auth | 401 | 200 | 200 |
-| GET | `/api/v1/subtitles/:subtitle_id/verify-sync/:media_id` | auth | 401 | 404 | 404 |
+| GET | `/api/v1/subtitles/:subtitle_id/verify-sync/:media_id` | auth (analysis capped: concurrent runs bounded, 429 `SYNC_BUSY` beyond the cap; results cached per unchanged media file) | 401 | 404 | 404 |
 | POST | `/api/v1/subtitles/translate` | RequireAdmin (route) | 401 | 403 | skip |
 | POST | `/api/v1/subtitles/upload` | auth | 401 | 400 | skip |
+| DELETE | `/api/v1/subtitles/:subtitle_id` | auth + handler check (uploader or admin; ownerless rows admin-only; a non-owner non-admin gets 404, not 403, so existence is not disclosed; 403 only when the admin lookup itself fails) | 401 | 404 (non-owner) / 204 (owner) | 204 |
 | GET | `/api/v1/subtitles/languages` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/subtitles/providers` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/stats/directories/by-size` | auth | 401 | 400 | 400 |
