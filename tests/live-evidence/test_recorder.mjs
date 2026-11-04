@@ -18,7 +18,7 @@ const port = 20000 + Math.floor(Math.random() * 20000);
 const script = path.join(tmp, 'server.py');
 fs.writeFileSync(script, 'import http.server, sys, os\nsrv = http.server.HTTPServer(("127.0.0.1", int(sys.argv[1])), http.server.SimpleHTTPRequestHandler)\nif len(sys.argv) > 2 and sys.argv[2] == "fork":\n    os.fork()\nsrv.serve_forever()\n');
 import { loadInterpTable } from './index.mjs';
-const cleanEnv = Object.fromEntries(Object.entries(process.env).filter(([k]) => !(loadInterpTable().env_keys || []).includes(k)));
+const cleanEnv = Object.fromEntries(Object.entries(process.env).filter(([k]) => !(loadInterpTable().env_keys || []).includes(k) && !(loadInterpTable().env_prefixes || []).some((p) => k.startsWith(p))));
 const srv = spawn(py, [script, String(port)], { cwd: tmp, stdio: 'ignore', env: cleanEnv });
 const port2 = port + 1;
 const srv2 = spawn(py, [script, String(port2), 'fork'], { cwd: tmp, stdio: 'ignore', env: cleanEnv });

@@ -6,7 +6,8 @@
 set -u
 HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd); ROOT=$(cd "$HERE/../.." && pwd)
 STAGES=${STAGES:-table vcode ncode gcode}
-M=$(mktemp -d "${TMPDIR:-/tmp}/lev-om.XXXXXX"); trap 'rm -rf "${M:?}"' EXIT
+M=$(mktemp -d "${TMPDIR:-/tmp}/lev-om.XXXXXX"); GM=$ROOT/catalog-api/internal/liveevidence_mut   # GM is a scratch copy of the Go package inside the module (go test needs it in-tree); the trap removes it on ANY exit
+trap 'rm -rf "${M:?}" "${GM:?}"' EXIT
 REALTBL=$ROOT/docs/qa/live-evidence.interpreter-options.json
 export LIVE_EVIDENCE_INTERP_OPTIONS=$REALTBL LIVE_EVIDENCE_DOUBLES=$ROOT/docs/qa/live-evidence.doubles.txt
 VSRC=$ROOT/scripts/test-infra/verify_live_evidence.sh
@@ -73,11 +74,17 @@ fp-dash-dropped	sha-?256[:=]	sha256[:=]
 fp-nonascii-dropped	 or test("[^\\x{20}-\\x{7e}]")	
 host-type-dropped	((($r.endpoint.host | type) == "string") and 	(
 interp-sh-dropped	|bash|sh|dash|	|bash|dash|
+unknown-kind-accepted	     or ($k != "process" and $k != "container" and $k != "socket")	
+envinj-nonarray-dropped	$ip and ($A.env_checked == true) and ((($A.env_injected // []) | type) != "array" or	$ip and ($A.env_checked == true) and (false or
+loader-env-interp-only	($ip | not) and ($k != "container") and ((($A.env_injected	$ip and ($k != "container") and ((($A.env_injected
+loader-env-dropped	($ip | not) and ($k != "container") and ((($A.env_injected	false and ($k != "container") and ((($A.env_injected
+loader-env-nonarray-dropped	($ip | not) and ($k != "container") and ((($A.env_injected // []) | type) != "array" or	($ip | not) and ($k != "container") and (false or
+loader-env-set-ignored	| index($e))) | length) > 0)) then "loader_env_injection"	| index($e))) | length) > 99)) then "loader_env_injection"
 MUT
 ;; esac
 case " $STAGES " in *" ncode "*)
-  mkdir -p "$M/node"; cp "$HERE/option_cases.json" "$HERE/test_option_cases_node.mjs" "$HERE/test_env_node.mjs" "$M/node/"
-  runn() { ( cd "$M/node" && LIVE_EVIDENCE_INTERP_OPTIONS=$REALTBL node test_option_cases_node.mjs >/dev/null 2>&1 </dev/null && node test_env_node.mjs >/dev/null 2>&1 </dev/null ); }
+  mkdir -p "$M/node"; cp "$HERE/option_cases.json" "$HERE/test_option_cases_node.mjs" "$HERE/test_env_node.mjs" "$HERE/test_host_node.mjs" "$M/node/"
+  runn() { ( cd "$M/node" && LIVE_EVIDENCE_INTERP_OPTIONS=$REALTBL node test_option_cases_node.mjs >/dev/null 2>&1 </dev/null && node test_env_node.mjs >/dev/null 2>&1 </dev/null && node test_host_node.mjs >/dev/null 2>&1 </dev/null ); }
   cp "$HERE/index.mjs" "$M/node/index.mjs"; runn || { echo "FAIL: node control run must pass" >&2; survived=$((survived+1)); }
   while IFS=$'\t' read -r name from to; do
     if [ -n "${ONLY:-}" ] && ! [[ $name =~ $ONLY ]]; then continue; fi   # ONLY=<regex> runs just the matching source mutants
@@ -113,13 +120,18 @@ plus-token-positional	if (!x.startsWith('-') && !x.startsWith('+')) return	if (!
 fold-flag-dropped	new RegExp(t.families[k].exe, 'iu')	new RegExp(t.families[k].exe, 'i')
 relative-bound	if (!path.isAbsolute(cand)) return null;	if (false) return null;
 env-empty-counts	&& kv.slice(i + 1) !== ''	
-env-key-set-ignored	keys.has(kv.slice(0, i)) &&	
+env-key-set-ignored	(keys.has(k) || pfx.some	(false || pfx.some
+env-prefix-dropped	|| pfx.some(	|| false && pfx.some(
+env-bare-prefix-counts	k.length > p.length && 	
+env-prefix-lookalike	k.startsWith(p)	k.includes(p)
 env-unreadable-clean	catch { return { env_checked: false }; }	catch { return { env_checked: true }; }
+localhost-v6-mapping	host === 'localhost' ? '127.0.0.1'	host === 'localhost' ? '::1'
+unresolvable-host-open	const want = host === '' || host == null ? null : (host === 'localhost'	const want = host === '' || host == null || host.endsWith('.invalid') ? null : (host === 'localhost'
 MUT
 ;; esac
 case " $STAGES " in *" gcode "*)
-  PK=$ROOT/catalog-api/internal/liveevidence; GM=$ROOT/catalog-api/internal/liveevidence_mut
-  rung() { ( cd "$ROOT/catalog-api" && systemd-run --user --scope -q -p MemoryMax=3G -p MemorySwapMax=0 go test ./internal/liveevidence_mut/ -run 'TestFrozenOptionCases|TestReviewShapesAreNotBound|TestSyntheticTable|TestScriptOfBinding|TestEnvOfEveryKey|TestRelativeScriptTokenNeverBinds' >/dev/null 2>&1 ); }
+  PK=$ROOT/catalog-api/internal/liveevidence
+  rung() { ( cd "$ROOT/catalog-api" && systemd-run --user --scope -q -p MemoryMax=3G -p MemorySwapMax=0 go test ./internal/liveevidence_mut/ -run 'TestFrozenOptionCases|TestReviewShapesAreNotBound|TestSyntheticTable|TestScriptOfBinding|TestEnvOfEveryKey|TestRelativeScriptTokenNeverBinds|TestUnresolvableHostFailsClosedSelfContained|TestAbsoluteScriptThatCannotBeHashedStaysUnbound' >/dev/null 2>&1 ); }
   mkdir -p "$GM"; cp "$PK"/*.go "$PK"/interp_options.json "$GM/"; rm -f "$GM/liveevidence_test.go"
   rung || { echo "FAIL: go control run must pass" >&2; survived=$((survived+1)); }
   while IFS=$'\t' read -r name from to; do
@@ -155,8 +167,13 @@ renamed-guard-dropped	if defaultInterpTable.family(filepath.Base(exe)) == nil {	
 plus-token-positional	if !strings.HasPrefix(x, "-") && !strings.HasPrefix(x, "+") {	if !strings.HasPrefix(x, "-") {
 relative-bound	if !filepath.IsAbs(cand) {	if false {
 env-empty-counts	kv[i+1:] != "" && !seen[kv[:i]]	!seen[kv[:i]]
-env-key-set-ignored	i > 0 && keys[kv[:i]] &&	i > 0 &&
+env-key-set-ignored	(keys[kv[:i]] || hasEnvPrefix(t.EnvPrefixes, kv[:i]))	hasEnvPrefix(t.EnvPrefixes, kv[:i])
+env-prefix-dropped	|| hasEnvPrefix(t.EnvPrefixes, kv[:i])	|| false
+env-bare-prefix-counts	len(k) > len(p) && 	
+env-prefix-lookalike	strings.HasPrefix(k, p)	strings.Contains(k, p)
 env-unreadable-clean	if readErr != nil {\n\t\treturn false, nil	if false {\n\t\treturn false, nil
+unresolvable-host-open	if !ok {\n\t\treturn in // unresolvable host	if false {\n\t\treturn in // unresolvable host
+script-hash-not-checked-file	sum, err := FileSHA256(cand)\n\tif err != nil {\n\t\treturn "", ""\n\t}\n\treturn cand, sum	sum, _ := FileSHA256(cand)\n\treturn cand, sum
 MUT
   rm -rf "${GM:?}"
 ;; esac

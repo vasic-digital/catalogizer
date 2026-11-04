@@ -141,6 +141,7 @@ def identity_reasons:  # IDENTITY-CHECK
       (if ($amiss | not) and $ip and iresult($A).st == "ok" and ($A.script_path | present) and ((iresult($A).script == null) or (scriptmatch($A.script_path; iresult($A).script) | not)) then "script_not_in_cmdline" else empty end),  # R:scriptcmd
       (if ($amiss | not) and $ip and ($A.env_checked != true) then "env_unrecorded" else empty end),  # R:envunrec
       (if ($amiss | not) and $ip and ($A.env_checked == true) and ((($A.env_injected // []) | type) != "array" or (($A.env_injected // []) | length) > 0) then "interpreter_env_injection" else empty end),  # R:envinj
+      (if ($amiss | not) and ($ip | not) and ($k != "container") and ((($A.env_injected // []) | type) != "array" or ((($A.env_injected // []) | map(select(. as $e | ($itbl[0].env_loader // []) | index($e))) | length) > 0)) then "loader_env_injection" else empty end),  # R:loaderenv (F1: loader keys bind every process kind)
       (if ($amiss | not) and $ip and ($E.script_sha256 | present | not) then "interpreter_script_unbound" else empty end),  # R:script_unbound
       (if ($amiss | not) and is_sha($r.artifact.fingerprint) and ((($A[$bk] | present) | not) or (norm($r.artifact.fingerprint) != norm($A[$bk]))) then "fingerprint_mismatch" else empty end),  # R:fp_mismatch
       empty ];  # END-IDENTITY

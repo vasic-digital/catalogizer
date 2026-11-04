@@ -53,7 +53,7 @@ const INTERP = /^(python[0-9.]*|pypy[0-9.]*|node|nodejs|deno|bun|java|ruby[0-9.]
 // ALLOW-LIST option parser shared (as DATA) with the verifier and the Go recorder: docs/qa/live-evidence.interpreter-options.json
 // (LIVE_EVIDENCE_INTERP_OPTIONS overrides the path, used by the mutation test). A "--name=value" token is split on the first "=" BEFORE any lookup.
 // Any option not listed as benign for the exe family is ambiguous => no script is recorded => the verifier reports UNIT. deno/bun have no table (unsupported).
-// Environment injection (NODE_OPTIONS, RUBYOPT, ...) is read from /proc/<pid>/environ for the closed key set TABLE.env_keys (see envOf); threat model: COOPERATIVE PRODUCER.
+// Environment injection (NODE_OPTIONS, RUBYOPT, ...) is read from /proc/<pid>/environ for the closed key set TABLE.env_keys plus the prefixes TABLE.env_prefixes (see envOf); threat model: COOPERATIVE PRODUCER.
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export function loadInterpTable(p = process.env.LIVE_EVIDENCE_INTERP_OPTIONS || path.join(HERE, '../../docs/qa/live-evidence.interpreter-options.json')) {
   const t = JSON.parse(fs.readFileSync(p, 'utf8'));
@@ -112,11 +112,12 @@ export function scriptOf(pid, exe, args) {
 export function envOf(pid, t = TABLE, read = (p) => fs.readFileSync(`/proc/${p}/environ`)) {
   let buf;
   try { buf = read(pid); } catch { return { env_checked: false }; }
-  const keys = new Set(t.env_keys || []);
+  const keys = new Set(t.env_keys || []); const pfx = t.env_prefixes || [];
   const hit = [];
   for (const kv of buf.toString('latin1').split('\0')) {
     const i = kv.indexOf('=');
-    if (i > 0 && keys.has(kv.slice(0, i)) && kv.slice(i + 1) !== '') hit.push(kv.slice(0, i));
+    const k = i > 0 ? kv.slice(0, i) : '';
+    if (i > 0 && kv.slice(i + 1) !== '' && (keys.has(k) || pfx.some((p) => p !== '' && k.length > p.length && k.startsWith(p)))) hit.push(k);
   }
   return hit.length ? { env_checked: true, env_injected: [...new Set(hit)].sort() } : { env_checked: true };
 }

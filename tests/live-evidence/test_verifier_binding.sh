@@ -55,6 +55,24 @@ runj '.answering.env_checked="true"'                            UNIT env_unrecor
 runj '.answering.env_injected=["NODE_OPTIONS"]'                 UNIT interpreter_env_injection
 runj '.answering.env_injected=["LD_PRELOAD","RUBYOPT"]'         UNIT interpreter_env_injection
 runj '.answering.env_injected="NODE_OPTIONS"'                   UNIT interpreter_env_injection
+# F5: a non-array env_injected is never clean even when its length is 0 (the length of a string is its character count, so only the type check catches "" / 0 / {}); an unknown answering.kind is never accepted
+runj '.answering.env_injected=""'                               UNIT interpreter_env_injection
+runj '.answering.env_injected=0'                                UNIT interpreter_env_injection
+runj '.answering.env_injected={}'                               UNIT interpreter_env_injection
+runj '.answering.kind="bogus"'                                  UNIT answering_identity_missing
+runj '.answering.kind="Process"'                                UNIT answering_identity_missing
+# F1: loader keys (LD_PRELOAD / LD_AUDIT / LD_LIBRARY_PATH) bind EVERY process kind, not only interpreters; other injected keys stay interpreter-only
+for k in LD_PRELOAD LD_AUDIT LD_LIBRARY_PATH; do
+  runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected=["'$k'"]' UNIT loader_env_injection
+done
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected=["LD_PRELOAD"] | .answering.kind="socket"' UNIT loader_env_injection
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_injected=["LD_PRELOAD"] | del(.answering.env_checked)' UNIT loader_env_injection
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected="LD_PRELOAD"' UNIT loader_env_injection
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected=["NODE_OPTIONS"]' LIVE none
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected=[]' LIVE none
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected=0' UNIT loader_env_injection
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected={}' UNIT loader_env_injection
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | del(.answering.env_checked)' LIVE none
 runj '.answering.exe_path="/bin/sh" | .answering.cmdline="sh -c x /srv/app/server.js"' UNIT interpreter_code_loading_option
 runj '.answering.exe_path="/bin/bash" | .answering.cmdline="bash +x /srv/app/server.js"' UNIT interpreter_option_unknown
 runj '.artifact.fingerprint="0x'"$FP"'"'                        INVALID fingerprint_malformed

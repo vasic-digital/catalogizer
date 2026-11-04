@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"sort"
@@ -248,7 +249,7 @@ func TestScriptOfBinding(t *testing.T) {
 }
 
 func TestEnvOfEveryKey(t *testing.T) {
-	want := []string{"NODE_OPTIONS", "JDK_JAVA_OPTIONS", "JAVA_TOOL_OPTIONS", "RUBYOPT", "PERL5OPT", "PERL5LIB", "PYTHONPATH", "PYTHONSTARTUP", "LUA_INIT", "BASH_ENV", "ENV", "PHPRC", "PHP_INI_SCAN_DIR", "LD_PRELOAD", "LD_AUDIT"}
+	want := []string{"NODE_OPTIONS", "NODE_PATH", "JDK_JAVA_OPTIONS", "JAVA_TOOL_OPTIONS", "_JAVA_OPTIONS", "RUBYOPT", "RUBYLIB", "PERL5OPT", "PERL5LIB", "PERLLIB", "PYTHONPATH", "PYTHONSTARTUP", "PYTHONHOME", "PYTHONUSERBASE", "PYTHONBREAKPOINT", "PYTHONPLATLIBDIR", "LUA_INIT", "LUA_PATH", "LUA_CPATH", "BASH_ENV", "ENV", "SHELLOPTS", "PHPRC", "PHP_INI_SCAN_DIR", "LD_PRELOAD", "LD_AUDIT", "LD_LIBRARY_PATH"}
 	got := append([]string(nil), defaultInterpTable.EnvKeys...)
 	sort.Strings(got)
 	w := append([]string(nil), want...)
@@ -266,6 +267,18 @@ func TestEnvOfEveryKey(t *testing.T) {
 		if ok, inj := EnvOf(defaultInterpTable, []byte("X"+k+"=x\x00"+k+"X=x\x00"), nil); !ok || len(inj) != 0 {
 			t.Errorf("lookalike of %s must not count: %v %v", k, ok, inj)
 		}
+	}
+	for _, pf := range []string{"BASH_FUNC_", "LUA_INIT_", "LUA_PATH_", "LUA_CPATH_"} {
+		k := pf + "5_4"
+		if ok, inj := EnvOf(defaultInterpTable, []byte("A=b\x00"+k+"=x\x00"), nil); !ok || len(inj) != 1 || inj[0] != k {
+			t.Errorf("prefix key %s not detected: %v %v", k, ok, inj)
+		}
+		if _, inj := EnvOf(defaultInterpTable, []byte(k+"=\x00X"+k+"=x\x00"+pf+"=x\x00"), nil); len(inj) != 0 {
+			t.Errorf("empty / lookalike / bare prefix %s must not count: %v", pf, inj)
+		}
+	}
+	if strings.Join(defaultInterpTable.EnvPrefixes, ",") != "BASH_FUNC_,LUA_INIT_,LUA_PATH_,LUA_CPATH_" || strings.Join(defaultInterpTable.EnvLoader, ",") != "LD_PRELOAD,LD_AUDIT,LD_LIBRARY_PATH" {
+		t.Errorf("prefix/loader sets: %v %v", defaultInterpTable.EnvPrefixes, defaultInterpTable.EnvLoader)
 	}
 	if ok, _ := EnvOf(defaultInterpTable, nil, os.ErrPermission); ok {
 		t.Error("unreadable environ must be env_checked=false")
@@ -291,5 +304,41 @@ func TestRelativeScriptTokenNeverBinds(t *testing.T) {
 	defer os.Chdir(old) //nolint:errcheck
 	if p, h := scriptOf(os.Getpid(), "/usr/bin/node", []string{"node", "server.js"}); p != "" || h != "" {
 		t.Errorf("relative token bound: %q %q", p, h)
+	}
+}
+
+// F5: self-contained (the mutation rung does not run liveevidence_test.go). An unresolvable named host matches nothing (fail closed), the empty host still finds
+// a real listener (control needle), and an absolute script token whose file cannot be hashed never yields a bound script.
+func TestUnresolvableHostFailsClosedSelfContained(t *testing.T) {
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Skipf("no loopback listener available: %v", err)
+	}
+	defer ln.Close()
+	port := ln.Addr().(*net.TCPAddr).Port
+	if in := listenInodes("", port); len(in) == 0 {
+		t.Fatal("control needle: the empty host (any address) must find the real listener")
+	}
+	if in := listenInodes("no-such-host.invalid", port); len(in) != 0 {
+		t.Fatalf("unresolvable host must match nothing, got %v", in)
+	}
+	if a, err := ResolveListenerAddr("no-such-host.invalid", port); err == nil || a != nil {
+		t.Fatalf("unresolvable host must not resolve an answering identity: %+v %v", a, err)
+	}
+}
+
+func TestAbsoluteScriptThatCannotBeHashedStaysUnbound(t *testing.T) {
+	d := t.TempDir()
+	good := filepath.Join(d, "real.js")
+	if err := os.WriteFile(good, []byte("x\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if p, h := scriptOf(os.Getpid(), "/usr/bin/node", []string{"node", good}); p != good || h == "" {
+		t.Fatalf("control: an existing absolute script must bind: %q %q", p, h)
+	}
+	for name, tok := range map[string]string{"missing": filepath.Join(d, "nope.js"), "directory": d} {
+		if p, h := scriptOf(os.Getpid(), "/usr/bin/node", []string{"node", tok}); p != "" || h != "" {
+			t.Errorf("%s: an unhashable script must stay unbound, got %q %q", name, p, h)
+		}
 	}
 }

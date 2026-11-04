@@ -132,6 +132,17 @@
         "runtime_hint": {
           "type": "string",
           "description": "Interpreter runtime detected from /proc/<pid>/maps (libpython, libnode, libjvm, ...) when the exe name is not a known interpreter."
+        },
+        "env_checked": {
+          "type": "boolean",
+          "description": "true when the recorder read /proc/<pid>/environ for the closed key set of the interpreter option table (env_keys + env_prefixes). Required true for interpreter answers (else UNIT env_unrecorded). false/absent = unreadable or older recorder, never 'clean'."
+        },
+        "env_injected": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Names of the keys from that closed set whose value was NON-EMPTY in the answering process (e.g. NODE_OPTIONS, LD_PRELOAD, BASH_FUNC_foo%%). Non-empty => UNIT interpreter_env_injection for interpreters; the loader keys (env_loader: LD_PRELOAD, LD_AUDIT, LD_LIBRARY_PATH) => UNIT loader_env_injection for every other process kind. A non-array value is never clean."
         }
       }
     },

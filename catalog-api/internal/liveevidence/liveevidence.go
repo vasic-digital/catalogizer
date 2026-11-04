@@ -309,6 +309,8 @@ type famTable struct {
 type InterpTable struct {
 	UnsupportedExe string              `json:"unsupported_exe"`
 	EnvKeys        []string            `json:"env_keys"`
+	EnvPrefixes    []string            `json:"env_prefixes"`
+	EnvLoader      []string            `json:"env_loader"`
 	Families       map[string]famTable `json:"families"`
 }
 
@@ -497,6 +499,16 @@ func scriptOf(pid int, exe string, args []string) (string, string) {
 	return cand, sum
 }
 
+// hasEnvPrefix: k starts with one of the closed prefixes and is longer than it (the bare prefix is not a key).
+func hasEnvPrefix(prefixes []string, k string) bool {
+	for _, p := range prefixes {
+		if p != "" && len(k) > len(p) && strings.HasPrefix(k, p) {
+			return true
+		}
+	}
+	return false
+}
+
 // EnvOf reads the closed key set t.EnvKeys from environ (the content of /proc/<pid>/environ). checked is false when environ is nil (unreadable): never guessed clean.
 func EnvOf(t *InterpTable, environ []byte, readErr error) (checked bool, injected []string) {
 	if readErr != nil {
@@ -509,7 +521,7 @@ func EnvOf(t *InterpTable, environ []byte, readErr error) (checked bool, injecte
 	seen := map[string]bool{}
 	for _, kv := range strings.Split(string(environ), "\x00") {
 		i := strings.Index(kv, "=")
-		if i > 0 && keys[kv[:i]] && kv[i+1:] != "" && !seen[kv[:i]] {
+		if i > 0 && kv[i+1:] != "" && !seen[kv[:i]] && (keys[kv[:i]] || hasEnvPrefix(t.EnvPrefixes, kv[:i])) {
 			seen[kv[:i]] = true
 			injected = append(injected, kv[:i])
 		}

@@ -67,7 +67,7 @@ func cleanEnv() []string {
 	}
 	var out []string
 	for _, kv := range os.Environ() {
-		if k, _, _ := strings.Cut(kv, "="); !drop[k] {
+		if k, _, _ := strings.Cut(kv, "="); !drop[k] && !hasEnvPrefix(defaultInterpTable.EnvPrefixes, k) {
 			out = append(out, kv)
 		}
 	}

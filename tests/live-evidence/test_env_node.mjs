@@ -5,8 +5,17 @@ import fs from 'node:fs'; import os from 'node:os'; import path from 'node:path'
 import { loadInterpTable, envOf, scriptOf } from './index.mjs';
 const t = loadInterpTable(); let n = 0;
 const env = (...kv) => Buffer.from(kv.join('\0') + '\0');
-const WANT = ['NODE_OPTIONS', 'JDK_JAVA_OPTIONS', 'JAVA_TOOL_OPTIONS', 'RUBYOPT', 'PERL5OPT', 'PERL5LIB', 'PYTHONPATH', 'PYTHONSTARTUP', 'LUA_INIT', 'BASH_ENV', 'ENV', 'PHPRC', 'PHP_INI_SCAN_DIR', 'LD_PRELOAD', 'LD_AUDIT'];
+const WANT = ['NODE_OPTIONS',  'NODE_PATH',  'JDK_JAVA_OPTIONS',  'JAVA_TOOL_OPTIONS',  '_JAVA_OPTIONS',  'RUBYOPT',  'RUBYLIB',  'PERL5OPT',  'PERL5LIB',  'PERLLIB',  'PYTHONPATH',  'PYTHONSTARTUP',  'PYTHONHOME',  'PYTHONUSERBASE',  'PYTHONBREAKPOINT',  'PYTHONPLATLIBDIR',  'LUA_INIT',  'LUA_PATH',  'LUA_CPATH',  'BASH_ENV',  'ENV',  'SHELLOPTS',  'PHPRC',  'PHP_INI_SCAN_DIR',  'LD_PRELOAD',  'LD_AUDIT',  'LD_LIBRARY_PATH'];
 assert.deepEqual([...t.env_keys].sort(), [...WANT].sort(), 'the closed key set is exactly the mandated one'); n++;
+const PFX = ['BASH_FUNC_', 'LUA_INIT_', 'LUA_PATH_', 'LUA_CPATH_']; const LOADER = ['LD_PRELOAD', 'LD_AUDIT', 'LD_LIBRARY_PATH'];
+assert.deepEqual([...t.env_prefixes].sort(), [...PFX].sort(), 'the closed prefix set is exactly the mandated one'); n++;
+assert.deepEqual([...t.env_loader].sort(), [...LOADER].sort(), 'the loader key set (applies to every process kind) is exactly the mandated one'); n++;
+for (const p of PFX) {
+  const k = p + (p === 'BASH_FUNC_' ? 'foo%%' : '5_4');
+  assert.deepEqual(envOf(1, t, () => env('A=b', `${k}=x`)), { env_checked: true, env_injected: [k] }, `prefix key ${k} detected`); n++;
+  assert.deepEqual(envOf(1, t, () => env(`${k}=`)), { env_checked: true }, `empty ${k} is not injection`); n++;
+  assert.deepEqual(envOf(1, t, () => env(`X${k}=x`, `${p}=x`)), { env_checked: true }, `lookalike of prefix ${p} (not a prefix / bare prefix) is not injection`); n++;
+}
 for (const k of WANT) {
   assert.deepEqual(envOf(1, t, () => env('A=b', `${k}=x`)), { env_checked: true, env_injected: [k] }, `key ${k} detected`); n++;
   assert.deepEqual(envOf(1, t, () => env(`${k}=`)), { env_checked: true }, `empty ${k} is not injection`); n++;
