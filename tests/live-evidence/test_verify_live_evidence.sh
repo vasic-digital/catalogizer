@@ -94,5 +94,18 @@ rm -f "${e:?}"
 r=$(mktemp); printf 'sha256:%s\n' "$(printf a | sha256sum | cut -d' ' -f1)" > "$r"
 LIVE_EVIDENCE_DOUBLES=$r "$VERIFIER" "$FX/golden_good.json" 2>&1 | grep -q registered_double && ok || no "custom register not honoured"
 rm -f "${r:?}"
+# class-level fixtures (round 3): one normaliser, every expected key bound, socket == process, sha256 rules cover exe/image/script
+expect bad_double_by_cmd_case 1 UNIT registered_double      # cmd: rules are case-insensitive (--mode FAKE_SERVER)
+expect bad_double_by_image_case 1 UNIT registered_double    # image: rules are applied and case-insensitive (WireMock/...)
+expect bad_double_by_script_hash 1 UNIT registered_double   # a sha256: rule matches the SCRIPT hash too
+expect golden_upper_hash 0 LIVE                             # SHA256:/upper case hex normalises to the same identity
+expect bad_fp_upper_prefix 1 UNIT fingerprint_mismatch      # SHA256: prefix must not escape the fingerprint binding
+expect bad_socket_interp_script 1 UNIT identity_mismatch    # a socket answer is bound to expected.script_sha256 like a process
+expect bad_socket_no_cmdline 1 UNIT endpoint_identity_incomplete
+expect bad_expected_script_native 1 UNIT identity_mismatch  # expected names a script, the answer carries none: never LIVE
+b=$(mktemp); printf 'name:foo/bar\n' > "$b"; LIVE_EVIDENCE_DOUBLES=$b "$VERIFIER" "$FX/golden_good.json" >/dev/null 2>&1; [ $? = 2 ] && ok || no "a rule that cannot match its own probe must make the register BLIND (exit 2)"
+rm -f "${b:?}"
+# table-driven matrix: kind x {interpreter,native,renamed} x every expected key
+bash "$HERE/test_identity_matrix.sh" "$VERIFIER" "$TREG" && ok || no "identity matrix"
 echo "verify_live_evidence tests: pass=$pass fail=$fail"
 [ "$fail" = 0 ]

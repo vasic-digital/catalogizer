@@ -332,6 +332,105 @@ func TestRuntimeHintSetForPythonServer(t *testing.T) {
 		t.Fatal(err)
 	}
 	if a.RuntimeHint == "" {
-		t.Skipf("python on this host maps no recognisable runtime library (heuristic): %+v", a)
+		// not a skip: a host that cannot produce the hint leaves the renamed-interpreter defence untested, which must be visible
+		t.Fatalf("no runtime hint obtainable on this host for a running python server: %+v", a)
+	}
+}
+
+// wildcard bind: a server bound to 0.0.0.0 covers every concrete host of that port, and the empty host means "any address".
+func TestWildcardBindCoversConcreteHosts(t *testing.T) {
+	py, err := exec.LookPath("python3")
+	if err != nil {
+		t.Skip("python3 not present")
+	}
+	port := freePort(t)
+	d := t.TempDir()
+	sc := filepath.Join(d, "w.py")
+	code := "import socket,sys,time\ns=socket.socket();s.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1);s.bind(('0.0.0.0',int(sys.argv[1])));s.listen(5);time.sleep(60)\n"
+	if err := os.WriteFile(sc, []byte(code), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command(py, sc, fmt.Sprint(port))
+	if err := cmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = cmd.Process.Kill(); _, _ = cmd.Process.Wait() })
+	var got *Answering
+	for i := 0; i < 50 && got == nil; i++ {
+		got, _ = ResolveListenerAddr("127.0.0.1", port)
+		time.Sleep(100 * time.Millisecond)
+	}
+	if got == nil || got.PID != cmd.Process.Pid {
+		t.Fatalf("0.0.0.0 bind must cover 127.0.0.1: %+v", got)
+	}
+	if a, err := ResolveListenerAddr("", port); err != nil || a.PID != cmd.Process.Pid {
+		t.Fatalf("empty host means any address: %+v %v", a, err)
+	}
+	if a, err := ResolveListenerAddr("0.0.0.0", port); err != nil || a.PID != cmd.Process.Pid {
+		t.Fatalf("wildcard host: %+v %v", a, err)
+	}
+}
+
+// a host that cannot be resolved fails closed: no answering identity, never "any address"
+func TestUnresolvableHostFailsClosed(t *testing.T) {
+	port, _, _, _ := startScriptServer(t, "")
+	if in := listenInodes("no-such-host.invalid", port); len(in) != 0 {
+		t.Fatalf("unresolvable host must match nothing, got %v", in)
+	}
+	if a, err := ResolveListenerAddr("no-such-host.invalid", port); err == nil || a != nil {
+		t.Fatalf("unresolvable host must not resolve an answering identity: %+v %v", a, err)
+	}
+	if in := listenInodes("", port); len(in) == 0 {
+		t.Fatal("control needle: the empty host (any address) must still find the real listener")
+	}
+}
+
+func TestScriptOfJarAndEqualsOptions(t *testing.T) {
+	d := t.TempDir()
+	jar := filepath.Join(d, "app.jar")
+	js := filepath.Join(d, "s.js")
+	py := filepath.Join(d, "s.py")
+	for _, p := range []string{jar, js, py} {
+		if err := os.WriteFile(p, []byte("x\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	sum := func(p string) string { return fileSHA(t, p) }
+	type c struct {
+		name, exe string
+		args      []string
+		path, sha string
+	}
+	cases := []c{
+		{"java -jar", "/usr/bin/java", []string{"java", "-jar", jar}, jar, sum(jar)},
+		{"java flags then -jar", "/usr/bin/java", []string{"java", "-Xmx1g", "-Dx=y", "-jar", jar, "arg"}, jar, sum(jar)},
+		{"java -jar without argument", "/usr/bin/java", []string{"java", "-jar"}, "", ""},
+		{"java main class is no file", "/usr/bin/java", []string{"java", "-cp", d, "com.example.Main"}, "", ""},
+		{"node --opt=value script", "/usr/bin/node", []string{"node", "--max-old-space-size=4096", js}, js, sum(js)},
+		{"python --opt=value script", "/usr/bin/python3", []string{"python3", "--check-hash-based-pycs=never", py}, py, sum(py)},
+		{"python unknown short option", "/usr/bin/python3", []string{"python3", "-Z", py}, "", ""},
+		{"python -m module", "/usr/bin/python3", []string{"python3", "-m", "http.server"}, "", ""},
+	}
+	for _, k := range cases {
+		p, h := scriptOf(0, k.exe, k.args)
+		if p != k.path || h != k.sha {
+			t.Errorf("%s: got (%q,%q) want (%q,%q)", k.name, p, h, k.path, k.sha)
+		}
+	}
+}
+
+// the script binding must survive ResolveAnswering(.. expectedExe ..): SetExpected merges
+func TestExpectedScriptSurvivesLaterSetExpected(t *testing.T) {
+	r := NewRecord("merge", "x")
+	r.SetExpectedScript("abc")
+	r.SetExpected("def", "")
+	if r.Expected == nil || r.Expected.ScriptSHA256 != "abc" || r.Expected.ExeSHA256 != "def" {
+		t.Fatalf("expected must merge: %+v", r.Expected)
+	}
+	r2 := NewRecord("merge2", "x")
+	r2.SetExpectedScript("abc")
+	_ = r2.ResolveAnswering("127.0.0.1:1", "def")
+	if r2.Expected == nil || r2.Expected.ScriptSHA256 != "abc" {
+		t.Fatalf("ResolveAnswering dropped the script binding: %+v", r2.Expected)
 	}
 }

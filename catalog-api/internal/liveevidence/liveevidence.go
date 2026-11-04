@@ -113,7 +113,16 @@ func (r *Record) SetAnsweringContainer(image, imageDigest, containerID string) {
 
 // SetExpected names the real artifact the claim is about (executable sha256 or image digest).
 func (r *Record) SetExpected(exeSHA256, imageDigest string) {
-	r.Expected = &Expected{ExeSHA256: exeSHA256, ImageDigest: imageDigest}
+	if r.Expected == nil {
+		r.Expected = &Expected{}
+	}
+	// merge, never replace: a script binding set earlier (SetExpectedScript) must survive a later SetExpected/ResolveAnswering
+	if exeSHA256 != "" {
+		r.Expected.ExeSHA256 = exeSHA256
+	}
+	if imageDigest != "" {
+		r.Expected.ImageDigest = imageDigest
+	}
 }
 
 // SetExpectedScript names the real script an interpreter-hosted server must be running (sha256 hex of the script file).
@@ -209,23 +218,30 @@ func procAddr(h string) net.IP {
 	return net.IP(b)
 }
 
-// hostIPs resolves the host of the claimed endpoint; "" or a wildcard host matches every bound address.
-func hostIPs(host string) []net.IP {
+// hostIPs resolves the host of the claimed endpoint. ok=false means the host is named but cannot be resolved: callers must FAIL CLOSED
+// (match nothing), never treat it like "any address". An empty host is the explicit "any address" request.
+func hostIPs(host string) (ips []net.IP, ok bool) {
 	if host == "" {
-		return nil
+		return nil, true
 	}
 	if ip := net.ParseIP(host); ip != nil {
-		return []net.IP{ip}
+		return []net.IP{ip}, true
 	}
-	ips, _ := net.LookupIP(host)
-	return ips
+	ips, err := net.LookupIP(host)
+	if err != nil || len(ips) == 0 {
+		return nil, false
+	}
+	return ips, true
 }
 
 // listenInodes returns the inodes of LISTEN sockets on port whose bound address covers host (a socket bound to a wildcard address covers every host;
 // a socket bound to another address does NOT, so a listener on 10.0.0.5:port is never reported for 127.0.0.1:port).
 func listenInodes(host string, port int) map[string]bool {
 	in := map[string]bool{}
-	want := hostIPs(host)
+	want, ok := hostIPs(host)
+	if !ok {
+		return in // unresolvable host: nothing can be shown to answer it
+	}
 	for _, f := range []string{"/proc/net/tcp", "/proc/net/tcp6"} {
 		b, err := os.ReadFile(f)
 		if err != nil {
@@ -245,7 +261,7 @@ func listenInodes(host string, port int) map[string]bool {
 				continue
 			}
 			bound := procAddr(lp[0])
-			covers := bound != nil && bound.IsUnspecified() || want == nil
+			covers := bound != nil && bound.IsUnspecified() || host == ""
 			for _, w := range want {
 				if bound != nil && bound.Equal(w) {
 					covers = true

@@ -29,6 +29,15 @@ try {
   await t('script of an interpreter-hosted server is recorded', () => {
     const a = findListener(port); assert.equal(a.script_path, script); assert.equal(a.script_sha256, sha256File(script));
   });
+  await t('runtime_hint is recorded for a running python server (fails, not skips, when the host yields none)', () => {
+    const a = findListener(port); assert.ok(a.runtime_hint && a.runtime_hint.length > 0, 'no runtime hint obtainable: ' + JSON.stringify(a));
+  });
+  await t('setExpectedScript survives a later resolveAnswering({expectedExeSha256})', () => {
+    const r = new Recorder({ testId: 'merge', command: 'x' });
+    r.setExpectedScript('abc');
+    r.resolveAnswering(`127.0.0.1:${port}`, { expectedExeSha256: 'def' });
+    assert.deepEqual(r.rec.expected, { script_sha256: 'abc', exe_sha256: 'def' });
+  });
   await t('interpreter without expected script is UNIT', () => {
     const r = new Recorder({ testId: 'unbound', command: 'x' });
     r.setArtifact('sha256:' + sha256File(script));

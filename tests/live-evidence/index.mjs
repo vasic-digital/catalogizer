@@ -132,7 +132,8 @@ export class Recorder {
     const r = this.rec; r.requests.total++; r.requests.methods[method] = (r.requests.methods[method] || 0) + 1;
     r.responses.status_histogram[String(status)] = (r.responses.status_histogram[String(status)] || 0) + 1;
   }
-  setExpected({ exeSha256, imageDigest }) { this.rec.expected = exeSha256 ? { exe_sha256: exeSha256 } : { image_digest: imageDigest }; }
+  // merge, never replace: a script binding set earlier (setExpectedScript) must survive a later setExpected / resolveAnswering({expectedExeSha256})
+  setExpected({ exeSha256, imageDigest }) { this.rec.expected = { ...(this.rec.expected || {}), ...(exeSha256 ? { exe_sha256: exeSha256 } : {}), ...(imageDigest ? { image_digest: imageDigest } : {}) }; }
   // The real script an interpreter-hosted server must run (sha256 hex of the file).
   setExpectedScript(scriptSha256) { this.rec.expected = { ...(this.rec.expected || {}), script_sha256: scriptSha256 }; }
   setAnsweringContainer({ image, imageDigest, containerId }) { this.rec.answering = { kind: 'container', image, image_digest: imageDigest, container_id: containerId }; }

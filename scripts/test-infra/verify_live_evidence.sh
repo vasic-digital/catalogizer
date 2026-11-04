@@ -32,54 +32,56 @@ for p in "${paths[@]}"; do
 done
 [ ${#files[@]} -gt 0 ] || { echo "verify_live_evidence: no records found (empty is not a pass)" >&2; exit 2; }
 
-read -r -d '' PROG <<'JQ'
+read -r -d '' DEFS <<'JQ'
 def glob2re: gsub("(?<c>[.+^$(){}|\\[\\]\\\\])"; "\\\(.c)") | gsub("\\*"; ".*") | gsub("\\?"; ".") | "^" + . + "$";
 def rules($k): [$reg | split("\n")[] | select(startswith($k + ":")) | .[($k|length)+1:] | gsub("^\\s+|\\s+$"; "") | select(length > 0)];
 def present: . != null and . != "";
+# ONE normaliser for every hash comparison (exe, image digest, script, fingerprint, register rules): trim, lowercase, strip an optional sha256: prefix
+def norm($s): ($s // "") | tostring | gsub("^\\s+|\\s+$"; "") | ascii_downcase | ltrimstr("sha256:");
+def is_sha($s): norm($s) | test("^[0-9a-f]{64}$");
 def is_double($a):
-  ([rules("sha256")[] | ascii_downcase] as $hashes
+  ([rules("sha256")[] | norm(.)] as $hashes
    | [rules("name")[] | glob2re] as $names
    | [rules("cmd")[] | glob2re] as $cmds
    | [rules("image")[] | glob2re] as $imgs
    | (($a.exe_path // "") | split("/") | (last // "")) as $base
-   | (($a.exe_sha256 // "") | ascii_downcase | ltrimstr("sha256:")) as $h
-   | (($a.image_digest // "") | ascii_downcase | ltrimstr("sha256:")) as $d
+   | ([norm($a.exe_sha256), norm($a.image_digest), norm($a.script_sha256)] | map(select(. != ""))) as $ids   # a sha256: rule matches the exe hash, the image digest AND the script hash
    | ($a.cmdline // "") as $cmd
    | ($a.image // "") as $img
-   | ([$hashes[] | ltrimstr("sha256:")] | any(. == $h and $h != "" or . == $d and $d != ""))
+   | (norm($a.image_digest)) as $d
+   | ($hashes | any(. as $h | $ids | index($h)))
      or ($names | any(. as $r | $base | test($r; "i")))
      or ($cmds | any(. as $r | $cmd | test($r; "i")))
      or ($imgs | any(. as $r | ($img + " " + $d) | test($r; "i"))));
-def norm($s): ($s // "") | ascii_downcase | ltrimstr("sha256:");
-def is_sha($s): ($s // "") | test("^(sha256:)?[0-9a-fA-F]{64}$");
 def interp($a): (($a.runtime_hint | present) or ((($a.exe_path // "") | split("/") | (last // "")) | test("^(python[0-9.]*|pypy[0-9.]*|node|nodejs|deno|bun|java|ruby[0-9.]*|perl[0-9.]*|php[0-9.]*|lua[0-9.]*|bash|sh|dash|zsh|ksh|fish)$"; "i")));
+def idkeys: ["exe_sha256","image_digest","script_sha256"];
 def identity_reasons:  # IDENTITY-CHECK
   . as $r
   | ($r.answering // null) as $a
   | ($r.expected // null) as $e
   | ($a // {}) as $A
   | ($e // {}) as $E
-  | (($A.kind // "") == "process" and interp($A)) as $ip
-  | (if $ip then $E.script_sha256 elif $A.kind == "container" then $E.image_digest else $E.exe_sha256 end) as $bound
+  | ($A.kind // "") as $k
+  | (($k == "process" or $k == "socket") and interp($A)) as $ip     # a socket answer is held to the same interpreter/script/cmdline rules as a process answer
+  | (if $k == "container" then "image_digest" else "exe_sha256" end) as $reqkey                       # the expected key the answering kind needs
+  | (if $k == "container" then "image_digest" elif $ip then "script_sha256" else "exe_sha256" end) as $bk   # the identity of the answering kind the fingerprint binds to
   | ($a == null or ($a.kind | present | not)
-     or ($a.kind != "process" and $a.kind != "container" and $a.kind != "socket")
-     or ($a.kind == "process" and (($a.pid | type) != "number" or ($a.exe_path | present | not) or ($a.exe_sha256 | present | not)))
-     or ($a.kind == "container" and ($a.image_digest | present | not))
-     or ($a.kind == "socket" and (($a.pid | type) != "number" or ($a.exe_path | present | not) or ($a.exe_sha256 | present | not)))) as $amiss
+     or ($k != "process" and $k != "container" and $k != "socket")
+     or (($k == "process" or $k == "socket") and (($a.pid | type) != "number" or ($a.exe_path | present | not) or ($a.exe_sha256 | present | not)))
+     or ($k == "container" and ($a.image_digest | present | not))) as $amiss
   | [ (if ($r.artifact.fingerprint | present) then empty else "artifact_fingerprint_missing" end),  # R:fp_missing
       (if (($r.endpoint.host | present) and ($r.endpoint.port != null)) then empty else "endpoint_identity_missing" end),  # R:endpoint_missing
       (if $r.verdict == "PASS" and (($r.runs.n | type) != "number" or $r.runs.n < 3) then "runs_below_3" else empty end),  # R:runs_below_3
       (if ($r.resolve_error | present) then "listener_unresolved_or_ambiguous" else empty end),  # R:resolve_error
       (if $amiss then "answering_identity_missing" else empty end),  # R:answering_missing
       (if ($amiss | not) and is_double($A) then "registered_double" else empty end),  # R:double
-      (if ($amiss | not) and ($A.kind == "process") and ($A.cmdline | present | not) then "endpoint_identity_incomplete" else empty end),  # R:cmdline_missing
-      (if ($amiss | not) and ($E.exe_sha256 | present | not) and ($E.image_digest | present | not) then "expected_identity_missing" else empty end),  # R:expected_missing
-      (if ($amiss | not) and (($E.exe_sha256 | present) or ($E.image_digest | present)) and ((($A.kind == "container") and ($E.image_digest | present | not)) or (($A.kind != "container") and ($E.exe_sha256 | present | not))) then "expected_kind_mismatch" else empty end),  # R:kind_mismatch
-      (if ($amiss | not) and ($E.exe_sha256 | present) and ($A.kind != "container") and norm($E.exe_sha256) != norm($A.exe_sha256) then "identity_mismatch" else empty end),  # R:exe_mismatch
-      (if ($amiss | not) and ($E.image_digest | present) and ($A.kind == "container") and norm($E.image_digest) != norm($A.image_digest) then "identity_mismatch" else empty end),  # R:image_mismatch
+      (if ($amiss | not) and ($k != "container") and ($A.cmdline | present | not) then "endpoint_identity_incomplete" else empty end),  # R:cmdline_missing
+      (if ($amiss | not) and ([idkeys[] | select($E[.] | present)] | length) == 0 then "expected_identity_missing" else empty end),  # R:expected_missing
+      (if ($amiss | not) and ([idkeys[] | select($E[.] | present)] | length) > 0 and ($E[$reqkey] | present | not) then "expected_kind_mismatch" else empty end),  # R:kind_mismatch
+      (if ($amiss | not) and ([idkeys[] as $f | select(($E[$f] | present) and norm($E[$f]) != norm($A[$f]))] | length) > 0 then "identity_mismatch" else empty end),  # R:identity_mismatch
       (if ($amiss | not) and $ip and (($A.script_path | present | not) or ($A.script_sha256 | present | not)) then "interpreter_script_missing" else empty end),  # R:script_missing
-      (if ($amiss | not) and $ip and ($A.script_sha256 | present) and (($E.script_sha256 | present | not) or norm($E.script_sha256) != norm($A.script_sha256)) then "interpreter_script_unbound" else empty end),  # R:script_unbound
-      (if ($amiss | not) and ($bound | present) and is_sha($r.artifact.fingerprint) and norm($r.artifact.fingerprint) != norm($bound) then "fingerprint_mismatch" else empty end),  # R:fp_mismatch
+      (if ($amiss | not) and $ip and ($E.script_sha256 | present | not) then "interpreter_script_unbound" else empty end),  # R:script_unbound
+      (if ($amiss | not) and is_sha($r.artifact.fingerprint) and ((($A[$bk] | present) | not) or (norm($r.artifact.fingerprint) != norm($A[$bk]))) then "fingerprint_mismatch" else empty end),  # R:fp_mismatch
       empty ];  # END-IDENTITY
 def skip_set: ["hardware_not_present","credentials_absent","topology_unsupported","operator_attended","structurally_impossible","feature_disabled_by_config","artifact_not_yet_built"];
 def invalid_reasons:
@@ -94,6 +96,8 @@ def invalid_reasons:
       (if ($r.runs | type) != "object" then "runs_missing" else empty end),  # R:runs_missing
       (if $r.verdict != "SKIP" and (($r.runs.n | type) != "number" or $r.runs.n < 1 or $r.runs.identical != true or ($r.runs.signature | present | not)) then "runs_not_identical_or_missing" else empty end),  # R:runs_ident
       empty ];
+JQ
+read -r -d '' MAIN <<'JQ'
 . as $r
 | if ($r | type) != "object" then {class:"INVALID", reasons:["not_an_object"]}
   else ($r | invalid_reasons) as $inv
@@ -104,9 +108,22 @@ def invalid_reasons:
   end
   end
 JQ
+PROG="$DEFS
+$MAIN"
 reg=$(grep -v '^[[:space:]]*#' "$DOUBLES")
-# control needle (11.4.273): an empty or comment-only register would let every double pass -> the instrument is BLIND
-if [ "$(printf '%s\n' "$reg" | grep -Ec '^(sha256|name|cmd|image):[^[:space:]]')" -lt 1 ]; then echo "verify_live_evidence: double register has no rules: $DOUBLES (BLIND, REFUSED)" >&2; exit 2; fi
+# control needle (11.4.273): a register the instrument cannot see is BLIND. (1) at least one rule must load; (2) EVERY loaded rule must match a known-bad probe
+# synthesised from that very rule (the needle), proving the double detection can actually fire for the rules it claims to apply.
+if [ "$(printf '%s\n' "$reg" | grep -Ec '^(sha256|name|cmd|image):[^[:space:]]')" -lt 1 ]; then
+  echo "verify_live_evidence: double register has no rules: $DOUBLES (BLIND, REFUSED)" >&2; exit 2
+fi
+NEEDLE='def sample: gsub("\\*"; "a") | gsub("\\?"; "a");
+  ([rules("sha256")[] | {exe_sha256: .}] + [rules("name")[] | {exe_path: ("/x/" + sample)}] + [rules("cmd")[] | {cmdline: sample}] + [rules("image")[] | {image: sample}]) as $probes
+  | {n: ($probes | length), missed: [$probes[] | select(is_double(.) | not)]}'
+needle=$(jq -n -c --arg reg "$reg" "$DEFS
+$NEEDLE" 2>&1) || { echo "verify_live_evidence: register control needle failed to run: $needle (BLIND, REFUSED)" >&2; exit 2; }
+if [ "$(jq -r '.n' <<<"$needle")" -lt 1 ] || [ "$(jq -r '.missed | length' <<<"$needle")" != 0 ]; then
+  echo "verify_live_evidence: register rule does not match its own known-bad probe: $needle (BLIND, REFUSED)" >&2; exit 2
+fi
 worst=0
 for f in "${files[@]}"; do
   if ! jq -e . "$f" >/dev/null 2>&1; then echo "$f class=INVALID reasons=unparseable_json"; worst=2; continue; fi
