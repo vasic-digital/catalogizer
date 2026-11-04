@@ -94,3 +94,34 @@ Residual risk, stated: a slice field omitted from a struct literal (never a `var
 ## Review correction (round 1, 2026-11-04)
 
 The RED counts above ("18 violations over 17 operations") are misreported. The RED `operations.json` holds 18 violations over 16 operations. Four of them (`include_patterns` / `exclude_patterns` on GET /browse and /browse/roots) are instrument false positives: RED ran at 277a1813 whose `nilListKeys` still contained those pointer keys, and be6f2a55 removed them. The true class RED is 14 violations on 14 operations. RED and GREEN did not run the same `nilListKeys`.
+
+## Follow-up NS-1 / NS-3 (2026-11-04, Roadmap-Item CAT-NS-1)
+
+**NS-1 (fixed).** `GET /entities/types` (`MediaEntityHandler.GetEntityTypes`) built `var result []gin.H`, so `types` serialised as `null`
+when `media_types` was empty. Reproduced first with `TestMediaEntityHandler_GetEntityTypes_EmptyTableIsEmptyArray` (real handler, real
+migrated SQLite, `DELETE FROM media_types`): RED `"types": (interface {}) <nil>`; fix `result := []gin.H{}`; GREEN `{"types":[]}`.
+
+**NS-3 (guard extended).** `catalog-api/internal/nilslice_guard` now also detects (a) a named slice/map result never assigned plus a bare
+`return`, (b) `return nil, nil` with a slice/map first result, (c) a struct-literal field value that is an unset `var x []T`/map. The scan
+is recursive (handlers/backups does not exist in the tree; any future subdirectory is covered) and includes `internal/handlers`. A
+`x == nil` check in the function counts as normalisation. Control needles: `TestDetectorsSeeNS3Shapes` (each shape flagged, each clean
+twin not), `TestScanIsRecursive`. Residual (d), not feasible without type/flow analysis: `x := f()` where `f` returns a nil slice
+(passthrough); the live `nullScan` remains the instrument for it.
+
+Run against the real tree: (a) 0 findings, (b) 0 findings, (c) 11 findings (after the nil-check rule dropped `GetStorageRoots`, which
+already normalises). No new live HTTP-path member: every finding is allow-listed in `guard_test.go` `accepted` with its reason (a stale entry
+fails the test):
+
+| Finding | Disposition |
+|---|---|
+| `repository/media_collection_repository.go` `scanCollection` externalIDs | `omitempty` on the field: nil map omitted, not null |
+| `handlers/admin_handler.go` `GetSystemInfo` unavailable | always has `totalRequests` appended: never nil |
+| `handlers/collection_handler.go` `ListCollectionItems` items | callee returns non-nil slice when err == nil |
+| `handlers/service_adapters.go` `ValidateWizardStep` errs/warns | `omitempty` on `ValidationResult.Errors/Warnings` |
+| `internal/services/music_player_service.go` `PlayArtist` tracks | errors when empty |
+| `internal/services/translation_service.go` `TranslateBatch` results | no HTTP caller (service-internal) |
+| `internal/handlers/copy.go` `ListSMBPath` fileList | unrouted (no route in main.go) |
+| `internal/handlers/localization_handlers.go` `CheckLanguageSupport` providers | unrouted (never constructed outside tests) |
+| `internal/handlers/media.go` `GetMediaTypes` mediaTypes, `SearchMedia` mediaItems | unrouted (never constructed outside tests) |
+
+If any unrouted `internal/handlers` handler is wired later, its entry must be fixed (`x := []T{}`) and removed from `accepted`.

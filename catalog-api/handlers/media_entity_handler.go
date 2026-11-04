@@ -418,7 +418,7 @@ func (h *MediaEntityHandler) GetEntityTypes(c *gin.Context) {
 
 	counts, _ := h.itemRepo.CountByType(ctx)
 
-	var result []gin.H
+	result := []gin.H{}
 	for _, mt := range types {
 		count := int64(0)
 		if c, ok := counts[mt.Name]; ok {

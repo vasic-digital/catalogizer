@@ -778,3 +778,25 @@ func TestMediaEntityHandler_RefreshEntityMetadata_NoDBIsNotQueued(t *testing.T) 
 	assert.NotContains(t, w.Body.String(), `"message"`)
 	assert.Contains(t, w.Body.String(), "Nothing was queued")
 }
+
+// NS-1: GET /entities/types must serialise `types` as [] (never null) when media_types is empty.
+// Real handler + real migrated SQLite, no doubles.
+func TestMediaEntityHandler_GetEntityTypes_EmptyTableIsEmptyArray(t *testing.T) {
+	db, cleanup := setupEntityTestDB(t)
+	defer cleanup()
+
+	handler, _ := setupEntityHandler(t, db)
+
+	_, err := db.ExecContext(context.Background(), "DELETE FROM media_types")
+	require.NoError(t, err)
+
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("GET", "/api/v1/entities/types", nil)
+
+	handler.GetEntityTypes(c)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.JSONEq(t, `{"types":[]}`, w.Body.String())
+}

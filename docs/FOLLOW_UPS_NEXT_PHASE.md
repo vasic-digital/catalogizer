@@ -1175,9 +1175,9 @@ Evidence: `docs/qa/api-contract-live-20261103/`; runner `scripts/test-infra/api_
 
 ## Nil-slice class review round 1 follow-ups (NS-*, minor)
 
-- NS-1 (source-defect, latent): GET /entities/types builds `var result []gin.H` (media_entity_handler.go:421); `types` serialises as null when media_types is empty. Fix RED-first.
+- NS-1 (FIXED, CAT-NS-1) (source-defect, latent): GET /entities/types builds `var result []gin.H` (media_entity_handler.go:421); `types` serialises as null when media_types is empty. Fix RED-first.
 - NS-2 (test-instrumentation): nullScan judges only a hand-curated `nilListKeys`; derive the list from Go struct nilable json fields or add spec array types.
-- NS-3 (test-instrumentation): AST guard misses named result + bare return, `return nil, nil`, struct-literal field from an unset var, `x := f()` passthrough; it also skips internal/handlers and handlers/backups and is non-recursive.
+- NS-3 (DONE for a/b/c + recursion + internal/handlers, CAT-NS-1; residual (d) `x := f()` passthrough documented) (test-instrumentation): AST guard misses named result + bare return, `return nil, nil`, struct-literal field from an unset var, `x := f()` passthrough; it also skips internal/handlers and handlers/backups and is non-recursive.
 - NS-4 (spec): fixed members (analyze, configuration, roles/{id}, files) have no response schema; add array schemas and `nullable: true` for pointer members.
 - NS-5 (process-doc): build ldflag has no dirty-tree marker; commits lack `Roadmap-Item` trailers (§11.4.293(A), a repo-wide convention gap).
 - NS-6 (observation): GET /entities/{id}/files emits capitalised keys (QualityInfo, Language): an untagged struct is served.
