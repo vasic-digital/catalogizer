@@ -203,6 +203,8 @@ func TestPlaybackSessionRepository_ListHistoryEmpty(t *testing.T) {
 	hist, err := repo.ListHistory(context.Background(), 99, 99, 10)
 	require.NoError(t, err)
 	require.Empty(t, hist)
+	// the HTTP layer serialises this slice: nil would become JSON null where the spec documents an array
+	require.NotNil(t, hist)
 }
 
 // Contract sweep finding: an unknown session id must be reported as

@@ -312,7 +312,7 @@ func (r *PlaybackSessionRepository) ListHistory(ctx context.Context, userID, med
 	}
 	defer rows.Close()
 
-	var out []PlaybackSession
+	out := []PlaybackSession{}
 	for rows.Next() {
 		var s PlaybackSession
 		var completed int
