@@ -3,26 +3,15 @@
 # (NGINX_ENVSUBST_FILTER), so nginx's own $host/$uri/... stay intact.
 # API_UPSTREAM is the host:port of the catalog-api (default set in the Dockerfile:
 # host.containers.internal:8080; in a compose stack use e.g. catalog-api:8080).
-# Access log without credentials: a stream ticket or a legacy session token in the query string must never reach the log
-# (the API redacts its own logs; this is the proxy in front of it). Three chained maps, one per parameter name, so a request
-# carrying several of them is fully redacted. Names are matched as whole parameter names (start of the query or after &).
-map $request_uri $uri_no_ticket {
-    default $request_uri;
-    "~^(?<pre>.*[?&]ticket=)[^&]*(?<post>.*)$" "${pre}REDACTED${post}";
-}
-map $uri_no_ticket $uri_no_access_token {
-    default $uri_no_ticket;
-    "~^(?<pre>.*[?&]access_token=)[^&]*(?<post>.*)$" "${pre}REDACTED${post}";
-}
-map $uri_no_access_token $redacted_uri {
-    default $uri_no_access_token;
-    "~^(?<pre>.*[?&]token=)[^&]*(?<post>.*)$" "${pre}REDACTED${post}";
-}
-log_format redacted '$remote_addr - $remote_user [$time_local] "$request_method $redacted_uri $server_protocol" '
-                    '$status $body_bytes_sent "$http_user_agent"';
+# Access log without credentials: a stream ticket or a legacy session token travels in the query string and must never reach the
+# log. Redacting named parameters is bypassable (duplicated names, percent-encoded names, new parameter names), so the query
+# string is simply never logged: $uri is the path only. (The nginx ERROR log can still print the request line when the upstream is
+# unreachable; nginx cannot redact it, see docs/FOLLOW_UPS_NEXT_PHASE.md WL12-F2.)
+log_format nocreds '$remote_addr - $remote_user [$time_local] "$request_method $uri $server_protocol" '
+                   '$status $body_bytes_sent "$http_user_agent"';
 
 server {
-    access_log /var/log/nginx/access.log redacted;
+    access_log /var/log/nginx/access.log nocreds;
     listen 3000;
     server_name localhost;
     root /usr/share/nginx/html;

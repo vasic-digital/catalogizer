@@ -29,7 +29,8 @@ interface MediaPlayerProps {
 }
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '') + '/api/v1'
-const TICKET_REFRESH_MS = 45_000 // tickets live 60 s server-side; refresh well before expiry
+const TICKET_NEAR_EXPIRY_MS = 45_000 // tickets live 60 s server-side; a seek needing the network after this age gets a fresh one first
+const MAX_CONSECUTIVE_RECOVERIES = 3
 
 /**
  * A <video>/<audio> element cannot send an Authorization header, and the session JWT must not go into the URL (logs, history,
@@ -75,52 +76,58 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
   // by a short-lived ticket (see mintStreamTicket). directory_path is a storage-relative path, never a playable URL.
   const [ticketSrc, setTicketSrc] = useState('')
   const [authError, setAuthError] = useState(false)
+  // Ticket lifecycle (all in refs: none of it drives rendering).
+  //  - resumeRef: where to continue after the source is re-pointed. It is written only while the element is NOT mid-reload, so an
+  //    error that lands before metadata cannot overwrite the real position with 0/paused (the last write used to win).
+  //  - errorTriesRef: consecutive recoveries WITHOUT real progress. Reset only when currentTime advances past the resume point
+  //    (never on loadedmetadata: a corrupt file fires loadedmetadata and then errors again on every reload).
+  //  - mintedAtRef: age of the ticket currently in the URL; no timer ever re-points a playing element (that dropped its buffer).
   const resumeRef = useRef<{ time: number; play: boolean } | null>(null)
-  // Consecutive error-driven recoveries; reset whenever the element makes real progress. Timer refreshes never count.
+  const reloadingRef = useRef(false)
   const errorTriesRef = useRef(0)
+  const progressFloorRef = useRef(0)
+  const mintedAtRef = useRef(0)
+  const inflightRef = useRef(false)
   const videoSrc = entityStreamUrl || ticketSrc
 
-  const refreshTicket = useCallback(async (resume: boolean) => {
+  /** Mint a new ticket and re-point the element at it. `at` overrides the resume position (a seek target). */
+  const refreshTicket = useCallback(async (resume: boolean, at?: number) => {
+    if (inflightRef.current) return
+    inflightRef.current = true
     try {
       const url = streamUrl(media.id, await mintStreamTicket(media.id))
       const v = videoRef.current
-      if (resume && v) resumeRef.current = { time: v.currentTime, play: !v.paused }
+      if (resume && v && !reloadingRef.current) {
+        const time = at ?? v.currentTime
+        resumeRef.current = { time, play: !v.paused }
+        progressFloorRef.current = time
+      }
+      mintedAtRef.current = Date.now()
       setTicketSrc(url)
       setAuthError(false)
     } catch {
       setAuthError(true)
+    } finally {
+      inflightRef.current = false
     }
   }, [media.id])
 
   useEffect(() => {
     if (entityStreamUrl) return
     resumeRef.current = null
+    reloadingRef.current = false
     errorTriesRef.current = 0
+    progressFloorRef.current = 0
     void refreshTicket(false)
-    // A seek issues a new range request carrying the URL's ticket, which dies after 60 s. While playing, re-point the element at a
-    // fresh ticket before expiry and resume at the same position. A paused
-    // element is left alone so its buffer is not dropped; if its ticket has expired by the time the user seeks, the error
-    // handler below mints a new one and resumes.
-    const timer = setInterval(() => {
-      const v = videoRef.current
-      if (!v || v.paused || v.ended) return
-      void refreshTicket(true)
-    }, TICKET_REFRESH_MS)
-    return () => clearInterval(timer)
   }, [media.id, entityStreamUrl, refreshTicket])
 
-  // A changed source does not reload an element by itself; restore position and play state after the swap.
+  // A changed source does not reload an element by itself. The single loadedmetadata listener (events effect below) restores
+  // position and play state once the new source is ready.
   useEffect(() => {
     const v = videoRef.current
     if (!v || !ticketSrc) return
+    reloadingRef.current = true
     v.load()
-    const r = resumeRef.current
-    if (r) {
-      v.addEventListener('loadedmetadata', () => {
-        v.currentTime = r.time
-        if (r.play) void v.play().catch(() => undefined)
-      }, { once: true })
-    }
   }, [ticketSrc])
 
   // Format time display
@@ -216,11 +223,30 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
 
     const handleLoadedMetadata = () => {
       setDuration(video.duration)
-      errorTriesRef.current = 0
+      reloadingRef.current = false
+      const r = resumeRef.current
+      resumeRef.current = null
+      if (r) {
+        video.currentTime = r.time
+        if (r.play) void video.play().catch(() => undefined)
+      }
     }
 
-    const handlePlaying = () => {
-      errorTriesRef.current = 0
+    // Real progress is the only thing that restores the recovery budget.
+    const handleProgress = () => {
+      if (!video.paused && video.currentTime > progressFloorRef.current + 0.25) errorTriesRef.current = 0
+    }
+
+    // A seek that needs the network after the ticket is (nearly) dead gets a fresh ticket first, resuming at the seek target.
+    // Seeks inside already-buffered ranges need no request and are left alone.
+    const handleSeeking = () => {
+      if (entityStreamUrl || reloadingRef.current || !mintedAtRef.current) return
+      if (Date.now() - mintedAtRef.current < TICKET_NEAR_EXPIRY_MS) return
+      const t = video.currentTime
+      for (let i = 0; i < video.buffered.length; i++) {
+        if (t >= video.buffered.start(i) && t <= video.buffered.end(i)) return
+      }
+      void refreshTicket(true, t)
     }
 
     const handleEnded = () => {
@@ -231,7 +257,10 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
     const handleError = () => {
       // An expired ticket makes the next range request 401, which the element reports as an error: mint a new one and resume
       // (bounded, so a genuinely broken file does not loop).
-      if (!entityStreamUrl && errorTriesRef.current < 3) {
+      // A decode error (code 3) is the file, not the ticket: retrying only loops. Everything else (401 on a range request surfaces
+      // as a network / not-supported error) is retried, bounded by consecutive recoveries without progress.
+      const code = video.error?.code
+      if (!entityStreamUrl && code !== 3 && errorTriesRef.current < MAX_CONSECUTIVE_RECOVERIES) {
         errorTriesRef.current += 1
         void refreshTicket(true)
         return
@@ -242,14 +271,16 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
     video.addEventListener('timeupdate', handleTimeUpdate)
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
     video.addEventListener('ended', handleEnded)
-    video.addEventListener('playing', handlePlaying)
+    video.addEventListener('timeupdate', handleProgress)
+    video.addEventListener('seeking', handleSeeking)
     video.addEventListener('error', handleError)
 
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate)
       video.removeEventListener('loadedmetadata', handleLoadedMetadata)
       video.removeEventListener('ended', handleEnded)
-      video.removeEventListener('playing', handlePlaying)
+      video.removeEventListener('timeupdate', handleProgress)
+      video.removeEventListener('seeking', handleSeeking)
       video.removeEventListener('error', handleError)
     }
   }, [onProgress, onEnded, onError, entityStreamUrl, refreshTicket])

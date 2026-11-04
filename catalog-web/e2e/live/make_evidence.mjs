@@ -48,11 +48,19 @@ const perRun = runs.map((r) => {
   return { bySpec, obs };
 });
 
-// Fingerprint cross-check: every test of every run recorded the build it ran against (read from /health at run time); all must
-// agree with each other and with the build read at evidence time, otherwise the records would describe a different artifact.
-const seen = new Set(perRun.flatMap((r) => r.obs.filter((o) => o.kind === 'fingerprint').map((o) => `${o.health_status}:${o.build_number}`)));
-if (seen.size !== 1 || ![...seen][0].endsWith(`:${health.build_number}`) || [...seen][0].startsWith('0:')) {
-  throw new Error(`artifact fingerprint changed or unreadable during the runs: ${JSON.stringify([...seen])} vs final ${health.build_number}`);
+// Fingerprint cross-check: EVERY test of every run recorded the build it ran against (read from /health at run time); each
+// record must be an HTTP 200 with a defined build_number, and all must agree with each other and with the build read now.
+for (const [i, r] of perRun.entries()) {
+  const verdicts = r.obs.filter((o) => o.kind === 'verdict');
+  const fps = r.obs.filter((o) => o.kind === 'fingerprint');
+  if (verdicts.length === 0) throw new Error(`run${i + 1}: no verdict records (obs missing)`);
+  if (fps.length !== verdicts.length) throw new Error(`run${i + 1}: ${fps.length} fingerprint records for ${verdicts.length} tests (every test must record one)`);
+  const bad = fps.filter((o) => o.health_status !== 200 || !o.build_number);
+  if (bad.length) throw new Error(`run${i + 1}: ${bad.length} fingerprint records without HTTP 200 / build_number (e.g. ${JSON.stringify(bad[0])})`);
+}
+const seenBuilds = new Set(perRun.flatMap((r) => r.obs.filter((o) => o.kind === 'fingerprint').map((o) => o.build_number)));
+if (seenBuilds.size !== 1 || !seenBuilds.has(health.build_number)) {
+  throw new Error(`artifact fingerprint changed during the runs: ${JSON.stringify([...seenBuilds])} vs final ${health.build_number}`);
 }
 
 const specs = [...new Set(perRun.flatMap((r) => Object.keys(r.bySpec)))].sort();

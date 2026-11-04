@@ -203,65 +203,115 @@ describe('MediaPlayer', () => {
 
 describe('MediaPlayer ticket lifecycle', () => {
   let n = 0
-  const mintSeq = () => postMock.mockImplementation(async () => ({ data: { ticket: `v1.t${++n}.m` } }))
   const srcOf = (c: HTMLElement) => c.querySelector('video')!.getAttribute('src')
-  const setPaused = (v: HTMLVideoElement, paused: boolean) => Object.defineProperty(v, 'paused', { configurable: true, value: paused })
+  const mintCount = () => postMock.mock.calls.filter((c) => /\/ticket$/.test(c[0])).length
+  // jsdom has no media pipeline: give the element the few observable properties the player reads, as plain writable state.
+  function arm(video: HTMLVideoElement, st: { time: number; paused: boolean; code: number | null; buffered: Array<[number, number]> }) {
+    Object.defineProperty(video, 'currentTime', { configurable: true, get: () => st.time, set: (v) => { st.time = v } })
+    Object.defineProperty(video, 'paused', { configurable: true, get: () => st.paused })
+    Object.defineProperty(video, 'error', { configurable: true, get: () => (st.code === null ? null : { code: st.code }) })
+    Object.defineProperty(video, 'buffered', { configurable: true, get: () => ({ length: st.buffered.length, start: (i: number) => st.buffered[i][0], end: (i: number) => st.buffered[i][1] }) })
+    video.load = vi.fn()
+    video.play = vi.fn().mockResolvedValue(undefined)
+  }
+  const fresh = () => ({ time: 0, paused: true, code: null as number | null, buffered: [] as Array<[number, number]> })
+  async function setup(onError = vi.fn()) {
+    const r = render(<MediaPlayer media={mockMedia as any} onError={onError} />)
+    const video = r.container.querySelector('video')!
+    const st = fresh()
+    arm(video, st)
+    await waitFor(() => expect(srcOf(r.container)).toContain('t1.'))
+    fireEvent(video, new Event('loadedmetadata')) // initial load finished
+    return { ...r, video, st, onError }
+  }
+  const recoverTo = async (c: HTMLElement, i: number) => waitFor(() => expect(srcOf(c)).toContain(`t${i}.`))
 
-  beforeEach(() => { n = 0; postMock.mockReset(); mintSeq() })
+  beforeEach(() => { n = 0; postMock.mockReset(); postMock.mockImplementation(async () => ({ data: { ticket: `v1.t${++n}.m` } })) })
 
-  it('error recovery is not exhausted by earlier recoveries: progress resets the budget (5 recoveries, each followed by playing)', async () => {
-    const onError = vi.fn()
-    const { container } = render(<MediaPlayer media={mockMedia as any} onError={onError} />)
-    const video = container.querySelector('video')!
-    await waitFor(() => expect(srcOf(container)).toContain('t1'))
+  it('real progress restores the recovery budget (5 recoveries, each followed by playback advancing)', async () => {
+    const { container, video, st, onError } = await setup()
+    st.paused = false; st.time = 10
     for (let i = 2; i <= 6; i++) {
+      st.code = 2
       fireEvent.error(video)
-      await waitFor(() => expect(srcOf(container)).toContain(`t${i}.`))
-      fireEvent(video, new Event('playing'))
+      await recoverTo(container, i)
+      st.code = null
+      fireEvent(video, new Event('loadedmetadata'))
+      st.time += 1 // advances past the resume point
+      fireEvent(video, new Event('timeupdate'))
     }
     expect(onError).not.toHaveBeenCalled()
   })
 
-  it('gives up with onError only after 3 consecutive recoveries without progress', async () => {
-    const onError = vi.fn()
-    const { container } = render(<MediaPlayer media={mockMedia as any} onError={onError} />)
-    const video = container.querySelector('video')!
-    await waitFor(() => expect(srcOf(container)).toContain('t1'))
+  it('loadedmetadata is NOT progress: a file that loads metadata and then errors on every reload gives up after 3 recoveries', async () => {
+    const { container, video, st, onError } = await setup()
+    st.paused = false
     for (let i = 2; i <= 4; i++) {
+      st.code = 2
       fireEvent.error(video)
-      await waitFor(() => expect(srcOf(container)).toContain(`t${i}.`))
+      await recoverTo(container, i)
+      fireEvent(video, new Event('loadedmetadata'))
     }
-    expect(onError).not.toHaveBeenCalled()
+    st.code = 2
     fireEvent.error(video)
     expect(onError).toHaveBeenCalledTimes(1)
+    expect(mintCount()).toBe(4) // 1 initial + 3 recoveries, then it stops
   })
 
-  describe('timer', () => {
+  it('a decode error (MEDIA_ERR_DECODE) is never retried', async () => {
+    const { video, st, onError } = await setup()
+    st.code = 3
+    fireEvent.error(video)
+    expect(onError).toHaveBeenCalledTimes(1)
+    expect(mintCount()).toBe(1)
+  })
+
+  it('an error that lands during a reload does not lose the resume position (playing at 30 s, two errors before metadata)', async () => {
+    const { container, video, st } = await setup()
+    st.time = 30; st.paused = false; st.code = 2
+    fireEvent.error(video)
+    await recoverTo(container, 2)
+    st.time = 0; st.paused = true // what load() does to the element
+    fireEvent.error(video) // second error before metadata: must not overwrite the target with 0/paused
+    await new Promise((r) => setTimeout(r, 20))
+    fireEvent(video, new Event('loadedmetadata'))
+    expect(st.time).toBe(30)
+    expect(video.play).toHaveBeenCalledTimes(1)
+  })
+
+  describe('no timer, lazy refresh', () => {
     beforeEach(() => { vi.useFakeTimers({ shouldAdvanceTime: true }) })
     afterEach(() => { vi.useRealTimers() })
 
-    it('refreshes the ticket before expiry while playing (seeks after 60 s need a live ticket) and leaves a paused element alone', async () => {
-      const { container } = render(<MediaPlayer media={mockMedia as any} />)
-      const video = container.querySelector('video')!
-      await waitFor(() => expect(srcOf(container)).toContain('t1.'))
-      setPaused(video, false)
-      await vi.advanceTimersByTimeAsync(46_000)
-      await waitFor(() => expect(srcOf(container)).toContain('t2.'))
-      setPaused(video, true)
-      await vi.advanceTimersByTimeAsync(100_000)
-      expect(srcOf(container)).toContain('t2.')
+    it('never reloads a playing element on a timer', async () => {
+      const { st } = await setup()
+      st.paused = false
+      await vi.advanceTimersByTimeAsync(300_000)
+      expect(mintCount()).toBe(1)
     })
 
-    it('idle/timer refreshes never consume the error-recovery budget', async () => {
-      const onError = vi.fn()
-      const { container } = render(<MediaPlayer media={mockMedia as any} onError={onError} />)
-      const video = container.querySelector('video')!
-      await waitFor(() => expect(srcOf(container)).toContain('t1.'))
-      setPaused(video, false)
-      for (let i = 0; i < 5; i++) await vi.advanceTimersByTimeAsync(46_000)
-      fireEvent.error(video)
-      await waitFor(() => expect(Number(/t(\d+)\./.exec(srcOf(container)!)![1])).toBeGreaterThan(5))
-      expect(onError).not.toHaveBeenCalled()
+    it('a seek that needs the network after the ticket is near expiry gets a fresh ticket and resumes at the seek target', async () => {
+      const { container, video, st } = await setup()
+      st.paused = false
+      await vi.advanceTimersByTimeAsync(50_000)
+      st.time = 40
+      fireEvent(video, new Event('seeking'))
+      await recoverTo(container, 2)
+      st.time = 0
+      fireEvent(video, new Event('loadedmetadata'))
+      expect(st.time).toBe(40)
+    })
+
+    it('a young ticket, or a seek inside the buffer, mints nothing', async () => {
+      const { video, st } = await setup()
+      st.time = 40
+      await vi.advanceTimersByTimeAsync(10_000)
+      fireEvent(video, new Event('seeking'))
+      await vi.advanceTimersByTimeAsync(40_000) // now 50 s old, but the target is buffered
+      st.buffered = [[35, 60]]
+      fireEvent(video, new Event('seeking'))
+      await vi.advanceTimersByTimeAsync(100)
+      expect(mintCount()).toBe(1)
     })
   })
 })

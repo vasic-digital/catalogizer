@@ -108,23 +108,33 @@ test.describe('player in the web UI (real browser, real stream)', () => {
     expect(streamed.some((s) => s.includes(`/stream/${id}`)), `saw ${JSON.stringify(streamed)}`).toBeTruthy();
   });
 
-  test('long playback: plays past the 60 s ticket lifetime, a seek after expiry works, currentTime keeps advancing, no media error', async ({ page, request }, testInfo) => {
-    test.setTimeout(170_000);
-    const rel = 'movies/Long.Seek.Movie.2018.60s.mp4';
+  test('long playback: plays past the 60 s ticket lifetime on a file the browser cannot buffer fully; a seek far ahead after expiry is network-served and continues from the seek target', async ({ page, request }, testInfo) => {
+    test.setTimeout(190_000);
+    const rel = 'movies/Big.Seek.Movie.2026.140s.mp4'; // ~200 MB, 140 s (e2e/live/gen_big_fixture.sh); registered in the corpus manifest
+    expect(files[rel], `${rel} is in the corpus manifest: run e2e/live/gen_big_fixture.sh <corpus-dir> and rescan`).toBeTruthy();
     const { video, streamed, id } = await playFromUi(page, testInfo, request, rel);
     const t0 = Date.now();
-    await video.evaluate((v: HTMLVideoElement) => { v.muted = true; v.loop = true; return v.play().catch(() => undefined); });
-    await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 15_000, message: `never advanced; saw ${JSON.stringify(streamed)}` }).toBeGreaterThan(0.3);
-    // Let the original ticket (60 s) die while the element keeps playing; the player must re-point itself before that.
+    await video.evaluate((v: HTMLVideoElement) => { v.muted = true; return v.play().catch(() => undefined); });
+    await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 20_000, message: `never advanced; saw ${JSON.stringify(streamed)}` }).toBeGreaterThan(0.3);
+    // Let the original ticket (60 s) die while the element keeps playing.
     await page.waitForTimeout(Math.max(0, 66_000 - (Date.now() - t0)));
     expect(await video.evaluate((v: HTMLVideoElement) => v.error), 'no media error while playing past ticket expiry').toBeNull();
-    await video.evaluate((v: HTMLVideoElement) => { v.currentTime = 40; });
-    const seekedAt = await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 20_000, message: `seek after expiry did not take effect; saw ${JSON.stringify(streamed)}` }).toBeGreaterThanOrEqual(40).then(() => video.evaluate((v: HTMLVideoElement) => v.currentTime));
-    await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 20_000, message: 'currentTime stopped advancing after the late seek' }).toBeGreaterThan((seekedAt as number) + 1);
+    const before = await video.evaluate((v: HTMLVideoElement) => v.currentTime);
+    expect(before, 'it kept playing past the ticket lifetime').toBeGreaterThan(55);
+    const TARGET = 120;
+    // Precondition: the target is NOT in the buffer, so this seek needs a new range request (and therefore a live ticket).
+    const buffered = await video.evaluate((v: HTMLVideoElement) => Array.from({ length: v.buffered.length }, (_, i) => [v.buffered.start(i), v.buffered.end(i)]));
+    expect(buffered.some(([a, b]) => TARGET >= a && TARGET <= b), `fixture must not be fully buffered (buffered=${JSON.stringify(buffered)})`).toBe(false);
+    const mintsBefore = streamed.filter((x) => /^200 POST /.test(x) && x.includes(`/stream/${id}/ticket`)).length;
+    await video.evaluate((v: HTMLVideoElement, t: number) => { v.currentTime = t; }, TARGET);
+    // No loop: a reset to 0 after the refresh would fail here (T1).
+    await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 30_000, message: `after the late seek the position fell back; saw ${JSON.stringify(streamed.slice(-8))}` }).toBeGreaterThanOrEqual(TARGET);
+    const seekedAt = await video.evaluate((v: HTMLVideoElement) => v.currentTime);
+    expect(seekedAt, 'position after the refresh is at least the pre-refresh position').toBeGreaterThanOrEqual(before);
+    await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 20_000, message: 'currentTime stopped advancing after the late seek' }).toBeGreaterThan(seekedAt + 1);
     expect(await video.evaluate((v: HTMLVideoElement) => v.error), 'no media error after the late seek').toBeNull();
-    expect(await video.evaluate((v: HTMLVideoElement) => v.paused), 'still playing').toBe(false);
     const mints = streamed.filter((x) => /^200 POST /.test(x) && x.includes(`/stream/${id}/ticket`)).length;
-    expect(mints, `the player refreshed its ticket while playing (mints: ${mints}); saw ${JSON.stringify(streamed)}`).toBeGreaterThanOrEqual(2);
+    expect(mints, `the late seek got a fresh ticket (before ${mintsBefore}, after ${mints}); saw ${JSON.stringify(streamed.slice(-12))}`).toBeGreaterThan(mintsBefore);
     expect(streamed.some((x) => x.includes('access_token')), 'session token never in a media URL').toBeFalsy();
     testInfo.annotations.push({ type: 'stream-401s', description: String(streamed.filter((x) => /^401 /.test(x)).length) });
     await shot(page, testInfo, 'long-playback-after-seek');
