@@ -273,15 +273,50 @@ func (g *ftpConnGroup) armDial(ctx context.Context) func() {
 	}
 }
 
-// replaceStale redials the control connection a previous operation left desynchronised (it was cut by its context or a deadline). It runs
-// with the operation turn held and is bounded by the calling operation's context and by the dial bound.
+// abortSession makes every deadline of the session's connections expire, so a Quit or read on a desynchronised session fails fast.
+func (c *FTPClient) abortSession(conn *ftp.ServerConn) {
+	if v, ok := c.ctl.Load(conn); ok {
+		v.(*ftpConnGroup).cancel()
+	}
+}
+
+// replaceStale redials the control connection a previous operation left desynchronised (it was cut by its context or a deadline), or
+// retries a replacement that failed earlier (the client is then not connected but was not Disconnect()ed). It runs with the operation
+// turn held and is bounded by the calling operation's context and by the dial bound.
 func (c *FTPClient) replaceStale(ctx context.Context) error {
 	c.mu.Lock()
 	stale := c.staleConn
 	c.staleConn = nil
+	retry := c.redialNeeded && c.client == nil && c.redialGen == c.gen
 	c.mu.Unlock()
-	if stale == nil {
+	if stale != nil {
+		c.abortSession(stale)            // the old session is dead: Quit must not wait for it
+		return c.reconnectIf(ctx, stale) // no-op when the client has moved on (Disconnect / Connect replaced the connection)
+	}
+	if retry {
+		return c.redial(ctx)
+	}
+	return nil
+}
+
+// redial opens a new session for a client that has none because an earlier replacement failed. A Disconnect or Connect during the dial wins.
+func (c *FTPClient) redial(ctx context.Context) error {
+	c.mu.Lock()
+	gen := c.gen
+	c.mu.Unlock()
+	fresh, base, err := c.dial(ctx)
+	if err != nil {
+		return err // redialNeeded stays set: the next operation tries again
+	}
+	c.mu.Lock()
+	if c.gen != gen || c.client != nil {
+		c.mu.Unlock()
+		c.ctl.Delete(fresh)
+		_ = fresh.Quit()
 		return nil
 	}
-	return c.reconnectIf(ctx, stale) // no-op when the client has moved on (Disconnect / Connect replaced the connection)
+	c.client, c.base, c.connected = fresh, base, true
+	c.redialNeeded = false
+	c.mu.Unlock()
+	return nil
 }

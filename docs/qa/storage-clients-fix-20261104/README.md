@@ -33,3 +33,10 @@ M1 remove op semaphore -> parallel-stat FAIL; M2 remove ctx.Err() check (FTP) ->
 - Mutants killed (mutations_round3.txt): N1, N2, N3, N3b (sticky flag), N4 (no stale replacement), N5 (ReadFile release(nil)).
 - ST-F7 (backslash `..` in smbPath) registered in FOLLOW_UPS as UNCONFIRMED, not changed (hasDotDotSegment is shared with FTP/WebDAV).
 - Evidence manifest: MANIFEST.txt (base commit, UTC timestamp, sha256 of every file here); the evidence was produced on the working tree committed in the commit that adds this manifest.
+
+## Review round 3 (final fix round) remediation
+- S1: smbPath replaces `\` by `/` before the `..` check (SMB-only). TestSmbPath_BackslashDotDotConfined (RED before: red_review_r3.txt). ST-F7 is FIXED.
+- T1: reviewer tests TestR3_* adopted (ftp_review_r3_unit_test.go).
+- M1: Disconnect of a cut (stale) session aborts it and ignores its dead write error; GetFileInfo returns the ctx error right after a cut SIZE instead of falling through to LIST. Tests TestFTPDisconnectAfterCutNoSpuriousError (10 rounds, timing dependent), TestFTPGetFileInfoCutReportsContextError.
+- M2: a failed lazy replacement sets redialNeeded (tied to the Disconnect generation); a later operation retries under its own ctx. TestFTPFailedReplacementRetriedByLaterOp; TestFTPDisconnectAfterFailedReplacementNoRedial guards against resurrection after Disconnect.
+- Mutants (mutations_round4.txt): L4 lockOps without replacement (killed by hanging until the 100 s test timeout, i.e. CopyFile ran on the desynced session), S1, M1a, M1b, M2, L6 (redial after Disconnect) all killed. Note: a first L6 variant (Disconnect without gen++) survived because Disconnect clears staleConn and reconnectIf's client==old guard also protects; the stronger variant (no gen check and no redialNeeded clear) is killed.

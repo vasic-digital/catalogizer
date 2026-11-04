@@ -128,3 +128,13 @@ func TestLiveRealFTP_CancelledContextFailsFastSessionSurvives(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, sizes["f00.bin"], fi.Size)
 }
+
+// S1: a backslash is a path separator for SMB, so `..` between backslashes is a traversal segment and is confined like `/..`.
+func TestSmbPath_BackslashDotDotConfined(t *testing.T) {
+	assert.Equal(t, "x", smbPath(`a\..\..\x`))
+	assert.Equal(t, "x", smbPath(`\..\x`))
+	assert.Equal(t, "x", smbPath(`..\x`))
+	assert.Equal(t, `a\.\b`, smbPath(`a\.\b`), "a single dot segment is not a traversal")
+	assert.Equal(t, `movies\Wait.. Live`, smbPath(`movies\Wait.. Live`), "a name containing .. is untouched")
+	assert.Equal(t, `a\b`, smbPath(`a\b`))
+}

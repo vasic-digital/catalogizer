@@ -62,6 +62,10 @@ type FTPClient struct {
 	gen uint64
 	// staleConn is a control connection a cut operation left desynchronised; the next operation replaces it (replaceStale).
 	staleConn *ftp.ServerConn
+	// redialNeeded: a replacement dial failed while the client was not Disconnect()ed (redialGen is the Disconnect generation then); a later
+	// operation retries it under its own context.
+	redialNeeded bool
+	redialGen    uint64
 }
 
 // NewFTPClient creates a new FTP client
@@ -146,8 +150,17 @@ func (c *FTPClient) Disconnect(ctx context.Context) error {
 	c.client = nil
 	c.connected = false
 	c.gen++
+	stale := conn != nil && c.staleConn == conn
+	c.staleConn = nil
+	c.redialNeeded = false
 	c.mu.Unlock()
 	if conn != nil {
+		if stale { // a cut left this session desynchronised: end it hard and do not report its dead write error
+			c.abortSession(conn)
+			_ = conn.Quit()
+			c.ctl.Delete(conn)
+			return nil
+		}
 		c.ctl.Delete(conn)
 		return conn.Quit()
 	}
@@ -285,6 +298,9 @@ func (c *FTPClient) reconnectIf(ctx context.Context, old *ftp.ServerConn) error 
 		if disconnected {
 			return nil // the user disconnected on purpose while the redial was in flight; its failure is not an error for Close
 		}
+		c.mu.Lock()
+		c.redialNeeded, c.redialGen = true, gen
+		c.mu.Unlock()
 		return err
 	}
 	c.mu.Lock()
@@ -294,6 +310,7 @@ func (c *FTPClient) reconnectIf(ctx context.Context, old *ftp.ServerConn) error 
 		return nil
 	}
 	c.client, c.base, c.connected = fresh, base, true
+	c.redialNeeded = false
 	c.mu.Unlock()
 	return nil
 }
@@ -346,6 +363,9 @@ func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (_ *FileInfo, 
 		}, nil
 	}
 	name := pathpkg.Base(fullPath)
+	if cerr := ctx.Err(); cerr != nil { // SIZE was cut by the context: the session is dead, a LIST would only fail the same way
+		return nil, fmt.Errorf("failed to get FTP file info %s: %w (%w)", fullPath, sizeErr, cerr)
+	}
 	if fullPath == "/" || name == "." || name == "/" {
 		return &FileInfo{Name: name, IsDir: true, Mode: 0755, Path: path, ModTime: time.Time{}}, nil
 	}

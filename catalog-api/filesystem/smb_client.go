@@ -353,6 +353,12 @@ func isNotExistError(err error) bool {
 // smbPath applies the shared containment rule (ConfinePath) to a share-relative path: a path with a ".." SEGMENT is confined to the share root
 // and returned share-relative; every other path is handed to the share exactly as given (WF22 N2 class A).
 func smbPath(p string) string {
+	// S1: a backslash is a path separator on the wire and cannot occur inside an SMB name, so a `..` between backslashes is a traversal
+	// segment exactly like one between slashes (go-smb2 maps / to \ and resolves nothing itself). SMB-only: hasDotDotSegment is shared
+	// with FTP/WebDAV, where a backslash is an ordinary filename character.
+	if norm := strings.ReplaceAll(p, `\`, "/"); hasDotDotSegment(norm) {
+		p = norm
+	}
 	if !hasDotDotSegment(p) {
 		// ST-D3: go-smb2 rejects a path that starts with a separator ("leading '\\' is not allowed"), so no caller can have a working
 		// "/x" today; accept it like the FTP and WebDAV clients do by reading it as share-relative. Paths that do not start with "/"
