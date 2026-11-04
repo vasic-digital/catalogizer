@@ -1,0 +1,61 @@
+{
+  "schema": "catalogizer.live-evidence/1",
+  "test_id": "catalog-web-live/chromium-390/websocket",
+  "class": "LIVE",
+  "verdict": "PASS",
+  "timestamp": "2026-11-04T11:51:18.034Z",
+  "command": "catalog-web/e2e/live/run_live.sh chromium-390",
+  "artifact": {
+    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:942d38404e6fa10f5140f1737b77b7ea9660ef1b60153ea9fbeeffb907716069;api-health={\"version\":\"e0cb1b36fbcad3a98d021af3a72886baff33b426\",\"build_number\":\"e0cb1b36fbcad3a98d021af3a72886baff33b426\",\"build_date\":\"stack3\"};web-image=sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d",
+    "source": "target"
+  },
+  "endpoint": {
+    "host": "127.0.0.1",
+    "port": 33020,
+    "resolved_ip": "127.0.0.1",
+    "url": "http://127.0.0.1:33020"
+  },
+  "answering": {
+    "kind": "container",
+    "image": "localhost/catqa3-web:main-e0cb1b36",
+    "image_digest": "sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d",
+    "container_id": "9af6f3a98b933c7c85ae63ba823d2437331e8cc2ee5e21288d8f392a43680721"
+  },
+  "expected": {
+    "image_digest": "sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d"
+  },
+  "requests": {
+    "total": 11,
+    "methods": {
+      "GET": 10,
+      "POST": 1
+    }
+  },
+  "responses": {
+    "status_histogram": {
+      "200": 11
+    }
+  },
+  "runs": {
+    "n": 3,
+    "identical": true,
+    "signature": "sha256:bca92f2450290a94679c573ce021821f023c2c5d65370aa3c0b672585f18f2af"
+  },
+  "tests": {
+    "run1": [
+      "after login the real socket opens, stays open, receives no close, and the chip is hidden (= connected)=passed",
+      "network outage shows the chip (Connecting/Disconnected); recovery reconnects a NEW socket and hides it=passed",
+      "no \"Disconnected\" chip before login (nothing to connect yet)=passed"
+    ],
+    "run2": [
+      "after login the real socket opens, stays open, receives no close, and the chip is hidden (= connected)=passed",
+      "network outage shows the chip (Connecting/Disconnected); recovery reconnects a NEW socket and hides it=passed",
+      "no \"Disconnected\" chip before login (nothing to connect yet)=passed"
+    ],
+    "run3": [
+      "after login the real socket opens, stays open, receives no close, and the chip is hidden (= connected)=passed",
+      "network outage shows the chip (Connecting/Disconnected); recovery reconnects a NEW socket and hides it=passed",
+      "no \"Disconnected\" chip before login (nothing to connect yet)=passed"
+    ]
+  }
+}

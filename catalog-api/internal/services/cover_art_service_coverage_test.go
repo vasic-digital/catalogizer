@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/netguard"
 	"context"
 	"database/sql"
 	"image"
@@ -91,6 +92,10 @@ func TestCoverArtService_DownloadCoverArt_Success(t *testing.T) {
 
 	logger := zap.NewNop()
 	service := NewCoverArtService(db, logger)
+	// production client is strict (ignores the allow-list); the fetch path is tested through
+	// the allow-list-aware seam, strictness in outbound_strict_resolvers_test.go
+	t.Setenv(netguard.AllowCIDRsEnv, "127.0.0.0/8")
+	service.httpClient = netguard.Client(5*time.Second, 3, netguard.HTTPOrHTTPS)
 
 	tmpDir := t.TempDir()
 	service.cacheDir = tmpDir
@@ -160,6 +165,10 @@ func TestCoverArtService_DownloadCoverArt_SetAsDefault(t *testing.T) {
 
 	logger := zap.NewNop()
 	service := NewCoverArtService(db, logger)
+	// production client is strict (ignores the allow-list); the fetch path is tested through
+	// the allow-list-aware seam, strictness in outbound_strict_resolvers_test.go
+	t.Setenv(netguard.AllowCIDRsEnv, "127.0.0.0/8")
+	service.httpClient = netguard.Client(5*time.Second, 3, netguard.HTTPOrHTTPS)
 	service.cacheDir = t.TempDir()
 
 	// Serve a valid JPEG

@@ -2,6 +2,7 @@ package services
 
 import (
 	"catalogizer/database"
+	"catalogizer/internal/netguard"
 	"context"
 	"image"
 	"image/color"
@@ -12,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -180,6 +182,10 @@ func TestCoverArtService_DownloadImage(t *testing.T) {
 	mockDB := database.WrapDB(nil, database.DialectSQLite)
 	logger := zap.NewNop()
 	service := NewCoverArtService(mockDB, logger)
+	// production client is strict (ignores the allow-list); the fetch path is tested through
+	// the allow-list-aware seam, strictness in outbound_strict_resolvers_test.go
+	t.Setenv(netguard.AllowCIDRsEnv, "127.0.0.0/8")
+	service.httpClient = netguard.Client(5*time.Second, 3, netguard.HTTPOrHTTPS)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -196,6 +202,10 @@ func TestCoverArtService_DownloadImage_HTTPError(t *testing.T) {
 	mockDB := database.WrapDB(nil, database.DialectSQLite)
 	logger := zap.NewNop()
 	service := NewCoverArtService(mockDB, logger)
+	// production client is strict (ignores the allow-list); the fetch path is tested through
+	// the allow-list-aware seam, strictness in outbound_strict_resolvers_test.go
+	t.Setenv(netguard.AllowCIDRsEnv, "127.0.0.0/8")
+	service.httpClient = netguard.Client(5*time.Second, 3, netguard.HTTPOrHTTPS)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)

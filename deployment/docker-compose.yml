@@ -78,6 +78,7 @@ services:
 
       # Security
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set (see .env.example)}
+      METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:-}
 
       # Media configuration
       MEDIA_DIRECTORIES: ${MEDIA_DIRECTORIES:-/media}
@@ -188,6 +189,7 @@ services:
       - "${PROMETHEUS_PORT:-9090}:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${METRICS_SCRAPE_TOKEN_FILE:-./monitoring/secrets/metrics_scrape_token}:/etc/prometheus/secrets/metrics_scrape_token:ro
       - prometheus_data:/prometheus
     networks:
       - catalogizer-network

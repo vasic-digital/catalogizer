@@ -418,6 +418,7 @@ export const MediaBrowser: React.FC = () => {
             </Button>
             <Suspense fallback={<div className="flex items-center justify-center min-h-[300px]"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" /></div>}>
               <MediaPlayer
+                key={selectedMedia.id}
                 media={selectedMedia}
                 onEnded={handleClosePlayer}
               />

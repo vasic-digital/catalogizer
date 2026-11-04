@@ -24,7 +24,7 @@ T="$(mktemp -d)"; : "${T:?}"
 SUF="$$-$(date +%s)"
 NET="d6net-$SUF"; BE="d6be-$SUF"
 FAILS=0
-cleanup() { podman rm -f "$BE" "d6web-a-$SUF" "d6web-b-$SUF" >/dev/null 2>&1; podman network rm -f "$NET" >/dev/null 2>&1; rm -rf -- "${T:?}"; }
+cleanup() { podman rm -f "$BE" "d6web-a-$SUF" "d6web-b-$SUF" "d6web-c-$SUF" >/dev/null 2>&1; podman network rm -f "$NET" >/dev/null 2>&1; rm -rf -- "${T:?}"; }
 trap cleanup EXIT
 check() { # name, expected, actual
   if [ "$2" = "$3" ]; then echo "PASS $1 (got: $3)"; else echo "FAIL $1 (expected: $2, got: $3)"; FAILS=$((FAILS+1)); fi
@@ -72,5 +72,19 @@ if [ -n "$WEB_IMAGE" ]; then
   DEF="$(podman exec "d6web-b-$SUF" cat /etc/nginx/conf.d/default.conf 2>/dev/null | grep -c 'proxy_pass http://host.containers.internal:8080;')"
   check "default upstream rendered (2 locations)" "2" "$DEF"
 fi
+# 3. Access log never carries credentials in the query string (ticket / access_token / token, duplicated, percent-encoded,
+#    look-alike names), while the request path is still logged. Own container with a literal-IP upstream (an unreachable one:
+#    the 502 is logged like any other request) so this check does not depend on container DNS.
+run_web "d6web-c-$SUF" -e "API_UPSTREAM=127.0.0.1:9" || { echo "FAIL web C start"; exit 1; }
+SEC="SECRET-$SUF"
+PORT_C="$(podman port "d6web-c-$SUF" 3000/tcp | head -1 | sed 's/.*://')"
+for _ in $(seq 1 30); do curl -s -o /dev/null --max-time 2 "http://127.0.0.1:${PORT_C}/api/ping" && break; sleep 0.5; done
+for q in "ticket=${SEC}-1" "access_token=${SEC}-2&x=1" "x=1&token=${SEC}-3&ticket=${SEC}-4" "ticket=${SEC}-5&ticket=${SEC}-6" "%74icket=${SEC}-7" "myticket=${SEC}-8" "a=1&access%5Ftoken=${SEC}-9"; do
+  curl -s -o /dev/null --max-time 3 "http://127.0.0.1:${PORT_C}/api/ping?${q}"
+done
+sleep 1
+ACCESS="$(podman logs "d6web-c-$SUF" 2>&1 | grep '\] "GET')"
+check "access log: no credential value (7 probes)" "0" "$(printf '%s\n' "$ACCESS" | grep -c "$SEC")"
+check "access log: the path of every probe is logged (7 + 1 readiness)" "1" "$([ "$(printf '%s\n' "$ACCESS" | grep -c '"GET /api/ping HTTP')" -ge 7 ] && echo 1 || echo 0)"
 echo "RESULT fails=$FAILS"
 [ "$FAILS" -eq 0 ]
