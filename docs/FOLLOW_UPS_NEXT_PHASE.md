@@ -1181,7 +1181,7 @@ Threat model unchanged: COOPERATIVE PRODUCER. F1 (loader keys bind every process
 
 ## Nil-slice class review round 1 follow-ups (NS-*, minor)
 
-- NS-1 (PROVISIONAL-DONE, CAT-NS-1; host-level handler test only, live HTTP run on a deployed stack owed) (source-defect, latent): GET /entities/types builds `var result []gin.H` (media_entity_handler.go:421); `types` serialises as null when media_types is empty. Fix RED-first.
+- NS-1 (VERIFIED live 2026-11-04 on stack 3 build 4c79b7e3 over the LAN URL: empty media_types returns types: [] , evidence docs/qa/live-web-stack3-20261104/REPORT.md; was PROVISIONAL-DONE, CAT-NS-1) (source-defect, latent): GET /entities/types builds `var result []gin.H` (media_entity_handler.go:421); `types` serialises as null when media_types is empty. Fix RED-first.
 - NS-2 (test-instrumentation): nullScan judges only a hand-curated `nilListKeys`; derive the list from Go struct nilable json fields or add spec array types.
 - NS-3 (DONE for a/b/c + recursion + internal/handlers, CAT-NS-1; residual (d) `x := f()` passthrough documented) (test-instrumentation): AST guard misses named result + bare return, `return nil, nil`, struct-literal field from an unset var, `x := f()` passthrough; it also skips internal/handlers and handlers/backups and is non-recursive.
 - NS-4 (spec): fixed members (analyze, configuration, roles/{id}, files) have no response schema; add array schemas and `nullable: true` for pointer members.
@@ -1209,7 +1209,7 @@ Add a fixture with a clean twin for each probe.
 
 ## CAT-CSRF-LAN follow-ups
 
-- CSRF-1 (provisional): fix proven by real-router tests only; confirm in a browser against the stack-3 QA stack on http://<LAN-IP> (PUT /api/v1/admin/users/:id succeeds) after the next rebuild.
+- CSRF-1 (VERIFIED live 2026-11-04 on stack 3 over plain http LAN URL: csrf-dev cookie, admin approve 200, mismatch 403, see docs/qa/live-web-stack3-20261104/REPORT.md; was provisional): fix proven by real-router tests only; confirm in a browser against the stack-3 QA stack on http://<LAN-IP> (PUT /api/v1/admin/users/:id succeeds) after the next rebuild.
 - CSRF-2 (process-doc): stack-3 `up.sh` sets the toggle; production compose files deliberately do not. Add a deploy-config lint that CSRF_INSECURE_DEV is absent from production manifests.
 - CSRF-3 (enhancement): serve the QA stack over HTTPS and retire the toggle.
 
@@ -1230,3 +1230,12 @@ Add a fixture with a clean twin for each probe.
 - LE3-B (OPEN): no test spawns a real server with `LD_PRELOAD` (or `PYTHONPATH` for python) from a clean-env test process and asserts the key is recorded and the record is UNIT through the real resolver (reviewer mutants R2 and R3 survive that path).
 - LE3-D (OPEN, doc nits): TESTING_GUIDE line 570 wording, `GCONV_PATH` in the schema `env_injected` description, and the F3/F4 label clash between the round-1 live-evidence findings and the older F3/F4 entries in this file (rename the live-evidence ones LE1-F3/LE1-F4).
 - LE3-C (DONE in this change): env values containing `=` are covered in `test_env_node.mjs` and `TestEnvOfEveryKey`.
+
+## Live QA round 3 + storage r1 findings (2026-11-04)
+
+- LW3-1 (intermittent, root cause UNCONFIRMED): firefox-desktop run 1 `pages.live.spec.ts:6` Favorites page showed the empty login form although login POST returned 200 (1 of 8 browser runs; 18/18 passes on rerun). Needs a trace captured on a failing run (keep traces on failure in CI-less local runs); leads: 401 handler in lib/api.ts or login/header race.
+- ST-D1 (product, low-medium): SmbClient.Connect ignores ctx (net.DialTimeout, smb_client.go ~42-47); SMB and FTP stat/read succeed on an already-cancelled context. Fix: DialContext + ctx.Err() checks.
+- ST-D2 (product hazard, SERIOUS): one FTPClient used from 4 goroutines corrupts its control connection (wrong results, a run hung forever in textproto.ReadResponse with no read deadline). Fix: per-client operation mutex + ctx-tied read deadlines.
+- ST-D3 (inconsistency): SmbClient rejects leading-slash paths while FTP/WebDAV accept them.
+- ST-NFS: NFS live test SKIPPED (Synology export list empty, no mount privilege); needs operator enabling an NFS export.
+- Evidence: docs/qa/live-storage-r1-20261104.md.

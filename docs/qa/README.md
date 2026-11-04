@@ -2,7 +2,7 @@
 
 Documents in this directory.
 
-Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 188 entries.
+Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 211 entries.
 
 | File | Description |
 |---|---|
@@ -21,6 +21,10 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [androidtv-players-20260629/decoder_metrics.txt](androidtv-players-20260629/decoder_metrics.txt) | (plain-text artefact; not read, listed by name only) |
 | [androidtv-players-20260629/exoplayer_diag.txt](androidtv-players-20260629/exoplayer_diag.txt) | (plain-text artefact; not read, listed by name only) |
 | [androidtv-players-20260629/player_crash_log.txt](androidtv-players-20260629/player_crash_log.txt) | (plain-text artefact; not read, listed by name only) |
+| [api-contract-live-20261103/go-test.txt](api-contract-live-20261103/go-test.txt) | (plain-text artefact; not read, listed by name only) |
+| [api-contract-live-20261103/nil-slice-red/go-test.txt](api-contract-live-20261103/nil-slice-red/go-test.txt) | (plain-text artefact; not read, listed by name only) |
+| [api-contract-live-20261103/nil-slice-red/operations.json](api-contract-live-20261103/nil-slice-red/operations.json) | (JSON data artefact; not read, listed by name only) |
+| [api-contract-live-20261103/nil-slice-red/summary.json](api-contract-live-20261103/nil-slice-red/summary.json) | (JSON data artefact; not read, listed by name only) |
 | [api-contract-live-20261103/operations.json](api-contract-live-20261103/operations.json) | (JSON data artefact; not read, listed by name only) |
 | [api-contract-live-20261103/summary.json](api-contract-live-20261103/summary.json) | (JSON data artefact; not read, listed by name only) |
 | [containerized-build-20260630/Status.html](containerized-build-20260630/Status.html) | (HTML export; not read, listed by name only) |
@@ -53,6 +57,9 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [helixqa-androidtv-20260629/login.png](helixqa-androidtv-20260629/login.png) | (PNG image; not read, listed by name only) |
 | [helixqa-androidtv-20260629/qa-report.md](helixqa-androidtv-20260629/qa-report.md) | HelixQA Android TV Autonomous QA Report |
 | [helixqa-androidtv-20260629/run2_episodes_list_100items.png](helixqa-androidtv-20260629/run2_episodes_list_100items.png) | (PNG image; not read, listed by name only) |
+| [live-evidence.doubles.txt](live-evidence.doubles.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-evidence.interpreter-options.json](live-evidence.interpreter-options.json) | (JSON data artefact; not read, listed by name only) |
+| [live-evidence.schema.json](live-evidence.schema.json) | (JSON data artefact; not read, listed by name only) |
 | [live-map-20261103/01_before_podman.txt](live-map-20261103/01_before_podman.txt) | (plain-text artefact; not read, listed by name only) |
 | [live-map-20261103/02_before_ports.txt](live-map-20261103/02_before_ports.txt) | (plain-text artefact; not read, listed by name only) |
 | [live-map-20261103/03_rootlessport_cmdlines.txt](live-map-20261103/03_rootlessport_cmdlines.txt) | (plain-text artefact; not read, listed by name only) |
@@ -96,7 +103,23 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [live-map-20261103/MAP.md](live-map-20261103/MAP.md) | Live map 2026-11-03: what runs on which port, podman desync root cause, staged restart, honest gaps |
 | [live-map-20261103/restart_stack.sh](live-map-20261103/restart_stack.sh) | (shell script; not read, listed by name only) |
 | [live-map-20261103/test_restart_stack.sh](live-map-20261103/test_restart_stack.sh) | (shell script; not read, listed by name only) |
+| [live-storage-r1-20261104.md](live-storage-r1-20261104.md) | Live storage/scan investigation r1 (clone of main 4c79b7e3; no live-repo change) - Evidence bundle: /home/milosvasic/.cache/claude-tmp/live-storage-r1/ (yandex/, yandex_scan/, smb/, ftp/, nfs/, old_runs/, tests/). Credentials: 0 hits (password strings... |
+| [live-web-stack3-20261104/REPORT.md](live-web-stack3-20261104/REPORT.md) | Live web specs, stack 3, round 3 (2026-11-04) - Target (LAN): web http://192.168.1.115:33020, API http://192.168.1.115:38082, website :33021. Specs + stack from main 4c79b7e3611fae4c400555ddf7f8db7a677f9ef7 (fresh... |
+| [monitoring-deploy-20261104/00_README.txt](monitoring-deploy-20261104/00_README.txt) | (plain-text artefact; not read, listed by name only) |
+| [monitoring-deploy-20261104/01_otel_validate.txt](monitoring-deploy-20261104/01_otel_validate.txt) | (plain-text artefact; not read, listed by name only) |
+| [monitoring-deploy-20261104/02_http_status.txt](monitoring-deploy-20261104/02_http_status.txt) | (plain-text artefact; not read, listed by name only) |
+| [monitoring-deploy-20261104/03_containers_ports.txt](monitoring-deploy-20261104/03_containers_ports.txt) | (plain-text artefact; not read, listed by name only) |
+| [monitoring-deploy-20261104/04_collector_log.txt](monitoring-deploy-20261104/04_collector_log.txt) | (plain-text artefact; not read, listed by name only) |
+| [monitoring-deploy-20261104/05_prometheus_api.txt](monitoring-deploy-20261104/05_prometheus_api.txt) | (plain-text artefact; not read, listed by name only) |
+| [monitoring-deploy-20261104/06_regression_test_run.txt](monitoring-deploy-20261104/06_regression_test_run.txt) | (plain-text artefact; not read, listed by name only) |
+| [monitoring-deploy-20261104/07_mutation_run.txt](monitoring-deploy-20261104/07_mutation_run.txt) | (plain-text artefact; not read, listed by name only) |
+| [monitoring-deploy-20261104/08_teardown.txt](monitoring-deploy-20261104/08_teardown.txt) | (plain-text artefact; not read, listed by name only) |
 | [nil-slice-null-census-20261104.md](nil-slice-null-census-20261104.md) | Nil slice / map serialised as JSON null - class census (2026-11-04) - Defect class (§11.4.276(C)): a Go nil slice or map is written by encoding/json as null, where the API documents an array |
+| [player-lifecycle-wl13-20261104/README.md](player-lifecycle-wl13-20261104/README.md) | WL13 player lifecycle (F1, F2, F3): real-browser evidence, 2026-11-04 - Spec: catalog-web/e2e/player-real/player_lifecycle.spec.ts (real MediaPlayer, real <video>, chromium and firefox, local ticket |
+| [player-lifecycle-wl13-20261104/green_final_both_browsers.txt](player-lifecycle-wl13-20261104/green_final_both_browsers.txt) | (plain-text artefact; not read, listed by name only) |
+| [player-lifecycle-wl13-20261104/red_f1_revert_chromium_firefox.txt](player-lifecycle-wl13-20261104/red_f1_revert_chromium_firefox.txt) | (plain-text artefact; not read, listed by name only) |
+| [player-lifecycle-wl13-20261104/red_main_chromium.txt](player-lifecycle-wl13-20261104/red_main_chromium.txt) | (plain-text artefact; not read, listed by name only) |
+| [player-lifecycle-wl13-20261104/red_main_firefox.txt](player-lifecycle-wl13-20261104/red_main_firefox.txt) | (plain-text artefact; not read, listed by name only) |
 | [provision-when-down-20260630/Status.md](provision-when-down-20260630/Status.md) | §11.4.76 / Boot-provisioning — provision-when-DOWN PROVEN - the digital.vasic.containers submodule (remote compose-up over SSH), SAFELY proven against a |
 | [responsive_d1_d2/green-chromium.json](responsive_d1_d2/green-chromium.json) | (JSON data artefact; not read, listed by name only) |
 | [responsive_d1_d2/red-chromium.json](responsive_d1_d2/red-chromium.json) | (JSON data artefact; not read, listed by name only) |
