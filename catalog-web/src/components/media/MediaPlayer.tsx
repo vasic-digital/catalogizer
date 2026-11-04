@@ -12,6 +12,7 @@ import {
   SkipForward,
   SkipBack
 } from 'lucide-react'
+import { api } from '@/lib/api'
 import type { MediaItem, MediaEntity } from '@/types/media'
 import type { SubtitleTrack } from '@/types/subtitles'
 
@@ -27,12 +28,19 @@ interface MediaPlayerProps {
   onNavigate?: (entityId: number) => void
 }
 
-const streamUrlFor = (id: number): string => {
-  let token = ''
-  try { token = localStorage.getItem('auth_token') || '' } catch { /* storage blocked: the request will 401 visibly */ }
-  const base = (import.meta.env.VITE_API_BASE_URL || '') + `/api/v1/stream/${id}`
-  return token ? `${base}?access_token=${encodeURIComponent(token)}` : base
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '') + '/api/v1'
+const TICKET_REFRESH_MS = 45_000 // tickets live 60 s server-side; refresh well before expiry
+
+/**
+ * A <video>/<audio> element cannot send an Authorization header, and the session JWT must not go into the URL (logs, history,
+ * Referer). The player therefore mints a short-lived stream ticket with the authenticated API client and uses ?ticket= for this
+ * media id only. Range/seek requests re-use the ticket within its lifetime; a timer refreshes it and a media error mints a new one.
+ */
+export const mintStreamTicket = async (id: number): Promise<string> => {
+  const res = await api.post(`/stream/${id}/ticket`, {})
+  return res.data.ticket as string
 }
+const streamUrl = (id: number, ticket: string) => `${API_BASE}/stream/${id}?ticket=${encodeURIComponent(ticket)}`
 
 /**
  * MediaPlayer renders an HTML5 video/audio player with transport controls,
@@ -62,6 +70,51 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
   const videoRef = useRef<HTMLVideoElement>(null)
   const playerRef = useRef<HTMLDivElement>(null)
   const controlsTimeoutRef = useRef<NodeJS.Timeout>()
+
+  // Source: an explicit entity stream URL wins; otherwise the real range-capable stream endpoint of the catalogued item, authorised
+  // by a short-lived ticket (see mintStreamTicket). directory_path is a storage-relative path, never a playable URL.
+  const [ticketSrc, setTicketSrc] = useState('')
+  const [authError, setAuthError] = useState(false)
+  const resumeRef = useRef<{ time: number; play: boolean; tries: number } | null>(null)
+  const videoSrc = entityStreamUrl || ticketSrc
+
+  const refreshTicket = useCallback(async (resume: boolean) => {
+    try {
+      const url = streamUrl(media.id, await mintStreamTicket(media.id))
+      const v = videoRef.current
+      if (resume && v) resumeRef.current = { time: v.currentTime, play: !v.paused, tries: (resumeRef.current?.tries ?? 0) + 1 }
+      setTicketSrc(url)
+      setAuthError(false)
+    } catch {
+      setAuthError(true)
+    }
+  }, [media.id])
+
+  useEffect(() => {
+    if (entityStreamUrl) return
+    resumeRef.current = null
+    void refreshTicket(false)
+    // Keep a fresh ticket for seeks: swapping the source of a playing element would stutter, so only an idle element is re-pointed.
+    const timer = setInterval(() => {
+      const v = videoRef.current
+      if (!v || v.paused) void refreshTicket(true)
+    }, TICKET_REFRESH_MS)
+    return () => clearInterval(timer)
+  }, [media.id, entityStreamUrl, refreshTicket])
+
+  // A changed source does not reload an element by itself; restore position and play state after the swap.
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v || !ticketSrc) return
+    v.load()
+    const r = resumeRef.current
+    if (r) {
+      v.addEventListener('loadedmetadata', () => {
+        v.currentTime = r.time
+        if (r.play) void v.play().catch(() => undefined)
+      }, { once: true })
+    }
+  }, [ticketSrc])
 
   // Format time display
   const formatTime = (time: number) => {
@@ -164,6 +217,12 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
     }
 
     const handleError = () => {
+      // An expired ticket makes the next range request 401, which the element reports as an error: mint a new one and resume
+      // (bounded, so a genuinely broken file does not loop).
+      if (!entityStreamUrl && (resumeRef.current?.tries ?? 0) < 3) {
+        void refreshTicket(true)
+        return
+      }
       onError?.(new Error('Video playback failed'))
     }
 
@@ -178,7 +237,7 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
       video.removeEventListener('ended', handleEnded)
       video.removeEventListener('error', handleError)
     }
-  }, [onProgress, onEnded, onError])
+  }, [onProgress, onEnded, onError, entityStreamUrl, refreshTicket])
 
   // Entity navigation (next/previous for episodes/tracks)
   const currentIndex = entity ? siblings.findIndex((s) => s.id === entity.id) : -1
@@ -192,11 +251,6 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
   const handleNext = useCallback(() => {
     if (nextSibling && onNavigate) onNavigate(nextSibling.id)
   }, [nextSibling, onNavigate])
-
-  // Determine the media source: an entity stream URL takes priority; otherwise the real range-capable stream endpoint
-  // of the catalogued item. A <video>/<audio> request cannot carry an Authorization header, so the session token travels as
-  // the documented query fallback (middleware/auth.go). directory_path is a storage-relative path, never a playable URL.
-  const videoSrc = entityStreamUrl || streamUrlFor(media.id)
 
   // Auto-hide controls
   useEffect(() => {
@@ -234,13 +288,14 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
           {/* Video Element */}
           <video
             ref={videoRef}
+            src={videoSrc || undefined}
             className="absolute inset-0 w-full h-full"
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
           >
-            <source src={videoSrc} />
             Your browser does not support the video tag.
           </video>
+          {authError && <div role="alert" className="absolute inset-0 flex items-center justify-center text-white">Could not authorise playback</div>}
 
           {/* Controls Overlay */}
           {showControls && (

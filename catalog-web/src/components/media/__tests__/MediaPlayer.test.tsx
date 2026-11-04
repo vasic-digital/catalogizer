@@ -1,6 +1,9 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MediaPlayer } from '../MediaPlayer'
+
+const { postMock } = vi.hoisted(() => ({ postMock: vi.fn().mockResolvedValue({ data: { ticket: 'tk' } }) }))
+vi.mock('@/lib/api', () => ({ api: { post: postMock } }))
 
 vi.mock('lucide-react', () => ({
   Play: () => <span data-testid="icon-play">Play</span>,
@@ -43,25 +46,29 @@ describe('MediaPlayer', () => {
     expect(screen.getByText('Unknown Title')).toBeInTheDocument()
   })
 
-  it('renders video element fed from the real stream endpoint, never the storage-relative path', () => {
-    localStorage.removeItem('auth_token')
+  it('mints a stream ticket and feeds the video from /stream/:id?ticket=, never the path or the session token', async () => {
+    postMock.mockResolvedValue({ data: { ticket: 'v1.a.b' } })
+    localStorage.setItem('auth_token', 'SESSION.JWT.VALUE')
     const { container } = render(<MediaPlayer media={mockMedia as any} />)
-    expect(container.querySelector('video')).toBeInTheDocument()
-    const source = container.querySelector('source')
-    expect(source).toHaveAttribute('src', '/api/v1/stream/1')
-    expect(source).not.toHaveAttribute('type')
-  })
-
-  it('carries the session token as the query fallback because <video> cannot send headers', () => {
-    localStorage.setItem('auth_token', 'a.b+c')
-    const { container } = render(<MediaPlayer media={mockMedia as any} />)
-    expect(container.querySelector('source')).toHaveAttribute('src', '/api/v1/stream/1?access_token=a.b%2Bc')
+    await waitFor(() => expect(container.querySelector('video')).toHaveAttribute('src', '/api/v1/stream/1?ticket=v1.a.b'))
+    expect(postMock).toHaveBeenCalledWith('/stream/1/ticket', {})
+    expect(container.querySelector('video')!.getAttribute('src')).not.toContain('SESSION')
+    expect(container.querySelector('video')!.getAttribute('src')).not.toContain('/videos/test.mp4')
     localStorage.removeItem('auth_token')
   })
 
-  it('an explicit entity stream URL takes priority', () => {
+  it('shows an error and no source when the ticket cannot be minted', async () => {
+    postMock.mockRejectedValue(new Error('401'))
+    const { container } = render(<MediaPlayer media={mockMedia as any} />)
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument())
+    expect(container.querySelector('video')).not.toHaveAttribute('src')
+  })
+
+  it('an explicit entity stream URL takes priority and mints nothing', () => {
+    postMock.mockClear()
     const { container } = render(<MediaPlayer media={mockMedia as any} entityStreamUrl="/api/v1/entities/9/stream" />)
-    expect(container.querySelector('source')).toHaveAttribute('src', '/api/v1/entities/9/stream')
+    expect(container.querySelector('video')).toHaveAttribute('src', '/api/v1/entities/9/stream')
+    expect(postMock).not.toHaveBeenCalled()
   })
 
   it('renders play button initially', () => {

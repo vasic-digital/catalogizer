@@ -1,6 +1,8 @@
 package main
 
 import (
+	"catalogizer/internal/logredact"
+	"catalogizer/internal/streamticket"
 	"errors"
 	"catalogizer/challenges"
 	root_config "catalogizer/config"
@@ -930,6 +932,9 @@ func main() {
 	// Initialize JWT middleware
 	// Session revocation + live admin check are installed together (main_jwtwire.go).
 	jwtMiddleware := newAuthMiddleware(jwtSecret, databaseDB, userRepo)
+	ticketSigner := streamticket.New(jwtSecret)
+	jwtMiddleware.SetStreamTicketSigner(ticketSigner)
+	streamHandler.SetTicketSigner(ticketSigner)
 
 	// Initialize tiered rate limiters using internal auth middleware.
 	// Constitution Article V §5.1 category 7 (DDoS/rate-limit) requires
@@ -961,7 +966,12 @@ func main() {
 	}
 
 	// Setup Gin router
-	router := gin.Default()
+	// gin.Default() equivalent whose access log redacts credential-bearing query parameters (ticket, access_token, token).
+	router := gin.New()
+	router.Use(gin.LoggerWithFormatter(func(p gin.LogFormatterParams) string {
+		return fmt.Sprintf("[GIN] %s | %3d | %13v | %15s | %-7s %#v\n%s",
+			p.TimeStamp.Format("2006/01/02 - 15:04:05"), p.StatusCode, p.Latency, p.ClientIP, p.Method, logredact.Path(p.Request.URL.Path, p.Request.URL.RawQuery), p.ErrorMessage)
+	}), gin.Recovery())
 
 	// RULE-GO-005 / Master Plan §4.2 — lock down X-Forwarded-For
 	// handling. Gin's default TrustedProxies is 0.0.0.0/0, which
@@ -1238,6 +1248,9 @@ func main() {
 
 	// Streaming endpoint — proxies file data from any storage backend (SMB, FTP, NFS, WebDAV, local)
 	api.GET("/stream/:id", streamHandler.StreamFile)
+	// Short-lived stream ticket for header-less players (web <video>): minted with the normal Authorization header, accepted only
+	// by GET/HEAD /stream/:id (middleware.RequireAuth). Replaces the session JWT in the query string for web clients.
+	api.POST("/stream/:id/ticket", streamHandler.MintTicket)
 
 	// Storage-operator routes (P2, authz review r3): creating storage roots,
 	// listing their directories, queueing scans, SMB discovery/probe/ingest,

@@ -1,6 +1,6 @@
 # Route authorization table (authz round 2)
 
-Generated 2026-11-03 on branch `fix-authz-round2` from (a) a static extraction of every `GET|POST|PUT|DELETE|PATCH` registration in `catalog-api/main.go` plus the routes mounted from `handlers/storage_routes.go` and `handlers/alias_routes.go` (260 rows), and (b) a live probe of the REAL binary (`route_enumeration_probe_test.go`, env-gated by `ROUTE_PROBE_FILE`/`ROUTE_PROBE_OUT`): each route is requested with no token, with a self-registered plain user's token and, for GET routes, with the administrator's token. Cells are HTTP status codes. `404`/`400` for a user means the request passed the gate and the handler rejected the made-up id or empty body. `skip` = not requested as admin (mutating or streaming). `ERR` = the 4 s probe client timed out (`pprof/profile` samples for 30 s).
+Generated 2026-11-03 on branch `fix-authz-round2` from (a) a static extraction of every `GET|POST|PUT|DELETE|PATCH` registration in `catalog-api/main.go` plus the routes mounted from `handlers/storage_routes.go` and `handlers/alias_routes.go` (261 rows; `POST /api/v1/stream/:id/ticket` added by hand, not yet re-probed), and (b) a live probe of the REAL binary (`route_enumeration_probe_test.go`, env-gated by `ROUTE_PROBE_FILE`/`ROUTE_PROBE_OUT`): each route is requested with no token, with a self-registered plain user's token and, for GET routes, with the administrator's token. Cells are HTTP status codes. `404`/`400` for a user means the request passed the gate and the handler rejected the made-up id or empty body. `skip` = not requested as admin (mutating or streaming). `ERR` = the 4 s probe client timed out (`pprof/profile` samples for 30 s).
 
 Instrument checks (control needles): the static extractor found 239 `main.go` registrations, equal to an independent `grep -cE` count of the same file region (239); the known routes `/metrics` and `/api/v1/smb/probe-and-ingest` are present and a fabricated route is absent; the probe asserts before and after the run that the plain token still gets `403` (not `401`) on `POST /api/v1/smb/probe` (the first probe run was invalid because `POST /auth/logout` revoked the plain token; that route and `change-password` are now skipped).
 
@@ -60,7 +60,8 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/download/file/:id` | auth | 401 | 404 | skip |
 | GET | `/api/v1/download/directory/*path` | auth | 401 | 500 | skip |
 | POST | `/api/v1/download/archive` | auth | 401 | 400 | skip |
-| GET | `/api/v1/stream/:id` | auth | 401 | 404 | skip |
+| GET | `/api/v1/stream/:id` | auth, or `?ticket=` (stream ticket, this route and this id only; see note below) | 401 | 404 | skip |
+| POST | `/api/v1/stream/:id/ticket` | auth (Authorization header only) | 401 | 404 | skip |
 | POST | `/api/v1/copy/storage` | RequireAdmin (route) | 401 | 403 | skip |
 | POST | `/api/v1/copy/local` | RequireAdmin (route) | 401 | 403 | skip |
 | POST | `/api/v1/copy/upload` | RequireAdmin (route) | 401 | 403 | skip |
@@ -276,3 +277,7 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/localization/translations` | auth | 401 | 501 | 501 |
 | GET | `/api/v1/localization/stats` | auth | 401 | 501 | 501 |
 | GET | `/api/v1/recommendations/by-type` | auth | 401 | 501 | 501 |
+
+## Stream tickets (added with the web player fix)
+
+`POST /api/v1/stream/:id/ticket` mints an HMAC-SHA256 ticket (60 s) bound to the media id, the user id and the minting session. `GET /api/v1/stream/:id?ticket=...` accepts it in place of the Authorization header ONLY for that id (middleware/auth.go `streamRoute`); on every other route, method or id the `ticket` parameter is ignored and the request is unauthenticated (401). A ticket dies with its session (logout/revocation is checked at use). The catalogue has no per-user ownership model, so any authenticated user may mint a ticket for any catalogued file, exactly as they may stream it with a bearer token. The legacy `?access_token=` / `?token=` query path stays for native clients (libVLC, ffmpeg) and is a follow-up to remove; both parameters are redacted from the gin and zap access logs (`internal/logredact`). Covered by `catalog-api/stream_ticket_binary_test.go` (real binary).

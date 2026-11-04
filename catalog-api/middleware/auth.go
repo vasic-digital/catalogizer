@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"catalogizer/internal/streamticket"
 	"catalogizer/utils"
 
 	"github.com/gin-gonic/gin"
@@ -29,6 +30,20 @@ type JWTMiddleware struct {
 	// permCheck, when set, decides RequirePermission from the database (the
 	// user's CURRENT role permissions). See SetPermissionChecker.
 	permCheck PermissionChecker
+	// tickets, when set, lets the stream route authenticate a short-lived stream ticket (?ticket=) instead of a session token.
+	tickets *streamticket.Signer
+}
+
+// SetStreamTicketSigner enables ?ticket= authentication on GET/HEAD /api/v1/stream/:id (and nowhere else).
+func (m *JWTMiddleware) SetStreamTicketSigner(s *streamticket.Signer) { m.tickets = s }
+
+// streamRoute reports whether the request is a GET/HEAD of the stream route and returns the media id of its path.
+func streamRoute(c *gin.Context) (int64, bool) {
+	if (c.Request.Method != http.MethodGet && c.Request.Method != http.MethodHead) || c.FullPath() != "/api/v1/stream/:id" {
+		return 0, false
+	}
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	return id, err == nil
 }
 
 // PermissionChecker reports whether the user identified by userID (the token
@@ -96,6 +111,31 @@ func (m *JWTMiddleware) RequireAuth() gin.HandlerFunc {
 		var tokenString string
 
 		authHeader := c.GetHeader("Authorization")
+		// Stream ticket: valid ONLY for GET/HEAD of /api/v1/stream/:id and ONLY for the media id it was minted for. On every other
+		// route the "ticket" parameter is ignored (the request then fails like any unauthenticated one).
+		if tk := c.Query("ticket"); tk != "" && authHeader == "" {
+			if mediaID, ok := streamRoute(c); ok && m.tickets != nil {
+				cl, err := m.tickets.Verify(tk, mediaID)
+				if err == nil && m.sessionCheck != nil && (cl.SessionID == "" || m.sessionCheck(c.Request.Context(), cl.SessionID, cl.UserID) != nil) {
+					err = streamticket.ErrInvalid
+				}
+				if err != nil {
+					utils.SendErrorResponse(c, http.StatusUnauthorized, "Invalid or expired stream ticket", nil)
+					c.Abort()
+					return
+				}
+				c.Set("username", cl.Username)
+				c.Set("session_id", cl.SessionID)
+				if uid, err := strconv.Atoi(cl.UserID); err == nil {
+					c.Set("user_id", uid)
+				} else {
+					c.Set("user_id", cl.UserID)
+				}
+				c.Set("auth_via_stream_ticket", true)
+				c.Next()
+				return
+			}
+		}
 		if authHeader != "" {
 			parts := strings.Split(authHeader, " ")
 			if len(parts) != 2 || parts[0] != "Bearer" {
@@ -105,7 +145,9 @@ func (m *JWTMiddleware) RequireAuth() gin.HandlerFunc {
 			}
 			tokenString = parts[1]
 		} else {
-			// Fallback to query parameter for native clients.
+			// Native-client LEGACY path (libVLC, ffmpeg, VLC iOS cannot be taught the ticket flow): the session token in the query
+			// string. Web clients MUST use /api/v1/stream/:id/ticket instead; the value is redacted from every access log. Follow-up:
+			// migrate native clients to tickets and delete this fallback (docs/FOLLOW_UPS_NEXT_PHASE.md).
 			tokenString = c.Query("access_token")
 			if tokenString == "" {
 				tokenString = c.Query("token")
@@ -149,6 +191,7 @@ func (m *JWTMiddleware) RequireAuth() gin.HandlerFunc {
 		// Set user info in context — convert user_id to int for handler compatibility
 		c.Set("username", claims.Username)
 		c.Set("role_id", claims.RoleID)
+		c.Set("session_id", claims.SessionID)
 		if uid, err := strconv.Atoi(claims.Subject); err == nil {
 			c.Set("user_id", uid)
 		} else {
