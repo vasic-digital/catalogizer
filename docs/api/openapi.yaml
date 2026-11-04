@@ -3759,9 +3759,16 @@ paths:
           required: true
           schema:
             type: integer
+      description: |
+        Measures the subtitle against the real audio of the media file (speech-activity cross-correlation, SRT/VTT/ASS).
+        `sync_result.status` is `measured` (offset in ms, positive = the subtitle appears late, confidence 0-1 computed),
+        `undetermined` (the media is not locally readable or has no usable audio activity: offset 0, confidence 0, `reason` set)
+        or `invalid` (no parseable cues, or cues beyond the media end).
       responses:
         '200':
           description: Sync verification result
+        '404':
+          description: Unknown media item (`MEDIA_NOT_FOUND`) or subtitle (`SUBTITLE_NOT_FOUND`, also when it belongs to another media item)
 
   /api/v1/subtitles/translate:
     post:
@@ -3777,6 +3784,10 @@ paths:
       responses:
         '200':
           description: Translated subtitle
+        '404':
+          description: Unknown subtitle (`SUBTITLE_NOT_FOUND`)
+        '503':
+          description: No translation provider is configured (`TRANSLATION_UNAVAILABLE`)
 
   /api/v1/subtitles/upload:
     post:
@@ -3791,7 +3802,34 @@ paths:
               type: object
       responses:
         '200':
-          description: Subtitle uploaded
+          description: Subtitle uploaded; the body carries the real `subtitle_id`
+        '404':
+          description: Unknown media item (`MEDIA_NOT_FOUND`)
+        '422':
+          description: The file is not a valid srt/vtt/ass subtitle (`INVALID_SUBTITLE_CONTENT`)
+
+  /api/v1/subtitles/{subtitle_id}:
+    delete:
+      tags: [subtitles]
+      summary: Delete subtitle
+      description: Allowed for the user who uploaded the track and for administrators; tracks with no recorded uploader are administrator-only.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: subtitle_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          description: Not authenticated
+        '403':
+          description: Caller is neither the uploader nor an administrator (`FORBIDDEN`)
+        '404':
+          description: Unknown subtitle (`SUBTITLE_NOT_FOUND`)
 
   /api/v1/subtitles/languages:
     get:

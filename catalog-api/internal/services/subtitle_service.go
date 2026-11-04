@@ -1,6 +1,8 @@
 package services
 
 import (
+	"unicode/utf8"
+
 	"catalogizer/internal/netguard"
 	"context"
 	"database/sql"
@@ -93,6 +95,13 @@ type SubtitleSyncResult struct {
 	DetectedFrames int         `json:"detected_frames"`
 	SamplePoints   []SyncPoint `json:"sample_points"`
 	Recommendation string      `json:"recommendation"`
+	// Status is "measured", "undetermined" or "invalid". SyncOffset is the measured delay of the
+	// subtitle relative to the audio (positive = the subtitle appears late). When Status is not
+	// "measured", SyncOffset and Confidence are 0 and Reason says why.
+	Status        string  `json:"status"`
+	Method        string  `json:"method"`
+	Reason        string  `json:"reason,omitempty"`
+	MediaDuration float64 `json:"media_duration,omitempty"`
 }
 
 // SyncPoint represents a point used for sync verification
@@ -141,6 +150,7 @@ type SubtitleUploadRequest struct {
 	IsForced     bool    `json:"is_forced" form:"is_forced"`
 	Encoding     string  `json:"encoding" form:"encoding"`
 	SyncOffset   float64 `json:"sync_offset" form:"sync_offset"`
+	UploadedBy   int64   `json:"-" form:"-"` // authenticated uploader; 0 = unknown (no owner recorded)
 }
 
 // SubtitleUploadResponse represents the response for subtitle upload
@@ -334,11 +344,22 @@ func (s *SubtitleService) TranslateSubtitle(ctx context.Context, request *Subtit
 	// Get original subtitle
 	original, err := s.getSubtitleTrack(ctx, request.SubtitleID)
 	if err != nil {
+		if errors.Is(err, ErrSubtitleNotFound) {
+			return nil, err
+		}
 		return nil, fmt.Errorf("failed to get original subtitle: %w", err)
 	}
 
+	// Without a configured provider nothing can be translated: say so before doing any work.
+	if len(s.translationService.getAvailableProviders()) == 0 {
+		return nil, ErrNoTranslationProvider
+	}
+
+	if original.Content == nil {
+		return nil, fmt.Errorf("%w: subtitle has no content", ErrInvalidSubtitleContent)
+	}
 	// Parse subtitle for translation
-	lines, err := s.parseSubtitleLines(*original.Content)
+	lines, err := s.parseCues(*original.Content, original.Format)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse subtitle lines: %w", err)
 	}
@@ -350,7 +371,8 @@ func (s *SubtitleService) TranslateSubtitle(ctx context.Context, request *Subtit
 	}
 
 	// Reconstruct subtitle content
-	translatedContent, err := s.reconstructSubtitle(original.Format, translatedLines)
+	// Translated output is always written as SRT: it is the one format the reconstruction supports.
+	translatedContent, err := s.reconstructSubtitle("srt", translatedLines)
 	if err != nil {
 		return nil, fmt.Errorf("failed to reconstruct subtitle: %w", err)
 	}
@@ -361,7 +383,7 @@ func (s *SubtitleService) TranslateSubtitle(ctx context.Context, request *Subtit
 		Language:     getLanguageName(request.TargetLanguage),
 		LanguageCode: request.TargetLanguage,
 		Source:       "translated",
-		Format:       original.Format,
+		Format:       "srt",
 		Content:      &translatedContent,
 		IsDefault:    false,
 		IsForced:     false,
@@ -429,49 +451,6 @@ func (s *SubtitleService) GetSubtitleTrack(ctx context.Context, subtitleID strin
 // VerifySynchronization checks if subtitles are properly synchronized with video (exported version)
 func (s *SubtitleService) VerifySynchronization(ctx context.Context, mediaItemID int64, track *SubtitleTrack) (*SubtitleSyncResult, error) {
 	return s.verifySynchronization(ctx, mediaItemID, track)
-}
-
-// verifySynchronization checks if subtitles are properly synchronized with video
-func (s *SubtitleService) verifySynchronization(ctx context.Context, mediaItemID int64, track *SubtitleTrack) (*SubtitleSyncResult, error) {
-	s.logger.Debug("Verifying subtitle synchronization",
-		zap.Int64("media_item_id", mediaItemID),
-		zap.String("subtitle_id", track.ID))
-
-	// Get video metadata
-	videoInfo, err := s.getVideoInfo(ctx, mediaItemID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get video info: %w", err)
-	}
-
-	// Parse subtitle timing
-	lines, err := s.parseSubtitleLines(*track.Content)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse subtitle lines: %w", err)
-	}
-
-	// Analyze timing patterns
-	samplePoints := s.extractSamplePoints(lines, videoInfo.Duration)
-
-	// Calculate sync offset and confidence
-	syncOffset, confidence := s.calculateSyncOffset(samplePoints, videoInfo)
-
-	result := &SubtitleSyncResult{
-		IsValid:        confidence > 0.7, // 70% confidence threshold
-		SyncOffset:     syncOffset,
-		Confidence:     confidence,
-		DetectedFrames: len(samplePoints),
-		SamplePoints:   samplePoints,
-	}
-
-	if result.IsValid {
-		result.Recommendation = "Subtitle synchronization is good"
-	} else if confidence > 0.4 {
-		result.Recommendation = fmt.Sprintf("Subtitle may need %+.1fs offset", syncOffset/1000)
-	} else {
-		result.Recommendation = "Subtitle synchronization is poor"
-	}
-
-	return result, nil
 }
 
 // Provider-specific search implementations
@@ -938,11 +917,25 @@ func (s *SubtitleService) getDownloadInfo(ctx context.Context, resultID string) 
 
 // saveSubtitleTrack saves a subtitle track to the database
 func (s *SubtitleService) saveSubtitleTrack(ctx context.Context, mediaItemID int64, track *SubtitleTrack) error {
+	_, err := s.saveSubtitleTrackOwned(ctx, mediaItemID, track, nil)
+	return err
+}
+
+// saveSubtitleTrackOwned inserts the track and returns the id the database assigned.
+// The uploaded_by column is written only when an owner is known.
+func (s *SubtitleService) saveSubtitleTrackOwned(ctx context.Context, mediaItemID int64, track *SubtitleTrack, owner *int64) (int64, error) {
 	query := `
 		INSERT INTO subtitle_tracks
 		(media_item_id, language, language_code, source, format, content, path,
 		 is_default, is_forced, encoding, sync_offset, verified_sync, created_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	if owner != nil {
+		query = `
+		INSERT INTO subtitle_tracks
+		(media_item_id, language, language_code, source, format, content, path,
+		 is_default, is_forced, encoding, sync_offset, verified_sync, created_at, uploaded_by)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	}
 
 	// Convert boolean values to integers for SQLite compatibility
 	isDefault := 0
@@ -989,12 +982,14 @@ func (s *SubtitleService) saveSubtitleTrack(ctx context.Context, mediaItemID int
 		zap.Int("verified_sync", verifiedSync),
 		zap.Time("created_at", track.CreatedAt))
 
-	_, err := s.db.ExecContext(ctx, query,
+	args := []interface{}{
 		mediaItemID, track.Language, track.LanguageCode, track.Source,
 		track.Format, content, path, isDefault, isForced,
-		track.Encoding, track.SyncOffset, verifiedSync, track.CreatedAt)
-
-	return err
+		track.Encoding, track.SyncOffset, verifiedSync, track.CreatedAt}
+	if owner != nil {
+		args = append(args, *owner)
+	}
+	return s.db.InsertReturningID(ctx, query, args...)
 }
 
 // autoTranslateSubtitle automatically translates a subtitle to multiple languages
@@ -1024,7 +1019,19 @@ func (s *SubtitleService) SaveUploadedSubtitle(ctx context.Context, req *Subtitl
 	var mediaID int
 	err := s.db.QueryRowContext(ctx, mediaQuery, req.MediaID).Scan(&mediaID)
 	if err != nil {
-		return nil, fmt.Errorf("media item not found: %w", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrMediaNotFound
+		}
+		return nil, fmt.Errorf("look up media item: %w", err)
+	}
+
+	// The bytes must be a real subtitle of the stated format (text formats only; no binary garbage).
+	if f := strings.ToLower(req.Format); f == "srt" || f == "vtt" || f == "ass" || f == "ssa" {
+		if _, verr := s.parseCues(req.Content, f); verr != nil {
+			return nil, verr
+		}
+	} else if !utf8.ValidString(req.Content) || strings.ContainsRune(req.Content, 0) {
+		return nil, fmt.Errorf("%w: not valid UTF-8 text", ErrInvalidSubtitleContent)
 	}
 
 	// Create subtitle track from upload
@@ -1044,10 +1051,15 @@ func (s *SubtitleService) SaveUploadedSubtitle(ctx context.Context, req *Subtitl
 	}
 
 	// Save the subtitle track
-	err = s.saveSubtitleTrack(ctx, req.MediaID, track)
+	var owner *int64
+	if req.UploadedBy > 0 {
+		owner = &req.UploadedBy
+	}
+	newID, err := s.saveSubtitleTrackOwned(ctx, req.MediaID, track, owner)
 	if err != nil {
 		return nil, fmt.Errorf("failed to save uploaded subtitle: %w", err)
 	}
+	track.ID = strconv.FormatInt(newID, 10)
 
 	// If it's marked as default, update other subtitles
 	if req.IsDefault {
@@ -1129,6 +1141,9 @@ func (s *SubtitleService) getSubtitleTrack(ctx context.Context, subtitleID strin
 		&track.Encoding, &track.SyncOffset, &track.CreatedAt, &track.VerifiedSync,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrSubtitleNotFound
+		}
 		return nil, fmt.Errorf("failed to get subtitle track: %w", err)
 	}
 
@@ -1356,4 +1371,52 @@ func (s *SubtitleService) calculateSyncOffset(points []SyncPoint, videoInfo *Vid
 	confidence := 0.8 // Default confidence
 
 	return avgOffset * 1000, confidence // Convert to milliseconds
+}
+
+// GetSubtitleTrackForMedia returns the track only when it belongs to that media item.
+func (s *SubtitleService) GetSubtitleTrackForMedia(ctx context.Context, subtitleID string, mediaItemID int64) (*SubtitleTrack, error) {
+	var mediaID int
+	if err := s.db.QueryRowContext(ctx, `SELECT id FROM files WHERE id = ?`, mediaItemID).Scan(&mediaID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrMediaNotFound
+		}
+		return nil, fmt.Errorf("look up media item: %w", err)
+	}
+	var owner int64
+	err := s.db.QueryRowContext(ctx, `SELECT media_item_id FROM subtitle_tracks WHERE id = ?`, subtitleID).Scan(&owner)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrSubtitleNotFound
+		}
+		return nil, fmt.Errorf("look up subtitle: %w", err)
+	}
+	if owner != mediaItemID {
+		return nil, ErrSubtitleNotFound
+	}
+	return s.getSubtitleTrack(ctx, subtitleID)
+}
+
+// DeleteSubtitle removes a subtitle track. The uploader and administrators may delete; a track with
+// no recorded uploader (legacy or downloaded) is administrator-only. Returns ErrSubtitleNotFound or
+// ErrSubtitleForbidden.
+func (s *SubtitleService) DeleteSubtitle(ctx context.Context, subtitleID string, userID int64, isAdmin bool) error {
+	var uploader sql.NullInt64
+	err := s.db.QueryRowContext(ctx, `SELECT uploaded_by FROM subtitle_tracks WHERE id = ?`, subtitleID).Scan(&uploader)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrSubtitleNotFound
+		}
+		return fmt.Errorf("look up subtitle: %w", err)
+	}
+	if !isAdmin && !(uploader.Valid && userID > 0 && uploader.Int64 == userID) {
+		return ErrSubtitleForbidden
+	}
+	res, err := s.db.ExecContext(ctx, `DELETE FROM subtitle_tracks WHERE id = ?`, subtitleID)
+	if err != nil {
+		return fmt.Errorf("delete subtitle: %w", err)
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return ErrSubtitleNotFound
+	}
+	return nil
 }
