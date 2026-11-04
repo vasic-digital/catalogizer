@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# usage: restart_stack.sh <qa_stack_dir> <project> <api_port>
+# usage: restart_stack.sh <qa_stack_dir> <project> <api_port> <web_port> <website_port>
 # Staged start (fixes API-before-Postgres race AND the broken aardvark-dns in a re-created rootless netns:
 # service names are pinned with extra_hosts from the live container IPs).
-# Exit codes: 0 all healthy; non-zero on any failed step or readiness timeout (message on stderr).
+# Exit codes: 0 only when postgres, redis, api, web (/) and website (/) all answered HTTP 200; non-zero on any failed step or readiness timeout (message on stderr).
 set -euo pipefail
-D="${1:?dir}"; P="${2:?project}"; PORT="${3:?port}"
+D="${1:?dir}"; P="${2:?project}"; PORT="${3:?port}"; WEBPORT="${4:?web_port}"; SITEPORT="${5:?website_port}"
 die() { echo "restart_stack: $*" >&2; exit 1; }
 cd "$D" || die "cannot cd to $D"
 set -a; . "$D/qa.env"; set +a
@@ -45,5 +45,18 @@ AP=$(container_ip "$P-api"); echo "api=$AP"
 printf 'services:\n  api:\n    extra_hosts: ["postgres:%s","redis:%s"]\n  web:\n    extra_hosts: ["api:%s"]\n' "$PG" "$RD" "$AP" > "$OV"
 compose_up --no-deps web website
 podman start "$P-web" "$P-website" >/dev/null 2>&1 || true
-sleep 3
+wait_http() { # url name -> sets $? 0 when 200 within 60 tries
+  local u="$1" code="" i
+  for i in $(seq 1 30); do
+    code=$(curl -s -o /dev/null -w '%{http_code}' "$u" || true)
+    if [ "$code" = 200 ]; then echo "$2 healthy 200 after $((i*2))s"; return 0; fi
+    sleep 2
+  done
+  LAST_HTTP="$code"; return 1
+}
+LAST_HTTP=""
+wok=0; wait_http "http://127.0.0.1:$WEBPORT/" web && wok=1
+[ $wok -eq 1 ] || die "web on :$WEBPORT not healthy (last http=$LAST_HTTP) after 60s"
+sok=0; wait_http "http://127.0.0.1:$SITEPORT/" website && sok=1
+[ $sok -eq 1 ] || die "website on :$SITEPORT not healthy (last http=$LAST_HTTP) after 60s"
 podman ps --filter "name=$P-" --format '{{.Names}}|{{.Status}}|{{.Ports}}'

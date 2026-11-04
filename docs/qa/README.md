@@ -2,7 +2,7 @@
 
 Documents in this directory.
 
-Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 168 entries.
+Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 183 entries.
 
 | File | Description |
 |---|---|
@@ -95,6 +95,21 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [provision-when-down-20260630/Status.md](provision-when-down-20260630/Status.md) | §11.4.76 / Boot-provisioning — provision-when-DOWN PROVEN - the digital.vasic.containers submodule (remote compose-up over SSH), SAFELY proven against a |
 | [responsive_d1_d2/green-chromium.json](responsive_d1_d2/green-chromium.json) | (JSON data artefact; not read, listed by name only) |
 | [responsive_d1_d2/red-chromium.json](responsive_d1_d2/red-chromium.json) | (JSON data artefact; not read, listed by name only) |
+| [stack3/README.md](stack3/README.md) | Catalogizer QA stack 3 - Rootless-podman QA stack built from a clean export of a main commit (default: the repo HEAD). Independent of stacks |
+| [stack3/build.sh](stack3/build.sh) | (shell script; not read, listed by name only) |
+| [stack3/down.sh](stack3/down.sh) | (shell script; not read, listed by name only) |
+| [stack3/evidence/health_body.json](stack3/evidence/health_body.json) | (JSON data artefact; not read, listed by name only) |
+| [stack3/evidence/health_deep.json](stack3/evidence/health_deep.json) | (JSON data artefact; not read, listed by name only) |
+| [stack3/evidence/images.txt](stack3/evidence/images.txt) | (plain-text artefact; not read, listed by name only) |
+| [stack3/evidence/lan_status.txt](stack3/evidence/lan_status.txt) | (plain-text artefact; not read, listed by name only) |
+| [stack3/evidence/login_bad.txt](stack3/evidence/login_bad.txt) | (plain-text artefact; not read, listed by name only) |
+| [stack3/evidence/login_via_web.txt](stack3/evidence/login_via_web.txt) | (plain-text artefact; not read, listed by name only) |
+| [stack3/evidence/media_and_tools.txt](stack3/evidence/media_and_tools.txt) | (plain-text artefact; not read, listed by name only) |
+| [stack3/evidence/other_stacks_ports.txt](stack3/evidence/other_stacks_ports.txt) | (plain-text artefact; not read, listed by name only) |
+| [stack3/evidence/up_after_down.txt](stack3/evidence/up_after_down.txt) | (plain-text artefact; not read, listed by name only) |
+| [stack3/lib.sh](stack3/lib.sh) | (shell script; not read, listed by name only) |
+| [stack3/test_scripts.sh](stack3/test_scripts.sh) | (shell script; not read, listed by name only) |
+| [stack3/up.sh](stack3/up.sh) | (shell script; not read, listed by name only) |
 | [web-live-20261103/stack3/FULL_ARTIFACTS.sha256](web-live-20261103/stack3/FULL_ARTIFACTS.sha256) | (file; not read, listed by name only) |
 | [web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_catalog.json](web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_catalog.json) | (JSON data artefact; not read, listed by name only) |
 | [web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_login.json](web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_login.json) | (JSON data artefact; not read, listed by name only) |
