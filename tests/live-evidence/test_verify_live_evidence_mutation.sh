@@ -5,7 +5,7 @@ HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 ROOT=$(cd "$HERE/../.." && pwd)
 M=$(mktemp -d "${TMPDIR:-/tmp}/lev-mut.XXXXXX"); trap 'rm -rf "${M:?}"' EXIT
 mkdir -p "$M/scripts/test-infra" "$M/docs/qa"
-cp "$ROOT/docs/qa/live-evidence.doubles.txt" "$M/docs/qa/"
+cp "$ROOT/docs/qa/live-evidence.doubles.txt" "$ROOT/docs/qa/live-evidence.interpreter-options.json" "$M/docs/qa/"
 src=$ROOT/scripts/test-infra/verify_live_evidence.sh
 cp "$src" "$M/scripts/test-infra/control.sh"
 # mutant 1: identity_reasons always empty
@@ -13,11 +13,15 @@ sed '/^def identity_reasons:/,/# END-IDENTITY/c\def identity_reasons: [];' "$src
 # mutant 2: double register ignored
 sed 's/^reg=\$(grep.*$/reg=""/' "$src" > "$M/scripts/test-infra/mut2.sh"
 # mutants 3..: every identity/invalid reason removed one at a time (marker comments "# R:<name>" in the jq program)
-RS="codeload hash_malformed fp_malformed expected_unknown exe_path kind_mismatch fp_missing endpoint_missing runs_below_3 resolve_error answering_missing double cmdline_missing expected_missing identity_mismatch script_missing script_unbound fp_mismatch schema timestamp class verdict skip_reason port runs_missing runs_ident"
+RS="optunknown unsupported scriptcmd fp_type exe_abs cmdline_type script_path_type runs_n_int runs_sig_type codeload hash_malformed fp_malformed expected_unknown exe_path kind_mismatch fp_missing endpoint_missing runs_below_3 resolve_error answering_missing double cmdline_missing expected_missing identity_mismatch script_missing script_unbound fp_mismatch schema timestamp class verdict skip_reason port runs_missing runs_ident"
 for r in $RS; do
   sed "/# R:$r\$/c\\      empty," "$src" > "$M/scripts/test-infra/r_$r.sh"
   cmp -s "$M/scripts/test-infra/r_$r.sh" "$src" && { echo "FAIL: reason mutant $r identical (marker lost)"; exit 1; }
 done
+# interpreter option table shape check removed / table read ignored
+sed '/^jq -e .(.families | type/,/option table malformed/d' "$src" > "$M/scripts/test-infra/r_tblshape.sh"
+sed '/^\[ -r "\$ITBL" \] ||/d' "$src" > "$M/scripts/test-infra/r_tblread.sh"
+for x in tblshape tblread; do cmp -s "$M/scripts/test-infra/r_$x.sh" "$src" && { echo "FAIL: mutant $x identical"; exit 1; }; done
 # register BLIND check removed
 sed '/has no rules/d' "$src" > "$M/scripts/test-infra/r_blind.sh"
 cmp -s "$M/scripts/test-infra/r_blind.sh" "$src" && { echo "FAIL: blind mutant identical"; exit 1; }
@@ -58,7 +62,7 @@ cmp -s "$M/scripts/test-infra/mut1.sh" "$src" && { echo "FAIL: mutant 1 identica
 cmp -s "$M/scripts/test-infra/mut2.sh" "$src" && { echo "FAIL: mutant 2 identical to original"; exit 1; }
 rc=0
 VERIFIER=$M/scripts/test-infra/control.sh "$HERE/test_verify_live_evidence.sh" >/dev/null 2>&1 || { echo "FAIL: control (unmutated copy) must pass"; rc=1; }
-for m in mut1 mut2 r_blind r_rm1 r_rm6 r_rm7 r_pid r_hexanchor r_exactimg r_shaneedle r_normcase r_normprefix r_cmdcase r_imgcase r_imgignored r_scripthash r_sockinterp r_sockcmd r_needle r_case r_bare r_qglob r_tsrange r_hint r_multi r_skip $(for r in $RS; do echo r_$r; done); do
+for m in mut1 mut2 r_tblshape r_tblread r_blind r_rm1 r_rm6 r_rm7 r_pid r_hexanchor r_exactimg r_shaneedle r_normcase r_normprefix r_cmdcase r_imgcase r_imgignored r_scripthash r_sockinterp r_sockcmd r_needle r_case r_bare r_qglob r_tsrange r_hint r_multi r_skip $(for r in $RS; do echo r_$r; done); do
   if VERIFIER=$M/scripts/test-infra/$m.sh "$HERE/test_verify_live_evidence.sh" >/dev/null 2>&1; then echo "FAIL: $m survived (suite did not catch it)"; rc=1; else echo "ok: $m killed"; fi
 done
 exit "$rc"

@@ -403,11 +403,11 @@ func TestScriptOfJarAndEqualsOptions(t *testing.T) {
 	}
 	cases := []c{
 		{"java -jar", "/usr/bin/java", []string{"java", "-jar", jar}, jar, sum(jar)},
-		{"java flags then -jar", "/usr/bin/java", []string{"java", "-Xmx1g", "-Dx=y", "-jar", jar, "arg"}, jar, sum(jar)},
+		{"java flags then -jar", "/usr/bin/java", []string{"java", "-Xmx1g", "-Dserver.port=8080", "-jar", jar, "arg"}, jar, sum(jar)},
 		{"java -jar without argument", "/usr/bin/java", []string{"java", "-jar"}, "", ""},
 		{"java main class is no file", "/usr/bin/java", []string{"java", "-cp", d, "com.example.Main"}, "", ""},
 		{"node --opt=value script", "/usr/bin/node", []string{"node", "--max-old-space-size=4096", js}, js, sum(js)},
-		{"python --opt=value script", "/usr/bin/python3", []string{"python3", "--check-hash-based-pycs=never", py}, py, sum(py)},
+		{"python unlisted --opt=value is ambiguous", "/usr/bin/python3", []string{"python3", "--check-hash-based-pycs=never", py}, "", ""},
 		{"python unknown short option", "/usr/bin/python3", []string{"python3", "-Z", py}, "", ""},
 		{"python -m module", "/usr/bin/python3", []string{"python3", "-m", "http.server"}, "", ""},
 	}

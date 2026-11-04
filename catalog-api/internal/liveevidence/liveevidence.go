@@ -6,6 +6,7 @@ package liveevidence
 
 import (
 	"crypto/sha256"
+	_ "embed"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -14,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -278,92 +280,207 @@ func listenInodes(host string, port int) map[string]bool {
 var interpreterRE = regexp.MustCompile(`(?i)^(python[0-9.]*|pypy[0-9.]*|node|nodejs|deno|bun|java|ruby[0-9.]*|perl[0-9.]*|php[0-9.]*|lua[0-9.]*|bash|sh|dash|zsh|ksh|fish)$`)
 var runtimeLibRE = regexp.MustCompile(`(libpython[0-9.]*|libjvm|libruby[0-9.]*|libperl|libphp[0-9.]*|liblua[0-9.]*|libnode|libv8|/lib-dynload/|/site-packages/|/node_modules/)`)
 
-// interpOpts: per interpreter family, options that take no value and options that take the NEXT argument as value, plus inline-code options.
-// An option that is in none of these tables makes the script ambiguous: the record then carries no script and the verifier reports UNIT.
-type interpOpts struct{ noval, val, inline map[string]bool }
-
-func set(xs ...string) map[string]bool {
-	m := map[string]bool{}
-	for _, x := range xs {
-		m[x] = true
-	}
-	return m
-}
-
-var interpTable = map[string]interpOpts{
-	"python": {set("-u", "-B", "-E", "-s", "-S", "-I", "-O", "-OO", "-v", "-vv", "-b", "-bb", "-q", "-d", "-R", "-x", "-P"), set("-W", "-X"), set("-c", "-m")},
-	"node":   {set("--no-warnings", "--trace-warnings", "--expose-gc", "--enable-source-maps", "--experimental-vm-modules", "--harmony", "--use-strict", "--preserve-symlinks"), set("-r", "--require", "--import", "--loader", "--experimental-loader", "--conditions", "-C", "--input-type", "--title"), set("-e", "-p", "--eval", "--print")},
-	"java":   {set("-server", "-ea", "-da", "-verbose"), set("-cp", "-classpath", "--class-path", "-p", "--module-path"), set()},
-	"ruby":   {set("-w", "-W0", "-W1", "-W2", "-v"), set("-I", "-r"), set("-e")},
-	"perl":   {set("-w", "-W", "-t", "-T", "-l"), set("-I"), set("-e", "-E")},
-	"php":    {set("-q", "-n"), set("-d", "-c"), set("-r")},
-	"lua":    {set("-W", "-i"), set("-l"), set("-e")},
-	"shell":  {set("-x", "-e", "-u", "-v", "-eu", "-ex", "-eux", "-l"), set(), set("-c")},
-}
-
-// codeLoadRE: per family, options that make the interpreter LOAD code other than the named script (preloads, agents, auto-prepend files, -M modules).
-// Such code is never bound by the script hash, so any of them makes the script ambiguous (no script recorded => the verifier reports UNIT).
+// The ALLOW-LIST of interpreter command-line options is DATA shared with the verifier and the Node recorder (docs/qa/live-evidence.interpreter-options.json;
+// interp_options.json here is its embedded copy, byte-parity tested). A "--name=value" token is split on the first "=" BEFORE any lookup; an option that is
+// not listed as benign for the exe family is ambiguous: no script is recorded and the verifier reports UNIT. deno/bun are unsupported (no table).
 // Limit: the same effect through the environment (NODE_OPTIONS, RUBYOPT, PYTHONSTARTUP, JAVA_TOOL_OPTIONS, PHP_INI_SCAN_DIR) is NOT visible in the command line.
-var codeLoadRE = map[string]*regexp.Regexp{
-	"node": regexp.MustCompile(`^(-r|--require|--import|--loader|--experimental-loader)(=.*)?$`),
-	"ruby": regexp.MustCompile(`^-r.*$`),
-	"php":  regexp.MustCompile(`^(-d.*|--define.*)$`),
-	"perl": regexp.MustCompile(`^-[Mm].*$`),
-	"java": regexp.MustCompile(`^-(javaagent|agentlib|agentpath|Xbootclasspath).*$`),
-	"lua":  regexp.MustCompile(`^-l.*$`),
+
+//go:embed interp_options.json
+var interpOptionsJSON []byte
+
+type optEntry struct {
+	Opt    string `json:"opt"`
+	Val    string `json:"val"`
+	Re     string `json:"re"`
+	Ex     string `json:"ex"`
+	Script bool   `json:"script"`
+}
+type famTable struct {
+	Exe              string     `json:"exe"`
+	Benign           []optEntry `json:"benign"`
+	Dangerous        []string   `json:"dangerous"`
+	PositionalScript *bool      `json:"positional_script"`
 }
 
-func interpFamily(base string) string {
-	b := strings.ToLower(base)
-	switch {
-	case strings.HasPrefix(b, "python"), strings.HasPrefix(b, "pypy"):
-		return "python"
-	case b == "node", b == "nodejs":
-		return "node"
-	case b == "bash", b == "sh", b == "dash", b == "zsh", b == "ksh", b == "fish":
-		return "shell"
+// InterpTable is the parsed option table.
+type InterpTable struct {
+	UnsupportedExe string              `json:"unsupported_exe"`
+	Families       map[string]famTable `json:"families"`
+}
+
+// ParseInterpTable parses and shape-checks an option table (an empty or malformed table is an error, never "everything allowed").
+func ParseInterpTable(b []byte) (*InterpTable, error) {
+	var t InterpTable
+	if err := json.Unmarshal(b, &t); err != nil {
+		return nil, err
 	}
-	for _, f := range []string{"java", "ruby", "perl", "php", "lua"} {
-		if strings.HasPrefix(b, f) {
-			return f
+	if len(t.Families) == 0 || t.UnsupportedExe == "" {
+		return nil, errors.New("interpreter option table empty or malformed")
+	}
+	for n, f := range t.Families {
+		if _, err := regexp.Compile("(?i)" + f.Exe); err != nil || f.Exe == "" {
+			return nil, fmt.Errorf("family %s: bad exe regex", n)
 		}
-	}
-	return "" // deno, bun and unknown: no table => nothing is guessed
-}
-
-// scriptOf returns the script file an interpreter process runs. Options are parsed with the per-family tables above; an unknown option, inline code
-// (-c, -e, -m ...) or a non-file first positional (module, main class, subcommand) yields "" so the verifier reports interpreter_script_missing.
-// For java, -jar's argument is the artifact. Relative paths are resolved against the process cwd.
-func scriptOf(pid int, exe string, args []string) (string, string) {
-	fam := interpFamily(filepath.Base(exe))
-	t, ok := interpTable[fam]
-	if !ok {
-		return "", ""
-	}
-	cand := ""
-	for i := 1; i < len(args) && cand == ""; i++ {
-		a := args[i]
-		switch {
-		case t.inline[a]:
-			return "", ""
-		case codeLoadRE[fam] != nil && codeLoadRE[fam].MatchString(a):
-			return "", "" // preload / agent / auto-prepend: code the script hash does not cover
-		case fam == "java" && a == "-jar":
-			if i+1 >= len(args) {
-				return "", ""
+		for _, e := range f.Benign {
+			if e.Opt == "" || (e.Val != "none" && e.Val != "next" && e.Val != "eq" && e.Val != "attached") {
+				return nil, fmt.Errorf("family %s: bad entry %q", n, e.Opt)
 			}
-			cand = args[i+1]
-		case t.val[a]:
-			i++
-		case t.noval[a], strings.HasPrefix(a, "--") && strings.Contains(a, "="):
-		case fam == "java" && (strings.HasPrefix(a, "-X") || strings.HasPrefix(a, "-D")):
-		case strings.HasPrefix(a, "-"):
-			return "", "" // unknown option: ambiguous, never guessed
-		default:
-			cand = a
+			if e.Re != "" {
+				if _, err := regexp.Compile(e.Re); err != nil {
+					return nil, fmt.Errorf("family %s: bad re for %q", n, e.Opt)
+				}
+			}
+			if e.Val == "attached" && e.Re == "" {
+				return nil, fmt.Errorf("family %s: attached %q needs a value regex", n, e.Opt)
+			}
 		}
 	}
-	if cand == "" {
+	return &t, nil
+}
+
+func mustTable(b []byte) *InterpTable {
+	t, err := ParseInterpTable(b)
+	if err != nil {
+		panic("liveevidence: embedded interpreter option table: " + err.Error())
+	}
+	return t
+}
+
+var defaultInterpTable = mustTable(interpOptionsJSON)
+
+var ctlRE = regexp.MustCompile("[\\x00-\\x1f\\x7f]")
+
+func (t *InterpTable) family(base string) *famTable {
+	names := make([]string, 0, len(t.Families))
+	for n := range t.Families {
+		names = append(names, n)
+	}
+	sort.Strings(names)
+	for _, n := range names {
+		f := t.Families[n]
+		if regexp.MustCompile("(?i)" + f.Exe).MatchString(base) {
+			return &f
+		}
+	}
+	return nil
+}
+
+func (f *famTable) danger(tok string) bool {
+	n := tok
+	if strings.HasPrefix(tok, "--") && strings.Contains(tok, "=") {
+		n = strings.SplitN(tok, "=", 2)[0]
+	}
+	for _, d := range f.Dangerous {
+		if strings.HasPrefix(d, "prefix:") {
+			if strings.HasPrefix(tok, strings.TrimPrefix(d, "prefix:")) {
+				return true
+			}
+		} else if d == n {
+			return true
+		}
+	}
+	return false
+}
+
+func reOK(e optEntry, v string) bool { return e.Re == "" || regexp.MustCompile(e.Re).MatchString(v) }
+
+// ParseInterpArgs applies the allow-list to an interpreter's arguments (args[0] is argv0). st is "ok", "codeload", "unknown" or "unsupported";
+// script is the file the interpreter runs ("" when none could be determined: a main class, a subcommand, or an ambiguity).
+func ParseInterpArgs(t *InterpTable, exe string, args []string) (st, script string) {
+	base := filepath.Base(exe)
+	f := t.family(base)
+	if f == nil && regexp.MustCompile("(?i)"+t.UnsupportedExe).MatchString(base) {
+		return "unsupported", ""
+	}
+	fam := &famTable{}
+	if f != nil {
+		fam = f
+	}
+	var toks []string
+	if len(args) > 1 {
+		toks = args[1:]
+	}
+	for i := 0; i < len(toks); {
+		x := toks[i]
+		if ctlRE.MatchString(x) {
+			return "unknown", ""
+		}
+		if !strings.HasPrefix(x, "-") {
+			if fam.PositionalScript != nil && !*fam.PositionalScript {
+				return "ok", ""
+			}
+			return "ok", x
+		}
+		if fam.danger(x) {
+			return "codeload", ""
+		}
+		has := strings.HasPrefix(x, "--") && strings.Contains(x, "=")
+		n, v := x, ""
+		if has {
+			p := strings.SplitN(x, "=", 2)
+			n, v = p[0], p[1]
+		}
+		var e *optEntry
+		for k := range fam.Benign {
+			if fam.Benign[k].Opt == n {
+				e = &fam.Benign[k]
+				break
+			}
+		}
+		if e == nil {
+			ok := false
+			for _, b := range fam.Benign {
+				if b.Val == "attached" && strings.HasPrefix(x, b.Opt) && regexp.MustCompile(b.Re).MatchString(strings.TrimPrefix(x, b.Opt)) {
+					ok = true
+					break
+				}
+			}
+			if !ok {
+				return "unknown", ""
+			}
+			i++
+			continue
+		}
+		switch e.Val {
+		case "none":
+			if has {
+				return "unknown", ""
+			}
+			i++
+		case "eq":
+			if !has || !reOK(*e, v) {
+				return "unknown", ""
+			}
+			i++
+		case "next":
+			if has {
+				if !reOK(*e, v) || e.Script {
+					return "unknown", ""
+				}
+				i++
+			} else if i+1 < len(toks) && !strings.HasPrefix(toks[i+1], "-") && reOK(*e, toks[i+1]) {
+				if e.Script {
+					return "ok", toks[i+1]
+				}
+				i += 2
+			} else {
+				return "unknown", ""
+			}
+		default:
+			return "unknown", ""
+		}
+	}
+	return "ok", ""
+}
+
+// scriptOf returns the script file an interpreter process runs, or "" when the allow-list cannot vouch for the command line (unknown option, inline code,
+// code-loading option, main class, unsupported or renamed interpreter). Relative paths are resolved against the process cwd.
+func scriptOf(pid int, exe string, args []string) (string, string) {
+	if defaultInterpTable.family(filepath.Base(exe)) == nil {
+		return "", "" // renamed / unknown binary: nothing is guessed
+	}
+	st, cand := ParseInterpArgs(defaultInterpTable, exe, args)
+	if st != "ok" || cand == "" {
 		return "", ""
 	}
 	if !filepath.IsAbs(cand) {

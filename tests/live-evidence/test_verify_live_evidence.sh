@@ -117,6 +117,42 @@ expect golden_node_plain 0 LIVE
 expect bad_exe_path_slash 2 INVALID exe_path_malformed
 expect bad_expected_unknown_key 2 INVALID expected_unknown_key
 expect bad_pid_zero 1 UNIT answering_identity_missing
+# round-6: ALLOW-LIST of interpreter options (the table docs/qa/live-evidence.interpreter-options.json); strict types
+expect bad_fp_number 2 INVALID fingerprint_malformed
+expect bad_fp_blank 2 INVALID fingerprint_malformed
+expect bad_exe_relative 2 INVALID exe_path_malformed
+expect bad_exe_nul 2 INVALID exe_path_malformed
+expect bad_cmdline_number 2 INVALID cmdline_malformed
+expect bad_script_path_number 2 INVALID script_path_malformed
+expect bad_runs_n_float 2 INVALID runs_not_identical_or_missing
+expect bad_runs_sig_number 2 INVALID runs_not_identical_or_missing
+expect bad_runs_sig_blank 2 INVALID runs_not_identical_or_missing
+expect bad_script_not_in_cmdline 1 UNIT script_not_in_cmdline
+for f in bad_node_eval_eq bad_node_env_file bad_node_env_file_space bad_node_e bad_java_patch_module bad_php_c_ini bad_python_c bad_python_m bad_option_after_benign; do expect $f 1 UNIT interpreter_code_loading_option; done
+expect bad_unknown_option 1 UNIT interpreter_option_unknown
+expect bad_bun_preload 1 UNIT interpreter_family_unsupported
+expect bad_deno_preload 1 UNIT interpreter_family_unsupported
+expect golden_node_benign_options 0 LIVE
+expect golden_python_benign_options 0 LIVE
+expect golden_script_args_not_options 0 LIVE       # tokens after the script are script arguments, not interpreter options
+# the option table is part of the instrument: unreadable / malformed / empty table is refused (exit 2), never "everything allowed"
+t=$(mktemp)
+o=$(LIVE_EVIDENCE_INTERP_OPTIONS=/nonexistent "$VERIFIER" "$FX/golden_node_plain.json" 2>&1); rc=$?; [ $rc = 2 ] && case $o in *"table unreadable"*) true;; *) false;; esac && ok || no "missing option table must exit 2 (unreadable): $o"
+printf '{}' > "$t"; o=$(LIVE_EVIDENCE_INTERP_OPTIONS=$t "$VERIFIER" "$FX/golden_node_plain.json" 2>&1); rc=$?; [ $rc = 2 ] && case $o in *"malformed/empty"*) true;; *) false;; esac && ok || no "empty option table must exit 2 (malformed): $o"
+printf 'nope' > "$t"; o=$(LIVE_EVIDENCE_INTERP_OPTIONS=$t "$VERIFIER" "$FX/golden_node_plain.json" 2>&1); rc=$?; [ $rc = 2 ] && case $o in *"malformed/empty"*) true;; *) false;; esac && ok || no "unparseable option table must exit 2 (malformed): $o"
+jq '.families.node.benign[0].val = "sideways"' "$ROOT/docs/qa/live-evidence.interpreter-options.json" > "$t"; o=$(LIVE_EVIDENCE_INTERP_OPTIONS=$t "$VERIFIER" "$FX/golden_node_plain.json" 2>&1); rc=$?; [ $rc = 2 ] && case $o in *"malformed/empty"*) true;; *) false;; esac && ok || no "table entry with unknown val must exit 2 (malformed): $o"
+rm -f "${t:?}"
+# synthetic option table: entry shapes the shipped table does not exercise (next-valued long option with a value regex) must be refused by the CODE
+t=$(mktemp); r=$(mktemp)
+jq '.families.node.benign += [{"opt":"--nx","val":"next","re":"^[a-z]+$","ex":"abc"}]' "$ROOT/docs/qa/live-evidence.interpreter-options.json" > "$t"
+for c in "node --nx=abc server.js:0:LIVE" "node --nx=ABC server.js:1:UNIT" "node --nx abc server.js:0:LIVE" "node --nx ABC server.js:1:UNIT" "node --nx -abc server.js:1:UNIT" "node --nx:1:UNIT"; do
+  cmd=${c%%:*}; rest=${c#*:}; want=${rest%%:*}; wc=${rest#*:}
+  jq --arg c "$cmd" '.answering.cmdline = $c' "$FX/golden_node_plain.json" > "$r"
+  o=$(LIVE_EVIDENCE_INTERP_OPTIONS=$t "$VERIFIER" "$r" 2>&1); rc=$?
+  { [ $rc = "$want" ] && case $o in *"class=$wc"*) true;; *) false;; esac; } && ok || no "synthetic table: [$cmd] want exit=$want class=$wc got rc=$rc $o"
+done
+rm -f "${t:?}" "${r:?}"
+"$HERE/test_verifier_binding.sh" "$VERIFIER" >/dev/null 2>&1 && ok || no "verifier binding cases (script binding, java positional, synthetic table) must pass"
 # a sha256: register rule also matches the container IMAGE DIGEST (golden_false_container is LIVE under the default register)
 r=$(mktemp); printf 'sha256:%s\n' "$(jq -r .answering.image_digest "$FX/golden_false_container.json" | sed 's/^sha256://')" > "$r"
 LIVE_EVIDENCE_DOUBLES=$r "$VERIFIER" "$FX/golden_false_container.json" 2>&1 | grep -q registered_double && ok || no "sha256 register rule must match an image digest"

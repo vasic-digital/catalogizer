@@ -5,6 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
 export const SCHEMA = 'catalogizer.live-evidence/1';
 export const SKIP_REASONS = ['hardware_not_present', 'credentials_absent', 'topology_unsupported', 'operator_attended', 'structurally_impossible', 'feature_disabled_by_config', 'artifact_not_yet_built'];
@@ -49,48 +50,60 @@ function procNetListeners(port, host) {
 }
 
 const INTERP = /^(python[0-9.]*|pypy[0-9.]*|node|nodejs|deno|bun|java|ruby[0-9.]*|perl[0-9.]*|php[0-9.]*|lua[0-9.]*|bash|sh|dash|zsh|ksh|fish)$/i;
-const S = (...x) => new Set(x);
-// Per interpreter family: options without value, options taking the NEXT argument, inline-code options. An option in none of them makes the
-// script ambiguous (no script recorded => verifier reports UNIT); deno/bun have no table, so nothing is guessed for them.
-const OPTS = {
-  python: { noval: S('-u', '-B', '-E', '-s', '-S', '-I', '-O', '-OO', '-v', '-vv', '-b', '-bb', '-q', '-d', '-R', '-x', '-P'), val: S('-W', '-X'), inline: S('-c', '-m') },
-  node: { noval: S('--no-warnings', '--trace-warnings', '--expose-gc', '--enable-source-maps', '--experimental-vm-modules', '--harmony', '--use-strict', '--preserve-symlinks'), val: S('-r', '--require', '--import', '--loader', '--experimental-loader', '--conditions', '-C', '--input-type', '--title'), inline: S('-e', '-p', '--eval', '--print') },
-  java: { noval: S('-server', '-ea', '-da', '-verbose'), val: S('-cp', '-classpath', '--class-path', '-p', '--module-path'), inline: S() },
-  ruby: { noval: S('-w', '-W0', '-W1', '-W2', '-v'), val: S('-I', '-r'), inline: S('-e') },
-  perl: { noval: S('-w', '-W', '-t', '-T', '-l'), val: S('-I'), inline: S('-e', '-E') },
-  php: { noval: S('-q', '-n'), val: S('-d', '-c'), inline: S('-r') },
-  lua: { noval: S('-W', '-i'), val: S('-l'), inline: S('-e') },
-  shell: { noval: S('-x', '-e', '-u', '-v', '-eu', '-ex', '-eux', '-l'), val: S(), inline: S('-c') },
-};
-// Options that load code other than the named script (preload, agent, auto-prepend, -M): never covered by the script hash => ambiguous.
+// ALLOW-LIST option parser shared (as DATA) with the verifier and the Go recorder: docs/qa/live-evidence.interpreter-options.json
+// (LIVE_EVIDENCE_INTERP_OPTIONS overrides the path, used by the mutation test). A "--name=value" token is split on the first "=" BEFORE any lookup.
+// Any option not listed as benign for the exe family is ambiguous => no script is recorded => the verifier reports UNIT. deno/bun have no table (unsupported).
 // Limit: NODE_OPTIONS / RUBYOPT / PYTHONSTARTUP / JAVA_TOOL_OPTIONS / PHP_INI_SCAN_DIR are environment, not command line, and are not seen.
-const CODELOAD = {
-  node: /^(-r|--require|--import|--loader|--experimental-loader)(=.*)?$/, ruby: /^-r.*$/, php: /^(-d.*|--define.*)$/,
-  perl: /^-[Mm].*$/, java: /^-(javaagent|agentlib|agentpath|Xbootclasspath).*$/, lua: /^-l.*$/,
-};
-function family(base) {
-  const b = base.toLowerCase();
-  if (b.startsWith('python') || b.startsWith('pypy')) return 'python';
-  if (b === 'node' || b === 'nodejs') return 'node';
-  if (['bash', 'sh', 'dash', 'zsh', 'ksh', 'fish'].includes(b)) return 'shell';
-  return ['java', 'ruby', 'perl', 'php', 'lua'].find((f) => b.startsWith(f)) || '';
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+export function loadInterpTable(p = process.env.LIVE_EVIDENCE_INTERP_OPTIONS || path.join(HERE, '../../docs/qa/live-evidence.interpreter-options.json')) {
+  const t = JSON.parse(fs.readFileSync(p, 'utf8'));
+  if (!t || typeof t.families !== 'object' || !Object.keys(t.families).length || typeof t.unsupported_exe !== 'string') throw new Error(`interpreter option table malformed: ${p}`);
+  return t;
+}
+const TABLE = loadInterpTable();
+const CTL = /[\x00-\x1f\x7f]/;
+function ifam(t, base) { for (const k of Object.keys(t.families).sort()) if (new RegExp(t.families[k].exe, 'i').test(base)) return t.families[k]; return null; }
+function isDanger(f, tok) {
+  const n = tok.startsWith('--') && tok.includes('=') ? tok.split('=')[0] : tok;
+  return (f.dangerous || []).some((d) => (d.startsWith('prefix:') ? tok.startsWith(d.slice(7)) : d === n));
+}
+// -> {st: 'ok'|'codeload'|'unknown'|'unsupported', script}   `toks` are the arguments AFTER argv[0]
+export function parseInterpArgs(exe, args, t = TABLE) {
+  const base = path.basename(exe);
+  const f = ifam(t, base);
+  if (f === null && new RegExp(t.unsupported_exe, 'i').test(base)) return { st: 'unsupported', script: null };
+  const fam = f || {}; const toks = args.slice(1);
+  for (let i = 0; i < toks.length;) {
+    const x = toks[i];
+    if (CTL.test(x)) return { st: 'unknown', script: null };
+    if (!x.startsWith('-')) return { st: 'ok', script: fam.positional_script === false ? null : x };
+    if (isDanger(fam, x)) return { st: 'codeload', script: null };
+    const has = x.startsWith('--') && x.includes('=');
+    const n = has ? x.split('=')[0] : x; const v = has ? x.slice(n.length + 1) : null;
+    const e = (fam.benign || []).find((b) => b.opt === n);
+    const reok = (b, val) => !b.re || new RegExp(b.re).test(val);
+    if (e) {
+      if (e.val === 'none') { if (has) return { st: 'unknown', script: null }; i += 1; }
+      else if (e.val === 'eq') { if (has && reok(e, v)) i += 1; else return { st: 'unknown', script: null }; }
+      else if (e.val === 'next') {
+        if (has) { if (reok(e, v) && !e.script) i += 1; else return { st: 'unknown', script: null }; }
+        else if (i + 1 < toks.length && !toks[i + 1].startsWith('-') && reok(e, toks[i + 1])) {
+          if (e.script) return { st: 'ok', script: toks[i + 1] };
+          i += 2;
+        } else return { st: 'unknown', script: null };
+      } else return { st: 'unknown', script: null };
+    } else {
+      const at = (fam.benign || []).find((b) => b.val === 'attached' && x.startsWith(b.opt) && new RegExp(b.re).test(x.slice(b.opt.length)));
+      if (at) i += 1; else return { st: 'unknown', script: null };
+    }
+  }
+  return { st: 'ok', script: null };
 }
 export function scriptOf(pid, exe, args) {
-  const fam = family(path.basename(exe)); const t = OPTS[fam];
-  if (!t) return null;
-  let cand = null;
-  for (let i = 1; i < args.length && cand === null; i++) {
-    const a = args[i];
-    if (t.inline.has(a)) return null;
-    if (CODELOAD[fam] && CODELOAD[fam].test(a)) return null;
-    if (fam === 'java' && a === '-jar') { if (i + 1 >= args.length) return null; cand = args[i + 1]; }
-    else if (t.val.has(a)) i++;
-    else if (t.noval.has(a) || (a.startsWith('--') && a.includes('='))) continue;
-    else if (fam === 'java' && (a.startsWith('-X') || a.startsWith('-D'))) continue;
-    else if (a.startsWith('-')) return null;
-    else cand = a;
-  }
-  if (cand === null) return null;
+  if (ifam(TABLE, path.basename(exe)) === null) return null; // a renamed / unknown binary: nothing is guessed
+  const r = parseInterpArgs(exe, args);
+  if (r.st !== 'ok' || r.script === null) return null;
+  let cand = r.script;
   try {
     if (!path.isAbsolute(cand)) cand = path.join(fs.readlinkSync(`/proc/${pid}/cwd`), cand);
     return { script_path: cand, script_sha256: sha256File(cand) };

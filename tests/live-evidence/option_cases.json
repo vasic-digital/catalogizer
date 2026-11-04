@@ -1,0 +1,5875 @@
+[
+ {
+  "member": "java:plain",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "ok",
+  "script": "app.jar"
+ },
+ {
+  "member": "java:unknown-short",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Q9",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "java:unknown-long",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--bogus-opt",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "java:unknown-long-eq",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--bogus-opt=1",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "java:control-char-token",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "x\ny",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "java:benign:-server",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-server",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "ok",
+  "script": "app.jar"
+ },
+ {
+  "member": "java:benign:-server:then-danger",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-server",
+   "-cp",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:benign:-ea",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-ea",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "ok",
+  "script": "app.jar"
+ },
+ {
+  "member": "java:benign:-ea:then-danger",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-ea",
+   "-cp",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:benign:-da",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-da",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "ok",
+  "script": "app.jar"
+ },
+ {
+  "member": "java:benign:-da:then-danger",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-da",
+   "-cp",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:benign:-verbose",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-verbose",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "ok",
+  "script": "app.jar"
+ },
+ {
+  "member": "java:benign:-verbose:then-danger",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-verbose",
+   "-cp",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:benign:-XX:+UseG1GC",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-XX:+UseG1GC",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "ok",
+  "script": "app.jar"
+ },
+ {
+  "member": "java:benign:-XX:+UseG1GC:then-danger",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-XX:+UseG1GC",
+   "-cp",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:benign:-XX:+UseSerialGC",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-XX:+UseSerialGC",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "ok",
+  "script": "app.jar"
+ },
+ {
+  "member": "java:benign:-XX:+UseSerialGC:then-danger",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-XX:+UseSerialGC",
+   "-cp",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:benign:-XX:+UseParallelGC",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-XX:+UseParallelGC",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "ok",
+  "script": "app.jar"
+ },
+ {
+  "member": "java:benign:-XX:+UseParallelGC:then-danger",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-XX:+UseParallelGC",
+   "-cp",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:benign:-jar",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "ok",
+  "script": "app.jar"
+ },
+ {
+  "member": "java:benign:-jar:missing-value",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-jar"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "java:benign:-jar:eq-form-refused",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-jar=app.jar"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "java:benign:-Xmx",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Xmx512m",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "ok",
+  "script": "app.jar"
+ },
+ {
+  "member": "java:benign:-Xmx:bad-value",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Xmx!",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "java:benign:-Xms",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Xms128m",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "ok",
+  "script": "app.jar"
+ },
+ {
+  "member": "java:benign:-Xms:bad-value",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Xms!",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "java:benign:-Xss",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Xss1m",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "ok",
+  "script": "app.jar"
+ },
+ {
+  "member": "java:benign:-Xss:bad-value",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Xss!",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "java:benign:-D",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Dserver.port=8080",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "ok",
+  "script": "app.jar"
+ },
+ {
+  "member": "java:benign:-D:bad-value",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-D!",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:-cp",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-cp",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:-cp:no-value",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-cp",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:-classpath",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-classpath",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:-classpath:no-value",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-classpath",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--class-path",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--class-path",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--class-path:no-value",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--class-path",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--class-path:eq-form",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--class-path=x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:-p",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-p",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:-p:no-value",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-p",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--module-path",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--module-path",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--module-path:no-value",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--module-path",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--module-path:eq-form",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--module-path=x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--patch-module",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--patch-module",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--patch-module:no-value",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--patch-module",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--patch-module:eq-form",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--patch-module=x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--add-modules",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--add-modules",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--add-modules:no-value",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--add-modules",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--add-modules:eq-form",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--add-modules=x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--upgrade-module-path",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--upgrade-module-path",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--upgrade-module-path:no-value",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--upgrade-module-path",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--upgrade-module-path:eq-form",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--upgrade-module-path=x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--limit-modules",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--limit-modules",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--limit-modules:no-value",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--limit-modules",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:--limit-modules:eq-form",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--limit-modules=x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-javaagent",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-javaagentx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-javaagent:bare",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-javaagent",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-javaagent:after-value-option",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-server",
+   "-javaagentx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-agentlib",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-agentlibx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-agentlib:bare",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-agentlib",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-agentlib:after-value-option",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-server",
+   "-agentlibx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-agentpath",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-agentpathx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-agentpath:bare",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-agentpath",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-agentpath:after-value-option",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-server",
+   "-agentpathx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Xbootclasspath",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Xbootclasspathx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Xbootclasspath:bare",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Xbootclasspath",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Xbootclasspath:after-value-option",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-server",
+   "-Xbootclasspathx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Xrun",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Xrunx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Xrun:bare",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Xrun",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Xrun:after-value-option",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-server",
+   "-Xrunx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-XX:Flags",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-XX:Flagsx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-XX:Flags:bare",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-XX:Flags",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-XX:Flags:after-value-option",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-server",
+   "-XX:Flagsx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-XX:OnError",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-XX:OnErrorx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-XX:OnError:bare",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-XX:OnError",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-XX:OnError:after-value-option",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-server",
+   "-XX:OnErrorx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-XX:+UnlockDiagnostic",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-XX:+UnlockDiagnosticx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-XX:+UnlockDiagnostic:bare",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-XX:+UnlockDiagnostic",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-XX:+UnlockDiagnostic:after-value-option",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-server",
+   "-XX:+UnlockDiagnosticx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Djava.class.path",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Djava.class.pathx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Djava.class.path:bare",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Djava.class.path",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Djava.class.path:after-value-option",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-server",
+   "-Djava.class.pathx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Djava.system.class.loader",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Djava.system.class.loaderx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Djava.system.class.loader:bare",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Djava.system.class.loader",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Djava.system.class.loader:after-value-option",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-server",
+   "-Djava.system.class.loaderx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Djava.ext.dirs",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Djava.ext.dirsx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Djava.ext.dirs:bare",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Djava.ext.dirs",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Djava.ext.dirs:after-value-option",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-server",
+   "-Djava.ext.dirsx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Xshare:dump",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Xshare:dumpx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Xshare:dump:bare",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Xshare:dump",
+   "x",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:dangerous:prefix:-Xshare:dump:after-value-option",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-server",
+   "-Xshare:dumpx",
+   "-jar",
+   "app.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "java:main-class-is-no-script",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "Main"
+  ],
+  "want": "ok",
+  "script": null
+ },
+ {
+  "member": "lua:plain",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "lua:unknown-short",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-Q9",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "lua:unknown-long",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "--bogus-opt",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "lua:unknown-long-eq",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "--bogus-opt=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "lua:control-char-token",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "x\ny",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "lua:benign:-W",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-W",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "lua:benign:-W:then-danger",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-W",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "lua:benign:-E",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-E",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "lua:benign:-E:then-danger",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-E",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "lua:benign:-v",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-v",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "lua:benign:-v:then-danger",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-v",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "lua:dangerous:-i",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-i",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "lua:dangerous:-i:no-value",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "lua:dangerous:prefix:-l",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-lx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "lua:dangerous:prefix:-l:bare",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-l",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "lua:dangerous:prefix:-l:after-value-option",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-W",
+   "-lx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "lua:dangerous:prefix:-e",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-ex",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "lua:dangerous:prefix:-e:bare",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-e",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "lua:dangerous:prefix:-e:after-value-option",
+  "exe": "/usr/bin/lua",
+  "args": [
+   "lua",
+   "-W",
+   "-ex",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:plain",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:unknown-short",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-Q9",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:unknown-long",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--bogus-opt",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:unknown-long-eq",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--bogus-opt=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:control-char-token",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "x\ny",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--no-warnings",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--no-warnings",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--no-warnings:then-danger",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--no-warnings",
+   "-e",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:benign:--no-warnings:with-value-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--no-warnings=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--trace-warnings",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--trace-warnings",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--trace-warnings:then-danger",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--trace-warnings",
+   "-e",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:benign:--trace-warnings:with-value-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--trace-warnings=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--expose-gc",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--expose-gc",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--expose-gc:then-danger",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--expose-gc",
+   "-e",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:benign:--expose-gc:with-value-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--expose-gc=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--enable-source-maps",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--enable-source-maps",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--enable-source-maps:then-danger",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--enable-source-maps",
+   "-e",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:benign:--enable-source-maps:with-value-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--enable-source-maps=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--use-strict",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--use-strict",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--use-strict:then-danger",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--use-strict",
+   "-e",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:benign:--use-strict:with-value-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--use-strict=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--harmony",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--harmony",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--harmony:then-danger",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--harmony",
+   "-e",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:benign:--harmony:with-value-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--harmony=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--preserve-symlinks",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--preserve-symlinks",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--preserve-symlinks:then-danger",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--preserve-symlinks",
+   "-e",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:benign:--preserve-symlinks:with-value-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--preserve-symlinks=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--no-deprecation",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--no-deprecation",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--no-deprecation:then-danger",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--no-deprecation",
+   "-e",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:benign:--no-deprecation:with-value-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--no-deprecation=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--trace-deprecation",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--trace-deprecation",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--trace-deprecation:then-danger",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--trace-deprecation",
+   "-e",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:benign:--trace-deprecation:with-value-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--trace-deprecation=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--abort-on-uncaught-exception",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--abort-on-uncaught-exception",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--abort-on-uncaught-exception:then-danger",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--abort-on-uncaught-exception",
+   "-e",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:benign:--abort-on-uncaught-exception:with-value-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--abort-on-uncaught-exception=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--experimental-vm-modules",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--experimental-vm-modules",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--experimental-vm-modules:then-danger",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--experimental-vm-modules",
+   "-e",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:benign:--experimental-vm-modules:with-value-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--experimental-vm-modules=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--max-old-space-size",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--max-old-space-size=4096",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--max-old-space-size:space-form-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--max-old-space-size",
+   "4096",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--max-old-space-size:bad-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--max-old-space-size=!",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--max-semi-space-size",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--max-semi-space-size=16",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--max-semi-space-size:space-form-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--max-semi-space-size",
+   "16",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--max-semi-space-size:bad-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--max-semi-space-size=!",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--stack-size",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--stack-size=984",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--stack-size:space-form-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--stack-size",
+   "984",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--stack-size:bad-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--stack-size=!",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--stack-trace-limit",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--stack-trace-limit=50",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--stack-trace-limit:space-form-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--stack-trace-limit",
+   "50",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--stack-trace-limit:bad-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--stack-trace-limit=!",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--title",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--title=svc",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--title:space-form-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--title",
+   "svc",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--title:bad-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--title=!",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--unhandled-rejections",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--unhandled-rejections=strict",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "node:benign:--unhandled-rejections:space-form-refused",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--unhandled-rejections",
+   "strict",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:benign:--unhandled-rejections:bad-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--unhandled-rejections=!",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:-e",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-e",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:-e:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-e",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--eval",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--eval",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--eval:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--eval",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--eval:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--eval=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:-p",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-p",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:-p:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-p",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--print",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--print",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--print:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--print",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--print:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--print=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:-pe",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-pe",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:-pe:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-pe",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:-r",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-r",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:-r:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-r",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--require",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--require",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--require:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--require",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--require:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--require=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--import",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--import",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--import:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--import",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--import:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--import=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--loader",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--loader",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--loader:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--loader",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--loader:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--loader=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--experimental-loader",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--experimental-loader",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--experimental-loader:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--experimental-loader",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--experimental-loader:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--experimental-loader=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--env-file",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--env-file",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--env-file:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--env-file",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--env-file:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--env-file=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--env-file-if-exists",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--env-file-if-exists",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--env-file-if-exists:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--env-file-if-exists",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--env-file-if-exists:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--env-file-if-exists=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:-c",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-c",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:-c:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-c",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--check",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--check",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--check:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--check",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--check:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--check=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:-i",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-i",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:-i:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--interactive",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--interactive",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--interactive:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--interactive",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--interactive:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--interactive=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--test",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--test",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--test:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--test",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--test:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--test=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--watch",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--watch",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--watch:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--watch",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--watch:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--watch=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--run",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--run",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--run:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--run",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--run:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--run=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--input-type",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--input-type",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--input-type:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--input-type",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--input-type:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--input-type=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--conditions",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--conditions",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--conditions:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--conditions",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--conditions:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--conditions=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:-C",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-C",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:-C:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-C",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--openssl-config",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--openssl-config",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--openssl-config:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--openssl-config",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--openssl-config:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--openssl-config=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--snapshot-blob",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--snapshot-blob",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--snapshot-blob:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--snapshot-blob",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--snapshot-blob:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--snapshot-blob=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--build-snapshot",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--build-snapshot",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--build-snapshot:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--build-snapshot",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--build-snapshot:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--build-snapshot=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--inspect-brk",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--inspect-brk",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--inspect-brk:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--inspect-brk",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--inspect-brk:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--inspect-brk=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--cpu-prof-dir",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--cpu-prof-dir",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--cpu-prof-dir:no-value",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--cpu-prof-dir",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "node:dangerous:--cpu-prof-dir:eq-form",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--cpu-prof-dir=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:plain",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "perl:unknown-short",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-Q9",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "perl:unknown-long",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "--bogus-opt",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "perl:unknown-long-eq",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "--bogus-opt=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "perl:control-char-token",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "x\ny",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "perl:benign:-w",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-w",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "perl:benign:-w:then-danger",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-w",
+   "-n",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:benign:-W",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-W",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "perl:benign:-W:then-danger",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-W",
+   "-n",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:benign:-t",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-t",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "perl:benign:-t:then-danger",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-t",
+   "-n",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:benign:-T",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-T",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "perl:benign:-T:then-danger",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-T",
+   "-n",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:benign:-l",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-l",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "perl:benign:-l:then-danger",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-l",
+   "-n",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:-n",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-n",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:-n:no-value",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-n",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:-p",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-p",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:-p:no-value",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-p",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-M",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-Mx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-M:bare",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-M",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-M:after-value-option",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-w",
+   "-Mx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-m",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-mx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-m:bare",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-m",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-m:after-value-option",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-w",
+   "-mx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-I",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-Ix",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-I:bare",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-I",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-I:after-value-option",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-w",
+   "-Ix",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-e",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-ex",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-e:bare",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-e",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-e:after-value-option",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-w",
+   "-ex",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-E",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-Ex",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-E:bare",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-E",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-E:after-value-option",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-w",
+   "-Ex",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-d",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-dx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-d:bare",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-d",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-d:after-value-option",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-w",
+   "-dx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-x",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-xx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-x:bare",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-x",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-x:after-value-option",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-w",
+   "-xx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-i",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-ix",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-i:bare",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-i",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "perl:dangerous:prefix:-i:after-value-option",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-w",
+   "-ix",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:plain",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "php:unknown-short",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-Q9",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "php:unknown-long",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "--bogus-opt",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "php:unknown-long-eq",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "--bogus-opt=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "php:control-char-token",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "x\ny",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "php:benign:-q",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-q",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "php:benign:-q:then-danger",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-q",
+   "--define",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:benign:-n",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-n",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "php:benign:-n:then-danger",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-n",
+   "--define",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:--define",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "--define",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:--define:no-value",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "--define",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:--define:eq-form",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "--define=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:-R",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-R",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:-R:no-value",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-R",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:-B",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-B",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:-B:no-value",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-B",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:-E",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-E",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:-E:no-value",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-E",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:-F",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-F",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:-F:no-value",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-F",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-d",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-dx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-d:bare",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-d",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-d:after-value-option",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-q",
+   "-dx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-c",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-cx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-c:bare",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-c",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-c:after-value-option",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-q",
+   "-cx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-r",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-rx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-r:bare",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-r",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-r:after-value-option",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-q",
+   "-rx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-S",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-Sx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-S:bare",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-S",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-S:after-value-option",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-q",
+   "-Sx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-t",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-tx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-t:bare",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-t",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-t:after-value-option",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-q",
+   "-tx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-f",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-fx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-f:bare",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-f",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-f:after-value-option",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-q",
+   "-fx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-z",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-zx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-z:bare",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-z",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "php:dangerous:prefix:-z:after-value-option",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-q",
+   "-zx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:plain",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:unknown-short",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-Q9",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "python:unknown-long",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "--bogus-opt",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "python:unknown-long-eq",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "--bogus-opt=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "python:control-char-token",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "x\ny",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "python:benign:-u",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-u",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-u:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-u",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-B",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-B",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-B:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-B",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-E",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-E",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-E:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-E",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-s",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-s",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-s:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-s",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-S",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-S",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-S:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-S",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-I",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-I",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-I:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-I",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-O",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-O",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-O:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-O",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-OO",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-OO",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-OO:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-OO",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-v",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-v",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-v:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-v",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-vv",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-vv",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-vv:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-vv",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-b",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-b",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-b:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-b",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-bb",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-bb",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-bb:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-bb",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-q",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-q",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-q:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-q",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-d",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-d",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-d:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-d",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-R",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-R",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-R:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-R",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-x",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-x",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-x:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-x",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-P",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-P",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-P:then-danger",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-P",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:benign:-W",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-W",
+   "ignore::DeprecationWarning",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-W:missing-value",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-W"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "python:benign:-W:bad-value",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-W",
+   "!",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "python:benign:-X",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-X",
+   "utf8",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "python:benign:-X:missing-value",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-X"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "python:benign:-X:bad-value",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-X",
+   "!",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "python:dangerous:-i",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-i",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:dangerous:-i:no-value",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:dangerous:prefix:-c",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-cx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:dangerous:prefix:-c:bare",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-c",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:dangerous:prefix:-c:after-value-option",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-u",
+   "-cx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:dangerous:prefix:-m",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-mx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:dangerous:prefix:-m:bare",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-m",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "python:dangerous:prefix:-m:after-value-option",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-u",
+   "-mx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:plain",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "ruby:unknown-short",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-Q9",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "ruby:unknown-long",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "--bogus-opt",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "ruby:unknown-long-eq",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "--bogus-opt=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "ruby:control-char-token",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "x\ny",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "ruby:benign:-w",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-w",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "ruby:benign:-w:then-danger",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-w",
+   "-S",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:benign:-W0",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-W0",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "ruby:benign:-W0:then-danger",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-W0",
+   "-S",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:benign:-W1",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-W1",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "ruby:benign:-W1:then-danger",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-W1",
+   "-S",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:benign:-W2",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-W2",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "ruby:benign:-W2:then-danger",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-W2",
+   "-S",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:benign:-v",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-v",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "ruby:benign:-v:then-danger",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-v",
+   "-S",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:-S",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-S",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:-S:no-value",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-S",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-e",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-ex",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-e:bare",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-e",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-e:after-value-option",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-w",
+   "-ex",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-r",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-rx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-r:bare",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-r",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-r:after-value-option",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-w",
+   "-rx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-I",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-Ix",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-I:bare",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-I",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-I:after-value-option",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-w",
+   "-Ix",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-x",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-xx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-x:bare",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-x",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-x:after-value-option",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-w",
+   "-xx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-C",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-Cx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-C:bare",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-C",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:prefix:-C:after-value-option",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-w",
+   "-Cx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:--require",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "--require",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:--require:no-value",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "--require",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:--require:eq-form",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "--require=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:--enable",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "--enable",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:--enable:no-value",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "--enable",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:--enable:eq-form",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "--enable=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:--disable",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "--disable",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:--disable:no-value",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "--disable",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:--disable:eq-form",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "--disable=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:--encoding",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "--encoding",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:--encoding:no-value",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "--encoding",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "ruby:dangerous:--encoding:eq-form",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "--encoding=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:plain",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "shell:unknown-short",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-Q9",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "shell:unknown-long",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--bogus-opt",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "shell:unknown-long-eq",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--bogus-opt=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "shell:control-char-token",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "x\ny",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "shell:benign:-x",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-x",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "shell:benign:-x:then-danger",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-x",
+   "--rcfile",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:benign:-e",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-e",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "shell:benign:-e:then-danger",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-e",
+   "--rcfile",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:benign:-u",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-u",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "shell:benign:-u:then-danger",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-u",
+   "--rcfile",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:benign:-v",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-v",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "shell:benign:-v:then-danger",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-v",
+   "--rcfile",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:benign:-eu",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-eu",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "shell:benign:-eu:then-danger",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-eu",
+   "--rcfile",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:benign:-ex",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-ex",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "shell:benign:-ex:then-danger",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-ex",
+   "--rcfile",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:benign:-eux",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-eux",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "shell:benign:-eux:then-danger",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-eux",
+   "--rcfile",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:benign:--norc",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--norc",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "shell:benign:--norc:then-danger",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--norc",
+   "--rcfile",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:benign:--norc:with-value-refused",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--norc=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "shell:benign:--noprofile",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--noprofile",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "shell:benign:--noprofile:then-danger",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--noprofile",
+   "--rcfile",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:benign:--noprofile:with-value-refused",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--noprofile=1",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "shell:benign:-o",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-o",
+   "pipefail",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "shell:benign:-o:missing-value",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-o"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "shell:benign:-o:bad-value",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-o",
+   "!",
+   "server.js"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:--rcfile",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--rcfile",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:--rcfile:no-value",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--rcfile",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:--rcfile:eq-form",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--rcfile=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:--init-file",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--init-file",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:--init-file:no-value",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--init-file",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:--init-file:eq-form",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--init-file=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:-s",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-s",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:-s:no-value",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-s",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:-i",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-i",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:-i:no-value",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-i",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:-l",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-l",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:-l:no-value",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-l",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:--login",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--login",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:--login:no-value",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--login",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:--login:eq-form",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--login=x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:-p",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-p",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:-p:no-value",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-p",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:prefix:-c",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-cx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:prefix:-c:bare",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-c",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:prefix:-c:after-value-option",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-x",
+   "-cx",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:prefix:-O",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-Ox",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:prefix:-O:bare",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-O",
+   "x",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "shell:dangerous:prefix:-O:after-value-option",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-x",
+   "-Ox",
+   "server.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:node-eval-eq-with-spaces",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--eval=require('http').createServer((a, b) => {}).listen(8080)",
+   "real.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:node-env-file-space",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--env-file",
+   "c2.env",
+   "real.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:node-env-file-eq",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--env-file=c2.env",
+   "real.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:node-e",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "-e",
+   "x",
+   "real.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:node-after-benign-option",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--no-warnings",
+   "--max-old-space-size=4096",
+   "--eval=x",
+   "real.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:node-nodejs-name",
+  "exe": "/usr/bin/nodejs",
+  "args": [
+   "nodejs",
+   "--eval=x",
+   "real.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:java-patch-module",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--patch-module=java.base=/tmp/c",
+   "-jar",
+   "real.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:java-add-modules-space",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "--add-modules",
+   "x",
+   "-jar",
+   "real.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:java-unlisted-D",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-Dfoo=bar",
+   "-jar",
+   "real.jar"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "review:java-XX-OnError",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "-XX:OnError=/bin/x",
+   "-jar",
+   "real.jar"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:php-c-ini",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-c",
+   "canned.ini",
+   "real.php"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:php-c-attached",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-ccanned.ini",
+   "real.php"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:php-define-eq",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "--define=auto_prepend_file=x",
+   "real.php"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:php-S-docroot",
+  "exe": "/usr/bin/php",
+  "args": [
+   "php",
+   "-S",
+   "0.0.0.0:8080",
+   "router.php"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:python-c",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-c",
+   "x",
+   "real.py"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:python-m",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-m",
+   "http.server"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:python-cache-prefix-X",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-X",
+   "pycache_prefix=/tmp/c",
+   "real.py"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "review:python-W-dash-value",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-W",
+   "-x",
+   "real.py"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "review:python-version-name",
+  "exe": "/usr/bin/python3.12",
+  "args": [
+   "python3.12",
+   "-c",
+   "x",
+   "real.py"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:ruby-r-exact",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-r",
+   "canned",
+   "real.rb"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:ruby-r-attached",
+  "exe": "/usr/bin/ruby",
+  "args": [
+   "ruby",
+   "-rcanned",
+   "real.rb"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:ruby-versioned-name",
+  "exe": "/usr/bin/ruby3.2",
+  "args": [
+   "ruby3.2",
+   "-rcanned",
+   "real.rb"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:perl-M",
+  "exe": "/usr/bin/perl",
+  "args": [
+   "perl",
+   "-MCanned",
+   "real.pl"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:lua-l",
+  "exe": "/usr/bin/lua5.4",
+  "args": [
+   "lua5.4",
+   "-lcanned",
+   "real.lua"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:bash-rcfile",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "--rcfile",
+   "c.sh",
+   "real.sh"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:bash-c",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "-c",
+   "x"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:bun-preload",
+  "exe": "/usr/bin/bun",
+  "args": [
+   "bun",
+   "--preload",
+   "canned.ts",
+   "real.ts"
+  ],
+  "want": "unsupported",
+  "script": null
+ },
+ {
+  "member": "review:deno-run-preload",
+  "exe": "/usr/bin/deno",
+  "args": [
+   "deno",
+   "run",
+   "--preload=.",
+   "real.ts"
+  ],
+  "want": "unsupported",
+  "script": null
+ },
+ {
+  "member": "review:deno-plain",
+  "exe": "/usr/bin/deno",
+  "args": [
+   "deno",
+   "run",
+   "real.ts"
+  ],
+  "want": "unsupported",
+  "script": null
+ },
+ {
+  "member": "review:renamed-plain",
+  "exe": "/opt/app/server",
+  "args": [
+   "server",
+   "real.py"
+  ],
+  "want": "ok",
+  "script": "real.py"
+ },
+ {
+  "member": "review:renamed-option",
+  "exe": "/opt/app/server",
+  "args": [
+   "server",
+   "-u",
+   "real.py"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "review:renamed-eval",
+  "exe": "/opt/app/server",
+  "args": [
+   "server",
+   "--eval=x",
+   "real.py"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "review:control-plain-node",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "server.js"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ },
+ {
+  "member": "review:control-plain-python",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "/srv/app/server.py",
+   "8080"
+  ],
+  "want": "ok",
+  "script": "/srv/app/server.py"
+ },
+ {
+  "member": "review:control-script-args-not-options",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "server.js",
+   "--eval=x",
+   "-r",
+   "y"
+  ],
+  "want": "ok",
+  "script": "server.js"
+ }
+]
