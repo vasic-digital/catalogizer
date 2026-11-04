@@ -1,0 +1,8 @@
+M1 always render page 1 (-f 1 -l 1)            -> TestD3_ValidPages_DistinctPixels_AndDimensions FAIL (valid rerun; first attempt did not compile and is not counted)
+M2 ErrPDFInvalid mapped to 500                 -> TestD3_MalformedPDFs_Are422_NoInternals FAIL (11 subtests)
+M3 pixel cap disabled                          -> TestD3_OversizedPage_Is413_CountStillWorks FAIL (got 200 instead of 413)
+M4 render temp dir not removed                 -> TestD3_PDFRender_NoTempLeak FAIL
+M5 no absolute path (option injection, -h/-v/-f) -> TestD3_PDFRender_OptionLikeRelativeName FAIL (first attempt with only "-x.pdf" SURVIVED: poppler reads unknown dash words as file names; test strengthened to -h/-v/-f)
+M6 encrypted not classified                    -> TestD3_EncryptedPDF_Is422_Generic FAIL
+M7 handler returns err details                 -> TestD3_Malformed...NoInternals FAIL
+Note: mut_M1 log file holds the failed-compile attempt; the valid M1 rerun output was printed to the session only (FAIL TestD3_ValidPages_DistinctPixels_AndDimensions).

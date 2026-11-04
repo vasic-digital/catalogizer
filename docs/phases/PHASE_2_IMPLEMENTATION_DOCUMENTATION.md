@@ -55,7 +55,7 @@ files, _ := client.ListDirectory("/path")
 - PDF to document formats (via external tools)
 
 **Key Libraries Used**:
-- `github.com/gen2brain/go-fitz` - PDF to image conversion
+- ~~`github.com/gen2brain/go-fitz`~~ (removed 2026-11-04, D3) - PDF to image conversion now uses poppler `pdftoppm` in an isolated child
 - `github.com/ledongthuc/pdf` - PDF text extraction
 
 **Technical Implementation**:
@@ -296,7 +296,7 @@ session, _ := service.StartSync(created.ID, userID)
 
 **New Libraries Integrated**:
 1. **go-fitz** (`github.com/gen2brain/go-fitz`)
-   - **Status 2026-11-03:** removal pending (AGPL; operator decision to keep poppler only). Still imported at `catalog-api/handlers/pdf_pages_handler.go:19`; see `docs/UPGRADE_NOTES.md`.
+   - **Status 2026-11-04:** REMOVED (AGPL; operator decision to keep poppler only); see `docs/UPGRADE_NOTES.md`. The notes below are historical.
    - PDF to image conversion
    - Multi-format support (PNG, JPEG, etc.)
    - DPI and quality controls

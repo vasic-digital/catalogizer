@@ -7,7 +7,7 @@ Behaviour changes an operator must know about when upgrading. Newest first.
 - **Collection sharing is not available.** The server has no `/collections/:id/share*` routes, so the web UI's Create Share Link, Send Invitations, QR Code and Copy Embed Code controls are disabled with a stated reason (`catalog-web/src/components/collections/CollectionSharing.tsx`, `SHARE_API_AVAILABLE`).
 - **Smart playlists and smart collections are available** (see `docs/guides/SMART_COLLECTIONS_GUIDE.md`); they replace the former 501.
 - **Conversion tools are part of the API image.** `ffmpeg` and `imagemagick` are installed in the runtime image; see `docs/deployment/DOCKER_SETUP.md`.
-- **go-fitz (AGPL) removal is pending.** The operator decision of 2026-11-03 is to keep poppler only and drop `github.com/gen2brain/go-fitz` (MuPDF, AGPL). It is still imported (`catalog-api/handlers/pdf_pages_handler.go:19`, `catalog-api/go.mod:84`), so the removal has not happened yet; track it in `docs/FOLLOW_UPS_NEXT_PHASE.md`.
+- **go-fitz (AGPL, MuPDF) is removed (D3, 2026-11-04, PROVISIONAL-DONE).** Per the operator decision of 2026-11-03 the dependency is gone from `catalog-api/go.mod`, `go.sum` and the code; PDF page count and page rendering use poppler (`pdfinfo`, `pdftoppm`) as isolated child processes (`catalog-api/services/pdf_page_render.go`), so `poppler-utils` (and `prlimit` from util-linux) must be installed on the API host. No MuPDF code remains in the binary, so there is nothing AGPL-licensed left to attribute. Live re-run owed: see `docs/FOLLOW_UPS_NEXT_PHASE.md` (D3 section).
 
 ---
 

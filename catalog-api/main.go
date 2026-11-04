@@ -825,7 +825,7 @@ func main() {
 	// clients (e.g. the Android TV book reader). Resolves the entity's PDF
 	// file over its storage protocol via the same MediaFileRepository +
 	// ClientFactory the comic handler uses, then rasterises one page at a
-	// time with MuPDF (go-fitz).
+	// time with poppler (isolated pdfinfo/pdftoppm child processes).
 	pdfPagesHandler := root_handlers.NewPdfPagesHandler(mediaFileRepo, databaseDB, clientFactory)
 
 	// Media entity handler for structured media browsing

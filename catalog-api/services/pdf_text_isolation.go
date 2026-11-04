@@ -97,6 +97,7 @@ type pdfLimits struct {
 	addressSpace uint64   // RLIMIT_AS in bytes; 0 means not set
 	dataSpace    uint64   // RLIMIT_DATA in bytes; 0 means not set
 	cpuSeconds   int      // RLIMIT_CPU
+	fileSize     uint64   // RLIMIT_FSIZE in bytes (largest file the tool may write); 0 means none (--fsize=0)
 	env          []string // extra environment of the tool (after the allowlisted base)
 	marker       string   // when set, stderr of a successful start begins with it (see child)
 }
@@ -179,7 +180,7 @@ func runLimited(ctx context.Context, bin string, args []string, lim pdfLimits, o
 	if lim.dataSpace > 0 {
 		full = append(full, "--data="+strconv.FormatUint(lim.dataSpace, 10))
 	}
-	full = append(full, "--cpu="+strconv.Itoa(lim.cpuSeconds), "--core=0", "--fsize=0", "--", bin)
+	full = append(full, "--cpu="+strconv.Itoa(lim.cpuSeconds), "--core=0", "--fsize="+strconv.FormatUint(lim.fileSize, 10), "--", bin)
 	full = append(full, args...)
 	inner, cancel := context.WithCancel(ctx)
 	defer cancel()

@@ -26,7 +26,7 @@ The conversion service API implementation for the Catalogizer project is **100% 
 - **Audio Conversion**: FFmpeg with bitrate and codec support
 - **Document Conversion**: 
   - Ebook conversion via Calibre (ebook-convert)
-  - PDF to images via go-fitz library (JPG/PNG/BMP/TIFF/GIF)
+  - PDF to images via poppler pdftoppm (isolated child; go-fitz removed 2026-11-04) (JPG/PNG/BMP/TIFF/GIF)
   - PDF to text extraction
   - PDF to HTML conversion (pandoc/LibreOffice fallback)
 - **Image Conversion**: ImageMagick integration with resize/compression options
@@ -119,7 +119,7 @@ GET    /api/v1/conversion/formats --> GetSupportedFormats
 
 - **FFmpeg**: Video/audio conversion (install on production server)
 - **ImageMagick**: Image conversion (v7.1.2-3 verified installed)
-- **go-fitz**: PDF to image rendering
+- **poppler (pdfinfo, pdftoppm)**: PDF to image rendering (replaced go-fitz, 2026-11-04)
 - **Calibre**: Ebook conversion (ebook-convert)
 - **pandoc/LibreOffice**: PDF to HTML conversion
 

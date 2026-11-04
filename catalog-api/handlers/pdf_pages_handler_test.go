@@ -25,7 +25,7 @@ import (
 
 // makePDF builds a syntactically valid, multi-page PDF entirely in Go,
 // with a correct cross-reference table (byte offsets computed from the
-// growing buffer) so MuPDF (go-fitz) opens it WITHOUT relying on its
+// growing buffer) so poppler opens it WITHOUT relying on its
 // repair/reconstruction fallback. Each page carries a tiny content
 // stream (a stroked rectangle) so every page is genuinely renderable —
 // a blank-page guess (§11.4.6) is avoided. Returns the PDF bytes.
