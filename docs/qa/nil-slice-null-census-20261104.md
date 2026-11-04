@@ -29,7 +29,7 @@ Defect class (§11.4.276(C)): a Go nil slice or map is written by `encoding/json
 | GET /stats/scans | `data.scans` | `stats_repository.GetScanHistory` | repository |
 | GET /configuration, /admin/config | `sections` | `ConfigurationServiceAdapter.GetConfigurationSchema` returned an empty struct (stub) | adapter delegates to the real service (nil inner: `Sections: []`) |
 | GET /recommendations/similar/{id} | `local_items` | `findLocalSimilarItems` nil | normalised in `GetSimilarItems` |
-| GET /logs/collections/{id}/analyze | `insights` | `generateInsights` `var` | initialised |
+| GET /logs/collections/{id}/analyze | `insights` | `generateInsights` `var`, and the empty-collection early return left the struct-literal field nil (found by the first GREEN attempt: the AST guard cannot see struct-literal omissions) | both initialised |
 | GET,PUT /roles/{id}, GET,PUT /users/{id} | `permissions`, `role.permissions` | `models.Permissions` nil / stored `null` | `Permissions.MarshalJSON` renders nil as `[]` (also fixes every other Role/User response and the stored JSON) |
 | POST /logs/collections/{id}/export | whole body | `GetLogEntries` nil then `json.MarshalIndent(nil)` | repository + defensive guard in `ExportLogs` |
 | GET /analytics/system | `geographic_distribution.locations` | `GetGeographicData` `var locations` | initialised (map element type, hand edit) |
@@ -72,6 +72,9 @@ Favorites `Tags` (`*[]string`): a stored JSON `null` now yields `[]`.
 `DetectDuplicates`, `GetSupportedLanguages`, `SearchLyrics`, `GetConcertLyrics`, `GetContinueWatching`, `GetBookmarks` (x2),
 `GetUserPlaylists`, `GetPlaylistItems`, `GetHighlights`, `GetRenameEvents`, `GetHosts`, `ListDirectory`, `BrowseShare`,
 `LoadSMBIdentitiesFromEnv`, `SearchSubtitles`, `GetSubtitles`, `GetWatchHistory`.
+
+Residual risk, stated: a slice field omitted from a struct literal (never a `var`) is invisible to the AST guard; only the live sweep
+(`nilListKeys`) detects it on operations it reaches.
 
 ### Scoped out (not fixed, with reason)
 

@@ -376,6 +376,7 @@ func (s *LogManagementService) AnalyzeLogs(collectionID int, userID int) (*model
 		EntriesByComponent: make(map[string]int),
 		ErrorPatterns:      make(map[string]int),
 		TimeRange:          &models.TimeRange{},
+		Insights:           []string{}, // the empty-collection early return below must not serialise insights as null
 	}
 
 	if len(entries) == 0 {
