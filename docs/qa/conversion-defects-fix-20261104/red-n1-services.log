@@ -1,0 +1,64 @@
+--- FAIL: TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs (0.00s)
+    conversion_d1_test.go:60: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:60
+        	Error:      	"'<path>/My: Movies/x.mp4' broke" should not contain "My"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "'/srv/My: Movies/x.mp4' broke" -> "'<path>/My: Movies/x.mp4' broke"
+    conversion_d1_test.go:60: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:60
+        	Error:      	"'<path>/My: Movies/x.mp4' broke" should not contain "Movies"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "'/srv/My: Movies/x.mp4' broke" -> "'<path>/My: Movies/x.mp4' broke"
+    conversion_d1_test.go:60: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:60
+        	Error:      	"a,/srv/hidden/dir/x.mp4" should not contain "hidden"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "a,/srv/hidden/dir/x.mp4" -> "a,/srv/hidden/dir/x.mp4"
+    conversion_d1_test.go:60: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:60
+        	Error:      	"a,/srv/hidden/dir/x.mp4" should not contain "/srv"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "a,/srv/hidden/dir/x.mp4" -> "a,/srv/hidden/dir/x.mp4"
+    conversion_d1_test.go:60: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:60
+        	Error:      	"open \"<path>/My: Movies/x.mp4\" broke" should not contain "My"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "open \"/srv/My: Movies/x.mp4\" broke" -> "open \"<path>/My: Movies/x.mp4\" broke"
+    conversion_d1_test.go:60: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:60
+        	Error:      	"open \"<path>/My: Movies/x.mp4\" broke" should not contain "Movies"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "open \"/srv/My: Movies/x.mp4\" broke" -> "open \"<path>/My: Movies/x.mp4\" broke"
+    conversion_d1_test.go:60: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:60
+        	Error:      	"failed:/srv/hidden/dir/x.mp4" should not contain "hidden"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "failed:/srv/hidden/dir/x.mp4" -> "failed:/srv/hidden/dir/x.mp4"
+    conversion_d1_test.go:60: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:60
+        	Error:      	"failed:/srv/hidden/dir/x.mp4" should not contain "/srv"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "failed:/srv/hidden/dir/x.mp4" -> "failed:/srv/hidden/dir/x.mp4"
+    conversion_d1_test.go:60: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:60
+        	Error:      	"failed:/srv/hidden/dir/x.mp4" should not contain "dir"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "failed:/srv/hidden/dir/x.mp4" -> "failed:/srv/hidden/dir/x.mp4"
+    conversion_d1_test.go:60: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:60
+        	Error:      	"failed:/srv/hidden/dir/x.mp4: Invalid data" should not contain "hidden"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "failed:/srv/hidden/dir/x.mp4: Invalid data" -> "failed:/srv/hidden/dir/x.mp4: Invalid data"
+    conversion_d1_test.go:60: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:60
+        	Error:      	"failed:/srv/hidden/dir/x.mp4: Invalid data" should not contain "/srv"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "failed:/srv/hidden/dir/x.mp4: Invalid data" -> "failed:/srv/hidden/dir/x.mp4: Invalid data"
+    conversion_d1_test.go:60: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:60
+        	Error:      	"failed:/srv/hidden/dir/x.mp4: Invalid data" should not contain "dir"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "failed:/srv/hidden/dir/x.mp4: Invalid data" -> "failed:/srv/hidden/dir/x.mp4: Invalid data"
+FAIL
+FAIL	catalogizer/services	0.034s
+FAIL

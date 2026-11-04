@@ -903,7 +903,7 @@ const conversionPathBody = `(?:file://)?/[^/'"` + "`" + `<>|\r\n][^'"` + "`" + `
 
 var (
 	conversionQuotedPathRE = regexp.MustCompile("(['\"`])(" + conversionPathBody + ")(['\"`])")
-	conversionPathRE       = regexp.MustCompile("(^|[\\s=(\\[,;:])((?:file://)?/[^/'\"`<>|\\s][^'\"`<>|;\\r\\n:]*(?::[^\\s'\"`<>|;\\r\\n][^'\"`<>|;\\r\\n:]*)*|[A-Za-z]:[\\\\/][^'\"`<>|;\\r\\n]*)")
+	conversionPathRE       = regexp.MustCompile("(^|[\\s=(\\[,;:'\"`])((?:file://)?/[^/'\"`<>|\\s][^'\"`<>|;\\r\\n:]*(?::[^\\s'\"`<>|;\\r\\n][^'\"`<>|;\\r\\n:]*)*|[A-Za-z]:[\\\\/][^'\"`<>|;\\r\\n]*)")
 )
 
 func pathBase(p string) string {

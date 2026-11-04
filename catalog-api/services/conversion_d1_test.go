@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"catalogizer/models"
@@ -48,6 +49,10 @@ func TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs(t *testing.T) {
 		`(/srv/hidden/dir/x.mp4)`:                                                         {"hidden", "/srv"},
 		`[/srv/hidden/dir/x.mp4]`:                                                         {"hidden", "/srv"},
 		`a,/srv/hidden/dir/x.mp4`:                                                         {"hidden", "/srv"},
+		`unterminated '/srv/secret/dir/x.mp4 no close`:                                    {"secret", "/srv", "dir"},
+		`x "/srv/secret dir/x.mp4`:                                                        {"secret", "/srv", "dir"},
+		"cut `/srv/secret dir/clients/acme.mp":                                            {"secret", "/srv", "clients"},
+		"tool said " + strings.Repeat("e", 2000) + " '/srv/secret/dir/ac":                 {"secret", "/srv"},
 		`ffmpeg failed on /srv/media/Secret Project/clients/acme.mp4: Invalid data`:       {"Secret Project", "clients", "/srv"},
 		`open "/srv/media/Secret Project/clients/acme.mp4": denied`:                       {"Secret Project", "clients", "/srv"},
 		`cannot read C:\Users\Jane Doe\Private Docs\a.pdf: denied`:                        {"Jane Doe", "Private Docs", "Users"},

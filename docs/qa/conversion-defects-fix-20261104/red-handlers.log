@@ -1,0 +1,49 @@
+--- FAIL: TestD2_DeleteOwnerOnlyAndConfinedFileRemoval (0.25s)
+    conversion_d1_d2_realstack_test.go:149: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/handlers/conversion_d1_d2_realstack_test.go:149
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 403
+        	Test:       	TestD2_DeleteOwnerOnlyAndConfinedFileRemoval
+        	Messages:   	foreign job ids answer 404 like unknown ones
+--- FAIL: TestRev_F1_InRootSymlinkTargetLeavesVictimIntact (0.13s)
+    conversion_d1_d2_realstack_test.go:207: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/handlers/conversion_d1_d2_realstack_test.go:207
+        	Error:      	Received unexpected error:
+        	            	open /home/milosvasic/.cache/claude-tmp/TestRev_F1_InRootSymlinkTargetLeavesVictimIntact3682177330/001/victim.jpg: no such file or directory
+        	Test:       	TestRev_F1_InRootSymlinkTargetLeavesVictimIntact
+        	Messages:   	the symlink's victim inside the roots must survive
+--- FAIL: TestConversionRealStack_OwnershipIsolation (0.25s)
+    conversion_realstack_test.go:316: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/handlers/conversion_realstack_test.go:316
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 403
+        	Test:       	TestConversionRealStack_OwnershipIsolation
+    conversion_realstack_test.go:317: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/handlers/conversion_realstack_test.go:317
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 403
+        	Test:       	TestConversionRealStack_OwnershipIsolation
+    conversion_realstack_test.go:318: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/handlers/conversion_realstack_test.go:318
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 403
+        	Test:       	TestConversionRealStack_OwnershipIsolation
+    conversion_realstack_test.go:319: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/handlers/conversion_realstack_test.go:319
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 403
+        	Test:       	TestConversionRealStack_OwnershipIsolation
+    conversion_realstack_test.go:320: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/handlers/conversion_realstack_test.go:320
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 403
+        	Test:       	TestConversionRealStack_OwnershipIsolation
+FAIL
+FAIL	catalogizer/handlers	1.839s
+FAIL
