@@ -1,0 +1,9 @@
+--- FAIL: TestResolveMediaFile_OnlyLocalRootsAndConfined (0.00s)
+--- FAIL: TestFFmpegArgs_NoPipeProtocolFilePrefixedNicedAndSingleThread (0.00s)
+--- FAIL: TestVerifySync_ConcurrencyLimitFailsFastAndDedupesAndCaches (10.01s)
+--- FAIL: TestDeleteSubtitle_InvalidatesTranslationCacheAndTranslateChecksExistenceFirst (0.00s)
+--- FAIL: TestDeleteSubtitle_NonOwnerIsNotFoundNotForbidden (0.00s)
+--- FAIL: TestSyncReason_NoZeroOfNCuesWording (0.00s)
+FAIL
+FAIL	catalogizer/internal/services	10.152s
+FAIL

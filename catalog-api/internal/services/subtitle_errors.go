@@ -15,4 +15,6 @@ var (
 	ErrNoTranslationProvider = errors.New("no translation provider configured")
 	// ErrSubtitleForbidden means the caller may not modify that subtitle.
 	ErrSubtitleForbidden = errors.New("subtitle modification forbidden")
+	// ErrSyncBusy means the bounded media-analysis capacity is in use; the caller should retry shortly.
+	ErrSyncBusy = errors.New("synchronization analysis busy")
 )

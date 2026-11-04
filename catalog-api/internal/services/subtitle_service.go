@@ -20,6 +20,7 @@ import (
 	"catalogizer/database"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/singleflight"
 )
 
 // CacheServiceInterface defines the interface for cache operations needed by SubtitleService
@@ -39,6 +40,14 @@ type SubtitleService struct {
 	cacheDir           string
 	wg                 sync.WaitGroup // Tracks running goroutines for graceful shutdown
 	shutdown           chan struct{}  // Signals goroutines to stop
+
+	// bounded media analysis (verify-sync): slot semaphore, shared in-flight work, short result cache
+	syncMu       sync.Mutex
+	syncSem      chan struct{}
+	syncFlight   singleflight.Group
+	syncCache    map[string]syncCacheEntry
+	analysisRuns atomic.Int64
+	analysisHook func() // test seam: called inside an acquired analysis slot
 }
 
 // SubtitleProvider represents different subtitle providers
@@ -334,20 +343,20 @@ func (s *SubtitleService) TranslateSubtitle(ctx context.Context, request *Subtit
 		zap.String("subtitle_id", request.SubtitleID),
 		zap.String("target_language", request.TargetLanguage))
 
-	// Check cache first
-	if request.UseCache {
-		if cached := s.getCachedTranslation(ctx, request.SubtitleID, request.TargetLanguage); cached != nil {
-			return cached, nil
-		}
-	}
-
-	// Get original subtitle
+	// The subtitle must exist before anything is served from the cache (a deleted subtitle's
+	// translations must not outlive it).
 	original, err := s.getSubtitleTrack(ctx, request.SubtitleID)
 	if err != nil {
 		if errors.Is(err, ErrSubtitleNotFound) {
 			return nil, err
 		}
 		return nil, fmt.Errorf("failed to get original subtitle: %w", err)
+	}
+
+	if request.UseCache {
+		if cached := s.getCachedTranslation(ctx, request.SubtitleID, request.TargetLanguage); cached != nil {
+			return cached, nil
+		}
 	}
 
 	// Without a configured provider nothing can be translated: say so before doing any work.
@@ -1166,6 +1175,9 @@ func (s *SubtitleService) saveCachedTranslation(ctx context.Context, subtitleID,
 	ttl := 30 * 24 * time.Hour
 
 	err := s.cacheService.Set(ctx, cacheKey, track, ttl)
+	if err == nil {
+		err = s.addTranslationIndex(ctx, subtitleID, targetLanguage, ttl)
+	}
 	if err != nil {
 		s.logger.Error("Failed to save cached translation",
 			zap.String("subtitle_id", subtitleID),
@@ -1396,9 +1408,9 @@ func (s *SubtitleService) GetSubtitleTrackForMedia(ctx context.Context, subtitle
 	return s.getSubtitleTrack(ctx, subtitleID)
 }
 
-// DeleteSubtitle removes a subtitle track. The uploader and administrators may delete; a track with
-// no recorded uploader (legacy or downloaded) is administrator-only. Returns ErrSubtitleNotFound or
-// ErrSubtitleForbidden.
+// DeleteSubtitle removes a subtitle track and invalidates its cached translations. The uploader and
+// administrators may delete; a track with no recorded uploader (legacy or downloaded) is
+// administrator-only. Anyone else gets ErrSubtitleNotFound (the id's existence is not disclosed).
 func (s *SubtitleService) DeleteSubtitle(ctx context.Context, subtitleID string, userID int64, isAdmin bool) error {
 	var uploader sql.NullInt64
 	err := s.db.QueryRowContext(ctx, `SELECT uploaded_by FROM subtitle_tracks WHERE id = ?`, subtitleID).Scan(&uploader)
@@ -1409,7 +1421,8 @@ func (s *SubtitleService) DeleteSubtitle(ctx context.Context, subtitleID string,
 		return fmt.Errorf("look up subtitle: %w", err)
 	}
 	if !isAdmin && !(uploader.Valid && userID > 0 && uploader.Int64 == userID) {
-		return ErrSubtitleForbidden
+		// not the uploader, not an administrator: indistinguishable from a missing id
+		return ErrSubtitleNotFound
 	}
 	res, err := s.db.ExecContext(ctx, `DELETE FROM subtitle_tracks WHERE id = ?`, subtitleID)
 	if err != nil {
@@ -1418,5 +1431,52 @@ func (s *SubtitleService) DeleteSubtitle(ctx context.Context, subtitleID string,
 	if n, _ := res.RowsAffected(); n == 0 {
 		return ErrSubtitleNotFound
 	}
+	s.invalidateTranslations(ctx, subtitleID)
 	return nil
+}
+
+// translationIndexKey is the cache key of the list of target languages cached for a subtitle, so a
+// delete can invalidate every translation of it (the target language is free text).
+func translationIndexKey(subtitleID string) string {
+	return fmt.Sprintf("subtitle_translation_index:%s", subtitleID)
+}
+
+func (s *SubtitleService) addTranslationIndex(ctx context.Context, subtitleID, targetLanguage string, ttl time.Duration) error {
+	var langs []string
+	if _, err := s.cacheService.Get(ctx, translationIndexKey(subtitleID), &langs); err != nil {
+		langs = nil
+	}
+	for _, l := range langs {
+		if l == targetLanguage {
+			return nil
+		}
+	}
+	return s.cacheService.Set(ctx, translationIndexKey(subtitleID), append(langs, targetLanguage), ttl)
+}
+
+// invalidateTranslations removes every cached translation of a subtitle (best effort, logged).
+func (s *SubtitleService) invalidateTranslations(ctx context.Context, subtitleID string) {
+	if s.cacheService == nil {
+		return
+	}
+	del := func(key string) {
+		if d, ok := s.cacheService.(interface {
+			Delete(context.Context, string) error
+		}); ok {
+			if err := d.Delete(ctx, key); err != nil {
+				s.logger.Warn("Failed to invalidate cached translation", zap.String("key", key), zap.Error(err))
+			}
+			return
+		}
+		// no delete support: expire the entry immediately
+		_ = s.cacheService.Set(ctx, key, nil, time.Nanosecond)
+	}
+	var langs []string
+	if _, err := s.cacheService.Get(ctx, translationIndexKey(subtitleID), &langs); err != nil {
+		langs = nil
+	}
+	for _, l := range langs {
+		del(fmt.Sprintf("subtitle_translation:%s:%s", subtitleID, l))
+	}
+	del(translationIndexKey(subtitleID))
 }

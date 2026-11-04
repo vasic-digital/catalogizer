@@ -50,9 +50,14 @@ type subHarness struct {
 	svc    *services.SubtitleService
 	h      *SubtitleHandler
 	dbExec func(q string, args ...interface{})
-	media  int64 // files id of the real generated media
-	ghost  int64 // files id whose file does not exist on disk
-	dir    string
+	// addFile inserts a files row (storage root id, path, name) and returns its id.
+	addFile func(rootID int64, path, name string) int64
+	// addRoot inserts a storage root and returns its id.
+	addRoot func(protocol, path string) int64
+	rootID  int64
+	media   int64 // files id of the real generated media
+	ghost   int64 // files id whose file does not exist on disk
+	dir     string
 }
 
 // genMedia makes a real 60 s audio+video file whose audio is a tone gated by subBursts.
@@ -157,8 +162,27 @@ func newSubHarness(t *testing.T) *subHarness {
 		}
 		c.Next()
 	})
-	registerSubtitleRoutes(r.Group("/api/v1"), h)
-	return &subHarness{t: t, r: r, svc: svc, h: h, media: mediaID, ghost: ghostID, dir: dir,
+	// the REAL production route table (the same function main.go calls), with an admin gate that
+	// behaves like RequireAdmin(): user 1 is the administrator in this harness
+	adminGate := func(c *gin.Context) {
+		if v, _ := c.Get("user_id"); v != 1 {
+			c.AbortWithStatusJSON(403, gin.H{"success": false, "code": "FORBIDDEN"})
+			return
+		}
+		c.Next()
+	}
+	RegisterSubtitleRoutes(r.Group("/api/v1"), func() *SubtitleHandler { return h }, adminGate)
+	return &subHarness{t: t, r: r, svc: svc, h: h, media: mediaID, ghost: ghostID, dir: dir, rootID: rootID,
+		addFile: func(rid int64, path, name string) int64 {
+			id, err := db.InsertReturningID(ctx, `INSERT INTO files (storage_root_id, path, name, size, modified_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`, rid, path, name, 1)
+			require.NoError(t, err)
+			return id
+		},
+		addRoot: func(protocol, path string) int64 {
+			id, err := db.InsertReturningID(ctx, `INSERT INTO storage_roots (name, protocol, path) VALUES (?,?,?)`, protocol+path, protocol, path)
+			require.NoError(t, err)
+			return id
+		},
 		dbExec: func(q string, args ...interface{}) {
 			_, err := db.ExecContext(ctx, q, args...)
 			require.NoError(t, err)
@@ -220,7 +244,7 @@ func TestSubtitleD5_VerifySyncMeasuresRealOffset(t *testing.T) {
 	}{
 		{"srt in sync", "a.srt", srtShifted(0), 0, true},
 		{"srt late +7s", "b.srt", srtShifted(7), 7000, false},
-		{"vtt early -3s", "c.vtt", vttShifted(-1.5), -1500, false},
+		{"vtt early -1.5s", "c.vtt", vttShifted(-1.5), -1500, false},
 		{"ass late +7s", "d.ass", assShifted(7), 7000, false},
 		{"vtt in sync", "e.vtt", vttShifted(0), 0, true},
 		{"ass in sync", "f.ass", assShifted(0), 0, true},
@@ -369,8 +393,8 @@ func TestSubtitleDelete_OwnerAdminAndAuthz(t *testing.T) {
 	code, _, raw := h.do("DELETE", "/api/v1/subtitles/"+a, "", nil, "")
 	assert.Equal(t, 401, code, raw)
 	code, js, raw := h.do("DELETE", "/api/v1/subtitles/"+a, "3", nil, "")
-	assert.Equal(t, 403, code, "another non-admin user must not delete: %s", raw)
-	assert.Equal(t, "FORBIDDEN", js["code"], raw)
+	assert.Equal(t, 404, code, "another non-admin user must not delete and must not learn the id exists: %s", raw)
+	assert.Equal(t, "SUBTITLE_NOT_FOUND", js["code"], raw)
 	assert.Equal(t, 2, listLen())
 
 	code, _, raw = h.do("DELETE", "/api/v1/subtitles/"+a, "2", nil, "")
@@ -392,20 +416,9 @@ func TestSubtitleDelete_OwnerAdminAndAuthz(t *testing.T) {
 	_, js, _ = h.do("GET", fmt.Sprintf("/api/v1/subtitles/media/%d", h.media), "2", nil, "")
 	legacy := fmt.Sprint(js["subtitles"].([]interface{})[0].(map[string]interface{})["id"])
 	code, _, raw = h.do("DELETE", "/api/v1/subtitles/"+legacy, "2", nil, "")
-	assert.Equal(t, 403, code, raw)
+	assert.Equal(t, 404, code, raw)
 	code, _, raw = h.do("DELETE", "/api/v1/subtitles/"+legacy, "1", nil, "")
 	assert.Equal(t, 204, code, raw)
-}
-
-// registerSubtitleRoutes mirrors the production subtitle route table (main.go) without the admin gate,
-// which is exercised separately; the handler-level authz (owner/admin) is what these tests cover.
-func registerSubtitleRoutes(g *gin.RouterGroup, h *SubtitleHandler) {
-	sub := g.Group("/subtitles")
-	sub.GET("/media/:media_id", h.GetSubtitles)
-	sub.GET("/:subtitle_id/verify-sync/:media_id", h.VerifySubtitleSync)
-	sub.POST("/translate", h.TranslateSubtitle)
-	sub.POST("/upload", h.UploadSubtitle)
-	sub.DELETE("/:subtitle_id", h.DeleteSubtitle)
 }
 
 func TestSubtitleD5_ServiceRejectsUnknownMediaDirectly(t *testing.T) {

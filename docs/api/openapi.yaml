@@ -3769,6 +3769,8 @@ paths:
           description: Sync verification result
         '404':
           description: Unknown media item (`MEDIA_NOT_FOUND`) or subtitle (`SUBTITLE_NOT_FOUND`, also when it belongs to another media item)
+        '429':
+          description: The bounded media-analysis capacity is in use (`SYNC_BUSY`, `Retry-After` header); each measurement costs an ffprobe plus an ffmpeg decode, so concurrent runs are capped and a result for an unchanged media file is reused for a few minutes
 
   /api/v1/subtitles/translate:
     post:
@@ -3812,7 +3814,7 @@ paths:
     delete:
       tags: [subtitles]
       summary: Delete subtitle
-      description: Allowed for the user who uploaded the track and for administrators; tracks with no recorded uploader are administrator-only.
+      description: Allowed for the user who uploaded the track and for administrators; tracks with no recorded uploader are administrator-only. A caller who is neither answers 404, not 403, so the id's existence is not disclosed.
       security:
         - BearerAuth: []
       parameters:
@@ -3827,9 +3829,9 @@ paths:
         '401':
           description: Not authenticated
         '403':
-          description: Caller is neither the uploader nor an administrator (`FORBIDDEN`)
+          description: The caller's administrator status could not be established (fail closed, `FORBIDDEN`)
         '404':
-          description: Unknown subtitle (`SUBTITLE_NOT_FOUND`)
+          description: Unknown subtitle, or a subtitle the caller may not delete (neither uploader nor administrator); the two cases are deliberately indistinguishable (`SUBTITLE_NOT_FOUND`). Deleting also invalidates the cached translations of that subtitle.
 
   /api/v1/subtitles/languages:
     get:

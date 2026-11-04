@@ -45,20 +45,25 @@ func subtitleActor(c *gin.Context) (int64, bool) {
 	return 0, false
 }
 
-func (h *SubtitleHandler) callerIsAdmin(c *gin.Context, uid int64) bool {
+// callerIsAdmin reports whether the caller is an administrator. A failing admin lookup returns the
+// error so the caller can fail closed distinctly from "confirmed not an administrator".
+func (h *SubtitleHandler) callerIsAdmin(c *gin.Context, uid int64) (bool, error) {
 	if uid <= 0 {
-		return false
+		return false, nil
 	}
 	if h.isAdmin != nil {
 		ok, err := h.isAdmin(c.Request.Context(), int(uid))
-		return err == nil && ok
+		if err != nil {
+			return false, err
+		}
+		return ok, nil
 	}
 	if r, ok := c.Get("role_id"); ok {
 		if id, isInt := r.(int); isInt {
-			return id == 1
+			return id == 1, nil
 		}
 	}
-	return false
+	return false, nil
 }
 
 // isNumericID reports whether s is a plain decimal row id (a non-numeric id can match no row).
@@ -431,6 +436,15 @@ func (h *SubtitleHandler) VerifySubtitleSync(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, services.ErrMediaNotFound) {
 			writeMediaNotFound(c)
+			return
+		}
+		if errors.Is(err, services.ErrSyncBusy) {
+			c.Header("Retry-After", "5")
+			c.JSON(http.StatusTooManyRequests, ErrorResponse{
+				Success: false,
+				Error:   "Synchronization analysis is busy, retry shortly",
+				Code:    "SYNC_BUSY",
+			})
 			return
 		}
 		h.logger.Error("Failed to verify subtitle sync",
@@ -879,7 +893,14 @@ func (h *SubtitleHandler) DeleteSubtitle(c *gin.Context) {
 		writeSubtitleNotFound(c)
 		return
 	}
-	err := h.subtitleService.DeleteSubtitle(c.Request.Context(), id, uid, h.callerIsAdmin(c, uid))
+	admin, aerr := h.callerIsAdmin(c, uid)
+	if aerr != nil {
+		// authority could not be established: fail closed (never 204)
+		h.logger.Error("Admin lookup failed during subtitle delete", zap.Int64("user_id", uid), zap.Error(aerr))
+		c.JSON(http.StatusForbidden, ErrorResponse{Success: false, Error: "You may not delete this subtitle", Code: "FORBIDDEN"})
+		return
+	}
+	err := h.subtitleService.DeleteSubtitle(c.Request.Context(), id, uid, admin)
 	switch {
 	case err == nil:
 		h.logger.Info("Subtitle deleted", zap.String("subtitle_id", id), zap.Int64("user_id", uid))

@@ -91,7 +91,10 @@ func cueSpans(lines []SubtitleLine) []cueSpan {
 	return spans
 }
 
-// resolveMediaFile returns the local file of a media item, or "" when it is not reachable locally.
+// resolveMediaFile returns the host-local file of a media item, or "" when it is not reachable
+// there. Only files that live under a LOCAL storage root are ever touched: a row of a remote
+// protocol (smb/ftp/nfs/webdav/...) or without a storage root is never looked up on the host
+// filesystem, and a path that leaves the root (".." or a symlink pointing out) is refused.
 // found=false means the media row itself does not exist.
 func (s *SubtitleService) resolveMediaFile(ctx context.Context, mediaItemID int64) (path string, found bool, err error) {
 	var fpath, name string
@@ -104,24 +107,67 @@ func (s *SubtitleService) resolveMediaFile(ctx context.Context, mediaItemID int6
 		}
 		return "", false, err
 	}
-	var cands []string
-	if protocol.Valid && protocol.String == "local" && rootPath.Valid && rootPath.String != "" {
-		cands = append(cands, filepath.Join(rootPath.String, fpath), filepath.Join(rootPath.String, fpath, name))
+	if !protocol.Valid || protocol.String != "local" || !rootPath.Valid || rootPath.String == "" {
+		return "", true, nil
 	}
-	cands = append(cands, fpath, filepath.Join(fpath, name))
-	for _, c := range cands {
-		if st, e := os.Stat(c); e == nil && st.Mode().IsRegular() {
-			return c, true, nil
+	absRoot, aerr := filepath.Abs(rootPath.String)
+	if aerr != nil {
+		return "", true, nil
+	}
+	realRoot, rerr := filepath.EvalSymlinks(absRoot)
+	if rerr != nil {
+		return "", true, nil
+	}
+	for _, c := range []string{filepath.Join(absRoot, fpath), filepath.Join(absRoot, fpath, name)} {
+		real, e := filepath.EvalSymlinks(c)
+		if e != nil {
+			continue
+		}
+		rel, e := filepath.Rel(realRoot, real)
+		if e != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) || filepath.IsAbs(rel) {
+			continue // escapes the storage root
+		}
+		if st, e := os.Stat(real); e == nil && st.Mode().IsRegular() {
+			return real, true, nil
 		}
 	}
 	return "", true, nil
 }
 
+// ffprobeArgs builds the ffprobe argument list. The input goes through -i with a file: prefix so a
+// file name that starts with "-" can never be read as an option, and only the file protocol is allowed.
+func ffprobeArgs(file string) []string {
+	return []string{"-v", "error", "-protocol_whitelist", "file",
+		"-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", "-i", "file:" + file}
+}
+
+// ffmpegActivityArgs builds the ffmpeg silence-detection argument list: single decoder thread, no
+// progress stats, file protocol only, input via -i file:.
+func ffmpegActivityArgs(file string, limit float64) []string {
+	return []string{"-nostdin", "-nostats", "-threads", "1", "-protocol_whitelist", "file", "-t", fmt.Sprintf("%.3f", limit),
+		"-i", "file:" + file, "-vn", "-af", "silencedetect=noise=-35dB:d=0.3", "-f", "null", "-"}
+}
+
+// mediaCommand runs a media tool at reduced CPU priority when nice(1) is available.
+func mediaCommand(ctx context.Context, tool string, args ...string) *exec.Cmd {
+	if nice, err := exec.LookPath("nice"); err == nil {
+		return exec.CommandContext(ctx, nice, append([]string{"-n", "10", tool}, args...)...)
+	}
+	return exec.CommandContext(ctx, tool, args...)
+}
+
+// beyondReason words why a subtitle runs past the media end.
+func beyondReason(beyond, total int, duration, lastEnd float64) string {
+	if beyond == 0 {
+		return fmt.Sprintf("the last cue ends at %.1fs, past the media duration (%.1fs)", lastEnd, duration)
+	}
+	return fmt.Sprintf("%d of %d cues start beyond the media duration (%.1fs); last cue ends at %.1fs", beyond, total, duration, lastEnd)
+}
+
 func ffprobeDuration(ctx context.Context, file string) (float64, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	out, err := exec.CommandContext(ctx, "ffprobe", "-v", "error", "-protocol_whitelist", "file,pipe",
-		"-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", file).Output()
+	out, err := mediaCommand(ctx, "ffprobe", ffprobeArgs(file)...).Output()
 	if err != nil {
 		return 0, err
 	}
@@ -139,8 +185,7 @@ func audioActivity(ctx context.Context, file string, duration float64) ([]cueSpa
 	ctx, cancel := context.WithTimeout(ctx, 150*time.Second)
 	defer cancel()
 	limit := math.Min(duration, syncMaxAnalysis)
-	cmd := exec.CommandContext(ctx, "ffmpeg", "-nostdin", "-protocol_whitelist", "file,pipe", "-t", fmt.Sprintf("%.3f", limit),
-		"-i", file, "-vn", "-af", "silencedetect=noise=-35dB:d=0.3", "-f", "null", "-")
+	cmd := mediaCommand(ctx, "ffmpeg", ffmpegActivityArgs(file, limit)...)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	if err := cmd.Run(); err != nil {
@@ -266,6 +311,138 @@ func subAbsInt(i int) int {
 	return i
 }
 
+const (
+	syncDefaultConcurrency = 2                // concurrent ffprobe+ffmpeg analyses allowed per service
+	syncCacheTTL           = 10 * time.Minute // how long an analysis of an unchanged media file is reused
+	syncCacheMax           = 128
+)
+
+// mediaAnalysis is the expensive, subtitle-independent part of a sync verification: the media
+// duration and its speech-activity intervals.
+type mediaAnalysis struct {
+	duration    float64
+	active      []cueSpan
+	audioTried  bool
+	audioFailed bool
+}
+
+type syncCacheEntry struct {
+	a  *mediaAnalysis
+	at time.Time
+}
+
+// SetSyncConcurrency bounds how many media analyses (ffprobe + ffmpeg decode) may run at once;
+// values below 1 mean 1. Requests beyond the bound fail fast with ErrSyncBusy.
+func (s *SubtitleService) SetSyncConcurrency(n int) {
+	if n < 1 {
+		n = 1
+	}
+	s.syncMu.Lock()
+	s.syncSem = make(chan struct{}, n)
+	s.syncMu.Unlock()
+}
+
+// AnalysisRuns returns how many media analyses (ffprobe + ffmpeg runs) this service has started.
+func (s *SubtitleService) AnalysisRuns() int64 { return s.analysisRuns.Load() }
+
+func (s *SubtitleService) syncSemaphore() chan struct{} {
+	s.syncMu.Lock()
+	defer s.syncMu.Unlock()
+	if s.syncSem == nil {
+		s.syncSem = make(chan struct{}, syncDefaultConcurrency)
+	}
+	return s.syncSem
+}
+
+func (s *SubtitleService) cachedAnalysis(key string) *mediaAnalysis {
+	s.syncMu.Lock()
+	defer s.syncMu.Unlock()
+	if e, ok := s.syncCache[key]; ok && time.Since(e.at) < syncCacheTTL {
+		return e.a
+	}
+	return nil
+}
+
+func (s *SubtitleService) storeAnalysis(key string, a *mediaAnalysis) {
+	s.syncMu.Lock()
+	defer s.syncMu.Unlock()
+	if s.syncCache == nil {
+		s.syncCache = map[string]syncCacheEntry{}
+	}
+	if len(s.syncCache) >= syncCacheMax {
+		for k, e := range s.syncCache {
+			if time.Since(e.at) >= syncCacheTTL {
+				delete(s.syncCache, k)
+			}
+		}
+		for k := range s.syncCache {
+			if len(s.syncCache) < syncCacheMax {
+				break
+			}
+			delete(s.syncCache, k)
+		}
+	}
+	s.syncCache[key] = syncCacheEntry{a: a, at: time.Now()}
+}
+
+// analyzeMedia returns the (cached) analysis of a media file. The cache key includes the file's
+// mtime and size, so a changed file is re-analysed; concurrent requests for the same file share one
+// run; a run needs a free slot or fails fast with ErrSyncBusy (each run costs an ffprobe plus up to
+// 30 minutes of audio decoding, so unbounded fan-out would be a denial-of-service vector).
+func (s *SubtitleService) analyzeMedia(ctx context.Context, file string, mediaItemID int64) (*mediaAnalysis, error) {
+	st, err := os.Stat(file)
+	if err != nil {
+		return &mediaAnalysis{}, nil
+	}
+	key := fmt.Sprintf("%s|%d|%d", file, st.ModTime().UnixNano(), st.Size())
+	if a := s.cachedAnalysis(key); a != nil {
+		return a, nil
+	}
+	v, ferr, _ := s.syncFlight.Do(key, func() (interface{}, error) {
+		if a := s.cachedAnalysis(key); a != nil {
+			return a, nil
+		}
+		sem := s.syncSemaphore()
+		select {
+		case sem <- struct{}{}:
+			defer func() { <-sem }()
+		default:
+			return nil, ErrSyncBusy
+		}
+		s.analysisRuns.Add(1)
+		if s.analysisHook != nil {
+			s.analysisHook()
+		}
+		// the shared run must not die with the first caller's request context; it is bounded by the
+		// per-tool timeouts and holds exactly one slot
+		wctx := context.WithoutCancel(ctx)
+		a := &mediaAnalysis{}
+		if d, derr := ffprobeDuration(wctx, file); derr == nil {
+			a.duration = d
+		}
+		if a.duration == 0 {
+			if vi, verr := s.getVideoInfo(wctx, mediaItemID); verr == nil && vi.Duration > 0 {
+				a.duration = vi.Duration
+			}
+		}
+		if a.duration > 0 {
+			a.audioTried = true
+			active, aerr := audioActivity(wctx, file, a.duration)
+			if aerr != nil {
+				a.audioFailed = true
+			} else {
+				a.active = active
+			}
+		}
+		s.storeAnalysis(key, a)
+		return a, nil
+	})
+	if ferr != nil {
+		return nil, ferr
+	}
+	return v.(*mediaAnalysis), nil
+}
+
 // verifySynchronization measures how well a subtitle track lines up with the real media.
 // It never fabricates a result: when the media file cannot be analysed the status is
 // "undetermined" with offset 0 and confidence 0.
@@ -308,15 +485,16 @@ func (s *SubtitleService) verifySynchronization(ctx context.Context, mediaItemID
 	}
 
 	duration := 0.0
+	var an *mediaAnalysis
 	if file != "" {
-		if d, derr := ffprobeDuration(ctx, file); derr == nil {
-			duration = d
+		a, aerr := s.analyzeMedia(ctx, file, mediaItemID)
+		if aerr != nil {
+			return nil, aerr
 		}
-	}
-	if duration == 0 {
-		if vi, verr := s.getVideoInfo(ctx, mediaItemID); verr == nil && vi.Duration > 0 {
-			duration = vi.Duration
-		}
+		an = a
+		duration = a.duration
+	} else if vi, verr := s.getVideoInfo(ctx, mediaItemID); verr == nil && vi.Duration > 0 {
+		duration = vi.Duration
 	}
 	res.MediaDuration = duration
 
@@ -330,7 +508,7 @@ func (s *SubtitleService) verifySynchronization(ctx context.Context, mediaItemID
 	}
 	if duration > 0 && lastEnd > duration+syncDurationSlack {
 		res.Method = "duration"
-		res.Reason = fmt.Sprintf("%d of %d cues start beyond the media duration (%.1fs); last cue ends at %.1fs", beyond, len(spans), duration, lastEnd)
+		res.Reason = beyondReason(beyond, len(spans), duration, lastEnd)
 	}
 
 	// Measurement against the real audio.
@@ -343,12 +521,12 @@ func (s *SubtitleService) verifySynchronization(ctx context.Context, mediaItemID
 			res.Reason = "the media duration could not be determined"
 		}
 	} else {
-		active, aerr := audioActivity(ctx, file, duration)
-		if aerr != nil {
+		if an.audioFailed || !an.audioTried {
 			if res.Reason == "" {
 				res.Reason = "the audio of the media file could not be analysed"
 			}
 		} else {
+			active := an.active
 			n := int(math.Min(duration, syncMaxAnalysis) / syncBinSeconds)
 			cueBins := toBins([]cueSpan(spans), int(math.Min(math.Max(lastEnd, duration)+syncMaxShiftSecs, syncMaxAnalysis+3*syncMaxShiftSecs)/syncBinSeconds)+1)
 			delay, peak, runner, ok := estimateDelay(cueBins, toBins(active, n))
