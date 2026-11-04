@@ -180,6 +180,7 @@ services:
       - '--storage.tsdb.path=/prometheus'
       - '--storage.tsdb.retention.time=200h'
       - '--web.enable-lifecycle'
+      - '--web.enable-remote-write-receiver'
     ports:
       - "${PROMETHEUS_PORT:-9090}:9090"
     volumes:
@@ -199,10 +200,10 @@ services:
 
   # OpenTelemetry Collector (Optional - `otel` profile). AZ2-R6: started with the same
   # scrape credential the API checks, so its `prometheus` receiver can read GET /metrics.
-  # Not part of the live-verified monitoring path: the collector config also lists jaeger
-  # and loki exporters whose backends are not in this compose file.
+  # Image pinned; `otelcol-contrib validate` on the repo config is part of
+  # scripts/monitoring/test_prometheus_token_start.sh.
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
+    image: docker.io/otel/opentelemetry-collector-contrib:0.164.0
     container_name: catalogizer-otel-collector
     profiles:
       - otel

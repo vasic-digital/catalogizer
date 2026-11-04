@@ -114,7 +114,8 @@ scrape_configs:
 once and put the SAME value in `.env` (the API and Prometheus both read `METRICS_SCRAPE_TOKEN`):
 
 ```bash
-printf 'METRICS_SCRAPE_TOKEN=%s\n' "$(openssl rand -hex 32)" >> .env   # .env is gitignored, keep it mode 0600
+grep -q '^METRICS_SCRAPE_TOKEN=.' .env 2>/dev/null || \
+  { sed -i '/^METRICS_SCRAPE_TOKEN=/d' .env 2>/dev/null; printf 'METRICS_SCRAPE_TOKEN=%s\n' "$(openssl rand -hex 32)" >> .env; }   # .env is gitignored, keep it mode 0600
 ```
 
 Prometheus does NOT mount a token file from the host. Its compose entrypoint writes the value of
@@ -123,13 +124,23 @@ and `monitoring/prometheus.yml` reads that path (`authorization.credentials_file
 unset or shorter than 32 characters the Prometheus container exits at once with
 `METRICS_SCRAPE_TOKEN must be set (>= 32 chars ...)` (previously a missing host file broke the start, or,
 under podman-compose, was silently created as a directory so every scrape failed with "is a directory").
-Rotate by changing `.env` and recreating the `prometheus` container (and the API).
+Note: `deployment/docker-compose.yml` reads `deployment/.env` (compose resolves `.env` next to the
+project directory), not the repository-root `.env`; put the variable in the file your compose command uses.
+
+Security note: the token lives in the container environment (visible to anyone who can run
+`podman inspect` / `docker inspect` on the host) and may briefly appear on the host's `podman create`
+command line while the container is created. Treat the host account as trusted; the credential grants
+read access to `GET /metrics` only. Rotate by changing `.env` and recreating the `prometheus` container (and the API).
 
 The API accepts it as `Authorization: Bearer <token>` on `GET /metrics` only (min 32 chars;
 constant-time compare; any other route answers 401 with it). Without the variable, only an
 admin JWT can read `/metrics`. The OpenTelemetry collector (compose profile `otel`, root
 `docker-compose.yml`) is started with `METRICS_SCRAPE_TOKEN` and reads `${env:METRICS_SCRAPE_TOKEN}`;
-that profile is not live-verified (its config also lists jaeger and loki exporters without backends here).
+the collector image is version-pinned, its config exports metrics to Prometheus' remote-write receiver
+(Prometheus runs with `--web.enable-remote-write-receiver` in the root compose file), and traces/logs are only
+logged (no backend in this compose file; the former jaeger/loki exporters are invalid in current releases).
+Verified: `otelcol-contrib validate` accepts the config, the collector starts (0 restarts), scrapes `/metrics`
+with the token and Prometheus holds the series (`up{job="catalogizer-api"} = 1`).
 
 Regression test (real `prom/prometheus` image under rootless podman, with a paired mutation run):
 `bash scripts/monitoring/test_prometheus_token_start.sh` and `... --mutations`.
@@ -149,6 +160,10 @@ curl -s localhost:19090/api/v1/targets      # catalog-api health "up"
 
 `deployment/docker-compose.yml` mounts `../monitoring/...` (paths are relative to that file) and its
 `catalogizer-server` service carries the network alias `api`, which `monitoring/prometheus.yml` targets.
+PROVISIONAL: the alias resolution through the compose network DNS and Grafana's provisioning of the
+datasource/dashboards were not live-verified (the test host's podman network DNS refused queries on the
+scratch project network; Grafana was only seen answering `/api/health`). The static test checks the alias and
+the mount sources exist.
 
 Ports (override per host; default / suggested QA-host value, pick free ports, never reuse a running stack's):
 

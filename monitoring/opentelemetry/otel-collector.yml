@@ -40,23 +40,17 @@ processors:
         action: upsert
 
 exporters:
-  jaeger:
-    endpoint: jaeger:14250
-    tls:
-      insecure: true
-
+  # Metrics go to Prometheus' remote-write receiver (Prometheus is started with
+  # --web.enable-remote-write-receiver in docker-compose.yml).
   prometheusremotewrite:
     endpoint: http://prometheus:9090/api/v1/write
     tls:
       insecure: true
 
-  loki:
-    endpoint: http://loki:3100/loki/api/v1/push
-    tls:
-      insecure: true
-
+  # Traces and logs have no backend in this compose file (the former jaeger and loki
+  # exporters are not valid in current collector releases); they are logged only.
   debug:
-    verbosity: detailed
+    verbosity: basic
 
 extensions:
   health_check:
@@ -75,7 +69,7 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch, resource]
-      exporters: [jaeger, debug]
+      exporters: [debug]
 
     metrics:
       receivers: [otlp, prometheus]
@@ -85,4 +79,4 @@ service:
     logs:
       receivers: [otlp]
       processors: [batch, resource]
-      exporters: [loki, debug]
+      exporters: [debug]
