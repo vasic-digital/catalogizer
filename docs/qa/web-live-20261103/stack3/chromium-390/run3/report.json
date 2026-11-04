@@ -135,46 +135,32 @@
               "tests": [
                 {
                   "timeout": 120000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
-                      "location": {
-                        "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
-                        "line": 55,
-                        "column": 30
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
+                  "annotations": [],
+                  "expectedStatus": "passed",
                   "projectId": "chromium-390",
                   "projectName": "chromium-390",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "skipped",
-                      "duration": 106,
+                      "status": "passed",
+                      "duration": 10945,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:05:20.752Z",
-                      "annotations": [
+                      "startTime": "2026-11-04T01:30:09.870Z",
+                      "annotations": [],
+                      "attachments": [
                         {
-                          "type": "skip",
-                          "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
-                          "location": {
-                            "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
-                            "line": 55,
-                            "column": 30
-                          }
+                          "name": "media-list",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-390/run3/artifacts/catalog.live-catalog-pages-400b7-s-counts-equal-the-real-API-chromium-390/attachments/media-list-d83fd663a1512d26975d6953da7a1b34cc49bc6a.png"
                         }
-                      ],
-                      "attachments": []
+                      ]
                     }
                   ],
-                  "status": "skipped"
+                  "status": "expected"
                 }
               ],
               "id": "b955bd8104f9462b2367-8776f7a95dfae3bc968b",
@@ -189,46 +175,37 @@
               "tests": [
                 {
                   "timeout": 120000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
-                      "location": {
-                        "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
-                        "line": 55,
-                        "column": 30
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
+                  "annotations": [],
+                  "expectedStatus": "passed",
                   "projectId": "chromium-390",
                   "projectName": "chromium-390",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "skipped",
-                      "duration": 71,
+                      "status": "passed",
+                      "duration": 11162,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:05:21.249Z",
-                      "annotations": [
+                      "startTime": "2026-11-04T01:30:21.068Z",
+                      "annotations": [],
+                      "attachments": [
                         {
-                          "type": "skip",
-                          "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
-                          "location": {
-                            "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
-                            "line": 55,
-                            "column": 30
-                          }
+                          "name": "media-search-hit",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-390/run3/artifacts/catalog.live-catalog-pages-482b4-rns-no-match-shows-no-items-chromium-390/attachments/media-search-hit-48a9442e4243e40533ad978dead11afc8c6e6fea.png"
+                        },
+                        {
+                          "name": "media-search-miss",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-390/run3/artifacts/catalog.live-catalog-pages-482b4-rns-no-match-shows-no-items-chromium-390/attachments/media-search-miss-a839dd3ce0b0efef8d55d7ce283d3ca88a3360e5.png"
                         }
-                      ],
-                      "attachments": []
+                      ]
                     }
                   ],
-                  "status": "skipped"
+                  "status": "expected"
                 }
               ],
               "id": "b955bd8104f9462b2367-610f6a5826e34b7b121c",
@@ -243,46 +220,32 @@
               "tests": [
                 {
                   "timeout": 120000,
-                  "annotations": [
-                    {
-                      "type": "skip",
-                      "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
-                      "location": {
-                        "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
-                        "line": 55,
-                        "column": 30
-                      }
-                    }
-                  ],
-                  "expectedStatus": "skipped",
+                  "annotations": [],
+                  "expectedStatus": "passed",
                   "projectId": "chromium-390",
                   "projectName": "chromium-390",
                   "results": [
                     {
                       "workerIndex": 0,
                       "parallelIndex": 0,
-                      "status": "skipped",
-                      "duration": 121,
+                      "status": "passed",
+                      "duration": 10702,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:05:21.349Z",
-                      "annotations": [
+                      "startTime": "2026-11-04T01:30:32.251Z",
+                      "annotations": [],
+                      "attachments": [
                         {
-                          "type": "skip",
-                          "description": "target has no CATALOGIZER_LOCAL_ROOT_BASES: local storage roots are refused (HTTP 403)",
-                          "location": {
-                            "file": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/catalog-web/e2e/live/catalog.live.spec.ts",
-                            "line": 55,
-                            "column": 30
-                          }
+                          "name": "browse-types",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-390/run3/artifacts/catalog.live-catalog-pages-0950e-ual-the-real-entities-stats-chromium-390/attachments/browse-types-a315d35e58fb94fdc5331fec8b89675b26f14847.png"
                         }
-                      ],
-                      "attachments": []
+                      ]
                     }
                   ],
-                  "status": "skipped"
+                  "status": "expected"
                 }
               ],
               "id": "b955bd8104f9462b2367-b4768d5ab024f5a87dcf",
@@ -323,12 +286,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 6356,
+                      "duration": 6090,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:05:21.508Z",
+                      "startTime": "2026-11-04T01:30:42.973Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -363,12 +326,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 6136,
+                      "duration": 5923,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:05:27.918Z",
+                      "startTime": "2026-11-04T01:30:49.079Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -403,12 +366,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 5992,
+                      "duration": 5815,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:05:34.086Z",
+                      "startTime": "2026-11-04T01:30:55.016Z",
                       "annotations": [],
                       "attachments": []
                     }
@@ -419,6 +382,285 @@
               "id": "2b210780b52e408e16af-f184d87c68ccfb87b0f4",
               "file": "login.live.spec.ts",
               "line": 32,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "management.live.spec.ts",
+      "file": "management.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "favorites (real backend)",
+          "file": "management.live.spec.ts",
+          "line": 9,
+          "column": 6,
+          "specs": [
+            {
+              "title": "favorite from the Media page card: the real API stores it for the clicked item, and the Favorites page lists that item",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-390",
+                  "projectName": "chromium-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 15648,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-04T01:31:00.850Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "favorite-added",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-390/run3/artifacts/management.live-favorites--52bc3-orites-page-lists-that-item-chromium-390/attachments/favorite-added-698a8ef976e88b9205e3feecba9db11d213b0e0b.png"
+                        },
+                        {
+                          "name": "favorites-page",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-390/run3/artifacts/management.live-favorites--52bc3-orites-page-lists-that-item-chromium-390/attachments/favorites-page-eba93735d6136b8f7336b23af20f9550695f51d3.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "173dde2369189948048f-d4a7958a990c3d50b302",
+              "file": "management.live.spec.ts",
+              "line": 10,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "collections (real backend)",
+          "file": "management.live.spec.ts",
+          "line": 42,
+          "column": 6,
+          "specs": [
+            {
+              "title": "manual collection CRUD through the real API, visible on the Collections page, gone after delete",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-390",
+                  "projectName": "chromium-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10341,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-04T01:31:16.510Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "collection-listed",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-390/run3/artifacts/management.live-collection-72431-ions-page-gone-after-delete-chromium-390/attachments/collection-listed-bf4d0ccb340b0b1fc603c9540fe28acbab2ae1b3.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "173dde2369189948048f-b7727bf768d160d97517",
+              "file": "management.live.spec.ts",
+              "line": 43,
+              "column": 7
+            },
+            {
+              "title": "smart collection: the rule is evaluated by the server; its size equals the same query through the media search; invalid rules are rejected",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-390",
+                  "projectName": "chromium-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 153,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-04T01:31:26.864Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "173dde2369189948048f-0113852f7345cc97d1bf",
+              "file": "management.live.spec.ts",
+              "line": 65,
+              "column": 7
+            },
+            {
+              "title": "another user cannot read or change my collection",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-390",
+                  "projectName": "chromium-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 296,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-04T01:31:27.031Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "173dde2369189948048f-1e183db0078a5c4cbfe8",
+              "file": "management.live.spec.ts",
+              "line": 88,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "admin user management (real backend)",
+          "file": "management.live.spec.ts",
+          "line": 111,
+          "column": 6,
+          "specs": [
+            {
+              "title": "pending registration appears on the Admin Users tab; Approve in the UI activates the account; lock/unlock/role change take effect on login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-390",
+                  "projectName": "chromium-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11736,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-04T01:31:27.340Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "admin-users-pending",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-390/run3/artifacts/management.live-admin-user-4d6b7-change-take-effect-on-login-chromium-390/attachments/admin-users-pending-1e5044f6218aca409b1fc414f63418b84928772a.png"
+                        },
+                        {
+                          "name": "admin-users-approved",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-390/run3/artifacts/management.live-admin-user-4d6b7-change-take-effect-on-login-chromium-390/attachments/admin-users-approved-3b9e98a8473fddc6cb7ff76a7bb3ac54d5a2bc11.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "173dde2369189948048f-726c45ce9a588e830585",
+              "file": "management.live.spec.ts",
+              "line": 112,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "conversions (real backend)",
+          "file": "management.live.spec.ts",
+          "line": 161,
+          "column": 6,
+          "specs": [
+            {
+              "title": "conversion page renders, the real format table matches the page, and a real mp3 to wav job runs to completion on the corpus",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-390",
+                  "projectName": "chromium-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11737,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-04T01:31:39.090Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "conversion-page",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-390/run3/artifacts/management.live-conversion-71a54-to-completion-on-the-corpus-chromium-390/attachments/conversion-page-a442727e5c8e36630700ee83a5a83ad1c7550a7b.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "173dde2369189948048f-32fb85f9d80540ff0c99",
+              "file": "management.live.spec.ts",
+              "line": 162,
               "column": 7
             }
           ]
@@ -454,12 +696,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 12758,
+                      "duration": 13009,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:05:40.101Z",
+                      "startTime": "2026-11-04T01:31:50.842Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -494,12 +736,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 12943,
+                      "duration": 12535,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:05:52.876Z",
+                      "startTime": "2026-11-04T01:32:03.862Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -534,12 +776,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 12608,
+                      "duration": 12529,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:06:05.836Z",
+                      "startTime": "2026-11-04T01:32:16.408Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -557,6 +799,320 @@
               "file": "pages.live.spec.ts",
               "line": 6,
               "column": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "playback.live.spec.ts",
+      "file": "playback.live.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "stream endpoint (real API)",
+          "file": "playback.live.spec.ts",
+          "line": 28,
+          "column": 6,
+          "specs": [
+            {
+              "title": "movies/Movie.Name.2020.1080p.mp4: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-390",
+                  "projectName": "chromium-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 65,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-04T01:32:28.953Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b094b6a9105450171ecb-395f08bbfa5b3d58b482",
+              "file": "playback.live.spec.ts",
+              "line": 30,
+              "column": 9
+            },
+            {
+              "title": "movies/Another.Movie.2019.vp9.webm: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-390",
+                  "projectName": "chromium-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 59,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-04T01:32:29.117Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b094b6a9105450171ecb-c6d16f27e48daccf9f67",
+              "file": "playback.live.spec.ts",
+              "line": 30,
+              "column": 9
+            },
+            {
+              "title": "music/Misc/Plain Tone.mp3: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-390",
+                  "projectName": "chromium-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 59,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-04T01:32:29.191Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b094b6a9105450171ecb-450b0701efdcb829af7d",
+              "file": "playback.live.spec.ts",
+              "line": 30,
+              "column": 9
+            },
+            {
+              "title": "music/Misc/Plain Tone.flac: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-390",
+                  "projectName": "chromium-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 268,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-04T01:32:29.263Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b094b6a9105450171ecb-d6400ac2c08f9b237ada",
+              "file": "playback.live.spec.ts",
+              "line": 30,
+              "column": 9
+            },
+            {
+              "title": "ticket path: POST /stream/:id/ticket then ?ticket= streams byte-identical bytes; the ticket is refused for another media id",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-390",
+                  "projectName": "chromium-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 59,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-04T01:32:29.542Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b094b6a9105450171ecb-9879138823d5889cec2d",
+              "file": "playback.live.spec.ts",
+              "line": 48,
+              "column": 7
+            },
+            {
+              "title": "stream requires authentication",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-390",
+                  "projectName": "chromium-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 37,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-04T01:32:29.612Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b094b6a9105450171ecb-c5c63b0ac800dc14a891",
+              "file": "playback.live.spec.ts",
+              "line": 66,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "player in the web UI (real browser, real stream)",
+          "file": "playback.live.spec.ts",
+          "line": 72,
+          "column": 6,
+          "specs": [
+            {
+              "title": "video: play advances currentTime and the element is fed from /api/v1/stream/:id",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-390",
+                  "projectName": "chromium-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13004,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-04T01:32:29.659Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "player-open",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-390/run3/artifacts/playback.live-player-in-th-d1987-s-fed-from-api-v1-stream-id-chromium-390/attachments/player-open-6a3e3fe35805d3b5450b52fb8e478f3b3fdd43fe.png"
+                        },
+                        {
+                          "name": "video-playing",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-390/run3/artifacts/playback.live-player-in-th-d1987-s-fed-from-api-v1-stream-id-chromium-390/attachments/video-playing-9520607417d5f4e2d43303ef90ea5098c781fe91.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b094b6a9105450171ecb-a4598de463f93d621679",
+              "file": "playback.live.spec.ts",
+              "line": 90,
+              "column": 7
+            },
+            {
+              "title": "audio file: the same player plays an mp3 from the real stream",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-390",
+                  "projectName": "chromium-390",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 12003,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-04T01:32:42.686Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "player-open",
+                          "contentType": "image/png",
+                          "path": "/home/milosvasic/.cache/claude-tmp/livee2e.aEF2L9/repo/docs/qa/web-live-20261103/stack3/chromium-390/run3/artifacts/playback.live-player-in-th-b4292-an-mp3-from-the-real-stream-chromium-390/attachments/player-open-1e9de1e40638da24c7ce9ad3bccdbcfe767d3981.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "b094b6a9105450171ecb-c0e7b860657206aa40fe",
+              "file": "playback.live.spec.ts",
+              "line": 104,
+              "column": 7
             }
           ]
         }
@@ -591,12 +1147,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 6054,
+                      "duration": 5857,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:06:18.469Z",
+                      "startTime": "2026-11-04T01:32:54.710Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -631,12 +1187,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 12903,
+                      "duration": 12557,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:06:24.542Z",
+                      "startTime": "2026-11-04T01:33:00.580Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -693,12 +1249,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 10476,
+                      "duration": 10152,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:06:37.488Z",
+                      "startTime": "2026-11-04T01:33:13.150Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -733,12 +1289,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 8883,
+                      "duration": 8530,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:06:47.994Z",
+                      "startTime": "2026-11-04T01:33:23.316Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -773,12 +1329,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 10057,
+                      "duration": 9966,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:06:56.897Z",
+                      "startTime": "2026-11-04T01:33:31.859Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -813,12 +1369,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 10195,
+                      "duration": 10107,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:07:06.971Z",
+                      "startTime": "2026-11-04T01:33:41.838Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -870,12 +1426,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 2800,
+                      "duration": 2786,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:07:17.183Z",
+                      "startTime": "2026-11-04T01:33:51.966Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -910,12 +1466,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 10133,
+                      "duration": 10040,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:07:19.999Z",
+                      "startTime": "2026-11-04T01:33:54.766Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -950,12 +1506,12 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "passed",
-                      "duration": 13906,
+                      "duration": 13763,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-11-03T23:07:30.147Z",
+                      "startTime": "2026-11-04T01:34:04.823Z",
                       "annotations": [],
                       "attachments": [
                         {
@@ -986,10 +1542,10 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-03T23:05:19.807Z",
-    "duration": 144336.111,
-    "expected": 15,
-    "skipped": 3,
+    "startTime": "2026-11-04T01:30:09.372Z",
+    "duration": 249293.06699999998,
+    "expected": 32,
+    "skipped": 0,
     "unexpected": 0,
     "flaky": 0
   }

@@ -2,11 +2,11 @@
   "schema": "catalogizer.live-evidence/1",
   "test_id": "catalog-web-live/firefox-390/catalog",
   "class": "LIVE",
-  "verdict": "SKIP",
-  "timestamp": "2026-11-03T23:22:33.121Z",
+  "verdict": "PASS",
+  "timestamp": "2026-11-04T02:00:19.612Z",
   "command": "catalog-web/e2e/live/run_live.sh firefox-390",
   "artifact": {
-    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:950df7c8276f25f2d50b3934123c4632bd75d7093e9f95ba24b5ea3599695c89;api-health={\"version\":\"1e92bc3316ac2d49fabbe062f181112539f8ca18\",\"build_number\":\"1e92bc3316ac2d49fabbe062f181112539f8ca18\",\"build_date\":\"stack3\"};web-image=sha256:27386b1078e1ce792269da80b3ec8b5f315115afeb618b2cb449e64bb2712bd8",
+    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:c44f737b0c380c896af5f765c24dc178a629c7308b358b416dcacca0e3883c2b;api-health={\"version\":\"0e0d3d680da18e23b077948fce8103742d721761\",\"build_number\":\"0e0d3d680da18e23b077948fce8103742d721761\",\"build_date\":\"stack3\"};web-image=sha256:7a201180f512940a83989e8111015235f01602fa80860ba10202d5acebeb55c6",
     "source": "target"
   },
   "endpoint": {
@@ -15,36 +15,47 @@
     "resolved_ip": "127.0.0.1",
     "url": "http://127.0.0.1:33020"
   },
-  "answering": null,
-  "expected": null,
+  "answering": {
+    "kind": "container",
+    "image": "localhost/catqa3-web:main-0e0d3d68",
+    "image_digest": "sha256:7a201180f512940a83989e8111015235f01602fa80860ba10202d5acebeb55c6",
+    "container_id": "4a88c76e12a84729a264c35990d3dbcd71f18a7e07070e773dcc197ec9c9ed76"
+  },
+  "expected": {
+    "image_digest": "sha256:7a201180f512940a83989e8111015235f01602fa80860ba10202d5acebeb55c6"
+  },
   "requests": {
-    "total": 0,
-    "methods": {}
+    "total": 155,
+    "methods": {
+      "GET": 152,
+      "POST": 3
+    }
   },
   "responses": {
-    "status_histogram": {}
+    "status_histogram": {
+      "200": 155
+    }
   },
   "runs": {
-    "n": 0,
-    "identical": false,
-    "signature": ""
+    "n": 3,
+    "identical": true,
+    "signature": "sha256:5fd33fa9fc962d5cacdf431c724cb051ba28a24c866b4ee4e94d315eb44d788d"
   },
-  "skip_reason": "topology_unsupported",
   "tests": {
     "run1": [
-      "Browse page entity-type counts equal the real /entities/stats=skipped",
-      "Media page lists the seeded items: counts equal the real API=skipped",
-      "Media search narrows to exactly what the real API returns; no-match shows no items=skipped"
+      "Browse page entity-type counts equal the real /entities/stats=passed",
+      "Media page lists the seeded items: counts equal the real API=passed",
+      "Media search narrows to exactly what the real API returns; no-match shows no items=passed"
     ],
     "run2": [
-      "Browse page entity-type counts equal the real /entities/stats=skipped",
-      "Media page lists the seeded items: counts equal the real API=skipped",
-      "Media search narrows to exactly what the real API returns; no-match shows no items=skipped"
+      "Browse page entity-type counts equal the real /entities/stats=passed",
+      "Media page lists the seeded items: counts equal the real API=passed",
+      "Media search narrows to exactly what the real API returns; no-match shows no items=passed"
     ],
     "run3": [
-      "Browse page entity-type counts equal the real /entities/stats=skipped",
-      "Media page lists the seeded items: counts equal the real API=skipped",
-      "Media search narrows to exactly what the real API returns; no-match shows no items=skipped"
+      "Browse page entity-type counts equal the real /entities/stats=passed",
+      "Media page lists the seeded items: counts equal the real API=passed",
+      "Media search narrows to exactly what the real API returns; no-match shows no items=passed"
     ]
   }
 }

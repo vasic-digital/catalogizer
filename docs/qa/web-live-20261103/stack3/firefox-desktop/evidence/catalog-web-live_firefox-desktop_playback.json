@@ -1,0 +1,77 @@
+{
+  "schema": "catalogizer.live-evidence/1",
+  "test_id": "catalog-web-live/firefox-desktop/playback",
+  "class": "LIVE",
+  "verdict": "PASS",
+  "timestamp": "2026-11-04T02:00:18.972Z",
+  "command": "catalog-web/e2e/live/run_live.sh firefox-desktop",
+  "artifact": {
+    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:c44f737b0c380c896af5f765c24dc178a629c7308b358b416dcacca0e3883c2b;api-health={\"version\":\"0e0d3d680da18e23b077948fce8103742d721761\",\"build_number\":\"0e0d3d680da18e23b077948fce8103742d721761\",\"build_date\":\"stack3\"};web-image=sha256:7a201180f512940a83989e8111015235f01602fa80860ba10202d5acebeb55c6",
+    "source": "target"
+  },
+  "endpoint": {
+    "host": "127.0.0.1",
+    "port": 33020,
+    "resolved_ip": "127.0.0.1",
+    "url": "http://127.0.0.1:33020"
+  },
+  "answering": {
+    "kind": "container",
+    "image": "localhost/catqa3-web:main-0e0d3d68",
+    "image_digest": "sha256:7a201180f512940a83989e8111015235f01602fa80860ba10202d5acebeb55c6",
+    "container_id": "4a88c76e12a84729a264c35990d3dbcd71f18a7e07070e773dcc197ec9c9ed76"
+  },
+  "expected": {
+    "image_digest": "sha256:7a201180f512940a83989e8111015235f01602fa80860ba10202d5acebeb55c6"
+  },
+  "requests": {
+    "total": 132,
+    "methods": {
+      "GET": 128,
+      "POST": 4
+    }
+  },
+  "responses": {
+    "status_histogram": {
+      "200": 130,
+      "206": 2
+    }
+  },
+  "runs": {
+    "n": 3,
+    "identical": true,
+    "signature": "sha256:070718bc89a1253f09ca09474d765ab97dd32c37371d5bf494e2e2a1e3ea61ca"
+  },
+  "tests": {
+    "run1": [
+      "audio file: the same player plays an mp3 from the real stream=passed",
+      "movies/Another.Movie.2019.vp9.webm: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "movies/Movie.Name.2020.1080p.mp4: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "music/Misc/Plain Tone.flac: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "music/Misc/Plain Tone.mp3: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "stream requires authentication=passed",
+      "ticket path: POST /stream/:id/ticket then ?ticket= streams byte-identical bytes; the ticket is refused for another media id=passed",
+      "video: play advances currentTime and the element is fed from /api/v1/stream/:id=passed"
+    ],
+    "run2": [
+      "audio file: the same player plays an mp3 from the real stream=passed",
+      "movies/Another.Movie.2019.vp9.webm: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "movies/Movie.Name.2020.1080p.mp4: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "music/Misc/Plain Tone.flac: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "music/Misc/Plain Tone.mp3: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "stream requires authentication=passed",
+      "ticket path: POST /stream/:id/ticket then ?ticket= streams byte-identical bytes; the ticket is refused for another media id=passed",
+      "video: play advances currentTime and the element is fed from /api/v1/stream/:id=passed"
+    ],
+    "run3": [
+      "audio file: the same player plays an mp3 from the real stream=passed",
+      "movies/Another.Movie.2019.vp9.webm: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "movies/Movie.Name.2020.1080p.mp4: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "music/Misc/Plain Tone.flac: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "music/Misc/Plain Tone.mp3: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "stream requires authentication=passed",
+      "ticket path: POST /stream/:id/ticket then ?ticket= streams byte-identical bytes; the ticket is refused for another media id=passed",
+      "video: play advances currentTime and the element is fed from /api/v1/stream/:id=passed"
+    ]
+  }
+}
