@@ -339,7 +339,7 @@ func (r *UserRepository) Delete(id int) error {
 		`UPDATE user_permissions SET granted_by = NULL WHERE granted_by = ?`,
 		`DELETE FROM users WHERE id = ?`,
 	} {
-		if _, err := tx.Exec(q, id); err != nil {
+		if _, err := tx.Exec(r.db.Rewrite(q), id); err != nil {
 			return err
 		}
 	}
