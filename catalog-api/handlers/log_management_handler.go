@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"os"
 	"strconv"
@@ -13,6 +15,20 @@ import (
 
 	"github.com/gorilla/mux"
 )
+
+// logServiceStatus maps a log-management service error to the HTTP status the API contract documents:
+// an unknown collection or share is 404, someone else's is 403, an unknown export format is 400; anything else is 500.
+func logServiceStatus(err error) int {
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		return http.StatusNotFound
+	case errors.Is(err, services.ErrLogAccessDenied):
+		return http.StatusForbidden
+	case errors.Is(err, services.ErrUnsupportedLogFormat):
+		return http.StatusBadRequest
+	}
+	return http.StatusInternalServerError
+}
 
 // LogManagementServiceInterface defines interface for log management service operations
 type LogManagementServiceInterface interface {
@@ -175,7 +191,7 @@ func (h *LogManagementHandler) GetLogEntries(w http.ResponseWriter, r *http.Requ
 	filters := h.parseLogEntryFilters(r)
 	entries, err := h.logManagementService.GetLogEntries(collectionID, userID, filters)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), logServiceStatus(err))
 		return
 	}
 
@@ -207,7 +223,7 @@ func (h *LogManagementHandler) CreateLogShare(w http.ResponseWriter, r *http.Req
 
 	share, err := h.logManagementService.CreateLogShare(userID, &request)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), logServiceStatus(err))
 		return
 	}
 
@@ -259,6 +275,13 @@ func (h *LogManagementHandler) RevokeLogShare(w http.ResponseWriter, r *http.Req
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
+	// The permission gate runs before the id is parsed, so a caller without it learns nothing about id validity.
+	hasPermission, err := h.authService.CheckPermission(userID, models.PermissionSystemAdmin)
+	if err != nil || !hasPermission {
+		http.Error(w, "Insufficient permissions", http.StatusForbidden)
+		return
+	}
+
 	vars := mux.Vars(r)
 	shareID, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -266,15 +289,9 @@ func (h *LogManagementHandler) RevokeLogShare(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	hasPermission, err := h.authService.CheckPermission(userID, models.PermissionSystemAdmin)
-	if err != nil || !hasPermission {
-		http.Error(w, "Insufficient permissions", http.StatusForbidden)
-		return
-	}
-
 	err = h.logManagementService.RevokeLogShare(shareID, userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), logServiceStatus(err))
 		return
 	}
 
@@ -307,7 +324,7 @@ func (h *LogManagementHandler) ExportLogs(w http.ResponseWriter, r *http.Request
 
 	data, err := h.logManagementService.ExportLogs(collectionID, userID, format)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), logServiceStatus(err))
 		return
 	}
 
@@ -427,7 +444,7 @@ func (h *LogManagementHandler) AnalyzeLogs(w http.ResponseWriter, r *http.Reques
 
 	analysis, err := h.logManagementService.AnalyzeLogs(collectionID, userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), logServiceStatus(err))
 		return
 	}
 

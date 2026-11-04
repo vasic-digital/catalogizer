@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -18,6 +19,12 @@ import (
 	"catalogizer/models"
 	"catalogizer/repository"
 )
+
+// ErrLogAccessDenied is returned when the caller does not own the collection or share; handlers map it to 403.
+var ErrLogAccessDenied = errors.New("access denied")
+
+// ErrUnsupportedLogFormat is returned by ExportLogs for a format it cannot produce; handlers map it to 400.
+var ErrUnsupportedLogFormat = errors.New("unsupported format")
 
 type LogManagementService struct {
 	logRepo       *repository.LogManagementRepository
@@ -205,7 +212,7 @@ func (s *LogManagementService) GetLogCollection(id int, userID int) (*models.Log
 	}
 
 	if collection.UserID != userID {
-		return nil, fmt.Errorf("access denied")
+		return nil, ErrLogAccessDenied
 	}
 
 	return collection, nil
@@ -223,7 +230,7 @@ func (s *LogManagementService) GetLogEntries(collectionID int, userID int, filte
 	}
 
 	if collection.UserID != userID {
-		return nil, fmt.Errorf("access denied")
+		return nil, ErrLogAccessDenied
 	}
 
 	return s.logRepo.GetLogEntries(collectionID, filters)
@@ -237,7 +244,7 @@ func (s *LogManagementService) CreateLogShare(userID int, request *models.LogSha
 	}
 
 	if collection.UserID != userID {
-		return nil, fmt.Errorf("access denied")
+		return nil, ErrLogAccessDenied
 	}
 
 	// Create share
@@ -290,7 +297,7 @@ func (s *LogManagementService) RevokeLogShare(id int, userID int) error {
 	}
 
 	if collection.UserID != userID {
-		return fmt.Errorf("access denied")
+		return ErrLogAccessDenied
 	}
 
 	share.IsActive = false
@@ -320,7 +327,7 @@ func (s *LogManagementService) ExportLogs(collectionID int, userID int, format s
 	case "zip":
 		return s.exportToZip(entries)
 	default:
-		return nil, fmt.Errorf("unsupported format: %s", format)
+		return nil, fmt.Errorf("%w: %s", ErrUnsupportedLogFormat, format)
 	}
 }
 

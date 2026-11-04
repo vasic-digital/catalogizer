@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"catalogizer/database"
 	"catalogizer/internal/config"
 	"catalogizer/internal/models"
@@ -68,7 +69,7 @@ func (s *CatalogService) ListPath(path string, sortBy string, sortOrder string, 
 				WHERE f.parent_id IS NULL
 			`
 		} else {
-			return nil, fmt.Errorf("path not found: %s", path)
+			return nil, fmt.Errorf("%w: %s", ErrPathNotFound, path)
 		}
 	} else {
 		// Path exists, list its children
@@ -531,6 +532,9 @@ func (s *CatalogService) GetSMBRoots() ([]string, error) {
 
 	return roots, nil
 }
+
+// ErrPathNotFound is returned by ListPath when the path is not cataloged.
+var ErrPathNotFound = errors.New("path not found")
 
 // ListDirectory lists files in a directory (alias for ListPath)
 func (s *CatalogService) ListDirectory(path string) ([]models.FileInfo, error) {

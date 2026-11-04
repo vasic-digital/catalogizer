@@ -3,11 +3,15 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
 	"catalogizer/database"
 )
+
+// ErrPlaybackSessionNotFound is returned by End for an unknown session id.
+var ErrPlaybackSessionNotFound = errors.New("playback session not found")
 
 // PlaybackStart is the payload for PlaybackSessionRepository.Start.
 type PlaybackStart struct {
@@ -112,13 +116,16 @@ func (r *PlaybackSessionRepository) Start(ctx context.Context, s PlaybackStart) 
 // caller already has start/end so an orphaned progress call is
 // not fatal.
 func (r *PlaybackSessionRepository) Progress(ctx context.Context, p PlaybackProgress) error {
-	_, err := r.db.ExecContext(ctx,
+	res, err := r.db.ExecContext(ctx,
 		`UPDATE playback_sessions
 		 SET end_position = ?, total_amount = ?
 		 WHERE id = ?`,
 		p.EndPosition, p.TotalAmount, p.SessionID)
 	if err != nil {
 		return fmt.Errorf("playback progress: %w", err)
+	}
+	if n, rerr := res.RowsAffected(); rerr == nil && n == 0 {
+		return ErrPlaybackSessionNotFound
 	}
 	return nil
 }
@@ -140,12 +147,16 @@ func (r *PlaybackSessionRepository) End(ctx context.Context, e PlaybackEnd) erro
 	if e.Completed {
 		completedInt = 1
 	}
-	if _, err := tx.ExecContext(ctx,
+	res, err := tx.ExecContext(ctx,
 		`UPDATE playback_sessions
 		 SET ended_at = ?, end_position = ?, total_amount = ?, completed = ?
 		 WHERE id = ?`,
-		e.EndedAt, e.EndPosition, e.TotalAmount, completedInt, e.SessionID); err != nil {
+		e.EndedAt, e.EndPosition, e.TotalAmount, completedInt, e.SessionID)
+	if err != nil {
 		return fmt.Errorf("end session: %w", err)
+	}
+	if n, rerr := res.RowsAffected(); rerr == nil && n == 0 {
+		return ErrPlaybackSessionNotFound
 	}
 
 	var userID, mediaItemID, endPos, totalAmount int64
@@ -301,7 +312,7 @@ func (r *PlaybackSessionRepository) ListHistory(ctx context.Context, userID, med
 	}
 	defer rows.Close()
 
-	var out []PlaybackSession
+	out := []PlaybackSession{}
 	for rows.Next() {
 		var s PlaybackSession
 		var completed int

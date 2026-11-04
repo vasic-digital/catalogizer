@@ -21,6 +21,10 @@ import (
 var verbs = map[string]bool{"GET": true, "POST": true, "PUT": true, "DELETE": true, "PATCH": true, "HEAD": true, "OPTIONS": true}
 var fset = token.NewFileSet()
 var funcs = map[string]*ast.FuncDecl{}
+
+// ext holds the router-registering functions and methods of the extra package directories passed on the command line
+// (cross-package registration such as handlers.RegisterStorageRoutes(api, ...) or h.RegisterAliasRoutes(api)).
+var ext = map[string][]*ast.FuncDecl{}
 var routes = map[string]bool{}
 var unresolved []string
 
@@ -166,29 +170,58 @@ func call(c *ast.CallExpr, e env, depth int) {
 			return
 		}
 	}
-	// helper call: f(group, ...) for a same-file function with router-typed params
-	if id, ok := c.Fun.(*ast.Ident); ok && depth < 20 {
-		if fd := funcs[id.Name]; fd != nil && fd.Body != nil {
-			ne := env{}
-			bound := false
-			i := 0
-			for _, f := range fd.Type.Params.List {
-				names := f.Names
-				if len(names) == 0 {
-					names = []*ast.Ident{nil}
-				}
-				for _, n := range names {
-					if i < len(c.Args) && n != nil && isRouterType(f.Type) {
-						if p, ok := group(c.Args[i], e); ok {
-							ne[n.Name] = p
-							bound = true
-						}
-					}
-					i++
-				}
+	// helper call: f(group, ...) for a same-file function, or pkg.F(group, ...) / x.M(group, ...) resolved by name among the
+	// extra package directories, with router-typed params
+	var name string
+	var cands []*ast.FuncDecl
+	if id, ok := c.Fun.(*ast.Ident); ok {
+		name = id.Name
+		if fd := funcs[name]; fd != nil {
+			cands = append(cands, fd)
+		}
+	} else if sel, ok := c.Fun.(*ast.SelectorExpr); ok {
+		name = sel.Sel.Name
+		cands = append(cands, ext[name]...)
+	}
+	if name == "" || depth >= 20 {
+		return
+	}
+	anyBound := false
+	for _, fd := range cands {
+		if fd.Body == nil {
+			continue
+		}
+		ne := env{}
+		bound := false
+		i := 0
+		for _, f := range fd.Type.Params.List {
+			names := f.Names
+			if len(names) == 0 {
+				names = []*ast.Ident{nil}
 			}
-			if bound {
-				walk(fd.Body, ne, depth+1)
+			for _, n := range names {
+				if i < len(c.Args) && n != nil && isRouterType(f.Type) {
+					if p, ok := group(c.Args[i], e); ok {
+						ne[n.Name] = p
+						bound = true
+					}
+				}
+				i++
+			}
+		}
+		if bound {
+			anyBound = true
+			walk(fd.Body, ne, depth+1)
+		}
+	}
+	// a resolved router group handed to a callee we cannot see must not read as "no routes there": report it
+	if !anyBound && name != "Use" && name != "Group" && !verbs[name] && name != "Any" && name != "Handle" && name != "Match" {
+		for _, a := range c.Args {
+			if id, ok := a.(*ast.Ident); ok {
+				if _, isGroup := e[id.Name]; isGroup {
+					unresolved = append(unresolved, fmt.Sprintf("UNRESOLVED %s router group %q passed to %s, which is not defined in the scanned packages", fset.Position(c.Pos()), id.Name, name))
+					return
+				}
 			}
 		}
 	}
@@ -224,8 +257,8 @@ func walk(body ast.Node, e env, depth int) {
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Fprintln(os.Stderr, "usage: gin_routes_ast FILE.go")
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "usage: gin_routes_ast FILE.go [PKGDIR...]")
 		os.Exit(2)
 	}
 	f, err := parser.ParseFile(fset, os.Args[1], nil, 0)
@@ -236,6 +269,28 @@ func main() {
 	for _, d := range f.Decls {
 		if fd, ok := d.(*ast.FuncDecl); ok && fd.Recv == nil {
 			funcs[fd.Name.Name] = fd
+		}
+	}
+	for _, dir := range os.Args[2:] {
+		ents, err := os.ReadDir(dir)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(2)
+		}
+		for _, en := range ents {
+			if en.IsDir() || !strings.HasSuffix(en.Name(), ".go") || strings.HasSuffix(en.Name(), "_test.go") {
+				continue
+			}
+			pf, err := parser.ParseFile(fset, dir+"/"+en.Name(), nil, 0)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(2)
+			}
+			for _, d := range pf.Decls {
+				if fd, ok := d.(*ast.FuncDecl); ok {
+					ext[fd.Name.Name] = append(ext[fd.Name.Name], fd)
+				}
+			}
 		}
 	}
 	m := funcs["main"]

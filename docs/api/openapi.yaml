@@ -207,6 +207,7 @@ components:
           type: string
         avatar_url:
           type: string
+          nullable: true
         is_active:
           type: boolean
         is_locked:
@@ -332,23 +333,30 @@ components:
           enum: [smb, ftp, nfs, webdav, local]
         host:
           type: string
+          nullable: true
         port:
           type: integer
+          nullable: true
         path:
           type: string
+          nullable: true
         username:
           type: string
+          nullable: true
         domain:
           type: string
+          nullable: true
         enabled:
           type: boolean
         max_depth:
           type: integer
         url:
           type: string
+          nullable: true
           description: WebDAV address; any password in its userinfo is returned redacted (xxxxx)
         mount_point:
           type: string
+          nullable: true
           description: NFS local mount point
         allow_empty:
           type: boolean
@@ -361,6 +369,7 @@ components:
           format: date-time
         last_scan_at:
           type: string
+          nullable: true
           format: date-time
 
     CreateStorageRootRequest:
@@ -892,6 +901,7 @@ components:
             type: string
 
     UpdateRoleRequest:
+      required: [name]
       type: object
       properties:
         name:
@@ -1412,6 +1422,26 @@ components:
           items:
             type: string
           description: Names of the figures above that could not be measured
+
+    AdminUserListItem:
+      type: object
+      required: [id, username, email, role, status, createdAt]
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, suspended, pending]
+        lastLogin:
+          type: string
+        createdAt:
+          type: string
 
     AdminUserUpdate:
       type: object
@@ -2961,8 +2991,12 @@ paths:
               schema:
                 type: string
                 format: binary
+        '400':
+          description: "Non-integer id, or the id names a directory."
         '404':
           description: File not found
+        '500':
+          description: "Storage backend error. Files on SMB roots stream through the SMB service; files on every other root protocol (local, NFS, WebDAV, FTP) are served by the stream handler."
 
   /api/v1/download/directory/{path}:
     get:
@@ -2984,6 +3018,12 @@ paths:
               schema:
                 type: string
                 format: binary
+        '400':
+          description: "Invalid format, invalid path, or the directory is larger than the archive limit."
+        '404':
+          description: "The path is not cataloged, or the directory is empty."
+        '500':
+          description: "Catalog read error."
 
   /api/v1/download/archive:
     post:
@@ -3797,10 +3837,10 @@ paths:
             type: integer
             format: int64
       responses:
-        '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
           description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: Storage path listing
           content:
@@ -3853,10 +3893,6 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
-        '403':
-          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Storage roots list
           content:
@@ -3920,10 +3956,6 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
-        '403':
-          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Storage roots list
           content:
@@ -3949,10 +3981,6 @@ paths:
           schema:
             type: integer
       responses:
-        '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
-        '403':
-          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Connectivity status
           content:
@@ -4265,8 +4293,6 @@ paths:
             schema:
               $ref: '#/components/schemas/QueueScanRequest'
       responses:
-        '403':
-          description: Caller is not an administrator (decided from the database on every request)
         '202':
           description: Scan job queued
           content:
@@ -4288,6 +4314,8 @@ paths:
           description: Missing or invalid token
         '404':
           description: Storage root not found
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '503':
           description: Scanner unavailable
     get:
@@ -4607,7 +4635,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/User'
+                  $ref: '#/components/schemas/AdminUserListItem'
         '401':
           description: Unauthorized
         '403':
@@ -4620,6 +4648,10 @@ paths:
       tags: [admin]
       summary: Update user (admin)
       description: |
+        Every mutating /api/v1/admin request is also guarded by a double-submit
+        CSRF token: any GET under /api/v1/admin returns a signed token in the
+        `X-CSRF-Token` header and in a cookie, and the mutating call must send
+        both back (otherwise 403 "missing csrf cookie/header").
         Updates a user's role, active status, or lock status. Admin users
         cannot modify their own account to prevent self-lockout. Requires
         admin role: every /api/v1/admin request is checked against the
@@ -4945,6 +4977,16 @@ paths:
       summary: Reset user password
       security:
         - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [new_password]
+              properties:
+                new_password:
+                  type: string
       parameters:
         - name: id
           in: path
@@ -4971,6 +5013,17 @@ paths:
       summary: Lock user account
       security:
         - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lock_until]
+              properties:
+                lock_until:
+                  type: string
+                  format: date-time
       parameters:
         - name: id
           in: path
@@ -5451,6 +5504,16 @@ paths:
           application/json:
             schema:
               type: object
+              required: [name, components]
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                components:
+                  type: array
+                  items:
+                    type: string
       responses:
         '200':
           description: "Collection created; body is the collection (JSON, with `id`). Measured on the real binary: 200, not 201."
@@ -5575,13 +5638,40 @@ paths:
       security:
         - BearerAuth: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required: [collection_id, share_type, permissions]
+              properties:
+                collection_id:
+                  type: integer
+                share_type:
+                  type: string
+                  enum: [public, private, internal]
+                permissions:
+                  type: array
+                  items:
+                    type: string
+                expires_at:
+                  type: string
+                  format: date-time
+                recipients:
+                  type: array
+                  items:
+                    type: string
       responses:
         '200':
           description: "Share created; body carries `id` and `share_token`. Measured on the real binary: 200, not 201."
+        '400':
+          description: "Invalid JSON body."
+        '401':
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
+        '403':
+          description: "Caller lacks `system.admin`, or does not own the collection."
+        '404':
+          description: "No such collection."
 
   /api/v1/logs/share/{token}:
     get:
@@ -5618,9 +5708,9 @@ paths:
         - name: token
           in: path
           required: true
-          description: Share id (DELETE) or share token (GET)
+          description: Share id (an integer) on DELETE; the GET above takes the share token
           schema:
-            type: string
+            type: integer
       responses:
         '204':
           description: "Share revoked (no body)."
@@ -5630,8 +5720,10 @@ paths:
           description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
           description: "Caller lacks `system.admin`."
+        '404':
+          description: "Unknown share id (`sql.ErrNoRows` from the lookup is mapped to 404 by the handler)."
         '500':
-          description: "Service error. An unknown share id is reported here too (measured: `500` with `failed to get log share ... no rows`), not as 404."
+          description: "Service error."
   /api/v1/logs/stream:
     get:
       tags: [logs]
@@ -6260,6 +6352,8 @@ paths:
           schema:
             type: integer
       responses:
+        '200':
+          description: No directory found for the entity; nothing queued
         '202':
           description: Refresh queued
 
@@ -6580,9 +6674,10 @@ paths:
         - name: path
           in: path
           required: true
-          description: File path (path segment used as file ID)
+          description: File ID (the handler parses the wildcard segment as a numeric file id; non-numeric values answer 400)
           schema:
-            type: string
+            type: integer
+            format: int64
       responses:
         '200':
           description: File information
@@ -9964,6 +10059,7 @@ paths:
                     type: integer
                   last_sync:
                     type: string
+                    nullable: true
         '401':
           description: Unauthorized
           content:

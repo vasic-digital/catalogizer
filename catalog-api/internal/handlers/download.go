@@ -6,6 +6,7 @@ import (
 	"catalogizer/internal/models"
 	"catalogizer/internal/services"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -26,6 +27,25 @@ type DownloadHandler struct {
 	maxArchiveSize int64
 	chunkSize      int
 	logger         *zap.Logger
+	// nonSMBFileHandler serves files whose storage root is not a configured SMB
+	// host (local, NFS, WebDAV, FTP roots); wired to the stream handler in main.
+	nonSMBFileHandler gin.HandlerFunc
+}
+
+// SetNonSMBFileHandler sets the handler used by DownloadFile for storage roots
+// that are not configured SMB hosts.
+func (h *DownloadHandler) SetNonSMBFileHandler(fn gin.HandlerFunc) { h.nonSMBFileHandler = fn }
+
+func (h *DownloadHandler) isSMBRoot(name string) bool {
+	if h.smbService == nil {
+		return false
+	}
+	for _, n := range h.smbService.GetHosts() {
+		if n == name {
+			return true
+		}
+	}
+	return false
 }
 
 func NewDownloadHandler(catalogService *services.CatalogService, smbService *services.SMBService, tempDir string, maxArchiveSize int64, chunkSize int, logger *zap.Logger) *DownloadHandler {
@@ -71,6 +91,11 @@ func (h *DownloadHandler) DownloadFile(c *gin.Context) {
 
 	if fileInfo.IsDirectory {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot download directory as single file"})
+		return
+	}
+
+	if !h.isSMBRoot(fileInfo.SmbRoot) && h.nonSMBFileHandler != nil {
+		h.nonSMBFileHandler(c)
 		return
 	}
 
@@ -126,6 +151,7 @@ func (h *DownloadHandler) DownloadFile(c *gin.Context) {
 // @Produce application/octet-stream
 // @Success 200 {file} binary
 // @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /api/v1/download/directory/{path} [get]
 func (h *DownloadHandler) DownloadDirectory(c *gin.Context) {
@@ -152,6 +178,10 @@ func (h *DownloadHandler) DownloadDirectory(c *gin.Context) {
 	// Get directory listing recursively
 	files, err := h.getDirectoryContentsRecursive(path)
 	if err != nil {
+		if errors.Is(err, services.ErrPathNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Directory not found"})
+			return
+		}
 		h.logger.Error("Failed to get directory contents", zap.String("path", path), zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read directory"})
 		return

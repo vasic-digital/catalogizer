@@ -842,17 +842,19 @@ func (h *UserHandler) allowedToActOn(w http.ResponseWriter, caller *models.User,
 	if !ok {
 		return false
 	}
-	if admin {
-		return true
-	}
 	target, err := h.userRepo.GetByID(targetID)
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
+			// The same 404 for an administrator as for anyone else: acting on a user that does not exist is not a success
+			// (delete answered 204 and unlock 200 for an unknown id before this check applied to administrators too).
 			http.Error(w, "User not found", http.StatusNotFound)
 			return false
 		}
 		http.Error(w, "Failed to get user", http.StatusInternalServerError)
 		return false
+	}
+	if admin {
+		return true
 	}
 	role, err := h.userRepo.GetRole(target.RoleID)
 	if err != nil || roleIsAdmin(role) {
