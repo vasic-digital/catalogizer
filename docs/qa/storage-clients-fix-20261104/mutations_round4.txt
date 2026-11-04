@@ -25,3 +25,6 @@ FAIL	catalogizer/filesystem	0.822s
 --- FAIL: TestFTPDisconnectAfterFailedReplacementNoRedial (0.40s)
 FAIL
 FAIL	catalogizer/filesystem	0.409s
+== M1b2-getfileinfo-falls-through (after clock-compare fix)
+--- FAIL: TestFTPGetFileInfoCutReportsContextError (0.40s)
+FAIL

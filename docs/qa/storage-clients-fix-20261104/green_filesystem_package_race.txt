@@ -1,4 +1,2 @@
 $ go test ./filesystem -race -count=1 (whole package)
-FAIL
-FAIL	catalogizer/filesystem	86.068s
-FAIL
+ok  	catalogizer/filesystem	87.604s

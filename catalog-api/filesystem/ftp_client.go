@@ -363,8 +363,17 @@ func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (_ *FileInfo, 
 		}, nil
 	}
 	name := pathpkg.Base(fullPath)
-	if cerr := ctx.Err(); cerr != nil { // SIZE was cut by the context: the session is dead, a LIST would only fail the same way
+	// SIZE was cut by the context or by the idle bound: the session is dead, a LIST would only fail the same way. The connection deadline
+	// can fire a moment before ctx.Err() turns non-nil, so the ctx deadline itself is compared with the clock too.
+	cerr := ctx.Err()
+	if d, ok := ctx.Deadline(); cerr == nil && ok && !time.Now().Before(d) {
+		cerr = context.DeadlineExceeded
+	}
+	var nerr net.Error
+	if cerr != nil {
 		return nil, fmt.Errorf("failed to get FTP file info %s: %w (%w)", fullPath, sizeErr, cerr)
+	} else if errors.As(sizeErr, &nerr) && nerr.Timeout() {
+		return nil, fmt.Errorf("failed to get FTP file info %s: %w", fullPath, sizeErr)
 	}
 	if fullPath == "/" || name == "." || name == "/" {
 		return &FileInfo{Name: name, IsDir: true, Mode: 0755, Path: path, ModTime: time.Time{}}, nil
