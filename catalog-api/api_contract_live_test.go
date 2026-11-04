@@ -410,7 +410,7 @@ func (g *cGen) pathParamValue(op *cOp, p cParam) string {
 			prev = strings.ToLower(segs[i-1])
 		}
 	}
-	for _, cand := range []string{prev, strings.ToLower(p.Name)} {
+	for _, cand := range []string{op.Method + " " + prev, prev, strings.ToLower(p.Name)} {
 		if v, ok := g.learned[cand]; ok {
 			return fmt.Sprint(v)
 		}
@@ -530,7 +530,7 @@ func (w *sweep) call(c *http.Client, method, path, tok string, body []byte, ct s
 	}
 	defer r.Body.Close()
 	b, _ := io.ReadAll(io.LimitReader(r.Body, 8<<20))
-	if w.trace != nil && r.StatusCode >= 500 {
+	if w.trace != nil && (r.StatusCode >= 500 || r.StatusCode == 403) {
 		n := len(b)
 		if n > 300 {
 			n = 300
@@ -570,6 +570,19 @@ func (w *sweep) setup(artifactSub string) {
 	// throwaway victim user + role for destructive ops
 	w.gen.learned["roles"] = w.mustID("POST", "/api/v1/roles", map[string]interface{}{"name": "contract-victim-role", "permissions": []string{"media.view"}}, 201)
 	w.gen.learned["users"] = w.mustID("POST", "/api/v1/users", map[string]interface{}{"username": "contractvictim", "email": "contractvictim@example.invalid", "password": pw, "role_id": w.gen.learned["roles"]}, 201)
+	// log collection + two shares: GET /logs/share/{token} reads one by token, DELETE /logs/share/{token} revokes one by id
+	w.gen.learned["collections"] = w.mustID("POST", "/api/v1/logs/collect", map[string]interface{}{"name": "contract-logs", "components": []string{"catalog-api"}}, 200)
+	shareBody := map[string]interface{}{"collection_id": w.gen.learned["collections"], "share_type": "private", "permissions": []string{"read"}}
+	code, _, raw = w.call(w.admC, "POST", "/api/v1/logs/share", w.adm, mustJSON(shareBody), "")
+	require.Equal(t, 200, code, "%s", raw)
+	var sh struct {
+		ID    int    `json:"id"`
+		Token string `json:"share_token"`
+	}
+	require.NoError(t, json.Unmarshal(raw, &sh))
+	require.NotEmpty(t, sh.Token)
+	w.gen.learned["GET share"] = sh.Token
+	w.gen.learned["DELETE share"] = w.mustID("POST", "/api/v1/logs/share", shareBody, 200)
 	// fixture storage root + scan -> real entities
 	rootID := w.mustID("POST", "/api/v1/storage/roots", map[string]interface{}{"name": "contract-local", "protocol": "local", "path": w.fixDir, "enabled": true}, 201)
 	w.gen.learned["storage-roots"], w.gen.learned["roots"], w.gen.learned["storage_id"], w.gen.learned["storage_root_id"] = rootID, rootID, rootID, rootID
@@ -1184,10 +1197,15 @@ func (w *sweep) addCSRF(c *http.Client, req *http.Request, tok string) {
 	_, _ = io.Copy(io.Discard, resp.Body)
 	hdr := resp.Header.Get("X-CSRF-Token")
 	for _, ck := range resp.Cookies() {
-		if hdr != "" && strings.HasPrefix(ck.Value, hdr+":") {
+		// the server writes the cookie with url.QueryEscape (gin SetCookie), so ":" arrives as "%3A"; the raw value is sent back
+		// unchanged (the server unescapes it) and only the comparison is made on the decoded form.
+		if dec, err := url.QueryUnescape(ck.Value); hdr != "" && err == nil && strings.HasPrefix(dec, hdr+":") {
 			req.Header.Set("X-CSRF-Token", hdr)
 			req.AddCookie(&http.Cookie{Name: ck.Name, Value: ck.Value})
 			return
 		}
+	}
+	if w.trace != nil {
+		fmt.Fprintf(w.trace, "   addCSRF: no usable pair status=%d hdr-present=%v set-cookies=%d\n", resp.StatusCode, hdr != "", len(resp.Cookies()))
 	}
 }

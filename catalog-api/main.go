@@ -684,6 +684,7 @@ func main() {
 	catalogHandler := handlers.NewCatalogHandler(catalogService, smbService, logger)
 	downloadHandler := handlers.NewDownloadHandler(catalogService, smbService, cfg.Catalog.TempDir, cfg.Catalog.MaxArchiveSize, cfg.Catalog.DownloadChunkSize, logger)
 	streamHandler := handlers.NewStreamHandler(catalogService, databaseDB, clientFactory, logger)
+	downloadHandler.SetNonSMBFileHandler(streamHandler.StreamFile)
 	copyHandler := handlers.NewCopyHandler(catalogService, smbService, cfg.Catalog.TempDir, logger)
 	smbDiscoveryHandler := handlers.NewSMBDiscoveryHandler(smbDiscoveryService, logger)
 	probeAndIngestHandler := handlers.NewProbeAndIngestHandler(smbDiscoveryService, bindingIngester, logger)

@@ -91,21 +91,25 @@
       "400",
       "401",
       "403",
+      "404",
       "500"
     ],
     "probes": {
-      "happy": 400,
+      "badid": 400,
+      "happy": 204,
       "nonadmin": 403,
-      "notfound": 400,
+      "notfound": 404,
       "unauth": 401
     },
     "status_codes_observed": [
+      204,
       400,
       401,
-      403
+      403,
+      404
     ],
-    "happy_2xx_reached": false,
-    "schema_verdict": "not-applicable"
+    "happy_2xx_reached": true,
+    "schema_verdict": "non-json-or-empty"
   },
   {
     "method": "DELETE",
@@ -430,20 +434,7 @@
       403
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$[0].id: expected integer, got 4 (string)",
-      "$[0].role: expected object, got string",
-      "$[1].id: expected integer, got 3 (string)",
-      "$[1].role: expected object, got string",
-      "$[2].id: expected integer, got 2 (string)",
-      "$[2].role: expected object, got string",
-      "$[3].id: expected integer, got 1 (string)",
-      "$[3].role: expected object, got string"
-    ],
-    "violations": [
-      "response body does not match the documented schema (8+ problems): $[0].id: expected integer, got 4 (string)"
-    ]
+    "schema_verdict": "valid"
   },
   {
     "method": "GET",
@@ -532,13 +523,7 @@
       403
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.user_growth_data: null where a non-nullable array is documented"
-    ],
-    "violations": [
-      "response body does not match the documented schema (1+ problems): $.user_growth_data: null where a non-nullable array is documented"
-    ]
+    "schema_verdict": "valid"
   },
   {
     "method": "GET",
@@ -566,13 +551,7 @@
       403
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.most_accessed_media: null where a non-nullable array is documented"
-    ],
-    "violations": [
-      "response body does not match the documented schema (1+ problems): $.most_accessed_media: null where a non-nullable array is documented"
-    ]
+    "schema_verdict": "valid"
   },
   {
     "method": "GET",
@@ -613,10 +592,7 @@
       200
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "non-json-or-empty",
-    "violations": [
-      "notfound: expected 404 (documented), got 200"
-    ]
+    "schema_verdict": "non-json-or-empty"
   },
   {
     "method": "GET",
@@ -652,13 +628,7 @@
       401
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.avatar_url: null where a non-nullable string is documented"
-    ],
-    "violations": [
-      "response body does not match the documented schema (1+ problems): $.avatar_url: null where a non-nullable string is documented"
-    ]
+    "schema_verdict": "valid"
   },
   {
     "method": "GET",
@@ -695,13 +665,7 @@
       401
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.avatar_url: null where a non-nullable string is documented"
-    ],
-    "violations": [
-      "response body does not match the documented schema (1+ problems): $.avatar_url: null where a non-nullable string is documented"
-    ],
+    "schema_verdict": "valid",
     "advisories": [
       "status 401 observed but not documented in the spec"
     ]
@@ -721,13 +685,7 @@
       200
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.user.avatar_url: null where a non-nullable string is documented"
-    ],
-    "violations": [
-      "response body does not match the documented schema (1+ problems): $.user.avatar_url: null where a non-nullable string is documented"
-    ]
+    "schema_verdict": "valid"
   },
   {
     "method": "GET",
@@ -747,13 +705,7 @@
       401
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.data[0].last_scan_at: null where a non-nullable string is documented"
-    ],
-    "violations": [
-      "response body does not match the documented schema (1+ problems): $.data[0].last_scan_at: null where a non-nullable string is documented"
-    ]
+    "schema_verdict": "valid"
   },
   {
     "method": "GET",
@@ -833,19 +785,19 @@
       "500"
     ],
     "probes": {
-      "happy": 400,
-      "notfound": 400,
+      "badid": 400,
+      "happy": 200,
+      "notfound": 404,
       "unauth": 401
     },
     "status_codes_observed": [
+      200,
       400,
-      401
+      401,
+      404
     ],
-    "happy_2xx_reached": false,
-    "schema_verdict": "not-applicable",
-    "violations": [
-      "notfound: expected 404 (documented), got 400"
-    ]
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
   },
   {
     "method": "GET",
@@ -865,13 +817,7 @@
       401
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.data[0].last_scan_at: null where a non-nullable string is documented"
-    ],
-    "violations": [
-      "response body does not match the documented schema (1+ problems): $.data[0].last_scan_at: null where a non-nullable string is documented"
-    ]
+    "schema_verdict": "valid"
   },
   {
     "method": "GET",
@@ -1335,23 +1281,22 @@
     "path": "/api/v1/download/directory/{path}",
     "public": false,
     "documented_statuses": [
-      "200"
+      "200",
+      "400",
+      "404",
+      "500"
     ],
     "probes": {
-      "happy": 500,
-      "notfound": 500,
+      "happy": 404,
+      "notfound": 404,
       "unauth": 401
     },
     "status_codes_observed": [
       401,
-      500
+      404
     ],
     "happy_2xx_reached": false,
     "schema_verdict": "not-applicable",
-    "violations": [
-      "server error 500 observed",
-      "status 500 observed but not documented"
-    ],
     "advisories": [
       "status 401 observed but not documented in the spec"
     ]
@@ -1362,28 +1307,25 @@
     "public": false,
     "documented_statuses": [
       "200",
-      "404"
+      "400",
+      "404",
+      "500"
     ],
     "probes": {
       "badid": 400,
-      "happy": 500,
+      "happy": 200,
       "notfound": 404,
       "unauth": 401
     },
     "status_codes_observed": [
+      200,
       400,
       401,
-      404,
-      500
+      404
     ],
-    "happy_2xx_reached": false,
-    "schema_verdict": "not-applicable",
-    "violations": [
-      "server error 500 observed",
-      "status 500 observed but not documented"
-    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "non-json-or-empty",
     "advisories": [
-      "status 400 observed but not documented in the spec",
       "status 401 observed but not documented in the spec"
     ]
   },
@@ -1851,13 +1793,7 @@
       401
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.progress: null where a non-nullable object is documented"
-    ],
-    "violations": [
-      "response body does not match the documented schema (1+ problems): $.progress: null where a non-nullable object is documented"
-    ]
+    "schema_verdict": "valid"
   },
   {
     "method": "GET",
@@ -2364,17 +2300,21 @@
       "404"
     ],
     "probes": {
-      "happy": 404,
-      "nonadmin": 404,
+      "happy": 200,
+      "nonadmin": 200,
       "notfound": 404,
       "unauth": 401
     },
     "status_codes_observed": [
+      200,
       401,
       404
     ],
-    "happy_2xx_reached": false,
-    "schema_verdict": "not-applicable"
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200"
+    ]
   },
   {
     "method": "GET",
@@ -2615,13 +2555,7 @@
       401
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.playlists: null where a non-nullable array is documented"
-    ],
-    "violations": [
-      "response body does not match the documented schema (1+ problems): $.playlists: null where a non-nullable array is documented"
-    ]
+    "schema_verdict": "valid"
   },
   {
     "method": "GET",
@@ -3020,13 +2954,7 @@
       401
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.data.files: null where a non-nullable array is documented"
-    ],
-    "violations": [
-      "response body does not match the documented schema (1+ problems): $.data.files: null where a non-nullable array is documented"
-    ]
+    "schema_verdict": "valid"
   },
   {
     "method": "GET",
@@ -3389,12 +3317,10 @@
     "public": false,
     "documented_statuses": [
       "200",
-      "403",
       "503"
     ],
     "probes": {
       "happy": 200,
-      "nonadmin": 200,
       "unauth": 401
     },
     "status_codes_observed": [
@@ -3402,20 +3328,7 @@
       401
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.roots[0].domain: null where a non-nullable string is documented",
-      "$.roots[0].host: null where a non-nullable string is documented",
-      "$.roots[0].last_scan_at: null where a non-nullable string is documented",
-      "$.roots[0].mount_point: null where a non-nullable string is documented",
-      "$.roots[0].port: null where a non-nullable integer is documented",
-      "$.roots[0].url: null where a non-nullable string is documented",
-      "$.roots[0].username: null where a non-nullable string is documented"
-    ],
-    "violations": [
-      "nonadmin: expected 403 (spec: \"Caller is not an administrator (decided from the database on every request)\"), got 200",
-      "response body does not match the documented schema (7+ problems): $.roots[0].domain: null where a non-nullable string is documented"
-    ],
+    "schema_verdict": "valid",
     "advisories": [
       "status 401 observed but not documented in the spec"
     ]
@@ -3426,14 +3339,12 @@
     "public": false,
     "documented_statuses": [
       "200",
-      "403",
       "404",
       "503"
     ],
     "probes": {
       "badid": 400,
       "happy": 200,
-      "nonadmin": 200,
       "notfound": 404,
       "unauth": 401
     },
@@ -3445,9 +3356,6 @@
     ],
     "happy_2xx_reached": true,
     "schema_verdict": "valid",
-    "violations": [
-      "nonadmin: expected 403 (spec: \"Caller is not an administrator (decided from the database on every request)\"), got 200"
-    ],
     "advisories": [
       "status 400 observed but not documented in the spec",
       "status 401 observed but not documented in the spec"
@@ -3461,7 +3369,6 @@
       "200",
       "400",
       "401",
-      "403",
       "404",
       "409",
       "422",
@@ -3471,14 +3378,12 @@
     "probes": {
       "happy": 404,
       "missingq:storage_id": 400,
-      "nonadmin": 403,
       "notfound": 404,
       "unauth": 401
     },
     "status_codes_observed": [
       400,
       401,
-      403,
       404
     ],
     "happy_2xx_reached": false,
@@ -3490,12 +3395,10 @@
     "public": false,
     "documented_statuses": [
       "200",
-      "403",
       "503"
     ],
     "probes": {
       "happy": 200,
-      "nonadmin": 200,
       "unauth": 401
     },
     "status_codes_observed": [
@@ -3503,20 +3406,7 @@
       401
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.roots[0].domain: null where a non-nullable string is documented",
-      "$.roots[0].host: null where a non-nullable string is documented",
-      "$.roots[0].last_scan_at: null where a non-nullable string is documented",
-      "$.roots[0].mount_point: null where a non-nullable string is documented",
-      "$.roots[0].port: null where a non-nullable integer is documented",
-      "$.roots[0].url: null where a non-nullable string is documented",
-      "$.roots[0].username: null where a non-nullable string is documented"
-    ],
-    "violations": [
-      "nonadmin: expected 403 (spec: \"Caller is not an administrator (decided from the database on every request)\"), got 200",
-      "response body does not match the documented schema (7+ problems): $.roots[0].domain: null where a non-nullable string is documented"
-    ],
+    "schema_verdict": "valid",
     "advisories": [
       "status 401 observed but not documented in the spec"
     ]
@@ -3894,13 +3784,7 @@
       401
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.last_sync: null where a non-nullable string is documented"
-    ],
-    "violations": [
-      "response body does not match the documented schema (1+ problems): $.last_sync: null where a non-nullable string is documented"
-    ]
+    "schema_verdict": "valid"
   },
   {
     "method": "GET",
@@ -3960,13 +3844,7 @@
       401
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.avatar_url: null where a non-nullable string is documented"
-    ],
-    "violations": [
-      "response body does not match the documented schema (1+ problems): $.avatar_url: null where a non-nullable string is documented"
-    ]
+    "schema_verdict": "valid"
   },
   {
     "method": "GET",
@@ -4061,13 +3939,17 @@
     ],
     "probes": {
       "happy": 200,
-      "unauth": 200
+      "unauth": 401
     },
     "status_codes_observed": [
-      200
+      200,
+      401
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "non-json-or-empty"
+    "schema_verdict": "non-json-or-empty",
+    "advisories": [
+      "status 401 observed but not documented in the spec"
+    ]
   },
   {
     "method": "GET",
@@ -4101,16 +3983,20 @@
       "503"
     ],
     "probes": {
-      "happy": 403,
+      "happy": 400,
       "nonadmin": 403,
       "unauth": 401
     },
     "status_codes_observed": [
+      400,
       401,
       403
     ],
     "happy_2xx_reached": false,
-    "schema_verdict": "not-applicable"
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 400 observed but not documented in the spec"
+    ]
   },
   {
     "method": "POST",
@@ -4126,12 +4012,13 @@
     ],
     "probes": {
       "nonadmin": 403,
-      "notfound": 403,
+      "notfound": 404,
       "unauth": 401
     },
     "status_codes_observed": [
       401,
-      403
+      403,
+      404
     ],
     "happy_2xx_reached": false,
     "happy_skipped_reason": "restores the live database over the running server; gate and unknown-id behaviour are still probed",
@@ -4208,7 +4095,7 @@
       "503"
     ],
     "probes": {
-      "happy": 403,
+      "happy": 400,
       "malformed": 400,
       "nonadmin": 403,
       "unauth": 401
@@ -4353,13 +4240,7 @@
       400
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "invalid",
-    "schema_errors": [
-      "$.user.avatar_url: null where a non-nullable string is documented"
-    ],
-    "violations": [
-      "response body does not match the documented schema (1+ problems): $.user.avatar_url: null where a non-nullable string is documented"
-    ]
+    "schema_verdict": "valid"
   },
   {
     "method": "POST",
@@ -4825,6 +4706,7 @@
     "path": "/api/v1/entities/{id}/metadata/refresh",
     "public": false,
     "documented_statuses": [
+      "200",
       "202"
     ],
     "probes": {
@@ -4840,12 +4722,10 @@
       404
     ],
     "happy_2xx_reached": true,
-    "schema_verdict": "not-applicable",
-    "violations": [
-      "status 200 observed but not documented"
-    ],
+    "schema_verdict": "no-schema-in-spec",
     "advisories": [
       "notfound: 404 returned but not documented",
+      "2xx JSON body returned but the spec documents no JSON schema for 200",
       "status 400 observed but not documented in the spec",
       "status 401 observed but not documented in the spec",
       "status 404 observed but not documented in the spec"
@@ -5015,24 +4895,28 @@
     "path": "/api/v1/logs/share",
     "public": false,
     "documented_statuses": [
-      "200"
+      "200",
+      "400",
+      "401",
+      "403",
+      "404"
     ],
     "probes": {
-      "happy": 404,
+      "happy": 200,
       "malformed": 400,
+      "nonadmin": 403,
       "unauth": 401
     },
     "status_codes_observed": [
+      200,
       400,
       401,
-      404
+      403
     ],
-    "happy_2xx_reached": false,
-    "schema_verdict": "not-applicable",
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
     "advisories": [
-      "status 400 observed but not documented in the spec",
-      "status 401 observed but not documented in the spec",
-      "status 404 observed but not documented in the spec"
+      "2xx JSON body returned but the spec documents no JSON schema for 200"
     ]
   },
   {
@@ -5095,19 +4979,19 @@
       "500"
     ],
     "probes": {
-      "happy": 500,
+      "happy": 404,
       "malformed": 400,
       "unauth": 401
     },
     "status_codes_observed": [
       400,
       401,
-      500
+      404
     ],
     "happy_2xx_reached": false,
     "schema_verdict": "not-applicable",
-    "violations": [
-      "server error 500 observed"
+    "advisories": [
+      "status 404 observed but not documented in the spec"
     ]
   },
   {
@@ -5121,17 +5005,20 @@
       "500"
     ],
     "probes": {
-      "happy": 200,
+      "happy": 404,
       "malformed": 400,
       "unauth": 401
     },
     "status_codes_observed": [
-      200,
       400,
-      401
+      401,
+      404
     ],
-    "happy_2xx_reached": true,
-    "schema_verdict": "valid"
+    "happy_2xx_reached": false,
+    "schema_verdict": "not-applicable",
+    "advisories": [
+      "status 404 observed but not documented in the spec"
+    ]
   },
   {
     "method": "POST",
@@ -5239,21 +5126,18 @@
     "documented_statuses": [
       "202",
       "401",
-      "403",
       "404",
       "503"
     ],
     "probes": {
       "happy": 202,
       "malformed": 400,
-      "nonadmin": 403,
       "unauth": 401
     },
     "status_codes_observed": [
       202,
       400,
-      401,
-      403
+      401
     ],
     "happy_2xx_reached": true,
     "schema_verdict": "valid",
@@ -5443,6 +5327,33 @@
     "advisories": [
       "status 401 observed but not documented in the spec"
     ]
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/stream/{id}/ticket",
+    "public": false,
+    "documented_statuses": [
+      "200",
+      "400",
+      "401",
+      "404",
+      "503"
+    ],
+    "probes": {
+      "badid": 400,
+      "happy": 200,
+      "malformed": 400,
+      "notfound": 404,
+      "unauth": 401
+    },
+    "status_codes_observed": [
+      200,
+      400,
+      401,
+      404
+    ],
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
   },
   {
     "method": "POST",
@@ -5668,19 +5579,21 @@
     ],
     "probes": {
       "badid": 400,
-      "happy": 400,
+      "happy": 200,
+      "malformed": 400,
       "nonadmin": 403,
       "notfound": 404,
       "unauth": 401
     },
     "status_codes_observed": [
+      200,
       400,
       401,
       403,
       404
     ],
-    "happy_2xx_reached": false,
-    "schema_verdict": "not-applicable"
+    "happy_2xx_reached": true,
+    "schema_verdict": "non-json-or-empty"
   },
   {
     "method": "POST",
@@ -5696,19 +5609,21 @@
     ],
     "probes": {
       "badid": 400,
-      "happy": 400,
+      "happy": 200,
+      "malformed": 400,
       "nonadmin": 403,
       "notfound": 404,
       "unauth": 401
     },
     "status_codes_observed": [
+      200,
       400,
       401,
       403,
       404
     ],
-    "happy_2xx_reached": false,
-    "schema_verdict": "not-applicable"
+    "happy_2xx_reached": true,
+    "schema_verdict": "non-json-or-empty"
   },
   {
     "method": "POST",
@@ -5752,23 +5667,22 @@
       "503"
     ],
     "probes": {
-      "badid": 403,
-      "happy": 403,
+      "badid": 400,
+      "happy": 200,
       "malformed": 400,
       "nonadmin": 403,
-      "notfound": 403,
+      "notfound": 404,
       "unauth": 401
     },
     "status_codes_observed": [
+      200,
       400,
       401,
-      403
+      403,
+      404
     ],
-    "happy_2xx_reached": false,
-    "schema_verdict": "not-applicable",
-    "violations": [
-      "badid: non-numeric id for an integer parameter expected 400/404, got 403"
-    ]
+    "happy_2xx_reached": true,
+    "schema_verdict": "valid"
   },
   {
     "method": "PUT",
@@ -5975,21 +5889,23 @@
     ],
     "probes": {
       "badid": 400,
-      "happy": 400,
+      "happy": 200,
       "malformed": 400,
       "nonadmin": 403,
-      "notfound": 400,
+      "notfound": 404,
       "unauth": 401
     },
     "status_codes_observed": [
+      200,
       400,
       401,
-      403
+      403,
+      404
     ],
-    "happy_2xx_reached": false,
-    "schema_verdict": "not-applicable",
-    "violations": [
-      "notfound: expected 404 (documented), got 400"
+    "happy_2xx_reached": true,
+    "schema_verdict": "no-schema-in-spec",
+    "advisories": [
+      "2xx JSON body returned but the spec documents no JSON schema for 200"
     ]
   },
   {

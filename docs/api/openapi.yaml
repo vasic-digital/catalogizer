@@ -2991,8 +2991,12 @@ paths:
               schema:
                 type: string
                 format: binary
+        '400':
+          description: "Non-integer id, or the id names a directory."
         '404':
           description: File not found
+        '500':
+          description: "Storage backend error. Files on SMB roots stream through the SMB service; files on every other root protocol (local, NFS, WebDAV, FTP) are served by the stream handler."
 
   /api/v1/download/directory/{path}:
     get:
@@ -3014,6 +3018,12 @@ paths:
               schema:
                 type: string
                 format: binary
+        '400':
+          description: "Invalid format, invalid path, or the directory is larger than the archive limit."
+        '404':
+          description: "The path is not cataloged, or the directory is empty."
+        '500':
+          description: "Catalog read error."
 
   /api/v1/download/archive:
     post:
@@ -4969,6 +4979,16 @@ paths:
       summary: Reset user password
       security:
         - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [new_password]
+              properties:
+                new_password:
+                  type: string
       parameters:
         - name: id
           in: path
@@ -4995,6 +5015,17 @@ paths:
       summary: Lock user account
       security:
         - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lock_until]
+              properties:
+                lock_until:
+                  type: string
+                  format: date-time
       parameters:
         - name: id
           in: path
@@ -5475,6 +5506,16 @@ paths:
           application/json:
             schema:
               type: object
+              required: [name, components]
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                components:
+                  type: array
+                  items:
+                    type: string
       responses:
         '200':
           description: "Collection created; body is the collection (JSON, with `id`). Measured on the real binary: 200, not 201."
@@ -5599,13 +5640,40 @@ paths:
       security:
         - BearerAuth: []
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
+              required: [collection_id, share_type, permissions]
+              properties:
+                collection_id:
+                  type: integer
+                share_type:
+                  type: string
+                  enum: [public, private, internal]
+                permissions:
+                  type: array
+                  items:
+                    type: string
+                expires_at:
+                  type: string
+                  format: date-time
+                recipients:
+                  type: array
+                  items:
+                    type: string
       responses:
         '200':
           description: "Share created; body carries `id` and `share_token`. Measured on the real binary: 200, not 201."
+        '400':
+          description: "Invalid JSON body."
+        '401':
+          description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
+        '403':
+          description: "Caller lacks `system.admin`, or does not own the collection."
+        '404':
+          description: "No such collection."
 
   /api/v1/logs/share/{token}:
     get:
@@ -5642,9 +5710,9 @@ paths:
         - name: token
           in: path
           required: true
-          description: Share id (DELETE) or share token (GET)
+          description: Share id (an integer) on DELETE; the GET above takes the share token
           schema:
-            type: string
+            type: integer
       responses:
         '204':
           description: "Share revoked (no body)."
@@ -5654,8 +5722,10 @@ paths:
           description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
           description: "Caller lacks `system.admin`."
+        '404':
+          description: "Unknown share id (`sql.ErrNoRows` from the lookup is mapped to 404 by the handler)."
         '500':
-          description: "Service error. An unknown share id is reported here too (measured: `500` with `failed to get log share ... no rows`), not as 404."
+          description: "Service error."
   /api/v1/logs/stream:
     get:
       tags: [logs]
