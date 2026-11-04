@@ -1,6 +1,7 @@
 ARG GO_IMAGE=docker.io/library/golang:1.25-alpine
 FROM ${GO_IMAGE}
 
+# mupdf-dev/libffi were needed by go-fitz (removed in D3); UNCONFIRMED whether anything else needs them, left unchanged without a build proof
 RUN apk add --no-cache git make libffi mupdf-dev poppler-utils util-linux
 
 # Non-root: a dedicated dev user owns /app and its own Go caches. The user and GOPATH/GOMODCACHE are set BEFORE `go mod download`

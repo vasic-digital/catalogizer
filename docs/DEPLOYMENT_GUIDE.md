@@ -480,7 +480,7 @@ trixie-slim base, non-root `appuser`) installs the external tools the conversion
 | Tool | Package | Used for |
 |---|---|---|
 | `ffmpeg` | `ffmpeg` | audio and video conversion |
-| `convert` | `imagemagick` | image conversion (the ImageMagick PDF fallback needs ghostscript, which the image does not ship; PDF pages are rasterised by go-fitz) |
+| `convert` | `imagemagick` | image conversion (the ImageMagick PDF fallback needs ghostscript, which the image does not ship; PDF pages are rasterised by poppler `pdftoppm` in an isolated child; `poppler-utils` and `prlimit` are required) |
 | `pdftotext` | `poppler-utils` | PDF text extraction (primary engine) |
 
 `GET /health/deep` reports which of them the running server can find (`"converters":

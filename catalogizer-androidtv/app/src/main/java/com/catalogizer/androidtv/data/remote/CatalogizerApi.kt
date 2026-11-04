@@ -57,8 +57,8 @@ interface CatalogizerApi {
     suspend fun getComicPages(@Path("id") id: Long): Response<kotlinx.serialization.json.JsonObject>
 
     // Book reader: returns the rendered-page COUNT of a PDF book as
-    // {"total_pages": N}. catalog-api renders each page server-side via MuPDF
-    // (go-fitz) over the same multi-protocol filesystem client as /stream, so
+    // {"total_pages": N}. catalog-api renders each page server-side via poppler
+    // (pdftoppm) over the same multi-protocol filesystem client as /stream, so
     // SMB/FTP/NFS-hosted books work. Individual page images stream from
     // GET .../pdf-pages/{n} (0-based) as image/png, loaded by Coil with the
     // same Bearer auth as /stream. A non-PDF entity returns HTTP 400 and a

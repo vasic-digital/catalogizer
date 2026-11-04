@@ -54,7 +54,7 @@ internal sealed interface BookReaderUiState {
  * Absolute URL of a single rendered PDF page image:
  * `<baseUrl>/api/v1/entities/<mediaId>/pdf-pages/<pageIndex>` (0-based index,
  * matching catalog-api `pdf_pages_handler.go` which renders each page server-side
- * via MuPDF). Pure + internal so it is unit-testable without Compose / a device
+ * via poppler). Pure + internal so it is unit-testable without Compose / a device
  * (§11.4.6 — URL construction proven, not guessed).
  */
 internal fun pdfPageUrl(baseUrl: String, mediaId: Long, pageIndex: Int): String =
@@ -110,7 +110,7 @@ internal fun bookErrorForHttp(code: Int, ext: String?): String = when (code) {
  * renders the current page via Coil from
  * `GET /api/v1/entities/{id}/pdf-pages/{n}` — the SAME per-request Bearer auth the
  * image viewer / comic reader / player use — on a black background. Each page is
- * rendered server-side (MuPDF) so the TV needs no PDF rasteriser of its own.
+ * rendered server-side (poppler) so the TV needs no PDF rasteriser of its own.
  *
  * D-pad controls (mirrors [ComicReaderScreen] / [ImageViewerScreen]):
  *  - LEFT / RIGHT : previous / next page, clamped to [0, total-1] (no wrap).

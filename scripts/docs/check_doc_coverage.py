@@ -183,8 +183,8 @@ CLAIMS = [
      "catalog-api/Dockerfile.runtime", r"ffmpeg\s+imagemagick"),
     ("converters-probe-in-health", "docs/api/openapi.yaml", r"converters:",
      "catalog-api/internal/metrics/health.go", r'json:"converters"'),
-    ("go-fitz-removal-pending", "docs/UPGRADE_NOTES.md", r"go-fitz.{0,300}(?i:AGPL)",
-     "catalog-api/go.mod", r"gen2brain/go-fitz"),
+    ("go-fitz-removed-poppler-renders", "docs/UPGRADE_NOTES.md", r"go-fitz.{0,300}(?i:AGPL).{0,300}(?i:removed)|go-fitz.{0,300}(?i:removed)",
+     "catalog-api/services/pdf_page_render.go", r'"pdftoppm"'),
 ]
 
 

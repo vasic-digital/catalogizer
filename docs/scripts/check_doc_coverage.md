@@ -17,7 +17,7 @@ Machine-checks that the documentation matches the code, in five checks. Audit ev
 | `env` | every environment variable read by non-test Go code under `catalog-api/` is named (whole word) in `docs/deployment/ENVIRONMENT_VARIABLES.md` or `docs/ENV_VARIABLES.md` (`GAP env UNDOCUMENTED_ENV`) | upper-case string literals passed to any call whose name contains `env`/`Getenv`/`LookupEnv`; `Setenv`/`Unsetenv`/`Expand` are ignored |
 | `scripts` | every top-level `scripts/<file>` (not `.md`) has `docs/scripts/<name>.md` (hyphen/underscore variants accepted) or an exemption (`GAP scripts NO_SCRIPT_GUIDE`) | `git ls-files` |
 | `readme` | `README.md` links `docs/README.md` | regex |
-| `claims` | each curated behaviour statement (REGISTRATION_MODE default, smart playlists 501, share controls disabled, converters in the image and in the `/health/deep` probe, go-fitz removal pending) is present in its doc AND its code anchor is still present (`CLAIM_NOT_IN_DOC` / `CLAIM_NOT_IN_CODE`) | table `CLAIMS` in the script; add a row when a new behaviour statement is documented |
+| `claims` | each curated behaviour statement (REGISTRATION_MODE default, smart playlists 501, share controls disabled, converters in the image and in the `/health/deep` probe, go-fitz removed, PDF pages rendered by poppler) is present in its doc AND its code anchor is still present (`CLAIM_NOT_IN_DOC` / `CLAIM_NOT_IN_CODE`) | table `CLAIMS` in the script; add a row when a new behaviour statement is documented |
 
 ## Usage
 

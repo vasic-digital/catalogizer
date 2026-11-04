@@ -1,0 +1,27 @@
+M1 always render page 1 (-f 1 -l 1)            -> TestD3_ValidPages_DistinctPixels_AndDimensions FAIL (valid rerun; first attempt did not compile and is not counted)
+M2 ErrPDFInvalid mapped to 500                 -> TestD3_MalformedPDFs_Are422_NoInternals FAIL (11 subtests)
+M3 pixel cap disabled                          -> TestD3_OversizedPage_Is413_CountStillWorks FAIL (got 200 instead of 413)
+M4 render temp dir not removed                 -> TestD3_PDFRender_NoTempLeak FAIL
+M5 no absolute path (option injection, -h/-v/-f) -> TestD3_PDFRender_OptionLikeRelativeName FAIL (first attempt with only "-x.pdf" SURVIVED: poppler reads unknown dash words as file names; test strengthened to -h/-v/-f)
+M6 encrypted not classified                    -> TestD3_EncryptedPDF_Is422_Generic FAIL
+M7 handler returns err details                 -> TestD3_Malformed...NoInternals FAIL
+Note: mut_M1 log file holds the failed-compile attempt; the valid M1 rerun output was printed to the session only (FAIL TestD3_ValidPages_DistinctPixels_AndDimensions).
+
+ROUND 2 (review round 1 fixes), logs mut2_*.log; all killed:
+RA errPDFTooBig unmapped            -> TestD3_StatusPerCause/buffer_bound FAIL
+RB LimitReader removed              -> TestD3_BufferBoundStopsTheCopy hangs on the endless source and dies at the 60 s test timeout (killed)
+RC pdftoppm fsize 0                 -> TestD3_PDFRender_ChildLimitsAndEnv FAIL
+RE CPU limit 20 -> 200              -> survived the first test (assertion used the constant); literal "--cpu=20" assertion added, then FAIL (mut2_RE_cpu_raised.log is the rerun)
+RF RLIMIT_AS dropped                -> TestD3_PDFRender_ChildLimitsAndEnv FAIL
+RG handler 503 -> 500               -> TestD3_StatusPerCause/poppler_missing FAIL
+RH handler 504 -> 500               -> TestD3_StatusPerCause/expired_deadline FAIL
+N1 -cropbox removed                 -> TestD3_CropBoxBomb_RendersCropBoxOnly FAIL (renders 18750 px)
+N2 reader slot acquire removed      -> TestD3_StatusPerCause/saturated FAIL
+N3 LC_ALL=C removed                 -> TestD3_PDFRender_ChildLimitsAndEnv FAIL
+N4 SIGKILL/SIGXCPU classification removed -> TestD3_PDFRender_LimitSignalsClassified FAIL
+N5 cancel mapped to timeout         -> TestD3_PDFRender_Unavailable_And_Cancelled FAIL
+Note: mut2_RB log is the hang/timeout panic; mut2_RB/RE logs for the first (surviving) attempt were overwritten by the reruns.
+Round 2 (reviewer mutants):
+N1 release() right after slot acquire, GetPdfPage  -> TestD3_SlotHeld FAIL (test timeout panic, r3_mut_N1_get_release_early.log)
+N1 release() right after slot acquire, ListPdfPages -> TestD3_SlotHeld FAIL (test timeout panic, r3_mut_N1_list_release_early.log)
+N4 divisor reverted to 2*pdfConcurrentSlots         -> TestD3_PDFRender_AddressSpaceSizing FAIL (r3_mut_N4_divisor.log)

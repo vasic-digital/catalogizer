@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"catalogizer/internal/pathguard"
 	"catalogizer/internal/pathsafe"
 	"context"
@@ -23,7 +24,6 @@ import (
 	"catalogizer/models"
 	"catalogizer/repository"
 
-	"github.com/gen2brain/go-fitz"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -429,16 +429,14 @@ func (s *ConversionService) convertPDF(job *models.ConversionJob) error {
 	}
 }
 
-// convertPDFToImage converts PDF pages to images using go-fitz library
+// convertPDFToImage converts PDF pages to images with poppler (pdfinfo, pdftoppm) run as
+// isolated child processes (RenderPDFPagePNG; D3: the in-process go-fitz renderer was removed).
 func (s *ConversionService) convertPDFToImage(job *models.ConversionJob, format string) error {
-	doc, err := fitz.New(job.SourcePath)
+	// Get total page count
+	totalPages, err := PDFPageCount(context.Background(), job.SourcePath)
 	if err != nil {
 		return fmt.Errorf("failed to open PDF: %w", err)
 	}
-	defer doc.Close()
-
-	// Get total page count
-	totalPages := doc.NumPage()
 
 	// Parse settings to determine which pages to convert
 	settings := make(map[string]interface{})
@@ -471,7 +469,7 @@ func (s *ConversionService) convertPDFToImage(job *models.ConversionJob, format 
 
 	// Convert each page
 	for i := startPage; i < endPage; i++ {
-		img, err := doc.ImageDPI(i, float64(dpi))
+		pngBytes, err := RenderPDFPagePNG(context.Background(), job.SourcePath, i, float64(dpi))
 		if err != nil {
 			return fmt.Errorf("failed to render page %d: %w", i+1, err)
 		}
@@ -497,9 +495,13 @@ func (s *ConversionService) convertPDFToImage(job *models.ConversionJob, format 
 		// Encode based on format
 		switch format {
 		case "jpg", "jpeg":
+			img, derr := png.Decode(bytes.NewReader(pngBytes))
+			if derr != nil {
+				return fmt.Errorf("failed to decode rendered page %d: %w", i+1, derr)
+			}
 			err = jpeg.Encode(file, img, &jpeg.Options{Quality: 85})
 		case "png":
-			err = png.Encode(file, img)
+			_, err = file.Write(pngBytes)
 		default:
 			// For other formats, use ImageMagick as fallback
 			return s.convertPDFWithImageMagick(job, format)
@@ -658,11 +660,11 @@ func (s *ConversionService) convertPDFToHTML(job *models.ConversionJob) error {
 	return out.Close()
 }
 
-// convertPDFWithImageMagick converts PDF to image formats not directly supported by go-fitz
+// convertPDFWithImageMagick converts PDF to image formats not produced directly by the poppler renderer
 func (s *ConversionService) convertPDFWithImageMagick(job *models.ConversionJob, format string) error {
 	// F2: IM rasterises a PDF through Ghostscript. Without `gs` it cannot, so say that instead of
 	// failing with an opaque delegate error (the runtime images do not ship Ghostscript: it is a
-	// large PostScript interpreter and PDF -> png/jpg does not need it, go-fitz renders those).
+	// large PostScript interpreter and PDF -> png/jpg does not need it, the poppler renderer produces those).
 	if _, err := lookPath("gs"); err != nil {
 		return fmt.Errorf("PDF to %s needs Ghostscript (gs), which is not installed on this server; convert to png or jpg instead", format)
 	}

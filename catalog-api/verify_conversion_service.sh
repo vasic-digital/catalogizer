@@ -170,11 +170,13 @@ else
     log_check "ImageMagick Installation" "FAIL" "ImageMagick not installed"
 fi
 
-# Check for go-fitz
+# PDF page rendering uses poppler (pdftoppm/pdfinfo) in isolated children; go-fitz was removed (D3)
 if grep -q "github.com/gen2brain/go-fitz" go.mod; then
-    log_check "go-fitz Library" "PASS" "go-fitz PDF library included in go.mod"
+    log_check "PDF renderer" "FAIL" "go-fitz (MuPDF, AGPL) is still in go.mod; it was removed in favour of poppler"
+elif command -v pdftoppm >/dev/null 2>&1 && command -v pdfinfo >/dev/null 2>&1; then
+    log_check "PDF renderer" "PASS" "poppler pdftoppm/pdfinfo available; go-fitz absent from go.mod"
 else
-    log_check "go-fitz Library" "FAIL" "go-fitz library not found in go.mod"
+    log_check "PDF renderer" "FAIL" "poppler-utils (pdftoppm, pdfinfo) not installed"
 fi
 
 echo ""

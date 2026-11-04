@@ -4,7 +4,8 @@
 # Build from repo root:
 #   podman build --network host -f catalog-api/Dockerfile -t catalogizer-api .
 
-# Stage 1: Build (Debian-based for glibc — required by go-fitz/MuPDF)
+# Stage 1: Build (Debian-based for glibc; this was chosen for go-fitz/MuPDF, which was removed in D3 -
+# UNCONFIRMED whether the CGO build stage is still required for other dependencies; not changed without a build proof)
 # Go floor: go.mod `go 1.25.7` / images.lock.yaml IMG-GO (1.25); override with --build-arg GO_IMAGE=docker.io/library/golang:1.26 (also verified)
 ARG GO_IMAGE=docker.io/library/golang:1.25
 FROM ${GO_IMAGE} AS builder
@@ -62,7 +63,7 @@ FROM docker.io/library/debian:trixie-slim
 # Install runtime dependencies. poppler-utils (pdftotext, pdfinfo) is the primary PDF text engine
 # (CAT-002); util-linux provides prlimit, which caps every PDF parser child. Without prlimit the
 # service refuses to parse PDFs. ffmpeg (audio/video) and imagemagick (`convert`: images; PDF
-# pages are rasterised by go-fitz, ghostscript is deliberately NOT installed, so the ImageMagick PDF fallback
+# pages are rasterised by poppler pdftoppm, ghostscript is deliberately NOT installed, so the ImageMagick PDF fallback
 # reports a specific error and /health/deep does not claim convert_pdf) are the converter tools the conversion worker execs; without them every conversion
 # job fails with "converter tool ... is not installed" (GET /health/deep -> converters shows what is present).
 RUN apt-get update && apt-get install -y --no-install-recommends \

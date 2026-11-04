@@ -721,7 +721,7 @@ func TestConversionService_ConvertDocument_PDFRoute(t *testing.T) {
 
 	err := service.convertDocument(job)
 	assert.Error(t, err)
-	// This goes to convertPDFToImage which uses go-fitz, and will fail opening nonexistent file
+	// This goes to convertPDFToImage which uses poppler, and will fail opening nonexistent file
 	assert.Contains(t, err.Error(), "failed to open PDF")
 }
 
