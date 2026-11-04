@@ -4,7 +4,7 @@
 # and EVERY expected key (exe_sha256, image_digest, script_sha256) the cell must be LIVE only when the answer carries the same identity.
 # Any cell that stays LIVE with a mismatching/absent identity, or that is refused while consistent, FAILS the suite.
 set -u
-V=$1; export LIVE_EVIDENCE_DOUBLES=$2
+V=${1:?usage: test_identity_matrix.sh <verifier> <register>}; export LIVE_EVIDENCE_DOUBLES=${2:?usage: test_identity_matrix.sh <verifier> <register>}
 command -v jq >/dev/null || { echo "matrix: jq missing" >&2; exit 2; }
 W=$(mktemp -d "${TMPDIR:-/tmp}/lev-mx.XXXXXX"); trap 'rm -rf "${W:?}"' EXIT
 EX=1111111111111111111111111111111111111111111111111111111111111111   # exe

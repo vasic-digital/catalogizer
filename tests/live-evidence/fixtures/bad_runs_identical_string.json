@@ -1,0 +1,43 @@
+{
+  "schema": "catalogizer.live-evidence/1",
+  "test_id": "fixture-golden_good",
+  "class": "LIVE",
+  "verdict": "PASS",
+  "timestamp": "2026-11-03T20:00:00Z",
+  "command": "go test ./internal/x -run TestY",
+  "artifact": {
+    "fingerprint": "sha256:ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+    "source": "target"
+  },
+  "endpoint": {
+    "host": "127.0.0.1",
+    "port": 8080,
+    "resolved_ip": "127.0.0.1"
+  },
+  "answering": {
+    "kind": "process",
+    "pid": 4242,
+    "exe_path": "/opt/catalog-api/catalog-api",
+    "exe_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
+    "cmdline": "/opt/catalog-api/catalog-api --port 8080"
+  },
+  "expected": {
+    "exe_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb"
+  },
+  "requests": {
+    "total": 3,
+    "methods": {
+      "GET": 3
+    }
+  },
+  "responses": {
+    "status_histogram": {
+      "200": 3
+    }
+  },
+  "runs": {
+    "n": 3,
+    "identical": "true",
+    "signature": "sha256:3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d"
+  }
+}

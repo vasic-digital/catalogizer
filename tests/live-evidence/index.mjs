@@ -62,6 +62,12 @@ const OPTS = {
   lua: { noval: S('-W', '-i'), val: S('-l'), inline: S('-e') },
   shell: { noval: S('-x', '-e', '-u', '-v', '-eu', '-ex', '-eux', '-l'), val: S(), inline: S('-c') },
 };
+// Options that load code other than the named script (preload, agent, auto-prepend, -M): never covered by the script hash => ambiguous.
+// Limit: NODE_OPTIONS / RUBYOPT / PYTHONSTARTUP / JAVA_TOOL_OPTIONS / PHP_INI_SCAN_DIR are environment, not command line, and are not seen.
+const CODELOAD = {
+  node: /^(-r|--require|--import|--loader|--experimental-loader)(=.*)?$/, ruby: /^-r.*$/, php: /^(-d.*|--define.*)$/,
+  perl: /^-[Mm].*$/, java: /^-(javaagent|agentlib|agentpath|Xbootclasspath).*$/, lua: /^-l.*$/,
+};
 function family(base) {
   const b = base.toLowerCase();
   if (b.startsWith('python') || b.startsWith('pypy')) return 'python';
@@ -76,6 +82,7 @@ export function scriptOf(pid, exe, args) {
   for (let i = 1; i < args.length && cand === null; i++) {
     const a = args[i];
     if (t.inline.has(a)) return null;
+    if (CODELOAD[fam] && CODELOAD[fam].test(a)) return null;
     if (fam === 'java' && a === '-jar') { if (i + 1 >= args.length) return null; cand = args[i + 1]; }
     else if (t.val.has(a)) i++;
     else if (t.noval.has(a) || (a.startsWith('--') && a.includes('='))) continue;

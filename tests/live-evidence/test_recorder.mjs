@@ -52,10 +52,18 @@ try {
     assert.equal(r.rec.answering, null); assert.match(r.rec.resolve_error, /ambiguous/);
   });
   await t('bound address must cover host', () => assert.equal(findListener(port, '10.255.255.1'), null));
+  await t('code-loading options leave the script unbound', () => {
+    const un = (exe, args) => assert.equal(scriptOf(0, exe, args), null, args.join(' '));
+    un('/usr/bin/node', ['node', '-r', './canned.js', script]); un('/usr/bin/node', ['node', '--require=./c.js', script]);
+    un('/usr/bin/node', ['node', '--import', './c.mjs', script]); un('/usr/bin/node', ['node', '--experimental-loader', './l.mjs', script]);
+    un('/usr/bin/ruby', ['ruby', '-rcanned', script]); un('/usr/bin/php', ['php', '-d', 'auto_prepend_file=/x.php', script]);
+    un('/usr/bin/perl', ['perl', '-MCanned', script]); un('/usr/bin/java', ['java', '-javaagent:/a.jar', '-jar', script]);
+    assert.equal(scriptOf(0, '/usr/bin/python3', ['python3', script])?.script_path, script); // control needle
+  });
   await t('scriptOf parses known options and refuses ambiguity', () => {
     const ok = (args) => scriptOf(0, '/usr/bin/' + args[0], args)?.script_path === script;
-    assert.ok(ok(['python3', script])); assert.ok(ok(['python3', '-W', 'ignore', script])); assert.ok(ok(['node', '--require=./f.js', script]));
-    assert.ok(ok(['node', '--require', './f.js', script]));
+    assert.ok(ok(['python3', script])); assert.ok(ok(['python3', '-W', 'ignore', script])); assert.ok(!ok(['node', '--require=./f.js', script]));
+    assert.ok(!ok(['node', '--require', './f.js', script]));
     assert.equal(scriptOf(0, '/usr/bin/python3', ['python3', '-Z', script]), null);
     assert.equal(scriptOf(0, '/usr/bin/python3', ['python3', '-W', script]), null);
     assert.equal(scriptOf(0, '/usr/bin/python3', ['python3', '-m', 'http.server']), null);

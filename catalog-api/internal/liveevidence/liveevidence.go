@@ -301,6 +301,18 @@ var interpTable = map[string]interpOpts{
 	"shell":  {set("-x", "-e", "-u", "-v", "-eu", "-ex", "-eux", "-l"), set(), set("-c")},
 }
 
+// codeLoadRE: per family, options that make the interpreter LOAD code other than the named script (preloads, agents, auto-prepend files, -M modules).
+// Such code is never bound by the script hash, so any of them makes the script ambiguous (no script recorded => the verifier reports UNIT).
+// Limit: the same effect through the environment (NODE_OPTIONS, RUBYOPT, PYTHONSTARTUP, JAVA_TOOL_OPTIONS, PHP_INI_SCAN_DIR) is NOT visible in the command line.
+var codeLoadRE = map[string]*regexp.Regexp{
+	"node": regexp.MustCompile(`^(-r|--require|--import|--loader|--experimental-loader)(=.*)?$`),
+	"ruby": regexp.MustCompile(`^-r.*$`),
+	"php":  regexp.MustCompile(`^(-d.*|--define.*)$`),
+	"perl": regexp.MustCompile(`^-[Mm].*$`),
+	"java": regexp.MustCompile(`^-(javaagent|agentlib|agentpath|Xbootclasspath).*$`),
+	"lua":  regexp.MustCompile(`^-l.*$`),
+}
+
 func interpFamily(base string) string {
 	b := strings.ToLower(base)
 	switch {
@@ -334,6 +346,8 @@ func scriptOf(pid int, exe string, args []string) (string, string) {
 		switch {
 		case t.inline[a]:
 			return "", ""
+		case codeLoadRE[fam] != nil && codeLoadRE[fam].MatchString(a):
+			return "", "" // preload / agent / auto-prepend: code the script hash does not cover
 		case fam == "java" && a == "-jar":
 			if i+1 >= len(args) {
 				return "", ""

@@ -105,6 +105,27 @@ expect bad_socket_no_cmdline 1 UNIT endpoint_identity_incomplete
 expect bad_expected_script_native 1 UNIT identity_mismatch  # expected names a script, the answer carries none: never LIVE
 b=$(mktemp); printf 'name:foo/bar\n' > "$b"; LIVE_EVIDENCE_DOUBLES=$b "$VERIFIER" "$FX/golden_good.json" >/dev/null 2>&1; [ $? = 2 ] && ok || no "a rule that cannot match its own probe must make the register BLIND (exit 2)"
 rm -f "${b:?}"
+# round-5: one hash normalisation then strict ^[0-9a-f]{64}$ everywhere; code-loading options; strict types
+for f in bad_hash_double_prefix bad_hash_nul bad_hash_number bad_hash_array bad_hash_junk bad_hash_space; do expect $f 2 INVALID hash_malformed; done
+expect bad_fp_fullwidth 2 INVALID fingerprint_malformed
+expect bad_fp_space 2 INVALID fingerprint_malformed
+expect bad_runs_identical_string 2 INVALID runs
+expect bad_runs_identical_missing 2 INVALID runs
+expect bad_no_port 1 UNIT endpoint_identity_missing
+expect bad_codeload_node 1 UNIT interpreter_code_loading_option
+expect golden_node_plain 0 LIVE
+expect bad_exe_path_slash 2 INVALID exe_path_malformed
+expect bad_expected_unknown_key 2 INVALID expected_unknown_key
+expect bad_pid_zero 1 UNIT answering_identity_missing
+# a sha256: register rule also matches the container IMAGE DIGEST (golden_false_container is LIVE under the default register)
+r=$(mktemp); printf 'sha256:%s\n' "$(jq -r .answering.image_digest "$FX/golden_false_container.json" | sed 's/^sha256://')" > "$r"
+LIVE_EVIDENCE_DOUBLES=$r "$VERIFIER" "$FX/golden_false_container.json" 2>&1 | grep -q registered_double && ok || no "sha256 register rule must match an image digest"
+# exact (no '*') image: rule matches the image reference exactly
+printf 'image:%s\n' "$(jq -r .answering.image "$FX/bad_double_by_image_case.json" | tr A-Z a-z)" > "$r"
+LIVE_EVIDENCE_DOUBLES=$r "$VERIFIER" "$FX/bad_double_by_image_case.json" 2>&1 | grep -q registered_double && ok || no "exact image: rule must match"
+# a malformed sha256: rule makes the register BLIND
+printf 'sha256:nothex\n' > "$r"; LIVE_EVIDENCE_DOUBLES=$r "$VERIFIER" "$FX/golden_good.json" >/dev/null 2>&1; [ $? = 2 ] && ok || no "malformed sha256 rule must be BLIND (exit 2)"
+rm -f "${r:?}"
 # table-driven matrix: kind x {interpreter,native,renamed} x every expected key
 bash "$HERE/test_identity_matrix.sh" "$VERIFIER" "$TREG" && ok || no "identity matrix"
 echo "verify_live_evidence tests: pass=$pass fail=$fail"

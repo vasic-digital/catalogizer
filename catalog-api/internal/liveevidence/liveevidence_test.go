@@ -307,8 +307,8 @@ func TestScriptOfParsesKnownOptionsAndRefusesAmbiguity(t *testing.T) {
 		{"unknown option is ambiguous", []string{"python3", "-Z", sc}, false},
 		{"-m module", []string{"python3", "-m", "http.server"}, false},
 		{"-c inline", []string{"python3", "-c", "print(1)"}, false},
-		{"node --require=file real.js", []string{"node", "--require=./f.js", sc}, true},
-		{"node --require f.js real.js", []string{"node", "--require", "./f.js", sc}, true},
+		{"node (code-loading, must be unbound) --require=file real.js", []string{"node", "--require=./f.js", sc}, false},
+		{"node (code-loading, must be unbound) --require f.js real.js", []string{"node", "--require", "./f.js", sc}, false},
 		{"node unknown flag", []string{"node", "--frobnicate", sc}, false},
 	}
 	for _, c := range cases {
@@ -432,5 +432,40 @@ func TestExpectedScriptSurvivesLaterSetExpected(t *testing.T) {
 	_ = r2.ResolveAnswering("127.0.0.1:1", "def")
 	if r2.Expected == nil || r2.Expected.ScriptSHA256 != "abc" {
 		t.Fatalf("ResolveAnswering dropped the script binding: %+v", r2.Expected)
+	}
+}
+
+// code-loading options inject code the script hash does not cover: the script must stay unbound (UNIT), whatever form the option takes
+func TestCodeLoadingOptionsLeaveScriptUnbound(t *testing.T) {
+	d := t.TempDir()
+	sc := filepath.Join(d, "server.js")
+	if err := os.WriteFile(sc, []byte("x\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	cases := []struct {
+		exe  string
+		args []string
+	}{
+		{"/usr/bin/node", []string{"node", "-r", "./canned.js", sc}},
+		{"/usr/bin/node", []string{"node", "--require", "./canned.js", sc}},
+		{"/usr/bin/node", []string{"node", "--require=./canned.js", sc}},
+		{"/usr/bin/node", []string{"node", "--import", "./canned.mjs", sc}},
+		{"/usr/bin/node", []string{"node", "--loader=./l.mjs", sc}},
+		{"/usr/bin/node", []string{"node", "--experimental-loader", "./l.mjs", sc}},
+		{"/usr/bin/ruby", []string{"ruby", "-rcanned", sc}},
+		{"/usr/bin/ruby", []string{"ruby", "-r", "canned", sc}},
+		{"/usr/bin/php", []string{"php", "-d", "auto_prepend_file=/x.php", sc}},
+		{"/usr/bin/php", []string{"php", "-dauto_prepend_file=/x.php", sc}},
+		{"/usr/bin/perl", []string{"perl", "-MCanned", sc}},
+		{"/usr/bin/java", []string{"java", "-javaagent:/a.jar", "-jar", sc}},
+	}
+	for _, c := range cases {
+		if p, h := scriptOf(0, c.exe, c.args); p != "" || h != "" {
+			t.Errorf("%v: code-loading option must leave the script unbound, got (%q,%q)", c.args, p, h)
+		}
+	}
+	// control needle: the same node call without the preload binds the script
+	if p, _ := scriptOf(0, "/usr/bin/node", []string{"node", sc}); p != sc {
+		t.Fatalf("control: plain node call must bind the script, got %q", p)
 	}
 }

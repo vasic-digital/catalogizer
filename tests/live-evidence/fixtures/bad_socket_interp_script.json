@@ -21,7 +21,7 @@
     "exe_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
     "cmdline": "python3 /srv/app/server.py 8080",
     "script_path": "/srv/app/server.py",
-    "script_sha256": "ff"
+    "script_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
   },
   "expected": {
     "exe_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",

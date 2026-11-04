@@ -37,8 +37,11 @@ def glob2re: gsub("(?<c>[.+^$(){}|\\[\\]\\\\])"; "\\\(.c)") | gsub("\\*"; ".*") 
 def rules($k): [$reg | split("\n")[] | select(startswith($k + ":")) | .[($k|length)+1:] | gsub("^\\s+|\\s+$"; "") | select(length > 0)];
 def present: . != null and . != "";
 # ONE normaliser for every hash comparison (exe, image digest, script, fingerprint, register rules): trim, lowercase, strip an optional sha256: prefix
-def norm($s): ($s // "") | tostring | gsub("^\\s+|\\s+$"; "") | ascii_downcase | ltrimstr("sha256:");
-def is_sha($s): norm($s) | test("^[0-9a-f]{64}$");
+def norm($s): if ($s | type) == "string" then ($s | ascii_downcase | ltrimstr("sha256:")) else "" end;
+def hexok($s): (($s | type) == "string") and (norm($s) | test("\\A[0-9a-f]{64}\\z"));
+def is_sha($s): hexok($s);
+# a value that LOOKS like a hash (sha256: prefix in any case, or a long run of hex incl. fullwidth digits) but does not normalise to 64 lowercase hex
+def hashlike($s): (($s | type) == "string") and (($s | ascii_downcase | startswith("sha256:")) or ($s | test("\\A[0-9a-fA-F\\x{ff10}-\\x{ff19}\\x{ff21}-\\x{ff26}\\x{ff41}-\\x{ff46}]{32,}\\z")));
 def is_double($a):
   ([rules("sha256")[] | norm(.)] as $hashes
    | [rules("name")[] | glob2re] as $names
@@ -52,8 +55,21 @@ def is_double($a):
    | ($hashes | any(. as $h | $ids | index($h)))
      or ($names | any(. as $r | $base | test($r; "i")))
      or ($cmds | any(. as $r | $cmd | test($r; "i")))
-     or ($imgs | any(. as $r | ($img + " " + $d) | test($r; "i"))));
+     or ($imgs | any(. as $r | ($img | test($r; "i")) or ($d | test($r; "i")))));
 def interp($a): (($a.runtime_hint | present) or ((($a.exe_path // "") | split("/") | (last // "")) | test("^(python[0-9.]*|pypy[0-9.]*|node|nodejs|deno|bun|java|ruby[0-9.]*|perl[0-9.]*|php[0-9.]*|lua[0-9.]*|bash|sh|dash|zsh|ksh|fish)$"; "i")));
+# options that make an interpreter load code the script hash does not cover (preload, agent, auto-prepend, -M); family from the exe name, union for a renamed one
+def codeload($a):
+  (($a.cmdline // "") | split(" ") | map(select(length > 0))) as $t
+  | (($a.exe_path // "") | split("/") | (last // "") | ascii_downcase) as $b
+  | (if ($b | test("^node(js)?$")) then "^(-r|--require|--import|--loader|--experimental-loader)(=.*)?$"
+     elif ($b | test("^ruby")) then "^-r"
+     elif ($b | test("^php")) then "^(-d|--define)"
+     elif ($b | test("^perl")) then "^-[Mm]"
+     elif ($b | test("^java")) then "^-(javaagent|agentlib|agentpath|Xbootclasspath)"
+     elif ($b | test("^lua")) then "^-l"
+     elif ($b | test("^(python|pypy|bash|sh|dash|zsh|ksh|fish|deno|bun)")) then "^$never^"
+     else "^((--require|--import|--loader|--experimental-loader)(=.*)?|-(javaagent|agentlib|agentpath|Xbootclasspath).*|-M.*)$" end) as $re
+  | any($t[]; test($re));
 def idkeys: ["exe_sha256","image_digest","script_sha256"];
 def identity_reasons:  # IDENTITY-CHECK
   . as $r
@@ -67,7 +83,7 @@ def identity_reasons:  # IDENTITY-CHECK
   | (if $k == "container" then "image_digest" elif $ip then "script_sha256" else "exe_sha256" end) as $bk   # the identity of the answering kind the fingerprint binds to
   | ($a == null or ($a.kind | present | not)
      or ($k != "process" and $k != "container" and $k != "socket")
-     or (($k == "process" or $k == "socket") and (($a.pid | type) != "number" or ($a.exe_path | present | not) or ($a.exe_sha256 | present | not)))
+     or (($k == "process" or $k == "socket") and (($a.pid | type) != "number" or $a.pid < 1 or $a.pid != ($a.pid | floor) or ($a.exe_path | present | not) or ($a.exe_sha256 | present | not)))
      or ($k == "container" and ($a.image_digest | present | not))) as $amiss
   | [ (if ($r.artifact.fingerprint | present) then empty else "artifact_fingerprint_missing" end),  # R:fp_missing
       (if (($r.endpoint.host | present) and ($r.endpoint.port != null)) then empty else "endpoint_identity_missing" end),  # R:endpoint_missing
@@ -80,6 +96,7 @@ def identity_reasons:  # IDENTITY-CHECK
       (if ($amiss | not) and ([idkeys[] | select($E[.] | present)] | length) > 0 and ($E[$reqkey] | present | not) then "expected_kind_mismatch" else empty end),  # R:kind_mismatch
       (if ($amiss | not) and ([idkeys[] as $f | select(($E[$f] | present) and norm($E[$f]) != norm($A[$f]))] | length) > 0 then "identity_mismatch" else empty end),  # R:identity_mismatch
       (if ($amiss | not) and $ip and (($A.script_path | present | not) or ($A.script_sha256 | present | not)) then "interpreter_script_missing" else empty end),  # R:script_missing
+      (if ($amiss | not) and $ip and codeload($A) then "interpreter_code_loading_option" else empty end),  # R:codeload
       (if ($amiss | not) and $ip and ($E.script_sha256 | present | not) then "interpreter_script_unbound" else empty end),  # R:script_unbound
       (if ($amiss | not) and is_sha($r.artifact.fingerprint) and ((($A[$bk] | present) | not) or (norm($r.artifact.fingerprint) != norm($A[$bk]))) then "fingerprint_mismatch" else empty end),  # R:fp_mismatch
       empty ];  # END-IDENTITY
@@ -88,10 +105,14 @@ def invalid_reasons:
   . as $r
   | [ (if $r.schema == "catalogizer.live-evidence/1" then empty else "schema" end),  # R:schema
       (if ($r.test_id | present) and ($r.command | present) and ($r.timestamp | present) then empty else "required_field_missing" end),
-      (if ($r.timestamp | type) == "string" and ($r.timestamp | test("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$") and ($r.timestamp | test("^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|[+-]([01][0-9]|2[0-3]):[0-5][0-9])$"))) then empty else "timestamp_not_rfc3339" end),  # R:timestamp
+      (if ($r.timestamp | type) == "string" and ($r.timestamp | test("\\A[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})\\z") and ($r.timestamp | test("\\A[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?(Z|[+-]([01][0-9]|2[0-3]):[0-5][0-9])\\z"))) then empty else "timestamp_not_rfc3339" end),  # R:timestamp
       (if ($r.class == "LIVE" or $r.class == "UNIT") then empty else "class" end),  # R:class
       (if ($r.verdict == "PASS" or $r.verdict == "FAIL" or $r.verdict == "SKIP") then empty else "verdict" end),  # R:verdict
       (if $r.verdict == "SKIP" and (skip_set | index($r.skip_reason) | not) then "skip_reason_not_in_closed_set" else empty end),  # R:skip_reason
+      (if ([($r.answering // {}) | (.exe_sha256, .image_digest, .script_sha256)] + [($r.expected // {}) | (.exe_sha256?, .image_digest?, .script_sha256?)] | map(select(. != null and (hexok(.) | not))) | length) > 0 then "hash_malformed" else empty end),  # R:hash_malformed
+      (if ($r.artifact.fingerprint != null) and (hashlike($r.artifact.fingerprint) and (hexok($r.artifact.fingerprint) | not)) then "fingerprint_malformed" else empty end),  # R:fp_malformed
+      (if ($r.expected != null) and ((($r.expected | type) != "object") or ([$r.expected | keys[] | select(. as $k | idkeys | index($k) | not)] | length) > 0) then "expected_unknown_key" else empty end),  # R:expected_unknown
+      (if (($r.answering // {}).exe_path != null) and ((($r.answering.exe_path | type) != "string") or ($r.answering.exe_path | endswith("/"))) then "exe_path_malformed" else empty end),  # R:exe_path
       (if ($r.endpoint.port != null) and ((($r.endpoint.port | type) != "number") or ($r.endpoint.port != ($r.endpoint.port | floor)) or $r.endpoint.port < 1 or $r.endpoint.port > 65535) then "port_not_integer" else empty end),  # R:port
       (if ($r.runs | type) != "object" then "runs_missing" else empty end),  # R:runs_missing
       (if $r.verdict != "SKIP" and (($r.runs.n | type) != "number" or $r.runs.n < 1 or $r.runs.identical != true or ($r.runs.signature | present | not)) then "runs_not_identical_or_missing" else empty end),  # R:runs_ident
@@ -118,7 +139,7 @@ if [ "$(printf '%s\n' "$reg" | grep -Ec '^(sha256|name|cmd|image):[^[:space:]]')
 fi
 NEEDLE='def sample: gsub("\\*"; "a") | gsub("\\?"; "a");
   ([rules("sha256")[] | {exe_sha256: .}] + [rules("name")[] | {exe_path: ("/x/" + sample)}] + [rules("cmd")[] | {cmdline: sample}] + [rules("image")[] | {image: sample}]) as $probes
-  | {n: ($probes | length), missed: [$probes[] | select(is_double(.) | not)]}'
+  | {n: ($probes | length), missed: ([$probes[] | select(is_double(.) | not)] + [rules("sha256")[] | select(hexok(.) | not) | {malformed_sha256_rule: .}])}'
 needle=$(jq -n -c --arg reg "$reg" "$DEFS
 $NEEDLE" 2>&1) || { echo "verify_live_evidence: register control needle failed to run: $needle (BLIND, REFUSED)" >&2; exit 2; }
 if [ "$(jq -r '.n' <<<"$needle")" -lt 1 ] || [ "$(jq -r '.missed | length' <<<"$needle")" != 0 ]; then
