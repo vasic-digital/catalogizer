@@ -1,0 +1,5 @@
+ok  	catalogizer/services	260.281s
+ok  	catalogizer/handlers	95.770s
+ok  	catalogizer/repository	1.095s
+ok  	catalogizer/tests	1.124s
+done
