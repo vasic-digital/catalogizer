@@ -5,13 +5,15 @@
 #   OUTSIDE the repo; the exact commit is baked into the binary (main.Version/BuildNumber via ldflags) and shows in /health.
 # - runs under systemd-run --user --scope with a 6G memory cap, no swap, nice 10 (host safety, constitution 12.6).
 # - the catalog-api Dockerfile already installs ffmpeg + imagemagick in the runtime image.
+# - DEVIATION from 11.4.173 (see README): this builds locally with `podman build --network host`, not via the containers submodule
+#   on a remote build host; --network host weakens build hermeticity. Tracked follow-up, not hidden.
 # - the only edit to the exported tree is the ldflags line of catalog-api/Dockerfile (ARG BUILD_COMMIT); nothing in the repo changes.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; . "$HERE/lib.sh"
 REPO="$(git -C "$HERE" rev-parse --show-toplevel)"
 SHA="$(git -C "$REPO" rev-parse "${1:-HEAD}")"; S="${SHA:0:8}"
 SUBMODULE_SRC="${SUBMODULE_SRC:-$REPO}"   # checkout that has the submodules initialised (a fresh clone must run `git submodule update` or point this at one)
-TMPBASE="${TMPBASE:-$HOME/.cache/claude-tmp}"; mkdir -p "$TMPBASE"
+TMPBASE="${TMPBASE:-$HOME/.cache/claude-tmp}"; mkdir -p "$TMPBASE" "${QA_DIR:?}"
 EXP="$(mktemp -d "$TMPBASE/${STACK}-export.XXXXXX")"; : "${EXP:?}"
 trap 'rm -rf -- "${EXP:?}"' EXIT
 echo "export $SHA -> $EXP"
@@ -34,7 +36,7 @@ cd "$EXP"
 "${B[@]}" -f catalog-web/Dockerfile -t "localhost/${STACK}-web:main-$S" .
 # Website (VitePress static site) -> $QA_DIR/website_dist ; skipped with WEBSITE=0
 if [ "${WEBSITE:-1}" = 1 ]; then
-  mkdir -p "$QA_DIR/website_dist"
+  rm -rf -- "${QA_DIR:?}/website_dist"; mkdir -p "${QA_DIR:?}/website_dist"   # no stale files from an earlier build
   systemd-run --user --scope -p MemoryMax=4G -p MemorySwapMax=0 nice -n 10 podman run --rm --network host \
     -v "$EXP/Website:/w:Z" -v "$QA_DIR/website_dist:/out:Z" docker.io/library/node:20-alpine \
     sh -c 'cp -r /w /b && cd /b && npm ci --no-audit --no-fund && npx vitepress build && cp -r .vitepress/dist/. /out/'

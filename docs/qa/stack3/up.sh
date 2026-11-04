@@ -22,6 +22,7 @@ if [ ! -f "$ENVF" ]; then   # fresh random secrets, never printed
 fi
 [ "$(stat -c %a "$ENVF")" = 600 ] || chmod 600 "$ENVF"
 set -a; . "$ENVF"; set +a
+export DATABASE_PASSWORD="$POSTGRES_PASSWORD"   # passed to podman by NAME (-e DATABASE_PASSWORD) so no secret value appears in argv
 TAG="${1:-main-$(cut -c1-8 "$QA_DIR/BUILT_COMMIT" 2>/dev/null || echo unknown)}"
 for i in "localhost/${STACK}-api:$TAG" "localhost/${STACK}-web:$TAG"; do
   podman image exists "$i" || { echo "image $i missing - run build.sh first" >&2; exit 3; }
@@ -29,8 +30,15 @@ done
 [ -d "$MEDIA_DIR" ] || { echo "media corpus $MEDIA_DIR missing - run: scripts/test-infra/gen_media_fixtures.sh --out $MEDIA_DIR" >&2; exit 3; }
 avail_kb=$(awk '/MemAvailable/{print $2}' /proc/meminfo)
 [ "$avail_kb" -gt 6000000 ] || { echo "only $((avail_kb/1024)) MiB available (<6 GiB) - refusing (host safety)" >&2; exit 4; }
-for p in "$API_PORT" "$WEB_PORT" "$WEBSITE_PORT" "$PG_PORT" "$REDIS_PORT"; do   # ports must be free unless our own pod holds them
-  if ss -ltnH "sport = :$p" | grep -q . && ! podman pod exists "$POD"; then echo "port $p already in use" >&2; exit 5; fi
+# ports must be free of FOREIGN owners BEFORE the old pod is removed: a busy port is only acceptable when our own pod publishes it
+own_ports=""
+if podman pod exists "$POD"; then
+  infra="$(podman pod inspect "$POD" --format '{{.InfraContainerID}}' 2>/dev/null || true)"
+  [ -z "$infra" ] || own_ports="$(podman port "$infra" 2>/dev/null || true)"
+fi
+for p in "$API_PORT" "$WEB_PORT" "$WEBSITE_PORT" "$PG_PORT" "$REDIS_PORT"; do
+  if ss -ltnH "sport = :$p" | grep -q . && ! printf '%s\n' "$own_ports" | grep -qE ":$p\$"; then
+    echo "port $p is in use by something other than pod $POD - refusing (pod left untouched)" >&2; exit 5; fi
 done
 podman pod rm -f "$POD" >/dev/null 2>&1 || true
 podman pod create --name "$POD" --network pasta \
@@ -57,7 +65,7 @@ wait_healthy "${STACK}-postgres" 90; wait_healthy "${STACK}-redis" 60
 
 podman run -d --pod "$POD" --name "${STACK}-api" --memory 2g --restart on-failure:3 \
   -e DATABASE_TYPE=postgres -e DATABASE_HOST=127.0.0.1 -e DATABASE_PORT=5432 \
-  -e DATABASE_USER="$POSTGRES_USER" -e DATABASE_PASSWORD="$POSTGRES_PASSWORD" -e DATABASE_NAME="$POSTGRES_DB" \
+  -e DATABASE_USER="$POSTGRES_USER" -e DATABASE_PASSWORD -e DATABASE_NAME="$POSTGRES_DB" \
   -e DATABASE_ENCRYPTION_KEY_FILE=/app/keys/db.key -e REDIS_HOST=127.0.0.1 -e REDIS_PORT=6379 \
   -e APP_ENV=development -e LOG_LEVEL=info -e JWT_SECRET -e ADMIN_USERNAME -e ADMIN_PASSWORD -e REGISTRATION_MODE \
   -e CORS_ENABLED=true -e CORS_ORIGINS='*' -e SMB_ENABLED=true -e MEDIA_ROOT_PATH="$MEDIA_MOUNT" \
@@ -72,8 +80,17 @@ podman run -d --pod "$POD" --name "${STACK}-web" --memory 256m -e API_UPSTREAM=1
 if [ -f "$QA_DIR/website_dist/index.html" ]; then
   podman run -d --pod "$POD" --name "${STACK}-website" --memory 128m -v "$QA_DIR/website_dist:/usr/share/nginx/html:ro,Z" "$NGINX_IMAGE" >/dev/null
 else echo "NOTE: no $QA_DIR/website_dist - website container not started (build.sh builds it)"; fi
-for i in $(seq 1 30); do [ "$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${WEB_PORT}/")" = 200 ] && break; sleep 1; done   # web: nginx, image HEALTHCHECK is not honoured by podman (OCI format)
+web_up=0   # web: nginx, image HEALTHCHECK is not honoured by podman (OCI format), so poll it
+for i in $(seq 1 30); do [ "$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${WEB_PORT}/")" = 200 ] && { web_up=1; break; }; sleep 1; done
+[ "$web_up" = 1 ] || echo "web did not answer 200 within 30s" >&2
 
-for u in "http://127.0.0.1:${API_PORT}/health" "http://127.0.0.1:${WEB_PORT}/" "http://127.0.0.1:${WEB_PORT}/api/v1/health" "http://127.0.0.1:${WEBSITE_PORT}/"; do
-  printf '%s -> %s\n' "$u" "$(curl -s -o /dev/null -w '%{http_code}' "$u")"; done
+rc=0; [ "$web_up" = 1 ] || rc=6
+probes=("http://127.0.0.1:${API_PORT}/health" "http://127.0.0.1:${WEB_PORT}/" "http://127.0.0.1:${WEB_PORT}/api/v1/health")
+[ -f "$QA_DIR/website_dist/index.html" ] && probes+=("http://127.0.0.1:${WEBSITE_PORT}/")
+for u in "${probes[@]}"; do
+  code="$(curl -s -o /dev/null -w '%{http_code}' "$u")"; printf '%s -> %s\n' "$u" "$code"
+  [ "$code" = 200 ] || { echo "probe failed: $u" >&2; rc=6; }
+done
 podman ps --filter "pod=$POD" --format '{{.Names}}\t{{.Status}}\t{{.Image}}'
+[ "$rc" = 0 ] || echo "stack $STACK is NOT healthy (exit $rc)" >&2
+exit "$rc"

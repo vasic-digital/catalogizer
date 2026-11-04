@@ -11,6 +11,20 @@ Rootless-podman QA stack built from a clean export of a `main` commit (default: 
 | PostgreSQL 15 | 127.0.0.1:35434 | loopback only |
 | Redis 7 | 127.0.0.1:36381 | loopback only |
 
+## Intentional LAN-QA settings
+The API pod publishes `0.0.0.0` (LAN-reachable, no TLS) and runs with `APP_ENV=development`, `CORS_ENABLED=true`, `CORS_ORIGINS='*'`.
+This is deliberate so QA devices and browsers on the LAN can reach the stack; it is NOT a production configuration and the stack must
+not be exposed beyond a trusted LAN. Postgres and Redis stay on loopback. Secrets are passed to containers by variable name
+(`-e NAME`), never as `-e NAME=value`, so no secret appears in `podman` argv or `ps`.
+
+## Script reference (11.4.18)
+| Script | Purpose | Exit codes |
+|---|---|---|
+| `build.sh [commit]` | clean-export build of api/web images (+ website unless `WEBSITE=0`); writes `$QA_DIR/BUILT_COMMIT` | 0 ok, 2 missing gitlink |
+| `up.sh [tag]` | replace this stack's pod, health-gated start, final probes | 0 all probes 200; 3 image/corpus missing; 4 low memory; 5 port held by a foreign owner (pod left untouched); 6 stack not healthy (a probe not 200 or web wait timed out) |
+| `down.sh [--purge]` | remove this stack's pod (and volumes with `--purge`) | 0 |
+| `test_scripts.sh` | sandbox tests with stub `podman/curl/systemd-run/sleep/ss`; touches no real container, port or data | 0 all pass |
+
 ## Use
 ```
 docs/qa/stack3/build.sh [commit]   # images localhost/catqa3-{api,web}:main-<short8> + website_dist (WEBSITE=0 to skip)
@@ -27,7 +41,7 @@ Overrides (env): `STACK`, `QA_DIR` (default `~/.cache/claude-tmp/catqa3`), `MEDI
 * Media corpus: generate with `scripts/test-infra/gen_media_fixtures.sh --out "$MEDIA_DIR"`; it is mounted **read-only at `/media`**
   in the API container (`MEDIA_ROOT_PATH=/media`). Create a storage root of type local with path `/media` (or a sub-directory such as `/media/movies`).
 * Local roots: `CATALOGIZER_LOCAL_ROOT_BASES=$MEDIA_MOUNT` (colon-separated absolute dirs; unset = deny every local root, see `catalog-api/filesystem/local_policy.go`). Roots must lie under `/media` after symlink resolution.
-* Read roots: `CATALOGIZER_READ_ROOTS=$MEDIA_MOUNT:./data` (colon-separated; REPLACES the default `MEDIA_ROOT_PATH:./data`) so request-named read paths such as a conversion source may lie in the read-only corpus; conversion output stays confined to the default write root `./data` (`/app/data`).
+* Read roots: `CATALOGIZER_READ_ROOTS=$MEDIA_MOUNT:./data` is an explicit pin of what `pathguard.ReadRoots()` already defaults to when `MEDIA_ROOT_PATH` is set (`MEDIA_ROOT_PATH:./data`); it is NOT what makes the corpus readable (an earlier commit note, 9a15580d, overstated that). Conversion output stays confined to the default write root `./data` (`/app/data`).
 * The only edit applied to the exported tree is the `go build -ldflags` line of `catalog-api/Dockerfile` (adds `-X main.Version=<sha>`);
   the repo itself is not modified.
 
@@ -49,3 +63,11 @@ current namespace, or restart all rootless containers) would disturb other proje
 ## Start-order race (API vs Postgres)
 Postgres/Redis/API carry podman healthchecks and `up.sh` gates each start on `healthy` (Postgres+Redis -> API -> web/website). The API
 also has `--restart on-failure:3`. (`podman-compose` ignores `depends_on: condition: service_healthy`, which is why this is a script.)
+
+## Documented deviation from constitution 11.4.173 (containerized + distributed build)
+11.4.173 requires every build to run in a build container provisioned through the `digital.vasic.containers` submodule and distributed
+to a remote build host, with artifacts brought back. `build.sh` does NOT do that: it runs `podman build --network host` locally on the
+QA host (under a `systemd-run` memory cap), and `--network host` also weakens build hermeticity (the build sees the host network).
+This is a known, accepted-for-now deviation for the QA stack, not a claim of compliance. Tracked follow-up: move the stack-3 image and
+website builds onto the containers-submodule build path (remote build host, no host networking, pinned inputs) and retire this script's
+local build; until that lands these images are QA artifacts only and must not be promoted as release artifacts.
