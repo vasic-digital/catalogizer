@@ -1,0 +1,4 @@
+=== RUN   TestMigrationsV24_RealPostgres
+--- PASS: TestMigrationsV24_RealPostgres (4.66s)
+PASS
+ok  	catalogizer/database	4.665s

@@ -141,9 +141,10 @@ All endpoints below require JWT authentication and are rate limited (2000 reques
 | GET | `/api/v1/subtitles/search` | Search subtitles from external providers |
 | POST | `/api/v1/subtitles/download` | Download a subtitle file from an external provider |
 | GET | `/api/v1/subtitles/media/:media_id` | Get all subtitles for a media item |
-| GET | `/api/v1/subtitles/:subtitle_id/verify-sync/:media_id` | Verify subtitle timing sync against a video |
+| GET | `/api/v1/subtitles/:subtitle_id/verify-sync/:media_id` | Verify subtitle timing sync against the media's real audio (status measured / undetermined / invalid) |
 | POST | `/api/v1/subtitles/translate` | Translate a subtitle file to another language |
 | POST | `/api/v1/subtitles/upload` | Upload a custom subtitle file |
+| DELETE | `/api/v1/subtitles/:subtitle_id` | Delete a subtitle (uploader or admin) |
 | GET | `/api/v1/subtitles/languages` | List supported subtitle languages |
 | GET | `/api/v1/subtitles/providers` | List available subtitle providers |
 

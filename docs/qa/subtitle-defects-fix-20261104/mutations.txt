@@ -1,0 +1,32 @@
+S1 concurrency cap unbounded: KILLED | panic: test timed out after 1m30s ; FAIL	catalogizer/internal/services	90.109s ; FAIL
+S2 result cache disabled: KILLED | --- FAIL: TestVerifySync_ConcurrencyLimitFailsFastAndDedupesAndCaches (0.55s) ; FAIL ; FAIL	catalogizer/internal/services	0.710s ; FAIL
+S3 cache key without mtime/size: KILLED | FAIL	catalogizer/internal/services [build failed] ; FAIL
+S4 local-protocol requirement dropped: KILLED | --- FAIL: TestResolveMediaFile_OnlyLocalRootsAndConfined (0.00s) ; FAIL ; FAIL	catalogizer/internal/services	0.405s ; FAIL
+S5 root confinement dropped: SURVIVED | ok  	catalogizer/internal/services	0.433s
+S6 pipe back in protocol whitelist (ffmpeg): KILLED | --- FAIL: TestFFmpegArgs_NoPipeProtocolFilePrefixedNicedAndSingleThread (0.00s) ; FAIL ; FAIL	catalogizer/internal/services	0.407s ; FAIL
+S7 file: prefix dropped (ffmpeg input): KILLED | --- FAIL: TestFFmpegArgs_NoPipeProtocolFilePrefixedNicedAndSingleThread (0.00s) ; FAIL ; FAIL	catalogizer/internal/services	0.420s ; FAIL
+S7b -threads 1 / -nostats dropped: KILLED | --- FAIL: TestFFmpegArgs_NoPipeProtocolFilePrefixedNicedAndSingleThread (0.00s) ; FAIL ; FAIL	catalogizer/internal/services	0.400s ; FAIL
+S8 delete does not invalidate translations: KILLED | --- FAIL: TestDeleteSubtitle_InvalidatesTranslationCacheAndTranslateChecksExistenceFirst (0.00s) ; FAIL ; FAIL	catalogizer/internal/services	0.633s ; FAIL
+S9 cache served before existence check: KILLED | --- FAIL: TestDeleteSubtitle_InvalidatesTranslationCacheAndTranslateChecksExistenceFirst (0.00s) ; FAIL ; FAIL	catalogizer/internal/services	0.636s ; FAIL
+S10 non-owner gets 403-class error: KILLED | --- FAIL: TestDeleteSubtitle_NonOwnerIsNotFoundNotForbidden (0.00s) ; FAIL ; FAIL	catalogizer/internal/services	0.416s ; FAIL
+S11 delete authz dropped: KILLED | --- FAIL: TestDeleteSubtitle_NonOwnerIsNotFoundNotForbidden (0.00s) ; FAIL ; FAIL	catalogizer/internal/services	0.579s ; FAIL
+S12 zero-of-N wording back: KILLED | --- FAIL: TestSyncReason_NoZeroOfNCuesWording (0.00s) ; FAIL ; FAIL	catalogizer/internal/services	0.443s ; FAIL
+S13 margin rule const to 0: KILLED | --- FAIL: TestReviewer_PeriodicAmbiguousAndNegativeShift (0.03s) ; FAIL ; FAIL	catalogizer/internal/services	0.592s ; FAIL
+S14 unknown media accepted (service): KILLED | --- FAIL: TestSubtitleD5_ServiceRejectsUnknownMediaDirectly (6.81s) ; FAIL ; FAIL	catalogizer/handlers	6.839s ; FAIL
+H1 upload unknown-media mapping reverted: KILLED | --- FAIL: TestSubtitleD6_UploadErrorMapping (5.84s) ; FAIL ; FAIL	catalogizer/handlers	5.910s ; FAIL
+H1b upload 422 -> 500: KILLED | --- FAIL: TestSubtitleD6_UploadErrorMapping (5.25s) ; FAIL ; FAIL	catalogizer/handlers	5.384s ; FAIL
+H2 verify constant 0.8 / offset 0: KILLED | --- FAIL: TestSubtitleD5_VerifySyncMeasuresRealOffset (5.11s) ; --- FAIL: TestSubtitleD5_ShiftedAndInSyncDiffer (3.74s) ; FAIL ; FAIL	catalogizer/handlers	8.932s
+H3 ambiguity margin clause dropped (kills MC): KILLED | --- FAIL: TestSubtitleF3_AmbiguousPeriodicAudioIsUndeterminedNotMeasured (5.99s) ; FAIL ; FAIL	catalogizer/handlers	6.020s ; FAIL
+H4 translate 503 -> 500: KILLED | --- FAIL: TestSubtitleD7_TranslateWithoutProviderIsUnavailableNotSecondInternalError (4.28s) ; FAIL ; FAIL	catalogizer/handlers	4.333s ; FAIL
+H5 SYNC_BUSY mapping removed: KILLED | --- FAIL: TestSubtitleF1_ConcurrentVerifyIsBoundedAndCacheHitSpawnsNothing (4.54s) ; FAIL ; FAIL	catalogizer/handlers	4.568s ; FAIL
+H6 admin-lookup error fails open: KILLED | --- FAIL: TestReviewer_AdminCheckErrorFailsClosed (3.92s) ; FAIL ; FAIL	catalogizer/handlers	3.950s ; FAIL
+H7 translate route loses admin gate: KILLED | --- FAIL: TestSubtitleF3_RealRouteTableAndAdminGate (3.81s) ; FAIL ; FAIL	catalogizer/handlers	3.841s ; FAIL
+H8 main.go loses WithAdminChecker: KILLED | --- FAIL: TestMainWiresSubtitleRoutesAndAdminChecker (0.01s) ; FAIL ; FAIL	catalogizer	0.027s ; FAIL
+DONE
+--- rerun of S3/S5 with corrected mutants (first S3 did not compile, first S5 left an overlapping clause) ---
+S3 cache key without mtime/size: KILLED | --- FAIL: TestVerifySync_ConcurrencyLimitFailsFastAndDedupesAndCaches (0.28s) ; FAIL ; FAIL	catalogizer/internal/services	0.411s ; FAIL
+S5 root confinement dropped: KILLED | FAIL	catalogizer/internal/services [build failed] ; FAIL
+DONE
+--- S5 rerun (previous mutant did not compile) ---
+S5 root confinement dropped: KILLED | --- FAIL: TestResolveMediaFile_OnlyLocalRootsAndConfined (0.00s) ; FAIL ; FAIL	catalogizer/internal/services	0.406s ; FAIL
+DONE

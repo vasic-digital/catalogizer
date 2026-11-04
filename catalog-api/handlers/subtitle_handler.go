@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -18,6 +19,64 @@ import (
 type SubtitleHandler struct {
 	subtitleService *services.SubtitleService
 	logger          *zap.Logger
+	// isAdmin decides from the database whether a user is an administrator; without it the
+	// role_id claim in the request context is used (role 1 is the seeded admin role).
+	isAdmin func(ctx context.Context, userID int) (bool, error)
+}
+
+// WithAdminChecker installs the live admin check (production wires UserRepository.IsAdmin).
+func (h *SubtitleHandler) WithAdminChecker(f func(ctx context.Context, userID int) (bool, error)) *SubtitleHandler {
+	h.isAdmin = f
+	return h
+}
+
+// subtitleActor returns the authenticated user id (0, false when the request carries none).
+func subtitleActor(c *gin.Context) (int64, bool) {
+	v, ok := c.Get("user_id")
+	if !ok {
+		return 0, false
+	}
+	switch id := v.(type) {
+	case int:
+		return int64(id), id > 0
+	case int64:
+		return id, id > 0
+	}
+	return 0, false
+}
+
+// callerIsAdmin reports whether the caller is an administrator. A failing admin lookup returns the
+// error so the caller can fail closed distinctly from "confirmed not an administrator".
+func (h *SubtitleHandler) callerIsAdmin(c *gin.Context, uid int64) (bool, error) {
+	if uid <= 0 {
+		return false, nil
+	}
+	if h.isAdmin != nil {
+		ok, err := h.isAdmin(c.Request.Context(), int(uid))
+		if err != nil {
+			return false, err
+		}
+		return ok, nil
+	}
+	if r, ok := c.Get("role_id"); ok {
+		if id, isInt := r.(int); isInt {
+			return id == 1, nil
+		}
+	}
+	return false, nil
+}
+
+// isNumericID reports whether s is a plain decimal row id (a non-numeric id can match no row).
+func isNumericID(s string) bool {
+	if s == "" || len(s) > 18 {
+		return false
+	}
+	for _, r := range s {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 // NewSubtitleHandler creates a new subtitle handler
@@ -62,9 +121,10 @@ type SubtitleDownloadResponse struct {
 
 // SubtitleUploadResponse represents the response for subtitle upload
 type SubtitleUploadResponse struct {
-	Success bool                    `json:"success"`
-	Message string                  `json:"message,omitempty"`
-	Track   *services.SubtitleTrack `json:"track,omitempty"`
+	Success    bool                    `json:"success"`
+	Message    string                  `json:"message,omitempty"`
+	SubtitleID string                  `json:"subtitle_id,omitempty"`
+	Track      *services.SubtitleTrack `json:"track,omitempty"`
 }
 
 // SubtitleListResponse represents the response for subtitle list
@@ -173,7 +233,7 @@ func (h *SubtitleHandler) SearchSubtitles(c *gin.Context) {
 		if errors.Is(err, services.ErrSubtitleProviderNotImplemented) {
 			c.JSON(http.StatusNotImplemented, ErrorResponse{
 				Success: false,
-				Error:   "No subtitle provider client is implemented yet: " + err.Error(),
+				Error:   "No subtitle provider client is implemented yet",
 				Code:    "NOT_IMPLEMENTED",
 			})
 			return
@@ -181,7 +241,7 @@ func (h *SubtitleHandler) SearchSubtitles(c *gin.Context) {
 		h.logger.Error("Failed to search subtitles", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Success: false,
-			Error:   "Failed to search subtitles: " + err.Error(),
+			Error:   "Failed to search subtitles",
 			Code:    "SEARCH_FAILED",
 		})
 		return
@@ -209,7 +269,7 @@ func (h *SubtitleHandler) DownloadSubtitle(c *gin.Context) {
 		h.logger.Error("Invalid request format", zap.Error(err))
 		c.JSON(http.StatusBadRequest, ErrorResponse{
 			Success: false,
-			Error:   "Invalid request format: " + err.Error(),
+			Error:   "Invalid request format",
 			Code:    "INVALID_REQUEST",
 		})
 		return
@@ -235,7 +295,7 @@ func (h *SubtitleHandler) DownloadSubtitle(c *gin.Context) {
 			zap.Error(err))
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Success: false,
-			Error:   "Failed to download subtitle: " + err.Error(),
+			Error:   "Failed to download subtitle",
 			Code:    "DOWNLOAD_FAILED",
 		})
 		return
@@ -295,7 +355,7 @@ func (h *SubtitleHandler) GetSubtitles(c *gin.Context) {
 			zap.Error(err))
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Success: false,
-			Error:   "Failed to get subtitles: " + err.Error(),
+			Error:   "Failed to get subtitles",
 			Code:    "GET_SUBTITLES_FAILED",
 		})
 		return
@@ -346,29 +406,54 @@ func (h *SubtitleHandler) VerifySubtitleSync(c *gin.Context) {
 
 	// Get subtitle track
 	ctx := c.Request.Context()
-	track, err := h.subtitleService.GetSubtitleTrack(ctx, subtitleID)
+	if !isNumericID(subtitleID) {
+		writeSubtitleNotFound(c)
+		return
+	}
+	track, err := h.subtitleService.GetSubtitleTrackForMedia(ctx, subtitleID, mediaID)
 	if err != nil {
+		if errors.Is(err, services.ErrMediaNotFound) {
+			writeMediaNotFound(c)
+			return
+		}
+		if errors.Is(err, services.ErrSubtitleNotFound) {
+			writeSubtitleNotFound(c)
+			return
+		}
 		h.logger.Error("Failed to get subtitle track",
 			zap.String("subtitle_id", subtitleID),
 			zap.Error(err))
-		c.JSON(http.StatusNotFound, ErrorResponse{
+		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Success: false,
-			Error:   "Subtitle not found: " + err.Error(),
-			Code:    "SUBTITLE_NOT_FOUND",
+			Error:   "Failed to load the subtitle",
+			Code:    "SYNC_VERIFICATION_FAILED",
 		})
 		return
 	}
 
-	// Verify synchronization
+	// Verify synchronization (measured against the real media; never a fabricated result)
 	syncResult, err := h.subtitleService.VerifySynchronization(ctx, mediaID, track)
 	if err != nil {
+		if errors.Is(err, services.ErrMediaNotFound) {
+			writeMediaNotFound(c)
+			return
+		}
+		if errors.Is(err, services.ErrSyncBusy) {
+			c.Header("Retry-After", "5")
+			c.JSON(http.StatusTooManyRequests, ErrorResponse{
+				Success: false,
+				Error:   "Synchronization analysis is busy, retry shortly",
+				Code:    "SYNC_BUSY",
+			})
+			return
+		}
 		h.logger.Error("Failed to verify subtitle sync",
 			zap.String("subtitle_id", subtitleID),
 			zap.Int64("media_id", mediaID),
 			zap.Error(err))
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Success: false,
-			Error:   "Failed to verify subtitle sync: " + err.Error(),
+			Error:   "Failed to verify subtitle sync",
 			Code:    "SYNC_VERIFICATION_FAILED",
 		})
 		return
@@ -399,7 +484,7 @@ func (h *SubtitleHandler) TranslateSubtitle(c *gin.Context) {
 		h.logger.Error("Invalid request format", zap.Error(err))
 		c.JSON(http.StatusBadRequest, ErrorResponse{
 			Success: false,
-			Error:   "Invalid request format: " + err.Error(),
+			Error:   "Invalid request format",
 			Code:    "INVALID_REQUEST",
 		})
 		return
@@ -424,11 +509,28 @@ func (h *SubtitleHandler) TranslateSubtitle(c *gin.Context) {
 			zap.String("source_language", request.SourceLanguage),
 			zap.String("target_language", request.TargetLanguage),
 			zap.Error(err))
-		c.JSON(http.StatusInternalServerError, ErrorResponse{
-			Success: false,
-			Error:   "Failed to translate subtitle: " + err.Error(),
-			Code:    "TRANSLATION_FAILED",
-		})
+		switch {
+		case errors.Is(err, services.ErrSubtitleNotFound):
+			writeSubtitleNotFound(c)
+		case errors.Is(err, services.ErrNoTranslationProvider):
+			c.JSON(http.StatusServiceUnavailable, ErrorResponse{
+				Success: false,
+				Error:   "No translation provider is configured on this server",
+				Code:    "TRANSLATION_UNAVAILABLE",
+			})
+		case errors.Is(err, services.ErrInvalidSubtitleContent):
+			c.JSON(http.StatusUnprocessableEntity, ErrorResponse{
+				Success: false,
+				Error:   "The stored subtitle cannot be translated",
+				Code:    "INVALID_SUBTITLE_CONTENT",
+			})
+		default:
+			c.JSON(http.StatusInternalServerError, ErrorResponse{
+				Success: false,
+				Error:   "Failed to translate subtitle",
+				Code:    "TRANSLATION_FAILED",
+			})
+		}
 		return
 	}
 
@@ -716,6 +818,9 @@ func (h *SubtitleHandler) UploadSubtitle(c *gin.Context) {
 		Encoding:     "utf-8",
 		SyncOffset:   0.0,
 	}
+	if uid, ok := subtitleActor(c); ok {
+		request.UploadedBy = uid
+	}
 
 	// Save to database
 	ctx := c.Request.Context()
@@ -725,6 +830,18 @@ func (h *SubtitleHandler) UploadSubtitle(c *gin.Context) {
 			zap.Int64("media_item_id", mediaID),
 			zap.String("language", language),
 			zap.Error(err))
+		switch {
+		case errors.Is(err, services.ErrMediaNotFound):
+			writeMediaNotFound(c)
+			return
+		case errors.Is(err, services.ErrInvalidSubtitleContent):
+			c.JSON(http.StatusUnprocessableEntity, ErrorResponse{
+				Success: false,
+				Error:   "The uploaded file is not a valid " + format + " subtitle",
+				Code:    "INVALID_SUBTITLE_CONTENT",
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Success: false,
 			Error:   "Failed to save uploaded subtitle",
@@ -739,7 +856,61 @@ func (h *SubtitleHandler) UploadSubtitle(c *gin.Context) {
 		zap.String("language", language))
 
 	c.JSON(http.StatusOK, SubtitleUploadResponse{
-		Success: true,
-		Message: "Subtitle uploaded successfully",
+		Success:    true,
+		Message:    "Subtitle uploaded successfully",
+		SubtitleID: response.SubtitleID,
 	})
+}
+
+func writeMediaNotFound(c *gin.Context) {
+	c.JSON(http.StatusNotFound, ErrorResponse{Success: false, Error: "Media item not found", Code: "MEDIA_NOT_FOUND"})
+}
+
+func writeSubtitleNotFound(c *gin.Context) {
+	c.JSON(http.StatusNotFound, ErrorResponse{Success: false, Error: "Subtitle not found", Code: "SUBTITLE_NOT_FOUND"})
+}
+
+// DeleteSubtitle removes one subtitle track.
+// @Summary Delete subtitle
+// @Description Delete a subtitle track. Allowed for the user who uploaded it and for administrators; tracks without a recorded uploader are administrator-only.
+// @Tags subtitles
+// @Produce json
+// @Param subtitle_id path int true "Subtitle ID"
+// @Success 204 "No Content"
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/subtitles/{subtitle_id} [delete]
+func (h *SubtitleHandler) DeleteSubtitle(c *gin.Context) {
+	uid, ok := subtitleActor(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Success: false, Error: "Authentication required", Code: "UNAUTHORIZED"})
+		return
+	}
+	id := c.Param("subtitle_id")
+	if !isNumericID(id) {
+		writeSubtitleNotFound(c)
+		return
+	}
+	admin, aerr := h.callerIsAdmin(c, uid)
+	if aerr != nil {
+		// authority could not be established: fail closed (never 204)
+		h.logger.Error("Admin lookup failed during subtitle delete", zap.Int64("user_id", uid), zap.Error(aerr))
+		c.JSON(http.StatusForbidden, ErrorResponse{Success: false, Error: "You may not delete this subtitle", Code: "FORBIDDEN"})
+		return
+	}
+	err := h.subtitleService.DeleteSubtitle(c.Request.Context(), id, uid, admin)
+	switch {
+	case err == nil:
+		h.logger.Info("Subtitle deleted", zap.String("subtitle_id", id), zap.Int64("user_id", uid))
+		c.Status(http.StatusNoContent)
+	case errors.Is(err, services.ErrSubtitleNotFound):
+		writeSubtitleNotFound(c)
+	case errors.Is(err, services.ErrSubtitleForbidden):
+		c.JSON(http.StatusForbidden, ErrorResponse{Success: false, Error: "You may not delete this subtitle", Code: "FORBIDDEN"})
+	default:
+		h.logger.Error("Failed to delete subtitle", zap.String("subtitle_id", id), zap.Error(err))
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Success: false, Error: "Failed to delete subtitle", Code: "DELETE_FAILED"})
+	}
 }

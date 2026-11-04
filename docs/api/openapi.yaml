@@ -3759,9 +3759,18 @@ paths:
           required: true
           schema:
             type: integer
+      description: |
+        Measures the subtitle against the real audio of the media file (speech-activity cross-correlation, SRT/VTT/ASS).
+        `sync_result.status` is `measured` (offset in ms, positive = the subtitle appears late, confidence 0-1 computed),
+        `undetermined` (the media is not locally readable or has no usable audio activity: offset 0, confidence 0, `reason` set)
+        or `invalid` (no parseable cues, or cues beyond the media end).
       responses:
         '200':
           description: Sync verification result
+        '404':
+          description: Unknown media item (`MEDIA_NOT_FOUND`) or subtitle (`SUBTITLE_NOT_FOUND`, also when it belongs to another media item)
+        '429':
+          description: The bounded media-analysis capacity is in use (`SYNC_BUSY`, `Retry-After` header); each measurement costs an ffprobe plus an ffmpeg decode, so concurrent runs are capped and a result for an unchanged media file is reused for a few minutes
 
   /api/v1/subtitles/translate:
     post:
@@ -3777,6 +3786,10 @@ paths:
       responses:
         '200':
           description: Translated subtitle
+        '404':
+          description: Unknown subtitle (`SUBTITLE_NOT_FOUND`)
+        '503':
+          description: No translation provider is configured (`TRANSLATION_UNAVAILABLE`)
 
   /api/v1/subtitles/upload:
     post:
@@ -3791,7 +3804,34 @@ paths:
               type: object
       responses:
         '200':
-          description: Subtitle uploaded
+          description: Subtitle uploaded; the body carries the real `subtitle_id`
+        '404':
+          description: Unknown media item (`MEDIA_NOT_FOUND`)
+        '422':
+          description: The file is not a valid srt/vtt/ass subtitle (`INVALID_SUBTITLE_CONTENT`)
+
+  /api/v1/subtitles/{subtitle_id}:
+    delete:
+      tags: [subtitles]
+      summary: Delete subtitle
+      description: Allowed for the user who uploaded the track and for administrators; tracks with no recorded uploader are administrator-only. A caller who is neither answers 404, not 403, so the id's existence is not disclosed.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: subtitle_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Deleted
+        '401':
+          description: Not authenticated
+        '403':
+          description: The caller's administrator status could not be established (fail closed, `FORBIDDEN`)
+        '404':
+          description: Unknown subtitle, or a subtitle the caller may not delete (neither uploader nor administrator); the two cases are deliberately indistinguishable (`SUBTITLE_NOT_FOUND`). Deleting also invalidates the cached translations of that subtitle.
 
   /api/v1/subtitles/languages:
     get:
