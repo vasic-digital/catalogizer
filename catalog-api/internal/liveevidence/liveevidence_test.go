@@ -159,7 +159,7 @@ func TestCarrierRealLoopbackServiceStaysLive(t *testing.T) {
 func TestDoubleCmdlineIsReclassifiedUnit(t *testing.T) {
 	port, exe, _ := startRealServer(t)
 	r := NewRecord("go-double", "x")
-	r.SetArtifact("sha256:abc", "target")
+	r.SetArtifact("sha256:"+strings.Repeat("a", 64), "target")
 	if err := r.ResolveAnswering(fmt.Sprintf("127.0.0.1:%d", port), fileSHA(t, exe)); err != nil {
 		t.Fatal(err)
 	}
@@ -175,7 +175,7 @@ func TestDoubleCmdlineIsReclassifiedUnit(t *testing.T) {
 func TestMismatchedExpectedIsUnit(t *testing.T) {
 	port, _, _ := startRealServer(t)
 	r := NewRecord("go-mismatch", "x")
-	r.SetArtifact("sha256:abc", "target")
+	r.SetArtifact("sha256:"+strings.Repeat("a", 64), "target")
 	if err := r.ResolveAnswering(fmt.Sprintf("127.0.0.1:%d", port), strings.Repeat("0", 64)); err != nil {
 		t.Fatal(err)
 	}
@@ -189,8 +189,8 @@ func TestMismatchedExpectedIsUnit(t *testing.T) {
 
 func TestUnresolvedAnsweringIsUnit(t *testing.T) {
 	r := NewRecord("go-nobody", "x")
-	r.SetArtifact("sha256:abc", "target")
-	if err := r.ResolveAnswering(fmt.Sprintf("127.0.0.1:%d", freePort(t)), "abc"); err == nil {
+	r.SetArtifact("sha256:"+strings.Repeat("a", 64), "target")
+	if err := r.ResolveAnswering(fmt.Sprintf("127.0.0.1:%d", freePort(t)), strings.Repeat("a", 64)); err == nil {
 		t.Fatal("expected resolve error")
 	}
 	r.Finish("PASS", []string{"a", "a", "a"})

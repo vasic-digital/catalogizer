@@ -91,7 +91,7 @@ try {
   });
   await t('unresolvable answering (nobody listens) is UNIT', () => {
     const r = new Recorder({ testId: 'nobody', command: 'x' });
-    r.setArtifact('sha256:abc'); r.resolveAnswering('127.0.0.1:65000', { expectedExeSha256: 'abc' });
+    r.setArtifact('sha256:' + 'a'.repeat(64)); r.resolveAnswering('127.0.0.1:65000', { expectedExeSha256: 'a'.repeat(64) });
     r.finish('PASS', ['ok', 'ok', 'ok']);
     const v = verify(r.write(tmp)); assert.equal(v.status, 1); assert.match(v.stdout, /answering_identity_missing/);
   });
