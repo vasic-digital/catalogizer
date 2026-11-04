@@ -1445,14 +1445,15 @@ components:
 
     AdminUserUpdate:
       type: object
-      description: Admin-level user update (role, active status, lock status)
+      description: |
+        Admin-level user update. Only `role`, `status` and `email` are read by the handler;
+        other fields (`role_id`, `is_active`, `is_locked`) are ignored, use `role` / `status`.
       properties:
-        role_id:
-          type: integer
-        is_active:
-          type: boolean
-        is_locked:
-          type: boolean
+        role:
+          type: string
+          description: Existing role name (case-insensitive, e.g. admin, user). Unknown -> 400.
+        email:
+          type: string
         status:
           type: string
           enum: [active, inactive, suspended]
@@ -4698,8 +4699,13 @@ paths:
         CSRF token: any GET under /api/v1/admin returns a signed token in the
         `X-CSRF-Token` header and in a cookie, and the mutating call must send
         both back (otherwise 403 "missing csrf cookie/header").
-        Updates a user's role, active status, or lock status. Admin users
-        cannot modify their own account to prevent self-lockout. Requires
+        Updates a user's role, active status, or lock status. `role` is an
+        existing role name (case-insensitive, e.g. `admin`, `user`) and is
+        persisted (D9); a role change revokes the target's sessions, so the
+        user logs in again and receives fresh claims (the admin gate itself
+        always reads the live role). Administrators cannot deactivate or
+        suspend themselves, nor remove their own administrator role, and the
+        last active administrator cannot be demoted. Requires
         admin role: every /api/v1/admin request is checked against the
         caller's CURRENT role in the database (system.admin / `*`), not the
         role_id claim in the access token, so a demotion, a role permission
@@ -4726,7 +4732,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '400':
-          description: Cannot modify own account, or `status` is not one of active/inactive/suspended
+          description: An administrator tried to deactivate or suspend their own account, `status` is not one of active/inactive/suspended, or `role` is not an existing role name (generic body, the value is not echoed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: |
+            Role change refused: an administrator cannot remove their own administrator role,
+            the last active, unlocked administrator cannot be demoted or deactivated (the check and the
+            write are one atomic statement, also for DELETE /users/:id and PUT /users/:id), or the user
+            changed concurrently.
           content:
             application/json:
               schema:

@@ -1,0 +1,18 @@
+=== RUN   TestD9_ListShowsRealRole
+--- PASS: TestD9_ListShowsRealRole (0.27s)
+=== RUN   TestD9_PutAppliesRole
+--- PASS: TestD9_PutAppliesRole (0.28s)
+=== RUN   TestD9_PutRoleOnlyChangeRevokesSessionsAndAdminGateFollows
+--- PASS: TestD9_PutRoleOnlyChangeRevokesSessionsAndAdminGateFollows (0.35s)
+=== RUN   TestD9_UnknownRoleRejected
+--- PASS: TestD9_UnknownRoleRejected (0.28s)
+=== RUN   TestD9_NonAdminCannotChangeRole
+--- PASS: TestD9_NonAdminCannotChangeRole (0.28s)
+=== RUN   TestD9_LastAdminCannotBeDemoted
+--- PASS: TestD9_LastAdminCannotBeDemoted (0.28s)
+=== RUN   TestD9_AdminCannotDemoteSelfEvenWithAnotherAdmin
+--- PASS: TestD9_AdminCannotDemoteSelfEvenWithAnotherAdmin (0.34s)
+=== RUN   TestD9_SameRoleAndOtherFieldsStillWork
+--- PASS: TestD9_SameRoleAndOtherFieldsStillWork (0.27s)
+PASS
+ok  	catalogizer/handlers	2.368s

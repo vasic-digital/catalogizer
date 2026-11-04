@@ -1,0 +1,10 @@
+2026/11/05 00:25:00 handlers: user 2 updated but the post-update session revoke failed: injected revoke failure
+--- FAIL: TestD9R1_AuditRecordedAndSurvivesSecondRevokeFailureAndRetryRevokes (0.24s)
+    admin_user_role_d9_round1_test.go:139: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:139
+        	Error:      	"[]" should have 1 item(s), but has 0
+        	Test:       	TestD9R1_AuditRecordedAndSurvivesSecondRevokeFailureAndRetryRevokes
+        	Messages:   	audit must be recorded right after the successful write, before the second revoke
+FAIL
+FAIL	catalogizer/handlers	0.266s
+FAIL

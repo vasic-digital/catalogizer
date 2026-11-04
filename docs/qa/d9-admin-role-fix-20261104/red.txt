@@ -1,0 +1,105 @@
+--- FAIL: TestD9_ListShowsRealRole (0.24s)
+    admin_user_role_d9_test.go:71: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:71
+        	Error:      	Not equal: 
+        	            	expected: "admin"
+        	            	actual  : "user"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-admin
+        	            	+user
+        	Test:       	TestD9_ListShowsRealRole
+        	Messages:   	the seeded administrator must be listed as admin, not the default user
+--- FAIL: TestD9_PutAppliesRole (0.24s)
+    admin_user_role_d9_test.go:79: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:79
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestD9_PutAppliesRole
+        	Messages:   	role_id must be persisted
+    admin_user_role_d9_test.go:80: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:80
+        	Error:      	Not equal: 
+        	            	expected: "admin"
+        	            	actual  : "user"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-admin
+        	            	+user
+        	Test:       	TestD9_PutAppliesRole
+--- FAIL: TestD9_PutRoleOnlyChangeRevokesSessionsAndAdminGateFollows (0.30s)
+    admin_user_role_d9_test.go:91: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:91
+        	Error:      	Not equal: 
+        	            	expected: 401
+        	            	actual  : 403
+        	Test:       	TestD9_PutRoleOnlyChangeRevokesSessionsAndAdminGateFollows
+        	Messages:   	old session must be revoked
+    admin_user_role_d9_test.go:98: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:98
+        	Error:      	Not equal: 
+        	            	expected: 200
+        	            	actual  : 403
+        	Test:       	TestD9_PutRoleOnlyChangeRevokesSessionsAndAdminGateFollows
+        	Messages:   	promoted user passes the live admin gate after re-login
+--- FAIL: TestD9_UnknownRoleRejected (0.23s)
+    admin_user_role_d9_test.go:105: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:105
+        	Error:      	Not equal: 
+        	            	expected: 400
+        	            	actual  : 200
+        	Test:       	TestD9_UnknownRoleRejected
+        	Messages:   	{"role":"superuser"} -> {"message":"User updated successfully"}
+    admin_user_role_d9_test.go:105: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:105
+        	Error:      	Not equal: 
+        	            	expected: 400
+        	            	actual  : 200
+        	Test:       	TestD9_UnknownRoleRejected
+        	Messages:   	{"role":""} -> {"message":"User updated successfully"}
+    admin_user_role_d9_test.go:105: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:105
+        	Error:      	Not equal: 
+        	            	expected: 400
+        	            	actual  : 200
+        	Test:       	TestD9_UnknownRoleRejected
+        	Messages:   	{"role":"  "} -> {"message":"User updated successfully"}
+    admin_user_role_d9_test.go:105: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:105
+        	Error:      	Not equal: 
+        	            	expected: 400
+        	            	actual  : 200
+        	Test:       	TestD9_UnknownRoleRejected
+        	Messages:   	{"role":"admin\u0000"} -> {"message":"User updated successfully"}
+--- FAIL: TestD9_LastAdminCannotBeDemoted (0.23s)
+    admin_user_role_d9_test.go:124: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:124
+        	Error:      	Not equal: 
+        	            	expected: 409
+        	            	actual  : 200
+        	Test:       	TestD9_LastAdminCannotBeDemoted
+        	Messages:   	{"message":"User updated successfully"}
+--- FAIL: TestD9_AdminCannotDemoteSelfEvenWithAnotherAdmin (0.29s)
+    admin_user_role_d9_test.go:134: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:134
+        	Error:      	Not equal: 
+        	            	expected: 409
+        	            	actual  : 200
+        	Test:       	TestD9_AdminCannotDemoteSelfEvenWithAnotherAdmin
+        	Messages:   	{"message":"User updated successfully"}
+    admin_user_role_d9_test.go:142: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:142
+        	Error:      	Not equal: 
+        	            	expected: 200
+        	            	actual  : 403
+        	Test:       	TestD9_AdminCannotDemoteSelfEvenWithAnotherAdmin
+FAIL
+FAIL	catalogizer/handlers	2.064s
+FAIL

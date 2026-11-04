@@ -1,0 +1,2 @@
+ok  	catalogizer/repository	89.326s
+exit=0

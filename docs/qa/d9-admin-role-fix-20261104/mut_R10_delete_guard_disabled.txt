@@ -1,0 +1,10 @@
+--- FAIL: TestD9_ConcurrentLastAdminNeverZero (2.84s)
+    --- FAIL: TestD9_ConcurrentLastAdminNeverZero/delete_both (2.60s)
+        admin_last_admin_race_d9_test.go:107: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_last_admin_race_d9_test.go:107
+            	Error:      	Should be zero, but was 12
+            	Test:       	TestD9_ConcurrentLastAdminNeverZero/delete_both
+            	Messages:   	DELETE_BOTH: iterations ending with ZERO active administrators (both succeeded in 12)
+FAIL
+FAIL	catalogizer/handlers	2.865s
+FAIL

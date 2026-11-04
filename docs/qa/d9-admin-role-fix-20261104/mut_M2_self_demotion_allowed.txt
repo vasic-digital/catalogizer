@@ -1,0 +1,26 @@
+2026/11/05 00:25:59 handlers: user 2 updated but the post-update session revoke failed: injected revoke failure
+--- FAIL: TestD9_LastAdminCannotBeDemoted (0.23s)
+    admin_user_role_d9_test.go:126: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:126
+        	Error:      	Not equal: 
+        	            	expected: 200
+        	            	actual  : 401
+        	Test:       	TestD9_LastAdminCannotBeDemoted
+        	Messages:   	admin must still hold a valid session
+--- FAIL: TestD9_AdminCannotDemoteSelfEvenWithAnotherAdmin (0.29s)
+    admin_user_role_d9_test.go:134: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:134
+        	Error:      	Not equal: 
+        	            	expected: 409
+        	            	actual  : 200
+        	Test:       	TestD9_AdminCannotDemoteSelfEvenWithAnotherAdmin
+        	Messages:   	{"message":"User updated successfully"}
+    admin_user_role_d9_test.go:135: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestD9_AdminCannotDemoteSelfEvenWithAnotherAdmin
+FAIL
+FAIL	catalogizer/handlers	3.479s
+FAIL

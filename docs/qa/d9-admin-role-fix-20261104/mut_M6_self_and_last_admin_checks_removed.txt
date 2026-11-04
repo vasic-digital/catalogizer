@@ -1,0 +1,64 @@
+--- FAIL: TestD9R1_RepoLastAdminCountsOnlyActiveUnlocked (0.24s)
+    admin_user_role_d9_round1_test.go:79: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:79
+        	Error:      	Should be false
+        	Test:       	TestD9R1_RepoLastAdminCountsOnlyActiveUnlocked
+    admin_user_role_d9_round1_test.go:80: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:80
+        	Error:      	Expected error with "operation would remove the last active administrator" in chain but got nil.
+        	Test:       	TestD9R1_RepoLastAdminCountsOnlyActiveUnlocked
+        	Messages:   	inactive admin must not count as another administrator
+    admin_user_role_d9_round1_test.go:83: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:83
+        	Error:      	Should be false
+        	Test:       	TestD9R1_RepoLastAdminCountsOnlyActiveUnlocked
+    admin_user_role_d9_round1_test.go:84: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:84
+        	Error:      	Expected error with "operation would remove the last active administrator" in chain but got nil.
+        	Test:       	TestD9R1_RepoLastAdminCountsOnlyActiveUnlocked
+        	Messages:   	locked admin must not count
+    admin_user_role_d9_round1_test.go:85: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:85
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestD9R1_RepoLastAdminCountsOnlyActiveUnlocked
+2026/11/05 00:26:40 handlers: user 2 updated but the post-update session revoke failed: injected revoke failure
+--- FAIL: TestD9_LastAdminCannotBeDemoted (0.24s)
+    admin_user_role_d9_test.go:124: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:124
+        	Error:      	Not equal: 
+        	            	expected: 409
+        	            	actual  : 200
+        	Test:       	TestD9_LastAdminCannotBeDemoted
+        	Messages:   	{"message":"User updated successfully"}
+    admin_user_role_d9_test.go:125: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:125
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestD9_LastAdminCannotBeDemoted
+    admin_user_role_d9_test.go:126: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:126
+        	Error:      	Not equal: 
+        	            	expected: 200
+        	            	actual  : 401
+        	Test:       	TestD9_LastAdminCannotBeDemoted
+        	Messages:   	admin must still hold a valid session
+--- FAIL: TestD9_AdminCannotDemoteSelfEvenWithAnotherAdmin (0.29s)
+    admin_user_role_d9_test.go:134: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:134
+        	Error:      	Not equal: 
+        	            	expected: 409
+        	            	actual  : 200
+        	Test:       	TestD9_AdminCannotDemoteSelfEvenWithAnotherAdmin
+        	Messages:   	{"message":"User updated successfully"}
+    admin_user_role_d9_test.go:135: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestD9_AdminCannotDemoteSelfEvenWithAnotherAdmin
+FAIL
+FAIL	catalogizer/handlers	3.554s
+FAIL

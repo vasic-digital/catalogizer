@@ -320,11 +320,14 @@ func TestUserRepository_Delete(t *testing.T) {
 			name: "success",
 			id:   1,
 			setup: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("FROM roles").WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "permissions", "is_system", "created_at", "updated_at"}).
+					AddRow(1, "Admin", "d", `["*"]`, true, time.Now(), time.Now()))
 				mock.ExpectBegin()
 				mock.ExpectQuery("SELECT username FROM users WHERE id").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"username"}).AddRow("u1"))
 				mock.ExpectExec("UPDATE auth_audit_log SET details").WithArgs(sqlmock.AnyArg(), 1).WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectExec("UPDATE auth_audit_log SET user_id").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectExec("UPDATE user_permissions").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 0))
+				mock.ExpectQuery("SELECT role_id, is_active FROM users WHERE id").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"role_id", "is_active"}).AddRow(2, true))
 				mock.ExpectExec("DELETE FROM users WHERE id").
 					WithArgs(1).
 					WillReturnResult(sqlmock.NewResult(0, 1))
@@ -335,11 +338,14 @@ func TestUserRepository_Delete(t *testing.T) {
 			name: "database error",
 			id:   999,
 			setup: func(mock sqlmock.Sqlmock) {
+				mock.ExpectQuery("FROM roles").WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "permissions", "is_system", "created_at", "updated_at"}).
+					AddRow(1, "Admin", "d", `["*"]`, true, time.Now(), time.Now()))
 				mock.ExpectBegin()
 				mock.ExpectQuery("SELECT username FROM users WHERE id").WithArgs(999).WillReturnRows(sqlmock.NewRows([]string{"username"}).AddRow("u999"))
 				mock.ExpectExec("UPDATE auth_audit_log SET details").WithArgs(sqlmock.AnyArg(), 999).WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectExec("UPDATE auth_audit_log SET user_id").WithArgs(999).WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectExec("UPDATE user_permissions").WithArgs(999).WillReturnResult(sqlmock.NewResult(0, 0))
+				mock.ExpectQuery("SELECT role_id, is_active FROM users WHERE id").WithArgs(999).WillReturnRows(sqlmock.NewRows([]string{"role_id", "is_active"}).AddRow(2, true))
 				mock.ExpectExec("DELETE FROM users WHERE id").
 					WithArgs(999).
 					WillReturnError(sql.ErrConnDone)

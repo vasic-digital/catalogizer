@@ -1,0 +1,28 @@
+--- FAIL: TestD9R1_RepoLastAdminCountsOnlyActiveUnlocked (0.25s)
+    admin_user_role_d9_round1_test.go:79: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:79
+        	Error:      	Should be false
+        	Test:       	TestD9R1_RepoLastAdminCountsOnlyActiveUnlocked
+    admin_user_role_d9_round1_test.go:80: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:80
+        	Error:      	Expected error with "operation would remove the last active administrator" in chain but got nil.
+        	Test:       	TestD9R1_RepoLastAdminCountsOnlyActiveUnlocked
+        	Messages:   	inactive admin must not count as another administrator
+    admin_user_role_d9_round1_test.go:83: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:83
+        	Error:      	Should be false
+        	Test:       	TestD9R1_RepoLastAdminCountsOnlyActiveUnlocked
+    admin_user_role_d9_round1_test.go:84: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:84
+        	Error:      	Expected error with "operation would remove the last active administrator" in chain but got nil.
+        	Test:       	TestD9R1_RepoLastAdminCountsOnlyActiveUnlocked
+        	Messages:   	locked admin must not count
+    admin_user_role_d9_round1_test.go:85: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:85
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestD9R1_RepoLastAdminCountsOnlyActiveUnlocked
+FAIL
+FAIL	catalogizer/handlers	0.273s
+FAIL

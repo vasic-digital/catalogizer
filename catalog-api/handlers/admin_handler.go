@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"catalogizer/internal/pathguard"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 
 	"catalogizer/database"
 	"catalogizer/models"
+	"catalogizer/repository"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/semaphore"
@@ -39,6 +41,8 @@ type AdminUserRepoInterface interface {
 	Update(user *models.User) error
 	Count() (int, error)
 	DeactivateAllUserSessions(userID int) error
+	GetRole(roleID int) (*models.Role, error)
+	ListRoles() ([]models.Role, error)
 }
 
 // AdminHandler provides administrative API endpoints for system info,
@@ -169,6 +173,15 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 		return
 	}
 
+	// D9: the repository List does not join the role, so resolve every user's
+	// role from the roles table. A failure is an error, never a silent default
+	// of "user" (which hid administrators).
+	roleNames, err := h.roleNamesByID()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list users"})
+		return
+	}
+
 	// Map to the shape the frontend expects.
 	type adminUser struct {
 		ID        string  `json:"id"`
@@ -196,9 +209,15 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 			continue
 		}
 
-		roleName := "user"
+		var roleName string
 		if u.Role != nil {
-			roleName = u.Role.Name
+			roleName = strings.ToLower(u.Role.Name) // already loaded by the repository
+		} else if n, ok := roleNames[u.RoleID]; ok {
+			roleName = n
+		} else {
+			// A dangling role_id is an error, never a silent default of "user".
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list users"})
+			return
 		}
 
 		au := adminUser{
@@ -257,6 +276,48 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
+	// D9: resolve the requested role (closed set = the roles table, matched
+	// case-insensitively by name) BEFORE any change. Unknown -> generic 400.
+	oldRoleID := user.RoleID
+	var newRole *models.Role
+	if updates.Role != nil {
+		roles, rerr := h.userRepo.ListRoles()
+		if rerr != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to resolve role"})
+			return
+		}
+		want := strings.ToLower(strings.TrimSpace(*updates.Role))
+		for i := range roles {
+			if want != "" && strings.ToLower(roles[i].Name) == want {
+				newRole = &roles[i]
+				break
+			}
+		}
+		if newRole == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role"})
+			return
+		}
+		if newRole.ID != oldRoleID {
+			cur, cerr := h.userRepo.GetRole(oldRoleID)
+			if cerr != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to resolve role"})
+				return
+			}
+			// Removing administrator rights: never from oneself (an admin
+			// cannot lock themselves out; another admin must do it) and never
+			// from the last remaining active administrator.
+			if roleIsAdmin(cur) && !roleIsAdmin(newRole) {
+				if id == admin.ID {
+					c.JSON(http.StatusConflict, gin.H{"error": "Administrators cannot remove their own administrator role; ask another administrator"})
+					return
+				}
+				// The last-administrator rule is enforced atomically by the
+				// repository write (UpdateGuarded -> repository.ErrLastAdmin).
+			}
+			user.RoleID = newRole.ID
+		}
+	}
+
 	// An administrator must not lock themselves out by deactivating or
 	// suspending their own account (found by the live contract sweep: a
 	// generated happy-path PUT on the admin's own id revoked every admin
@@ -267,6 +328,7 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 	}
 
 	wasActive := user.IsActive
+	roleChanged := user.RoleID != oldRoleID
 	wasPending := user.IsRegistrationPending()
 	if updates.Status != nil {
 		// The status is a closed set; anything else is refused before it can change
@@ -295,28 +357,41 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 		user.Email = *updates.Email
 	}
 
+	// Revocation is keyed on what was REQUESTED, not only on the diff: a retry
+	// after a failed post-update revoke sees no role difference and must still
+	// revoke (same rule as UserHandler.UpdateUser). Re-asserting one's own
+	// unchanged role revokes nothing (that would only log the admin out).
+	needRevoke := (updates.Role != nil && (roleChanged || id != admin.ID)) ||
+		wasActive && !user.IsActive || (updates.Status != nil && !user.IsActive)
+
 	// Revoke first (fail closed): a failed revocation leaves the user unchanged,
 	// so a retry still revokes.
-	if wasActive && !user.IsActive || (updates.Status != nil && !user.IsActive) {
+	if needRevoke {
 		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke sessions; user not updated"})
 			return
 		}
 	}
-	if err := h.userRepo.Update(user); err != nil {
+	if g, ok := h.userRepo.(guardedUserUpdater); ok {
+		// Compare-and-set on the role/activation the decisions above were made
+		// against, so a concurrent role change is not overwritten.
+		applied, gerr := g.UpdateGuarded(user, oldRoleID, wasActive)
+		if gerr != nil {
+			if errors.Is(gerr, repository.ErrLastAdmin) {
+				c.JSON(http.StatusConflict, gin.H{"error": "The last administrator cannot be demoted or deactivated"})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+			return
+		}
+		if !applied {
+			c.JSON(http.StatusConflict, gin.H{"error": "User was modified concurrently; reload and retry"})
+			return
+		}
+	} else if err := h.userRepo.Update(user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return
 	}
-	// Second revoke closes the window for a login between the first revoke and
-	// the update (that session carries the old claims).
-	if wasActive && !user.IsActive || (updates.Status != nil && !user.IsActive) {
-		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
-			log.Printf("handlers: user %d updated but the post-update session revoke failed: %v", user.ID, err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "User updated but revoking sessions failed; repeat the request"})
-			return
-		}
-	}
-
 	if updates.Status != nil {
 		event := "admin_user_status_changed"
 		switch {
@@ -329,7 +404,35 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 			"actor="+strconv.Itoa(admin.ID)+" status="+*updates.Status)
 	}
 
+	if roleChanged {
+		recordAuth(h.authService, user.ID, "admin_user_role_changed", c.ClientIP(), c.Request.UserAgent(),
+			"actor="+strconv.Itoa(admin.ID)+" role_id="+strconv.Itoa(oldRoleID)+"->"+strconv.Itoa(user.RoleID))
+	}
+
+	// Second revoke closes the window for a login between the first revoke and
+	// the update (that session carries the old claims).
+	if needRevoke {
+		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
+			log.Printf("handlers: user %d updated but the post-update session revoke failed: %v", user.ID, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User updated but revoking sessions failed; repeat the request"})
+			return
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})
+}
+
+// roleNamesByID maps role id to its lower-cased name (the shape the admin UI uses).
+func (h *AdminHandler) roleNamesByID() (map[int]string, error) {
+	roles, err := h.userRepo.ListRoles()
+	if err != nil {
+		return nil, err
+	}
+	m := make(map[int]string, len(roles))
+	for _, r := range roles {
+		m[r.ID] = strings.ToLower(r.Name)
+	}
+	return m, nil
 }
 
 // GetStorageInfo returns storage root information.
