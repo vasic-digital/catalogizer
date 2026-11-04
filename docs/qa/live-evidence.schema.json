@@ -135,7 +135,7 @@
         },
         "env_checked": {
           "type": "boolean",
-          "description": "true when the recorder read /proc/<pid>/environ for the closed key set of the interpreter option table (env_keys + env_prefixes). Required true for interpreter answers (else UNIT env_unrecorded). false/absent = unreadable or older recorder, never 'clean'."
+          "description": "true when the recorder read /proc/<pid>/environ for the closed key set of the interpreter option table (env_keys + env_prefixes). Required true for every process/socket answering, interpreter or native (else UNIT env_unrecorded); not needed for container. false/absent/non-boolean = unreadable (e.g. a service of another user), older recorder or hand-written record: never clean."
         },
         "env_injected": {
           "type": "array",

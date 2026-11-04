@@ -19,7 +19,8 @@
     "pid": 4242,
     "exe_path": "/opt/x/x",
     "exe_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
-    "cmdline": "/opt/x/x --port 8080"
+    "cmdline": "/opt/x/x --port 8080",
+    "env_checked": true
   },
   "expected": {
     "exe_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb"

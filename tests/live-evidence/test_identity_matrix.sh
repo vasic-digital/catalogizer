@@ -19,7 +19,7 @@ cell() {  # cell <kind> <variant> -> record on stdout, or nothing when the combi
   case "$k:$v" in
     container:native) ans='{"kind":"container","image_digest":"sha256:'$IM'","image":"reg.example/app:1","container_id":"c1"}'; exp='{"image_digest":"sha256:'$IM'"}'; bound=$IM;;
     container:*) return 1;;
-    *:native) ans='{"kind":"'$k'","pid":7,"exe_path":"/opt/app/app","exe_sha256":"'$EX'","cmdline":"/opt/app/app --port 8080"}'; exp='{"exe_sha256":"'$EX'"}'; bound=$EX;;
+    *:native) ans='{"kind":"'$k'","pid":7,"exe_path":"/opt/app/app","exe_sha256":"'$EX'","cmdline":"/opt/app/app --port 8080","env_checked":true}'; exp='{"exe_sha256":"'$EX'"}'; bound=$EX;;
     *:interpreter) ans='{"kind":"'$k'","pid":7,"exe_path":"/usr/bin/python3.12","exe_sha256":"'$EX'","cmdline":"python3 /srv/app/s.py","env_checked":true,"script_path":"/srv/app/s.py","script_sha256":"'$SC'"}'; exp='{"exe_sha256":"'$EX'","script_sha256":"'$SC'"}'; bound=$SC;;
     *:renamed) ans='{"kind":"'$k'","pid":7,"exe_path":"/opt/app/server","exe_sha256":"'$EX'","cmdline":"/opt/app/server /srv/app/s.py","runtime_hint":"libpython3.12","env_checked":true,"script_path":"/srv/app/s.py","script_sha256":"'$SC'"}'; exp='{"exe_sha256":"'$EX'","script_sha256":"'$SC'"}'; bound=$SC;;
   esac

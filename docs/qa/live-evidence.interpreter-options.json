@@ -2,9 +2,9 @@
  "schema": "catalogizer.live-evidence.interp-options/1",
  "note": "ALLOW-LIST of interpreter command-line options per family (constitution 11.4.289(D)). Read by the verifier, the Go recorder (embedded copy catalog-api/internal/liveevidence/interp_options.json, parity-tested) and the Node recorder. An option NOT listed under benign is ambiguous => the answer is UNIT. 'dangerous' only names options that load/run code the script hash does not cover (gives the reason code interpreter_code_loading_option); it is checked BEFORE benign. A '--name=value' token is split on the first '=' before ANY lookup. Entry: opt, val (none | next | eq | attached), re (value regex, anchored, RE2/JS/Oniguruma-safe), ex (example value used by the frozen test cases), script (true: the value is the script, -jar). 'prefix:P' in dangerous = any token starting with P. positional_script:false (java) = the first positional is a main class, not a file: only -jar binds a script.",
  "unsupported_exe": "^(deno|bun)$",
- "env_keys": ["NODE_OPTIONS", "NODE_PATH", "JDK_JAVA_OPTIONS", "JAVA_TOOL_OPTIONS", "_JAVA_OPTIONS", "RUBYOPT", "RUBYLIB", "PERL5OPT", "PERL5LIB", "PERLLIB", "PYTHONPATH", "PYTHONSTARTUP", "PYTHONHOME", "PYTHONUSERBASE", "PYTHONBREAKPOINT", "PYTHONPLATLIBDIR", "LUA_INIT", "LUA_PATH", "LUA_CPATH", "BASH_ENV", "ENV", "SHELLOPTS", "PHPRC", "PHP_INI_SCAN_DIR", "LD_PRELOAD", "LD_AUDIT", "LD_LIBRARY_PATH"],
+ "env_keys": ["NODE_OPTIONS", "NODE_PATH", "JDK_JAVA_OPTIONS", "JAVA_TOOL_OPTIONS", "_JAVA_OPTIONS", "RUBYOPT", "RUBYLIB", "GEM_HOME", "GEM_PATH", "BUNDLE_GEMFILE", "BUNDLE_PATH", "PERL5OPT", "PERL5LIB", "PERLLIB", "PYTHONPATH", "PYTHONSTARTUP", "PYTHONHOME", "PYTHONUSERBASE", "PYTHONBREAKPOINT", "PYTHONPLATLIBDIR", "PYTHONINSPECT", "PYTHONWARNINGS", "LUA_INIT", "LUA_PATH", "LUA_CPATH", "BASH_ENV", "ENV", "SHELLOPTS", "BASHOPTS", "ZDOTDIR", "PHPRC", "PHP_INI_SCAN_DIR", "OPENSSL_CONF", "OPENSSL_MODULES", "OPENSSL_ENGINES", "LD_PRELOAD", "LD_AUDIT", "LD_LIBRARY_PATH", "GCONV_PATH"],
  "env_prefixes": ["BASH_FUNC_", "LUA_INIT_", "LUA_PATH_", "LUA_CPATH_"],
- "env_loader": ["LD_PRELOAD", "LD_AUDIT", "LD_LIBRARY_PATH"],
+ "env_loader": ["LD_PRELOAD", "LD_AUDIT", "LD_LIBRARY_PATH", "GCONV_PATH"],
  "families": {
   "python": {
    "exe": "^(python[0-9.]*|pypy[0-9.]*)$",

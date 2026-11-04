@@ -76,6 +76,10 @@ host-type-dropped	((($r.endpoint.host | type) == "string") and 	(
 interp-sh-dropped	|bash|sh|dash|	|bash|dash|
 unknown-kind-accepted	     or ($k != "process" and $k != "container" and $k != "socket")	
 envinj-nonarray-dropped	$ip and ($A.env_checked == true) and ((($A.env_injected // []) | type) != "array" or	$ip and ($A.env_checked == true) and (false or
+env-unrec-interp-only	($k != "container") and ($A.env_checked != true) then "env_unrecorded"	$ip and ($A.env_checked != true) then "env_unrecorded"
+env-absent-counts-clean	($k != "container") and ($A.env_checked != true) then "env_unrecorded"	($k != "container") and ($A.env_checked == false) then "env_unrecorded"
+env-nonbool-counts-clean	($k != "container") and ($A.env_checked != true) then "env_unrecorded"	($k != "container") and (($A.env_checked // false) == false and ($A.env_checked | type) != "string") then "env_unrecorded"
+loader-env-first-only	| map(select(. as $e | ($itbl[0].env_loader // []) | index($e))) | length) > 0)	| .[0:1] | map(select(. as $e | ($itbl[0].env_loader // []) | index($e))) | length) > 0)
 loader-env-interp-only	($ip | not) and ($k != "container") and ((($A.env_injected	$ip and ($k != "container") and ((($A.env_injected
 loader-env-dropped	($ip | not) and ($k != "container") and ((($A.env_injected	false and ($k != "container") and ((($A.env_injected
 loader-env-nonarray-dropped	($ip | not) and ($k != "container") and ((($A.env_injected // []) | type) != "array" or	($ip | not) and ($k != "container") and (false or

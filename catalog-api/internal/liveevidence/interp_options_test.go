@@ -249,7 +249,7 @@ func TestScriptOfBinding(t *testing.T) {
 }
 
 func TestEnvOfEveryKey(t *testing.T) {
-	want := []string{"NODE_OPTIONS", "NODE_PATH", "JDK_JAVA_OPTIONS", "JAVA_TOOL_OPTIONS", "_JAVA_OPTIONS", "RUBYOPT", "RUBYLIB", "PERL5OPT", "PERL5LIB", "PERLLIB", "PYTHONPATH", "PYTHONSTARTUP", "PYTHONHOME", "PYTHONUSERBASE", "PYTHONBREAKPOINT", "PYTHONPLATLIBDIR", "LUA_INIT", "LUA_PATH", "LUA_CPATH", "BASH_ENV", "ENV", "SHELLOPTS", "PHPRC", "PHP_INI_SCAN_DIR", "LD_PRELOAD", "LD_AUDIT", "LD_LIBRARY_PATH"}
+	want := []string{"NODE_OPTIONS", "NODE_PATH", "JDK_JAVA_OPTIONS", "JAVA_TOOL_OPTIONS", "_JAVA_OPTIONS", "RUBYOPT", "RUBYLIB", "GEM_HOME", "GEM_PATH", "BUNDLE_GEMFILE", "BUNDLE_PATH", "PERL5OPT", "PERL5LIB", "PERLLIB", "PYTHONPATH", "PYTHONSTARTUP", "PYTHONHOME", "PYTHONUSERBASE", "PYTHONBREAKPOINT", "PYTHONPLATLIBDIR", "PYTHONINSPECT", "PYTHONWARNINGS", "LUA_INIT", "LUA_PATH", "LUA_CPATH", "BASH_ENV", "ENV", "SHELLOPTS", "BASHOPTS", "ZDOTDIR", "PHPRC", "PHP_INI_SCAN_DIR", "OPENSSL_CONF", "OPENSSL_MODULES", "OPENSSL_ENGINES", "LD_PRELOAD", "LD_AUDIT", "LD_LIBRARY_PATH", "GCONV_PATH"}
 	got := append([]string(nil), defaultInterpTable.EnvKeys...)
 	sort.Strings(got)
 	w := append([]string(nil), want...)
@@ -277,8 +277,12 @@ func TestEnvOfEveryKey(t *testing.T) {
 			t.Errorf("empty / lookalike / bare prefix %s must not count: %v", pf, inj)
 		}
 	}
-	if strings.Join(defaultInterpTable.EnvPrefixes, ",") != "BASH_FUNC_,LUA_INIT_,LUA_PATH_,LUA_CPATH_" || strings.Join(defaultInterpTable.EnvLoader, ",") != "LD_PRELOAD,LD_AUDIT,LD_LIBRARY_PATH" {
+	if strings.Join(defaultInterpTable.EnvPrefixes, ",") != "BASH_FUNC_,LUA_INIT_,LUA_PATH_,LUA_CPATH_" || strings.Join(defaultInterpTable.EnvLoader, ",") != "LD_PRELOAD,LD_AUDIT,LD_LIBRARY_PATH,GCONV_PATH" {
 		t.Errorf("prefix/loader sets: %v %v", defaultInterpTable.EnvPrefixes, defaultInterpTable.EnvLoader)
+	}
+	ordinary := "PATH=/usr/bin\x00HOME=/h\x00LANG=C.UTF-8\x00USER=u\x00SHELL=/bin/bash\x00PWD=/w\x00TERM=xterm\x00XDG_CONFIG_HOME=/h/.config\x00XDG_DATA_DIRS=/usr/share\x00GOPATH=/h/go\x00GOFLAGS=-mod=mod\x00JAVA_HOME=/jdk\x00CLASSPATH=/x.jar\x00PYTHONUNBUFFERED=1\x00PYTHONDONTWRITEBYTECODE=1\x00NODE_ENV=production\x00LD_ASSUME_KERNEL=\x00RUBY_GC_HEAP_INIT_SLOTS=1\x00BUNDLE_APP_CONFIG=/c\x00SSL_CERT_FILE=/c.pem\x00OPENSSL_FOO=1\x00GEM_HOMEX=1\x00"
+	if ok, inj := EnvOf(defaultInterpTable, []byte(ordinary), nil); !ok || len(inj) != 0 {
+		t.Errorf("an ordinary environment must stay clean: %v %v", ok, inj)
 	}
 	if ok, _ := EnvOf(defaultInterpTable, nil, os.ErrPermission); ok {
 		t.Error("unreadable environ must be env_checked=false")
