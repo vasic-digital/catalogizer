@@ -20,7 +20,7 @@ export function EntityHero({
   onFavorite,
   onRefresh,
   refreshPending,
-  canRefresh = true,
+  canRefresh = false, // admin-only action: hidden unless the caller says the user may refresh
 }: {
   entity: MediaEntityDetail
   files: EntityFile[]

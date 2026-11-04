@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"catalogizer/internal/netguard"
 	"context"
 	"errors"
 	"fmt"
@@ -32,7 +33,8 @@ type LLMImageSearchResolver struct {
 	enabled  bool
 	endpoint string
 	apiKey   string
-	client   *http.Client
+	client   *http.Client // operator-configured orchestrator endpoint (may be on the LAN)
+	imgs     *http.Client // image downloads: URLs come from the model, strict
 
 	mu           sync.Mutex
 	lastAttempts map[string]time.Time // key = entityType|entityID|variant
@@ -50,6 +52,7 @@ func NewLLMImageSearchResolver(priority int) *LLMImageSearchResolver {
 		endpoint:     endpoint,
 		apiKey:       os.Getenv("CATALOGIZER_LLM_IMAGE_SEARCH_API_KEY"),
 		client:       &http.Client{Timeout: 15 * time.Second},
+		imgs:         netguard.StrictClient(15*time.Second, 3, netguard.HTTPOrHTTPS),
 		lastAttempts: make(map[string]time.Time),
 	}
 }
@@ -104,7 +107,7 @@ func (r *LLMImageSearchResolver) Resolve(ctx context.Context, req *resolver.Reso
 	if err != nil {
 		return nil, fmt.Errorf("build image request: %w", err)
 	}
-	resp, err := r.client.Do(httpReq)
+	resp, err := r.imgs.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("download image: %w", err)
 	}

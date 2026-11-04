@@ -1075,9 +1075,18 @@ Open (not fixed here):
 
 ## Authz round 2 review follow-ups (Opus round 2, GO-with-follow-ups)
 
-- AZ2-R1 (important, source-defect, pre-existing): fanart_resolver.go, igdb_resolver.go, llm_image_resolver.go check a URL once, then fetch with a plain http.Client that follows redirects and re-resolves DNS (SSRF via redirect/rebinding). Switch to netguard.StrictClient with tests (redirect to loopback/metadata, rebinding).
-- AZ2-R2 (minor, test): scrape token on /debug/pprof/* must be 401 in the RealBinary suite (mutant m2b survived).
-- AZ2-R3 (minor, test): strict mode with IPv4-mapped IPv6 (::ffff:127.0.0.2, ::ffff:10.0.0.1) and allow-list env set (mutant m7 survived).
-- AZ2-R4 (minor, test): Refresh-button page wiring test with isAdmin false; consider defaulting canRefresh to false.
+- AZ2-R1 (important, source-defect, pre-existing): fanart_resolver.go, igdb_resolver.go, llm_image_resolver.go check a URL once, then fetch with a plain http.Client that follows redirects and re-resolves DNS (SSRF via redirect/rebinding). Switch to netguard.StrictClient with tests (redirect to loopback/metadata, rebinding). **FIXED (ssrf round 3): fanart, igdb download, llm image download and cover_art_service downloads use netguard.StrictClient; RED/GREEN tests in outbound_strict_resolvers_test.go (redirect to 127.0.0.2, metadata address, rebinding stand-in, allow-list ignored); census in docs/OUTBOUND_HTTP_CLIENTS.md. Review round 1: download() driven with a mapped-loopback literal, guardedRedirect unit + real forward-proxy tests, redirect-cap test, ffmpeg/ffprobe `-protocol_whitelist file,pipe` in cover_art_service.go, bounded download body, SOCKS5 dial honours ctx.**
+- AZ2-R2 (minor, test): scrape token on /debug/pprof/* must be 401 in the RealBinary suite (mutant m2b survived). **FIXED: TestRoutePerms_RealBinary_Round2_ScrapeTokenDoesNotOpenPprof (mutant: scrape-skip on the pprof group is caught).**
+- AZ2-R3 (minor, test): strict mode with IPv4-mapped IPv6 (::ffff:127.0.0.2, ::ffff:10.0.0.1) and allow-list env set (mutant m7 survived). **FIXED: TestStrictBlocksIPv4MappedIPv6WithAllowListSet (strict check and strict dial; mutant m7 equivalent, strict honouring the allow-list, is caught).**
+- AZ2-R4 (minor, test): Refresh-button page wiring test with isAdmin false; consider defaulting canRefresh to false. **FIXED: EntityDetailView canRefresh now defaults to false; page test hides Refresh for a non-admin (mutant canRefresh={true} is caught).**
 - AZ2-R5 (minor, deployment): Prometheus token-file mount breaks container start when the file is missing; document creation or make the mount optional.
 - AZ2-R6 (nit): deployment/docker-compose.yml monitoring mount path, otel collector not started with METRICS_SCRAPE_TOKEN by any compose file, Gate column for /metrics should mention the token.
+
+## SSRF resolvers review follow-ups (Opus round 2, GO-with-follow-ups)
+
+- SSRF-F1 (minor, test): SOCKS5 ContextDialer fix has no test (revert mutant survives). Add a never-answering SOCKS5 listener + cancelled ctx test.
+- SSRF-F2 (minor, test): pin the production default of coverArtMaxBytes (32 MiB); tests overwrite the variable.
+- SSRF-F3 (minor, test): TestCoverArtFFmpeg_PlaylistDoesNotReachNetwork cannot fail on ffmpeg 8.0.1; add a direct http://127.0.0.1:port/ videoPath case (a direct URL input DOES reach the listener without the whitelist: real behavioural RED, 1 hit each for ffprobe and ffmpeg; 0 with -protocol_whitelist file,pipe). Correct the claim in tests/docs that no behavioural RED exists.
+- SSRF-F4 (nit, test): assert -nostdin in the ffmpeg command.
+- SSRF-F5 (minor): cover-art ffmpeg guard lacks the converter's -format_whitelist allow-list; ffprobeDurationCmd has no ctx/timeout.
+- SSRF-F6 (nit, doc): add ftp_client.go:88 (ftp.Dial) and redis/postgres sql.Open operator connections to docs/OUTBOUND_HTTP_CLIENTS.md.

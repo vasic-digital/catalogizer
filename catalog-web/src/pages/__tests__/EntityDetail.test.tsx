@@ -58,7 +58,8 @@ vi.mock('@/lib/mediaApi', () => ({
   },
 }))
 
-vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ isAdmin: true }) }))
+const authState = vi.hoisted(() => ({ isAdmin: true }))
+vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ isAdmin: authState.isAdmin }) }))
 
 vi.mock('react-hot-toast', () => ({
   default: {
@@ -76,6 +77,7 @@ vi.mock('@/components/entity/EntityDetailView', async () => ({
     onFavorite,
     onRefresh,
     refreshPending,
+    canRefresh = false,
   }: {
     entity: MediaEntityDetail
     files: EntityFile[]
@@ -83,6 +85,7 @@ vi.mock('@/components/entity/EntityDetailView', async () => ({
     onFavorite: () => void
     onRefresh: () => void
     refreshPending: boolean
+    canRefresh?: boolean
   }) => (
     <div data-testid="entity-hero">
       <h1>{entity.title}</h1>
@@ -103,7 +106,7 @@ vi.mock('@/components/entity/EntityDetailView', async () => ({
       <div data-testid="entity-children-count">{entity.children_count}</div>
       <div data-testid="entity-children-count-label">Children</div>
       <button onClick={onFavorite}>Favorite</button>
-      <button onClick={onRefresh} disabled={refreshPending}>Refresh</button>
+      {canRefresh && <button onClick={onRefresh} disabled={refreshPending}>Refresh</button>}
     </div>
   ),
   ChildrenList: ({ items }: { items: MediaEntity[] }) => (
@@ -170,6 +173,7 @@ function renderWithProviders(entityId: string = '1') {
 describe('EntityDetail', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    authState.isAdmin = true
   })
 
   it('renders entity title', async () => {
@@ -325,5 +329,15 @@ describe('EntityDetail', () => {
       // At least 2: one in breadcrumb, one in EntityHero h1
       expect(headings.length).toBeGreaterThanOrEqual(2)
     })
+  })
+
+  it('hides the Refresh action for a non-admin user (page wiring of canRefresh)', async () => {
+    authState.isAdmin = false
+    renderWithProviders()
+    await waitFor(() => {
+      expect(screen.getByTestId('entity-hero')).toBeInTheDocument()
+    })
+    expect(screen.getByText('Favorite')).toBeInTheDocument()
+    expect(screen.queryByText('Refresh')).not.toBeInTheDocument()
   })
 })
