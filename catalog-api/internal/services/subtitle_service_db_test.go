@@ -211,8 +211,7 @@ func TestSubtitleService_GetSubtitleTrack_NotFound(t *testing.T) {
 	ctx := context.Background()
 
 	_, err := service.GetSubtitleTrack(ctx, "nonexistent_sub")
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "failed to get subtitle track")
+	assert.ErrorIs(t, err, ErrSubtitleNotFound, "a missing row is the typed not-found error the handlers map to 404")
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,20 @@
+--- FAIL: TestSmbPath_BackslashDotDotConfined (0.00s)
+FAIL
+FAIL	catalogizer/filesystem	0.006s
+FAIL
+--- FAIL: TestFTPDisconnectAfterCutNoSpuriousError (0.40s)
+    ftp_review_r3_unit_test.go:115: Disconnect after a cut returned write tcp 127.0.0.1:39590->127.0.0.1:35845: i/o timeout
+FAIL
+FAIL	catalogizer/filesystem	0.408s
+FAIL
+--- FAIL: TestFTPGetFileInfoCutReportsContextError (0.40s)
+    ftp_review_r3_unit_test.go:131: want an error wrapping context.DeadlineExceeded, got failed to get FTP file info /x: read tcp 127.0.0.1:38688->127.0.0.1:39579: i/o timeout
+FAIL
+FAIL	catalogizer/filesystem	0.408s
+FAIL
+--- FAIL: TestFTPFailedReplacementRetriedByLaterOp (0.40s)
+    ftp_review_r3_unit_test.go:212: op after the server came back: fi=<nil> err=not connected (client stuck not connected)
+FAIL
+FAIL	catalogizer/filesystem	0.408s
+FAIL
+ok  	catalogizer/filesystem	2.216s

@@ -675,7 +675,7 @@ func main() {
 	getSubtitleHandler := func() *root_handlers.SubtitleHandler {
 	subtitleHandlerOnce.Do(func() {
 			subtitleService := services.NewSubtitleService(databaseDB, logger, cacheService)
-			lazySubtitleHandler = root_handlers.NewSubtitleHandler(subtitleService, logger)
+			lazySubtitleHandler = root_handlers.NewSubtitleHandler(subtitleService, logger).WithAdminChecker(userRepo.IsAdmin)
 	})
 	return lazySubtitleHandler
 	}
@@ -1359,17 +1359,7 @@ func main() {
 	}
 
 	// Subtitle endpoints (lazy — handler initialized on first request)
-	subGroup := api.Group("/subtitles")
-	{
-			subGroup.GET("/search", adminGate, func(c *gin.Context) { getSubtitleHandler().SearchSubtitles(c) })
-			subGroup.POST("/download", adminGate, func(c *gin.Context) { getSubtitleHandler().DownloadSubtitle(c) })
-			subGroup.GET("/media/:media_id", func(c *gin.Context) { getSubtitleHandler().GetSubtitles(c) })
-			subGroup.GET("/:subtitle_id/verify-sync/:media_id", func(c *gin.Context) { getSubtitleHandler().VerifySubtitleSync(c) })
-			subGroup.POST("/translate", adminGate, func(c *gin.Context) { getSubtitleHandler().TranslateSubtitle(c) })
-			subGroup.POST("/upload", func(c *gin.Context) { getSubtitleHandler().UploadSubtitle(c) })
-			subGroup.GET("/languages", func(c *gin.Context) { getSubtitleHandler().GetSupportedLanguages(c) })
-			subGroup.GET("/providers", func(c *gin.Context) { getSubtitleHandler().GetSupportedProviders(c) })
-	}
+	root_handlers.RegisterSubtitleRoutes(api, getSubtitleHandler, adminGate)
 	root_handlers.RegisterStorageRoutes(api, scanHandler, jwtMiddleware)
 
 	// Statistics and sorting

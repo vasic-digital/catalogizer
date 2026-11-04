@@ -35,6 +35,7 @@ func (db *DB) RunMigrations(ctx context.Context) error {
 		{Version: 21, Name: "storage_roots_allow_empty", Up: db.addStorageRootsAllowEmptyColumn},
 		{Version: 22, Name: "create_runtime_tables", Up: db.createRuntimeTables},
 		{Version: 23, Name: "add_smart_collection_columns", Up: db.addSmartColumns},
+		{Version: 24, Name: "add_subtitle_uploaded_by", Up: db.addSubtitleUploadedBy},
 	}
 
 	for _, migration := range migrations {

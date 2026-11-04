@@ -1234,11 +1234,42 @@ Add a fixture with a clean twin for each probe.
 ## Live QA round 3 + storage r1 findings (2026-11-04)
 
 - LW3-1 (intermittent, root cause UNCONFIRMED): firefox-desktop run 1 `pages.live.spec.ts:6` Favorites page showed the empty login form although login POST returned 200 (1 of 8 browser runs; 18/18 passes on rerun). Needs a trace captured on a failing run (keep traces on failure in CI-less local runs); leads: 401 handler in lib/api.ts or login/header race.
-- ST-D1 (product, low-medium): SmbClient.Connect ignores ctx (net.DialTimeout, smb_client.go ~42-47); SMB and FTP stat/read succeed on an already-cancelled context. Fix: DialContext + ctx.Err() checks.
-- ST-D2 (product hazard, SERIOUS): one FTPClient used from 4 goroutines corrupts its control connection (wrong results, a run hung forever in textproto.ReadResponse with no read deadline). Fix: per-client operation mutex + ctx-tied read deadlines.
-- ST-D3 (inconsistency): SmbClient rejects leading-slash paths while FTP/WebDAV accept them.
+- ST-D1 (product, low-medium): SmbClient.Connect ignores ctx (net.DialTimeout, smb_client.go ~42-47); SMB and FTP stat/read succeed on an already-cancelled context. Fix: DialContext + ctx.Err() checks. **FIXED, PROVISIONAL-DONE (CAT-ST): evidence docs/qa/storage-clients-fix-20261104/README.md; live Synology confirmation owed.**
+- ST-D2 (product hazard, SERIOUS): one FTPClient used from 4 goroutines corrupts its control connection (wrong results, a run hung forever in textproto.ReadResponse with no read deadline). Fix: per-client operation mutex + ctx-tied read deadlines. **FIXED, PROVISIONAL-DONE (CAT-ST): evidence docs/qa/storage-clients-fix-20261104/README.md; live Synology confirmation owed.**
+- ST-D3 (inconsistency): SmbClient rejects leading-slash paths while FTP/WebDAV accept them. **FIXED, PROVISIONAL-DONE (CAT-ST): evidence docs/qa/storage-clients-fix-20261104/README.md; live Synology confirmation owed.**
+- ST-F5 (follow-up, minor): FTP ReadFile stream Close/Read happen outside the operation turn; a caller using the same client concurrently with an open stream still interleaves. No in-repo concurrent caller found. Fix idea: hold the turn until Close, or one client per stream.
+- ST-F7 (FIXED, PROVISIONAL-DONE CAT-ST): smbPath now treats a backslash as a separator before looking for `..` (SMB-only; FTP/WebDAV untouched). Evidence docs/qa/storage-clients-fix-20261104/README.md.
 - ST-NFS: NFS live test SKIPPED (Synology export list empty, no mount privilege); needs operator enabling an NFS export.
 - Evidence: docs/qa/live-storage-r1-20261104.md.
+
+### Storage clients fix: Opus round-4 follow-ups (GO-with-follow-ups, 2026-11-04)
+- ST-R4-1 (test-instrumentation, minor): make the GetFileInfo clock-compare race deterministic (ctx whose Err() is nil after its deadline passed) to kill mutant K1.
+- ST-R4-2 (test-instrumentation, minor): test where Connect or a stream Close installs a session while redial is in flight; assert exactly one live connection, no leak (kills K3).
+- ST-R4-3 (source-defect, nit): Connect does not clear redialNeeded (harmless today because of the client==nil guard); clear it and add a test (kills K5).
+- ST-R4-4 (source-defect, nit): reconnectIf discard path calls fresh.Quit() without c.ctl.Delete(fresh), leaking one map entry per lost race (ftp_client.go ~307-309).
+- Still open: ST-F5, live Synology FTP/SMB confirmation, SMB real-server test (mid-flight cancel through the context-bound share unproven).
+
+## Subtitle defects D5-D8 + delete route (live conv/docs/subs r1, branch fix-subtitle-defects) - PROVISIONAL-DONE
+
+Status: PROVISIONAL-DONE (§11.4.290). Reproduced first on a real generated media file through the real router and the production sqlite schema (RED: the +7 s subtitle and the in-sync one both returned `is_valid:true, sync_offset 0, confidence 0.8`; unknown media id returned 200; upload for an unknown media id returned 500 `SAVE_ERROR`; binary garbage and a plain-text file were accepted with 200). GREEN is the same tests after the fix. Live re-run on a rebuilt stack is OWED (verification job: re-run docs/qa/live-conv-docs-subs-r1-20261104.md subtitle scenarios against a stack built from this change; it must show `status:measured` with the real offset on the generated media).
+
+- D5 (HIGH) fixed: `verify-sync` now parses SRT, VTT and ASS, takes the media duration from ffprobe, extracts the speech-activity of the real audio with ffmpeg `silencedetect` and estimates the subtitle delay by normalised cross-correlation (+-120 s, first 30 min). Result fields added: `status` (`measured` / `undetermined` / `invalid`), `method`, `reason`, `media_duration`. `sync_offset` (ms) is positive when the subtitle appears late. An ambiguous or weak alignment, a media file that is not locally readable, or audio with no activity variation yields `undetermined` with offset 0 and confidence 0 (never the old constant 0.8). Cues beyond the media end are `invalid`. Unknown media id -> 404 `MEDIA_NOT_FOUND`; a subtitle that belongs to another media item -> 404 `SUBTITLE_NOT_FOUND`.
+- D6 fixed: upload for an unknown media id -> 404; content that is not valid UTF-8 text or has no cues in the stated format -> 422 `INVALID_SUBTITLE_CONTENT` (CRLF files accepted); upload now returns the real `subtitle_id` (it was a random string that matched no row).
+- D7/D8 fixed (subtitle part): error bodies no longer echo `err.Error()` (list, verify, translate, search, download, bad request); translate with no provider -> 503 `TRANSLATION_UNAVAILABLE`, unknown subtitle -> 404; translated output is written as SRT. NOT in this change: the conversion-job `error_message` path leak and the input-validation middleware rejecting empty JSON bodies (rest of D7/D8).
+- Delete route: `DELETE /api/v1/subtitles/:subtitle_id`; uploader or admin; rows without a recorded uploader (legacy, downloaded) admin-only; 401/403/404/204. New migration v24 adds `subtitle_tracks.uploaded_by` (nullable). Route table, OpenAPI and API_ENDPOINTS updated.
+- Tests: `handlers/subtitle_defects_test.go` (live-class: real router, production schema + migrations, ffmpeg-generated media with a known irregular audio-burst pattern, subtitle files shifted by known offsets), `internal/services/subtitle_sync_test.go`. Mutations killed: upload status mapping reverted (404 and 422), verify returns constant 0.8, delete authz dropped, unknown-media check removed, translate 503 -> 500.
+- Review round 1 (Opus, NO-GO on cce139ad) addressed in the follow-up commit: F1 bounded verify-sync (slot semaphore, 429 `SYNC_BUSY`, shared in-flight runs, per-file result cache keyed on path+mtime+size, `-nostats -threads 1`, `nice`); F2 media resolution only under a LOCAL storage root, confined to it (no `..`, no symlink escape), `file:`-prefixed inputs, `pipe` dropped from the protocol whitelist; F3 reviewer tests adopted, real route table extracted (`RegisterSubtitleRoutes`, called by main.go) and tested, main.go wiring AST check (source-class, labelled as such), end-to-end ambiguity test on strictly periodic audio; F4 delete invalidates cached translations (index key) and translate checks existence before the cache; F5 reason wording, non-owner delete -> 404; F6 case naming; F7 PG migration v24 run result in docs/qa/subtitle-defects-fix-20261104/. Evidence: docs/qa/subtitle-defects-fix-20261104/.
+- SUB-F1 (open, minor): the audio-activity estimator needs speech-like on/off structure; music-only or continuously loud audio yields `undetermined` by design. Remote (SMB/FTP/WebDAV) media is not copied for analysis, so those report `undetermined` with `reason`.
+- SUB-F2 (open, minor): D11 (scan does not import sidecar subtitles) is untouched.
+
+### Subtitle defects: Opus round-2 follow-ups (GO-with-follow-ups, 2026-11-04)
+- SUB-H1 (test-instrumentation, minor): test the path part of the analysis cache key (two different media files, equal size and equal mtime).
+- SUB-H2 (source-defect, minor): fairness: one user can hold both global verify-sync slots; add per-user cap/quota.
+- SUB-H3 (source-defect, minor): failed analyses are cached 10 minutes like successes; cache failures with short TTL or not at all.
+- SUB-H4 (source-defect, nit): translation index read-modify-write without lock can drop a language from the index.
+- SUB-H5 (test-instrumentation, nit): invalidation test uses an in-memory cache; exercise the real DB-backed CacheService and assert the index key itself is removed.
+- SUB-H6 (process-doc, minor): docs/api/API_ENDPOINTS.md still has old DELETE (403) and verify-sync (no 429) wording.
+- SUB-H7 (process-doc, nit): PostgreSQL v24 evidence is the author's transcript only; reviewer did not independently re-run.
 
 ## D3 pdf-pages: poppler-only rendering, go-fitz removed (2026-11-04, PROVISIONAL-DONE, live re-run owed)
 - Defect: `GET /entities/:id/pdf-pages[/:n]` on a malformed PDF answered 500 with `open pdf document: fitz: cannot open document`, and the PDF was parsed in the API process by go-fitz (MuPDF, cgo, AGPL) outside the CAT-002 isolation.

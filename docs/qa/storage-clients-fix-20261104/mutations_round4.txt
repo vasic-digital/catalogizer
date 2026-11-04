@@ -1,0 +1,30 @@
+== L4-lockOps-no-replace
+FAIL	catalogizer/filesystem	100.105s
+FAIL
+== L6-resurrect-after-disconnect
+ok  	catalogizer/filesystem	0.408s
+== S1-no-backslash-normalise
+--- FAIL: TestSmbPath_BackslashDotDotConfined (0.00s)
+FAIL
+FAIL	catalogizer/filesystem	0.005s
+== M1a-disconnect-reports-quit-error
+ok  	catalogizer/filesystem	0.409s
+== M1b-getfileinfo-falls-through
+--- FAIL: TestFTPGetFileInfoCutReportsContextError (0.40s)
+FAIL
+FAIL	catalogizer/filesystem	0.408s
+== M2-no-redial-retry
+--- FAIL: TestFTPFailedReplacementRetriedByLaterOp (0.40s)
+FAIL
+FAIL	catalogizer/filesystem	0.407s
+== M1a-disconnect-reports-quit-error (round4b)
+--- FAIL: TestFTPDisconnectAfterCutNoSpuriousError (0.80s)
+FAIL
+FAIL	catalogizer/filesystem	0.822s
+== L6-redial-after-disconnect (round4b)
+--- FAIL: TestFTPDisconnectAfterFailedReplacementNoRedial (0.40s)
+FAIL
+FAIL	catalogizer/filesystem	0.409s
+== M1b2-getfileinfo-falls-through (after clock-compare fix)
+--- FAIL: TestFTPGetFileInfoCutReportsContextError (0.40s)
+FAIL
