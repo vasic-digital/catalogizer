@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"sync"
@@ -73,9 +74,15 @@ func (s *ChallengeService) ListChallenges() []ChallengeSummary {
 }
 
 // RunChallenge executes a single challenge by ID.
+// ErrChallengeNotFound is returned for a challenge id or category that is not registered; handlers map it to 404.
+var ErrChallengeNotFound = errors.New("challenge not found")
+
 func (s *ChallengeService) RunChallenge(
 	ctx context.Context, id string,
 ) (*challenge.Result, error) {
+	if _, err := s.registry.Get(challenge.ID(id)); err != nil {
+		return nil, fmt.Errorf("%w: %s", ErrChallengeNotFound, id)
+	}
 	cfg := &challenge.Config{
 		ResultsDir: filepath.Join(
 			s.resultsDir, id,
@@ -179,7 +186,7 @@ func (s *ChallengeService) RunByCategory(
 	challenges := s.registry.ListByCategory(category)
 	if len(challenges) == 0 {
 		return nil, fmt.Errorf(
-			"no challenges found for category: %s", category,
+			"%w: no challenges found for category: %s", ErrChallengeNotFound, category,
 		)
 	}
 

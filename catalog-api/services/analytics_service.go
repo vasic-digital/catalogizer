@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -98,7 +99,7 @@ func (s *AnalyticsService) GetSystemAnalytics(startDate, endDate time.Time) (*mo
 		TotalMediaAccesses:     totalMediaAccesses,
 		TotalEvents:            totalEvents,
 		TopAccessedMedia:       topMedia,
-		UserGrowthData:         userGrowth,
+		UserGrowthData:         nonNilGrowth(userGrowth),
 		AverageSessionDuration: s.calculateAverageSessionDuration(startDate, endDate),
 		PeakUsageHours:         s.analyzePeakUsageHours(startDate, endDate),
 		PopularFileTypes:       s.analyzePopularFileTypes(startDate, endDate),
@@ -133,6 +134,9 @@ func (s *AnalyticsService) GetMediaAnalytics(mediaID int, startDate, endDate tim
 	return analytics, nil
 }
 
+// ErrUnsupportedReportType is returned by CreateReport for a report_type it does not know; handlers map it to 400.
+var ErrUnsupportedReportType = errors.New("unsupported report type")
+
 func (s *AnalyticsService) CreateReport(reportType string, params map[string]interface{}) (*models.AnalyticsReport, error) {
 	switch reportType {
 	case "user_activity":
@@ -144,7 +148,7 @@ func (s *AnalyticsService) CreateReport(reportType string, params map[string]int
 	case "geographic_analysis":
 		return s.generateGeographicAnalysisReport(params)
 	default:
-		return nil, fmt.Errorf("unsupported report type: %s", reportType)
+		return nil, fmt.Errorf("%w: %s", ErrUnsupportedReportType, reportType)
 	}
 }
 
@@ -314,7 +318,7 @@ func (s *AnalyticsService) findMostAccessedMedia(logs []models.MediaAccessLog) [
 		counts[log.MediaID]++
 	}
 
-	var results []models.MediaAccessCount
+	results := []models.MediaAccessCount{}
 	for mediaID, count := range counts {
 		results = append(results, models.MediaAccessCount{
 			MediaID:     mediaID,
@@ -656,4 +660,13 @@ func (s *AnalyticsService) extractDateRange(params map[string]interface{}) (time
 	}
 
 	return startDate, endDate, nil
+}
+
+// nonNilGrowth keeps the JSON contract (an array, never null) when there are
+// no growth points in the window.
+func nonNilGrowth(p []models.UserGrowthPoint) []models.UserGrowthPoint {
+	if p == nil {
+		return []models.UserGrowthPoint{}
+	}
+	return p
 }

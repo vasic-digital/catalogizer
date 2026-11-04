@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """check_api_route_vs_spec.py - local gate: the Gin router in catalog-api/main.go and docs/api/openapi.yaml must describe the same operations.
 
-Usage: scripts/check_api_route_vs_spec.py [--main FILE] [--spec FILE] [--exclude-prefix P]... [--list]
+Usage: scripts/check_api_route_vs_spec.py [--main FILE] [--spec FILE] [--pkgdir DIR]... [--exclude-prefix P]... [--list]
+(default --pkgdir set: every package directory below main.go's directory, so routes registered by handlers.Register*Routes(api, ...) are followed)
 
 Needs the Go toolchain (stdlib go/ast extractor in scripts/lib/gin_routes_ast.go).
 Exit: 0 in sync | 1 drift (undocumented route, phantom spec operation, equivalent templated paths) | 2 usage / unreadable / invalid YAML (duplicate keys)
@@ -36,7 +37,7 @@ class Unresolved(Exception):
     pass
 
 
-def code_routes(path):
+def code_routes(path, pkgdirs=()):
     """Extract (METHOD, normalised path) from main() of a Go file with go/ast (scripts/lib/gin_routes_ast.go)."""
     go = shutil.which("go")
     if not go:
@@ -48,7 +49,7 @@ def code_routes(path):
         b = subprocess.run([go, "build", "-o", exe, AST_SRC], env=env, capture_output=True, text=True, cwd=tmp)
         if b.returncode != 0:
             raise OSError("cannot build the AST extractor: %s" % b.stderr.strip())
-        r = subprocess.run([exe, path], env=env, capture_output=True, text=True)
+        r = subprocess.run([exe, path] + list(pkgdirs), env=env, capture_output=True, text=True)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     if r.returncode != 0:
@@ -102,6 +103,7 @@ def main(argv):
     root = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
     main_go = os.path.join(root, "catalog-api", "main.go")
     spec = os.path.join(root, "docs", "api", "openapi.yaml")
+    pkgdirs = []
     excludes, listing = list(DEFAULT_EXCLUDES), False
     custom_ex = False
     i = 0
@@ -112,12 +114,19 @@ def main(argv):
         elif a == "--exclude-prefix" and i + 1 < len(argv):
             if not custom_ex: excludes, custom_ex = [], True
             excludes.append(argv[i + 1]); i += 1
+        elif a == "--pkgdir" and i + 1 < len(argv): pkgdirs.append(argv[i + 1]); i += 1
         elif a == "--list": listing = True
         else:
             print(__doc__, file=sys.stderr); return 2
         i += 1
+    if not pkgdirs:  # default: every package directory next to main.go (routes are also registered from handlers/, internal/...)
+        base = os.path.dirname(os.path.abspath(main_go))
+        for dp, dn, fn in os.walk(base):
+            dn[:] = sorted(d for d in dn if d not in ("vendor", "node_modules", ".git") and not d.startswith("."))
+            if dp != base and any(f.endswith(".go") and not f.endswith("_test.go") for f in fn):
+                pkgdirs.append(dp)
     try:
-        code = code_routes(main_go)
+        code = code_routes(main_go, pkgdirs)
         ops, clashes = spec_ops(spec)
     except Unresolved as e:
         print("BLIND: route registrations that cannot be resolved statically (refusing to report in-sync):\n%s" % e); return 3

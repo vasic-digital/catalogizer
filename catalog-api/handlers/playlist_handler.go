@@ -58,6 +58,9 @@ func (h *PlaylistHandler) ListPlaylists(c *gin.Context) {
 		return
 	}
 
+	if playlists == nil {
+		playlists = []models.Playlist{}
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"playlists": playlists,
 		"count":     len(playlists),

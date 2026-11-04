@@ -443,7 +443,7 @@ func TestAdminHandler_UpdateUser_StatusVariants(t *testing.T) {
 			c.Request = httptest.NewRequest("PUT", "/admin/users/1", strings.NewReader(body))
 			c.Request.Header.Set("Content-Type", "application/json")
 			c.Request.Header.Set("Authorization", "Bearer token")
-			c.Params = gin.Params{{Key: "id", Value: "1"}}
+			c.Params = gin.Params{{Key: "id", Value: "2"}}
 
 			h.UpdateUser(c)
 			assert.Equal(t, http.StatusOK, w.Code)
@@ -666,4 +666,33 @@ func TestAdminHandler_UpdateUser_InternalError(t *testing.T) {
 
 	h.UpdateUser(c)
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+// Contract sweep finding: an admin deactivating/suspending their own
+// account locked every admin call out. It must be refused with 400 and the
+// user must not be updated.
+func TestAdminHandler_UpdateUser_SelfDeactivateRefused(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	updated := false
+	auth := &mockAdminAuthService{
+		getCurrentUserFn:  func(token string) (*models.User, error) { return &models.User{ID: 1}, nil },
+		checkPermissionFn: func(userID int, permission string) (bool, error) { return true, nil },
+	}
+	repo := &mockAdminUserRepo{
+		getByIDFn: func(id int) (*models.User, error) { return &models.User{ID: id, IsActive: true}, nil },
+		updateFn:  func(user *models.User) error { updated = true; return nil },
+	}
+	h := newTestAdminHandler(auth, repo)
+
+	for _, st := range []string{"inactive", "suspended"} {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		c.Request = httptest.NewRequest("PUT", "/admin/users/1", strings.NewReader(`{"status":"`+st+`"}`))
+		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("Authorization", "Bearer token")
+		c.Params = gin.Params{{Key: "id", Value: "1"}}
+		h.UpdateUser(c)
+		assert.Equal(t, http.StatusBadRequest, w.Code, st)
+	}
+	assert.False(t, updated)
 }

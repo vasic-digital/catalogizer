@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"catalogizer/models"
 	"catalogizer/repository"
@@ -141,7 +142,13 @@ func (h *BrowseHandler) BrowseDirectory(c *gin.Context) {
 func (h *BrowseHandler) GetFileInfo(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	idStr := c.Param("id")
+	// The route is /file-info/*path, so the id arrives as the wildcard
+	// segment (with a leading slash); reading c.Param("id") made every
+	// request a 400 (found by the live contract sweep).
+	idStr := strings.Trim(c.Param("path"), "/")
+	if idStr == "" {
+		idStr = c.Param("id") // alias routes registered with :id
+	}
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid file ID", nil)

@@ -141,8 +141,14 @@ run --list; case "$OUT" in *"GET /api/v1/auth/login"*|*"POST /api/v1/auth/login"
 case "$OUT" in *"GET /health"*) ok "control needle: real-tree extraction sees GET /health" ;; *) no "real tree needle 2" ;; esac
 # paired mutations on copies of the real files
 cp "$REPO/catalog-api/main.go" "$T/real_main.go"; cp "$REPO/docs/api/openapi.yaml" "$T/real_spec.yaml"
-sed 's|api.GET("/media-types"|api.GET("/media-types-mutant"|' "$T/real_main.go" >"$T/mut_main.go"
-expect "MUTATION: a renamed real route is detected" 1 --main "$T/mut_main.go" --spec "$T/real_spec.yaml"
+# routes live in main.go AND in handlers/*.go (followed through Register*Routes): mutate a copy of each
+PKGS=(); REALPK=(); for d in $(cd "$REPO/catalog-api" && find . -mindepth 1 -type d -not -path '*/.*' | sort); do
+  if ls "$REPO/catalog-api/$d"/*.go >/dev/null 2>&1; then mkdir -p "$T/pk/$d"; cp "$REPO/catalog-api/$d"/*.go "$T/pk/$d/"; PKGS+=(--pkgdir "$T/pk/$d"); REALPK+=(--pkgdir "$REPO/catalog-api/$d"); fi; done
+sed 's|api.GET("/media-types"|api.GET("/media-types-mutant"|' "$T/pk/./handlers/alias_routes.go" >"$T/alias.tmp" && mv "$T/alias.tmp" "$T/pk/./handlers/alias_routes.go"
+cp "$REPO/catalog-api/main.go" "$T/mut_main.go"
+expect "MUTATION: a renamed route in a followed Register*Routes helper is detected" 1 --main "$T/mut_main.go" --spec "$T/real_spec.yaml" "${PKGS[@]}"
+sed 's|router.GET("/health"|router.GET("/health-mutant"|' "$T/real_main.go" >"$T/mut_main2.go"
+grep -q 'health-mutant' "$T/mut_main2.go" && expect "MUTATION: a renamed route in main.go is detected" 1 --main "$T/mut_main2.go" --spec "$T/real_spec.yaml" "${REALPK[@]}"
 python3 -I - "$T/real_spec.yaml" "$T/mut_spec.yaml" <<'PY'
 import sys,re
 src=open(sys.argv[1]).read()
@@ -150,5 +156,5 @@ out=src.replace("  /api/v1/media-types:\n","  /api/v1/media-types-gone:\n",1)
 assert out!=src
 open(sys.argv[2],"w").write(out)
 PY
-expect "MUTATION: a spec path renamed away from the router is detected" 1 --main "$T/real_main.go" --spec "$T/mut_spec.yaml"
+expect "MUTATION: a spec path renamed away from the router is detected" 1 --main "$T/real_main.go" --spec "$T/mut_spec.yaml" "${REALPK[@]}"
 echo "PASS=$P FAIL=$F"; [ "$F" = 0 ]

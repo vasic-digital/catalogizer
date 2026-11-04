@@ -1,0 +1,83 @@
+# Operations whose happy-path probe is NOT expected to reach 2xx in the live sweep. Format: "METHOD path<TAB>reason".
+# A happy 2xx that becomes non-2xx and is not listed here is a violation; a listed op that now reaches 2xx is a stale entry and also a violation.
+DELETE /api/v1/conversion/jobs/{id}	generator has no seeded resource for this id/path (404); follow-up to seed
+DELETE /api/v1/roles/{id}	role in use by the seeded victim user (409)
+DELETE /api/v1/sync/endpoints/{id}	generator has no seeded resource for this id/path (404); follow-up to seed
+GET /api/v1/browse/directory-sizes/{path}	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/browse/directory/{path}	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/browse/duplicates/{path}	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/catalog-info/{path}	generator has no seeded resource for this id/path (404); follow-up to seed
+GET /api/v1/catalog/{path}	generator has no seeded resource for this id/path (404); follow-up to seed
+GET /api/v1/configuration/status	documented 501: feature not implemented in this build
+GET /api/v1/configuration/wizard/step/{step_id}	generator has no seeded resource for this id/path (404); follow-up to seed
+GET /api/v1/conversion/jobs/{id}	generator has no seeded resource for this id/path (404); follow-up to seed
+GET /api/v1/conversion/jobs/{id}/download	generator has no seeded resource for this id/path (404); follow-up to seed
+GET /api/v1/download/directory/{path}	fixture directory path is not a cataloged path in the sweep; follow-up
+GET /api/v1/entities/browse/{type}	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/entities/{id}/install-info	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/entities/{id}/pages	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/entities/{id}/pages/{n}	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/entities/{id}/pdf-pages	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/entities/{id}/pdf-pages/{n}	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/errors/crashes/{id}	generator has no seeded resource for this id/path (404); follow-up to seed
+GET /api/v1/errors/reports/{id}	generator has no seeded resource for this id/path (404); follow-up to seed
+GET /api/v1/image-proxy	proxy target is a non-routable URL by design (SSRF guard returns 403)
+GET /api/v1/localization/stats	documented 501: feature not implemented in this build
+GET /api/v1/localization/translations	documented 501: feature not implemented in this build
+GET /api/v1/recommendations	documented 501: feature not implemented in this build
+GET /api/v1/recommendations/by-type	documented 501: feature not implemented in this build
+GET /api/v1/recommendations/personalized/{user_id}	documented 501: feature not implemented in this build
+GET /api/v1/recommendations/trending	documented 501: feature not implemented in this build
+GET /api/v1/search/duplicates	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/smb/discover	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/smb/test	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/stats/directories/by-size	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/stats/smb/{smb_root}	generator has no seeded resource for this id/path (404); follow-up to seed
+GET /api/v1/storage/list/{path}	generator has no seeded resource for this id/path (404); follow-up to seed
+GET /api/v1/subtitles/search	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/subtitles/{subtitle_id}/verify-sync/{media_id}	generator has no seeded resource for this id/path (404); follow-up to seed
+GET /api/v1/sync/conflicts	documented 501: feature not implemented in this build
+GET /api/v1/sync/devices	documented 501: feature not implemented in this build
+GET /api/v1/sync/endpoints/{id}	generator has no seeded resource for this id/path (404); follow-up to seed
+GET /api/v1/sync/sessions/{id}	generator has no seeded resource for this id/path (404); follow-up to seed
+GET /api/v1/translations	documented 501: feature not implemented in this build
+POST /api/v1/admin/backups	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/admin/storage/scan	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/analytics/reports	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/auth/logout	auth-self op: session already ended earlier in the run
+POST /api/v1/auth/refresh	auth-self op: refresh token consumed earlier in the run
+POST /api/v1/auth/register	username already registered by the sweep setup (409)
+POST /api/v1/configuration/test	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/configuration/wizard/complete	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/configuration/wizard/step/{step_id}/save	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/configuration/wizard/step/{step_id}/validate	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/conversion/jobs	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/conversion/jobs/{id}/cancel	generator has no seeded resource for this id/path (404); follow-up to seed
+POST /api/v1/conversion/jobs/{id}/retry	generator has no seeded resource for this id/path (404); follow-up to seed
+POST /api/v1/copy/local	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/copy/storage	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/copy/upload	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/download/archive	archive handler (handlers/download.go) takes a models.DownloadRequest the generator cannot satisfy; follow-up
+POST /api/v1/errors/crash	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/errors/report	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/media/analyze	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/media/{id}/refresh	documented 501: feature not implemented in this build
+POST /api/v1/playback/sessions/end	generator has no seeded resource for this id/path (404); follow-up to seed
+POST /api/v1/playback/sessions/progress	generator has no seeded resource for this id/path (404); follow-up to seed
+POST /api/v1/smb/browse	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/smb/discover	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/smb/probe	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/smb/probe-and-ingest	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/smb/test	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/storage/roots	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/subtitles/download	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/subtitles/translate	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/subtitles/upload	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/sync/endpoints	generated request body/query not valid for this op (400); follow-up to hand-shape
+POST /api/v1/sync/endpoints/{id}/sync	generator has no seeded resource for this id/path (404); follow-up to seed
+POST /api/v1/sync/schedules	generator has no seeded resource for this id/path (404); follow-up to seed
+PUT /api/v1/errors/crashes/{id}/status	generated request body/query not valid for this op (400); follow-up to hand-shape
+PUT /api/v1/errors/reports/{id}/status	generated request body/query not valid for this op (400); follow-up to hand-shape
+PUT /api/v1/media/{id}/favorite	generated request body/query not valid for this op (400); follow-up to hand-shape
+PUT /api/v1/media/{id}/progress	generated request body/query not valid for this op (400); follow-up to hand-shape
+PUT /api/v1/sync/endpoints/{id}	generator has no seeded resource for this id/path (404); follow-up to seed

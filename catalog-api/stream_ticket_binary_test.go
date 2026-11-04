@@ -57,7 +57,7 @@ func TestStreamTicket_RealBinary(t *testing.T) {
 	bin := filepath.Join(dir, "catalog-api")
 	out0, err := execBuild(bin)
 	require.NoError(t, err, "%s", out0)
-	port := freePort(t)
+	port := freeLoopbackPort(t)
 	b := &binEnv{t: t, bin: bin, dir: dir, port: port}
 	const adminPw = "Op3rator-Supplied-Value-9x"
 	cmd, done, logs := b.start("GIN_MODE=release", "ADMIN_PASSWORD="+adminPw, "CATALOGIZER_READ_ROOTS="+media, "CATALOGIZER_LOCAL_ROOT_BASES="+media, "REGISTRATION_MODE=open")
@@ -221,7 +221,7 @@ func execBuild(bin string) (string, error) {
 	return string(out), err
 }
 
-func freePort(t *testing.T) int {
+func freeLoopbackPort(t *testing.T) int {
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(t, err)
 	defer ln.Close()

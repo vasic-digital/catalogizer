@@ -2,7 +2,7 @@
 
 Documents in this directory.
 
-Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 185 entries.
+Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 187 entries.
 
 | File | Description |
 |---|---|
@@ -21,6 +21,8 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [androidtv-players-20260629/decoder_metrics.txt](androidtv-players-20260629/decoder_metrics.txt) | (plain-text artefact; not read, listed by name only) |
 | [androidtv-players-20260629/exoplayer_diag.txt](androidtv-players-20260629/exoplayer_diag.txt) | (plain-text artefact; not read, listed by name only) |
 | [androidtv-players-20260629/player_crash_log.txt](androidtv-players-20260629/player_crash_log.txt) | (plain-text artefact; not read, listed by name only) |
+| [api-contract-live-20261103/operations.json](api-contract-live-20261103/operations.json) | (JSON data artefact; not read, listed by name only) |
+| [api-contract-live-20261103/summary.json](api-contract-live-20261103/summary.json) | (JSON data artefact; not read, listed by name only) |
 | [containerized-build-20260630/Status.html](containerized-build-20260630/Status.html) | (HTML export; not read, listed by name only) |
 | [containerized-build-20260630/Status.md](containerized-build-20260630/Status.md) | §11.4.173 Containerized + Distributed Build — PROOF (first increment) - (thinker.local), artifact brought back; never on the bare host. |
 | [containerized-build-20260630/build_proof.txt](containerized-build-20260630/build_proof.txt) | (plain-text artefact; not read, listed by name only) |

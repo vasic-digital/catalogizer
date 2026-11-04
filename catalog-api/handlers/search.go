@@ -155,6 +155,9 @@ func (h *SearchHandler) SearchFiles(c *gin.Context) {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Search failed", err)
 		return
 	}
+	if result != nil && result.Files == nil {
+		result.Files = []models.FileWithMetadata{}
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
@@ -255,6 +258,9 @@ func (h *SearchHandler) SearchDuplicates(c *gin.Context) {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Duplicate search failed", err)
 		return
 	}
+	if result != nil && result.Files == nil {
+		result.Files = []models.FileWithMetadata{}
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
@@ -321,6 +327,9 @@ func (h *SearchHandler) AdvancedSearch(c *gin.Context) {
 	if err != nil {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Advanced search failed", err)
 		return
+	}
+	if result != nil && result.Files == nil {
+		result.Files = []models.FileWithMetadata{}
 	}
 
 	c.JSON(http.StatusOK, gin.H{

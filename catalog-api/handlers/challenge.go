@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -98,6 +99,10 @@ func (h *ChallengeHandler) RunChallenge(c *gin.Context) {
 
 	result, err := h.service.RunChallenge(c.Request.Context(), id)
 	if err != nil {
+		if errors.Is(err, services.ErrChallengeNotFound) {
+			utils.SendErrorResponse(c, http.StatusNotFound, "Challenge not found", err)
+			return
+		}
 		utils.SendErrorResponse(
 			c, http.StatusInternalServerError,
 			"Failed to run challenge", err,
@@ -225,6 +230,10 @@ func (h *ChallengeHandler) RunByCategory(c *gin.Context) {
 
 	results, err := h.service.RunByCategory(ctx, category)
 	if err != nil {
+		if errors.Is(err, services.ErrChallengeNotFound) {
+			utils.SendErrorResponse(c, http.StatusNotFound, "Challenge category not found", err)
+			return
+		}
 		utils.SendErrorResponse(
 			c, http.StatusInternalServerError,
 			"Failed to run challenges", err,
