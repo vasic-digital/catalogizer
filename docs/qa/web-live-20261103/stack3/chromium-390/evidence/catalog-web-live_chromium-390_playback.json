@@ -1,0 +1,81 @@
+{
+  "schema": "catalogizer.live-evidence/1",
+  "test_id": "catalog-web-live/chromium-390/playback",
+  "class": "LIVE",
+  "verdict": "PASS",
+  "timestamp": "2026-11-04T11:51:18.033Z",
+  "command": "catalog-web/e2e/live/run_live.sh chromium-390",
+  "artifact": {
+    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:942d38404e6fa10f5140f1737b77b7ea9660ef1b60153ea9fbeeffb907716069;api-health={\"version\":\"e0cb1b36fbcad3a98d021af3a72886baff33b426\",\"build_number\":\"e0cb1b36fbcad3a98d021af3a72886baff33b426\",\"build_date\":\"stack3\"};web-image=sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d",
+    "source": "target"
+  },
+  "endpoint": {
+    "host": "127.0.0.1",
+    "port": 33020,
+    "resolved_ip": "127.0.0.1",
+    "url": "http://127.0.0.1:33020"
+  },
+  "answering": {
+    "kind": "container",
+    "image": "localhost/catqa3-web:main-e0cb1b36",
+    "image_digest": "sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d",
+    "container_id": "9af6f3a98b933c7c85ae63ba823d2437331e8cc2ee5e21288d8f392a43680721"
+  },
+  "expected": {
+    "image_digest": "sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d"
+  },
+  "requests": {
+    "total": 205,
+    "methods": {
+      "GET": 197,
+      "POST": 8
+    }
+  },
+  "responses": {
+    "status_histogram": {
+      "200": 198,
+      "206": 6,
+      "401": 1
+    }
+  },
+  "runs": {
+    "n": 3,
+    "identical": true,
+    "signature": "sha256:7fdfcf968dd19c77f18d97901f2d1e8a6e4ccf1f6037a069c1158a21c0f9a241"
+  },
+  "tests": {
+    "run1": [
+      "audio file: the same player plays an mp3 from the real stream=passed",
+      "long playback: plays past the 60 s ticket lifetime on a file the browser cannot buffer fully; a seek far ahead after expiry is network-served and continues from the seek target=passed",
+      "movies/Another.Movie.2019.vp9.webm: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "movies/Movie.Name.2020.1080p.mp4: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "music/Misc/Plain Tone.flac: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "music/Misc/Plain Tone.mp3: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "stream requires authentication=passed",
+      "ticket path: POST /stream/:id/ticket then ?ticket= streams byte-identical bytes; the ticket is refused for another media id=passed",
+      "video: play advances currentTime and the element is fed from /api/v1/stream/:id=passed"
+    ],
+    "run2": [
+      "audio file: the same player plays an mp3 from the real stream=passed",
+      "long playback: plays past the 60 s ticket lifetime on a file the browser cannot buffer fully; a seek far ahead after expiry is network-served and continues from the seek target=passed",
+      "movies/Another.Movie.2019.vp9.webm: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "movies/Movie.Name.2020.1080p.mp4: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "music/Misc/Plain Tone.flac: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "music/Misc/Plain Tone.mp3: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "stream requires authentication=passed",
+      "ticket path: POST /stream/:id/ticket then ?ticket= streams byte-identical bytes; the ticket is refused for another media id=passed",
+      "video: play advances currentTime and the element is fed from /api/v1/stream/:id=passed"
+    ],
+    "run3": [
+      "audio file: the same player plays an mp3 from the real stream=passed",
+      "long playback: plays past the 60 s ticket lifetime on a file the browser cannot buffer fully; a seek far ahead after expiry is network-served and continues from the seek target=passed",
+      "movies/Another.Movie.2019.vp9.webm: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "movies/Movie.Name.2020.1080p.mp4: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "music/Misc/Plain Tone.flac: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "music/Misc/Plain Tone.mp3: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
+      "stream requires authentication=passed",
+      "ticket path: POST /stream/:id/ticket then ?ticket= streams byte-identical bytes; the ticket is refused for another media id=passed",
+      "video: play advances currentTime and the element is fed from /api/v1/stream/:id=passed"
+    ]
+  }
+}

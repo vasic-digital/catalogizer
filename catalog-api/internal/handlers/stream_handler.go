@@ -5,6 +5,7 @@ import (
 	"catalogizer/filesystem"
 	"catalogizer/internal/models"
 	"catalogizer/internal/services"
+	"catalogizer/internal/streamticket"
 	root_models "catalogizer/models"
 	"context"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -25,6 +27,51 @@ type StreamHandler struct {
 	db             *database.DB
 	clientFactory  filesystem.ClientFactory
 	logger         *zap.Logger
+	tickets        *streamticket.Signer
+}
+
+// SetTicketSigner enables POST /api/v1/stream/:id/ticket.
+func (h *StreamHandler) SetTicketSigner(s *streamticket.Signer) { h.tickets = s }
+
+// MintTicket handles POST /api/v1/stream/:id/ticket (authenticated with the normal Authorization header). It returns a
+// short-lived ticket accepted ONLY by GET/HEAD /api/v1/stream/:id for this media id; see package streamticket.
+// The same existence checks as streaming apply (404 unknown id, 400 directory); the catalogue has no per-user ownership model,
+// so any authenticated user may stream any catalogued file, exactly as with the bearer-token path.
+func (h *StreamHandler) MintTicket(c *gin.Context) {
+	if h.tickets == nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "stream tickets are not available"})
+		return
+	}
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file ID"})
+		return
+	}
+	fileInfo, err := h.catalogService.GetFileInfo(strconv.FormatInt(id, 10))
+	if err != nil {
+		h.logger.Error("Failed to get file info for stream ticket", zap.Int64("id", id), zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get file information"})
+		return
+	}
+	if fileInfo == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
+		return
+	}
+	if fileInfo.IsDirectory {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot stream a directory"})
+		return
+	}
+	uid, ok := c.Get("user_id")
+	if !ok || fmt.Sprint(uid) == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
+		return
+	}
+	uname, _ := c.Get("username")
+	sid, _ := c.Get("session_id")
+	str := func(v interface{}) string { s, _ := v.(string); return s }
+	ticket, exp := h.tickets.Mint(id, fmt.Sprint(uid), str(uname), str(sid))
+	c.Header("Cache-Control", "no-store")
+	c.JSON(http.StatusOK, gin.H{"ticket": ticket, "expires_at": exp.UTC().Format(time.RFC3339), "expires_in": int(streamticket.TTL.Seconds())})
 }
 
 // NewStreamHandler creates a new stream handler.

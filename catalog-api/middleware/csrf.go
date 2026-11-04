@@ -100,22 +100,36 @@ func (c *CSRF) Handler() gin.HandlerFunc {
 		method := strings.ToUpper(ctx.Request.Method)
 		if method == http.MethodGet || method == http.MethodHead || method == http.MethodOptions {
 			if ctx.GetHeader(c.header) == "" && ctx.Writer.Header().Get("X-CSRF-Token") == "" {
+				// A browser fires several GETs in parallel. Minting a new pair on each one lets the cookie the browser keeps and the
+				// token the page keeps come from different mints (intermittent 403 on the next write), so a valid cookie that is
+				// already presented is reused and its token echoed instead.
+				if existing, err := ctx.Cookie(c.cookie); err == nil && existing != "" {
+					if tok := c.tokenOf(existing); tok != "" {
+						ctx.Writer.Header().Set(c.header, tok)
+						ctx.Next()
+						return
+					}
+				}
 				c.mintToken(ctx)
 			}
 			ctx.Next()
 			return
 		}
+		// A rejection hands back a fresh, usable pair so the caller can retry once without an extra round trip.
 		cookie, err := ctx.Cookie(c.cookie)
 		if err != nil || cookie == "" {
+			c.mintToken(ctx)
 			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "missing csrf cookie"})
 			return
 		}
 		header := ctx.GetHeader(c.header)
 		if header == "" {
+			c.mintToken(ctx)
 			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "missing csrf header"})
 			return
 		}
 		if !c.validate(cookie, header) {
+			c.mintToken(ctx)
 			ctx.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "csrf token mismatch"})
 			return
 		}
@@ -140,6 +154,18 @@ func (c *CSRF) mintToken(ctx *gin.Context) {
 		true,           // httpOnly
 	)
 	ctx.Writer.Header().Set(c.header, token)
+}
+
+// tokenOf returns the bare token of a cookie value whose signature verifies, or "".
+func (c *CSRF) tokenOf(cookie string) string {
+	parts := strings.SplitN(cookie, ":", 2)
+	if len(parts) != 2 || parts[0] == "" {
+		return ""
+	}
+	if !c.validate(cookie, parts[0]) {
+		return ""
+	}
+	return parts[0]
 }
 
 func (c *CSRF) sign(token string) string {
