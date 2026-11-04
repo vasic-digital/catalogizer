@@ -74,11 +74,15 @@ func WithCSRFInsecureDev(enabled bool) CSRFOption {
 // HTTP, so without it every admin write fails 403 "missing csrf cookie".
 const CSRFInsecureDevEnvVar = "CSRF_INSECURE_DEV"
 
+// csrfDevEnvs is the ALLOW-list of environments in which the toggle may take effect.
+// Anything else (production, prod, staging, live, empty, typos) is refused.
+var csrfDevEnvs = map[string]bool{"development": true, "dev": true, "test": true, "local": true, "qa": true}
+
 // CSRFOptionsFromEnv resolves the CSRF options from the toggle value
 // (CSRF_INSECURE_DEV) and the effective APP_ENV. Truthy values: 1, true, yes,
-// on (case-insensitive). The toggle is REFUSED, loudly, when appEnv is
-// "production" or empty (main.go treats an empty APP_ENV as production), and
-// the secure default (`__Host-csrf`, Secure) is kept. warnf may be nil.
+// on (case-insensitive). The toggle is REFUSED, loudly, unless appEnv (trimmed, lowercased) is in the
+// allow-list development, dev, test, local, qa; the secure default
+// (`__Host-csrf`, Secure) is kept otherwise. warnf may be nil.
 func CSRFOptionsFromEnv(toggle, appEnv string, warnf func(format string, args ...any)) []CSRFOption {
 	switch strings.ToLower(strings.TrimSpace(toggle)) {
 	case "1", "true", "yes", "on":
@@ -86,9 +90,9 @@ func CSRFOptionsFromEnv(toggle, appEnv string, warnf func(format string, args ..
 		return nil
 	}
 	env := strings.ToLower(strings.TrimSpace(appEnv))
-	if env == "" || env == "production" {
+	if !csrfDevEnvs[env] {
 		if warnf != nil {
-			warnf("SECURITY: %s is set but APP_ENV is %q (production); refusing to weaken the CSRF cookie, keeping Secure + __Host- prefix", CSRFInsecureDevEnvVar, appEnv)
+			warnf("SECURITY: %s is set but APP_ENV is %q, not an allowed dev-like environment (development, dev, test, local, qa); refusing to weaken the CSRF cookie, keeping Secure + __Host- prefix", CSRFInsecureDevEnvVar, appEnv)
 		}
 		return nil
 	}

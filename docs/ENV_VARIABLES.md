@@ -492,4 +492,4 @@ This document supersedes the per-submodule templates for operator setup.
 |---|---|---|
 | `CSRF_INSECURE_DEV` | unset / false | `true`/`1`/`yes`/`on` makes the admin CSRF cookie `csrf-dev` without `Secure` and without the `__Host-` prefix, so a browser on `http://<LAN-IP>` keeps it. Double-submit check (header must equal cookie, HMAC-verified) is unchanged. |
 
-Refused (logged at WARN, secure default kept) when `APP_ENV` is `production` or empty. Use only for plain-HTTP QA/LAN stacks.
+Honoured only when the raw `APP_ENV` (trimmed, case-insensitive) is one of `development`, `dev`, `test`, `local`, `qa`; any other value (production, prod, staging, empty, typos) is refused (logged at WARN, secure default kept). `-test-mode` forces the logger env to development but does NOT bypass this check. Use only for plain-HTTP QA/LAN stacks.

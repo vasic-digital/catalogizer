@@ -1440,7 +1440,7 @@ func main() {
 	// /admin/users, /admin/storage, /admin/backups. Caught by
 	// FQA-API-010 in the real-binary bank verification.
 	adminGroup.Use(jwtMiddleware.RequireAdmin())
-	if csrfGuard, csrfErr := root_middleware.NewCSRF([]byte(jwtSecret), root_middleware.CSRFOptionsFromEnv(os.Getenv(root_middleware.CSRFInsecureDevEnvVar), env, logging.Warnf)...); csrfErr != nil {
+	if csrfGuard, csrfErr := root_middleware.NewCSRF([]byte(jwtSecret), adminCSRFOptions(os.Getenv, logging.Warnf)...); csrfErr != nil {
 			logging.Warnf("CSRF guard disabled on admin group: %v", csrfErr)
 	} else {
 			adminGroup.Use(csrfGuard.Handler())
@@ -2222,4 +2222,11 @@ func newImageProxyClient(imageURL string, proxyCfg root_config.ProxyConfig) *htt
 		return nil
 	}
 	return cl
+}
+
+// adminCSRFOptions resolves the admin CSRF options from the process environment.
+// It deliberately reads the RAW APP_ENV: -test-mode overrides the logger env to
+// "development", which must never let CSRF_INSECURE_DEV weaken a production deploy.
+func adminCSRFOptions(getenv func(string) string, warnf func(string, ...any)) []root_middleware.CSRFOption {
+	return root_middleware.CSRFOptionsFromEnv(getenv(root_middleware.CSRFInsecureDevEnvVar), getenv("APP_ENV"), warnf)
 }

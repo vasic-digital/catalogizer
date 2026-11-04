@@ -110,3 +110,32 @@ func TestCSRFLAN_NonTruthyToggleStaysSecure(t *testing.T) {
 		}
 	}
 }
+
+func TestCSRFLAN_AllowListOnly(t *testing.T) {
+	for _, env := range []string{"prod", "prd", "live", "staging", "stage", "typo", "production ", " Production ", "\tPRODUCTION\n"} {
+		r, warns := lanRouter(t, "true", env)
+		if ck, _ := mint(t, r); ck.Name != "__Host-csrf" || !ck.Secure {
+			t.Fatalf("env=%q must be refused, got %s secure=%v", env, ck.Name, ck.Secure)
+		}
+		if len(warns) == 0 {
+			t.Fatalf("env=%q: refusal must warn", env)
+		}
+	}
+	for _, env := range []string{"development", "dev", "test", "local", "qa", " QA ", "Development"} {
+		r, warns := lanRouter(t, "true", env)
+		if ck, _ := mint(t, r); ck.Name == "__Host-csrf" || ck.Secure {
+			t.Fatalf("env=%q must enable, got %s secure=%v", env, ck.Name, ck.Secure)
+		}
+		if len(warns) == 0 {
+			t.Fatalf("env=%q: enable path must log a warning", env)
+		}
+	}
+}
+
+func TestCSRFLAN_TruthyValues(t *testing.T) {
+	for _, v := range []string{"yes", "on", "YES", " On ", "1", "true"} {
+		if opts := CSRFOptionsFromEnv(v, "dev", nil); len(opts) != 1 {
+			t.Fatalf("toggle=%q must enable", v)
+		}
+	}
+}
