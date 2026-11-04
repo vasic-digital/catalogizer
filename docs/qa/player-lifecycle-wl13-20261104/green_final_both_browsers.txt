@@ -1,0 +1,15 @@
+Running 12 tests using 1 worker
+  ✓   1 [chromium] › e2e/player-real/player_lifecycle.spec.ts:59:5 › WL13-F1: a Pause click during the reload after a seek-mint is honoured (the element stays paused) (13.7s)
+  ✓   2 [chromium] › e2e/player-real/player_lifecycle.spec.ts:82:5 › WL13-F1 (decision probe): an OS media-key pause during a reload is invisible to the page (already paused, no pause event) (7.5s)
+  ✓   3 [chromium] › e2e/player-real/player_lifecycle.spec.ts:105:5 › WL13-F2: the LAST seek wins when seek 2 lands in a buffered range while a seek-mint for seek 1 is in flight (12.8s)
+  ✓   4 [chromium] › e2e/player-real/player_lifecycle.spec.ts:125:5 › WL13-F3: after the media ended, seeking back to a near-expiry unbuffered target does not auto-play (17.4s)
+  ✓   5 [chromium] › e2e/player-real/player_recovery.spec.ts:44:5 › a seek past the buffer after ticket expiry recovers PLAYING (not paused) and advances from the seek target (19.6s)
+  ✓   6 [chromium] › e2e/player-real/player_recovery.spec.ts:62:5 › a cut connection after expiry recovers PLAYING and keeps advancing (25.2s)
+  ✓   7 [firefox] › e2e/player-real/player_lifecycle.spec.ts:59:5 › WL13-F1: a Pause click during the reload after a seek-mint is honoured (the element stays paused) (15.9s)
+  ✓   8 [firefox] › e2e/player-real/player_lifecycle.spec.ts:82:5 › WL13-F1 (decision probe): an OS media-key pause during a reload is invisible to the page (already paused, no pause event) (8.1s)
+  ✓   9 [firefox] › e2e/player-real/player_lifecycle.spec.ts:105:5 › WL13-F2: the LAST seek wins when seek 2 lands in a buffered range while a seek-mint for seek 1 is in flight (13.2s)
+  ✓  10 [firefox] › e2e/player-real/player_lifecycle.spec.ts:125:5 › WL13-F3: after the media ended, seeking back to a near-expiry unbuffered target does not auto-play (17.9s)
+  ✓  11 [firefox] › e2e/player-real/player_recovery.spec.ts:44:5 › a seek past the buffer after ticket expiry recovers PLAYING (not paused) and advances from the seek target (20.7s)
+  ✓  12 [firefox] › e2e/player-real/player_recovery.spec.ts:62:5 › a cut connection after expiry recovers PLAYING and keeps advancing (25.2s)
+  12 passed (3.6m)
+EXIT 0

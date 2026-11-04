@@ -1,0 +1,5 @@
+  ✘  1 [chromium] › e2e/player-real/player_lifecycle.spec.ts:59:5 › WL13-F1: a Pause click during the reload after a seek-mint is honoured (the element stays paused) (13.6s)
+  ✘  2 [firefox] › e2e/player-real/player_lifecycle.spec.ts:59:5 › WL13-F1: a Pause click during the reload after a seek-mint is honoured (the element stays paused) (15.9s)
+    Error: the user paused during the reload; the player resumed playing: {"t":45,"paused":false,"ended":false,"rs":1,"err":null,"dur":60,"buf":[[0,0.624]]}
+    Error: the user paused during the reload; the player resumed playing: {"t":45,"paused":false,"ended":false,"rs":1,"err":null,"dur":60,"buf":[[0,0.08]]}
+  2 failed

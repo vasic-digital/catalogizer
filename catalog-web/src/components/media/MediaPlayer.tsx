@@ -260,7 +260,9 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
       if (r) {
         // A position the user set while the source was reloading (the element holds it as its start position) beats the stored one.
         if (!(video.currentTime > 0.5)) video.currentTime = r.time
-        if (r.play) void video.play().catch(() => undefined)
+        // r.play was copied from the play intent when the ticket was minted; a Pause clicked during the reload cleared the intent since.
+        // (An OS media-key pause during a reload cannot be honoured: load() already paused the element, so no pause event exists.)
+        if (r.play && wantPlayRef.current) void video.play().catch(() => undefined)
       }
     }
 
@@ -281,6 +283,9 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
     const handleSeeking = () => {
       if (entityStreamUrl) return
       if (reloadingRef.current) return // a position set during a reload is kept by loadedmetadata (see there)
+      // The user's LAST seek wins: while a mint is in flight, record every seek target first, so a later seek that needs no
+      // network (inside a buffered range) is not overridden by the earlier unbuffered target when the mint resumes.
+      if (inflightRef.current === genRef.current) seekDuringMintRef.current = video.currentTime
       if (!mintedAtRef.current) return
       if (Date.now() - mintedAtRef.current < TICKET_NEAR_EXPIRY_MS) return
       const t = video.currentTime
@@ -291,6 +296,9 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
     }
 
     const handleEnded = () => {
+      // The end is not a user pause (handlePause ignores it), so clear the intent here: a later seek back that needs a fresh
+      // ticket must not resume playing a video the user never restarted.
+      wantPlayRef.current = false
       setIsPlaying(false)
       onEnded?.()
     }

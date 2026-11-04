@@ -1126,11 +1126,11 @@ Evidence: `docs/qa/api-contract-live-20261103/`; runner `scripts/test-infra/api_
 - MG-C3 (minor, test-instrumentation): mutants CM1-CM4 (.cover.png symlink check, '..' check, --check run1-symlink check, files element-type check) survive the base suite; add fixtures.
 
 ## Web player review follow-ups (round 4, GO-with-follow-ups)
-- WL13-F1 (minor, source): a Pause click during the reload after recovery/seek-mint is overridden (resumeRef.play copied from wantPlayRef at mint time). Fix: in handleLoadedMetadata use `r.play && wantPlayRef.current`. Reproduced in real Firefox; add RED test first. OS media-key pause during reload is also ignored by the reloadingRef guard.
-- WL13-F2 (minor, source): last seek does not always win when seek 2 lands in a buffered range while a seek-mint is in flight (handleSeeking returns before recording seekDuringMintRef). Record latest target first.
-- WL13-F3 (minor, source): after media end, seeking back with a near-expiry unbuffered target can auto-play (wantPlayRef stays true). Clear wantPlayRef in handleEnded.
+- WL13-F1 (minor, source): a Pause click during the reload after recovery/seek-mint is overridden (resumeRef.play copied from wantPlayRef at mint time). Fix: in handleLoadedMetadata use `r.play && wantPlayRef.current`. Reproduced in real Firefox; add RED test first. OS media-key pause during reload is also ignored by the reloadingRef guard. **PROVISIONAL-DONE (2026-11-04):** fixed (`r.play && wantPlayRef.current`); RED/GREEN/mutation on chromium and firefox in `docs/qa/player-lifecycle-wl13-20261104/`. Media-key decision: undetectable (load() already paused the element, no pause event; probe test), documented, not honoured.
+- WL13-F2 (minor, source): last seek does not always win when seek 2 lands in a buffered range while a seek-mint is in flight (handleSeeking returns before recording seekDuringMintRef). Record latest target first. **PROVISIONAL-DONE (2026-11-04):** handleSeeking records the target while a mint is in flight; evidence `docs/qa/player-lifecycle-wl13-20261104/`.
+- WL13-F3 (minor, source): after media end, seeking back with a near-expiry unbuffered target can auto-play (wantPlayRef stays true). Clear wantPlayRef in handleEnded. **PROVISIONAL-DONE (2026-11-04):** evidence `docs/qa/player-lifecycle-wl13-20261104/`.
 - WL13-F4 (nit): key={media.id} remounts player on switch, resetting volume/mute (intended).
-- WL13-T (test-instrumentation): add tests for user pause during reload, buffered second seek, ended-then-seek.
+- WL13-T (test-instrumentation): add tests for user pause during reload, buffered second seek, ended-then-seek. **PROVISIONAL-DONE (2026-11-04):** `catalog-web/e2e/player-real/player_lifecycle.spec.ts` (real chromium + firefox; ticket_server.mjs gained /ctl ttl, mintDelay, getDelay).
 
 ## Stack 3 scripts review follow-ups (round 2, GO-with-follow-ups)
 - S3-1 (minor, test-instrumentation): test_scripts.sh mutants survive: `rc=0; [ "$web_up" = 1 ] || rc=6` -> `rc=0`, removing rc=6 from the probe loop, `set -euo` -> `set -uo`. Add a case with web 200 and one probe failing, and failing `podman run`/unhealthy container cases.
