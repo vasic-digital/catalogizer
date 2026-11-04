@@ -1440,7 +1440,7 @@ func main() {
 	// /admin/users, /admin/storage, /admin/backups. Caught by
 	// FQA-API-010 in the real-binary bank verification.
 	adminGroup.Use(jwtMiddleware.RequireAdmin())
-	if csrfGuard, csrfErr := root_middleware.NewCSRF([]byte(jwtSecret)); csrfErr != nil {
+	if csrfGuard, csrfErr := root_middleware.NewCSRF([]byte(jwtSecret), root_middleware.CSRFOptionsFromEnv(os.Getenv(root_middleware.CSRFInsecureDevEnvVar), env, logging.Warnf)...); csrfErr != nil {
 			logging.Warnf("CSRF guard disabled on admin group: %v", csrfErr)
 	} else {
 			adminGroup.Use(csrfGuard.Handler())

@@ -484,3 +484,12 @@ This document supersedes the per-submodule templates for operator setup.
 
 ## Catalogizer API: local storage roots (CAT-001)
 - `CATALOGIZER_LOCAL_ROOT_BASES` — colon-separated absolute directories under which `local`-protocol storage roots may point. **Default: unset = deny every local root.** A root path is resolved with symlinks (`EvalSymlinks`) and must stay inside one of these bases; list/scan/status re-check on every use. Creating roots and `/storage/list` are admin-only. Example: `CATALOGIZER_LOCAL_ROOT_BASES=/srv/media:/mnt/library`.
+
+
+## CSRF_INSECURE_DEV (admin CSRF cookie over plain HTTP)
+
+| Var | Default | Effect |
+|---|---|---|
+| `CSRF_INSECURE_DEV` | unset / false | `true`/`1`/`yes`/`on` makes the admin CSRF cookie `csrf-dev` without `Secure` and without the `__Host-` prefix, so a browser on `http://<LAN-IP>` keeps it. Double-submit check (header must equal cookie, HMAC-verified) is unchanged. |
+
+Refused (logged at WARN, secure default kept) when `APP_ENV` is `production` or empty. Use only for plain-HTTP QA/LAN stacks.

@@ -63,11 +63,13 @@ podman run -d --pod "$POD" --name "${STACK}-redis" --memory 256m -v "${STACK}-rd
   "$REDIS_IMAGE" >/dev/null
 wait_healthy "${STACK}-postgres" 90; wait_healthy "${STACK}-redis" 60
 
+# QA stack only: CSRF_INSECURE_DEV=true because this stack is served over plain http on the LAN (Secure/__Host- cookies are dropped by browsers).
+# The API refuses the toggle when APP_ENV is production; never copy it to a production deployment.
 podman run -d --pod "$POD" --name "${STACK}-api" --memory 2g --restart on-failure:3 \
   -e DATABASE_TYPE=postgres -e DATABASE_HOST=127.0.0.1 -e DATABASE_PORT=5432 \
   -e DATABASE_USER="$POSTGRES_USER" -e DATABASE_PASSWORD -e DATABASE_NAME="$POSTGRES_DB" \
   -e DATABASE_ENCRYPTION_KEY_FILE=/app/keys/db.key -e REDIS_HOST=127.0.0.1 -e REDIS_PORT=6379 \
-  -e APP_ENV=development -e LOG_LEVEL=info -e JWT_SECRET -e ADMIN_USERNAME -e ADMIN_PASSWORD -e REGISTRATION_MODE \
+  -e APP_ENV=development -e CSRF_INSECURE_DEV=true -e LOG_LEVEL=info -e JWT_SECRET -e ADMIN_USERNAME -e ADMIN_PASSWORD -e REGISTRATION_MODE \
   -e CORS_ENABLED=true -e CORS_ORIGINS='*' -e SMB_ENABLED=true -e MEDIA_ROOT_PATH="$MEDIA_MOUNT" \
   -e CATALOGIZER_LOCAL_ROOT_BASES="$MEDIA_MOUNT" -e CATALOGIZER_READ_ROOTS="$MEDIA_MOUNT:./data" -e STORAGE_TYPE=local -e STORAGE_BUCKET=catalogizer-covers -e STORAGE_USE_SSL=false -e STORAGE_REGION=us-east-1 \
   -v "$MEDIA_DIR:$MEDIA_MOUNT:ro" -v "${STACK}-api_data:/app/data" -v "${STACK}-api_logs:/var/log/catalogizer" -v "${STACK}-api_keys:/app/keys" \

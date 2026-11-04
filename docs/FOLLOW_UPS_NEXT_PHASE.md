@@ -1191,3 +1191,9 @@ Add a fixture with a clean twin for each probe.
 - NS3-F4 (false positive): detector (b) checks `return nil, nil` inside a closure against the outer function's result types; skip FuncLit bodies or use their own types.
 - NS3-F5: named slice/map types (`type IDs []int`) and positional struct literals `&T{l}` are not detected; add to the census residuals.
 - NS3-F6: NS-1 stays provisional until a live HTTP run on a deployed stack shows `types: []` (stack 3 now runs b4d86546+; verify after next rebuild).
+
+## CAT-CSRF-LAN follow-ups
+
+- CSRF-1 (provisional): fix proven by real-router tests only; confirm in a browser against the stack-3 QA stack on http://<LAN-IP> (PUT /api/v1/admin/users/:id succeeds) after the next rebuild.
+- CSRF-2 (process-doc): stack-3 `up.sh` sets the toggle; production compose files deliberately do not. Add a deploy-config lint that CSRF_INSECURE_DEV is absent from production manifests.
+- CSRF-3 (enhancement): serve the QA stack over HTTPS and retire the toggle.
