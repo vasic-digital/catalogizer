@@ -336,10 +336,13 @@ components:
           nullable: true
         port:
           type: integer
+          nullable: true
         path:
           type: string
+          nullable: true
         username:
           type: string
+          nullable: true
         domain:
           type: string
           nullable: true
@@ -349,9 +352,11 @@ components:
           type: integer
         url:
           type: string
+          nullable: true
           description: WebDAV address; any password in its userinfo is returned redacted (xxxxx)
         mount_point:
           type: string
+          nullable: true
           description: NFS local mount point
         allow_empty:
           type: boolean
@@ -6601,9 +6606,10 @@ paths:
         - name: path
           in: path
           required: true
-          description: File path (path segment used as file ID)
+          description: File ID (the handler parses the wildcard segment as a numeric file id; non-numeric values answer 400)
           schema:
-            type: string
+            type: integer
+            format: int64
       responses:
         '200':
           description: File information
