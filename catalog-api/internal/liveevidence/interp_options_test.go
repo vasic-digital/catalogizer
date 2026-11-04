@@ -325,6 +325,19 @@ func TestUnresolvableHostFailsClosedSelfContained(t *testing.T) {
 	if a, err := ResolveListenerAddr("no-such-host.invalid", port); err == nil || a != nil {
 		t.Fatalf("unresolvable host must not resolve an answering identity: %+v %v", a, err)
 	}
+	// a WILDCARD bind covers every resolvable host, so only the explicit unresolvable-host refusal keeps it from matching a name nobody can resolve
+	wl, err := net.Listen("tcp", "0.0.0.0:0")
+	if err != nil {
+		t.Skipf("no wildcard listener available: %v", err)
+	}
+	defer wl.Close()
+	wport := wl.Addr().(*net.TCPAddr).Port
+	if in := listenInodes("127.0.0.1", wport); len(in) == 0 {
+		t.Fatal("control needle: a wildcard bind covers a resolvable host")
+	}
+	if in := listenInodes("no-such-host.invalid", wport); len(in) != 0 {
+		t.Fatalf("unresolvable host must match nothing even for a wildcard bind, got %v", in)
+	}
 }
 
 func TestAbsoluteScriptThatCannotBeHashedStaysUnbound(t *testing.T) {
