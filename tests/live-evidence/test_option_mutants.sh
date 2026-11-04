@@ -172,7 +172,7 @@ env-prefix-dropped	|| hasEnvPrefix(t.EnvPrefixes, kv[:i])	|| false
 env-bare-prefix-counts	len(k) > len(p) && 	
 env-prefix-lookalike	strings.HasPrefix(k, p)	strings.Contains(k, p)
 env-unreadable-clean	if readErr != nil {\n\t\treturn false, nil	if false {\n\t\treturn false, nil
-unresolvable-host-open	if !ok {\n\t\treturn in // unresolvable host	if false {\n\t\treturn in // unresolvable host
+unresolvable-host-open	if !ok {\n\t\treturn in // unresolvable host	if !ok && false {\n\t\treturn in // unresolvable host
 script-hash-not-checked-file	sum, err := FileSHA256(cand)\n\tif err != nil {\n\t\treturn "", ""\n\t}\n\treturn cand, sum	sum, _ := FileSHA256(cand)\n\treturn cand, sum
 MUT
   rm -rf "${GM:?}"
