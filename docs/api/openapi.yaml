@@ -1445,17 +1445,15 @@ components:
 
     AdminUserUpdate:
       type: object
-      description: Admin-level user update (role, active status, lock status)
+      description: |
+        Admin-level user update. Only `role`, `status` and `email` are read by the handler;
+        other fields (`role_id`, `is_active`, `is_locked`) are ignored, use `role` / `status`.
       properties:
         role:
           type: string
           description: Existing role name (case-insensitive, e.g. admin, user). Unknown -> 400.
-        role_id:
-          type: integer
-        is_active:
-          type: boolean
-        is_locked:
-          type: boolean
+        email:
+          type: string
         status:
           type: string
           enum: [active, inactive, suspended]
@@ -4688,7 +4686,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '400':
-          description: `status` is not one of active/inactive/suspended, or `role` is not an existing role name (generic body, the value is not echoed)
+          description: An administrator tried to deactivate or suspend their own account, `status` is not one of active/inactive/suspended, or `role` is not an existing role name (generic body, the value is not echoed)
           content:
             application/json:
               schema:
@@ -4696,7 +4694,9 @@ paths:
         '409':
           description: |
             Role change refused: an administrator cannot remove their own administrator role,
-            the last active administrator cannot be demoted, or the user changed concurrently.
+            the last active, unlocked administrator cannot be demoted or deactivated (the check and the
+            write are one atomic statement, also for DELETE /users/:id and PUT /users/:id), or the user
+            changed concurrently.
           content:
             application/json:
               schema:

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"catalogizer/models"
+	"catalogizer/repository"
 	"catalogizer/services"
 )
 
@@ -387,6 +389,10 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	if g, ok := h.userRepo.(guardedUserUpdater); ok {
 		applied, gerr := g.UpdateGuarded(user, oldRoleID, oldActive)
 		if gerr != nil {
+			if errors.Is(gerr, repository.ErrLastAdmin) {
+				http.Error(w, "The last administrator cannot be demoted or deactivated", http.StatusConflict)
+				return
+			}
 			if strings.Contains(gerr.Error(), "UNIQUE constraint failed") {
 				http.Error(w, "Username or email already exists", http.StatusConflict)
 				return
@@ -486,6 +492,10 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	err = h.userRepo.Delete(userID)
 	if err != nil {
+		if errors.Is(err, repository.ErrLastAdmin) {
+			http.Error(w, "The last administrator cannot be deleted", http.StatusConflict)
+			return
+		}
 		http.Error(w, "Failed to delete user", http.StatusInternalServerError)
 		return
 	}

@@ -1,0 +1,41 @@
+=== RUN   TestD9_ConcurrentLastAdminNeverZero
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/admin_put_demote_vs_users_deactivate
+    admin_last_admin_race_d9_test.go:107: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_last_admin_race_d9_test.go:107
+        	Error:      	Should be zero, but was 10
+        	Test:       	TestD9_ConcurrentLastAdminNeverZero/admin_put_demote_vs_users_deactivate
+        	Messages:   	ADMIN_PUT_DEMOTE_VS_USERS_DEACTIVATE: iterations ending with ZERO active administrators (both succeeded in 10)
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/admin_put_deactivate_both
+    admin_last_admin_race_d9_test.go:107: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_last_admin_race_d9_test.go:107
+        	Error:      	Should be zero, but was 12
+        	Test:       	TestD9_ConcurrentLastAdminNeverZero/admin_put_deactivate_both
+        	Messages:   	ADMIN_PUT_DEACTIVATE_BOTH: iterations ending with ZERO active administrators (both succeeded in 12)
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/delete_vs_admin_put_demote
+    admin_last_admin_race_d9_test.go:107: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_last_admin_race_d9_test.go:107
+        	Error:      	Should be zero, but was 2
+        	Test:       	TestD9_ConcurrentLastAdminNeverZero/delete_vs_admin_put_demote
+        	Messages:   	DELETE_VS_ADMIN_PUT_DEMOTE: iterations ending with ZERO active administrators (both succeeded in 2)
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/delete_both
+    admin_last_admin_race_d9_test.go:107: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_last_admin_race_d9_test.go:107
+        	Error:      	Should be zero, but was 12
+        	Test:       	TestD9_ConcurrentLastAdminNeverZero/delete_both
+        	Messages:   	DELETE_BOTH: iterations ending with ZERO active administrators (both succeeded in 12)
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/admin_put_demote_both
+    admin_last_admin_race_d9_test.go:107: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_last_admin_race_d9_test.go:107
+        	Error:      	Should be zero, but was 8
+        	Test:       	TestD9_ConcurrentLastAdminNeverZero/admin_put_demote_both
+        	Messages:   	ADMIN_PUT_DEMOTE_BOTH: iterations ending with ZERO active administrators (both succeeded in 8)
+--- FAIL: TestD9_ConcurrentLastAdminNeverZero (137.68s)
+    --- FAIL: TestD9_ConcurrentLastAdminNeverZero/admin_put_demote_vs_users_deactivate (19.62s)
+    --- FAIL: TestD9_ConcurrentLastAdminNeverZero/admin_put_deactivate_both (19.88s)
+    --- FAIL: TestD9_ConcurrentLastAdminNeverZero/delete_vs_admin_put_demote (30.13s)
+    --- FAIL: TestD9_ConcurrentLastAdminNeverZero/delete_both (39.86s)
+    --- FAIL: TestD9_ConcurrentLastAdminNeverZero/admin_put_demote_both (24.87s)
+FAIL
+FAIL	catalogizer/handlers	137.786s
+FAIL
+done

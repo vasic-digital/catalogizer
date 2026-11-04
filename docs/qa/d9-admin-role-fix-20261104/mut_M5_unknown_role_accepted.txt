@@ -1,0 +1,33 @@
+2026/11/05 00:26:30 handlers: user 2 updated but the post-update session revoke failed: injected revoke failure
+--- FAIL: TestD9_UnknownRoleRejected (0.25s)
+    admin_user_role_d9_test.go:105: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:105
+        	Error:      	Not equal: 
+        	            	expected: 400
+        	            	actual  : 200
+        	Test:       	TestD9_UnknownRoleRejected
+        	Messages:   	{"role":"superuser"} -> {"message":"User updated successfully"}
+    admin_user_role_d9_test.go:105: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:105
+        	Error:      	Not equal: 
+        	            	expected: 400
+        	            	actual  : 200
+        	Test:       	TestD9_UnknownRoleRejected
+        	Messages:   	{"role":""} -> {"message":"User updated successfully"}
+    admin_user_role_d9_test.go:105: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:105
+        	Error:      	Not equal: 
+        	            	expected: 400
+        	            	actual  : 200
+        	Test:       	TestD9_UnknownRoleRejected
+        	Messages:   	{"role":"  "} -> {"message":"User updated successfully"}
+    admin_user_role_d9_test.go:105: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:105
+        	Error:      	Not equal: 
+        	            	expected: 400
+        	            	actual  : 200
+        	Test:       	TestD9_UnknownRoleRejected
+        	Messages:   	{"role":"admin\u0000"} -> {"message":"User updated successfully"}
+FAIL
+FAIL	catalogizer/handlers	3.733s
+FAIL

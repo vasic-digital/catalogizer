@@ -1,0 +1,15 @@
+=== RUN   TestD9_ConcurrentLastAdminNeverZero
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/admin_put_demote_both
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/admin_put_demote_vs_users_deactivate
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/admin_put_deactivate_both
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/delete_vs_admin_put_demote
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/delete_both
+--- PASS: TestD9_ConcurrentLastAdminNeverZero (116.59s)
+    --- PASS: TestD9_ConcurrentLastAdminNeverZero/admin_put_demote_both (19.30s)
+    --- PASS: TestD9_ConcurrentLastAdminNeverZero/admin_put_demote_vs_users_deactivate (19.05s)
+    --- PASS: TestD9_ConcurrentLastAdminNeverZero/admin_put_deactivate_both (18.90s)
+    --- PASS: TestD9_ConcurrentLastAdminNeverZero/delete_vs_admin_put_demote (27.67s)
+    --- PASS: TestD9_ConcurrentLastAdminNeverZero/delete_both (28.38s)
+PASS
+ok  	catalogizer/handlers	117.690s
+done

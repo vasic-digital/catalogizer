@@ -1,0 +1,16 @@
+--- FAIL: TestD9R1_RevokeRunsBeforeUpdate (0.24s)
+    admin_user_role_d9_round1_test.go:113: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:113
+        	Error:      	"0" is not greater than or equal to "1"
+        	Test:       	TestD9R1_RevokeRunsBeforeUpdate
+        	Messages:   	sessions must be revoked BEFORE the role is written (fail closed)
+    admin_user_role_d9_round1_test.go:114: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:114
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 1
+        	Test:       	TestD9R1_RevokeRunsBeforeUpdate
+        	Messages:   	and once more after
+FAIL
+FAIL	catalogizer/handlers	0.268s
+FAIL

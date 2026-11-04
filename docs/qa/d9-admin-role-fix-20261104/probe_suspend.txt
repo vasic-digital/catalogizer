@@ -1,0 +1,7 @@
+    zz_probe_suspend_test.go:8: PUT status=suspended -> 200 {"message":"User updated successfully"}
+    zz_probe_suspend_test.go:11: stored is_active=true is_locked=false
+    zz_probe_suspend_test.go:12: old user token still works (PUT own status active) -> 403
+    zz_probe_suspend_test.go:13: (403 = authenticated but not admin; 401 would mean session revoked)
+    zz_probe_suspend_test.go:14: list status: [{"id":"2","username":"dave","email":"dave@example.test","role":"user","status":"active","lastLogin":"2026-11-05T00:12:25+01:00","createdAt":"2026-11-05T00:12:24+01:00"},{"id":"1","username":"rtadmin"
+--- PASS: TestProbeSuspend (0.25s)
+PASS

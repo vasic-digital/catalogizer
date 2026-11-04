@@ -1,0 +1,4 @@
+ok  	catalogizer/handlers	344.119s
+ok  	catalogizer/repository	95.499s
+ok  	catalogizer/middleware	9.090s
+exit=0

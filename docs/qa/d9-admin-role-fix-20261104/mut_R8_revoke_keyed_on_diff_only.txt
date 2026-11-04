@@ -1,0 +1,12 @@
+2026/11/05 00:25:07 handlers: user 2 updated but the post-update session revoke failed: injected revoke failure
+--- FAIL: TestD9R1_AuditRecordedAndSurvivesSecondRevokeFailureAndRetryRevokes (0.25s)
+    admin_user_role_d9_round1_test.go:146: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:146
+        	Error:      	Not equal: 
+        	            	expected: 4
+        	            	actual  : 2
+        	Test:       	TestD9R1_AuditRecordedAndSurvivesSecondRevokeFailureAndRetryRevokes
+        	Messages:   	a retry naming the role must revoke again although no role diff remains
+FAIL
+FAIL	catalogizer/handlers	0.281s
+FAIL

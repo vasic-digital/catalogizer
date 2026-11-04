@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"catalogizer/internal/pathguard"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 
 	"catalogizer/database"
 	"catalogizer/models"
+	"catalogizer/repository"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/semaphore"
@@ -309,15 +311,8 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 					c.JSON(http.StatusConflict, gin.H{"error": "Administrators cannot remove their own administrator role; ask another administrator"})
 					return
 				}
-				n, nerr := h.countActiveAdmins()
-				if nerr != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify administrators"})
-					return
-				}
-				if n <= 1 {
-					c.JSON(http.StatusConflict, gin.H{"error": "The last administrator cannot be demoted"})
-					return
-				}
+				// The last-administrator rule is enforced atomically by the
+				// repository write (UpdateGuarded -> repository.ErrLastAdmin).
 			}
 			user.RoleID = newRole.ID
 		}
@@ -362,9 +357,16 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 		user.Email = *updates.Email
 	}
 
+	// Revocation is keyed on what was REQUESTED, not only on the diff: a retry
+	// after a failed post-update revoke sees no role difference and must still
+	// revoke (same rule as UserHandler.UpdateUser). Re-asserting one's own
+	// unchanged role revokes nothing (that would only log the admin out).
+	needRevoke := (updates.Role != nil && (roleChanged || id != admin.ID)) ||
+		wasActive && !user.IsActive || (updates.Status != nil && !user.IsActive)
+
 	// Revoke first (fail closed): a failed revocation leaves the user unchanged,
 	// so a retry still revokes.
-	if roleChanged || wasActive && !user.IsActive || (updates.Status != nil && !user.IsActive) {
+	if needRevoke {
 		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to revoke sessions; user not updated"})
 			return
@@ -375,6 +377,10 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 		// against, so a concurrent role change is not overwritten.
 		applied, gerr := g.UpdateGuarded(user, oldRoleID, wasActive)
 		if gerr != nil {
+			if errors.Is(gerr, repository.ErrLastAdmin) {
+				c.JSON(http.StatusConflict, gin.H{"error": "The last administrator cannot be demoted or deactivated"})
+				return
+			}
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 			return
 		}
@@ -386,16 +392,6 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return
 	}
-	// Second revoke closes the window for a login between the first revoke and
-	// the update (that session carries the old claims).
-	if roleChanged || wasActive && !user.IsActive || (updates.Status != nil && !user.IsActive) {
-		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
-			log.Printf("handlers: user %d updated but the post-update session revoke failed: %v", user.ID, err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "User updated but revoking sessions failed; repeat the request"})
-			return
-		}
-	}
-
 	if updates.Status != nil {
 		event := "admin_user_status_changed"
 		switch {
@@ -413,6 +409,16 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 			"actor="+strconv.Itoa(admin.ID)+" role_id="+strconv.Itoa(oldRoleID)+"->"+strconv.Itoa(user.RoleID))
 	}
 
+	// Second revoke closes the window for a login between the first revoke and
+	// the update (that session carries the old claims).
+	if needRevoke {
+		if err := revokeUserSessions(h.userRepo, user.ID); err != nil {
+			log.Printf("handlers: user %d updated but the post-update session revoke failed: %v", user.ID, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User updated but revoking sessions failed; repeat the request"})
+			return
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})
 }
 
@@ -427,30 +433,6 @@ func (h *AdminHandler) roleNamesByID() (map[int]string, error) {
 		m[r.ID] = strings.ToLower(r.Name)
 	}
 	return m, nil
-}
-
-// countActiveAdmins counts active, unlocked users whose current role is an
-// administrator role.
-func (h *AdminHandler) countActiveAdmins() (int, error) {
-	users, err := h.userRepo.List(100000, 0)
-	if err != nil {
-		return 0, err
-	}
-	roles, err := h.userRepo.ListRoles()
-	if err != nil {
-		return 0, err
-	}
-	isAdminRole := make(map[int]bool, len(roles))
-	for i := range roles {
-		isAdminRole[roles[i].ID] = roleIsAdmin(&roles[i])
-	}
-	n := 0
-	for _, u := range users {
-		if u.IsActive && !u.IsAccountLocked() && isAdminRole[u.RoleID] {
-			n++
-		}
-	}
-	return n, nil
 }
 
 // GetStorageInfo returns storage root information.

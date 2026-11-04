@@ -1,0 +1,22 @@
+--- FAIL: TestD9R1_ConcurrentRoleChangeIs409 (0.24s)
+    admin_user_role_d9_round1_test.go:102: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:102
+        	Error:      	Not equal: 
+        	            	expected: 409
+        	            	actual  : 200
+        	Test:       	TestD9R1_ConcurrentRoleChangeIs409
+        	Messages:   	{"message":"User updated successfully"}
+    admin_user_role_d9_round1_test.go:104: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:104
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestD9R1_ConcurrentRoleChangeIs409
+        	Messages:   	the concurrent change must not be overwritten
+    admin_user_role_d9_round1_test.go:105: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:105
+        	Error:      	Should not be: "x@example.test"
+        	Test:       	TestD9R1_ConcurrentRoleChangeIs409
+FAIL
+FAIL	catalogizer/handlers	0.559s
+FAIL

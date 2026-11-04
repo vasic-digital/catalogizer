@@ -6,11 +6,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"catalogizer/database"
 	"catalogizer/models"
 )
+
+// ErrLastAdmin is returned when a write would leave the system without any
+// active, unlocked administrator (demotion, deactivation or deletion of the
+// last one). The check and the write are one atomic statement (D9).
+var ErrLastAdmin = errors.New("operation would remove the last active administrator")
 
 type UserRepository struct {
 	db *database.DB
@@ -198,22 +204,118 @@ func (r *UserRepository) Update(user *models.User) error {
 // reports whether a row was updated; (false, nil) means the guard no longer
 // holds and the caller must re-read and decide again.
 func (r *UserRepository) UpdateGuarded(user *models.User, expectedRoleID int, expectedActive bool) (bool, error) {
+	adminIDs, err := r.adminRoleIDs()
+	if err != nil {
+		return false, err
+	}
+	isAdmin := func(id int) bool { return containsInt(adminIDs, id) }
+	// The write removes an administrator when the stored row is an active
+	// admin and the new state is not (role without admin rights, or inactive).
+	removesAdmin := expectedActive && isAdmin(expectedRoleID) && !(user.IsActive && isAdmin(user.RoleID))
+
 	query := `
 		UPDATE users SET
 			username = ?, email = ?, first_name = ?, last_name = ?, display_name = ?,
 			avatar_url = ?, time_zone = ?, language = ?, is_active = ?, settings = ?,
 			role_id = ?, updated_at = ?
-		WHERE id = ? AND role_id = ? AND is_active = ?
-	`
-	res, err := r.db.Exec(query,
+		WHERE id = ? AND role_id = ? AND is_active = ?`
+	args := []interface{}{
 		user.Username, user.Email, user.FirstName, user.LastName, user.DisplayName,
 		user.AvatarURL, user.TimeZone, user.Language, user.IsActive, user.Settings,
-		user.RoleID, time.Now(), user.ID, expectedRoleID, expectedActive)
-	if err != nil {
+		user.RoleID, time.Now(), user.ID, expectedRoleID, expectedActive}
+	if removesAdmin {
+		clause, cargs := otherActiveAdminsClause(user.ID, adminIDs)
+		query += " AND " + clause
+		args = append(args, cargs...)
+	}
+
+	exec := func(q Execer, qs string) (int64, error) {
+		res, xerr := q.Exec(qs, args...)
+		if xerr != nil {
+			return 0, xerr
+		}
+		return res.RowsAffected()
+	}
+	var n int64
+	if removesAdmin && r.db.Dialect().Type == database.DialectPostgres {
+		// READ COMMITTED would let two transactions each see the other admin;
+		// serialise admin-removing writes with a transaction-scoped advisory lock.
+		tx, berr := r.db.Begin()
+		if berr != nil {
+			return false, berr
+		}
+		defer tx.Rollback()
+		if _, lerr := tx.Exec(`SELECT pg_advisory_xact_lock(7340001)`); lerr != nil {
+			return false, lerr
+		}
+		if n, err = exec(tx, r.db.Rewrite(query)); err != nil {
+			return false, err
+		}
+		if err = tx.Commit(); err != nil {
+			return false, err
+		}
+	} else if n, err = exec(r.db, query); err != nil {
 		return false, err
 	}
-	n, err := res.RowsAffected()
-	return n > 0, err
+	if n > 0 {
+		return true, nil
+	}
+	if removesAdmin {
+		// Distinguish "the guard held the write back" from "the row changed".
+		var rid int
+		var act bool
+		if qerr := r.db.QueryRow(`SELECT role_id, is_active FROM users WHERE id = ?`, user.ID).Scan(&rid, &act); qerr == nil &&
+			rid == expectedRoleID && act == expectedActive {
+			return false, ErrLastAdmin
+		}
+	}
+	return false, nil
+}
+
+// Execer is the Exec surface shared by *database.DB and *sql.Tx.
+type Execer interface {
+	Exec(query string, args ...interface{}) (sql.Result, error)
+}
+
+func containsInt(xs []int, v int) bool {
+	for _, x := range xs {
+		if x == v {
+			return true
+		}
+	}
+	return false
+}
+
+// adminRoleIDs returns the ids of every role that grants system administration.
+func (r *UserRepository) adminRoleIDs() ([]int, error) {
+	roles, err := r.ListRoles()
+	if err != nil {
+		return nil, err
+	}
+	var ids []int
+	for i := range roles {
+		if roles[i].Permissions.HasPermission(models.PermissionSystemAdmin) {
+			ids = append(ids, roles[i].ID)
+		}
+	}
+	return ids, nil
+}
+
+// otherActiveAdminsClause is a SQL condition true when at least one active,
+// unlocked administrator other than excludeID exists. Evaluated inside the
+// same statement as the write it guards, so check and write are atomic.
+func otherActiveAdminsClause(excludeID int, adminIDs []int) (string, []interface{}) {
+	if len(adminIDs) == 0 {
+		return "1 = 0", nil
+	}
+	ph := make([]string, len(adminIDs))
+	args := []interface{}{excludeID, true, false}
+	for i, id := range adminIDs {
+		ph[i] = "?"
+		args = append(args, id)
+	}
+	return "(SELECT COUNT(*) FROM users o WHERE o.id <> ? AND o.is_active = ? AND o.is_locked = ? AND o.role_id IN (" +
+		strings.Join(ph, ",") + ")) >= 1", args
 }
 
 // IsAdmin reports, from the database as it is NOW, whether the user is active
@@ -329,6 +431,12 @@ func (r *UserRepository) UnlockAccount(userID int) error {
 // attribution are detached (user_id / granted_by set NULL) in the same transaction, because both columns reference users(id)
 // without ON DELETE and would otherwise make every user that ever logged in undeletable (HTTP 500).
 func (r *UserRepository) Delete(id int) error {
+	// Read before the transaction: a second pooled connection taken while the
+	// transaction holds the only one would deadlock a single-connection pool.
+	adminIDs, err := r.adminRoleIDs()
+	if err != nil {
+		return err
+	}
 	tx, err := r.db.Begin()
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
@@ -346,11 +454,36 @@ func (r *UserRepository) Delete(id int) error {
 	for _, q := range []string{
 		`UPDATE auth_audit_log SET user_id = NULL WHERE user_id = ?`,
 		`UPDATE user_permissions SET granted_by = NULL WHERE granted_by = ?`,
-		`DELETE FROM users WHERE id = ?`,
 	} {
 		if _, err := tx.Exec(r.db.Rewrite(q), id); err != nil {
 			return err
 		}
+	}
+	// Deleting an active administrator is refused (atomically, in the same
+	// statement) when no other active administrator would remain.
+	del := `DELETE FROM users WHERE id = ?`
+	delArgs := []interface{}{id}
+	var rid int
+	var act bool
+	protected := false
+	if qerr := tx.QueryRow(r.db.Rewrite(`SELECT role_id, is_active FROM users WHERE id = ?`), id).Scan(&rid, &act); qerr == nil &&
+		act && containsInt(adminIDs, rid) {
+		protected = true
+		clause, cargs := otherActiveAdminsClause(id, adminIDs)
+		del += " AND " + clause
+		delArgs = append(delArgs, cargs...)
+		if r.db.Dialect().Type == database.DialectPostgres {
+			if _, lerr := tx.Exec(`SELECT pg_advisory_xact_lock(7340001)`); lerr != nil {
+				return lerr
+			}
+		}
+	}
+	res, err := tx.Exec(r.db.Rewrite(del), delArgs...)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 && protected {
+		return ErrLastAdmin // the deferred Rollback also undoes the audit detach
 	}
 	return tx.Commit()
 }

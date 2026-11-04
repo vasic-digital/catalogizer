@@ -1,0 +1,45 @@
+--- FAIL: TestD9R1_MixedCaseRoleNamesFromRealRepo (0.24s)
+    admin_user_role_d9_round1_test.go:155: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_round1_test.go:155
+        	Error:      	Not equal: 
+        	            	expected: "editor"
+        	            	actual  : "Editor"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-editor
+        	            	+Editor
+        	Test:       	TestD9R1_MixedCaseRoleNamesFromRealRepo
+--- FAIL: TestD9_ListShowsRealRole (0.24s)
+    admin_user_role_d9_test.go:71: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:71
+        	Error:      	Not equal: 
+        	            	expected: "admin"
+        	            	actual  : "Admin"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-admin
+        	            	+Admin
+        	Test:       	TestD9_ListShowsRealRole
+        	Messages:   	the seeded administrator must be listed as admin, not the default user
+    admin_user_role_d9_test.go:72: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/handlers/admin_user_role_d9_test.go:72
+        	Error:      	Not equal: 
+        	            	expected: "user"
+        	            	actual  : "User"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-user
+        	            	+User
+        	Test:       	TestD9_ListShowsRealRole
+FAIL
+FAIL	catalogizer/handlers	0.511s
+FAIL

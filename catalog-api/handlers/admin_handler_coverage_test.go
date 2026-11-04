@@ -253,7 +253,7 @@ func TestAdminHandler_GetUsers_Success(t *testing.T) {
 			return true, nil
 		},
 	}
-	roleName := "admin"
+	roleName := "Admin"
 	repo := &mockAdminUserRepo{
 		listFn: func(limit, offset int) ([]models.User, error) {
 			return []models.User{
