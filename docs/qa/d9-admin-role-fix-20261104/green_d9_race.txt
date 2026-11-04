@@ -1,0 +1,44 @@
+=== RUN   TestD9_ConcurrentLastAdminNeverZero
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/delete_both
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/admin_put_demote_both
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/admin_put_demote_vs_users_deactivate
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/admin_put_deactivate_both
+=== RUN   TestD9_ConcurrentLastAdminNeverZero/delete_vs_admin_put_demote
+--- PASS: TestD9_ConcurrentLastAdminNeverZero (116.62s)
+    --- PASS: TestD9_ConcurrentLastAdminNeverZero/delete_both (28.13s)
+    --- PASS: TestD9_ConcurrentLastAdminNeverZero/admin_put_demote_both (19.72s)
+    --- PASS: TestD9_ConcurrentLastAdminNeverZero/admin_put_demote_vs_users_deactivate (19.35s)
+    --- PASS: TestD9_ConcurrentLastAdminNeverZero/admin_put_deactivate_both (18.88s)
+    --- PASS: TestD9_ConcurrentLastAdminNeverZero/delete_vs_admin_put_demote (27.32s)
+=== RUN   TestD9R1_DemotingInactiveAdminIsAllowed
+--- PASS: TestD9R1_DemotingInactiveAdminIsAllowed (3.15s)
+=== RUN   TestD9R1_RepoLastAdminCountsOnlyActiveUnlocked
+--- PASS: TestD9R1_RepoLastAdminCountsOnlyActiveUnlocked (3.20s)
+=== RUN   TestD9R1_ConcurrentRoleChangeIs409
+--- PASS: TestD9R1_ConcurrentRoleChangeIs409 (3.24s)
+=== RUN   TestD9R1_RevokeRunsBeforeUpdate
+--- PASS: TestD9R1_RevokeRunsBeforeUpdate (3.72s)
+=== RUN   TestD9R1_AuditRecordedAndSurvivesSecondRevokeFailureAndRetryRevokes
+2026/11/05 00:36:18 handlers: user 2 updated but the post-update session revoke failed: injected revoke failure
+--- PASS: TestD9R1_AuditRecordedAndSurvivesSecondRevokeFailureAndRetryRevokes (3.57s)
+=== RUN   TestD9R1_MixedCaseRoleNamesFromRealRepo
+--- PASS: TestD9R1_MixedCaseRoleNamesFromRealRepo (3.23s)
+=== RUN   TestD9_ListShowsRealRole
+--- PASS: TestD9_ListShowsRealRole (3.27s)
+=== RUN   TestD9_PutAppliesRole
+--- PASS: TestD9_PutAppliesRole (3.35s)
+=== RUN   TestD9_PutRoleOnlyChangeRevokesSessionsAndAdminGateFollows
+--- PASS: TestD9_PutRoleOnlyChangeRevokesSessionsAndAdminGateFollows (3.87s)
+=== RUN   TestD9_UnknownRoleRejected
+--- PASS: TestD9_UnknownRoleRejected (3.18s)
+=== RUN   TestD9_NonAdminCannotChangeRole
+--- PASS: TestD9_NonAdminCannotChangeRole (3.77s)
+=== RUN   TestD9_LastAdminCannotBeDemoted
+--- PASS: TestD9_LastAdminCannotBeDemoted (3.33s)
+=== RUN   TestD9_AdminCannotDemoteSelfEvenWithAnotherAdmin
+--- PASS: TestD9_AdminCannotDemoteSelfEvenWithAnotherAdmin (4.08s)
+=== RUN   TestD9_SameRoleAndOtherFieldsStillWork
+--- PASS: TestD9_SameRoleAndOtherFieldsStillWork (3.35s)
+PASS
+ok  	catalogizer/handlers	166.025s
+exit=0

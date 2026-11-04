@@ -1,22 +1,40 @@
-# D9 admin role fix - evidence manifest
-- base: 855d78d40175752ec4874a334aa9033a6d7d9908 (main), branch fix-d9-admin-role
-- generated: 2026-11-04T22:18:46Z
-- red.log: TestD9_* on unfixed code (6 of 8 FAIL; non-admin and same-role tests pass trivially on the unfixed code)
-- green_d9.log: TestD9_* after fix (8/8 PASS)
-- green_full.log: go test ./handlers/ ./repository/ ./middleware/ -count=1 (unfiltered) all ok, exit=0
-- vet.log: go vet ./handlers/ ./repository/ ./middleware/
-- mut_*.log + mutate.py: six mutations, each killed (M2 killed by one test; the last-admin n<=1 check is only reachable once the self check is removed, see M6)
+# D9 admin role fix - evidence manifest (round 1 update)
+- base: 855d78d40175752ec4874a334aa9033a6d7d9908; merged main a61d56c6 (merge, not rebase); branch fix-d9-admin-role
+- generated: 2026-11-04T23:38:43Z
+- red.txt: TestD9_* on the original unfixed code (6/8 FAIL)
+- red_round1_race.txt: concurrent last-admin test on the round-0 fix: all 5 variants end with ZERO active admins
+- green_round1_race.txt: same test after the atomic repository guard, go test -race: PASS (12 iterations x 5 variants)
+- green_d9.txt / green_d9_race.txt: TestD9* (-race for the latter) on the merged tree
+- green_full.txt: go test ./handlers ./repository ./middleware ./database -count=1 on the merged tree (repository FAIL there = sqlmock Delete expectations, fixed afterwards; see green_repository.txt)
+- green_repository.txt: ./repository full, ok after the fix; vet.txt: go vet of the four packages
+- mut_M*.txt (mutate.py) and mut_R*.txt (mutate_round1.py): 15 mutations, each killed
+- probe_suspend.txt: CAT-D9-SUSPEND reproduction (pre-existing)
 - live re-run on a rebuilt stack: OWED (PROVISIONAL-DONE)
 
 ## sha256
-f8646d344c4c15a3f049a47767343f71b764a4322718425269f9697ad7310728  green_d9.log
-56acca10c7e4bad43d7a0ddfc33f4c2f29f88abda135717f3c5f051ac800ed86  green_full.log
-fedda961eb62ef7f367fefb24ace4693e180080aeed3b8ff983c1df13b701a8a  mut_M1_role_not_applied.log
-d4f1a6f8d730fc47ae6c8a15670ea8cce4b21269d4d28040c6d2dcf83814540f  mut_M2_self_demotion_allowed.log
-578856f6b5dbc060b4850a2721988370e37f9596b7972f1f4281b5acfe6aabca  mut_M3_no_session_revoke_on_role_change.log
-29ed4e8042bd5402d886de8b2e5271f85d03bdb884e269169934438a45723134  mut_M4_list_default_user.log
-2c4a3c8c10b38729df18b83f76197812fd00d2588b5aa816bf66b2c0caf3f72e  mut_M5_unknown_role_accepted.log
-21f047d58a04da80bd3f8e26025507c547fc0de458fcf7108af376987b957f8f  mut_M6_self_and_last_admin_checks_removed.log
-52843ae0f0a919ee7c22f27bfc4ab4f5aba877349c11f95969e82cf990b6f4fa  red.log
-379657899e7681dedd756dbab8c88d30cc8d3f6cb48b3cf4dacb3a757870b054  vet.log
-92b0262bc94399e955e730215917384626fadedd3dd5f798bed1c544961753ed  mutate.py
+f8646d344c4c15a3f049a47767343f71b764a4322718425269f9697ad7310728  green_d9.txt
+bd3e9014d23095719d1a4e05f7630406c5d4d3ecc161b0c54b1f71fd4235c6ef  green_d9_race.txt
+03e0a423e81b81cc58edb2be74eebee20dbeb28aa1e1f8689b12799ad98fe6c5  green_full.txt
+e2a1f17d677d08147cd39e8def2612f404d76ded7eb530e7281d52e6500eaa5c  green_repository.txt
+c20b42032e1d7f9b25f2350da12ab6deb967e3a2764201a8e025b7a1cf44e149  green_round1_race.txt
+949b8c39a8db937ecc9dd450491d92655c2fd49f793bb14ed8d673d14d5e8f66  mut_M1_role_not_applied.txt
+298b92e68b53fbc954991f246d6a247deb296553d74fd3132ec48f6aca820054  mut_M2_self_demotion_allowed.txt
+b83ad360532b62bc2b329b27744cfb1d142ab0358d2b8ef2e735aa4c47054802  mut_M3_no_session_revoke_on_role_change.txt
+2da4104ef4440d2641596efd8057069c9d8c406a9a323fe9c7a1b20873105533  mut_M4_list_default_user.txt
+1b459300dadaf25c9dbcb52511f46c94d42d081b672320957cd73130f2aa6482  mut_M5_unknown_role_accepted.txt
+fbf75384fdbeef3b58161e0454d064f8edde5841af48c0ff9d16119f846af2ec  mut_M6_self_and_last_admin_checks_removed.txt
+88e56d8ee7a1d0b30b6066c2c082973ec28acf3efe2cc72024c67308491c52c3  mut_R10_delete_guard_disabled.txt
+e41b31e38c185a1ce55631dabc087bcb180b776c9bc86b882fb3f83c7f038664  mut_R3_update_instead_of_updateguarded.txt
+d887e084940881047f853f45c13e05236f310f10618a2943410a2c8d44d1f5ad  mut_R4a_count_inactive_admins.txt
+c873d7e2c01315a7efea29ceae2d653db4c16ad8f553e41d1703c89fbbac9b8d  mut_R4b_count_locked_admins.txt
+26676d0283c7636d8580e5d8902991226a4467673d9622a1a0a2e634e3d6a5f4  mut_R5_audit_event_renamed.txt
+159b72aabed4deb8ddb2927b66bdd557f6daed6f989861ae8fb5d0a6e0160e69  mut_R6_first_revoke_ignores_role.txt
+e5b8ebade77e149a961ecf9acbb8ead2545d47a6f05dcc45222784baf7a8638a  mut_R7_no_tolower_in_role_names.txt
+a9960c3ecbdbe8b6c2c730176bcf07ad10408c076d06f4d2118d92ec4896c7b7  mut_R8_revoke_keyed_on_diff_only.txt
+a4968cd3ebf179333aa2492add6c8cd5bf258a0ad853e2c6fa64e20784b0e2bb  mut_R9_update_guard_disabled.txt
+7b2e80a959b5f64a39eaff1fd6e85574111e0b353c9a35a8f32bb39414d87163  mutate.py
+fab4db5ba1b4bc0e49b9896eecf483f10f061091088da20a8ea5c5edfe7b00c3  mutate_round1.py
+09c5de4132dbf657233643fe313197d0004ffd23c58bbc39271d81494d6ff91c  probe_suspend.txt
+52843ae0f0a919ee7c22f27bfc4ab4f5aba877349c11f95969e82cf990b6f4fa  red.txt
+d0f8a2bc1bbbf64d84646b14e844f76c9944e548afa6de9bc0df28e910920e94  red_round1_race.txt
+379657899e7681dedd756dbab8c88d30cc8d3f6cb48b3cf4dacb3a757870b054  vet.txt

@@ -1,4 +1,22 @@
-ok  	catalogizer/handlers	344.119s
-ok  	catalogizer/repository	95.499s
-ok  	catalogizer/middleware	9.090s
-exit=0
+ok  	catalogizer/handlers	383.905s
+--- FAIL: TestUserRepository_Delete (0.00s)
+    --- FAIL: TestUserRepository_Delete/success (0.00s)
+        user_repository_test.go:362: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/repository/user_repository_test.go:362
+            	Error:      	Received unexpected error:
+            	            	failed to list roles: call to Query '
+            	            			SELECT id, name, description, permissions, is_system, created_at, updated_at
+            	            			FROM roles ORDER BY is_system DESC, name ASC
+            	            		' with args [], was not expected, next expectation is: ExpectedBegin => expecting database transaction Begin
+            	Test:       	TestUserRepository_Delete/success
+        user_repository_test.go:363: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/d9.UKF7jL/repo/catalog-api/repository/user_repository_test.go:363
+            	Error:      	Received unexpected error:
+            	            	there is a remaining expectation which was not matched: ExpectedBegin => expecting database transaction Begin
+            	Test:       	TestUserRepository_Delete/success
+FAIL
+FAIL	catalogizer/repository	109.821s
+ok  	catalogizer/middleware	9.076s
+ok  	catalogizer/database	159.551s
+FAIL
+exit=1
