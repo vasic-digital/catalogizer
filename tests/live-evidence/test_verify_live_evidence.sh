@@ -19,7 +19,7 @@ expect(){
   out=$("$VERIFIER" "$FX/$f.json" 2>&1); rc=$?
   [ "$rc" = "$want" ] || { no "$f exit=$rc want=$want out=$out"; return; }
   case "$out" in *"class=$cls"*) ;; *) no "$f class want=$cls out=$out"; return;; esac
-  if [ -n "$sub" ]; then case "$out" in *"$sub"*) ;; *) no "$f reason want=$sub out=$out"; return;; esac; fi
+  if [ -n "$sub" ]; then case "${out#* class=}" in *"$sub"*) ;; *) no "$f reason want=$sub out=$out"; return;; esac; fi
   ok
 }
 [ -x "$VERIFIER" ] || { echo "FAIL: verifier missing or not executable: $VERIFIER" >&2; exit 1; }

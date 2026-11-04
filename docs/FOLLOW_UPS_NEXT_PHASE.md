@@ -1197,3 +1197,9 @@ Add a fixture with a clean twin for each probe.
 - NS3-F4 (false positive): detector (b) checks `return nil, nil` inside a closure against the outer function's result types; skip FuncLit bodies or use their own types.
 - NS3-F5: named slice/map types (`type IDs []int`) and positional struct literals `&T{l}` are not detected; add to the census residuals.
 - NS3-F6: NS-1 stays provisional until a live HTTP run on a deployed stack shows `types: []` (stack 3 now runs b4d86546+; verify after next rebuild).
+
+## Live-evidence verifier / recorders: round 3 follow-ups (3f7c9e58, GO-with-follow-ups)
+
+- LE3-B (OPEN): no test spawns a real server with `LD_PRELOAD` (or `PYTHONPATH` for python) from a clean-env test process and asserts the key is recorded and the record is UNIT through the real resolver (reviewer mutants R2 and R3 survive that path).
+- LE3-D (OPEN, doc nits): TESTING_GUIDE line 570 wording, `GCONV_PATH` in the schema `env_injected` description, and the F3/F4 label clash between the round-1 live-evidence findings and the older F3/F4 entries in this file (rename the live-evidence ones LE1-F3/LE1-F4).
+- LE3-C (DONE in this change): env values containing `=` are covered in `test_env_node.mjs` and `TestEnvOfEveryKey`.

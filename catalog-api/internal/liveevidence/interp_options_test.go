@@ -261,6 +261,9 @@ func TestEnvOfEveryKey(t *testing.T) {
 		if ok, inj := EnvOf(defaultInterpTable, []byte("A=b\x00"+k+"=x\x00"), nil); !ok || len(inj) != 1 || inj[0] != k {
 			t.Errorf("%s not detected: %v %v", k, ok, inj)
 		}
+		if ok, inj := EnvOf(defaultInterpTable, []byte(k+"=--require=/x.js=y\x00"), nil); !ok || len(inj) != 1 || inj[0] != k {
+			t.Errorf("value containing = must still detect %s: %v %v", k, ok, inj)
+		}
 		if ok, inj := EnvOf(defaultInterpTable, []byte(k+"=\x00"), nil); !ok || len(inj) != 0 {
 			t.Errorf("empty %s must not count: %v %v", k, ok, inj)
 		}

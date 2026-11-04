@@ -19,6 +19,7 @@ for (const p of PFX) {
 for (const k of WANT) {
   assert.deepEqual(envOf(1, t, () => env('A=b', `${k}=x`)), { env_checked: true, env_injected: [k] }, `key ${k} detected`); n++;
   assert.deepEqual(envOf(1, t, () => env(`${k}=`)), { env_checked: true }, `empty ${k} is not injection`); n++;
+  assert.deepEqual(envOf(1, t, () => env(`${k}=--require=/x.js=y`)), { env_checked: true, env_injected: [k] }, `value containing '=' still detects ${k}`); n++;
   assert.deepEqual(envOf(1, t, () => env(`X${k}=x`, `${k}X=x`)), { env_checked: true }, `lookalike of ${k} is not injection`); n++;
 }
 assert.deepEqual(envOf(1, t, () => env('PATH=/bin', 'HOME=/h')), { env_checked: true }); n++;
