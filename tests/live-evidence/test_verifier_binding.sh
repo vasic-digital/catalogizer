@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+# Verifier-only binding cases (constitution 11.4.289(D), gate-logic UNIT test): how the cmdline script token is bound to answering.script_path, java's
+# positional_script:false, and entry shapes the shipped table does not exercise (synthetic table). usage: test_verifier_binding.sh <verifier>; exit 0 = all pass
+set -u
+HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd); ROOT=$(cd "$HERE/../.." && pwd)
+V=${1:?usage: test_verifier_binding.sh <verifier>}
+export LIVE_EVIDENCE_DOUBLES=${LIVE_EVIDENCE_DOUBLES:-$ROOT/docs/qa/live-evidence.doubles.txt}
+REAL=$ROOT/docs/qa/live-evidence.interpreter-options.json
+W=$(mktemp -d "${TMPDIR:-/tmp}/lev-vb.XXXXXX"); trap 'rm -rf "${W:?}"' EXIT
+bad=0; n=0
+# run <table> <exe> <cmdline> <script_path> <want-class> <want-reasons>
+run() {
+  jq --arg e "$2" --arg c "$3" --arg s "$4" '.answering.exe_path = $e | .answering.cmdline = $c | .answering.script_path = $s' "$HERE/fixtures/golden_node_plain.json" > "$W/r.json"
+  line=$(LIVE_EVIDENCE_INTERP_OPTIONS=$1 "$V" "$W/r.json" 2>&1 | head -1)
+  cls=$(sed -n 's/.* class=\([A-Z]*\) .*/\1/p' <<<"$line"); rs=$(sed -n 's/.* reasons=//p' <<<"$line"); n=$((n+1))
+  if [ "$cls" != "$5" ] || [ "$rs" != "$6" ]; then bad=$((bad+1)); echo "FAIL [$3] script_path=$4 want $5/$6 got $cls/$rs" >&2; fi
+}
+N=/usr/bin/node
+# script token vs script_path binding (cooperative-producer: ONLY an absolute token that equals script_path binds; a relative token never does)
+run "$REAL" $N "node /srv/app/server.js"    /srv/app/server.js        LIVE none
+run "$REAL" $N "node server.js"             /srv/app/server.js        UNIT script_not_in_cmdline
+run "$REAL" $N "node ./server.js"           /srv/app/server.js        UNIT script_not_in_cmdline
+run "$REAL" $N "node ../app/server.js"      /srv/app/server.js        UNIT script_not_in_cmdline
+run "$REAL" $N "node app/server.js"         /srv/app/server.js        UNIT script_not_in_cmdline
+run "$REAL" $N "node /app/server.js"        /srv/app/server.js        UNIT script_not_in_cmdline
+run "$REAL" $N "node /srv/app/server.js"    /other/srv/app/server.js  UNIT script_not_in_cmdline
+run "$REAL" $N "node /srv/app/other.js"     /srv/app/server.js        UNIT script_not_in_cmdline
+run "$REAL" $N "node"                       /srv/app/server.js        UNIT script_not_in_cmdline
+# java: no positional script (positional_script:false) -> a class name is never a bound script
+run "$REAL" /usr/bin/java "java -Dserver.port=8080 Main" /srv/app/Main             UNIT script_not_in_cmdline
+run "$REAL" /usr/bin/java "java -jar /srv/app/app.jar" /srv/app/app.jar        LIVE none
+# synthetic table: a next-valued long option with a regex, and a next-valued SCRIPT option, with the --name=value form
+T=$W/t.json
+jq '.families.node.benign += [{"opt":"--nx","val":"next","re":"^[a-z]+$","ex":"abc"},{"opt":"--sx","val":"next","script":true,"ex":"x.js"}]' "$REAL" > "$T"
+run "$T" $N "node --nx=abc /srv/app/server.js"  /srv/app/server.js LIVE none
+run "$T" $N "node --nx=ABC /srv/app/server.js"  /srv/app/server.js UNIT interpreter_option_unknown
+run "$T" $N "node --nx abc /srv/app/server.js"  /srv/app/server.js LIVE none
+run "$T" $N "node --nx ABC /srv/app/server.js"  /srv/app/server.js UNIT interpreter_option_unknown
+run "$T" $N "node --nx -abc /srv/app/server.js" /srv/app/server.js UNIT interpreter_option_unknown
+run "$T" $N "node --sx /srv/app/server.js"      /srv/app/server.js LIVE none
+run "$T" $N "node --sx=/srv/app/server.js"      /srv/app/server.js UNIT interpreter_option_unknown
+# generic jq-edited records (cooperative-producer env + fingerprint/endpoint typing): runj <jq-edit> <want-class> <want-reasons>
+runj() {
+  jq "$1" "$HERE/fixtures/golden_node_plain.json" > "$W/r.json"
+  line=$(LIVE_EVIDENCE_INTERP_OPTIONS=$REAL "$V" "$W/r.json" 2>&1 | head -1)
+  cls=$(sed -n 's/.* class=\([A-Z]*\) .*/\1/p' <<<"$line"); rs=$(sed -n 's/.* reasons=//p' <<<"$line"); n=$((n+1))
+  if [ "$cls" != "$2" ] || [ "$rs" != "$3" ]; then bad=$((bad+1)); echo "FAIL [$1] want $2/$3 got $cls/$rs" >&2; fi
+}
+FP=$(jq -r '.artifact.fingerprint | ltrimstr("sha256:")' "$HERE/fixtures/golden_node_plain.json")
+runj '.'                                                        LIVE none
+runj '.answering.env_injected=[]'                               LIVE none
+runj 'del(.answering.env_checked)'                              UNIT env_unrecorded
+runj '.answering.env_checked=false'                             UNIT env_unrecorded
+runj '.answering.env_checked="true"'                            UNIT env_unrecorded
+runj '.answering.env_injected=["NODE_OPTIONS"]'                 UNIT interpreter_env_injection
+runj '.answering.env_injected=["LD_PRELOAD","RUBYOPT"]'         UNIT interpreter_env_injection
+runj '.answering.env_injected="NODE_OPTIONS"'                   UNIT interpreter_env_injection
+# F5: a non-array env_injected is never clean even when its length is 0 (the length of a string is its character count, so only the type check catches "" / 0 / {}); an unknown answering.kind is never accepted
+runj '.answering.env_injected=""'                               UNIT interpreter_env_injection
+runj '.answering.env_injected=0'                                UNIT interpreter_env_injection
+runj '.answering.env_injected={}'                               UNIT interpreter_env_injection
+runj '.answering.kind="bogus"'                                  UNIT answering_identity_missing
+runj '.answering.kind="Process"'                                UNIT answering_identity_missing
+# N2: the loader key is found wherever it sits in env_injected, not only first
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected=["JAVA_TOOL_OPTIONS","LD_PRELOAD"]' UNIT loader_env_injection
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected=["BASH_FUNC_x%%","LD_AUDIT"]' UNIT loader_env_injection
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected=["NODE_OPTIONS","PYTHONPATH","LD_LIBRARY_PATH"]' UNIT loader_env_injection
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected=["OPENSSL_CONF","GCONV_PATH"]' UNIT loader_env_injection
+# F1: loader keys (LD_PRELOAD / LD_AUDIT / LD_LIBRARY_PATH) bind EVERY process kind, not only interpreters; other injected keys stay interpreter-only
+for k in LD_PRELOAD LD_AUDIT LD_LIBRARY_PATH GCONV_PATH; do
+  runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected=["'$k'"]' UNIT loader_env_injection
+done
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected=["LD_PRELOAD"] | .answering.kind="socket"' UNIT loader_env_injection
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_injected=["LD_PRELOAD"] | del(.answering.env_checked)' UNIT env_unrecorded,loader_env_injection
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected="LD_PRELOAD"' UNIT loader_env_injection
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected=["NODE_OPTIONS"]' LIVE none
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected=[]' LIVE none
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected=0' UNIT loader_env_injection
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true | .answering.env_injected={}' UNIT loader_env_injection
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | del(.answering.env_checked)' UNIT env_unrecorded
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=false' UNIT env_unrecorded
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked="true"' UNIT env_unrecorded
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=1' UNIT env_unrecorded
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=null' UNIT env_unrecorded
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=false | .answering.env_injected=[]' UNIT env_unrecorded
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.kind="socket" | del(.answering.env_checked)' UNIT env_unrecorded
+runj '.answering.exe_path="/usr/local/bin/myserver" | .answering.cmdline="myserver --port 8080" | del(.answering.script_path,.answering.script_sha256) | .expected={exe_sha256:.answering.exe_sha256} | .artifact.fingerprint=.answering.exe_sha256 | .answering.runtime_hint=null | .answering.env_checked=true' LIVE none
+runj '.answering.exe_path="/bin/sh" | .answering.cmdline="sh -c x /srv/app/server.js"' UNIT interpreter_code_loading_option
+runj '.answering.exe_path="/bin/bash" | .answering.cmdline="bash +x /srv/app/server.js"' UNIT interpreter_option_unknown
+runj '.artifact.fingerprint="0x'"$FP"'"'                        INVALID fingerprint_malformed
+runj '.artifact.fingerprint="0X'"$FP"'"'                        INVALID fingerprint_malformed
+runj '.artifact.fingerprint="sha-256:'"$FP"'"'                  INVALID fingerprint_malformed
+runj '.artifact.fingerprint="SHA-256:'"$FP"'"'                  INVALID fingerprint_malformed
+runj '.artifact.fingerprint="sha256:\u200b'"$FP"'"'            INVALID fingerprint_malformed
+runj '.artifact.fingerprint="\u200bsha256:'"$FP"'"'            INVALID fingerprint_malformed
+runj '.artifact.fingerprint="sha256:'"$FP"'\u00a0"'            INVALID fingerprint_malformed
+runj '.artifact.fingerprint="SHA256:'"$(printf %s "$FP" | tr a-f A-F)"'"' LIVE none
+runj '.endpoint.host=127'                                       UNIT endpoint_identity_missing
+runj '.endpoint.host=["127.0.0.1"]'                             UNIT endpoint_identity_missing
+runj '.endpoint.host=""'                                        UNIT endpoint_identity_missing
+echo "verifier binding cases: $n run, $bad failed"
+[ "$bad" = 0 ]

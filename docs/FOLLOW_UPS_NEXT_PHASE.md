@@ -1144,6 +1144,12 @@ Evidence: `docs/qa/api-contract-live-20261103/`; runner `scripts/test-infra/api_
 - LM-F2 (process-doc, nit): `restart_stack.sh` header says postgres/redis answered HTTP 200; they are checked via `pg_isready` and `PONG`.
 - LM-F3 (process-doc, nit): `restart_stack.sh` has not been run end to end against real podman since the fix (disclosed in MAP section 5); stays provisional.
 
+## Live-evidence verifier / recorders (`scripts/test-infra/verify_live_evidence.sh`, `tests/live-evidence/`, `catalog-api/internal/liveevidence/`) — review round 1 of `a8c72de3`
+Threat model unchanged: COOPERATIVE PRODUCER. F1 (loader keys bind every process kind) and F2 (enumerated env key set with prefixes; not claimed exhaustive, residuals listed in `docs/scripts/verify_live_evidence.md`) are fixed in the same wave; the remaining small items are OPEN until a commit on `main` closes them.
+- F3 (test-instrumentation, OPEN): the interpreter set is hard-coded in three places (verifier `interp()`, Node `INTERP`, Go `runtimeLibRE`/family regexes) instead of being derived from the option table, the single source. Missing families / documented limit: Tcl, R, Julia, Erlang/Elixir, dotnet, gawk/awk, luajit, versioned names such as `node22`; the runtime library regex lacks `libtcl`, `libR`, `libjulia`, `libcoreclr`, `libluajit`. Fix: generate all three from the table plus a parity test, or document the limit next to `unsupported_exe`.
+- F4 (test-instrumentation, OPEN, low: all of these fail closed): Node host resolution differs from Go for `[::1]`-only servers, compressed vs uncompressed IPv6 text, kept brackets and named hosts (Node maps only `localhost` to `127.0.0.1`; Go resolves names). Pinned today by `tests/live-evidence/test_host_node.mjs` (`::1` finds nothing against a 127.0.0.1 listener). Fix: resolve names in Node like Go and compare parsed addresses.
+- F8 is closed in the docs (launchers named in `docs/scripts/verify_live_evidence.md` F5). F5 (five reviewer mutants), F6 (`liveevidence_mut` trap) and F7 (schema `env_checked`/`env_injected`, trim wording) are fixed in the same wave.
+
 ## API contract sweep follow-ups (test-api-contract-live, review round 1)
 
 - Stream path serves without re-checking confinement: `StreamHandler.StreamFile` -> `SettingsFromRoot` does not re-check
@@ -1218,3 +1224,9 @@ Add a fixture with a clean twin for each probe.
 - MON-G4 (test-instrumentation, minor): the otel collector's own scrape target and `authorization` block are unguarded (reviewer mutants N5 `nosuchhost`, N6 authorization removed survive; author's m17/m18 cover prometheus.yml only). Add static checks that the otel scrape target resolves to the api service/container name and its authorization uses `${env:METRICS_SCRAPE_TOKEN}`.
 - MON-G5 (process-doc, nit): evidence files 02-05 under docs/qa/monitoring-deploy-20261104 lack the exact producing commands; show the LAN opt-in case explicitly in the QA-host section; the unquoted `$PROMETHEUS_EXTRA_FLAGS` expansion can glob (operator-controlled input).
 - MON-PROV: the `api` network alias DNS resolution and the full `deployment/docker-compose.yml` stack remain PROVISIONAL (evidence used extra_hosts because podman DNS on the scratch network is broken on this host); verify on a healthy network (needs the shared aardvark-dns repaired, operator decision).
+
+## Live-evidence verifier / recorders: round 3 follow-ups (3f7c9e58, GO-with-follow-ups)
+
+- LE3-B (OPEN): no test spawns a real server with `LD_PRELOAD` (or `PYTHONPATH` for python) from a clean-env test process and asserts the key is recorded and the record is UNIT through the real resolver (reviewer mutants R2 and R3 survive that path).
+- LE3-D (OPEN, doc nits): TESTING_GUIDE line 570 wording, `GCONV_PATH` in the schema `env_injected` description, and the F3/F4 label clash between the round-1 live-evidence findings and the older F3/F4 entries in this file (rename the live-evidence ones LE1-F3/LE1-F4).
+- LE3-C (DONE in this change): env values containing `=` are covered in `test_env_node.mjs` and `TestEnvOfEveryKey`.

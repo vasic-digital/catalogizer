@@ -1,0 +1,24 @@
+# Register of known test doubles (constitution 11.4.289(D)). One rule per line; '#' starts a comment.
+#   sha256:<hex>   an executable hash or container image digest that is a double
+#   name:<glob>    glob on the BASENAME of the answering executable (case-insensitive)
+#   cmd:<glob>     glob on the answering command line (case-insensitive)
+#   image:<glob>   glob on the container image reference or digest
+# Projects append their own fixture servers here; a double is defined by WHAT ANSWERS, never by where it listens.
+name:*mock*
+name:*stub*
+name:*fake*
+name:*fixture*
+name:*replay*
+name:*canned*
+name:*wiremock*
+name:jev_server*
+cmd:*jev_server*
+cmd:*fixture_server*
+cmd:*wiremock*
+cmd:*mockserver*
+cmd:*stub_server*
+cmd:*fake_server*
+cmd:*replay_server*
+image:*mock*
+image:*wiremock*
+image:*stub*

@@ -1,0 +1,482 @@
+{
+ "schema": "catalogizer.live-evidence.interp-options/1",
+ "note": "ALLOW-LIST of interpreter command-line options per family (constitution 11.4.289(D)). Read by the verifier, the Go recorder (embedded copy catalog-api/internal/liveevidence/interp_options.json, parity-tested) and the Node recorder. An option NOT listed under benign is ambiguous => the answer is UNIT. 'dangerous' only names options that load/run code the script hash does not cover (gives the reason code interpreter_code_loading_option); it is checked BEFORE benign. A '--name=value' token is split on the first '=' before ANY lookup. Entry: opt, val (none | next | eq | attached), re (value regex, anchored, RE2/JS/Oniguruma-safe), ex (example value used by the frozen test cases), script (true: the value is the script, -jar). 'prefix:P' in dangerous = any token starting with P. positional_script:false (java) = the first positional is a main class, not a file: only -jar binds a script.",
+ "unsupported_exe": "^(deno|bun)$",
+ "env_keys": ["NODE_OPTIONS", "NODE_PATH", "JDK_JAVA_OPTIONS", "JAVA_TOOL_OPTIONS", "_JAVA_OPTIONS", "RUBYOPT", "RUBYLIB", "GEM_HOME", "GEM_PATH", "BUNDLE_GEMFILE", "BUNDLE_PATH", "PERL5OPT", "PERL5LIB", "PERLLIB", "PYTHONPATH", "PYTHONSTARTUP", "PYTHONHOME", "PYTHONUSERBASE", "PYTHONBREAKPOINT", "PYTHONPLATLIBDIR", "PYTHONINSPECT", "PYTHONWARNINGS", "LUA_INIT", "LUA_PATH", "LUA_CPATH", "BASH_ENV", "ENV", "SHELLOPTS", "BASHOPTS", "ZDOTDIR", "PHPRC", "PHP_INI_SCAN_DIR", "OPENSSL_CONF", "OPENSSL_MODULES", "OPENSSL_ENGINES", "LD_PRELOAD", "LD_AUDIT", "LD_LIBRARY_PATH", "GCONV_PATH"],
+ "env_prefixes": ["BASH_FUNC_", "LUA_INIT_", "LUA_PATH_", "LUA_CPATH_"],
+ "env_loader": ["LD_PRELOAD", "LD_AUDIT", "LD_LIBRARY_PATH", "GCONV_PATH"],
+ "families": {
+  "python": {
+   "exe": "^(python[0-9.]*|pypy[0-9.]*)$",
+   "benign": [
+    {
+     "opt": "-u",
+     "val": "none"
+    },
+    {
+     "opt": "-B",
+     "val": "none"
+    },
+    {
+     "opt": "-E",
+     "val": "none"
+    },
+    {
+     "opt": "-s",
+     "val": "none"
+    },
+    {
+     "opt": "-S",
+     "val": "none"
+    },
+    {
+     "opt": "-I",
+     "val": "none"
+    },
+    {
+     "opt": "-O",
+     "val": "none"
+    },
+    {
+     "opt": "-OO",
+     "val": "none"
+    },
+    {
+     "opt": "-v",
+     "val": "none"
+    },
+    {
+     "opt": "-vv",
+     "val": "none"
+    },
+    {
+     "opt": "-b",
+     "val": "none"
+    },
+    {
+     "opt": "-bb",
+     "val": "none"
+    },
+    {
+     "opt": "-q",
+     "val": "none"
+    },
+    {
+     "opt": "-d",
+     "val": "none"
+    },
+    {
+     "opt": "-R",
+     "val": "none"
+    },
+    {
+     "opt": "-x",
+     "val": "none"
+    },
+    {
+     "opt": "-P",
+     "val": "none"
+    },
+    {
+     "opt": "-W",
+     "val": "next",
+     "re": "^[A-Za-z0-9:_*-]+$",
+     "ex": "ignore::DeprecationWarning"
+    },
+    {
+     "opt": "-X",
+     "val": "next",
+     "re": "^(utf8|dev|importtime|faulthandler|warn_default_encoding|showrefcount)$",
+     "ex": "utf8"
+    }
+   ],
+   "dangerous": [
+    "-i",
+    "prefix:-c",
+    "prefix:-m"
+   ]
+  },
+  "node": {
+   "exe": "^node(js)?$",
+   "benign": [
+    {
+     "opt": "--no-warnings",
+     "val": "none"
+    },
+    {
+     "opt": "--trace-warnings",
+     "val": "none"
+    },
+    {
+     "opt": "--expose-gc",
+     "val": "none"
+    },
+    {
+     "opt": "--enable-source-maps",
+     "val": "none"
+    },
+    {
+     "opt": "--use-strict",
+     "val": "none"
+    },
+    {
+     "opt": "--harmony",
+     "val": "none"
+    },
+    {
+     "opt": "--preserve-symlinks",
+     "val": "none"
+    },
+    {
+     "opt": "--no-deprecation",
+     "val": "none"
+    },
+    {
+     "opt": "--trace-deprecation",
+     "val": "none"
+    },
+    {
+     "opt": "--abort-on-uncaught-exception",
+     "val": "none"
+    },
+    {
+     "opt": "--experimental-vm-modules",
+     "val": "none"
+    },
+    {
+     "opt": "--max-old-space-size",
+     "val": "eq",
+     "re": "^[0-9]+$",
+     "ex": "4096"
+    },
+    {
+     "opt": "--max-semi-space-size",
+     "val": "eq",
+     "re": "^[0-9]+$",
+     "ex": "16"
+    },
+    {
+     "opt": "--stack-size",
+     "val": "eq",
+     "re": "^[0-9]+$",
+     "ex": "984"
+    },
+    {
+     "opt": "--stack-trace-limit",
+     "val": "eq",
+     "re": "^[0-9]+$",
+     "ex": "50"
+    },
+    {
+     "opt": "--title",
+     "val": "eq",
+     "re": "^[A-Za-z0-9._-]+$",
+     "ex": "svc"
+    },
+    {
+     "opt": "--unhandled-rejections",
+     "val": "eq",
+     "re": "^(strict|warn|none|throw|warn-with-error-code)$",
+     "ex": "strict"
+    }
+   ],
+   "dangerous": [
+    "-e",
+    "--eval",
+    "-p",
+    "--print",
+    "-pe",
+    "-r",
+    "--require",
+    "--import",
+    "--loader",
+    "--experimental-loader",
+    "--env-file",
+    "--env-file-if-exists",
+    "-c",
+    "--check",
+    "-i",
+    "--interactive",
+    "--test",
+    "--watch",
+    "--run",
+    "--input-type",
+    "--conditions",
+    "-C",
+    "--openssl-config",
+    "--snapshot-blob",
+    "--build-snapshot",
+    "--inspect-brk",
+    "--cpu-prof-dir"
+   ]
+  },
+  "java": {
+   "exe": "^java",
+   "benign": [
+    {
+     "opt": "-server",
+     "val": "none"
+    },
+    {
+     "opt": "-ea",
+     "val": "none"
+    },
+    {
+     "opt": "-da",
+     "val": "none"
+    },
+    {
+     "opt": "-verbose",
+     "val": "none"
+    },
+    {
+     "opt": "-XX:+UseG1GC",
+     "val": "none"
+    },
+    {
+     "opt": "-XX:+UseSerialGC",
+     "val": "none"
+    },
+    {
+     "opt": "-XX:+UseParallelGC",
+     "val": "none"
+    },
+    {
+     "opt": "-jar",
+     "val": "next",
+     "script": true,
+     "ex": "app.jar"
+    },
+    {
+     "opt": "-Xmx",
+     "val": "attached",
+     "re": "^[0-9]+[kKmMgG]?$",
+     "ex": "512m"
+    },
+    {
+     "opt": "-Xms",
+     "val": "attached",
+     "re": "^[0-9]+[kKmMgG]?$",
+     "ex": "128m"
+    },
+    {
+     "opt": "-Xss",
+     "val": "attached",
+     "re": "^[0-9]+[kKmMgG]?$",
+     "ex": "1m"
+    },
+    {
+     "opt": "-D",
+     "val": "attached",
+     "re": "^(server\\.port|file\\.encoding|user\\.timezone|user\\.language|user\\.country|java\\.awt\\.headless|java\\.net\\.preferIPv4Stack)=[A-Za-z0-9._:-]*$",
+     "ex": "server.port=8080"
+    }
+   ],
+   "dangerous": [
+    "-cp",
+    "-classpath",
+    "--class-path",
+    "-p",
+    "--module-path",
+    "--patch-module",
+    "--add-modules",
+    "--upgrade-module-path",
+    "--limit-modules",
+    "prefix:-javaagent",
+    "prefix:-agentlib",
+    "prefix:-agentpath",
+    "prefix:-Xbootclasspath",
+    "prefix:-Xrun",
+    "prefix:-XX:Flags",
+    "prefix:-XX:OnError",
+    "prefix:-XX:+UnlockDiagnostic",
+    "prefix:-Djava.class.path",
+    "prefix:-Djava.system.class.loader",
+    "prefix:-Djava.ext.dirs",
+    "prefix:-Xshare:dump"
+   ],
+   "positional_script": false
+  },
+  "ruby": {
+   "exe": "^ruby",
+   "benign": [
+    {
+     "opt": "-w",
+     "val": "none"
+    },
+    {
+     "opt": "-W0",
+     "val": "none"
+    },
+    {
+     "opt": "-W1",
+     "val": "none"
+    },
+    {
+     "opt": "-W2",
+     "val": "none"
+    },
+    {
+     "opt": "-v",
+     "val": "none"
+    }
+   ],
+   "dangerous": [
+    "-S",
+    "prefix:-e",
+    "prefix:-r",
+    "prefix:-I",
+    "prefix:-x",
+    "prefix:-C",
+    "--require",
+    "--enable",
+    "--disable",
+    "--encoding"
+   ]
+  },
+  "perl": {
+   "exe": "^perl",
+   "benign": [
+    {
+     "opt": "-w",
+     "val": "none"
+    },
+    {
+     "opt": "-W",
+     "val": "none"
+    },
+    {
+     "opt": "-t",
+     "val": "none"
+    },
+    {
+     "opt": "-T",
+     "val": "none"
+    },
+    {
+     "opt": "-l",
+     "val": "none"
+    }
+   ],
+   "dangerous": [
+    "-n",
+    "-p",
+    "prefix:-M",
+    "prefix:-m",
+    "prefix:-I",
+    "prefix:-e",
+    "prefix:-E",
+    "prefix:-d",
+    "prefix:-x",
+    "prefix:-i"
+   ]
+  },
+  "php": {
+   "exe": "^php",
+   "benign": [
+    {
+     "opt": "-q",
+     "val": "none"
+    },
+    {
+     "opt": "-n",
+     "val": "none"
+    }
+   ],
+   "dangerous": [
+    "--define",
+    "-R",
+    "-B",
+    "-E",
+    "-F",
+    "prefix:-d",
+    "prefix:-c",
+    "prefix:-r",
+    "prefix:-S",
+    "prefix:-t",
+    "prefix:-f",
+    "prefix:-z"
+   ]
+  },
+  "lua": {
+   "exe": "^lua",
+   "benign": [
+    {
+     "opt": "-W",
+     "val": "none"
+    },
+    {
+     "opt": "-E",
+     "val": "none"
+    },
+    {
+     "opt": "-v",
+     "val": "none"
+    }
+   ],
+   "dangerous": [
+    "-i",
+    "prefix:-l",
+    "prefix:-e"
+   ]
+  },
+  "shell": {
+   "exe": "^(bash|sh|dash|zsh|ksh|fish)$",
+   "benign": [
+    {
+     "opt": "-x",
+     "val": "none"
+    },
+    {
+     "opt": "-e",
+     "val": "none"
+    },
+    {
+     "opt": "-u",
+     "val": "none"
+    },
+    {
+     "opt": "-v",
+     "val": "none"
+    },
+    {
+     "opt": "-eu",
+     "val": "none"
+    },
+    {
+     "opt": "-ex",
+     "val": "none"
+    },
+    {
+     "opt": "-eux",
+     "val": "none"
+    },
+    {
+     "opt": "--norc",
+     "val": "none"
+    },
+    {
+     "opt": "--noprofile",
+     "val": "none"
+    },
+    {
+     "opt": "-o",
+     "val": "next",
+     "re": "^(pipefail|errexit|nounset|xtrace)$",
+     "ex": "pipefail"
+    }
+   ],
+   "dangerous": [
+    "--rcfile",
+    "--init-file",
+    "-s",
+    "-i",
+    "-l",
+    "--login",
+    "-p",
+    "prefix:-c",
+    "prefix:-O"
+   ]
+  }
+ }
+}

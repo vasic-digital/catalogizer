@@ -1,0 +1,41 @@
+{
+  "schema": "catalogizer.live-evidence/1",
+  "test_id": "fixture-golden_false_container",
+  "class": "LIVE",
+  "verdict": "PASS",
+  "timestamp": "2026-11-03T20:00:00Z",
+  "command": "go test ./internal/x -run TestY",
+  "artifact": {
+    "fingerprint": "sha256:2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6",
+    "source": "target"
+  },
+  "endpoint": {
+    "host": "127.0.0.1",
+    "port": 8080,
+    "resolved_ip": "127.0.0.1"
+  },
+  "answering": {
+    "kind": "container",
+    "image_digest": "sha256:2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6",
+    "container_id": "abc123"
+  },
+  "expected": {
+    "image_digest": "sha256:2e7d2c03a9507ae265ecf5b5356885a53393a2029d241394997265a1a25aefc6"
+  },
+  "requests": {
+    "total": 3,
+    "methods": {
+      "GET": 3
+    }
+  },
+  "responses": {
+    "status_histogram": {
+      "200": 3
+    }
+  },
+  "runs": {
+    "n": 3,
+    "identical": true,
+    "signature": "sha256:3e23e8160039594a33894f6564e1b1348bbd7a0088d42c4acb73eeaed59c009d"
+  }
+}
