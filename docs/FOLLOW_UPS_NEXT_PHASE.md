@@ -1234,8 +1234,17 @@ Add a fixture with a clean twin for each probe.
 ## Live QA round 3 + storage r1 findings (2026-11-04)
 
 - LW3-1 (intermittent, root cause UNCONFIRMED): firefox-desktop run 1 `pages.live.spec.ts:6` Favorites page showed the empty login form although login POST returned 200 (1 of 8 browser runs; 18/18 passes on rerun). Needs a trace captured on a failing run (keep traces on failure in CI-less local runs); leads: 401 handler in lib/api.ts or login/header race.
-- ST-D1 (product, low-medium): SmbClient.Connect ignores ctx (net.DialTimeout, smb_client.go ~42-47); SMB and FTP stat/read succeed on an already-cancelled context. Fix: DialContext + ctx.Err() checks.
-- ST-D2 (product hazard, SERIOUS): one FTPClient used from 4 goroutines corrupts its control connection (wrong results, a run hung forever in textproto.ReadResponse with no read deadline). Fix: per-client operation mutex + ctx-tied read deadlines.
-- ST-D3 (inconsistency): SmbClient rejects leading-slash paths while FTP/WebDAV accept them.
+- ST-D1 (product, low-medium): SmbClient.Connect ignores ctx (net.DialTimeout, smb_client.go ~42-47); SMB and FTP stat/read succeed on an already-cancelled context. Fix: DialContext + ctx.Err() checks. **FIXED, PROVISIONAL-DONE (CAT-ST): evidence docs/qa/storage-clients-fix-20261104/README.md; live Synology confirmation owed.**
+- ST-D2 (product hazard, SERIOUS): one FTPClient used from 4 goroutines corrupts its control connection (wrong results, a run hung forever in textproto.ReadResponse with no read deadline). Fix: per-client operation mutex + ctx-tied read deadlines. **FIXED, PROVISIONAL-DONE (CAT-ST): evidence docs/qa/storage-clients-fix-20261104/README.md; live Synology confirmation owed.**
+- ST-D3 (inconsistency): SmbClient rejects leading-slash paths while FTP/WebDAV accept them. **FIXED, PROVISIONAL-DONE (CAT-ST): evidence docs/qa/storage-clients-fix-20261104/README.md; live Synology confirmation owed.**
+- ST-F5 (follow-up, minor): FTP ReadFile stream Close/Read happen outside the operation turn; a caller using the same client concurrently with an open stream still interleaves. No in-repo concurrent caller found. Fix idea: hold the turn until Close, or one client per stream.
+- ST-F7 (FIXED, PROVISIONAL-DONE CAT-ST): smbPath now treats a backslash as a separator before looking for `..` (SMB-only; FTP/WebDAV untouched). Evidence docs/qa/storage-clients-fix-20261104/README.md.
 - ST-NFS: NFS live test SKIPPED (Synology export list empty, no mount privilege); needs operator enabling an NFS export.
 - Evidence: docs/qa/live-storage-r1-20261104.md.
+
+### Storage clients fix: Opus round-4 follow-ups (GO-with-follow-ups, 2026-11-04)
+- ST-R4-1 (test-instrumentation, minor): make the GetFileInfo clock-compare race deterministic (ctx whose Err() is nil after its deadline passed) to kill mutant K1.
+- ST-R4-2 (test-instrumentation, minor): test where Connect or a stream Close installs a session while redial is in flight; assert exactly one live connection, no leak (kills K3).
+- ST-R4-3 (source-defect, nit): Connect does not clear redialNeeded (harmless today because of the client==nil guard); clear it and add a test (kills K5).
+- ST-R4-4 (source-defect, nit): reconnectIf discard path calls fresh.Quit() without c.ctl.Delete(fresh), leaking one map entry per lost race (ftp_client.go ~307-309).
+- Still open: ST-F5, live Synology FTP/SMB confirmation, SMB real-server test (mid-flight cancel through the context-bound share unproven).

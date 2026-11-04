@@ -52,8 +52,20 @@ type FTPClient struct {
 	// still interleave on the control connection (an in-flight operation then fails with a connection error). The production callers create
 	// one client per job via ClientFactory.CreateClient (no goroutine sharing was found in universal_scanner.go; other handlers were not audited).
 	mu sync.Mutex
+	// opSem serialises protocol operations on this client: the FTP control connection carries one command/reply exchange at a time
+	// (ST-D2), so two goroutines sharing a client must not interleave on it. It is a channel (capacity 1) so that waiting for the turn
+	// honours the caller's context. mu (above) still guards the fields; opSem guards the wire.
+	opSem chan struct{}
+	// ctl maps a control connection to its deadline group, so an operation can bound reads/writes by its context (ST-D2).
+	ctl sync.Map // *ftp.ServerConn -> *ftpConnGroup
 	// gen counts Disconnect calls. A reconnect started before a Disconnect must not install its new connection afterwards.
 	gen uint64
+	// staleConn is a control connection a cut operation left desynchronised; the next operation replaces it (replaceStale).
+	staleConn *ftp.ServerConn
+	// redialNeeded: a replacement dial failed while the client was not Disconnect()ed (redialGen is the Disconnect generation then); a later
+	// operation retries it under its own context.
+	redialNeeded bool
+	redialGen    uint64
 }
 
 // NewFTPClient creates a new FTP client
@@ -61,6 +73,7 @@ func NewFTPClient(config *FTPConfig) *FTPClient {
 	return &FTPClient{
 		config:    config,
 		connected: false,
+		opSem:     make(chan struct{}, 1),
 	}
 }
 
@@ -75,6 +88,7 @@ func (c *FTPClient) Connect(ctx context.Context) error {
 	c.client, c.base, c.connected = client, base, true
 	c.mu.Unlock()
 	if old != nil {
+		c.ctl.Delete(old)
 		_ = old.Quit() // a previous connection is ended, not leaked (an operation still running on it fails with a connection error)
 	}
 	return nil
@@ -82,16 +96,26 @@ func (c *FTPClient) Connect(ctx context.Context) error {
 
 // dial opens, logs in and positions a new control connection without touching the client's fields.
 func (c *FTPClient) dial(ctx context.Context, extra ...ftp.DialOption) (*ftp.ServerConn, string, error) {
+	return c.dialWith(ctx, nil, extra...)
+}
+
+// dialWith is dial with an optional inner connection dialer (CopyFile's tracker) that stays under the session's deadline policy.
+func (c *FTPClient) dialWith(ctx context.Context, inner func(network, address string) (net.Conn, error), extra ...ftp.DialOption) (*ftp.ServerConn, string, error) {
 	addr := net.JoinHostPort(c.config.Host, fmt.Sprintf("%d", c.config.Port))
 
-	opts := append([]ftp.DialOption{ftp.DialWithTimeout(30 * time.Second), ftp.DialWithContext(ctx)}, extra...)
+	grp := &ftpConnGroup{inner: inner}
+	endDial := grp.armDial(ctx)
+	defer endDial()
+	opts := append([]ftp.DialOption{ftp.DialWithTimeout(30 * time.Second), ftp.DialWithContext(ctx), ftp.DialWithDialFunc(grp.dialFunc(ctx))}, extra...)
 	client, err := ftp.Dial(addr, opts...)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to connect to FTP server: %w", err)
 	}
+	c.ctl.Store(client, grp)
 
 	err = client.Login(c.config.Username, c.config.Password)
 	if err != nil {
+		c.ctl.Delete(client)
 		client.Quit()
 		return nil, "", fmt.Errorf("failed to login to FTP server: %w", err)
 	}
@@ -100,6 +124,7 @@ func (c *FTPClient) dial(ctx context.Context, extra ...ftp.DialOption) (*ftp.Ser
 	if c.config.Path != "" {
 		err = client.ChangeDir(c.config.Path)
 		if err != nil {
+			c.ctl.Delete(client)
 			client.Quit()
 			return nil, "", fmt.Errorf("failed to change to base directory %s: %w", c.config.Path, err)
 		}
@@ -125,8 +150,18 @@ func (c *FTPClient) Disconnect(ctx context.Context) error {
 	c.client = nil
 	c.connected = false
 	c.gen++
+	stale := conn != nil && c.staleConn == conn
+	c.staleConn = nil
+	c.redialNeeded = false
 	c.mu.Unlock()
 	if conn != nil {
+		if stale { // a cut left this session desynchronised: end it hard and do not report its dead write error
+			c.abortSession(conn)
+			_ = conn.Quit()
+			c.ctl.Delete(conn)
+			return nil
+		}
+		c.ctl.Delete(conn)
 		return conn.Quit()
 	}
 	return nil
@@ -151,11 +186,12 @@ func (c *FTPClient) session() (*ftp.ServerConn, string, error) {
 }
 
 // TestConnection tests the FTP connection
-func (c *FTPClient) TestConnection(ctx context.Context) error {
-	conn, _, err := c.session()
+func (c *FTPClient) TestConnection(ctx context.Context) (retErr error) {
+	conn, _, release, err := c.beginOp(ctx)
 	if err != nil {
 		return err
 	}
+	defer func() { release(retErr) }()
 	_, err = conn.CurrentDir()
 	return err
 }
@@ -173,11 +209,14 @@ func (c *FTPClient) resolvePath(base, p string) string {
 }
 
 // ReadFile reads a file from the FTP server
-func (c *FTPClient) ReadFile(ctx context.Context, path string) (io.ReadCloser, error) {
-	conn, base, err := c.session()
+func (c *FTPClient) ReadFile(ctx context.Context, path string) (_ io.ReadCloser, retErr error) {
+	// The turn and the deadline cover the RETR command exchange; the returned transfer is read by the caller afterwards, outside the
+	// turn (a caller that reads it while using the same client concurrently is still interleaving: one client, one active transfer).
+	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return nil, err
 	}
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 	resp, err := conn.Retr(fullPath)
 	if err != nil {
@@ -247,6 +286,7 @@ func (c *FTPClient) reconnectIf(ctx context.Context, old *ftp.ServerConn) error 
 	c.client = nil
 	c.connected = false
 	c.mu.Unlock()
+	c.ctl.Delete(old)
 	_ = old.Quit()
 	rctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
@@ -258,6 +298,9 @@ func (c *FTPClient) reconnectIf(ctx context.Context, old *ftp.ServerConn) error 
 		if disconnected {
 			return nil // the user disconnected on purpose while the redial was in flight; its failure is not an error for Close
 		}
+		c.mu.Lock()
+		c.redialNeeded, c.redialGen = true, gen
+		c.mu.Unlock()
 		return err
 	}
 	c.mu.Lock()
@@ -267,16 +310,18 @@ func (c *FTPClient) reconnectIf(ctx context.Context, old *ftp.ServerConn) error 
 		return nil
 	}
 	c.client, c.base, c.connected = fresh, base, true
+	c.redialNeeded = false
 	c.mu.Unlock()
 	return nil
 }
 
 // WriteFile writes a file to the FTP server
-func (c *FTPClient) WriteFile(ctx context.Context, path string, data io.Reader) error {
-	conn, base, err := c.session()
+func (c *FTPClient) WriteFile(ctx context.Context, path string, data io.Reader) (retErr error) {
+	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return err
 	}
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 
 	// Ensure the directory exists
@@ -296,11 +341,12 @@ func (c *FTPClient) WriteFile(ctx context.Context, path string, data io.Reader) 
 }
 
 // GetFileInfo gets information about a file
-func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, error) {
-	conn, base, err := c.session()
+func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (_ *FileInfo, retErr error) {
+	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return nil, err
 	}
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 
 	// SIZE is defined for plain files only: a directory answers "550 not a plain file". Try it first (cheap, files), and on
@@ -317,6 +363,18 @@ func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, er
 		}, nil
 	}
 	name := pathpkg.Base(fullPath)
+	// SIZE was cut by the context or by the idle bound: the session is dead, a LIST would only fail the same way. The connection deadline
+	// can fire a moment before ctx.Err() turns non-nil, so the ctx deadline itself is compared with the clock too.
+	cerr := ctx.Err()
+	if d, ok := ctx.Deadline(); cerr == nil && ok && !time.Now().Before(d) {
+		cerr = context.DeadlineExceeded
+	}
+	var nerr net.Error
+	if cerr != nil {
+		return nil, fmt.Errorf("failed to get FTP file info %s: %w (%w)", fullPath, sizeErr, cerr)
+	} else if errors.As(sizeErr, &nerr) && nerr.Timeout() {
+		return nil, fmt.Errorf("failed to get FTP file info %s: %w", fullPath, sizeErr)
+	}
 	if fullPath == "/" || name == "." || name == "/" {
 		return &FileInfo{Name: name, IsDir: true, Mode: 0755, Path: path, ModTime: time.Time{}}, nil
 	}
@@ -364,11 +422,12 @@ func (c *FTPClient) fileModTime(conn *ftp.ServerConn, fullPath string) time.Time
 }
 
 // ListDirectory lists files in a directory
-func (c *FTPClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo, error) {
-	conn, base, err := c.session()
+func (c *FTPClient) ListDirectory(ctx context.Context, path string) (_ []*FileInfo, retErr error) {
+	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return nil, err
 	}
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 
 	entries, err := conn.List(fullPath)
@@ -405,11 +464,12 @@ func (c *FTPClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo
 }
 
 // FileExists checks if a file exists
-func (c *FTPClient) FileExists(ctx context.Context, path string) (bool, error) {
-	conn, base, err := c.session()
+func (c *FTPClient) FileExists(ctx context.Context, path string) (_ bool, retErr error) {
+	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return false, err
 	}
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 
 	// Try to get file size - if it succeeds, file exists
@@ -433,11 +493,12 @@ func (c *FTPClient) FileExists(ctx context.Context, path string) (bool, error) {
 }
 
 // CreateDirectory creates a directory
-func (c *FTPClient) CreateDirectory(ctx context.Context, path string) error {
-	conn, base, err := c.session()
+func (c *FTPClient) CreateDirectory(ctx context.Context, path string) (retErr error) {
+	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return err
 	}
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 	err = conn.MakeDir(fullPath)
 	if err != nil {
@@ -447,11 +508,12 @@ func (c *FTPClient) CreateDirectory(ctx context.Context, path string) error {
 }
 
 // DeleteDirectory deletes a directory
-func (c *FTPClient) DeleteDirectory(ctx context.Context, path string) error {
-	conn, base, err := c.session()
+func (c *FTPClient) DeleteDirectory(ctx context.Context, path string) (retErr error) {
+	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return err
 	}
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 	err = conn.RemoveDir(fullPath)
 	if err != nil {
@@ -461,11 +523,12 @@ func (c *FTPClient) DeleteDirectory(ctx context.Context, path string) error {
 }
 
 // DeleteFile deletes a file
-func (c *FTPClient) DeleteFile(ctx context.Context, path string) error {
-	conn, base, err := c.session()
+func (c *FTPClient) DeleteFile(ctx context.Context, path string) (retErr error) {
+	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return err
 	}
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 	err = conn.Delete(fullPath)
 	if err != nil {
@@ -750,6 +813,11 @@ var freeSpaceFn = freeSpace
 //     read as "never created" although the file exists) is only possible for a 550 that names a missing file and no refusal, which a
 //     server would not send for a file it holds.
 func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error {
+	unlock, err := c.lockOps(ctx)
+	if err != nil {
+		return err
+	}
+	defer unlock()
 	conn, base, err := c.session()
 	if err != nil {
 		return err
@@ -758,14 +826,14 @@ func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 	dstFullPath := c.resolvePath(base, dstPath)
 
 	tr := &connTracker{}
-	wconn, _, derr := c.dial(ctx, ftp.DialWithDialFunc(tr.dialFunc(ctx)))
+	wconn, _, derr := c.dialWith(ctx, tr.dialFunc(ctx))
 	if derr != nil {
 		if cerr := ctx.Err(); cerr != nil {
 			return cerr // cancelled: not a reason to fall back
 		}
 		return c.copyViaTempFile(ctx, conn, srcFullPath, dstFullPath, derr)
 	}
-	defer func() { _ = wconn.Quit() }()
+	defer func() { c.ctl.Delete(wconn); _ = wconn.Quit() }()
 
 	resp, err := conn.Retr(srcFullPath)
 	if err != nil {

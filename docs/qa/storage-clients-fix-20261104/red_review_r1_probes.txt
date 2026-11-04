@@ -1,0 +1,11 @@
+--- FAIL: TestRV_ReconnectAfterCutBounded (25.02s)
+    ftp_review_r1_unit_test.go:138: HANG: op with a 500ms ctx did not return in 25s (reconnect after cut blocks on banner with no deadline, holding the op turn)
+FAIL
+FAIL	catalogizer/filesystem	25.024s
+--- FAIL: TestRV_LongUploadExceedsOpCap (1.12s)
+    ftp_review_r1_unit_test.go:186: long upload err=failed to store FTP file /up.bin: write tcp 127.0.0.1:38800->127.0.0.1:52219: i/o timeout
+    ftp_review_r1_unit_test.go:188: a progressing upload longer than ftpOpTimeout failed: failed to store FTP file /up.bin: write tcp 127.0.0.1:38800->127.0.0.1:52219: i/o timeout
+FAIL
+ok  	catalogizer/filesystem	0.509s
+ok  	catalogizer/filesystem	0.309s
+ok  	catalogizer/filesystem	0.221s

@@ -1,0 +1,12 @@
+--- FAIL: TestR2_CopyFileSecondDialHonoursCtx (21.02s)
+    ftp_review_r2_unit_test.go:91: HANG: CopyFile with a 700ms ctx did not return in 20s; concurrent GetFileInfo err=context deadline exceeded
+FAIL
+FAIL	catalogizer/filesystem	21.027s
+--- FAIL: TestR2_StickyCancelledFlag (0.00s)
+    ftp_review_r2_unit_test.go:106: after disarm an unarmed dial still gets deadline 1970-01-01 01:00:01 +0100 CET (cancelled flag sticky)
+FAIL
+FAIL	catalogizer/filesystem	0.006s
+--- FAIL: TestFTPCutOperationReturnsWithoutWaitingForRedial (10.51s)
+    ftp_review_r2_unit_test.go:166: cut operation returned after 10.509303622s, expected about its 500ms context
+FAIL
+FAIL	catalogizer/filesystem	10.517s
