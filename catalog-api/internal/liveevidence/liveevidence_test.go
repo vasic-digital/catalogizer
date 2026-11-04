@@ -58,6 +58,22 @@ if len(sys.argv) > 2 and sys.argv[2] == "fork":
 srv.serve_forever()
 `
 
+// cleanEnv is the test process environment without the closed set of code-injecting keys (the harness itself may export e.g. LD_PRELOAD), so a spawned
+// REAL server is honestly recorded as free of environment injection.
+func cleanEnv() []string {
+	drop := map[string]bool{}
+	for _, k := range defaultInterpTable.EnvKeys {
+		drop[k] = true
+	}
+	var out []string
+	for _, kv := range os.Environ() {
+		if k, _, _ := strings.Cut(kv, "="); !drop[k] {
+			out = append(out, kv)
+		}
+	}
+	return out
+}
+
 // startRealServer starts a REAL separate process (python3 running a script file) on loopback.
 func startRealServer(t *testing.T) (port int, exe string, cmd *exec.Cmd) {
 	port, exe, _, cmd = startScriptServer(t, "")
@@ -73,12 +89,14 @@ func startScriptServer(t *testing.T, extra string) (port int, exe, script string
 	}
 	exe, _ = filepath.EvalSymlinks(py)
 	port = freePort(t)
-	cmd = exec.Command(py, "server.py", fmt.Sprint(port))
+	dir := t.TempDir()
+	script = filepath.Join(dir, "server.py")
+	cmd = exec.Command(py, script, fmt.Sprint(port))
 	if extra != "" {
 		cmd.Args = append(cmd.Args, extra)
 	}
-	cmd.Dir = t.TempDir()
-	script = filepath.Join(cmd.Dir, "server.py")
+	cmd.Dir = dir
+	cmd.Env = cleanEnv()
 	if err := os.WriteFile(script, []byte(serverPy), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -351,6 +369,7 @@ func TestWildcardBindCoversConcreteHosts(t *testing.T) {
 		t.Fatal(err)
 	}
 	cmd := exec.Command(py, sc, fmt.Sprint(port))
+	cmd.Env = cleanEnv()
 	if err := cmd.Start(); err != nil {
 		t.Fatal(err)
 	}

@@ -128,6 +128,17 @@ expect bad_runs_n_float 2 INVALID runs_not_identical_or_missing
 expect bad_runs_sig_number 2 INVALID runs_not_identical_or_missing
 expect bad_runs_sig_blank 2 INVALID runs_not_identical_or_missing
 expect bad_script_not_in_cmdline 1 UNIT script_not_in_cmdline
+expect bad_env_injected 1 UNIT interpreter_env_injection
+expect bad_env_unrecorded 1 UNIT env_unrecorded
+expect bad_relative_script 1 UNIT script_not_in_cmdline
+expect bad_fp_0x 2 INVALID fingerprint_malformed
+expect bad_fp_sha_dash 2 INVALID fingerprint_malformed
+expect bad_fp_zero_width 2 INVALID fingerprint_malformed
+expect bad_endpoint_host_number 1 UNIT endpoint_identity_missing
+expect bad_sh_c 1 UNIT interpreter_code_loading_option
+expect bad_fold_sh 1 UNIT interpreter_code_loading_option
+expect bad_shell_plus_opt 1 UNIT interpreter_option_unknown
+expect bad_python_W_dot 1 UNIT interpreter_option_unknown
 for f in bad_node_eval_eq bad_node_env_file bad_node_env_file_space bad_node_e bad_java_patch_module bad_php_c_ini bad_python_c bad_python_m bad_option_after_benign; do expect $f 1 UNIT interpreter_code_loading_option; done
 expect bad_unknown_option 1 UNIT interpreter_option_unknown
 expect bad_bun_preload 1 UNIT interpreter_family_unsupported
@@ -145,7 +156,7 @@ rm -f "${t:?}"
 # synthetic option table: entry shapes the shipped table does not exercise (next-valued long option with a value regex) must be refused by the CODE
 t=$(mktemp); r=$(mktemp)
 jq '.families.node.benign += [{"opt":"--nx","val":"next","re":"^[a-z]+$","ex":"abc"}]' "$ROOT/docs/qa/live-evidence.interpreter-options.json" > "$t"
-for c in "node --nx=abc server.js:0:LIVE" "node --nx=ABC server.js:1:UNIT" "node --nx abc server.js:0:LIVE" "node --nx ABC server.js:1:UNIT" "node --nx -abc server.js:1:UNIT" "node --nx:1:UNIT"; do
+for c in "node --nx=abc /srv/app/server.js:0:LIVE" "node --nx=ABC /srv/app/server.js:1:UNIT" "node --nx abc /srv/app/server.js:0:LIVE" "node --nx ABC /srv/app/server.js:1:UNIT" "node --nx -abc /srv/app/server.js:1:UNIT" "node --nx:1:UNIT"; do
   cmd=${c%%:*}; rest=${c#*:}; want=${rest%%:*}; wc=${rest#*:}
   jq --arg c "$cmd" '.answering.cmdline = $c' "$FX/golden_node_plain.json" > "$r"
   o=$(LIVE_EVIDENCE_INTERP_OPTIONS=$t "$VERIFIER" "$r" 2>&1); rc=$?

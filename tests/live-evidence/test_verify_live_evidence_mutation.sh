@@ -13,7 +13,7 @@ sed '/^def identity_reasons:/,/# END-IDENTITY/c\def identity_reasons: [];' "$src
 # mutant 2: double register ignored
 sed 's/^reg=\$(grep.*$/reg=""/' "$src" > "$M/scripts/test-infra/mut2.sh"
 # mutants 3..: every identity/invalid reason removed one at a time (marker comments "# R:<name>" in the jq program)
-RS="optunknown unsupported scriptcmd fp_type exe_abs cmdline_type script_path_type runs_n_int runs_sig_type codeload hash_malformed fp_malformed expected_unknown exe_path kind_mismatch fp_missing endpoint_missing runs_below_3 resolve_error answering_missing double cmdline_missing expected_missing identity_mismatch script_missing script_unbound fp_mismatch schema timestamp class verdict skip_reason port runs_missing runs_ident"
+RS="envunrec envinj optunknown unsupported scriptcmd fp_type exe_abs cmdline_type script_path_type runs_n_int runs_sig_type codeload hash_malformed fp_malformed expected_unknown exe_path kind_mismatch fp_missing endpoint_missing runs_below_3 resolve_error answering_missing double cmdline_missing expected_missing identity_mismatch script_missing script_unbound fp_mismatch schema timestamp class verdict skip_reason port runs_missing runs_ident"
 for r in $RS; do
   sed "/# R:$r\$/c\\      empty," "$src" > "$M/scripts/test-infra/r_$r.sh"
   cmp -s "$M/scripts/test-infra/r_$r.sh" "$src" && { echo "FAIL: reason mutant $r identical (marker lost)"; exit 1; }

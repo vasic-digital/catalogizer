@@ -46,7 +46,7 @@ def norm($s): if ($s | type) == "string" then ($s | ascii_downcase | ltrimstr("s
 def hexok($s): (($s | type) == "string") and (norm($s) | test("\\A[0-9a-f]{64}\\z"));
 def is_sha($s): hexok($s);
 # a value that LOOKS like a hash (sha256: prefix in any case, or a long run of hex incl. fullwidth digits) but does not normalise to 64 lowercase hex
-def hashlike($s): (($s | type) == "string") and (($s | ascii_downcase | startswith("sha256:")) or ($s | test("\\A[0-9a-fA-F\\x{ff10}-\\x{ff19}\\x{ff21}-\\x{ff26}\\x{ff41}-\\x{ff46}]{32,}\\z")));
+def hashlike($s): (($s | type) == "string") and (($s | ascii_downcase | test("\\A(sha-?256[:=]|0x[0-9a-f])")) or ($s | test("\\A[0-9a-fA-F\\x{ff10}-\\x{ff19}\\x{ff21}-\\x{ff26}\\x{ff41}-\\x{ff46}]{32,}\\z")));
 def is_double($a):
   ([rules("sha256")[] | norm(.)] as $hashes
    | [rules("name")[] | glob2re] as $names
@@ -92,7 +92,7 @@ def iparse($f; $t):   # tokens AFTER argv0 -> {st: ok|codeload|unknown, script}
     if $i >= ($t | length) then {st: "ok", script: null}
     else $t[$i] as $x
       | if ($x | ctl) then {st: "unknown", script: null}
-        elif ($x | startswith("-") | not) then {st: "ok", script: (if (($f | has("positional_script")) and $f.positional_script == false) then null else $x end)}
+        elif (($x | startswith("-") or startswith("+")) | not) then {st: "ok", script: (if (($f | has("positional_script")) and $f.positional_script == false) then null else $x end)}
         elif isdanger($f; $x) then {st: "codeload", script: null}
         else step($i) as $r
           | if $r.st == "unknown" then {st: "unknown", script: null}
@@ -101,12 +101,8 @@ def iparse($f; $t):   # tokens AFTER argv0 -> {st: ok|codeload|unknown, script}
         end
     end;
   go(0);
-def scriptmatch($sp; $tok):
-  if ($sp | type) != "string" then false
-  elif ($tok | startswith("/")) then $sp == $tok
-  else ($tok | ltrimstr("./")) as $r
-    | if ($r | contains("..")) then (($sp | split("/") | last) == ($r | split("/") | last)) else ($sp | endswith("/" + $r)) end
-  end;
+def scriptmatch($sp; $tok):   # cooperative-producer binding: ONLY an absolute script token binds, and it must equal script_path exactly (a relative token is never guessed)
+  (($sp | type) == "string") and (($tok | type) == "string") and ($tok | startswith("/")) and ($sp == $tok);
 def iresult($A):   # the parse of THIS answer's command line; {st, script}
   (($A.exe_path // "") | split("/") | (last // "")) as $b
   | (ifam($b)) as $f
@@ -129,7 +125,7 @@ def identity_reasons:  # IDENTITY-CHECK
      or (($k == "process" or $k == "socket") and (($a.pid | type) != "number" or $a.pid < 1 or $a.pid != ($a.pid | floor) or ($a.exe_path | present | not) or ($a.exe_sha256 | present | not)))
      or ($k == "container" and ($a.image_digest | present | not))) as $amiss
   | [ (if ($r.artifact.fingerprint | present) then empty else "artifact_fingerprint_missing" end),  # R:fp_missing
-      (if (($r.endpoint.host | present) and ($r.endpoint.port != null)) then empty else "endpoint_identity_missing" end),  # R:endpoint_missing
+      (if ((($r.endpoint.host | type) == "string") and ($r.endpoint.host | present) and ($r.endpoint.port != null)) then empty else "endpoint_identity_missing" end),  # R:endpoint_missing
       (if $r.verdict == "PASS" and (($r.runs.n | type) != "number" or $r.runs.n < 3) then "runs_below_3" else empty end),  # R:runs_below_3
       (if ($r.resolve_error | present) then "listener_unresolved_or_ambiguous" else empty end),  # R:resolve_error
       (if $amiss then "answering_identity_missing" else empty end),  # R:answering_missing
@@ -143,6 +139,8 @@ def identity_reasons:  # IDENTITY-CHECK
       (if ($amiss | not) and $ip and iresult($A).st == "unknown" then "interpreter_option_unknown" else empty end),  # R:optunknown
       (if ($amiss | not) and $ip and iresult($A).st == "unsupported" then "interpreter_family_unsupported" else empty end),  # R:unsupported
       (if ($amiss | not) and $ip and iresult($A).st == "ok" and ($A.script_path | present) and ((iresult($A).script == null) or (scriptmatch($A.script_path; iresult($A).script) | not)) then "script_not_in_cmdline" else empty end),  # R:scriptcmd
+      (if ($amiss | not) and $ip and ($A.env_checked != true) then "env_unrecorded" else empty end),  # R:envunrec
+      (if ($amiss | not) and $ip and ($A.env_checked == true) and ((($A.env_injected // []) | type) != "array" or (($A.env_injected // []) | length) > 0) then "interpreter_env_injection" else empty end),  # R:envinj
       (if ($amiss | not) and $ip and ($E.script_sha256 | present | not) then "interpreter_script_unbound" else empty end),  # R:script_unbound
       (if ($amiss | not) and is_sha($r.artifact.fingerprint) and ((($A[$bk] | present) | not) or (norm($r.artifact.fingerprint) != norm($A[$bk]))) then "fingerprint_mismatch" else empty end),  # R:fp_mismatch
       empty ];  # END-IDENTITY
@@ -157,7 +155,7 @@ def invalid_reasons:
       (if $r.verdict == "SKIP" and (skip_set | index($r.skip_reason) | not) then "skip_reason_not_in_closed_set" else empty end),  # R:skip_reason
       (if ([($r.answering // {}) | (.exe_sha256, .image_digest, .script_sha256)] + [($r.expected // {}) | (.exe_sha256?, .image_digest?, .script_sha256?)] | map(select(. != null and (hexok(.) | not))) | length) > 0 then "hash_malformed" else empty end),  # R:hash_malformed
       (if ($r.artifact.fingerprint != null) and (hashlike($r.artifact.fingerprint) and (hexok($r.artifact.fingerprint) | not)) then "fingerprint_malformed" else empty end),  # R:fp_malformed
-      (if ($r.artifact.fingerprint != null) and ((($r.artifact.fingerprint | type) != "string") or ($r.artifact.fingerprint | test("\\A\\s*\\z") or ctl)) then "fingerprint_malformed" else empty end),  # R:fp_type
+      (if ($r.artifact.fingerprint != null) and ((($r.artifact.fingerprint | type) != "string") or ($r.artifact.fingerprint | test("\\A\\s*\\z") or ctl or test("[^\\x{20}-\\x{7e}]"))) then "fingerprint_malformed" else empty end),  # R:fp_type
       (if ($r.expected != null) and ((($r.expected | type) != "object") or ([$r.expected | keys[] | select(. as $k | idkeys | index($k) | not)] | length) > 0) then "expected_unknown_key" else empty end),  # R:expected_unknown
       (if (($r.answering // {}).exe_path != null) and ((($r.answering.exe_path | type) != "string") or ($r.answering.exe_path | endswith("/"))) then "exe_path_malformed" else empty end),  # R:exe_path
       (if (($r.answering // {}).exe_path != null) and (($r.answering.exe_path | type) == "string") and (($r.answering.exe_path | startswith("/") | not) or ($r.answering.exe_path | ctl)) then "exe_path_malformed" else empty end),  # R:exe_abs
@@ -174,7 +172,7 @@ read -r -d '' MAIN <<'JQ'
 . as $r
 | if ($r | type) != "object" then {class:"INVALID", reasons:["not_an_object"]}
   else ($r | invalid_reasons) as $inv
-  | if ($inv | length) > 0 then {class:"INVALID", reasons:$inv}
+  | if ($inv | length) > 0 then {class:"INVALID", reasons:($inv | reduce .[] as $x ([]; if index($x) then . else . + [$x] end))}
   elif $r.verdict == "SKIP" then {class:"SKIP", reasons:[$r.skip_reason]}
   elif $r.class == "UNIT" then {class:"UNIT", reasons:["declared_unit"]}
   else ($r | identity_reasons) as $ir | if ($ir | length) == 0 then {class:"LIVE", reasons:[]} else {class:"UNIT", reasons:$ir} end

@@ -52,6 +52,9 @@ type Answering struct {
 	// RuntimeHint: a language-runtime library mapped into the process (libpython, libjvm ...): marks an interpreter even when the binary was renamed.
 	// Statically linked runtimes (node, deno, bun) expose none: a renamed copy of those is not detected (documented limit).
 	RuntimeHint string `json:"runtime_hint,omitempty"`
+	// EnvChecked: /proc/<pid>/environ was read for the closed key set InterpTable.EnvKeys; EnvInjected lists the keys that were non-empty (NODE_OPTIONS ...).
+	EnvChecked  bool     `json:"env_checked,omitempty"`
+	EnvInjected []string `json:"env_injected,omitempty"`
 }
 type Expected struct {
 	ExeSHA256    string `json:"exe_sha256,omitempty"`
@@ -305,6 +308,7 @@ type famTable struct {
 // InterpTable is the parsed option table.
 type InterpTable struct {
 	UnsupportedExe string              `json:"unsupported_exe"`
+	EnvKeys        []string            `json:"env_keys"`
 	Families       map[string]famTable `json:"families"`
 }
 
@@ -405,7 +409,7 @@ func ParseInterpArgs(t *InterpTable, exe string, args []string) (st, script stri
 		if ctlRE.MatchString(x) {
 			return "unknown", ""
 		}
-		if !strings.HasPrefix(x, "-") {
+		if !strings.HasPrefix(x, "-") && !strings.HasPrefix(x, "+") {
 			if fam.PositionalScript != nil && !*fam.PositionalScript {
 				return "ok", ""
 			}
@@ -484,15 +488,34 @@ func scriptOf(pid int, exe string, args []string) (string, string) {
 		return "", ""
 	}
 	if !filepath.IsAbs(cand) {
-		if cwd, err := os.Readlink(fmt.Sprintf("/proc/%d/cwd", pid)); err == nil {
-			cand = filepath.Join(cwd, cand)
-		}
+		return "", "" // cooperative-producer binding: only an ABSOLUTE script token binds; a relative one is never resolved against a guessed cwd
 	}
 	sum, err := FileSHA256(cand)
 	if err != nil {
 		return "", ""
 	}
 	return cand, sum
+}
+
+// EnvOf reads the closed key set t.EnvKeys from environ (the content of /proc/<pid>/environ). checked is false when environ is nil (unreadable): never guessed clean.
+func EnvOf(t *InterpTable, environ []byte, readErr error) (checked bool, injected []string) {
+	if readErr != nil {
+		return false, nil
+	}
+	keys := map[string]bool{}
+	for _, k := range t.EnvKeys {
+		keys[k] = true
+	}
+	seen := map[string]bool{}
+	for _, kv := range strings.Split(string(environ), "\x00") {
+		i := strings.Index(kv, "=")
+		if i > 0 && keys[kv[:i]] && kv[i+1:] != "" && !seen[kv[:i]] {
+			seen[kv[:i]] = true
+			injected = append(injected, kv[:i])
+		}
+	}
+	sort.Strings(injected)
+	return true, injected
 }
 
 // runtimeHint names a language-runtime library mapped into the process (python, jvm, ...), which marks an interpreter even when the binary was renamed.
@@ -558,5 +581,7 @@ func ResolveListenerAddr(host string, port int) (*Answering, error) {
 	cl, _ := os.ReadFile(fmt.Sprintf("/proc/%d/cmdline", pid))
 	args := strings.FieldsFunc(string(cl), func(r rune) bool { return r == 0 })
 	sp, ss := scriptOf(pid, exe, args)
-	return &Answering{Kind: "process", PID: pid, ExePath: exe, ExeSHA256: sum, Cmdline: strings.Join(args, " "), ScriptPath: sp, ScriptSHA256: ss, RuntimeHint: runtimeHint(pid)}, nil
+	env, envErr := os.ReadFile(fmt.Sprintf("/proc/%d/environ", pid))
+	ec, ei := EnvOf(defaultInterpTable, env, envErr)
+	return &Answering{EnvChecked: ec, EnvInjected: ei, Kind: "process", PID: pid, ExePath: exe, ExeSHA256: sum, Cmdline: strings.Join(args, " "), ScriptPath: sp, ScriptSHA256: ss, RuntimeHint: runtimeHint(pid)}, nil
 }

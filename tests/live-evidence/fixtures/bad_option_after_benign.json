@@ -19,9 +19,10 @@
     "pid": 4242,
     "exe_path": "/usr/bin/node",
     "exe_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
-    "cmdline": "node --no-warnings --max-old-space-size=4096 --require=./c.js server.js",
+    "cmdline": "node --no-warnings --max-old-space-size=4096 --require=./c.js /srv/app/server.js",
     "script_path": "/srv/app/server.js",
-    "script_sha256": "21a0270b7f66a1e4c25933f13a1e5a1bbb4757578072930c8189131f9c6aaae1"
+    "script_sha256": "21a0270b7f66a1e4c25933f13a1e5a1bbb4757578072930c8189131f9c6aaae1",
+    "env_checked": true
   },
   "expected": {
     "exe_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",

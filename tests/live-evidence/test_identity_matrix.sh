@@ -6,6 +6,8 @@
 set -u
 V=${1:?usage: test_identity_matrix.sh <verifier> <register>}; export LIVE_EVIDENCE_DOUBLES=${2:?usage: test_identity_matrix.sh <verifier> <register>}
 command -v jq >/dev/null || { echo "matrix: jq missing" >&2; exit 2; }
+# PRECONDITION (control needle): the register under test must be a readable file carrying at least one rule, otherwise every "must not be LIVE" cell would be vacuous
+[ -r "$LIVE_EVIDENCE_DOUBLES" ] && [ "$(grep -v '^[[:space:]]*#' "$LIVE_EVIDENCE_DOUBLES" | grep -Ec '^(sha256|name|cmd|image):[^[:space:]]')" -ge 1 ] || { echo "matrix: register unreadable or without rules: $LIVE_EVIDENCE_DOUBLES (BLIND, REFUSED)" >&2; exit 2; }
 W=$(mktemp -d "${TMPDIR:-/tmp}/lev-mx.XXXXXX"); trap 'rm -rf "${W:?}"' EXIT
 EX=1111111111111111111111111111111111111111111111111111111111111111   # exe
 SC=2222222222222222222222222222222222222222222222222222222222222222   # script
@@ -18,8 +20,8 @@ cell() {  # cell <kind> <variant> -> record on stdout, or nothing when the combi
     container:native) ans='{"kind":"container","image_digest":"sha256:'$IM'","image":"reg.example/app:1","container_id":"c1"}'; exp='{"image_digest":"sha256:'$IM'"}'; bound=$IM;;
     container:*) return 1;;
     *:native) ans='{"kind":"'$k'","pid":7,"exe_path":"/opt/app/app","exe_sha256":"'$EX'","cmdline":"/opt/app/app --port 8080"}'; exp='{"exe_sha256":"'$EX'"}'; bound=$EX;;
-    *:interpreter) ans='{"kind":"'$k'","pid":7,"exe_path":"/usr/bin/python3.12","exe_sha256":"'$EX'","cmdline":"python3 /srv/app/s.py","script_path":"/srv/app/s.py","script_sha256":"'$SC'"}'; exp='{"exe_sha256":"'$EX'","script_sha256":"'$SC'"}'; bound=$SC;;
-    *:renamed) ans='{"kind":"'$k'","pid":7,"exe_path":"/opt/app/server","exe_sha256":"'$EX'","cmdline":"/opt/app/server s.py","runtime_hint":"libpython3.12","script_path":"/srv/app/s.py","script_sha256":"'$SC'"}'; exp='{"exe_sha256":"'$EX'","script_sha256":"'$SC'"}'; bound=$SC;;
+    *:interpreter) ans='{"kind":"'$k'","pid":7,"exe_path":"/usr/bin/python3.12","exe_sha256":"'$EX'","cmdline":"python3 /srv/app/s.py","env_checked":true,"script_path":"/srv/app/s.py","script_sha256":"'$SC'"}'; exp='{"exe_sha256":"'$EX'","script_sha256":"'$SC'"}'; bound=$SC;;
+    *:renamed) ans='{"kind":"'$k'","pid":7,"exe_path":"/opt/app/server","exe_sha256":"'$EX'","cmdline":"/opt/app/server /srv/app/s.py","runtime_hint":"libpython3.12","env_checked":true,"script_path":"/srv/app/s.py","script_sha256":"'$SC'"}'; exp='{"exe_sha256":"'$EX'","script_sha256":"'$SC'"}'; bound=$SC;;
   esac
   jq -n --argjson a "$ans" --argjson e "$exp" --arg fp "sha256:$bound" '{schema:"catalogizer.live-evidence/1",test_id:"matrix",class:"LIVE",verdict:"PASS",timestamp:"2026-11-03T20:00:00Z",command:"x",
     artifact:{fingerprint:$fp,source:"target"},endpoint:{host:"127.0.0.1",port:8080,resolved_ip:"127.0.0.1"},answering:$a,expected:$e,

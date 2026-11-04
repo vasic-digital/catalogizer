@@ -564,3 +564,9 @@ ephemeral loopback port with a throwaway `ADMIN_PASSWORD`/`JWT_SECRET`, check `G
 `POST /api/v1/conversion/jobs` (source and target under the container's `/app/data`). Remove only the
 container and image you created. Tests that register a user and log in straight away must run the server
 with `REGISTRATION_MODE=open` (see `docs/UPGRADE_NOTES.md`).
+
+## Live-evidence records: what the verifier does and does not defend against (section 11.4.289)
+
+`scripts/test-infra/verify_live_evidence.sh` (doc: `docs/scripts/verify_live_evidence.md`) reclassifies a record that claims LIVE to UNIT when the answering process is a registered double, does not match the expected identity, loads code the script hash does not cover (interpreter option allow-list, `docs/qa/live-evidence.interpreter-options.json`), carries injecting environment (`interpreter_env_injection`, closed key set `env_keys`; an interpreter record without `env_checked: true` is `env_unrecorded`), or names its script by a relative path (only an absolute script token that equals `script_path` binds).
+
+**Threat model: COOPERATIVE PRODUCER** (operator decision, constitution 11.4.289(J)). The verifier defends against accidental or careless stubs and mislabelled runs, not against a double that actively forges its own process state. Stated limits: (F3) a process can rewrite its own `/proc/<pid>/cmdline` (ctypes, `process.title`, `setproctitle`); (F4) a container is identified by its image digest only, so command / entrypoint / mount / environment overrides are not captured; (F5) a generic launcher script binds the launcher's hash, not what it finally runs; the script file is hashed when the record is written, not when it is loaded; environment variables outside the closed key set are not visible. A harness that itself exports one of the injecting keys (for example `LD_PRELOAD`) must spawn the server under test with that key removed.

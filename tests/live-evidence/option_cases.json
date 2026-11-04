@@ -5839,6 +5839,74 @@
   "script": null
  },
  {
+  "member": "review:shell-plus-x",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "+x",
+   "/srv/app/real.sh"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "review:shell-plus-O",
+  "exe": "/usr/bin/bash",
+  "args": [
+   "bash",
+   "+O",
+   "extglob",
+   "/srv/app/real.sh"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "review:python-W-dot-module",
+  "exe": "/usr/bin/python3",
+  "args": [
+   "python3",
+   "-W",
+   "ignore::DeprecationWarning:x.y",
+   "/srv/app/real.py"
+  ],
+  "want": "unknown",
+  "script": null
+ },
+ {
+  "member": "review:sh-c",
+  "exe": "/bin/sh",
+  "args": [
+   "sh",
+   "-c",
+   "x"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:fold-long-s-sh",
+  "exe": "/usr/bin/ſh",
+  "args": [
+   "ſh",
+   "-c",
+   "x"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
+  "member": "review:fold-long-s-node-option",
+  "exe": "/usr/bin/node",
+  "args": [
+   "node",
+   "--eval=x",
+   "/srv/app/real.js"
+  ],
+  "want": "codeload",
+  "script": null
+ },
+ {
   "member": "review:control-plain-node",
   "exe": "/usr/bin/node",
   "args": [

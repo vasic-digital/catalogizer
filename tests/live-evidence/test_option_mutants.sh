@@ -65,11 +65,20 @@ next-value-dash-allowed	(($t[$i + 1] | startswith("-")) | not) and	true and
 relative-script-dotdot-basename-dropped	if ($r | contains("..")) then	if false then
 dot-slash-not-stripped	($tok | ltrimstr("./")) as $r	($tok) as $r
 absolute-script-endswith	elif ($tok | startswith("/")) then $sp == $tok	elif ($tok | startswith("/")) then ($sp | endswith($tok))
+scriptmatch-relative-accepted	($tok | startswith("/")) and ($sp == $tok);	($sp | endswith("/" + ($tok | ltrimstr("./"))));
+env-unrec-dropped	and ($A.env_checked != true) then "env_unrecorded"	and false then "env_unrecorded"
+env-injected-dropped	and ($A.env_checked == true) and ((($A.env_injected	and false and ((($A.env_injected
+plus-token-positional	elif (($x | startswith("-") or startswith("+")) | not)	elif (($x | startswith("-")) | not)
+fp-0x-dropped	|0x[0-9a-f])")	)")
+fp-dash-dropped	sha-?256[:=]	sha256[:=]
+fp-nonascii-dropped	 or test("[^\\x{20}-\\x{7e}]")	
+host-type-dropped	((($r.endpoint.host | type) == "string") and 	(
+interp-sh-dropped	|bash|sh|dash|	|bash|dash|
 MUT
 ;; esac
 case " $STAGES " in *" ncode "*)
-  mkdir -p "$M/node"; cp "$HERE/option_cases.json" "$HERE/test_option_cases_node.mjs" "$M/node/"
-  runn() { ( cd "$M/node" && LIVE_EVIDENCE_INTERP_OPTIONS=$REALTBL node test_option_cases_node.mjs >/dev/null 2>&1 </dev/null ); }
+  mkdir -p "$M/node"; cp "$HERE/option_cases.json" "$HERE/test_option_cases_node.mjs" "$HERE/test_env_node.mjs" "$M/node/"
+  runn() { ( cd "$M/node" && LIVE_EVIDENCE_INTERP_OPTIONS=$REALTBL node test_option_cases_node.mjs >/dev/null 2>&1 </dev/null && node test_env_node.mjs >/dev/null 2>&1 </dev/null ); }
   cp "$HERE/index.mjs" "$M/node/index.mjs"; runn || { echo "FAIL: node control run must pass" >&2; survived=$((survived+1)); }
   while IFS=$'\t' read -r name from to; do
     python3 - "$HERE/index.mjs" "$M/node/index.mjs" "$from" "$to" <<'PY'
@@ -100,11 +109,17 @@ eq-needs-no-value	else if (e.val === 'eq') { if (has && reok(e, v)) i += 1;	else
 next-eq-script-allowed	if (reok(e, v) && !e.script) i += 1;	if (reok(e, v)) i += 1;
 next-value-dash-allowed	!toks[i + 1].startsWith('-') && reok	reok
 renamed-guard-dropped	if (ifam(TABLE, path.basename(exe)) === null) return null;	
+plus-token-positional	if (!x.startsWith('-') && !x.startsWith('+')) return	if (!x.startsWith('-')) return
+fold-flag-dropped	new RegExp(t.families[k].exe, 'iu')	new RegExp(t.families[k].exe, 'i')
+relative-bound	if (!path.isAbsolute(cand)) return null;	if (false) return null;
+env-empty-counts	&& kv.slice(i + 1) !== ''	
+env-key-set-ignored	keys.has(kv.slice(0, i)) &&	
+env-unreadable-clean	catch { return { env_checked: false }; }	catch { return { env_checked: true }; }
 MUT
 ;; esac
 case " $STAGES " in *" gcode "*)
   PK=$ROOT/catalog-api/internal/liveevidence; GM=$ROOT/catalog-api/internal/liveevidence_mut
-  rung() { ( cd "$ROOT/catalog-api" && systemd-run --user --scope -q -p MemoryMax=3G -p MemorySwapMax=0 go test ./internal/liveevidence_mut/ -run 'TestFrozenOptionCases|TestReviewShapesAreNotBound|TestSyntheticTable|TestScriptOfBinding' >/dev/null 2>&1 ); }
+  rung() { ( cd "$ROOT/catalog-api" && systemd-run --user --scope -q -p MemoryMax=3G -p MemorySwapMax=0 go test ./internal/liveevidence_mut/ -run 'TestFrozenOptionCases|TestReviewShapesAreNotBound|TestSyntheticTable|TestScriptOfBinding|TestEnvOfEveryKey|TestRelativeScriptTokenNeverBinds' >/dev/null 2>&1 ); }
   mkdir -p "$GM"; cp "$PK"/*.go "$PK"/interp_options.json "$GM/"; rm -f "$GM/liveevidence_test.go"
   rung || { echo "FAIL: go control run must pass" >&2; survived=$((survived+1)); }
   while IFS=$'\t' read -r name from to; do
@@ -136,6 +151,11 @@ eq-needs-no-value	if !has || !reOK(*e, v) {	if !reOK(*e, v) {
 next-eq-script-allowed	if !reOK(*e, v) || e.Script {	if !reOK(*e, v) {
 next-value-dash-allowed	!strings.HasPrefix(toks[i+1], "-") &&	
 renamed-guard-dropped	if defaultInterpTable.family(filepath.Base(exe)) == nil {	if false {
+plus-token-positional	if !strings.HasPrefix(x, "-") && !strings.HasPrefix(x, "+") {	if !strings.HasPrefix(x, "-") {
+relative-bound	if !filepath.IsAbs(cand) {	if false {
+env-empty-counts	kv[i+1:] != "" && !seen[kv[:i]]	!seen[kv[:i]]
+env-key-set-ignored	i > 0 && keys[kv[:i]] &&	i > 0 &&
+env-unreadable-clean	if readErr != nil {\n\t\treturn false, nil	if false {\n\t\treturn false, nil
 MUT
   rm -rf "${GM:?}"
 ;; esac

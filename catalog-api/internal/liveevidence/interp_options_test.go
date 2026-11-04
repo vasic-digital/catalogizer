@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -242,5 +244,52 @@ func TestScriptOfBinding(t *testing.T) {
 		if p, h := scriptOf(0, c.exe, c.args); p != "" || h != "" {
 			t.Errorf("%v must stay unbound, got %q %q", c.args, p, h)
 		}
+	}
+}
+
+func TestEnvOfEveryKey(t *testing.T) {
+	want := []string{"NODE_OPTIONS", "JDK_JAVA_OPTIONS", "JAVA_TOOL_OPTIONS", "RUBYOPT", "PERL5OPT", "PERL5LIB", "PYTHONPATH", "PYTHONSTARTUP", "LUA_INIT", "BASH_ENV", "ENV", "PHPRC", "PHP_INI_SCAN_DIR", "LD_PRELOAD", "LD_AUDIT"}
+	got := append([]string(nil), defaultInterpTable.EnvKeys...)
+	sort.Strings(got)
+	w := append([]string(nil), want...)
+	sort.Strings(w)
+	if strings.Join(got, ",") != strings.Join(w, ",") {
+		t.Fatalf("env key set %v != mandated %v", got, w)
+	}
+	for _, k := range want {
+		if ok, inj := EnvOf(defaultInterpTable, []byte("A=b\x00"+k+"=x\x00"), nil); !ok || len(inj) != 1 || inj[0] != k {
+			t.Errorf("%s not detected: %v %v", k, ok, inj)
+		}
+		if ok, inj := EnvOf(defaultInterpTable, []byte(k+"=\x00"), nil); !ok || len(inj) != 0 {
+			t.Errorf("empty %s must not count: %v %v", k, ok, inj)
+		}
+		if ok, inj := EnvOf(defaultInterpTable, []byte("X"+k+"=x\x00"+k+"X=x\x00"), nil); !ok || len(inj) != 0 {
+			t.Errorf("lookalike of %s must not count: %v %v", k, ok, inj)
+		}
+	}
+	if ok, _ := EnvOf(defaultInterpTable, nil, os.ErrPermission); ok {
+		t.Error("unreadable environ must be env_checked=false")
+	}
+	if _, inj := EnvOf(defaultInterpTable, []byte("NODE_OPTIONS=a\x00LD_PRELOAD=b\x00NODE_OPTIONS=c\x00"), nil); strings.Join(inj, ",") != "LD_PRELOAD,NODE_OPTIONS" {
+		t.Errorf("dedup+sort: %v", inj)
+	}
+}
+
+func TestRelativeScriptTokenNeverBinds(t *testing.T) {
+	d := t.TempDir()
+	sc := filepath.Join(d, "server.js")
+	if err := os.WriteFile(sc, []byte("x\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if p, h := scriptOf(os.Getpid(), "/usr/bin/node", []string{"node", sc}); p != sc || h == "" {
+		t.Fatalf("control: the absolute form must bind, got %q %q", p, h)
+	}
+	old, _ := os.Getwd()
+	if err := os.Chdir(d); err != nil { // a REAL file at the relative path: only the absolute-only rule keeps it unbound
+		t.Fatal(err)
+	}
+	defer os.Chdir(old) //nolint:errcheck
+	if p, h := scriptOf(os.Getpid(), "/usr/bin/node", []string{"node", "server.js"}); p != "" || h != "" {
+		t.Errorf("relative token bound: %q %q", p, h)
 	}
 }

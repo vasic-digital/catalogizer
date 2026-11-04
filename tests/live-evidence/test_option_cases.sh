@@ -19,7 +19,7 @@ if [ "${COVERAGE:-0}" = 1 ]; then
 fi
 # ONE jq call emits, per case, a record line and an expectation line ("class<TAB>reasons<TAB>member<TAB>args"); FAILFAST=1 stops at the first mismatch (mutant runs)
 EXPECT='def exp($c): if ($c.member | endswith("control-char-token")) then ["INVALID","cmdline_malformed"]
-  elif $c.want == "ok" then (if $c.script == null then ["UNIT","script_not_in_cmdline"] else ["LIVE","none"] end)
+  elif $c.want == "ok" then (if ($c.script == null or ($c.script | startswith("/") | not)) then ["UNIT","script_not_in_cmdline"] else ["LIVE","none"] end)
   elif $c.want == "codeload" then ["UNIT","interpreter_code_loading_option"]
   elif $c.want == "unknown" then ["UNIT","interpreter_option_unknown"]
   else ["UNIT","interpreter_family_unsupported"] end;'
@@ -35,7 +35,7 @@ done < <(jq -r --arg ex "$EX" --arg sc "$SC" "$EXPECT"' [ .[] | select('"$FILTER
   | (if $c.script == null then "/srv/app/real" elif ($c.script | startswith("/")) then $c.script else "/srv/app/" + $c.script end) as $sp
   | ({schema:"catalogizer.live-evidence/1",test_id:"oc",class:"LIVE",verdict:"PASS",timestamp:"2026-11-04T10:00:00Z",command:"x",
        artifact:{fingerprint:("sha256:"+$sc),source:"target"},endpoint:{host:"127.0.0.1",port:8080,resolved_ip:"127.0.0.1"},
-       answering:({kind:"process",pid:7,exe_path:$c.exe,exe_sha256:$ex,cmdline:($c.args | join(" ")),script_path:$sp,script_sha256:$sc}
+       answering:({kind:"process",pid:7,exe_path:$c.exe,exe_sha256:$ex,cmdline:($c.args | join(" ")),script_path:$sp,script_sha256:$sc,env_checked:true}
                   + (if ($b | test("^(python[0-9.]*|pypy[0-9.]*|node|nodejs|deno|bun|java|ruby[0-9.]*|perl[0-9.]*|php[0-9.]*|lua[0-9.]*|bash|sh|dash|zsh|ksh|fish)$")) then {} else {runtime_hint:"libpython3.12"} end)),
        expected:{exe_sha256:$ex,script_sha256:$sc},requests:{total:3},responses:{},runs:{n:3,identical:true,signature:"sha256:s"}} | tojson),
     (exp($c) as $e | [$e[0], $e[1], $c.member, ($c.args | tojson)] | join("\t"))' "$CASES")

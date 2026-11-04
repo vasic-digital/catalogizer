@@ -53,7 +53,7 @@ const INTERP = /^(python[0-9.]*|pypy[0-9.]*|node|nodejs|deno|bun|java|ruby[0-9.]
 // ALLOW-LIST option parser shared (as DATA) with the verifier and the Go recorder: docs/qa/live-evidence.interpreter-options.json
 // (LIVE_EVIDENCE_INTERP_OPTIONS overrides the path, used by the mutation test). A "--name=value" token is split on the first "=" BEFORE any lookup.
 // Any option not listed as benign for the exe family is ambiguous => no script is recorded => the verifier reports UNIT. deno/bun have no table (unsupported).
-// Limit: NODE_OPTIONS / RUBYOPT / PYTHONSTARTUP / JAVA_TOOL_OPTIONS / PHP_INI_SCAN_DIR are environment, not command line, and are not seen.
+// Environment injection (NODE_OPTIONS, RUBYOPT, ...) is read from /proc/<pid>/environ for the closed key set TABLE.env_keys (see envOf); threat model: COOPERATIVE PRODUCER.
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export function loadInterpTable(p = process.env.LIVE_EVIDENCE_INTERP_OPTIONS || path.join(HERE, '../../docs/qa/live-evidence.interpreter-options.json')) {
   const t = JSON.parse(fs.readFileSync(p, 'utf8'));
@@ -62,7 +62,7 @@ export function loadInterpTable(p = process.env.LIVE_EVIDENCE_INTERP_OPTIONS || 
 }
 const TABLE = loadInterpTable();
 const CTL = /[\x00-\x1f\x7f]/;
-function ifam(t, base) { for (const k of Object.keys(t.families).sort()) if (new RegExp(t.families[k].exe, 'i').test(base)) return t.families[k]; return null; }
+function ifam(t, base) { for (const k of Object.keys(t.families).sort()) if (new RegExp(t.families[k].exe, 'iu').test(base)) return t.families[k]; return null; }
 function isDanger(f, tok) {
   const n = tok.startsWith('--') && tok.includes('=') ? tok.split('=')[0] : tok;
   return (f.dangerous || []).some((d) => (d.startsWith('prefix:') ? tok.startsWith(d.slice(7)) : d === n));
@@ -71,12 +71,12 @@ function isDanger(f, tok) {
 export function parseInterpArgs(exe, args, t = TABLE) {
   const base = path.basename(exe);
   const f = ifam(t, base);
-  if (f === null && new RegExp(t.unsupported_exe, 'i').test(base)) return { st: 'unsupported', script: null };
+  if (f === null && new RegExp(t.unsupported_exe, 'iu').test(base)) return { st: 'unsupported', script: null };
   const fam = f || {}; const toks = args.slice(1);
   for (let i = 0; i < toks.length;) {
     const x = toks[i];
     if (CTL.test(x)) return { st: 'unknown', script: null };
-    if (!x.startsWith('-')) return { st: 'ok', script: fam.positional_script === false ? null : x };
+    if (!x.startsWith('-') && !x.startsWith('+')) return { st: 'ok', script: fam.positional_script === false ? null : x };
     if (isDanger(fam, x)) return { st: 'codeload', script: null };
     const has = x.startsWith('--') && x.includes('=');
     const n = has ? x.split('=')[0] : x; const v = has ? x.slice(n.length + 1) : null;
@@ -103,11 +103,22 @@ export function scriptOf(pid, exe, args) {
   if (ifam(TABLE, path.basename(exe)) === null) return null; // a renamed / unknown binary: nothing is guessed
   const r = parseInterpArgs(exe, args);
   if (r.st !== 'ok' || r.script === null) return null;
-  let cand = r.script;
-  try {
-    if (!path.isAbsolute(cand)) cand = path.join(fs.readlinkSync(`/proc/${pid}/cwd`), cand);
-    return { script_path: cand, script_sha256: sha256File(cand) };
-  } catch { return null; }
+  const cand = r.script;
+  if (!path.isAbsolute(cand)) return null; // cooperative-producer binding: only an ABSOLUTE script token binds; a relative one is never resolved against a guessed cwd
+  try { return { script_path: cand, script_sha256: sha256File(cand) }; } catch { return null; }
+}
+// Environment that can inject code into an interpreter without appearing on the command line. Closed key set = TABLE.env_keys. Returns
+// { env_checked: true, env_injected?: [keys] } or { env_checked: false } when /proc/<pid>/environ is unreadable (never guessed as clean).
+export function envOf(pid, t = TABLE, read = (p) => fs.readFileSync(`/proc/${p}/environ`)) {
+  let buf;
+  try { buf = read(pid); } catch { return { env_checked: false }; }
+  const keys = new Set(t.env_keys || []);
+  const hit = [];
+  for (const kv of buf.toString('latin1').split('\0')) {
+    const i = kv.indexOf('=');
+    if (i > 0 && keys.has(kv.slice(0, i)) && kv.slice(i + 1) !== '') hit.push(kv.slice(0, i));
+  }
+  return hit.length ? { env_checked: true, env_injected: [...new Set(hit)].sort() } : { env_checked: true };
 }
 // A language-runtime library / module path mapped into the process marks an interpreter even when its binary was renamed (heuristic; static runtimes expose none).
 const RUNTIME_RE = /(libpython[0-9.]*|libjvm|libruby[0-9.]*|libperl|libphp[0-9.]*|liblua[0-9.]*|libnode|libv8|\/lib-dynload\/|\/site-packages\/|\/node_modules\/)/;
@@ -137,7 +148,7 @@ export function findListener(port, host = '') {
   try {
     const exe = fs.realpathSync(`/proc/${pid}/exe`);
     const args = fs.readFileSync(`/proc/${pid}/cmdline`, 'utf8').split('\0').filter(Boolean);
-    return { kind: 'process', pid, exe_path: exe, exe_sha256: sha256File(exe), cmdline: args.join(' '), ...(scriptOf(pid, exe, args) || {}), ...(runtimeHint(pid) ? { runtime_hint: runtimeHint(pid) } : {}) };
+    return { kind: 'process', pid, exe_path: exe, exe_sha256: sha256File(exe), cmdline: args.join(' '), ...(scriptOf(pid, exe, args) || {}), ...envOf(pid), ...(runtimeHint(pid) ? { runtime_hint: runtimeHint(pid) } : {}) };
   } catch { return null; }
 }
 

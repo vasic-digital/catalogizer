@@ -20,7 +20,8 @@
     "exe_path": "/opt/app/server",
     "exe_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb",
     "cmdline": "/opt/catalog-api/catalog-api --port 8080",
-    "runtime_hint": "libpython3.12.so.1.0"
+    "runtime_hint": "libpython3.12.so.1.0",
+    "env_checked": true
   },
   "expected": {
     "exe_sha256": "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb"
