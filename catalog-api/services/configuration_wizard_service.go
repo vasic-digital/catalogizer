@@ -1306,7 +1306,7 @@ func (s *ConfigurationWizardService) getSession(sessionID string) (*models.Wizar
 }
 
 func (s *ConfigurationWizardService) GetAvailableTemplates() []ConfigTemplate {
-	var templates []ConfigTemplate
+	templates := []ConfigTemplate{}
 	for _, template := range s.configTemplates {
 		templates = append(templates, template)
 	}

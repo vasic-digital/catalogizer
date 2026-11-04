@@ -133,7 +133,7 @@ func (s *DuplicateDetectionService) DetectDuplicates(ctx context.Context, req *D
 		zap.Float64("min_similarity", req.MinSimilarity),
 		zap.Int64("user_id", req.UserID))
 
-	var duplicateGroups []DuplicateGroup
+	duplicateGroups := []DuplicateGroup{}
 
 	// Process each media type
 	mediaTypes := req.MediaTypes

@@ -172,7 +172,7 @@ func (r *ErrorReportingRepository) GetErrorReportsByUser(userID int, filters *mo
 	}
 	defer rows.Close()
 
-	var reports []*models.ErrorReport
+	reports := []*models.ErrorReport{}
 	for rows.Next() {
 		var report models.ErrorReport
 		var contextJSON, systemInfoJSON string
@@ -364,7 +364,7 @@ func (r *ErrorReportingRepository) GetErrorsByFingerprint(fingerprint string, li
 	}
 	defer rows.Close()
 
-	var reports []*models.ErrorReport
+	reports := []*models.ErrorReport{}
 	for rows.Next() {
 		var report models.ErrorReport
 		var contextJSON, systemInfoJSON string
@@ -424,7 +424,7 @@ func (r *ErrorReportingRepository) GetTopErrors(userID int, limit int, timeRange
 	}
 	defer rows.Close()
 
-	var topErrors []*models.TopError
+	topErrors := []*models.TopError{}
 	for rows.Next() {
 		var topError models.TopError
 		err := rows.Scan(

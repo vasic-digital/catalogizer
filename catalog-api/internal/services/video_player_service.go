@@ -828,7 +828,7 @@ func (s *VideoPlayerService) GetWatchHistory(ctx context.Context, req *WatchHist
 	}
 	defer rows.Close()
 
-	var history []WatchHistory
+	history := []WatchHistory{}
 	var videoIDs []int64
 
 	for rows.Next() {

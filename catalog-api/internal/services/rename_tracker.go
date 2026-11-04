@@ -435,7 +435,7 @@ func (rt *RenameTracker) GetRenameEvents(ctx context.Context, limit int) ([]Rena
 	}
 	defer rows.Close()
 
-	var events []RenameEvent
+	events := []RenameEvent{}
 	for rows.Next() {
 		var event RenameEvent
 		err := rows.Scan(

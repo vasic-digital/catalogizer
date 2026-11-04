@@ -123,7 +123,10 @@ func (a *ConfigurationServiceAdapter) TestConfiguration(config *models.Configura
 }
 
 func (a *ConfigurationServiceAdapter) GetConfigurationSchema() (*models.ConfigurationSchema, error) {
-	return &models.ConfigurationSchema{}, nil
+	if a.Inner != nil {
+		return a.Inner.GetConfigurationSchema()
+	}
+	return &models.ConfigurationSchema{Sections: []*models.ConfigSection{}}, nil
 }
 
 // ErrorReportingServiceAdapter adapts *services.ErrorReportingService

@@ -413,7 +413,7 @@ func (s *LocalizationService) GetSupportedLanguages(ctx context.Context) (map[st
 	s.logger.Debug("Getting supported languages")
 
 	cacheKey := "localization:supported_languages"
-	var languages map[string]LanguageProfile
+	languages := map[string]LanguageProfile{}
 
 	found, err := s.cacheService.Get(ctx, cacheKey, &languages)
 	if err == nil && found {

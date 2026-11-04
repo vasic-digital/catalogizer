@@ -317,6 +317,9 @@ func (s *LogManagementService) ExportLogs(collectionID int, userID int, format s
 		return nil, fmt.Errorf("failed to get log entries: %w", err)
 	}
 
+	if entries == nil {
+		entries = []*models.LogEntry{} // a nil slice would export the JSON document "null"
+	}
 	switch format {
 	case "json":
 		return json.MarshalIndent(entries, "", "  ")
@@ -646,7 +649,7 @@ func (s *LogManagementService) extractErrorPattern(message string) string {
 }
 
 func (s *LogManagementService) generateInsights(entries []*models.LogEntry, analysis *models.LogAnalysis) []string {
-	var insights []string
+	insights := []string{}
 
 	// Check error rate
 	errorCount := analysis.EntriesByLevel["error"] + analysis.EntriesByLevel["fatal"]
@@ -736,7 +739,7 @@ func (c *FileLogCollector) CollectLogs() ([]*models.LogEntry, error) {
 	}
 	defer file.Close()
 
-	var entries []*models.LogEntry
+	entries := []*models.LogEntry{}
 	// This is a simplified implementation
 	// In reality, you would parse the log file format
 

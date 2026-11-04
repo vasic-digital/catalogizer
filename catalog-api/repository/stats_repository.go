@@ -151,7 +151,7 @@ func (r *StatsRepository) GetFileTypeStats(ctx context.Context, storageRootName 
 	}
 	defer rows.Close()
 
-	var stats []models.FileTypeStats
+	stats := []models.FileTypeStats{}
 	for rows.Next() {
 		var stat models.FileTypeStats
 		err := rows.Scan(
@@ -307,7 +307,7 @@ func (r *StatsRepository) GetTopDuplicateGroups(ctx context.Context, sortBy stri
 	}
 	defer rows.Close()
 
-	var groups []models.DuplicateGroupStats
+	groups := []models.DuplicateGroupStats{}
 	for rows.Next() {
 		var group models.DuplicateGroupStats
 		err := rows.Scan(
@@ -421,7 +421,7 @@ func (r *StatsRepository) GetGrowthTrends(ctx context.Context, storageRootName s
 	defer rows.Close()
 
 	var trends models.GrowthTrends
-	var monthlyGrowth []models.MonthlyGrowth
+	monthlyGrowth := []models.MonthlyGrowth{}
 
 	for rows.Next() {
 		var growth models.MonthlyGrowth
@@ -493,7 +493,7 @@ func (r *StatsRepository) GetScanHistory(ctx context.Context, storageRootName st
 	}
 	defer rows.Close()
 
-	var history []models.ScanHistoryItem
+	history := []models.ScanHistoryItem{}
 	for rows.Next() {
 		var item models.ScanHistoryItem
 		err := rows.Scan(

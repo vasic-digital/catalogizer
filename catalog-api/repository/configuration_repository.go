@@ -171,7 +171,7 @@ func (r *ConfigurationRepository) GetConfigurationHistory(limit int) ([]*models.
 	}
 	defer rows.Close()
 
-	var history []*models.ConfigurationHistory
+	history := []*models.ConfigurationHistory{}
 	for rows.Next() {
 		var entry models.ConfigurationHistory
 		err := rows.Scan(&entry.ID, &entry.Version, &entry.CreatedAt, &entry.UpdatedAt)
@@ -234,7 +234,7 @@ func (r *ConfigurationRepository) GetConfigurationBackups() ([]*models.Configura
 	}
 	defer rows.Close()
 
-	var backups []*models.ConfigurationBackup
+	backups := []*models.ConfigurationBackup{}
 	for rows.Next() {
 		var backup models.ConfigurationBackup
 		err := rows.Scan(&backup.ID, &backup.Name, &backup.Version, &backup.CreatedAt)
@@ -296,7 +296,7 @@ func (r *ConfigurationRepository) GetConfigurationTemplates() ([]*models.Configu
 	}
 	defer rows.Close()
 
-	var templates []*models.ConfigurationTemplate
+	templates := []*models.ConfigurationTemplate{}
 	for rows.Next() {
 		var template models.ConfigurationTemplate
 		var configJSON string
@@ -561,7 +561,7 @@ func (r *ConfigurationRepository) GetUserConfigurationProfiles(userID int) ([]*m
 	}
 	defer rows.Close()
 
-	var profiles []*models.ConfigurationProfile
+	profiles := []*models.ConfigurationProfile{}
 	for rows.Next() {
 		profile := &models.ConfigurationProfile{}
 		var configJSON, tagsJSON string

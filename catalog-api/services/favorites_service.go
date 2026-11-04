@@ -294,7 +294,7 @@ func (s *FavoritesService) GetRecommendedFavorites(userID int, limit int) ([]mod
 
 	entityTypes = s.removeDuplicateStrings(entityTypes)
 
-	var recommendations []models.RecommendedFavorite
+	recommendations := []models.RecommendedFavorite{}
 
 	for _, entityType := range entityTypes {
 		similarFavorites, err := s.favoritesRepo.GetSimilarFavorites(userID, entityType, limit/len(entityTypes))
@@ -375,7 +375,7 @@ func (s *FavoritesService) RevokeFavoriteShare(userID int, shareID int) error {
 }
 
 func (s *FavoritesService) BulkAddFavorites(userID int, favorites []models.BulkFavoriteRequest) ([]models.Favorite, error) {
-	var results []models.Favorite
+	results := []models.Favorite{}
 	var errors []error
 
 	for _, req := range favorites {

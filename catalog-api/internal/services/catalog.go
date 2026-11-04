@@ -116,7 +116,7 @@ func (s *CatalogService) ListPath(path string, sortBy string, sortOrder string, 
 	}
 	defer rows.Close()
 
-	var files []models.FileInfo
+	files := []models.FileInfo{}
 	for rows.Next() {
 		var file models.FileInfo
 		var lastModified sql.NullTime
@@ -323,7 +323,7 @@ func (s *CatalogService) SearchFiles(req *models.SearchRequest) ([]models.FileIn
 	}
 	defer rows.Close()
 
-	var files []models.FileInfo
+	files := []models.FileInfo{}
 	for rows.Next() {
 		var file models.FileInfo
 		var lastModified sql.NullTime
@@ -394,7 +394,7 @@ func (s *CatalogService) GetDirectoriesBySize(smbRoot string, limit int) ([]mode
 	}
 	defer rows.Close()
 
-	var stats []models.DirectoryStats
+	stats := []models.DirectoryStats{}
 	for rows.Next() {
 		var stat models.DirectoryStats
 		err := rows.Scan(&stat.Path, &stat.TotalSize, &stat.FileCount, &stat.DirectoryCount)
@@ -454,7 +454,7 @@ func (s *CatalogService) GetDuplicateGroups(smbRoot string, minCount int, limit 
 	}
 	rows.Close()
 
-	var groups []models.DuplicateGroup
+	groups := []models.DuplicateGroup{}
 	for _, group := range page {
 		// Get files in this duplicate group
 		filesQuery := `
@@ -521,7 +521,7 @@ func (s *CatalogService) GetSMBRoots() ([]string, error) {
 	}
 	defer rows.Close()
 
-	var roots []string
+	roots := []string{}
 	for rows.Next() {
 		var root string
 		if err := rows.Scan(&root); err != nil {

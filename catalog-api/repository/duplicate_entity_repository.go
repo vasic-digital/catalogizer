@@ -59,7 +59,7 @@ func (r *DuplicateEntityRepository) GetDuplicateGroups(ctx context.Context, limi
 	// Buffer the page and release the cursor (and its pooled connection) BEFORE the per-group
 	// id queries: a query issued while this cursor is open needs a second pooled connection, so
 	// concurrent calls exceeding the pool would all hold one and wait for another (pool deadlock).
-	var page []DuplicateEntityGroup
+	page := []DuplicateEntityGroup{}
 	for rows.Next() {
 		var g DuplicateEntityGroup
 		if err := rows.Scan(&g.Title, &g.MediaType, &g.Year, &g.Count); err != nil {
@@ -72,7 +72,7 @@ func (r *DuplicateEntityRepository) GetDuplicateGroups(ctx context.Context, limi
 	}
 	rows.Close()
 
-	var groups []DuplicateEntityGroup
+	groups := []DuplicateEntityGroup{}
 	for _, g := range page {
 		// Get entity IDs for this group
 		idQuery := `SELECT mi.id FROM media_items mi

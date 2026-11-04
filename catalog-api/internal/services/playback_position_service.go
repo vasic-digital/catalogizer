@@ -201,7 +201,7 @@ func (s *PlaybackPositionService) GetContinueWatching(ctx context.Context, userI
 	}
 	defer rows.Close()
 
-	var positions []PlaybackPosition
+	positions := []PlaybackPosition{}
 	for rows.Next() {
 		var position PlaybackPosition
 		err := rows.Scan(
@@ -271,7 +271,7 @@ func (s *PlaybackPositionService) GetBookmarks(ctx context.Context, userID, medi
 	}
 	defer rows.Close()
 
-	var bookmarks []PlaybackBookmark
+	bookmarks := []PlaybackBookmark{}
 	for rows.Next() {
 		var bookmark PlaybackBookmark
 		err := rows.Scan(

@@ -225,7 +225,7 @@ func (s *SMBDiscoveryService) BrowseShare(ctx context.Context, config SMBConnect
 	}
 
 	// Convert to our format
-	var fileEntries []SMBFileEntry
+	fileEntries := []SMBFileEntry{}
 	for _, entry := range entries {
 		var size *int64
 		if !entry.IsDir() {

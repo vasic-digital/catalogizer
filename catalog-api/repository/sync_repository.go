@@ -408,7 +408,7 @@ func (r *SyncRepository) GetEndpointsByType(syncType string) ([]models.SyncEndpo
 }
 
 func (r *SyncRepository) scanEndpoints(rows *sql.Rows) ([]models.SyncEndpoint, error) {
-	var endpoints []models.SyncEndpoint
+	endpoints := []models.SyncEndpoint{}
 
 	for rows.Next() {
 		var endpoint models.SyncEndpoint
@@ -440,7 +440,7 @@ func (r *SyncRepository) scanEndpoints(rows *sql.Rows) ([]models.SyncEndpoint, e
 }
 
 func (r *SyncRepository) scanSessions(rows *sql.Rows) ([]models.SyncSession, error) {
-	var sessions []models.SyncSession
+	sessions := []models.SyncSession{}
 
 	for rows.Next() {
 		var session models.SyncSession
@@ -477,7 +477,7 @@ func (r *SyncRepository) scanSessions(rows *sql.Rows) ([]models.SyncSession, err
 }
 
 func (r *SyncRepository) scanSchedules(rows *sql.Rows) ([]models.SyncSchedule, error) {
-	var schedules []models.SyncSchedule
+	schedules := []models.SyncSchedule{}
 
 	for rows.Next() {
 		var schedule models.SyncSchedule

@@ -161,7 +161,7 @@ func (r *CrashReportingRepository) GetCrashReportsByUser(userID int, filters *mo
 	}
 	defer rows.Close()
 
-	var reports []*models.CrashReport
+	reports := []*models.CrashReport{}
 	for rows.Next() {
 		var report models.CrashReport
 		var contextJSON, systemInfoJSON string
@@ -320,7 +320,7 @@ func (r *CrashReportingRepository) GetCrashesByFingerprint(fingerprint string, l
 	}
 	defer rows.Close()
 
-	var reports []*models.CrashReport
+	reports := []*models.CrashReport{}
 	for rows.Next() {
 		var report models.CrashReport
 		var contextJSON, systemInfoJSON string
@@ -379,7 +379,7 @@ func (r *CrashReportingRepository) GetTopCrashes(userID int, limit int, timeRang
 	}
 	defer rows.Close()
 
-	var topCrashes []*models.TopCrash
+	topCrashes := []*models.TopCrash{}
 	for rows.Next() {
 		var topCrash models.TopCrash
 		err := rows.Scan(
@@ -411,7 +411,7 @@ func (r *CrashReportingRepository) GetCrashTrends(userID int, days int) ([]*mode
 	}
 	defer rows.Close()
 
-	var trends []*models.CrashTrend
+	trends := []*models.CrashTrend{}
 	for rows.Next() {
 		var trend models.CrashTrend
 		var dateStr string

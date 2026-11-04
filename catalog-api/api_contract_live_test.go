@@ -284,7 +284,7 @@ func (s *cSpec) validate(schema, val interface{}, at string, out *[]string) {
 // nilListKeys names the collection-valued response members found by the census; extend it when a new list member is added.
 var nilListKeys = map[string]bool{
 	"sections": true, "groups": true, "files": true, "scans": true, "insights": true, "permissions": true,
-	"local_items": true, "locations": true, "exclude_patterns": true, "include_patterns": true, "items": true,
+	"local_items": true, "locations": true, "items": true,
 	"results": true, "sessions": true, "users": true, "roles": true, "collections": true, "entries": true,
 }
 
@@ -802,8 +802,8 @@ func (w *sweep) runOp(op *cOp) {
 		{
 			st, _, _ := w.call(w.admC, op.Method, w.gen.buildURL(op, nv, true, ""), w.adm, body, "")
 			w.record(rec, "notfound", st)
-			if w.documented(op, 404) && st != 404 && st != 403 && !notfoundExempt(op, st) {
-				// 403 is a legitimate answer when the gate runs before the lookup for admin-gated paths; admin cannot hit it.
+			if w.documented(op, 404) && st != 404 && !notfoundExempt(op, st) {
+				// The probe is made as admin, so no permission gate can answer 403 here; a 403 would be a real defect.
 				viol("notfound: expected 404 (documented), got %d", st)
 			}
 			if !w.documented(op, 404) && st == 404 {
@@ -872,10 +872,12 @@ func (w *sweep) runOp(op *cOp) {
 		w.record(rec, "happy", st)
 		if exc, listed := happyExceptions(w.t)[op.key()]; st >= 200 && st < 300 {
 			if listed {
-				viol("happy path now reaches %d but is listed in api_contract_happy_exceptions.tsv (%s): remove the stale entry", st, exc)
+				viol("happy path now reaches %d but is listed in api_contract_happy_exceptions.tsv (%d: %s): remove the stale entry", st, exc.status, exc.reason)
 			}
 		} else if !listed {
 			viol("happy path expected 2xx (not in api_contract_happy_exceptions.tsv), got %d", st)
+		} else if st != exc.status {
+			viol("happy path ended in %d but api_contract_happy_exceptions.tsv expects exactly %d (%s): a listed op may not hide a different failure", st, exc.status, exc.reason)
 		}
 		w.judgeHappy(op, rec, st, ct, raw, viol, adv)
 	}
@@ -1105,6 +1107,15 @@ func TestLiveAPIContract(t *testing.T) {
 	}
 	spec := loadSpec(t, specPath)
 	require.NotEmpty(t, spec.Ops)
+	{ // every exception key must name an operation of the spec (a typo or a removed route would otherwise be silently inert)
+		known := map[string]bool{}
+		for _, o := range spec.Ops {
+			known[o.key()] = true
+		}
+		for k := range happyExceptions(t) {
+			require.True(t, known[k], "api_contract_happy_exceptions.tsv names %q which is not an operation of %s", k, specPath)
+		}
+	}
 	runs := 3
 	if v, err := strconv.Atoi(os.Getenv("API_CONTRACT_RUNS")); err == nil && v > 0 {
 		runs = v
@@ -1307,23 +1318,34 @@ func (w *sweep) addCSRF(c *http.Client, req *http.Request, tok string) {
 
 var (
 	happyExcOnce sync.Once
-	happyExc     map[string]string
+	happyExcMap  map[string]happyExc
 )
 
+// happyExc is one committed exception: the exact non-2xx status the happy probe is expected to end in, and why.
+type happyExc struct {
+	status int
+	reason string
+}
+
 // happyExceptions loads the committed list of operations whose happy-path probe is allowed to end in a non-2xx status.
-func happyExceptions(t *testing.T) map[string]string {
+func happyExceptions(t *testing.T) map[string]happyExc {
 	happyExcOnce.Do(func() {
-		happyExc = map[string]string{}
+		happyExcMap = map[string]happyExc{}
 		raw, err := os.ReadFile("api_contract_happy_exceptions.tsv")
 		require.NoError(t, err)
 		for _, l := range strings.Split(string(raw), "\n") {
 			if l == "" || strings.HasPrefix(l, "#") {
 				continue
 			}
-			kv := strings.SplitN(l, "\t", 2)
-			require.Len(t, kv, 2, "bad exceptions line %q", l)
-			happyExc[kv[0]] = kv[1]
+			kv := strings.SplitN(l, "\t", 3)
+			require.Len(t, kv, 3, "bad exceptions line %q (want METHOD path<TAB>status<TAB>reason)", l)
+			code, err := strconv.Atoi(kv[1])
+			require.NoError(t, err, "bad status in exceptions line %q", l)
+			require.True(t, code >= 300 && code < 600, "exception status must be non-2xx: %q", l)
+			_, dup := happyExcMap[kv[0]]
+			require.False(t, dup, "duplicate exception key %q", kv[0])
+			happyExcMap[kv[0]] = happyExc{status: code, reason: kv[2]}
 		}
 	})
-	return happyExc
+	return happyExcMap
 }
