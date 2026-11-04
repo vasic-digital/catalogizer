@@ -1090,3 +1090,8 @@ Open (not fixed here):
 - SSRF-F4 (nit, test): assert -nostdin in the ffmpeg command.
 - SSRF-F5 (minor): cover-art ffmpeg guard lacks the converter's -format_whitelist allow-list; ffprobeDurationCmd has no ctx/timeout.
 - SSRF-F6 (nit, doc): add ftp_client.go:88 (ftp.Dial) and redis/postgres sql.Open operator connections to docs/OUTBOUND_HTTP_CLIENTS.md.
+
+## Media fixture generator review follow-ups (round 4, GO-with-follow-ups)
+- MG-C1 (minor, source): os.walk in the policy check has no onerror; an unreadable subtree is skipped and policy returns ok. Fail closed.
+- MG-C2 (minor, process-doc): gen() creates layout dirs before the stub manifest, so "stub plus helpers only" is unreachable; stale in-script comment and unused LAYOUT_TOP.
+- MG-C3 (minor, test-instrumentation): mutants CM1-CM4 (.cover.png symlink check, '..' check, --check run1-symlink check, files element-type check) survive the base suite; add fixtures.
