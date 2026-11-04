@@ -511,6 +511,9 @@ func (w *sweep) call(c *http.Client, method, path, tok string, body []byte, ct s
 	}
 	if tok != "" {
 		req.Header.Set("Authorization", "Bearer "+tok)
+		if method != "GET" && method != "HEAD" && method != "OPTIONS" && strings.HasPrefix(path, "/api/v1/admin/") {
+			w.addCSRF(c, req, tok)
+		}
 	}
 	w.reqs++
 	r, err := c.Do(req)
@@ -527,6 +530,13 @@ func (w *sweep) call(c *http.Client, method, path, tok string, body []byte, ct s
 	}
 	defer r.Body.Close()
 	b, _ := io.ReadAll(io.LimitReader(r.Body, 8<<20))
+	if w.trace != nil && r.StatusCode >= 500 {
+		n := len(b)
+		if n > 300 {
+			n = 300
+		}
+		fmt.Fprintf(w.trace, "   body: %s\n", b[:n])
+	}
 	return r.StatusCode, r.Header.Get("Content-Type"), b
 }
 
@@ -1151,4 +1161,33 @@ func notfoundExempt(op *cOp, st int) bool {
 		return st == 200
 	}
 	return false
+}
+
+// addCSRF performs what a browser client does for the /admin group, which is
+// guarded by a double-submit CSRF token (middleware/csrf.go): any GET under
+// /admin mints a signed token, returned as a cookie and in the X-CSRF-Token
+// header; a mutating call must send the cookie and the header back. The
+// cookie is Secure outside dev mode so a cookie jar would not return it over
+// plain HTTP; it is attached explicitly. These two requests are counted.
+func (w *sweep) addCSRF(c *http.Client, req *http.Request, tok string) {
+	gr, err := http.NewRequest("GET", w.srv.base()+"/api/v1/admin/system-info", nil)
+	if err != nil {
+		return
+	}
+	gr.Header.Set("Authorization", "Bearer "+tok)
+	w.reqs++
+	resp, err := c.Do(gr)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, resp.Body)
+	hdr := resp.Header.Get("X-CSRF-Token")
+	for _, ck := range resp.Cookies() {
+		if hdr != "" && strings.HasPrefix(ck.Value, hdr+":") {
+			req.Header.Set("X-CSRF-Token", hdr)
+			req.AddCookie(&http.Cookie{Name: ck.Name, Value: ck.Value})
+			return
+		}
+	}
 }

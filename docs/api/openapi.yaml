@@ -4644,6 +4644,10 @@ paths:
       tags: [admin]
       summary: Update user (admin)
       description: |
+        Every mutating /api/v1/admin request is also guarded by a double-submit
+        CSRF token: any GET under /api/v1/admin returns a signed token in the
+        `X-CSRF-Token` header and in a cookie, and the mutating call must send
+        both back (otherwise 403 "missing csrf cookie/header").
         Updates a user's role, active status, or lock status. Admin users
         cannot modify their own account to prevent self-lockout. Requires
         admin role: every /api/v1/admin request is checked against the
