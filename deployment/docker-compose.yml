@@ -188,10 +188,14 @@ services:
     # and every scrape then fails with "is a directory").
     environment:
       METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:-}
+      # Extra Prometheus flags, empty by default. The otel collector exports metrics through the
+      # remote-write receiver, an UNAUTHENTICATED write endpoint, so it is opt-in:
+      # PROMETHEUS_EXTRA_FLAGS=--web.enable-remote-write-receiver (only with the `otel` profile).
+      PROMETHEUS_EXTRA_FLAGS: ${PROMETHEUS_EXTRA_FLAGS:-}
     entrypoint:
       - /bin/sh
       - -c
-      - '[ "$${#METRICS_SCRAPE_TOKEN}" -ge 32 ] || { echo "METRICS_SCRAPE_TOKEN must be set (>= 32 chars, same value as the API); see docs/deployment/MONITORING_GUIDE.md" >&2; exit 1; }; umask 077; printf %s "$$METRICS_SCRAPE_TOKEN" > /tmp/metrics_scrape_token; exec /bin/prometheus "$$@"'
+      - '[ "$${#METRICS_SCRAPE_TOKEN}" -ge 32 ] || { echo "METRICS_SCRAPE_TOKEN must be set (>= 32 chars, same value as the API); see docs/deployment/MONITORING_GUIDE.md" >&2; exit 1; }; umask 077; printf %s "$$METRICS_SCRAPE_TOKEN" > /tmp/metrics_scrape_token; exec /bin/prometheus "$$@" $$PROMETHEUS_EXTRA_FLAGS'
       - prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -201,7 +205,7 @@ services:
       - '--storage.tsdb.retention.time=200h'
       - '--web.enable-lifecycle'
     ports:
-      - "${PROMETHEUS_PORT:-9090}:9090"
+      - "${PROMETHEUS_BIND:-127.0.0.1}:${PROMETHEUS_PORT:-9090}:9090"
     volumes:
       - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -225,7 +229,7 @@ services:
       GF_USERS_ALLOW_SIGN_UP: "false"
       GF_INSTALL_PLUGINS: ""
     ports:
-      - "${GRAFANA_PORT:-3001}:3000"
+      - "${GRAFANA_BIND:-127.0.0.1}:${GRAFANA_PORT:-3001}:3000"
     volumes:
       - grafana_data:/var/lib/grafana
       - ../monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro

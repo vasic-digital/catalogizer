@@ -1,0 +1,4 @@
+# utc: 2026-11-04T19:18:05Z
+podman ps -a names matching catmon|catalogizer-: 0
+networks matching catmon: 0
+volumes matching catmon: 0

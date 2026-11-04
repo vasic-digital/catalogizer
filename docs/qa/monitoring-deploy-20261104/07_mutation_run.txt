@@ -1,0 +1,23 @@
+KILLED   m1_root_readd_host_token_file_mount
+KILLED   m1_deploy_readd_host_token_file_mount
+KILLED   m2_root_drop_length_guard
+KILLED   m2_deploy_drop_length_guard
+KILLED   m2b_deploy_guard_exit_to_true
+KILLED   m3_credentials_path_drift
+KILLED   m4_deploy_revert_prometheus_mount_path
+KILLED   m5_deploy_remove_api_alias
+KILLED   m6_root_remove_token_passthrough
+KILLED   m7_deploy_remove_token_passthrough
+KILLED   m8_otel_invalid_exporter
+KILLED   m9_otel_image_latest
+KILLED   m10_root_prometheus_bind_all_interfaces
+KILLED   m10_deploy_prometheus_bind_all_interfaces
+KILLED   m11_root_grafana_bind_all_interfaces
+KILLED   m12_root_hardcode_receiver_flag
+KILLED   m13_root_drop_extra_flags_expansion
+KILLED   m14_otel_exporter_port_9999
+KILLED   m15_otel_pipeline_drops_remote_write
+KILLED   m16_otel_drop_token_passthrough
+KILLED   m17_scrape_target_nosuchhost
+KILLED   m18_drop_authorization_block
+mutations: 22/22 killed
