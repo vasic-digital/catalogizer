@@ -48,6 +48,13 @@ const perRun = runs.map((r) => {
   return { bySpec, obs };
 });
 
+// Fingerprint cross-check: every test of every run recorded the build it ran against (read from /health at run time); all must
+// agree with each other and with the build read at evidence time, otherwise the records would describe a different artifact.
+const seen = new Set(perRun.flatMap((r) => r.obs.filter((o) => o.kind === 'fingerprint').map((o) => `${o.health_status}:${o.build_number}`)));
+if (seen.size !== 1 || ![...seen][0].endsWith(`:${health.build_number}`) || [...seen][0].startsWith('0:')) {
+  throw new Error(`artifact fingerprint changed or unreadable during the runs: ${JSON.stringify([...seen])} vs final ${health.build_number}`);
+}
+
 const specs = [...new Set(perRun.flatMap((r) => Object.keys(r.bySpec)))].sort();
 const written = [];
 for (const spec of specs) {

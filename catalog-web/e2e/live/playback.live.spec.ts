@@ -107,4 +107,26 @@ test.describe('player in the web UI (real browser, real stream)', () => {
     await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 15_000, message: `audio never advanced; sources seen: ${JSON.stringify(streamed)}` }).toBeGreaterThan(0.3);
     expect(streamed.some((s) => s.includes(`/stream/${id}`)), `saw ${JSON.stringify(streamed)}`).toBeTruthy();
   });
+
+  test('long playback: plays past the 60 s ticket lifetime, a seek after expiry works, currentTime keeps advancing, no media error', async ({ page, request }, testInfo) => {
+    test.setTimeout(170_000);
+    const rel = 'movies/Long.Seek.Movie.2018.60s.mp4';
+    const { video, streamed, id } = await playFromUi(page, testInfo, request, rel);
+    const t0 = Date.now();
+    await video.evaluate((v: HTMLVideoElement) => { v.muted = true; v.loop = true; return v.play().catch(() => undefined); });
+    await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 15_000, message: `never advanced; saw ${JSON.stringify(streamed)}` }).toBeGreaterThan(0.3);
+    // Let the original ticket (60 s) die while the element keeps playing; the player must re-point itself before that.
+    await page.waitForTimeout(Math.max(0, 66_000 - (Date.now() - t0)));
+    expect(await video.evaluate((v: HTMLVideoElement) => v.error), 'no media error while playing past ticket expiry').toBeNull();
+    await video.evaluate((v: HTMLVideoElement) => { v.currentTime = 40; });
+    const seekedAt = await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 20_000, message: `seek after expiry did not take effect; saw ${JSON.stringify(streamed)}` }).toBeGreaterThanOrEqual(40).then(() => video.evaluate((v: HTMLVideoElement) => v.currentTime));
+    await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 20_000, message: 'currentTime stopped advancing after the late seek' }).toBeGreaterThan((seekedAt as number) + 1);
+    expect(await video.evaluate((v: HTMLVideoElement) => v.error), 'no media error after the late seek').toBeNull();
+    expect(await video.evaluate((v: HTMLVideoElement) => v.paused), 'still playing').toBe(false);
+    const mints = streamed.filter((x) => /^200 POST /.test(x) && x.includes(`/stream/${id}/ticket`)).length;
+    expect(mints, `the player refreshed its ticket while playing (mints: ${mints}); saw ${JSON.stringify(streamed)}`).toBeGreaterThanOrEqual(2);
+    expect(streamed.some((x) => x.includes('access_token')), 'session token never in a media URL').toBeFalsy();
+    testInfo.annotations.push({ type: 'stream-401s', description: String(streamed.filter((x) => /^401 /.test(x)).length) });
+    await shot(page, testInfo, 'long-playback-after-seek');
+  });
 });

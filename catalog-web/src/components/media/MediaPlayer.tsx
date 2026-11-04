@@ -75,14 +75,16 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
   // by a short-lived ticket (see mintStreamTicket). directory_path is a storage-relative path, never a playable URL.
   const [ticketSrc, setTicketSrc] = useState('')
   const [authError, setAuthError] = useState(false)
-  const resumeRef = useRef<{ time: number; play: boolean; tries: number } | null>(null)
+  const resumeRef = useRef<{ time: number; play: boolean } | null>(null)
+  // Consecutive error-driven recoveries; reset whenever the element makes real progress. Timer refreshes never count.
+  const errorTriesRef = useRef(0)
   const videoSrc = entityStreamUrl || ticketSrc
 
   const refreshTicket = useCallback(async (resume: boolean) => {
     try {
       const url = streamUrl(media.id, await mintStreamTicket(media.id))
       const v = videoRef.current
-      if (resume && v) resumeRef.current = { time: v.currentTime, play: !v.paused, tries: (resumeRef.current?.tries ?? 0) + 1 }
+      if (resume && v) resumeRef.current = { time: v.currentTime, play: !v.paused }
       setTicketSrc(url)
       setAuthError(false)
     } catch {
@@ -93,11 +95,18 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
   useEffect(() => {
     if (entityStreamUrl) return
     resumeRef.current = null
+    errorTriesRef.current = 0
     void refreshTicket(false)
-    // Keep a fresh ticket for seeks: swapping the source of a playing element would stutter, so only an idle element is re-pointed.
+    // A seek issues a new range request carrying the URL's ticket, which dies after 60 s. While playing, re-point the element at a
+    // fresh ticket before expiry and resume at the same position (skipped when the whole file is already buffered). A paused
+    // element is left alone so its buffer is not dropped; if its ticket has expired by the time the user seeks, the error
+    // handler below mints a new one and resumes.
     const timer = setInterval(() => {
       const v = videoRef.current
-      if (!v || v.paused) void refreshTicket(true)
+      if (!v || v.paused || v.ended) return
+      const b = v.buffered
+      if (b.length > 0 && Number.isFinite(v.duration) && b.end(b.length - 1) >= v.duration - 0.5) return
+      void refreshTicket(true)
     }, TICKET_REFRESH_MS)
     return () => clearInterval(timer)
   }, [media.id, entityStreamUrl, refreshTicket])
@@ -209,6 +218,11 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
 
     const handleLoadedMetadata = () => {
       setDuration(video.duration)
+      errorTriesRef.current = 0
+    }
+
+    const handlePlaying = () => {
+      errorTriesRef.current = 0
     }
 
     const handleEnded = () => {
@@ -219,7 +233,8 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
     const handleError = () => {
       // An expired ticket makes the next range request 401, which the element reports as an error: mint a new one and resume
       // (bounded, so a genuinely broken file does not loop).
-      if (!entityStreamUrl && (resumeRef.current?.tries ?? 0) < 3) {
+      if (!entityStreamUrl && errorTriesRef.current < 3) {
+        errorTriesRef.current += 1
         void refreshTicket(true)
         return
       }
@@ -229,12 +244,14 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
     video.addEventListener('timeupdate', handleTimeUpdate)
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
     video.addEventListener('ended', handleEnded)
+    video.addEventListener('playing', handlePlaying)
     video.addEventListener('error', handleError)
 
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate)
       video.removeEventListener('loadedmetadata', handleLoadedMetadata)
       video.removeEventListener('ended', handleEnded)
+      video.removeEventListener('playing', handlePlaying)
       video.removeEventListener('error', handleError)
     }
   }, [onProgress, onEnded, onError, entityStreamUrl, refreshTicket])

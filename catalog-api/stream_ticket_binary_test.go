@@ -2,6 +2,7 @@ package main
 
 import (
 	"catalogizer/internal/streamticket"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -151,7 +152,7 @@ func TestStreamTicket_RealBinary(t *testing.T) {
 	t.Run("ticket is not accepted on any other route or method", func(t *testing.T) {
 		for _, p := range []string{
 			"/api/v1/auth/me", "/api/v1/media/stats", fmt.Sprintf("/api/v1/media/%d", idA),
-			fmt.Sprintf("/api/v1/download/file/%d", idA), "/api/v1/users/me"		} {
+			fmt.Sprintf("/api/v1/download/file/%d", idA), "/api/v1/users/me"} {
 			sep := "?"
 			if strings.Contains(p, "?") {
 				sep = "&"
@@ -172,9 +173,23 @@ func TestStreamTicket_RealBinary(t *testing.T) {
 	t.Run("expired and wrongly-signed tickets are 401 (forged with the real secret / a wrong one)", func(t *testing.T) {
 		const secret = "Zq7-test-only-jwt-secret-0123456789abcdef"
 		past := streamticket.New(secret).WithClock(func() time.Time { return time.Now().Add(-2 * time.Minute) })
-		old, _ := past.Mint(int64(idA), "1", "admin", "")
-		st, _, _ := rawGet(t, "GET", fmt.Sprintf("%s/api/v1/stream/%d?ticket=%s", base, idA, old), nil)
-		assert.Equal(t, 401, st, "expired")
+		// Forge with the REAL user id and live session id of a genuinely minted ticket, so the only thing wrong with `old` is its
+		// expiry (a ticket with a made-up session would be refused by the session check and prove nothing about expiry).
+		code, live := mint(idA, adm)
+		require.Equal(t, 200, code)
+		parts := strings.Split(live, ".")
+		require.Len(t, parts, 3)
+		rawClaims, err := base64.RawURLEncoding.DecodeString(parts[1])
+		require.NoError(t, err)
+		var real streamticket.Claims
+		require.NoError(t, json.Unmarshal(rawClaims, &real))
+		require.NotEmpty(t, real.SessionID, "the minted ticket carries the live session id")
+		fresh, _ := streamticket.New(secret).Mint(int64(idA), real.UserID, real.Username, real.SessionID)
+		st, _, _ := rawGet(t, "GET", fmt.Sprintf("%s/api/v1/stream/%d?ticket=%s", base, idA, fresh), nil)
+		assert.Equal(t, 200, st, "control: same claims, same key, unexpired, is accepted")
+		old, _ := past.Mint(int64(idA), real.UserID, real.Username, real.SessionID)
+		st, _, _ = rawGet(t, "GET", fmt.Sprintf("%s/api/v1/stream/%d?ticket=%s", base, idA, old), nil)
+		assert.Equal(t, 401, st, "expired (everything else valid)")
 		foreign, _ := streamticket.New("another-secret-entirely").Mint(int64(idA), "1", "admin", "")
 		st, _, _ = rawGet(t, "GET", fmt.Sprintf("%s/api/v1/stream/%d?ticket=%s", base, idA, foreign), nil)
 		assert.Equal(t, 401, st, "wrong key")

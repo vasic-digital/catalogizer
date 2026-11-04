@@ -28,7 +28,10 @@ function record(testInfo: TestInfo, rec: Record<string, unknown>) {
 }
 
 export const test = base.extend<{ obs: void }>({
-  obs: [async ({ page }, use, testInfo) => {
+  obs: [async ({ page, request }, use, testInfo) => {
+    // Artifact fingerprint read from the target at run time, by every test (make_evidence cross-checks them).
+    const fp = await targetFingerprint(request).catch((e) => ({ status: 0, body: { error: String(e) } as Record<string, unknown> }));
+    record(testInfo, { kind: 'fingerprint', health_status: fp.status, version: fp.body?.version, build_number: fp.body?.build_number });
     page.on('response', (r) => {
       const u = r.url();
       if (u.includes('/api/') || u.includes('/health')) record(testInfo, { kind: 'http', method: r.request().method(), status: r.status() });

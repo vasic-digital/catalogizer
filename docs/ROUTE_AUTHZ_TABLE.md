@@ -61,7 +61,7 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/download/directory/*path` | auth | 401 | 500 | skip |
 | POST | `/api/v1/download/archive` | auth | 401 | 400 | skip |
 | GET | `/api/v1/stream/:id` | auth, or `?ticket=` (stream ticket, this route and this id only; see note below) | 401 | 404 | skip |
-| POST | `/api/v1/stream/:id/ticket` | auth (Authorization header only) | 401 | 404 | skip |
+| POST | `/api/v1/stream/:id/ticket` | auth (bearer; like every RequireAuth route it also still accepts the legacy `?access_token=` query; a stream ticket is NOT accepted here) | 401 | 404 | skip |
 | POST | `/api/v1/copy/storage` | RequireAdmin (route) | 401 | 403 | skip |
 | POST | `/api/v1/copy/local` | RequireAdmin (route) | 401 | 403 | skip |
 | POST | `/api/v1/copy/upload` | RequireAdmin (route) | 401 | 403 | skip |

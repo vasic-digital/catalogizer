@@ -2,7 +2,7 @@
 # Run the LIVE catalog-web specs N times for one project and build the evidence records.
 # usage: run_live.sh <project: chromium-desktop|chromium-390|firefox-desktop|firefox-390> [runs=3]
 # env (required): ADMIN_USERNAME ADMIN_PASSWORD (never printed), LIVE_CORPUS_MANIFEST (host path of the corpus manifest.json)
-# env (defaults): PLAYWRIGHT_BASE_URL=http://127.0.0.1:33000  LIVE_API_URL=http://127.0.0.1:38080  LIVE_EVIDENCE_OUT=<repo>/docs/qa/web-live-<date>
+# env (defaults): PLAYWRIGHT_BASE_URL=http://127.0.0.1:33020  LIVE_API_URL=http://127.0.0.1:38082  LIVE_EVIDENCE_OUT=<repo>/docs/qa/web-live-<date>
 #                 LIVE_EXPECTED_WEB_IMAGE_DIGEST (pinned digest of the web image the claim names)
 set -u
 project=${1:?project}; runs=${2:-3}

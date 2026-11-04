@@ -321,7 +321,9 @@ func TestUserRepository_Delete(t *testing.T) {
 			id:   1,
 			setup: func(mock sqlmock.Sqlmock) {
 				mock.ExpectBegin()
-				mock.ExpectExec("UPDATE auth_audit_log").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 0))
+				mock.ExpectQuery("SELECT username FROM users WHERE id").WithArgs(1).WillReturnRows(sqlmock.NewRows([]string{"username"}).AddRow("u1"))
+				mock.ExpectExec("UPDATE auth_audit_log SET details").WithArgs(sqlmock.AnyArg(), 1).WillReturnResult(sqlmock.NewResult(0, 0))
+				mock.ExpectExec("UPDATE auth_audit_log SET user_id").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectExec("UPDATE user_permissions").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectExec("DELETE FROM users WHERE id").
 					WithArgs(1).
@@ -334,7 +336,9 @@ func TestUserRepository_Delete(t *testing.T) {
 			id:   999,
 			setup: func(mock sqlmock.Sqlmock) {
 				mock.ExpectBegin()
-				mock.ExpectExec("UPDATE auth_audit_log").WithArgs(999).WillReturnResult(sqlmock.NewResult(0, 0))
+				mock.ExpectQuery("SELECT username FROM users WHERE id").WithArgs(999).WillReturnRows(sqlmock.NewRows([]string{"username"}).AddRow("u999"))
+				mock.ExpectExec("UPDATE auth_audit_log SET details").WithArgs(sqlmock.AnyArg(), 999).WillReturnResult(sqlmock.NewResult(0, 0))
+				mock.ExpectExec("UPDATE auth_audit_log SET user_id").WithArgs(999).WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectExec("UPDATE user_permissions").WithArgs(999).WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectExec("DELETE FROM users WHERE id").
 					WithArgs(999).

@@ -146,7 +146,7 @@ func (m *JWTMiddleware) RequireAuth() gin.HandlerFunc {
 			tokenString = parts[1]
 		} else {
 			// Native-client LEGACY path (libVLC, ffmpeg, VLC iOS cannot be taught the ticket flow): the session token in the query
-			// string. Web clients MUST use /api/v1/stream/:id/ticket instead; the value is redacted from every access log. Follow-up:
+			// string. Web clients MUST use /api/v1/stream/:id/ticket instead; the value is redacted from the API's own gin/zap access logs (a reverse proxy in front must redact too: catalog-web/nginx.conf.template does for its access log; proxy error logs are not covered). Follow-up:
 			// migrate native clients to tickets and delete this fallback (docs/FOLLOW_UPS_NEXT_PHASE.md).
 			tokenString = c.Query("access_token")
 			if tokenString == "" {

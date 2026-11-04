@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 	"testing"
 
@@ -35,4 +36,8 @@ func TestUserRepository_Delete_UserWithAuditTrail(t *testing.T) {
 	require.Equal(t, 0, users, "user row is gone")
 	require.Equal(t, 1, audits, "the audit trail is retained")
 	require.Equal(t, 1, orphaned, "the retained audit row is detached from the deleted user")
+	var details string
+	require.NoError(t, db.QueryRow(`SELECT COALESCE(details,'') FROM auth_audit_log WHERE event_type = 'login'`).Scan(&details))
+	require.Contains(t, details, "username=deleteme", "the retained audit row still says whose it was")
+	require.Contains(t, details, fmt.Sprintf("former_user_id=%d", id))
 }

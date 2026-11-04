@@ -334,6 +334,15 @@ func (r *UserRepository) Delete(id int) error {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer tx.Rollback()
+	// Detaching the audit rows must not make them anonymous: stamp who they belonged to into details first.
+	var username string
+	if err := tx.QueryRow(r.db.Rewrite(`SELECT username FROM users WHERE id = ?`), id).Scan(&username); err != nil && err != sql.ErrNoRows {
+		return fmt.Errorf("failed to read user before delete: %w", err)
+	}
+	stamp := fmt.Sprintf(" [former_user_id=%d username=%s]", id, username)
+	if _, err := tx.Exec(r.db.Rewrite(`UPDATE auth_audit_log SET details = COALESCE(details, '') || ? WHERE user_id = ?`), stamp, id); err != nil {
+		return err
+	}
 	for _, q := range []string{
 		`UPDATE auth_audit_log SET user_id = NULL WHERE user_id = ?`,
 		`UPDATE user_permissions SET granted_by = NULL WHERE granted_by = ?`,

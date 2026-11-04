@@ -200,3 +200,68 @@ describe('MediaPlayer', () => {
     expect(aspectVideo).toBeInTheDocument()
   })
 })
+
+describe('MediaPlayer ticket lifecycle', () => {
+  let n = 0
+  const mintSeq = () => postMock.mockImplementation(async () => ({ data: { ticket: `v1.t${++n}.m` } }))
+  const srcOf = (c: HTMLElement) => c.querySelector('video')!.getAttribute('src')
+  const setPaused = (v: HTMLVideoElement, paused: boolean) => Object.defineProperty(v, 'paused', { configurable: true, value: paused })
+
+  beforeEach(() => { n = 0; postMock.mockReset(); mintSeq() })
+
+  it('error recovery is not exhausted by earlier recoveries: progress resets the budget (5 recoveries, each followed by playing)', async () => {
+    const onError = vi.fn()
+    const { container } = render(<MediaPlayer media={mockMedia as any} onError={onError} />)
+    const video = container.querySelector('video')!
+    await waitFor(() => expect(srcOf(container)).toContain('t1'))
+    for (let i = 2; i <= 6; i++) {
+      fireEvent.error(video)
+      await waitFor(() => expect(srcOf(container)).toContain(`t${i}.`))
+      fireEvent(video, new Event('playing'))
+    }
+    expect(onError).not.toHaveBeenCalled()
+  })
+
+  it('gives up with onError only after 3 consecutive recoveries without progress', async () => {
+    const onError = vi.fn()
+    const { container } = render(<MediaPlayer media={mockMedia as any} onError={onError} />)
+    const video = container.querySelector('video')!
+    await waitFor(() => expect(srcOf(container)).toContain('t1'))
+    for (let i = 2; i <= 4; i++) {
+      fireEvent.error(video)
+      await waitFor(() => expect(srcOf(container)).toContain(`t${i}.`))
+    }
+    expect(onError).not.toHaveBeenCalled()
+    fireEvent.error(video)
+    expect(onError).toHaveBeenCalledTimes(1)
+  })
+
+  describe('timer', () => {
+    beforeEach(() => { vi.useFakeTimers({ shouldAdvanceTime: true }) })
+    afterEach(() => { vi.useRealTimers() })
+
+    it('refreshes the ticket before expiry while playing (seeks after 60 s need a live ticket) and leaves a paused element alone', async () => {
+      const { container } = render(<MediaPlayer media={mockMedia as any} />)
+      const video = container.querySelector('video')!
+      await waitFor(() => expect(srcOf(container)).toContain('t1.'))
+      setPaused(video, false)
+      await vi.advanceTimersByTimeAsync(46_000)
+      await waitFor(() => expect(srcOf(container)).toContain('t2.'))
+      setPaused(video, true)
+      await vi.advanceTimersByTimeAsync(100_000)
+      expect(srcOf(container)).toContain('t2.')
+    })
+
+    it('idle/timer refreshes never consume the error-recovery budget', async () => {
+      const onError = vi.fn()
+      const { container } = render(<MediaPlayer media={mockMedia as any} onError={onError} />)
+      const video = container.querySelector('video')!
+      await waitFor(() => expect(srcOf(container)).toContain('t1.'))
+      setPaused(video, false)
+      for (let i = 0; i < 5; i++) await vi.advanceTimersByTimeAsync(46_000)
+      fireEvent.error(video)
+      await waitFor(() => expect(Number(/t(\d+)\./.exec(srcOf(container)!)![1])).toBeGreaterThan(5))
+      expect(onError).not.toHaveBeenCalled()
+    })
+  })
+})
