@@ -45,6 +45,24 @@ test.describe('stream endpoint (real API)', () => {
     });
   }
 
+  test('ticket path: POST /stream/:id/ticket then ?ticket= streams byte-identical bytes; the ticket is refused for another media id', async ({ request }) => {
+    const rel = STREAMED[0];
+    const id = await idOf(request, rel);
+    const other = await idOf(request, STREAMED[2]);
+    const minted = await request.post(`${API_URL}/api/v1/stream/${id}/ticket`, { headers: auth, data: {} });
+    expect(minted.status()).toBe(200);
+    const { ticket, expires_in } = await minted.json();
+    expect(expires_in).toBeLessThanOrEqual(60);
+    const bare = await request.get(`${API_URL}/api/v1/stream/${id}?ticket=${encodeURIComponent(ticket)}`);
+    expect(bare.status(), 'ticket needs no Authorization header').toBe(200);
+    expect(crypto.createHash('sha256').update(await bare.body()).digest('hex')).toBe(files[rel].sha256);
+    const ranged = await request.get(`${API_URL}/api/v1/stream/${id}?ticket=${encodeURIComponent(ticket)}`, { headers: { Range: 'bytes=0-99' } });
+    expect(ranged.status()).toBe(206);
+    expect((await request.get(`${API_URL}/api/v1/stream/${other}?ticket=${encodeURIComponent(ticket)}`)).status(), 'ticket for another media id').toBe(401);
+    expect((await request.get(`${API_URL}/api/v1/media/stats?ticket=${encodeURIComponent(ticket)}`)).status(), 'ticket on another route').toBe(401);
+    expect((await request.post(`${API_URL}/api/v1/stream/${id}/ticket`, { data: {} })).status(), 'minting needs auth').toBe(401);
+  });
+
   test('stream requires authentication', async ({ request }) => {
     const id = await idOf(request, STREAMED[0]);
     expect((await request.get(`${API_URL}/api/v1/stream/${id}`)).status()).toBe(401);
@@ -55,7 +73,7 @@ test.describe('player in the web UI (real browser, real stream)', () => {
   async function playFromUi(page: import('@playwright/test').Page, testInfo: import('@playwright/test').TestInfo, request: import('@playwright/test').APIRequestContext, rel: string) {
     const id = await idOf(request, rel);
     const streamed: string[] = [];
-    page.on('response', (r) => { if (r.url().includes('/stream/') || r.url().includes(files[rel] ? rel.split('/').pop()! : '')) streamed.push(`${r.status()} ${r.url()}`); });
+    page.on('response', (r) => { if (r.url().includes('/stream/') || r.url().includes(files[rel] ? rel.split('/').pop()! : '')) streamed.push(`${r.status()} ${r.request().method()} ${r.url().replace(/ticket=[^&]+/, 'ticket=<t>')}`); });
     await uiAdminLogin(page);
     await navTo(page, 'Media');
     await page.locator('input[placeholder*="Search your media collection" i]').fill(rel.split('/').pop()!);
@@ -77,7 +95,9 @@ test.describe('player in the web UI (real browser, real stream)', () => {
     const t2 = await video.evaluate((v: HTMLVideoElement) => v.currentTime);
     expect(t2, 'currentTime keeps advancing').toBeGreaterThan(t1 as number);
     expect(await video.evaluate((v: HTMLVideoElement) => v.error), 'no media error').toBeNull();
-    expect(streamed.some((s) => s.includes(`/stream/${id}`) && /^(200|206) /.test(s)), `player requested /stream/${id}; saw ${JSON.stringify(streamed)}`).toBeTruthy();
+    expect(streamed.some((s) => /^20[06] GET /.test(s) && s.includes(`/stream/${id}?ticket=<t>`)), `player streamed /stream/${id}?ticket=; saw ${JSON.stringify(streamed)}`).toBeTruthy();
+    expect(streamed.some((s) => /^200 POST /.test(s) && s.includes(`/stream/${id}/ticket`)), 'player minted a ticket with the authenticated client').toBeTruthy();
+    expect(streamed.some((s) => s.includes('access_token')), 'session token never in a media URL').toBeFalsy();
     await shot(page, testInfo, 'video-playing');
   });
 

@@ -325,10 +325,25 @@ func (r *UserRepository) UnlockAccount(userID int) error {
 	return err
 }
 
+// Delete removes a user. Audit history is evidence and is retained: auth_audit_log rows and the user_permissions.granted_by
+// attribution are detached (user_id / granted_by set NULL) in the same transaction, because both columns reference users(id)
+// without ON DELETE and would otherwise make every user that ever logged in undeletable (HTTP 500).
 func (r *UserRepository) Delete(id int) error {
-	query := `DELETE FROM users WHERE id = ?`
-	_, err := r.db.Exec(query, id)
-	return err
+	tx, err := r.db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+	for _, q := range []string{
+		`UPDATE auth_audit_log SET user_id = NULL WHERE user_id = ?`,
+		`UPDATE user_permissions SET granted_by = NULL WHERE granted_by = ?`,
+		`DELETE FROM users WHERE id = ?`,
+	} {
+		if _, err := tx.Exec(q, id); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
 }
 
 func (r *UserRepository) List(limit, offset int) ([]models.User, error) {

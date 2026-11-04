@@ -320,18 +320,26 @@ func TestUserRepository_Delete(t *testing.T) {
 			name: "success",
 			id:   1,
 			setup: func(mock sqlmock.Sqlmock) {
+				mock.ExpectBegin()
+				mock.ExpectExec("UPDATE auth_audit_log").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 0))
+				mock.ExpectExec("UPDATE user_permissions").WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectExec("DELETE FROM users WHERE id").
 					WithArgs(1).
 					WillReturnResult(sqlmock.NewResult(0, 1))
+				mock.ExpectCommit()
 			},
 		},
 		{
 			name: "database error",
 			id:   999,
 			setup: func(mock sqlmock.Sqlmock) {
+				mock.ExpectBegin()
+				mock.ExpectExec("UPDATE auth_audit_log").WithArgs(999).WillReturnResult(sqlmock.NewResult(0, 0))
+				mock.ExpectExec("UPDATE user_permissions").WithArgs(999).WillReturnResult(sqlmock.NewResult(0, 0))
 				mock.ExpectExec("DELETE FROM users WHERE id").
 					WithArgs(999).
 					WillReturnError(sql.ErrConnDone)
+				mock.ExpectRollback()
 			},
 			wantErr: true,
 		},
