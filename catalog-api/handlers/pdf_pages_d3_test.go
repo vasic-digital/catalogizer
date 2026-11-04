@@ -462,3 +462,74 @@ func TestD3_BufferBoundStopsTheCopy(t *testing.T) {
 	require.Equal(t, http.StatusRequestEntityTooLarge, w.Code, w.Body.String())
 	assert.LessOrEqual(t, read, int64(1001), "the copy must stop at the bound")
 }
+
+// blockingClient serves a valid PDF but only after gate is closed; it announces each read start.
+type blockingClient struct {
+	streamingOnlyClient
+	started chan<- struct{}
+	gate    <-chan struct{}
+}
+
+func (c *blockingClient) ReadFile(context.Context, string) (io.ReadCloser, error) {
+	c.started <- struct{}{}
+	<-c.gate
+	return io.NopCloser(bytes.NewReader(c.data)), nil
+}
+
+type blockingFactory struct {
+	data    []byte
+	started chan struct{}
+	gate    chan struct{}
+}
+
+func (f *blockingFactory) CreateClient(*filesystem.StorageConfig) (filesystem.FileSystemClient, error) {
+	return &blockingClient{streamingOnlyClient: streamingOnlyClient{data: f.data}, started: f.started, gate: f.gate}, nil
+}
+func (f *blockingFactory) SupportedProtocols() []string { return []string{"webdav"} }
+
+// R2-1: the reader slot is HELD for the whole request (buffer + count + render), not only while it
+// is taken. PDFReaderSlots requests blocked in the storage read must make the next one 429 for
+// both endpoints, and once they finish the slots are free again (200).
+func TestD3_SlotHeldWhileWorkRuns(t *testing.T) {
+	for _, suffix := range []string{"", "/0"} {
+		t.Run("endpoint"+suffix, func(t *testing.T) {
+			db, cleanup := setupEntityTestDB(t)
+			defer cleanup()
+			itemRepo := repository.NewMediaItemRepository(db)
+			f := &blockingFactory{data: makeDistinctPDF(1), started: make(chan struct{}, 16), gate: make(chan struct{})}
+			r := newPdfRouter(NewPdfPagesHandler(repository.NewMediaFileRepository(db), db, f))
+			id := insertComicItemOnRoot(t, db, itemRepo, "webdav", "/dav", "slow.pdf", "slow.pdf")
+			do := func() *httptest.ResponseRecorder {
+				w := httptest.NewRecorder()
+				r.ServeHTTP(w, httptest.NewRequest("GET", fmt.Sprintf("/api/v1/entities/%d/pdf-pages%s", id, suffix), nil))
+				return w
+			}
+
+			done := make(chan *httptest.ResponseRecorder, services.PDFReaderSlots)
+			for i := 0; i < services.PDFReaderSlots; i++ {
+				go func() { done <- do() }()
+			}
+			for i := 0; i < services.PDFReaderSlots; i++ {
+				select {
+				case <-f.started:
+				case <-time.After(20 * time.Second):
+					t.Fatal("in-flight request never reached the storage read")
+				}
+			}
+			w := do()
+			require.Equal(t, http.StatusTooManyRequests, w.Code, w.Body.String())
+			assert.NotEmpty(t, w.Header().Get("Retry-After"))
+
+			close(f.gate)
+			for i := 0; i < services.PDFReaderSlots; i++ {
+				select {
+				case ww := <-done:
+					assert.Equal(t, http.StatusOK, ww.Code, ww.Body.String())
+				case <-time.After(30 * time.Second):
+					t.Fatal("blocked request never finished")
+				}
+			}
+			assert.Equal(t, http.StatusOK, do().Code, "slots must be free again")
+		})
+	}
+}

@@ -234,3 +234,32 @@ func TestD3_PDFReaderSlots_FailFast(t *testing.T) {
 	r()
 	rel[1]()
 }
+
+// R2-2: the address-space limit handed to poppler is MemAvailable / (2 * (conversion slots +
+// reader slots)), clamped to [512 MiB, 4 GiB].
+func TestD3_PDFRender_AddressSpaceSizing(t *testing.T) {
+	oldMem := memAvailable
+	t.Cleanup(func() { memAvailable = oldMem })
+	asOf := func(avail uint64) uint64 {
+		memAvailable = func() (uint64, bool) { return avail, true }
+		log := recordingPrlimit(t)
+		_, err := PDFPageCount(context.Background(), fixturePDF(t, "multi.pdf"))
+		require.NoError(t, err)
+		b, err := os.ReadFile(log)
+		require.NoError(t, err)
+		for _, l := range strings.Split(string(b), "\n") {
+			if i := strings.Index(l, "--as="); strings.HasPrefix(l, "ARGV") && i >= 0 {
+				f := strings.Fields(l[i+len("--as="):])[0]
+				n, err := strconv.ParseUint(f, 10, 64)
+				require.NoError(t, err)
+				return n
+			}
+		}
+		t.Fatal("no --as= recorded")
+		return 0
+	}
+	slots := uint64(pdfConcurrentSlots + PDFReaderSlots)
+	assert.Equal(t, (uint64(10)<<30)/(2*slots), asOf(10<<30), "avail/(2*(conversion+reader slots))")
+	assert.Equal(t, uint64(pdfMinAS), asOf(1<<30), "512 MiB floor")
+	assert.Equal(t, uint64(pdfPopplerMaxAS), asOf(100<<30), "4 GiB ceiling")
+}

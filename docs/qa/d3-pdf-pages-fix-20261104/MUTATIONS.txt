@@ -21,3 +21,7 @@ N3 LC_ALL=C removed                 -> TestD3_PDFRender_ChildLimitsAndEnv FAIL
 N4 SIGKILL/SIGXCPU classification removed -> TestD3_PDFRender_LimitSignalsClassified FAIL
 N5 cancel mapped to timeout         -> TestD3_PDFRender_Unavailable_And_Cancelled FAIL
 Note: mut2_RB log is the hang/timeout panic; mut2_RB/RE logs for the first (surviving) attempt were overwritten by the reruns.
+Round 2 (reviewer mutants):
+N1 release() right after slot acquire, GetPdfPage  -> TestD3_SlotHeld FAIL (test timeout panic, r3_mut_N1_get_release_early.log)
+N1 release() right after slot acquire, ListPdfPages -> TestD3_SlotHeld FAIL (test timeout panic, r3_mut_N1_list_release_early.log)
+N4 divisor reverted to 2*pdfConcurrentSlots         -> TestD3_PDFRender_AddressSpaceSizing FAIL (r3_mut_N4_divisor.log)
