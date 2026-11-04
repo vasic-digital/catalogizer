@@ -35,6 +35,9 @@ type ftpConnGroup struct {
 	// context only governs the control connection: it commonly ends right after Connect returns and must not break later transfers.
 	opCtx context.Context
 	first bool // the control connection (first dial) has been made
+	// inner, when set, dials instead of the plain dialer (CopyFile's connTracker); its connections are registered in the group too, so the
+	// deadline policy covers them (review N-1).
+	inner func(network, address string) (net.Conn, error)
 }
 
 type groupConn struct {
@@ -82,7 +85,13 @@ func (g *ftpConnGroup) dialFunc(ctx context.Context) func(network, address strin
 		}
 		g.first = true
 		g.mu.Unlock()
-		conn, err := d.DialContext(dctx, network, address)
+		var conn net.Conn
+		var err error
+		if g.inner != nil {
+			conn, err = g.inner(network, address)
+		} else {
+			conn, err = d.DialContext(dctx, network, address)
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -139,7 +148,7 @@ func (g *ftpConnGroup) arm(ctx context.Context, idle time.Duration) {
 func (g *ftpConnGroup) disarm() {
 	g.mu.Lock()
 	defer g.mu.Unlock()
-	g.armed, g.opCtx = false, nil
+	g.armed, g.opCtx, g.cancelled = false, nil, false
 	for c := range g.conns {
 		_ = c.SetDeadline(time.Time{})
 	}
@@ -188,6 +197,10 @@ func (c *FTPClient) beginOp(ctx context.Context) (*ftp.ServerConn, string, func(
 	case <-ctx.Done():
 		return nil, "", nil, ctx.Err()
 	}
+	if err := c.replaceStale(ctx); err != nil {
+		<-c.opSem
+		return nil, "", nil, err
+	}
 	conn, base, err := c.session()
 	if err != nil {
 		<-c.opSem
@@ -222,9 +235,10 @@ func (c *FTPClient) beginOp(ctx context.Context) (*ftp.ServerConn, string, func(
 			grp.disarm()
 		}
 		if cut {
-			rctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
-			_ = c.reconnectIf(rctx, conn) // best effort; on failure the client stays disconnected and the next call says so
-			cancel()
+			// Lazy replacement (review N-4): the cut operation returns now; the next operation redials under ITS context.
+			c.mu.Lock()
+			c.staleConn = conn
+			c.mu.Unlock()
 		}
 		<-c.opSem
 	}
@@ -241,6 +255,10 @@ func (c *FTPClient) lockOps(ctx context.Context) (func(), error) {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	}
+	if err := c.replaceStale(ctx); err != nil {
+		<-c.opSem
+		return nil, err
+	}
 	return func() { <-c.opSem }, nil
 }
 
@@ -253,4 +271,17 @@ func (g *ftpConnGroup) armDial(ctx context.Context) func() {
 		stop()
 		g.disarm()
 	}
+}
+
+// replaceStale redials the control connection a previous operation left desynchronised (it was cut by its context or a deadline). It runs
+// with the operation turn held and is bounded by the calling operation's context and by the dial bound.
+func (c *FTPClient) replaceStale(ctx context.Context) error {
+	c.mu.Lock()
+	stale := c.staleConn
+	c.staleConn = nil
+	c.mu.Unlock()
+	if stale == nil {
+		return nil
+	}
+	return c.reconnectIf(ctx, stale) // no-op when the client has moved on (Disconnect / Connect replaced the connection)
 }

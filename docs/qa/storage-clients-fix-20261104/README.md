@@ -24,3 +24,12 @@ M1 remove op semaphore -> parallel-stat FAIL; M2 remove ctx.Err() check (FTP) ->
 - F6: smbPath leading separators are trimmed (done); repeated INTERNAL separators ("a//b") are deliberately left as given, since that is today's behaviour for working callers.
 - Evidence files here: red_review_r1_probes.txt (RED on 3cae7498), mutations_round2.txt (mutants), green_new_tests_race_x3.txt, green_filesystem_package_race.txt, green_go_vet.txt, full_package_verbose_race.txt. Commands: `systemd-run --user --scope -p MemoryMax=4G -p MemorySwapMax=0 go test ./filesystem -race -count=N -run ...` in catalog-api with FTP_PYFTPDLIB_DIR set; `go vet ./...`.
 - Mutants killed (round 2): no-session-replacement, watcher no-op, data conns without initial deadline (idle test), cancel skipping a connection, turn leak on session error, data dial on Connect ctx, cut ignoring op error, no dial deadline, no idle progress push; round-1 mutants M1..M6 also still apply.
+
+## Review round 2 (Opus NO-GO) remediation
+- N-1: CopyFile's second session is dialled through dialWith(ctx, tr.dialFunc(ctx)): the tracker's connections are registered in the deadline group (TestR2_CopyFileSecondDialHonoursCtx: RED 21 s HANG, GREEN).
+- N-3: disarm clears the cancelled flag (TestR2_StickyCancelledFlag).
+- N-4: replacement of a cut session is LAZY (staleConn, replaced by the next operation under its own ctx and the dial bound); TestFTPCutOperationReturnsWithoutWaitingForRedial (RED 10.5 s, GREEN ~0.5 s).
+- N-2 tests: TestFTPSessionReplacedAfterIdleTimeout (N3), TestLiveRealFTP_CopyFileLongAfterConnect (N2), TestFTPReadFileCutReplacesSession (N5); long-download test has its own 30 s guard.
+- Mutants killed (mutations_round3.txt): N1, N2, N3, N3b (sticky flag), N4 (no stale replacement), N5 (ReadFile release(nil)).
+- ST-F7 (backslash `..` in smbPath) registered in FOLLOW_UPS as UNCONFIRMED, not changed (hasDotDotSegment is shared with FTP/WebDAV).
+- Evidence manifest: MANIFEST.txt (base commit, UTC timestamp, sha256 of every file here); the evidence was produced on the working tree committed in the commit that adds this manifest.

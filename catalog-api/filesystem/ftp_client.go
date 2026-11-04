@@ -60,6 +60,8 @@ type FTPClient struct {
 	ctl sync.Map // *ftp.ServerConn -> *ftpConnGroup
 	// gen counts Disconnect calls. A reconnect started before a Disconnect must not install its new connection afterwards.
 	gen uint64
+	// staleConn is a control connection a cut operation left desynchronised; the next operation replaces it (replaceStale).
+	staleConn *ftp.ServerConn
 }
 
 // NewFTPClient creates a new FTP client
@@ -90,9 +92,14 @@ func (c *FTPClient) Connect(ctx context.Context) error {
 
 // dial opens, logs in and positions a new control connection without touching the client's fields.
 func (c *FTPClient) dial(ctx context.Context, extra ...ftp.DialOption) (*ftp.ServerConn, string, error) {
+	return c.dialWith(ctx, nil, extra...)
+}
+
+// dialWith is dial with an optional inner connection dialer (CopyFile's tracker) that stays under the session's deadline policy.
+func (c *FTPClient) dialWith(ctx context.Context, inner func(network, address string) (net.Conn, error), extra ...ftp.DialOption) (*ftp.ServerConn, string, error) {
 	addr := net.JoinHostPort(c.config.Host, fmt.Sprintf("%d", c.config.Port))
 
-	grp := &ftpConnGroup{}
+	grp := &ftpConnGroup{inner: inner}
 	endDial := grp.armDial(ctx)
 	defer endDial()
 	opts := append([]ftp.DialOption{ftp.DialWithTimeout(30 * time.Second), ftp.DialWithContext(ctx), ftp.DialWithDialFunc(grp.dialFunc(ctx))}, extra...)
@@ -790,7 +797,7 @@ func (c *FTPClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 	dstFullPath := c.resolvePath(base, dstPath)
 
 	tr := &connTracker{}
-	wconn, _, derr := c.dial(ctx, ftp.DialWithDialFunc(tr.dialFunc(ctx)))
+	wconn, _, derr := c.dialWith(ctx, tr.dialFunc(ctx))
 	if derr != nil {
 		if cerr := ctx.Err(); cerr != nil {
 			return cerr // cancelled: not a reason to fall back

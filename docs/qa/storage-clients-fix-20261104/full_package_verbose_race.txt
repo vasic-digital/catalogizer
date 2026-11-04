@@ -323,24 +323,24 @@
     --- PASS: TestDefaultClientFactory_CreateClient/Local_client (0.00s)
     --- PASS: TestDefaultClientFactory_CreateClient/Unsupported_protocol (0.00s)
 === RUN   TestFTPCopyFile_CancelDuringStorOrphanReported
-2026/11/04 22:21:00 ftp: temporary file /dir/.dst.bin.ftpcopy-9022bfbadd131218.part may remain on the server: 550 "permission denied"
+2026/11/04 22:41:21 ftp: temporary file /dir/.dst.bin.ftpcopy-5f1569df054a229f.part may remain on the server: 550 "permission denied"
 --- PASS: TestFTPCopyFile_CancelDuringStorOrphanReported (0.80s)
 === RUN   TestTempNeverCreatedWordings
 --- PASS: TestTempNeverCreatedWordings (0.00s)
 === RUN   TestFTPCopyFile_AmbiguousDeleRefusalStillReportsOrphan
 === RUN   TestFTPCopyFile_AmbiguousDeleRefusalStillReportsOrphan/No_such_privilege
-2026/11/04 22:21:00 ftp: temporary file /dir/.dst.bin.ftpcopy-32568741549bbc8d.part may remain on the server: 550 "No such privilege"
+2026/11/04 22:41:21 ftp: temporary file /dir/.dst.bin.ftpcopy-f4987c3610f2e9e5.part may remain on the server: 550 "No such privilege"
 === RUN   TestFTPCopyFile_AmbiguousDeleRefusalStillReportsOrphan/File_not_found_or_permission_denied
-2026/11/04 22:21:00 ftp: temporary file /dir/.dst.bin.ftpcopy-9f662963068445ea.part may remain on the server: 550 "File not found or permission denied"
+2026/11/04 22:41:21 ftp: temporary file /dir/.dst.bin.ftpcopy-4cdab15f2a71c218.part may remain on the server: 550 "File not found or permission denied"
 --- PASS: TestFTPCopyFile_AmbiguousDeleRefusalStillReportsOrphan (0.01s)
     --- PASS: TestFTPCopyFile_AmbiguousDeleRefusalStillReportsOrphan/No_such_privilege (0.00s)
     --- PASS: TestFTPCopyFile_AmbiguousDeleRefusalStillReportsOrphan/File_not_found_or_permission_denied (0.00s)
 === RUN   TestTempSiblingInvalidUTF8
---- PASS: TestTempSiblingInvalidUTF8 (0.02s)
+--- PASS: TestTempSiblingInvalidUTF8 (0.01s)
 === RUN   TestFTPCopyFile_ConcurrentCancelStorm
 --- PASS: TestFTPCopyFile_ConcurrentCancelStorm (1.16s)
 === RUN   TestFTPCopyFile_FallbackCancelMidFlowingTransfer
---- PASS: TestFTPCopyFile_FallbackCancelMidFlowingTransfer (0.51s)
+--- PASS: TestFTPCopyFile_FallbackCancelMidFlowingTransfer (0.15s)
 === RUN   TestFTPClient_NewFTPClient
 --- PASS: TestFTPClient_NewFTPClient (0.00s)
 === RUN   TestFTPClient_NewFTPClient_MinimalConfig
@@ -372,7 +372,7 @@
 === RUN   TestFTPClient_CopyFile_NotConnected
 --- PASS: TestFTPClient_CopyFile_NotConnected (0.00s)
 === RUN   TestFTPClient_Connect_InvalidServer
---- PASS: TestFTPClient_Connect_InvalidServer (10.01s)
+--- PASS: TestFTPClient_Connect_InvalidServer (10.00s)
 === RUN   TestFTPClient_Connect_InvalidPort
 --- PASS: TestFTPClient_Connect_InvalidPort (0.00s)
 === RUN   TestFTPClient_Disconnect_NotConnected
@@ -410,24 +410,28 @@
 === RUN   TestFTPCopyFile_LongBasename
 --- PASS: TestFTPCopyFile_LongBasename (0.00s)
 === RUN   TestFTPCopyFile_RefusedRenameAndDeleNamesOrphan
-2026/11/04 22:21:22 ftp: temporary file /dir/.dst.bin.ftpcopy-070aca1979166d97.part may remain on the server: 550 "permission denied"
+2026/11/04 22:41:42 ftp: temporary file /dir/.dst.bin.ftpcopy-913430dd813c4717.part may remain on the server: 550 "permission denied"
 --- PASS: TestFTPCopyFile_RefusedRenameAndDeleNamesOrphan (0.00s)
 === RUN   TestFTPCopyFile_ConcurrentSameDestination
 --- PASS: TestFTPCopyFile_ConcurrentSameDestination (0.01s)
 === RUN   TestFTPCopyFile_OddNames
 --- PASS: TestFTPCopyFile_OddNames (0.01s)
 === RUN   TestFTPCopyFile_CancelWithBlackholedControlReturnsPromptly
---- PASS: TestFTPCopyFile_CancelWithBlackholedControlReturnsPromptly (0.81s)
+--- PASS: TestFTPCopyFile_CancelWithBlackholedControlReturnsPromptly (0.80s)
 === RUN   TestFTPCopyFile_SameSourceAndDestination
---- PASS: TestFTPCopyFile_SameSourceAndDestination (0.01s)
+--- PASS: TestFTPCopyFile_SameSourceAndDestination (0.00s)
 === RUN   TestFTPSilentDataConnectionHonoursContext
 --- PASS: TestFTPSilentDataConnectionHonoursContext (0.70s)
 === RUN   TestFTPTurnReleasedWhenNotConnected
 --- PASS: TestFTPTurnReleasedWhenNotConnected (0.00s)
 === RUN   TestLiveRealFTP_SuccessKeepsSessionWhenContextEndsLate
---- PASS: TestLiveRealFTP_SuccessKeepsSessionWhenContextEndsLate (0.16s)
+--- PASS: TestLiveRealFTP_SuccessKeepsSessionWhenContextEndsLate (0.08s)
 === RUN   TestFTPConnectSilentBannerHonoursContext
 --- PASS: TestFTPConnectSilentBannerHonoursContext (0.60s)
+=== RUN   TestFTPSilentDataConnectionEndsByIdleBound
+--- PASS: TestFTPSilentDataConnectionEndsByIdleBound (0.60s)
+=== RUN   TestFTPCancelUnblocksSilentDataConnection
+--- PASS: TestFTPCancelUnblocksSilentDataConnection (1.81s)
 === RUN   TestFTPReadCloser_DisconnectDuringRedialDoesNotResurrect
 --- PASS: TestFTPReadCloser_DisconnectDuringRedialDoesNotResurrect (0.01s)
 === RUN   TestFTPReadCloser_ConnectDuringRedialKeepsConnectsConnection
@@ -447,29 +451,29 @@
 === RUN   TestFTPReadCloser_426QuitsOldSessionAndClientUsable
 --- PASS: TestFTPReadCloser_426QuitsOldSessionAndClientUsable (0.25s)
 === RUN   TestLiveRealFTP_SharedClientParallelStat
---- PASS: TestLiveRealFTP_SharedClientParallelStat (0.86s)
+--- PASS: TestLiveRealFTP_SharedClientParallelStat (0.75s)
 === RUN   TestFTPOperationHonoursContextDeadlineOnSilentServer
 --- PASS: TestFTPOperationHonoursContextDeadlineOnSilentServer (0.70s)
 === RUN   TestReviewerProbe_RefusedStorMustNotDeleteExistingDestination
 --- PASS: TestReviewerProbe_RefusedStorMustNotDeleteExistingDestination (0.00s)
 === RUN   TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch
 === RUN   TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch/cancel-after-store-before-source-confirmation
-2026/11/04 22:21:27 ftp: temporary file /dir/.dst.bin.ftpcopy-39913bf7b3bf4813.part may remain on the server: 550 "permission denied"
+2026/11/04 22:41:50 ftp: temporary file /dir/.dst.bin.ftpcopy-fbfcd9b73d584b86.part may remain on the server: 550 "permission denied"
 === RUN   TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch/unconfirmed-source
-2026/11/04 22:21:27 ftp: temporary file /dir/.dst.bin.ftpcopy-314a591b62367d4f.part may remain on the server: 550 "permission denied"
+2026/11/04 22:41:50 ftp: temporary file /dir/.dst.bin.ftpcopy-17ea9b6bd8e6c19f.part may remain on the server: 550 "permission denied"
 === RUN   TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch/abandon-before-move
-2026/11/04 22:21:27 ftp: temporary file /dir/.dst.bin.ftpcopy-f10ff2acf12c9b99.part may remain on the server: 550 "permission denied"
+2026/11/04 22:41:50 ftp: temporary file /dir/.dst.bin.ftpcopy-16c308f8f758378c.part may remain on the server: 550 "permission denied"
 --- PASS: TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch (0.91s)
     --- PASS: TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch/cancel-after-store-before-source-confirmation (0.60s)
     --- PASS: TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch/unconfirmed-source (0.00s)
     --- PASS: TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch/abandon-before-move (0.30s)
 === RUN   TestFTPCopyFile_OrphanIsLogged
---- PASS: TestFTPCopyFile_OrphanIsLogged (0.01s)
+--- PASS: TestFTPCopyFile_OrphanIsLogged (0.00s)
 === RUN   TestFTPCopyFile_DeleRefusalRetryPolicy
 === RUN   TestFTPCopyFile_DeleRefusalRetryPolicy/transient-450-retries
-2026/11/04 22:21:27 ftp: temporary file /dir/.dst.bin.ftpcopy-5529b1b88f1dffd6.part may remain on the server: 450 "file busy"
+2026/11/04 22:41:50 ftp: temporary file /dir/.dst.bin.ftpcopy-d4d69bc4cbb04a1b.part may remain on the server: 450 "file busy"
 === RUN   TestFTPCopyFile_DeleRefusalRetryPolicy/permanent-550-does-not
-2026/11/04 22:21:27 ftp: temporary file /dir/.dst.bin.ftpcopy-a81cdb7ed7ff6f34.part may remain on the server: 550 "file busy"
+2026/11/04 22:41:50 ftp: temporary file /dir/.dst.bin.ftpcopy-0838a6cc658dc483.part may remain on the server: 550 "file busy"
 --- PASS: TestFTPCopyFile_DeleRefusalRetryPolicy (0.01s)
     --- PASS: TestFTPCopyFile_DeleRefusalRetryPolicy/transient-450-retries (0.00s)
     --- PASS: TestFTPCopyFile_DeleRefusalRetryPolicy/permanent-550-does-not (0.00s)
@@ -484,39 +488,52 @@
 === RUN   TestRV_CancelMidOpUnblocks
 --- PASS: TestRV_CancelMidOpUnblocks (0.30s)
 === RUN   TestRV_ReconnectAfterCutBounded
-    ftp_review_r1_unit_test.go:133: returned after 10.501837208s
-    ftp_review_r1_unit_test.go:144: second op err=not connected
---- PASS: TestRV_ReconnectAfterCutBounded (10.50s)
+    ftp_review_r1_unit_test.go:133: returned after 500.826893ms
+    ftp_review_r1_unit_test.go:144: second op err=failed to connect to FTP server: read tcp 127.0.0.1:44576->127.0.0.1:36415: i/o timeout
+--- PASS: TestRV_ReconnectAfterCutBounded (1.00s)
 === RUN   TestRV_LiveDataConnAfterConnectCtxEnds
---- PASS: TestRV_LiveDataConnAfterConnectCtxEnds (0.15s)
+--- PASS: TestRV_LiveDataConnAfterConnectCtxEnds (0.10s)
 === RUN   TestRV_LongUploadExceedsOpCap
     ftp_review_r1_unit_test.go:186: long upload err=<nil>
---- PASS: TestRV_LongUploadExceedsOpCap (3.33s)
+--- PASS: TestRV_LongUploadExceedsOpCap (3.31s)
 === RUN   TestRV_LongDownloadExceedsOpCap
---- PASS: TestRV_LongDownloadExceedsOpCap (3.33s)
+--- PASS: TestRV_LongDownloadExceedsOpCap (3.30s)
 === RUN   TestRV_SmbPathEdges
-    ftp_review_r1_unit_test.go:220: smbPath("/") = "."
-    ftp_review_r1_unit_test.go:220: smbPath("//") = "."
-    ftp_review_r1_unit_test.go:220: smbPath("///a//b/") = "a//b/"
-    ftp_review_r1_unit_test.go:220: smbPath("/..") = "."
-    ftp_review_r1_unit_test.go:220: smbPath("/a/../b") = "b"
-    ftp_review_r1_unit_test.go:220: smbPath("\\x") = "\\x"
-    ftp_review_r1_unit_test.go:220: smbPath("\\\\srv\\share\\x") = "\\\\srv\\share\\x"
-    ftp_review_r1_unit_test.go:220: smbPath("./x") = "./x"
-    ftp_review_r1_unit_test.go:220: smbPath("/./x") = "./x"
+    ftp_review_r1_unit_test.go:233: smbPath("/") = "."
+    ftp_review_r1_unit_test.go:233: smbPath("//") = "."
+    ftp_review_r1_unit_test.go:233: smbPath("///a//b/") = "a//b/"
+    ftp_review_r1_unit_test.go:233: smbPath("/..") = "."
+    ftp_review_r1_unit_test.go:233: smbPath("/a/../b") = "b"
+    ftp_review_r1_unit_test.go:233: smbPath("\\x") = "\\x"
+    ftp_review_r1_unit_test.go:233: smbPath("\\\\srv\\share\\x") = "\\\\srv\\share\\x"
+    ftp_review_r1_unit_test.go:233: smbPath("./x") = "./x"
+    ftp_review_r1_unit_test.go:233: smbPath("/./x") = "./x"
 --- PASS: TestRV_SmbPathEdges (0.00s)
+=== RUN   TestR2_CopyFileSecondDialHonoursCtx
+    ftp_review_r2_unit_test.go:82: CopyFile returned after 701.138304ms err=context deadline exceeded
+--- PASS: TestR2_CopyFileSecondDialHonoursCtx (0.70s)
+=== RUN   TestR2_StickyCancelledFlag
+--- PASS: TestR2_StickyCancelledFlag (0.00s)
+=== RUN   TestFTPSessionReplacedAfterIdleTimeout
+--- PASS: TestFTPSessionReplacedAfterIdleTimeout (0.50s)
+=== RUN   TestFTPReadFileCutReplacesSession
+--- PASS: TestFTPReadFileCutReplacesSession (0.50s)
+=== RUN   TestFTPCutOperationReturnsWithoutWaitingForRedial
+--- PASS: TestFTPCutOperationReturnsWithoutWaitingForRedial (0.50s)
+=== RUN   TestLiveRealFTP_CopyFileLongAfterConnect
+--- PASS: TestLiveRealFTP_CopyFileLongAfterConnect (1.01s)
 === RUN   TestR7_SpoolCancelDuringStorKeepsOrphanNote
-2026/11/04 22:21:46 ftp: temporary file /dir/.dst.bin.ftpcopy-c0344652d52177b6.part may remain on the server: 550 "permission denied"
-    ftp_review_r7_unit_test.go:27: err=copy of /src.bin cancelled: context canceled; temporary file /dir/.dst.bin.ftpcopy-c0344652d52177b6.part may remain on the server (cleanup failed: 550 "permission denied") temps=[/dir/.dst.bin.ftpcopy-c0344652d52177b6.part]
+2026/11/04 22:42:03 ftp: temporary file /dir/.dst.bin.ftpcopy-85e2c2da15ec8cb5.part may remain on the server: 550 "permission denied"
+    ftp_review_r7_unit_test.go:27: err=copy of /src.bin cancelled: context canceled; temporary file /dir/.dst.bin.ftpcopy-85e2c2da15ec8cb5.part may remain on the server (cleanup failed: 550 "permission denied") temps=[/dir/.dst.bin.ftpcopy-85e2c2da15ec8cb5.part]
 --- PASS: TestR7_SpoolCancelDuringStorKeepsOrphanNote (0.51s)
 === RUN   TestFTPSession_FieldCyclingVsOperations_NoRaceNoPanic
---- PASS: TestFTPSession_FieldCyclingVsOperations_NoRaceNoPanic (0.23s)
+--- PASS: TestFTPSession_FieldCyclingVsOperations_NoRaceNoPanic (0.20s)
 === RUN   TestFTPSession_DisconnectedOperationsReturnNotConnected
 --- PASS: TestFTPSession_DisconnectedOperationsReturnNotConnected (0.00s)
 === RUN   TestFTPCopyFile_NoControlCommandsWhileRetrDataConnectionOpen
 --- PASS: TestFTPCopyFile_NoControlCommandsWhileRetrDataConnectionOpen (0.00s)
 === RUN   TestFTPCopyFile_LargeFileStreamsWithoutBufferingInMemory
---- PASS: TestFTPCopyFile_LargeFileStreamsWithoutBufferingInMemory (0.19s)
+--- PASS: TestFTPCopyFile_LargeFileStreamsWithoutBufferingInMemory (0.18s)
 === RUN   TestFTPCopyFile_RetrCompletionFailureIsReturned
 === RUN   TestFTPCopyFile_RetrCompletionFailureIsReturned/stream/426
 === RUN   TestFTPCopyFile_RetrCompletionFailureIsReturned/stream/451
@@ -538,7 +555,7 @@
 === RUN   TestFTPCopyFile_RefusedStorKeepsExistingDestination
 === RUN   TestFTPCopyFile_RefusedStorKeepsExistingDestination/stream
 === RUN   TestFTPCopyFile_RefusedStorKeepsExistingDestination/fallback
---- PASS: TestFTPCopyFile_RefusedStorKeepsExistingDestination (0.51s)
+--- PASS: TestFTPCopyFile_RefusedStorKeepsExistingDestination (0.52s)
     --- PASS: TestFTPCopyFile_RefusedStorKeepsExistingDestination/stream (0.00s)
     --- PASS: TestFTPCopyFile_RefusedStorKeepsExistingDestination/fallback (0.51s)
 === RUN   TestFTPCopyFile_RenameOverExistingRefusedKeepsDestination
@@ -554,11 +571,11 @@
 === RUN   TestFTPCopyFile_CancelDuringTransferStopsAndKeepsDestination/fallback
 --- PASS: TestFTPCopyFile_CancelDuringTransferStopsAndKeepsDestination (0.95s)
     --- PASS: TestFTPCopyFile_CancelDuringTransferStopsAndKeepsDestination/stream (0.01s)
-    --- PASS: TestFTPCopyFile_CancelDuringTransferStopsAndKeepsDestination/fallback (0.94s)
+    --- PASS: TestFTPCopyFile_CancelDuringTransferStopsAndKeepsDestination/fallback (0.95s)
 === RUN   TestFTPCopyFile_CancelUnblocksStalledSourceRead
 === RUN   TestFTPCopyFile_CancelUnblocksStalledSourceRead/stream
 === RUN   TestFTPCopyFile_CancelUnblocksStalledSourceRead/fallback
---- PASS: TestFTPCopyFile_CancelUnblocksStalledSourceRead (2.41s)
+--- PASS: TestFTPCopyFile_CancelUnblocksStalledSourceRead (2.40s)
     --- PASS: TestFTPCopyFile_CancelUnblocksStalledSourceRead/stream (1.20s)
     --- PASS: TestFTPCopyFile_CancelUnblocksStalledSourceRead/fallback (1.20s)
 === RUN   TestFTPCopyFile_CancelUnblocksStalledDestinationWrite
@@ -590,16 +607,16 @@
     --- PASS: TestFTPCopyFile_CancelWithBlackholedSourceControlReplacesSession/stream (1.20s)
     --- PASS: TestFTPCopyFile_CancelWithBlackholedSourceControlReplacesSession/fallback (1.20s)
 === RUN   TestFTPCopyFile_OrphanTempIsNamedInError
-2026/11/04 22:21:59 ftp: temporary file /dir/.dst.bin.ftpcopy-ee1424ef897465f0.part may remain on the server: 550 "permission denied"
+2026/11/04 22:42:15 ftp: temporary file /dir/.dst.bin.ftpcopy-e990c92f54ef89fe.part may remain on the server: 550 "permission denied"
 --- PASS: TestFTPCopyFile_OrphanTempIsNamedInError (0.00s)
 === RUN   TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan
-=== RUN   TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan/cleanup-session-dial-refused
-2026/11/04 22:21:59 ftp: temporary file /dir/.dst.bin.ftpcopy-4f3f01df03e61dd6.part may remain on the server: write tcp 127.0.0.1:40158->127.0.0.1:41889: use of closed network connection (cleanup session: failed to connect to FTP server: 421 "no more sessions")
 === RUN   TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan/fresh-session-dele-refused
-2026/11/04 22:22:00 ftp: temporary file /dir/.dst.bin.ftpcopy-3476a883236bcb1d.part may remain on the server: 550 "permission denied"
+2026/11/04 22:42:16 ftp: temporary file /dir/.dst.bin.ftpcopy-8aa74d96c4017933.part may remain on the server: 550 "permission denied"
+=== RUN   TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan/cleanup-session-dial-refused
+2026/11/04 22:42:16 ftp: temporary file /dir/.dst.bin.ftpcopy-f171bec32fb43a97.part may remain on the server: write tcp 127.0.0.1:56004->127.0.0.1:43349: use of closed network connection (cleanup session: failed to connect to FTP server: 421 "no more sessions")
 --- PASS: TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan (1.41s)
-    --- PASS: TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan/cleanup-session-dial-refused (0.70s)
     --- PASS: TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan/fresh-session-dele-refused (0.70s)
+    --- PASS: TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan/cleanup-session-dial-refused (0.70s)
 === RUN   TestFTPCopyFile_CancelBeforeDisarmAbandonsCopy
 --- PASS: TestFTPCopyFile_CancelBeforeDisarmAbandonsCopy (0.30s)
 === RUN   TestFTPCopyFile_CancelAfterDisarmStillCommits
@@ -671,7 +688,7 @@
 === RUN   TestYandexAllowedURL
 --- PASS: TestYandexAllowedURL (0.00s)
 === RUN   TestDetBytesDeterministic
---- PASS: TestDetBytesDeterministic (0.05s)
+--- PASS: TestDetBytesDeterministic (0.04s)
 === RUN   TestLocalClient_Connect
 --- PASS: TestLocalClient_Connect (0.00s)
 === RUN   TestLocalClient_TestConnection
@@ -853,7 +870,7 @@
 === RUN   TestSmbClient_CopyFile_NotConnected
 --- PASS: TestSmbClient_CopyFile_NotConnected (0.00s)
 === RUN   TestSmbClient_Connect_InvalidServer
---- PASS: TestSmbClient_Connect_InvalidServer (10.00s)
+--- PASS: TestSmbClient_Connect_InvalidServer (10.01s)
 === RUN   TestSmbClient_Disconnect_NotConnected
 --- PASS: TestSmbClient_Disconnect_NotConnected (0.00s)
 === RUN   TestSmbConfig_AllFields
@@ -909,7 +926,7 @@
 === RUN   TestFTPCancelledContextNoNetworkTraffic
 --- PASS: TestFTPCancelledContextNoNetworkTraffic (0.10s)
 === RUN   TestLiveRealFTP_CancelledContextFailsFastSessionSurvives
---- PASS: TestLiveRealFTP_CancelledContextFailsFastSessionSurvives (0.10s)
+--- PASS: TestLiveRealFTP_CancelledContextFailsFastSessionSurvives (0.11s)
 === RUN   TestSmbClient_Disconnect_ForgetsHandles
 --- PASS: TestSmbClient_Disconnect_ForgetsHandles (0.00s)
 === RUN   TestIsNotExistError_WrappedPathError
@@ -1062,11 +1079,11 @@
 === RUN   TestDavStatusOK
 --- PASS: TestDavStatusOK (0.00s)
 === RUN   TestWebDAVTransfer_SlowButProgressingDownloadSucceeds
---- PASS: TestWebDAVTransfer_SlowButProgressingDownloadSucceeds (1.20s)
+--- PASS: TestWebDAVTransfer_SlowButProgressingDownloadSucceeds (1.21s)
 === RUN   TestWebDAVTransfer_StalledDownloadIsCutByIdleTimeout
 --- PASS: TestWebDAVTransfer_StalledDownloadIsCutByIdleTimeout (0.30s)
 === RUN   TestWebDAVTransfer_SlowButProgressingUploadSucceeds
---- PASS: TestWebDAVTransfer_SlowButProgressingUploadSucceeds (1.21s)
+--- PASS: TestWebDAVTransfer_SlowButProgressingUploadSucceeds (1.30s)
 === RUN   TestWebDAVTransfer_SizedUploadKeepsContentLength
 --- PASS: TestWebDAVTransfer_SizedUploadKeepsContentLength (0.00s)
 === RUN   TestWebDAVTransfer_MetadataOperationBoundedAsAWhole
@@ -1096,9 +1113,9 @@
 === RUN   TestWF22_R9_NoErrorOfTheWebDAVClientCarriesACredential
 --- PASS: TestWF22_R9_NoErrorOfTheWebDAVClientCarriesACredential (0.01s)
 === RUN   TestWF22_W1_AnswerLargerThanTheByteBoundIsAnErrorNotATruncation
---- PASS: TestWF22_W1_AnswerLargerThanTheByteBoundIsAnErrorNotATruncation (0.47s)
+--- PASS: TestWF22_W1_AnswerLargerThanTheByteBoundIsAnErrorNotATruncation (0.66s)
 === RUN   TestWF22_R4_ListLimitStopsDecodingEarly
---- PASS: TestWF22_R4_ListLimitStopsDecodingEarly (0.09s)
+--- PASS: TestWF22_R4_ListLimitStopsDecodingEarly (0.11s)
 === RUN   TestWF22_R10_NameIsTheHrefSegmentNotTheDisplayName
 --- PASS: TestWF22_R10_NameIsTheHrefSegmentNotTheDisplayName (0.00s)
 === RUN   TestWF22_E03_UnparsableOrMissingTimeIsTheZeroTime
@@ -1122,7 +1139,7 @@
 === RUN   TestWF22R3_A_WebDAVAndSMBConfine
 --- PASS: TestWF22R3_A_WebDAVAndSMBConfine (0.00s)
 === RUN   TestWF22R3_A_Classifier_EveryClientPathParameterGoesThroughAConfiningResolver
---- PASS: TestWF22R3_A_Classifier_EveryClientPathParameterGoesThroughAConfiningResolver (0.03s)
+--- PASS: TestWF22R3_A_Classifier_EveryClientPathParameterGoesThroughAConfiningResolver (0.04s)
 === RUN   TestWF22R3_A_EveryResolverUsesTheSharedRule
 --- PASS: TestWF22R3_A_EveryResolverUsesTheSharedRule (0.00s)
 === RUN   TestWF22R3_N1_ConnectNeverSucceedsWithoutAMount
@@ -1217,4 +1234,4 @@
     --- PASS: FuzzGetIntSetting/seed#3 (0.00s)
     --- PASS: FuzzGetIntSetting/seed#4 (0.00s)
 PASS
-ok  	catalogizer/filesystem	83.439s
+ok  	catalogizer/filesystem	79.204s

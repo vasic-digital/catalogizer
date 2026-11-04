@@ -208,10 +208,23 @@ func TestRV_LongDownloadExceedsOpCap(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	n, err := io.Copy(io.Discard, &slowReader{r: rc, delay: 200 * time.Millisecond})
-	rc.Close()
-	if err != nil || n != 4096*15 {
-		t.Fatalf("download n=%d err=%v", n, err)
+	type res struct {
+		n   int64
+		err error
+	}
+	ch := make(chan res, 1)
+	go func() {
+		n, err := io.Copy(io.Discard, &slowReader{r: rc, delay: 200 * time.Millisecond})
+		ch <- res{n, err}
+	}()
+	select {
+	case r := <-ch:
+		rc.Close()
+		if r.err != nil || r.n != 4096*15 {
+			t.Fatalf("download n=%d err=%v", r.n, r.err)
+		}
+	case <-time.After(30 * time.Second):
+		t.Fatal("HANG: slow download did not finish in 30s")
 	}
 }
 

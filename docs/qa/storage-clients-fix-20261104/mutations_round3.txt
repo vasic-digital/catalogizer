@@ -1,0 +1,24 @@
+== N1-copyfile-dial-replaces-group-dialfunc
+--- FAIL: TestR2_CopyFileSecondDialHonoursCtx (21.02s)
+FAIL
+FAIL	catalogizer/filesystem	21.032s
+== N3-cut-ignores-expired
+--- FAIL: TestFTPSessionReplacedAfterIdleTimeout (0.50s)
+FAIL
+FAIL	catalogizer/filesystem	0.509s
+== N2-armDial-without-disarm
+--- FAIL: TestLiveRealFTP_CopyFileLongAfterConnect (1.01s)
+FAIL
+FAIL	catalogizer/filesystem	1.014s
+== N5-readfile-release-nil
+--- FAIL: TestFTPReadFileCutReplacesSession (0.50s)
+FAIL
+FAIL	catalogizer/filesystem	0.511s
+== N3b-sticky-cancelled
+--- FAIL: TestR2_StickyCancelledFlag (0.00s)
+FAIL
+FAIL	catalogizer/filesystem	0.010s
+== N4-no-stale-replacement
+--- FAIL: TestRV_SessionReplacedAfterCut (0.50s)
+--- FAIL: TestFTPSessionReplacedAfterIdleTimeout (0.50s)
+FAIL
