@@ -1200,3 +1200,15 @@ Add a fixture with a clean twin for each probe.
 - WL13-R4 (process-doc, minor): PROVISIONAL-DONE entries name no live verification job (real catalog-api stream, tickets, target, due, command) per §11.4.290; the tests use the local ticket_server fixture (unit-class), so VERIFIED-DONE needs a live run.
 - WL13-R6 (nit): `r.play` in `r.play && wantPlayRef.current` is redundant (equivalent mutant); keep as defence in depth or drop.
 - Player controls lack accessible names / test ids (aria-labels would help tests and a11y).
+
+## CAT-CSRF-LAN follow-ups
+
+- CSRF-1 (provisional): fix proven by real-router tests only; confirm in a browser against the stack-3 QA stack on http://<LAN-IP> (PUT /api/v1/admin/users/:id succeeds) after the next rebuild.
+- CSRF-2 (process-doc): stack-3 `up.sh` sets the toggle; production compose files deliberately do not. Add a deploy-config lint that CSRF_INSECURE_DEV is absent from production manifests.
+- CSRF-3 (enhancement): serve the QA stack over HTTPS and retire the toggle.
+
+## CSRF-LAN review follow-ups (Opus rounds 1-2, GO-with-follow-ups, landed head 99a94f53)
+
+- CSRF-R2-1 (test-instrumentation, minor): the `main()` call `adminCSRFOptions(os.Getenv, logging.Warnf)` is untested (mutant passing a blank getenv survives); cover with the live CSRF-1 browser check on a rebuilt stack 3 or a startup test with a real env. Item stays PROVISIONAL-DONE until CSRF-1 runs live.
+- CSRF-R2-2 (nit): `catalog-api/csrf_env_test.go` declares a generic package-level helper `env` and a filler `_ = root_middleware.CSRFInsecureDevEnvVar`; rename/remove.
+- Residual (accepted for dev-only toggle): without the `__Host-` prefix a sibling-subdomain/HTTP MITM could plant `csrf-dev`; attacker still needs an HMAC-signed pair and a matching header.

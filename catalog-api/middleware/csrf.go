@@ -68,6 +68,40 @@ func WithCSRFInsecureDev(enabled bool) CSRFOption {
 	}
 }
 
+// CSRFInsecureDevEnvVar is the explicit, OFF-by-default toggle that lets a
+// plain-HTTP deployment (for example a QA stack served over http://<LAN-IP>)
+// keep its CSRF cookie. Browsers drop `Secure` and `__Host-` cookies on plain
+// HTTP, so without it every admin write fails 403 "missing csrf cookie".
+const CSRFInsecureDevEnvVar = "CSRF_INSECURE_DEV"
+
+// csrfDevEnvs is the ALLOW-list of environments in which the toggle may take effect.
+// Anything else (production, prod, staging, live, empty, typos) is refused.
+var csrfDevEnvs = map[string]bool{"development": true, "dev": true, "test": true, "local": true, "qa": true}
+
+// CSRFOptionsFromEnv resolves the CSRF options from the toggle value
+// (CSRF_INSECURE_DEV) and the effective APP_ENV. Truthy values: 1, true, yes,
+// on (case-insensitive). The toggle is REFUSED, loudly, unless appEnv (trimmed, lowercased) is in the
+// allow-list development, dev, test, local, qa; the secure default
+// (`__Host-csrf`, Secure) is kept otherwise. warnf may be nil.
+func CSRFOptionsFromEnv(toggle, appEnv string, warnf func(format string, args ...any)) []CSRFOption {
+	switch strings.ToLower(strings.TrimSpace(toggle)) {
+	case "1", "true", "yes", "on":
+	default:
+		return nil
+	}
+	env := strings.ToLower(strings.TrimSpace(appEnv))
+	if !csrfDevEnvs[env] {
+		if warnf != nil {
+			warnf("SECURITY: %s is set but APP_ENV is %q, not an allowed dev-like environment (development, dev, test, local, qa); refusing to weaken the CSRF cookie, keeping Secure + __Host- prefix", CSRFInsecureDevEnvVar, appEnv)
+		}
+		return nil
+	}
+	if warnf != nil {
+		warnf("WARNING: %s enabled (APP_ENV=%s): CSRF cookie is NOT Secure and has no __Host- prefix; plain-HTTP only, never use in production", CSRFInsecureDevEnvVar, appEnv)
+	}
+	return []CSRFOption{WithCSRFInsecureDev(true)}
+}
+
 // defaultCSRFCookieName and devCSRFCookieName are the two built-in
 // cookie names. Both are exported through constructor defaults +
 // WithCSRFInsecureDev so tests can pin either explicitly.
