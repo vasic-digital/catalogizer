@@ -1,0 +1,52 @@
+Running 4 tests using 1 worker
+  ✘  1 [firefox] › e2e/player-real/player_lifecycle.spec.ts:59:5 › WL13-F1: a Pause click during the reload after a seek-mint is honoured (the element stays paused) (38.8s)
+  ✓  2 [firefox] › e2e/player-real/player_lifecycle.spec.ts:79:5 › WL13-F1 (decision probe): an OS media-key pause during a reload is invisible to the page (already paused, no pause event) (9.2s)
+  ✘  3 [firefox] › e2e/player-real/player_lifecycle.spec.ts:102:5 › WL13-F2: the LAST seek wins when seek 2 lands in a buffered range while a seek-mint for seek 1 is in flight (12.9s)
+  ✘  4 [firefox] › e2e/player-real/player_lifecycle.spec.ts:122:5 › WL13-F3: after the media ended, seeking back to a near-expiry unbuffered target does not auto-play (19.1s)
+  1) [firefox] › e2e/player-real/player_lifecycle.spec.ts:59:5 › WL13-F1: a Pause click during the reload after a seek-mint is honoured (the element stays paused) 
+    Error: the user paused during the reload; the player resumed playing: {"t":0,"paused":false,"ended":false,"rs":4,"err":null,"dur":60,"buf":[[0,0.08],[40,60]]}
+    expect(received).toBe(expected) // Object.is equality
+    Expected: true
+    Received: false
+      73 |   await page.waitForTimeout(2500)
+      74 |   const end = await state(page)
+    > 75 |   expect(end.paused, `the user paused during the reload; the player resumed playing: ${JSON.stringify(end)}`).toBe(true)
+         |                                                                                                               ^
+      76 |   expect(end.t).toBeGreaterThanOrEqual(target - 1)
+      77 | })
+      78 |
+        at /home/milosvasic/.cache/claude-tmp/wl13.Jal3R0/repo/catalog-web/e2e/player-real/player_lifecycle.spec.ts:75:111
+    Error Context: test-results/player-real/player_lifecycle-WL13-F1-a-dba51-d-the-element-stays-paused--firefox/error-context.md
+  2) [firefox] › e2e/player-real/player_lifecycle.spec.ts:102:5 › WL13-F2: the LAST seek wins when seek 2 lands in a buffered range while a seek-mint for seek 1 is in flight 
+    Error: seek 2 (t=1) was the last seek, the player ended at {"t":45,"paused":false,"ended":false,"rs":1,"err":null,"dur":60,"buf":[[0,0.08],[40,42.04]]}
+    expect(received).toBeLessThan(expected)
+    Expected: < 11
+    Received:   45
+      117 |   await page.waitForTimeout(1500)
+      118 |   const end = await state(page)
+    > 119 |   expect(end.t, `seek 2 (t=${t2}) was the last seek, the player ended at ${JSON.stringify(end)}`).toBeLessThan(t2 + 10)
+          |                                                                                                   ^
+      120 | })
+      121 |
+      122 | test('WL13-F3: after the media ended, seeking back to a near-expiry unbuffered target does not auto-play', async ({ page }) => {
+        at /home/milosvasic/.cache/claude-tmp/wl13.Jal3R0/repo/catalog-web/e2e/player-real/player_lifecycle.spec.ts:119:99
+    Error Context: test-results/player-real/player_lifecycle-WL13-F2-t-bac0d-int-for-seek-1-is-in-flight-firefox/error-context.md
+  3) [firefox] › e2e/player-real/player_lifecycle.spec.ts:122:5 › WL13-F3: after the media ended, seeking back to a near-expiry unbuffered target does not auto-play 
+    Error: the user had not pressed play after the end; the player auto-played: {"t":21.931329,"paused":false,"ended":false,"rs":4,"err":null,"dur":60,"buf":[[0,0.08],[20,22.72]]}
+    expect(received).toBe(expected) // Object.is equality
+    Expected: true
+    Received: false
+      135 |   const end = await state(page)
+      136 |   expect(end.t).toBeGreaterThanOrEqual(back - 1)
+    > 137 |   expect(end.paused, `the user had not pressed play after the end; the player auto-played: ${JSON.stringify(end)}`).toBe(true)
+          |                                                                                                                     ^
+      138 |   expect(end.t, 'must not have advanced').toBeLessThan(back + 1.5)
+      139 | })
+      140 |
+        at /home/milosvasic/.cache/claude-tmp/wl13.Jal3R0/repo/catalog-web/e2e/player-real/player_lifecycle.spec.ts:137:117
+    Error Context: test-results/player-real/player_lifecycle-WL13-F3-a-5bc2d-d-target-does-not-auto-play-firefox/error-context.md
+  3 failed
+    [firefox] › e2e/player-real/player_lifecycle.spec.ts:59:5 › WL13-F1: a Pause click during the reload after a seek-mint is honoured (the element stays paused) 
+    [firefox] › e2e/player-real/player_lifecycle.spec.ts:102:5 › WL13-F2: the LAST seek wins when seek 2 lands in a buffered range while a seek-mint for seek 1 is in flight 
+    [firefox] › e2e/player-real/player_lifecycle.spec.ts:122:5 › WL13-F3: after the media ended, seeking back to a near-expiry unbuffered target does not auto-play 
+  1 passed (1.6m)
