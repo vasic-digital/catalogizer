@@ -61,7 +61,7 @@ podman run -d --pod "$POD" --name "${STACK}-api" --memory 2g --restart on-failur
   -e DATABASE_ENCRYPTION_KEY_FILE=/app/keys/db.key -e REDIS_HOST=127.0.0.1 -e REDIS_PORT=6379 \
   -e APP_ENV=development -e LOG_LEVEL=info -e JWT_SECRET -e ADMIN_USERNAME -e ADMIN_PASSWORD -e REGISTRATION_MODE \
   -e CORS_ENABLED=true -e CORS_ORIGINS='*' -e SMB_ENABLED=true -e MEDIA_ROOT_PATH="$MEDIA_MOUNT" \
-  -e CATALOGIZER_LOCAL_ROOT_BASES="$MEDIA_MOUNT" -e STORAGE_TYPE=local -e STORAGE_BUCKET=catalogizer-covers -e STORAGE_USE_SSL=false -e STORAGE_REGION=us-east-1 \
+  -e CATALOGIZER_LOCAL_ROOT_BASES="$MEDIA_MOUNT" -e CATALOGIZER_READ_ROOTS="$MEDIA_MOUNT:./data" -e STORAGE_TYPE=local -e STORAGE_BUCKET=catalogizer-covers -e STORAGE_USE_SSL=false -e STORAGE_REGION=us-east-1 \
   -v "$MEDIA_DIR:$MEDIA_MOUNT:ro" -v "${STACK}-api_data:/app/data" -v "${STACK}-api_logs:/var/log/catalogizer" -v "${STACK}-api_keys:/app/keys" \
   --health-cmd 'wget -q -O /dev/null http://127.0.0.1:8080/health' --health-interval 5s --health-timeout 3s --health-retries 12 --health-start-period 10s \
   "localhost/${STACK}-api:$TAG" >/dev/null
