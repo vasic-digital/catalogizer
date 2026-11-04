@@ -281,6 +281,59 @@ func (s *cSpec) validate(schema, val interface{}, at string, out *[]string) {
 	}
 }
 
+// nullScan reports JSON null values that the typed schema validation cannot see: a whole-body null, and a null object member or
+// array element where the spec gives no type (no schema, or an untyped one) and does not say nullable. A nil Go slice or map
+// serialises as null, which a client iterating a documented list cannot handle; it must be [] (or {}).
+func (s *cSpec) nullScan(schema, val interface{}, at string, out *[]string) {
+	schema = s.resolve(schema)
+	sm := asMap(schema)
+	if val == nil {
+		if sm != nil {
+			if nb, _ := sm["nullable"].(bool); nb {
+				return
+			}
+			if _, typed := sm["type"]; typed {
+				return // reported by validate
+			}
+		}
+		*out = append(*out, at+": JSON null where an empty array/object is required (nil slice or map serialised without normalisation)")
+		return
+	}
+	switch v := val.(type) {
+	case map[string]interface{}:
+		var props, ap map[string]interface{}
+		if sm != nil {
+			props = asMap(sm["properties"])
+			ap = asMap(sm["additionalProperties"])
+		}
+		keys := make([]string, 0, len(v))
+		for k := range v {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			var sub interface{}
+			if ps, ok := props[k]; ok {
+				sub = ps
+			} else if ap != nil {
+				sub = ap
+			}
+			s.nullScan(sub, v[k], at+"."+k, out)
+		}
+	case []interface{}:
+		var items interface{}
+		if sm != nil {
+			items = sm["items"]
+		}
+		for i, e := range v {
+			if i >= 50 {
+				break
+			}
+			s.nullScan(items, e, fmt.Sprintf("%s[%d]", at, i), out)
+		}
+	}
+}
+
 // ---------- request generation from the schema ----------
 
 type cGen struct {
@@ -849,6 +902,24 @@ func (w *sweep) judgeHappy(op *cOp, rec *opRecord, st int, ct string, raw []byte
 	// learn ids from successful creations / listings
 	if st >= 200 && st < 300 && strings.Contains(ct, "json") {
 		w.learn(op, raw)
+	}
+	// Class check (nil Go slice/map -> JSON null), independent of whether the spec documents a schema.
+	if st >= 200 && st < 300 && strings.Contains(ct, "json") {
+		var nv interface{}
+		if err := json.NewDecoder(bytes.NewReader(raw)).Decode(&nv); err == nil {
+			rc0 := strconv.Itoa(st)
+			var sch interface{}
+			if r0, ok := op.Responses[rc0]; ok {
+				if m := asMap(asMap(asMap(w.spec.resolve(r0))["content"])["application/json"]); m != nil {
+					sch = m["schema"]
+				}
+			}
+			var nulls []string
+			w.spec.nullScan(sch, nv, "$", &nulls)
+			for _, n := range nulls {
+				viol("%s", n)
+			}
+		}
 	}
 	rc := strconv.Itoa(st)
 	resp, documented := op.Responses[rc]
