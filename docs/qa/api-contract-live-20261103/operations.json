@@ -3316,8 +3316,7 @@
     "path": "/api/v1/storage-roots",
     "public": false,
     "documented_statuses": [
-      "200",
-      "503"
+      "200"
     ],
     "probes": {
       "happy": 200,
@@ -3339,8 +3338,7 @@
     "public": false,
     "documented_statuses": [
       "200",
-      "404",
-      "503"
+      "404"
     ],
     "probes": {
       "badid": 400,
@@ -3369,6 +3367,7 @@
       "200",
       "400",
       "401",
+      "403",
       "404",
       "409",
       "422",
@@ -3378,12 +3377,14 @@
     "probes": {
       "happy": 404,
       "missingq:storage_id": 400,
+      "nonadmin": 403,
       "notfound": 404,
       "unauth": 401
     },
     "status_codes_observed": [
       400,
       401,
+      403,
       404
     ],
     "happy_2xx_reached": false,
@@ -3394,8 +3395,7 @@
     "path": "/api/v1/storage/roots",
     "public": false,
     "documented_statuses": [
-      "200",
-      "503"
+      "200"
     ],
     "probes": {
       "happy": 200,
@@ -5126,18 +5126,21 @@
     "documented_statuses": [
       "202",
       "401",
+      "403",
       "404",
       "503"
     ],
     "probes": {
       "happy": 202,
       "malformed": 400,
+      "nonadmin": 403,
       "unauth": 401
     },
     "status_codes_observed": [
       202,
       400,
-      401
+      401,
+      403
     ],
     "happy_2xx_reached": true,
     "schema_verdict": "valid",
