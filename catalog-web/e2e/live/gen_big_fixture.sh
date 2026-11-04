@@ -2,7 +2,8 @@
 # Adds ONE large video (~200 MB, 140 s, constant 12 Mb/s) to a media corpus produced by scripts/test-infra/gen_media_fixtures.sh and
 # registers it in the corpus manifest, so the long-playback live spec has a file the browser cannot hold fully buffered (a seek far
 # ahead is then genuinely served by the network and needs a live stream ticket).
-# usage: gen_big_fixture.sh <corpus-dir>      idempotent; the file and the manifest entry are only written when missing/different.
+# usage: gen_big_fixture.sh <corpus-dir>      idempotent: an existing file is never regenerated; the manifest entry is written when it is
+# missing or when its sha256/size differ from the file on disk (the file is the source of truth; ffmpeg output is not byte-reproducible).
 set -euo pipefail
 dir=${1:?corpus dir}; rel="movies/Big.Seek.Movie.2026.140s.mp4"; f="${dir:?}/$rel"; man="${dir:?}/manifest.json"
 [ -f "$man" ] || { echo "no manifest.json in $dir" >&2; exit 2; }
@@ -17,7 +18,7 @@ import json, hashlib, subprocess, sys
 f, man, rel = sys.argv[1:4]
 h = hashlib.sha256(open(f, 'rb').read()).hexdigest()
 m = json.load(open(man))
-if rel not in m['files']:
+if rel not in m['files'] or m['files'][rel].get('sha256') != h:
     pr = json.loads(subprocess.check_output(['ffprobe', '-v', 'error', '-show_format', '-show_streams', '-of', 'json', f]))
     import os
     size = os.path.getsize(f)

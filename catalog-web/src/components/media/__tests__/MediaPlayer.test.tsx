@@ -224,20 +224,22 @@ describe('MediaPlayer ticket lifecycle', () => {
     fireEvent(video, new Event('loadedmetadata')) // initial load finished
     return { ...r, video, st, onError }
   }
+  // The user (or autoplay) starts playback: the element's paused flag drops and a play event fires.
+  const playing = (video: HTMLVideoElement, st: { paused: boolean }) => { st.paused = false; fireEvent(video, new Event('play')) }
   const recoverTo = async (c: HTMLElement, i: number) => waitFor(() => expect(srcOf(c)).toContain(`t${i}.`))
 
   beforeEach(() => { n = 0; postMock.mockReset(); postMock.mockImplementation(async () => ({ data: { ticket: `v1.t${++n}.m` } })) })
 
   it('real progress restores the recovery budget (5 recoveries, each followed by playback advancing)', async () => {
     const { container, video, st, onError } = await setup()
-    st.paused = false; st.time = 10
+    playing(video, st); st.time = 10
     for (let i = 2; i <= 6; i++) {
       st.code = 2
       fireEvent.error(video)
       await recoverTo(container, i)
       st.code = null
       fireEvent(video, new Event('loadedmetadata'))
-      st.time += 1 // advances past the resume point
+      st.time += 3 // advances past the resume point
       fireEvent(video, new Event('timeupdate'))
     }
     expect(onError).not.toHaveBeenCalled()
@@ -245,7 +247,7 @@ describe('MediaPlayer ticket lifecycle', () => {
 
   it('loadedmetadata is NOT progress: a file that loads metadata and then errors on every reload gives up after 3 recoveries', async () => {
     const { container, video, st, onError } = await setup()
-    st.paused = false
+    playing(video, st)
     for (let i = 2; i <= 4; i++) {
       st.code = 2
       fireEvent.error(video)
@@ -268,10 +270,11 @@ describe('MediaPlayer ticket lifecycle', () => {
 
   it('an error that lands during a reload does not lose the resume position (playing at 30 s, two errors before metadata)', async () => {
     const { container, video, st } = await setup()
-    st.time = 30; st.paused = false; st.code = 2
+    playing(video, st); st.time = 30
+    st.paused = true; st.code = 2 // Chromium pauses the element before it fires the error event
     fireEvent.error(video)
     await recoverTo(container, 2)
-    st.time = 0; st.paused = true // what load() does to the element
+    st.time = 0 // what load() does to the element
     fireEvent.error(video) // second error before metadata: must not overwrite the target with 0/paused
     await new Promise((r) => setTimeout(r, 20))
     fireEvent(video, new Event('loadedmetadata'))
@@ -292,7 +295,7 @@ describe('MediaPlayer ticket lifecycle', () => {
 
     it('a seek that needs the network after the ticket is near expiry gets a fresh ticket and resumes at the seek target', async () => {
       const { container, video, st } = await setup()
-      st.paused = false
+      playing(video, st)
       await vi.advanceTimersByTimeAsync(50_000)
       st.time = 40
       fireEvent(video, new Event('seeking'))
@@ -312,6 +315,157 @@ describe('MediaPlayer ticket lifecycle', () => {
       fireEvent(video, new Event('seeking'))
       await vi.advanceTimersByTimeAsync(100)
       expect(mintCount()).toBe(1)
+    })
+  })
+
+  describe('round-4 regressions', () => {
+    it('D1: an error recovery resumes PLAYING even though the browser already set paused=true (play intent, not !paused)', async () => {
+      const { container, video, st } = await setup()
+      playing(video, st); st.time = 100
+      st.paused = true; st.code = 2
+      fireEvent(video, new Event('pause')) // Chromium may also queue a pause event; error is already set, so it is not the user's
+      fireEvent.error(video)
+      await recoverTo(container, 2)
+      st.code = null; st.time = 0
+      fireEvent(video, new Event('loadedmetadata'))
+      expect(st.time).toBe(100)
+      expect(video.play).toHaveBeenCalledTimes(1)
+    })
+
+    it('D1: a user pause is respected - the recovery resumes paused', async () => {
+      const { container, video, st } = await setup()
+      playing(video, st); st.time = 20
+      st.paused = true
+      fireEvent(video, new Event('pause')) // no error, not reloading: the user paused
+      st.code = 2
+      fireEvent.error(video)
+      await recoverTo(container, 2)
+      st.code = null
+      fireEvent(video, new Event('loadedmetadata'))
+      expect(video.play).not.toHaveBeenCalled()
+    })
+
+    it('R1: the resume itself fires timeupdate at the resume point; a source that keeps failing there still gives up after 3 recoveries', async () => {
+      const { container, video, st, onError } = await setup()
+      playing(video, st); st.time = 50
+      for (let i = 2; i <= 4; i++) {
+        st.code = 2
+        fireEvent.error(video)
+        await recoverTo(container, i)
+        st.code = null; st.time = 0
+        fireEvent(video, new Event('loadedmetadata')) // sets currentTime = 50
+        fireEvent(video, new Event('timeupdate'))     // the browser reports the seek to 50: not progress
+      }
+      st.code = 2
+      fireEvent.error(video)
+      expect(onError).toHaveBeenCalledTimes(1)
+      expect(mintCount()).toBe(4)
+    })
+
+    it('R2: advancing time while the element is paused is not progress', async () => {
+      const { container, video, st, onError } = await setup()
+      playing(video, st); st.time = 10
+      for (let i = 2; i <= 4; i++) {
+        st.code = 2
+        fireEvent.error(video)
+        await recoverTo(container, i)
+        st.code = null
+        fireEvent(video, new Event('loadedmetadata'))
+        st.paused = true; st.time += 30
+        fireEvent(video, new Event('timeupdate'))
+      }
+      st.code = 2
+      fireEvent.error(video)
+      expect(onError).toHaveBeenCalledTimes(1)
+    })
+
+    it('S2: sub-step movement (1 s) does not restore the budget; a source failing every ~1 s gives up', async () => {
+      const { container, video, st, onError } = await setup()
+      playing(video, st); st.time = 10
+      for (let i = 2; i <= 4; i++) {
+        st.code = 2
+        fireEvent.error(video)
+        await recoverTo(container, i)
+        st.code = null
+        fireEvent(video, new Event('loadedmetadata'))
+        st.time += 1
+        fireEvent(video, new Event('timeupdate'))
+      }
+      st.code = 2
+      fireEvent.error(video)
+      expect(onError).toHaveBeenCalledTimes(1)
+    })
+
+    describe('seeks and switches', () => {
+      beforeEach(() => { vi.useFakeTimers({ shouldAdvanceTime: true }) })
+      afterEach(() => { vi.useRealTimers() })
+
+      it('R9: the seek target is what the player resumes at, even if currentTime has moved by the time the ticket arrives', async () => {
+        const { container, video, st } = await setup()
+        playing(video, st)
+        await vi.advanceTimersByTimeAsync(50_000)
+        let release!: () => void
+        postMock.mockImplementationOnce(() => new Promise((res) => { release = () => res({ data: { ticket: 'v1.t2.m' } }) }))
+        st.time = 90
+        fireEvent(video, new Event('seeking'))
+        st.time = 3 // the element moved on while the mint was pending
+        release()
+        await recoverTo(container, 2)
+        st.time = 0
+        fireEvent(video, new Event('loadedmetadata'))
+        expect(st.time).toBe(90)
+      })
+
+      it('S1: a second seek during an in-flight seek-mint wins', async () => {
+        const { container, video, st } = await setup()
+        playing(video, st)
+        await vi.advanceTimersByTimeAsync(50_000)
+        let release!: () => void
+        postMock.mockImplementationOnce(() => new Promise((res) => { release = () => res({ data: { ticket: 'v1.t2.m' } }) }))
+        st.time = 40
+        fireEvent(video, new Event('seeking'))
+        st.time = 90
+        fireEvent(video, new Event('seeking'))
+        release()
+        await recoverTo(container, 2)
+        st.time = 0
+        fireEvent(video, new Event('loadedmetadata'))
+        expect(st.time).toBe(90)
+        expect(mintCount()).toBe(2)
+      })
+
+      it('S1: a seek while the source is reloading is not overridden by the stored resume point', async () => {
+        const { container, video, st } = await setup()
+        playing(video, st); st.time = 30; st.code = 2
+        fireEvent.error(video)
+        await recoverTo(container, 2)
+        st.code = null; st.time = 75 // user seeks while reloading: the element holds 75 as its start position
+        fireEvent(video, new Event('loadedmetadata'))
+        expect(st.time).toBe(75)
+      })
+
+      it('D2: the previous item stops being the source the moment the id changes (even before the new ticket arrives)', async () => {
+        const r = render(<MediaPlayer media={mockMedia as any} />)
+        await waitFor(() => expect(srcOf(r.container)).toContain('/stream/1?ticket='))
+        postMock.mockImplementationOnce(() => new Promise(() => undefined))
+        r.rerender(<MediaPlayer media={{ ...mockMedia, id: 2 } as any} />)
+        await waitFor(() => expect(srcOf(r.container)).toBeNull())
+      })
+
+      it('D2: switching the item while a mint is in flight never plays the old item (stale result dropped, new id minted)', async () => {
+        postMock.mockReset()
+        const pending: Array<{ id: string; release: () => void }> = []
+        postMock.mockImplementation((url: string) => new Promise((res) => { pending.push({ id: url, release: () => res({ data: { ticket: `v1.for${url.match(/stream\/(\d+)/)![1]}.m` } }) }) }))
+        const r = render(<MediaPlayer media={mockMedia as any} />)
+        r.rerender(<MediaPlayer media={{ ...mockMedia, id: 2 } as any} />)
+        await waitFor(() => expect(pending.length).toBe(2)) // a mint for id 2 starts although the one for id 1 is still pending
+        pending[0].release() // the OLD item's ticket arrives late
+        await new Promise((x) => setTimeout(x, 30))
+        expect(srcOf(r.container)).toBeNull()
+        pending[1].release()
+        await waitFor(() => expect(srcOf(r.container)).toContain('/stream/2?ticket='))
+        expect(srcOf(r.container)).not.toContain('/stream/1')
+      })
     })
   })
 })

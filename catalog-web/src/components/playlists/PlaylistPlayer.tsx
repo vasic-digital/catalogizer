@@ -362,6 +362,7 @@ export const PlaylistPlayer: React.FC<PlaylistPlayerProps> = ({
       return (
         <div className="relative">
           <MediaPlayer
+            key={flattenedCurrentItem.item_id}
             media={{
               id: parseInt(flattenedCurrentItem.item_id),
               title: flattenedCurrentItem.title,

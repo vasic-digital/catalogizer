@@ -136,6 +136,7 @@ test.describe('player in the web UI (real browser, real stream)', () => {
     const seekedAt = await video.evaluate((v: HTMLVideoElement) => v.currentTime);
     expect(seekedAt, 'position after the refresh is at least the pre-refresh position').toBeGreaterThanOrEqual(before);
     await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 20_000, message: 'currentTime stopped advancing after the late seek' }).toBeGreaterThan(seekedAt + 1);
+    expect(await video.evaluate((v: HTMLVideoElement) => v.paused), 'the element is PLAYING after the post-expiry seek, not paused (Chromium pauses on error)').toBe(false);
     expect(await video.evaluate((v: HTMLVideoElement) => v.error), 'no media error after the late seek').toBeNull();
     const mints = streamed.filter((x) => /^200 POST /.test(x) && x.includes(`/stream/${id}/ticket`)).length;
     expect(mints, `the late seek got a fresh ticket (before ${mintsBefore}, after ${mints}); saw ${JSON.stringify(streamed.slice(-12))}`).toBeGreaterThan(mintsBefore);

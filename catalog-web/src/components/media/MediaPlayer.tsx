@@ -31,6 +31,10 @@ interface MediaPlayerProps {
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '') + '/api/v1'
 const TICKET_NEAR_EXPIRY_MS = 45_000 // tickets live 60 s server-side; a seek needing the network after this age gets a fresh one first
 const MAX_CONSECUTIVE_RECOVERIES = 3
+// Real progress means advancing this far past the resume point: the resume itself fires timeupdate at the floor, and a source that
+// fails every fraction of a second must not keep earning a fresh budget.
+const PROGRESS_STEP_S = 2
+const MAX_TOTAL_RECOVERIES = 100 // hard bound per source (generous: a long film recovers a few times per hour)
 
 /**
  * A <video>/<audio> element cannot send an Authorization header, and the session JWT must not go into the URL (logs, history,
@@ -85,39 +89,64 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
   const resumeRef = useRef<{ time: number; play: boolean } | null>(null)
   const reloadingRef = useRef(false)
   const errorTriesRef = useRef(0)
+  const totalRecoveriesRef = useRef(0)
   const progressFloorRef = useRef(0)
   const mintedAtRef = useRef(0)
-  const inflightRef = useRef(false)
+  // Generation of the media id currently shown, and the generation that has a mint in flight (-1 = none). Every mint is tagged
+  // with its generation and a stale result is dropped, so switching items while a mint is pending can never play the old item.
+  const genRef = useRef(0)
+  const mediaIdRef = useRef(media.id)
+  const inflightRef = useRef(-1)
+  // Latest seek target requested while a mint is in flight: the user's last seek wins.
+  const seekDuringMintRef = useRef<number | null>(null)
+  // Play intent, driven by user actions and play/pause events NOT caused by an error or a reload. Chromium sets paused=true
+  // before it fires the error event, so reading !paused at recovery time would resume a playing video as paused.
+  const wantPlayRef = useRef(false)
   const videoSrc = entityStreamUrl || ticketSrc
 
   /** Mint a new ticket and re-point the element at it. `at` overrides the resume position (a seek target). */
   const refreshTicket = useCallback(async (resume: boolean, at?: number) => {
-    if (inflightRef.current) return
-    inflightRef.current = true
+    const gen = genRef.current
+    const id = media.id
+    if (inflightRef.current === gen) {
+      if (resume && at !== undefined) seekDuringMintRef.current = at
+      return
+    }
+    inflightRef.current = gen
+    seekDuringMintRef.current = resume && at !== undefined ? at : null
     try {
-      const url = streamUrl(media.id, await mintStreamTicket(media.id))
+      const url = streamUrl(id, await mintStreamTicket(id))
+      if (gen !== genRef.current || id !== mediaIdRef.current) return // the item changed while minting: drop the stale ticket
       const v = videoRef.current
       if (resume && v && !reloadingRef.current) {
-        const time = at ?? v.currentTime
-        resumeRef.current = { time, play: !v.paused }
+        const time = seekDuringMintRef.current ?? v.currentTime
+        resumeRef.current = { time, play: wantPlayRef.current }
         progressFloorRef.current = time
       }
       mintedAtRef.current = Date.now()
       setTicketSrc(url)
       setAuthError(false)
     } catch {
-      setAuthError(true)
+      if (gen === genRef.current) setAuthError(true)
     } finally {
-      inflightRef.current = false
+      if (inflightRef.current === gen) inflightRef.current = -1
+      if (gen === genRef.current) seekDuringMintRef.current = null
     }
   }, [media.id])
 
   useEffect(() => {
     if (entityStreamUrl) return
+    genRef.current += 1
+    mediaIdRef.current = media.id
+    inflightRef.current = -1
+    seekDuringMintRef.current = null
     resumeRef.current = null
     reloadingRef.current = false
     errorTriesRef.current = 0
+    totalRecoveriesRef.current = 0
     progressFloorRef.current = 0
+    mintedAtRef.current = 0
+    setTicketSrc('') // never keep playing the previous item while the new ticket is minted
     void refreshTicket(false)
   }, [media.id, entityStreamUrl, refreshTicket])
 
@@ -142,8 +171,10 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
     if (!videoRef.current) return
 
     if (isPlaying) {
+      wantPlayRef.current = false
       videoRef.current.pause()
     } else {
+      wantPlayRef.current = true
       videoRef.current.play()
     }
     setIsPlaying(!isPlaying)
@@ -227,20 +258,30 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
       const r = resumeRef.current
       resumeRef.current = null
       if (r) {
-        video.currentTime = r.time
+        // A position the user set while the source was reloading (the element holds it as its start position) beats the stored one.
+        if (!(video.currentTime > 0.5)) video.currentTime = r.time
         if (r.play) void video.play().catch(() => undefined)
       }
     }
 
+    const handlePlay = () => { wantPlayRef.current = true }
+    const handlePause = () => {
+      // Chromium pauses the element when it errors; a pause caused by an error, a reload or the end is not the user's intent.
+      if (video.error || reloadingRef.current || video.ended) return
+      wantPlayRef.current = false
+    }
+
     // Real progress is the only thing that restores the recovery budget.
     const handleProgress = () => {
-      if (!video.paused && video.currentTime > progressFloorRef.current + 0.25) errorTriesRef.current = 0
+      if (!video.paused && video.currentTime > progressFloorRef.current + PROGRESS_STEP_S) errorTriesRef.current = 0
     }
 
     // A seek that needs the network after the ticket is (nearly) dead gets a fresh ticket first, resuming at the seek target.
     // Seeks inside already-buffered ranges need no request and are left alone.
     const handleSeeking = () => {
-      if (entityStreamUrl || reloadingRef.current || !mintedAtRef.current) return
+      if (entityStreamUrl) return
+      if (reloadingRef.current) return // a position set during a reload is kept by loadedmetadata (see there)
+      if (!mintedAtRef.current) return
       if (Date.now() - mintedAtRef.current < TICKET_NEAR_EXPIRY_MS) return
       const t = video.currentTime
       for (let i = 0; i < video.buffered.length; i++) {
@@ -260,8 +301,9 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
       // A decode error (code 3) is the file, not the ticket: retrying only loops. Everything else (401 on a range request surfaces
       // as a network / not-supported error) is retried, bounded by consecutive recoveries without progress.
       const code = video.error?.code
-      if (!entityStreamUrl && code !== 3 && errorTriesRef.current < MAX_CONSECUTIVE_RECOVERIES) {
+      if (!entityStreamUrl && code !== 3 && errorTriesRef.current < MAX_CONSECUTIVE_RECOVERIES && totalRecoveriesRef.current < MAX_TOTAL_RECOVERIES) {
         errorTriesRef.current += 1
+        totalRecoveriesRef.current += 1
         void refreshTicket(true)
         return
       }
@@ -274,6 +316,8 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
     video.addEventListener('timeupdate', handleProgress)
     video.addEventListener('seeking', handleSeeking)
     video.addEventListener('error', handleError)
+    video.addEventListener('play', handlePlay)
+    video.addEventListener('pause', handlePause)
 
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate)
@@ -282,6 +326,8 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
       video.removeEventListener('timeupdate', handleProgress)
       video.removeEventListener('seeking', handleSeeking)
       video.removeEventListener('error', handleError)
+      video.removeEventListener('play', handlePlay)
+      video.removeEventListener('pause', handlePause)
     }
   }, [onProgress, onEnded, onError, entityStreamUrl, refreshTicket])
 
