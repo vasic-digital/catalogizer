@@ -98,14 +98,12 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
     errorTriesRef.current = 0
     void refreshTicket(false)
     // A seek issues a new range request carrying the URL's ticket, which dies after 60 s. While playing, re-point the element at a
-    // fresh ticket before expiry and resume at the same position (skipped when the whole file is already buffered). A paused
+    // fresh ticket before expiry and resume at the same position. A paused
     // element is left alone so its buffer is not dropped; if its ticket has expired by the time the user seeks, the error
     // handler below mints a new one and resumes.
     const timer = setInterval(() => {
       const v = videoRef.current
       if (!v || v.paused || v.ended) return
-      const b = v.buffered
-      if (b.length > 0 && Number.isFinite(v.duration) && b.end(b.length - 1) >= v.duration - 0.5) return
       void refreshTicket(true)
     }, TICKET_REFRESH_MS)
     return () => clearInterval(timer)
