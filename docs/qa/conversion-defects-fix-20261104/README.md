@@ -15,3 +15,4 @@ Roadmap-Item: CAT-CONV. Status: PROVISIONAL-DONE (live re-run on a rebuilt stack
 Round 3: fd3ac5db (R3-1 unclosed-quote paths; evidence logs were gitignored before and are now force-added). Merged main a61d56c6 in 6a43eaa8.
 - red-r3-services.log: RED for the unclosed-quote cases.
 - green-merged-conversion-subtitle-race.log: `go test -race` of conversion/subtitle/TestRev/TestD tests on the merged tree (services, handlers, repository, tests), plus go build ./... and vet.log clean.
+- green-services-tests-full.log, green-handlers-repository-race-full.log: full-package runs of round 2 (code 8cc5b709).
