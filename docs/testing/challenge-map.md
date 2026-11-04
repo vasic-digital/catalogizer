@@ -127,7 +127,7 @@ Complete listing of all 174 user flow challenges (plus 2 environment bookends) o
 |----|------|-------------|
 | UF-API-HEALTH | API Health Check | UF-ENV-SETUP |
 | UF-API-HEALTH-VERSION | API Version Info | UF-API-HEALTH |
-| UF-API-HEALTH-METRICS | API Metrics Endpoint | UF-API-HEALTH |
+| UF-API-HEALTH-METRICS | API Metrics Endpoint (unauthenticated scrape must be rejected: 401) | UF-API-HEALTH |
 
 ### API Auth (5)
 

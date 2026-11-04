@@ -9,10 +9,12 @@ import { ArrowLeft, ChevronRight, Globe, Star, Download, Sparkles } from 'lucide
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { EntityHero, ChildrenList, FilesList, DuplicatesList } from '@/components/entity/EntityDetailView'
 import toast from 'react-hot-toast'
+import { useAuth } from '@/contexts/AuthContext'
 
 export function EntityDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { isAdmin } = useAuth()
   const queryClient = useQueryClient()
   const entityId = parseInt(id || '0', 10)
 
@@ -124,6 +126,7 @@ export function EntityDetail() {
         onFavorite={() => favoriteMutation.mutate(true)}
         onRefresh={() => refreshMutation.mutate()}
         refreshPending={refreshMutation.isPending}
+        canRefresh={isAdmin}
       />
 
       <ChildrenList

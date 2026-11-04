@@ -219,7 +219,7 @@ func (c *RedisConnectionPoolingChallenge) Execute(
 
 	// Check metrics for Redis pool indicators
 	c.ReportProgress("checking-metrics", nil)
-	metricsCode, metricsBody, metricsErr := client.GetRaw(ctx, "/metrics")
+	metricsCode, metricsBody, metricsErr := fetchMetrics(ctx, c.config)
 
 	metricsOK := metricsErr == nil && metricsCode == 200
 	redisPoolDetected := false
