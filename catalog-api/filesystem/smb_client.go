@@ -356,7 +356,12 @@ func smbPath(p string) string {
 	// S1: a backslash is a path separator on the wire and cannot occur inside an SMB name, so a `..` between backslashes is a traversal
 	// segment exactly like one between slashes (go-smb2 maps / to \ and resolves nothing itself). SMB-only: hasDotDotSegment is shared
 	// with FTP/WebDAV, where a backslash is an ordinary filename character.
-	if norm := strings.ReplaceAll(p, `\`, "/"); hasDotDotSegment(norm) {
+	if norm := strings.Map(func(r rune) rune {
+		if r == '\\' {
+			return '/'
+		}
+		return r
+	}, p); hasDotDotSegment(norm) {
 		p = norm
 	}
 	if !hasDotDotSegment(p) {
