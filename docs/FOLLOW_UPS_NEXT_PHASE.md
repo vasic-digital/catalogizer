@@ -1234,8 +1234,8 @@ Add a fixture with a clean twin for each probe.
 ## Live QA round 3 + storage r1 findings (2026-11-04)
 
 - LW3-1 (intermittent, root cause UNCONFIRMED): firefox-desktop run 1 `pages.live.spec.ts:6` Favorites page showed the empty login form although login POST returned 200 (1 of 8 browser runs; 18/18 passes on rerun). Needs a trace captured on a failing run (keep traces on failure in CI-less local runs); leads: 401 handler in lib/api.ts or login/header race.
-- ST-D1 (product, low-medium): SmbClient.Connect ignores ctx (net.DialTimeout, smb_client.go ~42-47); SMB and FTP stat/read succeed on an already-cancelled context. Fix: DialContext + ctx.Err() checks.
-- ST-D2 (product hazard, SERIOUS): one FTPClient used from 4 goroutines corrupts its control connection (wrong results, a run hung forever in textproto.ReadResponse with no read deadline). Fix: per-client operation mutex + ctx-tied read deadlines.
-- ST-D3 (inconsistency): SmbClient rejects leading-slash paths while FTP/WebDAV accept them.
+- ST-D1 (product, low-medium): SmbClient.Connect ignores ctx (net.DialTimeout, smb_client.go ~42-47); SMB and FTP stat/read succeed on an already-cancelled context. Fix: DialContext + ctx.Err() checks. **FIXED, PROVISIONAL-DONE (CAT-ST): evidence docs/qa/storage-clients-fix-20261104.md; live Synology confirmation owed.**
+- ST-D2 (product hazard, SERIOUS): one FTPClient used from 4 goroutines corrupts its control connection (wrong results, a run hung forever in textproto.ReadResponse with no read deadline). Fix: per-client operation mutex + ctx-tied read deadlines. **FIXED, PROVISIONAL-DONE (CAT-ST): evidence docs/qa/storage-clients-fix-20261104.md; live Synology confirmation owed.**
+- ST-D3 (inconsistency): SmbClient rejects leading-slash paths while FTP/WebDAV accept them. **FIXED, PROVISIONAL-DONE (CAT-ST): evidence docs/qa/storage-clients-fix-20261104.md; live Synology confirmation owed.**
 - ST-NFS: NFS live test SKIPPED (Synology export list empty, no mount privilege); needs operator enabling an NFS export.
 - Evidence: docs/qa/live-storage-r1-20261104.md.
