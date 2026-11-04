@@ -93,6 +93,8 @@ func (c *FTPClient) dial(ctx context.Context, extra ...ftp.DialOption) (*ftp.Ser
 	addr := net.JoinHostPort(c.config.Host, fmt.Sprintf("%d", c.config.Port))
 
 	grp := &ftpConnGroup{}
+	endDial := grp.armDial(ctx)
+	defer endDial()
 	opts := append([]ftp.DialOption{ftp.DialWithTimeout(30 * time.Second), ftp.DialWithContext(ctx), ftp.DialWithDialFunc(grp.dialFunc(ctx))}, extra...)
 	client, err := ftp.Dial(addr, opts...)
 	if err != nil {
@@ -164,12 +166,12 @@ func (c *FTPClient) session() (*ftp.ServerConn, string, error) {
 }
 
 // TestConnection tests the FTP connection
-func (c *FTPClient) TestConnection(ctx context.Context) error {
+func (c *FTPClient) TestConnection(ctx context.Context) (retErr error) {
 	conn, _, release, err := c.beginOp(ctx)
 	if err != nil {
 		return err
 	}
-	defer release()
+	defer func() { release(retErr) }()
 	_, err = conn.CurrentDir()
 	return err
 }
@@ -187,14 +189,14 @@ func (c *FTPClient) resolvePath(base, p string) string {
 }
 
 // ReadFile reads a file from the FTP server
-func (c *FTPClient) ReadFile(ctx context.Context, path string) (io.ReadCloser, error) {
+func (c *FTPClient) ReadFile(ctx context.Context, path string) (_ io.ReadCloser, retErr error) {
 	// The turn and the deadline cover the RETR command exchange; the returned transfer is read by the caller afterwards, outside the
 	// turn (a caller that reads it while using the same client concurrently is still interleaving: one client, one active transfer).
 	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer release()
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 	resp, err := conn.Retr(fullPath)
 	if err != nil {
@@ -290,12 +292,12 @@ func (c *FTPClient) reconnectIf(ctx context.Context, old *ftp.ServerConn) error 
 }
 
 // WriteFile writes a file to the FTP server
-func (c *FTPClient) WriteFile(ctx context.Context, path string, data io.Reader) error {
+func (c *FTPClient) WriteFile(ctx context.Context, path string, data io.Reader) (retErr error) {
 	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return err
 	}
-	defer release()
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 
 	// Ensure the directory exists
@@ -315,12 +317,12 @@ func (c *FTPClient) WriteFile(ctx context.Context, path string, data io.Reader) 
 }
 
 // GetFileInfo gets information about a file
-func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, error) {
+func (c *FTPClient) GetFileInfo(ctx context.Context, path string) (_ *FileInfo, retErr error) {
 	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer release()
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 
 	// SIZE is defined for plain files only: a directory answers "550 not a plain file". Try it first (cheap, files), and on
@@ -384,12 +386,12 @@ func (c *FTPClient) fileModTime(conn *ftp.ServerConn, fullPath string) time.Time
 }
 
 // ListDirectory lists files in a directory
-func (c *FTPClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo, error) {
+func (c *FTPClient) ListDirectory(ctx context.Context, path string) (_ []*FileInfo, retErr error) {
 	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer release()
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 
 	entries, err := conn.List(fullPath)
@@ -426,12 +428,12 @@ func (c *FTPClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo
 }
 
 // FileExists checks if a file exists
-func (c *FTPClient) FileExists(ctx context.Context, path string) (bool, error) {
+func (c *FTPClient) FileExists(ctx context.Context, path string) (_ bool, retErr error) {
 	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return false, err
 	}
-	defer release()
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 
 	// Try to get file size - if it succeeds, file exists
@@ -455,12 +457,12 @@ func (c *FTPClient) FileExists(ctx context.Context, path string) (bool, error) {
 }
 
 // CreateDirectory creates a directory
-func (c *FTPClient) CreateDirectory(ctx context.Context, path string) error {
+func (c *FTPClient) CreateDirectory(ctx context.Context, path string) (retErr error) {
 	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return err
 	}
-	defer release()
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 	err = conn.MakeDir(fullPath)
 	if err != nil {
@@ -470,12 +472,12 @@ func (c *FTPClient) CreateDirectory(ctx context.Context, path string) error {
 }
 
 // DeleteDirectory deletes a directory
-func (c *FTPClient) DeleteDirectory(ctx context.Context, path string) error {
+func (c *FTPClient) DeleteDirectory(ctx context.Context, path string) (retErr error) {
 	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return err
 	}
-	defer release()
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 	err = conn.RemoveDir(fullPath)
 	if err != nil {
@@ -485,12 +487,12 @@ func (c *FTPClient) DeleteDirectory(ctx context.Context, path string) error {
 }
 
 // DeleteFile deletes a file
-func (c *FTPClient) DeleteFile(ctx context.Context, path string) error {
+func (c *FTPClient) DeleteFile(ctx context.Context, path string) (retErr error) {
 	conn, base, release, err := c.beginOp(ctx)
 	if err != nil {
 		return err
 	}
-	defer release()
+	defer func() { release(retErr) }()
 	fullPath := c.resolvePath(base, path)
 	err = conn.Delete(fullPath)
 	if err != nil {

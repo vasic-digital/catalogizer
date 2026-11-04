@@ -1,0 +1,40 @@
+== MA-no-session-replacement
+--- FAIL: TestRV_SessionReplacedAfterCut (0.50s)
+FAIL
+FAIL	catalogizer/filesystem	0.508s
+== MB-watcher-noop
+--- FAIL: TestRV_CancelMidOpUnblocks (8.01s)
+FAIL
+FAIL	catalogizer/filesystem	8.014s
+== MC-data-conn-no-initial-deadline
+ok  	catalogizer/filesystem	0.711s
+== MC2-cancel-skips-some-conns
+ok  	catalogizer/filesystem	1.417s
+== MD-turn-leak-on-session-error
+--- FAIL: TestFTPTurnReleasedWhenNotConnected (2.00s)
+FAIL
+FAIL	catalogizer/filesystem	2.007s
+== ME-data-dial-uses-connect-ctx
+--- FAIL: TestLiveRealFTP_SharedClientParallelStat (0.12s)
+--- FAIL: TestRV_LiveDataConnAfterConnectCtxEnds (0.09s)
+FAIL
+== MG-cut-ignores-op-error
+--- FAIL: TestLiveRealFTP_SuccessKeepsSessionWhenContextEndsLate (0.10s)
+FAIL
+FAIL	catalogizer/filesystem	0.106s
+== MH-no-dial-deadline
+--- FAIL: TestFTPConnectSilentBannerHonoursContext (20.02s)
+--- FAIL: TestRV_ReconnectAfterCutBounded (25.01s)
+FAIL
+== MI-no-idle-progress-push
+--- FAIL: TestRV_LongUploadExceedsOpCap (1.10s)
+FAIL
+FAIL	catalogizer/filesystem	1.105s
+== MC-data-conn-no-initial-deadline (round2b)
+--- FAIL: TestFTPSilentDataConnectionEndsByIdleBound (15.02s)
+FAIL
+FAIL	catalogizer/filesystem	15.023s
+== MC2-cancel-skips-some-conns (round2b)
+--- FAIL: TestFTPCancelUnblocksSilentDataConnection (10.01s)
+FAIL
+FAIL	catalogizer/filesystem	10.018s

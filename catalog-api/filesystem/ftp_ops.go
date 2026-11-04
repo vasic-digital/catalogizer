@@ -9,16 +9,28 @@ import (
 	"github.com/jlaffaye/ftp"
 )
 
-// ftpOpTimeout bounds one protocol operation (command exchange plus its data transfer) when the caller's context carries no earlier
-// deadline. Before ST-D2 an operation against a server that stopped answering blocked forever in textproto.ReadResponse.
+// ftpOpTimeout is the IDLE bound of a protocol operation: the longest the control channel may wait for a reply, and the longest a
+// data transfer may go without moving a byte. It is pushed forward on every Read/Write of a data connection (progress), so a multi-GB
+// transfer is never cut while bytes still move (review F2), but a server that stops answering is given up on after this long.
+// Before ST-D2 an operation against a silent server blocked forever in textproto.ReadResponse.
 var ftpOpTimeout = 5 * time.Minute
 
+// ftpDialTimeout bounds connecting, the greeting banner, login and the initial CWD/PWD of a new session (review F1).
+var ftpDialTimeout = 30 * time.Second
+
 // ftpConnGroup tracks every network connection one logical FTP session opens (the control connection and its passive data connections)
-// so one deadline can be applied to all of them, and so an expired context can unblock a read that is in progress.
+// so one deadline policy can be applied to all of them, and so an expired context can unblock a read that is in progress.
 type ftpConnGroup struct {
-	mu       sync.Mutex
-	conns    map[net.Conn]struct{}
-	deadline time.Time
+	mu    sync.Mutex
+	conns map[net.Conn]struct{}
+	// armed: a deadline policy is in force (idle bound + optional hard deadline). When false no deadline is set on any connection, which
+	// is the state of a transfer handed to the caller after its operation returned (reading a returned stream is not time-capped).
+	armed     bool
+	idle      time.Duration
+	hard      time.Time // zero = none (ctx deadline)
+	cancelled bool      // ctx ended: deadlines are in the past and must not be pushed forward again
+	lastTouch time.Time
+	curDL     time.Time
 	// opCtx is the context of the operation currently running on the session; passive data connections are dialled with it. The Connect
 	// context only governs the control connection: it commonly ends right after Connect returns and must not break later transfers.
 	opCtx context.Context
@@ -27,7 +39,8 @@ type ftpConnGroup struct {
 
 type groupConn struct {
 	net.Conn
-	g *ftpConnGroup
+	g    *ftpConnGroup
+	data bool
 }
 
 func (c *groupConn) Close() error {
@@ -37,13 +50,31 @@ func (c *groupConn) Close() error {
 	return c.Conn.Close()
 }
 
+// Read and Write push the idle deadline forward on data connections: progress keeps an operation alive.
+func (c *groupConn) Read(p []byte) (int, error) {
+	n, err := c.Conn.Read(p)
+	if n > 0 && c.data {
+		c.g.touch()
+	}
+	return n, err
+}
+
+func (c *groupConn) Write(p []byte) (int, error) {
+	n, err := c.Conn.Write(p)
+	if n > 0 && c.data {
+		c.g.touch()
+	}
+	return n, err
+}
+
 // dialFunc dials like the library's default (30 s connect timeout) but with ctx, and registers the connection in the group.
 func (g *ftpConnGroup) dialFunc(ctx context.Context) func(network, address string) (net.Conn, error) {
 	return func(network, address string) (net.Conn, error) {
 		d := net.Dialer{Timeout: 30 * time.Second}
 		g.mu.Lock()
 		dctx := ctx
-		if g.first { // a data connection
+		data := g.first
+		if data { // a data connection
 			dctx = context.WithoutCancel(ctx)
 			if g.opCtx != nil {
 				dctx = g.opCtx
@@ -60,37 +91,95 @@ func (g *ftpConnGroup) dialFunc(ctx context.Context) func(network, address strin
 			g.conns = map[net.Conn]struct{}{}
 		}
 		g.conns[conn] = struct{}{}
-		dl := g.deadline
-		g.mu.Unlock()
-		if !dl.IsZero() {
+		if dl := g.deadlineLocked(); !dl.IsZero() {
 			_ = conn.SetDeadline(dl)
 		}
-		return &groupConn{Conn: conn, g: g}, nil
+		g.mu.Unlock()
+		return &groupConn{Conn: conn, g: g, data: data}, nil
 	}
 }
 
-// setDeadline applies t (zero = none) to every live connection of the group and to connections opened later.
-func (g *ftpConnGroup) setOpCtx(ctx context.Context) {
-	g.mu.Lock()
-	g.opCtx = ctx
-	g.mu.Unlock()
+// deadlineLocked is the deadline new activity gets: now+idle, never later than the hard (ctx) deadline; in the past once cancelled.
+func (g *ftpConnGroup) deadlineLocked() time.Time {
+	if g.cancelled {
+		return time.Unix(1, 0)
+	}
+	if !g.armed {
+		return time.Time{}
+	}
+	dl := time.Now().Add(g.idle)
+	if !g.hard.IsZero() && g.hard.Before(dl) {
+		dl = g.hard
+	}
+	g.curDL = dl
+	return dl
 }
 
-func (g *ftpConnGroup) setDeadline(t time.Time) {
+func (g *ftpConnGroup) applyLocked() {
+	dl := g.deadlineLocked()
+	for c := range g.conns {
+		_ = c.SetDeadline(dl)
+	}
+	g.lastTouch = time.Now()
+}
+
+// arm starts a deadline policy: idle bound plus the ctx's own deadline as hard limit, applied to every live connection.
+func (g *ftpConnGroup) arm(ctx context.Context, idle time.Duration) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
-	g.deadline = t
-	for c := range g.conns {
-		_ = c.SetDeadline(t)
+	g.armed, g.idle, g.cancelled, g.opCtx = true, idle, false, ctx
+	g.hard = time.Time{}
+	if d, ok := ctx.Deadline(); ok {
+		g.hard = d
 	}
+	g.applyLocked()
+}
+
+// disarm removes every deadline; the caller may keep reading a returned transfer without a cap.
+func (g *ftpConnGroup) disarm() {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.armed, g.opCtx = false, nil
+	for c := range g.conns {
+		_ = c.SetDeadline(time.Time{})
+	}
+}
+
+// cancel makes every deadline immediately expired: a read or write in progress returns at once.
+func (g *ftpConnGroup) cancel() {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.cancelled = true
+	for c := range g.conns {
+		_ = c.SetDeadline(time.Unix(1, 0))
+	}
+}
+
+// touch is called after a data connection moved bytes: the idle deadline of the whole session moves forward (the control connection
+// is waiting for the transfer's final reply meanwhile). Rate-limited to a quarter of the idle bound.
+func (g *ftpConnGroup) touch() {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	if !g.armed || g.cancelled || time.Since(g.lastTouch) < g.idle/4 {
+		return
+	}
+	g.applyLocked()
+}
+
+// expired reports whether the current deadline has passed, i.e. a timeout (not necessarily a ctx cancel) may have cut an exchange.
+func (g *ftpConnGroup) expired() bool {
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	return g.cancelled || (g.armed && !g.curDL.IsZero() && !time.Now().Before(g.curDL))
 }
 
 // beginOp is the entry of every serialised FTP operation. It (1) fails at once on an already-cancelled context, without touching the
 // network (ST-D1), (2) waits for its turn on the control connection, giving up when ctx ends (ST-D2), (3) takes the session snapshot,
-// and (4) arms a read/write deadline on the session's connections: the earlier of ctx's deadline and ftpOpTimeout, and an immediate
-// one if ctx is cancelled mid-operation. The returned release must be called exactly once (defer it). When the operation was cut
-// short by the context or the deadline, the control connection may hold an unread reply, so release replaces the session.
-func (c *FTPClient) beginOp(ctx context.Context) (*ftp.ServerConn, string, func(), error) {
+// and (4) arms the idle/hard deadline policy on the session's connections, plus an immediate expiry if ctx ends mid-operation. The
+// returned release(opErr) must be called exactly once (defer it) with the error the operation is returning. When the operation FAILED
+// because the context or a deadline cut it short, the control connection may hold an unread reply, so release replaces the session; an
+// operation that succeeded never loses its session, whatever the context does afterwards (review F4).
+func (c *FTPClient) beginOp(ctx context.Context) (*ftp.ServerConn, string, func(opErr error), error) {
 	if err := ctx.Err(); err != nil {
 		return nil, "", nil, err
 	}
@@ -108,15 +197,10 @@ func (c *FTPClient) beginOp(ctx context.Context) (*ftp.ServerConn, string, func(
 		<-c.opSem
 		return nil, "", nil, err
 	}
-	dl := time.Now().Add(ftpOpTimeout)
-	if d, ok := ctx.Deadline(); ok && d.Before(dl) {
-		dl = d
-	}
 	var grp *ftpConnGroup
 	if v, ok := c.ctl.Load(conn); ok {
 		grp = v.(*ftpConnGroup)
-		grp.setOpCtx(ctx)
-		grp.setDeadline(dl)
+		grp.arm(ctx, ftpOpTimeout)
 	}
 	stop := make(chan struct{})
 	watcherDone := make(chan struct{})
@@ -125,20 +209,17 @@ func (c *FTPClient) beginOp(ctx context.Context) (*ftp.ServerConn, string, func(
 		select {
 		case <-ctx.Done():
 			if grp != nil {
-				grp.setDeadline(time.Unix(1, 0)) // unblocks a read/write in progress at once
+				grp.cancel()
 			}
 		case <-stop:
 		}
 	}()
-	release := func() {
+	release := func(opErr error) {
 		close(stop)
 		<-watcherDone
-		cut := ctx.Err() != nil || !time.Now().Before(dl)
+		cut := opErr != nil && (ctx.Err() != nil || (grp != nil && grp.expired()))
 		if grp != nil {
-			grp.setOpCtx(nil)
-		}
-		if grp != nil && !cut {
-			grp.setDeadline(time.Time{})
+			grp.disarm()
 		}
 		if cut {
 			rctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
@@ -161,4 +242,15 @@ func (c *FTPClient) lockOps(ctx context.Context) (func(), error) {
 		return nil, ctx.Err()
 	}
 	return func() { <-c.opSem }, nil
+}
+
+// armDial bounds a new session's connect, greeting banner, login and initial CWD/PWD (review F1): idle = ftpDialTimeout, hard = ctx's
+// deadline, and an expiry at once if ctx ends. The returned func removes the deadlines (call it when the dial finished either way).
+func (g *ftpConnGroup) armDial(ctx context.Context) func() {
+	g.arm(ctx, ftpDialTimeout)
+	stop := context.AfterFunc(ctx, g.cancel)
+	return func() {
+		stop()
+		g.disarm()
+	}
 }

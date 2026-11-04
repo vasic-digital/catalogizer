@@ -1,0 +1,2 @@
+$ go test ./filesystem -race -count=3 -run (new tests)
+ok  	catalogizer/filesystem	75.242s

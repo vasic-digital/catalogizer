@@ -15,3 +15,12 @@ M1 remove op semaphore -> parallel-stat FAIL; M2 remove ctx.Err() check (FTP) ->
 ## Known limits
 - ReadFile: the turn covers the RETR exchange only; reading the returned transfer while using the same client concurrently still interleaves (one client, one active transfer).
 - Live Synology (SMB/FTP) confirmation of these changes was NOT run (no Synology access used); owed. FTP real-server tests need python3 + pyftpdlib (FTP_PYFTPDLIB_DIR; Python >= 3.12 also pyasynchat/pyasyncore) and SKIP honestly otherwise.
+
+## Review round 1 (Opus NO-GO) remediation, head after 3cae7498
+- F1: session dial (connect, banner, Login, CWD/PWD) armed with ftpDialTimeout + ctx deadline + ctx-cancel expiry (armDial); applies to Connect and the reconnect after a cut. Tests TestRV_ReconnectAfterCutBounded (RED: 25 s HANG; GREEN 10.5 s = the 10 s reconnect bound), TestFTPConnectSilentBannerHonoursContext.
+- F2: ftpOpTimeout is now an IDLE bound pushed forward on every Read/Write of a data connection (control channel deadline moves with it); downloads handed to the caller after the operation are uncapped as before. TestRV_LongUploadExceedsOpCap (RED: "i/o timeout" at 1.12 s; GREEN 3.3 s), TestRV_LongDownloadExceedsOpCap.
+- F3: TestRV_SessionReplacedAfterCut, TestRV_CancelMidOpUnblocks, TestFTPSilentDataConnectionHonoursContext, TestFTPSilentDataConnectionEndsByIdleBound, TestFTPCancelUnblocksSilentDataConnection, TestFTPTurnReleasedWhenNotConnected.
+- F4: release(opErr): the session is replaced only when the operation FAILED and ctx/deadline cut it; TestLiveRealFTP_SuccessKeepsSessionWhenContextEndsLate.
+- F6: smbPath leading separators are trimmed (done); repeated INTERNAL separators ("a//b") are deliberately left as given, since that is today's behaviour for working callers.
+- Evidence files here: red_review_r1_probes.txt (RED on 3cae7498), mutations_round2.txt (mutants), green_new_tests_race_x3.txt, green_filesystem_package_race.txt, green_go_vet.txt, full_package_verbose_race.txt. Commands: `systemd-run --user --scope -p MemoryMax=4G -p MemorySwapMax=0 go test ./filesystem -race -count=N -run ...` in catalog-api with FTP_PYFTPDLIB_DIR set; `go vet ./...`.
+- Mutants killed (round 2): no-session-replacement, watcher no-op, data conns without initial deadline (idle test), cancel skipping a connection, turn leak on session error, data dial on Connect ctx, cut ignoring op error, no dial deadline, no idle progress push; round-1 mutants M1..M6 also still apply.

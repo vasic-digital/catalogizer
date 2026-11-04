@@ -1,0 +1,2 @@
+$ go test ./filesystem -race -count=1 (whole package)
+ok  	catalogizer/filesystem	86.020s

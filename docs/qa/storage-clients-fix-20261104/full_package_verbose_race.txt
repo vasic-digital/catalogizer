@@ -1,0 +1,1220 @@
+=== RUN   TestGetStringSetting
+=== RUN   TestGetStringSetting/key_exists_with_string_value
+=== RUN   TestGetStringSetting/key_missing_returns_default
+=== RUN   TestGetStringSetting/key_exists_with_non-string_value_returns_default
+=== RUN   TestGetStringSetting/nil_settings_map_returns_default
+=== RUN   TestGetStringSetting/empty_string_value
+=== RUN   TestGetStringSetting/key_exists_with_bool_value_returns_default
+--- PASS: TestGetStringSetting (0.00s)
+    --- PASS: TestGetStringSetting/key_exists_with_string_value (0.00s)
+    --- PASS: TestGetStringSetting/key_missing_returns_default (0.00s)
+    --- PASS: TestGetStringSetting/key_exists_with_non-string_value_returns_default (0.00s)
+    --- PASS: TestGetStringSetting/nil_settings_map_returns_default (0.00s)
+    --- PASS: TestGetStringSetting/empty_string_value (0.00s)
+    --- PASS: TestGetStringSetting/key_exists_with_bool_value_returns_default (0.00s)
+=== RUN   TestGetIntSetting
+=== RUN   TestGetIntSetting/key_exists_with_int_value
+=== RUN   TestGetIntSetting/key_exists_with_float64_value_(JSON_numbers)
+=== RUN   TestGetIntSetting/key_missing_returns_default
+=== RUN   TestGetIntSetting/key_exists_with_string_value_returns_default
+=== RUN   TestGetIntSetting/nil_settings_map_returns_default
+=== RUN   TestGetIntSetting/zero_int_value
+=== RUN   TestGetIntSetting/zero_float64_value
+=== RUN   TestGetIntSetting/negative_int_value
+=== RUN   TestGetIntSetting/key_exists_with_bool_value_returns_default
+--- PASS: TestGetIntSetting (0.00s)
+    --- PASS: TestGetIntSetting/key_exists_with_int_value (0.00s)
+    --- PASS: TestGetIntSetting/key_exists_with_float64_value_(JSON_numbers) (0.00s)
+    --- PASS: TestGetIntSetting/key_missing_returns_default (0.00s)
+    --- PASS: TestGetIntSetting/key_exists_with_string_value_returns_default (0.00s)
+    --- PASS: TestGetIntSetting/nil_settings_map_returns_default (0.00s)
+    --- PASS: TestGetIntSetting/zero_int_value (0.00s)
+    --- PASS: TestGetIntSetting/zero_float64_value (0.00s)
+    --- PASS: TestGetIntSetting/negative_int_value (0.00s)
+    --- PASS: TestGetIntSetting/key_exists_with_bool_value_returns_default (0.00s)
+=== RUN   TestDefaultClientFactory_CreateClient_SettingsExtraction
+=== RUN   TestDefaultClientFactory_CreateClient_SettingsExtraction/SMB_settings_extraction_with_defaults
+=== RUN   TestDefaultClientFactory_CreateClient_SettingsExtraction/FTP_settings_extraction_with_defaults
+=== RUN   TestDefaultClientFactory_CreateClient_SettingsExtraction/NFS_settings_extraction_with_defaults
+=== RUN   TestDefaultClientFactory_CreateClient_SettingsExtraction/NFS_with_empty_mount_point_returns_error
+=== RUN   TestDefaultClientFactory_CreateClient_SettingsExtraction/WebDAV_settings_extraction
+=== RUN   TestDefaultClientFactory_CreateClient_SettingsExtraction/Local_settings_extraction
+=== RUN   TestDefaultClientFactory_CreateClient_SettingsExtraction/SMB_with_float64_port_from_JSON
+=== RUN   TestDefaultClientFactory_CreateClient_SettingsExtraction/FTP_with_float64_port_from_JSON
+=== RUN   TestDefaultClientFactory_CreateClient_SettingsExtraction/unsupported_protocol_with_empty_settings
+--- PASS: TestDefaultClientFactory_CreateClient_SettingsExtraction (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_SettingsExtraction/SMB_settings_extraction_with_defaults (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_SettingsExtraction/FTP_settings_extraction_with_defaults (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_SettingsExtraction/NFS_settings_extraction_with_defaults (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_SettingsExtraction/NFS_with_empty_mount_point_returns_error (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_SettingsExtraction/WebDAV_settings_extraction (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_SettingsExtraction/Local_settings_extraction (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_SettingsExtraction/SMB_with_float64_port_from_JSON (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_SettingsExtraction/FTP_with_float64_port_from_JSON (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_SettingsExtraction/unsupported_protocol_with_empty_settings (0.00s)
+=== RUN   TestDefaultClientFactory_SupportedProtocols_Contents
+=== RUN   TestDefaultClientFactory_SupportedProtocols_Contents/create_smb
+=== RUN   TestDefaultClientFactory_SupportedProtocols_Contents/create_ftp
+=== RUN   TestDefaultClientFactory_SupportedProtocols_Contents/create_nfs
+=== RUN   TestDefaultClientFactory_SupportedProtocols_Contents/create_webdav
+=== RUN   TestDefaultClientFactory_SupportedProtocols_Contents/create_local
+--- PASS: TestDefaultClientFactory_SupportedProtocols_Contents (0.00s)
+    --- PASS: TestDefaultClientFactory_SupportedProtocols_Contents/create_smb (0.00s)
+    --- PASS: TestDefaultClientFactory_SupportedProtocols_Contents/create_ftp (0.00s)
+    --- PASS: TestDefaultClientFactory_SupportedProtocols_Contents/create_nfs (0.00s)
+    --- PASS: TestDefaultClientFactory_SupportedProtocols_Contents/create_webdav (0.00s)
+    --- PASS: TestDefaultClientFactory_SupportedProtocols_Contents/create_local (0.00s)
+=== RUN   TestInterfaceCompliance
+=== RUN   TestInterfaceCompliance/LocalClient_implements_FileSystemClient
+=== RUN   TestInterfaceCompliance/FTPClient_implements_FileSystemClient
+=== RUN   TestInterfaceCompliance/SmbClient_implements_FileSystemClient
+=== RUN   TestInterfaceCompliance/WebDAVClient_implements_FileSystemClient
+=== RUN   TestInterfaceCompliance/NFSClient_implements_FileSystemClient
+--- PASS: TestInterfaceCompliance (0.00s)
+    --- PASS: TestInterfaceCompliance/LocalClient_implements_FileSystemClient (0.00s)
+    --- PASS: TestInterfaceCompliance/FTPClient_implements_FileSystemClient (0.00s)
+    --- PASS: TestInterfaceCompliance/SmbClient_implements_FileSystemClient (0.00s)
+    --- PASS: TestInterfaceCompliance/WebDAVClient_implements_FileSystemClient (0.00s)
+    --- PASS: TestInterfaceCompliance/NFSClient_implements_FileSystemClient (0.00s)
+=== RUN   TestLocalClient_GetConfig
+--- PASS: TestLocalClient_GetConfig (0.00s)
+=== RUN   TestLocalClient_CreateDirectory
+=== RUN   TestLocalClient_CreateDirectory/create_simple_directory
+=== RUN   TestLocalClient_CreateDirectory/create_nested_directory
+=== RUN   TestLocalClient_CreateDirectory/create_directory_that_already_exists
+--- PASS: TestLocalClient_CreateDirectory (0.00s)
+    --- PASS: TestLocalClient_CreateDirectory/create_simple_directory (0.00s)
+    --- PASS: TestLocalClient_CreateDirectory/create_nested_directory (0.00s)
+    --- PASS: TestLocalClient_CreateDirectory/create_directory_that_already_exists (0.00s)
+=== RUN   TestLocalClient_CreateDirectory_NotConnected
+--- PASS: TestLocalClient_CreateDirectory_NotConnected (0.00s)
+=== RUN   TestLocalClient_DeleteDirectory
+=== RUN   TestLocalClient_DeleteDirectory/delete_empty_directory
+=== RUN   TestLocalClient_DeleteDirectory/delete_directory_with_contents
+--- PASS: TestLocalClient_DeleteDirectory (0.00s)
+    --- PASS: TestLocalClient_DeleteDirectory/delete_empty_directory (0.00s)
+    --- PASS: TestLocalClient_DeleteDirectory/delete_directory_with_contents (0.00s)
+=== RUN   TestLocalClient_DeleteDirectory_NotConnected
+--- PASS: TestLocalClient_DeleteDirectory_NotConnected (0.00s)
+=== RUN   TestLocalClient_DeleteFile
+=== RUN   TestLocalClient_DeleteFile/delete_existing_file
+=== RUN   TestLocalClient_DeleteFile/delete_nonexistent_file_returns_error
+--- PASS: TestLocalClient_DeleteFile (0.00s)
+    --- PASS: TestLocalClient_DeleteFile/delete_existing_file (0.00s)
+    --- PASS: TestLocalClient_DeleteFile/delete_nonexistent_file_returns_error (0.00s)
+=== RUN   TestLocalClient_DeleteFile_NotConnected
+--- PASS: TestLocalClient_DeleteFile_NotConnected (0.00s)
+=== RUN   TestLocalClient_CopyFile
+=== RUN   TestLocalClient_CopyFile/copy_file_to_same_directory
+=== RUN   TestLocalClient_CopyFile/copy_file_to_nested_directory
+=== RUN   TestLocalClient_CopyFile/copy_nonexistent_source_returns_error
+--- PASS: TestLocalClient_CopyFile (0.00s)
+    --- PASS: TestLocalClient_CopyFile/copy_file_to_same_directory (0.00s)
+    --- PASS: TestLocalClient_CopyFile/copy_file_to_nested_directory (0.00s)
+    --- PASS: TestLocalClient_CopyFile/copy_nonexistent_source_returns_error (0.00s)
+=== RUN   TestLocalClient_CopyFile_NotConnected
+--- PASS: TestLocalClient_CopyFile_NotConnected (0.00s)
+=== RUN   TestLocalClient_Connect_NonexistentPath
+--- PASS: TestLocalClient_Connect_NonexistentPath (0.00s)
+=== RUN   TestLocalClient_Connect_FileInsteadOfDir
+--- PASS: TestLocalClient_Connect_FileInsteadOfDir (0.00s)
+=== RUN   TestLocalClient_TestConnection_NotConnected
+--- PASS: TestLocalClient_TestConnection_NotConnected (0.00s)
+=== RUN   TestLocalClient_ReadFile_NotConnected
+--- PASS: TestLocalClient_ReadFile_NotConnected (0.00s)
+=== RUN   TestLocalClient_WriteFile_NotConnected
+--- PASS: TestLocalClient_WriteFile_NotConnected (0.00s)
+=== RUN   TestLocalClient_GetFileInfo_NotConnected
+--- PASS: TestLocalClient_GetFileInfo_NotConnected (0.00s)
+=== RUN   TestLocalClient_ListDirectory_NotConnected
+--- PASS: TestLocalClient_ListDirectory_NotConnected (0.00s)
+=== RUN   TestLocalClient_FileExists_NotConnected
+--- PASS: TestLocalClient_FileExists_NotConnected (0.00s)
+=== RUN   TestLocalClient_ResolvePath_DirectoryTraversal
+=== RUN   TestLocalClient_ResolvePath_DirectoryTraversal/simple_traversal
+=== RUN   TestLocalClient_ResolvePath_DirectoryTraversal/double_traversal
+=== RUN   TestLocalClient_ResolvePath_DirectoryTraversal/nested_traversal
+--- PASS: TestLocalClient_ResolvePath_DirectoryTraversal (0.00s)
+    --- PASS: TestLocalClient_ResolvePath_DirectoryTraversal/simple_traversal (0.00s)
+    --- PASS: TestLocalClient_ResolvePath_DirectoryTraversal/double_traversal (0.00s)
+    --- PASS: TestLocalClient_ResolvePath_DirectoryTraversal/nested_traversal (0.00s)
+=== RUN   TestLocalClient_ResolvePath_NormalPaths
+=== RUN   TestLocalClient_ResolvePath_NormalPaths/simple_file
+=== RUN   TestLocalClient_ResolvePath_NormalPaths/nested_file
+=== RUN   TestLocalClient_ResolvePath_NormalPaths/current_dir
+--- PASS: TestLocalClient_ResolvePath_NormalPaths (0.00s)
+    --- PASS: TestLocalClient_ResolvePath_NormalPaths/simple_file (0.00s)
+    --- PASS: TestLocalClient_ResolvePath_NormalPaths/nested_file (0.00s)
+    --- PASS: TestLocalClient_ResolvePath_NormalPaths/current_dir (0.00s)
+=== RUN   TestLocalClient_WriteFile_CreatesNestedDirs
+--- PASS: TestLocalClient_WriteFile_CreatesNestedDirs (0.00s)
+=== RUN   TestLocalClient_ReadFile_Nonexistent
+--- PASS: TestLocalClient_ReadFile_Nonexistent (0.00s)
+=== RUN   TestLocalClient_GetFileInfo_Directory
+--- PASS: TestLocalClient_GetFileInfo_Directory (0.00s)
+=== RUN   TestLocalClient_GetFileInfo_Nonexistent
+--- PASS: TestLocalClient_GetFileInfo_Nonexistent (0.00s)
+=== RUN   TestLocalClient_ListDirectory_Empty
+--- PASS: TestLocalClient_ListDirectory_Empty (0.00s)
+=== RUN   TestLocalClient_ListDirectory_Nonexistent
+--- PASS: TestLocalClient_ListDirectory_Nonexistent (0.00s)
+=== RUN   TestLocalClient_FullLifecycle
+--- PASS: TestLocalClient_FullLifecycle (0.00s)
+=== RUN   TestLocalClient_StateTransitions
+--- PASS: TestLocalClient_StateTransitions (0.00s)
+=== RUN   TestFTPClient_ResolvePath
+=== RUN   TestFTPClient_ResolvePath/with_base_path
+=== RUN   TestFTPClient_ResolvePath/without_base_path
+=== RUN   TestFTPClient_ResolvePath/nested_path_with_base
+--- PASS: TestFTPClient_ResolvePath (0.00s)
+    --- PASS: TestFTPClient_ResolvePath/with_base_path (0.00s)
+    --- PASS: TestFTPClient_ResolvePath/without_base_path (0.00s)
+    --- PASS: TestFTPClient_ResolvePath/nested_path_with_base (0.00s)
+=== RUN   TestIsNotExistError
+=== RUN   TestIsNotExistError/nil_error
+=== RUN   TestIsNotExistError/file_does_not_exist
+=== RUN   TestIsNotExistError/no_such_file_or_directory
+=== RUN   TestIsNotExistError/other_error
+=== RUN   TestIsNotExistError/permission_denied
+--- PASS: TestIsNotExistError (0.00s)
+    --- PASS: TestIsNotExistError/nil_error (0.00s)
+    --- PASS: TestIsNotExistError/file_does_not_exist (0.00s)
+    --- PASS: TestIsNotExistError/no_such_file_or_directory (0.00s)
+    --- PASS: TestIsNotExistError/other_error (0.00s)
+    --- PASS: TestIsNotExistError/permission_denied (0.00s)
+=== RUN   TestDirectoryTreeInfo_Empty
+--- PASS: TestDirectoryTreeInfo_Empty (0.00s)
+=== RUN   TestDirectoryTreeInfo_DeepNesting
+--- PASS: TestDirectoryTreeInfo_DeepNesting (0.00s)
+=== RUN   TestWebDAVClient_ResolveURL_NoBasePath
+--- PASS: TestWebDAVClient_ResolveURL_NoBasePath (0.00s)
+=== RUN   TestWebDAVClient_ResolveURL_WithPort
+--- PASS: TestWebDAVClient_ResolveURL_WithPort (0.00s)
+=== RUN   TestDefaultClientFactory_CreateClient_NilSettings
+=== RUN   TestDefaultClientFactory_CreateClient_NilSettings/local_with_nil_settings
+=== RUN   TestDefaultClientFactory_CreateClient_NilSettings/smb_with_nil_settings
+=== RUN   TestDefaultClientFactory_CreateClient_NilSettings/ftp_with_nil_settings
+=== RUN   TestDefaultClientFactory_CreateClient_NilSettings/webdav_with_nil_settings
+=== RUN   TestDefaultClientFactory_CreateClient_NilSettings/nfs_with_nil_settings_fails
+--- PASS: TestDefaultClientFactory_CreateClient_NilSettings (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_NilSettings/local_with_nil_settings (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_NilSettings/smb_with_nil_settings (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_NilSettings/ftp_with_nil_settings (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_NilSettings/webdav_with_nil_settings (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_NilSettings/nfs_with_nil_settings_fails (0.00s)
+=== RUN   TestLocalClient_CopyFile_LargeContent
+--- PASS: TestLocalClient_CopyFile_LargeContent (0.01s)
+=== RUN   TestLocalClient_ListDirectory_MixedEntries
+--- PASS: TestLocalClient_ListDirectory_MixedEntries (0.00s)
+=== RUN   TestLocalClient_FileExists_DirectoryExists
+--- PASS: TestLocalClient_FileExists_DirectoryExists (0.00s)
+=== RUN   TestWebDAVClient_NewWebDAVClient_InvalidURL
+--- PASS: TestWebDAVClient_NewWebDAVClient_InvalidURL (0.00s)
+=== RUN   TestLocalClient_WriteFile_Overwrite
+--- PASS: TestLocalClient_WriteFile_Overwrite (0.00s)
+=== RUN   TestNFSClient_IsMounted_ViaIsConnected
+--- PASS: TestNFSClient_IsMounted_ViaIsConnected (0.00s)
+=== RUN   TestNFSClient_WriteFile_FakeMount
+--- PASS: TestNFSClient_WriteFile_FakeMount (0.00s)
+=== RUN   TestNFSClient_ReadFile_FakeMount
+--- PASS: TestNFSClient_ReadFile_FakeMount (0.00s)
+=== RUN   TestNFSClient_GetFileInfo_FakeMount
+--- PASS: TestNFSClient_GetFileInfo_FakeMount (0.00s)
+=== RUN   TestNFSClient_ListDirectory_FakeMount
+--- PASS: TestNFSClient_ListDirectory_FakeMount (0.00s)
+=== RUN   TestNFSClient_FileExists_FakeMount
+--- PASS: TestNFSClient_FileExists_FakeMount (0.00s)
+=== RUN   TestNFSClient_CreateDirectory_FakeMount
+--- PASS: TestNFSClient_CreateDirectory_FakeMount (0.00s)
+=== RUN   TestNFSClient_DeleteDirectory_FakeMount
+--- PASS: TestNFSClient_DeleteDirectory_FakeMount (0.00s)
+=== RUN   TestNFSClient_DeleteFile_FakeMount
+--- PASS: TestNFSClient_DeleteFile_FakeMount (0.00s)
+=== RUN   TestNFSClient_CopyFile_FakeMount
+--- PASS: TestNFSClient_CopyFile_FakeMount (0.00s)
+=== RUN   TestNFSClient_TestConnection_FakeMount
+--- PASS: TestNFSClient_TestConnection_FakeMount (0.00s)
+=== RUN   TestLocalClient_WriteFile_EmptyContent
+--- PASS: TestLocalClient_WriteFile_EmptyContent (0.00s)
+=== RUN   TestLocalClient_WriteFile_LargeContent
+--- PASS: TestLocalClient_WriteFile_LargeContent (0.00s)
+=== RUN   TestLocalClient_ReadFile_FullContent
+--- PASS: TestLocalClient_ReadFile_FullContent (0.00s)
+=== RUN   TestGetStringSetting_Expanded
+=== RUN   TestGetStringSetting_Expanded/key_exists_with_string_value
+=== RUN   TestGetStringSetting_Expanded/key_missing_returns_default
+=== RUN   TestGetStringSetting_Expanded/key_exists_with_non-string_value_returns_default
+=== RUN   TestGetStringSetting_Expanded/nil_settings_returns_default
+=== RUN   TestGetStringSetting_Expanded/empty_string_value_returns_empty
+--- PASS: TestGetStringSetting_Expanded (0.00s)
+    --- PASS: TestGetStringSetting_Expanded/key_exists_with_string_value (0.00s)
+    --- PASS: TestGetStringSetting_Expanded/key_missing_returns_default (0.00s)
+    --- PASS: TestGetStringSetting_Expanded/key_exists_with_non-string_value_returns_default (0.00s)
+    --- PASS: TestGetStringSetting_Expanded/nil_settings_returns_default (0.00s)
+    --- PASS: TestGetStringSetting_Expanded/empty_string_value_returns_empty (0.00s)
+=== RUN   TestGetIntSetting_Expanded
+=== RUN   TestGetIntSetting_Expanded/key_exists_with_int_value
+=== RUN   TestGetIntSetting_Expanded/key_exists_with_float64_value_(JSON_decoding)
+=== RUN   TestGetIntSetting_Expanded/key_missing_returns_default
+=== RUN   TestGetIntSetting_Expanded/key_exists_with_non-numeric_type_returns_default
+=== RUN   TestGetIntSetting_Expanded/nil_settings_returns_default
+=== RUN   TestGetIntSetting_Expanded/zero_int_value
+=== RUN   TestGetIntSetting_Expanded/negative_int_value
+--- PASS: TestGetIntSetting_Expanded (0.00s)
+    --- PASS: TestGetIntSetting_Expanded/key_exists_with_int_value (0.00s)
+    --- PASS: TestGetIntSetting_Expanded/key_exists_with_float64_value_(JSON_decoding) (0.00s)
+    --- PASS: TestGetIntSetting_Expanded/key_missing_returns_default (0.00s)
+    --- PASS: TestGetIntSetting_Expanded/key_exists_with_non-numeric_type_returns_default (0.00s)
+    --- PASS: TestGetIntSetting_Expanded/nil_settings_returns_default (0.00s)
+    --- PASS: TestGetIntSetting_Expanded/zero_int_value (0.00s)
+    --- PASS: TestGetIntSetting_Expanded/negative_int_value (0.00s)
+=== RUN   TestDefaultClientFactory_CreateClient_SMBDefaults
+--- PASS: TestDefaultClientFactory_CreateClient_SMBDefaults (0.00s)
+=== RUN   TestDefaultClientFactory_CreateClient_FTPDefaults
+--- PASS: TestDefaultClientFactory_CreateClient_FTPDefaults (0.00s)
+=== RUN   TestDefaultClientFactory_CreateClient_LocalDefaults
+--- PASS: TestDefaultClientFactory_CreateClient_LocalDefaults (0.00s)
+=== RUN   TestDefaultClientFactory_CreateClient_SMBFloatPort
+--- PASS: TestDefaultClientFactory_CreateClient_SMBFloatPort (0.00s)
+=== RUN   TestDefaultClientFactory_CreateClient_MultipleUnsupportedProtocols
+=== RUN   TestDefaultClientFactory_CreateClient_MultipleUnsupportedProtocols/s3
+=== RUN   TestDefaultClientFactory_CreateClient_MultipleUnsupportedProtocols/sftp
+=== RUN   TestDefaultClientFactory_CreateClient_MultipleUnsupportedProtocols/hdfs
+=== RUN   TestDefaultClientFactory_CreateClient_MultipleUnsupportedProtocols/gcs
+=== RUN   TestDefaultClientFactory_CreateClient_MultipleUnsupportedProtocols/azure
+--- PASS: TestDefaultClientFactory_CreateClient_MultipleUnsupportedProtocols (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_MultipleUnsupportedProtocols/s3 (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_MultipleUnsupportedProtocols/sftp (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_MultipleUnsupportedProtocols/hdfs (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_MultipleUnsupportedProtocols/gcs (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient_MultipleUnsupportedProtocols/azure (0.00s)
+=== RUN   TestDirectoryTreeInfo_Fields
+--- PASS: TestDirectoryTreeInfo_Fields (0.00s)
+=== RUN   TestDirectoryTreeInfo_NestedStructure
+--- PASS: TestDirectoryTreeInfo_NestedStructure (0.00s)
+=== RUN   TestSupportedProtocols_Order
+--- PASS: TestSupportedProtocols_Order (0.00s)
+=== RUN   TestSupportedProtocols_AllCreateable
+=== RUN   TestSupportedProtocols_AllCreateable/smb
+=== RUN   TestSupportedProtocols_AllCreateable/ftp
+=== RUN   TestSupportedProtocols_AllCreateable/nfs
+=== RUN   TestSupportedProtocols_AllCreateable/webdav
+=== RUN   TestSupportedProtocols_AllCreateable/local
+--- PASS: TestSupportedProtocols_AllCreateable (0.00s)
+    --- PASS: TestSupportedProtocols_AllCreateable/smb (0.00s)
+    --- PASS: TestSupportedProtocols_AllCreateable/ftp (0.00s)
+    --- PASS: TestSupportedProtocols_AllCreateable/nfs (0.00s)
+    --- PASS: TestSupportedProtocols_AllCreateable/webdav (0.00s)
+    --- PASS: TestSupportedProtocols_AllCreateable/local (0.00s)
+=== RUN   TestDefaultClientFactory_SupportedProtocols
+--- PASS: TestDefaultClientFactory_SupportedProtocols (0.00s)
+=== RUN   TestDefaultClientFactory_CreateClient
+=== RUN   TestDefaultClientFactory_CreateClient/SMB_client
+=== RUN   TestDefaultClientFactory_CreateClient/FTP_client
+=== RUN   TestDefaultClientFactory_CreateClient/NFS_client
+=== RUN   TestDefaultClientFactory_CreateClient/WebDAV_client
+=== RUN   TestDefaultClientFactory_CreateClient/Local_client
+=== RUN   TestDefaultClientFactory_CreateClient/Unsupported_protocol
+--- PASS: TestDefaultClientFactory_CreateClient (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient/SMB_client (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient/FTP_client (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient/NFS_client (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient/WebDAV_client (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient/Local_client (0.00s)
+    --- PASS: TestDefaultClientFactory_CreateClient/Unsupported_protocol (0.00s)
+=== RUN   TestFTPCopyFile_CancelDuringStorOrphanReported
+2026/11/04 22:21:00 ftp: temporary file /dir/.dst.bin.ftpcopy-9022bfbadd131218.part may remain on the server: 550 "permission denied"
+--- PASS: TestFTPCopyFile_CancelDuringStorOrphanReported (0.80s)
+=== RUN   TestTempNeverCreatedWordings
+--- PASS: TestTempNeverCreatedWordings (0.00s)
+=== RUN   TestFTPCopyFile_AmbiguousDeleRefusalStillReportsOrphan
+=== RUN   TestFTPCopyFile_AmbiguousDeleRefusalStillReportsOrphan/No_such_privilege
+2026/11/04 22:21:00 ftp: temporary file /dir/.dst.bin.ftpcopy-32568741549bbc8d.part may remain on the server: 550 "No such privilege"
+=== RUN   TestFTPCopyFile_AmbiguousDeleRefusalStillReportsOrphan/File_not_found_or_permission_denied
+2026/11/04 22:21:00 ftp: temporary file /dir/.dst.bin.ftpcopy-9f662963068445ea.part may remain on the server: 550 "File not found or permission denied"
+--- PASS: TestFTPCopyFile_AmbiguousDeleRefusalStillReportsOrphan (0.01s)
+    --- PASS: TestFTPCopyFile_AmbiguousDeleRefusalStillReportsOrphan/No_such_privilege (0.00s)
+    --- PASS: TestFTPCopyFile_AmbiguousDeleRefusalStillReportsOrphan/File_not_found_or_permission_denied (0.00s)
+=== RUN   TestTempSiblingInvalidUTF8
+--- PASS: TestTempSiblingInvalidUTF8 (0.02s)
+=== RUN   TestFTPCopyFile_ConcurrentCancelStorm
+--- PASS: TestFTPCopyFile_ConcurrentCancelStorm (1.16s)
+=== RUN   TestFTPCopyFile_FallbackCancelMidFlowingTransfer
+--- PASS: TestFTPCopyFile_FallbackCancelMidFlowingTransfer (0.51s)
+=== RUN   TestFTPClient_NewFTPClient
+--- PASS: TestFTPClient_NewFTPClient (0.00s)
+=== RUN   TestFTPClient_NewFTPClient_MinimalConfig
+--- PASS: TestFTPClient_NewFTPClient_MinimalConfig (0.00s)
+=== RUN   TestFTPClient_GetProtocol
+--- PASS: TestFTPClient_GetProtocol (0.00s)
+=== RUN   TestFTPClient_GetConfig
+--- PASS: TestFTPClient_GetConfig (0.00s)
+=== RUN   TestFTPClient_IsConnected_Initial
+--- PASS: TestFTPClient_IsConnected_Initial (0.00s)
+=== RUN   TestFTPClient_TestConnection_NotConnected
+--- PASS: TestFTPClient_TestConnection_NotConnected (0.00s)
+=== RUN   TestFTPClient_ReadFile_NotConnected
+--- PASS: TestFTPClient_ReadFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_WriteFile_NotConnected
+--- PASS: TestFTPClient_WriteFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_GetFileInfo_NotConnected
+--- PASS: TestFTPClient_GetFileInfo_NotConnected (0.00s)
+=== RUN   TestFTPClient_ListDirectory_NotConnected
+--- PASS: TestFTPClient_ListDirectory_NotConnected (0.00s)
+=== RUN   TestFTPClient_FileExists_NotConnected
+--- PASS: TestFTPClient_FileExists_NotConnected (0.00s)
+=== RUN   TestFTPClient_CreateDirectory_NotConnected
+--- PASS: TestFTPClient_CreateDirectory_NotConnected (0.00s)
+=== RUN   TestFTPClient_DeleteDirectory_NotConnected
+--- PASS: TestFTPClient_DeleteDirectory_NotConnected (0.00s)
+=== RUN   TestFTPClient_DeleteFile_NotConnected
+--- PASS: TestFTPClient_DeleteFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_CopyFile_NotConnected
+--- PASS: TestFTPClient_CopyFile_NotConnected (0.00s)
+=== RUN   TestFTPClient_Connect_InvalidServer
+--- PASS: TestFTPClient_Connect_InvalidServer (10.01s)
+=== RUN   TestFTPClient_Connect_InvalidPort
+--- PASS: TestFTPClient_Connect_InvalidPort (0.00s)
+=== RUN   TestFTPClient_Disconnect_NotConnected
+--- PASS: TestFTPClient_Disconnect_NotConnected (0.00s)
+=== RUN   TestFTPConfig_AllFields
+--- PASS: TestFTPConfig_AllFields (0.00s)
+=== RUN   TestFTPConfig_DefaultPort
+--- PASS: TestFTPConfig_DefaultPort (0.00s)
+=== RUN   TestFTPConfig_CustomPort
+--- PASS: TestFTPConfig_CustomPort (0.00s)
+=== RUN   TestFTPConfig_WithBasePath
+--- PASS: TestFTPConfig_WithBasePath (0.00s)
+=== RUN   TestFTPConfig_WithoutBasePath
+--- PASS: TestFTPConfig_WithoutBasePath (0.00s)
+=== RUN   TestFTPConfig_AnonymousLogin
+--- PASS: TestFTPConfig_AnonymousLogin (0.00s)
+=== RUN   TestFTPClient_ResolvePath_WithBasePath
+--- PASS: TestFTPClient_ResolvePath_WithBasePath (0.00s)
+=== RUN   TestFTPClient_ResolvePath_WithoutBasePath
+--- PASS: TestFTPClient_ResolvePath_WithoutBasePath (0.00s)
+=== RUN   TestFTPClient_ResolvePath_RootPath
+--- PASS: TestFTPClient_ResolvePath_RootPath (0.00s)
+=== RUN   TestFTPClient_ResolvePath_NestedPath
+--- PASS: TestFTPClient_ResolvePath_NestedPath (0.00s)
+=== RUN   TestFTPClient_IsConnected_StatePersistence
+--- PASS: TestFTPClient_IsConnected_StatePersistence (0.00s)
+=== RUN   TestFTPClient_MultipleInstances
+--- PASS: TestFTPClient_MultipleInstances (0.00s)
+=== RUN   TestFTPClient_Connect_WithContext
+--- PASS: TestFTPClient_Connect_WithContext (10.01s)
+=== RUN   TestFTPClient_Connect_WithCanceledContext
+--- PASS: TestFTPClient_Connect_WithCanceledContext (0.00s)
+=== RUN   TestFTPClient_Disconnect_WithContext
+--- PASS: TestFTPClient_Disconnect_WithContext (0.00s)
+=== RUN   TestFTPCopyFile_LongBasename
+--- PASS: TestFTPCopyFile_LongBasename (0.00s)
+=== RUN   TestFTPCopyFile_RefusedRenameAndDeleNamesOrphan
+2026/11/04 22:21:22 ftp: temporary file /dir/.dst.bin.ftpcopy-070aca1979166d97.part may remain on the server: 550 "permission denied"
+--- PASS: TestFTPCopyFile_RefusedRenameAndDeleNamesOrphan (0.00s)
+=== RUN   TestFTPCopyFile_ConcurrentSameDestination
+--- PASS: TestFTPCopyFile_ConcurrentSameDestination (0.01s)
+=== RUN   TestFTPCopyFile_OddNames
+--- PASS: TestFTPCopyFile_OddNames (0.01s)
+=== RUN   TestFTPCopyFile_CancelWithBlackholedControlReturnsPromptly
+--- PASS: TestFTPCopyFile_CancelWithBlackholedControlReturnsPromptly (0.81s)
+=== RUN   TestFTPCopyFile_SameSourceAndDestination
+--- PASS: TestFTPCopyFile_SameSourceAndDestination (0.01s)
+=== RUN   TestFTPSilentDataConnectionHonoursContext
+--- PASS: TestFTPSilentDataConnectionHonoursContext (0.70s)
+=== RUN   TestFTPTurnReleasedWhenNotConnected
+--- PASS: TestFTPTurnReleasedWhenNotConnected (0.00s)
+=== RUN   TestLiveRealFTP_SuccessKeepsSessionWhenContextEndsLate
+--- PASS: TestLiveRealFTP_SuccessKeepsSessionWhenContextEndsLate (0.16s)
+=== RUN   TestFTPConnectSilentBannerHonoursContext
+--- PASS: TestFTPConnectSilentBannerHonoursContext (0.60s)
+=== RUN   TestFTPReadCloser_DisconnectDuringRedialDoesNotResurrect
+--- PASS: TestFTPReadCloser_DisconnectDuringRedialDoesNotResurrect (0.01s)
+=== RUN   TestFTPReadCloser_ConnectDuringRedialKeepsConnectsConnection
+--- PASS: TestFTPReadCloser_ConnectDuringRedialKeepsConnectsConnection (0.02s)
+=== RUN   TestFTPReadCloser_DisconnectThenRedialFailureIsNotAnError
+--- PASS: TestFTPReadCloser_DisconnectThenRedialFailureIsNotAnError (0.01s)
+=== RUN   TestFTPReadCloser_RedialFailureWithoutDisconnectIsReported
+--- PASS: TestFTPReadCloser_RedialFailureWithoutDisconnectIsReported (0.01s)
+=== RUN   TestFTPReadCloser_PartialCloseDropsControl_ReconnectsAndReturnsNil
+--- PASS: TestFTPReadCloser_PartialCloseDropsControl_ReconnectsAndReturnsNil (0.00s)
+=== RUN   TestFTPReadCloser_Real426CloseFailureIsReturned
+--- PASS: TestFTPReadCloser_Real426CloseFailureIsReturned (0.00s)
+=== RUN   TestFTPReadCloser_CloseAfterDisconnectDoesNotRedial
+--- PASS: TestFTPReadCloser_CloseAfterDisconnectDoesNotRedial (0.25s)
+=== RUN   TestFTPReadCloser_ReadToEOFThenControlDropIsReturned
+--- PASS: TestFTPReadCloser_ReadToEOFThenControlDropIsReturned (0.00s)
+=== RUN   TestFTPReadCloser_426QuitsOldSessionAndClientUsable
+--- PASS: TestFTPReadCloser_426QuitsOldSessionAndClientUsable (0.25s)
+=== RUN   TestLiveRealFTP_SharedClientParallelStat
+--- PASS: TestLiveRealFTP_SharedClientParallelStat (0.86s)
+=== RUN   TestFTPOperationHonoursContextDeadlineOnSilentServer
+--- PASS: TestFTPOperationHonoursContextDeadlineOnSilentServer (0.70s)
+=== RUN   TestReviewerProbe_RefusedStorMustNotDeleteExistingDestination
+--- PASS: TestReviewerProbe_RefusedStorMustNotDeleteExistingDestination (0.00s)
+=== RUN   TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch
+=== RUN   TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch/cancel-after-store-before-source-confirmation
+2026/11/04 22:21:27 ftp: temporary file /dir/.dst.bin.ftpcopy-39913bf7b3bf4813.part may remain on the server: 550 "permission denied"
+=== RUN   TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch/unconfirmed-source
+2026/11/04 22:21:27 ftp: temporary file /dir/.dst.bin.ftpcopy-314a591b62367d4f.part may remain on the server: 550 "permission denied"
+=== RUN   TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch/abandon-before-move
+2026/11/04 22:21:27 ftp: temporary file /dir/.dst.bin.ftpcopy-f10ff2acf12c9b99.part may remain on the server: 550 "permission denied"
+--- PASS: TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch (0.91s)
+    --- PASS: TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch/cancel-after-store-before-source-confirmation (0.60s)
+    --- PASS: TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch/unconfirmed-source (0.00s)
+    --- PASS: TestFTPCopyFile_OrphanNoteSurvivesEveryErrorBranch/abandon-before-move (0.30s)
+=== RUN   TestFTPCopyFile_OrphanIsLogged
+--- PASS: TestFTPCopyFile_OrphanIsLogged (0.01s)
+=== RUN   TestFTPCopyFile_DeleRefusalRetryPolicy
+=== RUN   TestFTPCopyFile_DeleRefusalRetryPolicy/transient-450-retries
+2026/11/04 22:21:27 ftp: temporary file /dir/.dst.bin.ftpcopy-5529b1b88f1dffd6.part may remain on the server: 450 "file busy"
+=== RUN   TestFTPCopyFile_DeleRefusalRetryPolicy/permanent-550-does-not
+2026/11/04 22:21:27 ftp: temporary file /dir/.dst.bin.ftpcopy-a81cdb7ed7ff6f34.part may remain on the server: 550 "file busy"
+--- PASS: TestFTPCopyFile_DeleRefusalRetryPolicy (0.01s)
+    --- PASS: TestFTPCopyFile_DeleRefusalRetryPolicy/transient-450-retries (0.00s)
+    --- PASS: TestFTPCopyFile_DeleRefusalRetryPolicy/permanent-550-does-not (0.00s)
+=== RUN   TestIsCopyTempNameRejectsLookAlikes
+--- PASS: TestIsCopyTempNameRejectsLookAlikes (0.00s)
+=== RUN   TestTempSiblingFourByteRuneAtCut
+--- PASS: TestTempSiblingFourByteRuneAtCut (0.00s)
+=== RUN   TestFTPCopyFile_CancelDuringSlowHealthyRenameStillCommits
+--- PASS: TestFTPCopyFile_CancelDuringSlowHealthyRenameStillCommits (0.50s)
+=== RUN   TestRV_SessionReplacedAfterCut
+--- PASS: TestRV_SessionReplacedAfterCut (0.50s)
+=== RUN   TestRV_CancelMidOpUnblocks
+--- PASS: TestRV_CancelMidOpUnblocks (0.30s)
+=== RUN   TestRV_ReconnectAfterCutBounded
+    ftp_review_r1_unit_test.go:133: returned after 10.501837208s
+    ftp_review_r1_unit_test.go:144: second op err=not connected
+--- PASS: TestRV_ReconnectAfterCutBounded (10.50s)
+=== RUN   TestRV_LiveDataConnAfterConnectCtxEnds
+--- PASS: TestRV_LiveDataConnAfterConnectCtxEnds (0.15s)
+=== RUN   TestRV_LongUploadExceedsOpCap
+    ftp_review_r1_unit_test.go:186: long upload err=<nil>
+--- PASS: TestRV_LongUploadExceedsOpCap (3.33s)
+=== RUN   TestRV_LongDownloadExceedsOpCap
+--- PASS: TestRV_LongDownloadExceedsOpCap (3.33s)
+=== RUN   TestRV_SmbPathEdges
+    ftp_review_r1_unit_test.go:220: smbPath("/") = "."
+    ftp_review_r1_unit_test.go:220: smbPath("//") = "."
+    ftp_review_r1_unit_test.go:220: smbPath("///a//b/") = "a//b/"
+    ftp_review_r1_unit_test.go:220: smbPath("/..") = "."
+    ftp_review_r1_unit_test.go:220: smbPath("/a/../b") = "b"
+    ftp_review_r1_unit_test.go:220: smbPath("\\x") = "\\x"
+    ftp_review_r1_unit_test.go:220: smbPath("\\\\srv\\share\\x") = "\\\\srv\\share\\x"
+    ftp_review_r1_unit_test.go:220: smbPath("./x") = "./x"
+    ftp_review_r1_unit_test.go:220: smbPath("/./x") = "./x"
+--- PASS: TestRV_SmbPathEdges (0.00s)
+=== RUN   TestR7_SpoolCancelDuringStorKeepsOrphanNote
+2026/11/04 22:21:46 ftp: temporary file /dir/.dst.bin.ftpcopy-c0344652d52177b6.part may remain on the server: 550 "permission denied"
+    ftp_review_r7_unit_test.go:27: err=copy of /src.bin cancelled: context canceled; temporary file /dir/.dst.bin.ftpcopy-c0344652d52177b6.part may remain on the server (cleanup failed: 550 "permission denied") temps=[/dir/.dst.bin.ftpcopy-c0344652d52177b6.part]
+--- PASS: TestR7_SpoolCancelDuringStorKeepsOrphanNote (0.51s)
+=== RUN   TestFTPSession_FieldCyclingVsOperations_NoRaceNoPanic
+--- PASS: TestFTPSession_FieldCyclingVsOperations_NoRaceNoPanic (0.23s)
+=== RUN   TestFTPSession_DisconnectedOperationsReturnNotConnected
+--- PASS: TestFTPSession_DisconnectedOperationsReturnNotConnected (0.00s)
+=== RUN   TestFTPCopyFile_NoControlCommandsWhileRetrDataConnectionOpen
+--- PASS: TestFTPCopyFile_NoControlCommandsWhileRetrDataConnectionOpen (0.00s)
+=== RUN   TestFTPCopyFile_LargeFileStreamsWithoutBufferingInMemory
+--- PASS: TestFTPCopyFile_LargeFileStreamsWithoutBufferingInMemory (0.19s)
+=== RUN   TestFTPCopyFile_RetrCompletionFailureIsReturned
+=== RUN   TestFTPCopyFile_RetrCompletionFailureIsReturned/stream/426
+=== RUN   TestFTPCopyFile_RetrCompletionFailureIsReturned/stream/451
+=== RUN   TestFTPCopyFile_RetrCompletionFailureIsReturned/fallback/426
+=== RUN   TestFTPCopyFile_RetrCompletionFailureIsReturned/fallback/451
+--- PASS: TestFTPCopyFile_RetrCompletionFailureIsReturned (1.03s)
+    --- PASS: TestFTPCopyFile_RetrCompletionFailureIsReturned/stream/426 (0.00s)
+    --- PASS: TestFTPCopyFile_RetrCompletionFailureIsReturned/stream/451 (0.00s)
+    --- PASS: TestFTPCopyFile_RetrCompletionFailureIsReturned/fallback/426 (0.51s)
+    --- PASS: TestFTPCopyFile_RetrCompletionFailureIsReturned/fallback/451 (0.51s)
+=== RUN   TestFTPCopyFile_DeadControlConnectionIsReplaced
+--- PASS: TestFTPCopyFile_DeadControlConnectionIsReplaced (0.00s)
+=== RUN   TestFTPCopyFile_FailedStorLeavesDestinationAndRemovesTemp
+=== RUN   TestFTPCopyFile_FailedStorLeavesDestinationAndRemovesTemp/stream
+=== RUN   TestFTPCopyFile_FailedStorLeavesDestinationAndRemovesTemp/fallback
+--- PASS: TestFTPCopyFile_FailedStorLeavesDestinationAndRemovesTemp (0.51s)
+    --- PASS: TestFTPCopyFile_FailedStorLeavesDestinationAndRemovesTemp/stream (0.00s)
+    --- PASS: TestFTPCopyFile_FailedStorLeavesDestinationAndRemovesTemp/fallback (0.51s)
+=== RUN   TestFTPCopyFile_RefusedStorKeepsExistingDestination
+=== RUN   TestFTPCopyFile_RefusedStorKeepsExistingDestination/stream
+=== RUN   TestFTPCopyFile_RefusedStorKeepsExistingDestination/fallback
+--- PASS: TestFTPCopyFile_RefusedStorKeepsExistingDestination (0.51s)
+    --- PASS: TestFTPCopyFile_RefusedStorKeepsExistingDestination/stream (0.00s)
+    --- PASS: TestFTPCopyFile_RefusedStorKeepsExistingDestination/fallback (0.51s)
+=== RUN   TestFTPCopyFile_RenameOverExistingRefusedKeepsDestination
+=== RUN   TestFTPCopyFile_RenameOverExistingRefusedKeepsDestination/stream
+=== RUN   TestFTPCopyFile_RenameOverExistingRefusedKeepsDestination/fallback
+--- PASS: TestFTPCopyFile_RenameOverExistingRefusedKeepsDestination (0.51s)
+    --- PASS: TestFTPCopyFile_RenameOverExistingRefusedKeepsDestination/stream (0.00s)
+    --- PASS: TestFTPCopyFile_RenameOverExistingRefusedKeepsDestination/fallback (0.51s)
+=== RUN   TestFTPCopyFile_PreCancelledContextReturnsCanceled
+--- PASS: TestFTPCopyFile_PreCancelledContextReturnsCanceled (0.00s)
+=== RUN   TestFTPCopyFile_CancelDuringTransferStopsAndKeepsDestination
+=== RUN   TestFTPCopyFile_CancelDuringTransferStopsAndKeepsDestination/stream
+=== RUN   TestFTPCopyFile_CancelDuringTransferStopsAndKeepsDestination/fallback
+--- PASS: TestFTPCopyFile_CancelDuringTransferStopsAndKeepsDestination (0.95s)
+    --- PASS: TestFTPCopyFile_CancelDuringTransferStopsAndKeepsDestination/stream (0.01s)
+    --- PASS: TestFTPCopyFile_CancelDuringTransferStopsAndKeepsDestination/fallback (0.94s)
+=== RUN   TestFTPCopyFile_CancelUnblocksStalledSourceRead
+=== RUN   TestFTPCopyFile_CancelUnblocksStalledSourceRead/stream
+=== RUN   TestFTPCopyFile_CancelUnblocksStalledSourceRead/fallback
+--- PASS: TestFTPCopyFile_CancelUnblocksStalledSourceRead (2.41s)
+    --- PASS: TestFTPCopyFile_CancelUnblocksStalledSourceRead/stream (1.20s)
+    --- PASS: TestFTPCopyFile_CancelUnblocksStalledSourceRead/fallback (1.20s)
+=== RUN   TestFTPCopyFile_CancelUnblocksStalledDestinationWrite
+--- PASS: TestFTPCopyFile_CancelUnblocksStalledDestinationWrite (0.70s)
+=== RUN   TestFTPCopyFile_SingleSessionServerFallsBackToTempFile
+--- PASS: TestFTPCopyFile_SingleSessionServerFallsBackToTempFile (0.51s)
+=== RUN   TestFTPCopyFile_FallbackUsesConfiguredSpoolDir
+--- PASS: TestFTPCopyFile_FallbackUsesConfiguredSpoolDir (0.51s)
+=== RUN   TestFTPCopyFile_FallbackUnusableSpoolDirFailsBeforeTransfer
+--- PASS: TestFTPCopyFile_FallbackUnusableSpoolDirFailsBeforeTransfer (0.51s)
+=== RUN   TestFTPCopyFile_FallbackRefusesWhenSpoolHasInsufficientFreeSpace
+--- PASS: TestFTPCopyFile_FallbackRefusesWhenSpoolHasInsufficientFreeSpace (1.02s)
+=== RUN   TestFTPConnect_ReplacesAndQuitsPreviousConnection
+--- PASS: TestFTPConnect_ReplacesAndQuitsPreviousConnection (0.25s)
+=== RUN   TestFTPSession_ConnectedFlagWithNilClientIsNotConnected
+--- PASS: TestFTPSession_ConnectedFlagWithNilClientIsNotConnected (0.00s)
+=== RUN   TestFTPCopyFile_ConcurrentCopiesUseDistinctTempNames
+--- PASS: TestFTPCopyFile_ConcurrentCopiesUseDistinctTempNames (0.01s)
+=== RUN   TestFTPTempSibling_StaysWithinNameMaxAndRuneBoundary
+--- PASS: TestFTPTempSibling_StaysWithinNameMaxAndRuneBoundary (0.00s)
+=== RUN   TestFTPTempNeverCreated_OnlyNotFoundCounts
+--- PASS: TestFTPTempNeverCreated_OnlyNotFoundCounts (0.00s)
+=== RUN   TestFreeSpace_ReportsPositiveForRealDir
+--- PASS: TestFreeSpace_ReportsPositiveForRealDir (0.00s)
+=== RUN   TestFTPCopyFile_CancelWithBlackholedSourceControlReplacesSession
+=== RUN   TestFTPCopyFile_CancelWithBlackholedSourceControlReplacesSession/stream
+=== RUN   TestFTPCopyFile_CancelWithBlackholedSourceControlReplacesSession/fallback
+--- PASS: TestFTPCopyFile_CancelWithBlackholedSourceControlReplacesSession (2.40s)
+    --- PASS: TestFTPCopyFile_CancelWithBlackholedSourceControlReplacesSession/stream (1.20s)
+    --- PASS: TestFTPCopyFile_CancelWithBlackholedSourceControlReplacesSession/fallback (1.20s)
+=== RUN   TestFTPCopyFile_OrphanTempIsNamedInError
+2026/11/04 22:21:59 ftp: temporary file /dir/.dst.bin.ftpcopy-ee1424ef897465f0.part may remain on the server: 550 "permission denied"
+--- PASS: TestFTPCopyFile_OrphanTempIsNamedInError (0.00s)
+=== RUN   TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan
+=== RUN   TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan/cleanup-session-dial-refused
+2026/11/04 22:21:59 ftp: temporary file /dir/.dst.bin.ftpcopy-4f3f01df03e61dd6.part may remain on the server: write tcp 127.0.0.1:40158->127.0.0.1:41889: use of closed network connection (cleanup session: failed to connect to FTP server: 421 "no more sessions")
+=== RUN   TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan/fresh-session-dele-refused
+2026/11/04 22:22:00 ftp: temporary file /dir/.dst.bin.ftpcopy-3476a883236bcb1d.part may remain on the server: 550 "permission denied"
+--- PASS: TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan (1.41s)
+    --- PASS: TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan/cleanup-session-dial-refused (0.70s)
+    --- PASS: TestFTPCopyFile_CancelWithFailedCleanupNamesOrphan/fresh-session-dele-refused (0.70s)
+=== RUN   TestFTPCopyFile_CancelBeforeDisarmAbandonsCopy
+--- PASS: TestFTPCopyFile_CancelBeforeDisarmAbandonsCopy (0.30s)
+=== RUN   TestFTPCopyFile_CancelAfterDisarmStillCommits
+--- PASS: TestFTPCopyFile_CancelAfterDisarmStillCommits (0.30s)
+=== RUN   TestFTPCopyFile_RenameFailureWording
+=== RUN   TestFTPCopyFile_RenameFailureWording/server-refusal
+=== RUN   TestFTPCopyFile_RenameFailureWording/connection-lost
+--- PASS: TestFTPCopyFile_RenameFailureWording (0.01s)
+    --- PASS: TestFTPCopyFile_RenameFailureWording/server-refusal (0.00s)
+    --- PASS: TestFTPCopyFile_RenameFailureWording/connection-lost (0.00s)
+=== RUN   TestFTPCopyFile_CancelDuringStalledRenameIsCutOff
+--- PASS: TestFTPCopyFile_CancelDuringStalledRenameIsCutOff (0.60s)
+=== RUN   TestFTPCopyFile_SlowRenameWithoutCancelCompletes
+--- PASS: TestFTPCopyFile_SlowRenameWithoutCancelCompletes (0.60s)
+=== RUN   TestFTPListDirectory_ReportsCopyTempFilesToo
+--- PASS: TestFTPListDirectory_ReportsCopyTempFilesToo (0.00s)
+=== RUN   TestFTPIsCopyTemp_MatchesWhatTempSiblingProduces
+--- PASS: TestFTPIsCopyTemp_MatchesWhatTempSiblingProduces (0.00s)
+=== RUN   TestAvailBytes
+--- PASS: TestAvailBytes (0.00s)
+=== RUN   TestFreeSpaceRealDirectory
+--- PASS: TestFreeSpaceRealDirectory (0.00s)
+=== RUN   TestFileInfoCreation
+--- PASS: TestFileInfoCreation (0.00s)
+=== RUN   TestFileInfoDirectory
+--- PASS: TestFileInfoDirectory (0.00s)
+=== RUN   TestFileInfoZeroValue
+--- PASS: TestFileInfoZeroValue (0.00s)
+=== RUN   TestStorageConfigJSON
+--- PASS: TestStorageConfigJSON (0.00s)
+=== RUN   TestStorageConfigJSONAllProtocols
+=== RUN   TestStorageConfigJSONAllProtocols/smb
+=== RUN   TestStorageConfigJSONAllProtocols/ftp
+=== RUN   TestStorageConfigJSONAllProtocols/nfs
+=== RUN   TestStorageConfigJSONAllProtocols/webdav
+=== RUN   TestStorageConfigJSONAllProtocols/local
+--- PASS: TestStorageConfigJSONAllProtocols (0.00s)
+    --- PASS: TestStorageConfigJSONAllProtocols/smb (0.00s)
+    --- PASS: TestStorageConfigJSONAllProtocols/ftp (0.00s)
+    --- PASS: TestStorageConfigJSONAllProtocols/nfs (0.00s)
+    --- PASS: TestStorageConfigJSONAllProtocols/webdav (0.00s)
+    --- PASS: TestStorageConfigJSONAllProtocols/local (0.00s)
+=== RUN   TestStorageConfigJSONFromString
+--- PASS: TestStorageConfigJSONFromString (0.00s)
+=== RUN   TestStorageConfigDisabled
+--- PASS: TestStorageConfigDisabled (0.00s)
+=== RUN   TestCopyOperationFields
+--- PASS: TestCopyOperationFields (0.00s)
+=== RUN   TestCopyOperationNoOverwrite
+--- PASS: TestCopyOperationNoOverwrite (0.00s)
+=== RUN   TestCopyOperationZeroValue
+--- PASS: TestCopyOperationZeroValue (0.00s)
+=== RUN   TestCopyResultSuccess
+--- PASS: TestCopyResultSuccess (0.00s)
+=== RUN   TestCopyResultFailure
+--- PASS: TestCopyResultFailure (0.00s)
+=== RUN   TestCopyResultZeroValue
+--- PASS: TestCopyResultZeroValue (0.00s)
+=== RUN   TestDirectoryTreeInfo
+--- PASS: TestDirectoryTreeInfo (0.00s)
+=== RUN   TestLiveWebDAVClassifyProbe
+--- PASS: TestLiveWebDAVClassifyProbe (0.00s)
+=== RUN   TestLiveWebDAVValidateSandbox
+--- PASS: TestLiveWebDAVValidateSandbox (0.00s)
+=== RUN   TestLiveWebDAVApplyProbe
+--- PASS: TestLiveWebDAVApplyProbe (0.00s)
+=== RUN   TestYandexAllowedPath
+--- PASS: TestYandexAllowedPath (0.00s)
+=== RUN   TestYandexAllowedURL
+--- PASS: TestYandexAllowedURL (0.00s)
+=== RUN   TestDetBytesDeterministic
+--- PASS: TestDetBytesDeterministic (0.05s)
+=== RUN   TestLocalClient_Connect
+--- PASS: TestLocalClient_Connect (0.00s)
+=== RUN   TestLocalClient_TestConnection
+--- PASS: TestLocalClient_TestConnection (0.00s)
+=== RUN   TestLocalClient_WriteFile
+--- PASS: TestLocalClient_WriteFile (0.00s)
+=== RUN   TestLocalClient_ReadFile
+--- PASS: TestLocalClient_ReadFile (0.00s)
+=== RUN   TestLocalClient_GetFileInfo
+--- PASS: TestLocalClient_GetFileInfo (0.00s)
+=== RUN   TestLocalClient_ListDirectory
+--- PASS: TestLocalClient_ListDirectory (0.00s)
+=== RUN   TestLocalClient_FileExists
+--- PASS: TestLocalClient_FileExists (0.00s)
+=== RUN   TestLocalClient_GetProtocol
+--- PASS: TestLocalClient_GetProtocol (0.00s)
+=== RUN   TestCAT001_LocalClient_SymlinkEscapeIsRefusedForEveryOperation
+--- PASS: TestCAT001_LocalClient_SymlinkEscapeIsRefusedForEveryOperation (0.00s)
+=== RUN   TestCAT001_CheckLocalRoot
+--- PASS: TestCAT001_CheckLocalRoot (0.00s)
+=== RUN   TestCAT001_LocalClient_DeleteDirectoryRefusesTheStorageRoot
+--- PASS: TestCAT001_LocalClient_DeleteDirectoryRefusesTheStorageRoot (0.00s)
+=== RUN   TestCAT001_LocalClient_DeleteDirectoryRefusesASymlinkedStorageRoot
+--- PASS: TestCAT001_LocalClient_DeleteDirectoryRefusesASymlinkedStorageRoot (0.00s)
+=== RUN   TestResolveLocalRoot
+--- PASS: TestResolveLocalRoot (0.01s)
+=== RUN   TestNFSClient_NewNFSClient
+--- PASS: TestNFSClient_NewNFSClient (0.00s)
+=== RUN   TestNFSClient_NewNFSClient_MinimalConfig
+--- PASS: TestNFSClient_NewNFSClient_MinimalConfig (0.00s)
+=== RUN   TestNFSClient_NewNFSClient_NoMountPoint
+--- PASS: TestNFSClient_NewNFSClient_NoMountPoint (0.00s)
+=== RUN   TestNFSClient_GetProtocol
+--- PASS: TestNFSClient_GetProtocol (0.00s)
+=== RUN   TestNFSClient_GetConfig
+--- PASS: TestNFSClient_GetConfig (0.00s)
+=== RUN   TestNFSClient_IsConnected_Initial
+--- PASS: TestNFSClient_IsConnected_Initial (0.00s)
+=== RUN   TestNFSClient_TestConnection_NotConnected
+--- PASS: TestNFSClient_TestConnection_NotConnected (0.00s)
+=== RUN   TestNFSClient_ReadFile_NotConnected
+--- PASS: TestNFSClient_ReadFile_NotConnected (0.00s)
+=== RUN   TestNFSClient_WriteFile_NotConnected
+--- PASS: TestNFSClient_WriteFile_NotConnected (0.00s)
+=== RUN   TestNFSClient_GetFileInfo_NotConnected
+--- PASS: TestNFSClient_GetFileInfo_NotConnected (0.00s)
+=== RUN   TestNFSClient_ListDirectory_NotConnected
+--- PASS: TestNFSClient_ListDirectory_NotConnected (0.00s)
+=== RUN   TestNFSClient_FileExists_NotConnected
+--- PASS: TestNFSClient_FileExists_NotConnected (0.00s)
+=== RUN   TestNFSClient_CreateDirectory_NotConnected
+--- PASS: TestNFSClient_CreateDirectory_NotConnected (0.00s)
+=== RUN   TestNFSClient_DeleteDirectory_NotConnected
+--- PASS: TestNFSClient_DeleteDirectory_NotConnected (0.00s)
+=== RUN   TestNFSClient_DeleteFile_NotConnected
+--- PASS: TestNFSClient_DeleteFile_NotConnected (0.00s)
+=== RUN   TestNFSClient_CopyFile_NotConnected
+--- PASS: TestNFSClient_CopyFile_NotConnected (0.00s)
+=== RUN   TestNFSConfig_AllFields
+--- PASS: TestNFSConfig_AllFields (0.00s)
+=== RUN   TestNFSConfig_DefaultOptions
+--- PASS: TestNFSConfig_DefaultOptions (0.00s)
+=== RUN   TestNFSConfig_CustomMountPoint
+=== RUN   TestNFSConfig_CustomMountPoint/Root_Mount
+=== RUN   TestNFSConfig_CustomMountPoint/Nested_Mount
+=== RUN   TestNFSConfig_CustomMountPoint/Home_Mount
+=== RUN   TestNFSConfig_CustomMountPoint/Tmp_Mount
+--- PASS: TestNFSConfig_CustomMountPoint (0.00s)
+    --- PASS: TestNFSConfig_CustomMountPoint/Root_Mount (0.00s)
+    --- PASS: TestNFSConfig_CustomMountPoint/Nested_Mount (0.00s)
+    --- PASS: TestNFSConfig_CustomMountPoint/Home_Mount (0.00s)
+    --- PASS: TestNFSConfig_CustomMountPoint/Tmp_Mount (0.00s)
+=== RUN   TestNFSConfig_NFSVersionOptions
+=== RUN   TestNFSConfig_NFSVersionOptions/NFSv3
+=== RUN   TestNFSConfig_NFSVersionOptions/NFSv4
+=== RUN   TestNFSConfig_NFSVersionOptions/NFSv4.1
+=== RUN   TestNFSConfig_NFSVersionOptions/NFSv4.2
+=== RUN   TestNFSConfig_NFSVersionOptions/Multiple_Options
+--- PASS: TestNFSConfig_NFSVersionOptions (0.00s)
+    --- PASS: TestNFSConfig_NFSVersionOptions/NFSv3 (0.00s)
+    --- PASS: TestNFSConfig_NFSVersionOptions/NFSv4 (0.00s)
+    --- PASS: TestNFSConfig_NFSVersionOptions/NFSv4.1 (0.00s)
+    --- PASS: TestNFSConfig_NFSVersionOptions/NFSv4.2 (0.00s)
+    --- PASS: TestNFSConfig_NFSVersionOptions/Multiple_Options (0.00s)
+=== RUN   TestNFSConfig_ReadWriteOptions
+=== RUN   TestNFSConfig_ReadWriteOptions/Read-Write
+=== RUN   TestNFSConfig_ReadWriteOptions/Read-Only
+=== RUN   TestNFSConfig_ReadWriteOptions/Soft_Mount
+=== RUN   TestNFSConfig_ReadWriteOptions/Hard_Mount
+--- PASS: TestNFSConfig_ReadWriteOptions (0.00s)
+    --- PASS: TestNFSConfig_ReadWriteOptions/Read-Write (0.00s)
+    --- PASS: TestNFSConfig_ReadWriteOptions/Read-Only (0.00s)
+    --- PASS: TestNFSConfig_ReadWriteOptions/Soft_Mount (0.00s)
+    --- PASS: TestNFSConfig_ReadWriteOptions/Hard_Mount (0.00s)
+=== RUN   TestNFSClient_StatePersistence
+--- PASS: TestNFSClient_StatePersistence (0.00s)
+=== RUN   TestNFSClient_MultipleInstances
+--- PASS: TestNFSClient_MultipleInstances (0.00s)
+=== RUN   TestNFSClient_Disconnect_WithContext
+--- PASS: TestNFSClient_Disconnect_WithContext (0.00s)
+=== RUN   TestNFSClient_Disconnect_WhenNotMounted
+--- PASS: TestNFSClient_Disconnect_WhenNotMounted (0.00s)
+=== RUN   TestNFSClient_ResolvePath_Security
+=== RUN   TestNFSClient_ResolvePath_Security/Simple_Path
+=== RUN   TestNFSClient_ResolvePath_Security/Relative_Path
+=== RUN   TestNFSClient_ResolvePath_Security/Root_Path
+=== RUN   TestNFSClient_ResolvePath_Security/Current_Dir
+--- PASS: TestNFSClient_ResolvePath_Security (0.00s)
+    --- PASS: TestNFSClient_ResolvePath_Security/Simple_Path (0.00s)
+    --- PASS: TestNFSClient_ResolvePath_Security/Relative_Path (0.00s)
+    --- PASS: TestNFSClient_ResolvePath_Security/Root_Path (0.00s)
+    --- PASS: TestNFSClient_ResolvePath_Security/Current_Dir (0.00s)
+=== RUN   TestNFSClient_ResolvePath_DirectoryTraversal
+=== RUN   TestNFSClient_ResolvePath_DirectoryTraversal/../etc/passwd
+=== RUN   TestNFSClient_ResolvePath_DirectoryTraversal/../../etc/shadow
+=== RUN   TestNFSClient_ResolvePath_DirectoryTraversal/data/../../etc/hosts
+=== RUN   TestNFSClient_ResolvePath_DirectoryTraversal//data/../../../root
+--- PASS: TestNFSClient_ResolvePath_DirectoryTraversal (0.00s)
+    --- PASS: TestNFSClient_ResolvePath_DirectoryTraversal/../etc/passwd (0.00s)
+    --- PASS: TestNFSClient_ResolvePath_DirectoryTraversal/../../etc/shadow (0.00s)
+    --- PASS: TestNFSClient_ResolvePath_DirectoryTraversal/data/../../etc/hosts (0.00s)
+    --- PASS: TestNFSClient_ResolvePath_DirectoryTraversal//data/../../../root (0.00s)
+=== RUN   TestValidateSettings_RejectsUnknownKeyWithHint
+--- PASS: TestValidateSettings_RejectsUnknownKeyWithHint (0.00s)
+=== RUN   TestValidateSettings_RejectsEveryUnknownKeyNotJustTheFirst
+--- PASS: TestValidateSettings_RejectsEveryUnknownKeyNotJustTheFirst (0.00s)
+=== RUN   TestValidateSettings_WrongTypes
+--- PASS: TestValidateSettings_WrongTypes (0.00s)
+=== RUN   TestValidateSettings_IntegerSpellings
+--- PASS: TestValidateSettings_IntegerSpellings (0.00s)
+=== RUN   TestValidateSettings_UnsupportedProtocol
+--- PASS: TestValidateSettings_UnsupportedProtocol (0.00s)
+=== RUN   TestValidateSettings_NilAndEmptyAreValid
+--- PASS: TestValidateSettings_NilAndEmptyAreValid (0.00s)
+=== RUN   TestFactory_CreateClientRejectsUnknownKey
+--- PASS: TestFactory_CreateClientRejectsUnknownKey (0.00s)
+=== RUN   TestFactory_CreateClientAcceptsEveryBuiltinKey
+--- PASS: TestFactory_CreateClientAcceptsEveryBuiltinKey (0.00s)
+=== RUN   TestRegisterProtocol_Lifecycle
+--- PASS: TestRegisterProtocol_Lifecycle (0.00s)
+=== RUN   TestRegisterProtocol_Refusals
+--- PASS: TestRegisterProtocol_Refusals (0.00s)
+=== RUN   TestSettingsFromRoot_RegisteredProtocolUsesItsSchemaOnly
+--- PASS: TestSettingsFromRoot_RegisteredProtocolUsesItsSchemaOnly (0.00s)
+=== RUN   TestSettingsFromRoot_UnknownProtocolIsEmpty
+--- PASS: TestSettingsFromRoot_UnknownProtocolIsEmpty (0.00s)
+=== RUN   TestSettingsFromRoot_AlwaysValidatesForBuiltins
+--- PASS: TestSettingsFromRoot_AlwaysValidatesForBuiltins (0.00s)
+=== RUN   TestSettingsFromRoot_SMBIdentityResolverWins
+--- PASS: TestSettingsFromRoot_SMBIdentityResolverWins (0.00s)
+=== RUN   TestSmbClient_NewSmbClient
+--- PASS: TestSmbClient_NewSmbClient (0.00s)
+=== RUN   TestSmbClient_NewSmbClient_MinimalConfig
+--- PASS: TestSmbClient_NewSmbClient_MinimalConfig (0.00s)
+=== RUN   TestSmbClient_GetProtocol
+--- PASS: TestSmbClient_GetProtocol (0.00s)
+=== RUN   TestSmbClient_GetConfig
+--- PASS: TestSmbClient_GetConfig (0.00s)
+=== RUN   TestSmbClient_IsConnected_Initial
+--- PASS: TestSmbClient_IsConnected_Initial (0.00s)
+=== RUN   TestSmbClient_TestConnection_NotConnected
+--- PASS: TestSmbClient_TestConnection_NotConnected (0.00s)
+=== RUN   TestSmbClient_ReadFile_NotConnected
+--- PASS: TestSmbClient_ReadFile_NotConnected (0.00s)
+=== RUN   TestSmbClient_WriteFile_NotConnected
+--- PASS: TestSmbClient_WriteFile_NotConnected (0.00s)
+=== RUN   TestSmbClient_GetFileInfo_NotConnected
+--- PASS: TestSmbClient_GetFileInfo_NotConnected (0.00s)
+=== RUN   TestSmbClient_ListDirectory_NotConnected
+--- PASS: TestSmbClient_ListDirectory_NotConnected (0.00s)
+=== RUN   TestSmbClient_FileExists_NotConnected
+--- PASS: TestSmbClient_FileExists_NotConnected (0.00s)
+=== RUN   TestSmbClient_CreateDirectory_NotConnected
+--- PASS: TestSmbClient_CreateDirectory_NotConnected (0.00s)
+=== RUN   TestSmbClient_DeleteDirectory_NotConnected
+--- PASS: TestSmbClient_DeleteDirectory_NotConnected (0.00s)
+=== RUN   TestSmbClient_DeleteFile_NotConnected
+--- PASS: TestSmbClient_DeleteFile_NotConnected (0.00s)
+=== RUN   TestSmbClient_CopyFile_NotConnected
+--- PASS: TestSmbClient_CopyFile_NotConnected (0.00s)
+=== RUN   TestSmbClient_Connect_InvalidServer
+--- PASS: TestSmbClient_Connect_InvalidServer (10.00s)
+=== RUN   TestSmbClient_Disconnect_NotConnected
+--- PASS: TestSmbClient_Disconnect_NotConnected (0.00s)
+=== RUN   TestSmbConfig_AllFields
+--- PASS: TestSmbConfig_AllFields (0.00s)
+=== RUN   TestSmbConfig_DefaultPort
+--- PASS: TestSmbConfig_DefaultPort (0.00s)
+=== RUN   TestSmbConfig_CustomPort
+--- PASS: TestSmbConfig_CustomPort (0.00s)
+=== RUN   TestSmbConfig_ShareNames
+=== RUN   TestSmbConfig_ShareNames/Simple_Share
+=== RUN   TestSmbConfig_ShareNames/Data_Share
+=== RUN   TestSmbConfig_ShareNames/User_Share
+=== RUN   TestSmbConfig_ShareNames/Drive_Letter
+=== RUN   TestSmbConfig_ShareNames/Admin_Share
+--- PASS: TestSmbConfig_ShareNames (0.00s)
+    --- PASS: TestSmbConfig_ShareNames/Simple_Share (0.00s)
+    --- PASS: TestSmbConfig_ShareNames/Data_Share (0.00s)
+    --- PASS: TestSmbConfig_ShareNames/User_Share (0.00s)
+    --- PASS: TestSmbConfig_ShareNames/Drive_Letter (0.00s)
+    --- PASS: TestSmbConfig_ShareNames/Admin_Share (0.00s)
+=== RUN   TestSmbConfig_Domains
+=== RUN   TestSmbConfig_Domains/Workgroup
+=== RUN   TestSmbConfig_Domains/Domain
+=== RUN   TestSmbConfig_Domains/Enterprise
+=== RUN   TestSmbConfig_Domains/Empty
+--- PASS: TestSmbConfig_Domains (0.00s)
+    --- PASS: TestSmbConfig_Domains/Workgroup (0.00s)
+    --- PASS: TestSmbConfig_Domains/Domain (0.00s)
+    --- PASS: TestSmbConfig_Domains/Enterprise (0.00s)
+    --- PASS: TestSmbConfig_Domains/Empty (0.00s)
+=== RUN   TestSmbConfig_Authentication
+=== RUN   TestSmbConfig_Authentication/Basic_Auth
+=== RUN   TestSmbConfig_Authentication/Empty_Password
+=== RUN   TestSmbConfig_Authentication/Complex_Password
+=== RUN   TestSmbConfig_Authentication/Domain_User
+--- PASS: TestSmbConfig_Authentication (0.00s)
+    --- PASS: TestSmbConfig_Authentication/Basic_Auth (0.00s)
+    --- PASS: TestSmbConfig_Authentication/Empty_Password (0.00s)
+    --- PASS: TestSmbConfig_Authentication/Complex_Password (0.00s)
+    --- PASS: TestSmbConfig_Authentication/Domain_User (0.00s)
+=== RUN   TestSmbClient_StatePersistence
+--- PASS: TestSmbClient_StatePersistence (0.00s)
+=== RUN   TestSmbClient_MultipleInstances
+--- PASS: TestSmbClient_MultipleInstances (0.00s)
+=== RUN   TestSmbConnect_CancelledContextNoNetworkTraffic
+--- PASS: TestSmbConnect_CancelledContextNoNetworkTraffic (0.10s)
+=== RUN   TestSmbConnect_ReturnsPromptlyWhenContextEndsMidHandshake
+--- PASS: TestSmbConnect_ReturnsPromptlyWhenContextEndsMidHandshake (0.60s)
+=== RUN   TestSmbOperationsFailFastOnCancelledContext
+--- PASS: TestSmbOperationsFailFastOnCancelledContext (0.00s)
+=== RUN   TestSmbPath_LeadingSlashIsShareRelative
+--- PASS: TestSmbPath_LeadingSlashIsShareRelative (0.00s)
+=== RUN   TestFTPCancelledContextNoNetworkTraffic
+--- PASS: TestFTPCancelledContextNoNetworkTraffic (0.10s)
+=== RUN   TestLiveRealFTP_CancelledContextFailsFastSessionSurvives
+--- PASS: TestLiveRealFTP_CancelledContextFailsFastSessionSurvives (0.10s)
+=== RUN   TestSmbClient_Disconnect_ForgetsHandles
+--- PASS: TestSmbClient_Disconnect_ForgetsHandles (0.00s)
+=== RUN   TestIsNotExistError_WrappedPathError
+--- PASS: TestIsNotExistError_WrappedPathError (0.00s)
+=== RUN   TestNewWebDAVClient
+=== RUN   TestNewWebDAVClient/valid_config
+=== RUN   TestNewWebDAVClient/valid_config_without_auth
+=== RUN   TestNewWebDAVClient/invalid_URL
+=== RUN   TestNewWebDAVClient/empty_path_defaults_to_root
+--- PASS: TestNewWebDAVClient (0.00s)
+    --- PASS: TestNewWebDAVClient/valid_config (0.00s)
+    --- PASS: TestNewWebDAVClient/valid_config_without_auth (0.00s)
+    --- PASS: TestNewWebDAVClient/invalid_URL (0.00s)
+    --- PASS: TestNewWebDAVClient/empty_path_defaults_to_root (0.00s)
+=== RUN   TestWebDAVClient_Connect_Success
+--- PASS: TestWebDAVClient_Connect_Success (0.00s)
+=== RUN   TestWebDAVClient_Connect_OKStatus
+--- PASS: TestWebDAVClient_Connect_OKStatus (0.00s)
+=== RUN   TestWebDAVClient_Connect_AuthFailure
+--- PASS: TestWebDAVClient_Connect_AuthFailure (0.00s)
+=== RUN   TestWebDAVClient_Connect_NotFound
+--- PASS: TestWebDAVClient_Connect_NotFound (0.00s)
+=== RUN   TestWebDAVClient_Connect_ServerError
+--- PASS: TestWebDAVClient_Connect_ServerError (0.00s)
+=== RUN   TestWebDAVClient_Connect_WithTimeout
+--- PASS: TestWebDAVClient_Connect_WithTimeout (0.00s)
+=== RUN   TestWebDAVClient_IsConnected
+--- PASS: TestWebDAVClient_IsConnected (0.00s)
+=== RUN   TestWebDAVClient_TestConnection
+--- PASS: TestWebDAVClient_TestConnection (0.00s)
+=== RUN   TestWebDAVClient_ReadFile_Success
+--- PASS: TestWebDAVClient_ReadFile_Success (0.00s)
+=== RUN   TestWebDAVClient_ReadFile_NotFound
+--- PASS: TestWebDAVClient_ReadFile_NotFound (0.00s)
+=== RUN   TestWebDAVClient_ReadFile_NotConnected
+--- PASS: TestWebDAVClient_ReadFile_NotConnected (0.00s)
+=== RUN   TestWebDAVClient_WriteFile_Success
+--- PASS: TestWebDAVClient_WriteFile_Success (0.00s)
+=== RUN   TestWebDAVClient_WriteFile_NotConnected
+--- PASS: TestWebDAVClient_WriteFile_NotConnected (0.00s)
+=== RUN   TestWebDAVClient_Disconnect
+--- PASS: TestWebDAVClient_Disconnect (0.00s)
+=== RUN   TestWebDAVClient_resolveURL
+=== RUN   TestWebDAVClient_resolveURL/simple_path
+=== RUN   TestWebDAVClient_resolveURL/nested_path
+=== RUN   TestWebDAVClient_resolveURL/path_with_traversal_attempt
+--- PASS: TestWebDAVClient_resolveURL (0.00s)
+    --- PASS: TestWebDAVClient_resolveURL/simple_path (0.00s)
+    --- PASS: TestWebDAVClient_resolveURL/nested_path (0.00s)
+    --- PASS: TestWebDAVClient_resolveURL/path_with_traversal_attempt (0.00s)
+=== RUN   TestWebDAVClient_WithTimeout
+--- PASS: TestWebDAVClient_WithTimeout (0.20s)
+=== RUN   TestWebDAVClient_Connect_Success_HTTP
+--- PASS: TestWebDAVClient_Connect_Success_HTTP (0.00s)
+=== RUN   TestWebDAVClient_Connect_OKStatus_HTTP
+--- PASS: TestWebDAVClient_Connect_OKStatus_HTTP (0.00s)
+=== RUN   TestWebDAVClient_Connect_BadStatus
+--- PASS: TestWebDAVClient_Connect_BadStatus (0.00s)
+=== RUN   TestWebDAVClient_Connect_NoAuth
+--- PASS: TestWebDAVClient_Connect_NoAuth (0.00s)
+=== RUN   TestWebDAVClient_ReadFile_Success_HTTP
+--- PASS: TestWebDAVClient_ReadFile_Success_HTTP (0.00s)
+=== RUN   TestWebDAVClient_ReadFile_NotFound_HTTP
+--- PASS: TestWebDAVClient_ReadFile_NotFound_HTTP (0.00s)
+=== RUN   TestWebDAVClient_ReadFile_WithAuth
+--- PASS: TestWebDAVClient_ReadFile_WithAuth (0.00s)
+=== RUN   TestWebDAVClient_WriteFile_Success_HTTP
+--- PASS: TestWebDAVClient_WriteFile_Success_HTTP (0.00s)
+=== RUN   TestWebDAVClient_WriteFile_ServerError
+--- PASS: TestWebDAVClient_WriteFile_ServerError (0.00s)
+=== RUN   TestWebDAVClient_GetFileInfo_Success
+--- PASS: TestWebDAVClient_GetFileInfo_Success (0.00s)
+=== RUN   TestWebDAVClient_GetFileInfo_Directory
+--- PASS: TestWebDAVClient_GetFileInfo_Directory (0.00s)
+=== RUN   TestWebDAVClient_GetFileInfo_NotFound
+--- PASS: TestWebDAVClient_GetFileInfo_NotFound (0.00s)
+=== RUN   TestWebDAVClient_GetFileInfo_NoContentLength
+--- PASS: TestWebDAVClient_GetFileInfo_NoContentLength (0.00s)
+=== RUN   TestWebDAVClient_FileExists_Exists
+--- PASS: TestWebDAVClient_FileExists_Exists (0.00s)
+=== RUN   TestWebDAVClient_FileExists_NotExists
+--- PASS: TestWebDAVClient_FileExists_NotExists (0.00s)
+=== RUN   TestWebDAVClient_CreateDirectory_Success
+--- PASS: TestWebDAVClient_CreateDirectory_Success (0.00s)
+=== RUN   TestWebDAVClient_CreateDirectory_Conflict
+--- PASS: TestWebDAVClient_CreateDirectory_Conflict (0.00s)
+=== RUN   TestWebDAVClient_DeleteDirectory_Success
+--- PASS: TestWebDAVClient_DeleteDirectory_Success (0.00s)
+=== RUN   TestWebDAVClient_DeleteDirectory_NotFound
+--- PASS: TestWebDAVClient_DeleteDirectory_NotFound (0.00s)
+=== RUN   TestWebDAVClient_DeleteFile_Success
+--- PASS: TestWebDAVClient_DeleteFile_Success (0.00s)
+=== RUN   TestWebDAVClient_DeleteFile_Forbidden
+--- PASS: TestWebDAVClient_DeleteFile_Forbidden (0.00s)
+=== RUN   TestWebDAVClient_CopyFile_Success
+--- PASS: TestWebDAVClient_CopyFile_Success (0.00s)
+=== RUN   TestWebDAVClient_CopyFile_Failure
+--- PASS: TestWebDAVClient_CopyFile_Failure (0.00s)
+=== RUN   TestWebDAVClient_ListDirectory_Success
+    webdav_httptest_test.go:572: Got 2 files
+    webdav_httptest_test.go:574:   [0] Name="file1.txt" Path="file1.txt" IsDir=false Size=1024
+    webdav_httptest_test.go:574:   [1] Name="subdir" Path="subdir" IsDir=true Size=0
+--- PASS: TestWebDAVClient_ListDirectory_Success (0.00s)
+=== RUN   TestWebDAVClient_ListDirectory_NotMultiStatus
+--- PASS: TestWebDAVClient_ListDirectory_NotMultiStatus (0.00s)
+=== RUN   TestWebDAVClient_ListDirectory_EmptyResponse
+--- PASS: TestWebDAVClient_ListDirectory_EmptyResponse (0.00s)
+=== RUN   TestWebDAVClient_TestConnection_WhenConnected
+--- PASS: TestWebDAVClient_TestConnection_WhenConnected (0.00s)
+=== RUN   TestWebDAVClient_ReadFile_NoAuth
+--- PASS: TestWebDAVClient_ReadFile_NoAuth (0.00s)
+=== RUN   TestWebDAVClient_WriteFile_NoAuth
+--- PASS: TestWebDAVClient_WriteFile_NoAuth (0.00s)
+=== RUN   TestWebDAVClient_GetFileInfo_NoAuth
+--- PASS: TestWebDAVClient_GetFileInfo_NoAuth (0.00s)
+=== RUN   TestWebDAVClient_FileExists_NoAuth
+--- PASS: TestWebDAVClient_FileExists_NoAuth (0.00s)
+=== RUN   TestWebDAVClient_CreateDirectory_NoAuth
+--- PASS: TestWebDAVClient_CreateDirectory_NoAuth (0.00s)
+=== RUN   TestWebDAVClient_DeleteFile_NoAuth
+--- PASS: TestWebDAVClient_DeleteFile_NoAuth (0.00s)
+=== RUN   TestWebDAVClient_DeleteDirectory_NoAuth
+--- PASS: TestWebDAVClient_DeleteDirectory_NoAuth (0.00s)
+=== RUN   TestWebDAVClient_CopyFile_NoAuth
+--- PASS: TestWebDAVClient_CopyFile_NoAuth (0.00s)
+=== RUN   TestWebDAVClient_ListDirectory_WithAuth
+--- PASS: TestWebDAVClient_ListDirectory_WithAuth (0.00s)
+=== RUN   TestWebDAVClient_GetFileInfo_WithLastModified
+--- PASS: TestWebDAVClient_GetFileInfo_WithLastModified (0.00s)
+=== RUN   TestWebDAVClient_ListDirectory_AlternativeDateFormat
+--- PASS: TestWebDAVClient_ListDirectory_AlternativeDateFormat (0.00s)
+=== RUN   TestWebDAVClient_ListDirectory_NoDisplayName
+--- PASS: TestWebDAVClient_ListDirectory_NoDisplayName (0.00s)
+=== RUN   TestWebDAVClient_ListDirectory_DirectoryResourceType
+--- PASS: TestWebDAVClient_ListDirectory_DirectoryResourceType (0.00s)
+=== RUN   TestWebDAVClient_Connect_ServerReturnsNonMultiStatusNonOK
+--- PASS: TestWebDAVClient_Connect_ServerReturnsNonMultiStatusNonOK (0.00s)
+=== RUN   TestWebDAVClient_DisconnectReconnect
+--- PASS: TestWebDAVClient_DisconnectReconnect (0.00s)
+=== RUN   TestParsePropfind_ApacheModDav
+--- PASS: TestParsePropfind_ApacheModDav (0.00s)
+=== RUN   TestParsePropfind_PrefixesAndAbsoluteHrefs
+--- PASS: TestParsePropfind_PrefixesAndAbsoluteHrefs (0.00s)
+=== RUN   TestParsePropfind_IgnoresPropertiesOfFailedPropstats
+--- PASS: TestParsePropfind_IgnoresPropertiesOfFailedPropstats (0.00s)
+=== RUN   TestParsePropfind_EmptyAndMalformed
+--- PASS: TestParsePropfind_EmptyAndMalformed (0.00s)
+=== RUN   TestParsePropfind_NegativeAndGarbageLengthBecomeZero
+--- PASS: TestParsePropfind_NegativeAndGarbageLengthBecomeZero (0.00s)
+=== RUN   TestDavStatusOK
+--- PASS: TestDavStatusOK (0.00s)
+=== RUN   TestWebDAVTransfer_SlowButProgressingDownloadSucceeds
+--- PASS: TestWebDAVTransfer_SlowButProgressingDownloadSucceeds (1.20s)
+=== RUN   TestWebDAVTransfer_StalledDownloadIsCutByIdleTimeout
+--- PASS: TestWebDAVTransfer_StalledDownloadIsCutByIdleTimeout (0.30s)
+=== RUN   TestWebDAVTransfer_SlowButProgressingUploadSucceeds
+--- PASS: TestWebDAVTransfer_SlowButProgressingUploadSucceeds (1.21s)
+=== RUN   TestWebDAVTransfer_SizedUploadKeepsContentLength
+--- PASS: TestWebDAVTransfer_SizedUploadKeepsContentLength (0.00s)
+=== RUN   TestWebDAVTransfer_MetadataOperationBoundedAsAWhole
+--- PASS: TestWebDAVTransfer_MetadataOperationBoundedAsAWhole (0.30s)
+=== RUN   TestWebDAVClient_DefaultHTTPClientHasNoWholeRequestTimeout
+--- PASS: TestWebDAVClient_DefaultHTTPClientHasNoWholeRequestTimeout (0.00s)
+=== RUN   TestWebDAVTransfer_EmptyUploadIsSizedZeroNotChunked
+--- PASS: TestWebDAVTransfer_EmptyUploadIsSizedZeroNotChunked (0.00s)
+=== RUN   TestWebDAVTransfer_DownloadCloseStopsIdleGuard
+--- PASS: TestWebDAVTransfer_DownloadCloseStopsIdleGuard (0.00s)
+=== RUN   TestWebDAVTransfer_ListDirectoryAndConnectBoundedAsAWhole
+--- PASS: TestWebDAVTransfer_ListDirectoryAndConnectBoundedAsAWhole (5.00s)
+=== RUN   TestWF22_F1_PortAndIntegerRanges
+--- PASS: TestWF22_F1_PortAndIntegerRanges (0.00s)
+=== RUN   TestWF22_D02_FactoryReadsEveryIntegerSpelling
+--- PASS: TestWF22_D02_FactoryReadsEveryIntegerSpelling (0.00s)
+=== RUN   TestWF22_C09_LegacyHintOnlyWhenTheHintedKeyBelongsToTheProtocol
+--- PASS: TestWF22_C09_LegacyHintOnlyWhenTheHintedKeyBelongsToTheProtocol (0.00s)
+=== RUN   TestWF22_C02_F4_SMBDomainColumn
+--- PASS: TestWF22_C02_F4_SMBDomainColumn (0.00s)
+=== RUN   TestWF22_StoredPortZeroMeansUnset
+--- PASS: TestWF22_StoredPortZeroMeansUnset (0.00s)
+=== RUN   TestWF22_F5_RootPathIsJoinedUnderTheURLPath
+--- PASS: TestWF22_F5_RootPathIsJoinedUnderTheURLPath (0.00s)
+=== RUN   TestWF22_R11_DotDotInANameIsKeptDotDotSegmentIsClamped
+--- PASS: TestWF22_R11_DotDotInANameIsKeptDotDotSegmentIsClamped (0.00s)
+=== RUN   TestWF22_R9_NoErrorOfTheWebDAVClientCarriesACredential
+--- PASS: TestWF22_R9_NoErrorOfTheWebDAVClientCarriesACredential (0.01s)
+=== RUN   TestWF22_W1_AnswerLargerThanTheByteBoundIsAnErrorNotATruncation
+--- PASS: TestWF22_W1_AnswerLargerThanTheByteBoundIsAnErrorNotATruncation (0.47s)
+=== RUN   TestWF22_R4_ListLimitStopsDecodingEarly
+--- PASS: TestWF22_R4_ListLimitStopsDecodingEarly (0.09s)
+=== RUN   TestWF22_R10_NameIsTheHrefSegmentNotTheDisplayName
+--- PASS: TestWF22_R10_NameIsTheHrefSegmentNotTheDisplayName (0.00s)
+=== RUN   TestWF22_E03_UnparsableOrMissingTimeIsTheZeroTime
+--- PASS: TestWF22_E03_UnparsableOrMissingTimeIsTheZeroTime (0.00s)
+=== RUN   TestWF22_ParserRejectsNonXMLAndBodiesWithoutAnyElement
+--- PASS: TestWF22_ParserRejectsNonXMLAndBodiesWithoutAnyElement (0.00s)
+=== RUN   TestWF22_F3_OnlyDirectChildrenAreListed
+--- PASS: TestWF22_F3_OnlyDirectChildrenAreListed (0.00s)
+=== RUN   TestWF22_R18_FTPResolvePath
+--- PASS: TestWF22_R18_FTPResolvePath (0.00s)
+=== RUN   TestWF22_X1_RemotePathCodeDoesNotUseOSPathFunctions
+--- PASS: TestWF22_X1_RemotePathCodeDoesNotUseOSPathFunctions (0.00s)
+=== RUN   TestWF22_F1_WholeNumberBranches
+--- PASS: TestWF22_F1_WholeNumberBranches (0.00s)
+=== RUN   TestWF22R3_A_ConfinePath_Table
+--- PASS: TestWF22R3_A_ConfinePath_Table (0.00s)
+=== RUN   TestWF22R3_N2_FTPPathConfinedToBase
+--- PASS: TestWF22R3_N2_FTPPathConfinedToBase (0.00s)
+=== RUN   TestWF22R3_N7_NFSAndLocalKeepDotDotNamesAndConfineSegments
+--- PASS: TestWF22R3_N7_NFSAndLocalKeepDotDotNamesAndConfineSegments (0.00s)
+=== RUN   TestWF22R3_A_WebDAVAndSMBConfine
+--- PASS: TestWF22R3_A_WebDAVAndSMBConfine (0.00s)
+=== RUN   TestWF22R3_A_Classifier_EveryClientPathParameterGoesThroughAConfiningResolver
+--- PASS: TestWF22R3_A_Classifier_EveryClientPathParameterGoesThroughAConfiningResolver (0.03s)
+=== RUN   TestWF22R3_A_EveryResolverUsesTheSharedRule
+--- PASS: TestWF22R3_A_EveryResolverUsesTheSharedRule (0.00s)
+=== RUN   TestWF22R3_N1_ConnectNeverSucceedsWithoutAMount
+--- PASS: TestWF22R3_N1_ConnectNeverSucceedsWithoutAMount (0.00s)
+=== RUN   TestWF22R3_N1_PreMountedNFSConnectsListsAndIsNotUnmounted
+--- PASS: TestWF22R3_N1_PreMountedNFSConnectsListsAndIsNotUnmounted (0.00s)
+=== RUN   TestWF22R3_N1_MountsParser
+--- PASS: TestWF22R3_N1_MountsParser (0.00s)
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/ftp_ok
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/ftp_with_url+mount_point_(review_P5)
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/ftp_without_host
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/nfs_empty_(review_P5b)
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/nfs_ok
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/nfs_with_a_username
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/smb_without_share
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/smb_ok_with_identity_index
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/smb_with_a_url
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/webdav_without_url
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/webdav_ok
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/webdav_with_a_host
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/local_ok
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/local_without_path
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/local_with_a_host
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/ftp_with_a_pin_it_cannot_honour
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/ftp_options_not_JSON
+=== RUN   TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/unknown_protocol
+--- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/ftp_ok (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/ftp_with_url+mount_point_(review_P5) (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/ftp_without_host (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/nfs_empty_(review_P5b) (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/nfs_ok (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/nfs_with_a_username (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/smb_without_share (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/smb_ok_with_identity_index (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/smb_with_a_url (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/webdav_without_url (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/webdav_ok (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/webdav_with_a_host (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/local_ok (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/local_without_path (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/local_with_a_host (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/ftp_with_a_pin_it_cannot_honour (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/ftp_options_not_JSON (0.00s)
+    --- PASS: TestWF22R3_N3_ValidateRootRefusesWhatTheProtocolDoesNotConsumeOrRequire/unknown_protocol (0.00s)
+=== RUN   TestWF22R3_N4_RegisteredProtocolOptionsAreStrict
+--- PASS: TestWF22R3_N4_RegisteredProtocolOptionsAreStrict (0.00s)
+=== RUN   TestWF22R3_C_MappingOutputAlwaysPassesTheFactoryValidator
+--- PASS: TestWF22R3_C_MappingOutputAlwaysPassesTheFactoryValidator (0.00s)
+=== RUN   TestReviewProbe_F5_WebDAVPathReplacesURLPath
+    wf22_review_probe2_test.go:19: F5 url=.../remote.php/dav/files/alice path=/Movies -> https://nas.example/remote.php/dav/files/alice/Movies/x.mkv
+--- PASS: TestReviewProbe_F5_WebDAVPathReplacesURLPath (0.00s)
+=== RUN   TestReviewProbe_F1_IntOverflowPassesValidation
+    wf22_review_probe_test.go:18: F1 port=1e300 -> err=invalid ftp settings: wrong type: port (want integer) IntSetting=21
+--- PASS: TestReviewProbe_F1_IntOverflowPassesValidation (0.00s)
+=== RUN   TestReviewProbe_F2_PropfindSelfMismatchListsSelfAsChild
+    wf22_review_probe_test.go:38: F2 request /DAV/Movies/ -> children [a.mkv]
+--- PASS: TestReviewProbe_F2_PropfindSelfMismatchListsSelfAsChild (0.00s)
+=== RUN   TestReviewProbe_F3_PropfindForeignHrefAccepted
+    wf22_review_probe_test.go:55: F3 children [a.mkv]
+--- PASS: TestReviewProbe_F3_PropfindForeignHrefAccepted (0.00s)
+=== RUN   TestReviewProbe_F4_EmptyDomainColumnOverridesIdentity
+    wf22_review_probe_test.go:67: F4 domain="CORP"
+--- PASS: TestReviewProbe_F4_EmptyDomainColumnOverridesIdentity (0.00s)
+=== RUN   FuzzGetStringSetting
+=== RUN   FuzzGetStringSetting/seed#0
+=== RUN   FuzzGetStringSetting/seed#1
+=== RUN   FuzzGetStringSetting/seed#2
+=== RUN   FuzzGetStringSetting/seed#3
+=== RUN   FuzzGetStringSetting/seed#4
+=== RUN   FuzzGetStringSetting/seed#5
+=== RUN   FuzzGetStringSetting/seed#6
+--- PASS: FuzzGetStringSetting (0.00s)
+    --- PASS: FuzzGetStringSetting/seed#0 (0.00s)
+    --- PASS: FuzzGetStringSetting/seed#1 (0.00s)
+    --- PASS: FuzzGetStringSetting/seed#2 (0.00s)
+    --- PASS: FuzzGetStringSetting/seed#3 (0.00s)
+    --- PASS: FuzzGetStringSetting/seed#4 (0.00s)
+    --- PASS: FuzzGetStringSetting/seed#5 (0.00s)
+    --- PASS: FuzzGetStringSetting/seed#6 (0.00s)
+=== RUN   FuzzGetIntSetting
+=== RUN   FuzzGetIntSetting/seed#0
+=== RUN   FuzzGetIntSetting/seed#1
+=== RUN   FuzzGetIntSetting/seed#2
+=== RUN   FuzzGetIntSetting/seed#3
+=== RUN   FuzzGetIntSetting/seed#4
+--- PASS: FuzzGetIntSetting (0.00s)
+    --- PASS: FuzzGetIntSetting/seed#0 (0.00s)
+    --- PASS: FuzzGetIntSetting/seed#1 (0.00s)
+    --- PASS: FuzzGetIntSetting/seed#2 (0.00s)
+    --- PASS: FuzzGetIntSetting/seed#3 (0.00s)
+    --- PASS: FuzzGetIntSetting/seed#4 (0.00s)
+PASS
+ok  	catalogizer/filesystem	83.439s
