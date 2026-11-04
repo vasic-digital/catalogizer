@@ -2,7 +2,7 @@
 
 Documents in this directory.
 
-Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 187 entries.
+Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 188 entries.
 
 | File | Description |
 |---|---|
@@ -96,6 +96,7 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [live-map-20261103/MAP.md](live-map-20261103/MAP.md) | Live map 2026-11-03: what runs on which port, podman desync root cause, staged restart, honest gaps |
 | [live-map-20261103/restart_stack.sh](live-map-20261103/restart_stack.sh) | (shell script; not read, listed by name only) |
 | [live-map-20261103/test_restart_stack.sh](live-map-20261103/test_restart_stack.sh) | (shell script; not read, listed by name only) |
+| [nil-slice-null-census-20261104.md](nil-slice-null-census-20261104.md) | Nil slice / map serialised as JSON null - class census (2026-11-04) - Defect class (§11.4.276(C)): a Go nil slice or map is written by encoding/json as null, where the API documents an array |
 | [provision-when-down-20260630/Status.md](provision-when-down-20260630/Status.md) | §11.4.76 / Boot-provisioning — provision-when-DOWN PROVEN - the digital.vasic.containers submodule (remote compose-up over SSH), SAFELY proven against a |
 | [responsive_d1_d2/green-chromium.json](responsive_d1_d2/green-chromium.json) | (JSON data artefact; not read, listed by name only) |
 | [responsive_d1_d2/red-chromium.json](responsive_d1_d2/red-chromium.json) | (JSON data artefact; not read, listed by name only) |

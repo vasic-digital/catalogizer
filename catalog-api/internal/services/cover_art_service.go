@@ -205,7 +205,7 @@ func (s *CoverArtService) SearchCoverArt(ctx context.Context, request *CoverArtS
 		}
 	}
 
-	var allResults []CoverArtSearchResult
+	allResults := []CoverArtSearchResult{}
 
 	// Default providers if none specified
 	providers := request.Providers
@@ -302,7 +302,7 @@ func (s *CoverArtService) GenerateVideoThumbnails(ctx context.Context, request *
 		timestamps = s.generateTimestamps(duration, request.Count)
 	}
 
-	var thumbnails []*CoverArt
+	thumbnails := []*CoverArt{}
 
 	// Generate thumbnail for each timestamp
 	for i, timestamp := range timestamps {
@@ -325,7 +325,7 @@ func (s *CoverArtService) ScanLocalCoverArt(ctx context.Context, request *LocalC
 		zap.Int64("media_item_id", request.MediaItemID),
 		zap.String("directory", request.Directory))
 
-	var coverArts []*CoverArt
+	coverArts := []*CoverArt{}
 
 	// Common cover art filenames
 	coverFilenames := []string{

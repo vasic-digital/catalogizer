@@ -137,7 +137,7 @@ func (r *LogManagementRepository) GetLogCollectionsByUser(userID int, limit, off
 	}
 	defer rows.Close()
 
-	var collections []*models.LogCollection
+	collections := []*models.LogCollection{}
 	for rows.Next() {
 		var collection models.LogCollection
 		var componentsJSON, filtersJSON string
@@ -268,7 +268,7 @@ func (r *LogManagementRepository) GetLogEntries(collectionID int, filters *model
 	}
 	defer rows.Close()
 
-	var entries []*models.LogEntry
+	entries := []*models.LogEntry{}
 	for rows.Next() {
 		var entry models.LogEntry
 		var contextJSON string
@@ -314,7 +314,7 @@ func (r *LogManagementRepository) GetRecentLogEntries(component string, limit in
 	}
 	defer rows.Close()
 
-	var entries []*models.LogEntry
+	entries := []*models.LogEntry{}
 	for rows.Next() {
 		var entry models.LogEntry
 		var contextJSON string
@@ -477,7 +477,7 @@ func (r *LogManagementRepository) GetLogSharesByUser(userID int) ([]*models.LogS
 	}
 	defer rows.Close()
 
-	var shares []*models.LogShare
+	shares := []*models.LogShare{}
 	for rows.Next() {
 		var share models.LogShare
 		var permissionsJSON, recipientsJSON string

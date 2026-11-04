@@ -520,7 +520,7 @@ func (s *ReaderService) GetBookmarks(ctx context.Context, userID int64, bookID s
 	}
 	defer rows.Close()
 
-	var bookmarks []Bookmark
+	bookmarks := []Bookmark{}
 	for rows.Next() {
 		var bookmark Bookmark
 		var positionJSON, tagsJSON string
@@ -573,7 +573,7 @@ func (s *ReaderService) GetHighlights(ctx context.Context, userID int64, bookID 
 	}
 	defer rows.Close()
 
-	var highlights []Highlight
+	highlights := []Highlight{}
 	for rows.Next() {
 		var highlight Highlight
 		var startPosJSON, endPosJSON, tagsJSON string

@@ -54,7 +54,7 @@ func (r *ExternalMetadataRepository) GetByItem(ctx context.Context, mediaItemID 
 	}
 	defer rows.Close()
 
-	var items []*models.ExternalMetadata
+	items := []*models.ExternalMetadata{}
 	for rows.Next() {
 		em := &models.ExternalMetadata{}
 		if err := rows.Scan(

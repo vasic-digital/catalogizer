@@ -140,7 +140,7 @@ func (s *LyricsService) SearchLyrics(ctx context.Context, request *LyricsSearchR
 		}
 	}
 
-	var allResults []LyricsSearchResult
+	allResults := []LyricsSearchResult{}
 
 	// Default providers if none specified
 	providers := request.Providers
@@ -325,7 +325,7 @@ func (s *LyricsService) GetConcertLyrics(ctx context.Context, request *ConcertLy
 		zap.Int64("media_item_id", request.MediaItemID),
 		zap.String("artist", request.Artist))
 
-	var concertLyrics []*LyricsData
+	concertLyrics := []*LyricsData{}
 
 	// If setlist is provided, get lyrics for each song
 	if len(request.SetList) > 0 {

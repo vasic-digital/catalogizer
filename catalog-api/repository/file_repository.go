@@ -113,7 +113,7 @@ func (r *FileRepository) GetDirectoryContents(ctx context.Context, storageRootNa
 	}
 	defer rows.Close()
 
-	var files []models.FileWithMetadata
+	files := []models.FileWithMetadata{}
 	for rows.Next() {
 		var file models.File
 		err := rows.Scan(
@@ -193,7 +193,7 @@ func (r *FileRepository) SearchFiles(ctx context.Context, filter models.SearchFi
 	// Running the metadata query while this cursor is still open made each in-flight search hold
 	// one pooled connection and wait for a second: with more concurrent searches than pool
 	// connections every search waited on another (pool deadlock, found by the live scaling suite).
-	var page []models.File
+	page := []models.File{}
 	for rows.Next() {
 		var file models.File
 		err := rows.Scan(
@@ -214,7 +214,7 @@ func (r *FileRepository) SearchFiles(ctx context.Context, filter models.SearchFi
 	}
 	rows.Close()
 
-	var files []models.FileWithMetadata
+	files := []models.FileWithMetadata{}
 	for _, file := range page {
 		// Get metadata for search results if needed
 		metadata, err := r.getFileMetadata(ctx, file.ID)
@@ -272,7 +272,7 @@ func (r *FileRepository) GetDirectoriesSortedBySize(ctx context.Context, storage
 	}
 	defer rows.Close()
 
-	var directories []models.DirectoryInfo
+	directories := []models.DirectoryInfo{}
 	for rows.Next() {
 		var dir models.DirectoryInfo
 		err := rows.Scan(
@@ -321,7 +321,7 @@ func (r *FileRepository) GetDirectoriesSortedByDuplicates(ctx context.Context, s
 	}
 	defer rows.Close()
 
-	var directories []models.DirectoryInfo
+	directories := []models.DirectoryInfo{}
 	for rows.Next() {
 		var dir models.DirectoryInfo
 		err := rows.Scan(
@@ -353,7 +353,7 @@ func (r *FileRepository) GetStorageRoots(ctx context.Context) ([]models.StorageR
 	}
 	defer rows.Close()
 
-	var roots []models.StorageRoot
+	roots := []models.StorageRoot{}
 	for rows.Next() {
 		var root models.StorageRoot
 		err := rows.Scan(
@@ -387,7 +387,7 @@ func (r *FileRepository) getFileMetadata(ctx context.Context, fileID int64) ([]m
 	}
 	defer rows.Close()
 
-	var metadata []models.FileMetadata
+	metadata := []models.FileMetadata{}
 	for rows.Next() {
 		var meta models.FileMetadata
 		err := rows.Scan(&meta.ID, &meta.FileID, &meta.Key, &meta.Value, &meta.DataType)
@@ -674,7 +674,7 @@ func (r *FileRepository) GetFilesWithHash(ctx context.Context, hash string, stor
 	}
 	defer rows.Close()
 
-	var files []models.File
+	files := []models.File{}
 	for rows.Next() {
 		var file models.File
 		err := rows.Scan(

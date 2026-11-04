@@ -867,6 +867,8 @@ func TestAnalyticsRepository_GetGeographicData_Real(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotNil(t, result)
 		locations := result["locations"]
-		assert.Nil(t, locations)
+		// nil would serialise as JSON null where analytics/system documents an array
+		assert.NotNil(t, locations)
+		assert.Empty(t, locations)
 	})
 }

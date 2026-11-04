@@ -170,7 +170,7 @@ func (r *PlaylistRepository) GetPlaylistItems(playlistID int) ([]models.Playlist
 	}
 	defer rows.Close()
 
-	var items []models.PlaylistItem
+	items := []models.PlaylistItem{}
 	for rows.Next() {
 		var item models.PlaylistItem
 		err := rows.Scan(
@@ -230,7 +230,7 @@ func (r *PlaylistRepository) TouchPlaylistUpdatedAt(playlistID int) error {
 }
 
 func (r *PlaylistRepository) scanPlaylists(rows *sql.Rows) ([]models.Playlist, error) {
-	var playlists []models.Playlist
+	playlists := []models.Playlist{}
 
 	for rows.Next() {
 		var playlist models.Playlist

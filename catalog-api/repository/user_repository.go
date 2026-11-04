@@ -372,7 +372,7 @@ func (r *UserRepository) List(limit, offset int) ([]models.User, error) {
 	}
 	defer rows.Close()
 
-	var users []models.User
+	users := []models.User{}
 	for rows.Next() {
 		var user models.User
 		var settings sql.NullString
@@ -560,7 +560,7 @@ func (r *UserRepository) GetActiveUserSessions(userID int) ([]models.UserSession
 	}
 	defer rows.Close()
 
-	var sessions []models.UserSession
+	sessions := []models.UserSession{}
 	for rows.Next() {
 		var session models.UserSession
 		var deviceInfoJSON string
@@ -690,7 +690,7 @@ func (r *UserRepository) ListRoles() ([]models.Role, error) {
 	}
 	defer rows.Close()
 
-	var roles []models.Role
+	roles := []models.Role{}
 	for rows.Next() {
 		var role models.Role
 		var permissionsJSON string

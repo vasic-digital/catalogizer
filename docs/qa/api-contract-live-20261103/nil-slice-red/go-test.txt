@@ -1,0 +1,31 @@
+=== RUN   TestLiveAPIContract
+    api_contract_live_test.go:1179: run 1: pid=220326 endpoint=127.0.0.1:43043 requests=819 violations=18 signature=1c271e05f8e3fe490b388a48a8704fcf873f9024c41147225a478beba56ad806
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/admin/config: $.sections: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/analytics/system: $.geographic_distribution.locations: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/browse: $.data[0].exclude_patterns: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/browse: $.data[0].include_patterns: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/browse/roots: $.data[0].exclude_patterns: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/browse/roots: $.data[0].include_patterns: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/configuration: $.sections: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/entities/duplicates: $.groups: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/files: $.data.files: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/logs/collections/{id}/analyze: $.insights: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/recommendations/similar/{media_id}: $.local_items: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/roles/{id}: $.permissions: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/stats/duplicates/groups: $.data: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/stats/scans: $.data.scans: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION GET /api/v1/users/{id}: $.role.permissions: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION POST /api/v1/logs/collections/{id}/export: $: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION PUT /api/v1/roles/{id}: $.permissions: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1244: VIOLATION PUT /api/v1/users/{id}: $.role.permissions: JSON null where an empty array/object is required (nil slice or map serialised without normalisation)
+    api_contract_live_test.go:1248: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/nilslice.o6BHNL/repo/catalog-api/api_contract_live_test.go:1248
+        	Error:      	Not equal: 
+        	            	expected: 0
+        	            	actual  : 18
+        	Test:       	TestLiveAPIContract
+        	Messages:   	contract violations found (see operations.json)
+--- FAIL: TestLiveAPIContract (78.25s)
+FAIL
+FAIL	catalogizer	78.322s
+FAIL

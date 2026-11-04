@@ -145,7 +145,7 @@ func (r *AnalyticsRepository) GetMediaAccessLogs(userID int, mediaID *int, limit
 	}
 	defer rows.Close()
 
-	var logs []models.MediaAccessLog
+	logs := []models.MediaAccessLog{}
 	for rows.Next() {
 		var log models.MediaAccessLog
 		var deviceInfoJSON, locationJSON sql.NullString
@@ -306,7 +306,7 @@ func (r *AnalyticsRepository) GetUserGrowthData(startDate, endDate time.Time) ([
 	}
 	defer rows.Close()
 
-	var results []models.UserGrowthPoint
+	results := []models.UserGrowthPoint{}
 	for rows.Next() {
 		var result models.UserGrowthPoint
 		var dateStr string
@@ -371,7 +371,7 @@ func (r *AnalyticsRepository) GetSessionData(startDate, endDate time.Time) ([]mo
 	}
 	defer rows.Close()
 
-	var results []models.SessionData
+	results := []models.SessionData{}
 	for rows.Next() {
 		var result models.SessionData
 		var durationSeconds float64
@@ -459,7 +459,7 @@ func (r *AnalyticsRepository) GetGeographicData(startDate, endDate time.Time) (m
 	}
 	defer rows.Close()
 
-	var locations []map[string]interface{}
+	locations := []map[string]interface{}{}
 	countryCount := make(map[string]int)
 
 	for rows.Next() {
@@ -499,7 +499,7 @@ func (r *AnalyticsRepository) GetGeographicData(startDate, endDate time.Time) (m
 }
 
 func (r *AnalyticsRepository) scanMediaAccessLogs(rows *sql.Rows) ([]models.MediaAccessLog, error) {
-	var logs []models.MediaAccessLog
+	logs := []models.MediaAccessLog{}
 
 	for rows.Next() {
 		var log models.MediaAccessLog
@@ -541,7 +541,7 @@ func (r *AnalyticsRepository) scanMediaAccessLogs(rows *sql.Rows) ([]models.Medi
 }
 
 func (r *AnalyticsRepository) scanAnalyticsEvents(rows *sql.Rows) ([]models.AnalyticsEvent, error) {
-	var events []models.AnalyticsEvent
+	events := []models.AnalyticsEvent{}
 
 	for rows.Next() {
 		var event models.AnalyticsEvent

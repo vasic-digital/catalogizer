@@ -73,6 +73,14 @@ type Role struct {
 // Permissions represents a list of permission strings
 type Permissions []string
 
+// MarshalJSON renders a nil list as [] (a nil Go slice would serialise as null, which clients iterating the documented array cannot handle).
+func (p Permissions) MarshalJSON() ([]byte, error) {
+	if p == nil {
+		return []byte("[]"), nil
+	}
+	return json.Marshal([]string(p))
+}
+
 // Value implements the driver.Valuer interface for database storage
 func (p Permissions) Value() (driver.Value, error) {
 	if len(p) == 0 {

@@ -396,7 +396,7 @@ func (s *SMBService) FileExists(hostName, path string) (bool, error) {
 }
 
 func (s *SMBService) GetHosts() []string {
-	var hosts []string
+	hosts := []string{}
 	for _, host := range s.config.SMB.Hosts {
 		hosts = append(hosts, host.Name)
 	}
@@ -463,7 +463,7 @@ func (s *SMBService) ListDirectory(hostName, path string) ([]*models.FileInfo, e
 		return nil, err
 	}
 
-	var result []*models.FileInfo
+	result := []*models.FileInfo{}
 	for _, file := range files {
 		fileInfo := &models.FileInfo{
 			Name:         file.Name(),

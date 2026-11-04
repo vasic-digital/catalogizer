@@ -118,7 +118,7 @@ func (r *MediaFileRepository) GetPrimaryStreamableFile(ctx context.Context, medi
 	}
 	defer rows.Close()
 
-	var files []StreamableFile
+	files := []StreamableFile{}
 	for rows.Next() {
 		var f StreamableFile
 		var name, ext, mime, path sql.NullString
@@ -274,7 +274,7 @@ func (r *MediaFileRepository) GetFilesByItem(ctx context.Context, mediaItemID in
 	}
 	defer rows.Close()
 
-	var records []MediaFileRecord
+	records := []MediaFileRecord{}
 	for rows.Next() {
 		var rec MediaFileRecord
 		err := rows.Scan(
@@ -308,7 +308,7 @@ func (r *MediaFileRepository) GetItemByFile(ctx context.Context, fileID int64) (
 	}
 	defer rows.Close()
 
-	var itemIDs []int64
+	itemIDs := []int64{}
 	for rows.Next() {
 		var itemID int64
 		if err := rows.Scan(&itemID); err != nil {
@@ -338,7 +338,7 @@ func (r *MediaFileRepository) GetDuplicateFiles(ctx context.Context) ([]Duplicat
 	}
 	defer rows.Close()
 
-	var groups []DuplicateFileGroup
+	groups := []DuplicateFileGroup{}
 	for rows.Next() {
 		var group DuplicateFileGroup
 		if err := rows.Scan(&group.FileID, &group.ItemCount); err != nil {

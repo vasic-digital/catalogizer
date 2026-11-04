@@ -124,7 +124,7 @@ func (r *UserMetadataRepository) queryUserMetadata(ctx context.Context, query st
 	}
 	defer rows.Close()
 
-	var items []*models.UserMetadata
+	items := []*models.UserMetadata{}
 	for rows.Next() {
 		um := &models.UserMetadata{}
 		var tagsJSON sql.NullString
