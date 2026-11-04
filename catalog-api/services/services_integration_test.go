@@ -3101,7 +3101,7 @@ func TestConversionService_GetJob_Unauthorized(t *testing.T) {
 	// User 2 trying to access user 1's job
 	_, err = service.GetJob(job.ID, 2)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "unauthorized")
+	assert.ErrorIs(t, err, models.ErrConversionJobNotFound) // foreign ids answer like unknown ones (F2)
 }
 
 func TestConversionService_GetSupportedFormats_Integration(t *testing.T) {

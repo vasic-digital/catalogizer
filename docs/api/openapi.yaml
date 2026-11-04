@@ -4380,7 +4380,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/ConversionJob'
         '400':
-          description: Invalid request (malformed body, unsupported type/format, or a path outside the conversion roots)
+          description: |
+            Invalid request (malformed body, unsupported type/format, a target_path extension that
+            contradicts target_format, or a path outside the conversion roots). The body is
+            `{"error": "Invalid conversion request", "reason": "<short client-safe cause>"}`; `reason` never contains a server path.
           content:
             application/json:
               schema:
@@ -4425,7 +4428,7 @@ paths:
       description: |
         Removes the job row (pending, completed, failed or cancelled). The output file of a completed
         job is removed too, only when it is a regular file inside the conversion write roots.
-        A running job is refused with 409: cancel it first (POST .../cancel). Owner or administrator only.
+        A running job is refused with 409: cancel it first (POST .../cancel). Owner or administrator only; another user's job answers 404, the same as an unknown id.
       security:
         - BearerAuth: []
       parameters:
@@ -4444,10 +4447,8 @@ paths:
                 properties:
                   message:
                     type: string
-        '403':
-          description: Not the job owner and no manage-users permission
         '409':
-          description: Job is not pending or running
+          description: Job is running (cancel it first) or its state changed meanwhile
           content:
             application/json:
               schema:

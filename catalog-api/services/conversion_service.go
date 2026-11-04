@@ -382,16 +382,13 @@ func (s *ConversionService) convertDocument(job *models.ConversionJob) error {
 	// A PDF source going to a PDF-native target (text / html / image) is served by the isolated
 	// PDF path (CAT-002) first: the ebook list contains txt and html, so testing it first sent
 	// pdf -> txt to calibre, which is not installed in the image (D1).
-	switch {
-	case s.isPDFNativeConversion(job):
+	switch s.documentRoute(job) {
+	case "pdf":
 		return s.convertPDF(job)
-	case s.isEbookConversion(job):
+	case "ebook":
 		return s.convertEbook(job)
-	case s.isPDFConversion(job):
-		return s.convertPDF(job)
-	default:
-		return fmt.Errorf("unsupported document conversion")
 	}
+	return fmt.Errorf("unsupported document conversion")
 }
 
 func (s *ConversionService) convertEbook(job *models.ConversionJob) error {
@@ -420,13 +417,16 @@ func (s *ConversionService) convertEbook(job *models.ConversionJob) error {
 
 func (s *ConversionService) convertPDF(job *models.ConversionJob) error {
 	// Determine target format and use appropriate conversion method
-	ext := strings.ToLower(filepath.Ext(job.TargetPath))
-	targetFormat := strings.TrimPrefix(ext, ".")
+	// dispatch on the declared (canonical) target format, not the file name's spelling (.htm, .text)
+	targetFormat := canonicalFormat(job.TargetFormat)
+	if targetFormat == "" {
+		targetFormat = canonicalFormat(filepath.Ext(job.TargetPath))
+	}
 
 	switch targetFormat {
-	case "jpg", "jpeg", "png", "bmp", "tiff", "gif":
+	case "jpg", "png", "bmp", "tiff", "gif":
 		return s.convertPDFToImage(job, targetFormat)
-	case "txt", "text":
+	case "txt":
 		return s.convertPDFToText(job)
 	case "html":
 		return s.convertPDFToHTML(job)
@@ -893,18 +893,46 @@ func (s *ConversionService) handleConversionError(job *models.ConversionJob, con
 	s.notifyUser(job, fmt.Sprintf("Conversion failed: %s", errorMsg))
 }
 
-var conversionPathRE = regexp.MustCompile(`(?:[A-Za-z]:)?(?:/[^\s:"'<>|,;()\[\]]+)+`)
+// A path starts at "/", "file://" or a drive letter, after whitespace, a quote, "(", "=" or "[",
+// and runs (spaces included) to a quote, ":" , ";", "|", "<", ">" or the line end. It over-redacts
+// text that follows a path with no delimiter, which is the safe direction.
+var conversionPathRE = regexp.MustCompile("(^|[\\s'\"`(=\\[])((?:file://)?/[^'\"`<>|:;\\r\\n]*|[A-Za-z]:[\\\\/][^'\"`<>|:;\\r\\n]*)")
 
 // sanitizeConversionError removes server filesystem paths (D7) from a tool or service error
-// before it is stored on the job or shown to the user; the base name is kept so the message stays
-// useful, the directory layout is not disclosed.
+// before it is stored on the job or shown to the user; only the base name is kept, no
+// directory component is disclosed.
 func sanitizeConversionError(msg string) string {
-	return conversionPathRE.ReplaceAllStringFunc(msg, func(p string) string {
-		return "<path>/" + filepath.Base(p)
+	return conversionPathRE.ReplaceAllStringFunc(msg, func(m string) string {
+		sub := conversionPathRE.FindStringSubmatch(m)
+		lead, p := sub[1], strings.TrimRight(sub[2], " \t")
+		if i := strings.LastIndexAny(p, `/\`); i >= 0 {
+			p = p[i+1:]
+		}
+		return lead + "<path>/" + p
 	})
 }
 
+// conversionPreDeleteHook lets a test move a job between the DeleteJob snapshot and the delete.
+var conversionPreDeleteHook func()
+
+var conversionNotifyHook func(job *models.ConversionJob, message string)
+
+// documentRoute names the converter that serves a document job: "pdf" (the isolated PDF path:
+// pdf -> txt / html / image) or "ebook" (calibre, for every other advertised pair), "" if none.
+func (s *ConversionService) documentRoute(job *models.ConversionJob) string {
+	switch {
+	case s.isPDFNativeConversion(job):
+		return "pdf"
+	case documentPairSupported(job.SourceFormat, job.TargetFormat):
+		return "ebook"
+	}
+	return ""
+}
+
 func (s *ConversionService) notifyUser(job *models.ConversionJob, message string) {
+	if conversionNotifyHook != nil {
+		conversionNotifyHook(job, message)
+	}
 	// In a full implementation, this would send notifications via email, push, etc.
 	if logging.Logger != nil {
 		logging.With(
@@ -928,7 +956,7 @@ func (s *ConversionService) GetJob(jobID int, userID int) (*models.ConversionJob
 	if job.UserID != userID {
 		hasPermission, err := s.authService.CheckPermission(userID, auth.PermissionViewMedia)
 		if err != nil || !hasPermission {
-			return nil, fmt.Errorf("%w: view", models.ErrConversionForbidden)
+			return nil, fmt.Errorf("%w", models.ErrConversionJobNotFound)
 		}
 	}
 
@@ -944,7 +972,7 @@ func (s *ConversionService) CancelJob(jobID int, userID int) error {
 	if job.UserID != userID {
 		hasPermission, err := s.authService.CheckPermission(userID, auth.PermissionManageUsers)
 		if err != nil || !hasPermission {
-			return fmt.Errorf("%w: cancel", models.ErrConversionForbidden)
+			return fmt.Errorf("%w", models.ErrConversionJobNotFound)
 		}
 	}
 
@@ -983,7 +1011,7 @@ func (s *ConversionService) DeleteJob(jobID int, userID int) error {
 	if job.UserID != userID {
 		hasPermission, err := s.authService.CheckPermission(userID, auth.PermissionManageUsers)
 		if err != nil || !hasPermission {
-			return fmt.Errorf("%w: delete", models.ErrConversionForbidden)
+			return fmt.Errorf("%w", models.ErrConversionJobNotFound)
 		}
 	}
 
@@ -991,9 +1019,12 @@ func (s *ConversionService) DeleteJob(jobID int, userID int) error {
 		return fmt.Errorf("%w: cannot delete a running job; cancel it first", models.ErrConversionJobState)
 	}
 
-	// atomic: a claim that raced us (pending -> running) leaves the row and we report 409
-	deleted, err := s.conversionRepo.DeleteJobIf(jobID, models.ConversionStatusPending, models.ConversionStatusCompleted,
-		models.ConversionStatusFailed, models.ConversionStatusCancelled)
+	if conversionPreDeleteHook != nil {
+		conversionPreDeleteHook()
+	}
+	// atomic and conditional on the status we saw: a claim or finish that raced us leaves the row
+	// (and the file) alone and we report 409
+	deleted, err := s.conversionRepo.DeleteJobIf(jobID, job.Status)
 	if err != nil {
 		return err
 	}
@@ -1007,18 +1038,28 @@ func (s *ConversionService) DeleteJob(jobID int, userID int) error {
 	return nil
 }
 
-// removeConversionOutput deletes a finished job's output file, best effort, confined to the
-// conversion write roots.
+// removeConversionOutput deletes a finished job's output file, best effort. It acts only on the
+// job's OWN target path, never on what a symlink there points to: the leaf must be a regular file
+// (Lstat, no follow), inside the conversion write roots after resolving its directory, and not
+// the job's source (same file identity, hard links included). The leaf is re-checked right before
+// the remove. Residual: a parent directory swapped for a symlink between that last check and the
+// remove is not excluded without unlinkat on a directory fd.
 func removeConversionOutput(job *models.ConversionJob) {
+	if fi, err := os.Lstat(job.TargetPath); err != nil || !fi.Mode().IsRegular() {
+		return
+	}
 	resolved, err := pathguard.ConfineDataFile(job.TargetPath, pathguard.ConversionWriteRoots())
 	if err != nil {
 		return
 	}
-	if src, serr := filepath.Abs(job.SourcePath); serr == nil && src == resolved {
-		return
-	}
 	fi, err := os.Lstat(resolved)
 	if err != nil || !fi.Mode().IsRegular() {
+		return
+	}
+	if si, serr := os.Stat(job.SourcePath); serr == nil && os.SameFile(si, fi) {
+		return
+	}
+	if fi2, err := os.Lstat(resolved); err != nil || !fi2.Mode().IsRegular() || !os.SameFile(fi, fi2) {
 		return
 	}
 	_ = os.Remove(resolved)
@@ -1033,7 +1074,7 @@ func (s *ConversionService) RetryJob(jobID int, userID int) error {
 	if job.UserID != userID {
 		hasPermission, err := s.authService.CheckPermission(userID, auth.PermissionManageUsers)
 		if err != nil || !hasPermission {
-			return fmt.Errorf("%w: retry", models.ErrConversionForbidden)
+			return fmt.Errorf("%w", models.ErrConversionJobNotFound)
 		}
 	}
 
@@ -1096,7 +1137,7 @@ var (
 // served by the isolated PDF path need no external tool (txt) or pandoc/LibreOffice (html);
 // every other pair needs calibre's ebook-convert.
 func documentPairSupported(src, dst string) bool {
-	src, dst = strings.ToLower(src), strings.ToLower(dst)
+	src, dst = canonicalFormat(src), canonicalFormat(dst)
 	if src == dst {
 		return false
 	}
@@ -1469,11 +1510,11 @@ func (s *ConversionService) isEbookConversion(job *models.ConversionJob) bool {
 
 // isPDFNativeConversion reports a pdf source whose target the PDF path itself can produce.
 func (s *ConversionService) isPDFNativeConversion(job *models.ConversionJob) bool {
-	if strings.ToLower(job.SourceFormat) != "pdf" {
+	if canonicalFormat(job.SourceFormat) != "pdf" {
 		return false
 	}
-	switch strings.ToLower(job.TargetFormat) {
-	case "txt", "text", "html", "jpg", "jpeg", "png", "bmp", "tiff", "gif":
+	switch canonicalFormat(job.TargetFormat) {
+	case "txt", "html", "jpg", "png", "bmp", "tiff", "gif":
 		return true
 	}
 	return false

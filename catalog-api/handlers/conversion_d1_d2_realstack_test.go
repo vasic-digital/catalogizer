@@ -146,7 +146,7 @@ func TestD2_DeleteOwnerOnlyAndConfinedFileRemoval(t *testing.T) {
 	out := filepath.Join(s.dataDir, "mine.jpg")
 	require.NoError(t, os.WriteFile(out, []byte("x"), 0o600))
 	id := mkJob(t, s, models.ConversionStatusCompleted, src, out)
-	assert.Equal(t, http.StatusForbidden, s.doAs(t, tokB, "DELETE", "/jobs/"+convItoa(id)))
+	assert.Equal(t, http.StatusNotFound, s.doAs(t, tokB, "DELETE", "/jobs/"+convItoa(id)), "foreign job ids answer 404 like unknown ones")
 	_, err := os.Lstat(out)
 	require.NoError(t, err, "a refused delete must not touch the file")
 	_, err = s.repo.GetJob(id)
@@ -188,4 +188,70 @@ func TestD7_FailedJobErrorMessageHasNoServerPaths(t *testing.T) {
 	msg, _ := m["error_message"].(string)
 	require.NotEmpty(t, msg)
 	assert.False(t, strings.Contains(msg, s.dataDir), "error_message leaks a server path: %q", msg)
+}
+
+// F1: a completed job whose target_path is a symlink to ANOTHER file inside the roots must not
+// delete that other file (the link itself is not a regular file: nothing is removed).
+func TestRev_F1_InRootSymlinkTargetLeavesVictimIntact(t *testing.T) {
+	s := newConvStack(t)
+	src := filepath.Join(s.dataDir, "s.png")
+	writePNG(t, src)
+	victim := filepath.Join(s.dataDir, "victim.jpg")
+	require.NoError(t, os.WriteFile(victim, []byte("victim"), 0o600))
+	link := filepath.Join(s.dataDir, "link.jpg")
+	require.NoError(t, os.Symlink(victim, link))
+	id := mkJob(t, s, models.ConversionStatusCompleted, src, link)
+	code, body := s.do(t, "DELETE", "/jobs/"+convItoa(id), nil)
+	require.Equal(t, http.StatusOK, code, string(body))
+	b, err := os.ReadFile(victim)
+	require.NoError(t, err, "the symlink's victim inside the roots must survive")
+	assert.Equal(t, "victim", string(b))
+}
+
+// F7 M1: target == source (and a hard link to it) is never removed.
+func TestRev_F7_TargetEqualsSourceIsKept(t *testing.T) {
+	s := newConvStack(t)
+	src := filepath.Join(s.dataDir, "same.jpg")
+	require.NoError(t, os.WriteFile(src, []byte("src"), 0o600))
+	hard := filepath.Join(s.dataDir, "hard.jpg")
+	require.NoError(t, os.Link(src, hard))
+	for _, tgt := range []string{src, hard} {
+		id := mkJob(t, s, models.ConversionStatusCompleted, src, tgt)
+		code, body := s.do(t, "DELETE", "/jobs/"+convItoa(id), nil)
+		require.Equal(t, http.StatusOK, code, string(body))
+		_, err := os.Lstat(src)
+		require.NoError(t, err, "the source must survive a delete whose target is %s", tgt)
+	}
+}
+
+// F7 M2: only regular files are removed; an (empty) directory target stays.
+func TestRev_F7_DirectoryTargetIsKept(t *testing.T) {
+	s := newConvStack(t)
+	src := filepath.Join(s.dataDir, "s.png")
+	writePNG(t, src)
+	dir := filepath.Join(s.dataDir, "adir.jpg")
+	require.NoError(t, os.Mkdir(dir, 0o700))
+	id := mkJob(t, s, models.ConversionStatusCompleted, src, dir)
+	code, body := s.do(t, "DELETE", "/jobs/"+convItoa(id), nil)
+	require.Equal(t, http.StatusOK, code, string(body))
+	_, err := os.Lstat(dir)
+	assert.NoError(t, err, "a directory must not be removed")
+}
+
+// F6/F7 M3: the SQL delete is conditional on the status the caller saw.
+func TestRev_F7_DeleteJobIfIsStatusConditional(t *testing.T) {
+	s := newConvStack(t)
+	src := filepath.Join(s.dataDir, "s.png")
+	writePNG(t, src)
+	id := mkJob(t, s, models.ConversionStatusRunning, src, filepath.Join(s.dataDir, "r.jpg"))
+	ok, err := s.repo.DeleteJobIf(id, models.ConversionStatusPending, models.ConversionStatusCompleted,
+		models.ConversionStatusFailed, models.ConversionStatusCancelled)
+	require.NoError(t, err)
+	assert.False(t, ok, "a running row must not be deleted")
+	_, err = s.repo.GetJob(id)
+	assert.NoError(t, err)
+	id2 := mkJob(t, s, models.ConversionStatusCompleted, src, filepath.Join(s.dataDir, "c.jpg"))
+	ok, err = s.repo.DeleteJobIf(id2, models.ConversionStatusPending)
+	require.NoError(t, err)
+	assert.False(t, ok, "snapshot status pending != stored completed: row stays (F6)")
 }

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -33,6 +34,84 @@ func TestD7_SanitizeConversionError(t *testing.T) {
 	assert.NotContains(t, out, ".catalogizer-conv")
 	assert.Contains(t, out, "out.epub")
 	assert.Contains(t, out, "no such file")
+}
+
+// F5: directory components containing spaces, Windows and file:// forms must not leak.
+func TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs(t *testing.T) {
+	cases := map[string][]string{
+		"convert: improper image header `/srv/media/Secret Project/x.png' @ error":        {"Secret Project", "/srv"},
+		`ffmpeg failed on /srv/media/Secret Project/clients/acme.mp4: Invalid data`:       {"Secret Project", "clients", "/srv"},
+		`open "/srv/media/Secret Project/clients/acme.mp4": denied`:                       {"Secret Project", "clients", "/srv"},
+		`cannot read C:\Users\Jane Doe\Private Docs\a.pdf: denied`:                        {"Jane Doe", "Private Docs", "Users"},
+		`error at file:///srv/media/Secret Project/a.mp4 (code 1)`:                        {"Secret Project", "/srv"},
+		`stat /app/data/.catalogizer-conv-1/out.epub: no such file ('/app/data/a b.pdf')`: {"/app/data", "catalogizer-conv"},
+	}
+	for in, bad := range cases {
+		out := sanitizeConversionError(in)
+		for _, b := range bad {
+			assert.NotContains(t, out, b, "input %q -> %q", in, out)
+		}
+	}
+	assert.Contains(t, sanitizeConversionError(`stat /a/b/out.epub: no such file`), "no such file")
+}
+
+// UNIT-CLASS (lookup override): every advertised document pair routes to a converter that can
+// serve it (F3), and html targets dispatch on the canonical target_format (F4).
+func TestRev_F3_AdvertisedPairsRouteToARealConverter(t *testing.T) {
+	orig := converterLookPath
+	defer func() { converterLookPath = orig }()
+	converterLookPath = func(n string) (string, error) { return "/x/" + n, nil }
+	s := &ConversionService{}
+	f := s.GetSupportedFormats()
+	n := 0
+	for _, src := range f.Document.Input {
+		for _, dst := range f.Document.Output {
+			if !documentPairSupported(src, dst) {
+				continue
+			}
+			n++
+			route := s.documentRoute(&models.ConversionJob{SourceFormat: src, TargetFormat: dst})
+			switch route {
+			case "ebook":
+			case "pdf":
+				assert.Equal(t, "pdf", src, "%s->%s", src, dst)
+				assert.Contains(t, []string{"txt", "html"}, dst, "%s->%s", src, dst)
+			default:
+				t.Errorf("advertised pair %s->%s routes nowhere (%q)", src, dst, route)
+			}
+		}
+	}
+	assert.Greater(t, n, 10)
+	assert.Equal(t, "ebook", s.documentRoute(&models.ConversionJob{SourceFormat: "docx", TargetFormat: "pdf"}))
+	assert.Equal(t, "ebook", s.documentRoute(&models.ConversionJob{SourceFormat: "odt", TargetFormat: "pdf"}))
+}
+
+// F4: target_format html with a .htm file name must be served by the PDF html path.
+func TestRev_F4_HtmTargetDispatchesOnFormat(t *testing.T) {
+	root, src := copyFixture(t, "uni.pdf")
+	tgt := filepath.Join(root, "out.htm")
+	require.NoError(t, confineConversionPaths(src, tgt))
+	err := (&ConversionService{}).convertDocument(&models.ConversionJob{SourcePath: src, TargetPath: tgt, SourceFormat: "pdf", TargetFormat: "html", ConversionType: "document"})
+	require.NoError(t, err)
+	_, serr := os.Stat(tgt)
+	assert.NoError(t, serr)
+}
+
+// F7 M5: the failure notification carries the sanitised message. UNIT-CLASS observation hook.
+func TestRev_F7_NotificationIsSanitised(t *testing.T) {
+	svc, repo, dir := newWorkerSvc(t)
+	id := addImageJob(t, repo, dir, "n")
+	job, err := repo.GetJob(id)
+	require.NoError(t, err)
+	job.Status = models.ConversionStatusRunning
+	require.NoError(t, repo.UpdateJob(job))
+	var got string
+	conversionNotifyHook = func(_ *models.ConversionJob, msg string) { got = msg }
+	defer func() { conversionNotifyHook = nil }()
+	svc.handleConversionError(job, fmt.Errorf("tool failed on /srv/secret dir/clients/acme.mp4"))
+	require.NotEmpty(t, got)
+	assert.NotContains(t, got, "/srv")
+	assert.NotContains(t, got, "secret dir")
 }
 
 // UNIT-CLASS (§11.4.289(C)): models a host without tools by overriding the lookup; the real
@@ -81,4 +160,26 @@ func TestD1_PairCheckRefusesImpossibleCombinationOfListedFormats(t *testing.T) {
 	assert.False(t, s.isSupportedFormat(models.ConversionTypeDocument, "pdf", "html"))
 	assert.False(t, s.isSupportedFormat(models.ConversionTypeDocument, "txt", "txt"))
 	assert.True(t, s.isSupportedFormat(models.ConversionTypeDocument, "txt", "epub"))
+}
+
+// F6 (UNIT-CLASS hook models the race): a job that moved pending -> completed between the snapshot
+// and the delete must be kept together with its output file (409), not half-deleted.
+func TestRev_F6_DeleteRaceKeepsRowAndFile(t *testing.T) {
+	svc, repo, dir := newWorkerSvc(t)
+	id := addImageJob(t, repo, dir, "race")
+	out := filepath.Join(dir, "race.jpg")
+	require.NoError(t, os.WriteFile(out, []byte("out"), 0o600))
+	conversionPreDeleteHook = func() {
+		j, err := repo.GetJob(id)
+		require.NoError(t, err)
+		j.Status = models.ConversionStatusCompleted
+		require.NoError(t, repo.UpdateJob(j))
+	}
+	defer func() { conversionPreDeleteHook = nil }()
+	err := svc.DeleteJob(id, 1)
+	require.ErrorIs(t, err, models.ErrConversionJobState)
+	_, gerr := repo.GetJob(id)
+	assert.NoError(t, gerr, "row kept")
+	_, serr := os.Stat(out)
+	assert.NoError(t, serr, "output kept")
 }

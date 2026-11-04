@@ -690,8 +690,12 @@ func TestConversionService_IsPDFConversion(t *testing.T) {
 
 func TestConversionService_ConvertDocument_EbookRoute(t *testing.T) {
 	service := NewConversionService(nil, nil, nil)
+	// UNIT-CLASS: pretend calibre is advertised so the pair is routable; the real exec still fails.
+	origLP := converterLookPath
+	converterLookPath = func(n string) (string, error) { return "/x/" + n, nil }
+	defer func() { converterLookPath = origLP }()
 
-	// convertDocument routes to convertEbook when isEbookConversion returns true.
+	// convertDocument routes to convertEbook when the pair is served by calibre.
 	// Since ebook-convert is not installed in test, the exec.Command will fail,
 	// but we verify it attempted the ebook route (not the PDF route or default).
 	job := &models.ConversionJob{
