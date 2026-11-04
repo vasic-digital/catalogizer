@@ -1,0 +1,62 @@
+## rootless-netns holder
+total 16
+drwx------ 3 milosvasic milosvasic 160 Nov  3 22:51 .
+drwx------ 4 milosvasic milosvasic 120 Nov  2 10:48 ..
+-rw-r--r-- 1 milosvasic milosvasic  96 Nov  3 22:51 info.json
+-rw------- 1 milosvasic milosvasic   2 Nov  3 22:51 ref-count
+-rw-r--r-- 1 milosvasic milosvasic  46 Nov  3 22:51 resolv.conf
+-rw------- 1 milosvasic milosvasic   0 Nov  3 22:51 rootless-netns
+-rw------- 1 milosvasic milosvasic   8 Nov  3 22:51 rootless-netns-conn.pid
+drwx------ 4 milosvasic milosvasic  80 Nov  2 10:48 run
+pids 7638 1231453 1343975
+    PID     ELAPSED COMMAND
+   7638  1-12:06:18 /usr/bin/pasta --config-net --dns-forward 169.254.1.1 -t none -u none -T none -U none --no-map-gw --quiet --netns /run/user/1000/n
+1231453       03:03 /usr/bin/pasta --config-net --pid /run/user/1000/containers/networks/rootless-netns/rootless-netns-conn.pid --dns-forward 169.254.
+1343975       00:00 /bin/bash -c source /home/milosvasic/.claude-claude3/shell-snapshots/snapshot-bash-1793639042853-1ucgab.sh 2>/dev/null || true && 
+## in netns of aardvark (pid 6042)
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+podman5          UP             10.89.4.1/24 fe80::30fc:7ff:fe47:f0ed/64 
+veth0@if2        UP             fe80::b410:1bff:fe56:48ad/64 
+podman1          UP             10.89.0.1/24 fe80::28b3:6aff:fed8:8ebc/64 
+veth1@if2        UP             fe80::8cc0:e9ff:feb1:dc74/64 
+veth2@if2        UP             fe80::e043:e7ff:fe24:fb81/64 
+podman7          UP             10.89.6.1/24 fe80::8cfd:9bff:fedf:603c/64 
+veth3@if2        UP             fe80::40ec:cbff:fec4:2930/64 
+podman3          UP             10.89.2.1/24 fe80::cc45:57ff:fe53:2458/64 
+veth4@if2        UP             fe80::1873:f6ff:fe97:c517/64 
+veth5@if2        UP             fe80::4888:b5ff:feff:593e/64 
+veth6@if2        UP             fe80::18b9:2cff:fe1c:9ff0/64 
+veth7@if2        UP             fe80::dc9b:fff:fe0e:d217/64 
+veth8@if2        UP             fe80::8490:a3ff:fed1:f549/64 
+veth9@if2        UP             fe80::49c:a7ff:fee8:f583/64 
+veth10@if2       UP             fe80::701c:ecff:fe21:33ea/64 
+veth11@if2       UP             fe80::1464:3cff:feb8:4303/64 
+veth12@if2       UP             fe80::76:6bff:fe9e:5df/64 
+veth13@if2       UP             fe80::1483:51ff:fe50:8ef8/64 
+veth14@if2       UP             fe80::ec89:1eff:fe61:b0f2/64 
+veth15@if2       UP             fe80::5420:5cff:fe01:5304/64 
+veth16@if2       UP             fe80::481:a5ff:fe9e:76c7/64 
+veth17@if2       UP             fe80::340a:5ff:fe12:93c4/64 
+veth18@if2       UP             fe80::cb5:42ff:fe76:d07f/64 
+veth19@if2       UP             fe80::3802:4fff:fe1e:b704/64 
+veth20@if2       UP             fe80::868:9eff:fe2f:5fe5/64 
+veth21@if2       UP             fe80::1c38:ecff:fe5c:4551/64 
+veth22@if2       UP             fe80::f851:b7ff:fe78:3f42/64 
+veth23@if2       UP             fe80::6c1e:33ff:fe6c:8dd8/64 
+veth24@if2       UP             fe80::60f5:79ff:fe90:24ae/64 
+veth25@if2       UP             fe80::84b7:aeff:fe04:9acf/64 
+veth26@if2       UP             fe80::90a6:ecff:fe8c:79c6/64 
+veth27@if2       UP             fe80::d0f6:33ff:febe:af7c/64 
+veth28@if2       UP             fe80::e468:19ff:fe9d:14cd/64 
+veth29@if2       UP             fe80::4fa:b0ff:fe29:d1c9/64 
+veth30@if2       UP             fe80::382e:d8ff:fe46:37bb/64 
+veth31@if2       UP             fe80::8c3c:e1ff:fea1:858b/64 
+veth32@if2       UP             fe80::f488:5ff:fe0f:8235/64 
+veth33@if2       UP             fe80::74f2:afff:fe4d:66a8/64 
+veth34@if2       UP             fe80::68c7:a3ff:fe18:deb6/64 
+
+State  Recv-Q Send-Q Local Address:Port Peer Address:Port
+LISTEN 0      4096       10.89.2.1:53        0.0.0.0:*   
+LISTEN 0      4096       10.89.4.1:53        0.0.0.0:*   
+LISTEN 0      4096       10.89.0.1:53        0.0.0.0:*   
+LISTEN 0      4096      10.89.14.1:53        0.0.0.0:*   

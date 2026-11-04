@@ -1128,3 +1128,9 @@ Open (not fixed here):
 - S3-2 (minor, process-doc): README's section 11.4.173 deviation names a "tracked follow-up" with no tracker id; create the CAT item (containers-submodule/remote-host build).
 - S3-3 (minor, process-doc): committed stack3 evidence is from build 1e92bc33 with pre-fix scripts; capture a run of the fixed up.sh/build.sh against real podman when stack 3 is next rebuilt from main.
 - Process note: docs/qa/README.md is generated; whoever merges second between stack3 and live-map must regenerate with scripts/docs/gen_dir_indexes.py, not hand-merge.
+
+## Live-map review round 3 follow-ups (LM-F*, minor)
+
+- LM-F1 (test-instrumentation, minor): `docs/qa/live-map-20261103/test_restart_stack.sh` stubs cannot detect wrong probe paths (`/nope`, `/wrong`), swapped args 4/5, an optional 5th arg (`${5:-}`), or ignored `pg_isready`. Make stub curl path-exact, log stub calls and assert none in missing-arg cases, add a "5th arg missing" case, decouple pg and redis stubs.
+- LM-F2 (process-doc, nit): `restart_stack.sh` header says postgres/redis answered HTTP 200; they are checked via `pg_isready` and `PONG`.
+- LM-F3 (process-doc, nit): `restart_stack.sh` has not been run end to end against real podman since the fix (disclosed in MAP section 5); stays provisional.

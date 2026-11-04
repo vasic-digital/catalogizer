@@ -2,7 +2,7 @@
 
 Documents in this directory.
 
-Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 142 entries.
+Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 185 entries.
 
 | File | Description |
 |---|---|
@@ -51,6 +51,49 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [helixqa-androidtv-20260629/login.png](helixqa-androidtv-20260629/login.png) | (PNG image; not read, listed by name only) |
 | [helixqa-androidtv-20260629/qa-report.md](helixqa-androidtv-20260629/qa-report.md) | HelixQA Android TV Autonomous QA Report |
 | [helixqa-androidtv-20260629/run2_episodes_list_100items.png](helixqa-androidtv-20260629/run2_episodes_list_100items.png) | (PNG image; not read, listed by name only) |
+| [live-map-20261103/01_before_podman.txt](live-map-20261103/01_before_podman.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/02_before_ports.txt](live-map-20261103/02_before_ports.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/03_rootlessport_cmdlines.txt](live-map-20261103/03_rootlessport_cmdlines.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/04_why_exited.txt](live-map-20261103/04_why_exited.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/05_restart_stack1.txt](live-map-20261103/05_restart_stack1.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/06_real_state.txt](live-map-20261103/06_real_state.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/07_netns.txt](live-map-20261103/07_netns.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/08_rootless_netns.txt](live-map-20261103/08_rootless_netns.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/09_netns_identity.txt](live-map-20261103/09_netns_identity.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/10_teardown_stale.command.txt](live-map-20261103/10_teardown_stale.command.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/10_teardown_stale.txt](live-map-20261103/10_teardown_stale.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/11_restart_stack1.txt](live-map-20261103/11_restart_stack1.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/12_stack1_fail_logs.txt](live-map-20261103/12_stack1_fail_logs.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/13_restart_stack1_v2.txt](live-map-20261103/13_restart_stack1_v2.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/14_web_start.txt](live-map-20261103/14_web_start.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/15_restart_stack2.txt](live-map-20261103/15_restart_stack2.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/20_compose_services.txt](live-map-20261103/20_compose_services.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/21_components_inventory.txt](live-map-20261103/21_components_inventory.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/30_after_matrix.txt](live-map-20261103/30_after_matrix.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/31_after_containers.txt](live-map-20261103/31_after_containers.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/32_after_listeners.txt](live-map-20261103/32_after_listeners.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/33_stack3_and_all_ports_20261104T1352.txt](live-map-20261103/33_stack3_and_all_ports_20261104T1352.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/40_smoke_qa_stack.log](live-map-20261103/40_smoke_qa_stack.log) | (file; not read, listed by name only) |
+| [live-map-20261103/40_smoke_qa_stack2.log](live-map-20261103/40_smoke_qa_stack2.log) | (file; not read, listed by name only) |
+| [live-map-20261103/50_other_components.txt](live-map-20261103/50_other_components.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/60_qa_stack1_compose_REDACTED.yml](live-map-20261103/60_qa_stack1_compose_REDACTED.yml) | (YAML data; not read, listed by name only) |
+| [live-map-20261103/61_qa_stack2_compose_REDACTED.yml](live-map-20261103/61_qa_stack2_compose_REDACTED.yml) | (YAML data; not read, listed by name only) |
+| [live-map-20261103/70_test_restart_stack_RED_before_fix.txt](live-map-20261103/70_test_restart_stack_RED_before_fix.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/71_test_restart_stack_GREEN_after_fix.txt](live-map-20261103/71_test_restart_stack_GREEN_after_fix.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/72_test_RED_web_website_no_probe.txt](live-map-20261103/72_test_RED_web_website_no_probe.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/73_test_GREEN_with_mutations.txt](live-map-20261103/73_test_GREEN_with_mutations.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/80_session_scratchpad_evidence/SHA256SUMS](live-map-20261103/80_session_scratchpad_evidence/SHA256SUMS) | (file; not read, listed by name only) |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack2_QA_ENDPOINTS.md](live-map-20261103/80_session_scratchpad_evidence/qa_stack2_QA_ENDPOINTS.md) | Catalogizer QA stack 2 (main @ f28f8165, clean clone; rootless podman, project catqa2) - Built commit: f28f816581b10f2a4398979fa437ed4b8b67be03 (clean checkout in /home/milosvasic/.cache/claude-tmp/qa2root.ZRr5Wu/src; submodules copied from live repo at the... |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack2_smoke_20261103T133400_journey.txt](live-map-20261103/80_session_scratchpad_evidence/qa_stack2_smoke_20261103T133400_journey.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack2_smoke_20261103T230653_journey.txt](live-map-20261103/80_session_scratchpad_evidence/qa_stack2_smoke_20261103T230653_journey.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack_QA_ENDPOINTS.md](live-map-20261103/80_session_scratchpad_evidence/qa_stack_QA_ENDPOINTS.md) | Catalogizer QA stack (main @ 96b7b5ec, scratch clone; rootless podman, project catqa) - Host: anton, LAN 192.168.1.115 (enp5s0); also ppp0 10.1.106.107. Firewall: ufw ENABLED=no (/etc/ufw/ufw.conf), firewalld/nftables not running -> nothing filters LAN... |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261102T232152_journey.txt](live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261102T232152_journey.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261102T232207_journey.txt](live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261102T232207_journey.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261102T232339_journey.txt](live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261102T232339_journey.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261103T230634_journey.txt](live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261103T230634_journey.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/MAP.md](live-map-20261103/MAP.md) | Live map 2026-11-03: what runs on which port, podman desync root cause, staged restart, honest gaps |
+| [live-map-20261103/restart_stack.sh](live-map-20261103/restart_stack.sh) | (shell script; not read, listed by name only) |
+| [live-map-20261103/test_restart_stack.sh](live-map-20261103/test_restart_stack.sh) | (shell script; not read, listed by name only) |
 | [provision-when-down-20260630/Status.md](provision-when-down-20260630/Status.md) | §11.4.76 / Boot-provisioning — provision-when-DOWN PROVEN - the digital.vasic.containers submodule (remote compose-up over SSH), SAFELY proven against a |
 | [responsive_d1_d2/green-chromium.json](responsive_d1_d2/green-chromium.json) | (JSON data artefact; not read, listed by name only) |
 | [responsive_d1_d2/red-chromium.json](responsive_d1_d2/red-chromium.json) | (JSON data artefact; not read, listed by name only) |

@@ -1,0 +1,59 @@
+## top-level app dirs
+-- catalog-api: AGENTS.md ARCHITECTURE.md CHANGES.md CLAUDE.md CONVERSION_API_DOCUMENTATION.md CONVERSION_DEPLOYMENT_GUIDE.md CONVERSION_FINAL_SUMMARY.md CONVERSION_IMPLEMENTATION_COMPLETE.md CONVERSION_IMPLEMENTATION_STATUS.md Dockerfile Dockerfile.dev Dockerfile.runtime MEDIA_SYSTEM_README.md PHASE1_COMPLETION_REPORT.md README.md 
+-- catalog-web: AGENTS.md ARCHITECTURE.md CLAUDE.md Dockerfile IMPLEMENTATION-STATUS.md PHASE-3.2.6-SUMMARY.md PHASE3_1_COMPLETE.md PHASE3_2_PLAN.md PHASE_3_2_3_COMPLETE.md PHASE_3_2_4_PLAN.md PLAYLIST_IMPLEMENTATION_STATUS.md README.md catalog-web docs e2e 
+-- catalogizer-desktop: AGENTS.md ARCHITECTURE.md CLAUDE.md README.md build-scripts e2e index.html package-lock.json package.json playwright.config.ts postcss.config.js src src-tauri tailwind.config.js tsconfig.json 
+-- installer-wizard: AGENTS.md ARCHITECTURE.md CLAUDE.md README.md STATUS.md TESTING.md badges.json index.html install_sys_dependencies.sh package-lock.json package.json postcss.config.js scripts src src-tauri 
+-- catalogizer-android: AGENTS.md ARCHITECTURE.md CLAUDE.md README.md app build-fixed.sh build-scripts build.gradle.kts docs gradle gradle.properties gradlew gradlew.bat settings.gradle.kts 
+-- catalogizer-androidtv: AGENTS.md ARCHITECTURE.md CLAUDE.md README.md app build-fixed.sh build-scripts build.gradle.kts challenges docs gradle gradle.properties gradlew gradlew.bat scripts 
+-- catalogizer-api-client: AGENTS.md ARCHITECTURE.md CLAUDE.md README.md build-scripts jest.config.js package-lock.json package.json releases src tsconfig.json vitest.config.ts 
+-- Website: CLAUDE.md architecture.md changelog.md contributing.md course.md developer docs documentation.md download.md examples faq.md features.md getting-started.md guides index.md 
+-- monitoring: alertmanager alertmanager.yml alerts grafana opentelemetry prometheus prometheus.yml 
+-- qa-ai-system: CATALOGIZER_QA_MANUAL.html README.md core qa-ai-system reports scripts test-cases 
+-- OCU-CUDA-Sidecar: Dockerfile go.mod go.sum internal proto 
+
+## submodules
+constitution submodules/allure2 submodules/anthropic_quickstarts submodules/appium submodules/assets submodules/auth submodules/auth_context_react submodules/browser_use submodules/cache submodules/catalogizer_api_client_ts submodules/challenges submodules/chroma submodules/collection_manager_react submodules/concurrency submodules/config submodules/containers submodules/dashboard_analytics_react submodules/database submodules/discovery submodules/doc_processor submodules/docker_android submodules/docling submodules/entities submodules/event_bus submodules/filesystem submodules/helix_memory submodules/helix_qa submodules/kiwi_tcms submodules/lazy submodules/leakcanary submodules/llama_index submodules/llm_orchestrator submodules/llm_provider submodules/llms_verifier submodules/marker submodules/media submodules/media_browser_react submodules/media_player_react submodules/media_types_ts submodules/mem0 submodules/memory submodules/middleware submodules/midscene submodules/moondream submodules/observability submodules/perfetto submodules/rate_limiter submodules/recovery submodules/redroid submodules/replay_buffer submodules/scrcpy submodules/screen_diff submodules/security submodules/shortest submodules/signoz submodules/skyvern submodules/stagehand submodules/storage submodules/streaming submodules/superspec submodules/testdriverai submodules/training_collector submodules/ui_components_react submodules/ui_tars submodules/ui_tars_desktop submodules/unstructured submodules/vision_engine submodules/visual_regression submodules/watcher submodules/websocket_client_ts 
+## monitoring
+monitoring/prometheus.yml
+monitoring/alertmanager.yml
+monitoring/alerts/application-alerts.yml
+monitoring/alerts/system-alerts.yml
+monitoring/alerts/security-alerts.yml
+monitoring/alertmanager/alertmanager.yml
+monitoring/opentelemetry/otel-collector.yml
+monitoring/prometheus/prometheus.yml
+monitoring/prometheus/alerts.yml
+## tauri / package
+Cargo.toml
+build.rs
+gen
+icons
+src
+tauri.conf.json
+catalogizer-desktop/src-tauri/tauri.conf.json:  "version": "2.4.0",
+catalogizer-desktop/src-tauri/tauri.conf.json:  "identifier": "com.catalogizer.desktop",
+installer-wizard/src-tauri/tauri.conf.json:  "version": "2.4.0",
+installer-wizard/src-tauri/tauri.conf.json:  "identifier": "com.catalogizer.installer-wizard",
+catalogizer-android/app/build.gradle.kts:        applicationId = "com.catalogizer.android"
+catalogizer-android/app/build.gradle.kts:        versionName = "2.4.0"
+catalogizer-androidtv/app/build.gradle.kts:        applicationId = "com.catalogizer.androidtv"
+catalogizer-androidtv/app/build.gradle.kts:        versionName = "2.4.0"
+## ports in api code
+catalog-api/main.go:257:// @host localhost:8080
+catalog-api/main.go:327:	if port := os.Getenv("SERVER_PORT"); port != "" {
+catalog-api/main.go:344:	if dbPort := os.Getenv("DATABASE_PORT"); dbPort != "" {
+catalog-api/main.go:1758:	// Start HTTPS server on port 28443 (HTTP/2 with TLS, fallback for HTTP/3)
+catalog-api/main.go:1759:	httpsAddr := fmt.Sprintf("%s:%d", cfg.Server.Host, 28443)
+catalog-api/main.go:1768:			if err := httpsServer.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
+catalog-api/main.go:1775:			c.Header("Alt-Svc", `h3=":28443"; ma=86400`)
+catalog-api/main.go:1779:	// Start HTTP/3 server on UDP port 28443
+catalog-api/main.go:1787:			if err := http3Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+catalog-api/main.go:1796:	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+2:import { defineConfig } from 'vite'
+3:import react from '@vitejs/plugin-react'
+4:import path from 'path'
+5:import fs from 'fs'
+9:    const port = fs.readFileSync('../catalog-api/.service-port', 'utf8').trim();
+10:    return parseInt(port, 10);
+20:export default defineConfig({
+55:    port: 3000,
