@@ -114,7 +114,7 @@ func (r *MediaCollectionRepository) List(ctx context.Context, limit, offset int)
 	}
 	defer rows.Close()
 
-	var collections []*models.MediaCollection
+	collections := []*models.MediaCollection{}
 	for rows.Next() {
 		coll, err := r.scanCollection(rows)
 		if err != nil {
@@ -249,7 +249,7 @@ func (r *MediaCollectionRepository) ListVisible(ctx context.Context, viewerID in
 		return nil, 0, fmt.Errorf("failed to list media collections: %w", err)
 	}
 	defer rows.Close()
-	var out []*models.MediaCollection
+	out := []*models.MediaCollection{}
 	for rows.Next() {
 		coll, err := r.scanCollection(rows)
 		if err != nil {

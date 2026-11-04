@@ -194,6 +194,9 @@ func (rs *RecommendationService) GetSimilarItems(ctx context.Context, req *Simil
 	if err != nil {
 		return nil, fmt.Errorf("failed to find local similar items: %w", err)
 	}
+	if localItems == nil {
+		localItems = []*LocalSimilarItem{}
+	}
 	response.LocalItems = localItems
 	response.Performance.LocalSearchTime = time.Since(localStartTime)
 	response.Performance.LocalItemsFound = len(localItems)

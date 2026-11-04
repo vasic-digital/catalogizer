@@ -258,7 +258,7 @@ func (m *SyncOperationManager) GetAllActive() []*SyncOperation {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
-	var active []*SyncOperation
+	active := []*SyncOperation{}
 	for _, op := range m.operations {
 		op.mu.RLock()
 		isActive := op.State != SyncStateCompleted && op.State != SyncStateFailed && op.State != SyncStateCancelled

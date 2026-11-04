@@ -1,0 +1,7 @@
+=== RUN   TestLiveAPIContract
+    api_contract_live_test.go:1190: run 1: pid=1496095 endpoint=127.0.0.1:36527 requests=819 violations=0 signature=98b08780070c8d750fff1d143c068d97b08622d5861bb2764325542f85436fcf
+    api_contract_live_test.go:1190: run 2: pid=1552483 endpoint=127.0.0.1:35187 requests=819 violations=0 signature=98b08780070c8d750fff1d143c068d97b08622d5861bb2764325542f85436fcf
+    api_contract_live_test.go:1190: run 3: pid=1637616 endpoint=127.0.0.1:41325 requests=819 violations=0 signature=98b08780070c8d750fff1d143c068d97b08622d5861bb2764325542f85436fcf
+--- PASS: TestLiveAPIContract (217.19s)
+PASS
+ok  	catalogizer	217.257s

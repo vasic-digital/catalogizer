@@ -69,8 +69,11 @@ func (r *FavoritesRepository) GetFavorite(userID int, entityType string, entityI
 	}
 
 	if tagsJSON.Valid {
-		var tags []string
+		tags := []string{}
 		if err := json.Unmarshal([]byte(tagsJSON.String), &tags); err == nil {
+			if tags == nil { // stored JSON "null"
+				tags = []string{}
+			}
 			favorite.Tags = &tags
 		}
 	}
@@ -106,8 +109,11 @@ func (r *FavoritesRepository) GetFavoriteByID(favoriteID int) (*models.Favorite,
 	}
 
 	if tagsJSON.Valid {
-		var tags []string
+		tags := []string{}
 		if err := json.Unmarshal([]byte(tagsJSON.String), &tags); err == nil {
+			if tags == nil { // stored JSON "null"
+				tags = []string{}
+			}
 			favorite.Tags = &tags
 		}
 	}
@@ -539,7 +545,7 @@ func (r *FavoritesRepository) RevokeFavoriteShare(shareID int) error {
 }
 
 func (r *FavoritesRepository) scanFavorites(rows *sql.Rows) ([]models.Favorite, error) {
-	var favorites []models.Favorite
+	favorites := []models.Favorite{}
 
 	for rows.Next() {
 		var favorite models.Favorite
@@ -556,8 +562,11 @@ func (r *FavoritesRepository) scanFavorites(rows *sql.Rows) ([]models.Favorite, 
 		}
 
 		if tagsJSON.Valid {
-			var tags []string
+			tags := []string{}
 			if err := json.Unmarshal([]byte(tagsJSON.String), &tags); err == nil {
+				if tags == nil { // stored JSON "null"
+					tags = []string{}
+				}
 				favorite.Tags = &tags
 			}
 		}
@@ -573,7 +582,7 @@ func (r *FavoritesRepository) scanFavorites(rows *sql.Rows) ([]models.Favorite, 
 }
 
 func (r *FavoritesRepository) scanFavoriteCategories(rows *sql.Rows) ([]models.FavoriteCategory, error) {
-	var categories []models.FavoriteCategory
+	categories := []models.FavoriteCategory{}
 
 	for rows.Next() {
 		var category models.FavoriteCategory

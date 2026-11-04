@@ -165,7 +165,7 @@ func (r *ImageQualityRepository) SampleForRevalidation(ctx context.Context, olde
 	}
 	defer rows.Close()
 
-	var out []ImageQualityAssessment
+	out := []ImageQualityAssessment{}
 	for rows.Next() {
 		var a ImageQualityAssessment
 		if err := rows.Scan(

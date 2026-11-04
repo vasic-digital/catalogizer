@@ -121,7 +121,7 @@ func (r *AssetRepository) FindByEntity(ctx context.Context, entityType, entityID
 	}
 	defer rows.Close()
 
-	var assets []*asset.Asset
+	assets := []*asset.Asset{}
 	for rows.Next() {
 		var rec AssetRecord
 		if err := rows.Scan(
@@ -152,7 +152,7 @@ func (r *AssetRepository) FindPending(ctx context.Context, limit int) ([]*asset.
 	}
 	defer rows.Close()
 
-	var assets []*asset.Asset
+	assets := []*asset.Asset{}
 	for rows.Next() {
 		var rec AssetRecord
 		if err := rows.Scan(

@@ -47,7 +47,7 @@ type SMBProbeResult struct {
 // auth schemes). Secrets are read from env only and never logged (§11.4.10).
 func LoadSMBIdentitiesFromEnv() []SMBIdentity {
 	n, _ := strconv.Atoi(os.Getenv("CATALOGIZER_IDENTITY_COUNT"))
-	var out []SMBIdentity
+	out := []SMBIdentity{}
 	for i := 1; i <= n; i++ {
 		p := fmt.Sprintf("CATALOGIZER_IDENTITY_%d_", i)
 		kind := os.Getenv(p + "TYPE")

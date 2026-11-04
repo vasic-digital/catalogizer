@@ -278,7 +278,7 @@ func (r *MediaItemRepository) ListDuplicateGroups(ctx context.Context, limit, of
 	}
 	defer rows.Close()
 
-	var groups []DuplicateGroup
+	groups := []DuplicateGroup{}
 	for rows.Next() {
 		var g DuplicateGroup
 		if err := rows.Scan(&g.Title, &g.MediaTypeID, &g.MediaTypeName, &g.Count); err != nil {
@@ -364,7 +364,7 @@ func (r *MediaItemRepository) GetMediaTypes(ctx context.Context) ([]models.Media
 	}
 	defer rows.Close()
 
-	var types []models.MediaType
+	types := []models.MediaType{}
 	for rows.Next() {
 		var mt models.MediaType
 		var detPat, metaProv sql.NullString
@@ -437,7 +437,7 @@ func (r *MediaItemRepository) queryItems(ctx context.Context, query string, args
 	}
 	defer rows.Close()
 
-	var items []*models.MediaItem
+	items := []*models.MediaItem{}
 	for rows.Next() {
 		item, err := r.scanItemFromRows(rows)
 		if err != nil {

@@ -179,7 +179,7 @@ func (s *SubtitleService) SearchSubtitles(ctx context.Context, request *Subtitle
 		zap.String("media_path", request.MediaPath),
 		zap.Strings("languages", request.Languages))
 
-	var allResults []SubtitleSearchResult
+	allResults := []SubtitleSearchResult{}
 
 	// Default providers if none specified
 	providers := request.Providers
@@ -393,7 +393,7 @@ func (s *SubtitleService) GetSubtitles(ctx context.Context, mediaItemID int64) (
 	}
 	defer rows.Close()
 
-	var subtitles []SubtitleTrack
+	subtitles := []SubtitleTrack{}
 	for rows.Next() {
 		var track SubtitleTrack
 		var content sql.NullString

@@ -1178,3 +1178,22 @@ Threat model unchanged: COOPERATIVE PRODUCER. F1 (loader keys bind every process
 - CS-N4 (minor): exception keys are never validated against spec operations.
 - CS-N5 (process-doc, minor): gofmt unclean in internal/services/catalog.go, catalog_pathnotfound_test.go, playback_session_repository_test.go; version_ldflag has no dirty-tree marker.
 - CS-N6 (minor): 50 happy-2xx responses have no schema; add at least a null-where-array check.
+
+## Nil-slice class review round 1 follow-ups (NS-*, minor)
+
+- NS-1 (PROVISIONAL-DONE, CAT-NS-1; host-level handler test only, live HTTP run on a deployed stack owed) (source-defect, latent): GET /entities/types builds `var result []gin.H` (media_entity_handler.go:421); `types` serialises as null when media_types is empty. Fix RED-first.
+- NS-2 (test-instrumentation): nullScan judges only a hand-curated `nilListKeys`; derive the list from Go struct nilable json fields or add spec array types.
+- NS-3 (DONE for a/b/c + recursion + internal/handlers, CAT-NS-1; residual (d) `x := f()` passthrough documented) (test-instrumentation): AST guard misses named result + bare return, `return nil, nil`, struct-literal field from an unset var, `x := f()` passthrough; it also skips internal/handlers and handlers/backups and is non-recursive.
+- NS-4 (spec): fixed members (analyze, configuration, roles/{id}, files) have no response schema; add array schemas and `nullable: true` for pointer members.
+- NS-5 (process-doc): build ldflag has no dirty-tree marker; commits lack `Roadmap-Item` trailers (§11.4.293(A), a repo-wide convention gap).
+- NS-6 (observation): GET /entities/{id}/files emits capitalised keys (QualityInfo, Language): an untagged struct is served.
+
+## NS-1/NS-3 review round 1 follow-ups (NS3-F*, minor)
+
+Add a fixture with a clean twin for each probe.
+- NS3-F1: detector (a) counts `out = append(out, x)` as an assignment; a named result filled by append in a loop then bare-returned is still nil when empty.
+- NS3-F2: a named slice/map result returned explicitly (`return out, nil`) is not covered by any detector.
+- NS3-F3: the nil-check rule is too broad (any `x == nil` clears x, even if nothing assigns it, or on a shadowed or closure variable). Count it only when the `if` body assigns x.
+- NS3-F4 (false positive): detector (b) checks `return nil, nil` inside a closure against the outer function's result types; skip FuncLit bodies or use their own types.
+- NS3-F5: named slice/map types (`type IDs []int`) and positional struct literals `&T{l}` are not detected; add to the census residuals.
+- NS3-F6: NS-1 stays provisional until a live HTTP run on a deployed stack shows `types: []` (stack 3 now runs b4d86546+; verify after next rebuild).

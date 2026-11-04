@@ -290,7 +290,7 @@ func (s *PlaylistService) GetUserPlaylists(ctx context.Context, userID int64, in
 	}
 	rows.Close()
 
-	var playlists []Playlist
+	playlists := []Playlist{}
 	for _, playlist := range page {
 		playlist.Tags, _ = s.getPlaylistTags(ctx, playlist.ID)
 		playlist.CollaboratorIDs, _ = s.getPlaylistCollaborators(ctx, playlist.ID)
@@ -511,7 +511,7 @@ func (s *PlaylistService) GetPlaylistItems(ctx context.Context, playlistID, user
 	}
 	defer rows.Close()
 
-	var items []PlaylistItem
+	items := []PlaylistItem{}
 	for rows.Next() {
 		var item PlaylistItem
 		err := rows.Scan(

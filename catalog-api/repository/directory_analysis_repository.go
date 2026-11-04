@@ -95,7 +95,7 @@ func (r *DirectoryAnalysisRepository) GetUnprocessed(ctx context.Context, limit 
 	}
 	defer rows.Close()
 
-	var items []*models.DirectoryAnalysis
+	items := []*models.DirectoryAnalysis{}
 	for rows.Next() {
 		da, err := r.scanAnalysisFromRows(rows)
 		if err != nil {

@@ -139,7 +139,7 @@ func (r *ShareIdentityBindingRepository) Delete(ctx context.Context, id int64) e
 
 // scanBindings scans all rows from a binding query into a slice.
 func scanBindings(rows *sql.Rows) ([]models.ShareIdentityBinding, error) {
-	var out []models.ShareIdentityBinding
+	out := []models.ShareIdentityBinding{}
 	for rows.Next() {
 		var b models.ShareIdentityBinding
 		if err := rows.Scan(

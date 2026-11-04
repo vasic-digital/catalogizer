@@ -481,7 +481,7 @@ func (r *ConversionRepository) GetPopularFormats(limit int) ([]models.FormatPopu
 	}
 	defer rows.Close()
 
-	var formats []models.FormatPopularity
+	formats := []models.FormatPopularity{}
 	for rows.Next() {
 		var format models.FormatPopularity
 		err := rows.Scan(&format.Format, &format.Count)
