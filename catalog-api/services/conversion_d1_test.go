@@ -40,6 +40,14 @@ func TestD7_SanitizeConversionError(t *testing.T) {
 func TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs(t *testing.T) {
 	cases := map[string][]string{
 		"convert: improper image header `/srv/media/Secret Project/x.png' @ error":        {"Secret Project", "/srv"},
+		`failed:/srv/hidden/dir/x.mp4`:                                                    {"hidden", "/srv", "dir"},
+		`failed:/srv/hidden/dir/x.mp4: Invalid data`:                                      {"hidden", "/srv", "dir"},
+		`'/srv/My: Movies/x.mp4' broke`:                                                   {"My", "Movies", "/srv"},
+		`open "/srv/My: Movies/x.mp4" broke`:                                              {"My", "Movies", "/srv"},
+		`src=/srv/hidden/dir/x.mp4 bad`:                                                   {"hidden", "/srv"},
+		`(/srv/hidden/dir/x.mp4)`:                                                         {"hidden", "/srv"},
+		`[/srv/hidden/dir/x.mp4]`:                                                         {"hidden", "/srv"},
+		`a,/srv/hidden/dir/x.mp4`:                                                         {"hidden", "/srv"},
 		`ffmpeg failed on /srv/media/Secret Project/clients/acme.mp4: Invalid data`:       {"Secret Project", "clients", "/srv"},
 		`open "/srv/media/Secret Project/clients/acme.mp4": denied`:                       {"Secret Project", "clients", "/srv"},
 		`cannot read C:\Users\Jane Doe\Private Docs\a.pdf: denied`:                        {"Jane Doe", "Private Docs", "Users"},
@@ -53,6 +61,9 @@ func TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs(t *testing.T) {
 		}
 	}
 	assert.Contains(t, sanitizeConversionError(`stat /a/b/out.epub: no such file`), "no such file")
+	assert.Contains(t, sanitizeConversionError(`failed:/srv/hidden/dir/x.mp4: Invalid data`), "Invalid data")
+	assert.Contains(t, sanitizeConversionError(`'/srv/My: Movies/x.mp4' broke`), "x.mp4")
+	assert.Contains(t, sanitizeConversionError(`see http://example.com/docs for help`), "http://example.com/docs", "URLs are not file paths")
 }
 
 // UNIT-CLASS (lookup override): every advertised document pair routes to a converter that can

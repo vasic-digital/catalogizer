@@ -893,22 +893,38 @@ func (s *ConversionService) handleConversionError(job *models.ConversionJob, con
 	s.notifyUser(job, fmt.Sprintf("Conversion failed: %s", errorMsg))
 }
 
-// A path starts at "/", "file://" or a drive letter, after whitespace, a quote, "(", "=" or "[",
-// and runs (spaces included) to a quote, ":" , ";", "|", "<", ">" or the line end. It over-redacts
-// text that follows a path with no delimiter, which is the safe direction.
-var conversionPathRE = regexp.MustCompile("(^|[\\s'\"`(=\\[])((?:file://)?/[^'\"`<>|:;\\r\\n]*|[A-Za-z]:[\\\\/][^'\"`<>|:;\\r\\n]*)")
+// Paths are removed in two passes. Pass 1: a QUOTED path (one that starts right after ' " or a
+// backtick and ends at the next quote, so spaces and ": " inside a directory name are covered).
+// Pass 2: an UNQUOTED path starts at "/", "file://" or a drive letter after the line start,
+// whitespace or one of = ( [ , ; : and runs (spaces included) to a quote, "<>|;", a colon
+// followed by whitespace, or the line end. "//" (URLs) never starts a path. Text after a path with
+// no delimiter is over-removed, which is the safe direction.
+const conversionPathBody = `(?:file://)?/[^/'"` + "`" + `<>|\r\n][^'"` + "`" + `\r\n]*|[A-Za-z]:[\\/][^'"` + "`" + `\r\n]*`
+
+var (
+	conversionQuotedPathRE = regexp.MustCompile("(['\"`])(" + conversionPathBody + ")(['\"`])")
+	conversionPathRE       = regexp.MustCompile("(^|[\\s=(\\[,;:])((?:file://)?/[^/'\"`<>|\\s][^'\"`<>|;\\r\\n:]*(?::[^\\s'\"`<>|;\\r\\n][^'\"`<>|;\\r\\n:]*)*|[A-Za-z]:[\\\\/][^'\"`<>|;\\r\\n]*)")
+)
+
+func pathBase(p string) string {
+	p = strings.TrimRight(p, " \t")
+	if i := strings.LastIndexAny(p, `/\`); i >= 0 {
+		p = p[i+1:]
+	}
+	return "<path>/" + p
+}
 
 // sanitizeConversionError removes server filesystem paths (D7) from a tool or service error
 // before it is stored on the job or shown to the user; only the base name is kept, no
 // directory component is disclosed.
 func sanitizeConversionError(msg string) string {
+	msg = conversionQuotedPathRE.ReplaceAllStringFunc(msg, func(m string) string {
+		sub := conversionQuotedPathRE.FindStringSubmatch(m)
+		return sub[1] + pathBase(sub[2]) + sub[3]
+	})
 	return conversionPathRE.ReplaceAllStringFunc(msg, func(m string) string {
 		sub := conversionPathRE.FindStringSubmatch(m)
-		lead, p := sub[1], strings.TrimRight(sub[2], " \t")
-		if i := strings.LastIndexAny(p, `/\`); i >= 0 {
-			p = p[i+1:]
-		}
-		return lead + "<path>/" + p
+		return sub[1] + pathBase(sub[2])
 	})
 }
 

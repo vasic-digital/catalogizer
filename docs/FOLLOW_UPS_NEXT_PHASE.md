@@ -1255,3 +1255,7 @@ Status: PROVISIONAL-DONE (§11.4.290), not VERIFIED-DONE: the live re-run on a r
 - CONV-F3 (OPEN): `converterPresent` calls exec.LookPath on every format request/validation; cache with a short TTL if profiling shows cost.
 - CONV-F4 (OPEN): check the web client handles DELETE /conversion/jobs/:id answering 409 for a running job (previously it cancelled).
 - Residual (documented): between the last leaf check and os.Remove a parent directory could be swapped for a symlink; closing it needs unlinkat on a directory fd.
+- Review round 2 (bd9d2ada): N1 FIXED (path after `:`, `=`, `(`, `[`, `,` and quoted paths containing `: ` are stripped; RED-first, two mutants killed). Tracked, open:
+  - N2 (nit): the sanitiser over-removes text that follows a path with no delimiter; deliberately the safe direction.
+  - FU-1: permission inconsistency between viewing a job (view:media) and delete/cancel/retry (manage:users): an administrator may be able to delete a job it cannot view. Decide one rule.
+  - CONV-F3 (LookPath caching), CONV-F4 (web client handling of DELETE 409 on a running job) and the parent-directory-swap residual of removeConversionOutput remain open as listed above.
