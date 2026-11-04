@@ -1239,3 +1239,9 @@ Add a fixture with a clean twin for each probe.
 - ST-D3 (inconsistency): SmbClient rejects leading-slash paths while FTP/WebDAV accept them.
 - ST-NFS: NFS live test SKIPPED (Synology export list empty, no mount privilege); needs operator enabling an NFS export.
 - Evidence: docs/qa/live-storage-r1-20261104.md.
+
+## D9 admin role change (2026-11-04) - PROVISIONAL-DONE
+
+- D9 (product bug): `PUT /api/v1/admin/users/:id` parsed `role` but never applied it (200 "User updated successfully", role unchanged); `GET /api/v1/admin/users` showed every user as `user` because `UserRepository.List` does not join the role and the handler defaulted to "user". Fix in `catalog-api/handlers/admin_handler.go`: role names resolved from the roles table (case-insensitive, unknown -> 400 generic), persisted via compare-and-set `UpdateGuarded`, sessions revoked on role change, list resolves real role (fail closed, no silent default), self-demotion and last-active-admin demotion -> 409, audit event `admin_user_role_changed`. Tests: `handlers/admin_user_role_d9_test.go` (real gin router + migrated SQLite). Evidence: `docs/qa/d9-admin-role-fix-20261104/`.
+- Status PROVISIONAL-DONE: the live re-run (qa_admin listed as `admin`, PUT role on a rebuilt stack) is owed; not yet verified live.
+- Honest limits: the JWT already minted still carries its old `role_id` claim but the admin gate reads the live role from the DB (`IsAdmin`) and the sessions are revoked; the 'viewer' role in the web type has no seeded role (only Admin/User exist). The last-admin count reads up to 100000 users and is racy across processes (the CAS update only guards the target row, not the admin count). The Update path of the repository does not persist `is_locked` (UNCONFIRMED, noticed while reading, not tested: `Update`/`UpdateGuarded` SQL has no `is_locked` column), out of D9 scope.

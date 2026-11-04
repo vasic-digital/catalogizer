@@ -118,7 +118,7 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/conversion/formats` | auth + in-handler permission | 401 | 403 | 200 |
 | GET | `/api/v1/admin/system-info` | RequireAdmin (group) | 401 | 403 | 200 |
 | GET | `/api/v1/admin/users` | RequireAdmin (group) | 401 | 403 | 200 |
-| PUT | `/api/v1/admin/users/:id` | RequireAdmin (group) | 401 | 403 | skip |
+| PUT | `/api/v1/admin/users/:id` | RequireAdmin (group) + in-handler system.admin check; role change: closed set = roles table, no self/last-admin demotion (D9) | 401 | 403 | skip |
 | GET | `/api/v1/admin/storage` | RequireAdmin (group) | 401 | 403 | 200 |
 | GET | `/api/v1/admin/backups` | RequireAdmin (group) | 401 | 403 | 200 |
 | POST | `/api/v1/admin/backups` | RequireAdmin (group) | 401 | 403 | skip |

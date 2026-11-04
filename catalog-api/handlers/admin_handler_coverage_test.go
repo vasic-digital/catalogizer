@@ -73,6 +73,14 @@ func (m *mockAdminUserRepo) Count() (int, error) {
 	return 0, nil
 }
 
+func (m *mockAdminUserRepo) GetRole(roleID int) (*models.Role, error) {
+	return &models.Role{ID: roleID, Name: "User"}, nil
+}
+
+func (m *mockAdminUserRepo) ListRoles() ([]models.Role, error) {
+	return []models.Role{{ID: 1, Name: "Admin", Permissions: models.Permissions{"*"}}, {ID: 2, Name: "User"}}, nil
+}
+
 // DeactivateAllUserSessions records the revocation (the handlers require it).
 func (m *mockAdminUserRepo) DeactivateAllUserSessions(userID int) error {
 	m.revoked = append(m.revoked, userID)
@@ -250,7 +258,7 @@ func TestAdminHandler_GetUsers_Success(t *testing.T) {
 		listFn: func(limit, offset int) ([]models.User, error) {
 			return []models.User{
 				{ID: 1, Username: "alice", Email: "alice@test.com", IsActive: true, Role: &models.Role{Name: roleName}},
-				{ID: 2, Username: "bob", Email: "bob@test.com", IsActive: false, IsLocked: true},
+				{ID: 2, Username: "bob", Email: "bob@test.com", IsActive: false, IsLocked: true, RoleID: 2},
 			}, nil
 		},
 	}
