@@ -1122,3 +1122,9 @@ Open (not fixed here):
 - WL13-F3 (minor, source): after media end, seeking back with a near-expiry unbuffered target can auto-play (wantPlayRef stays true). Clear wantPlayRef in handleEnded.
 - WL13-F4 (nit): key={media.id} remounts player on switch, resetting volume/mute (intended).
 - WL13-T (test-instrumentation): add tests for user pause during reload, buffered second seek, ended-then-seek.
+
+## Stack 3 scripts review follow-ups (round 2, GO-with-follow-ups)
+- S3-1 (minor, test-instrumentation): test_scripts.sh mutants survive: `rc=0; [ "$web_up" = 1 ] || rc=6` -> `rc=0`, removing rc=6 from the probe loop, `set -euo` -> `set -uo`. Add a case with web 200 and one probe failing, and failing `podman run`/unhealthy container cases.
+- S3-2 (minor, process-doc): README's section 11.4.173 deviation names a "tracked follow-up" with no tracker id; create the CAT item (containers-submodule/remote-host build).
+- S3-3 (minor, process-doc): committed stack3 evidence is from build 1e92bc33 with pre-fix scripts; capture a run of the fixed up.sh/build.sh against real podman when stack 3 is next rebuilt from main.
+- Process note: docs/qa/README.md is generated; whoever merges second between stack3 and live-map must regenerate with scripts/docs/gen_dir_indexes.py, not hand-merge.
