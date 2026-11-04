@@ -157,6 +157,10 @@ func (db *DB) rewriteQuery(query string) string {
 	return query
 }
 
+// Rewrite applies the dialect rewriting (placeholders, boolean literals, ...) to a query. Statements run on a *sql.Tx obtained from
+// Begin bypass the DB wrappers, so transactional code must call this itself or a PostgreSQL deployment receives raw `?` markers.
+func (db *DB) Rewrite(query string) string { return db.rewriteQuery(query) }
+
 // ExecContext executes a query with dialect rewriting.
 func (db *DB) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	return db.DB.ExecContext(ctx, db.rewriteQuery(query), args...)

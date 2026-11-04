@@ -1,0 +1,7088 @@
+{
+ "constitution": "11.4.289",
+ "root": ".",
+ "files": [
+  {
+   "path": "catalog-web/e2e/accessibility.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 23,
+   "tests_real": 0,
+   "tests_mocked": 23,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L106:mock-helper:setupAllMocks",
+    "L118:mock-helper:setupAllMocks",
+    "L12:mock-helper:setupAllMocks",
+    "L130:mock-helper:setupAllMocks",
+    "L13:mock-helper",
+    "L145:mock-helper:setupAllMocks",
+    "L14:mock-helper",
+    "L15:mock-helper",
+    "L169:mock-helper:setupAllMocks",
+    "L16:mock-helper",
+    "L178:mock-helper:setupAllMocks",
+    "L18:route-intercept"
+   ],
+   "tests": [
+    {
+     "title": "login page has a proper heading structure",
+     "line": 84,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L85:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "dashboard has an h1 or prominent heading",
+     "line": 95,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L96:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "media browser page has descriptive headings",
+     "line": 105,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L106:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "collections page has descriptive headings",
+     "line": 117,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L118:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "favorites page has descriptive headings",
+     "line": 129,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L130:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "headings do not skip levels (h1 -> h3 without h2)",
+     "line": 144,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L145:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "navigation has an accessible role",
+     "line": 168,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L169:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "search input has accessible placeholder text",
+     "line": 177,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L178:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "login form inputs have proper labels or placeholders",
+     "line": 189,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L190:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "buttons have accessible text or aria-label",
+     "line": 205,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L206:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "images and icons have alt text or are decorative",
+     "line": 233,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L234:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "login form can be submitted using keyboard only",
+     "line": 258,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L259:mock-helper",
+      "L260:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Tab key moves focus through interactive elements",
+     "line": 282,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L283:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "navigation links are reachable via Tab key",
+     "line": 296,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L297:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "Escape key closes mobile menu",
+     "line": 317,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L318:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "focus is visible on interactive elements",
+     "line": 345,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L346:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "after login, focus returns to a reasonable element",
+     "line": 370,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L371:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "dialog/modal traps focus when open",
+     "line": 384,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L385:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "page uses semantic HTML elements",
+     "line": 417,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L418:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "text is not too small for readability",
+     "line": 432,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L433:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "login form submit button has descriptive text",
+     "line": 455,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L456:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "password input has type=\"password\" for security",
+     "line": 466,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L467:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "form fields have autocomplete attributes for user convenience",
+     "line": 475,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L476:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 5,
+     "examples": [
+      "login page has a proper heading structure",
+      "login form inputs have proper labels or placeholders",
+      "login form can be submitted using keyboard only"
+     ]
+    },
+    "collections": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "collections page has descriptive headings"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/entities/stats, **/api/v1/entities/types, **/api/v1/favorites**, **/api/v1/favorites/stats**, **/api/v1/media/stats**); assert on real responses.",
+    "Assertions depend on mock fixture rows (mockMedia); re-point them at the seeded L1 corpus manifest (counts and titles from scripts/test-infra/seed_corpus.sh).",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/auth.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 23,
+   "tests_real": 0,
+   "tests_mocked": 23,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L117:route-intercept",
+    "L118:route.fulfill",
+    "L125:route-intercept",
+    "L126:route.fulfill",
+    "L143:route-intercept",
+    "L144:route.fulfill",
+    "L150:route-intercept",
+    "L151:route.fulfill",
+    "L15:mock-helper",
+    "L169:mock-helper",
+    "L16:mock-helper",
+    "L170:route-intercept"
+   ],
+   "tests": [
+    {
+     "title": "displays login form with username and password fields",
+     "line": 19,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L15:mock-helper(hook)",
+      "L16:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "logs in with valid credentials and redirects to dashboard",
+     "line": 28,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L15:mock-helper(hook)",
+      "L16:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "stores JWT token in localStorage after successful login",
+     "line": 37,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L15:mock-helper(hook)",
+      "L16:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "stores user data in localStorage after successful login",
+     "line": 45,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L15:mock-helper(hook)",
+      "L16:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "shows welcome message on dashboard after login",
+     "line": 55,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L15:mock-helper(hook)",
+      "L16:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "maintains authentication across page reload",
+     "line": 62,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L15:mock-helper(hook)",
+      "L16:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "shows persistent inline error AND stays on /login",
+     "line": 74,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L82:route-intercept",
+      "L83:route.fulfill",
+      "L89:route-intercept",
+      "L90:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "stays on login page when credentials are wrong",
+     "line": 115,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L117:route-intercept",
+      "L118:route.fulfill",
+      "L125:route-intercept",
+      "L126:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "does not store token in localStorage on failed login",
+     "line": 142,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L143:route-intercept",
+      "L144:route.fulfill",
+      "L150:route-intercept",
+      "L151:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "handles server error (500) gracefully without crash",
+     "line": 168,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L169:mock-helper",
+      "L170:route-intercept",
+      "L171:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "submit button is disabled when fields are empty",
+     "line": 189,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L190:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "submit button enables when both fields have values",
+     "line": 197,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "logout button is accessible from the header area",
+     "line": 216,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L212:mock-helper(hook)",
+      "L213:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "clears auth token from localStorage after logout",
+     "line": 226,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L212:mock-helper(hook)",
+      "L213:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "redirects to login page after logout",
+     "line": 246,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L212:mock-helper(hook)",
+      "L213:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "auth status endpoint is called after login to verify token",
+     "line": 265,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L261:mock-helper(hook)",
+      "L262:mock-helper(hook)",
+      "L267:route-intercept",
+      "L269:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "expired token redirects to login",
+     "line": 285,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L261:mock-helper(hook)",
+      "L262:mock-helper(hook)",
+      "L289:route-intercept",
+      "L290:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "unauthenticated user is redirected to login from dashboard",
+     "line": 308,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L309:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "unauthenticated user is redirected to login from browse",
+     "line": 314,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L315:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "unauthenticated user is redirected to login from collections",
+     "line": 320,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L321:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "unauthenticated user is redirected to login from favorites",
+     "line": 326,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L327:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Disconnected banner is HIDDEN on /login (pre-auth)",
+     "line": 334,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L342:route-intercept",
+      "L343:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Disconnected banner is HIDDEN on /register (pre-auth)",
+     "line": 356,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L357:route-intercept",
+      "L358:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 15,
+     "examples": [
+      "displays login form with username and password fields",
+      "stores JWT token in localStorage after successful login",
+      "stores user data in localStorage after successful login"
+     ]
+    },
+    "registration": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "Disconnected banner is HIDDEN on /register (pre-auth)"
+     ]
+    },
+    "collections": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "unauthenticated user is redirected to login from collections"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/auth/init-status, **/api/v1/auth/login, **/api/v1/auth/status); assert on real responses.",
+    "Mocked error statuses ['401', '500']: live equivalent needs real fault injection (bad credentials, stop a fixture, expired token) - L11 - or the case stays legitimately unit-class.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/browse.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 18,
+   "tests_real": 0,
+   "tests_mocked": 18,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L100:route-intercept",
+    "L101:route.fulfill",
+    "L119:route-intercept",
+    "L132:route.fulfill",
+    "L145:route-intercept",
+    "L152:route.fulfill",
+    "L166:route-intercept",
+    "L177:route.fulfill",
+    "L185:route-intercept",
+    "L186:route.fulfill",
+    "L194:route-intercept",
+    "L195:route.fulfill"
+   ],
+   "tests": [
+    {
+     "title": "navigates to /browse and displays the entity browser",
+     "line": 255,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows the Entity Browser heading",
+     "line": 264,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "displays media type selector cards when no type is selected",
+     "line": 272,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking a media type shows entities of that type",
+     "line": 284,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows a back button when a type is selected",
+     "line": 301,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking back returns to the type selector view",
+     "line": 311,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "search input is visible on the browse page",
+     "line": 331,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "typing in search filters entities by title",
+     "line": 339,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clearing search returns to type selector",
+     "line": 351,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows pagination controls when there are multiple pages",
+     "line": 365,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)",
+      "L367:route-intercept",
+      "L368:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking next page updates URL with page parameter",
+     "line": 395,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)",
+      "L396:route-intercept",
+      "L397:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking an entity navigates to entity detail page",
+     "line": 424,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "entity detail page shows entity title",
+     "line": 449,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "entity detail page shows a back button to browse",
+     "line": 458,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "entity detail page shows file information",
+     "line": 468,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "entity not found shows appropriate message",
+     "line": 478,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)",
+      "L479:route-intercept",
+      "L480:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "browse link is visible in navigation",
+     "line": 497,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can navigate to browse from navigation bar",
+     "line": 507,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper:setupBrowseMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {},
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/entities/*, **/api/v1/entities/*/children, **/api/v1/entities/*/duplicates, **/api/v1/entities/*/files, **/api/v1/entities/*/metadata**, **/api/v1/entities/*/user-metadata); assert on real responses.",
+    "Mocked error statuses ['404']: live equivalent needs real fault injection (bad credentials, stop a fixture, expired token) - L11 - or the case stays legitimately unit-class.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/collections.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 20,
+   "tests_real": 0,
+   "tests_mocked": 20,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L100:route.fulfill",
+    "L113:route.fulfill",
+    "L122:route.fulfill",
+    "L129:route-intercept",
+    "L130:route.fulfill",
+    "L138:route-intercept",
+    "L139:route.fulfill",
+    "L152:route-intercept",
+    "L155:route.fulfill",
+    "L167:route.fulfill",
+    "L173:route.fulfill",
+    "L178:route-intercept"
+   ],
+   "tests": [
+    {
+     "title": "navigates to /collections and displays the page",
+     "line": 203,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "displays subtitle about organizing media",
+     "line": 211,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows tab navigation for All, Smart, and Manual collections",
+     "line": 220,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "collections list displays existing collections",
+     "line": 229,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "collections link is accessible from navigation",
+     "line": 238,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "search input is visible",
+     "line": 248,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "typing in search filters visible collections",
+     "line": 256,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "media type filter dropdown is available",
+     "line": 268,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "switching to Smart Collections tab filters results",
+     "line": 276,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Smart Collection button is visible",
+     "line": 290,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking Smart Collection button opens the builder",
+     "line": 298,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "grid and list view buttons are present",
+     "line": 312,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can switch to list view",
+     "line": 323,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can switch back to grid view",
+     "line": 335,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Templates button is available",
+     "line": 352,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Advanced Search button is available",
+     "line": 359,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Automation button is available",
+     "line": 366,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "AI Features button is available",
+     "line": 373,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows empty state when no collections match search",
+     "line": 382,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)",
+      "L384:route-intercept",
+      "L386:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "collection cards have action menus or delete buttons",
+     "line": 406,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L198:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "collections": {
+     "file_name_match": true,
+     "test_titles_matching": 10,
+     "examples": [
+      "navigates to /collections and displays the page",
+      "shows tab navigation for All, Smart, and Manual collections",
+      "collections list displays existing collections"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/collections**, **/api/v1/collections/*/duplicate, **/api/v1/collections/*/export**, **/api/v1/collections/*/items**, **/api/v1/collections/*/share, **/api/v1/collections/bulk**); assert on real responses.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/favorites.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 16,
+   "tests_real": 0,
+   "tests_mocked": 16,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L109:route-intercept",
+    "L111:route.fulfill",
+    "L117:route.fulfill",
+    "L128:mock-helper:setupFavoritesMocks",
+    "L39:mock-helper:setupFavoritesMocks",
+    "L40:mock-helper",
+    "L41:mock-helper",
+    "L47:route-intercept",
+    "L57:route.fulfill",
+    "L76:route.fulfill",
+    "L87:route.fulfill",
+    "L92:route-intercept"
+   ],
+   "tests": [
+    {
+     "title": "can navigate to the favorites page",
+     "line": 133,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "displays \"My Favorites\" page heading",
+     "line": 141,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "displays subtitle about managing favorites",
+     "line": 148,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "favorites link is accessible from the navigation",
+     "line": 155,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking favorites nav link navigates to favorites",
+     "line": 163,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "displays favorite items on the page",
+     "line": 174,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "displays multiple favorites",
+     "line": 184,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows Favorites, Recently Added, and Statistics tabs",
+     "line": 196,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can switch to Recently Added tab",
+     "line": 213,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can switch to Statistics tab and see stats",
+     "line": 226,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Statistics tab shows insight cards",
+     "line": 241,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Bulk Actions button is present",
+     "line": 258,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Import button is present",
+     "line": 265,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Export button is present",
+     "line": 272,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking Bulk Actions toggles selection mode",
+     "line": 279,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "favorite items have a remove/delete action available",
+     "line": 293,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L128:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {},
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/entities/*/user-metadata, **/api/v1/favorites**, **/api/v1/favorites/stats**); assert on real responses.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/real-backend-pages.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MIXED",
+   "tests_total": 6,
+   "tests_real": 5,
+   "tests_mocked": 1,
+   "imports_mock_fixtures": false,
+   "mock_signal_lines": [
+    "L61:route-intercept",
+    "L62:route.fulfill"
+   ],
+   "tests": [
+    {
+     "title": "${path} renders without hitting the ErrorBoundary",
+     "line": 35,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "/subtitles: media without subtitles and a zero-result search do not crash",
+     "line": 58,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L61:route-intercept",
+      "L62:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "a hard reload of a protected page keeps the session (no bounce to /login)",
+     "line": 86,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "a created collection is listed (not filtered out / cached empty)",
+     "line": 94,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "direct API request (request.*)",
+      "page.goto"
+     ]
+    },
+    {
+     "title": "settings Scans/Sync/Storage tabs do not crash",
+     "line": 107,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "websocket reaches the open state after login",
+     "line": 118,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": []
+    }
+   ],
+   "api_touched_by_real_tests": [
+    "direct API request (request.*)",
+    "page.goto"
+   ],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 2,
+     "examples": [
+      "a hard reload of a protected page keeps the session (no bounce to /login)",
+      "websocket reaches the open state after login"
+     ]
+    },
+    "collections": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "a created collection is listed (not filtered out / cached empty)"
+     ]
+    }
+   },
+   "make_live": [
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/media/search*); assert on real responses.",
+    "Visual snapshots were taken against mock data; regenerate baselines against the seeded live corpus (deterministic seed required) and record the artifact fingerprint.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "WebSocket behaviour: connect to the real /ws endpoint and trigger a real server event (scan/convert job) instead of a scripted frame.",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/responsive.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 22,
+   "tests_real": 0,
+   "tests_mocked": 22,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L108:mock-helper",
+    "L119:mock-helper:setupAllMocks",
+    "L12:mock-helper:setupAllMocks",
+    "L13:mock-helper",
+    "L14:mock-helper",
+    "L15:mock-helper",
+    "L16:mock-helper",
+    "L190:mock-helper:setupAllMocks",
+    "L19:route-intercept",
+    "L203:mock-helper:setupAllMocks",
+    "L20:route.fulfill",
+    "L216:mock-helper:setupAllMocks"
+   ],
+   "tests": [
+    {
+     "title": "login form renders correctly on mobile",
+     "line": 87,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L88:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "login form fits within mobile viewport without horizontal scroll",
+     "line": 97,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L98:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "login form is usable on very small screens (320px)",
+     "line": 107,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L108:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "hamburger menu button is visible on mobile",
+     "line": 125,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L119:mock-helper:setupAllMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "desktop navigation links are hidden on mobile",
+     "line": 132,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L119:mock-helper:setupAllMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "clicking hamburger opens mobile menu with all navigation links",
+     "line": 139,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L119:mock-helper:setupAllMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "mobile menu has search input",
+     "line": 151,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L119:mock-helper:setupAllMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "mobile menu has logout button",
+     "line": 162,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L119:mock-helper:setupAllMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "clicking a mobile menu link navigates and closes menu",
+     "line": 172,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L119:mock-helper:setupAllMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "favorites page renders on mobile",
+     "line": 189,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L190:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "collections page renders on mobile",
+     "line": 202,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L203:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "browse page renders on mobile",
+     "line": 215,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L216:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "desktop navigation is visible at tablet breakpoint",
+     "line": 238,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupAllMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "all main navigation links are visible",
+     "line": 244,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupAllMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "header search bar is visible at tablet width",
+     "line": 251,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupAllMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "mobile hamburger button is hidden on tablet",
+     "line": 256,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupAllMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "media page renders with controls at tablet width",
+     "line": 265,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L266:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "collections page renders at tablet width",
+     "line": 281,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L282:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "favorites page renders at tablet width",
+     "line": 294,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L295:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "browse page renders at tablet width with type selector",
+     "line": 307,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L308:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "header is sticky across all viewports",
+     "line": 322,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L323:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "user welcome text is visible on desktop but may be hidden on mobile",
+     "line": 338,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L339:mock-helper:setupAllMocks"
+     ],
+     "partial_real": false,
+     "io": []
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 3,
+     "examples": [
+      "login form renders correctly on mobile",
+      "login form fits within mobile viewport without horizontal scroll",
+      "login form is usable on very small screens (320px)"
+     ]
+    },
+    "collections": {
+     "file_name_match": false,
+     "test_titles_matching": 2,
+     "examples": [
+      "collections page renders on mobile",
+      "collections page renders at tablet width"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/entities/stats, **/api/v1/entities/types, **/api/v1/favorites**, **/api/v1/favorites/stats**, **/api/v1/media/stats**); assert on real responses.",
+    "Assertions depend on mock fixture rows (mockMedia); re-point them at the seeded L1 corpus manifest (counts and titles from scripts/test-infra/seed_corpus.sh).",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/search.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 16,
+   "tests_real": 0,
+   "tests_mocked": 16,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L107:route-intercept",
+    "L114:route.fulfill",
+    "L127:route-intercept",
+    "L128:route.fulfill",
+    "L141:route-intercept",
+    "L161:route.fulfill",
+    "L174:route-intercept",
+    "L175:route.fulfill",
+    "L190:route-intercept",
+    "L191:route.fulfill",
+    "L203:route-intercept",
+    "L205:route.fulfill"
+   ],
+   "tests": [
+    {
+     "title": "header search bar is visible on the dashboard",
+     "line": 237,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "can type in the header search bar",
+     "line": 242,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "pressing Enter in header search navigates or triggers search",
+     "line": 248,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "media page has a search input",
+     "line": 260,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "searching by title returns matching results",
+     "line": 268,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "searching for non-existent title shows no/empty results",
+     "line": 280,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)",
+      "L281:route-intercept",
+      "L285:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clearing search restores full results",
+     "line": 306,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "search is debounced to avoid excessive API calls",
+     "line": 320,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)",
+      "L322:route-intercept",
+      "L324:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "browse page has a search input",
+     "line": 346,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "searching entities by title updates URL with query param",
+     "line": 354,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "entity search results are displayed",
+     "line": 365,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "media page has filter controls",
+     "line": 376,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking filters button reveals filter options",
+     "line": 384,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking on a media item navigates to its detail",
+     "line": 398,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "collections page has a search input",
+     "line": 419,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can type in the collections search box",
+     "line": 427,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L232:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "collections": {
+     "file_name_match": false,
+     "test_titles_matching": 2,
+     "examples": [
+      "collections page has a search input",
+      "can type in the collections search box"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/collections**, **/api/v1/entities/stats, **/api/v1/entities/types, **/api/v1/entities?**, **/api/v1/media, **/api/v1/media/search**); assert on real responses.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/accessibility-expanded.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 20,
+   "tests_real": 0,
+   "tests_mocked": 20,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L111:mock-helper",
+    "L139:mock-helper",
+    "L13:mock-helper",
+    "L254:route-intercept",
+    "L255:route.fulfill",
+    "L296:mock-helper",
+    "L332:mock-helper",
+    "L38:mock-helper",
+    "L63:mock-helper",
+    "L8:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "media browser has no critical a11y violations",
+     "line": 12,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L13:mock-helper",
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "collections page has no critical a11y violations",
+     "line": 37,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L38:mock-helper",
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "settings page has no critical a11y violations",
+     "line": 62,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L63:mock-helper",
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "all interactive elements are keyboard accessible on login",
+     "line": 89,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "user can navigate dashboard using keyboard only",
+     "line": 110,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L111:mock-helper",
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "escape key closes modals",
+     "line": 138,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L139:mock-helper",
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "enter key activates buttons",
+     "line": 168,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "images have alt text or are decorative",
+     "line": 189,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "buttons have accessible names",
+     "line": 205,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "links have descriptive text",
+     "line": 223,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "aria-live regions for dynamic content",
+     "line": 238,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "status messages are announced to screen readers",
+     "line": 249,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L254:route-intercept",
+      "L255:route.fulfill",
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "focus is visible on all interactive elements",
+     "line": 275,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "focus trap works in modals",
+     "line": 295,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L296:mock-helper",
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "focus is restored after modal closes",
+     "line": 331,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L332:mock-helper",
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "text has sufficient color contrast",
+     "line": 366,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "information is not conveyed by color alone",
+     "line": 386,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "form inputs have associated labels",
+     "line": 405,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "required fields are indicated",
+     "line": 428,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "error messages are associated with inputs",
+     "line": 443,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "all interactive elements are keyboard accessible on login"
+     ]
+    },
+    "collections": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "collections page has no critical a11y violations"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/auth/login); assert on real responses.",
+    "Mocked error statuses ['401']: live equivalent needs real fault injection (bad credentials, stop a fixture, expired token) - L11 - or the case stays legitimately unit-class.",
+    "Assertions depend on mock fixture rows (mockMedia); re-point them at the seeded L1 corpus manifest (counts and titles from scripts/test-infra/seed_corpus.sh).",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/accessibility.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 6,
+   "tests_real": 0,
+   "tests_mocked": 6,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L50:mock-helper",
+    "L8:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "login page has no critical a11y violations",
+     "line": 11,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "registration page has no critical a11y violations",
+     "line": 30,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "dashboard page has no critical a11y violations",
+     "line": 49,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L50:mock-helper",
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "login page has proper heading hierarchy",
+     "line": 75,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "form inputs have associated labels or aria-labels",
+     "line": 85,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "interactive elements are keyboard accessible",
+     "line": 112,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 2,
+     "examples": [
+      "login page has no critical a11y violations",
+      "login page has proper heading hierarchy"
+     ]
+    },
+    "registration": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "registration page has no critical a11y violations"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/auth-flows.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 20,
+   "tests_real": 0,
+   "tests_mocked": 20,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L115:route-intercept",
+    "L116:route.fulfill",
+    "L122:mock-helper",
+    "L125:route-intercept",
+    "L126:route.fulfill",
+    "L143:mock-helper",
+    "L144:route-intercept",
+    "L145:route.fulfill",
+    "L162:mock-helper",
+    "L163:route-intercept",
+    "L181:mock-helper",
+    "L195:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "displays the Catalogizer branding and welcome text",
+     "line": 10,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows the logo with \"C\" initial",
+     "line": 16,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "password field is masked by default",
+     "line": 22,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "toggles password visibility with eye icon",
+     "line": 28,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "submit button is disabled when fields are empty",
+     "line": 48,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "submit button enables when both fields have values",
+     "line": 54,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "submit button disables again when a field is cleared",
+     "line": 65,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "redirects to dashboard after successful login",
+     "line": 83,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L80:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "stores auth_token in localStorage after login",
+     "line": 91,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L80:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "stores user object in localStorage after login",
+     "line": 98,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L80:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "displays welcome message with username on dashboard",
+     "line": 106,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L80:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "stays on login page with invalid credentials",
+     "line": 114,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L115:route-intercept",
+      "L116:route.fulfill",
+      "L122:mock-helper",
+      "L125:route-intercept",
+      "L126:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "handles server error (500) gracefully",
+     "line": 142,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L143:mock-helper",
+      "L144:route-intercept",
+      "L145:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "handles network timeout gracefully",
+     "line": 161,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L162:mock-helper",
+      "L163:route-intercept"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "maintains auth state across page reload when token exists",
+     "line": 180,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L181:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "logout button is accessible from header",
+     "line": 194,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L195:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "has link to registration page",
+     "line": 208,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L209:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "has link to forgot password",
+     "line": 215,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L216:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "remember me checkbox is present",
+     "line": 222,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L223:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking \"Create new account\" navigates to register",
+     "line": 229,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L230:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 4,
+     "examples": [
+      "redirects to dashboard after successful login",
+      "stores auth_token in localStorage after login",
+      "stores user object in localStorage after login"
+     ]
+    },
+    "registration": {
+     "file_name_match": false,
+     "test_titles_matching": 2,
+     "examples": [
+      "has link to registration page",
+      "clicking \"Create new account\" navigates to register"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/auth/login); assert on real responses.",
+    "Mocked error statuses ['401', '500']: live equivalent needs real fault injection (bad credentials, stop a fixture, expired token) - L11 - or the case stays legitimately unit-class.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/auth.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 13,
+   "tests_real": 0,
+   "tests_mocked": 13,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L35:route-intercept",
+    "L36:route.fulfill",
+    "L6:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "displays login form",
+     "line": 10,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "logs in with valid credentials",
+     "line": 19,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows error with invalid credentials",
+     "line": 33,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L35:route-intercept",
+      "L36:route.fulfill",
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "validates required fields - button disabled when empty",
+     "line": 57,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows link to create account",
+     "line": 73,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows remember me checkbox",
+     "line": 81,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows forgot password link",
+     "line": 89,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "displays registration form",
+     "line": 99,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "navigates to login page",
+     "line": 108,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "stores auth token after login",
+     "line": 121,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "stores user data after login",
+     "line": 134,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "redirects unauthenticated users to login",
+     "line": 149,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "allows authenticated users to access protected routes",
+     "line": 157,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 5,
+     "examples": [
+      "displays login form",
+      "navigates to login page",
+      "stores auth token after login"
+     ]
+    },
+    "registration": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "displays registration form"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/auth/login); assert on real responses.",
+    "Mocked error statuses ['401']: live equivalent needs real fault injection (bad credentials, stop a fixture, expired token) - L11 - or the case stays legitimately unit-class.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/backup-management.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 4,
+   "tests_real": 0,
+   "tests_mocked": 4,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L10:mock-helper",
+    "L30:route-intercept",
+    "L31:route.fulfill",
+    "L39:route-intercept",
+    "L41:route.fulfill",
+    "L59:route-intercept",
+    "L61:route.fulfill",
+    "L72:route-intercept",
+    "L73:route.fulfill",
+    "L83:mock-helper:setupBackupMocks",
+    "L8:mock-helper:setupBackupMocks",
+    "L9:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "can navigate to admin panel",
+     "line": 88,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L83:mock-helper:setupBackupMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "admin panel has navigation visible",
+     "line": 94,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L83:mock-helper:setupBackupMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "backup page loads without errors",
+     "line": 103,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L83:mock-helper:setupBackupMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "page renders without console errors",
+     "line": 120,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L83:mock-helper:setupBackupMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "admin": {
+     "file_name_match": true,
+     "test_titles_matching": 3,
+     "examples": [
+      "can navigate to admin panel",
+      "admin panel has navigation visible",
+      "backup page loads without errors"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/admin/**, **/api/v1/admin/backup, **/api/v1/admin/backup/restore, **/api/v1/admin/backups**); assert on real responses.",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/browsing-challenge.spec.ts",
+   "kind": "playwright-spec",
+   "class": "REAL",
+   "tests_total": 5,
+   "tests_real": 5,
+   "tests_mocked": 0,
+   "imports_mock_fixtures": false,
+   "mock_signal_lines": [],
+   "tests": [
+    {
+     "title": "dashboard loads with real data",
+     "line": 31,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "media browser shows actual content",
+     "line": 50,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "navigation links are present and functional",
+     "line": 71,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "no console errors on pages",
+     "line": 95,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "no placeholder or unknown titles in media browser",
+     "line": 120,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [
+    "page.goto"
+   ],
+   "domains": {}
+  },
+  {
+   "path": "catalog-web/e2e/tests/collections-management.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 16,
+   "tests_real": 0,
+   "tests_mocked": 16,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L100:route.fulfill",
+    "L108:route-intercept",
+    "L109:route.fulfill",
+    "L10:mock-helper",
+    "L122:route-intercept",
+    "L123:route.fulfill",
+    "L131:route-intercept",
+    "L132:route.fulfill",
+    "L142:mock-helper:setupCollectionMocks",
+    "L275:route-intercept",
+    "L276:route.fulfill",
+    "L50:route-intercept"
+   ],
+   "tests": [
+    {
+     "title": "displays the Collections page title",
+     "line": 147,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "displays subtitle about organizing media",
+     "line": 153,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "displays tab navigation for collection types",
+     "line": 159,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "search input for collections is visible",
+     "line": 170,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can type in the search box to filter collections",
+     "line": 177,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "media type filter dropdown is present",
+     "line": 186,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Smart Collection button is visible",
+     "line": 196,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking Smart Collection button shows the builder",
+     "line": 203,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "grid and list view toggles are present",
+     "line": 215,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can switch to list view",
+     "line": 225,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Templates button is available",
+     "line": 236,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Advanced Search button is available",
+     "line": 243,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Automation button is available",
+     "line": 250,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Integrations button is available",
+     "line": 257,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "AI Features button is available",
+     "line": 264,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows empty state message when no collections match filter",
+     "line": 273,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper:setupCollectionMocks(hook)",
+      "L275:route-intercept",
+      "L276:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "collections": {
+     "file_name_match": true,
+     "test_titles_matching": 7,
+     "examples": [
+      "displays the Collections page title",
+      "displays tab navigation for collection types",
+      "search input for collections is visible"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/collections**, **/api/v1/collections/*, **/api/v1/collections/*/duplicate, **/api/v1/collections/*/export**, **/api/v1/collections/*/share, **/api/v1/collections/bulk**); assert on real responses.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/collections.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 2,
+   "tests_real": 0,
+   "tests_mocked": 2,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L8:mock-helper",
+    "L9:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "can access collections from navigation",
+     "line": 19,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "dashboard has navigation visible",
+     "line": 30,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "collections": {
+     "file_name_match": true,
+     "test_titles_matching": 1,
+     "examples": [
+      "can access collections from navigation"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/critical-flows.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 11,
+   "tests_real": 0,
+   "tests_mocked": 11,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L12:mock-helper",
+    "L135:mock-helper",
+    "L139:route-intercept",
+    "L13:mock-helper",
+    "L14:mock-helper",
+    "L166:mock-helper",
+    "L176:route-intercept",
+    "L177:route.fulfill",
+    "L194:mock-helper",
+    "L195:mock-helper",
+    "L196:mock-helper",
+    "L224:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "user can login, browse media, and add to favorites",
+     "line": 11,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:mock-helper",
+      "L13:mock-helper",
+      "L14:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "user can create and manage a collection",
+     "line": 47,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L48:mock-helper",
+      "L49:mock-helper",
+      "L50:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "user can search and filter media",
+     "line": 90,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)",
+      "L91:mock-helper",
+      "L92:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "user can recover from network error",
+     "line": 134,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L135:mock-helper",
+      "L139:route-intercept",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "user can recover from session expiration",
+     "line": 165,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L166:mock-helper",
+      "L176:route-intercept",
+      "L177:route.fulfill",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "user can navigate through all main sections",
+     "line": 193,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L194:mock-helper",
+      "L195:mock-helper",
+      "L196:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "browser back button works correctly",
+     "line": 223,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L224:mock-helper",
+      "L225:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "user can change theme preference",
+     "line": 248,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L249:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "user can update profile information",
+     "line": 274,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L275:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "user preferences persist after reload",
+     "line": 305,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L306:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "search filters persist during session",
+     "line": 324,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L325:mock-helper",
+      "L326:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "user can login, browse media, and add to favorites"
+     ]
+    },
+    "collections": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "user can create and manage a collection"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/**); assert on real responses.",
+    "Mocked error statuses ['401']: live equivalent needs real fault injection (bad credentials, stop a fixture, expired token) - L11 - or the case stays legitimately unit-class.",
+    "Assertions depend on mock fixture rows (mockMedia); re-point them at the seeded L1 corpus manifest (counts and titles from scripts/test-infra/seed_corpus.sh).",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/dashboard.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 3,
+   "tests_real": 0,
+   "tests_mocked": 3,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L8:mock-helper",
+    "L9:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "displays dashboard page",
+     "line": 19,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "displays navigation",
+     "line": 27,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "page renders without errors",
+     "line": 33,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {},
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/error-handling.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MIXED",
+   "tests_total": 16,
+   "tests_real": 7,
+   "tests_mocked": 9,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L107:mock-helper",
+    "L108:mock-helper",
+    "L111:route-intercept",
+    "L112:route.fulfill",
+    "L118:route-intercept",
+    "L119:route.fulfill",
+    "L147:mock-helper",
+    "L148:mock-helper",
+    "L151:route-intercept",
+    "L152:route.fulfill",
+    "L201:mock-helper",
+    "L202:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "handles complete network failure on login gracefully",
+     "line": 7,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper",
+      "L9:route-intercept"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "handles network failure on media page gracefully",
+     "line": 24,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L25:mock-helper",
+      "L26:mock-helper",
+      "L29:route-intercept",
+      "L32:route-intercept"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "handles network failure on dashboard gracefully",
+     "line": 45,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L46:mock-helper",
+      "L49:route-intercept",
+      "L52:route-intercept"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "handles 401 Unauthorized on API calls",
+     "line": 64,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L65:mock-helper",
+      "L66:mock-helper",
+      "L70:route-intercept",
+      "L71:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "handles 403 Forbidden gracefully",
+     "line": 86,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper",
+      "L88:mock-helper",
+      "L91:route-intercept",
+      "L92:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "handles 500 Internal Server Error",
+     "line": 106,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L107:mock-helper",
+      "L108:mock-helper",
+      "L111:route-intercept",
+      "L112:route.fulfill",
+      "L118:route-intercept",
+      "L119:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "handles 404 Not Found on API",
+     "line": 146,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L147:mock-helper",
+      "L148:mock-helper",
+      "L151:route-intercept",
+      "L152:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "redirects /dashboard to login when not authenticated",
+     "line": 165,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "redirects /media to login when not authenticated",
+     "line": 170,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "redirects /collections to login when not authenticated",
+     "line": 175,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "redirects /favorites to login when not authenticated",
+     "line": 180,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "redirects /playlists to login when not authenticated",
+     "line": 185,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "redirects /admin to login when not authenticated",
+     "line": 190,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "redirects /analytics to login when not authenticated",
+     "line": 195,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "catch-all route redirects unknown paths",
+     "line": 200,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L201:mock-helper",
+      "L202:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows loading state while waiting for API response",
+     "line": 214,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L215:mock-helper",
+      "L218:route-intercept",
+      "L220:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": []
+    }
+   ],
+   "api_touched_by_real_tests": [
+    "page.goto"
+   ],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 8,
+     "examples": [
+      "handles complete network failure on login gracefully",
+      "redirects /dashboard to login when not authenticated",
+      "redirects /media to login when not authenticated"
+     ]
+    },
+    "collections": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "redirects /collections to login when not authenticated"
+     ]
+    },
+    "admin": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "redirects /admin to login when not authenticated"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/auth/login, **/api/v1/media/999, **/api/v1/media/search**, **/api/v1/media/stats**, **/api/v1/stats**); assert on real responses.",
+    "Mocked error statuses ['401', '403', '404', '500']: live equivalent needs real fault injection (bad credentials, stop a fixture, expired token) - L11 - or the case stays legitimately unit-class.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/favorites.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 14,
+   "tests_real": 0,
+   "tests_mocked": 14,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L10:mock-helper",
+    "L40:route-intercept",
+    "L43:route.fulfill",
+    "L53:route.fulfill",
+    "L63:route.fulfill",
+    "L68:route-intercept",
+    "L69:route.fulfill",
+    "L87:mock-helper:setupFavoritesMocks",
+    "L8:mock-helper:setupFavoritesMocks",
+    "L9:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "displays the My Favorites page title",
+     "line": 92,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "displays subtitle about managing favorites",
+     "line": 98,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "displays favorites tab navigation",
+     "line": 104,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Bulk Actions button is present",
+     "line": 115,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Import button is present",
+     "line": 122,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Export button is present",
+     "line": 129,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking Bulk Actions highlights the button",
+     "line": 136,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can switch to Recently Added tab",
+     "line": 149,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can switch to Statistics tab",
+     "line": 160,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Statistics tab shows total favorites count",
+     "line": 171,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Statistics tab shows media type breakdown",
+     "line": 181,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "Statistics tab shows insights cards",
+     "line": 191,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "favorites link is visible in header navigation",
+     "line": 205,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking favorites nav link navigates to favorites page",
+     "line": 213,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L87:mock-helper:setupFavoritesMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {},
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/favorites**, **/api/v1/favorites/stats**); assert on real responses.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/media-browser.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 2,
+   "tests_real": 0,
+   "tests_mocked": 2,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L8:mock-helper",
+    "L9:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "can navigate to media page from dashboard",
+     "line": 19,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "dashboard loads successfully after login",
+     "line": 30,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "dashboard loads successfully after login"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Assertions depend on mock fixture rows (mockMedia); re-point them at the seeded L1 corpus manifest (counts and titles from scripts/test-infra/seed_corpus.sh).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/media-browsing.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 17,
+   "tests_real": 0,
+   "tests_mocked": 17,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L12:route-intercept",
+    "L13:route.fulfill",
+    "L170:route-intercept",
+    "L171:route.fulfill",
+    "L187:route-intercept",
+    "L188:route.fulfill",
+    "L7:mock-helper",
+    "L8:mock-helper",
+    "L9:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "can navigate to media page from header navigation",
+     "line": 29,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "media page displays the title \"Media Browser\"",
+     "line": 37,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "media page displays subtitle text",
+     "line": 43,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "search input is visible on the media page",
+     "line": 51,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "typing in search filters the media list",
+     "line": 58,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows result count after search",
+     "line": 70,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "grid view button is present",
+     "line": 84,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "list view button is present",
+     "line": 91,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can switch between grid and list views",
+     "line": 98,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "filters toggle button is present",
+     "line": 114,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking filters button toggles the filter sidebar",
+     "line": 121,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "refresh button is available",
+     "line": 132,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "upload button is available",
+     "line": 139,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "displays Total Items stat card",
+     "line": 148,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "displays Media Types stat card",
+     "line": 157,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows error state when API fails",
+     "line": 168,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L170:route-intercept",
+      "L171:route.fulfill",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "retry button appears on error",
+     "line": 186,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L12:route-intercept(hook)",
+      "L13:route.fulfill(hook)",
+      "L187:route-intercept",
+      "L188:route.fulfill",
+      "L7:mock-helper(hook)",
+      "L8:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {},
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/media/search**, **/api/v1/media/stats**); assert on real responses.",
+    "Mocked error statuses ['500']: live equivalent needs real fault injection (bad credentials, stop a fixture, expired token) - L11 - or the case stays legitimately unit-class.",
+    "Assertions depend on mock fixture rows (mockMedia); re-point them at the seeded L1 corpus manifest (counts and titles from scripts/test-infra/seed_corpus.sh).",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/media-playback.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 6,
+   "tests_real": 0,
+   "tests_mocked": 6,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L10:mock-helper",
+    "L11:mock-helper",
+    "L14:route-intercept",
+    "L15:route.fulfill",
+    "L28:route-intercept",
+    "L29:route.fulfill",
+    "L66:route-intercept",
+    "L68:route.fulfill",
+    "L74:route.fulfill",
+    "L85:mock-helper:setupPlaybackMocks",
+    "L8:mock-helper:setupPlaybackMocks",
+    "L9:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "media page loads with playable content",
+     "line": 90,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L85:mock-helper:setupPlaybackMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "media page has controls for browsing",
+     "line": 96,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L85:mock-helper:setupPlaybackMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "refresh button triggers content reload",
+     "line": 109,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L85:mock-helper:setupPlaybackMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "upload button toggles the upload manager area",
+     "line": 123,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L85:mock-helper:setupPlaybackMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "searching for a video title filters results",
+     "line": 137,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L85:mock-helper:setupPlaybackMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "filter sidebar can be toggled on media page",
+     "line": 149,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L85:mock-helper:setupPlaybackMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "playback": {
+     "file_name_match": true,
+     "test_titles_matching": 1,
+     "examples": [
+      "searching for a video title filters results"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/media/search**, **/api/v1/media/stats**, **/api/v1/playback/position**); assert on real responses.",
+    "Assertions depend on mock fixture rows (mockMedia); re-point them at the seeded L1 corpus manifest (counts and titles from scripts/test-infra/seed_corpus.sh).",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/media-quality.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 7,
+   "tests_real": 0,
+   "tests_mocked": 7,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L10:mock-helper",
+    "L11:mock-helper",
+    "L14:route-intercept",
+    "L15:route.fulfill",
+    "L40:route-intercept",
+    "L41:route.fulfill",
+    "L59:route-intercept",
+    "L60:route.fulfill",
+    "L70:mock-helper:setupMediaQualityMocks",
+    "L8:mock-helper:setupMediaQualityMocks",
+    "L9:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "can access media browse page",
+     "line": 75,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L70:mock-helper:setupMediaQualityMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "media browse page loads without console errors",
+     "line": 81,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L70:mock-helper:setupMediaQualityMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "media items are displayed on browse page",
+     "line": 98,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L70:mock-helper:setupMediaQualityMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can navigate to entity detail page",
+     "line": 113,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L70:mock-helper:setupMediaQualityMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "entity detail page loads without errors",
+     "line": 119,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L70:mock-helper:setupMediaQualityMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can access analytics page",
+     "line": 138,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L70:mock-helper:setupMediaQualityMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "analytics page has navigation",
+     "line": 144,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L70:mock-helper:setupMediaQualityMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {},
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/admin/**, **/api/v1/media/*/quality, **/api/v1/media/quality**); assert on real responses.",
+    "Assertions depend on mock fixture rows (mockMedia); re-point them at the seeded L1 corpus manifest (counts and titles from scripts/test-infra/seed_corpus.sh).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/navigation.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MIXED",
+   "tests_total": 17,
+   "tests_real": 1,
+   "tests_mocked": 16,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L105:mock-helper:setupAllPageMocks",
+    "L10:mock-helper",
+    "L13:route-intercept",
+    "L14:route.fulfill",
+    "L169:mock-helper:setupAllPageMocks",
+    "L183:mock-helper",
+    "L184:mock-helper",
+    "L185:mock-helper",
+    "L188:route-intercept",
+    "L189:route.fulfill",
+    "L203:mock-helper:setupAllPageMocks",
+    "L213:mock-helper:setupAllPageMocks"
+   ],
+   "tests": [
+    {
+     "title": "Catalogizer logo links to home",
+     "line": 109,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L105:mock-helper:setupAllPageMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "Dashboard nav link is visible and functional",
+     "line": 116,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L105:mock-helper:setupAllPageMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "Media nav link is visible and functional",
+     "line": 123,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L105:mock-helper:setupAllPageMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "Favorites nav link is visible and functional",
+     "line": 130,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L105:mock-helper:setupAllPageMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "Playlists nav link is visible and functional",
+     "line": 137,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L105:mock-helper:setupAllPageMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "Analytics nav link is visible",
+     "line": 144,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L105:mock-helper:setupAllPageMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "Subtitles nav link is visible",
+     "line": 149,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L105:mock-helper:setupAllPageMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "Collections nav link is visible and functional",
+     "line": 154,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L105:mock-helper:setupAllPageMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "Convert nav link is visible",
+     "line": 161,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L105:mock-helper:setupAllPageMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "user icon buttons are visible in header",
+     "line": 173,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L169:mock-helper:setupAllPageMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "admin link shows for admin user",
+     "line": 182,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L183:mock-helper",
+      "L184:mock-helper",
+      "L185:mock-helper",
+      "L188:route-intercept",
+      "L189:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "admin link is hidden for regular user",
+     "line": 202,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L203:mock-helper:setupAllPageMocks"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "root path redirects to dashboard for authenticated users",
+     "line": 212,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L213:mock-helper:setupAllPageMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "root path redirects to login for unauthenticated users",
+     "line": 220,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows Login and Sign Up buttons when not authenticated",
+     "line": 227,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L228:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can navigate between multiple pages without errors",
+     "line": 239,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L240:mock-helper:setupAllPageMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "browser back button works correctly between pages",
+     "line": 269,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L270:mock-helper:setupAllPageMocks"
+     ],
+     "partial_real": false,
+     "io": []
+    }
+   ],
+   "api_touched_by_real_tests": [
+    "page.goto"
+   ],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 2,
+     "examples": [
+      "root path redirects to login for unauthenticated users",
+      "shows Login and Sign Up buttons when not authenticated"
+     ]
+    },
+    "registration": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "shows Login and Sign Up buttons when not authenticated"
+     ]
+    },
+    "collections": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "Collections nav link is visible and functional"
+     ]
+    },
+    "admin": {
+     "file_name_match": false,
+     "test_titles_matching": 2,
+     "examples": [
+      "admin link shows for admin user",
+      "admin link is hidden for regular user"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/admin/**, **/api/v1/analytics**, **/api/v1/collections**, **/api/v1/conversion**, **/api/v1/favorites**, **/api/v1/favorites/stats**); assert on real responses.",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/password-change.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 5,
+   "tests_real": 0,
+   "tests_mocked": 5,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L10:mock-helper",
+    "L13:route-intercept",
+    "L27:route.fulfill",
+    "L33:route.fulfill",
+    "L42:route-intercept",
+    "L43:route.fulfill",
+    "L53:mock-helper:setupPasswordChangeMocks",
+    "L8:mock-helper:setupPasswordChangeMocks",
+    "L9:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "can navigate to settings or profile page",
+     "line": 58,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L53:mock-helper:setupPasswordChangeMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can navigate to profile page",
+     "line": 67,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L53:mock-helper:setupPasswordChangeMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "settings page loads without errors",
+     "line": 77,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L53:mock-helper:setupPasswordChangeMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "password fields are present on settings page",
+     "line": 94,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L53:mock-helper:setupPasswordChangeMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "navigation contains settings or profile link",
+     "line": 111,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L53:mock-helper:setupPasswordChangeMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {},
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/admin/**, **/api/v1/auth/change-password); assert on real responses.",
+    "Mocked error statuses ['401']: live equivalent needs real fault injection (bad credentials, stop a fixture, expired token) - L11 - or the case stays legitimately unit-class.",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/performance.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 14,
+   "tests_real": 0,
+   "tests_mocked": 14,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L22:mock-helper",
+    "L239:mock-helper",
+    "L240:mock-helper",
+    "L39:mock-helper",
+    "L7:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "login page loads within 3 seconds",
+     "line": 11,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "dashboard loads within 4 seconds after login",
+     "line": 21,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L22:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "media browser loads within 4 seconds",
+     "line": 38,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L39:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "LCP (Largest Contentful Paint) is under 2.5s",
+     "line": 59,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "FID (First Input Delay) measurement setup",
+     "line": 82,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "CLS (Cumulative Layout Shift) is under 0.1",
+     "line": 109,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "TTFB (Time to First Byte) is under 600ms",
+     "line": 134,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "FCP (First Contentful Paint) is under 1.8s",
+     "line": 145,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "no images larger than 500KB",
+     "line": 172,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "JavaScript bundles are gzipped",
+     "line": 193,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "CSS is minified",
+     "line": 213,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "memory usage stays stable during navigation",
+     "line": 238,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L239:mock-helper",
+      "L240:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "API calls complete within 2 seconds",
+     "line": 276,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "no duplicate API requests",
+     "line": 304,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 2,
+     "examples": [
+      "login page loads within 3 seconds",
+      "dashboard loads within 4 seconds after login"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Assertions depend on mock fixture rows (mockMedia); re-point them at the seeded L1 corpus manifest (counts and titles from scripts/test-infra/seed_corpus.sh).",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/playlists.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 7,
+   "tests_real": 0,
+   "tests_mocked": 7,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L101:route-intercept",
+    "L102:route.fulfill",
+    "L10:mock-helper",
+    "L112:mock-helper:setupPlaylistMocks",
+    "L33:route-intercept",
+    "L39:route.fulfill",
+    "L56:route.fulfill",
+    "L61:route.fulfill",
+    "L74:route.fulfill",
+    "L8:mock-helper:setupPlaylistMocks",
+    "L90:route.fulfill",
+    "L9:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "can access playlists page",
+     "line": 117,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L112:mock-helper:setupPlaylistMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "playlists page loads without console errors",
+     "line": 123,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L112:mock-helper:setupPlaylistMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "playlists page displays page title",
+     "line": 140,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L112:mock-helper:setupPlaylistMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "playlists link is visible in navigation",
+     "line": 150,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L112:mock-helper:setupPlaylistMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking playlists nav link navigates to playlists page",
+     "line": 162,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L112:mock-helper:setupPlaylistMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "create playlist button is present",
+     "line": 177,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L112:mock-helper:setupPlaylistMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "page has navigation sidebar or header",
+     "line": 189,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L112:mock-helper:setupPlaylistMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {},
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/admin/**, **/api/v1/playlists**); assert on real responses.",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/protected-routes.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MIXED",
+   "tests_total": 9,
+   "tests_real": 7,
+   "tests_mocked": 2,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L53:mock-helper",
+    "L54:mock-helper",
+    "L74:mock-helper",
+    "L75:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "redirects / to login",
+     "line": 7,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "redirects /dashboard to login",
+     "line": 12,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "redirects /media to login",
+     "line": 17,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "redirects /collections to login",
+     "line": 22,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "redirects /favorites to login",
+     "line": 27,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "allows access to /login",
+     "line": 32,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "allows access to /register",
+     "line": 41,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "stays on dashboard after login",
+     "line": 64,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L53:mock-helper(hook)",
+      "L54:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "login redirects to dashboard",
+     "line": 73,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L74:mock-helper",
+      "L75:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [
+    "page.goto"
+   ],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 8,
+     "examples": [
+      "redirects / to login",
+      "redirects /dashboard to login",
+      "redirects /media to login"
+     ]
+    },
+    "registration": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "allows access to /register"
+     ]
+    },
+    "collections": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "redirects /collections to login"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/recent-popular.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 8,
+   "tests_real": 0,
+   "tests_mocked": 8,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L10:mock-helper",
+    "L11:mock-helper",
+    "L14:route-intercept",
+    "L15:route.fulfill",
+    "L42:route-intercept",
+    "L43:route.fulfill",
+    "L76:route-intercept",
+    "L77:route.fulfill",
+    "L85:route-intercept",
+    "L86:route.fulfill",
+    "L8:mock-helper:setupRecentPopularMocks",
+    "L96:mock-helper:setupRecentPopularMocks"
+   ],
+   "tests": [
+    {
+     "title": "dashboard loads and displays content",
+     "line": 101,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L96:mock-helper:setupRecentPopularMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "dashboard loads without console errors",
+     "line": 107,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L96:mock-helper:setupRecentPopularMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "dashboard has navigation",
+     "line": 124,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L96:mock-helper:setupRecentPopularMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can access browse page for media listing",
+     "line": 134,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L96:mock-helper:setupRecentPopularMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "browse page loads without console errors",
+     "line": 140,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L96:mock-helper:setupRecentPopularMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "browse page has navigation",
+     "line": 157,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L96:mock-helper:setupRecentPopularMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "media or browse link is visible in navigation",
+     "line": 167,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L96:mock-helper:setupRecentPopularMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking media nav link navigates away from dashboard",
+     "line": 179,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L96:mock-helper:setupRecentPopularMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {},
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/admin/**, **/api/v1/favorites**, **/api/v1/media/popular**, **/api/v1/media/recent**); assert on real responses.",
+    "Assertions depend on mock fixture rows (mockMedia); re-point them at the seeded L1 corpus manifest (counts and titles from scripts/test-infra/seed_corpus.sh).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/registration.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 13,
+   "tests_real": 0,
+   "tests_mocked": 13,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L145:route-intercept",
+    "L146:route.fulfill",
+    "L6:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "displays registration form with all required fields",
+     "line": 10,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "displays subtitle text about joining Catalogizer",
+     "line": 21,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "has link to login page",
+     "line": 26,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clicking \"Sign in instead\" navigates to login",
+     "line": 32,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows error when username is too short",
+     "line": 40,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows error for invalid email format",
+     "line": 53,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows error when password is too short",
+     "line": 66,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows error when passwords do not match",
+     "line": 79,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "shows error when required fields are empty",
+     "line": 92,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clears individual field errors on input change",
+     "line": 101,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "submits valid registration and navigates to login",
+     "line": 115,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "can toggle password visibility in both password fields",
+     "line": 131,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "handles duplicate username error from server",
+     "line": 144,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L145:route-intercept",
+      "L146:route.fulfill",
+      "L6:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 3,
+     "examples": [
+      "has link to login page",
+      "clicking \"Sign in instead\" navigates to login",
+      "submits valid registration and navigates to login"
+     ]
+    },
+    "registration": {
+     "file_name_match": true,
+     "test_titles_matching": 2,
+     "examples": [
+      "displays registration form with all required fields",
+      "submits valid registration and navigates to login"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/auth/register); assert on real responses.",
+    "Mocked error statuses ['409']: live equivalent needs real fault injection (bad credentials, stop a fixture, expired token) - L11 - or the case stays legitimately unit-class.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/responsive-layout.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 20,
+   "tests_real": 0,
+   "tests_mocked": 20,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L237:mock-helper",
+    "L238:mock-helper",
+    "L250:mock-helper",
+    "L261:mock-helper",
+    "L273:mock-helper",
+    "L274:mock-helper",
+    "L64:mock-helper",
+    "L65:mock-helper",
+    "L8:mock-helper",
+    "L9:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "header navigation links are visible on desktop",
+     "line": 13,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "all navigation items are visible on desktop",
+     "line": 23,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "header search bar is visible on desktop",
+     "line": 33,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "user welcome message is visible on desktop",
+     "line": 41,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "mobile menu button is hidden on desktop",
+     "line": 49,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper(hook)",
+      "L9:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "mobile menu button is visible on small screens",
+     "line": 68,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L64:mock-helper(hook)",
+      "L65:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "desktop navigation is hidden on mobile",
+     "line": 82,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L64:mock-helper(hook)",
+      "L65:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "header search bar is hidden on mobile",
+     "line": 96,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L64:mock-helper(hook)",
+      "L65:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "clicking hamburger opens mobile menu with navigation links",
+     "line": 108,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L64:mock-helper(hook)",
+      "L65:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "mobile menu contains Dashboard link",
+     "line": 127,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L64:mock-helper(hook)",
+      "L65:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "mobile menu contains Media link",
+     "line": 141,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L64:mock-helper(hook)",
+      "L65:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "mobile menu contains Favorites link",
+     "line": 155,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L64:mock-helper(hook)",
+      "L65:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "mobile menu contains Collections link",
+     "line": 169,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L64:mock-helper(hook)",
+      "L65:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "mobile menu contains Logout button",
+     "line": 183,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L64:mock-helper(hook)",
+      "L65:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "mobile menu has search input",
+     "line": 197,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L64:mock-helper(hook)",
+      "L65:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "clicking a mobile menu link closes the menu",
+     "line": 212,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L64:mock-helper(hook)",
+      "L65:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "navigation adjusts at tablet breakpoint",
+     "line": 236,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L237:mock-helper",
+      "L238:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "login form is centered on mobile",
+     "line": 249,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L250:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "login form fits within mobile viewport",
+     "line": 260,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L261:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "header is sticky and stays at top",
+     "line": 272,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L273:mock-helper",
+      "L274:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 2,
+     "examples": [
+      "login form is centered on mobile",
+      "login form fits within mobile viewport"
+     ]
+    },
+    "collections": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "mobile menu contains Collections link"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/search.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 8,
+   "tests_real": 0,
+   "tests_mocked": 8,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L105:route-intercept",
+    "L107:route.fulfill",
+    "L10:mock-helper",
+    "L118:route.fulfill",
+    "L123:route-intercept",
+    "L124:route.fulfill",
+    "L139:mock-helper:setupSearchMocks",
+    "L177:route-intercept",
+    "L181:route.fulfill",
+    "L223:route-intercept",
+    "L225:route.fulfill",
+    "L252:route-intercept"
+   ],
+   "tests": [
+    {
+     "title": "header search bar is visible on dashboard",
+     "line": 144,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L139:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "can type in the header search bar",
+     "line": 149,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L139:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "media page has a search input",
+     "line": 157,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L139:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "searching by title returns matching results",
+     "line": 164,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L139:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "searching with no results shows appropriate message",
+     "line": 175,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L139:mock-helper:setupSearchMocks(hook)",
+      "L177:route-intercept",
+      "L181:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "clearing search shows all results again",
+     "line": 204,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L139:mock-helper:setupSearchMocks(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "search is debounced and does not fire on every keystroke",
+     "line": 221,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L139:mock-helper:setupSearchMocks(hook)",
+      "L223:route-intercept",
+      "L225:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "collections page has a search input",
+     "line": 250,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L139:mock-helper:setupSearchMocks(hook)",
+      "L252:route-intercept",
+      "L253:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "collections": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "collections page has a search input"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/collections**, **/api/v1/media, **/api/v1/media/search**, **/api/v1/media/stats**, **/api/v1/search/history**); assert on real responses.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/settings-admin.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 15,
+   "tests_real": 0,
+   "tests_mocked": 15,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L10:route-intercept",
+    "L113:route-intercept",
+    "L115:route.fulfill",
+    "L11:route.fulfill",
+    "L130:route.fulfill",
+    "L142:mock-helper",
+    "L143:mock-helper",
+    "L144:mock-helper:setupAdminMocks",
+    "L152:mock-helper",
+    "L153:mock-helper",
+    "L161:mock-helper",
+    "L162:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "admin link is visible for admin users",
+     "line": 141,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L142:mock-helper",
+      "L143:mock-helper",
+      "L144:mock-helper:setupAdminMocks"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "admin link is hidden for regular users",
+     "line": 151,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L152:mock-helper",
+      "L153:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "regular user is redirected from admin page to dashboard",
+     "line": 160,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L161:mock-helper",
+      "L162:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "admin user can access the admin page",
+     "line": 172,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L173:mock-helper",
+      "L174:mock-helper",
+      "L175:mock-helper:setupAdminMocks"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "dashboard shows system status indicators",
+     "line": 187,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L188:mock-helper",
+      "L189:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "dashboard shows CPU usage",
+     "line": 196,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L197:mock-helper",
+      "L198:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "dashboard shows Memory usage",
+     "line": 204,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L205:mock-helper",
+      "L206:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "dashboard shows Disk usage",
+     "line": 212,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L213:mock-helper",
+      "L214:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "dashboard shows Network status",
+     "line": 220,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L221:mock-helper",
+      "L222:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "dashboard shows Uptime",
+     "line": 229,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L230:mock-helper",
+      "L231:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "shows Quick Actions section",
+     "line": 239,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L240:mock-helper",
+      "L241:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "shows Upload Media quick action",
+     "line": 247,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L248:mock-helper",
+      "L249:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "shows Scan Library quick action",
+     "line": 255,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L256:mock-helper",
+      "L257:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "shows Search quick action",
+     "line": 263,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L264:mock-helper",
+      "L265:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "shows Settings quick action",
+     "line": 273,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L274:mock-helper",
+      "L275:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "admin": {
+     "file_name_match": true,
+     "test_titles_matching": 4,
+     "examples": [
+      "admin link is visible for admin users",
+      "admin link is hidden for regular users",
+      "regular user is redirected from admin page to dashboard"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/admin/backups**, **/api/v1/admin/storage**, **/api/v1/admin/system**, **/api/v1/admin/users**, **/api/v1/settings**); assert on real responses.",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/visual-regression-dark.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 3,
+   "tests_real": 0,
+   "tests_mocked": 3,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L28:mock-helper",
+    "L60:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "login page renders in light then dark via toggle",
+     "line": 40,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L28:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "dashboard renders in light then dark via toggle",
+     "line": 59,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L28:mock-helper(hook)",
+      "L60:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "theme choice persists across reload",
+     "line": 82,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L28:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "login page renders in light then dark via toggle"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Visual snapshots were taken against mock data; regenerate baselines against the seeded live corpus (deterministic seed required) and record the artifact fingerprint.",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/visual-regression.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 17,
+   "tests_real": 0,
+   "tests_mocked": 17,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L118:mock-helper",
+    "L145:mock-helper",
+    "L196:mock-helper",
+    "L216:mock-helper",
+    "L251:mock-helper",
+    "L25:route-intercept",
+    "L26:route.fulfill",
+    "L273:mock-helper",
+    "L293:mock-helper",
+    "L310:mock-helper",
+    "L61:mock-helper",
+    "L79:mock-helper"
+   ],
+   "tests": [
+    {
+     "title": "login page matches baseline screenshot",
+     "line": 11,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "login page with error state matches baseline",
+     "line": 21,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L25:route-intercept",
+      "L26:route.fulfill",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "login form focus states",
+     "line": 45,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "dashboard matches baseline screenshot",
+     "line": 60,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L61:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "dashboard loading state",
+     "line": 78,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L79:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "media browser grid view matches baseline",
+     "line": 97,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)",
+      "L98:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "media browser list view matches baseline",
+     "line": 117,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L118:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "media detail modal matches baseline",
+     "line": 144,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L145:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "login page on mobile viewport",
+     "line": 173,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "login page on tablet viewport",
+     "line": 184,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "dashboard on mobile viewport",
+     "line": 195,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L196:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "dashboard on large desktop viewport",
+     "line": 215,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L216:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "login page in dark mode",
+     "line": 237,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "dashboard in dark mode",
+     "line": 250,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L251:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "empty state screens",
+     "line": 272,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L273:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "loading skeletons",
+     "line": 292,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L293:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "dropdown menus",
+     "line": 309,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L310:mock-helper",
+      "L7:mock-helper(hook)"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "login": {
+     "file_name_match": false,
+     "test_titles_matching": 6,
+     "examples": [
+      "login page matches baseline screenshot",
+      "login page with error state matches baseline",
+      "login form focus states"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/auth/login); assert on real responses.",
+    "Mocked error statuses ['401']: live equivalent needs real fault injection (bad credentials, stop a fixture, expired token) - L11 - or the case stays legitimately unit-class.",
+    "Assertions depend on mock fixture rows (mockMedia); re-point them at the seeded L1 corpus manifest (counts and titles from scripts/test-infra/seed_corpus.sh).",
+    "Visual snapshots were taken against mock data; regenerate baselines against the seeded live corpus (deterministic seed required) and record the artifact fingerprint.",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalog-web/e2e/tests/websocket-realtime.spec.ts",
+   "kind": "playwright-spec",
+   "class": "MOCKED",
+   "tests_total": 8,
+   "tests_real": 0,
+   "tests_mocked": 8,
+   "imports_mock_fixtures": true,
+   "mock_signal_lines": [
+    "L108:mock-helper",
+    "L109:mock-helper",
+    "L111:route-intercept",
+    "L112:route.fulfill",
+    "L119:route-intercept",
+    "L120:route.fulfill",
+    "L127:route-intercept",
+    "L128:route.fulfill",
+    "L158:mock-helper",
+    "L159:mock-helper",
+    "L161:route-intercept",
+    "L162:route.fulfill"
+   ],
+   "tests": [
+    {
+     "title": "connection status indicator appears when WebSocket is disconnected",
+     "line": 7,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L8:mock-helper",
+      "L9:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "disconnected status shows red/warn styling",
+     "line": 23,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L24:mock-helper",
+      "L25:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "dashboard loads and shows current data",
+     "line": 38,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L39:mock-helper",
+      "L40:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "dashboard shows last updated timestamp",
+     "line": 47,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L48:mock-helper",
+      "L49:mock-helper"
+     ],
+     "partial_real": false,
+     "io": []
+    },
+    {
+     "title": "media browser refresh button triggers data reload",
+     "line": 57,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L58:mock-helper",
+      "L59:mock-helper",
+      "L60:mock-helper",
+      "L62:route-intercept",
+      "L63:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "page remains functional without WebSocket connection",
+     "line": 92,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L93:mock-helper",
+      "L94:mock-helper"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "navigation works despite WebSocket being disconnected",
+     "line": 107,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L108:mock-helper",
+      "L109:mock-helper",
+      "L111:route-intercept",
+      "L112:route.fulfill",
+      "L119:route-intercept",
+      "L120:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "collections page has real-time collaboration controls",
+     "line": 157,
+     "class": "MOCKED",
+     "mock_evidence": [
+      "L158:mock-helper",
+      "L159:mock-helper",
+      "L161:route-intercept",
+      "L162:route.fulfill"
+     ],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    }
+   ],
+   "api_touched_by_real_tests": [],
+   "domains": {
+    "collections": {
+     "file_name_match": false,
+     "test_titles_matching": 1,
+     "examples": [
+      "collections page has real-time collaboration controls"
+     ]
+    }
+   },
+   "make_live": [
+    "Remove mockAuthEndpoints/mockAllEndpoints/mockDashboard|Media|CollectionEndpoints calls (e2e/fixtures/api-mocks.ts, e2e/fixtures/auth.ts); drive the real backend instead.",
+    "Delete page.route/route.fulfill interception (urls: **/api/v1/collections**, **/api/v1/favorites**, **/api/v1/favorites/stats**, **/api/v1/media/stats**); assert on real responses.",
+    "Assertions depend on mock fixture rows (mockMedia); re-point them at the seeded L1 corpus manifest (counts and titles from scripts/test-infra/seed_corpus.sh).",
+    "Timing thresholds were measured against instant mocks; re-baseline against the live API on the target host (report p50/p95, N>=3).",
+    "WebSocket behaviour: connect to the real /ws endpoint and trigger a real server event (scan/convert job) instead of a scripted frame.",
+    "Use real login with requireEnv('ADMIN_PASSWORD') (pattern: e2e/tests/browsing-challenge.spec.ts loginAsAdmin) and seed any needed data through the real API first (pattern: real-backend-pages.spec.ts request.post /collections), cleaning up after.",
+    "Add the file to testMatch in catalog-web/playwright.real.config.ts (currently only real-backend-pages.spec.ts) and run with PLAYWRIGHT_BASE_URL=<stack>; record target fingerprint + endpoint identity per 11.4.289(D)."
+   ]
+  },
+  {
+   "path": "catalogizer-desktop/e2e/theme.spec.ts",
+   "kind": "playwright-spec",
+   "class": "REAL",
+   "tests_total": 5,
+   "tests_real": 5,
+   "tests_mocked": 0,
+   "imports_mock_fixtures": false,
+   "mock_signal_lines": [],
+   "tests": [
+    {
+     "title": "light theme renders Catalogizer Blue",
+     "line": 115,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "dark theme renders Catalogizer Blue",
+     "line": 124,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "the brand primary is blue, not the legacy slate",
+     "line": 133,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "${theme}: accent hover bg/fg pair \u2265 4.5:1",
+     "line": 162,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": [
+      "page.goto"
+     ]
+    },
+    {
+     "title": "self-validation: the contrast checker rejects a sub-AA pair",
+     "line": 183,
+     "class": "REAL",
+     "mock_evidence": [],
+     "partial_real": false,
+     "io": []
+    }
+   ],
+   "api_touched_by_real_tests": [
+    "page.goto"
+   ],
+   "domains": {},
+   "note": "REAL = no test double; this spec does not touch the API at all (UI/theme only)"
+  },
+  {
+   "path": "tests/responsive-audit/measure_d1_d2.mjs",
+   "kind": "audit-script",
+   "class": "REAL",
+   "why": "drives the real built app against the real API (token from a real login)",
+   "mock_signals": [],
+   "tests_total": 0,
+   "tests_real": 0,
+   "tests_mocked": 0,
+   "domains": {}
+  },
+  {
+   "path": "tests/responsive-audit/needle.mjs",
+   "kind": "audit-script",
+   "class": "SELFTEST",
+   "why": "page.setContent on synthetic HTML; oracle self-test (golden-good/bad), not evidence about the product",
+   "mock_signals": [],
+   "tests_total": 0,
+   "tests_real": 0,
+   "tests_mocked": 0,
+   "domains": {}
+  },
+  {
+   "path": "tests/responsive-audit/oracle.mjs",
+   "kind": "audit-script",
+   "class": "HELPER",
+   "why": "no browser automation",
+   "mock_signals": [],
+   "tests_total": 0,
+   "tests_real": 0,
+   "tests_mocked": 0,
+   "domains": {}
+  },
+  {
+   "path": "tests/responsive-audit/run.mjs",
+   "kind": "audit-script",
+   "class": "MIXED",
+   "why": "drives the real app and real API but replaces part of the system with a double (see signals); the double is unit-class",
+   "mock_signals": [
+    "L53:init-script-double"
+   ],
+   "tests_total": 0,
+   "tests_real": 0,
+   "tests_mocked": 0,
+   "domains": {},
+   "make_live": [
+    "Replace the emulated Tauri IPC bridge (window.__TAURI_INTERNALS__) with the real Tauri window (built desktop artifact under Xvfb) for the desktop target; web/installer targets are already live."
+   ]
+  },
+  {
+   "path": "tests/responsive-audit/serve.mjs",
+   "kind": "audit-script",
+   "class": "HELPER",
+   "why": "no browser automation; infrastructure helper (serve.mjs-style static server/reverse proxy to the real API)",
+   "mock_signals": [],
+   "tests_total": 0,
+   "tests_real": 0,
+   "tests_mocked": 0,
+   "domains": {}
+  }
+ ],
+ "counts": {
+  "files": 43,
+  "REAL": 3,
+  "MOCKED": 32,
+  "MIXED": 5,
+  "other": 3,
+  "tests_total": 455,
+  "tests_real": 30,
+  "tests_mocked": 425
+ }
+}

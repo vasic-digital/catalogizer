@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"catalogizer/internal/netguard"
 	"context"
 	"crypto/sha256"
 	"database/sql"
@@ -153,7 +154,7 @@ func NewCoverArtService(db *database.DB, logger *zap.Logger) *CoverArtService {
 	return &CoverArtService{
 		db:         db,
 		logger:     logger,
-		httpClient: &http.Client{Timeout: 30 * time.Second},
+		httpClient: netguard.StrictClient(30*time.Second, 3, netguard.HTTPOrHTTPS), // image URLs come from provider data
 		apiKeys:    make(map[string]string),
 		cacheDir:   "./cache/cover_art",
 	}
@@ -519,9 +520,12 @@ func (s *CoverArtService) downloadImage(ctx context.Context, imageURL string) ([
 				SOCKS5Dialer, err := proxy.SOCKS5("tcp", parsedProxy.Host, auth, proxy.Direct)
 				if err == nil {
 					transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+						if cd, ok := SOCKS5Dialer.(proxy.ContextDialer); ok {
+							return cd.DialContext(ctx, network, addr) // honours cancellation/deadline
+						}
 						return SOCKS5Dialer.Dial(network, addr)
 					}
-					client = &http.Client{Timeout: 30 * time.Second, Transport: transport}
+					client = &http.Client{Timeout: 30 * time.Second, Transport: transport, CheckRedirect: guardedRedirect}
 				}
 			}
 		}
@@ -529,7 +533,7 @@ func (s *CoverArtService) downloadImage(ctx context.Context, imageURL string) ([
 			parsedHTTPProxy, err := url.Parse(s.proxyCfg.GetHTTPURL())
 			if err == nil {
 				transport.Proxy = http.ProxyURL(parsedHTTPProxy)
-				client = &http.Client{Timeout: 30 * time.Second, Transport: transport}
+				client = &http.Client{Timeout: 30 * time.Second, Transport: transport, CheckRedirect: guardedRedirect}
 			}
 		}
 	}
@@ -549,7 +553,35 @@ func (s *CoverArtService) downloadImage(ctx context.Context, imageURL string) ([
 		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, resp.Status)
 	}
 
-	return io.ReadAll(resp.Body)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, coverArtMaxBytes+1))
+	if err != nil {
+		return nil, err
+	}
+	if int64(len(body)) > coverArtMaxBytes {
+		return nil, fmt.Errorf("cover_art: download exceeds %d bytes", coverArtMaxBytes)
+	}
+	return body, nil
+}
+
+// coverArtMaxBytes caps one downloaded cover image (a variable only so a test can lower it).
+var coverArtMaxBytes int64 = 32 << 20
+
+// ffmpegInputGuard keeps ffmpeg/ffprobe from opening anything but local files and pipes
+// when a media file is really a playlist (HLS, concat, DASH...) naming network URLs.
+// Same option as services/converter_hardening.go. It is an input option: place it before -i.
+var ffmpegInputGuard = []string{"-nostdin", "-protocol_whitelist", "file,pipe"}
+
+func ffprobeDurationCmd(videoPath string) *exec.Cmd {
+	args := []string{"-v", "error"}
+	args = append(args, "-protocol_whitelist", "file,pipe")
+	args = append(args, "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", videoPath)
+	return exec.Command("ffprobe", args...)
+}
+
+func ffmpegFrameCmd(ctx context.Context, timestamp float64, videoPath, outputPath string) *exec.Cmd {
+	args := append([]string{}, ffmpegInputGuard...)
+	args = append(args, "-ss", fmt.Sprintf("%.2f", timestamp), "-i", videoPath, "-vframes", "1", "-q:v", "2", "-y", outputPath)
+	return exec.CommandContext(ctx, "ffmpeg", args...)
 }
 
 func (s *CoverArtService) resizeImage(img image.Image, options *CoverArtProcessingOptions) image.Image {
@@ -920,12 +952,7 @@ func (s *CoverArtService) saveCoverArtToDB(ctx context.Context, coverArt *CoverA
 
 // getVideoDuration gets the duration of a video file using ffprobe
 func (s *CoverArtService) getVideoDuration(videoPath string) (float64, error) {
-	output, err := exec.Command("ffprobe",
-		"-v", "error",
-		"-show_entries", "format=duration",
-		"-of", "default=noprint_wrappers=1:nokey=1",
-		videoPath,
-	).Output()
+	output, err := ffprobeDurationCmd(videoPath).Output()
 	if err == nil {
 		if duration, parseErr := strconv.ParseFloat(strings.TrimSpace(string(output)), 64); parseErr == nil && duration > 0 {
 			return duration, nil
@@ -951,14 +978,7 @@ func (s *CoverArtService) generateVideoThumbnail(ctx context.Context, request *V
 	outputPath := filepath.Join(s.cacheDir, coverID+".jpg")
 
 	// Try ffmpeg to extract a frame
-	err := exec.CommandContext(ctx, "ffmpeg",
-		"-ss", fmt.Sprintf("%.2f", timestamp),
-		"-i", request.VideoPath,
-		"-vframes", "1",
-		"-q:v", "2",
-		"-y",
-		outputPath,
-	).Run()
+	err := ffmpegFrameCmd(ctx, timestamp, request.VideoPath, outputPath).Run()
 
 	if err == nil {
 		if info, statErr := os.Stat(outputPath); statErr == nil {
@@ -1344,14 +1364,7 @@ func (s *CoverArtService) generateAndSaveVideoThumbnail(ctx context.Context, med
 	outputPath := filepath.Join(s.cacheDir, coverID+".jpg")
 
 	// Fast seek: place -ss before -i
-	cmd := exec.CommandContext(ctx, "ffmpeg",
-		"-ss", fmt.Sprintf("%.2f", timestamp),
-		"-i", videoPath,
-		"-vframes", "1",
-		"-q:v", "2",
-		"-y",
-		outputPath,
-	)
+	cmd := ffmpegFrameCmd(ctx, timestamp, videoPath, outputPath)
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("ffmpeg failed: %w", err)
 	}
@@ -1646,4 +1659,17 @@ func GeneratePlaceholderSVG(mediaType string) []byte {
 </svg>`, g[0], g[1], accent, accent, accent, icon, accent, label)
 
 	return []byte(svg)
+}
+
+// guardedRedirect re-checks every redirect hop with the string-level SSRF guard. It is
+// used for the operator-proxy clients, where the proxy (not this process) resolves and
+// dials the destination so the dial-time check of netguard cannot be applied.
+func guardedRedirect(req *http.Request, via []*http.Request) error {
+	if len(via) > 3 {
+		return http.ErrUseLastResponse
+	}
+	if err := GuardProviderURL(req.URL.String(), SSRFGuardConfig{}); err != nil {
+		return err
+	}
+	return nil
 }

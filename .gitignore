@@ -480,3 +480,6 @@ __pycache__/
 
 # LIVE scaling/chaos run artifacts (binary + per-run DBs + evidence) - §11.4.30, scripts/test-infra/scaling_live.sh
 .scaling-live-artifacts/
+
+# Prometheus scrape credential (F1)
+monitoring/secrets/

@@ -152,6 +152,8 @@ export default {
       borderRadius: {
         '4xl': designRadius['4xl'],
       },
+      // @tailwindcss/aspect-ratio replaces theme.aspectRatio; re-add the core keys it drops (see src/__tests__/tailwindAspect.test.ts).
+      aspectRatio: { auto: 'auto', square: '1 / 1', video: '16 / 9' },
       maxWidth: {
         '8xl': '88rem',
         '9xl': '96rem',

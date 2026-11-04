@@ -1,0 +1,61 @@
+{
+  "schema": "catalogizer.live-evidence/1",
+  "test_id": "catalog-web-live/chromium-390/pages",
+  "class": "LIVE",
+  "verdict": "PASS",
+  "timestamp": "2026-11-04T11:51:18.033Z",
+  "command": "catalog-web/e2e/live/run_live.sh chromium-390",
+  "artifact": {
+    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:942d38404e6fa10f5140f1737b77b7ea9660ef1b60153ea9fbeeffb907716069;api-health={\"version\":\"e0cb1b36fbcad3a98d021af3a72886baff33b426\",\"build_number\":\"e0cb1b36fbcad3a98d021af3a72886baff33b426\",\"build_date\":\"stack3\"};web-image=sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d",
+    "source": "target"
+  },
+  "endpoint": {
+    "host": "127.0.0.1",
+    "port": 33020,
+    "resolved_ip": "127.0.0.1",
+    "url": "http://127.0.0.1:33020"
+  },
+  "answering": {
+    "kind": "container",
+    "image": "localhost/catqa3-web:main-e0cb1b36",
+    "image_digest": "sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d",
+    "container_id": "9af6f3a98b933c7c85ae63ba823d2437331e8cc2ee5e21288d8f392a43680721"
+  },
+  "expected": {
+    "image_digest": "sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d"
+  },
+  "requests": {
+    "total": 43,
+    "methods": {
+      "GET": 40,
+      "POST": 3
+    }
+  },
+  "responses": {
+    "status_histogram": {
+      "200": 43
+    }
+  },
+  "runs": {
+    "n": 3,
+    "identical": true,
+    "signature": "sha256:1a6f237442245bd11a174d7d152579e1e3db200465d85a20d0f5ccd37f76f784"
+  },
+  "tests": {
+    "run1": [
+      "Admin page renders without the error boundary=passed",
+      "Collections page renders without the error boundary=passed",
+      "Favorites page renders without the error boundary=passed"
+    ],
+    "run2": [
+      "Admin page renders without the error boundary=passed",
+      "Collections page renders without the error boundary=passed",
+      "Favorites page renders without the error boundary=passed"
+    ],
+    "run3": [
+      "Admin page renders without the error boundary=passed",
+      "Collections page renders without the error boundary=passed",
+      "Favorites page renders without the error boundary=passed"
+    ]
+  }
+}

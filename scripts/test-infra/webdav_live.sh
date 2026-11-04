@@ -9,10 +9,11 @@ for v in LIVE_WEBDAV_URL LIVE_WEBDAV_USER LIVE_WEBDAV_PASSWORD LIVE_WEBDAV_SANDB
   [ -n "${!v:-}" ] || { echo "VERDICT=SKIPPED reason=credentials_absent missing=$v"; exit 3; }
 done
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-esc() { printf '%s' "$1" | sed -e 's/[][\\.*^$/&]/\\&/g'; }
-host="${LIVE_WEBDAV_URL#*://}"; host="${host%%/*}"; host="${host%%:*}"
+host="${LIVE_WEBDAV_URL#*://}"; host="${host%%/*}"; host="${host%%:*}"; export LIVE_WEBDAV_HOSTNAME="$host"
+# Redaction reads the secrets from the environment (awk ENVIRON): a credential on a command line (sed -e s/<password>/) is visible in /proc/<pid>/cmdline.
+redact() { awk 'BEGIN{n=split(ENVIRON["LIVE_WEBDAV_PASSWORD"] "\n" ENVIRON["LIVE_WEBDAV_USER"] "\n" ENVIRON["LIVE_WEBDAV_HOSTNAME"],s,"\n")} {for(i=1;i<=n;i++) if(length(s[i])>0){while((j=index($0,s[i]))>0) $0=substr($0,1,j-1) "<redacted>" substr($0,j+length(s[i]))} print}'; }
 out=$(cd "$ROOT/catalog-api" && go test -tags live -count=1 -v -run '^(TestLiveWebDAV_RoundTripAndFailurePaths|TestLiveWebDAV_BadCredentialRejected)$' ./filesystem/ 2>&1); rc=$?
-printf '%s\n' "$out" | sed -e "s/$(esc "$LIVE_WEBDAV_PASSWORD")/<PASS>/g" -e "s/$(esc "$LIVE_WEBDAV_USER")/<USER>/g" -e "s/$(esc "$host")/<HOST>/g"
+printf '%s\n' "$out" | redact
 ps=$(printf '%s\n' "$out" | grep -cE -- '^--- PASS: TestLiveWebDAV_(RoundTripAndFailurePaths|BadCredentialRejected) ')
 sk=$(printf '%s\n' "$out" | grep -cE -- '^--- SKIP: TestLiveWebDAV_(RoundTripAndFailurePaths|BadCredentialRejected) ')
 echo "GO_RC=$rc PASSED=$ps SKIPPED=$sk"

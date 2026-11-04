@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"catalogizer/internal/logredact"
 	"net/http"
 	"os"
 	"strings"
@@ -56,9 +57,7 @@ func Logger(logger *zap.Logger) gin.HandlerFunc {
 		method := c.Request.Method
 		statusCode := c.Writer.Status()
 
-		if raw != "" {
-			path = path + "?" + raw
-		}
+		path = logredact.Path(path, raw) // never log ticket / access_token values
 
 		logger.Info("HTTP Request",
 			zap.String("method", method),

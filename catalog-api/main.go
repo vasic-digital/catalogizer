@@ -1,6 +1,8 @@
 package main
 
 import (
+	"catalogizer/internal/logredact"
+	"catalogizer/internal/streamticket"
 	"errors"
 	"catalogizer/challenges"
 	root_config "catalogizer/config"
@@ -930,6 +932,9 @@ func main() {
 	// Initialize JWT middleware
 	// Session revocation + live admin check are installed together (main_jwtwire.go).
 	jwtMiddleware := newAuthMiddleware(jwtSecret, databaseDB, userRepo)
+	ticketSigner := streamticket.New(jwtSecret)
+	jwtMiddleware.SetStreamTicketSigner(ticketSigner)
+	streamHandler.SetTicketSigner(ticketSigner)
 
 	// Initialize tiered rate limiters using internal auth middleware.
 	// Constitution Article V §5.1 category 7 (DDoS/rate-limit) requires
@@ -961,7 +966,12 @@ func main() {
 	}
 
 	// Setup Gin router
-	router := gin.Default()
+	// gin.Default() equivalent whose access log redacts credential-bearing query parameters (ticket, access_token, token).
+	router := gin.New()
+	router.Use(gin.LoggerWithFormatter(func(p gin.LogFormatterParams) string {
+		return fmt.Sprintf("[GIN] %s | %3d | %13v | %15s | %-7s %#v\n%s",
+			p.TimeStamp.Format("2006/01/02 - 15:04:05"), p.StatusCode, p.Latency, p.ClientIP, p.Method, logredact.Path(p.Request.URL.Path, p.Request.URL.RawQuery), p.ErrorMessage)
+	}), gin.Recovery())
 
 	// RULE-GO-005 / Master Plan §4.2 — lock down X-Forwarded-For
 	// handling. Gin's default TrustedProxies is 0.0.0.0/0, which
@@ -1043,7 +1053,10 @@ func main() {
 	metrics.StartRuntimeCollector(15 * time.Second)
 
 	// Prometheus metrics endpoint
-	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	// Authz round 2: the exposition lists routes, hosts, runtime internals and
+	// per-endpoint traffic, so it is administrator-only (a scraper presents an
+	// administrator bearer token or the dedicated METRICS_SCRAPE_TOKEN, valid on this route only). /health and /health/deep stay public.
+	router.GET("/metrics", metricsScrapeDetect(metricsScrapeToken()), metricsSkipIfScrape(jwtMiddleware.RequireAuth()), metricsSkipIfScrape(jwtMiddleware.RequireAdmin()), gin.WrapH(promhttp.Handler()))
 
 	// pprof endpoints — OPT-IN via HELIX_PPROF_ENABLED=true.
 	//
@@ -1056,6 +1069,10 @@ func main() {
 	// accident — operators flip it on, capture profiles, flip it off.
 	if os.Getenv("HELIX_PPROF_ENABLED") == "true" {
 	pprofGroup := router.Group("/debug/pprof")
+	// Authz round 2: heap/goroutine/cmdline output exposes memory contents and
+	// process arguments; the flag turns the routes on, the admin gate decides who
+	// may read them.
+	pprofGroup.Use(jwtMiddleware.RequireAuth(), jwtMiddleware.RequireAdmin())
 	pprofGroup.GET("/", gin.WrapF(pprof.Index))
 	pprofGroup.GET("/cmdline", gin.WrapF(pprof.Cmdline))
 	pprofGroup.GET("/profile", gin.WrapF(pprof.Profile))
@@ -1231,6 +1248,9 @@ func main() {
 
 	// Streaming endpoint — proxies file data from any storage backend (SMB, FTP, NFS, WebDAV, local)
 	api.GET("/stream/:id", streamHandler.StreamFile)
+	// Short-lived stream ticket for header-less players (web <video>): minted with the normal Authorization header, accepted only
+	// by GET/HEAD /stream/:id (middleware.RequireAuth). Replaces the session JWT in the query string for web clients.
+	api.POST("/stream/:id/ticket", streamHandler.MintTicket)
 
 	// Storage-operator routes (P2, authz review r3): creating storage roots,
 	// listing their directories, queueing scans, SMB discovery/probe/ingest,
@@ -1340,11 +1360,11 @@ func main() {
 	// Subtitle endpoints (lazy — handler initialized on first request)
 	subGroup := api.Group("/subtitles")
 	{
-			subGroup.GET("/search", func(c *gin.Context) { getSubtitleHandler().SearchSubtitles(c) })
-			subGroup.POST("/download", func(c *gin.Context) { getSubtitleHandler().DownloadSubtitle(c) })
+			subGroup.GET("/search", adminGate, func(c *gin.Context) { getSubtitleHandler().SearchSubtitles(c) })
+			subGroup.POST("/download", adminGate, func(c *gin.Context) { getSubtitleHandler().DownloadSubtitle(c) })
 			subGroup.GET("/media/:media_id", func(c *gin.Context) { getSubtitleHandler().GetSubtitles(c) })
 			subGroup.GET("/:subtitle_id/verify-sync/:media_id", func(c *gin.Context) { getSubtitleHandler().VerifySubtitleSync(c) })
-			subGroup.POST("/translate", func(c *gin.Context) { getSubtitleHandler().TranslateSubtitle(c) })
+			subGroup.POST("/translate", adminGate, func(c *gin.Context) { getSubtitleHandler().TranslateSubtitle(c) })
 			subGroup.POST("/upload", func(c *gin.Context) { getSubtitleHandler().UploadSubtitle(c) })
 			subGroup.GET("/languages", func(c *gin.Context) { getSubtitleHandler().GetSupportedLanguages(c) })
 			subGroup.GET("/providers", func(c *gin.Context) { getSubtitleHandler().GetSupportedProviders(c) })
@@ -1531,7 +1551,7 @@ func main() {
 	// Asset management endpoints (authenticated)
 	assetsGroup := api.Group("/assets")
 	{
-			assetsGroup.POST("/request", assetHandler.RequestAsset)
+			assetsGroup.POST("/request", adminGate, assetHandler.RequestAsset)
 			assetsGroup.GET("/by-entity/:type/:id", assetHandler.GetByEntity)
 	}
 
@@ -1563,10 +1583,10 @@ func main() {
 			entityGroup.GET("/:id/pdf-pages", pdfPagesHandler.ListPdfPages)
 			entityGroup.GET("/:id/pdf-pages/:n", pdfPagesHandler.GetPdfPage)
 			entityGroup.GET("/:id/install-info", mediaEntityHandler.GetInstallInfo)
-			entityGroup.POST("/:id/metadata/refresh", mediaEntityHandler.RefreshEntityMetadata)
+			entityGroup.POST("/:id/metadata/refresh", adminGate, mediaEntityHandler.RefreshEntityMetadata)
 			entityGroup.PUT("/:id/user-metadata", mediaEntityHandler.UpdateUserMetadata)
 			entityGroup.POST("/:id/user-metadata", mediaEntityHandler.UpdateUserMetadata)
-			entityGroup.POST("/enrich", mediaEntityHandler.EnrichAllEntities)
+			entityGroup.POST("/enrich", adminGate, mediaEntityHandler.EnrichAllEntities)
 
 			// Playback session tracking: per-entity progress
 			// summary (used by the card badge) and full history
