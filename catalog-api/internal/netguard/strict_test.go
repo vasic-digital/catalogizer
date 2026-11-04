@@ -4,7 +4,11 @@ import (
 	"context"
 	"errors"
 	"net"
+	"net/http"
+	"net/http/httptest"
+	"sync/atomic"
 	"testing"
+	"time"
 )
 
 func TestStrictDialIgnoresAllowList(t *testing.T) {
@@ -69,5 +73,40 @@ func TestStrictBlocksIPv4MappedIPv6WithAllowListSet(t *testing.T) {
 		} else if !errors.Is(err, ErrBlocked) {
 			t.Errorf("strict dial to %s: want ErrBlocked, got %v", addr, err)
 		}
+	}
+}
+
+// Review round 1 (item 3): the redirect cap of Client/StrictClient.
+func TestClientRedirectCap(t *testing.T) {
+	var hits int32
+	var srv *httptest.Server
+	srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&hits, 1)
+		http.Redirect(w, r, srv.URL+r.URL.Path+"x", http.StatusFound) // endless chain
+	}))
+	defer srv.Close()
+	t.Setenv(AllowCIDRsEnv, "127.0.0.0/8")
+	c := Client(5*time.Second, 2, HTTPOrHTTPS)
+	resp, err := c.Get(srv.URL + "/a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	// 1 initial request + at most 2 followed redirects; the 3rd redirect response is returned as is
+	if got := atomic.LoadInt32(&hits); got != 3 {
+		t.Fatalf("maxRedirects=2 must stop after 3 requests, got %d", got)
+	}
+	if resp.StatusCode != http.StatusFound {
+		t.Fatalf("last response should be the unfollowed redirect, got %d", resp.StatusCode)
+	}
+	// nil redirectOK: no redirect is followed at all
+	atomic.StoreInt32(&hits, 0)
+	resp, err = Client(5*time.Second, 5, nil).Get(srv.URL + "/a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if got := atomic.LoadInt32(&hits); got != 1 {
+		t.Fatalf("nil redirectOK must follow nothing, got %d requests", got)
 	}
 }

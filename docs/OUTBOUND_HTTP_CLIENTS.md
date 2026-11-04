@@ -14,9 +14,11 @@ plus `http.Get(` / `http.Post(` (0 hits in non-test code), `&http.Transport{` an
 `netguard.(Client|StrictClient|Transport)(`.
 Control needles on the same path: positive `netguard.StrictClient(` returned 6 hits
 (>= the 3 production callers known before this change plus the 3 added here), negative
-fabricated token `ZZ_NO_SUCH_TOKEN_ZZ` returned 0. Result: 44 non-test files contain a
-constructed client; 23 of them are under `challenges/` (QA probes against our own server,
-not product code, listed once below).
+fabricated token `ZZ_NO_SUCH_TOKEN_ZZ` returned 0. Result: 44 non-test files construct a client directly:
+23 under `challenges/` (one row below), 21 elsewhere. Every one of the 21 appears in the table
+(`netguard.go` is the implementation itself, `webdav_client.go` is two files, one per package);
+the table also lists the three files that now obtain their client from `netguard.StrictClient`
+and the raw `net.Dial*` sites, which are not HTTP but are outbound connections.
 
 ## Classification
 
@@ -49,13 +51,33 @@ not product code, listed once below).
 | `services/sync_service.go` | `netguard.Transport()` | OPERATOR (LAN) | NAS/sync endpoints; honours the allow-list by design |
 | `filesystem/webdav_client.go`, `services/webdav_client.go` | WebDAV | OPERATOR | operator-configured server; env proxy honoured |
 | `services/error_reporting_service.go` | `httpClient` | OPERATOR | operator-configured webhooks |
+| `internal/netguard/netguard.go` | `Client`, `StrictClient`, `Transport` | implementation | dial-time check, pinned IP |
 | `internal/httpclient/pool.go` | pooled client | SELF | used by `challenges/` against our own server |
 | `challenges/*.go` (23 files) | probes | SELF | QA harness, base URL is our server |
+
+### Raw dial sites (non-HTTP outbound connections), all OPERATOR class
+
+The target is chosen by the operator (configured storage/NAS/FTP/SMB host, discovery of the
+operator's own network). None takes an address from third-party data. They do not honour
+`CATALOGIZER_OUTBOUND_ALLOW_CIDRS` because they are meant to reach the LAN.
+
+| File | What it dials |
+|---|---|
+| `services/configuration_wizard_service.go:1011` | TCP reachability probe of an operator-entered host |
+| `internal/services/smb_discovery.go` (lines 61, 143, 193), `smb_probe.go:79`, `smb.go:70` | SMB hosts (445) the operator configures or scans |
+| `filesystem/ftp_client.go:500` | operator-configured FTP server |
+| `filesystem/smb_client.go:45`, `smb/client.go:53`, `internal/smb/resilience.go` (459, 571) | operator-configured SMB server |
+| `internal/infra/provisioner.go:259` | local infrastructure readiness probe |
+| `main.go:150` | UDP "connect" to 8.8.8.8 to learn the local address; sends no data |
+| `challenges/*`, `tests/infra_helper.go` | QA harness |
 
 ## Residual (tracked in `docs/FOLLOW_UPS_NEXT_PHASE.md`)
 
 * FIXED-VENDOR clients still use a plain `http.Client` (redirects followed). The host is
   fixed, so an attacker cannot choose it; a vendor-side redirect to an internal host would
   be followed. Move to `netguard.Client` when a vendor base becomes operator-writable.
-* PROXY clients cannot pin the destination (the proxy resolves it); only the redirect hop
-  string check applies.
+* PROXY clients cannot pin the destination. The only address check is `GuardProviderURL`,
+  which resolves the host in THIS process before the request; the proxy then does its own,
+  separate DNS lookup, so a name that answers differently to the proxy (rebinding) is not
+  caught. Redirect hops are re-checked the same way. Treat the operator proxy as trusted to
+  enforce its own egress policy.
