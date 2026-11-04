@@ -3,10 +3,10 @@
   "test_id": "catalog-web-live/chromium-390/session",
   "class": "LIVE",
   "verdict": "PASS",
-  "timestamp": "2026-11-04T04:39:37.410Z",
+  "timestamp": "2026-11-04T11:51:18.034Z",
   "command": "catalog-web/e2e/live/run_live.sh chromium-390",
   "artifact": {
-    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:deaedba878b61f1c2078c846938153c1c4ff13fceae42be95451dd0166d69f83;api-health={\"version\":\"8e8cb9b135db6febee0e68b3b9e9b52251768b69\",\"build_number\":\"8e8cb9b135db6febee0e68b3b9e9b52251768b69\",\"build_date\":\"stack3\"};web-image=sha256:57e7ff82766e905f7b991a4c091feb851ac60ce6a405c71348cc7a7523b4ced5",
+    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:942d38404e6fa10f5140f1737b77b7ea9660ef1b60153ea9fbeeffb907716069;api-health={\"version\":\"e0cb1b36fbcad3a98d021af3a72886baff33b426\",\"build_number\":\"e0cb1b36fbcad3a98d021af3a72886baff33b426\",\"build_date\":\"stack3\"};web-image=sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d",
     "source": "target"
   },
   "endpoint": {
@@ -17,23 +17,23 @@
   },
   "answering": {
     "kind": "container",
-    "image": "localhost/catqa3-web:main-8e8cb9b1",
-    "image_digest": "sha256:57e7ff82766e905f7b991a4c091feb851ac60ce6a405c71348cc7a7523b4ced5",
-    "container_id": "0ade3c989f962bbccd1d7b9b36560cbc20a2be5b90863df364a123c334dd115f"
+    "image": "localhost/catqa3-web:main-e0cb1b36",
+    "image_digest": "sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d",
+    "container_id": "9af6f3a98b933c7c85ae63ba823d2437331e8cc2ee5e21288d8f392a43680721"
   },
   "expected": {
-    "image_digest": "sha256:57e7ff82766e905f7b991a4c091feb851ac60ce6a405c71348cc7a7523b4ced5"
+    "image_digest": "sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d"
   },
   "requests": {
-    "total": 86,
+    "total": 85,
     "methods": {
-      "GET": 81,
+      "GET": 80,
       "POST": 5
     }
   },
   "responses": {
     "status_histogram": {
-      "200": 86
+      "200": 85
     }
   },
   "runs": {
