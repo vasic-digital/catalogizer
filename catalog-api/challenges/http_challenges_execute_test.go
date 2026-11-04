@@ -93,6 +93,11 @@ func mockAPIServer(t *testing.T) *httptest.Server {
 
 	// New endpoints added to match updated challenge definitions
 	mux.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
+		// mirrors the real API: /metrics is admin-only (admin JWT or scrape token)
+		if r.Header.Get("Authorization") == "" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, "go_goroutines 10\n")
 	})

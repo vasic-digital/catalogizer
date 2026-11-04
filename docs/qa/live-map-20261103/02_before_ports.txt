@@ -1,0 +1,49 @@
+2026-11-03T22:50:55+01:00
+$ ss -ltnp (relevant)
+LISTEN 0      4096                           127.0.0.1:35432      0.0.0.0:*    users:(("rootlessport",pid=1041429,fd=9))                      
+LISTEN 0      4096                           127.0.0.1:35433      0.0.0.0:*    users:(("rootlessport",pid=1026313,fd=9))                      
+LISTEN 0      4096                           127.0.0.1:36380      0.0.0.0:*    users:(("rootlessport",pid=1026488,fd=10))                     
+LISTEN 0      4096                           127.0.0.1:36379      0.0.0.0:*    users:(("rootlessport",pid=1041817,fd=10))                     
+LISTEN 0      4096                                   *:38081            *:*    users:(("rootlessport",pid=1028439,fd=10))                     
+LISTEN 0      4096                                   *:38080            *:*    users:(("rootlessport",pid=1042527,fd=9))                      
+LISTEN 0      4096                                   *:33001            *:*    users:(("rootlessport",pid=1042137,fd=9))                      
+LISTEN 0      4096                                   *:33000            *:*    users:(("rootlessport",pid=1043036,fd=10))                     
+LISTEN 0      4096                                   *:33011            *:*    users:(("rootlessport",pid=980234,fd=10))                      
+LISTEN 0      4096                                   *:33010            *:*    users:(("rootlessport",pid=1028584,fd=10))                     
+
+http://127.0.0.1:38080/ -> 000 rc=56
+http://127.0.0.1:38080/health -> 000 rc=56
+http://127.0.0.1:38080/api/v1/health -> 000 rc=56
+https://127.0.0.1:38080/ -> 000 rc=35
+https://127.0.0.1:38080/health -> 000 rc=35
+https://127.0.0.1:38080/api/v1/health -> 000 rc=35
+http://127.0.0.1:38081/ -> 000 rc=56
+http://127.0.0.1:38081/health -> 000 rc=56
+http://127.0.0.1:38081/api/v1/health -> 000 rc=56
+https://127.0.0.1:38081/ -> 000 rc=35
+https://127.0.0.1:38081/health -> 000 rc=35
+https://127.0.0.1:38081/api/v1/health -> 000 rc=35
+http://127.0.0.1:33000/ -> 000 rc=56
+http://127.0.0.1:33000/health -> 000 rc=56
+http://127.0.0.1:33000/api/v1/health -> 000 rc=56
+https://127.0.0.1:33000/ -> 000 rc=35
+https://127.0.0.1:33000/health -> 000 rc=35
+https://127.0.0.1:33000/api/v1/health -> 000 rc=35
+http://127.0.0.1:33001/ -> 000 rc=56
+http://127.0.0.1:33001/health -> 000 rc=56
+http://127.0.0.1:33001/api/v1/health -> 000 rc=56
+https://127.0.0.1:33001/ -> 000 rc=35
+https://127.0.0.1:33001/health -> 000 rc=35
+https://127.0.0.1:33001/api/v1/health -> 000 rc=35
+http://127.0.0.1:33010/ -> 000 rc=56
+http://127.0.0.1:33010/health -> 000 rc=56
+http://127.0.0.1:33010/api/v1/health -> 000 rc=56
+https://127.0.0.1:33010/ -> 000 rc=35
+https://127.0.0.1:33010/health -> 000 rc=35
+https://127.0.0.1:33010/api/v1/health -> 000 rc=35
+http://127.0.0.1:33011/ -> 000 rc=56
+http://127.0.0.1:33011/health -> 000 rc=56
+http://127.0.0.1:33011/api/v1/health -> 000 rc=56
+https://127.0.0.1:33011/ -> 000 rc=35
+https://127.0.0.1:33011/health -> 000 rc=35
+https://127.0.0.1:33011/api/v1/health -> 000 rc=35

@@ -1,0 +1,22 @@
+2026-11-03T23:06:16+01:00
+catqa-postgres|Up 5 minutes (healthy)|docker.io/library/postgres:15-alpine|127.0.0.1:35432->5432/tcp
+catqa-redis|Up 5 minutes (healthy)|docker.io/library/redis:7-alpine|127.0.0.1:36379->6379/tcp
+catqa-api|Up 3 minutes|localhost/catqa-api:main|0.0.0.0:38080->8080/tcp
+catqa-website|Up 3 minutes|docker.io/library/nginx:alpine|0.0.0.0:33001->80/tcp
+catqa-web|Up 2 minutes|localhost/catqa-web:main|0.0.0.0:33000->3000/tcp, 80/tcp
+catqa2-postgres|Up 2 minutes (healthy)|docker.io/library/postgres:15-alpine|127.0.0.1:35433->5432/tcp
+catqa2-redis|Up 2 minutes (healthy)|docker.io/library/redis:7-alpine|127.0.0.1:36380->6379/tcp
+catqa2-api|Up 2 minutes|localhost/catqa2-api:main|0.0.0.0:38081->8080/tcp
+catqa2-website|Up 2 minutes|localhost/catqa2-website:main|0.0.0.0:33011->80/tcp
+catqa2-web|Up 2 minutes|localhost/catqa2-web:main|0.0.0.0:33010->3000/tcp, 80/tcp
+
+catqa-api localhost/catqa-api:main id=367b7c41167ac6b2e250e2bae867e29be526287fc73de4a306d2c2b3ae37e44f digest=sha256:c2282d1d2b357cd512446f81d56592185734cc2ea7495cea6e57b90001a1b157 netIP=10.89.13.25
+catqa-web localhost/catqa-web:main id=6fae3590d31940f6dc45ffe27706d71f2dd0dfc2ce578a5e40881b0ddaea912b digest=sha256:02ef41ced0f68ba3f3c611d7d74235874023e75436abc26c417bbb3ef36763ba netIP=10.89.13.26
+catqa-website docker.io/library/nginx:alpine id=3d6cab9c2941df2441024a2f02a65ebe1b8916c3cbe7b9527f62627accea8004 digest=sha256:a3554c0d0b48177b1413c26e01f695334428020d9df01243fbae3e11cfd17417 netIP=10.89.13.24
+catqa-postgres docker.io/library/postgres:15-alpine id=319d040b5d68e3e5b98a238f0b5d375b4b4d9c5b3a6a9afb0308a8bcf0de72a5 digest=sha256:f7d23353e1b15400d22ebe31189f4d314b87a4c129cc400c8c2d8d4ca127bf81 netIP=10.89.13.20
+catqa-redis docker.io/library/redis:7-alpine id=f84b0c4678011602b9b98c227a4dcd5468bf8b088b02fdd4165cb7758bad8058 digest=sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499 netIP=10.89.13.21
+catqa2-api localhost/catqa2-api:main id=2abd03100cfc873356c125d52c6b0518f8664660be4316fbd19dfca5badd1ba6 digest=sha256:4dfc736b1a24c95191c550440a789bb24edc7208b25e0d44ba216f09ce5c5084 netIP=10.89.14.15
+catqa2-web localhost/catqa2-web:main id=10d80231682136b741b6c9423580b75bae7e124d734fecca3c17582c3fed78cb digest=sha256:55a83f8e96fe40f3133c0086bb9e52cad0039c3c681b2ea6d8ad9f57920b0f33 netIP=10.89.14.17
+catqa2-website localhost/catqa2-website:main id=3d6cab9c2941df2441024a2f02a65ebe1b8916c3cbe7b9527f62627accea8004 digest=sha256:a3554c0d0b48177b1413c26e01f695334428020d9df01243fbae3e11cfd17417 netIP=10.89.14.16
+catqa2-postgres docker.io/library/postgres:15-alpine id=319d040b5d68e3e5b98a238f0b5d375b4b4d9c5b3a6a9afb0308a8bcf0de72a5 digest=sha256:f7d23353e1b15400d22ebe31189f4d314b87a4c129cc400c8c2d8d4ca127bf81 netIP=10.89.14.13
+catqa2-redis docker.io/library/redis:7-alpine id=f84b0c4678011602b9b98c227a4dcd5468bf8b088b02fdd4165cb7758bad8058 digest=sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499 netIP=10.89.14.14

@@ -1,0 +1,76 @@
+## adb
+List of devices attached
+
+## prebuilt artifacts
+./submodules/unstructured/docker/packages/pandoc-3.1.8-r0.apk
+./.audit/scratch/wf22fix/out/gomod/github.com/gabriel-vasile/mimetype@v1.4.12/testdata/msi.msi
+./submodules/appium/packages/appium/sample-code/apps/ApiDemos-debug.apk
+./submodules/appium/packages/base-driver/test/e2e/fixtures/FakeAndroidApp.apk
+./submodules/helix_qa/tools/opensource/appium/packages/appium/sample-code/apps/ApiDemos-debug.apk
+./submodules/helix_qa/tools/opensource/appium/packages/base-driver/test/e2e/fixtures/FakeAndroidApp.apk
+./submodules/helix_qa/tools/opensource/unstructured/docker/packages/pandoc-3.1.8-r0.apk
+./.audit/out/conductor-ca/gomod/github.com/gabriel-vasile/mimetype@v1.4.12/testdata/msi.msi
+ls: cannot access 'catalogizer-desktop/src-tauri/target': No such file or directory
+ls: cannot access 'installer-wizard/src-tauri/target': No such file or directory
+ls: cannot access 'catalogizer-android/app/build/outputs': No such file or directory
+## docs/qa
+docs/qa/CATALOGIZER_QA.md
+docs/qa/QA_TESTING_GUIDE.md
+docs/qa/README.md
+docs/qa/androidtv-players-20260629
+docs/qa/containerized-build-20260630
+docs/qa/cover-images-rootcause-20260629
+docs/qa/crashlytics-wiring-20260629
+docs/qa/device_qa_androidtv_20260626.md
+docs/qa/docs_sync_c4.md
+docs/qa/findings_20260626
+docs/qa/helixqa-androidtv-20260629
+docs/qa/provision-when-down-20260630
+docs/qa/responsive_d1_d2
+docs/qa/webdav-yandex-live-20261103
+## playwright/e2e live suites
+README.md
+accessibility.spec.ts
+auth.spec.ts
+browse.spec.ts
+collections.spec.ts
+favorites.spec.ts
+fixtures
+global-setup.ts
+real-backend-pages.spec.ts
+responsive.spec.ts
+search.spec.ts
+tests
+create_test_user.js
+frontend_test.js
+infra
+k6
+responsive-audit
+test_advanced_subtitle_features.js
+test_all_subtitle_endpoints.js
+test_auth.go
+test_auth_debug.js
+test_auth_simple.js
+test_browser_console.js
+test_build_system.sh
+test_complete_subtitle.js
+test_constitution_inheritance.sh
+test_login.js
+test_recommendations.sh
+test_register.js
+test_remaining_subtitle_endpoints.js
+test_simple.js
+test_subtitle_api.js
+data
+helixqa-banks
+results
+scripts
+## monitoring/grafana
+dashboards
+provisioning
+## helixqa
+challenges
+helix_memory
+helix_qa
+## minio refs
+8

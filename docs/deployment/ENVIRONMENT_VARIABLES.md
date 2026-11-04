@@ -37,6 +37,7 @@ These variables are read by the Go backend via `os.Getenv()` calls in the source
 | `JWT_SECRET` | JWT signing secret (minimum 32 characters) | (none) | **Yes** | `main.go`, `config/config.go` |
 | `ADMIN_USERNAME` | Default admin account username | (none) | **Yes** (if auth enabled) | `main.go`, `config/config.go` |
 | `ADMIN_PASSWORD` | Default admin account password | (none) | **Yes** (if auth enabled) | `main.go`, `config/config.go` |
+| `METRICS_SCRAPE_TOKEN` | Dedicated bearer credential accepted ONLY on `GET /metrics` (min 32 chars, constant-time compared, never logged, grants no other route). Unset or shorter = `/metrics` needs an admin JWT | (none) | No | `main_metricsauth.go` |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated list of allowed CORS origins | `*` | No | `middleware/request.go`, `internal/middleware/middleware.go` |
 | `CORS_ENABLED` | Enable/disable CORS | `false` | No | `docker-compose.yml` |
 | `CORS_ORIGINS` | Allowed CORS origins (Docker Compose) | (empty) | No | `docker-compose.yml` |

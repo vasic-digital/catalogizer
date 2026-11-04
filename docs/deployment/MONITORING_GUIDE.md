@@ -94,6 +94,9 @@ global:
 scrape_configs:
   - job_name: 'catalog-api'
     metrics_path: /metrics
+    authorization:
+      type: Bearer
+      credentials_file: /etc/prometheus/secrets/metrics_scrape_token
     static_configs:
       - targets: ['api:8080']
         labels:
@@ -104,6 +107,19 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 ```
+
+### /metrics Authentication
+
+`/metrics` (and `/debug/pprof/*`) are admin-only. Scrapers use a dedicated credential:
+
+```bash
+openssl rand -hex 32 > monitoring/secrets/metrics_scrape_token   # gitignored
+export METRICS_SCRAPE_TOKEN=$(cat monitoring/secrets/metrics_scrape_token)
+```
+
+The API accepts it as `Authorization: Bearer <token>` on `GET /metrics` only (min 32 chars;
+constant-time compare; any other route answers 401 with it). Without the variable, only an
+admin JWT can read `/metrics`. The OpenTelemetry collector reads `${env:METRICS_SCRAPE_TOKEN}`.
 
 ### Adding Additional Scrape Targets
 

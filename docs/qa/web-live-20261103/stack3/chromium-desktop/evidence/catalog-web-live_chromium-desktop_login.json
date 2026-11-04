@@ -1,0 +1,62 @@
+{
+  "schema": "catalogizer.live-evidence/1",
+  "test_id": "catalog-web-live/chromium-desktop/login",
+  "class": "LIVE",
+  "verdict": "PASS",
+  "timestamp": "2026-11-04T11:34:39.972Z",
+  "command": "catalog-web/e2e/live/run_live.sh chromium-desktop",
+  "artifact": {
+    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:942d38404e6fa10f5140f1737b77b7ea9660ef1b60153ea9fbeeffb907716069;api-health={\"version\":\"e0cb1b36fbcad3a98d021af3a72886baff33b426\",\"build_number\":\"e0cb1b36fbcad3a98d021af3a72886baff33b426\",\"build_date\":\"stack3\"};web-image=sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d",
+    "source": "target"
+  },
+  "endpoint": {
+    "host": "127.0.0.1",
+    "port": 33020,
+    "resolved_ip": "127.0.0.1",
+    "url": "http://127.0.0.1:33020"
+  },
+  "answering": {
+    "kind": "container",
+    "image": "localhost/catqa3-web:main-e0cb1b36",
+    "image_digest": "sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d",
+    "container_id": "9af6f3a98b933c7c85ae63ba823d2437331e8cc2ee5e21288d8f392a43680721"
+  },
+  "expected": {
+    "image_digest": "sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d"
+  },
+  "requests": {
+    "total": 14,
+    "methods": {
+      "GET": 11,
+      "POST": 3
+    }
+  },
+  "responses": {
+    "status_histogram": {
+      "200": 12,
+      "401": 2
+    }
+  },
+  "runs": {
+    "n": 3,
+    "identical": true,
+    "signature": "sha256:786569b61bc19536f45fb12dd76354759a1932b48cccfb04a7000aaa9ef250e5"
+  },
+  "tests": {
+    "run1": [
+      "unknown user: rejected with the same 401 and no user enumeration in the message=passed",
+      "valid admin credentials: real 200, dashboard, token stored and accepted by /auth/me=passed",
+      "wrong password: real 401, stays on /login, visible error, no session stored=passed"
+    ],
+    "run2": [
+      "unknown user: rejected with the same 401 and no user enumeration in the message=passed",
+      "valid admin credentials: real 200, dashboard, token stored and accepted by /auth/me=passed",
+      "wrong password: real 401, stays on /login, visible error, no session stored=passed"
+    ],
+    "run3": [
+      "unknown user: rejected with the same 401 and no user enumeration in the message=passed",
+      "valid admin credentials: real 200, dashboard, token stored and accepted by /auth/me=passed",
+      "wrong password: real 401, stays on /login, visible error, no session stored=passed"
+    ]
+  }
+}

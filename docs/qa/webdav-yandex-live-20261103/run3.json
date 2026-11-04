@@ -1,0 +1,206 @@
+{
+  "bytes_uploaded": 7369349,
+  "credentials_in_evidence": false,
+  "date_utc": "2026-11-03T21:44:22Z",
+  "guard_violations": 2,
+  "idle_cancel_errors": 0,
+  "latency_ms_max": 128648,
+  "latency_ms_p50": 237,
+  "latency_ms_p95": 2007,
+  "lost_acked_writes": 0,
+  "notes": {
+    "cleanup": "run dir removed, PROPFIND 404",
+    "guard_violations_after_suite_expected_2_plus_client_confine": 2,
+    "sandbox_preexisting": true
+  },
+  "requests_by_method": {
+    "COPY": 3,
+    "DELETE": 7,
+    "GET": 27,
+    "HEAD": 216,
+    "MKCOL": 7,
+    "MOVE": 1,
+    "PROPFIND": 13,
+    "PUT": 224
+  },
+  "requests_by_status": {
+    "0": 3,
+    "200": 232,
+    "201": 228,
+    "202": 1,
+    "204": 5,
+    "206": 1,
+    "207": 9,
+    "401": 1,
+    "404": 15,
+    "405": 1,
+    "409": 2
+  },
+  "requests_total": 498,
+  "run_dir": "catalogizer-live-1793741876",
+  "sandbox": "/Testing",
+  "service": "webdav.yandex.ru",
+  "signature": {
+    "01_connect_auth_success": "PASS",
+    "02_auth_failure_wrong_password": "PASS",
+    "03_mkdir": "PASS",
+    "04_upload_known_sha256": "PASS",
+    "05_list_sizes_mtimes": "PASS",
+    "06_download_sha256_and_stat": "PASS",
+    "07_range_partial_read": "PASS",
+    "08_copy_rename_move": "PASS",
+    "09_overwrite": "PASS",
+    "10_nonexistent_errors": "PASS",
+    "11_unicode_and_special_names": "PASS",
+    "12_large_listing_200": "PASS",
+    "13_concurrent_uploads_4": "PASS",
+    "14_unsized_reader_upload": "PASS",
+    "15_timeout_and_cancel": "PASS",
+    "16_delete": "PASS",
+    "17_guard_refuses_outside_sandbox": "PASS"
+  },
+  "steps": [
+    {
+      "name": "01_connect_auth_success",
+      "result": "PASS",
+      "ms": 7463,
+      "notes": {
+        "protocol": "webdav"
+      }
+    },
+    {
+      "name": "02_auth_failure_wrong_password",
+      "result": "PASS",
+      "ms": 192,
+      "notes": {
+        "status": 401
+      }
+    },
+    {
+      "name": "03_mkdir",
+      "result": "PASS",
+      "ms": 773,
+      "notes": {
+        "mkdir_existing_error": "WebDAV server returned status 405 for directory https://\u003credacted\u003e/Testing/catalogizer-live-1793741876/sub",
+        "mkdir_missing_parent_error": "WebDAV server returned status 409 for directory https://\u003credacted\u003e/Testing/catalogizer-live-1793741876/no/such/parent"
+      }
+    },
+    {
+      "name": "04_upload_known_sha256",
+      "result": "PASS",
+      "ms": 194997,
+      "notes": {
+        "sha256_one_mb.bin": "c8677035733d6157b4f3145519867a5b7aef27d8a74d918e24218d7dcf462ea5",
+        "sha256_small.bin": "60a70ec802793c5aabaf9b2fcfb7d064828b07686c5b92a38bd1b263d4e3dd2a",
+        "sha256_two_mb.bin": "81169c9ed4e52dc9f1405a3c7f5a17467b3e44f5caaf26fdbac047011c63d44a",
+        "upload_ms_one_mb.bin": 65512,
+        "upload_ms_small.bin": 815,
+        "upload_ms_two_mb.bin": 128668
+      }
+    },
+    {
+      "name": "05_list_sizes_mtimes",
+      "result": "PASS",
+      "ms": 240,
+      "notes": {
+        "mtime_skew_s_one_mb.bin": 129,
+        "mtime_skew_s_small.bin": 195,
+        "mtime_skew_s_two_mb.bin": 0
+      }
+    },
+    {
+      "name": "06_download_sha256_and_stat",
+      "result": "PASS",
+      "ms": 1894
+    },
+    {
+      "name": "07_range_partial_read",
+      "result": "PASS",
+      "ms": 120,
+      "notes": {
+        "accept_ranges": "bytes",
+        "range_status": 206,
+        "range_supported": true
+      }
+    },
+    {
+      "name": "08_copy_rename_move",
+      "result": "PASS",
+      "ms": 31291,
+      "notes": {
+        "copy_missing_error": "WebDAV server returned status 404 for copy operation",
+        "copy_over_existing": "replaced",
+        "move_status": 201
+      }
+    },
+    {
+      "name": "09_overwrite",
+      "result": "PASS",
+      "ms": 2113
+    },
+    {
+      "name": "10_nonexistent_errors",
+      "result": "PASS",
+      "ms": 1056,
+      "notes": {
+        "write_missing_parent_error": "WebDAV server returned status 409 for file https://\u003credacted\u003e/Testing/catalogizer-live-1793741876/no-parent/x.bin"
+      }
+    },
+    {
+      "name": "11_unicode_and_special_names",
+      "result": "PASS",
+      "ms": 7470
+    },
+    {
+      "name": "12_large_listing_200",
+      "result": "PASS",
+      "ms": 51618,
+      "notes": {
+        "entries": 200,
+        "list_ms": 607
+      }
+    },
+    {
+      "name": "13_concurrent_uploads_4",
+      "result": "PASS",
+      "ms": 35419,
+      "notes": {
+        "files": 8,
+        "max_parallel": 4
+      }
+    },
+    {
+      "name": "14_unsized_reader_upload",
+      "result": "PASS",
+      "ms": 7056,
+      "notes": {
+        "unsized_upload": "ok (chunked accepted)"
+      }
+    },
+    {
+      "name": "15_timeout_and_cancel",
+      "result": "PASS",
+      "ms": 2198,
+      "notes": {
+        "deadline_return_ms": 30,
+        "interrupted_upload_left_file": false,
+        "mid_body_cancel_error": "context canceled"
+      }
+    },
+    {
+      "name": "16_delete",
+      "result": "PASS",
+      "ms": 31106
+    },
+    {
+      "name": "17_guard_refuses_outside_sandbox",
+      "result": "PASS",
+      "ms": 572
+    }
+  ],
+  "total_ms": 386172,
+  "transient_retries": 1,
+  "transient_retry_classes": {
+    "connection reset": 1
+  }
+}

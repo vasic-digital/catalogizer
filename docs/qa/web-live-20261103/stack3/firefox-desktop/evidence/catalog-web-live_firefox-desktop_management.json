@@ -1,0 +1,71 @@
+{
+  "schema": "catalogizer.live-evidence/1",
+  "test_id": "catalog-web-live/firefox-desktop/management",
+  "class": "LIVE",
+  "verdict": "PASS",
+  "timestamp": "2026-11-04T12:06:36.666Z",
+  "command": "catalog-web/e2e/live/run_live.sh firefox-desktop",
+  "artifact": {
+    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:942d38404e6fa10f5140f1737b77b7ea9660ef1b60153ea9fbeeffb907716069;api-health={\"version\":\"e0cb1b36fbcad3a98d021af3a72886baff33b426\",\"build_number\":\"e0cb1b36fbcad3a98d021af3a72886baff33b426\",\"build_date\":\"stack3\"};web-image=sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d",
+    "source": "target"
+  },
+  "endpoint": {
+    "host": "127.0.0.1",
+    "port": 33020,
+    "resolved_ip": "127.0.0.1",
+    "url": "http://127.0.0.1:33020"
+  },
+  "answering": {
+    "kind": "container",
+    "image": "localhost/catqa3-web:main-e0cb1b36",
+    "image_digest": "sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d",
+    "container_id": "9af6f3a98b933c7c85ae63ba823d2437331e8cc2ee5e21288d8f392a43680721"
+  },
+  "expected": {
+    "image_digest": "sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d"
+  },
+  "requests": {
+    "total": 111,
+    "methods": {
+      "GET": 105,
+      "POST": 5,
+      "PUT": 1
+    }
+  },
+  "responses": {
+    "status_histogram": {
+      "200": 111
+    }
+  },
+  "runs": {
+    "n": 3,
+    "identical": true,
+    "signature": "sha256:92370860da6ed60276ea610b0d8f3081537e03d1f1c16d3f0ca4ac0dbd703950"
+  },
+  "tests": {
+    "run1": [
+      "another user cannot read or change my collection=passed",
+      "conversion page renders, the real format table matches the page, and a real mp3 to wav job runs to completion on the corpus=passed",
+      "favorite from the Media page card: the real API stores it for the clicked item, and the Favorites page lists that item=passed",
+      "manual collection CRUD through the real API, visible on the Collections page, gone after delete=passed",
+      "pending registration appears on the Admin Users tab; Approve in the UI activates the account; lock/unlock/role change take effect on login=passed",
+      "smart collection: the rule is evaluated by the server; its size equals the same query through the media search; invalid rules are rejected=passed"
+    ],
+    "run2": [
+      "another user cannot read or change my collection=passed",
+      "conversion page renders, the real format table matches the page, and a real mp3 to wav job runs to completion on the corpus=passed",
+      "favorite from the Media page card: the real API stores it for the clicked item, and the Favorites page lists that item=passed",
+      "manual collection CRUD through the real API, visible on the Collections page, gone after delete=passed",
+      "pending registration appears on the Admin Users tab; Approve in the UI activates the account; lock/unlock/role change take effect on login=passed",
+      "smart collection: the rule is evaluated by the server; its size equals the same query through the media search; invalid rules are rejected=passed"
+    ],
+    "run3": [
+      "another user cannot read or change my collection=passed",
+      "conversion page renders, the real format table matches the page, and a real mp3 to wav job runs to completion on the corpus=passed",
+      "favorite from the Media page card: the real API stores it for the clicked item, and the Favorites page lists that item=passed",
+      "manual collection CRUD through the real API, visible on the Collections page, gone after delete=passed",
+      "pending registration appears on the Admin Users tab; Approve in the UI activates the account; lock/unlock/role change take effect on login=passed",
+      "smart collection: the rule is evaluated by the server; its size equals the same query through the media search; invalid rules are rejected=passed"
+    ]
+  }
+}
