@@ -38,3 +38,42 @@ describe('api client CSRF echo', () => {
     expect(seen[0].csrf).toBeUndefined();
   });
 });
+
+describe('api client CSRF retry', () => {
+  it('retries a mutating request once with the token handed back by a csrf rejection', async () => {
+    vi.resetModules();
+    const { api } = await import('../api');
+    const seen: Seen[] = [];
+    api.defaults.adapter = async (config: InternalAxiosRequestConfig): Promise<AxiosResponse> => {
+      const get = (config.headers as unknown as { get(n: string): string | undefined }).get.bind(config.headers);
+      seen.push({ method: config.method, csrf: get('X-CSRF-Token') });
+      if (get('X-CSRF-Token') !== 'fresh') {
+        const err = Object.assign(new Error('csrf'), { config, isAxiosError: true, response: { status: 403, data: { error: 'csrf token mismatch' }, headers: { 'x-csrf-token': 'fresh' }, config, statusText: 'Forbidden' } });
+        throw err;
+      }
+      return { data: { ok: true }, status: 200, statusText: 'OK', headers: {}, config };
+    };
+    const res = await api.put('/admin/users/9', { status: 'active' });
+    expect(res.data).toEqual({ ok: true });
+    expect(seen.map((s) => s.csrf)).toEqual([undefined, 'fresh']);
+  });
+
+  it('does not retry forever and does not retry non-csrf 403s', async () => {
+    vi.resetModules();
+    const { api } = await import('../api');
+    let calls = 0;
+    api.defaults.adapter = async (config: InternalAxiosRequestConfig): Promise<AxiosResponse> => {
+      calls++;
+      throw Object.assign(new Error('forbidden'), { config, isAxiosError: true, response: { status: 403, data: { error: 'Insufficient permissions' }, headers: {}, config, statusText: 'Forbidden' } });
+    };
+    await expect(api.put('/users/9', {})).rejects.toBeTruthy();
+    expect(calls).toBe(1);
+    calls = 0;
+    api.defaults.adapter = async (config: InternalAxiosRequestConfig): Promise<AxiosResponse> => {
+      calls++;
+      throw Object.assign(new Error('csrf'), { config, isAxiosError: true, response: { status: 403, data: { error: 'csrf token mismatch' }, headers: { 'x-csrf-token': 'x' }, config, statusText: 'Forbidden' } });
+    };
+    await expect(api.put('/admin/users/9', {})).rejects.toBeTruthy();
+    expect(calls).toBe(2);
+  });
+});

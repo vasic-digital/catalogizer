@@ -49,6 +49,17 @@ api.interceptors.response.use(
   },
   (error) => {
     rememberCsrf(error.response?.headers)
+    // A csrf rejection hands back a fresh token (see catalog-api middleware/csrf.go); retry the request once with it.
+    const cfg = error.config as (typeof error.config & { _csrfRetried?: boolean }) | undefined
+    const body = error.response?.data as { error?: unknown } | undefined
+    if (
+      cfg && !cfg._csrfRetried && error.response?.status === 403 &&
+      typeof body?.error === 'string' && /csrf/i.test(body.error) &&
+      !SAFE_METHODS.has((cfg.method || 'get').toLowerCase())
+    ) {
+      cfg._csrfRetried = true
+      return api.request(cfg)
+    }
     // Article XI §11.5: when a 401 comes back FROM the login or
     // refresh endpoint itself, it means the credentials submitted
     // were wrong — NOT that an existing session expired. We must
