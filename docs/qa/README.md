@@ -2,7 +2,7 @@
 
 Documents in this directory.
 
-Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 42 entries.
+Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 168 entries.
 
 | File | Description |
 |---|---|
@@ -35,6 +35,10 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [crashlytics-wiring-20260629/firebase_tags.txt](crashlytics-wiring-20260629/firebase_tags.txt) | (plain-text artefact; not read, listed by name only) |
 | [crashlytics-wiring-20260629/launch_logcat.txt](crashlytics-wiring-20260629/launch_logcat.txt) | (plain-text artefact; not read, listed by name only) |
 | [device_qa_androidtv_20260626.md](device_qa_androidtv_20260626.md) | On-Device QA - Catalogizer Android TV (MIBOX4) - 2026-06-26: runtime-signature results for DEFECT-G, DEFECT-F and the OpenDesign palette on a clean debug APK |
+| [docs_sync_c4.md](docs_sync_c4.md) | Docs sync C4 - documentation vs reality audit - Before = the new script run over the pristine base docs with exemptions disabled. After-without-exemptions: total gaps: 104 in the captured run (103 plus the 1 new... |
+| [e2e-triage-20261103/README.md](e2e-triage-20261103/README.md) | E2E triage 2026-11-03 (constitution 11.4.289) - Mechanical REAL / MOCKED / MIXED classification of the browser-driven web tests. |
+| [e2e-triage-20261103/classification.json](e2e-triage-20261103/classification.json) | (JSON data artefact; not read, listed by name only) |
+| [e2e-triage-20261103/classification.md](e2e-triage-20261103/classification.md) | Web test classification (11.4.289) - Files: 43 \| REAL 3 MOCKED 32 MIXED 5 other 3 |
 | [findings_20260626/discovered_findings.html](findings_20260626/discovered_findings.html) | (HTML export; not read, listed by name only) |
 | [findings_20260626/discovered_findings.md](findings_20260626/discovered_findings.md) | Discovered Findings — 2026-06-26 (during §11.4.170 work) - The defect: a dark error color token (#EF4444) used as an error surface/background paired with a light foreground (#F8FAFC) → contrast 3.60:1, below WCAG AA 4.5:1 for... |
 | [findings_20260626/discovered_findings.pdf](findings_20260626/discovered_findings.pdf) | (PDF export; not read, listed by name only) |
@@ -47,6 +51,126 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [helixqa-androidtv-20260629/login.png](helixqa-androidtv-20260629/login.png) | (PNG image; not read, listed by name only) |
 | [helixqa-androidtv-20260629/qa-report.md](helixqa-androidtv-20260629/qa-report.md) | HelixQA Android TV Autonomous QA Report |
 | [helixqa-androidtv-20260629/run2_episodes_list_100items.png](helixqa-androidtv-20260629/run2_episodes_list_100items.png) | (PNG image; not read, listed by name only) |
+| [live-map-20261103/01_before_podman.txt](live-map-20261103/01_before_podman.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/02_before_ports.txt](live-map-20261103/02_before_ports.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/03_rootlessport_cmdlines.txt](live-map-20261103/03_rootlessport_cmdlines.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/04_why_exited.txt](live-map-20261103/04_why_exited.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/05_restart_stack1.txt](live-map-20261103/05_restart_stack1.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/06_real_state.txt](live-map-20261103/06_real_state.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/07_netns.txt](live-map-20261103/07_netns.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/08_rootless_netns.txt](live-map-20261103/08_rootless_netns.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/09_netns_identity.txt](live-map-20261103/09_netns_identity.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/10_teardown_stale.command.txt](live-map-20261103/10_teardown_stale.command.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/10_teardown_stale.txt](live-map-20261103/10_teardown_stale.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/11_restart_stack1.txt](live-map-20261103/11_restart_stack1.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/12_stack1_fail_logs.txt](live-map-20261103/12_stack1_fail_logs.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/13_restart_stack1_v2.txt](live-map-20261103/13_restart_stack1_v2.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/14_web_start.txt](live-map-20261103/14_web_start.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/15_restart_stack2.txt](live-map-20261103/15_restart_stack2.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/20_compose_services.txt](live-map-20261103/20_compose_services.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/21_components_inventory.txt](live-map-20261103/21_components_inventory.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/30_after_matrix.txt](live-map-20261103/30_after_matrix.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/31_after_containers.txt](live-map-20261103/31_after_containers.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/32_after_listeners.txt](live-map-20261103/32_after_listeners.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/33_stack3_and_all_ports_20261104T1352.txt](live-map-20261103/33_stack3_and_all_ports_20261104T1352.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/40_smoke_qa_stack.log](live-map-20261103/40_smoke_qa_stack.log) | (file; not read, listed by name only) |
+| [live-map-20261103/40_smoke_qa_stack2.log](live-map-20261103/40_smoke_qa_stack2.log) | (file; not read, listed by name only) |
+| [live-map-20261103/50_other_components.txt](live-map-20261103/50_other_components.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/60_qa_stack1_compose_REDACTED.yml](live-map-20261103/60_qa_stack1_compose_REDACTED.yml) | (YAML data; not read, listed by name only) |
+| [live-map-20261103/61_qa_stack2_compose_REDACTED.yml](live-map-20261103/61_qa_stack2_compose_REDACTED.yml) | (YAML data; not read, listed by name only) |
+| [live-map-20261103/70_test_restart_stack_RED_before_fix.txt](live-map-20261103/70_test_restart_stack_RED_before_fix.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/71_test_restart_stack_GREEN_after_fix.txt](live-map-20261103/71_test_restart_stack_GREEN_after_fix.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/80_session_scratchpad_evidence/SHA256SUMS](live-map-20261103/80_session_scratchpad_evidence/SHA256SUMS) | (file; not read, listed by name only) |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack2_QA_ENDPOINTS.md](live-map-20261103/80_session_scratchpad_evidence/qa_stack2_QA_ENDPOINTS.md) | Catalogizer QA stack 2 (main @ f28f8165, clean clone; rootless podman, project catqa2) - Built commit: f28f816581b10f2a4398979fa437ed4b8b67be03 (clean checkout in /home/milosvasic/.cache/claude-tmp/qa2root.ZRr5Wu/src; submodules copied from live repo at the... |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack2_smoke_20261103T133400_journey.txt](live-map-20261103/80_session_scratchpad_evidence/qa_stack2_smoke_20261103T133400_journey.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack2_smoke_20261103T230653_journey.txt](live-map-20261103/80_session_scratchpad_evidence/qa_stack2_smoke_20261103T230653_journey.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack_QA_ENDPOINTS.md](live-map-20261103/80_session_scratchpad_evidence/qa_stack_QA_ENDPOINTS.md) | Catalogizer QA stack (main @ 96b7b5ec, scratch clone; rootless podman, project catqa) - Host: anton, LAN 192.168.1.115 (enp5s0); also ppp0 10.1.106.107. Firewall: ufw ENABLED=no (/etc/ufw/ufw.conf), firewalld/nftables not running -> nothing filters LAN... |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261102T232152_journey.txt](live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261102T232152_journey.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261102T232207_journey.txt](live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261102T232207_journey.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261102T232339_journey.txt](live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261102T232339_journey.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261103T230634_journey.txt](live-map-20261103/80_session_scratchpad_evidence/qa_stack_smoke_20261103T230634_journey.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/MAP.md](live-map-20261103/MAP.md) | Live map 2026-11-03: what runs on which port, podman desync root cause, staged restart, honest gaps |
+| [live-map-20261103/restart_stack.sh](live-map-20261103/restart_stack.sh) | (shell script; not read, listed by name only) |
+| [live-map-20261103/test_restart_stack.sh](live-map-20261103/test_restart_stack.sh) | (shell script; not read, listed by name only) |
 | [provision-when-down-20260630/Status.md](provision-when-down-20260630/Status.md) | §11.4.76 / Boot-provisioning — provision-when-DOWN PROVEN - the digital.vasic.containers submodule (remote compose-up over SSH), SAFELY proven against a |
-
-- [Docs sync C4 audit (2026-11-03)](docs_sync_c4.md): documentation-vs-reality coverage matrix, gap counts before/after, machine evidence.
+| [responsive_d1_d2/green-chromium.json](responsive_d1_d2/green-chromium.json) | (JSON data artefact; not read, listed by name only) |
+| [responsive_d1_d2/red-chromium.json](responsive_d1_d2/red-chromium.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/FULL_ARTIFACTS.sha256](web-live-20261103/stack3/FULL_ARTIFACTS.sha256) | (file; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_catalog.json](web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_catalog.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_login.json](web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_login.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_management.json](web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_management.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_pages.json](web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_pages.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_playback.json](web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_playback.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_registration.json](web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_registration.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_session.json](web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_session.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_websocket.json](web-live-20261103/stack3/chromium-390/evidence/catalog-web-live_chromium-390_websocket.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/run1/artifacts/.last-run.json](web-live-20261103/stack3/chromium-390/run1/artifacts/.last-run.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/run1/obs/obs.jsonl](web-live-20261103/stack3/chromium-390/run1/obs/obs.jsonl) | (file; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/run1/report.json](web-live-20261103/stack3/chromium-390/run1/report.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/run2/artifacts/.last-run.json](web-live-20261103/stack3/chromium-390/run2/artifacts/.last-run.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/run2/obs/obs.jsonl](web-live-20261103/stack3/chromium-390/run2/obs/obs.jsonl) | (file; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/run2/report.json](web-live-20261103/stack3/chromium-390/run2/report.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/run3/artifacts/.last-run.json](web-live-20261103/stack3/chromium-390/run3/artifacts/.last-run.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/run3/obs/obs.jsonl](web-live-20261103/stack3/chromium-390/run3/obs/obs.jsonl) | (file; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-390/run3/report.json](web-live-20261103/stack3/chromium-390/run3/report.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_catalog.json](web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_catalog.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_login.json](web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_login.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_management.json](web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_management.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_pages.json](web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_pages.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_playback.json](web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_playback.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_registration.json](web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_registration.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_session.json](web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_session.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_websocket.json](web-live-20261103/stack3/chromium-desktop/evidence/catalog-web-live_chromium-desktop_websocket.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/run1/artifacts/.last-run.json](web-live-20261103/stack3/chromium-desktop/run1/artifacts/.last-run.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/run1/obs/obs.jsonl](web-live-20261103/stack3/chromium-desktop/run1/obs/obs.jsonl) | (file; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/run1/report.json](web-live-20261103/stack3/chromium-desktop/run1/report.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/run2/artifacts/.last-run.json](web-live-20261103/stack3/chromium-desktop/run2/artifacts/.last-run.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/run2/obs/obs.jsonl](web-live-20261103/stack3/chromium-desktop/run2/obs/obs.jsonl) | (file; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/run2/report.json](web-live-20261103/stack3/chromium-desktop/run2/report.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/run3/artifacts/.last-run.json](web-live-20261103/stack3/chromium-desktop/run3/artifacts/.last-run.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/run3/obs/obs.jsonl](web-live-20261103/stack3/chromium-desktop/run3/obs/obs.jsonl) | (file; not read, listed by name only) |
+| [web-live-20261103/stack3/chromium-desktop/run3/report.json](web-live-20261103/stack3/chromium-desktop/run3/report.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_catalog.json](web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_catalog.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_login.json](web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_login.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_management.json](web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_management.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_pages.json](web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_pages.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_playback.json](web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_playback.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_registration.json](web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_registration.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_session.json](web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_session.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_websocket.json](web-live-20261103/stack3/firefox-390/evidence/catalog-web-live_firefox-390_websocket.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/run1/artifacts/.last-run.json](web-live-20261103/stack3/firefox-390/run1/artifacts/.last-run.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/run1/obs/obs.jsonl](web-live-20261103/stack3/firefox-390/run1/obs/obs.jsonl) | (file; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/run1/report.json](web-live-20261103/stack3/firefox-390/run1/report.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/run2/artifacts/.last-run.json](web-live-20261103/stack3/firefox-390/run2/artifacts/.last-run.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/run2/obs/obs.jsonl](web-live-20261103/stack3/firefox-390/run2/obs/obs.jsonl) | (file; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/run2/report.json](web-live-20261103/stack3/firefox-390/run2/report.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/run3/artifacts/.last-run.json](web-live-20261103/stack3/firefox-390/run3/artifacts/.last-run.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/run3/obs/obs.jsonl](web-live-20261103/stack3/firefox-390/run3/obs/obs.jsonl) | (file; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-390/run3/report.json](web-live-20261103/stack3/firefox-390/run3/report.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_catalog.json](web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_catalog.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_login.json](web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_login.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_management.json](web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_management.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_pages.json](web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_pages.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_playback.json](web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_playback.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_registration.json](web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_registration.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_session.json](web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_session.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_websocket.json](web-live-20261103/stack3/firefox-desktop/evidence/catalog-web-live_firefox-desktop_websocket.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/run1/artifacts/.last-run.json](web-live-20261103/stack3/firefox-desktop/run1/artifacts/.last-run.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/run1/obs/obs.jsonl](web-live-20261103/stack3/firefox-desktop/run1/obs/obs.jsonl) | (file; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/run1/report.json](web-live-20261103/stack3/firefox-desktop/run1/report.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/run2/artifacts/.last-run.json](web-live-20261103/stack3/firefox-desktop/run2/artifacts/.last-run.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/run2/obs/obs.jsonl](web-live-20261103/stack3/firefox-desktop/run2/obs/obs.jsonl) | (file; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/run2/report.json](web-live-20261103/stack3/firefox-desktop/run2/report.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/run3/artifacts/.last-run.json](web-live-20261103/stack3/firefox-desktop/run3/artifacts/.last-run.json) | (JSON data artefact; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/run3/obs/obs.jsonl](web-live-20261103/stack3/firefox-desktop/run3/obs/obs.jsonl) | (file; not read, listed by name only) |
+| [web-live-20261103/stack3/firefox-desktop/run3/report.json](web-live-20261103/stack3/firefox-desktop/run3/report.json) | (JSON data artefact; not read, listed by name only) |
+| [webdav-yandex-live-20261103/RED_pre_fix_client_run1.json](webdav-yandex-live-20261103/RED_pre_fix_client_run1.json) | (JSON data artefact; not read, listed by name only) |
+| [webdav-yandex-live-20261103/run1.json](webdav-yandex-live-20261103/run1.json) | (JSON data artefact; not read, listed by name only) |
+| [webdav-yandex-live-20261103/run2.json](webdav-yandex-live-20261103/run2.json) | (JSON data artefact; not read, listed by name only) |
+| [webdav-yandex-live-20261103/run3.json](webdav-yandex-live-20261103/run3.json) | (JSON data artefact; not read, listed by name only) |
+| [webdav-yandex-live-20261103/run_N3_stricter_verdict_PASS_WITH_ANOMALIES.log](webdav-yandex-live-20261103/run_N3_stricter_verdict_PASS_WITH_ANOMALIES.log) | (file; not read, listed by name only) |
+| [webdav-yandex-live-20261103/run_RED_pre_fix_client_base05709505.log](webdav-yandex-live-20261103/run_RED_pre_fix_client_base05709505.log) | (file; not read, listed by name only) |
+| [webdav-yandex-live-20261103/run_stricter_verdict_attempt1_FAIL_tls_handshake_timeout.log](webdav-yandex-live-20261103/run_stricter_verdict_attempt1_FAIL_tls_handshake_timeout.log) | (file; not read, listed by name only) |
+| [webdav-yandex-live-20261103/run_stricter_verdict_attempt2_FAIL_idle_cancel_and_EOF.log](webdav-yandex-live-20261103/run_stricter_verdict_attempt2_FAIL_idle_cancel_and_EOF.log) | (file; not read, listed by name only) |
+| [webdav-yandex-live-20261103/scan_leg_run.json](webdav-yandex-live-20261103/scan_leg_run.json) | (JSON data artefact; not read, listed by name only) |
+| [webdav-yandex-live-20261103/scan_leg_run.log](webdav-yandex-live-20261103/scan_leg_run.log) | (file; not read, listed by name only) |
