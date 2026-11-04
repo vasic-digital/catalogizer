@@ -2,7 +2,7 @@
 
 Documents in this directory.
 
-Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 183 entries.
+Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 185 entries.
 
 | File | Description |
 |---|---|
@@ -80,6 +80,8 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [live-map-20261103/61_qa_stack2_compose_REDACTED.yml](live-map-20261103/61_qa_stack2_compose_REDACTED.yml) | (YAML data; not read, listed by name only) |
 | [live-map-20261103/70_test_restart_stack_RED_before_fix.txt](live-map-20261103/70_test_restart_stack_RED_before_fix.txt) | (plain-text artefact; not read, listed by name only) |
 | [live-map-20261103/71_test_restart_stack_GREEN_after_fix.txt](live-map-20261103/71_test_restart_stack_GREEN_after_fix.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/72_test_RED_web_website_no_probe.txt](live-map-20261103/72_test_RED_web_website_no_probe.txt) | (plain-text artefact; not read, listed by name only) |
+| [live-map-20261103/73_test_GREEN_with_mutations.txt](live-map-20261103/73_test_GREEN_with_mutations.txt) | (plain-text artefact; not read, listed by name only) |
 | [live-map-20261103/80_session_scratchpad_evidence/SHA256SUMS](live-map-20261103/80_session_scratchpad_evidence/SHA256SUMS) | (file; not read, listed by name only) |
 | [live-map-20261103/80_session_scratchpad_evidence/qa_stack2_QA_ENDPOINTS.md](live-map-20261103/80_session_scratchpad_evidence/qa_stack2_QA_ENDPOINTS.md) | Catalogizer QA stack 2 (main @ f28f8165, clean clone; rootless podman, project catqa2) - Built commit: f28f816581b10f2a4398979fa437ed4b8b67be03 (clean checkout in /home/milosvasic/.cache/claude-tmp/qa2root.ZRr5Wu/src; submodules copied from live repo at the... |
 | [live-map-20261103/80_session_scratchpad_evidence/qa_stack2_smoke_20261103T133400_journey.txt](live-map-20261103/80_session_scratchpad_evidence/qa_stack2_smoke_20261103T133400_journey.txt) | (plain-text artefact; not read, listed by name only) |
