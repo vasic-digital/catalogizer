@@ -1,0 +1,23 @@
+# command: see 10_teardown_stale.command.txt (the output below is that command's log)
+2026-11-03T22:55:19+01:00
+TERM children of conmon 980282 (-n catqa2-website)
+TERM children of conmon 1026330 (-n catqa2-postgres)
+TERM children of conmon 1026516 (-n catqa2-redis)
+TERM children of conmon 1028455 (-n catqa2-api)
+TERM children of conmon 1028604 (-n catqa2-web)
+TERM children of conmon 1041504 (-n catqa-postgres)
+TERM children of conmon 1041865 (-n catqa-redis)
+TERM children of conmon 1042175 (-n catqa-website)
+TERM children of conmon 1042584 (-n catqa-api)
+TERM children of conmon 1043077 (-n catqa-web)
+remaining
+catqa-postgres Exited (0) 292 years ago (healthy)
+catqa-redis Exited (0) 292 years ago (healthy)
+catqa-website Exited (0) 292 years ago
+catqa-api Exited (0) 292 years ago
+catqa-web Exited (0) 292 years ago
+catqa2-website Exited (0) 292 years ago
+catqa2-postgres Exited (0) 292 years ago (healthy)
+catqa2-redis Exited (0) 292 years ago (healthy)
+catqa2-api Exited (0) 292 years ago
+catqa2-web Exited (0) 292 years ago

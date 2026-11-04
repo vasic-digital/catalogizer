@@ -1,0 +1,57 @@
+=== docker-compose.yml
+  postgres: image=postgres:15-alpine ports=['${POSTGRES_PORT:-5432}:5432'] profiles=None
+  redis: image=redis:7-alpine ports=['${REDIS_PORT:-6379}:6379'] profiles=None
+  api: image=build:catalog-api/Dockerfile ports=['${API_PORT:-8080}:8080'] profiles=None
+  prometheus: image=prom/prometheus:latest ports=['${PROMETHEUS_PORT:-9090}:9090'] profiles=['monitoring']
+  grafana: image=grafana/grafana:latest ports=['${GRAFANA_PORT:-3001}:3000'] profiles=['monitoring']
+  minio: image=quay.io/minio/minio:latest ports=['${MINIO_API_PORT:-9000}:9000', '${MINIO_CONSOLE_PORT:-9001}:9001'] profiles=None
+  nginx: image=nginx:alpine ports=['${HTTP_PORT:-80}:80', '${HTTPS_PORT:-443}:443'] profiles=['production']
+=== docker-compose.dev.yml
+  postgres: image=postgres:15-alpine@sha256:f7d23353e1b15400d22ebe31189f4d314b87a4c129cc400c8c2d8d4ca127bf81 ports=['25432:5432'] profiles=None
+  redis: image=redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499 ports=['26379:6379'] profiles=None
+  api: image=build:catalog-api/Dockerfile.dev ports=['28080:8080'] profiles=None
+  pgadmin: image=docker.io/dpage/pgadmin4:9.18.0@sha256:c332c5f6dfba995d9ebc4af261d93506d6876085d712eaaa3defc8dd1a3f26de ports=['25050:80'] profiles=['tools']
+  redis-commander: image=docker.io/rediscommander/redis-commander:latest@sha256:19cd0c49f418779fa2822a0496c5e6516d0c792effc39ed20089e6268477e40a ports=['28081:8081'] profiles=['tools']
+  minio: image=quay.io/minio/minio:latest ports=['29000:9000', '29001:9001'] profiles=None
+=== docker-compose.qa.yml
+  helixqa-web: image=mcr.microsoft.com/playwright:v1.57.0-noble@sha256:3bed4b1a12f2338642f3d8cba28e291deef3c66bd4a964bbeb3e57bbff511dbd ports=None profiles=['web']
+  helixqa-api: image=docker.io/library/node:20-bookworm@sha256:8f693eaa7e0a8e71560c9a82b55fd54c2ae920a2ba5d2cde28bac7d1c01c9ba5 ports=None profiles=['web', 'api']
+=== docker-compose.qa-robot.yml
+  helixqa-robot: image=build:./submodules/helix_qa ports=None profiles=None
+=== docker-compose.test.yml
+  catalog-api: image=catalogizer-api:test ports=None profiles=['api', 'web', 'desktop', 'wizard', 'android', 'tv']
+  catalog-web: image=catalogizer-web:test ports=None profiles=['web']
+  playwright: image=docker.io/mcr.microsoft.com/playwright:v1.40.0-jammy ports=None profiles=['web']
+  android-emulator: image=catalogizer-android-emulator:test ports=None profiles=['android', 'tv']
+  tauri-desktop: image=catalogizer-tauri-desktop:test ports=None profiles=['desktop']
+  tauri-wizard: image=catalogizer-tauri-wizard:test ports=None profiles=['wizard']
+=== docker-compose.security.yml
+  sonarqube: image=docker.io/library/sonarqube:community@sha256:c0f1160bccfa435db4168c2d7df69af3c3ea7bfeb87395613014048fb33a68c1 ports=['9000:9000'] profiles=['sonarqube', 'security-full']
+  sonarqube-db: image=docker.io/library/postgres:15-alpine@sha256:f7d23353e1b15400d22ebe31189f4d314b87a4c129cc400c8c2d8d4ca127bf81 ports=None profiles=['sonarqube', 'security-full']
+  snyk-cli: image=docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e ports=None profiles=['snyk-scan']
+  dependency-check: image=docker.io/owasp/dependency-check:13.0.0@sha256:0e8f69ad5b00d62000937f4e57189812343f6903d9c83ee712012d51542a020a ports=None profiles=['dependency-check']
+  trivy-scanner: image=docker.io/aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa ports=None profiles=['trivy-scan', 'security-full']
+  trivy-server: image=docker.io/aquasec/trivy:0.75.0@sha256:af6acf9a6b85dfe389a1941505c0ce9efef52a4719635e1a962f022a3d855daa ports=['8080:8080'] profiles=['trivy-server']
+  semgrep-scanner: image=docker.io/semgrep/semgrep:1.179.0@sha256:93963d9295a366f59e4850127b1550400ee7b388f04fe144e4a1f6325d96e01b ports=None profiles=['semgrep-scan', 'security-full']
+  hadolint: image=docker.io/hadolint/hadolint:v2.15.1@sha256:32dac94127fd60b7b7e3fbfc65e1383b9b5e25c9bfd7b8536de7a539fe68a12d ports=None profiles=['hadolint', 'security-full']
+=== docker-compose.build.yml
+  postgres: image=docker.io/library/postgres@sha256:f7d23353e1b15400d22ebe31189f4d314b87a4c129cc400c8c2d8d4ca127bf81 ports=['127.0.0.1:${TI_PORT_POSTGRES:?}:5432'] profiles=None
+  redis: image=docker.io/library/redis@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499 ports=['127.0.0.1:${TI_PORT_REDIS:?}:6379'] profiles=None
+  catalogizer-builder: image=localhost/catalogizer-builder:latest ports=None profiles=None
+  android-emulator: image=docker.io/budtmo/docker-android:emulator_14.0 ports=['6080:6080', '5555:5555'] profiles=['emulator']
+=== deployment/docker-compose.yml
+  database: image=postgres:15-alpine ports=['${DATABASE_PORT:-5432}:5432'] profiles=None
+  redis: image=redis:7-alpine ports=['${REDIS_PORT:-6379}:6379'] profiles=None
+  catalogizer-server: image=catalogizer/server:${CATALOGIZER_VERSION:-latest} ports=['${CATALOGIZER_PORT:-8080}:8080', '${CATALOGIZER_WS_PORT:-8081}:8081', '${CATALOGIZER_ADMIN_PORT:-9090}:9090'] profiles=None
+  transcoder: image=catalogizer/transcoder:${CATALOGIZER_VERSION:-latest} ports=None profiles=None
+  web: image=catalogizer/web:${CATALOGIZER_VERSION:-latest} ports=['${WEB_PORT:-80}:80', '${WEB_SSL_PORT:-443}:443'] profiles=None
+  prometheus: image=prom/prometheus:latest ports=['${PROMETHEUS_PORT:-9090}:9090'] profiles=None
+  grafana: image=grafana/grafana:latest ports=['${GRAFANA_PORT:-3001}:3000'] profiles=None
+  backup: image=catalogizer/backup:${CATALOGIZER_VERSION:-latest} ports=None profiles=['backup']
+=== docker-compose.test-infra.yml
+  postgres: image=docker.io/library/postgres@sha256:f7d23353e1b15400d22ebe31189f4d314b87a4c129cc400c8c2d8d4ca127bf81 ports=['127.0.0.1:${TI_PORT_POSTGRES:?}:5432'] profiles=None
+  redis: image=docker.io/library/redis@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499 ports=['127.0.0.1:${TI_PORT_REDIS:?}:6379'] profiles=None
+  ftp: image=docker.io/stilliard/pure-ftpd@sha256:6435d108eb3fad29730f1b6748c1d49f3fa13e5d0fb49979ec3e0e96c5dbd94a ports=['127.0.0.1:${TI_PORT_FTP:?}:21'] profiles=None
+  smb: image=docker.io/dperson/samba@sha256:66088b78a19810dd1457a8f39340e95e663c728083efa5fe7dc0d40b2478e869 ports=['127.0.0.1:${TI_PORT_SMB:?}:445'] profiles=None
+  webdav: image=docker.io/bytemark/webdav@sha256:bcabbc024c511b9c63ed3345f88573e31d84c952ee493c9acb3fe345f4f80f57 ports=['127.0.0.1:${TI_PORT_WEBDAV:?}:80'] profiles=None
+  minio: image=${TI_MINIO_IMAGE:-localhost/blocked-minio-not-obtainable:none} ports=None profiles=['minio-blocked']

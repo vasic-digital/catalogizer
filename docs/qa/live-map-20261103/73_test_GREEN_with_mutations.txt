@@ -1,0 +1,13 @@
+PASS happy_exit0 rc=0
+PASS db_never_ready_nonzero rc=1
+PASS api_never_healthy_nonzero rc=1
+PASS compose_failure_nonzero rc=1
+PASS inspect_failure_nonzero rc=1
+PASS web_never_ready_nonzero rc=1
+PASS website_never_ready_nonzero rc=1
+PASS missing_args_nonzero
+PASS bad_dir_nonzero
+PASS mutation_no_set_e killed
+PASS mutation_web_probe_gone killed
+PASS mutation_website_probe_gone killed
+PASS mutation_db_timeout_swallowed killed

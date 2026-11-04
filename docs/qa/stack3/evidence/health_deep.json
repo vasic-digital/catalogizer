@@ -1,0 +1,1 @@
+{"status":"healthy","timestamp":"2026-11-03T22:25:37.790753625Z","version":"1e92bc3316ac2d49fabbe062f181112539f8ca18","uptime":"1m51.116029719s","components":{"database":{"status":"healthy","latency":"152.531µs"}},"converters":{"convert":true,"convert_pdf":false,"convert_svg":false,"ffmpeg":true,"pdftotext":true}}

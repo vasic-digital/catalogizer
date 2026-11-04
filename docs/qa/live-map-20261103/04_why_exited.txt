@@ -1,0 +1,28 @@
+exited exit=0 started=2026-11-02 23:21:04.454551513 +0100 CET finished=0001-01-01 00:00:00 +0000 UTC oom=false
+1793658063 create catqa-api
+1793658064 init catqa-api
+1793658064 start catqa-api
+1793658247 exec catqa-api
+1793658247 exec_died catqa-api
+1793658279 exec catqa-api
+1793658279 exec_died catqa-api
+2026-11-03T19:21:07.348Z	[34mINFO[0m	services/cache_service.go:158	Cleaning up expired cache entries
+2026-11-03T19:21:07.355Z	[35mDEBUG[0m	services/cache_service.go:158	Cleaned expired entries	{"table": "cache_entries", "count": 0}
+2026-11-03T19:21:07.355Z	[35mDEBUG[0m	services/cache_service.go:158	Cleaned expired entries	{"table": "media_metadata_cache", "count": 0}
+2026-11-03T19:21:07.356Z	[35mDEBUG[0m	services/cache_service.go:158	Cleaned expired entries	{"table": "api_cache", "count": 0}
+2026-11-03T19:21:07.356Z	[34mINFO[0m	services/cache_service.go:158	Completed cache cleanup	{"total_cleaned": 0}
+2026-11-03T20:21:07.349Z	[34mINFO[0m	services/cache_service.go:158	Cleaning up expired cache entries
+2026-11-03T20:21:07.359Z	[35mDEBUG[0m	services/cache_service.go:158	Cleaned expired entries	{"table": "cache_entries", "count": 0}
+2026-11-03T20:21:07.360Z	[35mDEBUG[0m	services/cache_service.go:158	Cleaned expired entries	{"table": "media_metadata_cache", "count": 0}
+2026-11-03T20:21:07.361Z	[35mDEBUG[0m	services/cache_service.go:158	Cleaned expired entries	{"table": "api_cache", "count": 0}
+2026-11-03T20:21:07.361Z	[34mINFO[0m	services/cache_service.go:158	Completed cache cleanup	{"total_cleaned": 0}
+2026-11-03T21:21:07.349Z	[34mINFO[0m	services/cache_service.go:158	Cleaning up expired cache entries
+2026-11-03T21:21:07.360Z	[35mDEBUG[0m	services/cache_service.go:158	Cleaned expired entries	{"table": "cache_entries", "count": 0}
+2026-11-03T21:21:07.361Z	[35mDEBUG[0m	services/cache_service.go:158	Cleaned expired entries	{"table": "media_metadata_cache", "count": 0}
+2026-11-03T21:21:07.362Z	[35mDEBUG[0m	services/cache_service.go:158	Cleaned expired entries	{"table": "api_cache", "count": 0}
+2026-11-03T21:21:07.362Z	[34mINFO[0m	services/cache_service.go:158	Completed cache cleanup	{"total_cleaned": 0}
+			GROUP BY file_type
+			ORDER BY count DESC
+		
+2026-11-03 00:31:05.553 UTC [22] LOG:  checkpoint starting: time
+2026-11-03 00:31:05.736 UTC [22] LOG:  checkpoint complete: wrote 2 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.136 s, sync=0.010 s, total=0.184 s; sync files=2, longest=0.007 s, average=0.005 s; distance=6 kB, estimate=1870 kB

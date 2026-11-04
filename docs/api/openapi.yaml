@@ -3836,8 +3836,6 @@ paths:
           description: Missing or invalid storage_id
         '401':
           description: Unauthorized
-        '403':
-          description: Admin role required
         '404':
           description: Storage root not found, or the directory does not exist
         '409':
@@ -4288,8 +4286,6 @@ paths:
                     type: string
         '401':
           description: Missing or invalid token
-        '403':
-          description: Admin role required
         '404':
           description: Storage root not found
         '503':
@@ -8292,6 +8288,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /api/v1/stream/{id}/ticket:
+    post:
+      tags:
+      - download
+      summary: Mint a short-lived stream ticket
+      description: >-
+        Returns a ticket for GET /api/v1/stream/{id}?ticket=... for header-less players (the web video element). The ticket is HMAC-signed,
+        bound to this media id, the calling user and the minting session (logout revokes it), and valid for 60 seconds; it is accepted
+        ONLY by GET /api/v1/stream/{id} for the same id and never on any other route. Seek/range requests re-use it within its lifetime;
+        mint a new one on a 401. The response is not cacheable. Replaces the session token in the query string for web clients (the
+        access_token query parameter remains for native clients only; both are redacted from access logs).
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Ticket
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticket:
+                    type: string
+                  expires_at:
+                    type: string
+                    format: date-time
+                  expires_in:
+                    type: integer
+                    description: Seconds
+        '400':
+          description: Invalid id, or the id is a directory
+        '401':
+          description: Unauthorized
+        '404':
+          description: File not found
+        '503':
+          description: Stream tickets are not available (no signing secret)
+
   /api/v1/entities/search:
     get:
       tags:

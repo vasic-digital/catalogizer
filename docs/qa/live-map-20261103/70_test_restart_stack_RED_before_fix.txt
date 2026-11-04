@@ -1,0 +1,7 @@
+PASS happy_exit0 rc=0
+FAIL db_never_ready_nonzero rc=0 (wanted nonzero=1)
+FAIL api_never_healthy_nonzero rc=0 (wanted nonzero=1)
+FAIL compose_failure_nonzero rc=0 (wanted nonzero=1)
+PASS missing_args_nonzero
+FAIL bad_dir_nonzero
+# old script = HEAD d37d61e0 restart_stack.sh; 'rc=...' lines above

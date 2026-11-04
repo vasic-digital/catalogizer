@@ -1,0 +1,63 @@
+## inside api netns
+lo               UNKNOWN        127.0.0.1/8 
+eth0@if53        UP             10.89.13.5/24 
+default via 10.89.13.1 dev eth0 proto static metric 100 
+10.89.13.0/24 dev eth0 proto kernel scope link src 10.89.13.5 
+inside http://127.0.0.1:8080/health -> 200
+## host side
+lo               UNKNOWN        127.0.0.1/8 
+enp5s0           UP             192.168.1.115/24 
+ppp0             UNKNOWN        10.1.106.107 peer 10.1.106.254/32 
+NETWORK ID    NAME                                               DRIVER
+3a21f3f674f2  catalogizer-test-build-1007224759-4107999_default  bridge
+8eab507e7315  catalogizer-test-build-1008001751-1285332_default  bridge
+1c54d4d8d409  catalogizer-test-build-1008035259-2477974_default  bridge
+80f1152e326f  catalogizer-test-revdry_test-network               bridge
+66859e79a1b9  catalogizer-test-victim_test-network               bridge
+b5fad52cecd2  catqa2_default                                     bridge
+cd6dc010a0ee  catqa_default                                      bridge
+f7692d9fdb69  glive1_default                                     bridge
+0d19d120fea1  helix_agent_helixagent-network                     bridge
+7a3209fa6bde  helixagent-mcp-network                             bridge
+277ef7b2a117  helixcode_default                                  bridge
+90e2a53f57e1  lava_lava-net                                      bridge
+2f259bab93aa  podman                                             bridge
+487a5bdb9b66  tirevy_default                                     bridge
+816e787b8c66  workshop-oomprobe-1355691_default                  bridge
+31fd569c6567  ytdlp_default                                      bridge
+[
+     {
+          "name": "catqa_default",
+          "id": "cd6dc010a0eec9f5d8c44cbf6734c058152a33f4eec32c3a311c5c2760e0cbc2",
+          "driver": "bridge",
+          "network_interface": "podman14",
+          "created": "2026-11-02T23:21:02.041305393+01:00",
+          "subnets": [
+               {
+                    "subnet": "10.89.13.0/24",
+                    "gateway": "10.89.13.1"
+               }
+          ],
+          "ipv6_enabled": false,
+          "internal": false,
+          "dns_enabled": true,
+          "labels": {
+               "com.docker.compose.project": "catqa",
+               "io.podman.compose.project": "catqa"
+          },
+          "ipam_options": {
+               "driver": "host-local"
+          },
+          "containers": {}
+     }
+]
+/run/user/1000/containers/networks:
+aardvark-dns
+aardvark.lock
+ipam.db
+rootless-netns
+
+/run/user/1000/netns:
+netns-0043909a-5d30-b815-e44d-d17a75007cd7
+netns-080f6dcc-7bcf-46e3-5d8d-bcbeef8d9e48
+netns-19f9a8df-3d9d-423a-9f16-b4de1af83c87

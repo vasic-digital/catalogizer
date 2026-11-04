@@ -1,0 +1,20 @@
+2026-11-03T23:00:50+01:00
+282750ffe6558cc25b3e5cc1b151ad263e2d156505af5a0ab53a404109b95528
+52c495976f075f7f6c056f152a3902a53993feb3d546667ef09160ec29029788
+catqa-postgres
+catqa-redis
+db+redis ready after 3s
+postgres=10.89.13.20 redis=10.89.13.21
+Error: no container with name or ID "catqa-api" found: no such container
+Error: no container with ID or name "catqa-api" found: no such container
+17d166e494982b78267dc3b7c49972ff9022e8d66d4e0923ee06f31728bd0a20
+Error: unable to start container "17d166e494982b78267dc3b7c49972ff9022e8d66d4e0923ee06f31728bd0a20": rootlessport listen tcp 0.0.0.0:38080: bind: address already in use
+api=
+f07502d61edb522ff8807fba39b33e0d85d07072f1c3dbaf7457a6feb57000dc
+Error: invalid IP address in add-host: ""
+catqa-website
+Error: no container with name or ID "catqa-web" found: no such container
+catqa-postgres|Up 2 minutes (healthy)|127.0.0.1:35432->5432/tcp
+catqa-redis|Up 2 minutes (healthy)|127.0.0.1:36379->6379/tcp
+catqa-website|Up 5 seconds|0.0.0.0:33001->80/tcp
+1->80/tcp

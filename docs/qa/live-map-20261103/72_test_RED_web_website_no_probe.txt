@@ -1,0 +1,8 @@
+PASS happy_exit0 rc=0
+PASS db_never_ready_nonzero rc=1
+PASS api_never_healthy_nonzero rc=1
+PASS compose_failure_nonzero rc=1
+FAIL web_never_ready_nonzero rc=0 (wanted nonzero=1)
+FAIL website_never_ready_nonzero rc=0 (wanted nonzero=1)
+PASS missing_args_nonzero
+PASS bad_dir_nonzero

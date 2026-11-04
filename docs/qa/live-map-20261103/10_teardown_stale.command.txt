@@ -1,0 +1,8 @@
+# Exact command used for 10_teardown_stale.txt (conmon pids found via `ps` for names catqa-*/catqa2-*):
+for cm in 980282 1026330 1026516 1028455 1028604 1041504 1041865 1042175 1042584 1043077; do
+  n=$(tr '\0' ' ' </proc/$cm/cmdline | grep -oE -- '-n catqa2?-[a-z]+')
+  case "$n" in "-n catqa-"*|"-n catqa2-"*) pkill -TERM -P $cm ;; *) echo "SKIP $cm not ours: $n";; esac
+done
+sleep 12; for cm in <same pids>; do [ -d /proc/$cm ] && kill -TERM $cm; done      # conmon leftovers
+sleep 3;  for rp in <rootlessport pids that held the 6 app ports + 4 db/redis ports>; do
+  grep -q rootlessport /proc/$rp/comm && kill $rp; done

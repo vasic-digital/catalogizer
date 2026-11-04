@@ -1,0 +1,28 @@
+2026-11-03T22:54:59+01:00
+old pasta 7638 netns: net:[4026531833]
+new pasta 1231453 netns: net:[4026531833]
+api netns parent-of-eth0 check
+aardvark 6042 netns: net:[4026533413]
+catqa-api 1042595 netns: net:[4026536334]
+rootlessport 1042527 netns: net:[4026536334]
+{"IPAddresses":["192.168.1.115"],"DnsForwardIps":["169.254.1.1"],"MapGuestIps":["169.254.1.2"]}
+
+podman14         UP             10.89.13.1/24 fe80::ecbd:9dff:feff:9f58/64 
+## new-netns ifaces
+nsenter: reassociate to namespaces failed: Operation not permitted
+
+287126 2026-11-03 15:12:22.831874422 +0100
+287122 2026-11-03 15:12:22.716621893 +0100
+287120 2026-11-03 22:33:23.595579253 +0100
+287118 2026-11-03 15:12:22.673954192 +0100
+287121 2026-11-03 22:33:23.595579253 +0100
+374951 2026-11-03 22:51:36.790977343 +0100
+total 8
+drwx------ 5 milosvasic milosvasic 160 Nov  3 22:51 .
+drwx-----T 3 milosvasic milosvasic  60 Nov  3 15:12 ..
+-rw-r--r-- 1 milosvasic milosvasic  37 Nov  3 15:12 alive
+-rw-r--r-- 1 milosvasic milosvasic   0 Nov  3 15:12 alive.lck
+drwxr-x--- 2 milosvasic milosvasic  40 Nov  3 22:33 exits
+-rw------- 1 milosvasic milosvasic   7 Nov  3 15:12 pause.pid
+drwxr-x--- 2 milosvasic milosvasic  40 Nov  3 22:33 persist
+drwx------ 2 milosvasic milosvasic  40 Nov  3 22:51 rp

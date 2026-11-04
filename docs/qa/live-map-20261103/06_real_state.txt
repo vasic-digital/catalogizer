@@ -1,0 +1,13 @@
+2026-11-03T22:54:23+01:00
+## processes (real state) vs podman view
+    PID STAT     ELAPSED COMMAND
+1028458 Ssl     09:21:12 /app/catalogizer-api
+1042595 Ssl     23:33:19 /app/catalogizer-api
+1043087 Ss      23:33:18 nginx: master process nginx -g daemon off;
+## ss inside api netns (nsenter -n, rootless: needs user ns)
+State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess                                       
+LISTEN 0      4096               *:8080             *:*    users:(("catalogizer-api",pid=1042595,fd=11))
+LISTEN 0      4096               *:28443            *:*    users:(("catalogizer-api",pid=1042595,fd=13))
+## podman exec
+Error: can only create exec sessions on running containers: container state improper
+0 exited
