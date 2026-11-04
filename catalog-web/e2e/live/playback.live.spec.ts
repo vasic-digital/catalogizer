@@ -121,10 +121,14 @@ test.describe('player in the web UI (real browser, real stream)', () => {
     expect(await video.evaluate((v: HTMLVideoElement) => v.error), 'no media error while playing past ticket expiry').toBeNull();
     const before = await video.evaluate((v: HTMLVideoElement) => v.currentTime);
     expect(before, 'it kept playing past the ticket lifetime').toBeGreaterThan(55);
-    const TARGET = 120;
-    // Precondition: the target is NOT in the buffer, so this seek needs a new range request (and therefore a live ticket).
+    // Browsers buffer a different amount ahead (chromium ~25 s, firefox ~55 s), so the seek target is chosen beyond the
+    // buffered end: the target is then NOT buffered by construction and needs a new range request (and a live ticket).
     const buffered = await video.evaluate((v: HTMLVideoElement) => Array.from({ length: v.buffered.length }, (_, i) => [v.buffered.start(i), v.buffered.end(i)]));
-    expect(buffered.some(([a, b]) => TARGET >= a && TARGET <= b), `fixture must not be fully buffered (buffered=${JSON.stringify(buffered)})`).toBe(false);
+    const duration = await video.evaluate((v: HTMLVideoElement) => v.duration);
+    const bufEnd = Math.max(...buffered.map(([, b]) => b));
+    const TARGET = Math.max(120, Math.ceil(bufEnd) + 5);
+    expect(TARGET, `fixture must leave room after the seek (buffered=${JSON.stringify(buffered)}, duration=${duration})`).toBeLessThan(duration - 6);
+    expect(buffered.some(([a, b]) => TARGET >= a && TARGET <= b), `target ${TARGET} must not be buffered (buffered=${JSON.stringify(buffered)})`).toBe(false);
     const mintsBefore = streamed.filter((x) => /^200 POST /.test(x) && x.includes(`/stream/${id}/ticket`)).length;
     await video.evaluate((v: HTMLVideoElement, t: number) => { v.currentTime = t; }, TARGET);
     // No loop: a reset to 0 after the refresh would fail here (T1).

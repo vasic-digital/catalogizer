@@ -30,7 +30,16 @@ test.beforeAll(async ({ request }) => {
     root = { id: (await created.json()).id, name: ROOT_NAME, path: ROOT_PATH };
   }
   const have = async () => (await (await request.get(`${API_URL}/api/v1/media/stats`, { headers: auth })).json()).total_items as number;
-  if ((await have()) < manifest.file_count) {
+  // A file added to the manifest after the last scan (e.g. by gen_big_fixture.sh) is not counted by total_items alone: probe the
+  // newest manifest entries by name as well.
+  const missing = async () => {
+    for (const rel of Object.keys(manifest.files).filter((k) => /Big\.Seek/.test(k))) {
+      const r = await request.get(`${API_URL}/api/v1/media/search?query=${encodeURIComponent(rel.split('/').pop()!)}&limit=5`, { headers: auth });
+      if (!((await r.json()).items ?? []).some((i: { title: string; directory_path: string }) => i.directory_path === rel || i.title === rel.split('/').pop())) return true;
+    }
+    return false;
+  };
+  if ((await have()) < manifest.file_count || (await missing())) {
     const q = await request.post(`${API_URL}/api/v1/scans`, { headers: auth, data: { storage_root_id: root.id, storage_root_name: ROOT_NAME } });
     expect(q.status(), 'queue scan through the real API').toBeLessThan(300);
     const job = (await q.json()).job_id as string;

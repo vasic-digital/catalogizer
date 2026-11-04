@@ -3,10 +3,10 @@
   "test_id": "catalog-web-live/firefox-desktop/playback",
   "class": "LIVE",
   "verdict": "PASS",
-  "timestamp": "2026-11-04T03:22:54.830Z",
+  "timestamp": "2026-11-04T10:05:34.906Z",
   "command": "catalog-web/e2e/live/run_live.sh firefox-desktop",
   "artifact": {
-    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:7027db881df9fe922eadc460ab513869103ccae2bcc213b28a711976639494d7;api-health={\"version\":\"71552b16ca2c4646834fd591226ccbf708168b06\",\"build_number\":\"71552b16ca2c4646834fd591226ccbf708168b06\",\"build_date\":\"stack3\"};web-image=sha256:cc9d4093bc8bd58b46924628a4b1c8d66864c9d4f0803e9482cd15d0047e2d6d",
+    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:deaedba878b61f1c2078c846938153c1c4ff13fceae42be95451dd0166d69f83;api-health={\"version\":\"8e8cb9b135db6febee0e68b3b9e9b52251768b69\",\"build_number\":\"8e8cb9b135db6febee0e68b3b9e9b52251768b69\",\"build_date\":\"stack3\"};web-image=sha256:57e7ff82766e905f7b991a4c091feb851ac60ce6a405c71348cc7a7523b4ced5",
     "source": "target"
   },
   "endpoint": {
@@ -17,35 +17,36 @@
   },
   "answering": {
     "kind": "container",
-    "image": "localhost/catqa3-web:main-71552b16",
-    "image_digest": "sha256:cc9d4093bc8bd58b46924628a4b1c8d66864c9d4f0803e9482cd15d0047e2d6d",
-    "container_id": "a66f18457b3120645a5e6d9766b23e324e18509cac0799f7d637c4e58021a912"
+    "image": "localhost/catqa3-web:main-8e8cb9b1",
+    "image_digest": "sha256:57e7ff82766e905f7b991a4c091feb851ac60ce6a405c71348cc7a7523b4ced5",
+    "container_id": "0ade3c989f962bbccd1d7b9b36560cbc20a2be5b90863df364a123c334dd115f"
   },
   "expected": {
-    "image_digest": "sha256:cc9d4093bc8bd58b46924628a4b1c8d66864c9d4f0803e9482cd15d0047e2d6d"
+    "image_digest": "sha256:57e7ff82766e905f7b991a4c091feb851ac60ce6a405c71348cc7a7523b4ced5"
   },
   "requests": {
-    "total": 201,
+    "total": 408,
     "methods": {
-      "GET": 194,
-      "POST": 7
+      "GET": 394,
+      "POST": 14
     }
   },
   "responses": {
     "status_histogram": {
-      "200": 197,
-      "206": 4
+      "200": 394,
+      "206": 13,
+      "401": 1
     }
   },
   "runs": {
     "n": 3,
     "identical": true,
-    "signature": "sha256:f90a4f96a3bc803883b86432d4302989827be99eb5312a650afdc22234f1607d"
+    "signature": "sha256:7fdfcf968dd19c77f18d97901f2d1e8a6e4ccf1f6037a069c1158a21c0f9a241"
   },
   "tests": {
     "run1": [
       "audio file: the same player plays an mp3 from the real stream=passed",
-      "long playback: plays past the 60 s ticket lifetime, a seek after expiry works, currentTime keeps advancing, no media error=passed",
+      "long playback: plays past the 60 s ticket lifetime on a file the browser cannot buffer fully; a seek far ahead after expiry is network-served and continues from the seek target=passed",
       "movies/Another.Movie.2019.vp9.webm: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
       "movies/Movie.Name.2020.1080p.mp4: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
       "music/Misc/Plain Tone.flac: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
@@ -56,7 +57,7 @@
     ],
     "run2": [
       "audio file: the same player plays an mp3 from the real stream=passed",
-      "long playback: plays past the 60 s ticket lifetime, a seek after expiry works, currentTime keeps advancing, no media error=passed",
+      "long playback: plays past the 60 s ticket lifetime on a file the browser cannot buffer fully; a seek far ahead after expiry is network-served and continues from the seek target=passed",
       "movies/Another.Movie.2019.vp9.webm: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
       "movies/Movie.Name.2020.1080p.mp4: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
       "music/Misc/Plain Tone.flac: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
@@ -67,7 +68,7 @@
     ],
     "run3": [
       "audio file: the same player plays an mp3 from the real stream=passed",
-      "long playback: plays past the 60 s ticket lifetime, a seek after expiry works, currentTime keeps advancing, no media error=passed",
+      "long playback: plays past the 60 s ticket lifetime on a file the browser cannot buffer fully; a seek far ahead after expiry is network-served and continues from the seek target=passed",
       "movies/Another.Movie.2019.vp9.webm: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
       "movies/Movie.Name.2020.1080p.mp4: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
       "music/Misc/Plain Tone.flac: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
