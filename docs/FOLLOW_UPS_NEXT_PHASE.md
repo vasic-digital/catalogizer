@@ -1239,3 +1239,14 @@ Add a fixture with a clean twin for each probe.
 - ST-D3 (inconsistency): SmbClient rejects leading-slash paths while FTP/WebDAV accept them.
 - ST-NFS: NFS live test SKIPPED (Synology export list empty, no mount privilege); needs operator enabling an NFS export.
 - Evidence: docs/qa/live-storage-r1-20261104.md.
+
+## Conversion defects D1, D2, D7 (conversion part), D10, D11 (fix-conversion-defects, 2026-11-04)
+
+Status: PROVISIONAL-DONE (§11.4.290), not VERIFIED-DONE: the live re-run on a rebuilt catqa stack is owed (verification job: re-run docs/qa/live-conv-docs-subs-r1-20261104.md D1/D2/D7/D10 against the new image; due on the next stack rebuild).
+- D1 FIXED (RED first: `TestD1_ConvertDocument_PDFToTextUsesPDFExtractor` failed with `ebook-convert ... not installed`; GREEN after routing PDF-native targets to the CAT-002 extractor before calibre). `/conversion/formats` is now derived from the tools present (`exec.LookPath`); unsupported pairs are refused at submit with 400 + `reason` instead of a job that can never run. pdf->png is not advertised and is refused (no calibre/libreoffice added to the image; add them only by an operator decision).
+- D2 FIXED: DELETE /conversion/jobs/:id really deletes pending/completed/failed/cancelled jobs (+ confined output removal for completed), 409 for running, owner/admin only.
+- D7 (conversion part) FIXED: job `error_message` and the failure notification replace absolute paths with `<path>/<basename>`. Subtitle `err.Error()` echo and translate-without-provider 500 remain OPEN (not conversion).
+- D10 FIXED: target_path extension must match target_format (jpg/jpeg, tif/tiff, htm/html, txt/text aliases) else 400. The "target directory must pre-exist" part is unchanged (documented, OPEN as spec decision).
+- D11 (truncated source reports `completed` with a tiny output): OPEN, not bounded here. Needs ffmpeg `-xerror`/stderr "Invalid data" detection plus a `warning` field on the job model and migration. D11 sidecar-subtitle import is a separate (subtitles) item.
+- CONV-F1 (OPEN): `convertPDFToImage` (go-fitz) is unreachable through the API now; remove with the go-fitz drop decision.
+- CONV-F2 (OPEN): existing rows keep their old unsanitised `error_message`; no backfill.

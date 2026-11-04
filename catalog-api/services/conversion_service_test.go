@@ -267,11 +267,11 @@ func TestConversionService_IsSupportedFormat(t *testing.T) {
 			expected:       true,
 		},
 		{
-			name:           "epub document format",
+			name:           "epub document format (needs calibre on the server)",
 			sourceFormat:   "epub",
 			targetFormat:   "pdf",
 			conversionType: "document",
-			expected:       true,
+			expected:       converterPresent("ebook-convert"),
 		},
 		{
 			name:           "source supported target unsupported video",

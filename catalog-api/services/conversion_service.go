@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -79,8 +80,8 @@ func NewConversionService(conversionRepo *repository.ConversionRepository, userR
 }
 
 func (s *ConversionService) CreateConversionJob(userID int, request *models.ConversionRequest) (*models.ConversionJob, error) {
-	if !s.validateConversionRequest(request) {
-		return nil, models.ErrInvalidConversionRequest
+	if reason := s.conversionRequestProblem(request); reason != "" {
+		return nil, fmt.Errorf("%w: %s", models.ErrInvalidConversionRequest, reason)
 	}
 
 	job := &models.ConversionJob{
@@ -378,7 +379,12 @@ func (s *ConversionService) convertAudio(job *models.ConversionJob) error {
 }
 
 func (s *ConversionService) convertDocument(job *models.ConversionJob) error {
+	// A PDF source going to a PDF-native target (text / html / image) is served by the isolated
+	// PDF path (CAT-002) first: the ebook list contains txt and html, so testing it first sent
+	// pdf -> txt to calibre, which is not installed in the image (D1).
 	switch {
+	case s.isPDFNativeConversion(job):
+		return s.convertPDF(job)
 	case s.isEbookConversion(job):
 		return s.convertEbook(job)
 	case s.isPDFConversion(job):
@@ -865,7 +871,7 @@ func (s *ConversionService) handleConversionError(job *models.ConversionJob, con
 	job.Status = models.ConversionStatusFailed
 	job.CompletedAt = &time.Time{}
 	*job.CompletedAt = time.Now()
-	errorMsg := conversionError.Error()
+	errorMsg := sanitizeConversionError(conversionError.Error())
 	job.ErrorMessage = &errorMsg
 
 	if job.StartedAt != nil {
@@ -884,7 +890,18 @@ func (s *ConversionService) handleConversionError(job *models.ConversionJob, con
 		return // cancelled meanwhile: the stored state wins
 	}
 
-	s.notifyUser(job, fmt.Sprintf("Conversion failed: %s", conversionError.Error()))
+	s.notifyUser(job, fmt.Sprintf("Conversion failed: %s", errorMsg))
+}
+
+var conversionPathRE = regexp.MustCompile(`(?:[A-Za-z]:)?(?:/[^\s:"'<>|,;()\[\]]+)+`)
+
+// sanitizeConversionError removes server filesystem paths (D7) from a tool or service error
+// before it is stored on the job or shown to the user; the base name is kept so the message stays
+// useful, the directory layout is not disclosed.
+func sanitizeConversionError(msg string) string {
+	return conversionPathRE.ReplaceAllStringFunc(msg, func(p string) string {
+		return "<path>/" + filepath.Base(p)
+	})
 }
 
 func (s *ConversionService) notifyUser(job *models.ConversionJob, message string) {
@@ -953,6 +970,60 @@ func (s *ConversionService) CancelJob(jobID int, userID int) error {
 	return nil
 }
 
+// DeleteJob removes a job that is not running: pending, completed, failed or cancelled (D2). The
+// owner or an administrator may delete. A running job gets ErrConversionJobState (409): cancel it
+// first. The output file of a completed job is removed too, but only when it is a regular file
+// inside the conversion write roots (never a symlink, never the job's own source).
+func (s *ConversionService) DeleteJob(jobID int, userID int) error {
+	job, err := s.conversionRepo.GetJob(jobID)
+	if err != nil {
+		return err
+	}
+
+	if job.UserID != userID {
+		hasPermission, err := s.authService.CheckPermission(userID, auth.PermissionManageUsers)
+		if err != nil || !hasPermission {
+			return fmt.Errorf("%w: delete", models.ErrConversionForbidden)
+		}
+	}
+
+	if job.Status == models.ConversionStatusRunning {
+		return fmt.Errorf("%w: cannot delete a running job; cancel it first", models.ErrConversionJobState)
+	}
+
+	// atomic: a claim that raced us (pending -> running) leaves the row and we report 409
+	deleted, err := s.conversionRepo.DeleteJobIf(jobID, models.ConversionStatusPending, models.ConversionStatusCompleted,
+		models.ConversionStatusFailed, models.ConversionStatusCancelled)
+	if err != nil {
+		return err
+	}
+	if !deleted {
+		return fmt.Errorf("%w: job state changed", models.ErrConversionJobState)
+	}
+
+	if job.Status == models.ConversionStatusCompleted {
+		removeConversionOutput(job)
+	}
+	return nil
+}
+
+// removeConversionOutput deletes a finished job's output file, best effort, confined to the
+// conversion write roots.
+func removeConversionOutput(job *models.ConversionJob) {
+	resolved, err := pathguard.ConfineDataFile(job.TargetPath, pathguard.ConversionWriteRoots())
+	if err != nil {
+		return
+	}
+	if src, serr := filepath.Abs(job.SourcePath); serr == nil && src == resolved {
+		return
+	}
+	fi, err := os.Lstat(resolved)
+	if err != nil || !fi.Mode().IsRegular() {
+		return
+	}
+	_ = os.Remove(resolved)
+}
+
 func (s *ConversionService) RetryJob(jobID int, userID int) error {
 	job, err := s.conversionRepo.GetJob(jobID)
 	if err != nil {
@@ -997,25 +1068,85 @@ func (s *ConversionService) CleanupCompletedJobs(olderThan time.Time) error {
 	return s.conversionRepo.CleanupJobs(olderThan)
 }
 
-func (s *ConversionService) GetSupportedFormats() *models.SupportedFormats {
-	return &models.SupportedFormats{
-		Video: models.VideoFormats{
-			Input:  []string{"mp4", "avi", "mkv", "mov", "wmv", "flv", "webm", "m4v", "3gp"},
-			Output: []string{"mp4", "avi", "mkv", "mov", "webm", "m4v"},
-		},
-		Audio: models.AudioFormats{
-			Input:  []string{"mp3", "wav", "flac", "aac", "ogg", "wma", "m4a", "opus"},
-			Output: []string{"mp3", "wav", "flac", "aac", "ogg", "m4a", "opus"},
-		},
-		Document: models.DocumentFormats{
-			Input:  []string{"epub", "mobi", "azw", "azw3", "pdf", "txt", "docx", "odt"},
-			Output: []string{"epub", "mobi", "pdf", "txt", "html"},
-		},
-		Image: models.ImageFormats{
-			Input:  []string{"jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp", "svg"},
-			Output: []string{"jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"},
-		},
+// converterLookPath resolves an executable; a variable so tests can model a host without a tool.
+var converterLookPath = exec.LookPath
+
+func converterPresent(names ...string) bool {
+	for _, n := range names {
+		if _, err := converterLookPath(n); err == nil {
+			return true
+		}
 	}
+	return false
+}
+
+var (
+	allVideoInput  = []string{"mp4", "avi", "mkv", "mov", "wmv", "flv", "webm", "m4v", "3gp"}
+	allVideoOutput = []string{"mp4", "avi", "mkv", "mov", "webm", "m4v"}
+	allAudioInput  = []string{"mp3", "wav", "flac", "aac", "ogg", "wma", "m4a", "opus"}
+	allAudioOutput = []string{"mp3", "wav", "flac", "aac", "ogg", "m4a", "opus"}
+	allImageInput  = []string{"jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp", "svg"}
+	allImageOutput = []string{"jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"}
+
+	ebookSources = []string{"epub", "mobi", "azw", "azw3", "pdf", "txt", "html", "docx", "odt"}
+	ebookTargets = []string{"epub", "mobi", "pdf", "txt", "html"}
+)
+
+// documentPairSupported says whether this server can really convert src -> dst (D1): the pairs
+// served by the isolated PDF path need no external tool (txt) or pandoc/LibreOffice (html);
+// every other pair needs calibre's ebook-convert.
+func documentPairSupported(src, dst string) bool {
+	src, dst = strings.ToLower(src), strings.ToLower(dst)
+	if src == dst {
+		return false
+	}
+	if src == "pdf" {
+		switch dst {
+		case "txt":
+			return true
+		case "html":
+			return converterPresent("pandoc", "libreoffice", "soffice")
+		}
+	}
+	return converterPresent("ebook-convert") && inList(src, ebookSources) && inList(dst, ebookTargets)
+}
+
+func inList(v string, list []string) bool {
+	for _, x := range list {
+		if v == x {
+			return true
+		}
+	}
+	return false
+}
+
+// GetSupportedFormats advertises only what the tools present on this server can do.
+func (s *ConversionService) GetSupportedFormats() *models.SupportedFormats {
+	f := &models.SupportedFormats{}
+	f.Video = models.VideoFormats{Input: []string{}, Output: []string{}}
+	f.Audio = models.AudioFormats{Input: []string{}, Output: []string{}}
+	f.Image = models.ImageFormats{Input: []string{}, Output: []string{}}
+	f.Document = models.DocumentFormats{Input: []string{}, Output: []string{}}
+	if converterPresent("ffmpeg") {
+		f.Video = models.VideoFormats{Input: allVideoInput, Output: allVideoOutput}
+		f.Audio = models.AudioFormats{Input: allAudioInput, Output: allAudioOutput}
+	}
+	if converterPresent("convert") {
+		f.Image = models.ImageFormats{Input: allImageInput, Output: allImageOutput}
+	}
+	for _, src := range ebookSources {
+		for _, dst := range ebookTargets {
+			if documentPairSupported(src, dst) {
+				if !inList(src, f.Document.Input) {
+					f.Document.Input = append(f.Document.Input, src)
+				}
+				if !inList(dst, f.Document.Output) {
+					f.Document.Output = append(f.Document.Output, dst)
+				}
+			}
+		}
+	}
+	return f
 }
 
 // moveLibreOfficeOutput renames the file LibreOffice wrote to the target's name (since review
@@ -1224,43 +1355,66 @@ func confineConversionPaths(source, target string) error {
 }
 
 func (s *ConversionService) validateConversionRequest(request *models.ConversionRequest) bool {
+	return s.conversionRequestProblem(request) == ""
+}
+
+// conversionExtAliases maps equivalent spellings of one format.
+var conversionExtAliases = map[string]string{"jpeg": "jpg", "tif": "tiff", "htm": "html", "text": "txt"}
+
+func canonicalFormat(f string) string {
+	f = strings.ToLower(strings.TrimPrefix(strings.TrimSpace(f), "."))
+	if a, ok := conversionExtAliases[f]; ok {
+		return a
+	}
+	return f
+}
+
+// conversionRequestProblem returns "" for a valid request, else a short client-safe reason (never
+// a filesystem path).
+func (s *ConversionService) conversionRequestProblem(request *models.ConversionRequest) string {
 	if request.SourcePath == "" || request.TargetPath == "" {
-		return false
+		return "source_path and target_path are required"
 	}
 
 	// Sanitize paths: reject path traversal and null bytes
 	for _, p := range []string{request.SourcePath, request.TargetPath} {
 		if strings.Contains(p, "\x00") {
-			return false
+			return "path not permitted"
 		}
 		cleaned := filepath.Clean(p)
 		if strings.Contains(cleaned, "..") {
-			return false
+			return "path not permitted"
 		}
-		// Absolute paths must stay inside the configured conversion roots; an
-		// authenticated caller must not read /etc/passwd or write ~/.ssh (§11.4.115).
 	}
+	// Absolute paths must stay inside the configured conversion roots; an
+	// authenticated caller must not read /etc/passwd or write ~/.ssh (§11.4.115).
 	if confineConversionPaths(request.SourcePath, request.TargetPath) != nil {
-		return false
+		return "path not permitted"
 	}
 
 	if request.SourceFormat == "" || request.TargetFormat == "" {
-		return false
+		return "source_format and target_format are required"
 	}
 
 	if request.ConversionType == "" {
-		return false
+		return "conversion_type is required"
 	}
 
 	if !s.isValidConversionType(request.ConversionType) {
-		return false
+		return "unknown conversion_type"
 	}
 
 	if !s.isSupportedFormat(request.ConversionType, request.SourceFormat, request.TargetFormat) {
-		return false
+		return fmt.Sprintf("conversion %s -> %s (%s) is not supported on this server", strings.ToLower(request.SourceFormat), strings.ToLower(request.TargetFormat), request.ConversionType)
 	}
 
-	return true
+	// D10: the target file's extension must agree with the declared target format.
+	ext := canonicalFormat(filepath.Ext(request.TargetPath))
+	if ext != canonicalFormat(request.TargetFormat) {
+		return "target_path extension does not match target_format"
+	}
+
+	return ""
 }
 
 func (s *ConversionService) isValidConversionType(conversionType string) bool {
@@ -1289,7 +1443,8 @@ func (s *ConversionService) isSupportedFormat(conversionType, sourceFormat, targ
 	case models.ConversionTypeAudio:
 		return s.isFormatSupported(sourceFormat, formats.Audio.Input) && s.isFormatSupported(targetFormat, formats.Audio.Output)
 	case models.ConversionTypeDocument:
-		return s.isFormatSupported(sourceFormat, formats.Document.Input) && s.isFormatSupported(targetFormat, formats.Document.Output)
+		return s.isFormatSupported(sourceFormat, formats.Document.Input) && s.isFormatSupported(targetFormat, formats.Document.Output) &&
+			documentPairSupported(sourceFormat, targetFormat)
 	case models.ConversionTypeImage:
 		return s.isFormatSupported(sourceFormat, formats.Image.Input) && s.isFormatSupported(targetFormat, formats.Image.Output)
 	}
@@ -1310,6 +1465,18 @@ func (s *ConversionService) isFormatSupported(format string, supportedFormats []
 func (s *ConversionService) isEbookConversion(job *models.ConversionJob) bool {
 	ebookFormats := []string{"epub", "mobi", "azw", "azw3", "txt", "html"}
 	return s.isFormatSupported(job.SourceFormat, ebookFormats) || s.isFormatSupported(job.TargetFormat, ebookFormats)
+}
+
+// isPDFNativeConversion reports a pdf source whose target the PDF path itself can produce.
+func (s *ConversionService) isPDFNativeConversion(job *models.ConversionJob) bool {
+	if strings.ToLower(job.SourceFormat) != "pdf" {
+		return false
+	}
+	switch strings.ToLower(job.TargetFormat) {
+	case "txt", "text", "html", "jpg", "jpeg", "png", "bmp", "tiff", "gif":
+		return true
+	}
+	return false
 }
 
 func (s *ConversionService) isPDFConversion(job *models.ConversionJob) bool {

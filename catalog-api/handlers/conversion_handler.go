@@ -19,6 +19,7 @@ type ConversionServiceInterface interface {
 	GetJob(jobID int, userID int) (*models.ConversionJob, error)
 	GetUserJobs(userID int, status *string, limit, offset int) ([]models.ConversionJob, error)
 	CancelJob(jobID int, userID int) error
+	DeleteJob(jobID int, userID int) error
 	RetryJob(jobID int, userID int) error
 	GetSupportedFormats() *models.SupportedFormats
 }
@@ -68,7 +69,8 @@ func (h *ConversionHandler) CreateJob(c *gin.Context) {
 	job, err := h.conversionService.CreateConversionJob(currentUser.ID, &request)
 	if err != nil {
 		if errors.Is(err, models.ErrInvalidConversionRequest) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid conversion request"})
+			reason := strings.TrimPrefix(strings.TrimPrefix(err.Error(), models.ErrInvalidConversionRequest.Error()), ": ")
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid conversion request", "reason": reason})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create conversion job"})
@@ -213,8 +215,7 @@ func (h *ConversionHandler) GetSupportedFormats(c *gin.Context) {
 	c.JSON(http.StatusOK, formats)
 }
 
-// DeleteJob cancels and removes a conversion job.
-// The frontend calls DELETE /conversion/jobs/:id which maps to CancelJob.
+// DeleteJob removes a conversion job that is not running (409 for a running one; cancel first).
 func (h *ConversionHandler) DeleteJob(c *gin.Context) {
 	currentUser, err := h.getCurrentUser(c)
 	if err != nil {
@@ -240,7 +241,7 @@ func (h *ConversionHandler) DeleteJob(c *gin.Context) {
 		return
 	}
 
-	err = h.conversionService.CancelJob(jobID, currentUser.ID)
+	err = h.conversionService.DeleteJob(jobID, currentUser.ID)
 	if err != nil {
 		writeJobError(c, err, "Failed to delete job")
 		return

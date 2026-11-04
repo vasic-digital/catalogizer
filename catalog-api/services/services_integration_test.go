@@ -3157,8 +3157,8 @@ func TestConversionService_CreateConversionJob_AllTypes(t *testing.T) {
 		{
 			name: "document conversion",
 			request: &models.ConversionRequest{
-				SourcePath: "/tmp/doc.epub", TargetPath: "/tmp/doc.pdf",
-				SourceFormat: "epub", TargetFormat: "pdf", ConversionType: "document", Quality: "medium",
+				SourcePath: "/tmp/doc.pdf", TargetPath: "/tmp/doc.txt",
+				SourceFormat: "pdf", TargetFormat: "txt", ConversionType: "document", Quality: "medium",
 			},
 		},
 		{

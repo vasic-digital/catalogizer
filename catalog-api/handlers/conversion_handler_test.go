@@ -52,6 +52,11 @@ func (m *MockConversionService) RetryJob(jobID int, userID int) error {
 	return args.Error(0)
 }
 
+func (m *MockConversionService) DeleteJob(jobID int, userID int) error {
+	args := m.Called(jobID, userID)
+	return args.Error(0)
+}
+
 func (m *MockConversionService) GetSupportedFormats() *models.SupportedFormats {
 	args := m.Called()
 	if args.Get(0) == nil {

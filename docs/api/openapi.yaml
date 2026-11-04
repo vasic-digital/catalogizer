@@ -4421,11 +4421,11 @@ paths:
           description: Job not found
     delete:
       tags: [conversion]
-      summary: Cancel (delete) a conversion job
+      summary: Delete a conversion job
       description: |
-        Same operation as POST .../cancel (the web client calls DELETE). A pending or running
-        job moves to status 'cancelled' and, if running, its converter process group is killed;
-        the row is kept. Failed, completed or already cancelled jobs are refused with 409.
+        Removes the job row (pending, completed, failed or cancelled). The output file of a completed
+        job is removed too, only when it is a regular file inside the conversion write roots.
+        A running job is refused with 409: cancel it first (POST .../cancel). Owner or administrator only.
       security:
         - BearerAuth: []
       parameters:
@@ -4436,7 +4436,7 @@ paths:
             type: integer
       responses:
         '200':
-          description: 'Job cancelled (body `{"message": "Job deleted successfully"}`)'
+          description: 'Job deleted (body `{"message": "Job deleted successfully"}`)'
           content:
             application/json:
               schema:
@@ -4570,6 +4570,11 @@ paths:
     get:
       tags: [conversion]
       summary: Get supported formats
+      description: |
+        Lists only the conversions this server can actually perform with the tools installed
+        (ffmpeg, ImageMagick, pandoc/LibreOffice, calibre ebook-convert). Document pdf -> txt is always
+        available; epub/mobi/pdf/azw outputs need calibre. A request outside this list, or whose
+        target_path extension contradicts target_format, is refused with 400 and a `reason`.
       security:
         - BearerAuth: []
       responses:

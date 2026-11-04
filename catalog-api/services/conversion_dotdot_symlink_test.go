@@ -24,13 +24,13 @@ func TestConversion_DotDotAfterSymlinkDoesNotEscape(t *testing.T) {
 	if err := os.Symlink(outside, filepath.Join(root, "lnk")); err != nil {
 		t.Fatal(err)
 	}
-	src := filepath.Join(root, "in.txt")
+	src := filepath.Join(root, "in.pdf")
 	_ = os.WriteFile(src, []byte("x"), 0o644)
 	t.Setenv("CATALOGIZER_CONVERSION_ROOTS", root)
 	t.Setenv("CATALOGIZER_READ_ROOTS", root)
 	target := root + "/lnk/../pwn.txt"
 	s := &ConversionService{}
-	ok := s.validateConversionRequest(&models.ConversionRequest{SourcePath: src, TargetPath: target, SourceFormat: "txt", TargetFormat: "html", ConversionType: models.ConversionTypeDocument})
+	ok := s.validateConversionRequest(&models.ConversionRequest{SourcePath: src, TargetPath: target, SourceFormat: "pdf", TargetFormat: "txt", ConversionType: models.ConversionTypeDocument})
 	err := confineConversionPaths(src, target)
 	f, werr := os.Create(target)
 	if werr == nil {
@@ -61,7 +61,7 @@ func TestConversion_DotDotAfterSymlinkRefusedEndToEnd(t *testing.T) {
 	require.NoError(t, os.MkdirAll(root, 0o755))
 	require.NoError(t, os.MkdirAll(outside, 0o755))
 	require.NoError(t, os.Symlink(outside, filepath.Join(root, "lnk")))
-	src := filepath.Join(root, "in.txt")
+	src := filepath.Join(root, "in.pdf")
 	require.NoError(t, os.WriteFile(src, []byte("x"), 0o644))
 	t.Setenv(pathGuardEnvConv, root)
 	t.Setenv(pathGuardEnvRead, root)
@@ -70,19 +70,19 @@ func TestConversion_DotDotAfterSymlinkRefusedEndToEnd(t *testing.T) {
 	repo := repository.NewConversionRepository(db)
 	svc := NewConversionService(repo, nil, nil)
 	req := func(dst string) *models.ConversionRequest {
-		return &models.ConversionRequest{SourcePath: src, TargetPath: dst, SourceFormat: "txt", TargetFormat: "html", ConversionType: models.ConversionTypeDocument}
+		return &models.ConversionRequest{SourcePath: src, TargetPath: dst, SourceFormat: "pdf", TargetFormat: "txt", ConversionType: models.ConversionTypeDocument}
 	}
 
-	_, err := svc.CreateConversionJob(1, req(filepath.Join(root, "ok.html")))
+	_, err := svc.CreateConversionJob(1, req(filepath.Join(root, "ok.txt")))
 	require.NoError(t, err, "control: an ordinary target inside the root is accepted")
 
-	evil := root + "/lnk/../pwn.html"
+	evil := root + "/lnk/../pwn.txt"
 	_, err = svc.CreateConversionJob(1, req(evil))
 	assert.Error(t, err, "CreateConversionJob must refuse %q", evil)
 
 	// a job stored before the fix is refused when it runs, and is marked failed
 	job := &models.ConversionJob{UserID: 1, SourcePath: src, TargetPath: evil,
-		SourceFormat: "txt", TargetFormat: "html", ConversionType: models.ConversionTypeDocument,
+		SourceFormat: "pdf", TargetFormat: "txt", ConversionType: models.ConversionTypeDocument,
 		Status: models.ConversionStatusPending, CreatedAt: time.Now()}
 	id, err := repo.CreateJob(job)
 	require.NoError(t, err)
