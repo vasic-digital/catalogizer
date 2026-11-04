@@ -21,17 +21,34 @@ export const api = axios.create({
   },
 })
 
+// CSRF double-submit: the server mints a token on GET/HEAD (X-CSRF-Token response header + cookie) for the groups that enforce it
+// (e.g. /admin/*) and rejects every mutating call that does not echo it back ("missing csrf header", 403). Keep the latest one.
+let csrfToken: string | null = null
+const SAFE_METHODS = new Set(['get', 'head', 'options'])
+const rememberCsrf = (headers: unknown) => {
+  const h = headers as { get?: (n: string) => unknown; [k: string]: unknown } | undefined
+  const t = (typeof h?.get === 'function' ? h.get('x-csrf-token') : h?.['x-csrf-token']) as string | undefined
+  if (t) csrfToken = t
+}
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  if (csrfToken && !SAFE_METHODS.has((config.method || 'get').toLowerCase())) {
+    config.headers['X-CSRF-Token'] = csrfToken
+  }
   return config
 })
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    rememberCsrf(response.headers)
+    return response
+  },
   (error) => {
+    rememberCsrf(error.response?.headers)
     // Article XI §11.5: when a 401 comes back FROM the login or
     // refresh endpoint itself, it means the credentials submitted
     // were wrong — NOT that an existing session expired. We must
