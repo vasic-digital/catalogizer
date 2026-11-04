@@ -1,3 +1,4 @@
+# command: see 10_teardown_stale.command.txt (the output below is that command's log)
 2026-11-03T22:55:19+01:00
 TERM children of conmon 980282 (-n catqa2-website)
 TERM children of conmon 1026330 (-n catqa2-postgres)

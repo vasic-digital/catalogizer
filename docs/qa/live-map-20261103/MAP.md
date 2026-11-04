@@ -1,9 +1,9 @@
 # Catalogizer live map — measured 2026-11-03 (host `anton`, LAN 192.168.1.115)
 
-Every row below is backed by a file in this directory (machine output, no narration). Credentials are named, never valued:
+Snapshot: the tables were measured 2026-11-03 23:06 CET (stacks 1-2) and stack 3 on 2026-11-04 13:52 CET; this is a point-in-time map, not a live view. Rows are backed by files in this directory (machine output), with these EXCEPTIONS: (a) the hung `podman-compose` pid 818992 (started 23 h earlier) was observed in a `ps` listing in the session only and no file captured it; (b) the older scratchpad evidence (smoke runs of 2026-11-02/03 and both `QA_ENDPOINTS.md`) is now copied with hashes into `80_session_scratchpad_evidence/` (`SHA256SUMS`); (c) in-session observations of the pre-fix state other than files 01-09 are not captured. Credentials are named, never valued:
 `qa.env` files (0600, outside the repo) hold `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `JWT_SECRET`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`.
 Stack 1 env: `<scratchpad>/qa_stack/qa.env`; stack 2 env: `<scratchpad>/qa_stack2/qa.env`
-(`<scratchpad>` = `/home/milosvasic/.cache/claude-tmp/claude-1000/-home-milosvasic-Projects-catalogizer/261db589-353c-4105-9405-009dbfe0bd33/scratchpad`).
+(`<session-scratchpad>` is a SESSION-LOCAL directory of the 2026-11-03 conductor session, not part of the repo; `<scratchpad>` below means the same).
 
 ## 1. Why the ports looked dead (root cause, evidence 01-09)
 
@@ -42,6 +42,10 @@ Measured `2026-11-03T23:06+01:00` (full matrix with localhost AND 192.168.1.115,
 | Website (stack 2, `catqa2-website:main`) | static site | http://192.168.1.115:33011 | none | same | `/` 200 | `30_after_matrix.txt` only |
 | PostgreSQL 15 (x2: `catqa-postgres` 127.0.0.1:35432, `catqa2-postgres` 127.0.0.1:35433) | DB | loopback only — NOT LAN | `POSTGRES_*` | in the same scripts | healthy (podman healthcheck) | `31_after_containers.txt` |
 | Redis 7 (x2: 127.0.0.1:36379, :36380, no auth) | cache | loopback only — NOT LAN | none | same | healthy | `31_after_containers.txt` |
+| catalog-api, stack 3 (`localhost/catqa3-api:main-e0cb1b36` sha256:942d3840..; built from main e0cb1b36 at review time; a later image `main-8e8cb9b1` also exists) | API | http://192.168.1.115:38082 | as above (own `qa.env`, name only) | started by another session (stack dir not in this scratchpad: UNKNOWN); `restart_stack.sh <stack3 dir> catqa3 38082` is the same project layout (UNTESTED on stack 3) | `/health` 200, `/api/v1/health` 200, `/` 404 — 2026-11-04 13:52 | `33_stack3_and_all_ports_20261104T1352.txt`; no smoke run by me |
+| catalog-web (stack 3, `catqa3-web:main-e0cb1b36` sha256:6c0fbd1d..) | web UI | http://192.168.1.115:33020 | as above | same | `/`,`/health`,`/api/v1/health` 200 | `33_stack3_and_all_ports_20261104T1352.txt` |
+| Website (stack 3, nginx:alpine) | static site | http://192.168.1.115:33021 | none | same | `/` 200 | same |
+| PostgreSQL 15 / Redis 7 (stack 3: 127.0.0.1:35434 / :36381) | DB/cache | loopback only | `POSTGRES_*` | same | healthy (podman) | same |
 | Reviewer-owned host process `catalog-api.bin` (pid 2600206, from `claude-tmp/resp.jA8VTf/`) | API (not ours) | 127.0.0.1:28443 tcp+udp | n/a | n/a (another session's scope) | listening | `32_after_listeners.txt` (not probed) |
 | Stray `helixcode` on `*:8080` (pid 6973) | unrelated project | LAN :8080 | n/a | n/a | listening — NOT Catalogizer | `32_after_listeners.txt` |
 | catalogizer-desktop (Tauri 2.4.0, `com.catalogizer.desktop`) | desktop client | n/a | login to API | `cd catalogizer-desktop && npm run tauri dev` (needs display + Rust) | NOT BUILT: no `src-tauri/target` | NONE live (compose `docker-compose.test.yml` profile `desktop` exists) |
@@ -69,3 +73,7 @@ Component inventory source: `20_compose_services.txt`, `21_components_inventory.
 - `restart_stack.sh` pins hostnames via `extra_hosts` to container IPs: IPs change on every recreate; it is a workaround, not a repair of aardvark-dns. Compose's own `depends_on` health gating is not exercised.
 - No browser (Playwright/HelixQA) run was done in this task; "LIVE" for web UIs means HTTP 200 only. Firewall: ufw off, but `nft list ruleset` needs root = UNVERIFIED; LAN reachability was measured only from the host itself via its own LAN IP, not from a second machine.
 - The older evidence mentioned (scratchpad `qa_stack*/evidence`) lives outside the repo and is not copied here.
+
+## 5. Test of the restart script
+
+`test_restart_stack.sh` (stubbed podman/podman-compose/curl/sleep in a mktemp sandbox) proves exit codes. RED against the previous `restart_stack.sh` (d37d61e0): `70_test_restart_stack_RED_before_fix.txt` (4 FAIL: db never ready, API never healthy, compose failure, bad dir all returned 0). GREEN against the fixed script: `71_test_restart_stack_GREEN_after_fix.txt` (6 PASS). The script now uses `set -euo pipefail`, checks `cd`, keeps compose exit status, and exits non-zero with a message on readiness timeout. It is still not exercised end to end against real podman since this fix (stacks were left running).

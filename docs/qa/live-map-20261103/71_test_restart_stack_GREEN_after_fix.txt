@@ -1,0 +1,22 @@
+compose-out
+db+redis ready after 3s
+postgres=10.0.0.1 redis=10.0.0.1
+compose-out
+API healthy 200 after 2s
+api=10.0.0.1
+compose-out
+PASS happy_exit0 rc=0
+compose-out
+restart_stack: postgres/redis not ready after 120s
+PASS db_never_ready_nonzero rc=1
+compose-out
+db+redis ready after 3s
+postgres=10.0.0.1 redis=10.0.0.1
+compose-out
+restart_stack: API on :38999 not healthy (last http=000) after 120s
+PASS api_never_healthy_nonzero rc=1
+compose-out
+restart_stack: podman-compose up postgres redis failed (rc=3)
+PASS compose_failure_nonzero rc=1
+PASS missing_args_nonzero
+PASS bad_dir_nonzero

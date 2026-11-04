@@ -51,7 +51,7 @@ services:
       STORAGE_REGION: us-east-1
     ports: ["0.0.0.0:38081:8080"]
     volumes:
-      - /home/milosvasic/.cache/claude-tmp/claude-1000/-home-milosvasic-Projects-catalogizer/261db589-353c-4105-9405-009dbfe0bd33/scratchpad/qa_stack2/media:/media:ro
+      - <session-scratchpad>/qa_stack2/media:/media:ro
       - api_data:/app/data
       - api_logs:/var/log/catalogizer
       - api_keys:/app/keys
@@ -75,6 +75,6 @@ services:
     container_name: catqa2-website
     ports: ["0.0.0.0:33011:80"]
     volumes:
-      - /home/milosvasic/.cache/claude-tmp/claude-1000/-home-milosvasic-Projects-catalogizer/261db589-353c-4105-9405-009dbfe0bd33/scratchpad/qa_stack2/website_dist:/usr/share/nginx/html:ro
+      - <session-scratchpad>/qa_stack2/website_dist:/usr/share/nginx/html:ro
     mem_limit: 128m
 volumes: {pg: {}, rd: {}, api_data: {}, api_logs: {}, api_keys: {}}

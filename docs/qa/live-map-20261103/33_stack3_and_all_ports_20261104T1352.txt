@@ -1,0 +1,44 @@
+2026-11-04T13:52:24+01:00
+catqa3-postgres|Up 2 hours (healthy)|docker.io/library/postgres:15-alpine
+catqa3-redis|Up 2 hours (healthy)|docker.io/library/redis:7-alpine
+catqa3-api|Up 2 hours (healthy)|localhost/catqa3-api:main-e0cb1b36
+catqa3-web|Up 2 hours|localhost/catqa3-web:main-e0cb1b36
+catqa3-website|Up 2 hours|docker.io/library/nginx:alpine
+catqa3-api localhost/catqa3-api:main-e0cb1b36 digest=sha256:942d38404e6fa10f5140f1737b77b7ea9660ef1b60153ea9fbeeffb907716069 ports={}
+catqa3-web localhost/catqa3-web:main-e0cb1b36 digest=sha256:6c0fbd1db3fccee66f9f55fc0e6575448f088a9615317bc0b1672d476c07775d ports={}
+catqa3-website docker.io/library/nginx:alpine digest=sha256:a3554c0d0b48177b1413c26e01f695334428020d9df01243fbae3e11cfd17417 ports={}
+catqa3-postgres docker.io/library/postgres:15-alpine digest=sha256:f7d23353e1b15400d22ebe31189f4d314b87a4c129cc400c8c2d8d4ca127bf81 ports={}
+catqa3-redis docker.io/library/redis:7-alpine digest=sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499 ports={}
+http://127.0.0.1:38082/ 404
+http://127.0.0.1:38082/health 200
+http://127.0.0.1:38082/api/v1/health 200
+http://127.0.0.1:33020/ 200
+http://127.0.0.1:33020/health 200
+http://127.0.0.1:33020/api/v1/health 200
+http://127.0.0.1:33021/ 200
+http://127.0.0.1:33021/health 404
+http://127.0.0.1:33021/api/v1/health 404
+http://192.168.1.115:38082/ 404
+http://192.168.1.115:38082/health 200
+http://192.168.1.115:38082/api/v1/health 200
+http://192.168.1.115:33020/ 200
+http://192.168.1.115:33020/health 200
+http://192.168.1.115:33020/api/v1/health 200
+http://192.168.1.115:33021/ 200
+http://192.168.1.115:33021/health 404
+http://192.168.1.115:33021/api/v1/health 404
+127.0.0.1:35432
+127.0.0.1:35433
+127.0.0.1:35434
+127.0.0.1:36379
+127.0.0.1:36380
+127.0.0.1:36381
+*:33000
+*:33001
+*:33010
+*:33011
+*:33020
+*:33021
+*:38080
+*:38081
+*:38082
