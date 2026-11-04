@@ -1,0 +1,9 @@
+# utc: 2026-11-04T19:17:26Z  (token/passwords never printed; status codes only)
+api GET /health                       -> 200
+api GET /metrics (no token)           -> 401
+api GET /metrics (Bearer scrape token)-> 200
+prometheus GET /-/ready (127.0.0.1:19090) -> 200
+grafana GET /api/health (127.0.0.1:13001) -> 200
+grafana GET /api/datasources (basic auth) -> 200
+grafana datasources (name,type,url): [('Prometheus', 'prometheus', 'http://prometheus:9090')]
+grafana dashboards search: ['Catalogizer Overview', 'Catalogizer Runtime & Latency']

@@ -1,0 +1,7 @@
+# utc: 2026-11-04T19:17:27Z
+up{job="catalog-api"} (Prometheus own scrape w/ token) = ['1']
+up{job="catalogizer-api"} (via otel collector -> remote write) = ['1']
+count({job="catalogizer-api"}) = ['79']
+targets:
+  catalog-api up ''
+  prometheus up ''

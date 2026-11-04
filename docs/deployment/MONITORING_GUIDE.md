@@ -60,11 +60,13 @@ curl -s http://localhost:9090/api/v1/targets | jq '.data.activeTargets[] | {job:
 Configure these in your `.env` file:
 
 ```bash
-# Prometheus
+# Prometheus (published on loopback by default; PROMETHEUS_BIND=0.0.0.0 exposes it, see "Exposure" below)
 PROMETHEUS_PORT=9090
+PROMETHEUS_BIND=127.0.0.1
 
 # Grafana
 GRAFANA_PORT=3001
+GRAFANA_BIND=127.0.0.1
 GRAFANA_USER=admin
 GRAFANA_PASSWORD=<YOUR_SECURE_PASSWORD>
 ```
@@ -110,16 +112,83 @@ scrape_configs:
 
 ### /metrics Authentication
 
-`/metrics` (and `/debug/pprof/*`) are admin-only. Scrapers use a dedicated credential:
+`/metrics` (and `/debug/pprof/*`) are admin-only. Scrapers use a dedicated credential. Generate it
+once and put the SAME value in `.env` (the API and Prometheus both read `METRICS_SCRAPE_TOKEN`):
 
 ```bash
-openssl rand -hex 32 > monitoring/secrets/metrics_scrape_token   # gitignored
-export METRICS_SCRAPE_TOKEN=$(cat monitoring/secrets/metrics_scrape_token)
+grep -q '^METRICS_SCRAPE_TOKEN=.' .env 2>/dev/null || \
+  { sed -i '/^METRICS_SCRAPE_TOKEN=/d' .env 2>/dev/null; printf 'METRICS_SCRAPE_TOKEN=%s\n' "$(openssl rand -hex 32)" >> .env; }   # .env is gitignored, keep it mode 0600
 ```
+
+Prometheus does NOT mount a token file from the host. Its compose entrypoint writes the value of
+`METRICS_SCRAPE_TOKEN` to `/tmp/metrics_scrape_token` inside the container (mode 0600) before starting,
+and `monitoring/prometheus.yml` reads that path (`authorization.credentials_file`). If the variable is
+unset or shorter than 32 characters the Prometheus container exits at once with
+`METRICS_SCRAPE_TOKEN must be set (>= 32 chars ...)` (previously a missing host file broke the start, or,
+under podman-compose, was silently created as a directory so every scrape failed with "is a directory").
+Note: `deployment/docker-compose.yml` reads `deployment/.env` (compose resolves `.env` next to the
+project directory), not the repository-root `.env`; put the variable in the file your compose command uses.
+
+Security note: the token lives in the container environment (visible to anyone who can run
+`podman inspect` / `docker inspect` on the host) and may briefly appear on the host's `podman create`
+command line while the container is created. Treat the host account as trusted; the credential grants
+read access to `GET /metrics` only. Rotate by changing `.env` and recreating the `prometheus` container (and the API).
 
 The API accepts it as `Authorization: Bearer <token>` on `GET /metrics` only (min 32 chars;
 constant-time compare; any other route answers 401 with it). Without the variable, only an
-admin JWT can read `/metrics`. The OpenTelemetry collector reads `${env:METRICS_SCRAPE_TOKEN}`.
+admin JWT can read `/metrics`. The OpenTelemetry collector (compose profile `otel`, root
+`docker-compose.yml`) is started with `METRICS_SCRAPE_TOKEN` and reads `${env:METRICS_SCRAPE_TOKEN}`;
+the collector image is version-pinned, its config exports metrics to Prometheus' remote-write receiver
+(opt-in: start Prometheus with `PROMETHEUS_EXTRA_FLAGS=--web.enable-remote-write-receiver`, only together with the
+`otel` profile), and traces/logs are only logged (no backend in this compose file; the former jaeger/loki exporters
+are invalid in current releases).
+VERIFIED, with committed raw evidence in `docs/qa/monitoring-deploy-20261104/` (files 01-05): `otelcol-contrib validate`
+accepts the config (the pre-fix config is rejected), the collector starts (0 restarts, 0 error lines), scrapes `/metrics`
+with the token and Prometheus holds the series (`up{job="catalogizer-api"} = 1`, 79 series); Grafana provisioned its
+Prometheus datasource and both dashboards. Not verified: see the PROVISIONAL note below.
+
+#### Exposure (read before changing `*_BIND`)
+
+- Prometheus and Grafana are published on `127.0.0.1` by default (`PROMETHEUS_BIND`, `GRAFANA_BIND`); a remote
+  scraper or browser needs an explicit `0.0.0.0` (or a reverse proxy with authentication in front).
+- Prometheus runs with `--web.enable-lifecycle`: `POST /-/reload` and `POST /-/quit` are UNAUTHENTICATED. Anyone who
+  can reach the port can stop Prometheus. Keep it on loopback or behind an authenticating proxy. (Lifecycle is used
+  by the reload command below; drop the flag in the compose file if you do not need hot reload.)
+- `--web.enable-remote-write-receiver` opens an UNAUTHENTICATED write endpoint (`/api/v1/write`) that can inject
+  arbitrary series. It is therefore off by default (verified: 404 without the flag, 400 = handler reached with it)
+  and must only be enabled with Prometheus bound to loopback or an internal-only network.
+
+Regression test (real `prom/prometheus` image under rootless podman, with a paired mutation run):
+`bash scripts/monitoring/test_prometheus_token_start.sh` and `... --mutations`.
+
+### Starting the monitoring stack (QA host / any host)
+
+```bash
+# root docker-compose.yml: monitoring is the `monitoring` profile
+export METRICS_SCRAPE_TOKEN=<same value as in .env> GRAFANA_PASSWORD=<set>
+PROMETHEUS_PORT=19090 GRAFANA_PORT=13001 \
+  podman-compose -p <project> --profile monitoring up -d prometheus grafana
+# Prometheus scrapes api:8080 on the compose network; start `api` from the same compose project
+# (or give your API container the network alias `api`). Check:
+curl -s localhost:19090/api/v1/targets      # catalog-api health "up"
+# teardown by project name: podman-compose -p <project> --profile monitoring down -v
+```
+
+`deployment/docker-compose.yml` mounts `../monitoring/...` (paths are relative to that file) and its
+`catalogizer-server` service carries the network alias `api`, which `monitoring/prometheus.yml` targets.
+PROVISIONAL (not live-verified): resolution of the `api` alias through the compose network DNS and the full
+`deployment/docker-compose.yml` stack (the test host's podman network DNS refused queries on the scratch project
+network, so names were injected with `extra_hosts`; see `docs/qa/monitoring-deploy-20261104/00_README.txt`). The
+static test checks that the alias and the mount sources exist. Grafana datasource/dashboard provisioning IS
+verified (file 02).
+
+Ports (override per host; default / suggested QA-host value, pick free ports, never reuse a running stack's):
+
+| Service | Env var | Default | Suggested on a shared QA host |
+|---------|---------|---------|-------------------------------|
+| Prometheus | `PROMETHEUS_PORT` (bind: `PROMETHEUS_BIND`, default 127.0.0.1) | 9090 | 19090 |
+| Grafana | `GRAFANA_PORT` (bind: `GRAFANA_BIND`, default 127.0.0.1) | 3001 | 13001 |
+| OTel collector (profile `otel`) | none published | - | - |
 
 ### Adding Additional Scrape Targets
 
@@ -160,7 +229,7 @@ scrape_configs:
 After editing, reload Prometheus configuration:
 
 ```bash
-# Hot reload (if --web.enable-lifecycle is enabled, which it is)
+# Hot reload (--web.enable-lifecycle is enabled: unauthenticated, loopback-only by default, see Exposure)
 curl -X POST http://localhost:9090/-/reload
 
 # Or restart the container

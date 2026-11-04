@@ -1,0 +1,8 @@
+# command: podman run --rm -v monitoring/opentelemetry/otel-collector.yml:/c.yml:ro -e METRICS_SCRAPE_TOKEN=<32+ chars> otel/opentelemetry-collector-contrib:0.164.0 validate --config=/c.yml
+# utc: 2026-11-04T19:15:34Z
+validate_rc=0
+# pre-fix config (git show d4a3dbd6:monitoring/opentelemetry/otel-collector.yml) for contrast:
+Error: failed to get config: cannot unmarshal the configuration: decoding failed due to the following error(s):
+
+'exporters' unknown type: "loki" for id: "loki" (valid values: [honeycombmarker loadbalancing prometheus tinybird clickhouse load_balancing logzio debug awsemf 
+old_validate_rc=1

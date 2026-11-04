@@ -1,0 +1,30 @@
+PASS docker-compose.yml: no host token-file bind mount
+PASS docker-compose.yml: entrypoint writes /tmp/metrics_scrape_token from the environment
+PASS docker-compose.yml: entrypoint has the length guard
+PASS docker-compose.yml: prometheus.yml credentials_file == /tmp/metrics_scrape_token
+PASS docker-compose.yml: environment passes METRICS_SCRAPE_TOKEN to prometheus
+PASS docker-compose.yml: every relative monitoring mount source exists
+PASS docker-compose.yml: scrape target host 'api' is a service name or network alias
+PASS docker-compose.yml: prometheus/grafana ports are bind-guarded (default 127.0.0.1)
+PASS docker-compose.yml: remote-write receiver is opt-in via PROMETHEUS_EXTRA_FLAGS (default empty)
+PASS docker-compose.yml: otel-collector image is version-pinned (docker.io/otel/opentelemetry-collector-contrib:0.164.0)
+PASS docker-compose.yml: otel wiring (token passthrough, remote-write endpoint == prometheus:9090, pipeline exporter)
+PASS docker-compose.yml live: otelcol-contrib validate accepts the collector config
+PASS docker-compose.yml live: unset token -> container exited rc=1 with clear message
+PASS docker-compose.yml live: short token -> container exited rc=1 with clear message
+PASS docker-compose.yml live: remote-write receiver closed by default (404), opened by PROMETHEUS_EXTRA_FLAGS (400 = handler reached)
+PASS docker-compose.yml live: valid token -> Prometheus ready, token file len=64 mode=600 equals env
+PASS deployment/docker-compose.yml: no host token-file bind mount
+PASS deployment/docker-compose.yml: entrypoint writes /tmp/metrics_scrape_token from the environment
+PASS deployment/docker-compose.yml: entrypoint has the length guard
+PASS deployment/docker-compose.yml: prometheus.yml credentials_file == /tmp/metrics_scrape_token
+PASS deployment/docker-compose.yml: environment passes METRICS_SCRAPE_TOKEN to prometheus
+PASS deployment/docker-compose.yml: every relative monitoring mount source exists
+PASS deployment/docker-compose.yml: scrape target host 'api' is a service name or network alias
+PASS deployment/docker-compose.yml: prometheus/grafana ports are bind-guarded (default 127.0.0.1)
+PASS deployment/docker-compose.yml: remote-write receiver is opt-in via PROMETHEUS_EXTRA_FLAGS (default empty)
+PASS deployment/docker-compose.yml live: unset token -> container exited rc=1 with clear message
+PASS deployment/docker-compose.yml live: short token -> container exited rc=1 with clear message
+PASS deployment/docker-compose.yml live: remote-write receiver closed by default (404), opened by PROMETHEUS_EXTRA_FLAGS (400 = handler reached)
+PASS deployment/docker-compose.yml live: valid token -> Prometheus ready, token file len=64 mode=600 equals env
+SUMMARY pass=29 fail=0 skip=0

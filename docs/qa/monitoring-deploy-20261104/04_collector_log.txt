@@ -1,0 +1,4 @@
+# collector log lines: ready + error count
+2026-11-04T19:15:56.032Z	info	service@v0.164.0/service.go:256	Everything is ready. Begin running and processing data.	
+error lines: 0
+"resource metrics": 1, "metrics": 60, "data points": 62

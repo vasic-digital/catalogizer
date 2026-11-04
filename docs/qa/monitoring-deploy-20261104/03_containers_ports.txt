@@ -1,0 +1,11 @@
+# utc: 2026-11-04T19:17:26Z
+catmon-test-api | Up About a minute
+catalogizer-grafana | Up About a minute
+catalogizer-prometheus | Up About a minute
+catalogizer-otel-collector | Up About a minute
+catalogizer-prometheus restarts=0 state=running
+catalogizer-otel-collector restarts=0 state=running
+catalogizer-grafana restarts=0 state=running
+published ports:
+9090/tcp -> 127.0.0.1:19090
+3000/tcp -> 127.0.0.1:13001
