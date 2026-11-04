@@ -1,0 +1,6 @@
+--- FAIL: TestConversionToolsMissing_RealBinary (11.77s)
+        	            	expected: 200
+        	            	actual  : 400
+FAIL
+FAIL	catalogizer	11.801s
+FAIL

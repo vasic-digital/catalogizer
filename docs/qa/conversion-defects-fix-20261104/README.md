@@ -16,3 +16,5 @@ Round 3: fd3ac5db (R3-1 unclosed-quote paths; evidence logs were gitignored befo
 - red-r3-services.log: RED for the unclosed-quote cases.
 - green-merged-conversion-subtitle-race.log: `go test -race` of conversion/subtitle/TestRev/TestD tests on the merged tree (services, handlers, repository, tests), plus go build ./... and vet.log clean.
 - green-services-tests-full.log, green-handlers-repository-race-full.log: full-package runs of round 2 (code 8cc5b709).
+
+Round 4: root package. red-root-conversion-tools.log = old TestConversionToolsMissing_RealBinary red on the branch (expected 200, got 400); green-root-package.log = full root package: only the pre-existing main failure TestOpenAPIContract_RealBinary_PathParamsAndUserRolePermissions (DELETE /api/v1/logs/share/999999 404 vs 500) fails; TestConversionToolsMissing_RealBinary passes.
