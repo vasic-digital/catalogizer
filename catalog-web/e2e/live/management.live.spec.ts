@@ -134,7 +134,7 @@ test.describe('admin user management (real backend)', () => {
       expect(ok.status(), 'approved account can log in').toBe(200);
       await shot(page, testInfo, 'admin-users-approved');
 
-      const lock = await request.post(`${API_URL}/api/v1/users/${uid}/lock`, { headers: auth, data: {} });
+      const lock = await request.post(`${API_URL}/api/v1/users/${uid}/lock`, { headers: auth, data: { lock_until: new Date(Date.now() + 3600_000).toISOString() } });
       expect(lock.status(), 'lock').toBe(200);
       expect([401, 403], 'locked account is refused').toContain((await apiLogin(request, username, password)).status());
       const unlock = await request.post(`${API_URL}/api/v1/users/${uid}/unlock`, { headers: auth, data: {} });
@@ -162,13 +162,13 @@ test.describe('conversions (real backend)', () => {
   test('conversion page renders, the real format table matches the page, and a real mp3 to wav job runs to completion on the corpus', async ({ page, request }, testInfo) => {
     const auth = { Authorization: `Bearer ${await adminToken(request)}` };
     await uiAdminLogin(page);
-    await navTo(page, 'Conversion');
+    await navTo(page, 'Convert');
     await expect(page.getByText(/something went wrong|unexpected error|not iterable/i)).toHaveCount(0);
     await shot(page, testInfo, 'conversion-page');
     const fmts = await (await request.get(`${API_URL}/api/v1/conversion/formats`, { headers: auth })).json();
     expect(fmts.audio.output).toContain('wav');
     const jobsBefore = (await (await request.get(`${API_URL}/api/v1/conversion/jobs`, { headers: auth })).json()) as Array<{ id: number }>;
-    const created = await request.post(`${API_URL}/api/v1/conversion/jobs`, { headers: auth, data: { source_path: '/media/music/Misc/Plain Tone.mp3', target_path: `/tmp/live-conv-${tag(testInfo)}.wav`, source_format: 'mp3', target_format: 'wav', conversion_type: 'audio_conversion', quality: 'medium' } });
+    const created = await request.post(`${API_URL}/api/v1/conversion/jobs`, { headers: auth, data: { source_path: '/media/music/Misc/Plain Tone.mp3', target_path: `/app/data/live-conv-${tag(testInfo)}.wav`, source_format: 'mp3', target_format: 'wav', conversion_type: 'audio', quality: 'medium' } });
     const body = await created.text();
     expect([200, 201, 202], `create conversion job: ${body.slice(0, 300)}`).toContain(created.status());
     const job = JSON.parse(body);
