@@ -55,6 +55,7 @@ for (const [fam, f] of Object.entries(t.families).sort()) {
     }
   }
   if (dbl) add(`${fam}:main-class-is-no-script`, exe, [a0, 'Main'], 'ok', null);
+  if (dbl) add(`${fam}:absolute-main-class-path-is-no-script`, exe, [a0, '/srv/app/real'], 'ok', null);
 }
 // shapes from the round-5 review: every one of these made a canned server LIVE under the deny-list design
 const R = (name, exe, args, want, script = null) => add('review:' + name, exe, args, want, script);

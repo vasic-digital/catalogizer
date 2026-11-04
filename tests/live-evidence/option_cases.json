@@ -1124,6 +1124,16 @@
   "script": null
  },
  {
+  "member": "java:absolute-main-class-path-is-no-script",
+  "exe": "/usr/bin/java",
+  "args": [
+   "java",
+   "/srv/app/real"
+  ],
+  "want": "ok",
+  "script": null
+ },
+ {
   "member": "lua:plain",
   "exe": "/usr/bin/lua",
   "args": [

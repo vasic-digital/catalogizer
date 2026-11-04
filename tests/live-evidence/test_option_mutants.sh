@@ -26,11 +26,13 @@ case " $STAGES " in *" table "*)
     if LIVE_EVIDENCE_INTERP_OPTIONS=$mt FAILFAST=1 bash "$HERE/test_option_cases.sh" "$VSRC" "select(.member == \"$member\" or (.member | startswith(\"$member:\")))" >/dev/null 2>&1 </dev/null; then res "table $kind $fam $name" survived; else res "table $kind $fam $name" killed; fi
   done < <(jq -r '.families | to_entries[] | .key as $f | ((.value.benign | to_entries[] | "rb\t\($f)\t\(.key)\t\(.value.opt)"), (.value.dangerous | to_entries[] | "rd\t\($f)\t\(.key)\t\(.value)", (select(.value | startswith("prefix:") | not) | "mv\t\($f)\t\(.key)\t\(.value)")))' "$REALTBL")
 ;; esac
+# NOTE: EQUIVALENT mutant, deliberately not listed: dropping the '(iresult($A).script == null) or' disjunct of script_not_in_cmdline changes nothing, because scriptmatch(null) is false (tok must be a string) so the right disjunct already fires; the relative-script dotdot/dot-slash mutants were removed with the code they mutated (a relative token never binds; scriptmatch-relative-accepted + absolute-script-endswith cover that path).
 # NOTE: no verifier mutant for the ctl() token check: it is defense-in-depth, EQUIVALENT in the verifier (cmdline_malformed INVALID pre-empts it); Node and Go mutants for it are killed.
 case " $STAGES " in *" vcode "*)
   FAILFAST=1 bash "$HERE/test_option_cases.sh" "$VSRC" 'true' >/dev/null 2>&1 || { echo "FAIL: verifier control run must pass" >&2; survived=$((survived+1)); }
   i=0
   while IFS=$'\t' read -r name from to; do
+    if [ -n "${ONLY:-}" ] && ! [[ $name =~ $ONLY ]]; then continue; fi   # ONLY=<regex> runs just the matching source mutants
     i=$((i+1)); mv_=$M/v$i.sh
     python3 - "$VSRC" "$mv_" "$from" "$to" <<'PY'
 import sys
@@ -53,7 +55,6 @@ next-value-re-dropped	and (($e.re | not) or ($t[$i + 1] | test($e.re))) then	the
 none-accepts-value	if $e.val == "none" then (if $has then {st: "unknown"} else {adv: 1} end)	if $e.val == "none" then {adv: 1}
 unknown-option-accepted	if $at != null then {adv: 1} else {st: "unknown"} end	{adv: 1}
 script-binding-dropped	(scriptmatch($A.script_path; iresult($A).script) | not)	false
-script-null-accepted	((iresult($A).script == null) or	(false or
 positional-script-ignored	(if (($f | has("positional_script")) and $f.positional_script == false) then null else $x end)	$x
 unsupported-dropped	if $f == null and iunsupported($b) then	if false then
 argv0-scanned	.[1:]))	.[0:]))
@@ -62,9 +63,7 @@ jar-script-dropped	(if $e.script then {script: $t[$i + 1]} else {adv: 2} end)	{a
 eq-needs-no-value	elif $e.val == "eq" then (if $has and	elif $e.val == "eq" then (if
 next-eq-script-allowed	and ($e.script | not) then {adv: 1}	then {adv: 1}
 next-value-dash-allowed	(($t[$i + 1] | startswith("-")) | not) and	true and
-relative-script-dotdot-basename-dropped	if ($r | contains("..")) then	if false then
-dot-slash-not-stripped	($tok | ltrimstr("./")) as $r	($tok) as $r
-absolute-script-endswith	elif ($tok | startswith("/")) then $sp == $tok	elif ($tok | startswith("/")) then ($sp | endswith($tok))
+absolute-script-endswith	($tok | startswith("/")) and ($sp == $tok);	($tok | startswith("/")) and ($sp | endswith($tok));
 scriptmatch-relative-accepted	($tok | startswith("/")) and ($sp == $tok);	($sp | endswith("/" + ($tok | ltrimstr("./"))));
 env-unrec-dropped	and ($A.env_checked != true) then "env_unrecorded"	and false then "env_unrecorded"
 env-injected-dropped	and ($A.env_checked == true) and ((($A.env_injected	and false and ((($A.env_injected
@@ -81,6 +80,7 @@ case " $STAGES " in *" ncode "*)
   runn() { ( cd "$M/node" && LIVE_EVIDENCE_INTERP_OPTIONS=$REALTBL node test_option_cases_node.mjs >/dev/null 2>&1 </dev/null && node test_env_node.mjs >/dev/null 2>&1 </dev/null ); }
   cp "$HERE/index.mjs" "$M/node/index.mjs"; runn || { echo "FAIL: node control run must pass" >&2; survived=$((survived+1)); }
   while IFS=$'\t' read -r name from to; do
+    if [ -n "${ONLY:-}" ] && ! [[ $name =~ $ONLY ]]; then continue; fi   # ONLY=<regex> runs just the matching source mutants
     python3 - "$HERE/index.mjs" "$M/node/index.mjs" "$from" "$to" <<'PY'
 import sys
 s=open(sys.argv[1]).read(); f=sys.argv[3].replace('\\n','\n').replace('\\t','\t'); t=sys.argv[4].replace('\\n','\n').replace('\\t','\t')
@@ -101,7 +101,7 @@ re-dropped	const reok = (b, val) => !b.re || new RegExp(b.re).test(val);	const r
 none-accepts-value	if (has) return { st: 'unknown', script: null }; i += 1; }	i += 1; }
 unknown-option-accepted	if (at) i += 1; else return { st: 'unknown', script: null };	i += 1;
 positional-script-ignored	fam.positional_script === false ? null : x	x
-unsupported-dropped	f === null && new RegExp(t.unsupported_exe, 'i')	false && new RegExp(t.unsupported_exe, 'i')
+unsupported-dropped	f === null && new RegExp(t.unsupported_exe, 'iu')	false && new RegExp(t.unsupported_exe, 'iu')
 argv0-scanned	const toks = args.slice(1);	const toks = args;
 next-adv-1	i += 2;	i += 1;
 jar-script-dropped	if (e.script) return { st: 'ok', script: toks[i + 1] };	
@@ -123,6 +123,7 @@ case " $STAGES " in *" gcode "*)
   mkdir -p "$GM"; cp "$PK"/*.go "$PK"/interp_options.json "$GM/"; rm -f "$GM/liveevidence_test.go"
   rung || { echo "FAIL: go control run must pass" >&2; survived=$((survived+1)); }
   while IFS=$'\t' read -r name from to; do
+    if [ -n "${ONLY:-}" ] && ! [[ $name =~ $ONLY ]]; then continue; fi   # ONLY=<regex> runs just the matching source mutants
     python3 - "$PK/liveevidence.go" "$GM/liveevidence.go" "$from" "$to" <<'PY'
 import sys
 s=open(sys.argv[1]).read(); f=sys.argv[3].replace('\\n','\n').replace('\\t','\t'); t=sys.argv[4].replace('\\n','\n').replace('\\t','\t')
