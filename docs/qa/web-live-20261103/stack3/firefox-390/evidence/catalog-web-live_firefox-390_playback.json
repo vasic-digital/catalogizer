@@ -3,10 +3,10 @@
   "test_id": "catalog-web-live/firefox-390/playback",
   "class": "LIVE",
   "verdict": "PASS",
-  "timestamp": "2026-11-04T02:00:19.614Z",
+  "timestamp": "2026-11-04T03:40:13.020Z",
   "command": "catalog-web/e2e/live/run_live.sh firefox-390",
   "artifact": {
-    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:c44f737b0c380c896af5f765c24dc178a629c7308b358b416dcacca0e3883c2b;api-health={\"version\":\"0e0d3d680da18e23b077948fce8103742d721761\",\"build_number\":\"0e0d3d680da18e23b077948fce8103742d721761\",\"build_date\":\"stack3\"};web-image=sha256:7a201180f512940a83989e8111015235f01602fa80860ba10202d5acebeb55c6",
+    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:7027db881df9fe922eadc460ab513869103ccae2bcc213b28a711976639494d7;api-health={\"version\":\"71552b16ca2c4646834fd591226ccbf708168b06\",\"build_number\":\"71552b16ca2c4646834fd591226ccbf708168b06\",\"build_date\":\"stack3\"};web-image=sha256:cc9d4093bc8bd58b46924628a4b1c8d66864c9d4f0803e9482cd15d0047e2d6d",
     "source": "target"
   },
   "endpoint": {
@@ -17,34 +17,35 @@
   },
   "answering": {
     "kind": "container",
-    "image": "localhost/catqa3-web:main-0e0d3d68",
-    "image_digest": "sha256:7a201180f512940a83989e8111015235f01602fa80860ba10202d5acebeb55c6",
-    "container_id": "4a88c76e12a84729a264c35990d3dbcd71f18a7e07070e773dcc197ec9c9ed76"
+    "image": "localhost/catqa3-web:main-71552b16",
+    "image_digest": "sha256:cc9d4093bc8bd58b46924628a4b1c8d66864c9d4f0803e9482cd15d0047e2d6d",
+    "container_id": "a66f18457b3120645a5e6d9766b23e324e18509cac0799f7d637c4e58021a912"
   },
   "expected": {
-    "image_digest": "sha256:7a201180f512940a83989e8111015235f01602fa80860ba10202d5acebeb55c6"
+    "image_digest": "sha256:cc9d4093bc8bd58b46924628a4b1c8d66864c9d4f0803e9482cd15d0047e2d6d"
   },
   "requests": {
-    "total": 132,
+    "total": 201,
     "methods": {
-      "GET": 128,
-      "POST": 4
+      "GET": 194,
+      "POST": 7
     }
   },
   "responses": {
     "status_histogram": {
-      "200": 130,
-      "206": 2
+      "200": 197,
+      "206": 4
     }
   },
   "runs": {
     "n": 3,
     "identical": true,
-    "signature": "sha256:070718bc89a1253f09ca09474d765ab97dd32c37371d5bf494e2e2a1e3ea61ca"
+    "signature": "sha256:f90a4f96a3bc803883b86432d4302989827be99eb5312a650afdc22234f1607d"
   },
   "tests": {
     "run1": [
       "audio file: the same player plays an mp3 from the real stream=passed",
+      "long playback: plays past the 60 s ticket lifetime, a seek after expiry works, currentTime keeps advancing, no media error=passed",
       "movies/Another.Movie.2019.vp9.webm: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
       "movies/Movie.Name.2020.1080p.mp4: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
       "music/Misc/Plain Tone.flac: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
@@ -55,6 +56,7 @@
     ],
     "run2": [
       "audio file: the same player plays an mp3 from the real stream=passed",
+      "long playback: plays past the 60 s ticket lifetime, a seek after expiry works, currentTime keeps advancing, no media error=passed",
       "movies/Another.Movie.2019.vp9.webm: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
       "movies/Movie.Name.2020.1080p.mp4: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
       "music/Misc/Plain Tone.flac: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
@@ -65,6 +67,7 @@
     ],
     "run3": [
       "audio file: the same player plays an mp3 from the real stream=passed",
+      "long playback: plays past the 60 s ticket lifetime, a seek after expiry works, currentTime keeps advancing, no media error=passed",
       "movies/Another.Movie.2019.vp9.webm: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
       "movies/Movie.Name.2020.1080p.mp4: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",
       "music/Misc/Plain Tone.flac: full read through /stream/:id is byte-identical to the corpus (sha256) and ranges answer 206=passed",

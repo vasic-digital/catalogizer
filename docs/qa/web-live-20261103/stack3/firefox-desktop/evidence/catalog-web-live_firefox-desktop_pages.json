@@ -3,10 +3,10 @@
   "test_id": "catalog-web-live/firefox-desktop/pages",
   "class": "LIVE",
   "verdict": "PASS",
-  "timestamp": "2026-11-04T02:00:18.972Z",
+  "timestamp": "2026-11-04T03:22:54.830Z",
   "command": "catalog-web/e2e/live/run_live.sh firefox-desktop",
   "artifact": {
-    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:c44f737b0c380c896af5f765c24dc178a629c7308b358b416dcacca0e3883c2b;api-health={\"version\":\"0e0d3d680da18e23b077948fce8103742d721761\",\"build_number\":\"0e0d3d680da18e23b077948fce8103742d721761\",\"build_date\":\"stack3\"};web-image=sha256:7a201180f512940a83989e8111015235f01602fa80860ba10202d5acebeb55c6",
+    "fingerprint": "base=http://127.0.0.1:33020;api=http://127.0.0.1:38082;api-image=sha256:7027db881df9fe922eadc460ab513869103ccae2bcc213b28a711976639494d7;api-health={\"version\":\"71552b16ca2c4646834fd591226ccbf708168b06\",\"build_number\":\"71552b16ca2c4646834fd591226ccbf708168b06\",\"build_date\":\"stack3\"};web-image=sha256:cc9d4093bc8bd58b46924628a4b1c8d66864c9d4f0803e9482cd15d0047e2d6d",
     "source": "target"
   },
   "endpoint": {
@@ -17,12 +17,12 @@
   },
   "answering": {
     "kind": "container",
-    "image": "localhost/catqa3-web:main-0e0d3d68",
-    "image_digest": "sha256:7a201180f512940a83989e8111015235f01602fa80860ba10202d5acebeb55c6",
-    "container_id": "4a88c76e12a84729a264c35990d3dbcd71f18a7e07070e773dcc197ec9c9ed76"
+    "image": "localhost/catqa3-web:main-71552b16",
+    "image_digest": "sha256:cc9d4093bc8bd58b46924628a4b1c8d66864c9d4f0803e9482cd15d0047e2d6d",
+    "container_id": "a66f18457b3120645a5e6d9766b23e324e18509cac0799f7d637c4e58021a912"
   },
   "expected": {
-    "image_digest": "sha256:7a201180f512940a83989e8111015235f01602fa80860ba10202d5acebeb55c6"
+    "image_digest": "sha256:cc9d4093bc8bd58b46924628a4b1c8d66864c9d4f0803e9482cd15d0047e2d6d"
   },
   "requests": {
     "total": 43,
