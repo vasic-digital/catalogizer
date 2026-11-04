@@ -1,0 +1,70 @@
+== M1-source-check-off
+--- FAIL: TestRev_F7_TargetEqualsSourceIsKept (0.13s)
+FAIL
+FAIL	catalogizer/handlers	0.435s
+FAIL
+== M2-IsRegular-dropped
+--- FAIL: TestRev_F1_InRootSymlinkTargetLeavesVictimIntact (0.15s)
+--- FAIL: TestRev_F7_DirectoryTargetIsKept (0.12s)
+FAIL
+FAIL	catalogizer/handlers	1.037s
+FAIL
+== M5-raw-error-in-notification
+--- FAIL: TestRev_F7_NotificationIsSanitised (0.00s)
+FAIL
+FAIL	catalogizer/services	0.028s
+FAIL
+== M3-status-condition-removed-in-SQL
+456:	res, err := r.db.Exec("DELETE FROM conversion_jobs WHERE id = ?", args[:1]...)
+--- FAIL: TestRev_F7_DeleteJobIfIsStatusConditional (0.14s)
+FAIL
+FAIL	catalogizer/handlers	0.363s
+FAIL
+== F1-revert-resolved-path-remove
+--- FAIL: TestRev_F1_InRootSymlinkTargetLeavesVictimIntact (0.16s)
+FAIL
+FAIL	catalogizer/handlers	0.240s
+FAIL
+== F6-snapshot-status-condition-widened
+ok  	catalogizer/handlers	0.170s
+== F2-foreign-is-403-again
+--- FAIL: TestD2_DeleteOwnerOnlyAndConfinedFileRemoval (0.25s)
+--- FAIL: TestConversionRealStack_OwnershipIsolation (0.25s)
+FAIL
+FAIL	catalogizer/handlers	0.535s
+FAIL
+== F3-route-docx-to-pdf
+--- FAIL: TestRev_F3_AdvertisedPairsRouteToARealConverter (0.00s)
+FAIL
+FAIL	catalogizer/services	0.043s
+FAIL
+== F5-sanitizer-first-space
+sed: -e expression #1, char 29: unknown option to `s'
+== green F6
+ok  	catalogizer/services	0.026s
+== F6-snapshot-status-condition-widened (retest)
+--- FAIL: TestRev_F6_DeleteRaceKeepsRowAndFile (0.01s)
+FAIL
+FAIL	catalogizer/services	0.050s
+FAIL
+== F5-sanitizer-first-space
+--- FAIL: TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs (0.00s)
+FAIL
+FAIL	catalogizer/services	0.026s
+FAIL
+== N1-M1 colon/comma removed from path-start delimiters
+ 1 file changed, 25 insertions(+), 9 deletions(-)
+0
+--- FAIL: TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs (0.00s)
+FAIL
+FAIL	catalogizer/services	0.030s
+FAIL
+== N1-M2 quoted pass disabled
+--- FAIL: TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs (0.00s)
+FAIL
+FAIL	catalogizer/services	0.142s
+FAIL
+== R3-M1 quote chars removed from second-pass lead list (verified applied)
+--- FAIL: TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs (0.00s)
+FAIL
+FAIL	catalogizer/services	0.021s

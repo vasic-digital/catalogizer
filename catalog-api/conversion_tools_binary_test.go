@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,8 +15,8 @@ import (
 
 // Real-binary proof for the converter-tool capability handling: with the
 // converter tools absent from PATH (the old runtime image had no ffmpeg), a
-// conversion job must end `failed` with an honest, tool-naming reason - never
-// stay `pending` forever - and /health/deep must report which converters exist.
+// conversion pair must be refused at submit (400 + reason) and not advertised,
+// and /health/deep must report which converters exist.
 func TestConversionToolsMissing_RealBinary(t *testing.T) {
 	if testing.Short() {
 		t.Skip("builds and runs the server binary")
@@ -44,28 +43,28 @@ func TestConversionToolsMissing_RealBinary(t *testing.T) {
 	require.NoError(t, os.MkdirAll(filepath.Join(dir, "data"), 0o755))
 	src := filepath.Join(dir, "data", "in.mp3")
 	require.NoError(t, os.WriteFile(src, []byte("not really audio"), 0o644))
-	jid := c.id("POST", "/api/v1/conversion/jobs", adm, map[string]interface{}{
+	// D1 contract: with ffmpeg absent, an audio pair is not advertised and is refused at submit
+	// with 400 and a client-safe reason, instead of becoming a job that can never run.
+	code, raw := c.do("POST", "/api/v1/conversion/jobs", adm, map[string]interface{}{
 		"source_path": src, "target_path": filepath.Join(dir, "data", "out.wav"),
-		"source_format": "mp3", "target_format": "wav", "conversion_type": "audio", "quality": "medium", "priority": 5}, 200)
+		"source_format": "mp3", "target_format": "wav", "conversion_type": "audio", "quality": "medium", "priority": 5})
+	require.Equal(t, 400, code, "%s", raw)
+	var rej map[string]interface{}
+	require.NoError(t, json.Unmarshal(raw, &rej), "%s", raw)
+	assert.Contains(t, fmt.Sprint(rej["reason"]), "not supported on this server", "%s", raw)
+	assert.NotContains(t, string(raw), dir, "the refusal must not leak a server path")
 
-	var job map[string]interface{}
-	deadline := time.Now().Add(30 * time.Second)
-	for time.Now().Before(deadline) {
-		code, raw := c.do("GET", fmt.Sprintf("/api/v1/conversion/jobs/%d", jid), adm, nil)
-		require.Equal(t, 200, code, "%s", raw)
-		job = map[string]interface{}{}
-		require.NoError(t, json.Unmarshal(raw, &job))
-		if job["status"] != "pending" && job["status"] != "running" {
-			break
-		}
-		time.Sleep(time.Second)
-	}
-	assert.Equal(t, "failed", job["status"], "job must reach a terminal state, got %v", job)
-	assert.Contains(t, fmt.Sprint(job["error_message"]), "ffmpeg", "the failure must name the missing tool: %v", job)
-	assert.Contains(t, fmt.Sprint(job["error_message"]), "not installed", "%v", job)
+	code, raw = c.do("GET", "/api/v1/conversion/formats", adm, nil)
+	require.Equal(t, 200, code, "%s", raw)
+	var fm map[string]map[string][]string
+	require.NoError(t, json.Unmarshal(raw, &fm), "%s", raw)
+	assert.Empty(t, fm["audio"]["input"], "no audio format may be advertised without ffmpeg: %s", raw)
+	assert.Empty(t, fm["audio"]["output"], "%s", raw)
+	assert.Empty(t, fm["video"]["input"], "%s", raw)
+	assert.Empty(t, fm["image"]["input"], "no image format without ImageMagick: %s", raw)
 
 	// capabilities are reported from real lookups
-	code, raw := c.do("GET", "/health/deep", "", nil)
+	code, raw = c.do("GET", "/health/deep", "", nil)
 	assert.Contains(t, []int{200, 503}, code)
 	var h map[string]interface{}
 	require.NoError(t, json.Unmarshal(raw, &h), "%s", raw)

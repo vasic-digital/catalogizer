@@ -1,0 +1,110 @@
+--- FAIL: TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs (0.00s)
+    conversion_d1_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:51
+        	Error:      	"ffmpeg failed on <path>/Secret Project<path>/acme.mp4: Invalid data" should not contain "Secret Project"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "ffmpeg failed on /srv/media/Secret Project/clients/acme.mp4: Invalid data" -> "ffmpeg failed on <path>/Secret Project<path>/acme.mp4: Invalid data"
+    conversion_d1_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:51
+        	Error:      	"open \"<path>/Secret Project<path>/acme.mp4\": denied" should not contain "Secret Project"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "open \"/srv/media/Secret Project/clients/acme.mp4\": denied" -> "open \"<path>/Secret Project<path>/acme.mp4\": denied"
+    conversion_d1_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:51
+        	Error:      	"cannot read C:\\Users\\Jane Doe\\Private Docs\\a.pdf: denied" should not contain "Jane Doe"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "cannot read C:\\Users\\Jane Doe\\Private Docs\\a.pdf: denied" -> "cannot read C:\\Users\\Jane Doe\\Private Docs\\a.pdf: denied"
+    conversion_d1_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:51
+        	Error:      	"cannot read C:\\Users\\Jane Doe\\Private Docs\\a.pdf: denied" should not contain "Private Docs"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "cannot read C:\\Users\\Jane Doe\\Private Docs\\a.pdf: denied" -> "cannot read C:\\Users\\Jane Doe\\Private Docs\\a.pdf: denied"
+    conversion_d1_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:51
+        	Error:      	"cannot read C:\\Users\\Jane Doe\\Private Docs\\a.pdf: denied" should not contain "Users"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "cannot read C:\\Users\\Jane Doe\\Private Docs\\a.pdf: denied" -> "cannot read C:\\Users\\Jane Doe\\Private Docs\\a.pdf: denied"
+    conversion_d1_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:51
+        	Error:      	"error at fil<path>/Secret Project<path>/a.mp4 (code 1)" should not contain "Secret Project"
+        	Test:       	TestRev_F5_SanitizeHandlesSpacesWindowsAndFileURLs
+        	Messages:   	input "error at file:///srv/media/Secret Project/a.mp4 (code 1)" -> "error at fil<path>/Secret Project<path>/a.mp4 (code 1)"
+--- FAIL: TestRev_F3_AdvertisedPairsRouteToARealConverter (0.00s)
+    conversion_d1_test.go:76: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:76
+        	Error:      	Not equal: 
+        	            	expected: "pdf"
+        	            	actual  : "docx"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-pdf
+        	            	+docx
+        	Test:       	TestRev_F3_AdvertisedPairsRouteToARealConverter
+        	Messages:   	docx->pdf
+    conversion_d1_test.go:77: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:77
+        	Error:      	[]string{"txt", "html"} does not contain "pdf"
+        	Test:       	TestRev_F3_AdvertisedPairsRouteToARealConverter
+        	Messages:   	docx->pdf
+    conversion_d1_test.go:76: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:76
+        	Error:      	Not equal: 
+        	            	expected: "pdf"
+        	            	actual  : "odt"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-pdf
+        	            	+odt
+        	Test:       	TestRev_F3_AdvertisedPairsRouteToARealConverter
+        	Messages:   	odt->pdf
+    conversion_d1_test.go:77: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:77
+        	Error:      	[]string{"txt", "html"} does not contain "pdf"
+        	Test:       	TestRev_F3_AdvertisedPairsRouteToARealConverter
+        	Messages:   	odt->pdf
+    conversion_d1_test.go:84: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:84
+        	Error:      	Not equal: 
+        	            	expected: "ebook"
+        	            	actual  : "pdf"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-ebook
+        	            	+pdf
+        	Test:       	TestRev_F3_AdvertisedPairsRouteToARealConverter
+    conversion_d1_test.go:85: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:85
+        	Error:      	Not equal: 
+        	            	expected: "ebook"
+        	            	actual  : "pdf"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-ebook
+        	            	+pdf
+        	Test:       	TestRev_F3_AdvertisedPairsRouteToARealConverter
+--- FAIL: TestRev_F4_HtmTargetDispatchesOnFormat (0.01s)
+    conversion_d1_test.go:94: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:94
+        	Error:      	Received unexpected error:
+        	            	unsupported PDF conversion target format: htm
+        	Test:       	TestRev_F4_HtmTargetDispatchesOnFormat
+--- FAIL: TestRev_F7_NotificationIsSanitised (0.00s)
+    conversion_d1_test.go:113: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/conv.0CZSOt/repo/catalog-api/services/conversion_d1_test.go:113
+        	Error:      	"Conversion failed: tool failed on <path>/secret dir<path>/acme.mp4" should not contain "secret dir"
+        	Test:       	TestRev_F7_NotificationIsSanitised
+FAIL
+FAIL	catalogizer/services	0.050s
+FAIL

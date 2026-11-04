@@ -441,6 +441,26 @@ func (r *ConversionRepository) GetStatistics(userID *int, startDate, endDate tim
 	return stats, nil
 }
 
+// DeleteJobIf deletes the row only while its stored status is one of from (atomic), reporting
+// whether a row was removed.
+func (r *ConversionRepository) DeleteJobIf(jobID int, from ...string) (bool, error) {
+	if len(from) == 0 {
+		return false, nil
+	}
+	marks := make([]string, len(from))
+	args := []interface{}{jobID}
+	for i, f := range from {
+		marks[i] = "?"
+		args = append(args, f)
+	}
+	res, err := r.db.Exec("DELETE FROM conversion_jobs WHERE id = ? AND status IN ("+strings.Join(marks, ",")+")", args...)
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	return n > 0, err
+}
+
 func (r *ConversionRepository) CleanupJobs(olderThan time.Time) error {
 	query := `
 		DELETE FROM conversion_jobs

@@ -376,7 +376,7 @@ func TestDeleteJob_NotFound(t *testing.T) {
 
 	mockAuthSvc.On("GetCurrentUser", "test-token").Return(&models.User{ID: 1}, nil)
 	mockAuthSvc.On("CheckPermission", 1, models.PermissionConversionManage).Return(true, nil)
-	mockConvSvc.On("CancelJob", 999, 1).Return(errors.New("job not found"))
+	mockConvSvc.On("DeleteJob", 999, 1).Return(errors.New("job not found"))
 
 	handler := NewConversionHandler(mockConvSvc, mockAuthSvc)
 
@@ -399,7 +399,7 @@ func TestDeleteJob_ServiceError(t *testing.T) {
 
 	mockAuthSvc.On("GetCurrentUser", "test-token").Return(&models.User{ID: 1}, nil)
 	mockAuthSvc.On("CheckPermission", 1, models.PermissionConversionManage).Return(true, nil)
-	mockConvSvc.On("CancelJob", 42, 1).Return(errors.New("internal error"))
+	mockConvSvc.On("DeleteJob", 42, 1).Return(errors.New("internal error"))
 
 	handler := NewConversionHandler(mockConvSvc, mockAuthSvc)
 

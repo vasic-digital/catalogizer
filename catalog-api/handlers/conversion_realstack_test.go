@@ -313,11 +313,11 @@ func TestConversionRealStack_OwnershipIsolation(t *testing.T) {
 	require.NoError(t, err)
 
 	// another user's job: 403 on every route
-	assert.Equal(t, http.StatusForbidden, s.doAs(t, tokB, "GET", "/jobs/"+convItoa(failed)))
-	assert.Equal(t, http.StatusForbidden, s.doAs(t, tokB, "POST", "/jobs/"+convItoa(failed)+"/retry"))
-	assert.Equal(t, http.StatusForbidden, s.doAs(t, tokB, "POST", "/jobs/"+convItoa(pending)+"/cancel"))
-	assert.Equal(t, http.StatusForbidden, s.doAs(t, tokB, "DELETE", "/jobs/"+convItoa(pending)))
-	assert.Equal(t, http.StatusForbidden, s.doAs(t, tokB, "GET", "/jobs/"+convItoa(completed)+"/download"))
+	assert.Equal(t, http.StatusNotFound, s.doAs(t, tokB, "GET", "/jobs/"+convItoa(failed)))
+	assert.Equal(t, http.StatusNotFound, s.doAs(t, tokB, "POST", "/jobs/"+convItoa(failed)+"/retry"))
+	assert.Equal(t, http.StatusNotFound, s.doAs(t, tokB, "POST", "/jobs/"+convItoa(pending)+"/cancel"))
+	assert.Equal(t, http.StatusNotFound, s.doAs(t, tokB, "DELETE", "/jobs/"+convItoa(pending)))
+	assert.Equal(t, http.StatusNotFound, s.doAs(t, tokB, "GET", "/jobs/"+convItoa(completed)+"/download"))
 	// untouched
 	j, err := s.repo.GetJob(failed)
 	require.NoError(t, err)

@@ -85,7 +85,7 @@ func TestConversionIntegration(t *testing.T) {
 	tempDir := t.TempDir()
 	// conversion paths are confined to configured roots (pathguard); allow this test's dir
 	t.Setenv("CATALOGIZER_CONVERSION_ROOTS", tempDir)
-	sourceFile := filepath.Join(tempDir, "test.txt")
+	sourceFile := filepath.Join(tempDir, "test.pdf")
 	targetFile := filepath.Join(tempDir, "test_copy.txt")
 
 	// Create a test source file
@@ -96,7 +96,7 @@ func TestConversionIntegration(t *testing.T) {
 	request := &models.ConversionRequest{
 		SourcePath:     sourceFile,
 		TargetPath:     targetFile,
-		SourceFormat:   "txt",
+		SourceFormat:   "pdf",
 		TargetFormat:   "txt",
 		ConversionType: models.ConversionTypeDocument,
 		Quality:        "medium",
