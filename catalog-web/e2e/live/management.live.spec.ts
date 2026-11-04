@@ -167,7 +167,6 @@ test.describe('conversions (real backend)', () => {
     await shot(page, testInfo, 'conversion-page');
     const fmts = await (await request.get(`${API_URL}/api/v1/conversion/formats`, { headers: auth })).json();
     expect(fmts.audio.output).toContain('wav');
-    const jobsBefore = (await (await request.get(`${API_URL}/api/v1/conversion/jobs`, { headers: auth })).json()) as Array<{ id: number }>;
     const created = await request.post(`${API_URL}/api/v1/conversion/jobs`, { headers: auth, data: { source_path: '/media/music/Misc/Plain Tone.mp3', target_path: `/app/data/live-conv-${tag(testInfo)}.wav`, source_format: 'mp3', target_format: 'wav', conversion_type: 'audio', quality: 'medium' } });
     const body = await created.text();
     expect([200, 201, 202], `create conversion job: ${body.slice(0, 300)}`).toContain(created.status());
@@ -180,6 +179,8 @@ test.describe('conversions (real backend)', () => {
     }, { timeout: 90_000, intervals: [1000] }).toMatch(/completed|failed/);
     const fin = await (await request.get(`${API_URL}/api/v1/conversion/jobs/${jid}`, { headers: auth })).json();
     expect(fin.status ?? fin.job?.status, `conversion outcome: ${JSON.stringify(fin).slice(0, 300)}`).toBe('completed');
-    expect(((await (await request.get(`${API_URL}/api/v1/conversion/jobs`, { headers: auth })).json()) as unknown[]).length).toBeGreaterThan(jobsBefore.length);
+    // The list is newest-first and capped (50), so its length stops growing on a long-lived stack: assert the new job is IN it.
+    const listed = (await (await request.get(`${API_URL}/api/v1/conversion/jobs`, { headers: auth })).json()) as Array<{ id?: number; job_id?: number }>;
+    expect(listed.map((j) => j.id ?? j.job_id), 'the new job is in the job list').toContain(jid);
   });
 });
