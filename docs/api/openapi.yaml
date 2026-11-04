@@ -3837,6 +3837,8 @@ paths:
             type: integer
             format: int64
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
@@ -3891,8 +3893,6 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: Storage roots list
           content:
@@ -3956,8 +3956,6 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: Storage roots list
           content:
@@ -3983,8 +3981,6 @@ paths:
           schema:
             type: integer
       responses:
-        '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '200':
           description: Connectivity status
           content:
@@ -4318,6 +4314,8 @@ paths:
           description: Missing or invalid token
         '404':
           description: Storage root not found
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '503':
           description: Scanner unavailable
     get:

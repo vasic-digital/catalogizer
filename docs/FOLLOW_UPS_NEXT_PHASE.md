@@ -1143,3 +1143,23 @@ Evidence: `docs/qa/api-contract-live-20261103/`; runner `scripts/test-infra/api_
 - LM-F1 (test-instrumentation, minor): `docs/qa/live-map-20261103/test_restart_stack.sh` stubs cannot detect wrong probe paths (`/nope`, `/wrong`), swapped args 4/5, an optional 5th arg (`${5:-}`), or ignored `pg_isready`. Make stub curl path-exact, log stub calls and assert none in missing-arg cases, add a "5th arg missing" case, decouple pg and redis stubs.
 - LM-F2 (process-doc, nit): `restart_stack.sh` header says postgres/redis answered HTTP 200; they are checked via `pg_isready` and `PONG`.
 - LM-F3 (process-doc, nit): `restart_stack.sh` has not been run end to end against real podman since the fix (disclosed in MAP section 5); stays provisional.
+
+## API contract sweep follow-ups (test-api-contract-live, review round 1)
+
+- Stream path serves without re-checking confinement: `StreamHandler.StreamFile` -> `SettingsFromRoot` does not re-check
+  `CATALOGIZER_LOCAL_ROOT_BASES` or the storage root's `enabled` flag when serving. `GET /api/v1/download/file/:id` now hands non-SMB
+  roots to this path (catalog-api/main.go `SetNonSMBFileHandler`) and inherits the gap. Fix at the stream handler (single place).
+- Disclosed gaps of the download fix: (1) `GET /download/directory/{path}` happy path ends 404 in the sweep (no cataloged directory path
+  is seeded); (2) `POST /download/archive` happy path ends 400 (the body is a `models.DownloadRequest` the generator does not shape);
+  (3) a real directory under a non-SMB root still builds its archive through the SMB service (`createZipArchive`/`createTarArchive`
+  call `smbService.DownloadFile`), so such an archive would be empty or fail.
+- `catalog-api/handlers/download.go` (constructor `NewDownloadHandler(fileRepo, tempDir, ...)`) is not wired in main.go (main uses
+  `internal/handlers/download.go`). Investigate git history (how it was wired, how it died) before proposing removal (constitution 11.4.124).
+- Happy-path ratchet: `catalog-api/api_contract_happy_exceptions.tsv` lists the 81 operations whose happy probe is not 2xx, with
+  a reason each; many reasons are generic (generator cannot seed a valid body/resource). Seed them and shrink the list; a stale entry is a violation.
+- `GET /api/v1/logs/stream` flake (F5): the SSE handler writes nothing until the first log entry, and the sweep used to `ReadAll` the
+  never-ending body, so every run spent the whole 60 s client timeout there (about 60 of the 70 s per run); under host load the header
+  wait could also hit that timeout and log `transport error / no response`. The sweep now returns after the headers of a
+  `text/event-stream` response. A transport error would still be reported; not reproduced on demand (UNCONFIRMED whether headers are
+  flushed by middleware before the first entry on every host).
+

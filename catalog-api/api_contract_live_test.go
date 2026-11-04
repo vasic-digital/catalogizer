@@ -39,6 +39,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -529,6 +530,11 @@ func (w *sweep) call(c *http.Client, method, path, tok string, body []byte, ct s
 		return -1, "", []byte(err.Error())
 	}
 	defer r.Body.Close()
+	if strings.HasPrefix(r.Header.Get("Content-Type"), "text/event-stream") {
+		// An SSE response never ends by itself: the status and headers are the contract. Reading the body would hold the sweep
+		// until the client timeout (60 s per run) and make the run depend on host load (F5: one 'transport error' under load).
+		return r.StatusCode, r.Header.Get("Content-Type"), nil
+	}
 	b, _ := io.ReadAll(io.LimitReader(r.Body, 8<<20))
 	if w.trace != nil && (r.StatusCode >= 500 || r.StatusCode == 403) {
 		n := len(b)
@@ -800,6 +806,13 @@ func (w *sweep) runOp(op *cOp) {
 		}
 		st, ct, raw := w.call(cl, op.Method, valid, tok, body, "")
 		w.record(rec, "happy", st)
+		if exc, listed := happyExceptions(w.t)[op.key()]; st >= 200 && st < 300 {
+			if listed {
+				viol("happy path now reaches %d but is listed in api_contract_happy_exceptions.tsv (%s): remove the stale entry", st, exc)
+			}
+		} else if !listed {
+			viol("happy path expected 2xx (not in api_contract_happy_exceptions.tsv), got %d", st)
+		}
 		w.judgeHappy(op, rec, st, ct, raw, viol, adv)
 	}
 	// observed set
@@ -1208,4 +1221,27 @@ func (w *sweep) addCSRF(c *http.Client, req *http.Request, tok string) {
 	if w.trace != nil {
 		fmt.Fprintf(w.trace, "   addCSRF: no usable pair status=%d hdr-present=%v set-cookies=%d\n", resp.StatusCode, hdr != "", len(resp.Cookies()))
 	}
+}
+
+var (
+	happyExcOnce sync.Once
+	happyExc     map[string]string
+)
+
+// happyExceptions loads the committed list of operations whose happy-path probe is allowed to end in a non-2xx status.
+func happyExceptions(t *testing.T) map[string]string {
+	happyExcOnce.Do(func() {
+		happyExc = map[string]string{}
+		raw, err := os.ReadFile("api_contract_happy_exceptions.tsv")
+		require.NoError(t, err)
+		for _, l := range strings.Split(string(raw), "\n") {
+			if l == "" || strings.HasPrefix(l, "#") {
+				continue
+			}
+			kv := strings.SplitN(l, "\t", 2)
+			require.Len(t, kv, 2, "bad exceptions line %q", l)
+			happyExc[kv[0]] = kv[1]
+		}
+	})
+	return happyExc
 }
