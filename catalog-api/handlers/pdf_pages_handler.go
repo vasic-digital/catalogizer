@@ -59,7 +59,9 @@ type PdfPagesHandler struct {
 const pdfRenderDPI = services.PDFRenderDPI
 
 // pdfMaxBufferBytes bounds the PDF copied to the temp file; a larger document is refused (413).
-const pdfMaxBufferBytes int64 = 1 << 30
+// Known limit: every page view re-copies the document (no cache); concurrency is bounded by
+// services.PDFReaderSlots (429 when saturated).
+var pdfMaxBufferBytes int64 = 1 << 30 // var so tests can lower it
 
 var errPDFTooBig = errors.New("pdf file exceeds buffer bound")
 
@@ -86,17 +88,17 @@ func (h *PdfPagesHandler) resolvePDF(c *gin.Context) (sf *repository.StreamableF
 
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid entity ID", err)
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid entity ID", nil)
 		return nil, false
 	}
 
 	primary, err := h.fileRepo.GetPrimaryStreamableFile(ctx, id)
 	if err != nil {
 		if err == repository.ErrNoStreamableFile {
-			utils.SendErrorResponse(c, http.StatusNotFound, "No file available for this entity", err)
+			utils.SendErrorResponse(c, http.StatusNotFound, "No file available for this entity", nil)
 			return nil, false
 		}
-		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to resolve PDF file", err)
+		respondPDFError(c, "resolve", err)
 		return nil, false
 	}
 
@@ -237,7 +239,13 @@ func respondPDFError(c *gin.Context, op string, err error) {
 		status, msg = http.StatusUnprocessableEntity, "File is not a readable PDF document"
 	case errors.Is(err, services.ErrPDFPageTooLarge), errors.Is(err, errPDFTooBig):
 		status, msg = http.StatusRequestEntityTooLarge, "PDF document or page is too large to render"
-	case errors.Is(err, services.ErrPDFRenderTimeout):
+	case errors.Is(err, services.ErrPDFBusy):
+		c.Header("Retry-After", "2")
+		status, msg = http.StatusTooManyRequests, "PDF reader is busy, retry shortly"
+	case errors.Is(err, services.ErrPDFRenderCanceled), errors.Is(err, context.Canceled):
+		// The client went away: not a server timeout. 499 (client closed request) is for logs only.
+		status, msg = 499, "Request canceled"
+	case errors.Is(err, services.ErrPDFRenderTimeout), errors.Is(err, context.DeadlineExceeded):
 		status, msg = http.StatusGatewayTimeout, "PDF rendering timed out"
 	case errors.Is(err, services.ErrPDFRenderUnavailable):
 		status, msg = http.StatusServiceUnavailable, "PDF rendering is not available"
@@ -261,6 +269,13 @@ func (h *PdfPagesHandler) ListPdfPages(c *gin.Context) {
 	if !ok {
 		return
 	}
+
+	release, ok := services.AcquirePDFReaderSlot()
+	if !ok {
+		respondPDFError(c, "slot", services.ErrPDFBusy)
+		return
+	}
+	defer release()
 
 	path, cleanup, err := h.bufferPDF(c.Request.Context(), sf)
 	if err != nil {
@@ -294,6 +309,13 @@ func (h *PdfPagesHandler) GetPdfPage(c *gin.Context) {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid page index", nil)
 		return
 	}
+
+	release, ok := services.AcquirePDFReaderSlot()
+	if !ok {
+		respondPDFError(c, "slot", services.ErrPDFBusy)
+		return
+	}
+	defer release()
 
 	path, cleanup, err := h.bufferPDF(c.Request.Context(), sf)
 	if err != nil {

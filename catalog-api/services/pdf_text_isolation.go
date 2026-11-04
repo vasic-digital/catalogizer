@@ -28,7 +28,9 @@ const (
 	// pdfChildMaxTextEnv lowers the child's total-text cap (tests only; it can never raise it).
 	pdfChildMaxTextEnv = "CATALOGIZER_PDFTEXT_MAX_TEXT"
 	// pdfConcurrentSlots is the number of conversions the service runs at once (semaphore of 3 in
-	// ConversionService); limits are sized so all slots together stay within half of MemAvailable.
+	// ConversionService). The per-tool address-space limit is sized for these slots PLUS the
+	// PDFReaderSlots reader requests, so all poppler children together stay within half of
+	// MemAvailable (pdfToolLimits). The pure-Go child (pdfChildLimits) runs only in conversions.
 	pdfConcurrentSlots = 3
 	// Poppler tools: address-space (RLIMIT_AS) ceiling and floor per child (bytes). poppler is C++
 	// and reserves little virtual memory, so RLIMIT_AS bounds it well (measured by the review: it
@@ -115,12 +117,12 @@ func pdfBaseEnv() []string {
 }
 
 // pdfToolLimits sizes the address-space limit to the host (§12.11): MemAvailable divided by twice
-// the number of concurrent conversions, clamped to [pdfMinAS, ceiling]. The floor (512 MiB) keeps
+// the number of concurrent conversions and reader requests, clamped to [pdfMinAS, ceiling]. The floor (512 MiB) keeps
 // ordinary documents working on a small host; when MemAvailable cannot be read the floor is used.
 func pdfToolLimits(ceiling uint64) pdfLimits {
 	as := uint64(pdfMinAS)
 	if avail, ok := memAvailable(); ok {
-		as = avail / (2 * pdfConcurrentSlots)
+		as = avail / (2 * (pdfConcurrentSlots + PDFReaderSlots))
 		if as > ceiling {
 			as = ceiling
 		}

@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 )
 
@@ -45,9 +47,32 @@ var (
 	ErrPDFPageOutOfRange = errors.New("PDF page index out of range")
 	// ErrPDFRenderUnavailable: the isolated renderer cannot run on this host (no poppler, no prlimit).
 	ErrPDFRenderUnavailable = errors.New("PDF rendering is not available on this server")
-	// ErrPDFRenderTimeout: the tool did not finish within the time bound.
+	// ErrPDFRenderTimeout: the tool did not finish within the time bound (wall clock or CPU limit).
 	ErrPDFRenderTimeout = errors.New("PDF rendering timed out")
+	// ErrPDFRenderCanceled: the caller (client) went away; not a server-side timeout.
+	ErrPDFRenderCanceled = errors.New("PDF rendering canceled by the caller")
+	// ErrPDFBusy: every reader slot is in use; try again later.
+	ErrPDFBusy = errors.New("PDF reader is busy")
 )
+
+// PDFReaderSlots is the number of reader requests (buffer + count + render) that run at once.
+// Together with the pdfConcurrentSlots conversion slots it sizes the per-tool address-space limit
+// (pdfToolLimits), so the sum of all poppler children stays within half of MemAvailable.
+const PDFReaderSlots = 2
+
+var pdfReaderSem = make(chan struct{}, PDFReaderSlots)
+
+// AcquirePDFReaderSlot takes a reader slot without waiting. ok=false means the reader is
+// saturated (the caller answers 429). The returned release must be called exactly once.
+func AcquirePDFReaderSlot() (release func(), ok bool) {
+	select {
+	case pdfReaderSem <- struct{}{}:
+		var once sync.Once
+		return func() { once.Do(func() { <-pdfReaderSem }) }, true
+	default:
+		return func() {}, false
+	}
+}
 
 // classifyPDFToolError maps a failure of an isolated poppler run to one of the sentinel errors.
 // The tool's stderr is part of err only for logs; callers must not send err text to clients.
@@ -55,15 +80,37 @@ func classifyPDFToolError(err error) error {
 	switch {
 	case err == nil:
 		return nil
-	case errors.Is(err, context.DeadlineExceeded), errors.Is(err, context.Canceled):
+	case errors.Is(err, context.DeadlineExceeded):
 		return fmt.Errorf("%w: %v", ErrPDFRenderTimeout, err)
+	case errors.Is(err, context.Canceled):
+		return fmt.Errorf("%w: %v", ErrPDFRenderCanceled, err)
 	case errors.Is(err, errPrlimitMissing), errors.Is(err, exec.ErrNotFound):
 		return fmt.Errorf("%w: %v", ErrPDFRenderUnavailable, err)
+	case strings.Contains(err.Error(), "output exceeds"):
+		return fmt.Errorf("%w: %v", ErrPDFPageTooLarge, err)
+	case childKilledBy(err, syscall.SIGXFSZ):
+		return fmt.Errorf("%w: %v", ErrPDFPageTooLarge, err)
+	case childKilledBy(err, syscall.SIGXCPU), childKilledBy(err, syscall.SIGKILL):
+		// prlimit sets soft == hard for RLIMIT_CPU, so the kernel ends the child with SIGKILL (not
+		// SIGXCPU) at the limit. A SIGKILL while the context is still live is the CPU limit (or the
+		// kernel OOM killer): either way the document needs more than the server grants.
+		return fmt.Errorf("%w: %v", ErrPDFRenderTimeout, err)
 	case strings.Contains(err.Error(), "Incorrect password"), strings.Contains(err.Error(), "needs a password"):
 		return fmt.Errorf("%w: %v", ErrPDFEncrypted, err)
 	default:
 		return fmt.Errorf("%w: %v", ErrPDFInvalid, err)
 	}
+}
+
+// childKilledBy reports whether err wraps an exit caused by the given signal (the kernel sends
+// SIGXCPU at RLIMIT_CPU and SIGXFSZ at RLIMIT_FSIZE).
+func childKilledBy(err error, sig syscall.Signal) bool {
+	var ee *exec.ExitError
+	if !errors.As(err, &ee) {
+		return false
+	}
+	ws, ok := ee.Sys().(syscall.WaitStatus)
+	return ok && ws.Signaled() && ws.Signal() == sig
 }
 
 func absPDFPath(path string) (string, error) {
@@ -83,6 +130,11 @@ func PDFPageCount(ctx context.Context, path string) (int, error) {
 	}
 	ctx, cancel := context.WithTimeout(ctx, pdfRenderTimeout)
 	defer cancel()
+	return pdfPageCount(ctx, abs)
+}
+
+// pdfPageCount is PDFPageCount without its own deadline (the caller owns the deadline).
+func pdfPageCount(ctx context.Context, abs string) (int, error) {
 	out, err := runPopplerTool(ctx, "pdfinfo", []string{abs}, pdfInfoMaxBytes, 0)
 	if err != nil {
 		return 0, classifyPDFToolError(err)
@@ -137,15 +189,16 @@ func RenderPDFPagePNG(ctx context.Context, path string, page int, dpi float64) (
 	if err != nil {
 		return nil, err
 	}
-	total, err := PDFPageCount(ctx, abs)
+	// One overall deadline for count, page size and render together.
+	ctx, cancel := context.WithTimeout(ctx, pdfRenderTimeout)
+	defer cancel()
+	total, err := pdfPageCount(ctx, abs)
 	if err != nil {
 		return nil, err
 	}
 	if page >= total {
 		return nil, ErrPDFPageOutOfRange
 	}
-	ctx, cancel := context.WithTimeout(ctx, pdfRenderTimeout)
-	defer cancel()
 	pw, ph, err := pdfPageSize(ctx, abs, page+1)
 	if err != nil {
 		return nil, err
@@ -164,11 +217,13 @@ func RenderPDFPagePNG(ctx context.Context, path string, page int, dpi float64) (
 			_ = os.RemoveAll(dir)
 		}
 	}()
+	// -cropbox: pdfinfo reports the CropBox size, so pdftoppm must rasterise the CropBox too (by
+	// default it uses the MediaBox, which can be far larger than the checked size, review F1).
 	// pdftoppm cannot write PNG to stdout, so it writes <root>.png; the root is absolute (no option
 	// reading) and inside the private directory.
 	root := filepath.Join(dir, "page")
 	p := strconv.Itoa(page + 1)
-	args := []string{"-png", "-singlefile", "-r", strconv.FormatFloat(dpi, 'f', -1, 64), "-f", p, "-l", p, abs, root}
+	args := []string{"-png", "-singlefile", "-cropbox", "-r", strconv.FormatFloat(dpi, 'f', -1, 64), "-f", p, "-l", p, abs, root}
 	if _, err := runPopplerTool(ctx, "pdftoppm", args, 4096, pdfMaxPNGBytes); err != nil {
 		return nil, classifyPDFToolError(err)
 	}
@@ -196,5 +251,7 @@ func runPopplerTool(ctx context.Context, tool string, args []string, outMax int,
 	}
 	lim := pdfToolLimits(pdfPopplerMaxAS)
 	lim.fileSize = maxFile
+	// Poppler output is parsed in English: do not inherit the service's locale (review F9).
+	lim.env = append(lim.env, "LC_ALL=C", "LANG=C")
 	return runLimited(ctx, bin, args, lim, outMax)
 }

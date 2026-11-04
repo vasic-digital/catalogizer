@@ -7,6 +7,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"crypto/md5"
 	"crypto/rc4"
 	"crypto/sha256"
@@ -15,14 +16,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"image/png"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
+	"catalogizer/filesystem"
 	"catalogizer/repository"
+	"catalogizer/services"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -128,17 +134,7 @@ func makeEncryptedPDF() []byte {
 // setupD3 creates the DB/router and stores each named file (content) under base; returns ids.
 func setupD3(t *testing.T, files map[string][]byte) (ids map[string]int64, get func(id int64, suffix string) *httptest.ResponseRecorder) {
 	t.Helper()
-	db, cleanup := setupEntityTestDB(t)
-	t.Cleanup(cleanup)
-	itemRepo := repository.NewMediaItemRepository(db)
-	h := newPdfHandler(t, db)
-	r := newPdfRouter(h)
-	base := t.TempDir()
-	ids = map[string]int64{}
-	for name, data := range files {
-		require.NoError(t, os.WriteFile(filepath.Join(base, name), data, 0o600))
-		ids[name] = insertComicItemOnRoot(t, db, itemRepo, "local", base, name, name)
-	}
+	ids, r := setupD3R(t, files)
 	get = func(id int64, suffix string) *httptest.ResponseRecorder {
 		w := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/entities/%d/pdf-pages%s", id, suffix), nil)
@@ -146,6 +142,23 @@ func setupD3(t *testing.T, files map[string][]byte) (ids map[string]int64, get f
 		return w
 	}
 	return ids, get
+}
+
+// setupD3R is setupD3 returning the router, for tests that need their own request context.
+func setupD3R(t *testing.T, files map[string][]byte) (ids map[string]int64, r http.Handler) {
+	t.Helper()
+	db, cleanup := setupEntityTestDB(t)
+	t.Cleanup(cleanup)
+	itemRepo := repository.NewMediaItemRepository(db)
+	h := newPdfHandler(t, db)
+	r = newPdfRouter(h)
+	base := t.TempDir()
+	ids = map[string]int64{}
+	for name, data := range files {
+		require.NoError(t, os.WriteFile(filepath.Join(base, name), data, 0o600))
+		ids[name] = insertComicItemOnRoot(t, db, itemRepo, "local", base, name, name)
+	}
+	return ids, r
 }
 
 type errBody struct {
@@ -298,4 +311,154 @@ func TestD3_NoTempLeak(t *testing.T) {
 		return nil
 	})
 	assert.Empty(t, left, "temp artefacts survived")
+}
+
+// makeBoxPDF builds a one-page PDF with the given page-dictionary box entries.
+func makeBoxPDF(boxes string) []byte {
+	c := "0 0 0 rg 10 10 100 100 re f\n"
+	return pdfFromObjects([]string{
+		"<< /Type /Catalog /Pages 2 0 R >>",
+		"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+		"<< /Type /Page /Parent 2 0 R " + boxes + " /Contents 4 0 R /Resources << >> >>",
+		fmt.Sprintf("<< /Length %d >>\nstream\n%sendstream", len(c), c),
+	}, "")
+}
+
+// F1 (review round 1): pdfinfo reports the CropBox size, so pdftoppm must rasterise the CropBox
+// too. MediaBox 9000x9000 pt with a CropBox of 100x100 pt used to pass the pixel check and then
+// render 18750x18750 px (1.4 GB RSS).
+func TestD3_CropBoxBomb_RendersCropBoxOnly(t *testing.T) {
+	ids, get := setupD3(t, map[string][]byte{
+		"crop.pdf":    makeBoxPDF("/MediaBox [0 0 9000 9000] /CropBox [0 0 100 100]"),
+		"cropbig.pdf": makeBoxPDF("/MediaBox [0 0 100 100] /CropBox [0 0 14400 14400]"),
+	})
+	w := get(ids["crop.pdf"], "/0")
+	require.Equal(t, http.StatusOK, w.Code, w.Body.String())
+	img, err := png.Decode(bytes.NewReader(w.Body.Bytes()))
+	require.NoError(t, err)
+	assert.InDelta(t, 208, img.Bounds().Dx(), 2, "CropBox 100 pt at 150 dpi")
+	assert.InDelta(t, 208, img.Bounds().Dy(), 2)
+	// A huge CropBox over a small MediaBox is clipped to the MediaBox by poppler; it must stay bounded
+	// and never be a 500.
+	w = get(ids["cropbig.pdf"], "/0")
+	assert.Less(t, w.Code, 500, w.Body.String())
+}
+
+// Status mapping per cause (review F2, F3, F4, F5): each observable status has its own test.
+func TestD3_StatusPerCause(t *testing.T) {
+	ids, r := setupD3R(t, map[string][]byte{"ok.pdf": makeDistinctPDF(2)})
+	do := func(ctx context.Context, suffix string) *httptest.ResponseRecorder {
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest("GET", fmt.Sprintf("/api/v1/entities/%d/pdf-pages%s", ids["ok.pdf"], suffix), nil).WithContext(ctx)
+		r.ServeHTTP(w, req)
+		return w
+	}
+
+	t.Run("saturated readers -> 429 with Retry-After", func(t *testing.T) {
+		var rel []func()
+		for i := 0; i < services.PDFReaderSlots; i++ {
+			f, ok := services.AcquirePDFReaderSlot()
+			require.True(t, ok)
+			rel = append(rel, f)
+		}
+		defer func() {
+			for _, f := range rel {
+				f()
+			}
+		}()
+		for _, suffix := range []string{"", "/0"} {
+			w := do(context.Background(), suffix)
+			require.Equal(t, http.StatusTooManyRequests, w.Code, w.Body.String())
+			assert.NotEmpty(t, w.Header().Get("Retry-After"))
+			assertNoInternals(t, w)
+		}
+	})
+	t.Run("slot released after a request", func(t *testing.T) {
+		for i := 0; i < services.PDFReaderSlots+2; i++ {
+			require.Equal(t, http.StatusOK, do(context.Background(), "").Code)
+		}
+	})
+	t.Run("buffer bound -> 413", func(t *testing.T) {
+		old := pdfMaxBufferBytes
+		pdfMaxBufferBytes = 100
+		defer func() { pdfMaxBufferBytes = old }()
+		for _, suffix := range []string{"", "/0"} {
+			w := do(context.Background(), suffix)
+			require.Equal(t, http.StatusRequestEntityTooLarge, w.Code, w.Body.String())
+			assertNoInternals(t, w)
+		}
+	})
+	t.Run("poppler missing -> 503", func(t *testing.T) {
+		bin := t.TempDir()
+		pl, err := exec.LookPath("prlimit")
+		require.NoError(t, err)
+		require.NoError(t, os.Symlink(pl, filepath.Join(bin, "prlimit")))
+		t.Setenv("PATH", bin)
+		for _, suffix := range []string{"", "/0"} {
+			w := do(context.Background(), suffix)
+			require.Equal(t, http.StatusServiceUnavailable, w.Code, w.Body.String())
+			assertNoInternals(t, w)
+		}
+	})
+	t.Run("expired deadline -> 504", func(t *testing.T) {
+		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(-time.Second))
+		defer cancel()
+		for _, suffix := range []string{"", "/0"} {
+			w := do(ctx, suffix)
+			require.Equal(t, http.StatusGatewayTimeout, w.Code, w.Body.String())
+			assertNoInternals(t, w)
+		}
+	})
+	t.Run("client cancel -> 499 not 504", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		for _, suffix := range []string{"", "/0"} {
+			w := do(ctx, suffix)
+			require.Equal(t, 499, w.Code, w.Body.String())
+		}
+	})
+}
+
+// endlessClient streams zero bytes forever and counts what was read from it.
+type endlessClient struct {
+	streamingOnlyClient
+	read *int64
+}
+
+type endlessReader struct{ n *int64 }
+
+func (e endlessReader) Read(p []byte) (int, error) { *e.n += int64(len(p)); return len(p), nil }
+func (e endlessReader) Close() error               { return nil }
+
+func (c *endlessClient) ReadFile(context.Context, string) (io.ReadCloser, error) {
+	return endlessReader{c.read}, nil
+}
+
+type endlessFactory struct{ read *int64 }
+
+func (f *endlessFactory) CreateClient(*filesystem.StorageConfig) (filesystem.FileSystemClient, error) {
+	return &endlessClient{read: f.read}, nil
+}
+func (f *endlessFactory) SupportedProtocols() []string { return []string{"webdav"} }
+
+// The buffer bound must stop the COPY, not just reject afterwards (review F5/RB): an endless
+// source is read only up to the bound (plus one read chunk) and the answer is 413.
+func TestD3_BufferBoundStopsTheCopy(t *testing.T) {
+	db, cleanup := setupEntityTestDB(t)
+	defer cleanup()
+	itemRepo := repository.NewMediaItemRepository(db)
+	var read int64
+	h := NewPdfPagesHandler(repository.NewMediaFileRepository(db), db, &endlessFactory{read: &read})
+	r := newPdfRouter(h)
+	id := insertComicItemOnRoot(t, db, itemRepo, "webdav", "/dav", "endless.pdf", "endless.pdf")
+	old := pdfMaxBufferBytes
+	pdfMaxBufferBytes = 1000
+	defer func() { pdfMaxBufferBytes = old }()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest("GET", fmt.Sprintf("/api/v1/entities/%d/pdf-pages", id), nil).WithContext(ctx))
+	require.Equal(t, http.StatusRequestEntityTooLarge, w.Code, w.Body.String())
+	assert.LessOrEqual(t, read, int64(1001), "the copy must stop at the bound")
 }

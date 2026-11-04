@@ -8789,6 +8789,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '413':
+          description: PDF or page too large to render
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: File is not a readable PDF, or it is encrypted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: PDF reader busy; retry after the Retry-After seconds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: PDF rendering unavailable on this server (poppler or prlimit missing)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: PDF rendering timed out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
           content:
@@ -8839,6 +8869,36 @@ paths:
                 $ref: '#/components/schemas/Error'
         '404':
           description: No file for this entity or page index out of range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: PDF or page too large to render
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: File is not a readable PDF, or it is encrypted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: PDF reader busy; retry after the Retry-After seconds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: PDF rendering unavailable on this server (poppler or prlimit missing)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: PDF rendering timed out
           content:
             application/json:
               schema:

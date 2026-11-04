@@ -85,7 +85,7 @@ internal fun childSectionTitle(parentMediaType: String?): String = when (parentM
  *
  * BOOK was added the same way: a `book` media_type (or a `.pdf` path) opens the
  * dedicated [BookReaderScreen] (catalog-api renders each PDF page server-side via
- * MuPDF) instead of the player.
+ * poppler) instead of the player.
  */
 internal enum class LeafActionKind { VIDEO, IMAGE, COMIC, BOOK }
 

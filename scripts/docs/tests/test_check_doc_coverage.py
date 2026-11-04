@@ -155,7 +155,7 @@ def test_claims_check_detects_missing_doc_statement_and_missing_code():
     claim_files = ["docs/UPGRADE_NOTES.md", "catalog-api/handlers/auth_handler.go", "docs/deployment/ENVIRONMENT_VARIABLES.md",
                    "docs/api/API_DOCUMENTATION.md", "catalog-api/handlers/playlist_handler.go",
                    "catalog-web/src/components/collections/CollectionSharing.tsx", "docs/deployment/DOCKER_SETUP.md",
-                   "catalog-api/Dockerfile.runtime", "docs/api/openapi.yaml", "catalog-api/internal/metrics/health.go", "catalog-api/go.mod"]
+                   "catalog-api/Dockerfile.runtime", "docs/api/openapi.yaml", "catalog-api/internal/metrics/health.go", "catalog-api/services/pdf_page_render.go"]
     files = {f: open(os.path.join(REPO, f), encoding="utf-8", errors="replace").read() for f in claim_files}
     d = build(files)
     try:
@@ -166,7 +166,7 @@ def test_claims_check_detects_missing_doc_statement_and_missing_code():
         files["catalog-api/Dockerfile.runtime"] = files["catalog-api/Dockerfile.runtime"].replace("ffmpeg imagemagick", "")
         d = build(files)
         rc, out = run(d, "--check", "claims")
-        assert rc == 1 and "CLAIM_NOT_IN_DOC\tgo-fitz-removal-pending" in out and "CLAIM_NOT_IN_CODE\tconverters-in-image" in out, out
+        assert rc == 1 and "CLAIM_NOT_IN_DOC\tgo-fitz-removed-poppler-renders" in out and "CLAIM_NOT_IN_CODE\tconverters-in-image" in out, out
     finally:
         shutil.rmtree(d, ignore_errors=True)
 
