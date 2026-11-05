@@ -54,4 +54,16 @@ check_image_digests "$S/pins" docker.io/b:1 >/dev/null 2>&1 && bad N2.mismatch_r
 check_image_digests "$S/pins" docker.io/a:1 docker.io/unlisted:9 >"$S/o" 2>&1 && bad N2.unlisted_image_refused "accepted" || ok N2.unlisted_image_refused
 ALLOW_UNPINNED_IMAGES=1 check_image_digests "$S/pins" docker.io/a:1 docker.io/unlisted:9 >"$S/o" 2>&1 && grep -q 'WARNING.*unlisted:9.*unpinned' "$S/o" && ok N2.optout_allows_with_loud_warning || bad N2.optout_allows_with_loud_warning "$(cat "$S/o")"
 check_image_digests "$S/nonexistent-pins" docker.io/a:1 >/dev/null 2>&1 && bad N2.missing_pins_file_refused "accepted" || ok N2.missing_pins_file_refused
+# QA-MON-FU-1: seed_scrape_token.sh writes a static METRICS_SCRAPE_TOKEN (stdin only) as the Prometheus credentials file; refuses short tokens
+SEED="$HERE/seed_scrape_token.sh"; TOK32="$(printf 'A%.0s' $(seq 1 40))"
+mkdir -p "$S/seed"; rm -f "$S/seed/"*
+if [ -f "$SEED" ]; then
+  printf '%s' "$TOK32" | TOK_DIR="$S/seed" TOK_CHOWN= sh "$SEED"; rc=$?
+else rc=127; fi
+[ "$rc" = 0 ] && [ "$(cat "$S/seed/metrics.tok" 2>/dev/null)" = "$TOK32" ] && ok FU1.token_seeded_from_stdin || bad FU1.token_seeded_from_stdin "rc=$rc"
+[ "$(stat -c %a "$S/seed/metrics.tok" 2>/dev/null)" = 400 ] && ok FU1.seeded_token_mode_0400 || bad FU1.seeded_token_mode_0400 ""
+rm -f "$S/seed/"*; if [ -f "$SEED" ]; then printf 'short' | TOK_DIR="$S/seed" TOK_CHOWN= sh "$SEED" 2>/dev/null; rc=$?; else rc=127; fi
+[ "$rc" != 0 ] && [ "$rc" != 127 ] && [ ! -e "$S/seed/metrics.tok" ] && ok FU1.short_token_refused_nothing_written || bad FU1.short_token_refused_nothing_written "rc=$rc"
+grep -q 'METRICS_SCRAPE_TOKEN' "$HERE/up.sh" && grep -q 'seed_scrape_token.sh' "$HERE/up.sh" && ok FU1.up_sh_uses_static_token_path || bad FU1.up_sh_uses_static_token_path "up.sh does not wire the seed"
+
 [ "$fail" = 0 ] && echo "ALL PASS" || echo "SOME FAILED"; exit "$fail"

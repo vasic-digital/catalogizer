@@ -89,4 +89,21 @@ setup b2; mkdir -p "$QA_DIR/website_dist"; echo old > "$QA_DIR/website_dist/stal
 PATH="$BIN:$PATH" bash "$R/docs/qa/stack3/build.sh" >"$T/out" 2>"$T/err"
 [ ! -e "$QA_DIR/website_dist/stale.html" ]; ok $? "stale website_dist cleared before build"
 
+# 5. QA-MON-FU-1 / QA-MON follow-up: dedicated scrape token + explicit TRUSTED_PROXIES (passed by NAME / explicit CIDR, never a value in argv)
+setup t5; run_up
+tok="$(grep '^METRICS_SCRAPE_TOKEN=' "$QA_DIR/qa.env" | cut -d= -f2-)"
+[ "${#tok}" -ge 32 ]; ok $? "fresh qa.env carries METRICS_SCRAPE_TOKEN (>=32 chars)"
+[ "$(stat -c %a "$QA_DIR/qa.env")" = 600 ]; ok $? "qa.env stays mode 0600"
+bad=0; [ -n "$tok" ] && grep -qF -- "$tok" "$STUB_LOG" && { echo "  scrape token value leaked in argv"; bad=1; }
+grep -q -- '-e METRICS_SCRAPE_TOKEN ' "$STUB_LOG" || { echo "  METRICS_SCRAPE_TOKEN not passed by name to the api"; bad=1; }
+ok $bad "scrape token passed by name, never as a value"
+grep -qE -- '-e TRUSTED_PROXIES=[0-9a-fA-F:./,]+ ' "$STUB_LOG" && ! grep -qE -- 'TRUSTED_PROXIES=(auto|0\.0\.0\.0/0) ' "$STUB_LOG"; ok $? "TRUSTED_PROXIES is an explicit CIDR list (not auto, not 0.0.0.0/0)"
+# an EXISTING qa.env without the token (stack already running) gets the token appended, other secrets untouched
+setup t5b; ( umask 077; printf 'ADMIN_USERNAME=qa_admin\nADMIN_PASSWORD=keepme\nJWT_SECRET=keepjwt\nPOSTGRES_USER=c\nPOSTGRES_PASSWORD=keeppg\nPOSTGRES_DB=c\nREGISTRATION_MODE=approval\n' > "$QA_DIR/qa.env" )
+run_up
+t2="$(grep '^METRICS_SCRAPE_TOKEN=' "$QA_DIR/qa.env" | cut -d= -f2-)"
+[ "${#t2}" -ge 32 ] && grep -q '^ADMIN_PASSWORD=keepme$' "$QA_DIR/qa.env" && grep -q '^JWT_SECRET=keepjwt$' "$QA_DIR/qa.env" && [ "$(stat -c %a "$QA_DIR/qa.env")" = 600 ]; ok $? "legacy qa.env: token appended, existing secrets and mode kept"
+run_up; t3="$(grep '^METRICS_SCRAPE_TOKEN=' "$QA_DIR/qa.env" | cut -d= -f2-)"
+[ "$t3" = "$t2" ]; ok $? "re-run keeps the same token (idempotent)"
+
 echo "passed=$pass failed=$fail"; [ "$fail" = 0 ]

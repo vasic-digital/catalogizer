@@ -36,7 +36,7 @@ Postgres passwords and the `qa_admin` login used by the token refresher are podm
   has no `METRICS_SCRAPE_TOKEN`, and it must not be restarted from here, so `token_refresher.sh` (sidecar) logs in as `qa_admin` every 6 h, writes the
   24 h session token to a shared volume (owner 65534 = Prometheus uid, mode 0400), then logs the previous session out (`POST /api/v1/auth/logout`, bearer and login body passed on curl's stdin - never in argv; up to 3 attempts, then dropped and logged; the superseded token is kept in a 0400 file on the token volume so a container restart still revokes it - if that also fails the session lives until its 24 h expiry);
   `verify.py` also logs out its own sessions and checks the token is rejected afterwards). Login JSON is escaped (`\` and `"`), failures back off
-  30 s doubling to 900 s so a wrong password cannot hammer the login lockout. **Named follow-up `QA-MON-FU-1`**: set `METRICS_SCRAPE_TOKEN` (>= 32 chars) in
+  30 s doubling to 900 s so a wrong password cannot hammer the login lockout. **`QA-MON-FU-1` (implemented 2026-11-05, `seed_scrape_token.sh`, live-verified in docs/qa/stack3-verify-20261105): when stack 3's `qa.env` carries `METRICS_SCRAPE_TOKEN` (stack-3 `up.sh` now generates it) this add-on seeds it as Prometheus' credentials file and starts NO refresher / no admin session; the refresher remains only as a fallback for a stack-3 API without the token. Original follow-up text:** set `METRICS_SCRAPE_TOKEN` (>= 32 chars) in
   stack 3's `up.sh` and scrape with it instead of an admin session (changes stack 3, so not done here). The refresher still holds admin credentials (as a secret).
 * **Networking / residual risk.** The pod is on `pasta` with `-T` port forwards for exactly four host ports (Postgres 35434, API 38082, web 33020,
   website 33021): inside the pod `127.0.0.1:<port>` reaches the host's `127.0.0.1:<port>`. An earlier revision used `--map-gw`, which exposed ALL
@@ -50,8 +50,7 @@ Postgres passwords and the `qa_admin` login used by the token refresher are podm
   per-IP rate limits and login lockouts are shared across all proxy users and API audit logs record that address, not the real client.
   (The legacy `net/http` handler `AuthHandler.Login` / `getClientIP` in `handlers/auth_handler.go` does trust `X-Real-IP` unconditionally, but it is not
   registered in stack 3's router - only the `*Gin` handlers are.) nginx sets `X-Real-IP` to `$remote_addr` (overwriting any client value) and appends to
-  `X-Forwarded-For` (`$proxy_add_x_forwarded_for`, so a client-supplied prefix is preserved there). Fix (stack-3 change, not done):
-  `TRUSTED_PROXIES=<explicit cidr>` in stack 3's `up.sh`.
+  `X-Forwarded-For` (`$proxy_add_x_forwarded_for`, so a client-supplied prefix is preserved there). Fix: stack-3 `up.sh` now sets `TRUSTED_PROXIES` (explicit CIDR, `lib.sh`; value measured live, see docs/qa/stack3-verify-20261105).
 * **Restart window (named follow-up `QA-MON-FU-2`).** If the refresher container dies after writing a new `metrics.tok` but before it updates `previous.tok` (or between revoking and re-persisting), one admin session can be left to expire on its own (<= 24 h). Closing it needs a two-entry revoke list; not done.
 * **pgAdmin.** `servers.json` is imported on first start of a fresh volume (`down.sh --purge` then `up.sh` re-imports). In server mode pgAdmin ignores
   the `PassFile` key, so `PGPASSFILE` is exported instead. Verify uses an unknown user for the wrong-password control: a wrong password on

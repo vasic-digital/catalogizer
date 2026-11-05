@@ -11,3 +11,6 @@ PG_PORT="${PG_PORT:-35434}";   REDIS_PORT="${REDIS_PORT:-36381}"  # loopback onl
 PG_IMAGE="${PG_IMAGE:-docker.io/library/postgres:15-alpine}"
 REDIS_IMAGE="${REDIS_IMAGE:-docker.io/library/redis:7-alpine}"
 NGINX_IMAGE="${NGINX_IMAGE:-docker.io/library/nginx:alpine}"
+# Peer CIDR(s) the API trusts for X-Forwarded-For (gin SetTrustedProxies). Explicit list, never "auto"/0.0.0.0/0. Default = the address the
+# monitoring nginx front door appears from inside the API pod (pasta); measured live, see docs/qa/stack3-verify-*/ . Override: TRUSTED_PROXIES=...
+TRUSTED_PROXIES="${TRUSTED_PROXIES:-127.0.0.1/32}"
