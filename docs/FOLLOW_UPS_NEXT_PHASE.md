@@ -1585,3 +1585,9 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - D7-R4-3: "pending" badge dark:bg-gray-800 equals card bg (shape invisible, text passes).
 - D7-R4-4: contrast helper dark fallback to light bg-*-50 lets islands pass; add class-wide check. Decorative status icons unmeasured (WCAG 1.4.11 3:1).
 - Live check on rebuilt web image (includes these fixes) owed (CAT-UI-AXE-LIVE-1 rerun).
+
+## Prometheus auth landed (CAT-PROM-AUTH-1; PROVISIONAL; GO-with-follow-ups round 2/5)
+- PROM-R2-1 (test minor): test_prom_auth_grafana.sh `nosecret` mutation kills by crashing Grafana (provisioning error, ~4 min wait), not by auth failure; use wrong-password secret (401) and fail fast if Grafana exits.
+- PROM-R2-2: flaky test_scripts.sh root cause UNCONFIRMED (stdin-drain removal did not reproduce in 6 runs); timeout raised 60->180 s may mask it - keep tracked, do not call fixed.
+- PROM-R2-3/4/5 (nits): verify.py vs up.sh user precedence wording; validate PROM_AUTH_USER before sed use in up.sh; --memory limit on grafana test containers.
+- Live: up.sh never run end to end until conductor applies (monitoring/up.sh, then verify.py + both tests). Basic auth over plain HTTP on LAN is sniffable.
