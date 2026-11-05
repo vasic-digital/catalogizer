@@ -1,0 +1,20 @@
+{
+ "light /dashboard []": [],
+ "light /analytics []": [],
+ "light /browse []": [],
+ "light /subtitles []": [],
+ "light /admin []": [],
+ "light /settings []": [],
+ "light /ai []": [],
+ "light /identities []": [],
+ "light /media []": [],
+ "dark /dashboard [dark]": [],
+ "dark /analytics [dark]": [],
+ "dark /browse [dark]": [],
+ "dark /subtitles [dark]": [],
+ "dark /admin [dark]": [],
+ "dark /settings [dark]": [],
+ "dark /ai [dark]": [],
+ "dark /identities [dark]": [],
+ "dark /media [dark]": []
+}

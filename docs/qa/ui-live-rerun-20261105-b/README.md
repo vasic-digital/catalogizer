@@ -1,0 +1,5 @@
+# UI live rerun on QA stack 3, image main-17ec3c1f (2026-11-05, evening)
+Target: web http://192.168.1.115:33080 (nginx front door), API :38082, qa_admin. Same scripts as `ui-live-rerun-20261105/` (earlier run on main-1db4760f). Chromium headless shell 1228, axe-core. Each check 3x sequentially. Screenshots + sha256 manifest in `/home/milosvasic/.cache/claude-tmp/evidence-archive/ui-live-rerun-20261105-b/`.
+Results: D7 axe (18 page/theme combos): 0 violations in all 3 runs (identical hash). D5/D6: all 7 lists empty, admin@360 sw=bw=cw=360 (3 identical). D8: `/browse?q=...`, entity query issued (3 identical). D1 /conversion: 200, no pageerror (3 identical). D2/D3: identical after normalising request order (duplicates/similar retries arrive in varying order).
+pprof (HELIX_PPROF_ENABLED=true): no token 401, bad token 401, admin 200 x3. 60 s profile cap not exercised.
+Not covered: non-admin 403, cover-art SSRF F2..F5, TRUSTED_PROXIES from second LAN host. axe is automated; labelled N=3 machine evidence, not VERIFIED-DONE of the items.

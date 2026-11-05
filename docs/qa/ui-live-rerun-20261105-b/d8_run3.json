@@ -1,0 +1,17 @@
+{
+ "url": "/browse?q=zzznomatchzzz",
+ "h1": [
+  "Search: \"zzznomatchzzz\""
+ ],
+ "searchInputValue": [
+  "Search movies, shows, music...=zzznomatchzzz",
+  "Search entities...=zzznomatchzzz"
+ ],
+ "body": "Search: \"zzznomatchzzz\"\n\nNo entities found",
+ "entityCalls": [
+  "GET /api/v1/entities/stats",
+  "GET /api/v1/entities/types",
+  "GET /api/v1/entities/stats",
+  "GET /api/v1/entities?query=zzznomatchzzz&limit=24&offset=0"
+ ]
+}
