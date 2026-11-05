@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/netguard"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -18,10 +19,11 @@ import (
 )
 
 type WebDAVClient struct {
-	client   *gowebdav.Client
-	baseURL  string
-	username string
-	password string
+	client    *gowebdav.Client
+	baseURL   string
+	username  string
+	password  string
+	quotaHTTP *http.Client // GetQuota; shares the client transport (connection reuse, one policy)
 }
 
 type WebDAVFile struct {
@@ -33,12 +35,18 @@ type WebDAVFile struct {
 
 func NewWebDAVClient(url, username, password string) *WebDAVClient {
 	client := gowebdav.NewClient(url, username, password)
+	// SECQ-1/W5: dial-time operator policy (loopback / link-local / metadata refused on the resolved address of every connection,
+	// so every redirect hop is covered). gowebdav owns its CheckRedirect (it cannot be replaced), so there is no earlier per-hop
+	// host check here. One transport per client, shared with GetQuota.
+	tr := netguard.OperatorTransport()
+	client.SetTransport(tr)
 
 	return &WebDAVClient{
-		client:   client,
-		baseURL:  url,
-		username: username,
-		password: password,
+		client:    client,
+		baseURL:   url,
+		username:  username,
+		password:  password,
+		quotaHTTP: &http.Client{Timeout: 30 * time.Second, Transport: tr, CheckRedirect: netguard.OperatorCheckRedirect},
 	}
 }
 
@@ -240,7 +248,10 @@ func (c *WebDAVClient) GetQuota() (*WebDAVQuota, error) {
 	req.SetBasicAuth(c.username, c.password)
 	req.Header.Set("Depth", "0")
 	req.Header.Set("Content-Type", "application/xml")
-	httpClient := &http.Client{Timeout: 30 * time.Second}
+	httpClient := c.quotaHTTP
+	if httpClient == nil { // a client built without NewWebDAVClient
+		httpClient = &http.Client{Timeout: 30 * time.Second, Transport: netguard.OperatorTransport(), CheckRedirect: netguard.OperatorCheckRedirect}
+	}
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("quota request: %w", err)

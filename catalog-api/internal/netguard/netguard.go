@@ -53,14 +53,27 @@ func embeddedV4(ip net.IP) net.IP {
 		return nil
 	}
 	switch {
+	case ip.IsUnspecified() || ip.Equal(net.IPv6loopback):
+		return nil // :: and ::1 are not IPv4-compatible 0.0.0.0 / 0.0.0.1
 	case mustCIDR("::/96").Contains(ip16):
 		return net.IP{ip16[12], ip16[13], ip16[14], ip16[15]}
+	case ip16[8] == 0xff && ip16[9] == 0xff && ip16[10] == 0 && ip16[11] == 0 && allZero(ip16[:8]):
+		return net.IP{ip16[12], ip16[13], ip16[14], ip16[15]} // SIIT-translated ::ffff:0:a.b.c.d
 	case mustCIDR("64:ff9b::/96").Contains(ip16):
 		return net.IP{ip16[12], ip16[13], ip16[14], ip16[15]}
 	case ip16[0] == 0x20 && ip16[1] == 0x02:
 		return net.IP{ip16[2], ip16[3], ip16[4], ip16[5]}
 	}
 	return nil
+}
+
+func allZero(b []byte) bool {
+	for _, x := range b {
+		if x != 0 {
+			return false
+		}
+	}
+	return true
 }
 
 func mustCIDR(s string) *net.IPNet {
