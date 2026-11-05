@@ -20,6 +20,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"testing/iotest"
 	"time"
 
 	"catalogizer/internal/netguard"
@@ -48,6 +49,9 @@ type fakeS3 struct {
 	vhost       string // when set, the bucket comes from the Host header (virtual-host addressing)
 	badSigns    int
 	crossBucket int
+	delay       time.Duration
+	copySources []string
+	deletePosts int
 }
 
 func newFakeS3(bucket string) *fakeS3 {
@@ -78,6 +82,9 @@ func (f *fakeS3) requests() []string {
 }
 
 func (f *fakeS3) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if f.delay > 0 {
+		time.Sleep(f.delay)
+	}
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.reqs = append(f.reqs, r.Method+" "+r.URL.EscapedPath()+"?"+r.URL.RawQuery)
@@ -104,12 +111,40 @@ func (f *fakeS3) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("<Error><Code>NoSuchBucket</Code></Error>"))
 		return
 	}
+	if strings.HasSuffix(key, "forbidden") {
+		w.WriteHeader(http.StatusForbidden)
+		if r.Method != http.MethodHead {
+			_, _ = w.Write([]byte("<Error><Code>AccessDenied</Code></Error>"))
+		}
+		return
+	}
 	switch {
+	case key == "" && r.Method == http.MethodPost && r.URL.Query().Has("delete"):
+		f.deletePosts++
+		var req struct {
+			Objects []struct{ Key string } `xml:"Object"`
+		}
+		b, _ := io.ReadAll(r.Body)
+		_ = xml.Unmarshal(b, &req)
+		var sb strings.Builder
+		sb.WriteString("<DeleteResult>")
+		for _, o := range req.Objects {
+			if strings.HasSuffix(o.Key, "failkey") {
+				sb.WriteString("<Error><Key>" + o.Key + "</Key><Code>AccessDenied</Code></Error>")
+				continue
+			}
+			delete(f.objs, o.Key)
+			sb.WriteString("<Deleted><Key>" + o.Key + "</Key></Deleted>")
+		}
+		sb.WriteString("</DeleteResult>")
+		w.Header().Set("Content-Type", "application/xml")
+		_, _ = w.Write([]byte(sb.String()))
 	case key == "" && r.Method == http.MethodHead:
 		w.WriteHeader(http.StatusOK)
 	case key == "" && r.Method == http.MethodGet:
 		f.list(w, r)
 	case r.Method == http.MethodPut && r.Header.Get("X-Amz-Copy-Source") != "":
+		f.copySources = append(f.copySources, r.Header.Get("X-Amz-Copy-Source"))
 		src, _ := url.PathUnescape(r.Header.Get("X-Amz-Copy-Source"))
 		src = strings.TrimPrefix(src, "/")
 		sbucket, skey, _ := strings.Cut(src, "/")
@@ -547,4 +582,200 @@ func TestS3_FactoryAndSettings(t *testing.T) {
 	require.Error(t, err, "an unknown key is an error (PA-01)")
 	_, err = NewDefaultClientFactory().CreateClient(&StorageConfig{Protocol: "s3", Settings: map[string]interface{}{"url": srv.URL, "path": "media", "addressing": "weird"}})
 	require.Error(t, err)
+}
+
+// ---- review round 1 additions (CAT-S3-1) ----
+
+func TestS3_StatPrefixBoundary(t *testing.T) {
+	f := newFakeS3("media")
+	srv := httptest.NewServer(f)
+	defer srv.Close()
+	f.put("lib/foobar/x", "1")
+	c := s3Client(t, srv, "media", "lib")
+	ok, err := c.FileExists(context.Background(), "/foo")
+	require.NoError(t, err)
+	require.False(t, ok, "'foo' must not be a directory because 'foobar/' exists")
+	d, err := c.GetFileInfo(context.Background(), "/foobar")
+	require.NoError(t, err)
+	require.True(t, d.IsDir)
+}
+
+func TestS3_ForbiddenIsNotNotFound(t *testing.T) {
+	f := newFakeS3("media")
+	srv := httptest.NewServer(f)
+	defer srv.Close()
+	c := s3Client(t, srv, "media", "")
+	_, err := c.GetFileInfo(context.Background(), "/forbidden")
+	require.Error(t, err)
+	require.False(t, errors.Is(err, os.ErrNotExist), "a 403 must not read as 'does not exist': %v", err)
+	ok, err := c.FileExists(context.Background(), "/forbidden")
+	require.Error(t, err)
+	require.False(t, ok)
+	require.Error(t, c.DeleteFile(context.Background(), "/forbidden"))
+	require.False(t, errors.Is(c.DeleteFile(context.Background(), "/forbidden"), os.ErrNotExist))
+}
+
+func TestS3_RmdirMultiPageBatchedPerRequestTimeout(t *testing.T) {
+	f := newFakeS3("media")
+	f.delay = 120 * time.Millisecond
+	srv := httptest.NewServer(f)
+	defer srv.Close()
+	for i := 0; i < 7; i++ {
+		f.put(fmt.Sprintf("d/k%d", i), "x")
+	}
+	f.put("d2/keep", "x")
+	f.put("d/failkey-not-here", "x")
+	delete(f.objs, "d/failkey-not-here")
+	c := s3Client(t, srv, "media", "")
+	old := s3OpTimeout
+	s3OpTimeout = 400 * time.Millisecond // 4 list pages + deletes take ~1s in total: one shared deadline would cut it
+	defer func() { s3OpTimeout = old }()
+	require.NoError(t, c.DeleteDirectory(context.Background(), "/d"))
+	require.Equal(t, []string{"d2/keep"}, f.keys(), "the sibling 'd2' survives and every key of 'd' is gone")
+	reqs := strings.Join(f.requests(), "\n")
+	require.Contains(t, reqs, "continuation-token", "rmdir follows the continuation token across pages")
+	require.LessOrEqual(t, f.deletePosts, 4, "deletes are batched, not one request per key")
+	require.NotContains(t, reqs, "DELETE /media/d/", "no per-object DELETE requests")
+}
+
+func TestS3_RmdirPerKeyErrorReported(t *testing.T) {
+	f := newFakeS3("media")
+	srv := httptest.NewServer(f)
+	defer srv.Close()
+	f.put("d/ok", "x")
+	f.put("d/failkey", "x")
+	c := s3Client(t, srv, "media", "")
+	err := c.DeleteDirectory(context.Background(), "/d")
+	require.Error(t, err, "a per-key error in the DeleteObjects answer is an error, not a success")
+	require.Contains(t, err.Error(), "AccessDenied")
+}
+
+// rewindFails refuses the FIRST rewind (the client's own sizing step) and behaves normally afterwards, so only the client's handling of that
+// error decides the outcome (the SDK's own rewind would otherwise mask a swallowed error).
+type rewindFails struct {
+	*strings.Reader
+	failed *bool
+}
+
+func (r rewindFails) Seek(off int64, whence int) (int64, error) {
+	if whence == io.SeekStart && !*r.failed {
+		*r.failed = true
+		return 0, errors.New("rewind refused")
+	}
+	return r.Reader.Seek(off, whence)
+}
+
+func TestS3_WriteSeekFailureIsNotSilentEmptyObject(t *testing.T) {
+	f := newFakeS3("media")
+	srv := httptest.NewServer(f)
+	defer srv.Close()
+	c := s3Client(t, srv, "media", "")
+	err := c.WriteFile(context.Background(), "/x", rewindFails{strings.NewReader("payload"), new(bool)})
+	require.Error(t, err)
+	require.Empty(t, f.keys(), "no 0-byte object may be stored")
+	// a ReadSeeker that is not at offset 0 is stored from offset 0
+	rd := strings.NewReader("payload")
+	_, _ = rd.Seek(3, io.SeekStart)
+	require.NoError(t, c.WriteFile(context.Background(), "/y", rd))
+	require.Equal(t, "payload", string(f.objs["y"].data))
+}
+
+func TestS3_SpoolTempFileRemoved(t *testing.T) {
+	tmp := t.TempDir()
+	t.Setenv("TMPDIR", tmp)
+	f := newFakeS3("media")
+	srv := httptest.NewServer(f)
+	defer srv.Close()
+	c := s3Client(t, srv, "media", "")
+	require.NoError(t, c.WriteFile(context.Background(), "/s", iotest.OneByteReader(strings.NewReader("spooled body"))))
+	require.Equal(t, "spooled body", string(f.objs["s"].data))
+	ents, err := os.ReadDir(tmp)
+	require.NoError(t, err)
+	require.Empty(t, ents, "the spool file is removed after the upload")
+	// also after a failed upload
+	require.Error(t, c.WriteFile(context.Background(), "/forbidden", iotest.OneByteReader(strings.NewReader("zzz"))))
+	ents, _ = os.ReadDir(tmp)
+	require.Empty(t, ents)
+}
+
+// CheckRedirect is a line of defence of its own: called directly, it refuses a hop to a metadata address, a non-http scheme and an 11th hop,
+// independent of the dial guard.
+func TestS3_CheckRedirectInstalledAndRefuses(t *testing.T) {
+	f := newFakeS3("media")
+	srv := httptest.NewServer(f)
+	defer srv.Close()
+	c := s3Client(t, srv, "media", "")
+	require.NotNil(t, c.httpC.CheckRedirect, "the guarded redirect policy is installed")
+	mk := func(u string) *http.Request { r, _ := http.NewRequest("GET", u, nil); return r }
+	require.True(t, errors.Is(c.httpC.CheckRedirect(mk("http://169.254.169.254/x"), []*http.Request{mk("http://a/")}), netguard.ErrBlocked))
+	require.True(t, errors.Is(c.httpC.CheckRedirect(mk("ftp://example.com/x"), []*http.Request{mk("http://a/")}), netguard.ErrBlocked))
+	require.Error(t, c.httpC.CheckRedirect(mk("http://example.com/"), make([]*http.Request, 10)))
+}
+
+func TestS3_CopySourceHeaderExactlyEscaped(t *testing.T) {
+	f := newFakeS3("media")
+	srv := httptest.NewServer(f)
+	defer srv.Close()
+	c := s3Client(t, srv, "media", "lib")
+	name := "/a b+c&d=e$f:g@h,i;j%k.txt"
+	f.put("lib"+name, "1")
+	require.NoError(t, c.CopyFile(context.Background(), name, "/dst"))
+	require.Equal(t, []string{"media/lib/a%20b%2Bc%26d%3De%24f%3Ag%40h%2Ci%3Bj%25k.txt"}, f.copySources)
+	require.Contains(t, f.keys(), "lib/dst")
+}
+
+func TestS3_ListSkipsUnaddressableKeys(t *testing.T) {
+	f := newFakeS3("media")
+	srv := httptest.NewServer(f)
+	defer srv.Close()
+	for _, k := range []string{"lib/good", "lib//dbl", "lib/../up", "lib/./dot", "lib/sub/ok"} {
+		f.put(k, "1")
+	}
+	c := s3Client(t, srv, "media", "lib")
+	got, err := c.ListDirectory(context.Background(), "/")
+	require.NoError(t, err)
+	names := []string{}
+	for _, e := range got {
+		names = append(names, e.Name)
+	}
+	sort.Strings(names)
+	require.Equal(t, []string{"good", "sub"}, names)
+	require.GreaterOrEqual(t, c.SkippedKeys(), int64(2), "skipped keys are counted, not silently lost")
+}
+
+func TestS3_NotFoundErrorCarriesNoWireText(t *testing.T) {
+	f := newFakeS3("media")
+	srv := httptest.NewServer(f)
+	defer srv.Close()
+	c := s3Client(t, srv, "media", "")
+	_, err := c.ReadFile(context.Background(), "/missing")
+	require.True(t, errors.Is(err, os.ErrNotExist))
+	var se *scrubbedError
+	require.True(t, errors.As(err, &se))
+	require.Equal(t, os.ErrNotExist, se.cause, "the cause is the bare sentinel, not the raw SDK text")
+}
+
+func TestS3_ListAndRmdirHungServerBoundedPerRequest(t *testing.T) {
+	block := make(chan struct{})
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodHead {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+		<-block
+	}))
+	defer srv.Close()
+	defer close(block)
+	c := s3Client(t, srv, "b", "")
+	old := s3OpTimeout
+	s3OpTimeout = 200 * time.Millisecond
+	defer func() { s3OpTimeout = old }()
+	for name, fn := range map[string]func() error{
+		"list":  func() error { _, err := c.ListDirectory(context.Background(), "/"); return err },
+		"rmdir": func() error { return c.DeleteDirectory(context.Background(), "/d") },
+	} {
+		start := time.Now()
+		require.Error(t, fn(), name)
+		require.Less(t, time.Since(start), 8*time.Second, name)
+	}
 }

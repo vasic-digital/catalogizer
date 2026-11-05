@@ -73,6 +73,7 @@ type S3Client struct {
 	api       *awss3.Client
 	httpC     *http.Client
 	connected atomic.Bool
+	skipped   atomic.Int64
 	mu        sync.Mutex
 
 	// httpOverride replaces the guarded HTTP client. Unit tests only (virtual-host Host-header assertion); never set by production code.
@@ -243,7 +244,7 @@ func (c *S3Client) wrapErr(op string, err error) error {
 		return nil
 	}
 	if isS3NotFound(err) {
-		return &scrubbedError{msg: fmt.Sprintf("s3 %s: %v", op, os.ErrNotExist), cause: fmt.Errorf("%w (%v)", os.ErrNotExist, err)}
+		return &scrubbedError{msg: fmt.Sprintf("s3 %s: %v", op, os.ErrNotExist), cause: os.ErrNotExist}
 	}
 	msg := err.Error()
 	for _, secret := range []string{c.cfg.SecretKey, c.cfg.AccessKey} {
@@ -313,14 +314,19 @@ func (c *S3Client) WriteFile(ctx context.Context, path string, data io.Reader) e
 	return nil
 }
 
+// seekable returns a body the signer can read twice and its length. A ReadSeeker is used as it is and is ALWAYS read from offset 0 (its
+// current offset is ignored); if it cannot be sized or rewound the error is returned, never a silent fall-through to the spool (which would
+// read from the END and store a 0-byte object as a success).
 func (c *S3Client) seekable(ctx context.Context, data io.Reader) (io.ReadSeeker, int64, func(), error) {
 	if rs, ok := data.(io.ReadSeeker); ok {
 		end, err := rs.Seek(0, io.SeekEnd)
-		if err == nil {
-			if _, err = rs.Seek(0, io.SeekStart); err == nil {
-				return rs, end, func() {}, nil
-			}
+		if err != nil {
+			return nil, 0, func() {}, fmt.Errorf("size the source: %w", err)
 		}
+		if _, err = rs.Seek(0, io.SeekStart); err != nil {
+			return nil, 0, func() {}, fmt.Errorf("rewind the source: %w", err)
+		}
+		return rs, end, func() {}, nil
 	}
 	f, err := os.CreateTemp("", "catalogizer-s3-spool-*")
 	if err != nil {
@@ -428,15 +434,34 @@ func (c *S3Client) CopyFile(ctx context.Context, srcPath, dstPath string) error 
 	return nil
 }
 
+// escapeCopySource percent-encodes "bucket/key" for the X-Amz-Copy-Source header: every byte except the unreserved set and "/" is encoded
+// (url.PathEscape would leave + & = $ : @ , as they are).
 func escapeCopySource(bucket, key string) string {
-	parts := strings.Split(bucket+"/"+key, "/")
-	for i, p := range parts {
-		parts[i] = url.PathEscape(p)
+	const hex = "0123456789ABCDEF"
+	var b strings.Builder
+	for _, ch := range []byte(bucket + "/" + key) {
+		switch {
+		case ch >= 'a' && ch <= 'z', ch >= 'A' && ch <= 'Z', ch >= '0' && ch <= '9', ch == '-', ch == '_', ch == '.', ch == '~', ch == '/':
+			b.WriteByte(ch)
+		default:
+			b.WriteByte('%')
+			b.WriteByte(hex[ch>>4])
+			b.WriteByte(hex[ch&15])
+		}
 	}
-	return strings.Join(parts, "/")
+	return b.String()
 }
 
-// ListDirectory lists the entries directly below path ("/" delimiter). It honours WithListLimit.
+// SkippedKeys reports how many listed keys were skipped because they do not map to a clean name below the directory (empty, "." or ".."
+// segments such as "lib//x" or "lib/../up"). Such a key can exist in S3 and cannot be addressed safely through a slash path.
+func (c *S3Client) SkippedKeys() int64 { return c.skipped.Load() }
+
+func cleanS3Name(name string) bool {
+	return name != "" && name != "." && name != ".." && !strings.Contains(name, "/")
+}
+
+// ListDirectory lists the entries directly below path ("/" delimiter). It honours WithListLimit. Every page has its own timeout, so a
+// large directory is not cut by one deadline that covers all pages.
 func (c *S3Client) ListDirectory(ctx context.Context, path string) ([]*FileInfo, error) {
 	api, err := c.client()
 	if err != nil {
@@ -444,19 +469,18 @@ func (c *S3Client) ListDirectory(ctx context.Context, path string) ([]*FileInfo,
 	}
 	pfx := c.dirPrefix(path)
 	limit, limited := ListLimit(ctx)
-	cctx, cancel := c.opCtx(ctx)
-	defer cancel()
 	var out []*FileInfo
 	var token *string
 	for {
-		res, err := api.ListObjectsV2(cctx, &awss3.ListObjectsV2Input{Bucket: aws.String(c.cfg.Bucket), Prefix: aws.String(pfx), Delimiter: aws.String("/"), ContinuationToken: token})
+		res, err := c.listPage(ctx, api, &awss3.ListObjectsV2Input{Bucket: aws.String(c.cfg.Bucket), Prefix: aws.String(pfx), Delimiter: aws.String("/"), ContinuationToken: token})
 		if err != nil {
 			return nil, c.wrapErr("list "+c.rel(pfx), err)
 		}
 		for _, cp := range res.CommonPrefixes {
 			p := aws.ToString(cp.Prefix)
 			name := strings.TrimSuffix(strings.TrimPrefix(p, pfx), "/")
-			if name == "" {
+			if !cleanS3Name(name) {
+				c.skipped.Add(1)
 				continue
 			}
 			out = append(out, &FileInfo{Name: name, Path: c.rel(p), IsDir: true, Mode: os.ModeDir | 0o755})
@@ -467,7 +491,11 @@ func (c *S3Client) ListDirectory(ctx context.Context, path string) ([]*FileInfo,
 				continue // the directory's own marker
 			}
 			name := strings.TrimPrefix(k, pfx)
-			if name == "" || strings.Contains(name, "/") {
+			if strings.Contains(name, "/") {
+				continue
+			}
+			if !cleanS3Name(name) {
+				c.skipped.Add(1)
 				continue
 			}
 			fi := &FileInfo{Name: name, Path: c.rel(k), Size: aws.ToInt64(o.Size), Mode: 0o644}
@@ -484,6 +512,13 @@ func (c *S3Client) ListDirectory(ctx context.Context, path string) ([]*FileInfo,
 		}
 		token = res.NextContinuationToken
 	}
+}
+
+// listPage runs one ListObjectsV2 request under its own operation timeout.
+func (c *S3Client) listPage(ctx context.Context, api *awss3.Client, in *awss3.ListObjectsV2Input) (*awss3.ListObjectsV2Output, error) {
+	cctx, cancel := c.opCtx(ctx)
+	defer cancel()
+	return api.ListObjectsV2(cctx, in)
 }
 
 // CreateDirectory emulates mkdir with a zero-byte "dir/" key. The root needs nothing.
@@ -504,7 +539,9 @@ func (c *S3Client) CreateDirectory(ctx context.Context, path string) error {
 	return nil
 }
 
-// DeleteDirectory removes every key below the directory, marker included. The root is refused (ErrRefuseDeleteRoot).
+// DeleteDirectory removes every key below the directory, marker included, in DeleteObjects batches of at most 1000 keys. Every request has
+// its own timeout (a large directory is not cut half-deleted by one deadline). A per-key failure reported by the server is an error. The
+// root is refused (ErrRefuseDeleteRoot).
 func (c *S3Client) DeleteDirectory(ctx context.Context, path string) error {
 	api, err := c.client()
 	if err != nil {
@@ -514,28 +551,52 @@ func (c *S3Client) DeleteDirectory(ctx context.Context, path string) error {
 	if pfx == "" || pfx == c.prefix {
 		return ErrRefuseDeleteRoot
 	}
-	cctx, cancel := c.opCtx(ctx)
-	defer cancel()
 	var token *string
 	for {
-		res, err := api.ListObjectsV2(cctx, &awss3.ListObjectsV2Input{Bucket: aws.String(c.cfg.Bucket), Prefix: aws.String(pfx), ContinuationToken: token})
+		res, err := c.listPage(ctx, api, &awss3.ListObjectsV2Input{Bucket: aws.String(c.cfg.Bucket), Prefix: aws.String(pfx), ContinuationToken: token})
 		if err != nil {
 			return c.wrapErr("rmdir list "+c.rel(pfx), err)
 		}
+		var ids []types.ObjectIdentifier
 		for _, o := range res.Contents {
 			k := aws.ToString(o.Key)
 			if !strings.HasPrefix(k, pfx) { // belt and braces: never delete outside the listed prefix
 				continue
 			}
-			if _, err := api.DeleteObject(cctx, &awss3.DeleteObjectInput{Bucket: aws.String(c.cfg.Bucket), Key: aws.String(k)}); err != nil {
-				return c.wrapErr("rmdir "+c.rel(k), err)
+			ids = append(ids, types.ObjectIdentifier{Key: aws.String(k)})
+		}
+		for len(ids) > 0 {
+			n := len(ids)
+			if n > s3DeleteBatch {
+				n = s3DeleteBatch
 			}
+			if err := c.deleteBatch(ctx, api, ids[:n]); err != nil {
+				return err
+			}
+			ids = ids[n:]
 		}
 		if !aws.ToBool(res.IsTruncated) || res.NextContinuationToken == nil {
 			return nil
 		}
 		token = res.NextContinuationToken
 	}
+}
+
+// s3DeleteBatch is the DeleteObjects limit (S3 allows 1000 keys per call).
+const s3DeleteBatch = 1000
+
+func (c *S3Client) deleteBatch(ctx context.Context, api *awss3.Client, ids []types.ObjectIdentifier) error {
+	cctx, cancel := c.opCtx(ctx)
+	defer cancel()
+	out, err := api.DeleteObjects(cctx, &awss3.DeleteObjectsInput{Bucket: aws.String(c.cfg.Bucket), Delete: &types.Delete{Objects: ids, Quiet: aws.Bool(true)}})
+	if err != nil {
+		return c.wrapErr("rmdir", err)
+	}
+	if len(out.Errors) > 0 {
+		e := out.Errors[0]
+		return c.wrapErr("rmdir", fmt.Errorf("%d of %d keys not deleted, first: %s (%s)", len(out.Errors), len(ids), c.rel(aws.ToString(e.Key)), aws.ToString(e.Code)))
+	}
+	return nil
 }
 
 // GetProtocol returns "s3".

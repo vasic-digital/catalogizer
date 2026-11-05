@@ -116,9 +116,12 @@ func supportedStorageProtocol(protocol string) bool {
 }
 
 // validateWebDAVRootURL applies the operator-class outbound policy (netguard.CheckOperatorURL) to the URL of a WebDAV storage root.
-func validateWebDAVRootURL(raw *string) error {
+func validateWebDAVRootURL(raw *string) error { return validateRootURL("webdav", raw) }
+
+// validateRootURL is the operator-class check for every protocol whose root is an operator-chosen URL (webdav, s3).
+func validateRootURL(protocol string, raw *string) error {
 	if raw == nil || *raw == "" {
-		return errors.New("webdav storage root needs a url")
+		return fmt.Errorf("%s storage root needs a url", protocol)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -130,7 +133,7 @@ func validateWebDAVRootURL(raw *string) error {
 		target = u.String()
 	}
 	if _, err := netguard.CheckOperatorURL(ctx, target, "http", "https"); err != nil {
-		return fmt.Errorf("webdav url refused: %w", err)
+		return fmt.Errorf("%s url refused: %w", protocol, err)
 	}
 	return nil
 }
@@ -177,8 +180,8 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 
 	// SECQ-1/W5: early refusal of a WebDAV root aimed at loopback / link-local / cloud-metadata addresses. The dial of the client checks the
 	// resolved address again on every connection and redirect hop, so this is for a clear error, not the only line of defence.
-	if req.Protocol == "webdav" {
-		if err := validateWebDAVRootURL(req.URL); err != nil {
+	if req.Protocol == "webdav" || req.Protocol == "s3" {
+		if err := validateRootURL(req.Protocol, req.URL); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}

@@ -3,6 +3,7 @@ package filesystem
 import (
 	"fmt"
 	"strings"
+	"sync"
 )
 
 // Settings keys consumed only by the s3 protocol (region and addressing travel in the root's options JSON, see optionKeys).
@@ -11,9 +12,13 @@ const (
 	KeyAddressing = "addressing" // "path" (default) or "virtual"
 )
 
+var s3RegisterMu sync.Mutex
+
 // RegisterS3Protocol makes "s3" a creatable storage protocol (factory, SupportedProtocols, generic scanner). It is explicit, not an init(), so
 // a binary or test that does not want s3 is unchanged; main() calls it once at start-up. Safe to call more than once.
 func RegisterS3Protocol() error {
+	s3RegisterMu.Lock()
+	defer s3RegisterMu.Unlock()
 	if IsRegisteredProtocol("s3") {
 		return nil
 	}
