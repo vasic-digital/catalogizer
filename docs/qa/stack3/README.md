@@ -15,7 +15,8 @@ Rootless-podman QA stack built from a clean export of a `main` commit (default: 
 The API pod publishes `0.0.0.0` (LAN-reachable, no TLS) and runs with `APP_ENV=development`, `CORS_ENABLED=true`, `CORS_ORIGINS='*'`.
 This is deliberate so QA devices and browsers on the LAN can reach the stack; it is NOT a production configuration and the stack must
 not be exposed beyond a trusted LAN. Postgres and Redis stay on loopback. Secrets are passed to containers by variable name
-(`-e NAME`), never as `-e NAME=value`, so no secret appears in `podman` argv or `ps`.
+(`-e NAME`), never as `-e NAME=value`, so no secret appears in `podman` argv or `ps`. The VALUES are still part of the container's configuration: the host user can read them with `podman inspect catqa3-api` (`.Config.Env`) and from `/proc/<pid>/environ`, including `METRICS_SCRAPE_TOKEN` (accepted risk for a single-tenant QA host, tracked as `QA-MON-FU-3`).
+`TRUSTED_PROXIES` defaults to the host primary address /32 (see `lib.sh`): any client on the QA host can forge `X-Forwarded-For`; remote-LAN source preservation is UNCONFIRMED (`QA-MON-FU-4`).
 
 ## Script reference (11.4.18)
 | Script | Purpose | Exit codes |

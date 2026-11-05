@@ -1,0 +1,40 @@
+{"phase": "A", "round": "5", "check": "env.health_build", "result": "PASS", "detail": "015896fd89180a42cc6c1e794719bd04e39e9c40"}
+{"phase": "A", "round": "5", "check": "S1.metrics_anon_401", "result": "PASS", "detail": 401}
+{"phase": "A", "round": "5", "check": "S1.metrics_bogus_401", "result": "PASS", "detail": 401}
+{"phase": "A", "round": "5", "check": "S1.metrics_scrape_token_200", "result": "PASS", "detail": {"status": 200, "bytes": 18644}}
+{"phase": "A", "round": "5", "check": "S1.metrics_admin_session_200", "result": "PASS", "detail": 200}
+{"phase": "A", "round": "5", "check": "S1.metrics_scrape_token_off_by_one_401", "result": "PASS", "detail": null}
+{"phase": "A", "round": "5", "check": "S1.scrape_token_not_accepted_elsewhere", "result": "PASS", "detail": {"/api/v1/admin/users": 401, "/api/v1/media/stats": 401, "/api/v1/auth/profile": 401}}
+{"phase": "A", "round": "5", "check": "S1.control_admin_session_accepted_on_same_routes", "result": "PASS", "detail": "admin session 200 on the routes the scrape token is refused on"}
+{"phase": "A", "round": "5", "check": "S1.prometheus_scrapes_with_static_token", "result": "PASS", "detail": [["catalogizer-api", "up"], ["prometheus", "up"]]}
+{"phase": "A", "round": "5", "check": "S1.pprof_off_by_default_404", "result": "PASS", "detail": "HELIX_PPROF_ENABLED unset"}
+{"phase": "A", "round": "5", "check": "S3.csrf_cookie_dev_mode", "result": "PASS", "detail": {"status": 200, "cookie_attrs": "csrf-dev=<v>; Path=<v>; Max-Age=<v>; HttpOnly"}}
+{"phase": "A", "round": "5", "check": "S3.csrf_missing_cookie_403", "result": "PASS", "detail": [403, "b'{\"error\":\"missing csrf cookie\"}'"]}
+{"phase": "A", "round": "5", "check": "S3.csrf_missing_header_403", "result": "PASS", "detail": [403, "b'{\"error\":\"missing csrf header\"}'"]}
+{"phase": "A", "round": "5", "check": "S3.csrf_wrong_token_403", "result": "PASS", "detail": [403, "b'{\"error\":\"csrf token mismatch\"}'"]}
+{"phase": "A", "round": "5", "check": "S3.csrf_valid_pair_passes_guard_404_nonexistent_user", "result": "PASS", "detail": [404, "b'{\"error\":\"User not found\"}'"]}
+{"phase": "A", "round": "5", "check": "P2g.access_log_has_request_line", "result": "PASS", "detail": {"status": 200, "lines": 1}}
+{"phase": "A", "round": "5", "check": "P2g.sentinel_never_in_api_log", "result": "PASS", "detail": "sentinel absent from full api log window"}
+{"phase": "A", "round": "5", "check": "P2g.control_noncredential_param_kept", "result": "PASS", "detail": "non-credential param still logged (needle)"}
+{"phase": "A", "round": "5", "check": "P2g.redaction_marker_present", "result": "PASS", "detail": ["smb/test?host=127.0.0.1&share=x&username=u&password=REDACTED&pass=REDACTED&secret=REDACTED&token=REDACTED&keep=VISIBLEVAL\", \"status\": 200, \"ip\": \"192.168.1.115\", \"latency\": \"908.063\u00b5s\", \"user_agent\": "]}
+{"phase": "A", "round": "5", "check": "S5.second_user_registered_approved_login", "result": "PASS", "detail": [201, 200, 200]}
+{"phase": "A", "round": "5", "check": "S5.user_metrics_403", "result": "PASS", "detail": 403}
+{"phase": "A", "round": "5", "check": "S5.user_admin_users_403", "result": "PASS", "detail": 403}
+{"phase": "A", "round": "5", "check": "S5.user_generate_thumbnails_403", "result": "PASS", "detail": 403}
+{"phase": "A", "round": "5", "check": "S5.control_admin_reads_existing_conversion_job_200", "result": "PASS", "detail": {"job": 134, "admin_status": 200, "list_status": 200}}
+{"phase": "A", "round": "5", "check": "S5.user_conversion_job_refused_404_ownership_masking", "result": "PASS", "detail": {"job": 134, "user_status": 404, "admin_status": 200, "nonexistent_id_user_status": 404, "note": "another owner's job answers 404 to a plain user (masking), admin 200"}}
+{"phase": "A", "round": "5", "check": "S5.control_admin_admin_users_200", "result": "PASS", "detail": null}
+{"phase": "A", "round": "5", "check": "S6.user_b_created_approved_login", "result": "PASS", "detail": [201, 200, 200]}
+{"phase": "A", "round": "5", "check": "S6.control_recommendations_personalized_own_data_not_refused", "result": "PASS", "detail": {"A_on_A": 501, "B_on_B": 501}}
+{"phase": "A", "round": "5", "check": "S6.recommendations_personalized_A_cannot_read_B_403", "result": "PASS", "detail": 403}
+{"phase": "A", "round": "5", "check": "S6.recommendations_personalized_B_cannot_read_A_403", "result": "PASS", "detail": 403}
+{"phase": "A", "round": "5", "check": "S6.control_recommendations_personalized_admin_may_read_either", "result": "PASS", "detail": "admin passes SelfOrAdmin"}
+{"phase": "A", "round": "5", "check": "S6.control_analytics_user_own_data_not_refused", "result": "PASS", "detail": {"A_on_A": 200, "B_on_B": 200}}
+{"phase": "A", "round": "5", "check": "S6.analytics_user_A_cannot_read_B_403", "result": "PASS", "detail": 403}
+{"phase": "A", "round": "5", "check": "S6.analytics_user_B_cannot_read_A_403", "result": "PASS", "detail": 403}
+{"phase": "A", "round": "5", "check": "S6.control_analytics_user_admin_may_read_either", "result": "PASS", "detail": "admin passes SelfOrAdmin"}
+{"phase": "A", "round": "5", "check": "S6.user_b_logout_200", "result": "PASS", "detail": 200}
+{"phase": "A", "round": "5", "check": "S6.cleanup_user_b", "result": "PASS", "detail": null}
+{"phase": "A", "round": "5", "check": "S5.user_logout_revokes_only_own_token", "result": "PASS", "detail": {"logout": 200, "admin_profile_after": 200, "user_profile_after": 401}}
+{"phase": "A", "round": "5", "check": "S5.cleanup_user", "result": "PASS", "detail": null}
+SUMMARY A 5 39 PASS 0 FAIL 0 SKIP

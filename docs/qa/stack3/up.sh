@@ -17,10 +17,14 @@ if [ ! -f "$ENVF" ]; then   # fresh random secrets, never printed
   ( umask 077; r() { head -c "$1" /dev/urandom | od -An -vtx1 | tr -d ' \n'; }
     { echo "ADMIN_USERNAME=qa_admin"; echo "ADMIN_PASSWORD=Qa-$(r 12)-Zz9"; echo "JWT_SECRET=$(r 32)"
       echo "POSTGRES_USER=catalogizer"; echo "POSTGRES_PASSWORD=$(r 16)"; echo "POSTGRES_DB=catalogizer"
-      echo "REGISTRATION_MODE=approval"; } > "$ENVF" )
+      echo "REGISTRATION_MODE=approval"; echo "METRICS_SCRAPE_TOKEN=$(r 32)"; } > "$ENVF" )
   echo "generated new $ENVF (0600)"
 fi
 [ "$(stat -c %a "$ENVF")" = 600 ] || chmod 600 "$ENVF"
+if ! grep -q '^METRICS_SCRAPE_TOKEN=.\{32,\}' "$ENVF"; then   # QA-MON-FU-1: legacy qa.env -> append a dedicated Prometheus scrape token (64 hex), keep every other line
+  ( umask 077; sed -i '/^METRICS_SCRAPE_TOKEN=/d' "$ENVF"; echo "METRICS_SCRAPE_TOKEN=$(head -c 32 /dev/urandom | od -An -vtx1 | tr -d ' \n')" >> "$ENVF" )
+  echo "appended METRICS_SCRAPE_TOKEN to $ENVF (0600)"
+fi
 set -a; . "$ENVF"; set +a
 export DATABASE_PASSWORD="$POSTGRES_PASSWORD"   # passed to podman by NAME (-e DATABASE_PASSWORD) so no secret value appears in argv
 TAG="${1:-main-$(cut -c1-8 "$QA_DIR/BUILT_COMMIT" 2>/dev/null || echo unknown)}"
@@ -69,7 +73,7 @@ podman run -d --pod "$POD" --name "${STACK}-api" --memory 2g --restart on-failur
   -e DATABASE_TYPE=postgres -e DATABASE_HOST=127.0.0.1 -e DATABASE_PORT=5432 \
   -e DATABASE_USER="$POSTGRES_USER" -e DATABASE_PASSWORD -e DATABASE_NAME="$POSTGRES_DB" \
   -e DATABASE_ENCRYPTION_KEY_FILE=/app/keys/db.key -e REDIS_HOST=127.0.0.1 -e REDIS_PORT=6379 \
-  -e APP_ENV=development -e CSRF_INSECURE_DEV=true -e LOG_LEVEL=info -e JWT_SECRET -e ADMIN_USERNAME -e ADMIN_PASSWORD -e REGISTRATION_MODE \
+  -e APP_ENV=development -e CSRF_INSECURE_DEV=true -e LOG_LEVEL=info -e JWT_SECRET ${HELIX_PPROF_ENABLED:+-e HELIX_PPROF_ENABLED} -e METRICS_SCRAPE_TOKEN -e TRUSTED_PROXIES="$TRUSTED_PROXIES" -e ADMIN_USERNAME -e ADMIN_PASSWORD -e REGISTRATION_MODE \
   -e CORS_ENABLED=true -e CORS_ORIGINS='*' -e SMB_ENABLED=true -e MEDIA_ROOT_PATH="$MEDIA_MOUNT" \
   -e CATALOGIZER_LOCAL_ROOT_BASES="$MEDIA_MOUNT" -e CATALOGIZER_READ_ROOTS="$MEDIA_MOUNT:./data" -e STORAGE_TYPE=local -e STORAGE_BUCKET=catalogizer-covers -e STORAGE_USE_SSL=false -e STORAGE_REGION=us-east-1 \
   -v "$MEDIA_DIR:$MEDIA_MOUNT:ro" -v "${STACK}-api_data:/app/data" -v "${STACK}-api_logs:/var/log/catalogizer" -v "${STACK}-api_keys:/app/keys" \

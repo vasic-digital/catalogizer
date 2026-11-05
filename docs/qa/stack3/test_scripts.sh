@@ -41,11 +41,16 @@ echo "systemd-run $*" >> "$STUB_LOG"
 while [ $# -gt 0 ]; do case "$1" in --user|--scope) shift;; -p) shift 2;; *) break;; esac; done
 exec "$@"
 S
+cat > "$BIN/ip" <<'S'
+#!/usr/bin/env bash
+# stub `ip -4 route get 1.1.1.1`: prints the route line with src $STUB_IP_SRC (nothing and rc 1 when unset)
+[ -n "${STUB_IP_SRC:-}" ] || exit 1; echo "1.1.1.1 via 10.0.0.1 dev eth0 src ${STUB_IP_SRC} uid 1000"
+S
 chmod +x "$BIN"/*
 
 setup() { # <name>  -> fresh sandbox dirs + env
   T="$ROOT/${1:?}"; mkdir -p "$T/qa" "$T/media" "$T/stub"
-  export STUB_LOG="$T/log" STUB_DIR="$T/stub" QA_DIR="$T/qa" MEDIA_DIR="$T/media" BUSY_PORTS="" CURL_CODE=200
+  export STUB_IP_SRC=192.168.1.115 STUB_LOG="$T/log" STUB_DIR="$T/stub" QA_DIR="$T/qa" MEDIA_DIR="$T/media" BUSY_PORTS="" CURL_CODE=200
   : > "$STUB_LOG"
   echo deadbeefcafe0123 > "$QA_DIR/BUILT_COMMIT"
 }
@@ -89,4 +94,34 @@ setup b2; mkdir -p "$QA_DIR/website_dist"; echo old > "$QA_DIR/website_dist/stal
 PATH="$BIN:$PATH" bash "$R/docs/qa/stack3/build.sh" >"$T/out" 2>"$T/err"
 [ ! -e "$QA_DIR/website_dist/stale.html" ]; ok $? "stale website_dist cleared before build"
 
+# 5. QA-MON-FU-1 / QA-MON follow-up: dedicated scrape token + explicit TRUSTED_PROXIES (passed by NAME / explicit CIDR, never a value in argv)
+setup t5; run_up
+tok="$(grep '^METRICS_SCRAPE_TOKEN=' "$QA_DIR/qa.env" | cut -d= -f2-)"
+[ "${#tok}" -ge 32 ]; ok $? "fresh qa.env carries METRICS_SCRAPE_TOKEN (>=32 chars)"
+[ "$(stat -c %a "$QA_DIR/qa.env")" = 600 ]; ok $? "qa.env stays mode 0600"
+bad=0; [ -n "$tok" ] && grep -qF -- "$tok" "$STUB_LOG" && { echo "  scrape token value leaked in argv"; bad=1; }
+grep -q -- '-e METRICS_SCRAPE_TOKEN ' "$STUB_LOG" || { echo "  METRICS_SCRAPE_TOKEN not passed by name to the api"; bad=1; }
+ok $bad "scrape token passed by name, never as a value"
+grep -qE -- '-e TRUSTED_PROXIES=[0-9a-fA-F:./,]+ ' "$STUB_LOG" && ! grep -qE -- 'TRUSTED_PROXIES=(auto|0\.0\.0\.0/0) ' "$STUB_LOG"; ok $? "TRUSTED_PROXIES is an explicit CIDR list (not auto, not 0.0.0.0/0)"
+# an EXISTING qa.env without the token (stack already running) gets the token appended, other secrets untouched
+setup t5b; ( umask 077; printf 'ADMIN_USERNAME=qa_admin\nADMIN_PASSWORD=keepme\nJWT_SECRET=keepjwt\nPOSTGRES_USER=c\nPOSTGRES_PASSWORD=keeppg\nPOSTGRES_DB=c\nREGISTRATION_MODE=approval\n' > "$QA_DIR/qa.env" )
+run_up
+t2="$(grep '^METRICS_SCRAPE_TOKEN=' "$QA_DIR/qa.env" | cut -d= -f2-)"
+[ -n "$t2" ] && [ "${#t2}" -ge 32 ] && grep -q '^ADMIN_PASSWORD=keepme$' "$QA_DIR/qa.env" && grep -q '^JWT_SECRET=keepjwt$' "$QA_DIR/qa.env" && [ "$(stat -c %a "$QA_DIR/qa.env")" = 600 ]; ok $? "legacy qa.env: token appended, existing secrets and mode kept"
+run_up; t3="$(grep '^METRICS_SCRAPE_TOKEN=' "$QA_DIR/qa.env" | cut -d= -f2-)"
+[ -n "$t2" ] && [ -n "$t3" ] && [ "$t3" = "$t2" ]; ok $? "re-run keeps the same token (idempotent)"
+
+# 6. pprof is opt-in per run: HELIX_PPROF_ENABLED reaches the api only when the caller sets it (by name), never by default
+setup t6; run_up; ! grep -q 'HELIX_PPROF_ENABLED' "$STUB_LOG"; ok $? "pprof env NOT passed by default"
+setup t6b; HELIX_PPROF_ENABLED=true run_up; grep -q -- '-e HELIX_PPROF_ENABLED ' "$STUB_LOG" && ! grep -q 'HELIX_PPROF_ENABLED=' "$STUB_LOG"; ok $? "pprof env passed by name when the caller sets it"
+# 7. F4: default TRUSTED_PROXIES never contains loopback (127.0.0.0/8, ::1); a host-local client could otherwise forge X-Forwarded-For through the proxy
+tp() { ( STUB_IP_SRC="$1"; export STUB_IP_SRC; unset TRUSTED_PROXIES; export PATH="$BIN:$PATH"; . "$HERE/lib.sh" >/dev/null 2>&1; printf '%s' "${TRUSTED_PROXIES-<unset>}" ); }
+v="$(tp 192.168.1.115)"; [ "$v" = 192.168.1.115/32 ]; ok $? "default TRUSTED_PROXIES = detected host address /32 (got '$v')"
+printf '%s' "$v" | grep -qE '(^|,)(127\.|::1|0\.0\.0\.0|localhost)'; [ $? != 0 ]; ok $? "default TRUSTED_PROXIES excludes 127.0.0.0/8, ::1 and 0.0.0.0"
+v="$(tp "")"; [ "$v" = "" ]; ok $? "no detectable host address -> TRUSTED_PROXIES empty (trust nothing), not loopback (got '$v')"
+v="$( STUB_IP_SRC=; unset TRUSTED_PROXIES; export PATH="$BIN:$PATH"; TRUSTED_PROXIES=10.1.2.3/32; . "$HERE/lib.sh" >/dev/null 2>&1; printf '%s' "$TRUSTED_PROXIES")"; [ "$v" = 10.1.2.3/32 ]; ok $? "explicit TRUSTED_PROXIES override is kept"
+# 8. R-1: up.sh with NO detectable host address passes an EMPTY TRUSTED_PROXIES (trust nothing) and never a loopback/wildcard fallback
+setup t8; export STUB_IP_SRC=""; unset TRUSTED_PROXIES; run_up
+grep -qE -- '-e TRUSTED_PROXIES= ' "$STUB_LOG"; ok $? "no host address -> up.sh passes -e TRUSTED_PROXIES= (empty)"
+grep -oE -- 'TRUSTED_PROXIES=[^ ]*' "$STUB_LOG" | grep -qE '127\.|::1|0\.0\.0\.0'; [ $? != 0 ]; ok $? "no host address -> no 127./::1/0.0.0.0 in the TRUSTED_PROXIES argument"
 echo "passed=$pass failed=$fail"; [ "$fail" = 0 ]

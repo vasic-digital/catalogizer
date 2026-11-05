@@ -1,0 +1,829 @@
+=== RUN   TestValidateToken_RejectsUnexpectedAlgorithms
+--- PASS: TestValidateToken_RejectsUnexpectedAlgorithms (0.08s)
+=== RUN   TestRequireAuth_RejectsUnexpectedAlgorithms
+--- PASS: TestRequireAuth_RejectsUnexpectedAlgorithms (0.11s)
+=== RUN   TestValidateToken_StillAcceptsPinnedHS256
+--- PASS: TestValidateToken_StillAcceptsPinnedHS256 (0.00s)
+=== RUN   TestRequirePermission_LiveCheckDecides
+--- PASS: TestRequirePermission_LiveCheckDecides (0.00s)
+=== RUN   TestRequirePermission_FailsClosedOnCheckError
+--- PASS: TestRequirePermission_FailsClosedOnCheckError (0.00s)
+=== RUN   TestRequirePermission_AnonymousIs401
+--- PASS: TestRequirePermission_AnonymousIs401 (0.00s)
+=== RUN   TestRequirePermission_WithoutCheckerOnlyAdminRoleClaimPasses
+--- PASS: TestRequirePermission_WithoutCheckerOnlyAdminRoleClaimPasses (0.00s)
+=== RUN   TestRequirePermission_NonIntegerSubjectIsRefused
+--- PASS: TestRequirePermission_NonIntegerSubjectIsRefused (0.00s)
+=== RUN   TestRequireSelfOrAdmin_ExactIDMatch
+--- PASS: TestRequireSelfOrAdmin_ExactIDMatch (0.00s)
+=== RUN   TestRequireAuth_SessionChecker
+--- PASS: TestRequireAuth_SessionChecker (0.00s)
+=== RUN   TestRequireAuth_NoCheckerUnchanged
+--- PASS: TestRequireAuth_NoCheckerUnchanged (0.00s)
+=== RUN   TestGenerateToken_Success
+--- PASS: TestGenerateToken_Success (0.00s)
+=== RUN   TestGenerateAndValidateToken
+--- PASS: TestGenerateAndValidateToken (0.00s)
+=== RUN   TestValidateToken_InvalidToken
+--- PASS: TestValidateToken_InvalidToken (0.00s)
+=== RUN   TestValidateToken_EmptyToken
+--- PASS: TestValidateToken_EmptyToken (0.00s)
+=== RUN   TestValidateToken_WrongSecret
+--- PASS: TestValidateToken_WrongSecret (0.00s)
+=== RUN   TestValidateToken_ExpiredToken
+--- PASS: TestValidateToken_ExpiredToken (0.00s)
+=== RUN   TestRequireAuth_NoAuthorizationHeader
+--- PASS: TestRequireAuth_NoAuthorizationHeader (0.00s)
+=== RUN   TestRequireAuth_InvalidHeaderFormat
+=== RUN   TestRequireAuth_InvalidHeaderFormat/no_prefix
+=== RUN   TestRequireAuth_InvalidHeaderFormat/wrong_prefix
+=== RUN   TestRequireAuth_InvalidHeaderFormat/basic_auth
+=== RUN   TestRequireAuth_InvalidHeaderFormat/three_parts
+--- PASS: TestRequireAuth_InvalidHeaderFormat (0.00s)
+    --- PASS: TestRequireAuth_InvalidHeaderFormat/no_prefix (0.00s)
+    --- PASS: TestRequireAuth_InvalidHeaderFormat/wrong_prefix (0.00s)
+    --- PASS: TestRequireAuth_InvalidHeaderFormat/basic_auth (0.00s)
+    --- PASS: TestRequireAuth_InvalidHeaderFormat/three_parts (0.00s)
+=== RUN   TestRequireAuth_InvalidToken
+--- PASS: TestRequireAuth_InvalidToken (0.00s)
+=== RUN   TestRequireAuth_ExpiredToken_HTTP
+--- PASS: TestRequireAuth_ExpiredToken_HTTP (0.00s)
+=== RUN   TestRequireAuth_ValidToken_SetsContext
+--- PASS: TestRequireAuth_ValidToken_SetsContext (0.00s)
+=== RUN   TestRequireAuth_ProtectedAndPublicRoutes
+--- PASS: TestRequireAuth_ProtectedAndPublicRoutes (0.00s)
+=== RUN   TestRequireAuth_DifferentHTTPMethods
+=== RUN   TestRequireAuth_DifferentHTTPMethods/GET
+=== RUN   TestRequireAuth_DifferentHTTPMethods/POST
+=== RUN   TestRequireAuth_DifferentHTTPMethods/PUT
+=== RUN   TestRequireAuth_DifferentHTTPMethods/DELETE
+--- PASS: TestRequireAuth_DifferentHTTPMethods (0.00s)
+    --- PASS: TestRequireAuth_DifferentHTTPMethods/GET (0.00s)
+    --- PASS: TestRequireAuth_DifferentHTTPMethods/POST (0.00s)
+    --- PASS: TestRequireAuth_DifferentHTTPMethods/PUT (0.00s)
+    --- PASS: TestRequireAuth_DifferentHTTPMethods/DELETE (0.00s)
+=== RUN   TestGenerateToken_DifferentExpirations
+=== RUN   TestGenerateToken_DifferentExpirations/1_hour
+=== RUN   TestGenerateToken_DifferentExpirations/24_hours
+=== RUN   TestGenerateToken_DifferentExpirations/168_hours_(7_days)
+--- PASS: TestGenerateToken_DifferentExpirations (0.00s)
+    --- PASS: TestGenerateToken_DifferentExpirations/1_hour (0.00s)
+    --- PASS: TestGenerateToken_DifferentExpirations/24_hours (0.00s)
+    --- PASS: TestGenerateToken_DifferentExpirations/168_hours_(7_days) (0.00s)
+=== RUN   TestTokenTampering
+--- PASS: TestTokenTampering (0.00s)
+=== RUN   TestRequireAdmin_AdminTokenAllowed
+--- PASS: TestRequireAdmin_AdminTokenAllowed (0.00s)
+=== RUN   TestRequireAdmin_NonAdminForbidden
+--- PASS: TestRequireAdmin_NonAdminForbidden (0.00s)
+=== RUN   TestRequireAdmin_NoTokenUnauthenticated
+--- PASS: TestRequireAdmin_NoTokenUnauthenticated (0.00s)
+=== RUN   TestRequireAdmin_RoleZeroForbidden
+--- PASS: TestRequireAdmin_RoleZeroForbidden (0.00s)
+=== RUN   TestRequireAdmin_AdminCheckerOverridesClaim
+--- PASS: TestRequireAdmin_AdminCheckerOverridesClaim (0.00s)
+=== RUN   TestRequireAdmin_NonIntUserIDFailsClosed
+--- PASS: TestRequireAdmin_NonIntUserIDFailsClosed (0.00s)
+=== RUN   TestCacheHeaders_GETSuccess
+--- PASS: TestCacheHeaders_GETSuccess (0.00s)
+=== RUN   TestCacheHeaders_POSTIgnored
+--- PASS: TestCacheHeaders_POSTIgnored (0.00s)
+=== RUN   TestCacheHeaders_ErrorIgnored
+--- PASS: TestCacheHeaders_ErrorIgnored (0.00s)
+=== RUN   TestCacheHeaders_IfNoneMatch
+--- PASS: TestCacheHeaders_IfNoneMatch (0.00s)
+=== RUN   TestStaticCacheHeaders
+--- PASS: TestStaticCacheHeaders (0.00s)
+=== RUN   TestConcurrencyLimiter_AllowsWithinLimit
+--- PASS: TestConcurrencyLimiter_AllowsWithinLimit (0.00s)
+=== RUN   TestConcurrencyLimiter_RejectsOverLimit
+--- PASS: TestConcurrencyLimiter_RejectsOverLimit (0.10s)
+=== RUN   TestConcurrencyLimiter_ReleasesAfterCompletion
+--- PASS: TestConcurrencyLimiter_ReleasesAfterCompletion (0.00s)
+=== RUN   TestConcurrencyLimiter_HighLimit
+--- PASS: TestConcurrencyLimiter_HighLimit (0.01s)
+=== RUN   TestCSRF_W2_AdminGroupRejectsCrossOriginMutations
+--- PASS: TestCSRF_W2_AdminGroupRejectsCrossOriginMutations (0.00s)
+=== RUN   TestCSRF_B5_InsecureDevDropsHostPrefixAndSecureFlag
+--- PASS: TestCSRF_B5_InsecureDevDropsHostPrefixAndSecureFlag (0.00s)
+=== RUN   TestCSRFLAN_DefaultIsSecureHostPrefixed
+--- PASS: TestCSRFLAN_DefaultIsSecureHostPrefixed (0.00s)
+=== RUN   TestCSRFLAN_EnabledInDevelopmentWorksOverPlainHTTP
+--- PASS: TestCSRFLAN_EnabledInDevelopmentWorksOverPlainHTTP (0.00s)
+=== RUN   TestCSRFLAN_EnabledInProductionIsRefused
+--- PASS: TestCSRFLAN_EnabledInProductionIsRefused (0.00s)
+=== RUN   TestCSRFLAN_NonTruthyToggleStaysSecure
+--- PASS: TestCSRFLAN_NonTruthyToggleStaysSecure (0.00s)
+=== RUN   TestCSRFLAN_AllowListOnly
+--- PASS: TestCSRFLAN_AllowListOnly (0.00s)
+=== RUN   TestCSRFLAN_TruthyValues
+--- PASS: TestCSRFLAN_TruthyValues (0.00s)
+=== RUN   TestCSRF_GETMintsToken
+--- PASS: TestCSRF_GETMintsToken (0.00s)
+=== RUN   TestCSRF_POSTWithoutTokenForbidden
+--- PASS: TestCSRF_POSTWithoutTokenForbidden (0.00s)
+=== RUN   TestCSRF_POSTWithMatchingTokenAccepted
+--- PASS: TestCSRF_POSTWithMatchingTokenAccepted (0.00s)
+=== RUN   TestCSRF_POSTWithWrongHeaderForbidden
+--- PASS: TestCSRF_POSTWithWrongHeaderForbidden (0.00s)
+=== RUN   TestCSRF_POSTWithoutCookieForbidden
+--- PASS: TestCSRF_POSTWithoutCookieForbidden (0.00s)
+=== RUN   TestSubtleCompare
+--- PASS: TestSubtleCompare (0.00s)
+=== RUN   TestCSRF_GETWithValidCookieReusesToken
+--- PASS: TestCSRF_GETWithValidCookieReusesToken (0.00s)
+=== RUN   TestCSRF_RejectionReissuesUsableToken
+--- PASS: TestCSRF_RejectionReissuesUsableToken (0.00s)
+=== RUN   TestInputValidation_SQLInjectionDetection
+=== RUN   TestInputValidation_SQLInjectionDetection/Valid_text
+=== RUN   TestInputValidation_SQLInjectionDetection/SQL_SELECT
+=== RUN   TestInputValidation_SQLInjectionDetection/SQL_UNION
+=== RUN   TestInputValidation_SQLInjectionDetection/SQL_COMMENT
+=== RUN   TestInputValidation_SQLInjectionDetection/SQL_OR
+=== RUN   TestInputValidation_SQLInjectionDetection/SQL_DROP
+--- PASS: TestInputValidation_SQLInjectionDetection (0.00s)
+    --- PASS: TestInputValidation_SQLInjectionDetection/Valid_text (0.00s)
+    --- PASS: TestInputValidation_SQLInjectionDetection/SQL_SELECT (0.00s)
+    --- PASS: TestInputValidation_SQLInjectionDetection/SQL_UNION (0.00s)
+    --- PASS: TestInputValidation_SQLInjectionDetection/SQL_COMMENT (0.00s)
+    --- PASS: TestInputValidation_SQLInjectionDetection/SQL_OR (0.00s)
+    --- PASS: TestInputValidation_SQLInjectionDetection/SQL_DROP (0.00s)
+=== RUN   TestInputValidation_XSSDetection
+=== RUN   TestInputValidation_XSSDetection/Valid_text
+=== RUN   TestInputValidation_XSSDetection/Script_tag
+=== RUN   TestInputValidation_XSSDetection/Iframe
+=== RUN   TestInputValidation_XSSDetection/JavaScript
+=== RUN   TestInputValidation_XSSDetection/Onload
+=== RUN   TestInputValidation_XSSDetection/Eval
+--- PASS: TestInputValidation_XSSDetection (0.00s)
+    --- PASS: TestInputValidation_XSSDetection/Valid_text (0.00s)
+    --- PASS: TestInputValidation_XSSDetection/Script_tag (0.00s)
+    --- PASS: TestInputValidation_XSSDetection/Iframe (0.00s)
+    --- PASS: TestInputValidation_XSSDetection/JavaScript (0.00s)
+    --- PASS: TestInputValidation_XSSDetection/Onload (0.00s)
+    --- PASS: TestInputValidation_XSSDetection/Eval (0.00s)
+=== RUN   TestInputValidation_PathTraversalDetection
+=== RUN   TestInputValidation_PathTraversalDetection/Valid_path
+=== RUN   TestInputValidation_PathTraversalDetection/Basic_traversal
+=== RUN   TestInputValidation_PathTraversalDetection/URL_encoded_traversal
+=== RUN   TestInputValidation_PathTraversalDetection/Windows_traversal
+=== RUN   TestInputValidation_PathTraversalDetection/Unix_traversal
+--- PASS: TestInputValidation_PathTraversalDetection (0.00s)
+    --- PASS: TestInputValidation_PathTraversalDetection/Valid_path (0.00s)
+    --- PASS: TestInputValidation_PathTraversalDetection/Basic_traversal (0.00s)
+    --- PASS: TestInputValidation_PathTraversalDetection/URL_encoded_traversal (0.00s)
+    --- PASS: TestInputValidation_PathTraversalDetection/Windows_traversal (0.00s)
+    --- PASS: TestInputValidation_PathTraversalDetection/Unix_traversal (0.00s)
+=== RUN   TestInputValidation_GinMiddleware
+=== RUN   TestInputValidation_GinMiddleware/Reject_SQL_Injection
+=== RUN   TestInputValidation_GinMiddleware/Reject_XSS
+=== RUN   TestInputValidation_GinMiddleware/Allow_valid_input
+--- PASS: TestInputValidation_GinMiddleware (0.00s)
+    --- PASS: TestInputValidation_GinMiddleware/Reject_SQL_Injection (0.00s)
+    --- PASS: TestInputValidation_GinMiddleware/Reject_XSS (0.00s)
+    --- PASS: TestInputValidation_GinMiddleware/Allow_valid_input (0.00s)
+=== RUN   TestInputValidation_SizeLimit
+--- PASS: TestInputValidation_SizeLimit (0.00s)
+=== RUN   TestInputValidation_Sanitization
+=== RUN   TestInputValidation_Sanitization/Sanitize_input
+=== RUN   TestInputValidation_Sanitization/Sanitize_input#01
+=== RUN   TestInputValidation_Sanitization/Sanitize_input#02
+--- PASS: TestInputValidation_Sanitization (0.00s)
+    --- PASS: TestInputValidation_Sanitization/Sanitize_input (0.00s)
+    --- PASS: TestInputValidation_Sanitization/Sanitize_input#01 (0.00s)
+    --- PASS: TestInputValidation_Sanitization/Sanitize_input#02 (0.00s)
+=== RUN   TestInputValidation_SecurityHeaders
+--- PASS: TestInputValidation_SecurityHeaders (0.00s)
+=== RUN   TestSanitizeInput_InvalidUTF8
+--- PASS: TestSanitizeInput_InvalidUTF8 (0.00s)
+=== RUN   TestSanitizeInput_NullBytesAndWhitespace
+--- PASS: TestSanitizeInput_NullBytesAndWhitespace (0.00s)
+=== RUN   TestSanitizeInput_EmptyString
+--- PASS: TestSanitizeInput_EmptyString (0.00s)
+=== RUN   TestSanitizeInput_OnlyWhitespace
+--- PASS: TestSanitizeInput_OnlyWhitespace (0.00s)
+=== RUN   TestSanitizeInput_ValidUTF8PassesThrough
+--- PASS: TestSanitizeInput_ValidUTF8PassesThrough (0.00s)
+=== RUN   TestValidateJSONValues_NestedObjects
+--- PASS: TestValidateJSONValues_NestedObjects (0.00s)
+=== RUN   TestValidateJSONValues_ArrayOfStrings
+--- PASS: TestValidateJSONValues_ArrayOfStrings (0.00s)
+=== RUN   TestValidateJSONValues_ArrayWithSafeStrings
+--- PASS: TestValidateJSONValues_ArrayWithSafeStrings (0.00s)
+=== RUN   TestValidateJSONValues_MixedTypes
+--- PASS: TestValidateJSONValues_MixedTypes (0.00s)
+=== RUN   TestValidateJSONValues_PathTraversalInNested
+--- PASS: TestValidateJSONValues_PathTraversalInNested (0.00s)
+=== RUN   TestValidateJSONValues_XSSInArray
+--- PASS: TestValidateJSONValues_XSSInArray (0.00s)
+=== RUN   TestValidateJSONValues_EmptyMap
+--- PASS: TestValidateJSONValues_EmptyMap (0.00s)
+=== RUN   TestValidateJSONValues_CustomRuleMatch
+--- PASS: TestValidateJSONValues_CustomRuleMatch (0.00s)
+=== RUN   TestValidateJSONValues_CustomRuleNoMatch
+--- PASS: TestValidateJSONValues_CustomRuleNoMatch (0.00s)
+=== RUN   TestInputValidation_PathTraversalViaMiddleware
+--- PASS: TestInputValidation_PathTraversalViaMiddleware (0.00s)
+=== RUN   TestInputValidation_InvalidJSON
+--- PASS: TestInputValidation_InvalidJSON (0.00s)
+=== RUN   TestInputValidation_EmptyJSONBodyIsNotMalformed
+--- PASS: TestInputValidation_EmptyJSONBodyIsNotMalformed (0.00s)
+=== RUN   TestInputValidation_GETRequestSkipsBodyValidation
+--- PASS: TestInputValidation_GETRequestSkipsBodyValidation (0.00s)
+=== RUN   TestInputValidation_NonJSONContentType
+--- PASS: TestInputValidation_NonJSONContentType (0.00s)
+=== RUN   TestInputValidation_ZeroConfigUsesDefaults
+--- PASS: TestInputValidation_ZeroConfigUsesDefaults (0.00s)
+=== RUN   TestInputValidation_ContentLengthExceedsLimit
+--- PASS: TestInputValidation_ContentLengthExceedsLimit (0.00s)
+=== RUN   TestInputValidation_SQLInjectionWithWaitfor
+--- PASS: TestInputValidation_SQLInjectionWithWaitfor (0.00s)
+=== RUN   TestInputValidation_SQLInjectionWithBenchmark
+--- PASS: TestInputValidation_SQLInjectionWithBenchmark (0.00s)
+=== RUN   TestInputValidation_SQLInjectionWithSleep
+--- PASS: TestInputValidation_SQLInjectionWithSleep (0.00s)
+=== RUN   TestInputValidation_SQLInjectionWithExec
+--- PASS: TestInputValidation_SQLInjectionWithExec (0.00s)
+=== RUN   TestInputValidation_XSSWithObjectTag
+--- PASS: TestInputValidation_XSSWithObjectTag (0.00s)
+=== RUN   TestInputValidation_XSSWithEmbedTag
+--- PASS: TestInputValidation_XSSWithEmbedTag (0.00s)
+=== RUN   TestInputValidation_XSSWithEventHandler
+--- PASS: TestInputValidation_XSSWithEventHandler (0.00s)
+=== RUN   TestInputValidation_XSSWithConfirm
+--- PASS: TestInputValidation_XSSWithConfirm (0.00s)
+=== RUN   TestInputValidation_XSSWithPrompt
+--- PASS: TestInputValidation_XSSWithPrompt (0.00s)
+=== RUN   TestInputValidation_XSSWithDataURI
+--- PASS: TestInputValidation_XSSWithDataURI (0.00s)
+=== RUN   TestInputValidation_XSSWithVBScript
+--- PASS: TestInputValidation_XSSWithVBScript (0.00s)
+=== RUN   TestInputValidation_PathTraversalURLEncoded
+--- PASS: TestInputValidation_PathTraversalURLEncoded (0.00s)
+=== RUN   TestInputValidation_PathTraversalWindowsSystem32
+--- PASS: TestInputValidation_PathTraversalWindowsSystem32 (0.00s)
+=== RUN   TestInputValidation_PathTraversalWinIni
+--- PASS: TestInputValidation_PathTraversalWinIni (0.00s)
+=== RUN   TestInputValidation_PathTraversalBootIni
+--- PASS: TestInputValidation_PathTraversalBootIni (0.00s)
+=== RUN   TestInputValidation_PathTraversalEtcShadow
+--- PASS: TestInputValidation_PathTraversalEtcShadow (0.00s)
+=== RUN   TestInputValidation_PathTraversalEtcHosts
+--- PASS: TestInputValidation_PathTraversalEtcHosts (0.00s)
+=== RUN   TestInputValidation_SafeStringPassesAll
+{"error":"potential SQL injection detected in field: search","ip":"192.0.2.1","level":"warning","msg":"Security validation failed","path":"/test","time":"2026-11-05T09:17:29Z"}
+{"error":"potential XSS detected in field: comment","ip":"192.0.2.1","level":"warning","msg":"Security validation failed","path":"/test","time":"2026-11-05T09:17:29Z"}
+{"error":"request body too large","ip":"192.0.2.1","level":"warning","msg":"Security validation failed","path":"/test","time":"2026-11-05T09:17:29Z"}
+{"error":"potential path traversal detected in field: file_path","ip":"192.0.2.1","level":"warning","msg":"Security validation failed","path":"/test","time":"2026-11-05T09:17:29Z"}
+{"error":"invalid JSON format","ip":"192.0.2.1","level":"warning","msg":"Security validation failed","path":"/test","time":"2026-11-05T09:17:29Z"}
+{"error":"invalid JSON format","ip":"192.0.2.1","level":"warning","msg":"Security validation failed","path":"/test","time":"2026-11-05T09:17:29Z"}
+{"error":"potential XSS detected in field: x","ip":"192.0.2.1","level":"warning","msg":"Security validation failed","path":"/test","time":"2026-11-05T09:17:29Z"}
+{"error":"request body too large","ip":"192.0.2.1","level":"warning","msg":"Security validation failed","path":"/test","time":"2026-11-05T09:17:29Z"}
+--- PASS: TestInputValidation_SafeStringPassesAll (0.00s)
+=== RUN   TestValidateStruct
+--- PASS: TestValidateStruct (0.00s)
+=== RUN   TestValidateVar
+--- PASS: TestValidateVar (0.00s)
+=== RUN   TestDefaultInputValidationConfig
+--- PASS: TestDefaultInputValidationConfig (0.00s)
+=== RUN   TestValidateStringValue_SQLDetectionDisabled
+--- PASS: TestValidateStringValue_SQLDetectionDisabled (0.00s)
+=== RUN   TestValidateStringValue_XSSDetectionDisabled
+--- PASS: TestValidateStringValue_XSSDetectionDisabled (0.00s)
+=== RUN   TestValidateStringValue_PathTraversalDetectionDisabled
+--- PASS: TestValidateStringValue_PathTraversalDetectionDisabled (0.00s)
+=== RUN   TestDetectXSS_Round2Corpus
+--- PASS: TestDetectXSS_Round2Corpus (0.00s)
+=== RUN   TestDetectSQLInjection_QuoteTautologies
+--- PASS: TestDetectSQLInjection_QuoteTautologies (0.00s)
+=== RUN   TestValidateJSONValues_SecretExemptionTopLevelOnly
+--- PASS: TestValidateJSONValues_SecretExemptionTopLevelOnly (0.00s)
+=== RUN   TestValidateJSONValues_SecretKeyNestedArrayStillValidated
+--- PASS: TestValidateJSONValues_SecretKeyNestedArrayStillValidated (0.00s)
+=== RUN   TestRedisRateLimit_LiveRedis_WindowExpiresFromFirstRequest
+redis: 2026/11/05 09:17:29 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp 127.0.0.1:6379: connect: connection refused
+redis: 2026/11/05 09:17:30 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp 127.0.0.1:6379: connect: connection refused
+redis: 2026/11/05 09:17:30 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp 127.0.0.1:6379: connect: connection refused
+    redis_rate_limiter_live_test.go:32: SKIP reason=hardware_not_present: no real Redis reachable at localhost:6379 (context deadline exceeded); live-class run owed
+--- SKIP: TestRedisRateLimit_LiveRedis_WindowExpiresFromFirstRequest (2.00s)
+=== RUN   TestRedisRateLimit_FailClosed
+redis: 2026/11/05 09:17:31 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp 127.0.0.1:6379: connect: connection refused
+--- PASS: TestRedisRateLimit_FailClosed (0.50s)
+=== RUN   TestRedisRateLimit_SecurityBehavior
+redis: 2026/11/05 09:17:31 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp: address redis://invalid-host:6379: too many colons in address
+redis: 2026/11/05 09:17:32 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp: lookup invalid-host on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+redis: 2026/11/05 09:17:32 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp: lookup invalid-host on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+redis: 2026/11/05 09:17:33 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp: lookup invalid-host on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+redis: 2026/11/05 09:17:33 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp: lookup invalid-host on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+redis: 2026/11/05 09:17:34 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp: lookup invalid-host on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+redis: 2026/11/05 09:17:34 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp: lookup invalid-host on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+redis: 2026/11/05 09:17:35 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp: lookup invalid-host on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+redis: 2026/11/05 09:17:35 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp: lookup invalid-host on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+redis: 2026/11/05 09:17:36 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp: lookup invalid-host on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+--- PASS: TestRedisRateLimit_SecurityBehavior (5.01s)
+=== RUN   TestRedisRateLimit_Unit_Miniredis_FixedBehavior
+redis: 2026/11/05 09:17:36 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp: lookup invalid-host on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+--- PASS: TestRedisRateLimit_Unit_Miniredis_FixedBehavior (0.01s)
+=== RUN   TestDefaultRedisRateLimiterConfig
+--- PASS: TestDefaultRedisRateLimiterConfig (0.00s)
+=== RUN   TestStrictRedisRateLimiterConfig
+--- PASS: TestStrictRedisRateLimiterConfig (0.00s)
+=== RUN   TestAuthRedisRateLimiterConfig
+--- PASS: TestAuthRedisRateLimiterConfig (0.00s)
+=== RUN   TestUserRedisRateLimiterConfig
+--- PASS: TestUserRedisRateLimiterConfig (0.00s)
+=== RUN   TestRedisRateLimit_Unit_Miniredis_LimitEnforced
+--- PASS: TestRedisRateLimit_Unit_Miniredis_LimitEnforced (0.00s)
+=== RUN   TestSlidingWindowRedisRateLimit_Unit_Miniredis_LimitEnforced
+--- PASS: TestSlidingWindowRedisRateLimit_Unit_Miniredis_LimitEnforced (0.00s)
+=== RUN   TestTokenBucketRedisRateLimit_Unit_Miniredis_RefillAfterEmpty
+--- PASS: TestTokenBucketRedisRateLimit_Unit_Miniredis_RefillAfterEmpty (0.00s)
+=== RUN   TestRedisRateLimit_ErrorHandling
+--- PASS: TestRedisRateLimit_ErrorHandling (0.50s)
+=== RUN   TestAuthRateLimiterKeyGeneration
+--- PASS: TestAuthRateLimiterKeyGeneration (0.00s)
+=== RUN   TestUserRateLimiterKeyGeneration
+--- PASS: TestUserRateLimiterKeyGeneration (0.00s)
+=== RUN   TestRedisRateLimit_Unit_WindowExpiresFromFirstRequest
+redis: 2026/11/05 09:17:37 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp: lookup invalid-host on 1.0.0.1:53: dial udp 1.0.0.1:53: connect: network is unreachable
+--- PASS: TestRedisRateLimit_Unit_WindowExpiresFromFirstRequest (0.00s)
+=== RUN   TestRedisRateLimit_Unit_CountComesFromIncr
+--- PASS: TestRedisRateLimit_Unit_CountComesFromIncr (0.00s)
+=== RUN   TestSlidingWindowRedisRateLimit_Unit_FailsClosed
+--- PASS: TestSlidingWindowRedisRateLimit_Unit_FailsClosed (0.50s)
+=== RUN   TestRedisRateLimit_Unit_RepairsKeyWithoutTTL
+--- PASS: TestRedisRateLimit_Unit_RepairsKeyWithoutTTL (0.00s)
+=== RUN   TestRedisRateLimit_Unit_HeadersAndRetryAfter
+redis: 2026/11/05 09:17:37 pool.go:426: redis: connection pool: failed to dial after 5 attempts: dial tcp 127.0.0.1:43877: connect: connection refused
+--- PASS: TestRedisRateLimit_Unit_HeadersAndRetryAfter (0.00s)
+=== RUN   TestRequestIDGeneratesUUID
+--- PASS: TestRequestIDGeneratesUUID (0.00s)
+=== RUN   TestRequestIDPreservesExistingHeader
+--- PASS: TestRequestIDPreservesExistingHeader (0.00s)
+=== RUN   TestRequestIDUniqueness
+--- PASS: TestRequestIDUniqueness (0.00s)
+=== RUN   TestCORSDefaultOrigins
+--- PASS: TestCORSDefaultOrigins (0.00s)
+=== RUN   TestCORSSecondDefaultOrigin
+--- PASS: TestCORSSecondDefaultOrigin (0.00s)
+=== RUN   TestCORSDisallowedOrigin
+--- PASS: TestCORSDisallowedOrigin (0.00s)
+=== RUN   TestCORSCustomOrigins
+--- PASS: TestCORSCustomOrigins (0.00s)
+=== RUN   TestCORSEmptyOriginHeader
+--- PASS: TestCORSEmptyOriginHeader (0.00s)
+=== RUN   TestCORSOptionsReturns204
+--- PASS: TestCORSOptionsReturns204 (0.00s)
+=== RUN   TestCORSNonOptionsCallsNext
+--- PASS: TestCORSNonOptionsCallsNext (0.00s)
+=== RUN   TestRateLimiterCallsNext
+--- PASS: TestRateLimiterCallsNext (0.00s)
+=== RUN   TestRateLimiterWithDifferentLimits
+--- PASS: TestRateLimiterWithDifferentLimits (0.00s)
+=== RUN   TestSecurityHeaders_SetsAllHeaders
+--- PASS: TestSecurityHeaders_SetsAllHeaders (0.00s)
+=== RUN   TestSecurityHeaders_NoHSTSWithoutTLS
+--- PASS: TestSecurityHeaders_NoHSTSWithoutTLS (0.00s)
+=== RUN   TestSecurityHeaders_HSTSWithTLS
+--- PASS: TestSecurityHeaders_HSTSWithTLS (0.00s)
+=== RUN   TestSecurityHeaders_HeadersPresentOnAllStatusCodes
+=== RUN   TestSecurityHeaders_HeadersPresentOnAllStatusCodes/200_OK
+=== RUN   TestSecurityHeaders_HeadersPresentOnAllStatusCodes/404_Not_Found
+=== RUN   TestSecurityHeaders_HeadersPresentOnAllStatusCodes/500_Internal_Server_Error
+--- PASS: TestSecurityHeaders_HeadersPresentOnAllStatusCodes (0.00s)
+    --- PASS: TestSecurityHeaders_HeadersPresentOnAllStatusCodes/200_OK (0.00s)
+    --- PASS: TestSecurityHeaders_HeadersPresentOnAllStatusCodes/404_Not_Found (0.00s)
+    --- PASS: TestSecurityHeaders_HeadersPresentOnAllStatusCodes/500_Internal_Server_Error (0.00s)
+=== RUN   TestDefaultSecurityHeadersConfig
+--- PASS: TestDefaultSecurityHeadersConfig (0.00s)
+=== RUN   TestSecurityHeadersWithConfig_CSPHeader
+--- PASS: TestSecurityHeadersWithConfig_CSPHeader (0.00s)
+=== RUN   TestSecurityHeadersWithConfig_AdditionalHeaders
+--- PASS: TestSecurityHeadersWithConfig_AdditionalHeaders (0.00s)
+=== RUN   TestSecurityHeadersWithConfig_CSPDisabled
+--- PASS: TestSecurityHeadersWithConfig_CSPDisabled (0.00s)
+=== RUN   TestSecurityHeadersWithConfig_HSTSWithForwardedProto
+--- PASS: TestSecurityHeadersWithConfig_HSTSWithForwardedProto (0.00s)
+=== RUN   TestStopAllInvokesRegisteredStops
+--- PASS: TestStopAllInvokesRegisteredStops (0.00s)
+=== RUN   TestStopAllIsIdempotent
+--- PASS: TestStopAllIsIdempotent (0.00s)
+=== RUN   TestRateLimiterRegistersStop
+--- PASS: TestRateLimiterRegistersStop (0.02s)
+=== RUN   TestRequestTimeout_SetsContextDeadline
+--- PASS: TestRequestTimeout_SetsContextDeadline (0.00s)
+=== RUN   TestRequestTimeout_DeadlineMatchesDuration
+--- PASS: TestRequestTimeout_DeadlineMatchesDuration (0.00s)
+=== RUN   TestRequestTimeout_ContextCancelledAfterExpiry
+--- PASS: TestRequestTimeout_ContextCancelledAfterExpiry (0.10s)
+=== RUN   TestRequestTimeout_NormalRequestCompletes
+--- PASS: TestRequestTimeout_NormalRequestCompletes (0.00s)
+=== RUN   TestDetectXSS_BehaviorUrlAndOpenTagSpacing
+--- PASS: TestDetectXSS_BehaviorUrlAndOpenTagSpacing (0.00s)
+=== RUN   FuzzContentSecurityPolicy
+=== RUN   FuzzContentSecurityPolicy/seed#0
+=== RUN   FuzzContentSecurityPolicy/seed#1
+=== RUN   FuzzContentSecurityPolicy/seed#2
+=== RUN   FuzzContentSecurityPolicy/seed#3
+=== RUN   FuzzContentSecurityPolicy/seed#4
+=== RUN   FuzzContentSecurityPolicy/seed#5
+--- PASS: FuzzContentSecurityPolicy (0.00s)
+    --- PASS: FuzzContentSecurityPolicy/seed#0 (0.00s)
+    --- PASS: FuzzContentSecurityPolicy/seed#1 (0.00s)
+    --- PASS: FuzzContentSecurityPolicy/seed#2 (0.00s)
+    --- PASS: FuzzContentSecurityPolicy/seed#3 (0.00s)
+    --- PASS: FuzzContentSecurityPolicy/seed#4 (0.00s)
+    --- PASS: FuzzContentSecurityPolicy/seed#5 (0.00s)
+=== RUN   FuzzSanitizeInput
+=== RUN   FuzzSanitizeInput/seed#0
+=== RUN   FuzzSanitizeInput/seed#1
+=== RUN   FuzzSanitizeInput/seed#2
+=== RUN   FuzzSanitizeInput/seed#3
+=== RUN   FuzzSanitizeInput/seed#4
+=== RUN   FuzzSanitizeInput/seed#5
+=== RUN   FuzzSanitizeInput/seed#6
+=== RUN   FuzzSanitizeInput/seed#7
+=== RUN   FuzzSanitizeInput/seed#8
+=== RUN   FuzzSanitizeInput/seed#9
+=== RUN   FuzzSanitizeInput/seed#10
+=== RUN   FuzzSanitizeInput/seed#11
+=== RUN   FuzzSanitizeInput/seed#12
+=== RUN   FuzzSanitizeInput/seed#13
+=== RUN   FuzzSanitizeInput/seed#14
+=== RUN   FuzzSanitizeInput/seed#15
+=== RUN   FuzzSanitizeInput/seed#16
+=== RUN   FuzzSanitizeInput/seed#17
+=== RUN   FuzzSanitizeInput/seed#18
+=== RUN   FuzzSanitizeInput/061b71de11ad355a
+--- PASS: FuzzSanitizeInput (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#0 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#1 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#2 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#3 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#4 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#5 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#6 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#7 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#8 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#9 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#10 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#11 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#12 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#13 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#14 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#15 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#16 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#17 (0.00s)
+    --- PASS: FuzzSanitizeInput/seed#18 (0.00s)
+    --- PASS: FuzzSanitizeInput/061b71de11ad355a (0.00s)
+=== RUN   FuzzContainsSQLInjection
+=== RUN   FuzzContainsSQLInjection/seed#0
+=== RUN   FuzzContainsSQLInjection/seed#1
+=== RUN   FuzzContainsSQLInjection/seed#2
+=== RUN   FuzzContainsSQLInjection/seed#3
+=== RUN   FuzzContainsSQLInjection/seed#4
+=== RUN   FuzzContainsSQLInjection/seed#5
+=== RUN   FuzzContainsSQLInjection/seed#6
+=== RUN   FuzzContainsSQLInjection/seed#7
+=== RUN   FuzzContainsSQLInjection/seed#8
+=== RUN   FuzzContainsSQLInjection/seed#9
+=== RUN   FuzzContainsSQLInjection/seed#10
+=== RUN   FuzzContainsSQLInjection/seed#11
+=== RUN   FuzzContainsSQLInjection/seed#12
+=== RUN   FuzzContainsSQLInjection/seed#13
+=== RUN   FuzzContainsSQLInjection/seed#14
+=== RUN   FuzzContainsSQLInjection/seed#15
+=== RUN   FuzzContainsSQLInjection/seed#16
+=== RUN   FuzzContainsSQLInjection/seed#17
+=== RUN   FuzzContainsSQLInjection/seed#18
+=== RUN   FuzzContainsSQLInjection/seed#19
+=== RUN   FuzzContainsSQLInjection/seed#20
+=== RUN   FuzzContainsSQLInjection/seed#21
+=== RUN   FuzzContainsSQLInjection/seed#22
+=== RUN   FuzzContainsSQLInjection/seed#23
+=== RUN   FuzzContainsSQLInjection/seed#24
+=== RUN   FuzzContainsSQLInjection/seed#25
+=== RUN   FuzzContainsSQLInjection/seed#26
+=== RUN   FuzzContainsSQLInjection/seed#27
+=== RUN   FuzzContainsSQLInjection/seed#28
+=== RUN   FuzzContainsSQLInjection/seed#29
+--- PASS: FuzzContainsSQLInjection (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#0 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#1 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#2 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#3 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#4 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#5 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#6 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#7 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#8 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#9 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#10 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#11 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#12 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#13 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#14 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#15 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#16 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#17 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#18 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#19 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#20 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#21 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#22 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#23 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#24 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#25 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#26 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#27 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#28 (0.00s)
+    --- PASS: FuzzContainsSQLInjection/seed#29 (0.00s)
+=== RUN   FuzzContainsXSS
+=== RUN   FuzzContainsXSS/seed#0
+=== RUN   FuzzContainsXSS/seed#1
+=== RUN   FuzzContainsXSS/seed#2
+=== RUN   FuzzContainsXSS/seed#3
+=== RUN   FuzzContainsXSS/seed#4
+=== RUN   FuzzContainsXSS/seed#5
+=== RUN   FuzzContainsXSS/seed#6
+=== RUN   FuzzContainsXSS/seed#7
+=== RUN   FuzzContainsXSS/seed#8
+=== RUN   FuzzContainsXSS/seed#9
+=== RUN   FuzzContainsXSS/seed#10
+=== RUN   FuzzContainsXSS/seed#11
+=== RUN   FuzzContainsXSS/seed#12
+=== RUN   FuzzContainsXSS/seed#13
+=== RUN   FuzzContainsXSS/seed#14
+=== RUN   FuzzContainsXSS/seed#15
+=== RUN   FuzzContainsXSS/seed#16
+=== RUN   FuzzContainsXSS/seed#17
+=== RUN   FuzzContainsXSS/seed#18
+=== RUN   FuzzContainsXSS/seed#19
+=== RUN   FuzzContainsXSS/seed#20
+=== RUN   FuzzContainsXSS/seed#21
+=== RUN   FuzzContainsXSS/seed#22
+=== RUN   FuzzContainsXSS/seed#23
+=== RUN   FuzzContainsXSS/seed#24
+=== RUN   FuzzContainsXSS/seed#25
+=== RUN   FuzzContainsXSS/seed#26
+=== RUN   FuzzContainsXSS/seed#27
+=== RUN   FuzzContainsXSS/seed#28
+--- PASS: FuzzContainsXSS (0.00s)
+    --- PASS: FuzzContainsXSS/seed#0 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#1 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#2 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#3 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#4 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#5 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#6 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#7 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#8 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#9 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#10 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#11 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#12 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#13 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#14 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#15 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#16 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#17 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#18 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#19 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#20 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#21 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#22 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#23 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#24 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#25 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#26 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#27 (0.00s)
+    --- PASS: FuzzContainsXSS/seed#28 (0.00s)
+=== RUN   FuzzContainsPathTraversal
+=== RUN   FuzzContainsPathTraversal/seed#0
+=== RUN   FuzzContainsPathTraversal/seed#1
+=== RUN   FuzzContainsPathTraversal/seed#2
+=== RUN   FuzzContainsPathTraversal/seed#3
+=== RUN   FuzzContainsPathTraversal/seed#4
+=== RUN   FuzzContainsPathTraversal/seed#5
+=== RUN   FuzzContainsPathTraversal/seed#6
+=== RUN   FuzzContainsPathTraversal/seed#7
+=== RUN   FuzzContainsPathTraversal/seed#8
+=== RUN   FuzzContainsPathTraversal/seed#9
+=== RUN   FuzzContainsPathTraversal/seed#10
+=== RUN   FuzzContainsPathTraversal/seed#11
+=== RUN   FuzzContainsPathTraversal/seed#12
+=== RUN   FuzzContainsPathTraversal/seed#13
+=== RUN   FuzzContainsPathTraversal/seed#14
+=== RUN   FuzzContainsPathTraversal/seed#15
+=== RUN   FuzzContainsPathTraversal/seed#16
+=== RUN   FuzzContainsPathTraversal/seed#17
+=== RUN   FuzzContainsPathTraversal/seed#18
+=== RUN   FuzzContainsPathTraversal/seed#19
+=== RUN   FuzzContainsPathTraversal/seed#20
+=== RUN   FuzzContainsPathTraversal/seed#21
+=== RUN   FuzzContainsPathTraversal/seed#22
+=== RUN   FuzzContainsPathTraversal/seed#23
+=== RUN   FuzzContainsPathTraversal/seed#24
+=== RUN   FuzzContainsPathTraversal/seed#25
+=== RUN   FuzzContainsPathTraversal/seed#26
+=== RUN   FuzzContainsPathTraversal/seed#27
+=== RUN   FuzzContainsPathTraversal/seed#28
+--- PASS: FuzzContainsPathTraversal (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#0 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#1 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#2 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#3 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#4 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#5 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#6 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#7 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#8 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#9 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#10 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#11 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#12 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#13 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#14 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#15 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#16 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#17 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#18 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#19 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#20 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#21 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#22 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#23 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#24 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#25 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#26 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#27 (0.00s)
+    --- PASS: FuzzContainsPathTraversal/seed#28 (0.00s)
+=== RUN   FuzzValidateStringValue
+=== RUN   FuzzValidateStringValue/seed#0
+=== RUN   FuzzValidateStringValue/seed#1
+=== RUN   FuzzValidateStringValue/seed#2
+=== RUN   FuzzValidateStringValue/seed#3
+=== RUN   FuzzValidateStringValue/seed#4
+=== RUN   FuzzValidateStringValue/seed#5
+=== RUN   FuzzValidateStringValue/seed#6
+=== RUN   FuzzValidateStringValue/seed#7
+=== RUN   FuzzValidateStringValue/seed#8
+=== RUN   FuzzValidateStringValue/seed#9
+=== RUN   FuzzValidateStringValue/seed#10
+=== RUN   FuzzValidateStringValue/seed#11
+=== RUN   FuzzValidateStringValue/seed#12
+=== RUN   FuzzValidateStringValue/seed#13
+=== RUN   FuzzValidateStringValue/seed#14
+=== RUN   FuzzValidateStringValue/seed#15
+=== RUN   FuzzValidateStringValue/seed#16
+=== RUN   FuzzValidateStringValue/seed#17
+=== RUN   FuzzValidateStringValue/seed#18
+=== RUN   FuzzValidateStringValue/seed#19
+=== RUN   FuzzValidateStringValue/seed#20
+=== RUN   FuzzValidateStringValue/seed#21
+=== RUN   FuzzValidateStringValue/seed#22
+=== RUN   FuzzValidateStringValue/seed#23
+=== RUN   FuzzValidateStringValue/seed#24
+=== RUN   FuzzValidateStringValue/seed#25
+=== RUN   FuzzValidateStringValue/seed#26
+=== RUN   FuzzValidateStringValue/seed#27
+=== RUN   FuzzValidateStringValue/seed#28
+=== RUN   FuzzValidateStringValue/seed#29
+=== RUN   FuzzValidateStringValue/seed#30
+=== RUN   FuzzValidateStringValue/seed#31
+=== RUN   FuzzValidateStringValue/seed#32
+=== RUN   FuzzValidateStringValue/seed#33
+--- PASS: FuzzValidateStringValue (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#0 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#1 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#2 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#3 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#4 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#5 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#6 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#7 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#8 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#9 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#10 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#11 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#12 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#13 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#14 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#15 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#16 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#17 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#18 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#19 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#20 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#21 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#22 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#23 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#24 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#25 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#26 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#27 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#28 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#29 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#30 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#31 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#32 (0.00s)
+    --- PASS: FuzzValidateStringValue/seed#33 (0.00s)
+=== RUN   FuzzSanitizeInput_NoPanic
+=== RUN   FuzzSanitizeInput_NoPanic/seed#0
+=== RUN   FuzzSanitizeInput_NoPanic/seed#1
+=== RUN   FuzzSanitizeInput_NoPanic/seed#2
+=== RUN   FuzzSanitizeInput_NoPanic/seed#3
+=== RUN   FuzzSanitizeInput_NoPanic/seed#4
+=== RUN   FuzzSanitizeInput_NoPanic/seed#5
+=== RUN   FuzzSanitizeInput_NoPanic/seed#6
+=== RUN   FuzzSanitizeInput_NoPanic/seed#7
+=== RUN   FuzzSanitizeInput_NoPanic/seed#8
+=== RUN   FuzzSanitizeInput_NoPanic/seed#9
+=== RUN   FuzzSanitizeInput_NoPanic/seed#10
+--- PASS: FuzzSanitizeInput_NoPanic (0.00s)
+    --- PASS: FuzzSanitizeInput_NoPanic/seed#0 (0.00s)
+    --- PASS: FuzzSanitizeInput_NoPanic/seed#1 (0.00s)
+    --- PASS: FuzzSanitizeInput_NoPanic/seed#2 (0.00s)
+    --- PASS: FuzzSanitizeInput_NoPanic/seed#3 (0.00s)
+    --- PASS: FuzzSanitizeInput_NoPanic/seed#4 (0.00s)
+    --- PASS: FuzzSanitizeInput_NoPanic/seed#5 (0.00s)
+    --- PASS: FuzzSanitizeInput_NoPanic/seed#6 (0.00s)
+    --- PASS: FuzzSanitizeInput_NoPanic/seed#7 (0.00s)
+    --- PASS: FuzzSanitizeInput_NoPanic/seed#8 (0.00s)
+    --- PASS: FuzzSanitizeInput_NoPanic/seed#9 (0.00s)
+    --- PASS: FuzzSanitizeInput_NoPanic/seed#10 (0.00s)
+=== RUN   FuzzSanitizeInput_Idempotent
+=== RUN   FuzzSanitizeInput_Idempotent/seed#0
+=== RUN   FuzzSanitizeInput_Idempotent/seed#1
+=== RUN   FuzzSanitizeInput_Idempotent/seed#2
+=== RUN   FuzzSanitizeInput_Idempotent/seed#3
+=== RUN   FuzzSanitizeInput_Idempotent/seed#4
+=== RUN   FuzzSanitizeInput_Idempotent/seed#5
+=== RUN   FuzzSanitizeInput_Idempotent/f0b2de960c073e5d
+--- PASS: FuzzSanitizeInput_Idempotent (0.00s)
+    --- PASS: FuzzSanitizeInput_Idempotent/seed#0 (0.00s)
+    --- PASS: FuzzSanitizeInput_Idempotent/seed#1 (0.00s)
+    --- PASS: FuzzSanitizeInput_Idempotent/seed#2 (0.00s)
+    --- PASS: FuzzSanitizeInput_Idempotent/seed#3 (0.00s)
+    --- PASS: FuzzSanitizeInput_Idempotent/seed#4 (0.00s)
+    --- PASS: FuzzSanitizeInput_Idempotent/seed#5 (0.00s)
+    --- PASS: FuzzSanitizeInput_Idempotent/f0b2de960c073e5d (0.00s)
+=== RUN   FuzzDetectSQLInjection_NoPanic
+=== RUN   FuzzDetectSQLInjection_NoPanic/seed#0
+=== RUN   FuzzDetectSQLInjection_NoPanic/seed#1
+=== RUN   FuzzDetectSQLInjection_NoPanic/seed#2
+=== RUN   FuzzDetectSQLInjection_NoPanic/seed#3
+=== RUN   FuzzDetectSQLInjection_NoPanic/seed#4
+=== RUN   FuzzDetectSQLInjection_NoPanic/seed#5
+=== RUN   FuzzDetectSQLInjection_NoPanic/seed#6
+=== RUN   FuzzDetectSQLInjection_NoPanic/seed#7
+=== RUN   FuzzDetectSQLInjection_NoPanic/seed#8
+--- PASS: FuzzDetectSQLInjection_NoPanic (0.08s)
+    --- PASS: FuzzDetectSQLInjection_NoPanic/seed#0 (0.00s)
+    --- PASS: FuzzDetectSQLInjection_NoPanic/seed#1 (0.00s)
+    --- PASS: FuzzDetectSQLInjection_NoPanic/seed#2 (0.00s)
+    --- PASS: FuzzDetectSQLInjection_NoPanic/seed#3 (0.00s)
+    --- PASS: FuzzDetectSQLInjection_NoPanic/seed#4 (0.00s)
+    --- PASS: FuzzDetectSQLInjection_NoPanic/seed#5 (0.00s)
+    --- PASS: FuzzDetectSQLInjection_NoPanic/seed#6 (0.00s)
+    --- PASS: FuzzDetectSQLInjection_NoPanic/seed#7 (0.00s)
+    --- PASS: FuzzDetectSQLInjection_NoPanic/seed#8 (0.08s)
+=== RUN   FuzzDetectXSS_NoPanic
+=== RUN   FuzzDetectXSS_NoPanic/seed#0
+=== RUN   FuzzDetectXSS_NoPanic/seed#1
+=== RUN   FuzzDetectXSS_NoPanic/seed#2
+=== RUN   FuzzDetectXSS_NoPanic/seed#3
+=== RUN   FuzzDetectXSS_NoPanic/seed#4
+=== RUN   FuzzDetectXSS_NoPanic/seed#5
+=== RUN   FuzzDetectXSS_NoPanic/seed#6
+=== RUN   FuzzDetectXSS_NoPanic/seed#7
+=== RUN   FuzzDetectXSS_NoPanic/seed#8
+--- PASS: FuzzDetectXSS_NoPanic (0.00s)
+    --- PASS: FuzzDetectXSS_NoPanic/seed#0 (0.00s)
+    --- PASS: FuzzDetectXSS_NoPanic/seed#1 (0.00s)
+    --- PASS: FuzzDetectXSS_NoPanic/seed#2 (0.00s)
+    --- PASS: FuzzDetectXSS_NoPanic/seed#3 (0.00s)
+    --- PASS: FuzzDetectXSS_NoPanic/seed#4 (0.00s)
+    --- PASS: FuzzDetectXSS_NoPanic/seed#5 (0.00s)
+    --- PASS: FuzzDetectXSS_NoPanic/seed#6 (0.00s)
+    --- PASS: FuzzDetectXSS_NoPanic/seed#7 (0.00s)
+    --- PASS: FuzzDetectXSS_NoPanic/seed#8 (0.00s)
+=== RUN   FuzzDetectPathTraversal_NoPanic
+=== RUN   FuzzDetectPathTraversal_NoPanic/seed#0
+=== RUN   FuzzDetectPathTraversal_NoPanic/seed#1
+=== RUN   FuzzDetectPathTraversal_NoPanic/seed#2
+=== RUN   FuzzDetectPathTraversal_NoPanic/seed#3
+=== RUN   FuzzDetectPathTraversal_NoPanic/seed#4
+=== RUN   FuzzDetectPathTraversal_NoPanic/seed#5
+=== RUN   FuzzDetectPathTraversal_NoPanic/seed#6
+=== RUN   FuzzDetectPathTraversal_NoPanic/seed#7
+--- PASS: FuzzDetectPathTraversal_NoPanic (0.00s)
+    --- PASS: FuzzDetectPathTraversal_NoPanic/seed#0 (0.00s)
+    --- PASS: FuzzDetectPathTraversal_NoPanic/seed#1 (0.00s)
+    --- PASS: FuzzDetectPathTraversal_NoPanic/seed#2 (0.00s)
+    --- PASS: FuzzDetectPathTraversal_NoPanic/seed#3 (0.00s)
+    --- PASS: FuzzDetectPathTraversal_NoPanic/seed#4 (0.00s)
+    --- PASS: FuzzDetectPathTraversal_NoPanic/seed#5 (0.00s)
+    --- PASS: FuzzDetectPathTraversal_NoPanic/seed#6 (0.00s)
+    --- PASS: FuzzDetectPathTraversal_NoPanic/seed#7 (0.00s)
+PASS

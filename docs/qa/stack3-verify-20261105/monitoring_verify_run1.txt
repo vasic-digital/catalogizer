@@ -1,0 +1,46 @@
+PASS prom.target_catalogizer-api_up health=up lastError=''
+PASS prom.query_up==1 ['1']
+PASS prom.query_http_requests_total_has_data sum=12
+PASS prom.query_goroutines_has_data value=32
+PASS prom.control_needle_absent_metric_empty result=[]
+PASS api.metrics_no_auth_rejected http=401
+PASS api.metrics_wrong_bearer_rejected http=401
+PASS api.metrics_valid_admin_bearer_ok http=200
+PASS grafana.datasource_health_OK http=200 msg='Successfully queried the Prometheus API.'
+PASS grafana.wrong_password_rejected http=401
+PASS grafana.dashboard_provisioned panels=7
+PASS grafana.panel1_Request_rate_(req/s,_by_stat http=200 datapoints=1660 errors=[]
+PASS grafana.panel2_Error_rate_(5xx_req/s) http=200 datapoints=283 errors=[]
+PASS grafana.panel3_Latency_(p50_/_p95_/_p99) http=200 datapoints=543 errors=[]
+PASS grafana.panel4_Active_HTTP_connections http=200 datapoints=175 errors=[]
+PASS grafana.panel5_Go_goroutines http=200 datapoints=350 errors=[]
+PASS grafana.panel6_Go_memory_(alloc_/_heap_inus http=200 datapoints=525 errors=[]
+PASS grafana.panel7_GC_pause_(avg_seconds_over_5 http=200 datapoints=181 errors=[]
+PASS pgadmin.login_page_reachable http=200
+PASS pgadmin.wrong_password_not_authenticated authenticated=False
+PASS pgadmin.login_ok_authenticated_session csrf_len=91
+PASS pgadmin.preconfigured_server_listed http=200 group=2 servers=['catqa3-postgres']
+PASS pgadmin.server_connection_works http=200 success=1 connected=True
+PASS nginx.GET_/health_proxied_to_api http=200 body=b'{"build_date":"stack3","build_number":"015896fd89180a42cc6c1'
+PASS nginx.security_headers_on_/health missing=[]
+PASS nginx.server_tokens_off server='nginx'
+PASS nginx.api_v1_route_reaches_api_(login_wrong_creds_401_json) http=401 body=b'{"error":"invalid credentials"}'
+PASS nginx.api_login_valid_creds_200 http=200
+PASS nginx.logout_revokes_proxy_login_session logout=200
+PASS nginx.web_index http=200 ctype=text/html
+PASS nginx.gzip_applied_to_web_index content-encoding=gzip
+PASS nginx.website_index_via_proxy http=200
+PASS nginx.security_headers_on_website missing=[]
+PASS nginx.control_unknown_api_route_404_from_api http=404
+PASS pod.reaches_postgres_port_(control_needle_must_be_reachable) port=35434
+PASS pod.reaches_api_port_(control_needle_must_be_reachable) port=38082
+PASS pod.CANNOT_reach_36381_catqa3 host_listening=True
+PASS pod.CANNOT_reach_11434_host host_listening=True
+PASS pod.CANNOT_reach_35433_host host_listening=True
+PASS lan.ip_detected ip=192.168.1.115
+PASS lan.nginx_reachable_(control_needle) 192.168.1.115:33080
+PASS lan.prometheus_NOT_reachable_on_LAN_IP 192.168.1.115:39090
+PASS lan.grafana_NOT_reachable_on_LAN_IP 192.168.1.115:33030
+PASS lan.pgadmin_NOT_reachable_on_LAN_IP 192.168.1.115:33050
+PASS api.logout_revokes_verify_session_token logout=200 metrics_after=401
+SUMMARY pass=45 fail=0 total=45

@@ -1,0 +1,14 @@
+Running as unit: run-p2793748-i132720593.scope; invocation ID: fdf4786263854791bb66c899e8550596
+catqa3-postgres healthy after 1s
+catqa3-redis healthy after 1s
+catqa3-api healthy after 5s
+http://127.0.0.1:38082/health -> 200
+http://127.0.0.1:33020/ -> 200
+http://127.0.0.1:33020/api/v1/health -> 200
+http://127.0.0.1:33021/ -> 200
+0abff6a5b808-infra	Up 11 seconds	
+catqa3-postgres	Up 10 seconds (healthy)	docker.io/library/postgres:15-alpine
+catqa3-redis	Up 9 seconds (healthy)	docker.io/library/redis:7-alpine
+catqa3-api	Up 8 seconds (healthy)	localhost/catqa3-api:main-015896fd
+catqa3-web	Up 1 second	localhost/catqa3-web:main-015896fd
+catqa3-website	Up Less than a second	docker.io/library/nginx:alpine

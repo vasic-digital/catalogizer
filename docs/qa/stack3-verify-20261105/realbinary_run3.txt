@@ -1,0 +1,29 @@
+Running as unit: run-p3297903-i133228487.scope; invocation ID: 11b0f1bd4ef44144b49cfc6f74b77183
+=== RUN   TestAdminGate_RealBinary
+--- PASS: TestAdminGate_RealBinary (10.71s)
+=== RUN   TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware
+=== RUN   TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/default_is_the_secure___Host-_cookie
+=== RUN   TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/toggle_in_a_dev-like_env_reaches_the_middleware
+=== RUN   TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/toggle_is_refused_outside_a_dev-like_env
+--- PASS: TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware (15.06s)
+    --- PASS: TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/default_is_the_secure___Host-_cookie (2.07s)
+    --- PASS: TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/toggle_in_a_dev-like_env_reaches_the_middleware (2.07s)
+    --- PASS: TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/toggle_is_refused_outside_a_dev-like_env (2.08s)
+=== RUN   TestRoutePerms_RealBinary_SelfOrAdmin
+--- PASS: TestRoutePerms_RealBinary_SelfOrAdmin (13.37s)
+=== RUN   TestRoutePerms_RealBinary_CollectionOwnership
+--- PASS: TestRoutePerms_RealBinary_CollectionOwnership (10.79s)
+=== RUN   TestRoutePerms_RealBinary_Round2_ObservabilityAdminOnly
+--- PASS: TestRoutePerms_RealBinary_Round2_ObservabilityAdminOnly (10.61s)
+=== RUN   TestRoutePerms_RealBinary_Round2_MetricsScrapeToken
+--- PASS: TestRoutePerms_RealBinary_Round2_MetricsScrapeToken (10.52s)
+=== RUN   TestRoutePerms_RealBinary_Round2_ShortScrapeTokenIgnored
+--- PASS: TestRoutePerms_RealBinary_Round2_ShortScrapeTokenIgnored (10.32s)
+=== RUN   TestRoutePerms_RealBinary_Round2_ScrapeTokenDoesNotOpenPprof
+--- PASS: TestRoutePerms_RealBinary_Round2_ScrapeTokenDoesNotOpenPprof (10.14s)
+=== RUN   TestSSRF_RealBinary_ImageProxy
+--- PASS: TestSSRF_RealBinary_ImageProxy (10.62s)
+=== RUN   TestSSRF_RealBinary_SyncEndpointURL
+--- PASS: TestSSRF_RealBinary_SyncEndpointURL (10.72s)
+PASS
+ok  	catalogizer	112.896s

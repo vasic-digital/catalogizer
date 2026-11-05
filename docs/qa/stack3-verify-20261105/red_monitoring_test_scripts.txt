@@ -1,0 +1,6 @@
+PASS N2.missing_pins_file_refused
+FAIL FU1.token_seeded_from_stdin rc=127
+FAIL FU1.seeded_token_mode_0400 
+FAIL FU1.short_token_refused_nothing_written rc=127
+FAIL FU1.up_sh_uses_static_token_path up.sh does not wire the seed
+SOME FAILED

@@ -1419,3 +1419,9 @@ PROVISIONAL-DONE (unit + real-listener + handler tests; no live run against the 
 ## SECQ-3/5/6 (landed 2026-11-05, review round 2 GO-with-follow-ups; flaky-test fix verified by RED -count=10 4 failures, GREEN 0)
 
 PROVISIONAL-DONE until a live rerun on a rebuilt stack 3. Pre-existing, NOT caused by this branch: `DELETE /api/v1/subtitles/{id}` contract violation in the live contract harness (spec answers 404 to a non-owner; the harness expects 403 because the 403 description matches `adminGate403`; the happy path has no seeded subtitle or exceptions row). Fix belongs in the harness or spec wording (tracked SUB-CONTRACT-1). SECQ-4b (CollectionHandler.CreateCollection same count-then-insert race) remains open.
+
+## Stack-3 verification pack follow-ups (landed 2026-11-05, review round 3 GO-with-follow-ups)
+- STK3-FU-1: TRUSTED_PROXIES remote-LAN XFF behaviour UNCONFIRMED (QA-MON-FU-4): measure from a second LAN host.
+- STK3-FU-2: secrets visible in `podman inspect` accepted risk (QA-MON-FU-3).
+- STK3-FU-3: pprof phase B not re-run (needs HELIX_PPROF_ENABLED=true restart) — PROVISIONAL.
+- STK3-FU-4: reviewer mutations R7/R8/R13 not wired into a harness; horizontal authz VERIFIED only on 2 routes, others PROVISIONAL.

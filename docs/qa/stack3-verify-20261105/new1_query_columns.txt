@@ -1,0 +1,6 @@
+ id |                            full_path                             | protocol | host | port |  path  
+----+------------------------------------------------------------------+----------+------+------+--------
+  1 | movies/Another.Movie.2019.vp9.webm/Another.Movie.2019.vp9.webm   | local    |      |      | /media
+  1 | movies/Movie.Name.2020.1080p.en.ass/Movie.Name.2020.1080p.en.ass | local    |      |      | /media
+(2 rows)
+

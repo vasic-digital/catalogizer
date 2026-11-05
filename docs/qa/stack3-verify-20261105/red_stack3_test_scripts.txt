@@ -1,0 +1,12 @@
+PASS foreign port owner refused before pod rm
+PASS own-pod port allowed, pod replaced
+PASS WEBSITE=0 with fresh QA_DIR succeeds (rc=0)
+PASS stale website_dist cleared before build
+FAIL fresh qa.env carries METRICS_SCRAPE_TOKEN (>=32 chars)
+PASS qa.env stays mode 0600
+  METRICS_SCRAPE_TOKEN not passed by name to the api
+FAIL scrape token passed by name, never as a value
+FAIL TRUSTED_PROXIES is an explicit CIDR list (not auto, not 0.0.0.0/0)
+FAIL legacy qa.env: token appended, existing secrets and mode kept
+PASS re-run keeps the same token (idempotent)
+passed=9 failed=4

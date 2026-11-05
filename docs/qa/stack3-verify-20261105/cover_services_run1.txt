@@ -1,0 +1,348 @@
+Running as unit: run-p2731554-i132682477.scope; invocation ID: 899b580945874319933d27cf52efd30c
+ffprobe version 7.1.5-0+deb13u1 Copyright (c) 2007-2026 the FFmpeg developers
+=== RUN   TestCacheService_SetCoverArt
+--- PASS: TestCacheService_SetCoverArt (0.00s)
+=== RUN   TestCacheService_GetCoverArt
+--- PASS: TestCacheService_GetCoverArt (0.00s)
+=== RUN   TestCoverArtProvider_Constants
+--- PASS: TestCoverArtProvider_Constants (0.00s)
+=== RUN   TestCoverArtQuality_Constants
+--- PASS: TestCoverArtQuality_Constants (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_DefaultProviders
+--- PASS: TestCoverArtService_SearchCoverArt_DefaultProviders (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_SpecificProviders
+--- PASS: TestCoverArtService_SearchCoverArt_SpecificProviders (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_UnsupportedProvider
+--- PASS: TestCoverArtService_SearchCoverArt_UnsupportedProvider (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_WithAlbum
+--- PASS: TestCoverArtService_SearchCoverArt_WithAlbum (0.00s)
+=== RUN   TestCoverArtService_SearchMusicBrainz_NotFabricated
+--- PASS: TestCoverArtService_SearchMusicBrainz_NotFabricated (0.00s)
+=== RUN   TestCoverArtService_SearchLastFM_NotFabricated
+--- PASS: TestCoverArtService_SearchLastFM_NotFabricated (0.00s)
+=== RUN   TestCoverArtService_SearchITunes_NotFabricated
+--- PASS: TestCoverArtService_SearchITunes_NotFabricated (0.00s)
+=== RUN   TestCoverArtService_DownloadImage
+--- PASS: TestCoverArtService_DownloadImage (0.01s)
+=== RUN   TestCoverArtService_DownloadImage_HTTPError
+--- PASS: TestCoverArtService_DownloadImage_HTTPError (0.00s)
+=== RUN   TestCoverArtService_DownloadImage_InvalidURL
+--- PASS: TestCoverArtService_DownloadImage_InvalidURL (0.00s)
+=== RUN   TestCoverArtService_GenerateTimestamps_ZeroCountDefault
+--- PASS: TestCoverArtService_GenerateTimestamps_ZeroCountDefault (0.00s)
+=== RUN   TestCoverArtService_GenerateTimestamps_NegativeCountDefault
+--- PASS: TestCoverArtService_GenerateTimestamps_NegativeCountDefault (0.00s)
+=== RUN   TestCoverArtService_GenerateTimestamps_EvenlyDistributed
+--- PASS: TestCoverArtService_GenerateTimestamps_EvenlyDistributed (0.00s)
+=== RUN   TestCoverArtService_SortCoverArtResults_EqualScores
+--- PASS: TestCoverArtService_SortCoverArtResults_EqualScores (0.00s)
+=== RUN   TestCoverArtService_SortCoverArtResults_EmptySlice
+--- PASS: TestCoverArtService_SortCoverArtResults_EmptySlice (0.00s)
+=== RUN   TestCoverArtService_SortCoverArtResults_Single
+--- PASS: TestCoverArtService_SortCoverArtResults_Single (0.00s)
+=== RUN   TestCoverArtService_ResizeImage_ExactDimensions
+--- PASS: TestCoverArtService_ResizeImage_ExactDimensions (0.00s)
+=== RUN   TestCoverArtService_ResizeImage_PreserveAspect
+--- PASS: TestCoverArtService_ResizeImage_PreserveAspect (0.00s)
+=== RUN   TestCoverArtService_ProcessImage_JPEG
+--- PASS: TestCoverArtService_ProcessImage_JPEG (0.00s)
+=== RUN   TestCoverArtService_ProcessImage_PNG
+--- PASS: TestCoverArtService_ProcessImage_PNG (0.02s)
+=== RUN   TestCoverArtService_ProcessImage_NonexistentInput
+--- PASS: TestCoverArtService_ProcessImage_NonexistentInput (0.00s)
+=== RUN   TestCoverArtService_ScanLocalCoverArt_NoFiles
+--- PASS: TestCoverArtService_ScanLocalCoverArt_NoFiles (0.00s)
+=== RUN   TestCoverArtService_ScanLocalCoverArt_NonexistentDir
+--- PASS: TestCoverArtService_ScanLocalCoverArt_NonexistentDir (0.00s)
+=== RUN   TestCoverArtService_GetCoverArtDownloadInfo_NilDB
+--- PASS: TestCoverArtService_GetCoverArtDownloadInfo_NilDB (0.00s)
+=== RUN   TestCoverArtSearchRequest_Fields
+--- PASS: TestCoverArtSearchRequest_Fields (0.00s)
+=== RUN   TestCoverArtProcessingOptions_Fields
+--- PASS: TestCoverArtProcessingOptions_Fields (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_AllProvidersFailIsError
+--- PASS: TestCoverArtService_SearchCoverArt_AllProvidersFailIsError (0.00s)
+=== RUN   TestCoverArtFFprobe_PlaylistToLocalFileIsRefused
+--- PASS: TestCoverArtFFprobe_PlaylistToLocalFileIsRefused (0.52s)
+=== RUN   TestCoverArtFFmpeg_PlaylistToLocalFileMakesNoThumbnail
+--- PASS: TestCoverArtFFmpeg_PlaylistToLocalFileMakesNoThumbnail (0.38s)
+=== RUN   TestGetVideoDuration_HungToolIsBoundedByTimeout
+--- PASS: TestGetVideoDuration_HungToolIsBoundedByTimeout (0.50s)
+=== RUN   TestGenerateVideoThumbnail_HungToolIsBoundedByTimeout
+--- PASS: TestGenerateVideoThumbnail_HungToolIsBoundedByTimeout (0.50s)
+=== RUN   TestGenerateAndSaveVideoThumbnail_HungToolIsBoundedByTimeout
+--- PASS: TestGenerateAndSaveVideoThumbnail_HungToolIsBoundedByTimeout (0.70s)
+=== RUN   TestCoverArtFFCommands_DirectURLInputDoesNotReachNetwork
+--- PASS: TestCoverArtFFCommands_DirectURLInputDoesNotReachNetwork (0.40s)
+=== RUN   TestCoverArtFFCommands_GuardArguments
+--- PASS: TestCoverArtFFCommands_GuardArguments (0.00s)
+=== RUN   TestCoverArtMaxBytes_ProductionDefaultIs32MiB
+--- PASS: TestCoverArtMaxBytes_ProductionDefaultIs32MiB (0.00s)
+=== RUN   TestNonRegularVideoPathIsSkippedQuickly
+--- PASS: TestNonRegularVideoPathIsSkippedQuickly (0.00s)
+=== RUN   TestGetVideoDuration_HonoursCallerContext
+--- PASS: TestGetVideoDuration_HonoursCallerContext (0.30s)
+=== RUN   TestCoverArtDemuxers_MatchConverterHardeningList
+--- PASS: TestCoverArtDemuxers_MatchConverterHardeningList (0.00s)
+=== RUN   TestGenerateVideoThumbnail_RejectsNonRegularPath
+--- PASS: TestGenerateVideoThumbnail_RejectsNonRegularPath (0.00s)
+=== RUN   TestCoverArtService_DownloadCoverArt_Success
+    cover_art_service_coverage_test.go:90: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_coverage_test.go:30
+        	            				/src/catalog-api/internal/services/cover_art_service_coverage_test.go:90
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_DownloadCoverArt_Success
+--- FAIL: TestCoverArtService_DownloadCoverArt_Success (0.00s)
+=== RUN   TestCoverArtService_DownloadCoverArt_DownloadFailure
+    cover_art_service_coverage_test.go:141: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_coverage_test.go:30
+        	            				/src/catalog-api/internal/services/cover_art_service_coverage_test.go:141
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_DownloadCoverArt_DownloadFailure
+--- FAIL: TestCoverArtService_DownloadCoverArt_DownloadFailure (0.00s)
+=== RUN   TestCoverArtService_DownloadCoverArt_SetAsDefault
+    cover_art_service_coverage_test.go:163: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_coverage_test.go:30
+        	            				/src/catalog-api/internal/services/cover_art_service_coverage_test.go:163
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_DownloadCoverArt_SetAsDefault
+--- FAIL: TestCoverArtService_DownloadCoverArt_SetAsDefault (0.00s)
+=== RUN   TestCoverArtService_ProcessAndSaveCoverArt_InvalidImageData
+--- PASS: TestCoverArtService_ProcessAndSaveCoverArt_InvalidImageData (0.00s)
+=== RUN   TestCoverArtService_ScanLocalCoverArt_WithCoverFiles
+--- PASS: TestCoverArtService_ScanLocalCoverArt_WithCoverFiles (0.00s)
+=== RUN   TestCoverArtService_ScanLocalCoverArt_Recursive
+--- PASS: TestCoverArtService_ScanLocalCoverArt_Recursive (0.00s)
+=== RUN   TestCoverArtService_ScanLocalCoverArt_NonImageFile
+--- PASS: TestCoverArtService_ScanLocalCoverArt_NonImageFile (0.00s)
+=== RUN   TestCoverArtService_GetCoverURL_FromCoverArtTable
+    cover_art_service_coverage_test.go:315: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_coverage_test.go:30
+        	            				/src/catalog-api/internal/services/cover_art_service_coverage_test.go:315
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_GetCoverURL_FromCoverArtTable
+--- FAIL: TestCoverArtService_GetCoverURL_FromCoverArtTable (0.00s)
+=== RUN   TestCoverArtService_GetCoverURL_FromLocalPath
+    cover_art_service_coverage_test.go:335: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_coverage_test.go:30
+        	            				/src/catalog-api/internal/services/cover_art_service_coverage_test.go:335
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_GetCoverURL_FromLocalPath
+--- FAIL: TestCoverArtService_GetCoverURL_FromLocalPath (0.00s)
+=== RUN   TestCoverArtService_GetCoverURL_FromExternalMetadata
+    cover_art_service_coverage_test.go:355: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_coverage_test.go:30
+        	            				/src/catalog-api/internal/services/cover_art_service_coverage_test.go:355
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_GetCoverURL_FromExternalMetadata
+--- FAIL: TestCoverArtService_GetCoverURL_FromExternalMetadata (0.00s)
+=== RUN   TestCoverArtService_GetCoverURL_Placeholder
+    cover_art_service_coverage_test.go:375: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_coverage_test.go:30
+        	            				/src/catalog-api/internal/services/cover_art_service_coverage_test.go:375
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_GetCoverURL_Placeholder
+--- FAIL: TestCoverArtService_GetCoverURL_Placeholder (0.00s)
+=== RUN   TestCoverArtService_GetCoverURL_NilDB
+--- PASS: TestCoverArtService_GetCoverURL_NilDB (0.00s)
+=== RUN   TestCoverArtService_GetCoverURLsBatch_Empty
+--- PASS: TestCoverArtService_GetCoverURLsBatch_Empty (0.00s)
+=== RUN   TestCoverArtService_GetCoverURLsBatch_NilDB
+--- PASS: TestCoverArtService_GetCoverURLsBatch_NilDB (0.00s)
+=== RUN   TestCoverArtService_GetCoverURLsBatch_WithData
+    cover_art_service_coverage_test.go:424: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_coverage_test.go:30
+        	            				/src/catalog-api/internal/services/cover_art_service_coverage_test.go:424
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_GetCoverURLsBatch_WithData
+--- FAIL: TestCoverArtService_GetCoverURLsBatch_WithData (0.00s)
+=== RUN   TestCoverArtService_GetCoverURLsBatch_CoverArtOverridesExternal
+    cover_art_service_coverage_test.go:462: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_coverage_test.go:30
+        	            				/src/catalog-api/internal/services/cover_art_service_coverage_test.go:462
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_GetCoverURLsBatch_CoverArtOverridesExternal
+--- FAIL: TestCoverArtService_GetCoverURLsBatch_CoverArtOverridesExternal (0.00s)
+=== RUN   TestCoverArtService_GetCoverURLsBatch_LocalPathFallback
+    cover_art_service_coverage_test.go:493: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_coverage_test.go:30
+        	            				/src/catalog-api/internal/services/cover_art_service_coverage_test.go:493
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_GetCoverURLsBatch_LocalPathFallback
+--- FAIL: TestCoverArtService_GetCoverURLsBatch_LocalPathFallback (0.00s)
+=== RUN   TestCoverArtService_ProcessLocalCoverArt_Success
+--- PASS: TestCoverArtService_ProcessLocalCoverArt_Success (0.00s)
+=== RUN   TestCoverArtService_ProcessLocalCoverArt_NonexistentFile
+--- PASS: TestCoverArtService_ProcessLocalCoverArt_NonexistentFile (0.00s)
+=== RUN   TestCoverArtService_ProcessLocalCoverArt_InvalidImage
+--- PASS: TestCoverArtService_ProcessLocalCoverArt_InvalidImage (0.00s)
+=== RUN   TestCoverArtService_GetCoverArt_Found
+    cover_art_service_db_test.go:81: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_db_test.go:22
+        	            				/src/catalog-api/internal/services/cover_art_service_db_test.go:81
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_GetCoverArt_Found
+--- FAIL: TestCoverArtService_GetCoverArt_Found (0.00s)
+=== RUN   TestCoverArtService_GetCoverArt_NotFound
+    cover_art_service_db_test.go:118: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_db_test.go:22
+        	            				/src/catalog-api/internal/services/cover_art_service_db_test.go:118
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_GetCoverArt_NotFound
+--- FAIL: TestCoverArtService_GetCoverArt_NotFound (0.00s)
+=== RUN   TestCoverArtService_GetCoverArt_NullableFields
+    cover_art_service_db_test.go:132: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_db_test.go:22
+        	            				/src/catalog-api/internal/services/cover_art_service_db_test.go:132
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_GetCoverArt_NullableFields
+--- FAIL: TestCoverArtService_GetCoverArt_NullableFields (0.00s)
+=== RUN   TestCoverArtService_GetCoverArt_OnlyReturnsDefault
+    cover_art_service_db_test.go:163: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_db_test.go:22
+        	            				/src/catalog-api/internal/services/cover_art_service_db_test.go:163
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_GetCoverArt_OnlyReturnsDefault
+--- FAIL: TestCoverArtService_GetCoverArt_OnlyReturnsDefault (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_WithCachedResult
+    cover_art_service_db_test.go:189: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_db_test.go:22
+        	            				/src/catalog-api/internal/services/cover_art_service_db_test.go:189
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_SearchCoverArt_WithCachedResult
+--- FAIL: TestCoverArtService_SearchCoverArt_WithCachedResult (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_CacheMiss
+    cover_art_service_db_test.go:227: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_db_test.go:22
+        	            				/src/catalog-api/internal/services/cover_art_service_db_test.go:227
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_SearchCoverArt_CacheMiss
+--- FAIL: TestCoverArtService_SearchCoverArt_CacheMiss (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_WithSpecificProviders
+    cover_art_service_db_test.go:251: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_db_test.go:22
+        	            				/src/catalog-api/internal/services/cover_art_service_db_test.go:251
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_SearchCoverArt_WithSpecificProviders
+--- FAIL: TestCoverArtService_SearchCoverArt_WithSpecificProviders (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_AllDefaultProviders
+    cover_art_service_db_test.go:275: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_db_test.go:22
+        	            				/src/catalog-api/internal/services/cover_art_service_db_test.go:275
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_SearchCoverArt_AllDefaultProviders
+--- FAIL: TestCoverArtService_SearchCoverArt_AllDefaultProviders (0.00s)
+=== RUN   TestCoverArtService_SetDefaultCoverArt
+    cover_art_service_db_test.go:302: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_db_test.go:22
+        	            				/src/catalog-api/internal/services/cover_art_service_db_test.go:302
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_SetDefaultCoverArt
+--- FAIL: TestCoverArtService_SetDefaultCoverArt (0.00s)
+=== RUN   TestCoverArtService_GetCoverArtDownloadInfo_FromDB
+    cover_art_service_db_test.go:345: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_db_test.go:22
+        	            				/src/catalog-api/internal/services/cover_art_service_db_test.go:345
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_GetCoverArtDownloadInfo_FromDB
+--- FAIL: TestCoverArtService_GetCoverArtDownloadInfo_FromDB (0.00s)
+=== RUN   TestCoverArtService_GetCoverArtDownloadInfo_NotInDB
+    cover_art_service_db_test.go:368: 
+        	Error Trace:	/src/catalog-api/internal/services/cover_art_service_db_test.go:22
+        	            				/src/catalog-api/internal/services/cover_art_service_db_test.go:368
+        	Error:      	Received unexpected error:
+        	            	sql: unknown driver "sqlite3" (forgotten import?)
+        	Test:       	TestCoverArtService_GetCoverArtDownloadInfo_NotInDB
+--- FAIL: TestCoverArtService_GetCoverArtDownloadInfo_NotInDB (0.00s)
+=== RUN   TestCoverArtService_SortCoverArtResults_SameScore
+--- PASS: TestCoverArtService_SortCoverArtResults_SameScore (0.00s)
+=== RUN   TestCoverArtService_SortCoverArtResults_Empty
+--- PASS: TestCoverArtService_SortCoverArtResults_Empty (0.00s)
+=== RUN   TestCoverArtService_SortCoverArtResults_SingleItem
+--- PASS: TestCoverArtService_SortCoverArtResults_SingleItem (0.00s)
+=== RUN   TestCoverArtService_GenerateTimestamps_ZeroCount
+--- PASS: TestCoverArtService_GenerateTimestamps_ZeroCount (0.00s)
+=== RUN   TestCoverArtService_GenerateTimestamps_NegativeCount
+--- PASS: TestCoverArtService_GenerateTimestamps_NegativeCount (0.00s)
+=== RUN   TestCoverArtService_GenerateTimestamps_Values
+--- PASS: TestCoverArtService_GenerateTimestamps_Values (0.00s)
+=== RUN   TestCoverArtService_ResizeImage
+--- PASS: TestCoverArtService_ResizeImage (0.02s)
+=== RUN   TestCoverArtService_ResizeImage_NoPreserve
+--- PASS: TestCoverArtService_ResizeImage_NoPreserve (0.02s)
+=== RUN   TestCoverArtService_ResizeImage_TallImage
+--- PASS: TestCoverArtService_ResizeImage_TallImage (0.02s)
+=== RUN   TestCoverArtService_GenerateCacheKey_Deterministic
+--- PASS: TestCoverArtService_GenerateCacheKey_Deterministic (0.00s)
+=== RUN   TestCoverArtService_GenerateCacheKey_DifferentInputs
+--- PASS: TestCoverArtService_GenerateCacheKey_DifferentInputs (0.00s)
+=== RUN   TestCoverArtService_GenerateCacheKey_WithAlbum
+--- PASS: TestCoverArtService_GenerateCacheKey_WithAlbum (0.00s)
+=== RUN   TestCoverArtService_SearchProvider_Unsupported
+--- PASS: TestCoverArtService_SearchProvider_Unsupported (0.00s)
+=== RUN   TestCoverArtService_GetCoverArt_NilDB
+--- PASS: TestCoverArtService_GetCoverArt_NilDB (0.00s)
+=== RUN   TestCoverArtService_GenerateCacheKey
+=== RUN   TestCoverArtService_GenerateCacheKey/basic_request
+=== RUN   TestCoverArtService_GenerateCacheKey/empty_fields
+=== RUN   TestCoverArtService_GenerateCacheKey/special_characters
+--- PASS: TestCoverArtService_GenerateCacheKey (0.00s)
+    --- PASS: TestCoverArtService_GenerateCacheKey/basic_request (0.00s)
+    --- PASS: TestCoverArtService_GenerateCacheKey/empty_fields (0.00s)
+    --- PASS: TestCoverArtService_GenerateCacheKey/special_characters (0.00s)
+=== RUN   TestCoverArtService_GenerateCacheKey_Uniqueness
+--- PASS: TestCoverArtService_GenerateCacheKey_Uniqueness (0.00s)
+=== RUN   TestCoverArtService_GenerateTimestamps
+=== RUN   TestCoverArtService_GenerateTimestamps/normal_video
+=== RUN   TestCoverArtService_GenerateTimestamps/short_video
+=== RUN   TestCoverArtService_GenerateTimestamps/zero_duration
+--- PASS: TestCoverArtService_GenerateTimestamps (0.00s)
+    --- PASS: TestCoverArtService_GenerateTimestamps/normal_video (0.00s)
+    --- PASS: TestCoverArtService_GenerateTimestamps/short_video (0.00s)
+    --- PASS: TestCoverArtService_GenerateTimestamps/zero_duration (0.00s)
+=== RUN   TestCoverArtService_SortCoverArtResults
+--- PASS: TestCoverArtService_SortCoverArtResults (0.00s)
+=== RUN   TestCoverArtService_GenerateCoverArtID
+--- PASS: TestCoverArtService_GenerateCoverArtID (0.00s)
+=== RUN   TestDownloadImage_Socks5HandshakeIsBoundedByDialTimeout
+--- PASS: TestDownloadImage_Socks5HandshakeIsBoundedByDialTimeout (0.40s)
+=== RUN   TestSocks5DialTimeout_ProductionDefaultIsBounded
+--- PASS: TestSocks5DialTimeout_ProductionDefaultIsBounded (0.00s)
+=== RUN   TestCoverArtFFmpegCommands_ProtocolWhitelist
+--- PASS: TestCoverArtFFmpegCommands_ProtocolWhitelist (0.00s)
+=== RUN   TestCoverArtFFmpeg_PlaylistDoesNotReachNetwork
+--- PASS: TestCoverArtFFmpeg_PlaylistDoesNotReachNetwork (0.63s)
+=== RUN   TestCoverArtArchiveResolver_RequiresMusicBrainzID
+--- PASS: TestCoverArtArchiveResolver_RequiresMusicBrainzID (0.00s)
+=== RUN   TestCoverArtArchiveResolver_RejectsNonMusicEntities
+--- PASS: TestCoverArtArchiveResolver_RejectsNonMusicEntities (0.00s)
+=== RUN   TestWF22_R1_CoverArtThumbnailCopyBuildsEveryProtocolThroughTheSingleMapping
+--- PASS: TestWF22_R1_CoverArtThumbnailCopyBuildsEveryProtocolThroughTheSingleMapping (0.01s)
+=== RUN   TestWF22R3_N6_CoverArtResolvesTheSMBIdentityLikeEveryOtherCaller
+--- PASS: TestWF22R3_N6_CoverArtResolvesTheSMBIdentityLikeEveryOtherCaller (0.03s)
+=== RUN   TestReviewProbe_R1_CoverArtRemoteCopyRejectedByStrictFactory
+    wf22_review_probe_test.go:61: R1 ftp -> failed to connect filesystem client: failed to connect to FTP server: dial tcp 127.0.0.1:1: connect: connection refused
+    wf22_review_probe_test.go:61: R1 nfs -> failed to create filesystem client: failed to create NFS client: mount point is required
+    wf22_review_probe_test.go:61: R1 webdav -> failed to connect filesystem client: failed to connect to WebDAV server: Propfind "/media": unsupported protocol scheme ""
+--- PASS: TestReviewProbe_R1_CoverArtRemoteCopyRejectedByStrictFactory (0.00s)
+FAIL

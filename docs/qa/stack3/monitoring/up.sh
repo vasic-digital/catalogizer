@@ -37,7 +37,7 @@ sub "$HERE/prometheus/prometheus.yml" "$R/prometheus/prometheus.yml"
 sub "$HERE/nginx/nginx.conf" "$R/nginx/nginx.conf"
 sub "$HERE/pgadmin/servers.json" "$R/pgadmin/servers.json"
 cp -r "$HERE/grafana/provisioning" "$HERE/grafana/dashboards" "$R/grafana/"
-cp "$HERE/token_refresher.sh" "$R/token_refresher.sh"
+cp "$HERE/token_refresher.sh" "$HERE/seed_scrape_token.sh" "$R/"
 ( umask 077; printf '%s:%s:%s:%s:%s\n' "$MON_PG_HOST" "$PG_PORT" '*' "$POSTGRES_USER" "$POSTGRES_PASSWORD" > "$R/pgpass" )
 
 podman pod rm -f "$MON_POD" >/dev/null 2>&1 || true
@@ -53,6 +53,14 @@ rm -f -- "${R:?}/pgpass" "${R:?}/qaadmin"
 podman volume rm -f "${MON_POD}-cfg" >/dev/null 2>&1 || true
 podman volume create "${MON_POD}-cfg" >/dev/null; podman volume create "${MON_POD}-tok" >/dev/null 2>&1 || true
 podman run --rm --user 0 -v "$R:/src:ro" -v "${MON_POD}-cfg:/dst" "$CURL_IMAGE" sh -c 'cp -r /src/. /dst/ && chmod -R a+rX /dst' >/dev/null
+if [ "${#METRICS_SCRAPE_TOKEN}" -ge 32 ]; then   # switching from the admin-session refresher: revoke the sessions it left behind (best effort, outcome printed), via the volume's owner
+  for f in metrics.tok previous.tok; do
+    old="$(podman run --rm --user 0 -v "${MON_POD}-tok:/tokens:ro" "$CURL_IMAGE" cat "/tokens/$f" 2>/dev/null || true)"
+    [ -n "$old" ] && [ "$old" != "$METRICS_SCRAPE_TOKEN" ] || continue
+    code="$(printf 'Authorization: Bearer %s\n' "$old" | curl -s -m 10 -o /dev/null -w '%{http_code}' -X POST -H @- "http://127.0.0.1:${API_PORT}/api/v1/auth/logout" || true)"
+    echo "stale refresher session ($f) logout: HTTP ${code:-none}"; old=""
+  done
+fi
 podman run --rm --user 0 -v "${MON_POD}-tok:/tokens" "$CURL_IMAGE" sh -c 'rm -f /tokens/metrics.tok; chmod 755 /tokens' >/dev/null
 
 podman pod create --name "$MON_POD" --network "pasta:-T,${PG_PORT},-T,${API_PORT},-T,${WEB_PORT},-T,${WEBSITE_PORT}" \
@@ -60,10 +68,15 @@ podman pod create --name "$MON_POD" --network "pasta:-T,${PG_PORT},-T,${API_PORT
   -p "${NGINX_BIND}:${NGINX_PORT}:8088" -p "${NGINX_BIND}:${NGINX_SITE_PORT}:8089" >/dev/null
 
 export MON_HOST API_PORT
+if [ "${#METRICS_SCRAPE_TOKEN}" -ge 32 ]; then   # QA-MON-FU-1: stack 3's API has a dedicated METRICS_SCRAPE_TOKEN -> static credentials file, NO admin session, NO refresher
+  printf '%s' "$METRICS_SCRAPE_TOKEN" | podman run --rm -i --user 0 -v "${MON_POD}-cfg:/cfg:ro" -v "${MON_POD}-tok:/tokens" "$CURL_IMAGE" sh /cfg/seed_scrape_token.sh >/dev/null \
+    || { echo "seeding the static scrape token failed" >&2; exit 6; }
+else   # legacy fallback (stack-3 API without METRICS_SCRAPE_TOKEN): admin-session sidecar
 podman run -d --pod "$MON_POD" --name "${MON_POD}-tokenrefresh" --memory 32m --user 0 -e MON_HOST -e API_PORT --secret "${MON_POD}-qaadmin,target=/run/secrets/qa_admin,uid=0,mode=0400" \
   -v "${MON_POD}-cfg:/cfg:ro" -v "${MON_POD}-tok:/tokens" "$CURL_IMAGE" sh /cfg/token_refresher.sh >/dev/null
+fi
 for i in $(seq 1 40); do podman run --rm --user 0 -v "${MON_POD}-tok:/tokens:ro" "$CURL_IMAGE" test -s /tokens/metrics.tok 2>/dev/null && break; sleep 1; done
-podman run --rm --user 0 -v "${MON_POD}-tok:/tokens:ro" "$CURL_IMAGE" test -s /tokens/metrics.tok || { echo "token refresher produced no token" >&2; podman logs "${MON_POD}-tokenrefresh" >&2; exit 6; }
+podman run --rm --user 0 -v "${MON_POD}-tok:/tokens:ro" "$CURL_IMAGE" test -s /tokens/metrics.tok || { echo "no scrape token available" >&2; exit 6; }
 
 podman run -d --pod "$MON_POD" --name "${MON_POD}-prometheus" --memory 512m \
   -v "${MON_POD}-cfg:/cfg:ro" -v "${MON_POD}-tok:/tokens:ro" -v "${MON_POD}-prom:/prometheus" \

@@ -1,0 +1,49 @@
+=== RUN   TestHealthChecker_NoChecks
+--- PASS: TestHealthChecker_NoChecks (0.00s)
+=== RUN   TestHealthChecker_OverrideCheck
+--- PASS: TestHealthChecker_OverrideCheck (0.00s)
+=== RUN   TestHealthChecker_AllUnhealthy
+--- PASS: TestHealthChecker_AllUnhealthy (0.00s)
+=== RUN   TestHealthCheck_JSONSerialization
+--- PASS: TestHealthCheck_JSONSerialization (0.00s)
+=== RUN   TestGinHealthHandler_NoChecks
+--- PASS: TestGinHealthHandler_NoChecks (0.00s)
+=== RUN   TestPrometheusMiddleware_MultipleRoutes
+--- PASS: TestPrometheusMiddleware_MultipleRoutes (0.00s)
+=== RUN   TestMetrics_Monitor_ContextCancellation
+--- PASS: TestMetrics_Monitor_ContextCancellation (0.00s)
+=== RUN   TestMetrics_DatabaseQueries
+--- PASS: TestMetrics_DatabaseQueries (0.00s)
+=== RUN   TestMetrics_CacheHitsAndMisses
+--- PASS: TestMetrics_CacheHitsAndMisses (0.00s)
+=== RUN   TestMetrics_ActiveConnections
+--- PASS: TestMetrics_ActiveConnections (0.00s)
+=== RUN   TestDefaultMonitoringConfig_AllFields
+--- PASS: TestDefaultMonitoringConfig_AllFields (0.00s)
+=== RUN   TestMonitoringConfig_CustomValues
+--- PASS: TestMonitoringConfig_CustomValues (0.00s)
+=== RUN   TestStartPrometheusServer
+2026-11-05T09:17:28.181Z	INFO	monitoring/monitoring.go:325	Starting Prometheus server	{"addr": "127.0.0.1:39957"}
+--- PASS: TestStartPrometheusServer (0.01s)
+=== RUN   TestPrometheusMiddleware
+--- PASS: TestPrometheusMiddleware (0.00s)
+=== RUN   TestHealthChecker_AllHealthy
+--- PASS: TestHealthChecker_AllHealthy (0.00s)
+=== RUN   TestHealthChecker_OneUnhealthy
+--- PASS: TestHealthChecker_OneUnhealthy (0.00s)
+=== RUN   TestHealthChecker_RegisterMultiple
+--- PASS: TestHealthChecker_RegisterMultiple (0.00s)
+=== RUN   TestGinHealthHandler_Healthy
+--- PASS: TestGinHealthHandler_Healthy (0.00s)
+=== RUN   TestGinHealthHandler_Unhealthy
+--- PASS: TestGinHealthHandler_Unhealthy (0.00s)
+=== RUN   TestUpdateSystemMetrics
+--- PASS: TestUpdateSystemMetrics (0.00s)
+=== RUN   TestDefaultMonitoringConfig
+--- PASS: TestDefaultMonitoringConfig (0.00s)
+=== RUN   TestUpdateSystemMetrics_GoroutinesMatchRuntime
+--- PASS: TestUpdateSystemMetrics_GoroutinesMatchRuntime (0.00s)
+=== RUN   TestStartPrometheusServer_ListensOnLoopbackOnly
+    prometheus_bind_test.go:55: no non-loopback IPv4 address on this host: only the bound-address assertion ran
+--- PASS: TestStartPrometheusServer_ListensOnLoopbackOnly (0.00s)
+PASS

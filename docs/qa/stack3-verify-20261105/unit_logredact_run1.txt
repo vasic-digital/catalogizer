@@ -1,0 +1,3 @@
+=== RUN   TestPath
+--- PASS: TestPath (0.00s)
+PASS
