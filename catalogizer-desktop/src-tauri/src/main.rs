@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod confirm;
 mod url_guard;
 
 #[cfg(feature = "vlc-player")]
@@ -9,6 +10,7 @@ mod vlc;
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use tauri::State;
+use confirm::SharedConfirmer;
 use tokio::sync::Mutex;
 
 #[cfg(feature = "vlc-player")]
@@ -47,13 +49,46 @@ async fn get_config(config: State<'_, ConfigState>) -> Result<AppConfig, String>
 async fn update_config(
     new_config: AppConfig,
     config: State<'_, ConfigState>,
+    confirmer: State<'_, SharedConfirmer>,
 ) -> Result<(), String> {
-    apply_config(&config, new_config).await
+    apply_config(&config, &confirmer, new_config).await
 }
 
-async fn apply_config(config: &ConfigState, new_config: AppConfig) -> Result<(), String> {
+/// Server-URL change gate: validate, then ask the user natively whenever the
+/// URL differs from the one in force (first-time setup included, so clearing
+/// and re-setting cannot be used to dodge the prompt). The config lock is NOT
+/// held while the dialog is open.
+async fn confirm_url_change(
+    config: &ConfigState,
+    confirmer: &SharedConfirmer,
+    requested: &str,
+) -> Result<(), String> {
+    let current = config.lock().await.server_url.clone();
+    if current.as_deref() == Some(requested) {
+        return Ok(());
+    }
+    let c = confirmer.clone();
+    let req = requested.to_string();
+    let approved = tokio::task::spawn_blocking(move || {
+        c.confirm_server_url_change(current.as_deref(), &req)
+    })
+    .await
+    .map_err(|e| format!("Confirmation prompt failed: {}", e))?;
+    if approved {
+        Ok(())
+    } else {
+        Err("Server URL change was not confirmed by the user".to_string())
+    }
+}
+
+async fn apply_config(
+    config: &ConfigState,
+    confirmer: &SharedConfirmer,
+    new_config: AppConfig,
+) -> Result<(), String> {
     if let Some(u) = new_config.server_url.as_deref() {
-        url_guard::validate_server_url(u)?;
+        let u = url_guard::validate_server_url(u)?;
+        confirm_url_change(config, confirmer, &u).await?;
     }
     let mut config = config.lock().await;
     *config = new_config;
@@ -61,12 +96,21 @@ async fn apply_config(config: &ConfigState, new_config: AppConfig) -> Result<(),
 }
 
 #[tauri::command]
-async fn set_server_url(url: String, config: State<'_, ConfigState>) -> Result<(), String> {
-    apply_server_url(&config, url).await
+async fn set_server_url(
+    url: String,
+    config: State<'_, ConfigState>,
+    confirmer: State<'_, SharedConfirmer>,
+) -> Result<(), String> {
+    apply_server_url(&config, &confirmer, url).await
 }
 
-async fn apply_server_url(config: &ConfigState, url: String) -> Result<(), String> {
+async fn apply_server_url(
+    config: &ConfigState,
+    confirmer: &SharedConfirmer,
+    url: String,
+) -> Result<(), String> {
     let url = url_guard::validate_server_url(&url)?;
+    confirm_url_change(config, confirmer, &url).await?;
     let mut config = config.lock().await;
     config.server_url = Some(url);
     Ok(())
@@ -187,7 +231,15 @@ fn main() {
 
     let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_dialog::init())
         .manage(config)
+        .setup(|app| {
+            use tauri::Manager;
+            let confirmer: SharedConfirmer =
+                std::sync::Arc::new(confirm::DialogConfirmer(app.handle().clone()));
+            app.manage(confirmer);
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             get_config,
             update_config,
@@ -602,30 +654,237 @@ mod tests {
             assert!(r.starts_with("post /echo"), "{}", r);
         }
 
+        /// Test confirmer: scripted answer + records every prompt it was shown.
+        struct Scripted {
+            answer: bool,
+            seen: std::sync::Mutex<Vec<(Option<String>, String)>>,
+        }
+        impl Scripted {
+            fn new(answer: bool) -> Arc<Self> {
+                Arc::new(Self { answer, seen: Default::default() })
+            }
+            fn prompts(&self) -> Vec<(Option<String>, String)> {
+                self.seen.lock().unwrap().clone()
+            }
+        }
+        impl crate::confirm::UrlConfirmer for Scripted {
+            fn confirm_server_url_change(&self, current: Option<&str>, requested: &str) -> bool {
+                self.seen.lock().unwrap().push((current.map(String::from), requested.to_string()));
+                self.answer
+            }
+        }
+        fn shared(c: &Arc<Scripted>) -> SharedConfirmer {
+            c.clone()
+        }
+
         #[tokio::test]
         async fn set_server_url_rejects_bad_urls_and_keeps_old_value() {
             let state: ConfigState = Mutex::new(AppConfig::default());
-            assert!(apply_server_url(&state, "http://a.com".into()).await.is_ok());
+            let yes = Scripted::new(true);
+            assert!(apply_server_url(&state, &shared(&yes), "http://a.com".into()).await.is_ok());
+            let before = yes.prompts().len();
             for bad in ["ftp://a.com", "http://u@a.com", "http://u:p@a.com", "garbage", "file:///etc/passwd"] {
-                assert!(apply_server_url(&state, bad.into()).await.is_err(), "{}", bad);
+                assert!(apply_server_url(&state, &shared(&yes), bad.into()).await.is_err(), "{}", bad);
             }
+            assert_eq!(yes.prompts().len(), before, "invalid URLs must not even reach the prompt");
             assert_eq!(state.lock().await.server_url.as_deref(), Some("http://a.com"));
         }
 
         #[tokio::test]
         async fn update_config_rejects_bad_server_url_and_keeps_old_config() {
             let state: ConfigState = Mutex::new(AppConfig::default());
+            let yes = Scripted::new(true);
             let good = AppConfig { server_url: Some("https://a.com".into()), ..AppConfig::default() };
-            assert!(apply_config(&state, good).await.is_ok());
+            assert!(apply_config(&state, &shared(&yes), good).await.is_ok());
             for bad in ["ftp://a.com", "http://u@a.com"] {
                 let cfg = AppConfig { server_url: Some(bad.into()), theme: "light".into(), ..AppConfig::default() };
-                assert!(apply_config(&state, cfg).await.is_err(), "{}", bad);
+                assert!(apply_config(&state, &shared(&yes), cfg).await.is_err(), "{}", bad);
             }
             let g = state.lock().await;
             assert_eq!(g.server_url.as_deref(), Some("https://a.com"));
             assert_eq!(g.theme, "dark");
             drop(g);
-            assert!(apply_config(&state, AppConfig::default()).await.is_ok());
+            assert!(apply_config(&state, &shared(&yes), AppConfig::default()).await.is_ok());
+        }
+
+        #[tokio::test]
+        async fn url_change_requires_confirmation_and_decline_keeps_old_value() {
+            let state: ConfigState = Mutex::new(AppConfig::default());
+            let yes = Scripted::new(true);
+            apply_server_url(&state, &shared(&yes), "http://a.com".into()).await.unwrap();
+            let no = Scripted::new(false);
+            let r = apply_server_url(&state, &shared(&no), "http://evil.com".into()).await;
+            assert_eq!(r.unwrap_err(), "Server URL change was not confirmed by the user");
+            assert_eq!(state.lock().await.server_url.as_deref(), Some("http://a.com"));
+            assert_eq!(no.prompts(), vec![(Some("http://a.com".to_string()), "http://evil.com".to_string())]);
+            apply_server_url(&state, &shared(&yes), "http://b.com".into()).await.unwrap();
+            assert_eq!(state.lock().await.server_url.as_deref(), Some("http://b.com"));
+            assert_eq!(yes.prompts().last().unwrap(), &(Some("http://a.com".to_string()), "http://b.com".to_string()));
+        }
+
+        #[tokio::test]
+        async fn first_time_setup_is_confirmed_too() {
+            let state: ConfigState = Mutex::new(AppConfig::default());
+            let no = Scripted::new(false);
+            assert!(apply_server_url(&state, &shared(&no), "http://a.com".into()).await.is_err());
+            assert!(state.lock().await.server_url.is_none());
+            assert_eq!(no.prompts(), vec![(None, "http://a.com".to_string())]);
+            let yes = Scripted::new(true);
+            apply_server_url(&state, &shared(&yes), "http://a.com".into()).await.unwrap();
+            assert_eq!(state.lock().await.server_url.as_deref(), Some("http://a.com"));
+        }
+
+        #[tokio::test]
+        async fn unchanged_url_needs_no_prompt() {
+            let state: ConfigState = Mutex::new(AppConfig::default());
+            let yes = Scripted::new(true);
+            apply_server_url(&state, &shared(&yes), "http://a.com".into()).await.unwrap();
+            let no = Scripted::new(false);
+            apply_server_url(&state, &shared(&no), "http://a.com".into()).await.unwrap();
+            let cfg = AppConfig { server_url: Some("http://a.com".into()), theme: "light".into(), ..AppConfig::default() };
+            apply_config(&state, &shared(&no), cfg).await.unwrap();
+            assert!(no.prompts().is_empty(), "same URL must not prompt");
+            assert_eq!(state.lock().await.theme, "light");
+        }
+
+        #[tokio::test]
+        async fn update_config_cannot_bypass_confirmation() {
+            let state: ConfigState = Mutex::new(AppConfig::default());
+            let yes = Scripted::new(true);
+            apply_server_url(&state, &shared(&yes), "http://a.com".into()).await.unwrap();
+            let no = Scripted::new(false);
+            let cfg = AppConfig { server_url: Some("http://evil.com".into()), theme: "light".into(), ..AppConfig::default() };
+            assert!(apply_config(&state, &shared(&no), cfg).await.is_err());
+            let g = state.lock().await;
+            assert_eq!(g.server_url.as_deref(), Some("http://a.com"));
+            assert_eq!(g.theme, "dark", "a declined change must not apply ANY part of the config");
+            drop(g);
+            // Clearing is allowed, but the next set is then a first-time set and prompts again.
+            apply_config(&state, &shared(&no), AppConfig::default()).await.unwrap();
+            assert!(no.prompts().len() == 1);
+            assert!(apply_server_url(&state, &shared(&no), "http://evil.com".into()).await.is_err());
+            assert_eq!(no.prompts().len(), 2);
+            assert!(state.lock().await.server_url.is_none());
+        }
+
+        #[tokio::test]
+        async fn config_lock_is_not_held_while_prompting() {
+            struct Probe(Arc<ConfigState>, std::sync::Mutex<Option<bool>>);
+            impl crate::confirm::UrlConfirmer for Probe {
+                fn confirm_server_url_change(&self, _: Option<&str>, _: &str) -> bool {
+                    *self.1.lock().unwrap() = Some(self.0.try_lock().is_ok());
+                    true
+                }
+            }
+            let state = Arc::new(Mutex::new(AppConfig::default()));
+            let probe = Arc::new(Probe(state.clone(), Default::default()));
+            let c: SharedConfirmer = probe.clone();
+            apply_server_url(&state, &c, "http://a.com".into()).await.unwrap();
+            assert_eq!(*probe.1.lock().unwrap(), Some(true), "config must be readable while the dialog is open");
+        }
+
+        // ---- IPC-level tests (TAURI-F15): real command wrappers through tauri::test ----
+        use tauri::test::{get_ipc_response, mock_builder, mock_context, noop_assets, MockRuntime};
+        use tauri::webview::InvokeRequest;
+        use tauri::ipc::InvokeBody;
+
+        fn ipc_window(state: ConfigState, c: SharedConfirmer) -> (tauri::App<MockRuntime>, tauri::WebviewWindow<MockRuntime>) {
+            let app = mock_builder()
+                .manage(state)
+                .manage(c)
+                .invoke_handler(tauri::generate_handler![get_config, update_config, set_server_url, make_http_request])
+                .build(mock_context(noop_assets()))
+                .expect("mock app");
+            let w = tauri::WebviewWindowBuilder::new(&app, "main", Default::default()).build().expect("window");
+            (app, w)
+        }
+
+        fn ipc(w: &tauri::WebviewWindow<MockRuntime>, cmd: &str, body: serde_json::Value) -> Result<serde_json::Value, serde_json::Value> {
+            // The IPC call blocks this thread until the command answers; block_in_place
+            // keeps the test runtime's other workers (echo servers) running meanwhile.
+            tokio::task::block_in_place(|| get_ipc_response(
+                w,
+                InvokeRequest {
+                    cmd: cmd.into(),
+                    callback: tauri::ipc::CallbackFn(0),
+                    error: tauri::ipc::CallbackFn(1),
+                    url: "tauri://localhost".parse().unwrap(),
+                    body: InvokeBody::Json(body),
+                    headers: Default::default(),
+                    invoke_key: tauri::test::INVOKE_KEY.to_string(),
+                },
+            ))
+            .map(|r| r.deserialize::<serde_json::Value>().unwrap())
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+        async fn ipc_set_server_url_is_confirmed_by_the_backend() {
+            let no = Scripted::new(false);
+            let (_app, w) = ipc_window(Mutex::new(AppConfig::default()), shared(&no));
+            let r = ipc(&w, "set_server_url", serde_json::json!({"url": "http://a.com"}));
+            assert_eq!(r.unwrap_err(), serde_json::json!("Server URL change was not confirmed by the user"));
+            assert_eq!(no.prompts(), vec![(None, "http://a.com".to_string())]);
+            assert!(ipc(&w, "get_config", serde_json::json!({})).unwrap()["server_url"].is_null());
+
+            let yes = Scripted::new(true);
+            let (_app2, w2) = ipc_window(Mutex::new(AppConfig::default()), shared(&yes));
+            ipc(&w2, "set_server_url", serde_json::json!({"url": "http://a.com"})).unwrap();
+            assert_eq!(ipc(&w2, "get_config", serde_json::json!({})).unwrap()["server_url"], "http://a.com");
+            let bad = ipc(&w2, "set_server_url", serde_json::json!({"url": "ftp://a.com"}));
+            assert!(bad.unwrap_err().as_str().unwrap().contains("http or https"));
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+        async fn ipc_update_config_cannot_change_server_without_confirmation() {
+            let no = Scripted::new(false);
+            let init = AppConfig { server_url: Some("http://a.com".into()), ..AppConfig::default() };
+            let (_app, w) = ipc_window(Mutex::new(init), shared(&no));
+            let cfg = serde_json::json!({"newConfig": {"server_url": "http://evil.com", "auth_token": null, "theme": "light", "auto_start": false}});
+            assert!(ipc(&w, "update_config", cfg).is_err());
+            let got = ipc(&w, "get_config", serde_json::json!({})).unwrap();
+            assert_eq!(got["server_url"], "http://a.com");
+            assert_eq!(got["theme"], "dark");
+        }
+
+        #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+        async fn ipc_make_http_request_wrapper_forwards_every_argument() {
+            let a = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let pa = a.local_addr().unwrap().port();
+            tokio::spawn(crate::url_guard::tests::serve(a, 1, Arc::new(AtomicUsize::new(0))));
+            let server = format!("http://127.0.0.1:{}", pa);
+            let init = AppConfig { server_url: Some(server.clone()), ..AppConfig::default() };
+            let (_app, w) = ipc_window(Mutex::new(init), shared(&Scripted::new(false)));
+            let r = ipc(&w, "make_http_request", serde_json::json!({
+                "url": format!("{}/echo", server), "method": "PUT",
+                "headers": {"X-Probe": "hdr-42"}, "body": "body-77"
+            })).unwrap();
+            let echoed = r.as_str().unwrap().to_lowercase();
+            assert!(echoed.starts_with("put /echo"), "{}", echoed);
+            assert!(echoed.contains("x-probe: hdr-42") && echoed.contains("body-77"), "{}", echoed);
+            let out = ipc(&w, "make_http_request", serde_json::json!({
+                "url": "http://127.0.0.1:1/x", "method": "GET", "headers": {}, "body": null
+            }));
+            assert!(out.unwrap_err().as_str().unwrap().contains("within configured server"));
+
+            let (_app2, w2) = ipc_window(Mutex::new(AppConfig::default()), shared(&Scripted::new(false)));
+            let out = ipc(&w2, "make_http_request", serde_json::json!({
+                "url": format!("{}/echo", server), "method": "GET", "headers": {}, "body": null
+            }));
+            assert_eq!(out.unwrap_err(), serde_json::json!("Server URL not configured"));
+        }
+
+        #[tokio::test]
+        async fn perform_request_sends_large_header_and_body_intact() {
+            let a = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let pa = a.local_addr().unwrap().port();
+            tokio::spawn(crate::url_guard::tests::serve(a, 1, Arc::new(AtomicUsize::new(0))));
+            let server = format!("http://127.0.0.1:{}", pa);
+            let mut h = HashMap::new();
+            h.insert("X-Big".to_string(), "h".repeat(3000));
+            let body = format!("{}END-MARK", "b".repeat(9000));
+            let r = perform_request(&server, &format!("{}/echo", server), "POST", h, Some(body.clone())).await.unwrap();
+            assert!(r.ends_with(&body), "echoed body must be complete (9 KB + marker)");
+            assert!(r.to_lowercase().contains(&format!("x-big: {}", "h".repeat(3000))));
         }
     }
 

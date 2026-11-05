@@ -181,9 +181,28 @@ pub(crate) mod tests {
             let Ok((mut sock, _)) = listener.accept().await else { return };
             let hits = hits.clone();
             tokio::spawn(async move {
-                let mut buf = [0u8; 2048];
-                let n = sock.read(&mut buf).await.unwrap_or(0);
-                let req = String::from_utf8_lossy(&buf[..n]).to_string();
+                // Read the full request: headers up to CRLFCRLF, then Content-Length bytes (TAURI-F16).
+                let mut data: Vec<u8> = Vec::new();
+                let mut buf = [0u8; 1024];
+                loop {
+                    let n = sock.read(&mut buf).await.unwrap_or(0);
+                    if n == 0 {
+                        break;
+                    }
+                    data.extend_from_slice(&buf[..n]);
+                    if let Some(pos) = data.windows(4).position(|w| w == b"\r\n\r\n") {
+                        let head = String::from_utf8_lossy(&data[..pos]).to_lowercase();
+                        let cl = head
+                            .lines()
+                            .find_map(|l| l.strip_prefix("content-length:"))
+                            .and_then(|v| v.trim().parse::<usize>().ok())
+                            .unwrap_or(0);
+                        if data.len() >= pos + 4 + cl {
+                            break;
+                        }
+                    }
+                }
+                let req = String::from_utf8_lossy(&data).to_string();
                 let path = req.split_whitespace().nth(1).unwrap_or("/").to_string();
                 hits.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                 let resp = match path.as_str() {
