@@ -14,6 +14,6 @@ NGINX_IMAGE="${NGINX_IMAGE:-docker.io/library/nginx:alpine}"
 # Peer CIDR(s) the API trusts for X-Forwarded-For (gin SetTrustedProxies). Explicit list, never "auto"/0.0.0.0/0.
 # MEASURED 2026-11-05 (docs/qa/stack3-verify-20261105/clientip_probe.txt): with pasta, a request that reaches the API through the monitoring nginx
 # front door (pod catqa3mon, -T forward) AND a direct host-local request both arrive with the HOST's primary LAN address as TCP peer, so the proxy
-# is trusted by trusting exactly that /32 (+ loopback). Remote LAN clients keep their own address and are NOT trusted. Override: TRUSTED_PROXIES=...
+# is trusted by trusting exactly that /32 (loopback NOT included, see below). Remote LAN clients keep their own address and are NOT trusted. Override: TRUSTED_PROXIES=...
 _hip="$(ip -4 route get 1.1.1.1 2>/dev/null | sed -n 's/.* src \([0-9.]*\).*/\1/p' | head -n1)"
-TRUSTED_PROXIES="${TRUSTED_PROXIES:-${_hip:+${_hip}/32,}127.0.0.1/32}"
+TRUSTED_PROXIES="${TRUSTED_PROXIES:-${_hip:+${_hip}/32}}"; TRUSTED_PROXIES="${TRUSTED_PROXIES:-127.0.0.1/32}"   # loopback ONLY as a fallback: trusting it too lets a host-local client forge X-Forwarded-For through the proxy (measured, clientip_probe_after.txt)
