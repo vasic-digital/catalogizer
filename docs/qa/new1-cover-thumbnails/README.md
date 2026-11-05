@@ -1,0 +1,4 @@
+# NEW-1 generate-thumbnails returned {"generated":0}
+
+Reproduction (reproduced-live): red_run1.txt (build 015896fd89180a42cc6c1e794719bd04e39e9c40, stack 3, POST returned 200 generated 0 in 0.03 s, no log, cover_art 0 rows). exp_pg.txt: the pre-fix `is_default = 1` is rewritten by the DB wrapper (suspect refuted); the doubled `f.path || '/' || f.name` yields movies/X.mp4/X.mp4 (files.path already holds the relative path incl. name).
+Root causes (each proven by a RED test on SQLite and real PostgreSQL 15, then GREEN): (1) scan order differed from select order (host/port/path), error swallowed; (2) doubled path; (3) ffmpeg exit 251 because the cache dir was never created; (4) SQLite `ON CONFLICT DO UPDATE` unsupported in the go-sqlcipher build, thumbnail save failed. Test: catalog-api/internal/services/cover_art_missing_thumbnails_test.go.
