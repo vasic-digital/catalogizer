@@ -1,0 +1,77 @@
+--- FAIL: TestD4_FullTextSearchOverExtractedDocuments_RealBinary (70.45s)
+    doc_search_binary_test.go:128: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d4.MZTsYq/repo/catalog-api/doc_search_binary_test.go:128
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 0
+        	Test:       	TestD4_FullTextSearchOverExtractedDocuments_RealBinary
+        	Messages:   	text file content must be searchable
+    doc_search_binary_test.go:129: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d4.MZTsYq/repo/catalog-api/doc_search_binary_test.go:129
+        	Error:      	Not equal: 
+        	            	expected: []string{"notes.txt"}
+        	            	actual  : []string{}
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1,3 +1,2 @@
+        	            	-([]string) (len=1) {
+        	            	- (string) (len=9) "notes.txt"
+        	            	+([]string) {
+        	            	 }
+        	Test:       	TestD4_FullTextSearchOverExtractedDocuments_RealBinary
+    doc_search_binary_test.go:131: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d4.MZTsYq/repo/catalog-api/doc_search_binary_test.go:131
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 0
+        	Test:       	TestD4_FullTextSearchOverExtractedDocuments_RealBinary
+        	Messages:   	markdown content must be searchable
+    doc_search_binary_test.go:132: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d4.MZTsYq/repo/catalog-api/doc_search_binary_test.go:132
+        	Error:      	Not equal: 
+        	            	expected: []string{"readme.md"}
+        	            	actual  : []string{}
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1,3 +1,2 @@
+        	            	-([]string) (len=1) {
+        	            	- (string) (len=9) "readme.md"
+        	            	+([]string) {
+        	            	 }
+        	Test:       	TestD4_FullTextSearchOverExtractedDocuments_RealBinary
+    doc_search_binary_test.go:134: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d4.MZTsYq/repo/catalog-api/doc_search_binary_test.go:134
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 0
+        	Test:       	TestD4_FullTextSearchOverExtractedDocuments_RealBinary
+        	Messages:   	PDF text must be searchable
+    doc_search_binary_test.go:135: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d4.MZTsYq/repo/catalog-api/doc_search_binary_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: []string{"report.pdf"}
+        	            	actual  : []string{}
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1,3 +1,2 @@
+        	            	-([]string) (len=1) {
+        	            	- (string) (len=10) "report.pdf"
+        	            	+([]string) {
+        	            	 }
+        	Test:       	TestD4_FullTextSearchOverExtractedDocuments_RealBinary
+    doc_search_binary_test.go:151: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d4.MZTsYq/repo/catalog-api/doc_search_binary_test.go:151
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 0
+        	Test:       	TestD4_FullTextSearchOverExtractedDocuments_RealBinary
+        	Messages:   	changed content re-indexed
+FAIL
+FAIL	catalogizer	70.477s
+FAIL

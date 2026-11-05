@@ -31,7 +31,7 @@ func NewSearchHandler(fileRepo *repository.FileRepository) *SearchHandler {
 // @Tags search
 // @Accept json
 // @Produce json
-// @Param q query string false "Search query (searches in filename and path)"
+// @Param q query string false "Search query (substring match on filename, path, and the extracted text of pdf, txt and md files of local storage roots)"
 // @Param path query string false "Path filter (partial match)"
 // @Param name query string false "Name filter (partial match)"
 // @Param extension query string false "File extension filter (exact match)"

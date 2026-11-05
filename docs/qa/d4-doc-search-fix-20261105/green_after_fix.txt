@@ -1,0 +1,13 @@
+=== RUN   TestD4_FullTextSearchOverExtractedDocuments_RealBinary
+--- PASS: TestD4_FullTextSearchOverExtractedDocuments_RealBinary (11.38s)
+PASS
+ok  	catalogizer	11.408s
+=== RUN   TestDocumentTextIndexer_TxtMdPdfAndSkips
+--- PASS: TestDocumentTextIndexer_TxtMdPdfAndSkips (0.29s)
+=== RUN   TestDocumentTextIndexer_RefusesSymlinkEscapeAndRemoteRoots
+--- PASS: TestDocumentTextIndexer_RefusesSymlinkEscapeAndRemoteRoots (0.06s)
+=== RUN   TestDocumentTextIndexer_DeletedFilesNotIndexed
+--- PASS: TestDocumentTextIndexer_DeletedFilesNotIndexed (0.02s)
+PASS
+ok  	catalogizer/services	0.403s
+ok  	catalogizer/database	24.009s

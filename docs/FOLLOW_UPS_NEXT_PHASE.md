@@ -1325,3 +1325,23 @@ Status: PROVISIONAL-DONE (§11.4.290). Reproduced first on a real generated medi
 - D9-F1 [source-defect, minor, open]: LockAccount (admin /users/:id/lock and auto-lock after failed logins) is not covered by the last-admin guard; a brute-force attacker can temporarily lock the only admin. Add a guarded LockAccount (409 when target is last usable admin).
 - D9-F2 [process-doc, minor, open]: PostgreSQL branch of the last-admin guard (tx + pg_advisory_xact_lock) UNCONFIRMED; needs a live PostgreSQL concurrency run.
 - D9-F3 [nit, open]: refused last-admin write has already revoked the target's sessions (fail closed); revisit ordering.
+
+## D4 document full-text search (CAT-D4, PROVISIONAL-DONE until a live rerun on stack 3)
+
+Reproduced first (RED, `docs/qa/d4-doc-search-fix-20261105/red_before_fix.txt`): on the real server binary with a real local corpus, `GET /search/files?q=` found a file by name (control needle) but returned 0 for words inside a `.txt`, `.md` and `.pdf` (root cause: `applySearchFilters` matched only `f.name` and `f.path`; no step ever extracted document text into the database). Fix: migration v26 `file_text_index`; `services.DocumentTextIndexer` (txt/md bounded read, pdf through the isolated CAT-002 extractor) run in the background after each completed scan via `UniversalScanner.SetPostScanIndexer`; `q` also matches the extracted text. Verification: `doc_search_binary_test.go` (real binary) + `services/document_text_indexer_test.go`; 8 mutations killed (`mutations.txt`).
+Open items:
+- D4-1: only `local` storage roots are indexed; smb/ftp/nfs/webdav roots need a client-based fetch to a temp file before extraction.
+- D4-2: only pdf, txt, md. docx/odt/epub/html and OCR for scanned PDFs are not indexed (no tool in the image).
+- D4-3: matching is a `LIKE '%q%'` substring over the whole text (no ranking, no stemming, ASCII-only case folding in SQLite, no snippets); an FTS5/tsvector index is the scalable replacement. Scan cost grows linearly with stored text (cap 2 MiB per file).
+- D4-4: the indexer runs only after a scan; there is no on-demand re-index API and no backfill for files scanned before this change until the next scan of the root. Extraction failures are recorded as `status=failed` (no text) and retried only when size or modified time changes.
+- D4-5: Postgres: migration v26 and the dialect upsert are written for both dialects but only SQLite was run live here.
+- D4-6: live rerun on stack 3 with the D4 fixtures (`ZEBRA-4242`, `OKAPI-1357`) is owed; until then the item is PROVISIONAL-DONE, not VERIFIED-DONE.
+- D4-7 (F7): the content match is an unindexed `LIKE '%q%'` over up to 2 MiB per document, evaluated for every file row; scale threshold to revisit: roughly 10k indexed documents or search p95 above 500 ms, then FTS5/tsvector.
+- D4-8 (F8): LIKE wildcards (`%`, `_`) in `q` are not escaped (pre-existing for name/path, now also for content); nit.
+- D4-9 (F10): Postgres `LIKE` is case-sensitive while SQLite folds ASCII case, so the same query can match differently per dialect; use ILIKE/lower() when the FTS work lands.
+- D4-10 (F6 residual): file reads go through one verified descriptor; the PDF child reopens that same inode via `/proc/<pid>/fd/N`, so a path swap after the open cannot redirect it. Not covered: a Linux-only `/proc` dependency (the indexer fails closed with status failed elsewhere).
+- D4-11 (F4/F5): fixed (F4 logs a tool-absent skip of the PDF leg; F5 does not persist missing-tool or cancelled runs as failed). Open: a `failed` row from a corrupt file is retried only when size or mtime changes.
+- Migration number: file_text_index is migration v26 (v25 is reserved for conversion_jobs.warning on fix-d11-d7).
+- D4-12 (round 2): the indexer holds at most one PDF reader slot globally (docIndexerGate), so interactive readers keep one of the two slots; the pure-Go child divisor in pdfChildLimits counts the indexer's slot. A per-file timeout is recorded failed and retried only on size/mtime change.
+- D4-13 (R3-2, minor): a per-file timeout caused by host load is stored as failed and the file is skipped until its size/mtime changes; wanted: scheduled retry of failed rows or a capability-change recheck (under D4-4).
+- D4-14 (R3-3, nit): a pass that ends with a DB error while a coalesced request is pending drops that request (`again` needs e==nil); the next scan covers it.

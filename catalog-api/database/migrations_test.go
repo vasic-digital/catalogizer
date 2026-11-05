@@ -271,20 +271,18 @@ func TestMigrationSequence_AllVersionsApplied(t *testing.T) {
 	err := db.RunMigrations(ctx)
 	require.NoError(t, err)
 
-	// Verify all 24 migrations were recorded
-	// (v17 adds image_quality_assessments; v18 adds media_items.is_favorite + updated_at;
-	//  v19 adds share_identity_bindings; v20 adds external_metadata unique index;
-	//  v21 adds storage_roots.allow_empty; v22 adds the runtime tables behind
-	//  system_configuration, wizard_*, log_entries, favorite_shares, ...;
-	//  v23 adds the smart collection/playlist columns; v24 adds subtitle_tracks.uploaded_by).
-	const latestVersion = 24
-	var count int
-	err = db.QueryRowContext(ctx, "SELECT COUNT(*) FROM migrations").Scan(&count)
+	// v25 is reserved for the conversion_jobs.warning migration (branch fix-d11-d7); v26 adds
+	// file_text_index (D4). Until both branches are merged this tree has 25 rows (1..24, 26).
+	const latestVersion = 26
+	var maxV int
+	err = db.QueryRowContext(ctx, "SELECT MAX(version) FROM migrations").Scan(&maxV)
 	assert.NoError(t, err)
-	assert.Equal(t, latestVersion, count)
+	assert.Equal(t, latestVersion, maxV)
 
-	// Verify each version exists
 	for v := 1; v <= latestVersion; v++ {
+		if v == 25 {
+			continue // owned by the conversion warning migration, absent on this branch
+		}
 		var exists int
 		err := db.QueryRowContext(ctx, "SELECT COUNT(*) FROM migrations WHERE version = ?", v).Scan(&exists)
 		assert.NoError(t, err)

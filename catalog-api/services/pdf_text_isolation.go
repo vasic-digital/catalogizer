@@ -30,7 +30,7 @@ const (
 	// pdfConcurrentSlots is the number of conversions the service runs at once (semaphore of 3 in
 	// ConversionService). The per-tool address-space limit is sized for these slots PLUS the
 	// PDFReaderSlots reader requests, so all poppler children together stay within half of
-	// MemAvailable (pdfToolLimits). The pure-Go child (pdfChildLimits) runs only in conversions.
+	// MemAvailable (pdfToolLimits). The pure-Go child (pdfChildLimits) runs in conversions and, as fallback or alone, in the document indexer (docIndexerSlots, counted in its divisor).
 	pdfConcurrentSlots = 3
 	// Poppler tools: address-space (RLIMIT_AS) ceiling and floor per child (bytes). poppler is C++
 	// and reserves little virtual memory, so RLIMIT_AS bounds it well (measured by the review: it
@@ -139,7 +139,7 @@ func pdfToolLimits(ceiling uint64) pdfLimits {
 func pdfChildLimits() pdfLimits {
 	d := uint64(pdfChildMinData)
 	if avail, ok := memAvailable(); ok {
-		d = avail / (2 * pdfConcurrentSlots)
+		d = avail / (2 * (pdfConcurrentSlots + docIndexerSlots)) // + the indexer's one child (R2-4)
 		if d > pdfChildMaxData {
 			d = pdfChildMaxData
 		}

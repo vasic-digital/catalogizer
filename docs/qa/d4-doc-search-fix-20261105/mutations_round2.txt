@@ -1,0 +1,7 @@
+R21_blocking_waiter_no_gate => ok  	catalogizer/services	1.164s 
+R21_gate_cap2 => --- FAIL: TestDocumentTextIndexer_DoesNotStarveInteractiveReaders (0.32s) FAIL 
+NM2_child_gets_resolved_path => --- FAIL: TestDocumentTextIndexer_ChildGetsVerifiedFdPath (0.03s) FAIL 
+NM3_again_always_true => --- FAIL: TestDocumentTextIndexer_CoalescedRequestRunsAgain (0.02s) FAIL 
+R25_timeout_environmental => --- FAIL: TestDocumentTextIndexer_PerFileTimeoutRecordedFailed (0.03s) FAIL 
+RM5_no_limitreader => --- FAIL: TestReadPlainCapped_BoundsBytesRead (0.06s) FAIL 
+R21_no_global_gate => --- FAIL: TestDocumentTextIndexer_DoesNotStarveInteractiveReaders (0.32s) FAIL 

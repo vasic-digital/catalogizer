@@ -436,9 +436,10 @@ func (r *FileRepository) applySearchFilters(baseQuery string, args []interface{}
 	}
 
 	if filter.Query != "" {
-		baseQuery += " AND (f.name LIKE ? OR f.path LIKE ?)"
+		// name, path, or the text extracted from the document by the post-scan indexer (D4)
+		baseQuery += " AND (f.name LIKE ? OR f.path LIKE ? OR EXISTS (SELECT 1 FROM file_text_index fti WHERE fti.file_id = f.id AND fti.content LIKE ?))"
 		searchPattern := "%" + filter.Query + "%"
-		args = append(args, searchPattern, searchPattern)
+		args = append(args, searchPattern, searchPattern, searchPattern)
 	}
 
 	if filter.Path != "" {
