@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// createFileTextIndex (migration v25) adds file_text_index: the text extracted from document files
+// createFileTextIndex (migration v26) adds file_text_index: the text extracted from document files
 // (pdf, txt, md) by the post-scan indexer, so that GET /search/files?q= finds words inside the
 // documents and not only file names and paths (D4 of docs/qa/live-conv-docs-subs-r1-20261104.md).
 // source_size and source_modified record the files row the text was extracted from, so a changed

@@ -34,6 +34,8 @@ type UniversalScanner struct {
 	maxConcurrentScans int
 	scanSem            *scancontrol.Semaphore
 	stopCh             chan struct{}
+	stopCtx            context.Context
+	stopCancel         context.CancelFunc
 	wg                 sync.WaitGroup
 	protocolScannersMu sync.RWMutex
 	protocolScanners   map[string]ProtocolScanner
@@ -107,6 +109,7 @@ func NewUniversalScanner(db *database.DB, logger *zap.Logger, renameTracker *Uni
 		concurrency = scannerConcurrency[0]
 	}
 
+	stopCtx, stopCancel := context.WithCancel(context.Background())
 	scanner := &UniversalScanner{
 		db:                 db,
 		logger:             logger,
@@ -117,6 +120,8 @@ func NewUniversalScanner(db *database.DB, logger *zap.Logger, renameTracker *Uni
 		maxConcurrentScans: concurrency,
 		scanSem:            scancontrol.NewSemaphore(concurrency),
 		stopCh:             make(chan struct{}),
+		stopCtx:            stopCtx,
+		stopCancel:         stopCancel,
 		protocolScanners:   make(map[string]ProtocolScanner),
 		activeScans:        make(map[string]*ScanStatus),
 	}
@@ -213,6 +218,7 @@ func (s *UniversalScanner) Start() error {
 func (s *UniversalScanner) Stop() {
 	s.logger.Info("Stopping universal scanner service")
 	close(s.stopCh)
+	s.stopCancel() // cancels a running post-scan indexer so Stop() does not wait for it (F2)
 	s.wg.Wait()
 	s.logger.Info("Universal scanner service stopped")
 }
@@ -413,22 +419,7 @@ func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
 		zap.Int64("files_processed", snapshot.FilesProcessed),
 		zap.Duration("duration", time.Since(snapshot.StartTime)))
 
-	// Post-scan document text indexing (D4): makes extracted document text searchable
-	if s.postScanIndexer != nil {
-		s.wg.Add(1)
-		go func() {
-			defer s.wg.Done()
-			ictx := job.Context
-			if ictx == nil {
-				ictx = context.Background()
-			}
-			if err := s.postScanIndexer(ictx, int64(job.StorageRoot.ID)); err != nil {
-				s.logger.Error("Post-scan document text indexing failed",
-					zap.String("job_id", job.ID),
-					errField(err, status.secrets))
-			}
-		}()
-	}
+	s.startPostScanIndexer(job.ID, int64(job.StorageRoot.ID), status.secrets)
 
 	// Run post-scan aggregation to create media entities from scanned files
 	if s.aggregationService != nil {
@@ -1080,3 +1071,20 @@ func classifyFileType(ext string) string {
 // ConfineScanPath confines a requested scan path to the storage root (filesystem.ConfineKeepForm): "" stays "" (the root), a relative path
 // stays relative, a rooted path stays rooted.
 func ConfineScanPath(p string) string { return filesystem.ConfineKeepForm(p) }
+
+// startPostScanIndexer runs the registered document text indexer (D4) in the background. Its context is
+// cancelled by Stop(), so shutdown never waits for a long indexing pass (F2).
+func (s *UniversalScanner) startPostScanIndexer(jobID string, rootID int64, secrets []string) {
+	if s.postScanIndexer == nil {
+		return
+	}
+	s.wg.Add(1)
+	go func() {
+		defer s.wg.Done()
+		if err := s.postScanIndexer(s.stopCtx, rootID); err != nil && s.stopCtx.Err() == nil {
+			s.logger.Error("Post-scan document text indexing failed",
+				zap.String("job_id", jobID),
+				errField(err, secrets))
+		}
+	}()
+}

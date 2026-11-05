@@ -1,0 +1,15 @@
+RM1_no_regular_check => FAIL	catalogizer/services [build failed] FAIL 
+RM2_no_stored_cap => --- FAIL: TestDocumentTextIndexer_PlainTextReadCap (0.06s) FAIL 
+RM3_no_mtime_check => --- FAIL: TestDocumentTextIndexer_MtimeOnlyChangeReindexes (0.03s) FAIL 
+RM4_no_page_cap => --- FAIL: TestDocumentTextIndexer_PDFPageCap (0.03s) FAIL 
+RM5_no_limitreader => ok  	catalogizer/services	0.699s 
+F1_no_single_flight => --- FAIL: TestDocumentTextIndexer_SingleFlightPerRoot (0.17s) FAIL 
+F1_no_shared_slot => --- FAIL: TestDocumentTextIndexer_UsesSharedPDFSlot (0.04s) FAIL 
+F5_persist_env_failure => --- FAIL: TestDocumentTextIndexer_EnvironmentFailureNotPersisted (0.02s) FAIL 
+F6_no_fd_reverify => FAIL	catalogizer/services [build failed] FAIL 
+F2_stop_no_cancel => --- FAIL: TestPostScanIndexer_StopCancelsRunningIndexer (5.00s) FAIL 
+RM1_no_regular_check => FAIL	catalogizer/services [build failed] FAIL 
+RM5_no_limitreader => FAIL	catalogizer/services	1109.354s FAIL 
+F6_no_fd_reverify => FAIL	catalogizer/services [build failed] FAIL 
+RM1_no_regular_check => --- FAIL: TestDocumentTextIndexer_NonRegularFileDoesNotBlock (0.03s) FAIL 
+F6_no_fd_reverify => --- FAIL: TestDocumentTextIndexer_RefusesSymlinkEscapeAndRemoteRoots (0.04s) --- FAIL: TestDocumentTextIndexer_ParentSymlinkSwapEscape (0.02s) 

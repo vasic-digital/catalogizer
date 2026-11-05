@@ -7,10 +7,12 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
-	"unicode/utf8"
 
 	"catalogizer/database"
 )
@@ -39,16 +41,53 @@ const (
 type DocumentTextIndexer struct {
 	db        *database.DB
 	extractor pdfTextExtractor
+
+	// single-flight per storage root: repeated scans coalesce into one running indexer plus one
+	// follow-up pass (F1), so indexers never stack up.
+	mu      sync.Mutex
+	running map[int64]bool
+	pending map[int64]bool
 }
 
 // NewDocumentTextIndexer returns an indexer that uses the production isolated PDF extractor.
 func NewDocumentTextIndexer(db *database.DB) *DocumentTextIndexer {
-	return &DocumentTextIndexer{db: db, extractor: defaultPDFTextExtractor()}
+	return &DocumentTextIndexer{db: db, extractor: defaultPDFTextExtractor(), running: map[int64]bool{}, pending: map[int64]bool{}}
 }
 
 // IndexStorageRoot indexes every new or changed document of the root. It returns how many
 // documents were indexed and how many failed. A root that is not local is not indexed (0, 0, nil).
 func (x *DocumentTextIndexer) IndexStorageRoot(ctx context.Context, rootID int64) (indexed, failed int, err error) {
+	x.mu.Lock()
+	if x.running[rootID] {
+		x.pending[rootID] = true // the running pass will run once more; this call coalesces into it
+		x.mu.Unlock()
+		return 0, 0, nil
+	}
+	x.running[rootID] = true
+	x.mu.Unlock()
+	defer func() {
+		x.mu.Lock()
+		delete(x.running, rootID)
+		delete(x.pending, rootID)
+		x.mu.Unlock()
+	}()
+	for {
+		i, f, e := x.indexOnce(ctx, rootID)
+		indexed, failed = indexed+i, failed+f
+		if e != nil {
+			return indexed, failed, e
+		}
+		x.mu.Lock()
+		again := x.pending[rootID]
+		delete(x.pending, rootID)
+		x.mu.Unlock()
+		if !again || ctx.Err() != nil {
+			return indexed, failed, nil
+		}
+	}
+}
+
+func (x *DocumentTextIndexer) indexOnce(ctx context.Context, rootID int64) (indexed, failed int, err error) {
 	var protocol string
 	var rootPath sql.NullString
 	if err = x.db.QueryRowContext(ctx, `SELECT protocol, path FROM storage_roots WHERE id = ?`, rootID).Scan(&protocol, &rootPath); err != nil {
@@ -95,6 +134,11 @@ func (x *DocumentTextIndexer) IndexStorageRoot(ctx context.Context, rootID int64
 		}
 		text, xerr := x.extract(ctx, rootPath.String, d.path, d.ext)
 		status := "ok"
+		if xerr != nil && (isEnvironmentalErr(xerr) || ctx.Err() != nil) {
+			// F5: a missing tool or a cancelled run says nothing about the file; do not persist it as failed.
+			failed++
+			continue
+		}
 		if xerr != nil {
 			status, text = "failed", ""
 			failed++
@@ -111,59 +155,90 @@ func (x *DocumentTextIndexer) IndexStorageRoot(ctx context.Context, rootID int64
 	return indexed, failed, nil
 }
 
-// resolveInRoot maps a catalog path to a regular file inside the root, refusing a path that
-// escapes the root (lexically or through a symlink).
-func resolveInRoot(root, rel string) (string, error) {
+// isEnvironmentalErr reports errors caused by the host (missing tool, cancellation), not by the file.
+func isEnvironmentalErr(err error) bool {
+	return errors.Is(err, errPrlimitMissing) || errors.Is(err, exec.ErrNotFound) ||
+		errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)
+}
+
+// openInRoot opens a regular file inside the root through ONE handle and verifies, on that handle,
+// that it is inside the root and regular (F6: no check-then-use window; a parent swapped for a
+// symlink before the open is caught by the /proc/self/fd re-verification). The final component is
+// opened O_NOFOLLOW|O_NONBLOCK so a FIFO or device cannot block the open.
+func openInRoot(root, rel string) (*os.File, error) {
 	rootAbs, err := filepath.EvalSymlinks(root)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	full := filepath.Join(rootAbs, filepath.FromSlash(strings.TrimLeft(rel, "/")))
-	resolved, err := filepath.EvalSymlinks(full)
-	if err != nil {
-		return "", err
+	if lb, err := filepath.Rel(rootAbs, full); err != nil || lb == ".." || strings.HasPrefix(lb, ".."+string(filepath.Separator)) {
+		return nil, errors.New("path escapes the storage root")
 	}
-	back, err := filepath.Rel(rootAbs, resolved)
+	// the leaf is opened without following a symlink; a symlinked leaf is resolved once, lexically
+	// checked below, and then opened by its resolved path.
+	target := full
+	if resolved, err := filepath.EvalSymlinks(full); err == nil {
+		target = resolved
+	} else {
+		return nil, err
+	}
+	f, err := os.OpenFile(target, os.O_RDONLY|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0)
+	if err != nil {
+		return nil, err
+	}
+	ok := false
+	defer func() {
+		if !ok {
+			f.Close()
+		}
+	}()
+	// re-verify on the opened handle: where does the fd really point?
+	real, err := os.Readlink(fmt.Sprintf("/proc/self/fd/%d", f.Fd()))
+	if err != nil {
+		return nil, err
+	}
+	back, err := filepath.Rel(rootAbs, real)
 	if err != nil || back == ".." || strings.HasPrefix(back, ".."+string(filepath.Separator)) {
-		return "", errors.New("path escapes the storage root")
+		return nil, errors.New("path escapes the storage root")
 	}
-	st, err := os.Stat(resolved)
+	st, err := f.Stat()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if !st.Mode().IsRegular() {
-		return "", errors.New("not a regular file")
+		return nil, errors.New("not a regular file")
 	}
-	return resolved, nil
+	ok = true
+	return f, nil
 }
 
 func (x *DocumentTextIndexer) extract(ctx context.Context, root, rel, ext string) (string, error) {
-	path, err := resolveInRoot(root, rel)
+	f, err := openInRoot(root, rel)
 	if err != nil {
 		return "", err
 	}
+	defer f.Close()
 	switch ext {
 	case "txt", "md":
-		f, err := os.Open(path)
-		if err != nil {
-			return "", err
-		}
-		defer f.Close()
-		b, err := io.ReadAll(io.LimitReader(f, docIndexMaxPlainBytes))
-		if err != nil {
-			return "", err
-		}
-		return clampText(string(b)), nil
+		return readPlainCapped(f)
 	case "pdf":
-		st, err := os.Stat(path)
+		st, err := f.Stat()
 		if err != nil {
 			return "", err
 		}
 		if st.Size() > docIndexMaxPDFBytes {
 			return "", errors.New("pdf too large to index")
 		}
+		// PDF extraction shares the reader slot budget (F1): the slot is counted in pdfToolLimits.
+		release, err := acquirePDFReaderSlotWait(ctx)
+		if err != nil {
+			return "", err
+		}
+		defer release()
 		pctx, cancel := context.WithTimeout(ctx, pdfTextTimeout)
 		defer cancel()
+		// the child reopens the SAME inode through the already verified descriptor (F6).
+		path := fmt.Sprintf("/proc/%d/fd/%d", os.Getpid(), f.Fd())
 		n, err := x.extractor.NumPages(pctx, path)
 		if err != nil {
 			return "", err
@@ -183,14 +258,31 @@ func (x *DocumentTextIndexer) extract(ctx context.Context, root, rel, ext string
 	return "", fmt.Errorf("unsupported extension %q", ext)
 }
 
+// acquirePDFReaderSlotWait blocks (bounded by ctx) for a reader slot of the shared PDF budget.
+func acquirePDFReaderSlotWait(ctx context.Context) (func(), error) {
+	select {
+	case pdfReaderSem <- struct{}{}:
+		var once sync.Once
+		return func() { once.Do(func() { <-pdfReaderSem }) }, nil
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+}
+
 // clampText bounds the stored text and makes it valid UTF-8 without NUL bytes.
 func clampText(s string) string {
 	if len(s) > docIndexMaxStoredBytes {
 		s = s[:docIndexMaxStoredBytes]
 	}
 	s = strings.ToValidUTF8(s, "")
-	if !utf8.ValidString(s) {
-		s = ""
-	}
 	return strings.ReplaceAll(s, "\x00", "")
+}
+
+// readPlainCapped reads at most docIndexMaxPlainBytes from r and returns the clamped text.
+func readPlainCapped(r io.Reader) (string, error) {
+	b, err := io.ReadAll(io.LimitReader(r, docIndexMaxPlainBytes))
+	if err != nil {
+		return "", err
+	}
+	return clampText(string(b)), nil
 }
