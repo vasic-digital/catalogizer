@@ -1372,3 +1372,13 @@ Registered, NOT code:
 - D11-R2-3 [test-instrumentation, nit, open]: no test covers the readlink-failure branch of descriptorInsideRoot (fails closed today).
 - D11-R2-4 [process-doc, nit, open]: on Linux without /proc mounted every sidecar is refused (only trace: Skipped count in the Info summary); add to honest limits.
 - D11-R2-5 [source-defect, nit, open]: sidecarAfterCheck test seam is a mutable package global; pass as option/parameter.
+
+## Live verification of stack 3 (2026-11-05, main d9238b47) - evidence docs/qa/stack3-rebuild-live-20261105/
+
+54 PASS / 0 FAIL / 1 SKIP per round, 3 identical rounds; Yandex WebDAV and Synology SMB/FTP read-only suites 3/3. Promoted to VERIFIED-DONE on this evidence: D1, D2, D3, D4, D5 (measured on speech-like media), D6, D7, D8, D9, D10, D11a, D11b, subtitle DELETE route, storage-client live suites (SMB/FTP/WebDAV).
+Still open:
+- LV3-1: cross-user conversion-job isolation for a non-privileged user is a SKIP (registered plain users get 403 on every conversion route; no API grants the permission). Second admin sees other users' jobs (by design, FU-1).
+- LV3-2: storage-client idle-deadline and cut-recovery scenarios not run against real Synology (loopback/unit only); Synology NFS skipped topology_unsupported (no exports).
+- LV3-3: D5 on the stock corpus returns `undetermined` (continuous tone, no silences) - add a bursty-audio fixture to gen_media_fixtures.sh.
+- LV3-4: stack-3 DB still lists removed fixture rows (rescan does not delete rows for removed files).
+- LV3-5: multi-process last-admin race on PostgreSQL not exercised (D9-F2).
