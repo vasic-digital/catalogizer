@@ -25,6 +25,17 @@ type CollectionHandler struct {
 	// isAdmin decides, from the database, whether a user is an administrator.
 	// Without it the role_id claim in the request context is used.
 	isAdmin func(ctx context.Context, userID int) (bool, error)
+	// smartCreateMu: one mutex per owner id, serialising the smart-collection cap check with the insert.
+	// Entries are never pruned; the map is bounded by the number of users.
+	smartCreateMu sync.Map // int64 -> *sync.Mutex
+}
+
+// lockSmartCreate takes the per-owner create lock and returns its release function.
+func (h *CollectionHandler) lockSmartCreate(uid int64) func() {
+	m, _ := h.smartCreateMu.LoadOrStore(uid, &sync.Mutex{})
+	mu := m.(*sync.Mutex)
+	mu.Lock()
+	return mu.Unlock
 }
 
 // WithAdminChecker installs the live admin check (production wires UserRepository.IsAdmin).
@@ -403,6 +414,16 @@ func (h *CollectionHandler) CreateCollection(c *gin.Context) {
 		if !ok {
 			return
 		}
+		// run the rules once, OUTSIDE the lock (slow, independent of the count)
+		total, ok := h.verifyRules(c, rs, uid)
+		if !ok {
+			return
+		}
+		// SECQ-4b: count and insert must be one atomic step per owner, or concurrent creates from cap-1 all pass the
+		// check. The lock is held through the insert below (defer). CAVEAT: in-process only; several server instances
+		// sharing one database (or PostgreSQL behind a load balancer) still need a DB-level guarantee.
+		unlock := h.lockSmartCreate(uid)
+		defer unlock()
 		n, err := h.repo.CountSmartByOwner(ctx, uid)
 		if err != nil {
 			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to create collection", err)
@@ -411,10 +432,6 @@ func (h *CollectionHandler) CreateCollection(c *gin.Context) {
 		if n >= MaxSmartCollectionsPerUser {
 			utils.SendErrorResponse(c, http.StatusConflict,
 				fmt.Sprintf("smart collection limit reached (max %d per user)", MaxSmartCollectionsPerUser), nil)
-			return
-		}
-		total, ok := h.verifyRules(c, rs, uid)
-		if !ok {
 			return
 		}
 		coll.IsSmart = true
