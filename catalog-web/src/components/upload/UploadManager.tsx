@@ -243,7 +243,7 @@ export const UploadManager: React.FC<UploadManagerProps> = ({
               {uploadQueue.map(item => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
                 >
                   {getStatusIcon(item.status)}
                   <div className="flex-1 min-w-0">
