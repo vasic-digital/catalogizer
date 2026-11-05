@@ -31,8 +31,8 @@ vi.mock('@/lib/mediaApi', () => ({
       return Promise.reject(failure.err)
     }),
     getEntityChildren: vi.fn().mockResolvedValue({ items: [], total: 0 }),
-    getEntityFiles: vi.fn().mockRejectedValue(failure.err),
-    getEntityDuplicates: vi.fn().mockRejectedValue(failure.err),
+    getEntityFiles: vi.fn(() => Promise.reject(failure.err)),
+    getEntityDuplicates: vi.fn(() => Promise.reject(failure.err)),
     refreshEntityMetadata: vi.fn(),
     updateUserMetadata: vi.fn(),
   },
@@ -91,5 +91,28 @@ describe('EntityDetail terminal error states', () => {
     expect(alert).toHaveTextContent(/failed to load/i)
     expect(screen.queryByText('Entity not found')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument()
+  })
+
+  it.each(['abc', '0', '-5'])('shows not-found for invalid id %s without any request', async (bad) => {
+    failure.err = notFound
+    renderPage(bad)
+    expect(await screen.findByText('Entity not found', {}, { timeout: 1000 })).toBeInTheDocument()
+    expect(screen.queryByTestId('entity-loading')).not.toBeInTheDocument()
+    expect(calls.getEntity).toBe(0)
+  })
+
+  it.each([400, 403])('does not retry a %i (all 4xx are terminal)', async (status) => {
+    failure.err = { response: { status, data: { success: false, error: 'x' } } }
+    renderPage()
+    await screen.findByText(/not found|access|invalid/i, {}, { timeout: 1000 })
+    await new Promise((r) => setTimeout(r, 300))
+    expect(calls.getEntity).toBe(1)
+  })
+
+  it('shows a distinct access-denied message for 401/403', async () => {
+    failure.err = { response: { status: 403, data: { success: false, error: 'forbidden' } } }
+    renderPage()
+    expect(await screen.findByText(/do not have access/i, {}, { timeout: 1000 })).toBeInTheDocument()
+    expect(screen.queryByText('Entity not found')).not.toBeInTheDocument()
   })
 })

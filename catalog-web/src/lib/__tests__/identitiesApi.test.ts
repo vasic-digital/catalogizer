@@ -45,8 +45,8 @@ describe('identitiesApi', () => {
     it('lists identities from GET /smb/identities (never the non-existent /identities)', async () => {
       mockApi.get.mockResolvedValue({
         data: [
-          { index: 1, kind: 'credentials', username: 'nas-admin', label: 'nas-admin' },
-          { index: 2, kind: 'credentials', username: 'media', label: 'media' },
+          { index: 1, kind: 'credentials', username: 'nas-admin', label: 'nas-admin (SMB)' },
+          { index: 2, kind: 'guest', username: '', label: 'guest' },
         ],
       })
 
@@ -55,8 +55,8 @@ describe('identitiesApi', () => {
       expect(mockApi.get).toHaveBeenCalledTimes(1)
       expect(mockApi.get).toHaveBeenCalledWith('/smb/identities')
       expect(result).toEqual([
-        expect.objectContaining({ id: 1, name: 'nas-admin', type: 'credentials', username: 'nas-admin', secret_ref: null, enabled: true }),
-        expect.objectContaining({ id: 2, name: 'media', type: 'credentials', username: 'media', secret_ref: null, enabled: true }),
+        expect.objectContaining({ id: 1, name: 'nas-admin (SMB)', type: 'credentials', username: 'nas-admin', secret_ref: null, enabled: true }),
+        expect.objectContaining({ id: 2, name: 'guest', type: 'anonymous', username: null, secret_ref: null, enabled: true }),
       ])
       expect(JSON.stringify(result)).not.toMatch(/password|secret":"/i)
     })

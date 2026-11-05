@@ -95,7 +95,8 @@ export function EntityDetail() {
     },
   })
 
-  if (isLoading) {
+  // v4: a disabled query (invalid id) reports isLoading, so gate on a valid id.
+  if (isLoading && entityId > 0) {
     return (
       <div className="flex items-center justify-center min-h-[400px]" data-testid="entity-loading">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
@@ -115,9 +116,12 @@ export function EntityDetail() {
   }
 
   if (!entity) {
+    const denied = errorStatus === 401 || errorStatus === 403
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 dark:text-gray-400">Entity not found</p>
+        <p className="text-gray-500 dark:text-gray-400">
+          {denied ? 'You do not have access to this item' : 'Entity not found'}
+        </p>
         <Button variant="outline" className="mt-4" onClick={() => navigate('/browse')}>
           Back to Browse
         </Button>

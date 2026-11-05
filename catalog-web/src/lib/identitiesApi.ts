@@ -53,7 +53,7 @@ export const identitiesApi = {
         (i): Identity => ({
           id: i.index,
           name: i.label,
-          type: 'credentials',
+          type: i.kind === 'guest' ? 'anonymous' : 'credentials',
           username: i.username || null,
           secret_ref: null,
           domain: null,
