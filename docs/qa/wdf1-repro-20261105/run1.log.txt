@@ -1,0 +1,21 @@
+Running as unit: run-p1655419-i131609117.scope; invocation ID: fc7373de98564708b2771f82e4fcee67
+=== RUN   TestLiveYandexWDF1Probe
+    live_webdav_wdf1_probe_test.go:127: f000.bin size=1024 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f001.bin size=65536 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f002.bin size=524288 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f003.bin size=2097152 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f004.bin size=1024 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f005.bin size=65536 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f006.bin size=524288 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f007.bin size=2097152 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f008.bin size=1024 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f009.bin size=65536 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f010.bin size=524288 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f011.bin size=2097152 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f012.bin size=1024 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f013.bin size=65536 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f014.bin size=524288 put_err=false retry= verdict=ok
+    live_webdav_wdf1_probe_test.go:127: f015.bin size=2097152 put_err=false retry= verdict=ok
+--- PASS: TestLiveYandexWDF1Probe (689.54s)
+PASS
+ok  	catalogizer/filesystem	690.080s

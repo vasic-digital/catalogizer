@@ -1,0 +1,167 @@
+{
+ "lost_acked": 0,
+ "n": 16,
+ "put_err_but_present": 0,
+ "recs": [
+  {
+   "name": "f000.bin",
+   "size": 1024,
+   "sha256": "024d5039ccc8eb8ab9fd214eced23d64fa88070e284f1f3f2ca34c403c2e9871",
+   "put_ms": 954,
+   "polls": [
+    "+0s head_err=false size=1024 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f001.bin",
+   "size": 65536,
+   "sha256": "c29f77ccc89078d5b16a4556a710933728000a8e0cd91c4c3ff8c86dbb190d11",
+   "put_ms": 4723,
+   "polls": [
+    "+0s head_err=false size=65536 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f002.bin",
+   "size": 524288,
+   "sha256": "2d71de67f343f6a5a4c361266e619b32e321ba536687be85bd8a1e80dcc420e2",
+   "put_ms": 32688,
+   "polls": [
+    "+0s head_err=false size=524288 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f003.bin",
+   "size": 2097152,
+   "sha256": "00c77bbcdb6e7f4187e3a47064140bfeb4cc61c6f5a75e7c1ae44a090c624135",
+   "put_ms": 129157,
+   "polls": [
+    "+0s head_err=false size=2097152 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f004.bin",
+   "size": 1024,
+   "sha256": "0b42724ce5b24ef43bbf64b88a7cba2fd772da337000733b5ef553b16888189e",
+   "put_ms": 681,
+   "polls": [
+    "+0s head_err=false size=1024 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f005.bin",
+   "size": 65536,
+   "sha256": "0f1167218dd1d8c8c7fe24e777a15883fea35f79131b4ef2021970c4d2643922",
+   "put_ms": 4776,
+   "polls": [
+    "+0s head_err=false size=65536 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f006.bin",
+   "size": 524288,
+   "sha256": "95e7db3c2fe625a74c78447bc3ff49a81cf1e8756383ad6239b39fdc1e1dd57e",
+   "put_ms": 32639,
+   "polls": [
+    "+0s head_err=false size=524288 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f007.bin",
+   "size": 2097152,
+   "sha256": "82021f6c75beb5648019810358a3725d74a9d715c8e92974f29187837b577084",
+   "put_ms": 130454,
+   "polls": [
+    "+0s head_err=false size=2097152 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f008.bin",
+   "size": 1024,
+   "sha256": "041312b691328e6a65193ee6e3b9c31d50ba6def360d8ef005e96ab932073edd",
+   "put_ms": 571,
+   "polls": [
+    "+0s head_err=false size=1024 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f009.bin",
+   "size": 65536,
+   "sha256": "377d563f24b330a248daf012702a8bcc5d3f58849bc6ca9d2c7aebe2733dacf6",
+   "put_ms": 4962,
+   "polls": [
+    "+0s head_err=false size=65536 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f010.bin",
+   "size": 524288,
+   "sha256": "47a297729983174b90aedc903f54581b2b069bd354dd4364e08e62f27d886ad4",
+   "put_ms": 33352,
+   "polls": [
+    "+0s head_err=false size=524288 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f011.bin",
+   "size": 2097152,
+   "sha256": "64cb0a129ea9148df5db5df3d45bc10c2e3a3a39dadbcaa74dd5db45f9265a87",
+   "put_ms": 128953,
+   "polls": [
+    "+0s head_err=false size=2097152 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f012.bin",
+   "size": 1024,
+   "sha256": "20b8bc9231bc309a79c863c3cfeb96517444a671e81b2857048acd1a48477818",
+   "put_ms": 865,
+   "polls": [
+    "+0s head_err=false size=1024 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f013.bin",
+   "size": 65536,
+   "sha256": "cbeb78ebdf837701d39f9319b21075424a426a8acbae2055749ad059cfbdb17d",
+   "put_ms": 4709,
+   "polls": [
+    "+0s head_err=false size=65536 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f014.bin",
+   "size": 524288,
+   "sha256": "996bab6f4e38428f6d91ecb17dbe3437260c7860b5c258fb20d9b32659ec3e7d",
+   "put_ms": 32809,
+   "polls": [
+    "+0s head_err=false size=524288 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f015.bin",
+   "size": 2097152,
+   "sha256": "d44a0d025af6d87a4fa31c6d3b2a81a1291f7bf6584af42eb56b4f00dbcfe16a",
+   "put_ms": 129325,
+   "polls": [
+    "+0s head_err=false size=2097152 list=true(false)"
+   ],
+   "verdict": "ok"
+  }
+ ]
+}

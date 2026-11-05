@@ -79,6 +79,10 @@ func TestWebDAVTransfer_SlowButProgressingUploadSucceeds(t *testing.T) {
 			w.WriteHeader(207)
 			return
 		}
+		if r.Method == "HEAD" { // write read-back (WD-F1 hardening)
+			w.WriteHeader(200)
+			return
+		}
 		buf := make([]byte, 1000)
 		for {
 			n, err := r.Body.Read(buf)
@@ -102,6 +106,10 @@ func TestWebDAVTransfer_SizedUploadKeepsContentLength(t *testing.T) {
 			cl, te = r.ContentLength, r.TransferEncoding
 			_, _ = io.Copy(io.Discard, r.Body)
 			w.WriteHeader(201)
+			return
+		}
+		if r.Method == "HEAD" { // write read-back (WD-F1 hardening): the file is reported present
+			w.WriteHeader(200)
 			return
 		}
 		w.WriteHeader(207)
@@ -149,6 +157,10 @@ func TestWebDAVTransfer_EmptyUploadIsSizedZeroNotChunked(t *testing.T) {
 		if r.Method == "PUT" {
 			cl, te = r.ContentLength, r.TransferEncoding
 			w.WriteHeader(201)
+			return
+		}
+		if r.Method == "HEAD" { // write read-back (WD-F1 hardening): the file is reported present
+			w.WriteHeader(200)
 			return
 		}
 		w.WriteHeader(207)

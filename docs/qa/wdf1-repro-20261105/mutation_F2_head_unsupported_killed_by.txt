@@ -1,0 +1,1 @@
+--- FAIL: TestWriteFile_Verify_HeadNotSupported_AcceptsWithoutSecondPut (0.00s)

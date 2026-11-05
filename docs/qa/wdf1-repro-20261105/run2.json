@@ -1,0 +1,457 @@
+{
+ "lost_acked": 0,
+ "n": 45,
+ "put_err_but_present": 0,
+ "recs": [
+  {
+   "name": "f000.bin",
+   "size": 512,
+   "sha256": "dc723df5bb7b6b0e79d2954e46792d9e39f953f95c306a8039b03cf71212ff1c",
+   "put_ms": 1568,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f001.bin",
+   "size": 4096,
+   "sha256": "814ef3c3748ec23600b58fb742eb247128a6e6748a133dff5521139cd71f1838",
+   "put_ms": 1719,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f002.bin",
+   "size": 16384,
+   "sha256": "5121908264c020400da60b4a001640ac288e286ce4c23deb7a78da2ac2771fe6",
+   "put_ms": 2007,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f003.bin",
+   "size": 512,
+   "sha256": "50e202b936be2d39c3d4197865e51053881ef9c73cb4af81019e1834a68422e5",
+   "put_ms": 892,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f004.bin",
+   "size": 4096,
+   "sha256": "5838921d7f5181967853a5d7fe1dc1d802ce5c31a9a9e6931cab33bb4a17b2a5",
+   "put_ms": 769,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f005.bin",
+   "size": 16384,
+   "sha256": "93f18642daefa31a0fbaf3b405f4317cf3ea8160a84790e3b75b8295f533ac00",
+   "put_ms": 1824,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f006.bin",
+   "size": 512,
+   "sha256": "8073b82d8e53dbb54c14c315e90298444edfb52a1fda177a749cfbbb53c1b2c2",
+   "put_ms": 1265,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f007.bin",
+   "size": 4096,
+   "sha256": "f47c5cb7011a957a4b04eeec1445cb4b448c374454f6c12c650c483f5249c240",
+   "put_ms": 1170,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f008.bin",
+   "size": 16384,
+   "sha256": "f83bbc2c44f4c9c0d6d950e17c0b3da9d124ab1af4b6aee90a6cfd10d5870094",
+   "put_ms": 1549,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f009.bin",
+   "size": 512,
+   "sha256": "8e43bb183fac07d48a2f05495a3be572f8d1420698538fbce204dbe966c32563",
+   "put_ms": 1002,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f010.bin",
+   "size": 4096,
+   "sha256": "996babd83cc81f8c0561c2a5e6448df87618ae0750b671de35c1911f2d85724b",
+   "put_ms": 902,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f011.bin",
+   "size": 16384,
+   "sha256": "aa5ca8a07cdf7f0d4dbd4faee278552f6b96755a658d29b9a05c8c8f7527ad65",
+   "put_ms": 1792,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f012.bin",
+   "size": 512,
+   "sha256": "f55f0fbbe2ece1a6e1368618babf79c9df6d08a3fc3d99fd287037b3b4be2fdf",
+   "put_ms": 1658,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f013.bin",
+   "size": 4096,
+   "sha256": "18800f049b9d42e3d634231dec23a330a44f3448717b6f076c2394d880dda56e",
+   "put_ms": 1021,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f014.bin",
+   "size": 16384,
+   "sha256": "1691528a1f606d7cc727b7916d1df4aa2e7d7722257c7f948d24863f22fbc6f0",
+   "put_ms": 1660,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f015.bin",
+   "size": 512,
+   "sha256": "656984f9155b5698c08e9706815911d8ba904a3273567201e9e712c199ba2e92",
+   "put_ms": 661,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f016.bin",
+   "size": 4096,
+   "sha256": "92f83828a6905a209332fd1b884bf453a3a7b6ff81f6cd9db610543a3d7108e1",
+   "put_ms": 939,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f017.bin",
+   "size": 16384,
+   "sha256": "923657b404711e2bc92a285e6af19d3df41405b888f677216984f152b12e722c",
+   "put_ms": 1853,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f018.bin",
+   "size": 512,
+   "sha256": "7a7d88a307daf56a5ded607187a20397754691db796e049ac7bf074b78ce5bf0",
+   "put_ms": 815,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f019.bin",
+   "size": 4096,
+   "sha256": "b9ae611c7ac9d3ae7c1353fe8ffb2d067a97f8837a52e197ef07581ef2f57cc0",
+   "put_ms": 897,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f020.bin",
+   "size": 16384,
+   "sha256": "c2c0d75b0e3a315964b5b5536d9d45aec8799050469a38453e6b578ad982c9b8",
+   "put_ms": 1724,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f021.bin",
+   "size": 512,
+   "sha256": "b1cc981a097bb171dfeaf84d88b93c704eedd08c955a93cb2389c09d8a423273",
+   "put_ms": 513,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f022.bin",
+   "size": 4096,
+   "sha256": "20c6a3056dd52d15a55e2099188e986e36d487807b5ac8074cb9f2d1ae554ee6",
+   "put_ms": 780,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f023.bin",
+   "size": 16384,
+   "sha256": "4f83265cd0287c178d568f0d61085f59f4163665ff79cd94ef3306cde1eefe25",
+   "put_ms": 1525,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f024.bin",
+   "size": 512,
+   "sha256": "ecb3b3691b99e3a8834cfbbadbd4a83ba1db36abe7080d98585c1fa854495d93",
+   "put_ms": 521,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f025.bin",
+   "size": 4096,
+   "sha256": "05e0df0fdb00ffd7ef635735a3f28c3d039f78553209eb17c672dd9879de156c",
+   "put_ms": 930,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f026.bin",
+   "size": 16384,
+   "sha256": "a5a421ccc5f88aaed780c49801569d1766cba5e3a32747bd5bd6209e21a7ecb5",
+   "put_ms": 1801,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f027.bin",
+   "size": 512,
+   "sha256": "527aafa63a0b7aabaa6beabcb971876ccb27d766999379a3945089b756b94c32",
+   "put_ms": 725,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f028.bin",
+   "size": 4096,
+   "sha256": "725e3ca67f526a852d92a5c284f7b91e1c9ae979268144dfbc016cdb5a0198aa",
+   "put_ms": 1547,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f029.bin",
+   "size": 16384,
+   "sha256": "63c92f26fff1322cbcd7745febd9ddf218da4047110817e83b460b1d6889638b",
+   "put_ms": 1701,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f030.bin",
+   "size": 512,
+   "sha256": "06727083b1ffcc127b765ba8a2d2108ce37377f1b4e42b57e438022832eee296",
+   "put_ms": 1388,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f031.bin",
+   "size": 4096,
+   "sha256": "4a89b1838e93e069bf042cded593946d46ac15489fa0a2f8f15ece4ef2a348a8",
+   "put_ms": 1347,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f032.bin",
+   "size": 16384,
+   "sha256": "2fe865c078088f6d4e50cbeafb12d89905581b6bf023074c57b33d60f037979e",
+   "put_ms": 1831,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f033.bin",
+   "size": 512,
+   "sha256": "6294b147bf4e3995eaec6243a1a52e5781f5c82dc3485d3ba98bc598d29499fe",
+   "put_ms": 751,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f034.bin",
+   "size": 4096,
+   "sha256": "60fe325a069a2db3ece509e0229b724b85c4ed81fc39315591e25234d738433a",
+   "put_ms": 713,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f035.bin",
+   "size": 16384,
+   "sha256": "b02ddf7afb1acdd53775229d50e9632811e19d43e7a9adc74ecc629306858988",
+   "put_ms": 2384,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f036.bin",
+   "size": 512,
+   "sha256": "afbc98892251326a766e6a28b3e0cab29e292c2712c71168c0071cb144a11d43",
+   "put_ms": 1176,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f037.bin",
+   "size": 4096,
+   "sha256": "08e1d3a4b3a0aea71541ba0df9c4ba4c2e6071a73bd0c6fd2c123e2e9b94a7f5",
+   "put_ms": 819,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f038.bin",
+   "size": 16384,
+   "sha256": "fe1c7cf146355dec71952ca70b9c2b34f98838cf98e768b06e12af76492c4b06",
+   "put_ms": 1686,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f039.bin",
+   "size": 512,
+   "sha256": "9351d3d5850c3dca2e96d9ed998cc0943e31595fa5b11b4666f109be06ca11cc",
+   "put_ms": 700,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f040.bin",
+   "size": 4096,
+   "sha256": "b8aff3399091d0cac6a547f55480c8af6db222e2c529605dd0b9232d9062faae",
+   "put_ms": 743,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f041.bin",
+   "size": 16384,
+   "sha256": "f3ac56b1d0e40976c5e0826d193069cd44e4e473dd34fef723320fb8b1336b0a",
+   "put_ms": 1654,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f042.bin",
+   "size": 512,
+   "sha256": "4a56726f46a55332aaa369997c0e13d4161910cee0887b82f698b84a86943885",
+   "put_ms": 709,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f043.bin",
+   "size": 4096,
+   "sha256": "3d9be6de7c5c51a084f76976c2ef0b6178fa0cafa223cdd7343002feaa560448",
+   "put_ms": 751,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f044.bin",
+   "size": 16384,
+   "sha256": "ba06abec03bdb318e8ce65f83083b7da81b4d422cdf4d410c0c6d6f00795eed5",
+   "put_ms": 2155,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  }
+ ]
+}
