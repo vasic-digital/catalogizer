@@ -187,9 +187,9 @@ Responses are cached for 60 seconds.
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/api/v1/smb/discover` | Discover SMB shares on the network |
-| GET | `/api/v1/smb/discover` | Discover SMB shares (GET variant) |
+| GET | `/api/v1/smb/discover` | Retired: answers 410, use POST (no credentials in URLs) |
 | POST | `/api/v1/smb/test` | Test SMB connection parameters |
-| GET | `/api/v1/smb/test` | Test SMB connection (GET variant) |
+| GET | `/api/v1/smb/test` | Retired: answers 410, use POST (no credentials in URLs) |
 | POST | `/api/v1/smb/browse` | Browse contents of an SMB share |
 
 ---

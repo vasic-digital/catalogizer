@@ -102,9 +102,9 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/stats/growth` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/stats/scans` | auth | 401 | 200 | 200 |
 | POST | `/api/v1/smb/discover` | RequireAdmin (group) | 401 | 403 | skip |
-| GET | `/api/v1/smb/discover` | RequireAdmin (group) | 401 | 403 | 400 |
+| GET | `/api/v1/smb/discover` | RequireAdmin (group) | 401 | 403 | 410 |
 | POST | `/api/v1/smb/test` | RequireAdmin (group) | 401 | 403 | skip |
-| GET | `/api/v1/smb/test` | RequireAdmin (group) | 401 | 403 | 400 |
+| GET | `/api/v1/smb/test` | RequireAdmin (group) | 401 | 403 | 410 |
 | POST | `/api/v1/smb/browse` | RequireAdmin (group) | 401 | 403 | skip |
 | GET | `/api/v1/smb/identities` | RequireAdmin (group) | 401 | 403 | 200 |
 | POST | `/api/v1/smb/probe` | RequireAdmin (group) | 401 | 403 | skip |

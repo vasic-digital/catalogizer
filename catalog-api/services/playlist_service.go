@@ -34,6 +34,9 @@ type PlaylistService struct {
 	playlistRepo *repository.PlaylistRepository
 	// smartCreateMu serialises "count this user's smart playlists, then insert one" per user (SECQ-4 / SC7): without it
 	// concurrent creates all read the same count and the user ends above MaxSmartPlaylistsPerUser.
+	// CAVEAT: the lock is IN-PROCESS only. Several server instances (or any other writer) sharing one database can still
+	// race; closing that needs a database-level guarantee (conditional insert or a unique constraint), tracked as SECQ-4.
+	// The wait is not context-aware: CreatePlaylist takes no context and the critical section is two short statements.
 	smartCreateMu sync.Map // userID (int) -> *sync.Mutex
 }
 
@@ -86,7 +89,12 @@ func (s *PlaylistService) CreatePlaylistCtx(ctx context.Context, userID int, req
 		if err != nil {
 			return nil, err
 		}
-		unlock := s.lockSmartCreate(userID) // held through the insert below
+		// run the rules once, OUTSIDE the lock (slow, and independent of the count): rules that cannot be evaluated are
+		// refused, not stored
+		if _, _, err := s.playlistRepo.EvaluateSmart(ctx, 0, rs, int64(userID), 1, 0); err != nil {
+			return nil, fmt.Errorf("smart playlist rules could not be evaluated: %w", err)
+		}
+		unlock := s.lockSmartCreate(userID) // held through the insert below; only count and insert run under it
 		defer unlock()
 		n, err := s.playlistRepo.CountSmartByUser(ctx, userID)
 		if err != nil {
@@ -94,10 +102,6 @@ func (s *PlaylistService) CreatePlaylistCtx(ctx context.Context, userID int, req
 		}
 		if n >= MaxSmartPlaylistsPerUser {
 			return nil, fmt.Errorf("%w (max %d per user)", ErrSmartLimit, MaxSmartPlaylistsPerUser)
-		}
-		// run the rules once: rules that cannot be evaluated are refused, not stored
-		if _, _, err := s.playlistRepo.EvaluateSmart(ctx, 0, rs, int64(userID), 1, 0); err != nil {
-			return nil, fmt.Errorf("smart playlist rules could not be evaluated: %w", err)
 		}
 		playlist.IsSmart = true
 		playlist.SmartRules = json.RawMessage(rs.Raw)

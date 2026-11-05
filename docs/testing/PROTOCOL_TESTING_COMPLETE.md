@@ -127,8 +127,8 @@ This document outlines the comprehensive solution implemented for real-time file
 POST /api/v1/smb/discover - Discover available shares
 POST /api/v1/smb/test     - Test connection credentials
 POST /api/v1/smb/browse   - Browse share contents
-GET  /api/v1/smb/discover - Simple discovery (query params)
-GET  /api/v1/smb/test     - Simple connection test
+GET  /api/v1/smb/discover - retired, answers 410 (credentials never in URLs)
+GET  /api/v1/smb/test     - retired, answers 410
 ```
 
 #### Rename Detection Features
