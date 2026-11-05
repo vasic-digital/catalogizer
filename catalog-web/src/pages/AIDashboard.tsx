@@ -265,8 +265,8 @@ const AIDashboard: React.FC = () => {
             onClick={() => handleSectionChange(tab.id as AIDashboardState['activeSection'])}
             className={`flex flex-shrink-0 whitespace-nowrap items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
               state.activeSection === tab.id
-                ? 'border-indigo-500 text-indigo-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300'
             }`}
           >
             <tab.icon className="w-4 h-4" />
@@ -281,47 +281,47 @@ const AIDashboard: React.FC = () => {
   const renderOverview = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-indigo-100 rounded-lg">
               <Activity className="w-6 h-6 text-indigo-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">Processed Items</p>
-              <p className="text-2xl font-bold text-gray-900">Unavailable</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Processed Items</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">Unavailable</p>
             </div>
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-green-100 rounded-lg">
               <Brain className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">AI Accuracy</p>
-              <p className="text-2xl font-bold text-gray-900">Unavailable</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">AI Accuracy</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">Unavailable</p>
             </div>
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <Zap className="w-6 h-6 text-yellow-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">Time Saved</p>
-              <p className="text-2xl font-bold text-gray-900">Unavailable</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Time Saved</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">Unavailable</p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">AI Performance</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">AI Performance</h3>
             <button
               onClick={() => toggleSectionExpansion('overview-perf')}
               aria-label="Toggle AI Performance section"
@@ -334,16 +334,16 @@ const AIDashboard: React.FC = () => {
           {expandedSections['overview-perf'] && (
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Automation Rules</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Automation Rules</span>
                 <span className="text-sm font-medium">Unavailable</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Active Predictions</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Active Predictions</span>
                 <span className="text-sm font-medium">Unavailable</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Last Update</span>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-gray-600 dark:text-gray-300">Last Update</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">
                   Unavailable
                 </span>
               </div>
@@ -351,9 +351,9 @@ const AIDashboard: React.FC = () => {
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-gray-900">Quick Actions</h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">Quick Actions</h3>
             <Info className="w-4 h-4 text-gray-400" />
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -365,7 +365,7 @@ const AIDashboard: React.FC = () => {
             </button>
             <button
               onClick={() => handleSectionChange('search')}
-              className="px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+              className="px-3 py-2 bg-green-700 text-white text-sm rounded-lg hover:bg-green-800 transition-colors"
             >
               AI Search
             </button>
@@ -377,7 +377,7 @@ const AIDashboard: React.FC = () => {
             </button>
             <button
               onClick={() => handleSectionChange('automation')}
-              className="px-3 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition-colors"
+              className="px-3 py-2 bg-yellow-700 text-white text-sm rounded-lg hover:bg-yellow-800 transition-colors"
             >
               Manage Rules
             </button>
@@ -397,7 +397,7 @@ const AIDashboard: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">AI-Powered Suggestions</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">AI-Powered Suggestions</h2>
               <button
                 onClick={() => toggleSectionExpansion('suggestions')}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -418,12 +418,12 @@ const AIDashboard: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">Natural Language Search</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Natural Language Search</h2>
             </div>
             <AINaturalSearch onSearch={handleNaturalSearch} />
             
             <div className="mt-8">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Content Categorization</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Content Categorization</h3>
               <AIContentCategorizer
                 item={{
                   title: 'Sample Content Item',
@@ -439,7 +439,7 @@ const AIDashboard: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">AI Analytics</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">AI Analytics</h2>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -465,7 +465,7 @@ const AIDashboard: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">AI Metadata Services</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">AI Metadata Services</h2>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -493,9 +493,9 @@ const AIDashboard: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900">AI Automation</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">AI Automation</h2>
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">Automation unavailable</span>
+                <span className="text-sm text-gray-600 dark:text-gray-300">Automation unavailable</span>
                 <button
                   onClick={() => toggleSectionExpansion('automation')}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors"

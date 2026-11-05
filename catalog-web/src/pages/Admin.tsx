@@ -142,25 +142,25 @@ export const Admin: React.FC = () => {
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
                       {fmtNum(usageReport.active_users)}
                     </div>
-                    <div className="text-xs text-gray-500">Active Users</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">Active Users</div>
                   </div>
                   <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
                       {fmtNum(usageReport.total_media_accessed)}
                     </div>
-                    <div className="text-xs text-gray-500">Media Accessed</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">Media Accessed</div>
                   </div>
                   <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
                       {fmtNum(usageReport.total_downloads)}
                     </div>
-                    <div className="text-xs text-gray-500">Downloads</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">Downloads</div>
                   </div>
                   <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
                       {usageReport.storage_growth_bytes == null ? '—' : `${(usageReport.storage_growth_bytes / (1024 ** 3)).toFixed(1)} GB`}
                     </div>
-                    <div className="text-xs text-gray-500">Storage Growth</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">Storage Growth</div>
                   </div>
                 </div>
                 {usageReport.top_media && usageReport.top_media.length > 0 && (
@@ -170,7 +170,7 @@ export const Admin: React.FC = () => {
                       {usageReport.top_media.slice(0, 5).map((m) => (
                         <div key={m.id} className="flex items-center justify-between text-sm">
                           <span className="text-gray-900 dark:text-white truncate flex-1">{m.title}</span>
-                          <span className="text-gray-500 ml-2">{m.access_count} accesses</span>
+                          <span className="text-gray-600 dark:text-gray-400 ml-2">{m.access_count} accesses</span>
                         </div>
                       ))}
                     </div>
@@ -197,26 +197,26 @@ export const Admin: React.FC = () => {
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
                       {fmtNum(performanceReport.p95_response_time_ms, 'ms')}
                     </div>
-                    <div className="text-xs text-gray-500">P95 Response</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">P95 Response</div>
                   </div>
                   <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <div className="text-xl font-bold text-gray-900 dark:text-white">
                       {fmtNum(performanceReport.total_requests)}
                     </div>
-                    <div className="text-xs text-gray-500">Total Requests</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">Total Requests</div>
                   </div>
                   <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <div className={`text-xl font-bold ${(performanceReport.error_rate ?? 0) > 5 ? 'text-red-600' : 'text-green-600'}`}>
                       {fmtNum(performanceReport.error_rate, '%', 1)}
                     </div>
-                    <div className="text-xs text-gray-500">Error Rate</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">Error Rate</div>
                   </div>
                 </div>
                 <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                   <div className="text-xl font-bold text-green-600">
                     {fmtNum(performanceReport.uptime_percentage, '%', 2)}
                   </div>
-                  <div className="text-xs text-gray-500">Uptime</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">Uptime</div>
                 </div>
                 {performanceReport.slowest_endpoints && performanceReport.slowest_endpoints.length > 0 && (
                   <div>
@@ -225,7 +225,7 @@ export const Admin: React.FC = () => {
                       {performanceReport.slowest_endpoints.slice(0, 5).map((ep, idx) => (
                         <div key={idx} className="flex items-center justify-between text-sm">
                           <span className="text-gray-900 dark:text-white truncate flex-1 font-mono text-xs">{ep.path}</span>
-                          <span className="text-gray-500 ml-2">{ep.avg_ms}ms ({ep.count}x)</span>
+                          <span className="text-gray-600 dark:text-gray-400 ml-2">{ep.avg_ms}ms ({ep.count}x)</span>
                         </div>
                       ))}
                     </div>

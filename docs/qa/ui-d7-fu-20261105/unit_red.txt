@@ -1,0 +1,196 @@
+
+ RUN  v4.0.18 /home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+(node:255784) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, light theme (WCAG AA 4.5:1) > /ai: tabs and Quick Action buttons meet AA
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+stderr | src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, light theme (WCAG AA 4.5:1) > /media: MediaCard text meets AA
+Warning: React does not recognize the `whileHover` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `whilehover` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+    at div
+    at M (/home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web/src/styles/__tests__/contrastD7Remaining.test.tsx:5:16)
+    at /home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web/src/components/media/MediaCard.tsx:102:3
+    at QueryClientProvider (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/@tanstack/react-query/build/lib/QueryClientProvider.mjs:41:3)
+
+ ❯ src/styles/__tests__/contrastD7Remaining.test.tsx (10 tests | 6 failed) 462ms
+     × /ai: tabs and Quick Action buttons meet AA 80ms
+     ✓ /admin: panel (all tabs) meets AA 140ms
+     ✓ /admin page: usage and performance reports meet AA 68ms
+     × /media: MediaCard text meets AA 15ms
+     ✓ /analytics: stat labels meet AA 52ms
+     × /ai: tabs and Quick Action buttons meet AA 14ms
+     × /admin: panel (all tabs) meets AA 17ms
+     × /admin page: usage and performance reports meet AA 45ms
+     ✓ /media: MediaCard text meets AA 6ms
+     × /analytics: stat labels meet AA 23ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, light theme (WCAG AA 4.5:1) > /ai: tabs and Quick Action buttons meet AA
+AssertionError: expected 'button.px-3 py-2 bg-green-600 text-wh…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ button.px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors "AI Search" 3.30
++ button.px-3 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition-colors "Manage Rules" 2.94
+
+ ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:95:50
+     93|   it('/ai: tabs and Quick Action buttons meet AA', () => {
+     94|     const { container } = render(<AIDashboard />)
+     95|     expect(failing(container, theme).join("\n")).toBe("")
+       |                                                  ^
+     96|     for (const t of ['AI Suggestions', 'Natural Search', 'Analytics', …
+     97|       fireEvent.click(screen.getByText(t))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, light theme (WCAG AA 4.5:1) > /media: MediaCard text meets AA
+AssertionError: expected 'div.flex items-center text-sm text-ye…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ div.flex items-center text-sm text-yellow-600 "8.5" 2.94
++ div.mt-3 text-xs text-gray-400 "Updated January 1, 2024" 2.54
+
+ ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:126:50
+    124|   it('/media: MediaCard text meets AA', () => {
+    125|     const { container } = wrap(<MediaCard media={MEDIA} />)
+    126|     expect(failing(container, theme).join("\n")).toBe("")
+       |                                                  ^
+    127|   })
+    128| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, dark theme (WCAG AA 4.5:1) > /ai: tabs and Quick Action buttons meet AA
+AssertionError: expected 'span.null "Overview" 2.82\nspan.null …' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ span.null "Overview" 2.82
++ span.null "AI Suggestions" 3.67
++ span.null "Natural Search" 3.67
++ span.null "Analytics" 3.67
++ span.null "Metadata" 3.67
++ span.null "Automation" 3.67
++ button.px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors "AI Search" 3.30
++ button.px-3 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition-colors "Manage Rules" 2.94
+
+ ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:95:50
+     93|   it('/ai: tabs and Quick Action buttons meet AA', () => {
+     94|     const { container } = render(<AIDashboard />)
+     95|     expect(failing(container, theme).join("\n")).toBe("")
+       |                                                  ^
+     96|     for (const t of ['AI Suggestions', 'Natural Search', 'Analytics', …
+     97|       fireEvent.click(screen.getByText(t))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, dark theme (WCAG AA 4.5:1) > /admin: panel (all tabs) meets AA
+AssertionError: expected 'button.flex flex-shrink-0 items-cente…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ button.flex flex-shrink-0 items-center gap-2 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors border-blue-500 text-blue-600 "Overview" 3.43
++ button.flex flex-shrink-0 items-center gap-2 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 "Users" 3.67
++ button.flex flex-shrink-0 items-center gap-2 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 "Storage" 3.67
++ button.flex flex-shrink-0 items-center gap-2 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 "Backups" 3.67
++ p.text-sm font-medium text-gray-600 "Version" 1.94
++ p.text-2xl font-bold text-gray-900 break-all "1.0.0" 1.21
++ p.text-sm font-medium text-gray-600 "Uptime" 1.94
++ p.text-2xl font-bold text-gray-900 "1d 0h 0m" 1.21
++ p.text-sm font-medium text-gray-600 "Active Connections" 1.94
++ p.text-2xl font-bold text-gray-900 "12" 1.21
++ p.text-sm font-medium text-gray-600 "Total Requests" 1.94
++ p.text-2xl font-bold text-gray-900 "15,420" 1.21
++ span.text-sm text-gray-600 "45%" 1.94
++ span.text-sm text-gray-600 "62%" 1.94
++ span.text-sm text-gray-600 "50 Bytes / 100 Bytes" 1.94
+
+ ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:110:50
+    108|     }
+    109|     const { container } = render(<AdminPanel {...props} />)
+    110|     expect(failing(container, theme).join("\n")).toBe("")
+       |                                                  ^
+    111|     for (const t of ['Users', 'Storage', 'Backups']) {
+    112|       fireEvent.click(screen.getByText(t))
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, dark theme (WCAG AA 4.5:1) > /admin page: usage and performance reports meet AA
+AssertionError: expected 'button.flex flex-shrink-0 items-cente…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ button.flex flex-shrink-0 items-center gap-2 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors border-blue-500 text-blue-600 "Overview" 3.43
++ button.flex flex-shrink-0 items-center gap-2 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 "Users" 3.67
++ button.flex flex-shrink-0 items-center gap-2 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 "Storage" 3.67
++ button.flex flex-shrink-0 items-center gap-2 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 "Backups" 3.67
++ p.text-sm font-medium text-gray-600 "Version" 1.94
++ p.text-2xl font-bold text-gray-900 break-all "1.0.0" 1.21
++ p.text-sm font-medium text-gray-600 "Uptime" 1.94
++ p.text-2xl font-bold text-gray-900 "1d 0h 0m" 1.21
++ p.text-sm font-medium text-gray-600 "Active Connections" 1.94
++ p.text-2xl font-bold text-gray-900 "12" 1.21
++ p.text-sm font-medium text-gray-600 "Total Requests" 1.94
++ p.text-2xl font-bold text-gray-900 "15,420" 1.21
++ span.text-sm text-gray-600 "45%" 1.94
++ span.text-sm text-gray-600 "62%" 1.94
++ span.text-sm text-gray-600 "50 Bytes / 100 Bytes" 1.94
++ div.text-xs text-gray-500 "Active Users" 3.04
++ div.text-xs text-gray-500 "Media Accessed" 3.04
++ div.text-xs text-gray-500 "Downloads" 3.04
++ div.text-xs text-gray-500 "Storage Growth" 3.04
++ span.text-gray-500 ml-2 "4 accesses" 3.04
++ div.text-xs text-gray-500 "P95 Response" 3.04
++ div.text-xs text-gray-500 "Total Requests" 3.04
++ div.text-xs text-gray-500 "Error Rate" 3.04
++ div.text-xs text-gray-500 "Uptime" 3.04
+
+ ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:121:50
+    119|     await screen.findByText('Usage Report')
+    120|     await screen.findByText('Performance Report')
+    121|     expect(failing(container, theme).join("\n")).toBe("")
+       |                                                  ^
+    122|   })
+    123| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, dark theme (WCAG AA 4.5:1) > /analytics: stat labels meet AA
+AssertionError: expected 'div.text-xs text-gray-500 "Groups" 3.…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ div.text-xs text-gray-500 "Groups" 3.04
++ div.text-xs text-gray-500 "Files" 3.04
++ div.text-xs text-gray-500 "Wasted" 3.04
++ div.text-xs text-gray-500 "Total Events" 3.04
++ div.text-xs text-gray-500 "Active Users (24h)" 3.04
++ h5.text-xs font-medium text-gray-500 mb-2 "Most Popular" 3.04
++ span.text-gray-500 ml-2 "7 views" 3.04
+
+ ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:132:50
+    130|     const { container } = wrap(<Analytics />)
+    131|     await waitFor(() => expect(screen.getByText('Total Events')).toBeI…
+    132|     expect(failing(container, theme).join("\n")).toBe("")
+       |                                                  ^
+    133|   })
+    134| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 4 passed (10)
+   Start at  14:44:30
+   Duration  3.67s (transform 420ms, setup 193ms, import 1.69s, tests 462ms, environment 1.11s)
+
