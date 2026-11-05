@@ -3,6 +3,7 @@ package monitoring
 import (
 	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"runtime"
 	"time"
@@ -301,22 +302,32 @@ func (h *HealthChecker) GinHealthHandler() gin.HandlerFunc {
 	}
 }
 
-// StartPrometheusServer starts Prometheus metrics server
-func StartPrometheusServer(port int, logger *zap.Logger) {
+// StartPrometheusServer starts the Prometheus metrics server.
+// This listener has NO authentication (the main API serves /metrics behind the administrator
+// gate), so it is bound to the loopback address only: a scraper on another host must go through
+// the authenticated /metrics route of the main server. It returns the running server (nil when the
+// port could not be bound) so callers and tests can read the bound address and shut it down.
+func StartPrometheusServer(port int, logger *zap.Logger) *http.Server {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
 
+	ln, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
+	if err != nil {
+		logger.Error("Prometheus server cannot listen", zap.Error(err))
+		return nil
+	}
 	server := &http.Server{
-		Addr:              fmt.Sprintf(":%d", port),
+		Addr:              ln.Addr().String(),
 		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	logger.Info("Starting Prometheus server", zap.Int("port", port))
+	logger.Info("Starting Prometheus server", zap.String("addr", server.Addr))
 
 	go func() {
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := server.Serve(ln); err != nil && err != http.ErrServerClosed {
 			logger.Error("Prometheus server error", zap.Error(err))
 		}
 	}()
+	return server
 }

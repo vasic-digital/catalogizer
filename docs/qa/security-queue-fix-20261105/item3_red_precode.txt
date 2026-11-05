@@ -1,0 +1,7 @@
+--- PASS: TestStartPrometheusServer (0.01s)
+        	Messages:   	bound address "::" must be loopback
+    prometheus_bind_test.go:51: the unauthenticated /metrics listener answered on 192.168.1.115
+--- FAIL: TestStartPrometheusServer_ListensOnLoopbackOnly (0.01s)
+FAIL
+FAIL	catalogizer/internal/monitoring	0.023s
+FAIL

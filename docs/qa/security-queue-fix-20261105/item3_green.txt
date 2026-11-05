@@ -1,0 +1,3 @@
+--- PASS: TestStartPrometheusServer (0.01s)
+--- PASS: TestStartPrometheusServer_ListensOnLoopbackOnly (0.00s)
+ok  	catalogizer/internal/monitoring	0.027s
