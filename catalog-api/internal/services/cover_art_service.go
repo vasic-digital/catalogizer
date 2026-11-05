@@ -521,7 +521,12 @@ func (s *CoverArtService) downloadImage(ctx context.Context, imageURL string) ([
 				if err == nil {
 					transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 						if cd, ok := SOCKS5Dialer.(proxy.ContextDialer); ok {
-							return cd.DialContext(ctx, network, addr) // honours cancellation/deadline
+							// net/http detaches a dial from the request context (Go 1.23+), so the
+							// request deadline never reaches here: bound the handshake explicitly or a
+							// proxy that accepts TCP and never answers holds the connection forever.
+							dctx, dcancel := context.WithTimeout(ctx, socks5DialTimeout)
+							defer dcancel()
+							return cd.DialContext(dctx, network, addr)
 						}
 						return SOCKS5Dialer.Dial(network, addr)
 					}
@@ -586,6 +591,11 @@ func ffmpegInputGuard() []string {
 
 // coverArtFFmpegTimeout bounds one frame extraction when the caller's context has no deadline.
 var coverArtFFmpegTimeout = 2 * time.Minute
+
+// socks5DialTimeout bounds the SOCKS5 connect+handshake (a variable only so a test can lower it).
+const socks5DialTimeoutDefault = 30 * time.Second
+
+var socks5DialTimeout = socks5DialTimeoutDefault
 
 // withFFmpegDeadline gives ctx the coverArtFFmpegTimeout deadline when it has none.
 func withFFmpegDeadline(ctx context.Context) (context.Context, context.CancelFunc) {

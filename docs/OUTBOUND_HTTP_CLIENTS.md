@@ -65,7 +65,8 @@ operator's own network). None takes an address from third-party data. They do no
 |---|---|
 | `services/configuration_wizard_service.go:1011` | TCP reachability probe of an operator-entered host |
 | `internal/services/smb_discovery.go` (lines 61, 143, 193), `smb_probe.go:79`, `smb.go:70` | SMB hosts (445) the operator configures or scans |
-| `filesystem/ftp_client.go:500` | operator-configured FTP server |
+| `filesystem/ftp_client.go:500`, `filesystem/ftp_client.go:88-103` (`ftp.Dial` via `dial`/`dialWith`) | operator-configured FTP server |
+| `database/connection.go` (`sql.Open("postgres", ...)`), `main.go:611` (`redis.NewClient`) | operator-configured Postgres and Redis servers (database/cache connections, not user data) |
 | `filesystem/smb_client.go:45`, `smb/client.go:53`, `internal/smb/resilience.go` (459, 571) | operator-configured SMB server |
 | `internal/infra/provisioner.go:259` | local infrastructure readiness probe |
 | `main.go:150` | UDP "connect" to 8.8.8.8 to learn the local address; sends no data |

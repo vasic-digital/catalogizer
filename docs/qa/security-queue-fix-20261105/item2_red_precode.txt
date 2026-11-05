@@ -1,0 +1,5 @@
+    cover_art_socks5_ctx_test.go:68: the SOCKS5 dial ignored the caller's context: handshake connection still open 3 s after cancel
+--- FAIL: TestDownloadImage_Socks5DialHonoursContextCancellation (3.20s)
+FAIL
+FAIL	catalogizer/internal/services	3.218s
+FAIL

@@ -1,0 +1,12 @@
+Item 2 (SSRF-F1) mutations:
+BASE
+ok  	catalogizer/internal/services	0.414s
+Ma: cd.DialContext(ctx) instead of dctx
+--- FAIL: TestDownloadImage_Socks5DialHonoursContextCancellation (3.20s)
+Mb: non-context Dial
+--- FAIL: TestDownloadImage_Socks5DialHonoursContextCancellation (3.20s)
+Mc: timeout 24h
+ok  	catalogizer/internal/services	0.417s
+restored
+Mc (24h default): --- FAIL: TestSocks5DialTimeout_ProductionDefaultIsBounded (0.00s)
+Mc killed by TestSocks5DialTimeout_ProductionDefaultIs.. (24h default)
