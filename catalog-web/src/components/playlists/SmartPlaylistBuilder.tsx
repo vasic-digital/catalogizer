@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
@@ -141,6 +141,7 @@ export const SmartPlaylistBuilder: React.FC<SmartPlaylistBuilderProps> = ({
   initialData,
   className = ''
 }) => {
+  const uid = useId();
   const [name, setName] = useState(initialData?.name || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [rules, setRules] = useState<SmartPlaylistRule[]>(
@@ -242,6 +243,7 @@ export const SmartPlaylistBuilder: React.FC<SmartPlaylistBuilderProps> = ({
         case 'media_type':
           return (
             <Select
+              aria-label="Media type"
               value={String(rule.value)}
               onChange={(value) => updateRule(index, { value: value })}
               className="flex-1"
@@ -258,6 +260,7 @@ export const SmartPlaylistBuilder: React.FC<SmartPlaylistBuilderProps> = ({
         case 'quality':
           return (
             <Select
+              aria-label="Quality"
               value={Array.isArray(rule.value) ? rule.value[0] : String(rule.value)}
               onChange={(value) => updateRule(index, { value: value })}
               className="flex-1"
@@ -301,6 +304,7 @@ export const SmartPlaylistBuilder: React.FC<SmartPlaylistBuilderProps> = ({
         case 'genre':
           return (
             <Select
+              aria-label="Genre"
               value={String(rule.value)}
               onChange={(value) => updateRule(index, { value: value })}
               className="flex-1"
@@ -412,10 +416,10 @@ export const SmartPlaylistBuilder: React.FC<SmartPlaylistBuilderProps> = ({
                   <div className="flex items-center gap-3">
                     {/* Field */}
                     <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <label htmlFor={`${uid}-field-${index}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Field
                       </label>
-                      <Select
+                      <Select id={`${uid}-field-${index}`}
                         value={rule.field}
                         onChange={(value) => updateRule(index, { 
                           field: value as SmartPlaylistRule['field'],
@@ -432,10 +436,10 @@ export const SmartPlaylistBuilder: React.FC<SmartPlaylistBuilderProps> = ({
 
                     {/* Operator */}
                     <div className="flex-1">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <label htmlFor={`${uid}-cond-${index}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Condition
                       </label>
-                      <Select
+                      <Select id={`${uid}-cond-${index}`}
                         value={rule.operator}
                         onChange={(value) => updateRule(index, { 
                           operator: value as SmartPlaylistRule['operator']

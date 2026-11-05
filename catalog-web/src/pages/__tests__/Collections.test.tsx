@@ -1101,3 +1101,32 @@ describe('Collections Page', () => {
     })
   })
 })
+
+describe('Collections accessible names (CAT-UI-D5D6)', () => {
+  it('names the selection checkboxes and reflects their pressed state', async () => {
+    const user = userEvent.setup()
+    render(<Collections />)
+    const boxes = screen.getAllByRole('button', { name: /^Select collection / })
+    expect(boxes.length).toBeGreaterThanOrEqual(1)
+    expect(boxes[0]).toHaveAttribute('aria-pressed', 'false')
+    await user.click(boxes[0])
+    expect(screen.getAllByRole('button', { name: /^Select collection / })[0]).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('names and toggles the selection buttons in list view too', async () => {
+    const user = userEvent.setup()
+    render(<Collections />)
+    await user.click(document.querySelector('button[title="List View"]') as HTMLElement)
+    const boxes = screen.getAllByRole('button', { name: /^Select collection / })
+    expect(boxes.length).toBeGreaterThanOrEqual(1)
+    expect(boxes[0]).toHaveAttribute('aria-pressed', 'false')
+    await user.click(boxes[0])
+    expect(screen.getAllByRole('button', { name: /^Select collection / })[0]).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('names the filter and sort selects by purpose', () => {
+    render(<Collections />)
+    expect(screen.getByRole('combobox', { name: 'Filter by media type' })).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Sort collections' })).toBeInTheDocument()
+  })
+})

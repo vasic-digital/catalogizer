@@ -237,7 +237,7 @@ export const FavoritesGrid: React.FC<FavoritesGridProps> = ({
               </div>
               
               {/* Media Type Filter */}
-              <Select value={mediaTypeFilter} onValueChange={setMediaTypeFilter}>
+              <Select aria-label="Filter by media type" value={mediaTypeFilter} onValueChange={setMediaTypeFilter}>
                 <option value="all">All Types</option>
                 <option value="movie">Movies</option>
                 <option value="tv_show">TV Shows</option>
@@ -249,7 +249,7 @@ export const FavoritesGrid: React.FC<FavoritesGridProps> = ({
               
               {/* Sort Options */}
               <div className="flex gap-2">
-                <Select value={sortBy} onValueChange={(value: string) => setSortBy(value as 'created_at' | 'title' | 'rating' | 'year')}>
+                <Select aria-label="Sort favorites" value={sortBy} onValueChange={(value: string) => setSortBy(value as 'created_at' | 'title' | 'rating' | 'year')}>
                   <option value="created_at">Date Added</option>
                   <option value="title">Title</option>
                   <option value="rating">Rating</option>

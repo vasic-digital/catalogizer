@@ -578,10 +578,10 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
                     {/* Expiry Time */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="coll-sharing-select-1" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Expires In
                         </label>
-                        <Select
+                        <Select id="coll-sharing-select-1"
                           value={expiryTime}
                           onChange={setExpiryTime}
                           options={EXPIRY_OPTIONS}
@@ -700,10 +700,10 @@ export const CollectionSharing: React.FC<CollectionSharingProps> = ({
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="coll-sharing-select-2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Permission Level
                       </label>
-                      <Select
+                      <Select id="coll-sharing-select-2"
                         value={selectedPermission.name}
                         onChange={(value) => setSelectedPermission(PERMISSION_LEVELS.find(p => p.name === value) || PERMISSION_LEVELS[1])}
                         options={PERMISSION_LEVELS.map(p => ({ value: p.name, label: p.name }))}

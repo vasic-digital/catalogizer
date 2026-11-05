@@ -600,6 +600,7 @@ export const PlaylistGrid: React.FC<PlaylistGridProps> = ({
         {/* Filters */}
         <div className="flex items-center gap-2">
           <Select
+            aria-label="Filter by media type"
             value={filterMediaType}
             onChange={(value) => setFilterMediaType(value)}
             options={[
@@ -613,6 +614,7 @@ export const PlaylistGrid: React.FC<PlaylistGridProps> = ({
           />
           
           <Select
+            aria-label="Filter by visibility"
             value={filterVisibility}
             onChange={(value) => setFilterVisibility(value)}
             options={[
@@ -630,6 +632,8 @@ export const PlaylistGrid: React.FC<PlaylistGridProps> = ({
             variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => setViewMode('grid')}
+            aria-label="Grid view"
+            aria-pressed={viewMode === 'grid'}
           >
             <Grid className="w-4 h-4" />
           </Button>
@@ -637,6 +641,8 @@ export const PlaylistGrid: React.FC<PlaylistGridProps> = ({
             variant={viewMode === 'list' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => setViewMode('list')}
+            aria-label="List view"
+            aria-pressed={viewMode === 'list'}
           >
             <List className="w-4 h-4" />
           </Button>
@@ -645,6 +651,7 @@ export const PlaylistGrid: React.FC<PlaylistGridProps> = ({
         {/* Sort */}
         <div className="flex items-center gap-2">
           <Select
+            aria-label="Sort playlists"
             value={sortBy}
             onChange={(value) => setSortBy(value as PlaylistSortBy)}
             options={[

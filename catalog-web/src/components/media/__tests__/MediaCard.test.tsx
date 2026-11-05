@@ -273,3 +273,14 @@ describe('MediaCard', () => {
     expect(buttons.length).toBe(2);
   });
 });
+
+describe('MediaCard overlay buttons accessible names (CAT-UI-D5D6)', () => {
+  it('exposes play/view/download by role and name including the title', () => {
+    renderWithProviders(
+      <MediaCard media={mockMediaItem} onPlay={() => {}} onView={() => {}} onDownload={() => {}} />
+    );
+    expect(screen.getByRole('button', { name: 'Play Test Movie' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'View details of Test Movie' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Download Test Movie' })).toBeInTheDocument();
+  });
+});

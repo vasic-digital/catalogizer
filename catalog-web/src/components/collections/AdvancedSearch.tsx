@@ -352,6 +352,7 @@ const AdvancedSearch: React.FC = () => {
                           />
                           {index > 0 && (
                             <Select
+                              aria-label="Rule condition"
                               value={rule.condition || 'and'}
                               onChange={(value) => updateRule(rule.id, { condition: value as 'and' | 'or' })}
                               options={[
@@ -364,6 +365,7 @@ const AdvancedSearch: React.FC = () => {
 
                         <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
                           <Select
+                            aria-label="Rule field"
                             value={rule.field}
                             onChange={(value) => updateRule(rule.id, { 
                               field: value, 
@@ -374,6 +376,7 @@ const AdvancedSearch: React.FC = () => {
                           />
 
                           <Select
+                            aria-label="Rule operator"
                             value={rule.operator}
                             onChange={(value) => updateRule(rule.id, { operator: value, value: '' })}
                             options={getOperatorsForField(rule.field)}
@@ -430,8 +433,8 @@ const AdvancedSearch: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-                  <Select
+                  <label htmlFor="adv-search-select-1" className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                  <Select id="adv-search-select-1"
                     value={searchSettings.sortBy}
                     onChange={(value) => setSearchSettings({ ...searchSettings, sortBy: value })}
                     options={[
@@ -444,8 +447,8 @@ const AdvancedSearch: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Order</label>
-                  <Select
+                  <label htmlFor="adv-search-select-2" className="block text-sm font-medium text-gray-700 mb-2">Order</label>
+                  <Select id="adv-search-select-2"
                     value={searchSettings.sortOrder}
                     onChange={(value) => setSearchSettings({ ...searchSettings, sortOrder: value as 'asc' | 'desc' })}
                     options={[
@@ -456,8 +459,8 @@ const AdvancedSearch: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Items per page</label>
-                  <Select
+                  <label htmlFor="adv-search-select-3" className="block text-sm font-medium text-gray-700 mb-2">Items per page</label>
+                  <Select id="adv-search-select-3"
                     value={searchSettings.itemsPerPage.toString()}
                     onChange={(value) => setSearchSettings({ ...searchSettings, itemsPerPage: Number(value) })}
                     options={[

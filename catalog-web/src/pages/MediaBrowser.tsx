@@ -212,6 +212,7 @@ export const MediaBrowser: React.FC = () => {
               size="sm"
               onClick={() => setViewMode('grid')}
               className="rounded-r-none"
+              aria-label="Grid view"
               data-testid="grid-view-button"
             >
               <Grid className="h-4 w-4" />
@@ -221,6 +222,7 @@ export const MediaBrowser: React.FC = () => {
               size="sm"
               onClick={() => setViewMode('list')}
               className="rounded-l-none"
+              aria-label="List view"
               data-testid="list-view-button"
             >
               <List className="h-4 w-4" />
@@ -230,6 +232,7 @@ export const MediaBrowser: React.FC = () => {
           <Button
             variant="outline"
             onClick={() => setShowUpload(!showUpload)}
+            aria-label="Upload media"
             data-testid="upload-button"
           >
             <Upload className="h-4 w-4" />
@@ -239,6 +242,7 @@ export const MediaBrowser: React.FC = () => {
             variant="outline"
             onClick={() => refetch()}
             disabled={isLoading}
+            aria-label="Refresh media list"
             data-testid="refresh-button"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -303,6 +307,7 @@ export const MediaBrowser: React.FC = () => {
                     size="sm"
                     onClick={() => handlePageChange('prev')}
                     disabled={currentPage === 1}
+                    aria-label="Previous page"
                     data-testid="prev-page-button"
                   >
                     <ChevronLeft className="h-4 w-4" />
@@ -315,6 +320,7 @@ export const MediaBrowser: React.FC = () => {
                     size="sm"
                     onClick={() => handlePageChange('next')}
                     disabled={currentPage === totalPages}
+                    aria-label="Next page"
                     data-testid="next-page-button"
                   >
                     <ChevronRight className="h-4 w-4" />

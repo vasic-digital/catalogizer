@@ -147,6 +147,7 @@ export const MediaCard: React.FC<MediaCardProps> = React.memo(({
                     e.stopPropagation()
                     onPlay(media)
                   }}
+                  aria-label={`Play ${media.title}`}
                   data-testid={`play-button-${media.id}`}
                 >
                   <Play className="h-4 w-4" />
@@ -160,6 +161,7 @@ export const MediaCard: React.FC<MediaCardProps> = React.memo(({
                     e.stopPropagation()
                     onView(media)
                   }}
+                  aria-label={`View details of ${media.title}`}
                   data-testid={`view-button-${media.id}`}
                 >
                   <Eye className="h-4 w-4" />
@@ -173,6 +175,7 @@ export const MediaCard: React.FC<MediaCardProps> = React.memo(({
                     e.stopPropagation()
                     onDownload(media)
                   }}
+                  aria-label={`Download ${media.title}`}
                   data-testid={`download-button-${media.id}`}
                 >
                   <Download className="h-4 w-4" />

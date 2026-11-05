@@ -273,6 +273,7 @@ export const SmartCollectionBuilder: React.FC<SmartCollectionBuilderProps> = ({
           <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
             {/* Field Select */}
             <Select
+              aria-label="Rule field"
               value={rule.field}
               onChange={(value) => updateRule(rule.id, { field: value })}
               options={COLLECTION_FIELD_OPTIONS}
@@ -281,6 +282,7 @@ export const SmartCollectionBuilder: React.FC<SmartCollectionBuilderProps> = ({
 
             {/* Operator Select */}
             <Select
+              aria-label="Rule operator"
               value={rule.operator}
               onChange={(value) => updateRule(rule.id, { operator: value })}
               options={operators}
@@ -296,6 +298,7 @@ export const SmartCollectionBuilder: React.FC<SmartCollectionBuilderProps> = ({
                 />
               ) : fieldOptions.length > 0 ? (
                 <Select
+                  aria-label="Rule value"
                   value={Array.isArray(rule.value) ? rule.value[0] : String(rule.value ?? '')}
                   onChange={(value) => updateRule(rule.id, {
                     value: rule.operator === 'is_any' || rule.operator === 'is_not_any' ? [value] : value
@@ -615,10 +618,10 @@ export const SmartCollectionBuilder: React.FC<SmartCollectionBuilderProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label htmlFor="smart-coll-select-1" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Auto-refresh frequency
                     </label>
-                    <Select
+                    <Select id="smart-coll-select-1"
                       value={refreshFrequency}
                       onChange={(value) => setRefreshFrequency(value)}
                       options={[
@@ -632,10 +635,10 @@ export const SmartCollectionBuilder: React.FC<SmartCollectionBuilderProps> = ({
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label htmlFor="smart-coll-select-2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Sort order
                     </label>
-                    <Select
+                    <Select id="smart-coll-select-2"
                       value={sortOrder}
                       onChange={(value) => setSortOrder(value)}
                       options={[

@@ -55,7 +55,7 @@ vi.mock('recharts', async () => ({
   ResponsiveContainer: ({ children }: any) => <div data-testid="responsive-container">{children}</div>,
   PieChart: ({ children }: any) => <div data-testid="pie-chart">{children}</div>,
   Pie: ({ children }: any) => <div data-testid="pie">{children}</div>,
-  Cell: () => <div data-testid="cell" />,
+  Cell: (p: any) => <div data-testid="cell" aria-label={p['aria-label']} />,
   BarChart: ({ children, data }: any) => <div data-testid="bar-chart" data-points={JSON.stringify(data ?? null)}>{children}</div>,
   Bar: () => <div data-testid="bar" />,
   LineChart: ({ children }: any) => <div data-testid="line-chart">{children}</div>,
@@ -439,5 +439,21 @@ describe('Analytics', () => {
         expect(screen.queryByText(invented)).not.toBeInTheDocument()
       }
     })
+  })
+})
+
+describe('Analytics pie cells are named (CAT-UI-D5D6)', () => {
+  it('gives each pie Cell an aria-label with type, localized count and unit', async () => {
+    mockMediaApi.getMediaStats.mockResolvedValue({
+      total_items: 1500, total_size: 1, recent_additions: 1,
+      by_type: { movie: 1200, music: 300 }, by_quality: { '1080p': 1500 },
+    })
+    mockMediaApi.getRecentMedia.mockResolvedValue([])
+    const TestWrapper = createTestWrapper()
+    render(<TestWrapper><Analytics /></TestWrapper>)
+    await waitFor(() => expect(screen.getAllByTestId('cell').length).toBeGreaterThan(0))
+    const labels = screen.getAllByTestId('cell').map(c => c.getAttribute('aria-label'))
+    expect(labels).toContain(`MOVIE: ${(1200).toLocaleString()} items`)
+    expect(labels).toContain(`MUSIC: ${(300).toLocaleString()} items`)
   })
 })

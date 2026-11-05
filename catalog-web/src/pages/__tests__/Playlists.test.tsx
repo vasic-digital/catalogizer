@@ -699,3 +699,12 @@ describe('Playlists Page', () => {
     expect(screen.queryByText('Create New Playlist')).not.toBeInTheDocument()
   })
 })
+
+describe('Playlists page accessible names (CAT-UI-D5D6)', () => {
+  it('names the media-type filter select (create form media picker)', async () => {
+    const user = userEvent.setup()
+    render(<PlaylistsPage />)
+    await user.click(screen.getByText('Grid Create'))
+    expect(screen.getByRole('combobox', { name: 'Filter by media type' })).toBeInTheDocument()
+  })
+})

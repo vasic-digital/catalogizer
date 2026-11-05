@@ -1491,3 +1491,10 @@ FAIL (open, dispatched as UI-D1..D8): D1 HIGH /conversion crashes (TypeError rea
 - UI-D8-FU-1: share one named constant for the search query param between Header.tsx and EntityBrowser.tsx.
 - UI-D8-FU-2: e2e/tests/critical-flows.spec.ts:352 asserts search= with `|| true` (cannot fail).
 - UI-D8-FU-3 (nit): no test for leading/trailing-space trim. UI-D7-FU-2 (minor): contrast helper may wrongly throw on text-current/inherit/transparent and text-[13px].
+
+## UI-D5/D6 landed (reviewed GO-with-follow-ups round 3/5; PROVISIONAL until live axe rerun docs/qa/ui-d5d6-20261105/axe_live.cjs on rebuilt web image)
+- UI-D5D6-FU-1 (minor): test rendering two SmartPlaylistBuilders on one page asserting unique ids (useId-drop mutation survived).
+- UI-D5D6-FU-2 (nit): Playlists test name still wrong (checks page-level media-type filter, Playlists.tsx:509); selectLabelsSource id regex misses an id as last attribute before `>` (false alarm only).
+- MP-FLAKE-1 (minor, pre-existing): MediaPlayer.test.tsx "seek after ticket near expiry gets a fresh ticket" fails only under full-suite load (35/35 alone x3); needs root cause / quarantine (§11.4.248).
+- WEB-DEPS-1: borrowed node_modules lacks @vasic-digital/* packages: 8 test files fail to load (Avatar, EmptyState, LoadingSpinner, AuthContext.integration, module-registry, websocket, WebSocketContext*) - verify on a real npm ci in the web image build.
+- UI-D7-FU-1 now includes AIDashboard/AdminPanel/MediaCard/Analytics dark contrast (owners: D5/D6 files).

@@ -324,6 +324,8 @@ const AIDashboard: React.FC = () => {
             <h3 className="font-semibold text-gray-900">AI Performance</h3>
             <button
               onClick={() => toggleSectionExpansion('overview-perf')}
+              aria-label="Toggle AI Performance section"
+              aria-expanded={Boolean(expandedSections['overview-perf'])}
               className="p-1 hover:bg-gray-100 rounded-full transition-colors"
             >
               {expandedSections['overview-perf'] ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}

@@ -480,6 +480,7 @@ export const PlaylistManager: React.FC<PlaylistManagerProps> = ({
 
         {/* Sort */}
         <Select
+          aria-label="Sort playlists"
           value={sortBy}
           onChange={(value) => setSortBy(value as PlaylistSortBy)}
           options={[

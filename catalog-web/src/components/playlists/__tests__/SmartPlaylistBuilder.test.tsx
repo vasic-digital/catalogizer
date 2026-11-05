@@ -113,3 +113,19 @@ describe('SmartPlaylistBuilder', () => {
     expect(onSave).toHaveBeenCalledWith('N', 'D', [{ field: 'genre', operator: 'equals', value: 'rock' }])
   })
 })
+
+describe('SmartPlaylistBuilder per-rule control ids (CAT-UI-D5D6)', () => {
+  it('gives every rule uniquely-id\'d, correctly named Field/Condition selects', async () => {
+    const { SmartPlaylistBuilder } = await import('../SmartPlaylistBuilder')
+    const user = userEvent.setup()
+    render(<SmartPlaylistBuilder onSave={vi.fn()} onCancel={vi.fn()} />)
+    await user.click(screen.getByText('Add Rule'))
+    await user.click(screen.getByText('Add Rule'))
+    const fields = screen.getAllByRole('combobox', { name: 'Field' })
+    const conds = screen.getAllByRole('combobox', { name: 'Condition' })
+    expect(fields.length).toBeGreaterThanOrEqual(2)
+    expect(conds.length).toBe(fields.length)
+    const ids = Array.from(document.querySelectorAll('[id]')).map(e => e.id)
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+})

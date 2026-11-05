@@ -144,11 +144,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-600">Version</p>
-                    <p className="text-2xl font-bold text-gray-900">{systemInfo.version}</p>
+                    <p className="text-2xl font-bold text-gray-900 break-all">{systemInfo.version}</p>
                   </div>
-                  <Settings className="w-8 h-8 text-blue-500" />
+                  <Settings className="w-8 h-8 flex-shrink-0 text-blue-500" aria-hidden="true" />
                 </div>
               </CardContent>
             </Card>
@@ -156,7 +156,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-600">Uptime</p>
                     <p className="text-2xl font-bold text-gray-900">{formatUptime(systemInfo.uptime)}</p>
                   </div>
@@ -168,7 +168,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-600">Active Connections</p>
                     <p className="text-2xl font-bold text-gray-900">{formatCountOrUnavailable(systemInfo.activeConnections)}</p>
                   </div>
@@ -180,7 +180,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-600">Total Requests</p>
                     <p className="text-2xl font-bold text-gray-900">{formatCountOrUnavailable(systemInfo.totalRequests)}</p>
                   </div>
