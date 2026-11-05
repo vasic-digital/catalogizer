@@ -1,0 +1,56 @@
+{
+ "wsFrames": [
+  "{\"channel\":\"media_updates\",\"timestamp\":\"2026-11-05T12:04:26Z\",\"type\":\"subscribed",
+  "{\"channel\":\"system_updates\",\"timestamp\":\"2026-11-05T12:04:26Z\",\"type\":\"subscribe",
+  "{\"channel\":\"analysis_updates\",\"timestamp\":\"2026-11-05T12:04:26Z\",\"type\":\"subscri",
+  "{\"channel\":\"asset_updates\",\"timestamp\":\"2026-11-05T12:04:26Z\",\"type\":\"subscribed",
+  "{\"channel\":\"media_updates\",\"timestamp\":\"2026-11-05T12:04:26Z\",\"type\":\"subscribed",
+  "{\"channel\":\"system_updates\",\"timestamp\":\"2026-11-05T12:04:26Z\",\"type\":\"subscribe",
+  "{\"channel\":\"analysis_updates\",\"timestamp\":\"2026-11-05T12:04:26Z\",\"type\":\"subscri",
+  "{\"channel\":\"asset_updates\",\"timestamp\":\"2026-11-05T12:04:26Z\",\"type\":\"subscribed",
+  "{\"channel\":\"media_updates\",\"timestamp\":\"2026-11-05T12:04:36Z\",\"type\":\"subscribed",
+  "{\"channel\":\"system_updates\",\"timestamp\":\"2026-11-05T12:04:36Z\",\"type\":\"subscribe",
+  "{\"channel\":\"analysis_updates\",\"timestamp\":\"2026-11-05T12:04:36Z\",\"type\":\"subscri",
+  "{\"channel\":\"asset_updates\",\"timestamp\":\"2026-11-05T12:04:36Z\",\"type\":\"subscribed",
+  "{\"channel\":\"media_updates\",\"timestamp\":\"2026-11-05T12:04:42Z\",\"type\":\"subscribed",
+  "{\"channel\":\"system_updates\",\"timestamp\":\"2026-11-05T12:04:42Z\",\"type\":\"subscribe",
+  "{\"channel\":\"analysis_updates\",\"timestamp\":\"2026-11-05T12:04:42Z\",\"type\":\"subscri",
+  "{\"channel\":\"asset_updates\",\"timestamp\":\"2026-11-05T12:04:42Z\",\"type\":\"subscribed",
+  "{\"channel\":\"media_updates\",\"timestamp\":\"2026-11-05T12:04:49Z\",\"type\":\"subscribed",
+  "{\"channel\":\"system_updates\",\"timestamp\":\"2026-11-05T12:04:49Z\",\"type\":\"subscribe",
+  "{\"channel\":\"analysis_updates\",\"timestamp\":\"2026-11-05T12:04:49Z\",\"type\":\"subscri",
+  "{\"channel\":\"asset_updates\",\"timestamp\":\"2026-11-05T12:04:49Z\",\"type\":\"subscribed"
+ ],
+ "wsHandshake": {
+  "status": 101
+ },
+ "wsClosed": 4,
+ "indicator": "none",
+ "themeBtn": 1,
+ "theme": {
+  "before": "|rgb(255, 255, 255)",
+  "after": "dark|rgb(2, 8, 23)"
+ },
+ "axeDark": [
+  "color-contrast:serious:14",
+  "heading-order:moderate:1",
+  "region:moderate:1",
+  "svg-img-alt:serious:6"
+ ],
+ "axeMediaDark": [
+  "button-name:critical:78",
+  "color-contrast:serious:11",
+  "heading-order:moderate:1",
+  "region:moderate:1"
+ ],
+ "persist": "dark",
+ "searchUrl": "/browse?search=a",
+ "searchText": "c 1 item Game 0 items Movie 10 items Music Album 3 items Music Artist 0 items Software 0 items Tv Show 1 item v1.1.0",
+ "typeReq": [
+  "auth_token",
+  "catalogizer_launched",
+  "user",
+  "catalog-web-theme"
+ ],
+ "detailApi": []
+}

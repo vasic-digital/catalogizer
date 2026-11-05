@@ -1,0 +1,51 @@
+{
+ "entity35": {
+  "text": "",
+  "api": [
+   "200 GET /api/v1/auth/status",
+   "200 GET /api/v1/entities/35/files",
+   "404 GET /api/v1/entities/35",
+   "404 GET /api/v1/recommendations/similar/35",
+   "404 GET /api/v1/entities/35/duplicates",
+   "200 POST /api/v1/analytics/access",
+   "200 GET /api/v1/auth/permissions"
+  ],
+  "con": [
+   "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ },
+ "entity3": {
+  "text": "rbage Music Album Favorite Refresh Play Download 1 Files 0 Children Files (1) File # Download1 file available Download v1.1.0",
+  "api": [
+   "200 GET /api/v1/auth/status",
+   "200 GET /api/v1/entities/3/duplicates",
+   "200 GET /api/v1/entities/3/files",
+   "200 GET /api/v1/recommendations/similar/3",
+   "200 GET /api/v1/entities/3",
+   "200 POST /api/v1/analytics/access",
+   "200 GET /api/v1/auth/permissions"
+  ],
+  "con": []
+ },
+ "entity4": {
+  "text": "est Comic 001 Comic Favorite Refresh Play Download 2 Files 0 Children Files (2) File # File # Download2 files available Download v1.1.0",
+  "api": [
+   "200 GET /api/v1/auth/status",
+   "200 GET /api/v1/entities/4/duplicates",
+   "200 POST /api/v1/analytics/access",
+   "200 GET /api/v1/entities/4/files",
+   "200 GET /api/v1/recommendations/similar/4",
+   "200 GET /api/v1/auth/permissions",
+   "200 GET /api/v1/entities/4"
+  ],
+  "con": []
+ },
+ "typesFetch": {
+  "status": 200,
+  "keys": [
+   "types"
+  ]
+ }
+}

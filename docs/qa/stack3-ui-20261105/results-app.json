@@ -1,0 +1,3278 @@
+{
+ "pages": [
+  {
+   "name": "login",
+   "size": "mobile",
+   "sw": 360,
+   "cw": 360,
+   "over": [],
+   "text": "C Welcome back Enter your credentials to access Catalogizer Username Password Remember me Forgot password? Sign in Don't have an account? Create new account Made with ❤ by Vasic Digital © 2026 Vas",
+   "len": 232,
+   "title": "Catalogizer - Media Management System",
+   "url": "/login",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "landmark-one-main",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Document should have one main landmark"
+    },
+    {
+     "id": "page-has-heading-one",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Page should contain a level-one heading"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 8,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "dashboard",
+   "size": "mobile",
+   "sw": 360,
+   "cw": 360,
+   "over": [],
+   "text": "C Catalogizer Disconnected Welcome back, qa_admin! Here's what's happening with your media library today. Last updated: 1:01:54 PM Total Media 47 Storage Used 204.42 MB Recent Additions 47 last 7 da",
+   "len": 1036,
+   "title": "Catalogizer - Media Management System",
+   "url": "/dashboard",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    },
+    {
+     "id": "svg-img-alt",
+     "impact": "serious",
+     "n": 6,
+     "help": "<svg> elements with an img role must have alternative text"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "media",
+   "size": "mobile",
+   "sw": 360,
+   "cw": 360,
+   "over": [],
+   "text": "C Catalogizer Disconnected Media Browser Explore and discover your media collection 47 Total Items 6 Media Types 0.2 GB Total Size 47 Recent Additions Filters Showing 24 of 47 results Page 1 of 2 MP",
+   "len": 1723,
+   "title": "Catalogizer - Media Management System",
+   "url": "/media",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "button-name",
+     "impact": "critical",
+     "n": 78,
+     "help": "Buttons must have discernible text"
+    },
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 36,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "browse",
+   "size": "mobile",
+   "sw": 360,
+   "cw": 360,
+   "over": [],
+   "text": "C Catalogizer Disconnected Browse Media 20 total entities across all types Book 3 items Comic 1 item Game 0 items Movie 10 items Music Album 3 items Music Artist 0 items Software 0 item",
+   "len": 226,
+   "title": "Catalogizer - Media Management System",
+   "url": "/browse",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "admin",
+   "size": "mobile",
+   "sw": 618,
+   "cw": 360,
+   "over": [
+    "DIV.flex-1 r=618",
+    "P.text-sm font-medium text-gray-600 r=618",
+    "P.text-2xl font-bold text-gray-900 r=618"
+   ],
+   "text": "C Catalogizer Disconnected Admin Panel Refresh Overview Users Storage Backups Version 5c480072b2d5cda2102b7091a8f7422d941f24e2 Uptime 0d 0h 16m Active Connections 44 Total Requests Unavailable",
+   "len": 589,
+   "title": "Catalogizer - Media Management System",
+   "url": "/admin",
+   "overflowX": true,
+   "axe": [
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "settings",
+   "size": "mobile",
+   "sw": 360,
+   "cw": 360,
+   "over": [],
+   "text": "C Catalogizer Disconnected Settings Manage scans, network discovery, and synchronization Scans SMB Discovery Sync Start New Scan Storage Root Select a storage root... qa-live-corpus (local) qa-corpu",
+   "len": 265,
+   "title": "Catalogizer - Media Management System",
+   "url": "/settings",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "login",
+   "size": "tablet",
+   "sw": 768,
+   "cw": 768,
+   "over": [],
+   "text": "C Welcome back Enter your credentials to access Catalogizer Username Password Remember me Forgot password? Sign in Don't have an account? Create new account Made with ❤ by Vasic Digital © 2026 Vas",
+   "len": 232,
+   "title": "Catalogizer - Media Management System",
+   "url": "/login",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "landmark-one-main",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Document should have one main landmark"
+    },
+    {
+     "id": "page-has-heading-one",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Page should contain a level-one heading"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 8,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "dashboard",
+   "size": "tablet",
+   "sw": 768,
+   "cw": 768,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media More Disconnected Welcome back, qa_admin! Here's what's happening with your media library today. Last updated: 1:02:25 PM Total Media 47 Storage Used 204.42 MB Recent A",
+   "len": 1057,
+   "title": "Catalogizer - Media Management System",
+   "url": "/dashboard",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    },
+    {
+     "id": "svg-img-alt",
+     "impact": "serious",
+     "n": 6,
+     "help": "<svg> elements with an img role must have alternative text"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "media",
+   "size": "tablet",
+   "sw": 768,
+   "cw": 768,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media More Disconnected Media Browser Explore and discover your media collection 47 Total Items 6 Media Types 0.2 GB Total Size 47 Recent Additions Filters Showing 24 of 47 r",
+   "len": 1744,
+   "title": "Catalogizer - Media Management System",
+   "url": "/media",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "button-name",
+     "impact": "critical",
+     "n": 78,
+     "help": "Buttons must have discernible text"
+    },
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 32,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "browse",
+   "size": "tablet",
+   "sw": 768,
+   "cw": 768,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media More Disconnected Browse Media 20 total entities across all types Book 3 items Comic 1 item Game 0 items Movie 10 items Music Album 3 items Music Artist 0 it",
+   "len": 247,
+   "title": "Catalogizer - Media Management System",
+   "url": "/browse",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "admin",
+   "size": "tablet",
+   "sw": 768,
+   "cw": 768,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media More Disconnected Admin Panel Refresh Overview Users Storage Backups Version 5c480072b2d5cda2102b7091a8f7422d941f24e2 Uptime 0d 0h 16m Active Connections 42 Total ",
+   "len": 610,
+   "title": "Catalogizer - Media Management System",
+   "url": "/admin",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "settings",
+   "size": "tablet",
+   "sw": 768,
+   "cw": 768,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media More Disconnected Settings Manage scans, network discovery, and synchronization Scans SMB Discovery Sync Start New Scan Storage Root Select a storage root... qa-live-co",
+   "len": 286,
+   "title": "Catalogizer - Media Management System",
+   "url": "/settings",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "login",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Welcome back Enter your credentials to access Catalogizer Username Password Remember me Forgot password? Sign in Don't have an account? Create new account Made with ❤ by Vasic Digital © 2026 Vas",
+   "len": 232,
+   "title": "Catalogizer - Media Management System",
+   "url": "/login",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "landmark-one-main",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Document should have one main landmark"
+    },
+    {
+     "id": "page-has-heading-one",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Page should contain a level-one heading"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 8,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "dashboard",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Disconnected Welcome back, qa_admin! Here's what's happening with your media library today. Last updated: 1:02:55",
+   "len": 1107,
+   "title": "Catalogizer - Media Management System",
+   "url": "/dashboard",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 2,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    },
+    {
+     "id": "svg-img-alt",
+     "impact": "serious",
+     "n": 6,
+     "help": "<svg> elements with an img role must have alternative text"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "media",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Disconnected Media Browser Explore and discover your media collection 47 Total Items 6 Media Types 0.2 GB Total S",
+   "len": 1794,
+   "title": "Catalogizer - Media Management System",
+   "url": "/media",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "button-name",
+     "impact": "critical",
+     "n": 78,
+     "help": "Buttons must have discernible text"
+    },
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 34,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "browse",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Disconnected Browse Media 20 total entities across all types Book 3 items Comic 1 item Game 0 items Movie ",
+   "len": 297,
+   "title": "Catalogizer - Media Management System",
+   "url": "/browse",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "collections",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Disconnected Collections Organize your media with smart and manual collections Render: 14.8ms Items: 2 Page 1/1 A",
+   "len": 555,
+   "title": "Catalogizer - Media Management System",
+   "url": "/collections",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "button-name",
+     "impact": "critical",
+     "n": 2,
+     "help": "Buttons must have discernible text"
+    },
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    },
+    {
+     "id": "select-name",
+     "impact": "critical",
+     "n": 2,
+     "help": "Select element must have an accessible name"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "favorites",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Disconnected My Favorites Manage your favorite media items Bulk Actions Import Export Favorites Recently Added St",
+   "len": 451,
+   "title": "Catalogizer - Media Management System",
+   "url": "/favorites",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    },
+    {
+     "id": "select-name",
+     "impact": "critical",
+     "n": 2,
+     "help": "Select element must have an accessible name"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "playlists",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Home / Playlists Playlists Organize and manage your media collections All Playlists My Playlists Public Favorites",
+   "len": 531,
+   "title": "Catalogizer - Media Management System",
+   "url": "/playlists",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "button-name",
+     "impact": "critical",
+     "n": 2,
+     "help": "Buttons must have discernible text"
+    },
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "landmark-unique",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    },
+    {
+     "id": "select-name",
+     "impact": "critical",
+     "n": 4,
+     "help": "Select element must have an accessible name"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "subtitles",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Disconnected Subtitle Manager Search, download, and manage subtitles for your media collection Selected Media Sel",
+   "len": 313,
+   "title": "Catalogizer - Media Management System",
+   "url": "/subtitles",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "analytics",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Disconnected Analytics Dashboard Insights and statistics about your media collection Total Media Items 47 Stora",
+   "len": 1307,
+   "title": "Catalogizer - Media Management System",
+   "url": "/analytics",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    },
+    {
+     "id": "svg-img-alt",
+     "impact": "serious",
+     "n": 6,
+     "help": "<svg> elements with an img role must have alternative text"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "conversion",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Disconnected Something went wrong in Conversion Tools This page encountered an error. Other pages should still wor",
+   "len": 231,
+   "title": "Catalogizer - Media Management System",
+   "url": "/conversion",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "page-has-heading-one",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Page should contain a level-one heading"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "admin",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Disconnected Admin Panel Refresh Overview Users Storage Backups Version 5c480072b2d5cda2102b7091a8f7422d941f24e2 ",
+   "len": 659,
+   "title": "Catalogizer - Media Management System",
+   "url": "/admin",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "settings",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Disconnected Settings Manage scans, network discovery, and synchronization Scans SMB Discovery Sync Start New Sca",
+   "len": 336,
+   "title": "Catalogizer - Media Management System",
+   "url": "/settings",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "ai",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Disconnected AI Dashboard Advanced AI-powered features for intelligent content management and automation Overview",
+   "len": 432,
+   "title": "Catalogizer - Media Management System",
+   "url": "/ai",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "button-name",
+     "impact": "critical",
+     "n": 1,
+     "help": "Buttons must have discernible text"
+    },
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 3,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "landmark-unique",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Landmarks should have a unique role or role/label/title (i.e. accessible name) combination"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "identities",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Disconnected Identity & Share Discovery Manage network identities and browse discovered shares Identity Manager D",
+   "len": 247,
+   "title": "Catalogizer - Media Management System",
+   "url": "/identities",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  },
+  {
+   "name": "search",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "over": [],
+   "text": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Browse Media 20 total entities across all types Book 3 items Comic 1 item Game 0 items Movie 10 items Mus",
+   "len": 284,
+   "title": "Catalogizer - Media Management System",
+   "url": "/browse",
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1,
+     "help": "Elements must meet minimum color contrast ratio thresholds"
+    },
+    {
+     "id": "heading-order",
+     "impact": "moderate",
+     "n": 1,
+     "help": "Heading levels should only increase by one"
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1,
+     "help": "All page content should be contained by landmarks"
+    }
+   ],
+   "con": [],
+   "net": []
+  }
+ ],
+ "site": [],
+ "notes": [
+  "mobile post-login url /dashboard",
+  "tablet post-login url /dashboard",
+  "desktop post-login url /dashboard"
+ ],
+ "all_net_mobile": 0,
+ "api_mobile": [
+  {
+   "page": "login@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "login@mobile",
+   "status": 200,
+   "method": "POST",
+   "url": "/api/v1/auth/login"
+  },
+  {
+   "page": "login@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "login@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "login@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/duplicates"
+  },
+  {
+   "page": "login@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/stats"
+  },
+  {
+   "page": "login@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/overall"
+  },
+  {
+   "page": "login@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/growth?days=7"
+  },
+  {
+   "page": "login@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/scans?limit=5"
+  },
+  {
+   "page": "login@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/stats"
+  },
+  {
+   "page": "login@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/system-info"
+  },
+  {
+   "page": "dashboard@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "dashboard@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/stats"
+  },
+  {
+   "page": "dashboard@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/overall"
+  },
+  {
+   "page": "dashboard@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/duplicates"
+  },
+  {
+   "page": "dashboard@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/growth?days=7"
+  },
+  {
+   "page": "dashboard@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/scans?limit=5"
+  },
+  {
+   "page": "dashboard@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/stats"
+  },
+  {
+   "page": "dashboard@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "dashboard@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/system-info"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/stats"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/search?limit=24&offset=0&sort_by=updated_at&sort_order=desc"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/35"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites?"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites?limit=200"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/34"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/33"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/32"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/18"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/6"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/31"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/42"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/17"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/27"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/391"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/4"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/46"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/339"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/5"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/23"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/25"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/26"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/22"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/21"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/24"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/16"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/34/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/15"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/3"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/35/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/32/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/33/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/6/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/31/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/18/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/27/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/5/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/46/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/4/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/42/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/17/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/339/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/26/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/24/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/23/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/25/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/21/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/15/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/16/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/22/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/3/progress"
+  },
+  {
+   "page": "media@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/391/progress"
+  },
+  {
+   "page": "browse@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "browse@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/stats"
+  },
+  {
+   "page": "browse@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/types"
+  },
+  {
+   "page": "browse@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "admin@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "admin@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/reports/usage"
+  },
+  {
+   "page": "admin@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/users"
+  },
+  {
+   "page": "admin@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/backups"
+  },
+  {
+   "page": "admin@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/storage"
+  },
+  {
+   "page": "admin@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "admin@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/reports/performance"
+  },
+  {
+   "page": "admin@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/system-info"
+  },
+  {
+   "page": "settings@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "settings@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/scans"
+  },
+  {
+   "page": "settings@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/storage/roots"
+  },
+  {
+   "page": "settings@mobile",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  }
+ ],
+ "con_mobile": [
+  {
+   "page": "login@mobile",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "dashboard@mobile",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "media@mobile",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "browse@mobile",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "admin@mobile",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "settings@mobile",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  }
+ ],
+ "net_mobile": [],
+ "ws_mobile": [
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": []
+  }
+ ],
+ "all_net_tablet": 0,
+ "api_tablet": [
+  {
+   "page": "login@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "login@tablet",
+   "status": 200,
+   "method": "POST",
+   "url": "/api/v1/auth/login"
+  },
+  {
+   "page": "login@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "login@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "login@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/overall"
+  },
+  {
+   "page": "login@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/growth?days=7"
+  },
+  {
+   "page": "login@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/stats"
+  },
+  {
+   "page": "login@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/stats"
+  },
+  {
+   "page": "login@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/scans?limit=5"
+  },
+  {
+   "page": "login@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/duplicates"
+  },
+  {
+   "page": "login@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/system-info"
+  },
+  {
+   "page": "dashboard@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "dashboard@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/stats"
+  },
+  {
+   "page": "dashboard@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/overall"
+  },
+  {
+   "page": "dashboard@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/duplicates"
+  },
+  {
+   "page": "dashboard@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/growth?days=7"
+  },
+  {
+   "page": "dashboard@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/scans?limit=5"
+  },
+  {
+   "page": "dashboard@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "dashboard@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/stats"
+  },
+  {
+   "page": "dashboard@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/system-info"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/stats"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/search?limit=24&offset=0&sort_by=updated_at&sort_order=desc"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/35"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites?"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites?limit=200"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/34"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/33"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/32"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/6"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/5"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/31"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/18"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/17"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/27"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/339"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/46"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/42"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/391"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/4"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/23"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/21"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/25"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/22"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/26"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/3"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/35/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/15"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/34/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/16"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/24"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/6/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/32/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/18/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/33/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/31/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/27/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/5/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/4/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/42/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/46/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/17/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/339/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/26/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/24/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/391/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/23/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/22/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/21/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/3/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/15/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/16/progress"
+  },
+  {
+   "page": "media@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/25/progress"
+  },
+  {
+   "page": "browse@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "browse@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/stats"
+  },
+  {
+   "page": "browse@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/types"
+  },
+  {
+   "page": "browse@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "admin@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "admin@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/users"
+  },
+  {
+   "page": "admin@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/reports/performance"
+  },
+  {
+   "page": "admin@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/storage"
+  },
+  {
+   "page": "admin@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/backups"
+  },
+  {
+   "page": "admin@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "admin@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/reports/usage"
+  },
+  {
+   "page": "admin@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/system-info"
+  },
+  {
+   "page": "settings@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "settings@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/scans"
+  },
+  {
+   "page": "settings@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/storage/roots"
+  },
+  {
+   "page": "settings@tablet",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  }
+ ],
+ "con_tablet": [
+  {
+   "page": "login@tablet",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "dashboard@tablet",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "media@tablet",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "browse@tablet",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "admin@tablet",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "settings@tablet",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  }
+ ],
+ "net_tablet": [],
+ "ws_tablet": [
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": []
+  }
+ ],
+ "tabOrderLogin": [
+  "INPUT[text]:r0:",
+  "INPUT[password]login-password",
+  "BUTTON[button]Show password",
+  "INPUT[checkbox]remember-me",
+  "A[]Forgot password?",
+  "A[]Create new account",
+  "BUTTON[]Create new account",
+  "BODY[]C\nWelcome back\n\nEnte"
+ ],
+ "tabOrderDash": [
+  "A:/",
+  "A:/dashboard",
+  "A:/media",
+  "A:/browse",
+  "A:/favorites",
+  "A:/playlists",
+  "A:/analytics",
+  "BUTTON:More",
+  "INPUT:",
+  "BUTTON:Switch to dark theme"
+ ],
+ "theme": "no theme toggle found",
+ "all_net_desktop": 2,
+ "api_desktop": [
+  {
+   "page": "login@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "login@desktop",
+   "status": 200,
+   "method": "POST",
+   "url": "/api/v1/auth/login"
+  },
+  {
+   "page": "login@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "login@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "login@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/overall"
+  },
+  {
+   "page": "login@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/stats"
+  },
+  {
+   "page": "login@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/duplicates"
+  },
+  {
+   "page": "login@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/stats"
+  },
+  {
+   "page": "login@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/scans?limit=5"
+  },
+  {
+   "page": "login@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/growth?days=7"
+  },
+  {
+   "page": "login@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/system-info"
+  },
+  {
+   "page": "dashboard@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "dashboard@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/stats"
+  },
+  {
+   "page": "dashboard@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/overall"
+  },
+  {
+   "page": "dashboard@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/duplicates"
+  },
+  {
+   "page": "dashboard@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/growth?days=7"
+  },
+  {
+   "page": "dashboard@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/scans?limit=5"
+  },
+  {
+   "page": "dashboard@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/stats"
+  },
+  {
+   "page": "dashboard@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "dashboard@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/system-info"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/stats"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/search?limit=24&offset=0&sort_by=updated_at&sort_order=desc"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/35"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites?"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites?limit=200"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/34"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/33"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/32"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/6"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/17"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/31"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/42"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/18"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/4"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/5"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/26"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/46"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/391"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/25"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/339"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/27"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/24"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/3"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/22"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/21"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/16"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/23"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites/check/movie/15"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/35/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/34/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/33/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/6/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/32/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/18/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/31/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/5/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/17/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/42/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/4/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/46/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/27/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/26/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/391/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/25/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/339/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/24/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/22/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/23/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/21/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/3/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/16/progress"
+  },
+  {
+   "page": "media@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/15/progress"
+  },
+  {
+   "page": "browse@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "browse@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/stats"
+  },
+  {
+   "page": "browse@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/types"
+  },
+  {
+   "page": "browse@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "collections@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "collections@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/collections"
+  },
+  {
+   "page": "collections@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "favorites@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "favorites@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites?sort_by=created_at&sort_order=desc"
+  },
+  {
+   "page": "favorites@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites?limit=200"
+  },
+  {
+   "page": "favorites@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites?"
+  },
+  {
+   "page": "favorites@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "playlists@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "playlists@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "playlists@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites?"
+  },
+  {
+   "page": "playlists@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/playlists?"
+  },
+  {
+   "page": "playlists@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/favorites?limit=200"
+  },
+  {
+   "page": "subtitles@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "subtitles@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/subtitles/providers"
+  },
+  {
+   "page": "subtitles@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/subtitles/languages"
+  },
+  {
+   "page": "subtitles@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "analytics@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "analytics@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/duplicates"
+  },
+  {
+   "page": "analytics@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/recent?limit=20"
+  },
+  {
+   "page": "analytics@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/stats"
+  },
+  {
+   "page": "analytics@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/growth?days=30"
+  },
+  {
+   "page": "analytics@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/filetypes"
+  },
+  {
+   "page": "analytics@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "analytics@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/analytics/system"
+  },
+  {
+   "page": "conversion@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "conversion@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/conversion/jobs"
+  },
+  {
+   "page": "conversion@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "admin@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "admin@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/reports/usage"
+  },
+  {
+   "page": "admin@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/storage"
+  },
+  {
+   "page": "admin@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "admin@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/users"
+  },
+  {
+   "page": "admin@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/backups"
+  },
+  {
+   "page": "admin@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/reports/performance"
+  },
+  {
+   "page": "admin@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/system-info"
+  },
+  {
+   "page": "settings@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "settings@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/scans"
+  },
+  {
+   "page": "settings@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/storage/roots"
+  },
+  {
+   "page": "settings@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "ai@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "ai@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "identities@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "identities@desktop",
+   "status": 404,
+   "method": "GET",
+   "url": "/api/v1/identities"
+  },
+  {
+   "page": "identities@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "identities@desktop",
+   "status": 404,
+   "method": "GET",
+   "url": "/api/v1/identities"
+  },
+  {
+   "page": "identities@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/status"
+  },
+  {
+   "page": "identities@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/stats"
+  },
+  {
+   "page": "identities@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/overall"
+  },
+  {
+   "page": "identities@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/duplicates"
+  },
+  {
+   "page": "identities@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/media/stats"
+  },
+  {
+   "page": "identities@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/growth?days=7"
+  },
+  {
+   "page": "identities@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/auth/permissions"
+  },
+  {
+   "page": "identities@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/stats/scans?limit=5"
+  },
+  {
+   "page": "identities@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/admin/system-info"
+  },
+  {
+   "page": "search@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/types"
+  },
+  {
+   "page": "search@desktop",
+   "status": 200,
+   "method": "GET",
+   "url": "/api/v1/entities/stats"
+  }
+ ],
+ "con_desktop": [
+  {
+   "page": "login@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "dashboard@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "media@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "browse@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "collections@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "favorites@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "playlists@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "subtitles@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "analytics@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "conversion@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "conversion@desktop",
+   "type": "error",
+   "text": "TypeError: Cannot read properties of undefined (reading 'name')\n    at http://192.168.1.115:33080/assets/ConversionTools-uzJlsW-3.js:1:3185\n    at Array.map (<anonymous>)\n    at Y (http://192.168.1.115:33080/assets/ConversionTools-uzJlsW-3.js:1:2784)\n    at Xu (http://192.168.1.115:33080/assets/rout"
+  },
+  {
+   "page": "conversion@desktop",
+   "type": "error",
+   "text": "ErrorBoundary caught an error: TypeError: Cannot read properties of undefined (reading 'name')\n    at http://192.168.1.115:33080/assets/ConversionTools-uzJlsW-3.js:1:3185\n    at Array.map (<anonymous>)\n    at Y (http://192.168.1.115:33080/assets/ConversionTools-uzJlsW-3.js:1:2784)\n    at Xu (http://"
+  },
+  {
+   "page": "admin@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "settings@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "ai@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "identities@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "identities@desktop",
+   "type": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  },
+  {
+   "page": "identities@desktop",
+   "type": "error",
+   "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  },
+  {
+   "page": "identities@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  },
+  {
+   "page": "search@desktop",
+   "type": "error",
+   "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+  }
+ ],
+ "net_desktop": [
+  {
+   "page": "identities@desktop",
+   "status": 404,
+   "method": "GET",
+   "url": "http://192.168.1.115:33080/api/v1/identities"
+  },
+  {
+   "page": "identities@desktop",
+   "status": 404,
+   "method": "GET",
+   "url": "http://192.168.1.115:33080/api/v1/identities"
+  }
+ ],
+ "ws_desktop": [
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  },
+  {
+   "url": "ws://192.168.1.115:33080/ws?token=[R]",
+   "events": [
+    "close"
+   ]
+  }
+ ]
+}
