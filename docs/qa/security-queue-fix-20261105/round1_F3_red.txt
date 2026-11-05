@@ -1,0 +1,5 @@
+--- FAIL: TestNonRegularVideoPathIsSkippedQuickly (3.00s)
+    cover_art_ffmpeg_hardening_test.go:207: a FIFO video path was handed to ffprobe/ffmpeg instead of being skipped
+FAIL
+FAIL	catalogizer/internal/services	3.016s
+FAIL

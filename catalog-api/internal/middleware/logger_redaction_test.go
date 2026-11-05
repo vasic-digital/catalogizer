@@ -23,7 +23,7 @@ func TestLogger_CredentialQueryParametersAreRedacted(t *testing.T) {
 	r.Use(Logger(zap.New(core)))
 	r.GET("/api/v1/smb/discover", func(c *gin.Context) { c.Status(http.StatusOK) })
 
-	for _, name := range []string{"password", "passwd", "secret", "client_secret", "refresh_token", "api_key", "access_token", "ticket", "token", "pass", "pwd", "authorization", "PASSWORD"} {
+	for _, name := range []string{"password", "passwd", "secret", "client_secret", "refresh_token", "api_key", "apikey", "access_token", "ticket", "token", "pass", "pwd", "authorization", "PASSWORD"} {
 		t.Run(name, func(t *testing.T) {
 			req := httptest.NewRequest("GET", "/api/v1/smb/discover?host=nas.lan&"+name+"=hunter2-SECRET&domain=WORK", nil)
 			w := httptest.NewRecorder()

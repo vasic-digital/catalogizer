@@ -1,0 +1,13 @@
+Round 1 mutations (cover_art_service.go, each restored):
+BASE
+ok  	catalogizer/internal/services	3.130s 
+RC no deadline in generateAndSaveVideoThumbnail only
+--- FAIL: TestGenerateAndSaveVideoThumbnail_HungToolIsBoundedByTimeout (10.01s) 
+M-F3a no regular-file check in getVideoDuration
+--- FAIL: TestNonRegularVideoPathIsSkippedQuickly (3.00s) 
+M-F3b IsRegular always true
+--- FAIL: TestNonRegularVideoPathIsSkippedQuickly (3.00s) 
+M-F6 caller ctx ignored
+--- FAIL: TestGetVideoDuration_HonoursCallerContext (30.01s) 
+restored
+F7 mutant: --- FAIL: TestCoverArtDemuxers_MatchConverterHardeningList (0.00s)

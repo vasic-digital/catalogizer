@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"sync/atomic"
 	"syscall"
 	"testing"
@@ -57,7 +59,7 @@ func TestCoverArtFFprobe_PlaylistToLocalFileIsRefused(t *testing.T) {
 	out, err := ffprobeDurationCmd(playlist).Output()
 	assert.Error(t, err, "ffprobe must refuse a non-container (HLS) input, got duration %q", string(out))
 	s := NewCoverArtService(nil, zap.NewNop())
-	d, _ := s.getVideoDuration(playlist)
+	d, _ := s.getVideoDuration(context.Background(), playlist)
 	assert.Less(t, d, 1.0, "duration must not come from the secret segment (2.0 s)")
 }
 
@@ -70,28 +72,66 @@ func TestCoverArtFFmpeg_PlaylistToLocalFileMakesNoThumbnail(t *testing.T) {
 	assert.True(t, os.IsNotExist(err), "no frame may be produced from a file the playlist names")
 }
 
-// SSRF-F5 (RED): ffprobe had no ctx/timeout; a FIFO named like a video blocks open() forever.
-func TestGetVideoDuration_BlockedInputIsBoundedByTimeout(t *testing.T) {
-	needFFTools(t)
-	fifo := filepath.Join(t.TempDir(), "v.mp4")
-	require.NoError(t, syscall.Mkfifo(fifo, 0o600))
-	old := ffprobeTimeout
-	ffprobeTimeout = 500 * time.Millisecond
-	t.Cleanup(func() { ffprobeTimeout = old })
-	// release any blocked reader at the end so a failing (unbounded) run does not leak a process
-	t.Cleanup(func() {
-		if f, err := os.OpenFile(fifo, os.O_WRONLY|syscall.O_NONBLOCK, 0); err == nil {
-			f.Close()
-		}
-	})
-	s := NewCoverArtService(nil, zap.NewNop())
-	done := make(chan float64, 1)
-	go func() { d, _ := s.getVideoDuration(fifo); done <- d }()
+// shimTools puts executable stand-ins for ffprobe and ffmpeg that sleep far longer than any
+// deadline in front of PATH. This is a UNIT test of the deadlines (a regular file cannot block
+// the real tools); the real tools are exercised by the other tests in this file.
+func shimTools(t *testing.T) string {
+	t.Helper()
+	dir := t.TempDir()
+	for _, n := range []string{"ffprobe", "ffmpeg"} {
+		require.NoError(t, os.WriteFile(filepath.Join(dir, n), []byte("#!/bin/sh\nexec sleep 60\n"), 0o755))
+	}
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	f := filepath.Join(t.TempDir(), "v.mp4")
+	require.NoError(t, os.WriteFile(f, []byte("not really a video"), 0o600))
+	return f
+}
+
+func boundedWithin(t *testing.T, what string, fn func()) {
+	t.Helper()
+	done := make(chan struct{})
+	go func() { fn(); close(done) }()
 	select {
 	case <-done:
 	case <-time.After(10 * time.Second):
-		t.Fatal("getVideoDuration blocked on a FIFO: ffprobe has no timeout")
+		t.Fatalf("%s did not return: the tool has no deadline", what)
 	}
+}
+
+// SSRF-F5 (RED on the pre-fix tree): ffprobe had no ctx/timeout.
+func TestGetVideoDuration_HungToolIsBoundedByTimeout(t *testing.T) {
+	f := shimTools(t)
+	old := ffprobeTimeout
+	ffprobeTimeout = 500 * time.Millisecond
+	t.Cleanup(func() { ffprobeTimeout = old })
+	s := NewCoverArtService(nil, zap.NewNop())
+	boundedWithin(t, "getVideoDuration", func() { _, _ = s.getVideoDuration(context.Background(), f) })
+}
+
+func TestGenerateVideoThumbnail_HungToolIsBoundedByTimeout(t *testing.T) {
+	f := shimTools(t)
+	old := coverArtFFmpegTimeout
+	coverArtFFmpegTimeout = 500 * time.Millisecond
+	t.Cleanup(func() { coverArtFFmpegTimeout = old })
+	s := NewCoverArtService(nil, zap.NewNop())
+	s.cacheDir = t.TempDir()
+	boundedWithin(t, "generateVideoThumbnail", func() {
+		_, _ = s.generateVideoThumbnail(context.Background(), &VideoThumbnailRequest{MediaItemID: 1, VideoPath: f}, 1, 0)
+	})
+}
+
+// F1: the production scan path (generateAndSaveVideoThumbnail) has its own deadline site.
+func TestGenerateAndSaveVideoThumbnail_HungToolIsBoundedByTimeout(t *testing.T) {
+	f := shimTools(t)
+	oldP, oldF := ffprobeTimeout, coverArtFFmpegTimeout
+	ffprobeTimeout, coverArtFFmpegTimeout = 200*time.Millisecond, 500*time.Millisecond
+	t.Cleanup(func() { ffprobeTimeout, coverArtFFmpegTimeout = oldP, oldF })
+	s := NewCoverArtService(nil, zap.NewNop())
+	s.cacheDir = t.TempDir()
+	boundedWithin(t, "generateAndSaveVideoThumbnail", func() {
+		_, err := s.generateAndSaveVideoThumbnail(context.Background(), 7, f)
+		require.Error(t, err)
+	})
 }
 
 // SSRF-F3: a DIRECT http URL as video path reaches a listener without the protocol whitelist
@@ -115,7 +155,7 @@ func TestCoverArtFFmpeg_DirectURLVideoPathDoesNotReachNetwork(t *testing.T) {
 	url := fmt.Sprintf("http://127.0.0.1:%d/v.mp4", ln.Addr().(*net.TCPAddr).Port)
 	s := NewCoverArtService(nil, zap.NewNop())
 	s.cacheDir = t.TempDir()
-	_, _ = s.getVideoDuration(url)
+	_, _ = s.getVideoDuration(context.Background(), url)
 	_, _ = s.generateVideoThumbnail(context.Background(), &VideoThumbnailRequest{MediaItemID: 1, VideoPath: url}, 1, 0)
 	time.Sleep(200 * time.Millisecond)
 	assert.Zero(t, atomic.LoadInt32(&hits), "a URL named as video path must never be contacted")
@@ -180,4 +220,59 @@ func TestGenerateVideoThumbnail_BlockedInputIsBoundedByTimeout(t *testing.T) {
 	case <-time.After(10 * time.Second):
 		t.Fatal("generateVideoThumbnail blocked on a FIFO: ffmpeg has no deadline")
 	}
+}
+
+// F3: a non-regular file (FIFO) in a library root must be skipped at once; it used to cost the
+// full ffprobe timeout plus the ffmpeg timeout per item.
+func TestNonRegularVideoPathIsSkippedQuickly(t *testing.T) {
+	needFFTools(t)
+	fifo := filepath.Join(t.TempDir(), "v.mp4")
+	require.NoError(t, syscall.Mkfifo(fifo, 0o600))
+	t.Cleanup(func() {
+		if f, err := os.OpenFile(fifo, os.O_WRONLY|syscall.O_NONBLOCK, 0); err == nil {
+			f.Close()
+		}
+	})
+	s := NewCoverArtService(nil, zap.NewNop())
+	s.cacheDir = t.TempDir()
+	done := make(chan error, 1)
+	go func() {
+		_, err := s.generateAndSaveVideoThumbnail(context.Background(), 7, fifo)
+		done <- err
+	}()
+	select {
+	case err := <-done:
+		require.Error(t, err)
+	case <-time.After(3 * time.Second):
+		t.Fatal("a FIFO video path was handed to ffprobe/ffmpeg instead of being skipped")
+	}
+}
+
+// F6: the caller's context bounds the probe (a cancelled caller must not wait for ffprobeTimeout).
+func TestGetVideoDuration_HonoursCallerContext(t *testing.T) {
+	f := shimTools(t)
+	s := NewCoverArtService(nil, zap.NewNop())
+	ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
+	defer cancel()
+	start := time.Now()
+	_, _ = s.getVideoDuration(ctx, f) // ffprobeTimeout stays at its 30 s default
+	assert.Less(t, time.Since(start), 5*time.Second)
+}
+
+// F7: the cover-art demuxer list must stay identical to the converter's (the packages cannot
+// import each other, so the converter source is parsed).
+func TestCoverArtDemuxers_MatchConverterHardeningList(t *testing.T) {
+	src, err := os.ReadFile(filepath.Join("..", "..", "services", "converter_hardening.go"))
+	require.NoError(t, err)
+	text := string(src)
+	start := strings.Index(text, "var ffmpegDemuxers = []string{")
+	require.GreaterOrEqual(t, start, 0, "control: converter list found")
+	end := strings.Index(text[start:], "\n}")
+	require.Greater(t, end, 0)
+	var want []string
+	for _, m := range regexp.MustCompile(`"([a-z0-9_]+)"`).FindAllStringSubmatch(text[start:start+end], -1) {
+		want = append(want, m[1])
+	}
+	require.NotEmpty(t, want)
+	assert.Equal(t, want, coverArtDemuxers)
 }

@@ -13,6 +13,9 @@ func TestPath(t *testing.T) {
 		"Ticket=SecretValue":                 "/p?Ticket=REDACTED",
 		"host=nas&password=hunter2&domain=W": "/p?host=nas&password=REDACTED&domain=W",
 		"PassWord=x&username=bob":            "/p?PassWord=REDACTED&username=bob",
+		"a=1&apikey=k1&b=2":                  "/p?a=1&apikey=REDACTED&b=2",
+		"a=1;password=x":                     "/p?a=1;password=REDACTED",
+		"a=1;b=2&token=t;c=3":                "/p?a=1;b=2&token=REDACTED;c=3",
 		"%zz=1&ticket=secretvalue":           "/p?REDACTED&ticket=REDACTED",
 	}
 	for q, want := range cases {

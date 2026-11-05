@@ -21,19 +21,33 @@ func Query(rawQuery string) string {
 	if rawQuery == "" {
 		return ""
 	}
-	pairs := strings.Split(rawQuery, "&")
-	for i, p := range pairs {
-		name, _, hasVal := strings.Cut(p, "=")
-		un, err := url.QueryUnescape(name)
-		if err != nil {
-			pairs[i] = "REDACTED"
+	// Both '&' and ';' separate pairs for redaction purposes (some servers and proxies still split
+	// on ';'), so "a=1;password=x" cannot hide a value from the log filter. Separators are kept.
+	var out strings.Builder
+	start := 0
+	for i := 0; i <= len(rawQuery); i++ {
+		if i < len(rawQuery) && rawQuery[i] != '&' && rawQuery[i] != ';' {
 			continue
 		}
-		if sensitive[strings.ToLower(un)] && hasVal {
-			pairs[i] = name + "=REDACTED"
+		out.WriteString(redactPair(rawQuery[start:i]))
+		if i < len(rawQuery) {
+			out.WriteByte(rawQuery[i])
 		}
+		start = i + 1
 	}
-	return strings.Join(pairs, "&")
+	return out.String()
+}
+
+func redactPair(p string) string {
+	name, _, hasVal := strings.Cut(p, "=")
+	un, err := url.QueryUnescape(name)
+	if err != nil {
+		return "REDACTED"
+	}
+	if sensitive[strings.ToLower(un)] && hasVal {
+		return name + "=REDACTED"
+	}
+	return p
 }
 
 // Path returns path + "?" + redacted query (or just path when there is no query).

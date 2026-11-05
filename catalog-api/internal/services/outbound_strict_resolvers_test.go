@@ -352,7 +352,7 @@ func TestCoverArtFFmpeg_PlaylistDoesNotReachNetwork(t *testing.T) {
 	s := NewCoverArtService(nil, zap.NewNop())
 	s.cacheDir = dir
 	for _, p := range []string{hls, cc} {
-		_, _ = s.getVideoDuration(p)
+		_, _ = s.getVideoDuration(context.Background(), p)
 		_, _ = s.generateVideoThumbnail(context.Background(), &VideoThumbnailRequest{MediaItemID: 1, VideoPath: p}, 1, 0)
 	}
 	time.Sleep(200 * time.Millisecond)

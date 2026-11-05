@@ -20,10 +20,12 @@ func (c socksProxyCfg) GetHTTPURL() string  { return "" }
 func (c socksProxyCfg) GetUsername() string { return "" }
 func (c socksProxyCfg) GetPassword() string { return "" }
 
-// SSRF-F1: the SOCKS5 dial must honour the caller's context. A real listener that accepts the
-// TCP connection and never answers the SOCKS5 handshake holds the dial; a cancelled context
-// has to end the download well before the client's own 30 s timeout.
-func TestDownloadImage_Socks5DialHonoursContextCancellation(t *testing.T) {
+// SSRF-F1: the SOCKS5 handshake is bounded by the fixed socks5DialTimeout. net/http detaches the
+// dial from the request context, so the caller's context does not reach it, and a proxy that
+// answers slowly but steadily is not detected (SECQ-7). A real listener accepts the TCP
+// connection and never answers the handshake; the half-open connection must be closed once
+// the (lowered) dial timeout has passed.
+func TestDownloadImage_Socks5HandshakeIsBoundedByDialTimeout(t *testing.T) {
 	AllowPrivateSSRFForTests(t)
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(t, err)

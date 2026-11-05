@@ -291,7 +291,7 @@ func (s *CoverArtService) GenerateVideoThumbnails(ctx context.Context, request *
 		zap.String("video_path", request.VideoPath))
 
 	// Get video duration
-	duration, err := s.getVideoDuration(request.VideoPath)
+	duration, err := s.getVideoDuration(ctx, request.VideoPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get video duration: %w", err)
 	}
@@ -591,6 +591,19 @@ func ffmpegInputGuard() []string {
 
 // coverArtFFmpegTimeout bounds one frame extraction when the caller's context has no deadline.
 var coverArtFFmpegTimeout = 2 * time.Minute
+
+// requireRegularFile refuses anything that is not a regular file (FIFO, device, socket, directory,
+// URL string): opening those can block ffprobe/ffmpeg or reach places a media file never should.
+func requireRegularFile(path string) error {
+	info, err := os.Stat(path)
+	if err != nil {
+		return fmt.Errorf("cover_art: video path not readable: %w", err)
+	}
+	if !info.Mode().IsRegular() {
+		return fmt.Errorf("cover_art: video path is not a regular file (%s)", info.Mode().Type())
+	}
+	return nil
+}
 
 // socks5DialTimeout bounds the SOCKS5 connect+handshake (a variable only so a test can lower it).
 const socks5DialTimeoutDefault = 30 * time.Second
@@ -988,8 +1001,11 @@ func (s *CoverArtService) saveCoverArtToDB(ctx context.Context, coverArt *CoverA
 }
 
 // getVideoDuration gets the duration of a video file using ffprobe
-func (s *CoverArtService) getVideoDuration(videoPath string) (float64, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), ffprobeTimeout)
+func (s *CoverArtService) getVideoDuration(ctx context.Context, videoPath string) (float64, error) {
+	if err := requireRegularFile(videoPath); err != nil {
+		return 0, err
+	}
+	ctx, cancel := context.WithTimeout(ctx, ffprobeTimeout)
 	defer cancel()
 	output, err := ffprobeDurationCmdContext(ctx, videoPath).Output()
 	if err == nil {
@@ -1016,6 +1032,9 @@ func (s *CoverArtService) generateVideoThumbnail(ctx context.Context, request *V
 
 	outputPath := filepath.Join(s.cacheDir, coverID+".jpg")
 
+	if rerr := requireRegularFile(request.VideoPath); rerr != nil {
+		return nil, rerr
+	}
 	// Try ffmpeg to extract a frame
 	fctx, fcancel := withFFmpegDeadline(ctx)
 	err := ffmpegFrameCmd(fctx, timestamp, request.VideoPath, outputPath).Run()
@@ -1390,7 +1409,7 @@ func (s *CoverArtService) copyRemoteFileToTemp(ctx context.Context, t thumbnailT
 // generateAndSaveVideoThumbnail creates a single thumbnail for a video file
 // and persists it to the database.
 func (s *CoverArtService) generateAndSaveVideoThumbnail(ctx context.Context, mediaItemID int64, videoPath string) (*CoverArt, error) {
-	duration, err := s.getVideoDuration(videoPath)
+	duration, err := s.getVideoDuration(ctx, videoPath)
 	if err != nil {
 		return nil, err
 	}
