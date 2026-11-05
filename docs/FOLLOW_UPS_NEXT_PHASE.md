@@ -1578,3 +1578,10 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - VERIFIED (3/3 identical machine evidence, evidence docs/qa/ui-live-rerun-20261105-b): D7 contrast 9 pages x light/dark 0 violations; D5/D6 names + 360px admin; D8 header search; D1 /conversion; D2 /identities; D3 /entity (background 404 retries on missing entity remain, order differs only); pprof gate 401/401/200.
 - Not exercised: pprof 60 s profile cap, non-admin 403, cover-art SSRF F2..F5, TRUSTED_PROXIES from a second LAN host. Prometheus /api/v1/targets answers without token on the LAN (only API /metrics needs the scrape token) - decide if Prometheus itself needs auth (new item CAT-PROM-AUTH-1).
 - Cleanup owed: qa.env.bak.pre-rotate in catqa3 dir (delete after confirm). Subagent printed unrelated env keys into its own tool output once; operator may rotate (not in repo/evidence).
+
+## D7 follow-ups landed (PROVISIONAL; GO-with-follow-ups round 1/5)
+- D7-R4-1 (source-defect minor): UploadManager.tsx:260 failed-row error text `text-red-500` no dark variant: 3.60 light / 3.29 dark. Fix `text-red-700 dark:text-red-400` + error-row test (pre-existing).
+- D7-R4-2 (test nit): ExternalIntegrations test assigns global.fetch without restore; use vi.stubGlobal/afterEach.
+- D7-R4-3: "pending" badge dark:bg-gray-800 equals card bg (shape invisible, text passes).
+- D7-R4-4: contrast helper dark fallback to light bg-*-50 lets islands pass; add class-wide check. Decorative status icons unmeasured (WCAG 1.4.11 3:1).
+- Live check on rebuilt web image (includes these fixes) owed (CAT-UI-AXE-LIVE-1 rerun).
