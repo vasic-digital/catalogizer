@@ -66,4 +66,33 @@ rm -f "$S/seed/"*; if [ -f "$SEED" ]; then printf 'short' | TOK_DIR="$S/seed" TO
 [ "$rc" != 0 ] && [ "$rc" != 127 ] && [ ! -e "$S/seed/metrics.tok" ] && ok FU1.short_token_refused_nothing_written || bad FU1.short_token_refused_nothing_written "rc=$rc"
 grep -q 'METRICS_SCRAPE_TOKEN' "$HERE/up.sh" && grep -q 'seed_scrape_token.sh' "$HERE/up.sh" && ok FU1.up_sh_uses_static_token_path || bad FU1.up_sh_uses_static_token_path "up.sh does not wire the seed"
 
+# F4/F6 (opus review): seed boundary 31/32, chown failure is fatal, stale refresher session files are removed
+rm -f "$S/seed/"*; T31="$(printf 'B%.0s' $(seq 1 31))"; T32="$(printf 'C%.0s' $(seq 1 32))"
+printf '%s' "$T31" | TOK_DIR="$S/seed" TOK_CHOWN= sh "$SEED" >/dev/null 2>&1; rc31=$?
+[ "$rc31" != 0 ] && [ ! -e "$S/seed/metrics.tok" ] && ok FU1.boundary_31_chars_refused || bad FU1.boundary_31_chars_refused "rc=$rc31"
+printf '%s' "$T32" | TOK_DIR="$S/seed" TOK_CHOWN= sh "$SEED" >/dev/null 2>&1; rc32=$?
+[ "$rc32" = 0 ] && [ "$(cat "$S/seed/metrics.tok" 2>/dev/null)" = "$T32" ] && ok FU1.boundary_32_chars_accepted || bad FU1.boundary_32_chars_accepted "rc=$rc32"
+rm -f "$S/seed/"*; printf '%s' "$T32" | TOK_DIR="$S/seed" TOK_CHOWN=no_such_user_xx:no_such_grp_xx sh "$SEED" >/dev/null 2>&1; rcc=$?
+[ "$rcc" != 0 ] && [ ! -e "$S/seed/metrics.tok" ] && ok FU1.chown_failure_is_fatal_nothing_published || bad FU1.chown_failure_is_fatal_nothing_published "rc=$rcc"
+rm -f "$S/seed/"*; printf 'STALE_REFRESHER_SESSION' > "$S/seed/previous.tok"; printf '%s' "$T32" | TOK_DIR="$S/seed" TOK_CHOWN= sh "$SEED" >/dev/null 2>&1
+[ ! -e "$S/seed/previous.tok" ] && ok FU1.stale_previous_tok_removed || bad FU1.stale_previous_tok_removed "previous.tok still present"
+# up.sh behaviour with a stub podman/curl/ss: the token reaches the seeding container on STDIN only (argv and env names checked, not a name grep)
+U="$S/up"; mkdir -p "$U/bin" "$U/qa"
+cat > "$U/bin/podman" <<'FP'
+#!/bin/bash
+echo "podman $*" >> "$U_LOG"
+case "$*" in *seed_scrape_token.sh*) cat > "$U_DIR/seed.stdin";; esac
+case "$*" in *"cat /tokens/previous.tok"*) printf 'OLDADMINSESSIONTOKEN';; esac
+case "$1 $2" in "pod exists") exit 1;; "image inspect") awk -v i="$3" '$1==i{print $2}' "$PINS"; exit 0;; esac
+exit 0
+FP
+printf '#!/bin/sh\necho "curl $*" >> "$U_LOG"\ncase "$*" in *@-*) cat >> "$U_DIR/curl.stdin";; esac\nprintf 200\n' > "$U/bin/curl"; printf '#!/bin/sh\nexit 0\n' > "$U/bin/sleep"; printf '#!/bin/sh\nexit 0\n' > "$U/bin/ss"; chmod +x "$U/bin/"*
+( umask 077; { echo ADMIN_USERNAME=a; echo ADMIN_PASSWORD=pw; echo POSTGRES_USER=c; echo POSTGRES_PASSWORD=pp; echo "METRICS_SCRAPE_TOKEN=$T32"; } > "$U/qa/qa.env" )
+PINS="$HERE/evidence/image_digests.txt" U_LOG="$U/log" U_DIR="$U" QA_DIR="$U/qa" PATH="$U/bin:$PATH" bash "$HERE/up.sh" >/dev/null 2>&1
+[ "$(cat "$U/seed.stdin" 2>/dev/null)" = "$T32" ] && ok FU1.up_feeds_token_on_stdin || bad FU1.up_feeds_token_on_stdin "stdin=$(wc -c < "$U/seed.stdin" 2>/dev/null)"
+grep -qF -- "$T32" "$U/log" && bad FU1.token_value_never_in_argv "token value in podman argv" || ok FU1.token_value_never_in_argv
+grep -qE -- '(-e|--env)[= ]METRICS_SCRAPE_TOKEN' "$U/log" && bad FU1.token_never_passed_as_env_to_monitoring "env pass-through" || ok FU1.token_never_passed_as_env_to_monitoring
+grep -q 'auth/logout' "$U/log" && grep -q 'Bearer OLDADMINSESSIONTOKEN' "$U/curl.stdin" 2>/dev/null && ! grep -q OLDADMINSESSIONTOKEN "$U/log" && ok FU1.stale_refresher_session_revoked_token_on_stdin_only || bad FU1.stale_refresher_session_revoked_token_on_stdin_only "no logout / token in argv"
+grep -q -- 'tokenrefresh' "$U/log" && bad FU1.no_refresher_started_in_static_mode "refresher started" || ok FU1.no_refresher_started_in_static_mode
+
 [ "$fail" = 0 ] && echo "ALL PASS" || echo "SOME FAILED"; exit "$fail"

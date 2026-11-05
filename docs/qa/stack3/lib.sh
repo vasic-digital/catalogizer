@@ -11,9 +11,12 @@ PG_PORT="${PG_PORT:-35434}";   REDIS_PORT="${REDIS_PORT:-36381}"  # loopback onl
 PG_IMAGE="${PG_IMAGE:-docker.io/library/postgres:15-alpine}"
 REDIS_IMAGE="${REDIS_IMAGE:-docker.io/library/redis:7-alpine}"
 NGINX_IMAGE="${NGINX_IMAGE:-docker.io/library/nginx:alpine}"
-# Peer CIDR(s) the API trusts for X-Forwarded-For (gin SetTrustedProxies). Explicit list, never "auto"/0.0.0.0/0.
-# MEASURED 2026-11-05 (docs/qa/stack3-verify-20261105/clientip_probe.txt): with pasta, a request that reaches the API through the monitoring nginx
-# front door (pod catqa3mon, -T forward) AND a direct host-local request both arrive with the HOST's primary LAN address as TCP peer, so the proxy
-# is trusted by trusting exactly that /32 (loopback NOT included, see below). Remote LAN clients keep their own address and are NOT trusted. Override: TRUSTED_PROXIES=...
-_hip="$(ip -4 route get 1.1.1.1 2>/dev/null | sed -n 's/.* src \([0-9.]*\).*/\1/p' | head -n1)"
-TRUSTED_PROXIES="${TRUSTED_PROXIES:-${_hip:+${_hip}/32}}"; TRUSTED_PROXIES="${TRUSTED_PROXIES:-127.0.0.1/32}"   # loopback ONLY as a fallback: trusting it too lets a host-local client forge X-Forwarded-For through the proxy (measured, clientip_probe_after.txt)
+# Peer CIDR(s) the API trusts for X-Forwarded-For (gin SetTrustedProxies). Explicit list, never "auto"/0.0.0.0/0, and never loopback.
+# TRADE-OFF, NOT A FIX - sound only on a single-tenant QA host. MEASURED 2026-11-05 (docs/qa/stack3-verify-20261105/clientip_probe*.txt): with pasta, a
+# request through the monitoring nginx front door (pod catqa3mon, -T forward) AND a direct host-local request both reach the API with the HOST's primary
+# LAN address as TCP peer, so the proxy can only be trusted by trusting that /32 - which also trusts every client running on this host. Consequence:
+# any process on the QA host can forge X-Forwarded-For, which defeats per-IP rate limits, login lockout and audit attribution for requests originating
+# on the host. UNCONFIRMED (not yet measured from a second LAN host): that a REMOTE LAN client keeps its own source address and is therefore not trusted.
+# If no host address can be detected the value is EMPTY = trust no proxy header (fail closed). Override: TRUSTED_PROXIES=...
+_hip="$(ip -4 route get 1.1.1.1 2>/dev/null | sed -n 's/.* src \([0-9.]*\).*/\1/p' | head -n1 || true)"
+TRUSTED_PROXIES="${TRUSTED_PROXIES-${_hip:+${_hip}/32}}"

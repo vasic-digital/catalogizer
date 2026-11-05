@@ -41,11 +41,16 @@ echo "systemd-run $*" >> "$STUB_LOG"
 while [ $# -gt 0 ]; do case "$1" in --user|--scope) shift;; -p) shift 2;; *) break;; esac; done
 exec "$@"
 S
+cat > "$BIN/ip" <<'S'
+#!/usr/bin/env bash
+# stub `ip -4 route get 1.1.1.1`: prints the route line with src $STUB_IP_SRC (nothing and rc 1 when unset)
+[ -n "${STUB_IP_SRC:-}" ] || exit 1; echo "1.1.1.1 via 10.0.0.1 dev eth0 src ${STUB_IP_SRC} uid 1000"
+S
 chmod +x "$BIN"/*
 
 setup() { # <name>  -> fresh sandbox dirs + env
   T="$ROOT/${1:?}"; mkdir -p "$T/qa" "$T/media" "$T/stub"
-  export STUB_LOG="$T/log" STUB_DIR="$T/stub" QA_DIR="$T/qa" MEDIA_DIR="$T/media" BUSY_PORTS="" CURL_CODE=200
+  export STUB_IP_SRC=192.168.1.115 STUB_LOG="$T/log" STUB_DIR="$T/stub" QA_DIR="$T/qa" MEDIA_DIR="$T/media" BUSY_PORTS="" CURL_CODE=200
   : > "$STUB_LOG"
   echo deadbeefcafe0123 > "$QA_DIR/BUILT_COMMIT"
 }
@@ -102,11 +107,17 @@ grep -qE -- '-e TRUSTED_PROXIES=[0-9a-fA-F:./,]+ ' "$STUB_LOG" && ! grep -qE -- 
 setup t5b; ( umask 077; printf 'ADMIN_USERNAME=qa_admin\nADMIN_PASSWORD=keepme\nJWT_SECRET=keepjwt\nPOSTGRES_USER=c\nPOSTGRES_PASSWORD=keeppg\nPOSTGRES_DB=c\nREGISTRATION_MODE=approval\n' > "$QA_DIR/qa.env" )
 run_up
 t2="$(grep '^METRICS_SCRAPE_TOKEN=' "$QA_DIR/qa.env" | cut -d= -f2-)"
-[ "${#t2}" -ge 32 ] && grep -q '^ADMIN_PASSWORD=keepme$' "$QA_DIR/qa.env" && grep -q '^JWT_SECRET=keepjwt$' "$QA_DIR/qa.env" && [ "$(stat -c %a "$QA_DIR/qa.env")" = 600 ]; ok $? "legacy qa.env: token appended, existing secrets and mode kept"
+[ -n "$t2" ] && [ "${#t2}" -ge 32 ] && grep -q '^ADMIN_PASSWORD=keepme$' "$QA_DIR/qa.env" && grep -q '^JWT_SECRET=keepjwt$' "$QA_DIR/qa.env" && [ "$(stat -c %a "$QA_DIR/qa.env")" = 600 ]; ok $? "legacy qa.env: token appended, existing secrets and mode kept"
 run_up; t3="$(grep '^METRICS_SCRAPE_TOKEN=' "$QA_DIR/qa.env" | cut -d= -f2-)"
-[ "$t3" = "$t2" ]; ok $? "re-run keeps the same token (idempotent)"
+[ -n "$t2" ] && [ -n "$t3" ] && [ "$t3" = "$t2" ]; ok $? "re-run keeps the same token (idempotent)"
 
 # 6. pprof is opt-in per run: HELIX_PPROF_ENABLED reaches the api only when the caller sets it (by name), never by default
 setup t6; run_up; ! grep -q 'HELIX_PPROF_ENABLED' "$STUB_LOG"; ok $? "pprof env NOT passed by default"
 setup t6b; HELIX_PPROF_ENABLED=true run_up; grep -q -- '-e HELIX_PPROF_ENABLED ' "$STUB_LOG" && ! grep -q 'HELIX_PPROF_ENABLED=' "$STUB_LOG"; ok $? "pprof env passed by name when the caller sets it"
+# 7. F4: default TRUSTED_PROXIES never contains loopback (127.0.0.0/8, ::1); a host-local client could otherwise forge X-Forwarded-For through the proxy
+tp() { ( STUB_IP_SRC="$1"; export STUB_IP_SRC; unset TRUSTED_PROXIES; export PATH="$BIN:$PATH"; . "$HERE/lib.sh" >/dev/null 2>&1; printf '%s' "${TRUSTED_PROXIES-<unset>}" ); }
+v="$(tp 192.168.1.115)"; [ "$v" = 192.168.1.115/32 ]; ok $? "default TRUSTED_PROXIES = detected host address /32 (got '$v')"
+printf '%s' "$v" | grep -qE '(^|,)(127\.|::1|0\.0\.0\.0|localhost)'; [ $? != 0 ]; ok $? "default TRUSTED_PROXIES excludes 127.0.0.0/8, ::1 and 0.0.0.0"
+v="$(tp "")"; [ "$v" = "" ]; ok $? "no detectable host address -> TRUSTED_PROXIES empty (trust nothing), not loopback (got '$v')"
+v="$( STUB_IP_SRC=; unset TRUSTED_PROXIES; export PATH="$BIN:$PATH"; TRUSTED_PROXIES=10.1.2.3/32; . "$HERE/lib.sh" >/dev/null 2>&1; printf '%s' "$TRUSTED_PROXIES")"; [ "$v" = 10.1.2.3/32 ]; ok $? "explicit TRUSTED_PROXIES override is kept"
 echo "passed=$pass failed=$fail"; [ "$fail" = 0 ]
