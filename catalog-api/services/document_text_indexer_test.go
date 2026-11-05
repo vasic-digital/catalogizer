@@ -444,3 +444,71 @@ func TestDocumentTextIndexer_CoalescedRequestRunsAgain(t *testing.T) {
 	require.NoError(t, e.db.QueryRow(`SELECT COUNT(*) FROM file_text_index`).Scan(&n))
 	assert.Equal(t, 2, n, "the file added during the first pass must be indexed by the follow-up pass")
 }
+
+type sleepExtractor struct{ d time.Duration }
+
+func (s sleepExtractor) NumPages(context.Context, string) (int, error) {
+	time.Sleep(s.d)
+	return 1, nil
+}
+func (s sleepExtractor) ExtractPages(context.Context, string, int, int) ([]string, error) {
+	return []string{"T"}, nil
+}
+
+// R3-1: the REAL IndexStorageRoot path (two roots) must leave interactive readers a slot; fails if
+// extract() uses the plain blocking acquire instead of the gated indexer acquire.
+func TestDocumentTextIndexer_RealPathDoesNotStarveInteractiveReaders(t *testing.T) {
+	envs := []*indexerEnv{newIndexerEnv(t, "local"), newIndexerEnv(t, "local")}
+	x := NewDocumentTextIndexer(envs[0].db)
+	x.extractor = sleepExtractor{20 * time.Millisecond}
+	for _, e := range envs {
+		for i := 0; i < 60; i++ {
+			e.addFile(t, fmt.Sprintf("p%d.pdf", i), "pdf", []byte("%PDF-1.4 stub"), 13)
+		}
+	}
+	// each env has its own DB; use one indexer per DB, sharing the process-wide slot budget
+	x2 := NewDocumentTextIndexer(envs[1].db)
+	x2.extractor = x.extractor
+	var wg sync.WaitGroup
+	for i, e := range envs {
+		ix := []*DocumentTextIndexer{x, x2}[i]
+		wg.Add(1)
+		go func(ix *DocumentTextIndexer, id int64) {
+			defer wg.Done()
+			_, _, _ = ix.IndexStorageRoot(context.Background(), id)
+		}(ix, e.id)
+	}
+	time.Sleep(50 * time.Millisecond) // let both passes start
+	ok := 0
+	for i := 0; i < 300; i++ {
+		if rel, got := AcquirePDFReaderSlot(); got {
+			ok++
+			rel()
+		}
+		time.Sleep(time.Millisecond)
+	}
+	wg.Wait()
+	assert.Greater(t, ok, 250, "interactive readers must keep getting a slot during real indexing")
+}
+
+// R3-4: cancelling during the reader-slot wait must release the indexer gate.
+func TestAcquireIndexerPDFSlot_CancelReleasesGate(t *testing.T) {
+	var held []func()
+	for i := 0; i < PDFReaderSlots; i++ {
+		r, ok := AcquirePDFReaderSlot()
+		require.True(t, ok)
+		held = append(held, r)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	_, err := acquireIndexerPDFSlot(ctx)
+	require.Error(t, err)
+	for _, r := range held {
+		r()
+	}
+	ctx2, cancel2 := context.WithTimeout(context.Background(), time.Second)
+	defer cancel2()
+	rel, err := acquireIndexerPDFSlot(ctx2)
+	require.NoError(t, err, "gate must be free after a cancelled wait")
+	rel()
+}

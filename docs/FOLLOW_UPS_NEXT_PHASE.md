@@ -1343,3 +1343,5 @@ Open items:
 - D4-11 (F4/F5): fixed (F4 logs a tool-absent skip of the PDF leg; F5 does not persist missing-tool or cancelled runs as failed). Open: a `failed` row from a corrupt file is retried only when size or mtime changes.
 - Migration number: file_text_index is migration v26 (v25 is reserved for conversion_jobs.warning on fix-d11-d7).
 - D4-12 (round 2): the indexer holds at most one PDF reader slot globally (docIndexerGate), so interactive readers keep one of the two slots; the pure-Go child divisor in pdfChildLimits counts the indexer's slot. A per-file timeout is recorded failed and retried only on size/mtime change.
+- D4-13 (R3-2, minor): a per-file timeout caused by host load is stored as failed and the file is skipped until its size/mtime changes; wanted: scheduled retry of failed rows or a capability-change recheck (under D4-4).
+- D4-14 (R3-3, nit): a pass that ends with a DB error while a coalesced request is pending drops that request (`again` needs e==nil); the next scan covers it.

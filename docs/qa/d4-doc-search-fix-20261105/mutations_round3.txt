@@ -1,0 +1,2 @@
+R31_call_site_swap => --- FAIL: TestDocumentTextIndexer_RealPathDoesNotStarveInteractiveReaders (1.27s) FAIL 
+R34_gate_not_released_on_error => --- FAIL: TestAcquireIndexerPDFSlot_CancelReleasesGate (1.10s) FAIL 

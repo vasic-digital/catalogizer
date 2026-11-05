@@ -1,0 +1,27 @@
+--- PASS: TestD4_FullTextSearchOverExtractedDocuments_RealBinary (10.87s)
+PASS
+ok  	catalogizer	11.995s
+--- PASS: TestDocumentTextIndexer_TxtMdPdfAndSkips (0.07s)
+--- PASS: TestDocumentTextIndexer_RefusesSymlinkEscapeAndRemoteRoots (0.05s)
+--- PASS: TestDocumentTextIndexer_DeletedFilesNotIndexed (0.02s)
+--- PASS: TestDocumentTextIndexer_NonRegularFileDoesNotBlock (0.04s)
+--- PASS: TestDocumentTextIndexer_PlainTextReadCap (0.15s)
+--- PASS: TestDocumentTextIndexer_MtimeOnlyChangeReindexes (0.03s)
+--- PASS: TestDocumentTextIndexer_PDFPageCap (0.02s)
+--- PASS: TestDocumentTextIndexer_EnvironmentFailureNotPersisted (0.02s)
+--- PASS: TestDocumentTextIndexer_ParentSymlinkSwapEscape (0.02s)
+--- PASS: TestDocumentTextIndexer_SingleFlightPerRoot (0.08s)
+--- PASS: TestDocumentTextIndexer_UsesSharedPDFSlot (0.35s)
+--- PASS: TestReadPlainCapped_BoundsBytesRead (0.18s)
+--- PASS: TestDocumentTextIndexer_DoesNotStarveInteractiveReaders (0.33s)
+--- PASS: TestDocumentTextIndexer_ChildGetsVerifiedFdPath (0.04s)
+--- PASS: TestOpenInRoot_FdSurvivesPathSwap (0.02s)
+--- PASS: TestDocumentTextIndexer_PerFileTimeoutRecordedFailed (0.02s)
+--- PASS: TestDocumentTextIndexer_CoalescedRequestRunsAgain (0.02s)
+--- PASS: TestDocumentTextIndexer_RealPathDoesNotStarveInteractiveReaders (2.51s)
+--- PASS: TestAcquireIndexerPDFSlot_CancelReleasesGate (0.10s)
+PASS
+ok  	catalogizer/services	5.387s
+--- PASS: TestPostScanIndexer_StopCancelsRunningIndexer (0.00s)
+PASS
+ok  	catalogizer/internal/services	1.321s
