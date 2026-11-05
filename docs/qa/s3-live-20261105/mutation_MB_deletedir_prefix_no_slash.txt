@@ -1,0 +1,19 @@
+# run_utc=2026-11-05T14:41:59Z image=docker.io/dxflrs/garage@sha256:a5706cf1f3d7b349ac5133ec59ad8181b709270b75e5f2fa7b3e1a5c07d67137 imageid=625da745433e16283b054db98a4ca662f75115e088d0f076f341e779b2ebdad2 digest=sha256:a5706cf1f3d7b349ac5133ec59ad8181b709270b75e5f2fa7b3e1a5c07d67137 garage=garage v1.0.1 
+=== RUN   TestS3Live_SpecialKeysCRUD
+--- PASS: TestS3Live_SpecialKeysCRUD (0.52s)
+=== RUN   TestS3Live_DeleteDirectoryOver1000
+    s3_live_test.go:138: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/s3live.riTIta/repo/catalog-api/filesystem/s3_live_test.go:138
+        	Error:      	Should be true
+        	Test:       	TestS3Live_DeleteDirectoryOver1000
+        	Messages:   	sibling must survive DeleteDirectory(/big): /big2/keep
+--- FAIL: TestS3Live_DeleteDirectoryOver1000 (6.80s)
+=== RUN   TestS3Live_DirectoriesAndConfinement
+--- PASS: TestS3Live_DirectoriesAndConfinement (0.07s)
+=== RUN   TestS3Live_SweepStaleRuns
+    s3_live_test.go:178: SKIP: S3_LIVE_SWEEP!=1
+--- SKIP: TestS3Live_SweepStaleRuns (0.00s)
+FAIL
+FAIL	catalogizer/filesystem	7.393s
+FAIL
+exit=1

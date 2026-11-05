@@ -1553,3 +1553,8 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - S3-R2-3 (F10): rename tracker ProtocolHandlerFactory and web SUPPORTED_PROTOCOLS lack s3; UI/docs for s3 roots.
 - S3-R2-4 (nit): fake stripChunked no-op; no test with >1000 delete ids (N2 survivor).
 - S3-R2-5: live run needs a real S3 server: verify copy-source encoding and DeleteObjects checksum compatibility (MinIO/Ceph/Garage) - UNCONFIRMED.
+
+## S3 live (Garage) follow-ups (review round 2, GO-with-follow-ups; live evidence on Garage v1.0.1 only, PROVISIONAL)
+- S3-LIVE-FU-1: rerun suite against AWS S3 or a stricter server (MinIO/Ceph RGW/second impl) to kill survivors M2 (1001-key delete batch) and MC ('+' unencoded in CopySource); also virtual-host addressing, TLS, >5 GiB objects.
+- S3-LIVE-FU-2: MH (ListDirectory keeping names with '/') judged equivalent by reviewer; document definition in README.
+- Incident record: author's RED run of old down.sh purged the real disposable state dir (test data only; keys rotated) - see docs/qa/s3-live-20261105 incident record.
