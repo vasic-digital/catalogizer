@@ -1,11 +1,11 @@
 package filesystem
 
 import (
+	"catalogizer/internal/netguard"
 	"context"
 	"errors"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/url"
 	pathpkg "path"
@@ -53,9 +53,12 @@ var (
 
 // newWebDAVHTTPClient builds the client: connection-phase timeouts on the transport, no whole-request Timeout.
 func newWebDAVHTTPClient() *http.Client {
-	return &http.Client{Transport: &http.Transport{
-		Proxy:                 http.ProxyFromEnvironment,
-		DialContext:           (&net.Dialer{Timeout: 15 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
+	// SECQ-1/W5: operator-class outbound policy. The dial checks the RESOLVED address of every connection (loopback, link-local and
+	// cloud-metadata addresses are refused, RFC 1918 / ULA / public stay reachable; see netguard/operator.go), every redirect hop is
+	// re-checked, and an environment proxy is honoured only after the destination host was checked.
+	return &http.Client{CheckRedirect: netguard.OperatorCheckRedirect, Transport: &http.Transport{
+		Proxy:                 netguard.OperatorProxy,
+		DialContext:           netguard.OperatorDialContext,
 		TLSHandshakeTimeout:   15 * time.Second,
 		MaxIdleConns:          16,
 		MaxIdleConnsPerHost:   8,

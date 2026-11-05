@@ -3,6 +3,7 @@ package handlers
 import (
 	"catalogizer/database"
 	"catalogizer/filesystem"
+	"catalogizer/internal/netguard"
 	"catalogizer/internal/services"
 	"catalogizer/models"
 	"context"
@@ -114,6 +115,26 @@ func supportedStorageProtocol(protocol string) bool {
 	return false
 }
 
+// validateWebDAVRootURL applies the operator-class outbound policy (netguard.CheckOperatorURL) to the URL of a WebDAV storage root.
+func validateWebDAVRootURL(raw *string) error {
+	if raw == nil || *raw == "" {
+		return errors.New("webdav storage root needs a url")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	// WebDAV roots may carry userinfo (the stored URL is redacted on every read path), which says nothing about where the connection
+	// goes: check the destination without it.
+	target := *raw
+	if u, perr := url.Parse(target); perr == nil && u.User != nil {
+		u.User = nil
+		target = u.String()
+	}
+	if _, err := netguard.CheckOperatorURL(ctx, target, "http", "https"); err != nil {
+		return fmt.Errorf("webdav url refused: %w", err)
+	}
+	return nil
+}
+
 // CreateStorageRoot handles POST /api/v1/storage/roots.
 // Strictly creates a new storage root. If a row with the same name
 // already exists, returns 409 Conflict (CATAPI-DEFECT-005). For
@@ -152,6 +173,15 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 	if err := filesystem.ValidateRoot(candidate); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	// SECQ-1/W5: early refusal of a WebDAV root aimed at loopback / link-local / cloud-metadata addresses. The dial of the client checks the
+	// resolved address again on every connection and redirect hop, so this is for a clear error, not the only line of defence.
+	if req.Protocol == "webdav" {
+		if err := validateWebDAVRootURL(req.URL); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	if req.Protocol == "local" {

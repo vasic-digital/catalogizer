@@ -10,6 +10,7 @@ import (
 // confinement itself stays under test.
 func TestMain(m *testing.M) {
 	const roots = "/input:/output:/tmp:/nonexistent:/media:/test:/data:/source:/remote:/local:/old:/new"
+	os.Setenv("CATALOGIZER_OUTBOUND_ALLOW_CIDRS", "127.0.0.0/8,::1/128") // SECQ-1/W5: loopback WebDAV fixtures
 	os.Setenv("CATALOGIZER_SYNC_ROOTS", roots)
 	os.Setenv("CATALOGIZER_CONVERSION_ROOTS", roots)
 	code := m.Run()

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/netguard"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -33,6 +34,8 @@ type WebDAVFile struct {
 
 func NewWebDAVClient(url, username, password string) *WebDAVClient {
 	client := gowebdav.NewClient(url, username, password)
+	// SECQ-1/W5: dial-time operator policy (loopback / link-local / metadata refused), redirects re-checked.
+	client.SetTransport(netguard.OperatorTransport())
 
 	return &WebDAVClient{
 		client:   client,
@@ -240,7 +243,7 @@ func (c *WebDAVClient) GetQuota() (*WebDAVQuota, error) {
 	req.SetBasicAuth(c.username, c.password)
 	req.Header.Set("Depth", "0")
 	req.Header.Set("Content-Type", "application/xml")
-	httpClient := &http.Client{Timeout: 30 * time.Second}
+	httpClient := &http.Client{Timeout: 30 * time.Second, Transport: netguard.OperatorTransport(), CheckRedirect: netguard.OperatorCheckRedirect}
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("quota request: %w", err)

@@ -49,7 +49,7 @@ and the raw `net.Dial*` sites, which are not HTTP but are outbound connections.
 | `internal/media/providers/providers.go`, `llm_provider.go` | shared provider client | FIXED-VENDOR / PROXY / OPERATOR | HTTP proxy optional |
 | `internal/firebase/firebase.go` | `httpClient` | FIXED-VENDOR | |
 | `services/sync_service.go` | `netguard.Transport()` | OPERATOR (LAN) | NAS/sync endpoints; honours the allow-list by design |
-| `filesystem/webdav_client.go`, `services/webdav_client.go` | WebDAV | OPERATOR | operator-configured server; env proxy honoured |
+| `filesystem/webdav_client.go`, `services/webdav_client.go` | WebDAV | OPERATOR | operator-configured server; `netguard.OperatorDialContext` (SECQ-1/W5): loopback, link-local/metadata, unspecified, multicast and their mapped/NAT64/6to4 forms refused at dial and on redirect hops; RFC 1918/ULA/public allowed; `CATALOGIZER_OPERATOR_DENY_PRIVATE=1` also refuses private; env proxy honoured after a host check |
 | `services/error_reporting_service.go` | `httpClient` | OPERATOR | operator-configured webhooks |
 | `internal/netguard/netguard.go` | `Client`, `StrictClient`, `Transport` | implementation | dial-time check, pinned IP |
 | `internal/httpclient/pool.go` | pooled client | SELF | used by `challenges/` against our own server |
