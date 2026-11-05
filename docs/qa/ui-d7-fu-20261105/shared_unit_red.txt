@@ -1,0 +1,158 @@
+
+ RUN  v4.0.18 /home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+(node:1163758) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, light theme (WCAG AA 4.5:1) > SubtitleManager: result Download button meets AA
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ❯ src/styles/__tests__/contrastD7Shared.test.tsx (12 tests | 9 failed) 366ms
+     × SubtitleManager: result Download button meets AA 122ms
+     × CollectionRealTime: Connect button meets AA 30ms
+     × CollectionsManager: "Updated" text in grid and list view meets AA 34ms
+     × MediaDistributionChart: empty-state hint meets AA 7ms
+     × DiscoveredShares: last-seen and filtered hint meet AA 37ms
+     × EntityDetail: similar-items reason line meets AA 22ms
+     × SubtitleManager: result Download button meets AA 48ms
+     × CollectionRealTime: Connect button meets AA 15ms
+     ✓ CollectionsManager: "Updated" text in grid and list view meets AA 15ms
+     ✓ MediaDistributionChart: empty-state hint meets AA 3ms
+     × DiscoveredShares: last-seen and filtered hint meet AA 19ms
+     ✓ EntityDetail: similar-items reason line meets AA 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, light theme (WCAG AA 4.5:1) > SubtitleManager: result Download button meets AA
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, dark theme (WCAG AA 4.5:1) > SubtitleManager: result Download button meets AA
+AssertionError: expected 'button.ml-4 px-4 py-2 bg-green-600 te…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ button.ml-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 flex items-center gap-2 "Download" 3.30
+
+ ❯ src/styles/__tests__/contrastD7Shared.test.tsx:91:53
+     89|     fireEvent.click(screen.getByText('Search'))
+     90|     await screen.findByText('Download')
+     91|     expect(failing(container, theme, ['Download'])).toBe('')
+       |                                                     ^
+     92|   })
+     93| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, light theme (WCAG AA 4.5:1) > CollectionRealTime: Connect button meets AA
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, dark theme (WCAG AA 4.5:1) > CollectionRealTime: Connect button meets AA
+AssertionError: expected 'button.inline-flex items-center justi…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ button.inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] [@media(pointer:coarse)]:min-h-[44px] [@media(pointer:coarse)]:min-w-[44px] text-white active:bg-blue-800 shadow-lg hover:shadow-xl h-10 px-4 py-2 w-full bg-green-600 hover:bg-green-700 "Connect" 3.30
+
+ ❯ src/styles/__tests__/contrastD7Shared.test.tsx:97:54
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, light theme (WCAG AA 4.5:1) > CollectionsManager: "Updated" text in grid and list view meets AA
+AssertionError: expected 'span.text-xs text-gray-400 "Updated 1…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ span.text-xs text-gray-400 "Updated 1/15/2024" 2.54
+
+ ❯ src/styles/__tests__/contrastD7Shared.test.tsx:103:54
+    101|     const props = { collections: COLLECTIONS, onCreateCollection: vi.f…
+    102|     const { container } = render(<CollectionsManager {...props} />)
+    103|     expect(failing(container, theme, [/^Updated /])).toBe('')
+       |                                                      ^
+    104|     fireEvent.click(container.querySelectorAll('button')[1]) // list-v…
+    105|     expect(failing(container, theme, [/^Updated /])).toBe('')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, light theme (WCAG AA 4.5:1) > MediaDistributionChart: empty-state hint meets AA
+AssertionError: expected 'p.text-sm text-gray-400 "Media will a…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ p.text-sm text-gray-400 "Media will appear here once sc" 2.54
+
+ ❯ src/styles/__tests__/contrastD7Shared.test.tsx:110:80
+    108|   it('MediaDistributionChart: empty-state hint meets AA', () => {
+    109|     const { container } = render(<MediaDistributionChart />)
+    110|     expect(failing(container, theme, ['Media will appear here once sca…
+       |                                                                                ^
+    111|   })
+    112| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, light theme (WCAG AA 4.5:1) > DiscoveredShares: last-seen and filtered hint meet AA
+AssertionError: expected 'span.text-xs text-gray-400 dark:text-…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ span.text-xs text-gray-400 dark:text-gray-500 ml-3 "seen 1/1/2026" 2.54
++ span.text-xs text-gray-400 dark:text-gray-500 ml-3 "seen 1/2/2026" 2.54
+
+ ❯ src/styles/__tests__/contrastD7Shared.test.tsx:116:51
+    114|     const { container } = wrap(<DiscoveredShares />)
+    115|     await screen.findByText('media')
+    116|     expect(failing(container, theme, [/^seen /])).toBe('')
+       |                                                   ^
+    117|     fireEvent.change(screen.getByPlaceholderText('Search host...'), { …
+    118|     fireEvent.change(container.querySelector('select')!, { target: { v…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, light theme (WCAG AA 4.5:1) > EntityDetail: similar-items reason line meets AA
+AssertionError: expected 'div.text-xs text-gray-400 mt-1 trunca…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ div.text-xs text-gray-400 mt-1 truncate "Same director" 2.43
+
+ ❯ src/styles/__tests__/contrastD7Shared.test.tsx:128:58
+    126|     )
+    127|     await screen.findByText('Same director')
+    128|     expect(failing(container, theme, ['Same director'])).toBe('')
+       |                                                          ^
+    129|   })
+    130| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, dark theme (WCAG AA 4.5:1) > DiscoveredShares: last-seen and filtered hint meet AA
+AssertionError: expected 'span.text-xs text-gray-400 dark:text-…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ span.text-xs text-gray-400 dark:text-gray-500 ml-3 "seen 1/1/2026" 3.04
++ span.text-xs text-gray-400 dark:text-gray-500 ml-3 "seen 1/2/2026" 3.04
+
+ ❯ src/styles/__tests__/contrastD7Shared.test.tsx:116:51
+    114|     const { container } = wrap(<DiscoveredShares />)
+    115|     await screen.findByText('media')
+    116|     expect(failing(container, theme, [/^seen /])).toBe('')
+       |                                                   ^
+    117|     fireEvent.change(screen.getByPlaceholderText('Search host...'), { …
+    118|     fireEvent.change(container.querySelector('select')!, { target: { v…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 3 passed (12)
+   Start at  15:01:50
+   Duration  2.45s (transform 495ms, setup 133ms, import 1.15s, tests 366ms, environment 638ms)
+

@@ -1,0 +1,2046 @@
+
+ RUN  v4.0.18 /home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+(node:1177613) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, light theme (WCAG AA 4.5:1) > SubtitleManager: result Download button meets AA
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/styles/__tests__/contrastD7Shared.test.tsx (12 tests) 585ms
+(node:1181314) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/collections/__tests__/CollectionSettings.test.tsx > CollectionSettings > renders heading
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/collections/__tests__/CollectionSettings.test.tsx (20 tests) 916ms
+(node:1183466) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/collections/__tests__/CollectionTemplates.test.tsx > CollectionTemplates > renders the dialog title
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+Warning: React does not recognize the `whileHover` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `whilehover` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+    at div
+    at MotionDiv (/home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web/src/components/collections/__tests__/CollectionTemplates.test.tsx:10:24)
+    at div
+    at div
+    at div
+    at MotionDiv (/home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web/src/components/collections/__tests__/CollectionTemplates.test.tsx:10:24)
+    at div
+    at MotionDiv (/home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web/src/components/collections/__tests__/CollectionTemplates.test.tsx:10:24)
+    at CollectionTemplates (/home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web/src/components/collections/CollectionTemplates.tsx:301:3)
+
+ ✓ src/components/collections/__tests__/CollectionTemplates.test.tsx (21 tests) 1420ms
+(node:1186601) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/collections/__tests__/CollectionSharing.test.tsx > CollectionSharing > renders heading
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/collections/__tests__/CollectionSharing.test.tsx (19 tests) 1030ms
+(node:1189334) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/collections/__tests__/CollectionsManager.test.tsx > CollectionsManager > renders all collections
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/collections/__tests__/CollectionsManager.test.tsx (23 tests) 923ms
+(node:1191242) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/collections/__tests__/AdvancedSearch.test.tsx > AdvancedSearch > renders heading and description
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/collections/__tests__/AdvancedSearch.test.tsx (13 tests) 1076ms
+     ✓ adds a rule when Add Rule is clicked  314ms
+(node:1194002) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/collections/__tests__/SmartCollectionBuilder.test.tsx > SmartCollectionBuilder > renders the component
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/collections/__tests__/SmartCollectionBuilder.test.tsx (18 tests) 1060ms
+(node:1197386) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/collections/__tests__/CollectionExport.test.tsx > CollectionExport > renders heading
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+Not implemented: navigation to another Document
+Not implemented: navigation to another Document
+ ✓ src/components/collections/__tests__/CollectionExport.test.tsx (18 tests) 956ms
+(node:1200634) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/pages/__tests__/SubtitleManager.test.tsx > SubtitleManager Page > renders page heading
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/pages/__tests__/SubtitleManager.test.tsx (18 tests) 696ms
+(node:1203978) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/dashboard/__tests__/MediaDistributionChart.a11y.test.tsx > MediaDistributionChart a11y (CAT-UI-D5D6) > renders real pie sectors and each has an accessible name (svg-img-alt)
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/dashboard/__tests__/MediaDistributionChart.a11y.test.tsx (1 test) 790ms
+     ✓ renders real pie sectors and each has an accessible name (svg-img-alt)  788ms
+(node:1207387) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/collections/__tests__/CollectionAnalytics.test.tsx > CollectionAnalytics (CAT-001: no fabricated analytics) > shows only figures derived from the real items
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/collections/__tests__/CollectionAnalytics.test.tsx (6 tests) 484ms
+(node:1209071) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/collections/__tests__/BulkOperations.test.tsx > BulkOperations > renders heading
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/collections/__tests__/BulkOperations.test.tsx (10 tests) 596ms
+(node:1211557) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/collections/__tests__/ExternalIntegrations.test.tsx > ExternalIntegrations > renders the heading
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/collections/__tests__/ExternalIntegrations.test.tsx (12 tests) 601ms
+(node:1213728) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/collections/__tests__/CollectionPreview.test.tsx > CollectionPreview > renders collection name
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/collections/__tests__/CollectionPreview.test.tsx (11 tests) 510ms
+(node:1216548) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/collections/__tests__/PerformanceOptimizer.test.tsx > PerformanceOptimizer > when itemCount is below threshold > renders children directly without optimization
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/collections/__tests__/PerformanceOptimizer.test.tsx (29 tests) 434ms
+(node:1218336) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, light theme (WCAG AA 4.5:1) > /ai: tabs and every section (after lazy load) meet AA
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+stderr | src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, light theme (WCAG AA 4.5:1) > /media: MediaCard text meets AA
+Warning: React does not recognize the `whileHover` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `whilehover` instead. If you accidentally passed it from a parent component, remove it from the DOM element.
+    at div
+    at M (/home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web/src/styles/__tests__/contrastD7Remaining.test.tsx:5:16)
+    at /home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web/src/components/media/MediaCard.tsx:102:3
+    at QueryClientProvider (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/@tanstack/react-query/build/lib/QueryClientProvider.mjs:41:3)
+
+ ✓ src/styles/__tests__/contrastD7Remaining.test.tsx (10 tests) 685ms
+(node:1221277) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/dashboard/__tests__/ActivityFeed.test.tsx > ActivityFeed (CAT-001: no sample activity) > without supplied data shows an unavailable state and no invented people or titles
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/dashboard/__tests__/ActivityFeed.test.tsx (6 tests) 292ms
+(node:1223314) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > renders entity title
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > renders entity title
+Warning: Received `false` for a non-boolean attribute `loading`.
+
+If you want to write it to the DOM, pass a string instead: loading="false" or loading={value.toString()}.
+
+If you used to conditionally omit it with loading={condition && value}, pass loading={condition ? value : undefined} instead.
+    at button
+    at Button (/home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web/src/pages/__tests__/EntityDetail.test.tsx:248:14)
+    at div
+    at CardContent (/home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web/src/pages/__tests__/EntityDetail.test.tsx:231:19)
+    at div
+    at Card (/home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web/src/pages/__tests__/EntityDetail.test.tsx:226:12)
+    at div
+    at EntityDetail (/home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web/src/pages/EntityDetail.tsx:30:53)
+    at RenderedRoute (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/react-router/dist/umd/react-router.development.js:539:7)
+    at Routes (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/react-router/dist/umd/react-router.development.js:1273:7)
+    at Router (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/react-router/dist/umd/react-router.development.js:1207:17)
+    at MemoryRouter (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/react-router/dist/umd/react-router.development.js:1101:7)
+    at QueryClientProvider (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/@tanstack/react-query/build/lib/QueryClientProvider.mjs:41:3)
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows year
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows year
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows year
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows year
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows rating with one decimal place
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows rating with one decimal place
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows runtime
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows runtime
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows language
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows language
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows genre badges
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows director
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows director
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows director
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows description
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows file count in stats
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows file count in stats
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows children count in stats
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows children count in stats
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows children count in stats
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows files list when files exist
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows files list when files exist
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows the files section with count
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows the files section with count
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows favorite and refresh action buttons
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows favorite and refresh action buttons
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > does not show children list when there are no children
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > does not show children list when there are no children
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > does not show duplicates list when there are no duplicates
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows not found for invalid entity
+{
+  response: {
+    status: 404,
+    data: {
+      success: false,
+      error: 'Entity not found',
+      details: 'media item not found'
+    }
+  }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows not found for invalid entity
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows not found for invalid entity
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows back to browse button when entity not found
+{
+  response: {
+    status: 404,
+    data: {
+      success: false,
+      error: 'Entity not found',
+      details: 'media item not found'
+    }
+  }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows back to browse button when entity not found
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows back to browse button when entity not found
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/999',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows back to browse button when entity not found
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":999,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows breadcrumb with media type
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/999',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > shows breadcrumb with media type
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":999,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > hides the Refresh action for a non-admin user (page wiring of canRefresh)
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx > EntityDetail > hides the Refresh action for a non-admin user (page wiring of canRefresh)
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'get',
+    url: '/recommendations/similar/1',
+    allowAbsoluteUrls: true,
+    data: undefined
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+stderr | src/pages/__tests__/EntityDetail.test.tsx
+AxiosError: Network Error
+    at XMLHttpRequest.handleError (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axios/lib/adapters/xhr.js:122:21)
+    at XMLHttpRequest.invokeTheCallbackFunction (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28)
+    at XMLHttpRequest.<anonymous> (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/create-event-accessor.js:36:32)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at XMLHttpRequestImpl._dispatch (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at fireAnEvent (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/helpers/events.js:18:36)
+    at requestErrorSteps (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:77:3)
+    at dispatchError (/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:51:3)
+    at /home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/jsdom/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:695:13 {
+  isAxiosError: true,
+  code: 'ERR_NETWORK',
+  config: {
+    transitional: {
+      silentJSONParsing: true,
+      forcedJSONParsing: true,
+      clarifyTimeoutError: false,
+      legacyInterceptorReqResOrdering: true
+    },
+    adapter: [ 'xhr', 'http', 'fetch' ],
+    transformRequest: [ [Function: transformRequest] ],
+    transformResponse: [ [Function: transformResponse] ],
+    timeout: 10000,
+    xsrfCookieName: 'XSRF-TOKEN',
+    xsrfHeaderName: 'X-XSRF-TOKEN',
+    maxContentLength: -1,
+    maxBodyLength: -1,
+    env: { FormData: [Function], Blob: [class Blob] },
+    validateStatus: [Function: validateStatus],
+    headers: Object [AxiosHeaders] {
+      Accept: 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    },
+    baseURL: '/api/v1',
+    method: 'post',
+    url: '/analytics/access',
+    data: '{"media_id":1,"action":"view"}',
+    allowAbsoluteUrls: true
+  },
+  request: XMLHttpRequest {},
+  event: ProgressEvent { isTrusted: [Getter] }
+}
+
+ ✓ src/pages/__tests__/EntityDetail.test.tsx (20 tests) 446ms
+(node:1225785) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/dashboard/__tests__/DashboardStats.test.tsx > StatCard > renders title and value
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/dashboard/__tests__/DashboardStats.test.tsx (17 tests) 284ms
+(node:1227967) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/identity/__tests__/IdentityManager.extended.test.tsx > IdentityManager — extended tests > Add Identity form > shows type selector with all options when Add Identity is clicked
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/identity/__tests__/IdentityManager.extended.test.tsx (17 tests) 419ms
+(node:1229831) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/styles/__tests__/contrastD7.test.tsx > UI-D7 contrast, light theme (WCAG AA 4.5:1) > Layout version label (.fixed) meets AA
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/styles/__tests__/contrastD7.test.tsx (9 tests) 371ms
+(node:1233201) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/identity/__tests__/IdentityManager.test.tsx > IdentityManager > renders the Identities card header
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/identity/__tests__/IdentityManager.test.tsx (6 tests) 129ms
+(node:1234415) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/collections/__tests__/CollectionRealTime.test.tsx > CollectionRealTime (CAT-001: no simulated users or events) > says real-time is unavailable instead of faking a connection
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/collections/__tests__/CollectionRealTime.test.tsx (2 tests) 112ms
+(node:1236001) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/dashboard/__tests__/MediaDistributionChart.test.tsx > MediaDistributionChart > renders the chart title
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/dashboard/__tests__/MediaDistributionChart.test.tsx (8 tests) 102ms
+(node:1237542) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/components/collections/__tests__/CollectionAutomation.test.tsx > CollectionAutomation (CAT-001: no invented rules) > renders heading and description
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ✓ src/components/collections/__tests__/CollectionAutomation.test.tsx (3 tests) 54ms
+(node:1239047) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/styles/__tests__/contrastHelper.test.ts (7 tests) 13ms
+(node:1240175) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/styles/__tests__/touch_targets.test.ts (15 tests) 10ms
+(node:1240958) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/styles/__tests__/tokens.test.ts (8 tests) 12ms
+(node:1242087) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/styles/__tests__/wcag_contrast.test.ts (19 tests) 8ms
+(node:1243147) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/styles/__tests__/identity_contrast.test.ts (13 tests) 7ms
+
+ Test Files  30 passed (30)
+      Tests  391 passed (391)
+   Start at  15:02:09
+   Duration  60.28s (transform 1.99s, setup 2.48s, import 16.82s, tests 15.02s, environment 20.31s)
+

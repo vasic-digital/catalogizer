@@ -101,7 +101,7 @@ const ShareRow: React.FC<ShareRowProps> = ({ share }) => {
             :{share.port}
           </span>
           {share.last_seen && (
-            <span className="text-xs text-gray-400 dark:text-gray-500 ml-3">
+            <span className="text-xs text-gray-600 dark:text-gray-400 ml-3">
               seen {new Date(share.last_seen).toLocaleDateString()}
             </span>
           )}
@@ -398,7 +398,7 @@ export const DiscoveredShares: React.FC = () => {
                 <FolderOpen className="h-4 w-4" />
                 {filteredShares.length} share{filteredShares.length !== 1 ? 's' : ''}
                 {filteredShares.length !== (shares?.length ?? 0) && (
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-gray-600 dark:text-gray-400">
                     (filtered from {shares?.length ?? 0})
                   </span>
                 )}

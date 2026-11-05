@@ -255,7 +255,7 @@ export function EntityDetail() {
                       )}
                     </div>
                     {item.reason && (
-                      <div className="text-xs text-gray-400 mt-1 truncate">{item.reason}</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate">{item.reason}</div>
                     )}
                   </div>
                   {item.rating != null && (
