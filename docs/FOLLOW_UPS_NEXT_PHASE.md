@@ -1460,3 +1460,7 @@ PROVISIONAL-DONE until a live rerun on a rebuilt stack 3. Pre-existing, NOT caus
 - SECQ-3 pprof: UNCONFIRMED (404 everywhere since HELIX_PPROF_ENABLED unset; gate and 60 s guard need a flagged restart).
 - No delete API for storage roots (DELETE /storage/roots/{id} 404): QA cleanup needed direct SQL; consider tracking as API gap (STK3L2-FU-1).
 - POST /smb/discover with credentials to unreachable host returns 500 on i/o timeout rather than a 4xx/504 (STK3L2-FU-2, minor).
+
+## Stack-3 live browser pass (2026-11-05, image main-5c480072; evidence docs/qa/stack3-ui-20261105/)
+VERIFIED: GET /entities/types 200 from UI; 11 app pages render real data; website 47 pages / 31 internal URLs OK; theme toggle; no overflow except D5.
+FAIL (open, dispatched as UI-D1..D8): D1 HIGH /conversion crashes (TypeError reading 'name' in ConversionTools); D2 /identities calls missing GET /api/v1/identities (404); D3 /entity/35 (media-item id) 404s and spins forever; D4 /ws closes ~4x/25s idle -> red Disconnected badge; D5 /admin horizontal overflow at 360px; D6 a11y critical (78 unnamed buttons /media, unlabeled selects, 1 unnamed button /ai); D7 colour-contrast serious + svg-img-alt; D8 header search results unfiltered (UNCONFIRMED). Not covered: player subtitles panel. Note: reviewer agent printed QA-stack JWT_SECRET/METRICS token into its own session output (QA-only; rotate with next stack recreate).

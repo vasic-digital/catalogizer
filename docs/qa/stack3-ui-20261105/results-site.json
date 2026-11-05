@@ -1,0 +1,870 @@
+{
+ "pages": [
+  {
+   "u": "/",
+   "size": "mobile",
+   "sw": 360,
+   "cw": 360,
+   "title": "Catalogizer",
+   "h1": "Catalogizer\nMulti-Platform Media Collection Manager",
+   "len": 932,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1
+    },
+    {
+     "id": "landmark-one-main",
+     "impact": "moderate",
+     "n": 1
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "u": "/features.html",
+   "size": "mobile",
+   "sw": 360,
+   "cw": 360,
+   "title": "Features | Catalogizer",
+   "h1": "Catalogizer Features\n​",
+   "len": 17543,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/download.html",
+   "size": "mobile",
+   "sw": 360,
+   "cw": 360,
+   "title": "Download and Install | Catalogizer",
+   "h1": "Download and Install Catalogizer\n​",
+   "len": 4951,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 24
+    }
+   ]
+  },
+  {
+   "u": "/documentation.html",
+   "size": "mobile",
+   "sw": 360,
+   "cw": 360,
+   "title": "Documentation Hub | Catalogizer",
+   "h1": "Documentation Hub\n​",
+   "len": 4759,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/course.html",
+   "size": "mobile",
+   "sw": 360,
+   "cw": 360,
+   "title": "Video Course | Catalogizer",
+   "h1": "Video Course\n​",
+   "len": 3758,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/faq.html",
+   "size": "mobile",
+   "sw": 360,
+   "cw": 360,
+   "title": "Frequently Asked Questions | Catalogizer",
+   "h1": "Frequently Asked Questions\n​",
+   "len": 18410,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/support.html",
+   "size": "mobile",
+   "sw": 360,
+   "cw": 360,
+   "title": "Support | Catalogizer",
+   "h1": "Support\n​",
+   "len": 7028,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 13
+    }
+   ]
+  },
+  {
+   "u": "/getting-started.html",
+   "size": "mobile",
+   "sw": 360,
+   "cw": 360,
+   "title": "Getting Started | Catalogizer",
+   "h1": "Getting Started with Catalogizer\n​",
+   "len": 4307,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 12
+    }
+   ]
+  },
+  {
+   "u": "/",
+   "size": "tablet",
+   "sw": 768,
+   "cw": 768,
+   "title": "Catalogizer",
+   "h1": "Catalogizer\nMulti-Platform Media Collection Manager",
+   "len": 1010,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1
+    },
+    {
+     "id": "landmark-one-main",
+     "impact": "moderate",
+     "n": 1
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "u": "/features.html",
+   "size": "tablet",
+   "sw": 768,
+   "cw": 768,
+   "title": "Features | Catalogizer",
+   "h1": "Catalogizer Features\n​",
+   "len": 17621,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/download.html",
+   "size": "tablet",
+   "sw": 768,
+   "cw": 768,
+   "title": "Download and Install | Catalogizer",
+   "h1": "Download and Install Catalogizer\n​",
+   "len": 5029,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 27
+    }
+   ]
+  },
+  {
+   "u": "/documentation.html",
+   "size": "tablet",
+   "sw": 768,
+   "cw": 768,
+   "title": "Documentation Hub | Catalogizer",
+   "h1": "Documentation Hub\n​",
+   "len": 4837,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/course.html",
+   "size": "tablet",
+   "sw": 768,
+   "cw": 768,
+   "title": "Video Course | Catalogizer",
+   "h1": "Video Course\n​",
+   "len": 3836,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/faq.html",
+   "size": "tablet",
+   "sw": 768,
+   "cw": 768,
+   "title": "Frequently Asked Questions | Catalogizer",
+   "h1": "Frequently Asked Questions\n​",
+   "len": 18488,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/support.html",
+   "size": "tablet",
+   "sw": 768,
+   "cw": 768,
+   "title": "Support | Catalogizer",
+   "h1": "Support\n​",
+   "len": 7106,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 17
+    }
+   ]
+  },
+  {
+   "u": "/getting-started.html",
+   "size": "tablet",
+   "sw": 768,
+   "cw": 768,
+   "title": "Getting Started | Catalogizer",
+   "h1": "Getting Started with Catalogizer\n​",
+   "len": 4385,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 13
+    }
+   ]
+  },
+  {
+   "u": "/",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Catalogizer",
+   "h1": "Catalogizer\nMulti-Platform Media Collection Manager",
+   "len": 1010,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1
+    },
+    {
+     "id": "landmark-one-main",
+     "impact": "moderate",
+     "n": 1
+    },
+    {
+     "id": "region",
+     "impact": "moderate",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "u": "/features.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Features | Catalogizer",
+   "h1": "Catalogizer Features\n​",
+   "len": 18003,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/download.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Download and Install | Catalogizer",
+   "h1": "Download and Install Catalogizer\n​",
+   "len": 5144,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 27
+    }
+   ]
+  },
+  {
+   "u": "/documentation.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Documentation Hub | Catalogizer",
+   "h1": "Documentation Hub\n​",
+   "len": 4903,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/course.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Video Course | Catalogizer",
+   "h1": "Video Course\n​",
+   "len": 3933,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/faq.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Frequently Asked Questions | Catalogizer",
+   "h1": "Frequently Asked Questions\n​",
+   "len": 18645,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/support.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Support | Catalogizer",
+   "h1": "Support\n​",
+   "len": 7222,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 17
+    }
+   ]
+  },
+  {
+   "u": "/getting-started.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Getting Started | Catalogizer",
+   "h1": "Getting Started with Catalogizer\n​",
+   "len": 4599,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 13
+    }
+   ]
+  },
+  {
+   "u": "/docs/getting-started/quick-start.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Quick Start | Catalogizer",
+   "h1": "Quick Start\n​",
+   "len": 4391,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 13
+    }
+   ]
+  },
+  {
+   "u": "/docs/getting-started/configuration.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Configuration | Catalogizer",
+   "h1": "Configuration\n​",
+   "len": 6910,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 7
+    }
+   ]
+  },
+  {
+   "u": "/docs/getting-started/first-scan.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "First Scan | Catalogizer",
+   "h1": "First Scan\n​",
+   "len": 7424,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 1
+    }
+   ]
+  },
+  {
+   "u": "/guides/web-app.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Web App Guide | Catalogizer",
+   "h1": "Web App Guide\n​",
+   "len": 7110,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/guides/desktop.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Desktop App Guide | Catalogizer",
+   "h1": "Desktop App Guide\n​",
+   "len": 4966,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/guides/android.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Android App Guide | Catalogizer",
+   "h1": "Android App Guide\n​",
+   "len": 6644,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/guides/android-tv.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Android TV Guide | Catalogizer",
+   "h1": "Android TV Guide\n​",
+   "len": 5024,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/platforms.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Platforms | Catalogizer",
+   "h1": "Platforms\n​",
+   "len": 10261,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 23
+    }
+   ]
+  },
+  {
+   "u": "/guides/configuration.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Configuration Reference | Catalogizer",
+   "h1": "Configuration Reference\n​",
+   "len": 7057,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 11
+    }
+   ]
+  },
+  {
+   "u": "/guides/security.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Security Guide | Catalogizer",
+   "h1": "Security Guide\n​",
+   "len": 7303,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 8
+    }
+   ]
+  },
+  {
+   "u": "/guides/monitoring.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Monitoring Guide | Catalogizer",
+   "h1": "Monitoring Guide\n​",
+   "len": 5247,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 20
+    }
+   ]
+  },
+  {
+   "u": "/security.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Security | Catalogizer",
+   "h1": "Security\n​",
+   "len": 9048,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 5
+    }
+   ]
+  },
+  {
+   "u": "/developer/architecture.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Architecture Overview | Catalogizer",
+   "h1": "Architecture Overview\n​",
+   "len": 6802,
+   "overflowX": false,
+   "axe": []
+  },
+  {
+   "u": "/architecture.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "System Architecture | Catalogizer",
+   "h1": "System Architecture\n​",
+   "len": 11414,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 7
+    }
+   ]
+  },
+  {
+   "u": "/developer/api.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "API Reference | Catalogizer",
+   "h1": "API Reference\n​",
+   "len": 7502,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 10
+    }
+   ]
+  },
+  {
+   "u": "/docs/developer-guide/database.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Database Architecture | Catalogizer",
+   "h1": "Database Architecture\n​",
+   "len": 6755,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 14
+    }
+   ]
+  },
+  {
+   "u": "/docs/developer-guide/protocols.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Filesystem Protocols | Catalogizer",
+   "h1": "Filesystem Protocols\n​",
+   "len": 7610,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 33
+    }
+   ]
+  },
+  {
+   "u": "/docs/developer-guide/media-pipeline.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Media Detection Pipeline | Catalogizer",
+   "h1": "Media Detection Pipeline\n​",
+   "len": 9941,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 2
+    }
+   ]
+  },
+  {
+   "u": "/docs/developer-guide/websockets.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "WebSocket Real-Time Events | Catalogizer",
+   "h1": "WebSocket Real-Time Events\n​",
+   "len": 8866,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 32
+    }
+   ]
+  },
+  {
+   "u": "/developer/testing.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Testing Guide | Catalogizer",
+   "h1": "Testing Guide\n​",
+   "len": 7566,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 53
+    }
+   ]
+  },
+  {
+   "u": "/developer/contributing.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Contributing Guide | Catalogizer",
+   "h1": "Contributing Guide\n​",
+   "len": 7163,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 21
+    }
+   ]
+  },
+  {
+   "u": "/contributing.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Contributing | Catalogizer",
+   "h1": "Contributing\n​",
+   "len": 10136,
+   "overflowX": false,
+   "axe": [
+    {
+     "id": "color-contrast",
+     "impact": "serious",
+     "n": 45
+    }
+   ]
+  },
+  {
+   "u": "/changelog.html",
+   "size": "desktop",
+   "sw": 1440,
+   "cw": 1440,
+   "title": "Changelog | Catalogizer",
+   "h1": "Changelog\n​",
+   "len": 17468,
+   "overflowX": false,
+   "axe": []
+  }
+ ],
+ "links": [
+  {
+   "u": "/",
+   "status": 200
+  },
+  {
+   "u": "/features.html",
+   "status": 200
+  },
+  {
+   "u": "/download.html",
+   "status": 200
+  },
+  {
+   "u": "/documentation.html",
+   "status": 200
+  },
+  {
+   "u": "/course.html",
+   "status": 200
+  },
+  {
+   "u": "/faq.html",
+   "status": 200
+  },
+  {
+   "u": "/support.html",
+   "status": 200
+  },
+  {
+   "u": "/getting-started.html",
+   "status": 200
+  },
+  {
+   "u": "/docs/getting-started/quick-start.html",
+   "status": 200
+  },
+  {
+   "u": "/docs/getting-started/configuration.html",
+   "status": 200
+  },
+  {
+   "u": "/docs/getting-started/first-scan.html",
+   "status": 200
+  },
+  {
+   "u": "/guides/web-app.html",
+   "status": 200
+  },
+  {
+   "u": "/guides/desktop.html",
+   "status": 200
+  },
+  {
+   "u": "/guides/android.html",
+   "status": 200
+  },
+  {
+   "u": "/guides/android-tv.html",
+   "status": 200
+  },
+  {
+   "u": "/platforms.html",
+   "status": 200
+  },
+  {
+   "u": "/guides/configuration.html",
+   "status": 200
+  },
+  {
+   "u": "/guides/security.html",
+   "status": 200
+  },
+  {
+   "u": "/guides/monitoring.html",
+   "status": 200
+  },
+  {
+   "u": "/security.html",
+   "status": 200
+  },
+  {
+   "u": "/developer/architecture.html",
+   "status": 200
+  },
+  {
+   "u": "/architecture.html",
+   "status": 200
+  },
+  {
+   "u": "/developer/api.html",
+   "status": 200
+  },
+  {
+   "u": "/docs/developer-guide/database.html",
+   "status": 200
+  },
+  {
+   "u": "/docs/developer-guide/protocols.html",
+   "status": 200
+  },
+  {
+   "u": "/docs/developer-guide/media-pipeline.html",
+   "status": 200
+  },
+  {
+   "u": "/docs/developer-guide/websockets.html",
+   "status": 200
+  },
+  {
+   "u": "/developer/testing.html",
+   "status": 200
+  },
+  {
+   "u": "/developer/contributing.html",
+   "status": 200
+  },
+  {
+   "u": "/contributing.html",
+   "status": 200
+  },
+  {
+   "u": "/changelog.html",
+   "status": 200
+  }
+ ],
+ "notes": [],
+ "externalLinks": [
+  "https://github.com/vasic-digital/Catalogizer",
+  "http://localhost:8080/",
+  "http://localhost:9090/",
+  "http://localhost:3001/",
+  "https://rustup.rs/",
+  "https://tauri.app/v1/guides/getting-started/prerequisites"
+ ],
+ "con_mobile": [],
+ "net_mobile": [],
+ "con_tablet": [],
+ "net_tablet": [],
+ "con_desktop": [],
+ "net_desktop": [],
+ "theme": {
+  "before": "false|rgb(255, 255, 255)",
+  "after": "true|rgb(27, 27, 31)"
+ }
+}
