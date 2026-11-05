@@ -1,0 +1,38 @@
+=== RUN   TestWriteFile_Verify_AckedButDropped_IsRetriedAndStored
+--- PASS: TestWriteFile_Verify_AckedButDropped_IsRetriedAndStored (0.00s)
+=== RUN   TestWriteFile_Verify_AckedButNeverStored_ReturnsError
+--- PASS: TestWriteFile_Verify_AckedButNeverStored_ReturnsError (0.00s)
+=== RUN   TestWriteFile_Verify_TruncatedStore_IsRetried
+--- PASS: TestWriteFile_Verify_TruncatedStore_IsRetried (0.00s)
+=== RUN   TestWriteFile_Verify_TruncatedAlways_ReturnsError
+--- PASS: TestWriteFile_Verify_TruncatedAlways_ReturnsError (0.00s)
+=== RUN   TestWriteFile_Verify_HealthyService_OnePutOneHead
+--- PASS: TestWriteFile_Verify_HealthyService_OnePutOneHead (0.00s)
+=== RUN   TestWriteFile_Verify_NoContentLengthOnHead_ExistenceOnly
+--- PASS: TestWriteFile_Verify_NoContentLengthOnHead_ExistenceOnly (0.00s)
+=== RUN   TestWriteFile_Verify_UnknownLengthBody_ExistenceOnlyNoRetryPossible
+--- PASS: TestWriteFile_Verify_UnknownLengthBody_ExistenceOnlyNoRetryPossible (0.00s)
+=== RUN   TestWriteFile_Verify_UnknownLengthBody_HealthyServer_Succeeds
+    webdav_writeverify_test.go:142: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wdf1.w4zBXG/c/catalog-api/filesystem/webdav_writeverify_test.go:142
+        	Error:      	Received unexpected error:
+        	            	WebDAV upload of http://127.0.0.1:39333/a.bin was acknowledged but not verified and the body cannot be replayed: read-back size 5000 differs from the 0 bytes sent
+        	Test:       	TestWriteFile_Verify_UnknownLengthBody_HealthyServer_Succeeds
+--- FAIL: TestWriteFile_Verify_UnknownLengthBody_HealthyServer_Succeeds (0.00s)
+=== RUN   TestWriteFile_Verify_UnknownLengthBody_File_HealthyServer_Succeeds
+    webdav_writeverify_test.go:156: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wdf1.w4zBXG/c/catalog-api/filesystem/webdav_writeverify_test.go:156
+        	Error:      	Received unexpected error:
+        	            	WebDAV upload of http://127.0.0.1:44531/a.bin was acknowledged but not verified and the body cannot be replayed: read-back size 5000 differs from the 0 bytes sent
+        	Test:       	TestWriteFile_Verify_UnknownLengthBody_File_HealthyServer_Succeeds
+--- FAIL: TestWriteFile_Verify_UnknownLengthBody_File_HealthyServer_Succeeds (0.00s)
+=== RUN   TestWriteFile_Verify_HeadNotSupported_AcceptsWithoutSecondPut
+    webdav_writeverify_test.go:165: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wdf1.w4zBXG/c/catalog-api/filesystem/webdav_writeverify_test.go:165
+        	Error:      	Received unexpected error:
+        	            	WebDAV upload of http://127.0.0.1:41069/a.bin was acknowledged twice but verification still fails: read-back HEAD answered status 405 (file absent after an acknowledged write)
+        	Test:       	TestWriteFile_Verify_HeadNotSupported_AcceptsWithoutSecondPut
+--- FAIL: TestWriteFile_Verify_HeadNotSupported_AcceptsWithoutSecondPut (0.00s)
+FAIL
+FAIL	catalogizer/filesystem	0.024s
+FAIL

@@ -287,18 +287,36 @@ func TestLiveYandexWDF1ForcedReset(t *testing.T) {
 	ctrl := wdf1Verdict(cerr == nil, cpresent, "", cw)
 	t.Logf("control needle: delete_err=%v verdict=%s", derr != nil, ctrl)
 
+	// CONTROL NEEDLE 2: acknowledged write, then overwritten remotely with SAME-SIZE DIFFERENT bytes; the CORRUPT branch must fire.
+	c2 := detBytes("wdf1-control2", 4096)
+	c2h := sha256.Sum256(c2)
+	if err := c.WriteFile(ctx, dir+"/control2.bin", bytes.NewReader(c2)); err != nil {
+		t.Fatalf("control2 write: %s", rd(err))
+	}
+	resp, rerr := r.raw(ctx, "PUT", dir+"/control2.bin", nil, bytes.NewReader(detBytes("wdf1-control2-other", 4096)))
+	if rerr != nil {
+		t.Fatalf("control2 overwrite: %s", rd(rerr))
+	}
+	resp.Body.Close()
+	c2present, _ := wdf1Poll(ctx, c, dir, "control2.bin")
+	ctrl2 := wdf1Verdict(true, c2present, wdf1Sha(ctx, c, dir+"/control2.bin", c2), hex.EncodeToString(c2h[:]))
+	t.Logf("control needle 2 (same-size overwrite): verdict=%s", ctrl2)
+
 	fired := 0
 	for _, x := range recs {
 		if x.FaultFired {
 			fired++
 		}
 	}
-	b, _ := json.MarshalIndent(map[string]any{"cases": recs, "faults_fired": fired, "lost_or_corrupt": lost, "control_needle_verdict": ctrl, "control_polls": cpolls}, "", " ")
+	b, _ := json.MarshalIndent(map[string]any{"cases": recs, "faults_fired": fired, "lost_or_corrupt": lost, "control_needle_verdict": ctrl, "control_needle2_same_size_overwrite_verdict": ctrl2, "control_polls": cpolls}, "", " ")
 	if p := os.Getenv("LIVE_YANDEX_EVIDENCE"); p != "" {
 		_ = os.WriteFile(p, b, 0o600)
 	}
 	if ctrl != "LOST_ACKED_WRITE" {
 		t.Fatalf("control needle did not fire (got %s): verdict logic is blind", ctrl)
+	}
+	if ctrl2 != "CORRUPT" {
+		t.Fatalf("control needle 2 did not fire (got %s): the CORRUPT branch is blind", ctrl2)
 	}
 	if fired == 0 {
 		t.Fatalf("no fault fired: the forced-reset condition was not exercised")

@@ -73,16 +73,13 @@ func TestLiveYandexWDF1Probe(t *testing.T) {
 		}
 		acked := perr == nil || rec.Retry == "ok"
 		present := false
+		lastOff := time.Duration(0)
 		for _, off := range []time.Duration{0, 3 * time.Second, 10 * time.Second, 30 * time.Second, 60 * time.Second} {
 			if off > 0 && present {
 				break
 			}
-			time.Sleep(off - func() time.Duration {
-				if off == 0 {
-					return 0
-				}
-				return 0
-			}())
+			time.Sleep(off - lastOff)
+			lastOff = off
 			fi, err := c.GetFileInfo(ctx, p)
 			ls, lerr := c.ListDirectory(ctx, dir)
 			inList := false

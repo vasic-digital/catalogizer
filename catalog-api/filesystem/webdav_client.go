@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -275,11 +276,17 @@ func (c *WebDAVClient) WriteFile(ctx context.Context, path string, data io.Reade
 		return err
 	}
 
-	// Defensive hardening (WD-F1/SECQ-2; NOT a proven fix, the loss was never reproduced live): a 2xx answer to a PUT is not taken as proof that the
-	// bytes are stored. HEAD the target; if it is absent, or its Content-Length differs from the bytes sent, PUT once more (only when the body can
-	// be replayed) and verify again; if still wrong, the write is an error instead of a silent success.
+	// Defensive hardening (WD-F1/SECQ-2; NOT a proven fix: no lost acknowledged write was ever reproduced live). After a 2xx PUT the target is
+	// HEADed: absent, or a Content-Length different from the bytes sent (when both are known), triggers one replay of the PUT (only when the body
+	// can be replayed) and a second check; still wrong is an error. LIMITS: this is an existence + SIZE check only. Same-size different content
+	// is NOT detected (an ETag/MD5 comparison is a tracked follow-up), a body of unknown length is checked for existence only, and a server that
+	// answers HEAD with 405/501 cannot be verified and the 2xx is accepted (logged).
 	vErr := c.verifyStored(ctx, fullURL, want)
 	if vErr == nil {
+		return nil
+	}
+	if errors.Is(vErr, errWebDAVHeadUnsupported) {
+		log.Printf("webdav: %s: server does not support HEAD, upload acknowledged but not verifiable", redactURL(fullURL))
 		return nil
 	}
 	if getBody == nil {
@@ -287,7 +294,7 @@ func (c *WebDAVClient) WriteFile(ctx context.Context, path string, data io.Reade
 	}
 	body, gerr := getBody()
 	if gerr != nil {
-		return fmt.Errorf("WebDAV upload of %s was acknowledged but not verified: %w", redactURL(fullURL), vErr)
+		return fmt.Errorf("WebDAV upload of %s was acknowledged but not verified (%v): %w", redactURL(fullURL), gerr, vErr)
 	}
 	if _, _, err := c.putOnce(ctx, fullURL, body); err != nil {
 		return fmt.Errorf("WebDAV re-upload of %s after failed verification (%v): %w", redactURL(fullURL), vErr, err)
@@ -307,8 +314,8 @@ func (c *WebDAVClient) putOnce(ctx context.Context, fullURL string, data io.Read
 		return 0, nil, fmt.Errorf("failed to create PUT request: %w", err)
 	}
 	want, getBody := req.ContentLength, req.GetBody
-	if req.ContentLength == 0 && (req.Body == nil || req.Body == http.NoBody) {
-		want = 0
+	if req.ContentLength == 0 && req.Body != nil && req.Body != http.NoBody {
+		want = -1 // unknown length (file, pipe, MultiReader): ContentLength 0 means "unknown" here, never "0 bytes"
 	}
 	// Wrap AFTER NewRequest so that Content-Length and GetBody it derived from the concrete reader type are kept (a wrapped reader passed in
 	// would make the upload chunked); every body read feeds the idle timer.
@@ -337,6 +344,8 @@ func (c *WebDAVClient) putOnce(ctx context.Context, fullURL string, data io.Read
 	return want, getBody, nil
 }
 
+var errWebDAVHeadUnsupported = errors.New("HEAD not supported")
+
 // verifyStored HEADs the target: present with 200, and, when both the sent length (want >= 0) and a Content-Length header are known, equal.
 func (c *WebDAVClient) verifyStored(ctx context.Context, fullURL string, want int64) error {
 	ctx, cancel := opContext(ctx)
@@ -353,6 +362,9 @@ func (c *WebDAVClient) verifyStored(ctx context.Context, fullURL string, want in
 		return fmt.Errorf("read-back HEAD failed: %w", err)
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusMethodNotAllowed || resp.StatusCode == http.StatusNotImplemented {
+		return fmt.Errorf("read-back HEAD answered %d: %w", resp.StatusCode, errWebDAVHeadUnsupported)
+	}
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("read-back HEAD answered status %d (file absent after an acknowledged write)", resp.StatusCode)
 	}

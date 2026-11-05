@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"sync"
 	"testing"
 
@@ -18,13 +19,14 @@ import (
 )
 
 type memDAV struct {
-	mu       sync.Mutex
-	files    map[string][]byte
-	puts     int
-	heads    int
-	dropPuts int  // first N PUTs are acknowledged (201) but NOT stored
-	truncate int  // first N PUTs store only half of the body (acked)
-	noLength bool // HEAD answers without Content-Length
+	mu         sync.Mutex
+	files      map[string][]byte
+	puts       int
+	heads      int
+	dropPuts   int  // first N PUTs are acknowledged (201) but NOT stored
+	truncate   int  // first N PUTs store only half of the body (acked)
+	noLength   bool // HEAD answers without Content-Length
+	headStatus int  // when non-zero HEAD answers this status (a server without HEAD support)
 }
 
 func (m *memDAV) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -48,6 +50,10 @@ func (m *memDAV) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 	case "HEAD":
 		m.heads++
+		if m.headStatus != 0 {
+			w.WriteHeader(m.headStatus)
+			return
+		}
 		b, ok := m.files[r.URL.Path]
 		if !ok {
 			w.WriteHeader(http.StatusNotFound)
@@ -126,4 +132,37 @@ func TestWriteFile_Verify_UnknownLengthBody_ExistenceOnlyNoRetryPossible(t *test
 	err := c.WriteFile(context.Background(), "/a.bin", io.MultiReader(bytes.NewReader(detBytes("v7", 100))))
 	require.Error(t, err)
 	assert.Equal(t, 1, m.puts)
+}
+
+// F1 (review): an upload whose length is unknown (http.NewRequest gives ContentLength 0) must not be compared against 0 bytes.
+func TestWriteFile_Verify_UnknownLengthBody_HealthyServer_Succeeds(t *testing.T) {
+	m := &memDAV{}
+	c := newMemDAV(t, m)
+	data := detBytes("v8", 5000)
+	require.NoError(t, c.WriteFile(context.Background(), "/a.bin", io.MultiReader(bytes.NewReader(data))))
+	assert.Equal(t, data, m.files["/a.bin"])
+	assert.Equal(t, 1, m.puts, "healthy server, existence-only verification: no second PUT")
+}
+
+func TestWriteFile_Verify_UnknownLengthBody_File_HealthyServer_Succeeds(t *testing.T) {
+	m := &memDAV{}
+	c := newMemDAV(t, m)
+	data := detBytes("v9", 5000)
+	f, err := os.CreateTemp(t.TempDir(), "up")
+	require.NoError(t, err)
+	_, _ = f.Write(data)
+	_, _ = f.Seek(0, 0)
+	defer f.Close()
+	require.NoError(t, c.WriteFile(context.Background(), "/a.bin", f))
+	assert.Equal(t, 1, m.puts)
+}
+
+// F2 (review): a server that does not implement HEAD cannot be verified: accept the 2xx, never upload twice.
+func TestWriteFile_Verify_HeadNotSupported_AcceptsWithoutSecondPut(t *testing.T) {
+	for _, code := range []int{http.StatusMethodNotAllowed, http.StatusNotImplemented} {
+		m := &memDAV{headStatus: code}
+		c := newMemDAV(t, m)
+		require.NoError(t, c.WriteFile(context.Background(), "/a.bin", bytes.NewReader(detBytes("v10", 100))))
+		assert.Equal(t, 1, m.puts, "HEAD %d: cannot verify, accept, no double upload", code)
+	}
 }
