@@ -1454,3 +1454,9 @@ PROVISIONAL-DONE until a live rerun on a rebuilt stack 3. Pre-existing, NOT caus
 
 ## NEW-1 live re-verification (2026-11-05, stack 3 image main-5c480072)
 - NEW-1: generated=2 then 0 (idempotent), cover_art rows video_thumbnail/is_default=true x2 on PostgreSQL; evidence docs/qa/new1-cover-thumbnails/green_main5c48.txt. VERIFIED on this stack for the batch endpoint. Still owed: SSRF-F2..F5 through the cover-art product path, SECQ-5 POST flows, pprof delta routes, SECQ-1 via POST /storage/roots; 10 stale video fixtures (files absent) should be reseeded or pruned.
+
+## Stack-3 live re-verification 2 (2026-11-05, image main-5c480072; evidence docs/qa/stack3-live-20261105/)
+- VERIFIED live: SECQ-1 (loopback/localhost/link-local/fd20:ce::254/::ffff:127.0.0.1 -> 400, RFC1918 -> 201), SECQ-5 (GET 410, authz 401/403), SECQ-4/4b (51 creates at 16 concurrent -> exactly 50x201 + 1x409, 3 rounds, both resources), subtitle DELETE non-owner 404 with row intact.
+- SECQ-3 pprof: UNCONFIRMED (404 everywhere since HELIX_PPROF_ENABLED unset; gate and 60 s guard need a flagged restart).
+- No delete API for storage roots (DELETE /storage/roots/{id} 404): QA cleanup needed direct SQL; consider tracking as API gap (STK3L2-FU-1).
+- POST /smb/discover with credentials to unreachable host returns 500 on i/o timeout rather than a 4xx/504 (STK3L2-FU-2, minor).
