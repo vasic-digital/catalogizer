@@ -41,8 +41,8 @@ to curl via a 0600 netrc and to the scanner via a 0600 env-file, never in argv.
   `io.catalogizer.service=sonarqube`; `up.sh`/`down.sh` refuse to reuse or remove any existing pod/volume of the stack that lacks it
   (nothing is removed if any check fails). `up.sh`/`scan.sh` refuse to start with < 10 GB free or > 98 % disk used. `scan.sh` refuses a
   non-empty `RUN_ID` directory.
-* Tests: `test_guards.sh` (21 checks, podman/df/nproc/sleep shims in a mktemp sandbox, touches no real stack) and
-  `mutation_guards.sh` (12 paired mutations, all must be killed).
+* Tests: `test_guards.sh` (23 checks, podman/df/nproc/sleep shims in a mktemp sandbox, touches no real stack) and
+  `mutation_guards.sh` (14 paired mutations, all must be killed).
 
 ## Elasticsearch prerequisites (no sudo)
 
@@ -67,7 +67,31 @@ must vanish, a clean file must stay clean) and a final scan of every exported fi
 
 ## Honest boundaries
 
-* The gate is SonarQube's default "Sonar way", which judges NEW code only; measured: `conditions: []` in the exported gate JSON (no new-code period on a first analysis), so `OK` is vacuous. A gate `OK` is therefore NOT a statement that the code base is clean: measured run1/run2 gate `OK` for both projects while the issue lists hold 16 BLOCKER + 9 CRITICAL (web) and 666 CRITICAL (api). Read the issue/measure exports, not just the gate.
+* The gate is SonarQube's default "Sonar way", which judges NEW code only. Measured in the committed (old, first-run) evidence: in **run1** both
+  projects' `quality_gate.json` show `status: OK` with `conditions: []` (no new-code period on a first analysis, so OK is vacuous); in **run2**
+  both show `status: OK` with one condition, `new_violations: OK`. A gate OK is therefore NOT a statement that the code base is clean: the issue
+  lists hold 16 BLOCKER + 9 CRITICAL (web) and 666 CRITICAL (api). Read the issue/measure exports, not just the gate.
+* run1 vs run2 were two analyses on the SAME SonarQube instance (re-analysis of an unchanged tree): identical per-project issue sets show
+  stability of re-analysis only. They do NOT demonstrate fresh-instance reproducibility; that needs a run on a freshly created instance.
 * Community Edition: no branch analysis, no taint-analysis rules of paid editions. No coverage report is fed in (not run here).
 * Findings are exported as found; sources are never edited to hide them. Static-analysis counts are not proof the product works (not a substitute for live QA, section 11.4.289).
 * The scanner container mounts the repo read-only and writes its work dir under a temp dir that is deleted afterwards.
+
+## Status of the committed evidence (read this)
+
+`docs/qa/sonarqube-20261105/run1` and `run2` are the OLD first run, produced with images that are no longer in the local podman store and
+with the pre-review scripts. See `docs/qa/sonarqube-20261105/EVIDENCE_NOTE.md`. Their `SHA256SUMS` omit the two gitignored scanner logs and
+verify from the committed tree (`cd run1 && sha256sum -c SHA256SUMS`). New runs write `*.scanner.txt` instead. A re-run is owed.
+
+## Docker Hub rate limit
+
+All three images are pinned by digest in `lib.sh` (sonarqube and postgres identical to `docker-compose.security.yml`). `up.sh` / `scan.sh`
+use a local copy when present; otherwise they pull. On Docker Hub's anonymous pull limit (`toomanyrequests`) they stop **before creating
+anything** with an explicit message. Remedies: `podman login docker.io` (your own interactive session; this service never stores
+credentials), or pre-pull / `podman load` the pinned images and re-run. Covered by `test_guards.sh` T9/T9b (no network: podman shim) and
+mutations M13/M14. Note: the first re-run attempt after review failed exactly this way once the local images had been pruned.
+
+## Tracker id
+
+The tracker id for this work is `CAT-QA-SONAR-1`. The first commit (`8c3ebe9a`) carries the provisional trailer `Roadmap-Item: QA-SONARQUBE`;
+history is not rewritten, so read that trailer as `CAT-QA-SONAR-1`.

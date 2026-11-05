@@ -14,6 +14,7 @@ load_secrets; : "${SONAR_TOKEN:?run ./up.sh first (no scan token)}"
 podman pod exists "$POD" || die "pod $POD not running - run ./up.sh first"
 write_netrc admin "$SONAR_ADMIN_PASSWORD"
 sq "$API_URL/api/authentication/validate" | jq -e .valid >/dev/null || die "admin login failed"
+ensure_images "$SCANNER_IMAGE"
 wait_for_load "${SQ_LOAD_TIMEOUT:-900}"
 
 R="$OUT/$RUN_ID"; mkdir -p "$R"; WORK="$(mktemp -d "$SQ_DIR/work.XXXXXX")"; chmod 700 "$WORK"

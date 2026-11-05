@@ -55,6 +55,22 @@ check_disk_floor() {
   DISK_USED_PCT="$used"; DISK_FREE_GB="$free"
 }
 
+# Images (digest-pinned): use local copies; otherwise pull. Docker Hub's anonymous pull limit is a known failure: fail with a clear
+# message instead of a half-created pod. Credentials are never stored here: use `podman login docker.io` (your own session) or pre-pull.
+ensure_images() {
+  local img out
+  for img in "$@"; do
+    podman image exists "$img" 2>/dev/null && continue
+    echo "image not present locally, pulling: ${img##*/}"
+    if ! out="$(podman pull "$img" 2>&1)"; then
+      if printf '%s' "$out" | grep -qiE 'toomanyrequests|rate limit'; then
+        die "Docker Hub rate limit hit while pulling $img. Fix: run 'podman login docker.io' (authenticated pulls have a higher limit), or pre-pull/load the pinned image (podman pull / podman load) and re-run. Nothing was started."
+      fi
+      die "pull of $img failed: $(printf '%s' "$out" | tail -1)"
+    fi
+  done
+}
+
 # Secrets file: SONAR_ADMIN_PASSWORD, SONAR_DB_PASSWORD (+ SONAR_TOKEN once minted). Created 0600, never printed.
 ensure_secrets() {
   mkdir -p "$SQ_DIR"

@@ -30,6 +30,7 @@ NOFILE="$(ulimit -Hn)"; [ "$NOFILE" -ge 65535 ] || die "hard nofile limit $NOFIL
 if podman pod exists "$POD" && [ "$(podman inspect -f '{{.State.Running}}' "${STACK}-sonar" 2>/dev/null || echo false)" = true ]; then
   echo "pod $POD already running"
 else
+  ensure_images "$SONAR_IMAGE" "$PG_IMAGE"       # before anything is created: a failed pull leaves no half-started pod
   wait_for_load "${SQ_LOAD_TIMEOUT:-900}"
   podman pod exists "$POD" && owned_pod && podman pod rm -f "$POD" >/dev/null 2>&1
   for v in pg data extensions logs; do podman volume exists "${STACK}-$v" || podman volume create --label "$LABEL_KEY=$LABEL_VAL" "${STACK}-$v" >/dev/null; done

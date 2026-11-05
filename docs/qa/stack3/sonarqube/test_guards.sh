@@ -10,7 +10,9 @@ S="$SB/state"; BIN="$SB/bin"; mkdir -p "$S" "$BIN" "$SB/sq" "$SB/out"
 cat > "$BIN/podman" <<'SH'
 #!/usr/bin/env bash
 echo "$*" >> "$SHIM_STATE/calls"
+if [ "$1" = pull ]; then [ -f "$SHIM_STATE/pullmsg" ] && { cat "$SHIM_STATE/pullmsg" >&2; exit 1; }; exit 0; fi
 case "$1 $2" in
+ "image exists") [ ! -f "$SHIM_STATE/noimg" ];;
  "pod exists") [ -f "$SHIM_STATE/pod" ];;
  "pod inspect") cat "$SHIM_STATE/pod_label" 2>/dev/null;;
  "volume exists") [ -f "$SHIM_STATE/vol_$3" ];;
@@ -82,6 +84,12 @@ mkdir -p "$SB/out/run1"; echo keep > "$SB/out/run1/x"; reset
 printf 'SONAR_ADMIN_PASSWORD=Aa1-planted-secret-value-xyz\nSONAR_DB_PASSWORD=dbplantedsecretvalue123456789\nSONAR_TOKEN=squ_plantedtoken\n' > "$SB/sq/sonar.env"
 REPO="$SB" OUT="$SB/out" RUN_ID=run1 "$SRC/scan.sh" > "$SB/scan.out" 2>&1; rc=$?
 { grep -q 'is not empty' "$SB/scan.out" && [ $rc -ne 0 ] && [ "$(cat "$SB/out/run1/x")" = keep ] && [ "$(ls "$SB/out/run1" | wc -l)" = 1 ] && ! created; } && ok "T7 non-empty RUN_ID dir refused" || bad "T7 (rc=$rc)"
+
+# T9: missing image + Docker Hub rate limit -> clear message, nothing created; without the limit message a pull failure is still fatal.
+reset; touch "$S/noimg"; echo 'Error: ... toomanyrequests: You have reached your unauthenticated pull rate limit.' > "$S/pullmsg"
+"$SRC/up.sh" > "$SB/up.out" 2>&1; rc=$?
+{ [ $rc -ne 0 ] && grep -q 'Docker Hub rate limit' "$SB/up.out" && grep -q 'podman login' "$SB/up.out" && ! created; } && ok "T9 rate-limited pull -> clear message, nothing created" || bad "T9 (rc=$rc)"
+reset; touch "$S/noimg"; "$SRC/up.sh" > "$SB/up.out" 2>&1; ! grep -q 'rate limit' "$SB/up.out" && grep -q 'pulling' "$SB/up.out" && ok "T9b pull attempted for missing image (no false rate-limit message)" || bad "T9b"
 
 # T8 F7: scan.sh resets gate_status.txt instead of appending (static check of the truncating redirect before the loop).
 grep -q ': > "\$R/gate_status.txt"' "$SRC/scan.sh" && ok "T8 gate_status.txt truncated at start" || bad "T8"

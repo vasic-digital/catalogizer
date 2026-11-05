@@ -28,4 +28,6 @@ mut M9-up-skips-owner-check     up.sh   'require_owned_resources ' ': '
 mut M10-volume-owner-check-off  lib.sh  'if podman volume exists "${STACK}-$v" 2>/dev/null && ! owned_vol "${STACK}-$v"; then' 'if false; then'
 mut M11-gate-status-append-only scan.sh ': > "$R/gate_status.txt"' ':'
 mut M12-up-skips-disk-floor     up.sh   'check_disk_floor "$VOLROOT"' 'DISK_USED_PCT=10; DISK_FREE_GB=999'
+mut M13-rate-limit-message-gone lib.sh  'toomanyrequests|rate limit' 'zzzneverzzz'
+mut M14-up-skips-image-check    up.sh   'ensure_images "$SONAR_IMAGE" "$PG_IMAGE"' ':'
 echo "survivors: $SURV"; exit "$SURV"
