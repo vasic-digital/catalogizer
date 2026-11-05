@@ -564,22 +564,49 @@ func (s *CoverArtService) downloadImage(ctx context.Context, imageURL string) ([
 }
 
 // coverArtMaxBytes caps one downloaded cover image (a variable only so a test can lower it).
-var coverArtMaxBytes int64 = 32 << 20
+var coverArtMaxBytes = coverArtMaxBytesDefault
 
-// ffmpegInputGuard keeps ffmpeg/ffprobe from opening anything but local files and pipes
-// when a media file is really a playlist (HLS, concat, DASH...) naming network URLs.
-// Same option as services/converter_hardening.go. It is an input option: place it before -i.
-var ffmpegInputGuard = []string{"-nostdin", "-protocol_whitelist", "file,pipe"}
+// coverArtDemuxers are the container demuxers accepted for cover-art video input (the same
+// allow-list as services/converter_hardening.go ffmpegDemuxers; that package cannot be imported
+// from here). -protocol_whitelist alone does not stop a library file that is really an HLS/concat
+// playlist from pulling segments from ANY local path (measured: a "movie.m3u8" naming a file:
+// segment outside the library produced a thumbnail and a duration); hls, concat, dash, sdp,
+// image2 patterns and lavfi are not in this list and are refused.
+var coverArtDemuxers = []string{
+	"mov", "mp4", "m4a", "3gp", "3g2", "mj2", "matroska", "webm", "avi", "asf", "flv",
+	"mpegts", "mpeg", "mpegvideo", "ogg", "wav", "flac", "mp3", "aac", "ac3", "eac3", "dts",
+	"ape", "wv", "aiff", "caf", "amr", "au", "w64", "rm", "h264", "hevc", "m4v", "ivf", "obu",
+}
+
+// ffmpegInputGuard keeps ffmpeg/ffprobe from opening anything but local plain media containers
+// (no network protocols, no playlist demuxers). These are input options: place them before -i.
+func ffmpegInputGuard() []string {
+	return []string{"-nostdin", "-protocol_whitelist", "file,pipe", "-format_whitelist", strings.Join(coverArtDemuxers, ",")}
+}
+
+// coverArtFFmpegTimeout bounds one frame extraction when the caller's context has no deadline.
+var coverArtFFmpegTimeout = 2 * time.Minute
+
+// withFFmpegDeadline gives ctx the coverArtFFmpegTimeout deadline when it has none.
+func withFFmpegDeadline(ctx context.Context) (context.Context, context.CancelFunc) {
+	if _, ok := ctx.Deadline(); ok {
+		return ctx, func() {}
+	}
+	return context.WithTimeout(ctx, coverArtFFmpegTimeout)
+}
 
 func ffprobeDurationCmd(videoPath string) *exec.Cmd {
-	args := []string{"-v", "error"}
-	args = append(args, "-protocol_whitelist", "file,pipe")
+	return ffprobeDurationCmdContext(context.Background(), videoPath)
+}
+
+func ffprobeDurationCmdContext(ctx context.Context, videoPath string) *exec.Cmd {
+	args := []string{"-v", "error", "-protocol_whitelist", "file,pipe", "-format_whitelist", strings.Join(coverArtDemuxers, ",")}
 	args = append(args, "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", videoPath)
-	return exec.Command("ffprobe", args...)
+	return exec.CommandContext(ctx, "ffprobe", args...)
 }
 
 func ffmpegFrameCmd(ctx context.Context, timestamp float64, videoPath, outputPath string) *exec.Cmd {
-	args := append([]string{}, ffmpegInputGuard...)
+	args := ffmpegInputGuard()
 	args = append(args, "-ss", fmt.Sprintf("%.2f", timestamp), "-i", videoPath, "-vframes", "1", "-q:v", "2", "-y", outputPath)
 	return exec.CommandContext(ctx, "ffmpeg", args...)
 }
@@ -952,7 +979,9 @@ func (s *CoverArtService) saveCoverArtToDB(ctx context.Context, coverArt *CoverA
 
 // getVideoDuration gets the duration of a video file using ffprobe
 func (s *CoverArtService) getVideoDuration(videoPath string) (float64, error) {
-	output, err := ffprobeDurationCmd(videoPath).Output()
+	ctx, cancel := context.WithTimeout(context.Background(), ffprobeTimeout)
+	defer cancel()
+	output, err := ffprobeDurationCmdContext(ctx, videoPath).Output()
 	if err == nil {
 		if duration, parseErr := strconv.ParseFloat(strings.TrimSpace(string(output)), 64); parseErr == nil && duration > 0 {
 			return duration, nil
@@ -978,7 +1007,9 @@ func (s *CoverArtService) generateVideoThumbnail(ctx context.Context, request *V
 	outputPath := filepath.Join(s.cacheDir, coverID+".jpg")
 
 	// Try ffmpeg to extract a frame
-	err := ffmpegFrameCmd(ctx, timestamp, request.VideoPath, outputPath).Run()
+	fctx, fcancel := withFFmpegDeadline(ctx)
+	err := ffmpegFrameCmd(fctx, timestamp, request.VideoPath, outputPath).Run()
+	fcancel()
 
 	if err == nil {
 		if info, statErr := os.Stat(outputPath); statErr == nil {
@@ -1364,7 +1395,9 @@ func (s *CoverArtService) generateAndSaveVideoThumbnail(ctx context.Context, med
 	outputPath := filepath.Join(s.cacheDir, coverID+".jpg")
 
 	// Fast seek: place -ss before -i
-	cmd := ffmpegFrameCmd(ctx, timestamp, videoPath, outputPath)
+	fctx, fcancel := withFFmpegDeadline(ctx)
+	defer fcancel()
+	cmd := ffmpegFrameCmd(fctx, timestamp, videoPath, outputPath)
 	if err := cmd.Run(); err != nil {
 		return nil, fmt.Errorf("ffmpeg failed: %w", err)
 	}
@@ -1673,3 +1706,9 @@ func guardedRedirect(req *http.Request, via []*http.Request) error {
 	}
 	return nil
 }
+
+// ffprobeTimeout bounds one ffprobe duration probe (a variable only so a test can lower it).
+var ffprobeTimeout = 30 * time.Second
+
+// coverArtMaxBytesDefault is the production cap of one downloaded cover image.
+const coverArtMaxBytesDefault int64 = 32 << 20

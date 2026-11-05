@@ -319,8 +319,10 @@ func TestCoverArtFFmpegCommands_ProtocolWhitelist(t *testing.T) {
 
 // Behavioural check against the installed ffmpeg: a crafted HLS/ffconcat playlist that
 // points at a real local listener must cause no connection. (On the ffmpeg build used
-// at the time of writing the default whitelist already blocks this, so it is a
-// regression guard, not the RED; the argument test above is the RED.)
+// at the time of writing the default whitelist already blocks playlist-borne URLs, so this one
+// is a regression guard; the behavioural REDs are in cover_art_ffmpeg_hardening_test.go: a direct
+// http:// video path reaches a listener without -protocol_whitelist (1 hit each for ffprobe and
+// ffmpeg measured), and a playlist naming a local file is followed without -format_whitelist.)
 func TestCoverArtFFmpeg_PlaylistDoesNotReachNetwork(t *testing.T) {
 	for _, tool := range []string{"ffmpeg", "ffprobe"} {
 		if _, err := exec.LookPath(tool); err != nil {

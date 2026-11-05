@@ -1,0 +1,43 @@
+# github.com/mutecomm/go-sqlcipher
+sqlite3.c: In function ‘sqlite3SelectNew’:
+sqlite3.c:120891:10: warning: function may return address of local variable [-Wreturn-local-addr]
+120891 |   return pNew;
+       |          ^~~~
+sqlite3.c:120852:10: note: declared here
+120852 |   Select standin;
+       |          ^~~~~~~
+sqlite3.c: In function ‘sqlite3VdbeExpandSql’:
+sqlite3.c:82156:10: warning: function may return address of local variable [-Wreturn-local-addr]
+82156 |   return sqlite3StrAccumFinish(&out);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+sqlite3.c:82052:8: note: declared here
+82052 |   char zBase[100];         /* Initial working space */
+      |        ^~~~~
+--- FAIL: TestCoverArtFFprobe_PlaylistToLocalFileIsRefused (0.39s)
+    cover_art_ffmpeg_hardening_test.go:58: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/internal/services/cover_art_ffmpeg_hardening_test.go:58
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestCoverArtFFprobe_PlaylistToLocalFileIsRefused
+        	Messages:   	ffprobe must refuse a non-container (HLS) input, got duration "2.000000\n"
+    cover_art_ffmpeg_hardening_test.go:61: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/internal/services/cover_art_ffmpeg_hardening_test.go:61
+        	Error:      	"2" is not less than "1"
+        	Test:       	TestCoverArtFFprobe_PlaylistToLocalFileIsRefused
+        	Messages:   	duration must not come from the secret segment (2.0 s)
+--- FAIL: TestCoverArtFFmpeg_PlaylistToLocalFileMakesNoThumbnail (0.15s)
+    cover_art_ffmpeg_hardening_test.go:70: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/internal/services/cover_art_ffmpeg_hardening_test.go:70
+        	Error:      	Should be true
+        	Test:       	TestCoverArtFFmpeg_PlaylistToLocalFileMakesNoThumbnail
+        	Messages:   	no frame may be produced from a file the playlist names
+--- FAIL: TestGetVideoDuration_BlockedInputIsBoundedByTimeout (10.01s)
+    cover_art_ffmpeg_hardening_test.go:93: getVideoDuration blocked on a FIFO: ffprobe has no timeout
+--- FAIL: TestCoverArtFFCommands_GuardArguments (0.00s)
+    cover_art_ffmpeg_hardening_test.go:140: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/internal/services/cover_art_ffmpeg_hardening_test.go:140
+        	Error:      	"-1" is not greater than or equal to "0"
+        	Test:       	TestCoverArtFFCommands_GuardArguments
+        	Messages:   	ffmpeg lacks -format_whitelist: [ffmpeg -nostdin -protocol_whitelist file,pipe -ss 1.00 -i /x.mp4 -vframes 1 -q:v 2 -y /o.jpg]
+FAIL
+FAIL	catalogizer/internal/services	11.273s
+FAIL
