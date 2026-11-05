@@ -120,4 +120,8 @@ v="$(tp 192.168.1.115)"; [ "$v" = 192.168.1.115/32 ]; ok $? "default TRUSTED_PRO
 printf '%s' "$v" | grep -qE '(^|,)(127\.|::1|0\.0\.0\.0|localhost)'; [ $? != 0 ]; ok $? "default TRUSTED_PROXIES excludes 127.0.0.0/8, ::1 and 0.0.0.0"
 v="$(tp "")"; [ "$v" = "" ]; ok $? "no detectable host address -> TRUSTED_PROXIES empty (trust nothing), not loopback (got '$v')"
 v="$( STUB_IP_SRC=; unset TRUSTED_PROXIES; export PATH="$BIN:$PATH"; TRUSTED_PROXIES=10.1.2.3/32; . "$HERE/lib.sh" >/dev/null 2>&1; printf '%s' "$TRUSTED_PROXIES")"; [ "$v" = 10.1.2.3/32 ]; ok $? "explicit TRUSTED_PROXIES override is kept"
+# 8. R-1: up.sh with NO detectable host address passes an EMPTY TRUSTED_PROXIES (trust nothing) and never a loopback/wildcard fallback
+setup t8; export STUB_IP_SRC=""; unset TRUSTED_PROXIES; run_up
+grep -qE -- '-e TRUSTED_PROXIES= ' "$STUB_LOG"; ok $? "no host address -> up.sh passes -e TRUSTED_PROXIES= (empty)"
+grep -oE -- 'TRUSTED_PROXIES=[^ ]*' "$STUB_LOG" | grep -qE '127\.|::1|0\.0\.0\.0'; [ $? != 0 ]; ok $? "no host address -> no 127./::1/0.0.0.0 in the TRUSTED_PROXIES argument"
 echo "passed=$pass failed=$fail"; [ "$fail" = 0 ]

@@ -81,7 +81,7 @@ U="$S/up"; mkdir -p "$U/bin" "$U/qa"
 cat > "$U/bin/podman" <<'FP'
 #!/bin/bash
 echo "podman $*" >> "$U_LOG"
-case "$*" in *seed_scrape_token.sh*) cat > "$U_DIR/seed.stdin";; esac
+case "$*" in *seed_scrape_token.sh*) cat > "$U_DIR/seed.stdin"; [ -z "${SEED_FAIL:-}" ] || exit 1;; esac
 case "$*" in *"cat /tokens/previous.tok"*) printf 'OLDADMINSESSIONTOKEN';; esac
 case "$1 $2" in "pod exists") exit 1;; "image inspect") awk -v i="$3" '$1==i{print $2}' "$PINS"; exit 0;; esac
 exit 0
@@ -95,4 +95,7 @@ grep -qE -- '(-e|--env)[= ]METRICS_SCRAPE_TOKEN' "$U/log" && bad FU1.token_never
 grep -q 'auth/logout' "$U/log" && grep -q 'Bearer OLDADMINSESSIONTOKEN' "$U/curl.stdin" 2>/dev/null && ! grep -q OLDADMINSESSIONTOKEN "$U/log" && ok FU1.stale_refresher_session_revoked_token_on_stdin_only || bad FU1.stale_refresher_session_revoked_token_on_stdin_only "no logout / token in argv"
 grep -q -- 'tokenrefresh' "$U/log" && bad FU1.no_refresher_started_in_static_mode "refresher started" || ok FU1.no_refresher_started_in_static_mode
 
+# R-2: the seeding container failing must make up.sh exit non-zero (6) and must not go on to start Prometheus
+: > "$U/log"; SEED_FAIL=1 PINS="$HERE/evidence/image_digests.txt" U_LOG="$U/log" U_DIR="$U" QA_DIR="$U/qa" PATH="$U/bin:$PATH" timeout 60 bash "$HERE/up.sh" >/dev/null 2>&1 </dev/null; rcs=$?
+[ "$rcs" = 6 ] && ! grep -q -- 'catqa3mon-prometheus' "$U/log" && ok FU1.seed_failure_makes_up_exit_6_prometheus_not_started || bad FU1.seed_failure_makes_up_exit_6_prometheus_not_started "rc=$rcs"
 [ "$fail" = 0 ] && echo "ALL PASS" || echo "SOME FAILED"; exit "$fail"
