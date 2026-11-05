@@ -32,7 +32,14 @@ pub fn validate_server_url(raw: &str) -> Result<String, String> {
     if lp.contains("%2f") || lp.contains("%5c") || lp.contains("%2e") {
         return Err("Server URL path must not contain encoded separators".to_string());
     }
-    Ok(u.as_str().to_string())
+    // Canonical form: bare "/" path trimmed, because callers concatenate
+    // `${serverUrl}/api/v1/...` and a trailing slash would yield `//api/v1/...`
+    // (404 on the server). Same form is used for storage AND equality checks.
+    let mut out = u.as_str().to_string();
+    if u.path() == "/" && u.query().is_none() && u.fragment().is_none() {
+        out.pop();
+    }
+    Ok(out)
 }
 
 /// HTTP client that re-checks every redirect hop against the configured server.
@@ -187,9 +194,28 @@ pub(crate) mod tests {
     }
 
     #[test]
+    fn canonical_form_has_no_trailing_slash_for_root_and_keeps_path_port() {
+        for (raw, want) in [
+            ("http://a.com", "http://a.com"),
+            ("http://a.com/", "http://a.com"),
+            ("HTTP://A.com:8080/", "http://a.com:8080"),
+            ("https://a.com:443", "https://a.com"),
+            ("https://a.com/api", "https://a.com/api"),
+            ("https://a.com/api/", "https://a.com/api/"),
+            ("http://[::1]:8080/", "http://[::1]:8080"),
+        ] {
+            let got = validate_server_url(raw).unwrap();
+            assert_eq!(got, want, "{}", raw);
+            // frontend shape: `${serverUrl}/api/v1/x` must not contain `//` after the origin
+            let joined = format!("{}/api/v1/x", got);
+            assert!(!url::Url::parse(&joined).unwrap().path().starts_with("//"), "{}", joined);
+        }
+    }
+
+    #[test]
     fn server_url_is_normalised_and_control_chars_rejected() {
-        assert_eq!(validate_server_url("HTTP://A.com").unwrap(), "http://a.com/");
-        assert_eq!(validate_server_url("https://c\u{0430}talogizer.example").unwrap(), "https://xn--ctalogizer-zqi.example/");
+        assert_eq!(validate_server_url("HTTP://A.com").unwrap(), "http://a.com");
+        assert_eq!(validate_server_url("https://c\u{0430}talogizer.example").unwrap(), "https://xn--ctalogizer-zqi.example");
         for bad in ["http://a.com/\nNew: http://good.example", "http://a.com/\t", "http://a .com", "http://a.com/\u{202e}x", "http://a.com/\r"] {
             assert!(validate_server_url(bad).is_err(), "{:?}", bad);
         }

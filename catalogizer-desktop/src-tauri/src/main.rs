@@ -78,10 +78,11 @@ async fn confirm_url_change(
     if current.as_deref() == Some(requested) || last.as_deref() == Some(requested) {
         return Ok(current);
     }
+    let in_force = current.is_some();
     let reference = current.clone().or(last);
     let c = confirmer.clone();
     let req = requested.to_string();
-    let approved = tokio::task::spawn_blocking(move || c.ask(reference.as_deref(), &req))
+    let approved = tokio::task::spawn_blocking(move || c.ask(reference.as_deref(), in_force, &req))
         .await
         .map_err(|e| format!("Confirmation prompt failed: {}", e))??;
     if approved {
@@ -700,7 +701,7 @@ mod tests {
             }
         }
         impl crate::confirm::UrlConfirmer for Scripted {
-            fn confirm_server_url_change(&self, current: Option<&str>, requested: &str) -> bool {
+            fn confirm_server_url_change(&self, current: Option<&str>, _in_force: bool, requested: &str) -> bool {
                 self.seen.lock().unwrap().push((current.map(String::from), requested.to_string()));
                 self.answer
             }
@@ -719,7 +720,7 @@ mod tests {
                 assert!(apply_server_url(&state, &shared(&yes), bad.into()).await.is_err(), "{}", bad);
             }
             assert_eq!(yes.prompts().len(), before, "invalid URLs must not even reach the prompt");
-            assert_eq!(state.lock().await.server_url.as_deref(), Some("http://a.com/"));
+            assert_eq!(state.lock().await.server_url.as_deref(), Some("http://a.com"));
         }
 
         #[tokio::test]
@@ -733,7 +734,7 @@ mod tests {
                 assert!(apply_config(&state, &shared(&yes), cfg).await.is_err(), "{}", bad);
             }
             let g = state.lock().await;
-            assert_eq!(g.server_url.as_deref(), Some("https://a.com/"));
+            assert_eq!(g.server_url.as_deref(), Some("https://a.com"));
             assert_eq!(g.theme, "dark");
             drop(g);
             assert!(apply_config(&state, &shared(&yes), AppConfig::default()).await.is_ok());
@@ -747,11 +748,11 @@ mod tests {
             let no = Scripted::new(false);
             let r = apply_server_url(&state, &shared(&no), "http://evil.com".into()).await;
             assert_eq!(r.unwrap_err(), "Server URL change was not confirmed by the user");
-            assert_eq!(state.lock().await.server_url.as_deref(), Some("http://a.com/"));
-            assert_eq!(no.prompts(), vec![(Some("http://a.com/".to_string()), "http://evil.com/".to_string())]);
+            assert_eq!(state.lock().await.server_url.as_deref(), Some("http://a.com"));
+            assert_eq!(no.prompts(), vec![(Some("http://a.com".to_string()), "http://evil.com".to_string())]);
             apply_server_url(&state, &shared(&yes), "http://b.com".into()).await.unwrap();
-            assert_eq!(state.lock().await.server_url.as_deref(), Some("http://b.com/"));
-            assert_eq!(yes.prompts().last().unwrap(), &(Some("http://a.com/".to_string()), "http://b.com/".to_string()));
+            assert_eq!(state.lock().await.server_url.as_deref(), Some("http://b.com"));
+            assert_eq!(yes.prompts().last().unwrap(), &(Some("http://a.com".to_string()), "http://b.com".to_string()));
         }
 
         #[tokio::test]
@@ -760,10 +761,10 @@ mod tests {
             let no = Scripted::new(false);
             assert!(apply_server_url(&state, &shared(&no), "http://a.com".into()).await.is_err());
             assert!(state.lock().await.server_url.is_none());
-            assert_eq!(no.prompts(), vec![(None, "http://a.com/".to_string())]);
+            assert_eq!(no.prompts(), vec![(None, "http://a.com".to_string())]);
             let yes = Scripted::new(true);
             apply_server_url(&state, &shared(&yes), "http://a.com".into()).await.unwrap();
-            assert_eq!(state.lock().await.server_url.as_deref(), Some("http://a.com/"));
+            assert_eq!(state.lock().await.server_url.as_deref(), Some("http://a.com"));
         }
 
         #[tokio::test]
@@ -788,7 +789,7 @@ mod tests {
             let cfg = AppConfig { server_url: Some("http://evil.com".into()), theme: "light".into(), ..AppConfig::default() };
             assert!(apply_config(&state, &shared(&no), cfg).await.is_err());
             let g = state.lock().await;
-            assert_eq!(g.server_url.as_deref(), Some("http://a.com/"));
+            assert_eq!(g.server_url.as_deref(), Some("http://a.com"));
             assert_eq!(g.theme, "dark", "a declined change must not apply ANY part of the config");
             drop(g);
             // Clearing is allowed, but the next set is then a first-time set and prompts again.
@@ -803,7 +804,7 @@ mod tests {
         async fn config_lock_is_not_held_while_prompting() {
             struct Probe(Arc<ConfigState>, std::sync::Mutex<Option<bool>>);
             impl crate::confirm::UrlConfirmer for Probe {
-                fn confirm_server_url_change(&self, _: Option<&str>, _: &str) -> bool {
+                fn confirm_server_url_change(&self, _: Option<&str>, _in_force: bool, _: &str) -> bool {
                     *self.1.lock().unwrap() = Some(self.0.try_lock().is_ok());
                     true
                 }
@@ -816,6 +817,25 @@ mod tests {
         }
 
         // ---- review round 1 fixes ----
+        /// Run an async test body on its own runtime/thread with a hard deadline, so a
+        /// deadlock (e.g. config lock held across a prompt) FAILS instead of hanging the suite.
+        fn run_with_timeout<F>(secs: u64, f: F)
+        where
+            F: std::future::Future<Output = ()> + Send + 'static,
+        {
+            let (tx, rx) = std::sync::mpsc::channel();
+            let h = std::thread::spawn(move || {
+                let rt = tokio::runtime::Builder::new_multi_thread().worker_threads(3).enable_all().build().unwrap();
+                rt.block_on(f);
+                let _ = tx.send(());
+            });
+            match rx.recv_timeout(std::time::Duration::from_secs(secs)) {
+                Ok(()) => {}
+                Err(std::sync::mpsc::RecvTimeoutError::Timeout) => panic!("test timed out after {}s (deadlock?)", secs),
+                Err(_) => std::panic::resume_unwind(h.join().unwrap_err()),
+            }
+        }
+
         #[tokio::test]
         async fn newline_in_url_cannot_forge_dialog_text() {
             let state: ConfigState = Mutex::new(AppConfig::default());
@@ -848,7 +868,7 @@ mod tests {
                 assert_eq!(no.prompts().len(), before + 1, "{} must prompt", other);
             }
             let quiet = Scripted::new(false);
-            for same in ["http://a.com", "HTTP://A.COM", "http://a.com/", "http://a.com:80"] {
+            for same in ["http://a.com", "HTTP://A.COM", "http://a.com", "http://a.com:80"] {
                 assert!(apply_server_url(&state, &shared(&quiet), same.into()).await.is_ok(), "{}", same);
             }
             assert!(quiet.prompts().is_empty());
@@ -856,28 +876,30 @@ mod tests {
 
         struct Interloper(Arc<ConfigState>);
         impl crate::confirm::UrlConfirmer for Interloper {
-            fn confirm_server_url_change(&self, _: Option<&str>, _: &str) -> bool {
-                self.0.blocking_lock().server_url = Some("http://c.com/".into());
+            fn confirm_server_url_change(&self, _: Option<&str>, _in_force: bool, _: &str) -> bool {
+                self.0.blocking_lock().server_url = Some("http://c.com".into());
                 true
             }
         }
 
-        #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-        async fn url_changed_during_prompt_is_not_overwritten() {
-            let init = AppConfig { server_url: Some("http://a.com/".into()), ..AppConfig::default() };
+        #[test]
+        fn url_changed_during_prompt_is_not_overwritten() {
+            run_with_timeout(20, async move {
+            let init = AppConfig { server_url: Some("http://a.com".into()), ..AppConfig::default() };
             let st = Arc::new(Mutex::new(init));
             let c = crate::confirm::PromptGate::new(Arc::new(Interloper(st.clone())));
             let r = apply_server_url(&st, &c, "http://b.com".into()).await;
             assert!(r.unwrap_err().contains("changed while waiting"));
-            assert_eq!(st.lock().await.server_url.as_deref(), Some("http://c.com/"));
-            let init = AppConfig { server_url: Some("http://a.com/".into()), ..AppConfig::default() };
+            assert_eq!(st.lock().await.server_url.as_deref(), Some("http://c.com"));
+            let init = AppConfig { server_url: Some("http://a.com".into()), ..AppConfig::default() };
             let st = Arc::new(Mutex::new(init));
             let c = crate::confirm::PromptGate::new(Arc::new(Interloper(st.clone())));
             let cfg = AppConfig { server_url: Some("http://b.com".into()), theme: "light".into(), ..AppConfig::default() };
             let r = apply_config(&st, &c, cfg).await;
             assert!(r.unwrap_err().contains("changed while waiting"));
             let g = st.lock().await;
-            assert_eq!((g.server_url.as_deref(), g.theme.as_str()), (Some("http://c.com/"), "dark"));
+            assert_eq!((g.server_url.as_deref(), g.theme.as_str()), (Some("http://c.com"), "dark"));
+            })
         }
 
         #[tokio::test]
@@ -888,10 +910,10 @@ mod tests {
             let no = Scripted::new(false);
             apply_config(&state, &shared(&no), AppConfig::default()).await.unwrap();
             assert!(apply_server_url(&state, &shared(&no), "http://evil.com".into()).await.is_err());
-            assert_eq!(no.prompts(), vec![(Some("http://a.com/".to_string()), "http://evil.com/".to_string())]);
+            assert_eq!(no.prompts(), vec![(Some("http://a.com".to_string()), "http://evil.com".to_string())]);
             // the frontend cannot reset or read the backend-only memory
             assert!(!serde_json::to_string(&*state.lock().await).unwrap().contains("last_confirmed"));
-            let cfg: AppConfig = serde_json::from_str(r#"{"server_url":null,"auth_token":null,"theme":"dark","auto_start":false,"last_confirmed_url":"http://evil.com/"}"#).unwrap();
+            let cfg: AppConfig = serde_json::from_str(r#"{"server_url":null,"auth_token":null,"theme":"dark","auto_start":false,"last_confirmed_url":"http://evil.com"}"#).unwrap();
             assert!(cfg.last_confirmed_url.is_none());
             // re-adopting the previously confirmed URL needs no new prompt
             let quiet = Scripted::new(false);
@@ -901,18 +923,18 @@ mod tests {
 
         struct Panicker;
         impl crate::confirm::UrlConfirmer for Panicker {
-            fn confirm_server_url_change(&self, _: Option<&str>, _: &str) -> bool {
+            fn confirm_server_url_change(&self, _: Option<&str>, _in_force: bool, _: &str) -> bool {
                 panic!("dialog backend died")
             }
         }
 
         #[tokio::test]
         async fn panicking_confirmer_fails_closed_and_releases_the_gate() {
-            let init = AppConfig { server_url: Some("http://a.com/".into()), ..AppConfig::default() };
+            let init = AppConfig { server_url: Some("http://a.com".into()), ..AppConfig::default() };
             let state: ConfigState = Mutex::new(init);
             let c = crate::confirm::PromptGate::new(Arc::new(Panicker));
             assert!(apply_server_url(&state, &c, "http://b.com".into()).await.is_err());
-            assert_eq!(state.lock().await.server_url.as_deref(), Some("http://a.com/"));
+            assert_eq!(state.lock().await.server_url.as_deref(), Some("http://a.com"));
             // gate released: the next attempt reaches the confirmer again (panics again) instead of "already open"
             let e = apply_server_url(&state, &c, "http://b.com".into()).await.unwrap_err();
             assert!(!e.contains("already open"), "{}", e);
@@ -920,15 +942,16 @@ mod tests {
 
         struct Blocking(std::sync::Mutex<std::sync::mpsc::Receiver<()>>, std::sync::mpsc::SyncSender<()>);
         impl crate::confirm::UrlConfirmer for Blocking {
-            fn confirm_server_url_change(&self, _: Option<&str>, _: &str) -> bool {
+            fn confirm_server_url_change(&self, _: Option<&str>, _in_force: bool, _: &str) -> bool {
                 let _ = self.1.try_send(()); // signal: dialog open
                 self.0.lock().unwrap().recv_timeout(std::time::Duration::from_secs(10)).ok(); // wait for release
                 true
             }
         }
 
-        #[tokio::test(flavor = "multi_thread", worker_threads = 3)]
-        async fn only_one_prompt_in_flight_second_is_rejected() {
+        #[test]
+        fn only_one_prompt_in_flight_second_is_rejected() {
+            run_with_timeout(20, async move {
             let (rel_tx, rel_rx) = std::sync::mpsc::sync_channel::<()>(1);
             let (open_tx, open_rx) = std::sync::mpsc::sync_channel::<()>(1);
             let st = Arc::new(Mutex::new(AppConfig::default()));
@@ -940,7 +963,28 @@ mod tests {
             assert_eq!(second.unwrap_err(), "Another server confirmation is already open");
             rel_tx.send(()).unwrap();
             first.await.unwrap().unwrap();
-            assert_eq!(st.lock().await.server_url.as_deref(), Some("http://a.com/"));
+            assert_eq!(st.lock().await.server_url.as_deref(), Some("http://a.com"));
+            })
+        }
+
+        #[tokio::test]
+        async fn stored_url_is_bare_so_frontend_concat_has_no_double_slash() {
+            for (raw, want) in [("http://a.com", "http://a.com"), ("http://a.com/", "http://a.com"), ("https://a.com:8443/", "https://a.com:8443"), ("https://a.com/api", "https://a.com/api")] {
+                let state: ConfigState = Mutex::new(AppConfig::default());
+                let yes = Scripted::new(true);
+                apply_server_url(&state, &shared(&yes), raw.into()).await.unwrap();
+                let stored = state.lock().await.server_url.clone().unwrap();
+                assert_eq!(stored, want);
+                // authStore.ts / apiService.ts shape: `${serverUrl}/api/v1/auth/login`
+                let frontend = format!("{}/api/v1/auth/login", stored);
+                let path = url::Url::parse(&frontend).unwrap().path().to_string();
+                assert!(!path.starts_with("//") && !path.contains("//api"), "{}", frontend);
+                assert!(crate::url_guard::is_within_server(&stored, &frontend), "{}", frontend);
+                // the equality check uses the same canonical form: re-entering is not a change
+                let no = Scripted::new(false);
+                apply_server_url(&state, &shared(&no), raw.into()).await.unwrap();
+                assert!(no.prompts().is_empty(), "{} re-entered must not prompt", raw);
+            }
         }
 
         // ---- IPC-level tests (TAURI-F15): real command wrappers through tauri::test ----
@@ -983,13 +1027,13 @@ mod tests {
             let (_app, w) = ipc_window(Mutex::new(AppConfig::default()), shared(&no));
             let r = ipc(&w, "set_server_url", serde_json::json!({"url": "http://a.com"}));
             assert_eq!(r.unwrap_err(), serde_json::json!("Server URL change was not confirmed by the user"));
-            assert_eq!(no.prompts(), vec![(None, "http://a.com/".to_string())]);
+            assert_eq!(no.prompts(), vec![(None, "http://a.com".to_string())]);
             assert!(ipc(&w, "get_config", serde_json::json!({})).unwrap()["server_url"].is_null());
 
             let yes = Scripted::new(true);
             let (_app2, w2) = ipc_window(Mutex::new(AppConfig::default()), shared(&yes));
             ipc(&w2, "set_server_url", serde_json::json!({"url": "http://a.com"})).unwrap();
-            assert_eq!(ipc(&w2, "get_config", serde_json::json!({})).unwrap()["server_url"], "http://a.com/");
+            assert_eq!(ipc(&w2, "get_config", serde_json::json!({})).unwrap()["server_url"], "http://a.com");
             let bad = ipc(&w2, "set_server_url", serde_json::json!({"url": "ftp://a.com"}));
             assert!(bad.unwrap_err().as_str().unwrap().contains("http or https"));
         }
