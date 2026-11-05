@@ -1,0 +1,159 @@
+light /dashboard []
+   color-contrast 2
+      .text-gray-400.text-center | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      .fixed | Element has insufficient color contrast of 2.65 (foreground color: #919cad, background color: #f9fafb, font si
+   svg-img-alt 6
+      path[name="Audio"] | Element has no child that is a title
+      path[name="Book"] | Element has no child that is a title
+      path[name="Document"] | Element has no child that is a title
+      path[name="Image"] | Element has no child that is a title
+      path[name="Other"] | Element has no child that is a title
+      path[name="Video"] | Element has no child that is a title
+light /analytics []
+   color-contrast 1
+      .fixed | Element has insufficient color contrast of 2.65 (foreground color: #919cad, background color: #f9fafb, font si
+   svg-img-alt 6
+      .recharts-sector[name="AUDIO"][stroke="#fff"] | Element has no child that is a title
+      .recharts-sector[name="BOOK"][fill="#EF4444"] | Element has no child that is a title
+      .recharts-sector[name="DOCUMENT"][fill="#10B981"] | Element has no child that is a title
+      .recharts-sector[name="IMAGE"][fill="#F59E0B"] | Element has no child that is a title
+      .recharts-sector[name="OTHER"][stroke="#fff"] | Element has no child that is a title
+      .recharts-sector[name="VIDEO"][fill="#EC4899"] | Element has no child that is a title
+light /browse []
+   color-contrast 1
+      .fixed | Element has insufficient color contrast of 2.65 (foreground color: #919cad, background color: #f9fafb, font si
+light /subtitles []
+   color-contrast 1
+      .fixed | Element has insufficient color contrast of 2.65 (foreground color: #919cad, background color: #f9fafb, font si
+light /admin []
+   color-contrast 1
+      .fixed | Element has insufficient color contrast of 2.65 (foreground color: #919cad, background color: #f9fafb, font si
+light /settings []
+   color-contrast 1
+      .fixed | Element has insufficient color contrast of 2.65 (foreground color: #919cad, background color: #f9fafb, font si
+light /ai []
+   color-contrast 3
+      .bg-green-600 | Element has insufficient color contrast of 3.29 (foreground color: #ffffff, background color: #16a34a, font si
+      .bg-yellow-600 | Element has insufficient color contrast of 2.93 (foreground color: #ffffff, background color: #ca8a04, font si
+      .fixed | Element has insufficient color contrast of 2.65 (foreground color: #919cad, background color: #f9fafb, font si
+light /identities []
+   color-contrast 1
+      .fixed | Element has insufficient color contrast of 2.65 (foreground color: #919cad, background color: #f9fafb, font si
+light /media []
+   color-contrast 25
+      div[data-testid="media-item-35"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-34"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-33"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-32"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-6"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3.t | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-31"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-18"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-17"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-42"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-5"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3.t | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-4"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3.t | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-27"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-46"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-391"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3 | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-339"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3 | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-26"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-25"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-24"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-23"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-22"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-21"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-3"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3.t | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-16"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      div[data-testid="media-item-15"] > .overflow-hidden.group.hover\:shadow-xl > .p-4 > .mt-3. | Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font si
+      .fixed | Element has insufficient color contrast of 2.65 (foreground color: #919cad, background color: #f9fafb, font si
+dark /dashboard [dark]
+   color-contrast 14
+      .gap-3.p-3.bg-gray-50:nth-child(1) > div > .capitalize.text-xs.text-gray-500 | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .gap-3.p-3.bg-gray-50:nth-child(2) > div > .capitalize.text-xs.text-gray-500 | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .gap-3.p-3.bg-gray-50:nth-child(3) > div > .capitalize.text-xs.text-gray-500 | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .gap-3.p-3.bg-gray-50:nth-child(4) > div > .capitalize.text-xs.text-gray-500 | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .gap-3.p-3.bg-gray-50:nth-child(5) > div > .capitalize.text-xs.text-gray-500 | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .gap-3.p-3.bg-gray-50:nth-child(6) > div > .capitalize.text-xs.text-gray-500 | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .gap-3.p-3.bg-gray-50:nth-child(7) > div > .capitalize.text-xs.text-gray-500 | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .p-3.bg-gray-50.rounded-lg:nth-child(1) > .text-xs.text-gray-500 | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .p-3.bg-gray-50.rounded-lg:nth-child(2) > .text-xs.text-gray-500 | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .p-3.bg-gray-50.rounded-lg:nth-child(3) > .text-xs.text-gray-500 | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .p-3.bg-gray-50.rounded-lg:nth-child(4) > .text-xs.text-gray-500 | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .p-3.bg-gray-50.rounded-lg:nth-child(5) > .text-xs.text-gray-500 | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .text-center:nth-child(2) | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .fixed | Element has insufficient color contrast of 3.29 (foreground color: #606b7e, background color: #111827, font si
+   svg-img-alt 6
+      path[name="Audio"] | Element has no child that is a title
+      path[name="Book"] | Element has no child that is a title
+      path[name="Document"] | Element has no child that is a title
+      path[name="Image"] | Element has no child that is a title
+      path[name="Other"] | Element has no child that is a title
+      path[name="Video"] | Element has no child that is a title
+dark /analytics [dark]
+   color-contrast 6
+      .text-center.bg-gray-50.p-3:nth-child(1) > .text-gray-500.text-xs | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .text-center.bg-gray-50.p-3:nth-child(2) > .text-gray-500.text-xs | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .text-center.bg-gray-50.p-3:nth-child(3) > .text-gray-500.text-xs | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .grid-cols-2 > .bg-gray-50.p-3.dark\:bg-gray-800:nth-child(1) > .text-gray-500.text-xs | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .grid-cols-2 > .bg-gray-50.p-3.dark\:bg-gray-800:nth-child(2) > .text-gray-500.text-xs | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .fixed | Element has insufficient color contrast of 3.29 (foreground color: #606b7e, background color: #111827, font si
+   svg-img-alt 6
+      .recharts-sector[name="AUDIO"][stroke="#fff"] | Element has no child that is a title
+      .recharts-sector[name="BOOK"][fill="#EF4444"] | Element has no child that is a title
+      .recharts-sector[name="DOCUMENT"][fill="#10B981"] | Element has no child that is a title
+      .recharts-sector[name="IMAGE"][fill="#F59E0B"] | Element has no child that is a title
+      .recharts-sector[name="OTHER"][stroke="#fff"] | Element has no child that is a title
+      .recharts-sector[name="VIDEO"][fill="#EC4899"] | Element has no child that is a title
+dark /browse [dark]
+   color-contrast 1
+      .fixed | Element has insufficient color contrast of 3.29 (foreground color: #606b7e, background color: #111827, font si
+dark /subtitles [dark]
+   color-contrast 1
+      .fixed | Element has insufficient color contrast of 3.29 (foreground color: #606b7e, background color: #111827, font si
+dark /admin [dark]
+   color-contrast 23
+      .border-blue-500 | Element has insufficient color contrast of 3.43 (foreground color: #2563eb, background color: #111827, font si
+      .border-transparent.hover\:text-gray-700.hover\:border-gray-300:nth-child(2) | Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font si
+      .border-transparent.hover\:text-gray-700.hover\:border-gray-300:nth-child(3) | Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font si
+      .border-transparent.hover\:text-gray-700.hover\:border-gray-300:nth-child(4) | Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font si
+      .rounded-xl.shadow-lg.dark\:border-gray-700:nth-child(1) > .p-6 > .flex.items-center > .fl | Element has insufficient color contrast of 1.94 (foreground color: #4b5563, background color: #1f2937, font si
+      .rounded-xl.shadow-lg.dark\:border-gray-700:nth-child(2) > .p-6 > .flex.items-center > .fl | Element has insufficient color contrast of 1.94 (foreground color: #4b5563, background color: #1f2937, font si
+      .rounded-xl.shadow-lg.dark\:border-gray-700:nth-child(2) > .p-6 > .flex.items-center > .fl | Element has insufficient color contrast of 1.2 (foreground color: #111827, background color: #1f2937, font siz
+      .rounded-xl.shadow-lg.dark\:border-gray-700:nth-child(3) > .p-6 > .flex.items-center > .fl | Element has insufficient color contrast of 1.94 (foreground color: #4b5563, background color: #1f2937, font si
+      .rounded-xl.shadow-lg.dark\:border-gray-700:nth-child(3) > .p-6 > .flex.items-center > .fl | Element has insufficient color contrast of 1.2 (foreground color: #111827, background color: #1f2937, font siz
+      .rounded-xl.shadow-lg.dark\:border-gray-700:nth-child(4) > .p-6 > .flex.items-center > .fl | Element has insufficient color contrast of 1.94 (foreground color: #4b5563, background color: #1f2937, font si
+      .rounded-xl.shadow-lg.dark\:border-gray-700:nth-child(4) > .p-6 > .flex.items-center > .fl | Element has insufficient color contrast of 1.2 (foreground color: #111827, background color: #1f2937, font siz
+      div:nth-child(1) > .mb-2.justify-between.flex > .text-gray-600 | Element has insufficient color contrast of 1.94 (foreground color: #4b5563, background color: #1f2937, font si
+      div:nth-child(2) > .mb-2.justify-between.flex > .text-gray-600 | Element has insufficient color contrast of 1.94 (foreground color: #4b5563, background color: #1f2937, font si
+      div:nth-child(3) > .mb-2.justify-between.flex > .text-gray-600 | Element has insufficient color contrast of 1.94 (foreground color: #4b5563, background color: #1f2937, font si
+      .rounded-xl.shadow-lg.dark\:border-gray-700:nth-child(1) > .pt-0.p-6 > .space-y-4 > .grid- | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .rounded-xl.shadow-lg.dark\:border-gray-700:nth-child(1) > .pt-0.p-6 > .space-y-4 > .grid- | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .rounded-xl.shadow-lg.dark\:border-gray-700:nth-child(1) > .pt-0.p-6 > .space-y-4 > .grid- | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .p-3.bg-gray-50.rounded-lg:nth-child(4) > .text-xs.text-gray-500 | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .rounded-xl.shadow-lg.dark\:border-gray-700:nth-child(2) > .pt-0.p-6 > .space-y-4 > .grid- | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .rounded-xl.shadow-lg.dark\:border-gray-700:nth-child(2) > .pt-0.p-6 > .space-y-4 > .grid- | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .rounded-xl.shadow-lg.dark\:border-gray-700:nth-child(2) > .pt-0.p-6 > .space-y-4 > .grid- | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .space-y-4 > .p-3.bg-gray-50.rounded-lg > .text-xs.text-gray-500 | Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font si
+      .fixed | Element has insufficient color contrast of 3.29 (foreground color: #606b7e, background color: #111827, font si
+dark /settings [dark]
+   color-contrast 1
+      .fixed | Element has insufficient color contrast of 3.29 (foreground color: #606b7e, background color: #111827, font si
+dark /ai [dark]
+   color-contrast 9
+      .border-indigo-500 > span | Element has insufficient color contrast of 2.82 (foreground color: #4f46e5, background color: #111827, font si
+      .border-transparent.hover\:text-gray-700.hover\:border-gray-300:nth-child(2) > span | Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font si
+      .border-transparent.hover\:text-gray-700.hover\:border-gray-300:nth-child(3) > span | Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font si
+      .border-transparent.hover\:text-gray-700.hover\:border-gray-300:nth-child(4) > span | Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font si
+      .border-transparent.hover\:text-gray-700.hover\:border-gray-300:nth-child(5) > span | Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font si
+      .border-transparent.hover\:text-gray-700.hover\:border-gray-300:nth-child(6) > span | Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font si
+      .bg-green-600 | Element has insufficient color contrast of 3.29 (foreground color: #ffffff, background color: #16a34a, font si
+      .bg-yellow-600 | Element has insufficient color contrast of 2.93 (foreground color: #ffffff, background color: #ca8a04, font si
+      .fixed | Element has insufficient color contrast of 3.29 (foreground color: #606b7e, background color: #111827, font si
+dark /identities [dark]
+   color-contrast 1
+      .fixed | Element has insufficient color contrast of 3.29 (foreground color: #606b7e, background color: #111827, font si
+dark /media [dark]
+   color-contrast 1
+      .fixed | Element has insufficient color contrast of 3.29 (foreground color: #606b7e, background color: #111827, font si
+
+[exited with code 0]

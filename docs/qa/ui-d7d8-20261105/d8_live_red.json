@@ -1,0 +1,16 @@
+{
+ "url": "/browse?search=zzznomatchzzz",
+ "h1": [
+  "Browse Media"
+ ],
+ "searchInputValue": [
+  "Search movies, shows, music...=zzznomatchzzz",
+  "Search entities...="
+ ],
+ "body": "Browse Media\n\n20 total entities across all types\n\nBook\n\n3 items\n\nComic\n\n1 item\n\nGame\n\n0 items\n\nMovie\n\n10 items\n\nMusic Album\n\n3 items\n\nMusic Artist\n\n0 items\n\nSoftware\n\n0 items\n\nTv Show\n\n1 item",
+ "entityCalls": [
+  "GET /api/v1/entities/stats",
+  "GET /api/v1/entities/types",
+  "GET /api/v1/entities/stats"
+ ]
+}

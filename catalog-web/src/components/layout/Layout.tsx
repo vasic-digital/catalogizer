@@ -12,7 +12,7 @@ export const Layout: React.FC = () => {
       <main className="flex-1">
         <Outlet />
       </main>
-      <span className="fixed bottom-2 right-3 text-xs text-slate-500/70 dark:text-slate-400/60 select-none pointer-events-none">v1.1.0</span>
+      <span className="fixed bottom-2 right-3 text-xs text-slate-600 dark:text-slate-300 select-none pointer-events-none">v1.1.0</span>
     </div>
   )
 }

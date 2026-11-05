@@ -1,0 +1,4 @@
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mAssertionError[22m[39m: expected "vi.fn()" to be called at least once
+[90m [2m❯[22m runWithExpensiveErrorDiagnosticsDisabled ../../../lv.lRxQmt/repo/catalog-web/node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/config.js:[2m47:12[22m[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[90m (1)[39m
