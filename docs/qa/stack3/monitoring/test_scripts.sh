@@ -81,6 +81,7 @@ U="$S/up"; mkdir -p "$U/bin" "$U/qa"
 cat > "$U/bin/podman" <<'FP'
 #!/bin/bash
 echo "podman $*" >> "$U_LOG"
+case "$1 $2" in "secret create") cat > "$U_DIR/secret.$3" 2>/dev/null || cat >/dev/null; echo "$3" >> "$U_DIR/secrets.created";; esac   # drain stdin (else printf|podman races SIGPIPE under pipefail = the flake)
 case "$*" in *seed_scrape_token.sh*) cat > "$U_DIR/seed.stdin"; [ -z "${SEED_FAIL:-}" ] || exit 1;; esac
 case "$*" in *"cat /tokens/previous.tok"*) printf 'OLDADMINSESSIONTOKEN';; esac
 case "$1 $2" in "pod exists") exit 1;; "image inspect") awk -v i="$3" '$1==i{print $2}' "$PINS"; exit 0;; esac
@@ -88,14 +89,28 @@ exit 0
 FP
 printf '#!/bin/sh\necho "curl $*" >> "$U_LOG"\ncase "$*" in *@-*) cat >> "$U_DIR/curl.stdin";; esac\nprintf 200\n' > "$U/bin/curl"; printf '#!/bin/sh\nexit 0\n' > "$U/bin/sleep"; printf '#!/bin/sh\nexit 0\n' > "$U/bin/ss"; chmod +x "$U/bin/"*
 ( umask 077; { echo ADMIN_USERNAME=a; echo ADMIN_PASSWORD=pw; echo POSTGRES_USER=c; echo POSTGRES_PASSWORD=pp; echo "METRICS_SCRAPE_TOKEN=$T32"; } > "$U/qa/qa.env" )
-PINS="$HERE/evidence/image_digests.txt" U_LOG="$U/log" U_DIR="$U" QA_DIR="$U/qa" PATH="$U/bin:$PATH" timeout 60 bash "$HERE/up.sh" >/dev/null 2>&1 </dev/null   # </dev/null + timeout: a mutated up.sh that stops piping must FAIL the asserts below, never hang the stub
+PINS="$HERE/evidence/image_digests.txt" U_LOG="$U/log" U_DIR="$U" QA_DIR="$U/qa" PATH="$U/bin:$PATH" timeout "${TEST_RUN_TIMEOUT:-180}" bash "$HERE/up.sh" >/dev/null 2>&1 </dev/null   # </dev/null + timeout: a mutated up.sh that stops piping must FAIL the asserts below, never hang the stub
 [ "$(cat "$U/seed.stdin" 2>/dev/null)" = "$T32" ] && ok FU1.up_feeds_token_on_stdin || bad FU1.up_feeds_token_on_stdin "stdin=$(wc -c < "$U/seed.stdin" 2>/dev/null)"
 grep -qF -- "$T32" "$U/log" && bad FU1.token_value_never_in_argv "token value in podman argv" || ok FU1.token_value_never_in_argv
 grep -qE -- '(-e|--env)[= ]METRICS_SCRAPE_TOKEN' "$U/log" && bad FU1.token_never_passed_as_env_to_monitoring "env pass-through" || ok FU1.token_never_passed_as_env_to_monitoring
 grep -q 'auth/logout' "$U/log" && grep -q 'Bearer OLDADMINSESSIONTOKEN' "$U/curl.stdin" 2>/dev/null && ! grep -q OLDADMINSESSIONTOKEN "$U/log" && ok FU1.stale_refresher_session_revoked_token_on_stdin_only || bad FU1.stale_refresher_session_revoked_token_on_stdin_only "no logout / token in argv"
 grep -q -- 'tokenrefresh' "$U/log" && bad FU1.no_refresher_started_in_static_mode "refresher started" || ok FU1.no_refresher_started_in_static_mode
 
+# QA-PROM-AUTH: the Prometheus password never reaches a podman argv / env (only podman secrets), the secrets exist, and down.sh removes them
+PPW="$(grep '^PROM_AUTH_PASSWORD=' "$U/qa/mon.env" 2>/dev/null | cut -d= -f2-)"
+[ "${#PPW}" -ge 16 ] && ok PA.positive_control_password_in_mon_env || bad PA.positive_control_password_in_mon_env "len=${#PPW}"
+[ -n "$PPW" ] && ! grep -qF -- "$PPW" "$U/log" && ok PA.password_value_never_in_argv || bad PA.password_value_never_in_argv "value in log or empty"
+grep -qE -- '(-e|--env)[= ]PROM_AUTH_PASSWORD' "$U/log" && bad PA.password_never_passed_as_env "env pass-through" || ok PA.password_never_passed_as_env
+[ "$(cat "$U/secret.catqa3mon-promauth" 2>/dev/null)" = "$PPW" ] && [ "$(cat "$U/secret.catqa3mon-promauthgf" 2>/dev/null)" = "$PPW" ] && ok PA.secrets_created_with_password || bad PA.secrets_created_with_password ""
+grep -q -- 'catqa3mon-promauth,target=/run/secrets/prom_pw,uid=65534,mode=0400' "$U/log" && grep -q -- 'catqa3mon-promauthgf,target=/run/secrets/prom_pw,uid=472,mode=0400' "$U/log" && ok PA.secrets_mounted_for_prom_and_grafana || bad PA.secrets_mounted_for_prom_and_grafana ""
+grep -q -- '--web.config.file=/cfg/prometheus/web.yml' "$U/log" && ok PA.prometheus_started_with_web_config || bad PA.prometheus_started_with_web_config ""
+# down.sh removes every secret up.sh creates (F1)
+: > "$U/log"; PATH="$U/bin:$PATH" U_LOG="$U/log" U_DIR="$U" bash "$HERE/down.sh" >/dev/null 2>&1 </dev/null
+miss=""; for sc in $(sort -u "$U/secrets.created"); do grep -qx -- "podman secret rm $sc" "$U/log" || miss="$miss $sc"; done
+[ -z "$miss" ] && [ -s "$U/secrets.created" ] && ok PA.down_removes_every_secret_up_creates || bad PA.down_removes_every_secret_up_creates "not removed:$miss"
+
 # R-2: the seeding container failing must make up.sh exit non-zero (6) and must not go on to start Prometheus
-: > "$U/log"; SEED_FAIL=1 PINS="$HERE/evidence/image_digests.txt" U_LOG="$U/log" U_DIR="$U" QA_DIR="$U/qa" PATH="$U/bin:$PATH" timeout 60 bash "$HERE/up.sh" >/dev/null 2>&1 </dev/null; rcs=$?
+: > "$U/log"; SEED_FAIL=1 PINS="$HERE/evidence/image_digests.txt" U_LOG="$U/log" U_DIR="$U" QA_DIR="$U/qa" PATH="$U/bin:$PATH" timeout "${TEST_RUN_TIMEOUT:-180}" bash "$HERE/up.sh" >/dev/null 2>&1 </dev/null; rcs=$?
 [ "$rcs" = 6 ] && ! grep -q -- 'catqa3mon-prometheus' "$U/log" && ok FU1.seed_failure_makes_up_exit_6_prometheus_not_started || bad FU1.seed_failure_makes_up_exit_6_prometheus_not_started "rc=$rcs"
+
 [ "$fail" = 0 ] && echo "ALL PASS" || echo "SOME FAILED"; exit "$fail"

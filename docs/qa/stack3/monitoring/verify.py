@@ -34,11 +34,16 @@ def jget(url, method="GET", headers=None, data=None, opener=None):
 
 # ---------------- Prometheus
 pu = f"http://{H}:{P['prom']}"
-s, d = jget(f"{pu}/api/v1/targets")
+PU = os.environ.get("PROM_AUTH_USER") or M.get("PROM_AUTH_USER") or "qa_prom"   # same precedence as up.sh (mon.env, else lib.sh default)
+PA = {"Authorization": "Basic " + base64.b64encode(f"{PU}:{M.get('PROM_AUTH_PASSWORD', '')}".encode()).decode()}
+s, _, _ = http(f"{pu}/api/v1/targets"); rec("prom.anonymous_targets_rejected", s == 401, f"http={s}")
+s, _, _ = http(f"{pu}/api/v1/query?query=up"); rec("prom.anonymous_query_rejected", s == 401, f"http={s}")
+s, _, _ = http(f"{pu}/api/v1/targets", headers={"Authorization": "Basic " + base64.b64encode(PU.encode() + b":wrong-" + os.urandom(6).hex().encode()).decode()}); rec("prom.wrong_password_rejected", s == 401, f"http={s}")
+s, d = jget(f"{pu}/api/v1/targets", headers=PA)
 tg = [t for t in (d or {}).get("data", {}).get("activeTargets", []) if t["labels"].get("job") == "catalogizer-api"]
 rec("prom.target_catalogizer-api_up", s == 200 and len(tg) == 1 and tg[0]["health"] == "up", f"health={tg[0]['health'] if tg else None} lastError={tg[0]['lastError'] if tg else None!r}")
 def q(expr):
-    s, d = jget(f"{pu}/api/v1/query?query={urllib.parse.quote(expr)}")
+    s, d = jget(f"{pu}/api/v1/query?query={urllib.parse.quote(expr)}", headers=PA)
     return (d or {}).get("data", {}).get("result", []) if s == 200 else None
 r = q('up{job="catalogizer-api"}'); rec("prom.query_up==1", bool(r) and r[0]["value"][1] == "1", f"{[x['value'][1] for x in r or []]}")
 r = q("sum(catalogizer_http_requests_total)"); rec("prom.query_http_requests_total_has_data", bool(r) and float(r[0]["value"][1]) > 0, f"sum={r[0]['value'][1] if r else None}")
