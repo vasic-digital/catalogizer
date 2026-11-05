@@ -24,7 +24,7 @@ import (
 // The operator policy therefore refuses, always, after name resolution and on the address that is dialled:
 // loopback, link-local (169.254.0.0/16, fe80::/10, which includes the metadata address 169.254.169.254),
 // unspecified, multicast, broadcast, the reserved ranges of reservedNets, 0.0.0.0/8 and 240.0.0.0/4, the
-// IPv6 metadata address fd00:ec2::254 and 100.100.100.200, and every IPv4-mapped, IPv4-compatible, NAT64 and
+// IPv6 metadata addresses fd00:ec2::254 and fd20:ce::254 and 100.100.100.200, and every IPv4-mapped, IPv4-compatible, NAT64 and
 // 6to4 form of those. RFC 1918, IPv6 ULA (fc00::/7), CGNAT (Tailscale-style) and public addresses are allowed.
 //
 // Two operator controls:
@@ -33,7 +33,9 @@ import (
 //     it names, in both modes; it can never re-admit the always-refused addresses above.
 const DenyPrivateEnv = "CATALOGIZER_OPERATOR_DENY_PRIVATE"
 
-var operatorMetadataNets = []*net.IPNet{mustCIDR("fd00:ec2::254/128"), mustCIDR("100.100.100.200/32"), mustCIDR("2001::/32") /* Teredo */}
+// fd20:ce::254 is the Compute Engine metadata server on IPv6-only instances, documented by Google at
+// https://docs.cloud.google.com/compute/docs/metadata/querying-metadata (single address; the surrounding /32 is not refused).
+var operatorMetadataNets = []*net.IPNet{mustCIDR("fd00:ec2::254/128"), mustCIDR("fd20:ce::254/128"), mustCIDR("100.100.100.200/32"), mustCIDR("2001::/32") /* Teredo */}
 
 func denyPrivate() bool {
 	switch strings.ToLower(strings.TrimSpace(os.Getenv(DenyPrivateEnv))) {
@@ -133,14 +135,22 @@ func resolveOperator(ctx context.Context, host string) ([]net.IP, error) {
 	if err != nil {
 		return nil, fmt.Errorf("resolve %q: %w", host, err)
 	}
+	// FILTER policy (SECQ1-F4): refused addresses are dropped from the answer and only the remaining, checked
+	// addresses are dialled (the dial is pinned to them), so a name that answers 192.168.x.x together with fe80::
+	// still works. The whole name is refused only when no permitted address remains.
 	var ok []net.IP
+	dropped := 0
 	for _, a := range addrs {
 		if IsBlockedOperatorIP(a.IP) {
-			return nil, fmt.Errorf("%w: %s resolves to a loopback, link-local, metadata or reserved address", ErrBlocked, host)
+			dropped++
+			continue
 		}
 		ok = append(ok, a.IP)
 	}
 	if len(ok) == 0 {
+		if dropped > 0 {
+			return nil, fmt.Errorf("%w: %s resolves only to loopback, link-local, metadata or reserved addresses", ErrBlocked, host)
+		}
 		return nil, fmt.Errorf("resolve %q: no addresses", host)
 	}
 	return ok, nil
@@ -185,6 +195,9 @@ func (ps *proxySet) proxy(req *http.Request) (*url.URL, error) {
 	return p, nil
 }
 
+// SECQ1-F1 (considered, not changed): bypassing the check only for proxy addresses that are not operator-blocked
+// would break the supported local-proxy case (a proxy on 127.0.0.1 is operator configuration and is itself blocked),
+// and a dial cannot tell a proxy connection from a direct one. The narrow residual stays documented.
 func (ps *proxySet) dial(ctx context.Context, network, addr string) (net.Conn, error) {
 	if _, ok := ps.m.Load(addr); ok {
 		return (&net.Dialer{Timeout: 15 * time.Second, KeepAlive: 30 * time.Second}).DialContext(ctx, network, addr)
@@ -192,8 +205,7 @@ func (ps *proxySet) dial(ctx context.Context, network, addr string) (net.Conn, e
 	return OperatorDialContext(ctx, network, addr)
 }
 
-// OperatorDialContext resolves addr, refuses the whole answer when any address is refused by the operator
-// policy, and dials the checked IP itself (pinned), never the name.
+// OperatorDialContext resolves addr, drops the addresses refused by the operator policy (refusing the name when none remain), and dials the checked IP itself (pinned), never the name.
 func OperatorDialContext(ctx context.Context, network, addr string) (net.Conn, error) {
 	host, port, err := net.SplitHostPort(addr)
 	if err != nil {
