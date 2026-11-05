@@ -4,8 +4,8 @@
 > A fresh session that receives only the prompt `continue` MUST read this file first, then
 > `docs/FOLLOW_UPS_NEXT_PHASE.md`, then resume the §11.4.126 loop with the steps in "RESUME ORDER".
 
-**Revision:** 12
-**Last modified:** 2026-11-05T19:00:00Z (20:00 CET; after the post-reboot landing wave)
+**Revision:** 13
+**Last modified:** 2026-11-05 (queue replaced by the workable-items register)
 **Exports:** `CONTINUATION.html` / `CONTINUATION.pdf` are STALE (Rev 9). Regenerate from this file (owed, §11.4.65); this `.md` is authoritative.
 
 ## 1. State at stop
@@ -21,7 +21,7 @@
 
 | Branch | Where | Item | State |
 |---|---|---|---|
-| `feat/sonarqube-qa` HEAD `734a5ee6` (local only, not pushed) | scratch clone `/home/milosvasic/.cache/claude-tmp/sonarqa.FG8Tji/repo` | SonarQube on-demand QA service (minimal tokens) | BLOCKED: the pinned sonarqube/scanner images are gone locally and the Docker Hub unauthenticated pull rate limit was hit (needs login, a mirror, or waiting). Evidence `results run1/run2` in that tree is the OLD first run. Owed: README F7 fixes, tracker entry `CAT-QA-SONAR-1`, a fresh run once images are available, Opus review (max 5 rounds), then land. |
+| `feat/sonarqube-qa` HEAD `734a5ee6` (local only, not pushed) | scratch clone `/home/milosvasic/.cache/claude-tmp/sonarqa.FG8Tji/repo` | SonarQube on-demand QA service (minimal tokens) | BLOCKED: the pinned sonarqube/scanner images are gone locally and the Docker Hub unauthenticated pull rate limit was hit (needs login, a mirror, or waiting). Evidence `results run1/run2` in that tree is the OLD first run. Tracked as `CAT-QA-SONAR-1` (register). Owed: README F7 fixes, a fresh run once images are available, Opus review (max 5 rounds), then land. |
 
 ## 3. Landed (all PROVISIONAL-DONE until live rerun)
 
@@ -40,7 +40,16 @@ URL map (host 192.168.1.115): API :38082 (/health), web :33020, website :33021, 
 4. Open work items (Sonnet authors in scratch clones via `git clone --no-hardlinks`, then Opus reviewers, max 5 rounds): (a) SonarQube (section 2; unblock image pull first); (b) Vision/HelixQA UI leg: stop `llmctl-onnx@decide-nli` ONLY via `llmctl stop`/`start` (never `enable`), CPU-capped, do not harm other sessions; (c) Tauri native boot of the confirm-on-URL-change and SSRF changes (`TAURI_BUILD_JOBS=2 scripts/tauri/build.sh <out>`, `QA_BIND=192.168.1.115 scripts/tauri/run-qa.sh desktop`); (d) Android real login via secret-safe path; (e) S3 UI/docs/web SUPPORTED_PROTOCOLS follow-ups (S3-FU); (f) throwaway pre-release tag test to prove GitHub/GitLab release permission (then delete the test tag everywhere).
 5. Landing procedure: `git fetch -q --recurse-submodules=no <clone> <branch>`; `git diff --raw HEAD...FETCH_HEAD -- submodules constitution | wc -l` must be 0; `git merge --no-ff --no-commit FETCH_HEAD`; append follow-ups to docs/FOLLOW_UPS_NEXT_PHASE.md; commit with `Roadmap-Item:` + `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`; push SERIALLY to six upstreams with `sleep 4` (parallel push fails "failed to lock"); verify `git ls-remote <r> refs/heads/main` parity; delete any wip branch on every upstream after landing.
 6. Remaining release scope (memory `feedback_release_completion_mandate`): WL13 player follow-ups + subtitles panel; responsive/a11y live matrix across devices/browsers; desktop+installer wizard; Android/Android TV; HelixQA with Vision; performance/security/chaos; N>=3 determinism ledger; retire stacks catqa1/catqa2 (docs note only); LV3-1..5; D5 bursty-audio fixture; Synology idle-deadline/cut-recovery live and Synology SMB/FTP/NFS live tests (SKIP `hardware_not_present` while the drives are OFF); PostgreSQL last-admin race; key-rotation waiver = operator-accepted open risk, no expiry, never invent a date; `versions.json` 2.3.0 -> 2.4.0 + changelog (VERIFIED / PROVISIONAL / REOPENED / OVERDUE separately); test GITHUB_TOKEN / GitLab release permission with a real create at release time; tag `v2.4.0` on all upstreams only after live validation.
-7. Queue: SECQ-2 (WD-F1/WD-F1a, UNREPRODUCED), SECQ-4b, SECQ-7, SECQ-8, SUB-H1..H7, ST-R4-1..4, LW3-1, WL13-R*, MON-G4/G5/PROV, QA-MON-FU-2/3/4, LE3-B/D, ST-NFS, D8-F1, CAT-D9-SUSPEND, D9-F1, D4-3 FTS5/tsvector, UI-D4 (UNREPRODUCED), UI-FAV-1, MP-FLAKE-1, WEB-DEPS-1, AND-FU-1..7, S3-FU-1..3, TAURI-FU-1..7, D11-R2-2..5, root-package OpenAPI test failure (pre-existing), services TestCAT002 (host-memory dependent), llms_verifier submodule, waiver gate consumer-data design, trust manifest, atm_id->cat_id rename, llmctl pin bumps, periodic constitution fetch, 90 owed script guides.
+7. Queue: every open item is a registered workable item in `docs/WORKABLE_ITEMS_REGISTER.md` (Part A = existing follow-up ids with pointers into `docs/FOLLOW_UPS_NEXT_PHASE.md`; Part B = items registered at Rev 13). Do not keep a parallel list here.
+
+| Group | Item ids (see register) |
+|---|---|
+| Verification (PROVISIONAL until live) | CAT-UI-AXE-LIVE-1, CAT-STACK3-REBUILD-1, CAT-PROM-LAN-1, CAT-PPROF-LIVE-1, CAT-DETERMINISM-LEDGER-1, CAT-TAURI-NATIVE-1 |
+| Blocked | CAT-QA-SONAR-1 (Docker Hub rate limit), CAT-SYN-LIVE-1 + ST-NFS (drives OFF, SKIP hardware_not_present), CAT-HELIXQA-VISION-1 (host capacity) |
+| Features / coverage | CAT-TAURI-INSTALLER-1, CAT-ANDROID-LOGIN-1, CAT-S3-LIVE-2, CAT-RESPONSIVE-A11Y-MATRIX-1, CAT-PERF-CHAOS-1, CAT-WL13-PLAYER-1, CAT-D5-BURSTY-AUDIO-1, CAT-PG-LASTADMIN-1, CAT-QA-MON-FU-2, CAT-STACK-RETIRE-1 |
+| Release | CAT-REL-V240-1, CAT-REL-PERM-1, CAT-KEYROT-WAIVER-1 (operator-accepted open risk, no expiry) |
+| Governance | CAT-WI-ENGINE-1, CAT-CONST-FETCH-1, CAT-LLMS-VERIFIER-1, CAT-WAIVER-GATE-DESIGN-1, CAT-LLMCTL-PINS-1, CAT-TEST-PREEXIST-1, CAT-DOCS-EXPORT-1 |
+| Existing follow-up ids | SECQ-2/4b/7/8, SUB-H1..H7, ST-R4-1..4, LW3-1, WL13-R*, MON-G4/G5/PROV, QA-MON-FU-3/4, LE3-B/D, D8-F1, CAT-D9-SUSPEND, D9-F1, D4-3, UI-D4, UI-FAV-1, MP-FLAKE-1, WEB-DEPS-1, AND-FU-1..7, S3-FU-1..3, TAURI-FU-1..7, D11-R2-2..5, D7-R3-FU1/M1/M3, LV3-1..5 |
 
 ## 6. Disk
 

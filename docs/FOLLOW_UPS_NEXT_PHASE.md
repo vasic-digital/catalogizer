@@ -5,6 +5,8 @@ Small items left after independent review rounds, documented per the operator ru
 land and are listed here. Layers follow constitution §11.4.235(D).
 Status values: OPEN until a commit on `main` closes the item.
 
+> **Index (2026-11-05):** the id register is `docs/WORKABLE_ITEMS_REGISTER.md` (Part A points here for every existing follow-up id; Part B registers items that had no entry, e.g. `CAT-QA-SONAR-1`, `CAT-UI-AXE-LIVE-1`, `CAT-REL-V240-1`, `CAT-SYN-LIVE-1`). `docs/CONTINUATION.md` section 5.7 points to the same register. Add every new follow-up to the register as well as to the section below it.
+
 ## Container hygiene guard (`scripts/tests/test_container_hygiene.sh`) — test-instrumentation
 Found by the round-3 reviewer (landed series `a9e5248b`). Commit `8c73f797` claimed O1-O4 CLOSED; the
 independent review of that commit returned NO-GO (a regression in the R3 exemption, `|| exit 256` exempted, and
