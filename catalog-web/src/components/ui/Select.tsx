@@ -16,31 +16,6 @@ interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>
   className?: string
 }
 
-function nodeText(node: React.ReactNode): string {
-  if (node == null || typeof node === 'boolean') return ''
-  if (typeof node === 'string' || typeof node === 'number') return String(node)
-  if (Array.isArray(node)) return node.map(nodeText).join('')
-  if (React.isValidElement(node)) return nodeText((node.props as { children?: React.ReactNode }).children)
-  return ''
-}
-
-function selectedOptionLabel(
-  value: string | undefined,
-  options: Option[] | undefined,
-  children: React.ReactNode
-): string | undefined {
-  if (options && options.length > 0) {
-    return (options.find((o) => o.value === value) ?? options[0]).label
-  }
-  const opts: React.ReactElement<{ value?: string; children?: React.ReactNode }>[] = []
-  React.Children.forEach(children, (c) => {
-    if (React.isValidElement(c)) opts.push(c as React.ReactElement<{ value?: string; children?: React.ReactNode }>)
-  })
-  const pick = opts.find((o) => o.props.value === value) ?? opts[0]
-  const text = pick ? nodeText(pick.props.children).trim() : ''
-  return text || undefined
-}
-
 export const Select: React.FC<SelectProps> = ({
   value,
   onChange,
@@ -60,14 +35,6 @@ export const Select: React.FC<SelectProps> = ({
     }
   }
 
-  // Accessible-name fallback (WCAG 4.1.2 / axe select-name): a select whose call site gave no
-  // aria-label, aria-labelledby, title or id (an id may be associated with a <label>) is named from
-  // its currently selected option, so no page ends up with an unnamed combobox.
-  const hasOwnName = Boolean(
-    props['aria-label'] || props['aria-labelledby'] || props.title || props.id
-  )
-  const fallbackName = hasOwnName ? undefined : selectedOptionLabel(value, options, children)
-
   // Generate options if provided
   const optionsChildren = options?.map((option) => (
     <option key={option.value} value={option.value}>
@@ -80,7 +47,6 @@ export const Select: React.FC<SelectProps> = ({
       <select
         value={value}
         onChange={handleChange}
-        aria-label={fallbackName}
         className={cn(
           'w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent dark:focus-visible:ring-offset-gray-900',

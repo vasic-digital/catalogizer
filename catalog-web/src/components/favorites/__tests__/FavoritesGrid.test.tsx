@@ -242,3 +242,11 @@ describe('FavoritesGrid', () => {
     })
   })
 })
+
+describe('FavoritesGrid accessible names (CAT-UI-D5D6)', () => {
+  it('names the filter and sort selects by purpose', () => {
+    renderWithRouter(<FavoritesGrid />)
+    expect(screen.getByRole('combobox', { name: 'Filter by media type' })).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Sort favorites' })).toBeInTheDocument()
+  })
+})

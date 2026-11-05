@@ -5,5 +5,5 @@ RED (live, QA stack 3 image main-5c480072, qa_admin, headless Chromium + axe-cor
 RED counts: /media button-name 78; /collections button-name 2 + select-name 2; /playlists button-name 2 + select-name 4;
 /favorites select-name 2; /ai button-name 1; /dashboard svg-img-alt 6; /analytics svg-img-alt 6; /admin @360px scrollWidth 618 (client 360), cause: 40-char commit hash in the Version stat card.
 
-GREEN live re-run plan (after conductor rebuilds the web image): `node axe_live.cjs` with the same env; expect every list empty
+GREEN live re-run plan (after conductor rebuilds the web image): `NODE_MODULES_DIR=<dir with playwright-core+axe-core> [CHROMIUM_PATH=<chrome-headless-shell>] BASE=... U=... P=... node axe_live.cjs`; expect every list empty
 and admin360 sw == cw == 360. Not run here (stack 3 must not be rebuilt by the author).

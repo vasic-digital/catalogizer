@@ -336,10 +336,10 @@ export const CollectionSettings: React.FC<CollectionSettingsProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="coll-settings-select-1" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Items Per Page
                       </label>
-                      <Select
+                      <Select id="coll-settings-select-1"
                         value={preferences.itemsPerPage.toString()}
                         onChange={(value) => updatePreference('itemsPerPage', parseInt(value))}
                         options={ITEMS_PER_PAGE_OPTIONS.map(count => ({
@@ -350,10 +350,10 @@ export const CollectionSettings: React.FC<CollectionSettingsProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="coll-settings-select-2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Thumbnail Size
                       </label>
-                      <Select
+                      <Select id="coll-settings-select-2"
                         value={preferences.thumbnailSize}
                         onChange={(value) => updatePreference('thumbnailSize', value as CollectionPreferences['thumbnailSize'])}
                         options={VIEW_SIZE_OPTIONS}
@@ -427,10 +427,10 @@ export const CollectionSettings: React.FC<CollectionSettingsProps> = ({
 
                     {preferences.autoRefresh && (
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label htmlFor="coll-settings-select-3" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Refresh Interval
                         </label>
-                        <Select
+                        <Select id="coll-settings-select-3"
                           value={preferences.refreshInterval.toString()}
                           onChange={(value) => updatePreference('refreshInterval', parseInt(value))}
                           options={REFRESH_INTERVAL_OPTIONS.map(interval => ({
@@ -452,10 +452,10 @@ export const CollectionSettings: React.FC<CollectionSettingsProps> = ({
                   
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="coll-settings-select-4" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Sort By
                       </label>
-                      <Select
+                      <Select id="coll-settings-select-4"
                         value={preferences.sortOrder}
                         onChange={(value) => updatePreference('sortOrder', value as CollectionPreferences['sortOrder'])}
                         options={SORT_OPTIONS}
@@ -463,10 +463,10 @@ export const CollectionSettings: React.FC<CollectionSettingsProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="coll-settings-select-5" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Sort Direction
                       </label>
-                      <Select
+                      <Select id="coll-settings-select-5"
                         value={preferences.sortDirection}
                         onChange={(value) => updatePreference('sortDirection', value as CollectionPreferences['sortDirection'])}
                         options={[
@@ -477,10 +477,10 @@ export const CollectionSettings: React.FC<CollectionSettingsProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="coll-settings-select-6" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Group By
                       </label>
-                      <Select
+                      <Select id="coll-settings-select-6"
                         value={preferences.groupBy || ''}
                         onChange={(value) => updatePreference('groupBy', value as CollectionPreferences['groupBy'])}
                         options={GROUP_BY_OPTIONS}
@@ -556,10 +556,10 @@ export const CollectionSettings: React.FC<CollectionSettingsProps> = ({
                   
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="coll-settings-select-7" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Default Format
                       </label>
-                      <Select
+                      <Select id="coll-settings-select-7"
                         value={preferences.defaultDownloadFormat}
                         onChange={(value) => updatePreference('defaultDownloadFormat', value)}
                         options={[
@@ -572,10 +572,10 @@ export const CollectionSettings: React.FC<CollectionSettingsProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="coll-settings-select-8" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Download Quality
                       </label>
-                      <Select
+                      <Select id="coll-settings-select-8"
                         value={preferences.downloadQuality}
                         onChange={(value) => updatePreference('downloadQuality', value as CollectionPreferences['downloadQuality'])}
                         options={DOWNLOAD_QUALITY_OPTIONS}
@@ -583,10 +583,10 @@ export const CollectionSettings: React.FC<CollectionSettingsProps> = ({
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label htmlFor="coll-settings-select-9" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Download Location
                       </label>
-                      <Select
+                      <Select id="coll-settings-select-9"
                         value={preferences.downloadLocation}
                         onChange={(value) => updatePreference('downloadLocation', value as CollectionPreferences['downloadLocation'])}
                         options={[

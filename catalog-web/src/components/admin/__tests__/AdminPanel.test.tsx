@@ -260,3 +260,15 @@ describe('AdminPanel narrow-viewport safety (CAT-UI-D5D6)', () => {
     expect(value.parentElement!.className).toMatch(/min-w-0/)
   })
 })
+
+describe('AdminPanel stat cards (CAT-UI-D5D6)', () => {
+  it('every stat value container can shrink (min-w-0) and the decorative icon is hidden from AT', () => {
+    const { container } = render(<AdminPanel {...defaultProps} />)
+    for (const label of ['Version', 'Uptime', 'Active Connections', 'Total Requests']) {
+      expect(screen.getByText(label).parentElement!.className).toMatch(/min-w-0/)
+    }
+    const icon = screen.getByText('Version').parentElement!.nextElementSibling!
+    expect(icon.getAttribute('aria-hidden')).toBe('true')
+    expect(container).toBeTruthy()
+  })
+})

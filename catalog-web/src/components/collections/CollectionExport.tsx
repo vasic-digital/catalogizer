@@ -563,10 +563,10 @@ export const CollectionExport: React.FC<CollectionExportProps> = ({
                         >
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              <label htmlFor="coll-export-select-1" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Compression
                               </label>
-                              <Select
+                              <Select id="coll-export-select-1"
                                 value={exportOptions.compression}
                                 onChange={(value) => setExportOptions(prev => ({ ...prev, compression: value as ExportOptions['compression'] }))}
                                 options={COMPRESSION_OPTIONS}
@@ -575,10 +575,10 @@ export const CollectionExport: React.FC<CollectionExportProps> = ({
                             </div>
                             
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              <label htmlFor="coll-export-select-2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Quality
                               </label>
-                              <Select
+                              <Select id="coll-export-select-2"
                                 value={exportOptions.quality}
                                 onChange={(value) => setExportOptions(prev => ({ ...prev, quality: value as ExportOptions['quality'] }))}
                                 options={QUALITY_OPTIONS}
@@ -778,10 +778,10 @@ export const CollectionExport: React.FC<CollectionExportProps> = ({
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <label htmlFor="coll-export-select-3" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Merge Strategy
                           </label>
-                          <Select
+                          <Select id="coll-export-select-3"
                             value={importOptions.mergeStrategy}
                             onChange={(value) => setImportOptions(prev => ({ ...prev, mergeStrategy: value as ImportOptions['mergeStrategy'] }))}
                             options={[
@@ -794,10 +794,10 @@ export const CollectionExport: React.FC<CollectionExportProps> = ({
                         </div>
                         
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <label htmlFor="coll-export-select-4" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             Duplicate Handling
                           </label>
-                          <Select
+                          <Select id="coll-export-select-4"
                             value={importOptions.duplicateHandling}
                             onChange={(value) => setImportOptions(prev => ({ ...prev, duplicateHandling: value as ImportOptions['duplicateHandling'] }))}
                             options={[

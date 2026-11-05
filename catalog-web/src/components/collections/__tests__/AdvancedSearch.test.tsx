@@ -121,3 +121,16 @@ describe('AdvancedSearch', () => {
     })
   })
 })
+
+describe('AdvancedSearch accessible names (CAT-UI-D5D6)', () => {
+  it('names rule selects and associates the Sort By / Order / Items per page labels', async () => {
+    const user = userEvent.setup()
+    render(<AdvancedSearch />)
+    await user.click(screen.getByText('Add First Rule'))
+    expect(screen.getByRole('combobox', { name: 'Rule field' })).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Rule operator' })).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Sort By' })).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Order' })).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Items per page' })).toBeInTheDocument()
+  })
+})

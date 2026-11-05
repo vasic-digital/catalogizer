@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { PlaylistGrid } from '../PlaylistGrid'
 
 // Mock framer-motion
@@ -164,5 +165,21 @@ describe('PlaylistGrid - checkbox touch targets', () => {
     const box = screen.getByLabelText('Select playlist My Playlist') as HTMLInputElement
     expect(box.closest('label')!.className).toContain('touch-target')
     expect(box.className).toContain('[@media(pointer:coarse)]:opacity-100')
+  })
+})
+
+describe('PlaylistGrid accessible names (CAT-UI-D5D6)', () => {
+  it('names the view toggles with aria-pressed and the selects by purpose', async () => {
+    const user = userEvent.setup()
+    render(<PlaylistGrid />)
+    const grid = screen.getByRole('button', { name: 'Grid view' })
+    const list = screen.getByRole('button', { name: 'List view' })
+    expect(grid).toHaveAttribute('aria-pressed', 'true')
+    expect(list).toHaveAttribute('aria-pressed', 'false')
+    await user.click(list)
+    expect(screen.getByRole('button', { name: 'List view' })).toHaveAttribute('aria-pressed', 'true')
+    for (const n of ['Filter by media type', 'Filter by visibility', 'Sort playlists']) {
+      expect(screen.getByRole('combobox', { name: n })).toBeInTheDocument()
+    }
   })
 })

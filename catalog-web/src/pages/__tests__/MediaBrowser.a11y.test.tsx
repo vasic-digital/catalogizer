@@ -28,7 +28,7 @@ const renderPage = () =>
 describe('MediaBrowser icon-only controls have accessible names (CAT-UI-D5D6)', () => {
   beforeEach(() => {
     vi.mocked(mediaApi.searchMedia).mockResolvedValue({ items: [], total: 0, limit: 20, offset: 0 } as any)
-    vi.mocked(mediaApi.getMediaStats).mockResolvedValue({} as any)
+    vi.mocked(mediaApi.getMediaStats).mockResolvedValue({ total_items: 100, total_size: 1024, by_type: { movie: 100 }, by_quality: {}, recent_additions: 1 } as any)
   })
 
   it.each([
@@ -39,6 +39,15 @@ describe('MediaBrowser icon-only controls have accessible names (CAT-UI-D5D6)', 
   ])('%s is reachable by role+name', (testId, name) => {
     renderPage()
     expect(screen.getByRole('button', { name })).toBe(screen.getByTestId(testId))
+  })
+
+  it('names the pagination buttons when there is more than one page', async () => {
+    vi.mocked(mediaApi.searchMedia).mockResolvedValue({ items: [], total: 100, limit: 20, offset: 0 } as any)
+    renderPage()
+    const prev = await screen.findByRole('button', { name: 'Previous page' })
+    const next = screen.getByRole('button', { name: 'Next page' })
+    expect(prev).toBe(screen.getByTestId('prev-page-button'))
+    expect(next).toBe(screen.getByTestId('next-page-button'))
   })
 
   it('has no axe button-name violation', async () => {

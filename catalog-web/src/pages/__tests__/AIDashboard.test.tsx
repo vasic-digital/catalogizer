@@ -237,3 +237,15 @@ describe('AIDashboard Page', () => {
     expect(await screen.findByTestId('ai-quality')).toBeInTheDocument()
   })
 })
+
+describe('AIDashboard accessible names (CAT-UI-D5D6)', () => {
+  it('names the section toggle and exposes aria-expanded', async () => {
+    const user = userEvent.setup()
+    render(<AIDashboard />)
+    const toggle = screen.getByRole('button', { name: 'Toggle AI Performance section' })
+    const before = toggle.getAttribute('aria-expanded')
+    expect(['true', 'false']).toContain(before)
+    await user.click(toggle)
+    expect(toggle.getAttribute('aria-expanded')).not.toBe(before)
+  })
+})

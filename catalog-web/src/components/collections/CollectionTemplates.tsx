@@ -394,6 +394,7 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
             </div>
             
             <Select
+              aria-label="Filter by category"
               value={selectedCategory}
               onChange={setSelectedCategory}
               options={[
@@ -403,6 +404,7 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
             />
             
             <Select
+              aria-label="Sort templates"
               value={sortBy}
               onChange={(value) => setSortBy(value as 'name' | 'complexity' | 'updated')}
               options={[

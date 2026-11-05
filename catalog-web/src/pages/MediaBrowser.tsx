@@ -213,7 +213,7 @@ export const MediaBrowser: React.FC = () => {
               onClick={() => setViewMode('grid')}
               className="rounded-r-none"
               aria-label="Grid view"
-                    data-testid="grid-view-button"
+              data-testid="grid-view-button"
             >
               <Grid className="h-4 w-4" />
             </Button>
@@ -223,7 +223,7 @@ export const MediaBrowser: React.FC = () => {
               onClick={() => setViewMode('list')}
               className="rounded-l-none"
               aria-label="List view"
-                    data-testid="list-view-button"
+              data-testid="list-view-button"
             >
               <List className="h-4 w-4" />
             </Button>
@@ -233,7 +233,7 @@ export const MediaBrowser: React.FC = () => {
             variant="outline"
             onClick={() => setShowUpload(!showUpload)}
             aria-label="Upload media"
-                    data-testid="upload-button"
+            data-testid="upload-button"
           >
             <Upload className="h-4 w-4" />
           </Button>
@@ -243,7 +243,7 @@ export const MediaBrowser: React.FC = () => {
             onClick={() => refetch()}
             disabled={isLoading}
             aria-label="Refresh media list"
-                    data-testid="refresh-button"
+            data-testid="refresh-button"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>

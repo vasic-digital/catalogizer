@@ -1,7 +1,8 @@
-const {chromium}=require('/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/playwright-core');const fs=require('fs');
-const axeSrc=fs.readFileSync('/home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/axe-core/axe.min.js','utf8');
+const NM=process.env.NODE_MODULES_DIR;if(!NM){console.error('set NODE_MODULES_DIR (dir containing playwright-core and axe-core)');process.exit(2)}
+const {chromium}=require(NM+'/playwright-core');const fs=require('fs');
+const axeSrc=fs.readFileSync(NM+'/axe-core/axe.min.js','utf8');
 (async()=>{
- const b=await chromium.launch({executablePath:'/home/milosvasic/.cache/ms-playwright/chromium_headless_shell-1228/chrome-headless-shell-linux64/chrome-headless-shell'});const out={};
+ const b=await chromium.launch(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{});const out={};
  const ctx=await b.newContext({viewport:{width:1440,height:900}});const p=await ctx.newPage();
  await p.goto(process.env.BASE+'/login');
  await p.fill('input[type=text],input[name=username]',process.env.U);await p.fill('input[type=password]',process.env.P);
