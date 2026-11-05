@@ -83,6 +83,76 @@ describe('authStore', () => {
     })
   })
 
+  describe('login server contract (CAT-TAURI-1)', () => {
+    const user = { id: 1, username: 'qa', email: 'q@x', first_name: 'Q', last_name: 'A', is_admin: true, created_at: '', updated_at: '' }
+
+    it('uses the server_url from the Tauri config when the store has none, on /api/v1', async () => {
+      useAuthStore.setState({ serverUrl: null })
+      mockInvoke.mockImplementation(async (cmd) => {
+        if (cmd === 'get_config') return { server_url: 'http://qa-host:38082', auth_token: null } as any
+        if (cmd === 'make_http_request') return JSON.stringify({ token: 't', user })
+        return undefined as any
+      })
+
+      await useAuthStore.getState().login('qa', 'pw')
+
+      expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
+        url: 'http://qa-host:38082/api/v1/auth/login',
+      }))
+    })
+
+    it('accepts the session_token field returned by catalog-api', async () => {
+      mockInvoke.mockImplementation(async (cmd) => {
+        if (cmd === 'get_config') return { server_url: 'http://qa-host:38082', auth_token: null } as any
+        if (cmd === 'make_http_request') return JSON.stringify({ session_token: 'sess-1', refresh_token: 'r', user })
+        return undefined as any
+      })
+
+      await useAuthStore.getState().login('qa', 'pw')
+
+      expect(mockInvoke).toHaveBeenCalledWith('set_auth_token', { token: 'sess-1' })
+      expect(useAuthStore.getState().isAuthenticated).toBe(true)
+    })
+
+    it('prefers the config server_url over a different stored one', async () => {
+      useAuthStore.setState({ serverUrl: 'http://stale-store:1' })
+      mockInvoke.mockImplementation(async (cmd) => {
+        if (cmd === 'get_config') return { server_url: 'http://cfg-host:2', auth_token: null } as any
+        if (cmd === 'make_http_request') return JSON.stringify({ token: 't', user })
+        return undefined as any
+      })
+
+      await useAuthStore.getState().login('qa', 'pw')
+
+      expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
+        url: 'http://cfg-host:2/api/v1/auth/login',
+      }))
+    })
+
+    it('throws Server URL not configured instead of requesting null/api', async () => {
+      useAuthStore.setState({ serverUrl: null })
+      mockInvoke.mockImplementation(async (cmd) => {
+        if (cmd === 'get_config') return { server_url: null, auth_token: null } as any
+        return undefined as any
+      })
+
+      await expect(useAuthStore.getState().login('qa', 'pw')).rejects.toThrow('Server URL not configured')
+      expect(mockInvoke).not.toHaveBeenCalledWith('make_http_request', expect.anything())
+    })
+
+    it('fails explicitly when the response carries neither token nor session_token', async () => {
+      mockInvoke.mockImplementation(async (cmd) => {
+        if (cmd === 'get_config') return { server_url: 'http://qa-host:38082', auth_token: null } as any
+        if (cmd === 'make_http_request') return JSON.stringify({ user })
+        return undefined as any
+      })
+
+      await expect(useAuthStore.getState().login('qa', 'pw')).rejects.toThrow('no token')
+      expect(useAuthStore.getState().isAuthenticated).toBe(false)
+      expect(mockInvoke).not.toHaveBeenCalledWith('set_auth_token', expect.anything())
+    })
+  })
+
   describe('login', () => {
     const mockUser = {
       id: 1,
@@ -129,7 +199,7 @@ describe('authStore', () => {
       await useAuthStore.getState().login('admin', 'password')
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', {
-        url: 'http://localhost:8080/api/auth/login',
+        url: 'http://localhost:8080/api/v1/auth/login',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: 'admin', password: 'password' }),
@@ -213,7 +283,7 @@ describe('authStore', () => {
       await useAuthStore.getState().logout()
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', {
-        url: 'http://localhost:8080/api/auth/logout',
+        url: 'http://localhost:8080/api/v1/auth/logout',
         method: 'POST',
         headers: {},
       })
@@ -319,7 +389,7 @@ describe('authStore', () => {
       await useAuthStore.getState().checkAuthStatus()
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', {
-        url: 'http://localhost:8080/api/auth/status',
+        url: 'http://localhost:8080/api/v1/auth/status',
         method: 'GET',
         headers: { Authorization: 'Bearer my-token' },
       })

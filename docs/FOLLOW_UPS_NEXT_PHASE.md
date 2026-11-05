@@ -1508,3 +1508,12 @@ VERIFIED: both debug APKs build in rootless JDK17 container; phone (API34) and T
 ## Tauri QA boot / S3 follow-ups registered (branches under review)
 - TAURI-FU-1: desktop client vs API drift: /api/v1/smb/configs, /smb/status, /auth/logout return 404. 
 - S3-FU-1 (F8): read/write have no operation timeout; OperatorTransport lacks ResponseHeaderTimeout. S3-FU-2 (F10): rename tracker/ProtocolHandlerFactory and catalog-web SUPPORTED_PROTOCOLS lack s3. S3-FU-3: live MinIO/Garage evidence; verify copy-source encoding on a real server; SeekableClient/multipart/STS unsupported.
+
+## Tauri QA boot review follow-ups (feat/tauri-qa-boot, GO-with-follow-ups round 2/5, PROVISIONAL)
+
+- TAURI-FU-2 (process-doc, minor): `docs/qa/tauri-boot-20261105/dockerfile_hash_checks.txt` negative control used a badly formatted hash (format error, not mismatch); re-run with a full-length wrong hash and fix the label. A proper control was checked by the reviewer (FAILED, exit 1).
+- TAURI-FU-3 (test-instrumentation, minor): no automatic guard that production `dist/` contains no `__QA_IPC_CALLS__` / `qa-tauri-ipc-shim`.
+- TAURI-FU-4 (test-instrumentation, nit): vite QA host defaults (127.0.0.1) have no test.
+- TAURI-FU-5 (source-defect, pre-existing, TRACKED): Rust `starts_with` URL prefix check in `main.rs` make_http_request accepts `http://a.com.evil` for `http://a.com`; fix with parsed-host comparison (RED-first, security-adjacent).
+- TAURI-FU-6 (documented gaps): apt pinning, GPG verification of publisher hashes, committing Cargo.lock.
+- TAURI-FU-7 (UNCONFIRMED): no image rebuild, no desktop rebuild with login fix, no native boot, no VNC run, no wizard binary yet.
