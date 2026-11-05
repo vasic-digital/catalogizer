@@ -119,6 +119,16 @@ func looksNumeric(host string) bool {
 var errUnverified = errors.New("destination could not be verified")
 
 func resolveOperator(ctx context.Context, host string) ([]net.IP, error) {
+	return resolveOperatorMode(ctx, host, false)
+}
+
+// resolveOperatorStrict refuses the name when ANY resolved address is refused. It is used where the name (not a pinned
+// address) is handed to another party that resolves it again, i.e. an environment proxy.
+func resolveOperatorStrict(ctx context.Context, host string) ([]net.IP, error) {
+	return resolveOperatorMode(ctx, host, true)
+}
+
+func resolveOperatorMode(ctx context.Context, host string, strict bool) ([]net.IP, error) {
 	if host == "" {
 		return nil, fmt.Errorf("%w: empty host", ErrBlocked)
 	}
@@ -142,6 +152,9 @@ func resolveOperator(ctx context.Context, host string) ([]net.IP, error) {
 	dropped := 0
 	for _, a := range addrs {
 		if IsBlockedOperatorIP(a.IP) {
+			if strict {
+				return nil, fmt.Errorf("%w: %s resolves to a loopback, link-local, metadata or reserved address", ErrBlocked, host)
+			}
 			dropped++
 			continue
 		}
@@ -176,7 +189,8 @@ func proxyAddr(u *url.URL) string {
 }
 
 // proxy selects the environment proxy for req and, when one is used, FAILS CLOSED unless the destination host is a
-// canonical IP literal or a DNS name that resolves locally to permitted addresses only. A proxy resolves the destination
+// canonical IP literal or a DNS name that resolves locally to permitted addresses only (STRICT: one refused address in
+// the answer refuses the name, because the name, not a pinned address, is forwarded). A proxy resolves the destination
 // itself, so a name that does not resolve here, or a numeric spelling the proxy reads differently, must never be
 // forwarded. Residual risk (documented): the proxy resolves the name again, so a rebinding answer between this check and
 // the proxy's own lookup is not covered; set DenyPrivateEnv and/or run without a proxy where that matters.
@@ -185,7 +199,7 @@ func (ps *proxySet) proxy(req *http.Request) (*url.URL, error) {
 	if err != nil || p == nil {
 		return p, err
 	}
-	if _, err := resolveOperator(req.Context(), req.URL.Hostname()); err != nil {
+	if _, err := resolveOperatorStrict(req.Context(), req.URL.Hostname()); err != nil {
 		if errors.Is(err, ErrBlocked) {
 			return nil, err
 		}
@@ -195,9 +209,10 @@ func (ps *proxySet) proxy(req *http.Request) (*url.URL, error) {
 	return p, nil
 }
 
-// SECQ1-F1 (considered, not changed): bypassing the check only for proxy addresses that are not operator-blocked
-// would break the supported local-proxy case (a proxy on 127.0.0.1 is operator configuration and is itself blocked),
-// and a dial cannot tell a proxy connection from a direct one. The narrow residual stays documented.
+// SECQ1-F1 (considered, not changed): bypassing only for proxy addresses that are not operator-blocked would break the
+// supported local proxy on 127.0.0.1 (itself blocked), and a dial cannot tell a proxy connection from a direct one.
+// Actual residual: a direct dial (e.g. NO_PROXY) to exactly host:port of a proxy already used by the same transport
+// skips the destination check.
 func (ps *proxySet) dial(ctx context.Context, network, addr string) (net.Conn, error) {
 	if _, ok := ps.m.Load(addr); ok {
 		return (&net.Dialer{Timeout: 15 * time.Second, KeepAlive: 30 * time.Second}).DialContext(ctx, network, addr)
