@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -379,6 +380,31 @@ func TestInputValidation_InvalidJSON(t *testing.T) {
 
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 	assert.Contains(t, w.Body.String(), "invalid JSON format")
+}
+
+// D7/D8: an empty (or whitespace-only) JSON body has nothing to validate; whether a body is required
+// is the handler's decision (after authentication), so the middleware must not answer 400 for it.
+func TestInputValidation_EmptyJSONBodyIsNotMalformed(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.Use(InputValidation(DefaultInputValidationConfig()))
+	router.POST("/test", func(c *gin.Context) {
+		b, _ := io.ReadAll(c.Request.Body)
+		c.JSON(http.StatusOK, gin.H{"body_len": len(b)})
+	})
+	for _, body := range []string{"", " ", "\n\t "} {
+		req := httptest.NewRequest("POST", "/test", strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusOK, w.Code, "body %q: %s", body, w.Body.String())
+	}
+	// control: malformed non-empty JSON is still refused
+	req := httptest.NewRequest("POST", "/test", strings.NewReader("{"))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestInputValidation_GETRequestSkipsBodyValidation(t *testing.T) {

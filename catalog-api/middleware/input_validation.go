@@ -194,6 +194,14 @@ func ValidateRequestBody(config InputValidationConfig, c *gin.Context) error {
 
 	// For JSON requests, validate the structure
 	if strings.Contains(contentType, "application/json") {
+		// An EMPTY body is not malformed JSON: there is nothing to validate. This middleware runs
+		// before authentication, so refusing it here answered an anonymous caller 400 instead of
+		// 401 and rejected bodiless actions (cancel, retry, logout) sent by clients that attach a
+		// JSON content type to every request (D7/D8). Whether a body is REQUIRED is the handler's
+		// decision (binding an empty body fails there with 400, after authentication).
+		if len(strings.TrimSpace(string(bodyBytes))) == 0 {
+			return nil
+		}
 		var jsonData map[string]interface{}
 		if err := json.Unmarshal(bodyBytes, &jsonData); err != nil {
 			return fmt.Errorf("invalid JSON format")

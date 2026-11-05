@@ -1,0 +1,60 @@
+=== RUN   TestEmptyJSONBody_AuthDecidesBeforeBodyValidation_RealBinary
+    empty_json_body_binary_test.go:71: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d11.jJ43tm/repo/catalog-api/empty_json_body_binary_test.go:71
+        	Error:      	Not equal: 
+        	            	expected: 401
+        	            	actual  : 400
+        	Test:       	TestEmptyJSONBody_AuthDecidesBeforeBodyValidation_RealBinary
+        	Messages:   	anonymous empty JSON body on /api/v1/conversion/jobs/1/cancel: {"details":"invalid JSON format","error":"validation_failed","message":"Invalid input detected"}
+    empty_json_body_binary_test.go:71: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d11.jJ43tm/repo/catalog-api/empty_json_body_binary_test.go:71
+        	Error:      	Not equal: 
+        	            	expected: 401
+        	            	actual  : 400
+        	Test:       	TestEmptyJSONBody_AuthDecidesBeforeBodyValidation_RealBinary
+        	Messages:   	anonymous empty JSON body on /api/v1/conversion/jobs/1/retry: {"details":"invalid JSON format","error":"validation_failed","message":"Invalid input detected"}
+    empty_json_body_binary_test.go:71: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d11.jJ43tm/repo/catalog-api/empty_json_body_binary_test.go:71
+        	Error:      	Not equal: 
+        	            	expected: 401
+        	            	actual  : 400
+        	Test:       	TestEmptyJSONBody_AuthDecidesBeforeBodyValidation_RealBinary
+        	Messages:   	anonymous empty JSON body on /api/v1/conversion/jobs: {"details":"invalid JSON format","error":"validation_failed","message":"Invalid input detected"}
+    empty_json_body_binary_test.go:71: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d11.jJ43tm/repo/catalog-api/empty_json_body_binary_test.go:71
+        	Error:      	Not equal: 
+        	            	expected: 401
+        	            	actual  : 400
+        	Test:       	TestEmptyJSONBody_AuthDecidesBeforeBodyValidation_RealBinary
+        	Messages:   	anonymous empty JSON body on /api/v1/auth/logout: {"details":"invalid JSON format","error":"validation_failed","message":"Invalid input detected"}
+    empty_json_body_binary_test.go:75: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d11.jJ43tm/repo/catalog-api/empty_json_body_binary_test.go:75
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 400
+        	Test:       	TestEmptyJSONBody_AuthDecidesBeforeBodyValidation_RealBinary
+        	Messages:   	authenticated empty body on a bodiless action: {"details":"invalid JSON format","error":"validation_failed","message":"Invalid input detected"}
+    empty_json_body_binary_test.go:77: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d11.jJ43tm/repo/catalog-api/empty_json_body_binary_test.go:77
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 400
+        	Test:       	TestEmptyJSONBody_AuthDecidesBeforeBodyValidation_RealBinary
+        	Messages:   	{"details":"invalid JSON format","error":"validation_failed","message":"Invalid input detected"}
+    empty_json_body_binary_test.go:81: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d11.jJ43tm/repo/catalog-api/empty_json_body_binary_test.go:81
+        	Error:      	"{\"details\":\"invalid JSON format\",\"error\":\"validation_failed\",\"message\":\"Invalid input detected\"}" should not contain "validation_failed"
+        	Test:       	TestEmptyJSONBody_AuthDecidesBeforeBodyValidation_RealBinary
+        	Messages:   	the refusal must come from the handler, not the pre-auth middleware: {"details":"invalid JSON format","error":"validation_failed","message":"Invalid input detected"}
+    empty_json_body_binary_test.go:84: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d11.jJ43tm/repo/catalog-api/empty_json_body_binary_test.go:84
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 400
+        	Test:       	TestEmptyJSONBody_AuthDecidesBeforeBodyValidation_RealBinary
+        	Messages:   	{"details":"invalid JSON format","error":"validation_failed","message":"Invalid input detected"}
+--- FAIL: TestEmptyJSONBody_AuthDecidesBeforeBodyValidation_RealBinary (11.46s)
+FAIL
+FAIL	catalogizer	11.493s
+FAIL
+done

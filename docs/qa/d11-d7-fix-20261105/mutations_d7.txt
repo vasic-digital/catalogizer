@@ -1,0 +1,16 @@
+== MUTANT C1-empty-body-rejected-again (len check removed)
+--- FAIL: TestInputValidation_EmptyJSONBodyIsNotMalformed (0.00s)
+FAIL
+FAIL	catalogizer/middleware	0.011s
+FAIL
+== MUTANT C2-whitespace-not-trimmed
+--- FAIL: TestInputValidation_EmptyJSONBodyIsNotMalformed (0.00s)
+FAIL
+FAIL	catalogizer/middleware	0.009s
+FAIL
+== MUTANT C3-all-JSON-skipped (validation of non-empty bodies dropped)
+--- FAIL: TestInputValidation_InvalidJSON (0.00s)
+--- FAIL: TestInputValidation_EmptyJSONBodyIsNotMalformed (0.00s)
+FAIL
+FAIL	catalogizer/middleware	0.013s
+FAIL
