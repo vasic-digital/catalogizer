@@ -122,64 +122,38 @@ func (suite *SMBDiscoveryHandlerTestSuite) TestBrowseShare_MissingFields() {
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
 }
 
-// DiscoverSharesGET tests
+// SECQ-5: the credential-in-URL GET forms are retired. A request that carries credentials in the query string must be
+// refused with 410 Gone before any parameter is read, the response must never echo the secret, and the service (nil here,
+// so any use would panic) must never be reached.
 
-func (suite *SMBDiscoveryHandlerTestSuite) TestDiscoverSharesGET_MissingParams() {
-	req := httptest.NewRequest("GET", "/api/v1/smb/discover", nil)
+const secq5Secret = "s3cr3t-SECQ5-pw"
+
+func (suite *SMBDiscoveryHandlerTestSuite) assertGone(path string) {
+	req := httptest.NewRequest("GET", path, nil)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, req)
 
-	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+	assert.Equal(suite.T(), http.StatusGone, w.Code)
+	assert.NotContains(suite.T(), w.Body.String(), secq5Secret)
 	var resp map[string]interface{}
-	err := json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.NoError(suite.T(), err)
-	assert.Contains(suite.T(), resp["error"].(string), "host, username, and password are required")
+	assert.NoError(suite.T(), json.Unmarshal(w.Body.Bytes(), &resp))
+	assert.Contains(suite.T(), resp["error"].(string), "POST")
 }
 
-func (suite *SMBDiscoveryHandlerTestSuite) TestDiscoverSharesGET_MissingUsername() {
-	req := httptest.NewRequest("GET", "/api/v1/smb/discover?host=192.168.1.1&password=pass", nil)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, req)
-
-	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+func (suite *SMBDiscoveryHandlerTestSuite) TestDiscoverSharesGET_RetiredWithCredentials() {
+	suite.assertGone("/api/v1/smb/discover?host=192.168.1.1&username=user&password=" + secq5Secret)
 }
 
-func (suite *SMBDiscoveryHandlerTestSuite) TestDiscoverSharesGET_MissingPassword() {
-	req := httptest.NewRequest("GET", "/api/v1/smb/discover?host=192.168.1.1&username=user", nil)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, req)
-
-	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+func (suite *SMBDiscoveryHandlerTestSuite) TestDiscoverSharesGET_RetiredWithoutParams() {
+	suite.assertGone("/api/v1/smb/discover")
 }
 
-// TestConnectionGET tests
-
-func (suite *SMBDiscoveryHandlerTestSuite) TestTestConnectionGET_MissingParams() {
-	req := httptest.NewRequest("GET", "/api/v1/smb/test", nil)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, req)
-
-	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
-	var resp map[string]interface{}
-	err := json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.NoError(suite.T(), err)
-	assert.Contains(suite.T(), resp["error"].(string), "host, share, username, and password are required")
+func (suite *SMBDiscoveryHandlerTestSuite) TestTestConnectionGET_RetiredWithCredentials() {
+	suite.assertGone("/api/v1/smb/test?host=192.168.1.1&share=s&username=user&password=" + secq5Secret)
 }
 
-func (suite *SMBDiscoveryHandlerTestSuite) TestTestConnectionGET_MissingShare() {
-	req := httptest.NewRequest("GET", "/api/v1/smb/test?host=192.168.1.1&username=user&password=pass", nil)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, req)
-
-	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
-}
-
-func (suite *SMBDiscoveryHandlerTestSuite) TestTestConnectionGET_PartialParams() {
-	req := httptest.NewRequest("GET", "/api/v1/smb/test?host=192.168.1.1&share=share1", nil)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, req)
-
-	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+func (suite *SMBDiscoveryHandlerTestSuite) TestTestConnectionGET_RetiredWithoutParams() {
+	suite.assertGone("/api/v1/smb/test")
 }
 
 func TestSMBDiscoveryHandlerTestSuite(t *testing.T) {

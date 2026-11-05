@@ -93,7 +93,6 @@ describe('smb: null / non-array 200', () => {
       '/smb/browse': { entries: null },
     })
     expect(await smbApi.discover()).toEqual([])
-    expect(await smbApi.discoverGet()).toEqual([])
     expect(await smbApi.browse({ host: 'h', share: 's' })).toEqual([])
   })
 })

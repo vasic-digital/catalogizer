@@ -43,18 +43,6 @@ describe('smbApi', () => {
     })
   })
 
-  describe('discoverGet', () => {
-    it('calls GET /smb/discover and returns shares', async () => {
-      const mockShares = [{ name: 'videos', path: '/videos', host: '192.168.1.50' }]
-      mockApi.get.mockResolvedValue({ data: mockShares })
-
-      const result = await smbApi.discoverGet()
-
-      expect(mockApi.get).toHaveBeenCalledWith('/smb/discover')
-      expect(result).toEqual(mockShares)
-    })
-  })
-
   describe('testConnection', () => {
     it('calls POST /smb/test with credentials and returns result', async () => {
       const request = { host: '192.168.1.100', share: 'media', username: 'user', password: 'pass' }

@@ -3,7 +3,6 @@ package handlers
 import (
 	"catalogizer/internal/services"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -193,18 +192,13 @@ func (h *SMBDiscoveryHandler) BrowseShare(c *gin.Context) {
 	c.JSON(http.StatusOK, entries)
 }
 
-// DiscoverSharesGET discovers SMB shares using GET parameters (for simple testing)
-// @Summary Discover SMB shares (GET)
-// @Description Discovers available SMB shares using GET parameters
+// DiscoverSharesGET is the retired credential-in-URL form of share discovery (SECQ-5). Credentials in a query string
+// leak into access logs, proxies and browser history, so the handler answers 410 Gone WITHOUT reading any parameter.
+// @Summary Discover SMB shares (GET, retired)
+// @Description Retired: credentials in a URL are refused. Use POST /api/v1/smb/discover with a JSON body.
 // @Tags SMB
 // @Produce json
-// @Param host query string true "SMB host"
-// @Param username query string true "Username"
-// @Param password query string true "Password"
-// @Param domain query string false "Domain"
-// @Success 200 {array} services.SMBShareInfo
-// @Failure 400 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Failure 410 {object} map[string]interface{}
 // @Router /api/v1/smb/discover [get]
 // ListIdentities returns the safe (no-secrets) identities loaded from the environment.
 // @Summary List SMB identities
@@ -272,86 +266,24 @@ func (h *SMBDiscoveryHandler) ProbeHost(c *gin.Context) {
 }
 
 func (h *SMBDiscoveryHandler) DiscoverSharesGET(c *gin.Context) {
-	host := c.Query("host")
-	username := c.Query("username")
-	password := c.Query("password")
-	domain := c.Query("domain")
-
-	if host == "" || username == "" || password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "host, username, and password are required"})
-		return
-	}
-
-	var domainPtr *string
-	if domain != "" {
-		domainPtr = &domain
-	}
-
-	shares, err := h.service.DiscoverShares(c.Request.Context(), host, username, password, domainPtr)
-	if err != nil {
-		h.logger.Error("Failed to discover SMB shares", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to discover shares: " + err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, shares)
+	smbCredentialsInURLGone(c)
 }
 
-// TestConnectionGET tests SMB connection using GET parameters (for simple testing)
-// @Summary Test SMB connection (GET)
-// @Description Tests SMB connection using GET parameters
+// TestConnectionGET is the retired credential-in-URL form of the connection test (SECQ-5); see DiscoverSharesGET.
+// @Summary Test SMB connection (GET, retired)
+// @Description Retired: credentials in a URL are refused. Use POST /api/v1/smb/test with a JSON body.
 // @Tags SMB
 // @Produce json
-// @Param host query string true "SMB host"
-// @Param share query string true "Share name"
-// @Param username query string true "Username"
-// @Param password query string true "Password"
-// @Param domain query string false "Domain"
-// @Param port query int false "Port (default 445)"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
+// @Failure 410 {object} map[string]interface{}
 // @Router /api/v1/smb/test [get]
 func (h *SMBDiscoveryHandler) TestConnectionGET(c *gin.Context) {
-	host := c.Query("host")
-	share := c.Query("share")
-	username := c.Query("username")
-	password := c.Query("password")
-	domain := c.Query("domain")
-	portStr := c.Query("port")
+	smbCredentialsInURLGone(c)
+}
 
-	if host == "" || share == "" || username == "" || password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "host, share, username, and password are required"})
-		return
-	}
-
-	port := 445
-	if portStr != "" {
-		if p, err := strconv.Atoi(portStr); err == nil {
-			port = p
-		}
-	}
-
-	var domainPtr *string
-	if domain != "" {
-		domainPtr = &domain
-	}
-
-	config := services.SMBConnectionConfig{
-		Host:     host,
-		Port:     port,
-		Share:    share,
-		Username: username,
-		Password: password,
-		Domain:   domainPtr,
-	}
-
-	success := h.service.TestConnection(c.Request.Context(), config)
-
-	c.JSON(http.StatusOK, gin.H{
-		"success":    success,
-		"host":       host,
-		"share":      share,
-		"username":   username,
-		"connection": success,
+// smbCredentialsInURLGone answers the retired GET forms. It deliberately never reads c.Query: the secret is not parsed,
+// logged or echoed.
+func smbCredentialsInURLGone(c *gin.Context) {
+	c.JSON(http.StatusGone, gin.H{
+		"error": "credentials in the URL are no longer accepted; use POST " + c.Request.URL.Path + " with a JSON body",
 	})
 }

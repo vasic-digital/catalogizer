@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"catalogizer/internal/smartrules"
@@ -31,6 +32,17 @@ const MaxSmartPlaylistsPerUser = 50
 // PlaylistService provides business logic for playlist operations.
 type PlaylistService struct {
 	playlistRepo *repository.PlaylistRepository
+	// smartCreateMu serialises "count this user's smart playlists, then insert one" per user (SECQ-4 / SC7): without it
+	// concurrent creates all read the same count and the user ends above MaxSmartPlaylistsPerUser.
+	smartCreateMu sync.Map // userID (int) -> *sync.Mutex
+}
+
+// lockSmartCreate takes the per-user create lock and returns its release function.
+func (s *PlaylistService) lockSmartCreate(userID int) func() {
+	m, _ := s.smartCreateMu.LoadOrStore(userID, &sync.Mutex{})
+	mu := m.(*sync.Mutex)
+	mu.Lock()
+	return mu.Unlock
 }
 
 // NewPlaylistService creates a new playlist service.
@@ -74,6 +86,8 @@ func (s *PlaylistService) CreatePlaylistCtx(ctx context.Context, userID int, req
 		if err != nil {
 			return nil, err
 		}
+		unlock := s.lockSmartCreate(userID) // held through the insert below
+		defer unlock()
 		n, err := s.playlistRepo.CountSmartByUser(ctx, userID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to count smart playlists: %w", err)
