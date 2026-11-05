@@ -4,8 +4,20 @@
 
 use url::Url;
 
-/// Validate a server URL at set time: parseable, http/https, host, no userinfo.
+/// Validate a server URL at set time: parseable, http/https, host, no userinfo,
+/// no control characters or whitespace in the RAW text (the URL parser silently
+/// strips tab/newline, which would let text shown to the user differ from what
+/// is stored). Returns the NORMALISED form (`Url::as_str`: lowercase scheme/host,
+/// IDN hosts as punycode), which is what is shown, confirmed and stored.
 pub fn validate_server_url(raw: &str) -> Result<String, String> {
+    if raw.chars().any(|c| {
+        c.is_control()
+            || c.is_whitespace()
+            // zero-width and bidi format characters (display spoofing)
+            || matches!(c, '\u{200B}'..='\u{200F}' | '\u{202A}'..='\u{202E}' | '\u{2066}'..='\u{2069}' | '\u{FEFF}')
+    }) {
+        return Err("Server URL must not contain whitespace or control characters".to_string());
+    }
     let u = Url::parse(raw).map_err(|e| format!("Invalid server URL: {}", e))?;
     if !matches!(u.scheme(), "http" | "https") {
         return Err("Server URL must use http or https".to_string());
@@ -20,7 +32,7 @@ pub fn validate_server_url(raw: &str) -> Result<String, String> {
     if lp.contains("%2f") || lp.contains("%5c") || lp.contains("%2e") {
         return Err("Server URL path must not contain encoded separators".to_string());
     }
-    Ok(raw.to_string())
+    Ok(u.as_str().to_string())
 }
 
 /// HTTP client that re-checks every redirect hop against the configured server.
@@ -172,6 +184,15 @@ pub(crate) mod tests {
         assert!(validate_server_url("http://a.com/a%2Eb").is_err());
         assert!(validate_server_url("garbage").is_err());
         assert!(validate_server_url("").is_err());
+    }
+
+    #[test]
+    fn server_url_is_normalised_and_control_chars_rejected() {
+        assert_eq!(validate_server_url("HTTP://A.com").unwrap(), "http://a.com/");
+        assert_eq!(validate_server_url("https://c\u{0430}talogizer.example").unwrap(), "https://xn--ctalogizer-zqi.example/");
+        for bad in ["http://a.com/\nNew: http://good.example", "http://a.com/\t", "http://a .com", "http://a.com/\u{202e}x", "http://a.com/\r"] {
+            assert!(validate_server_url(bad).is_err(), "{:?}", bad);
+        }
     }
 
     // LIVE: real sockets, real reqwest client.
