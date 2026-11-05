@@ -1,0 +1,14 @@
+Running as unit: run-p2223012-i132128352.scope; invocation ID: 7a6efcc00a434ce0a798e4ace6e881bc
+=== RUN   TestLiveYandexWDF1ForcedReset
+    live_webdav_wdf1_chaos_test.go:249: A_reset_mid_body size=65536 fired=true put_err=true present_no_retry=false retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:249: A_reset_mid_body size=524288 fired=true put_err=true present_no_retry=false retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:249: A_reset_mid_body size=2097152 fired=true put_err=true present_no_retry=false retry_acked=true verdict=CORRUPT
+    live_webdav_wdf1_chaos_test.go:249: B_reset_after_full_body_ack_lost size=65536 fired=true put_err=true present_no_retry=false retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:249: B_reset_after_full_body_ack_lost size=524288 fired=true put_err=true present_no_retry=true retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:249: B_reset_after_full_body_ack_lost size=2097152 fired=true put_err=true present_no_retry=true retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:264: control needle: delete_err=false verdict=LOST_ACKED_WRITE
+    live_webdav_wdf1_chaos_test.go:283: WD-F1 REPRODUCED: lost_or_corrupt=1
+--- FAIL: TestLiveYandexWDF1ForcedReset (937.05s)
+FAIL
+FAIL	catalogizer/filesystem	937.078s
+FAIL

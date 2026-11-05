@@ -1,0 +1,97 @@
+{
+ "lost_acked": 0,
+ "n": 9,
+ "put_err_but_present": 0,
+ "recs": [
+  {
+   "name": "f000.bin",
+   "size": 512,
+   "sha256": "d9cbd3b940bf6e6c8f88e1dde345253fa8019b47994d2e5d6713f2396adab828",
+   "put_ms": 1071,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f001.bin",
+   "size": 4096,
+   "sha256": "06c600e1fcf2638503c8d7bd0d2f1bef1ae6cd808c0a1653098d3347a704c7e4",
+   "put_ms": 1933,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f002.bin",
+   "size": 16384,
+   "sha256": "cd2a86e1e92559de43fabb98f283d15acd5a9d61051925d5830b9b8a9959104e",
+   "put_ms": 1710,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f003.bin",
+   "size": 512,
+   "sha256": "be1be4d85b8573ee5ee30f6e63d330f2cc1de2326eea05206cc475d8b502f30b",
+   "put_ms": 1398,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f004.bin",
+   "size": 4096,
+   "sha256": "b9195845da14f5c07c04f4455a099f6227dc2944ba354e2d43f7bc8a527543d7",
+   "put_ms": 1244,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f005.bin",
+   "size": 16384,
+   "sha256": "e97eaa9fe01cf296d5861657cd026d5e8dfaa92142423c8373d1b5530d8bf6f7",
+   "put_ms": 2303,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f006.bin",
+   "size": 512,
+   "sha256": "7f71aef26630ae7dd994a97ff98aed810b5364fce4ef8296ffd30e6331869982",
+   "put_ms": 1060,
+   "polls": [
+    "+0s head_err=false size=512 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f007.bin",
+   "size": 4096,
+   "sha256": "8a8b5eb1d620c14f3c14728a36c59f61d52a1cca1f43397144fa290906681b4d",
+   "put_ms": 1076,
+   "polls": [
+    "+0s head_err=false size=4096 list=true(false)"
+   ],
+   "verdict": "ok"
+  },
+  {
+   "name": "f008.bin",
+   "size": 16384,
+   "sha256": "03c93db7800ac8dc8248f081c31f90516be180eadac7185fb63caa4a745936ee",
+   "put_ms": 2207,
+   "polls": [
+    "+0s head_err=false size=16384 list=true(false)"
+   ],
+   "verdict": "ok"
+  }
+ ]
+}

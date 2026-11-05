@@ -1,0 +1,129 @@
+{
+ "cases": [
+  {
+   "Case": "A_reset_mid_body",
+   "Name": "c01.bin",
+   "Size": 2097152,
+   "FaultFired": true,
+   "PutErr": "failed to upload WebDAV file https://\u003credacted\u003e/Testing/wdf1c-1793869792/c01.bin: Put \"https://\u003credacted\u003e/Testing/wdf1c-1793869792/c01.bin\": read tcp \u003cip\u003e:34504-\u003e\u003cip\u003e:36429: read: connection reset by peer",
+   "PollsNoRetry": [
+    "+0s head_err=true size=-1 list=false list_err=false",
+    "+3s head_err=true size=-1 list=false list_err=false",
+    "+10s head_err=true size=-1 list=false list_err=false",
+    "+30s head_err=true size=-1 list=false list_err=false",
+    "+1m0s head_err=true size=-1 list=false list_err=false"
+   ],
+   "PresentNoRetry": false,
+   "RetryAcked": true,
+   "PollsAfterRetry": [
+    "+0s head_err=false size=2097152 list=true list_err=false"
+   ],
+   "Verdict": "ok",
+   "ReadDetail": "len=2097152 want_len=2097152 first_diff=-1 body_err=false",
+   "ErrButFullFilePresent": false,
+   "PartialOrCorruptVisible": false
+  },
+  {
+   "Case": "A_reset_mid_body",
+   "Name": "c02.bin",
+   "Size": 2097152,
+   "FaultFired": true,
+   "PutErr": "failed to upload WebDAV file https://\u003credacted\u003e/Testing/wdf1c-1793869792/c02.bin: Put \"https://\u003credacted\u003e/Testing/wdf1c-1793869792/c02.bin\": read tcp \u003cip\u003e:33626-\u003e\u003cip\u003e:36429: read: connection reset by peer",
+   "PollsNoRetry": [
+    "+0s head_err=true size=-1 list=false list_err=false",
+    "+3s head_err=true size=-1 list=false list_err=true",
+    "+10s head_err=true size=-1 list=false list_err=false",
+    "+30s head_err=true size=-1 list=false list_err=false",
+    "+1m0s head_err=true size=-1 list=false list_err=false"
+   ],
+   "PresentNoRetry": false,
+   "RetryAcked": true,
+   "PollsAfterRetry": [
+    "+0s head_err=false size=2097152 list=true list_err=false"
+   ],
+   "Verdict": "ok",
+   "ReadDetail": "len=2097152 want_len=2097152 first_diff=-1 body_err=false",
+   "ErrButFullFilePresent": false,
+   "PartialOrCorruptVisible": false
+  },
+  {
+   "Case": "A_reset_mid_body",
+   "Name": "c03.bin",
+   "Size": 2097152,
+   "FaultFired": true,
+   "PutErr": "failed to upload WebDAV file https://\u003credacted\u003e/Testing/wdf1c-1793869792/c03.bin: Put \"https://\u003credacted\u003e/Testing/wdf1c-1793869792/c03.bin\": read tcp \u003cip\u003e:46042-\u003e\u003cip\u003e:36429: read: connection reset by peer",
+   "PollsNoRetry": [
+    "+0s head_err=true size=-1 list=false list_err=false",
+    "+3s head_err=true size=-1 list=false list_err=false",
+    "+10s head_err=true size=-1 list=false list_err=false",
+    "+30s head_err=true size=-1 list=false list_err=false",
+    "+1m0s head_err=true size=-1 list=false list_err=false"
+   ],
+   "PresentNoRetry": false,
+   "RetryAcked": true,
+   "PollsAfterRetry": [
+    "+0s head_err=false size=2097152 list=true list_err=false"
+   ],
+   "Verdict": "ok",
+   "ReadDetail": "len=2097152 want_len=2097152 first_diff=-1 body_err=false",
+   "ErrButFullFilePresent": false,
+   "PartialOrCorruptVisible": false
+  },
+  {
+   "Case": "A_reset_mid_body",
+   "Name": "c04.bin",
+   "Size": 2097152,
+   "FaultFired": true,
+   "PutErr": "failed to upload WebDAV file https://\u003credacted\u003e/Testing/wdf1c-1793869792/c04.bin: Put \"https://\u003credacted\u003e/Testing/wdf1c-1793869792/c04.bin\": read tcp \u003cip\u003e:33886-\u003e\u003cip\u003e:36429: read: connection reset by peer",
+   "PollsNoRetry": [
+    "+0s head_err=true size=-1 list=false list_err=false",
+    "+3s head_err=true size=-1 list=false list_err=false",
+    "+10s head_err=true size=-1 list=false list_err=false",
+    "+30s head_err=true size=-1 list=false list_err=false",
+    "+1m0s head_err=true size=-1 list=false list_err=false"
+   ],
+   "PresentNoRetry": false,
+   "RetryAcked": true,
+   "PollsAfterRetry": [
+    "+0s head_err=false size=2097152 list=true list_err=false"
+   ],
+   "Verdict": "ok",
+   "ReadDetail": "len=2097152 want_len=2097152 first_diff=-1 body_err=false",
+   "ErrButFullFilePresent": false,
+   "PartialOrCorruptVisible": false
+  },
+  {
+   "Case": "A_reset_mid_body",
+   "Name": "c05.bin",
+   "Size": 2097152,
+   "FaultFired": true,
+   "PutErr": "failed to upload WebDAV file https://\u003credacted\u003e/Testing/wdf1c-1793869792/c05.bin: Put \"https://\u003credacted\u003e/Testing/wdf1c-1793869792/c05.bin\": read tcp \u003cip\u003e:60418-\u003e\u003cip\u003e:36429: read: connection reset by peer",
+   "PollsNoRetry": [
+    "+0s head_err=true size=-1 list=false list_err=false",
+    "+3s head_err=true size=-1 list=false list_err=false",
+    "+10s head_err=true size=-1 list=false list_err=false",
+    "+30s head_err=true size=-1 list=false list_err=false",
+    "+1m0s head_err=true size=-1 list=false list_err=false"
+   ],
+   "PresentNoRetry": false,
+   "RetryAcked": true,
+   "PollsAfterRetry": [
+    "+0s head_err=false size=2097152 list=true list_err=false"
+   ],
+   "Verdict": "ok",
+   "ReadDetail": "len=2097152 want_len=2097152 first_diff=-1 body_err=false",
+   "ErrButFullFilePresent": false,
+   "PartialOrCorruptVisible": false
+  }
+ ],
+ "control_needle_verdict": "LOST_ACKED_WRITE",
+ "control_polls": [
+  "+0s head_err=true size=-1 list=false list_err=false",
+  "+3s head_err=true size=-1 list=false list_err=false",
+  "+10s head_err=true size=-1 list=false list_err=false",
+  "+30s head_err=true size=-1 list=false list_err=false",
+  "+1m0s head_err=true size=-1 list=false list_err=false"
+ ],
+ "faults_fired": 5,
+ "lost_or_corrupt": 0
+}

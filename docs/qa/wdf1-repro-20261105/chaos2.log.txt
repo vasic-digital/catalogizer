@@ -1,0 +1,11 @@
+Running as unit: run-p2861685-i132805834.scope; invocation ID: adc67b4b09a14449b8a10c92d4d3098a
+=== RUN   TestLiveYandexWDF1ForcedReset
+    live_webdav_wdf1_chaos_test.go:273: A_reset_mid_body size=2097152 fired=true put_err=true present_no_retry=false retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:273: A_reset_mid_body size=2097152 fired=true put_err=true present_no_retry=false retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:273: A_reset_mid_body size=2097152 fired=true put_err=true present_no_retry=false retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:273: A_reset_mid_body size=2097152 fired=true put_err=true present_no_retry=false retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:273: A_reset_mid_body size=2097152 fired=true put_err=true present_no_retry=false retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:288: control needle: delete_err=false verdict=LOST_ACKED_WRITE
+--- PASS: TestLiveYandexWDF1ForcedReset (1131.56s)
+PASS
+ok  	catalogizer/filesystem	1131.575s
