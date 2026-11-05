@@ -1,0 +1,1 @@
+{"error":"credentials in the URL are no longer accepted; use POST /api/v1/smb/discover with a JSON body"}

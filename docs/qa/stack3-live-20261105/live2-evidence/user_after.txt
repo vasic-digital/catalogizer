@@ -1,0 +1,4 @@
+GET /api/v1/users/302 
+status=404 ts=2026-11-05T11:52:38Z
+User not found
+

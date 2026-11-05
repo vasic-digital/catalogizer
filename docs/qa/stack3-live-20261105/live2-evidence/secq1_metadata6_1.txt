@@ -1,0 +1,3 @@
+POST /api/v1/storage/roots body={"name":"qa-ssrf-metadata6","protocol":"webdav","url":"http://[fd20:ce::254]/"}
+status=400 ts=2026-11-05T11:49:39Z
+{"error":"webdav url refused: outbound destination not allowed: fd20:ce::254 is a loopback, link-local, metadata or reserved address"}

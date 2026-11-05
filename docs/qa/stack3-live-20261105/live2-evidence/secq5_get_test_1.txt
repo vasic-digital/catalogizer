@@ -1,0 +1,3 @@
+GET /api/v1/smb/test 
+status=410 ts=2026-11-05T11:50:30Z
+{"error":"credentials in the URL are no longer accepted; use POST /api/v1/smb/test with a JSON body"}

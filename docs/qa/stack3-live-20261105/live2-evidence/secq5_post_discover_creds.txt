@@ -1,0 +1,3 @@
+POST /api/v1/smb/discover body={"host":"192.0.2.1","username":"u","password":"<redacted>"}
+status=500 ts=2026-11-05T11:51:09Z
+{"error":"Failed to discover shares: connect to 192.0.2.1:445: dial tcp 192.0.2.1:445: i/o timeout"}

@@ -1,0 +1,3 @@
+GET /api/v1/smb/discover 
+status=403 ts=2026-11-05T11:50:30Z
+{"success":false,"error":"Admin role required"}
