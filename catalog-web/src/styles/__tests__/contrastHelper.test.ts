@@ -84,6 +84,29 @@ describe('contrast helper goldens', () => {
       expect(failingElements(d, 'light')).toEqual([])
     })
 
+    it('an element with its own bg-* is still measured (badge text-red-600 on bg-red-100 = 3.95)', () => {
+      const d = document.createElement('div'); d.className = 'bg-white'
+      d.innerHTML = '<span class="bg-red-100 text-red-600">Error</span><span class="bg-red-100 text-red-700">Error</span>'
+      const out = failingElements(d, 'light')
+      expect(out).toHaveLength(1)
+      expect(out[0]).toMatch(/text-red-600.* 3\.95$/)
+    })
+
+    it('text-lg is NOT large text (needs 4.5, not 3); text-2xl is', () => {
+      const lg = failingElements(html('<p class="text-lg text-gray-500">x</p>'), 'dark')
+      expect(lg).toHaveLength(1) // 3.04 < 4.5
+      expect(failingElements(html('<p class="text-2xl text-gray-500">x</p>'), 'dark')).toEqual([])
+      expect(failingElements(html('<p class="text-xl font-bold text-gray-500">x</p>'), 'dark')).toEqual([])
+      expect(failingElements(html('<p class="text-xl text-gray-500">x</p>'), 'dark')).toHaveLength(1)
+    })
+
+    it('overlay skip is anchored: only a real bg-black/N or bg-black+bg-opacity-N skips, variant classes do not', () => {
+      expect(failingElements(html('<p class="text-gray-500 bg-black/50">x</p>'), 'dark')).toEqual([])
+      expect(failingElements(html('<p class="text-gray-500 bg-black bg-opacity-50">x</p>'), 'dark')).toEqual([])
+      expect(failingElements(html('<p class="text-gray-500 hover:bg-black/85">x</p>'), 'dark')).toHaveLength(1)
+      expect(failingElements(html('<p class="text-gray-500 group-hover:bg-black/85">x</p>'), 'dark')).toHaveLength(1)
+    })
+
     it('large text needs 3:1 only; svg content and disabled controls are exempt', () => {
       expect(failingElements(html('<p class="text-3xl text-gray-500">big</p>'), 'dark')).toEqual([])
       expect(failingElements(html('<svg><text class="text-gray-500">s</text></svg>'), 'dark')).toEqual([])

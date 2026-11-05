@@ -1,0 +1,6 @@
+ FAIL  src/styles/__tests__/contrastD7Populated.test.tsx > UI-D7-FU populated states, dark theme > ExternalIntegrations: cards (connected + pending badge), expanded panel, add modal
++ Received
++ h5.font-medium text-sm text-gray-700 dark:text-gray-300 mb-2 "Configuration" 1.41
++ h5.font-medium text-sm text-gray-700 dark:text-gray-300 mb-2 "Sync Settings" 1.41
++ h5.font-medium text-sm text-gray-700 dark:text-gray-300 mb-2 "Statistics" 1.41
+      Tests  1 failed | 33 passed (34)

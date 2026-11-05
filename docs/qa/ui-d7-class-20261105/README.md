@@ -1,6 +1,6 @@
 # UI D7 class-wide dark-mode contrast (D7-R2-F1..F4) - 2026-11-05
 
-Status: PROVISIONAL (unit-class, jsdom + real Tailwind theme). No live-stack axe re-run was done here; the live re-check
+Status: PROVISIONAL (unit-class, jsdom + real Tailwind theme; round 2 after reviewer NO-GO). No live-stack axe re-run was done here.
 is owed to the conductor after the next stack rebuild.
 
 ## Defect
@@ -48,3 +48,18 @@ Reviewer-style mutations (`mutations_summary.txt`, `mut_*.log`): 13 of 14 killed
 Full `vitest run` on the scratch clone: 2485 passed / 14 failed in 8 files (Avatar, EmptyState, LoadingSpinner, AuthContext.integration, WebSocketContext x2, module-registry, websocket)
 - none touch the edited files; causes seen: unresolved `@vasic-digital/*` imports (submodules not initialised in the scratch clone) and localStorage assertions. UNCONFIRMED: not re-run against pristine main.
 Digests: `SHA256SUMS`.
+
+## Round 2 (reviewer NO-GO F1/F2 + minors)
+Correction of round-1 claims: the round-1 `contrastD7Class` ExternalIntegrations test mocked `fetch` as `ok:false` (no cards / expanded panel / modal) and the
+UploadManager test never queued a file, so "whole panel" / "with a queued file" overstated coverage. The new `contrastD7Populated.test.tsx` (reviewer probe adopted, with
+assertions) renders: ExternalIntegrations cards (connected + pending), expanded panel, add modal; UploadManager drag-over zone and queued file; FormatConverter selected preset.
+RED on the round-1 source: `RED_populated.log` (6 failed): queued/drag-over 1.35/2.33, pending badge 2.43, connected badge 2.18 (light AND dark), hint 4.44 on blue-50 (light).
+Fixes: light surfaces got dark surfaces (UploadManager row `dark:bg-gray-800`, drag-over `dark:bg-blue-900/20`; ExternalIntegrations expanded panel `dark:bg-gray-900` with inner boxes
+`dark:bg-gray-800` and code chips `dark:bg-gray-700`; FormatConverter selected preset `dark:bg-blue-900/20`; status badges: green/red/blue-500 -> -700 + `dark:*-400` on `dark:bg-*-900/20`,
+default gray `gray-600/gray-300` on `bg-gray-50 dark:bg-gray-800`). Light-mode changes (all improvements, listed honestly): status badge text 500->700 (2.18 -> >=4.5), drag-over hint
+gray-500 -> gray-600 on blue-50 (4.44 -> 6.0), EntityDetailView duplicates count orange-600 -> orange-700 (3.56 -> 5.18), CollectionRealTime badges (round 1).
+PerformanceOptimizer:422 is a text "x" button (not an icon): gray-500 -> gray-400 (hover gray-200) on its dark overlay (3.67 -> ~6.7). Not render-tested (UNCONFIRMED by render).
+Walker minors: overlay skip anchored `(^|\s)bg-black/` plus `bg-black bg-opacity-N`; goldens added killing R5 (skip elements with own bg-*), R6 (`text-lg` counted large), R7 (unanchored overlay).
+Mutations re-run (`mutations_summary.txt`): M1-M13, P1-P6 (new surfaces/badge), R5-R7 - all killed (each >=1 failing test); M10/M13 killed via helper goldens.
+GREEN: `GREEN_affected2.log` 61 files / 1070 tests passed (styles, collections, upload, conversion, entity, dashboard, ai, media, pages), `tsc2.log` rc=0.
+Follow-up registered (not fixed): D7-R3-FU1 FormatConverter job error/success boxes (`bg-red-50`/`bg-green-50`, text -700) are light islands in dark mode (readable, 6+:1, but visually inconsistent): add `dark:bg-*-900/20 dark:text-*-300`.

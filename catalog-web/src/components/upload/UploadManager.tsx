@@ -201,7 +201,7 @@ export const UploadManager: React.FC<UploadManagerProps> = ({
         <div
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
             isDragOver 
-              ? 'border-blue-500 bg-blue-50' 
+              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
               : 'border-gray-300 hover:border-gray-400'
           }`}
           onDrop={handleDrop}
@@ -212,7 +212,7 @@ export const UploadManager: React.FC<UploadManagerProps> = ({
           <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
             Drop files here or click to browse
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Max file size: {formatFileSize(maxFileSize)}
             {acceptedTypes.length > 0 && (
               <> • Accepted types: {acceptedTypes.join(', ')}</>
@@ -243,7 +243,7 @@ export const UploadManager: React.FC<UploadManagerProps> = ({
               {uploadQueue.map(item => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
                 >
                   {getStatusIcon(item.status)}
                   <div className="flex-1 min-w-0">

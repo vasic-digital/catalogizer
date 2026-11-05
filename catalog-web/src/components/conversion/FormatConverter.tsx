@@ -352,7 +352,7 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                       key={key}
                       className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
                         quality === key 
-                          ? 'border-blue-500 bg-blue-50' 
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >

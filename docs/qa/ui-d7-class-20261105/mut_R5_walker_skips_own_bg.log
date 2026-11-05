@@ -1,0 +1,4 @@
+ FAIL  src/styles/__tests__/contrastHelper.test.ts > contrast helper goldens > failingElements walker goldens (a walker that sees nothing would pass every component) > an element with its own bg-* is still measured (badge text-red-600 on bg-red-100 = 3.95)
++ Received
++ 0
+      Tests  1 failed | 48 passed (49)

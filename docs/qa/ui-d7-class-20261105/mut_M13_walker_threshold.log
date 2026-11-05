@@ -4,7 +4,9 @@
  FAIL  src/styles/__tests__/contrastHelper.test.ts > contrast helper goldens > failingElements walker goldens (a walker that sees nothing would pass every component) > a light panel without a dark bg stays light: dark:text-gray-400 on it is flagged (real ances
 + Received
 + 0
- FAIL  src/styles/__tests__/contrastHelper.test.ts > contrast helper goldens > failingElements walker goldens (a walker that sees nothing would pass every component) > large text needs 3:1 only; svg content and disabled controls are exempt
+ FAIL  src/styles/__tests__/contrastHelper.test.ts > contrast helper goldens > failingElements walker goldens (a walker that sees nothing would pass every component) > an element with its own bg-* is still measured (badge text-red-600 on bg-red-100 = 3.95)
 + Received
 + 0
-      Tests  3 failed | 9 passed (12)
+ FAIL  src/styles/__tests__/contrastHelper.test.ts > contrast helper goldens > failingElements walker goldens (a walker that sees nothing would pass every component) > text-lg is NOT large text (needs 4.5, not 3); text-2xl is
++ Received
++ 0

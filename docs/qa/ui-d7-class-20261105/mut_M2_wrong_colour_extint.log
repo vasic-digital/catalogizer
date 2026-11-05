@@ -6,4 +6,7 @@
 + p.text-sm text-gray-500 dark:text-gray-600 "Active Syncs" 1.94
 + p.text-sm text-gray-500 dark:text-gray-600 "Success Rate" 1.94
 + p.text-gray-500 dark:text-gray-600 mb-4 "Connect with external services" 1.94
-      Tests  1 failed | 36 passed (37)
+ FAIL  src/styles/__tests__/contrastD7Populated.test.tsx > UI-D7-FU populated states, dark theme > ExternalIntegrations: cards (connected + pending badge), expanded panel, add modal
++ Received
++ p.text-sm text-gray-500 dark:text-gray-600 mt-1 "Connect with external services" 2.35
++ p.text-sm text-gray-500 dark:text-gray-600 "Total Integrations" 1.94

@@ -125,7 +125,7 @@ export function failingElements(root: Element, theme: Theme, min = WCAG_AA_NORMA
     const own = Array.from(n.childNodes).some((c) => c.nodeType === 3 && (c.textContent ?? '').trim() !== '')
     if (!own) continue
     const cls = n.getAttribute('class') ?? ''
-    if (/\bbg-black\//.test(cls)) continue
+    if (/(^|\s)bg-black\//.test(cls) || (/(^|\s)bg-black(\s|$)/.test(cls) && /(^|\s)bg-opacity-\d+(\s|$)/.test(cls))) continue
     const large = /\btext-(2xl|3xl|4xl|5xl)\b/.test(cls) || (/\btext-xl\b/.test(cls) && /\bfont-bold\b/.test(cls))
     const r = contrastOf(n, theme)
     if (r < (large ? 3 : min)) bad.push(`${n.tagName.toLowerCase()}.${cls} "${(n.textContent ?? '').trim().slice(0, 30)}" ${r.toFixed(2)}`)

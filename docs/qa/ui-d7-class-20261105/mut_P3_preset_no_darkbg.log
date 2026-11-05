@@ -1,0 +1,5 @@
+ FAIL  src/styles/__tests__/contrastD7Populated.test.tsx > UI-D7-FU populated states, dark theme > FormatConverter: selected quality preset (bg-blue-50 when selected) with the form open
++ Received
++ div.font-medium "Medium (Balanced)" 1.09
++ div.text-sm text-gray-600 dark:text-gray-300 "720p • 2500kbps" 1.35
+      Tests  1 failed | 33 passed (34)

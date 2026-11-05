@@ -2,4 +2,4 @@
 + Received
 + p.font-medium text-gray-700 dark:text-gray-300 "Automation unavailable" 1.41
 + p.text-sm text-gray-500 dark:text-gray-400 "This server has no automation " 2.43
-      Tests  1 failed | 36 passed (37)
+      Tests  1 failed | 33 passed (34)

@@ -5,4 +5,4 @@
  FAIL  src/styles/__tests__/contrastD7Class.test.tsx > UI-D7-FU class-wide gray text, dark theme (WCAG AA 4.5:1) > EntityDetailView: hero, children, files, duplicates
 + Received
 + div.text-lg font-semibold text-orange-600 "1" 4.12
-      Tests  2 failed | 35 passed (37)
+      Tests  2 failed | 32 passed (34)

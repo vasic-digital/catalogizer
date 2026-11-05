@@ -376,15 +376,15 @@ const ExternalIntegrations: React.FC = () => {
   const getStatusInfo = (status: string) => {
     switch (status) {
       case 'connected':
-        return { icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-50' };
+        return { icon: CheckCircle, color: 'text-green-700 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/20' };
       case 'disconnected':
-        return { icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' };
+        return { icon: XCircle, color: 'text-red-700 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/20' };
       case 'error':
-        return { icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-50' };
+        return { icon: AlertCircle, color: 'text-red-700 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/20' };
       case 'connecting':
-        return { icon: RefreshCw, color: 'text-blue-500', bg: 'bg-blue-50' };
+        return { icon: RefreshCw, color: 'text-blue-700 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20' };
       default:
-        return { icon: Clock, color: 'text-gray-500 dark:text-gray-400', bg: 'bg-gray-50' };
+        return { icon: Clock, color: 'text-gray-600 dark:text-gray-300', bg: 'bg-gray-50 dark:bg-gray-800' };
     }
   };
 
@@ -656,16 +656,16 @@ const ExternalIntegrations: React.FC = () => {
                       transition={{ duration: 0.2 }}
                       className="border-t overflow-hidden"
                     >
-                      <div className="p-4 bg-gray-50 space-y-4">
+                      <div className="p-4 bg-gray-50 dark:bg-gray-900 space-y-4">
                         {/* Configuration */}
                         <div>
                           <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">Configuration</h5>
-                          <div className="bg-white dark:bg-gray-900 rounded p-3 text-sm space-y-2">
+                          <div className="bg-white dark:bg-gray-800 rounded p-3 text-sm space-y-2">
                             {integration.config.endpoint && (
                               <div className="flex items-center gap-2">
                                 <ExternalLink className="w-3 h-3 text-gray-400" />
                                 <span className="text-gray-600 dark:text-gray-300">Endpoint: </span>
-                                <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+                                <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs">
                                   {integration.config.endpoint}
                                 </code>
                               </div>
@@ -674,7 +674,7 @@ const ExternalIntegrations: React.FC = () => {
                               <div className="flex items-center gap-2">
                                 <Link className="w-3 h-3 text-gray-400" />
                                 <span className="text-gray-600 dark:text-gray-300">Webhook: </span>
-                                <code className="bg-gray-100 px-2 py-1 rounded text-xs truncate max-w-xs">
+                                <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs truncate max-w-xs">
                                   {integration.config.webhookUrl}
                                 </code>
                               </div>
@@ -683,7 +683,7 @@ const ExternalIntegrations: React.FC = () => {
                               <div className="flex items-center gap-2">
                                 <Key className="w-3 h-3 text-gray-400" />
                                 <span className="text-gray-600 dark:text-gray-300">API Key: </span>
-                                <code className="bg-gray-100 px-2 py-1 rounded text-xs">
+                                <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs">
                                   {integration.config.apiKey}
                                 </code>
                               </div>
@@ -694,7 +694,7 @@ const ExternalIntegrations: React.FC = () => {
                         {/* Sync Settings */}
                         <div>
                           <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">Sync Settings</h5>
-                          <div className="bg-white dark:bg-gray-900 rounded p-3 text-sm">
+                          <div className="bg-white dark:bg-gray-800 rounded p-3 text-sm">
                             <div className="grid grid-cols-2 gap-4 text-xs">
                               <div>
                                 <span className="text-gray-500 dark:text-gray-400">Enabled: </span>
@@ -721,7 +721,7 @@ const ExternalIntegrations: React.FC = () => {
                         {/* Statistics */}
                         <div>
                           <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">Statistics</h5>
-                          <div className="bg-white dark:bg-gray-900 rounded p-3">
+                          <div className="bg-white dark:bg-gray-800 rounded p-3">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                               <div className="text-center">
                                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{integration.statistics.totalSyncs}</p>

@@ -1,0 +1,5 @@
+ FAIL  src/styles/__tests__/contrastD7Populated.test.tsx > UI-D7-FU populated states, dark theme > UploadManager: queued file row and drag-over zone
++ Received
++ p.text-lg font-medium text-gray-700 dark:text-gray-300 mb-2 "Drop files here or click to br" 1.35
++ p.text-sm text-gray-600 dark:text-gray-400 mb-4 "Max file size: 100 MB • Accept" 2.33
+      Tests  1 failed | 33 passed (34)
