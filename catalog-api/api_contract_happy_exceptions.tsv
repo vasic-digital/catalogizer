@@ -2,6 +2,7 @@
 # A happy 2xx that becomes non-2xx and is not listed here is a violation; a listed op that now reaches 2xx is a stale entry and also a violation.
 DELETE /api/v1/conversion/jobs/{id}	404	generator has no seeded resource for this id/path (404); follow-up to seed
 DELETE /api/v1/roles/{id}	409	role in use by the seeded victim user (409)
+DELETE /api/v1/subtitles/{subtitle_id}	404	no seeded subtitle track for the generated id; an unknown id and a non-owner both answer 404 by design (SUBTITLE_NOT_FOUND ownership masking); follow-up to seed
 DELETE /api/v1/sync/endpoints/{id}	404	generator has no seeded resource for this id/path (404); follow-up to seed
 GET /api/v1/browse/directory-sizes/{path}	400	generated request body/query not valid for this op (400); follow-up to hand-shape
 GET /api/v1/browse/directory/{path}	400	generated request body/query not valid for this op (400); follow-up to hand-shape
