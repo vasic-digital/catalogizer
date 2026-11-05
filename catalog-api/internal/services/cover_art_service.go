@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"catalogizer/internal/netguard"
+	"catalogizer/internal/pathguard"
 	"context"
 	"crypto/sha256"
 	"database/sql"
@@ -622,7 +623,17 @@ func ffprobeDurationCmd(videoPath string) *exec.Cmd {
 	return ffprobeDurationCmdContext(context.Background(), videoPath)
 }
 
+// toolInputPath makes a path safe to pass as an ffprobe/ffmpeg input: a relative path starting with "-" would be read
+// as an option, so it is anchored with "./" (NEW1-F3).
+func toolInputPath(p string) string {
+	if strings.HasPrefix(p, "-") {
+		return "./" + p
+	}
+	return p
+}
+
 func ffprobeDurationCmdContext(ctx context.Context, videoPath string) *exec.Cmd {
+	videoPath = toolInputPath(videoPath)
 	args := []string{"-v", "error", "-protocol_whitelist", "file,pipe", "-format_whitelist", strings.Join(coverArtDemuxers, ",")}
 	args = append(args, "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", videoPath)
 	return exec.CommandContext(ctx, "ffprobe", args...)
@@ -630,7 +641,7 @@ func ffprobeDurationCmdContext(ctx context.Context, videoPath string) *exec.Cmd 
 
 func ffmpegFrameCmd(ctx context.Context, timestamp float64, videoPath, outputPath string) *exec.Cmd {
 	args := ffmpegInputGuard()
-	args = append(args, "-ss", fmt.Sprintf("%.2f", timestamp), "-i", videoPath, "-vframes", "1", "-q:v", "2", "-y", outputPath)
+	args = append(args, "-ss", fmt.Sprintf("%.2f", timestamp), "-i", toolInputPath(videoPath), "-vframes", "1", "-q:v", "2", "-y", outputPath)
 	return exec.CommandContext(ctx, "ffmpeg", args...)
 }
 
@@ -1242,6 +1253,14 @@ func (s *CoverArtService) GenerateMissingVideoThumbnails(ctx context.Context, li
 		  AND f.name NOT LIKE '%.txt'
 		  AND f.name NOT LIKE '%.jpg'
 		  AND f.name NOT LIKE '%.png'
+		  AND mf.id = (
+		      SELECT mf2.id FROM media_files mf2
+		      JOIN files f2 ON mf2.file_id = f2.id
+		      WHERE mf2.media_item_id = mi.id
+		        AND f2.name NOT LIKE '%.srt' AND f2.name NOT LIKE '%.sub' AND f2.name NOT LIKE '%.nfo'
+		        AND f2.name NOT LIKE '%.txt' AND f2.name NOT LIKE '%.jpg' AND f2.name NOT LIKE '%.png'
+		      ORDER BY mf2.is_primary DESC, f2.size DESC, mf2.id
+		      LIMIT 1)
 		ORDER BY mi.id
 		LIMIT ?
 	`
@@ -1270,12 +1289,22 @@ func (s *CoverArtService) GenerateMissingVideoThumbnails(ctx context.Context, li
 
 	generated := 0
 	for _, t := range tasks {
-		resolvedPath := t.videoPath
+		var resolvedPath string
 		isTemp := false
 
-		if t.protocol == "local" && t.rootPath.Valid && t.rootPath.String != "" {
-			resolvedPath = filepath.Join(t.rootPath.String, t.videoPath)
-		} else if t.protocol != "local" && s.fsFactory != nil {
+		switch {
+		case t.protocol == "local":
+			// NEW1-F3: the root must be set and the file must stay inside it.
+			p, err := resolveLocalVideoPath(t.rootPath.String, t.videoPath)
+			if err != nil {
+				s.logger.Warn("Refusing video path for thumbnail generation",
+					zap.Int64("media_item_id", t.mediaItemID),
+					zap.String("path", t.videoPath),
+					zap.Error(err))
+				continue
+			}
+			resolvedPath = p
+		case s.fsFactory != nil:
 			// Copy remote file to temp location for ffmpeg
 			tempPath, err := s.copyRemoteFileToTemp(ctx, t)
 			if err != nil {
@@ -1287,6 +1316,13 @@ func (s *CoverArtService) GenerateMissingVideoThumbnails(ctx context.Context, li
 			}
 			resolvedPath = tempPath
 			isTemp = true
+		default:
+			// NEW1-F3: a remote path is never a local path; without a filesystem factory there is no way to read it.
+			s.logger.Warn("Refusing remote video path: no filesystem factory configured",
+				zap.Int64("media_item_id", t.mediaItemID),
+				zap.String("protocol", t.protocol),
+				zap.String("path", t.videoPath))
+			continue
 		}
 
 		thumb, err := s.generateAndSaveVideoThumbnail(ctx, t.mediaItemID, resolvedPath)
@@ -1306,6 +1342,23 @@ func (s *CoverArtService) GenerateMissingVideoThumbnails(ctx context.Context, li
 	}
 
 	return generated, nil
+}
+
+// resolveLocalVideoPath joins a files.path onto its local storage root and returns the symlink-RESOLVED path
+// (the one handed to ffprobe/ffmpeg). It refuses an empty or relative root and any path that, after resolving
+// symlinks, is not strictly below the root (NEW1-F3). Confinement is delegated to the project guard pathguard.ConfineFile.
+// Residual race: a component could be swapped for a symlink between this check and the tool opening the file
+// (check-to-use); the resolved path narrows but does not close that window.
+func resolveLocalVideoPath(root, rel string) (string, error) {
+	if root == "" {
+		return "", fmt.Errorf("cover_art: local storage root has no path")
+	}
+	root = filepath.Clean(root)
+	resolved, err := pathguard.ConfineFile(filepath.Join(root, rel), []string{root})
+	if err != nil {
+		return "", fmt.Errorf("cover_art: video path refused: %w", err)
+	}
+	return resolved, nil
 }
 
 // thumbnailTask holds the data needed to generate a video thumbnail.
@@ -1468,7 +1521,9 @@ func (s *CoverArtService) generateAndSaveVideoThumbnail(ctx context.Context, med
 		return nil, fmt.Errorf("failed to save thumbnail to database: %w", err)
 	}
 	if err := s.setDefaultCoverArt(ctx, mediaItemID, coverArt.ID); err != nil {
-		s.logger.Warn("Failed to set default cover art", zap.Error(err))
+		// NEW1-F4: a thumbnail that is not the default cover is a failure, not a generated thumbnail.
+		s.logger.Error("Failed to set default cover art", zap.Int64("media_item_id", mediaItemID), zap.Error(err))
+		return nil, fmt.Errorf("failed to set default cover art: %w", err)
 	}
 
 	return coverArt, nil

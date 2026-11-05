@@ -1425,3 +1425,9 @@ PROVISIONAL-DONE until a live rerun on a rebuilt stack 3. Pre-existing, NOT caus
 - STK3-FU-2: secrets visible in `podman inspect` accepted risk (QA-MON-FU-3).
 - STK3-FU-3: pprof phase B not re-run (needs HELIX_PPROF_ENABLED=true restart) — PROVISIONAL.
 - STK3-FU-4: reviewer mutations R7/R8/R13 not wired into a harness; horizontal authz VERIFIED only on 2 routes, others PROVISIONAL.
+
+## NEW1-F3/F4 landed 2026-11-05 (review round 2 GO-with-follow-ups)
+- NEW1F3-FU-1 (nit): resolveLocalVideoPath joins before ConfineFile, so pathguard's post-symlink `..` check never fires; safe because the resolved path is what ffmpeg/ffprobe receive. Add a one-line comment.
+- NEW1F3-FU-2: check-to-use race between ConfineFile and ffmpeg open (acknowledged in code comment; needs write access inside the media root).
+- NEW1F3-FU-3: external cover caching path's setDefaultCoverArt still ignores failures (out of scope of F4).
+- Remote-path confinement via fsFactory was not reviewed.
