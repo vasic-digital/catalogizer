@@ -154,13 +154,13 @@ func TestOperatorDialChecksResolvedIPNotName(t *testing.T) {
 	if !errors.Is(err, ErrBlocked) {
 		t.Fatalf("name resolving to metadata must be refused, got %v", err)
 	}
-	// mixed answer: one good, one bad -> refused
+	// mixed answer: one good, one bad -> the bad one is dropped (SECQ1-F4 filter), never dialled
 	lookupIPAddr = func(ctx context.Context, host string) ([]net.IPAddr, error) {
 		return []net.IPAddr{{IP: net.ParseIP("192.168.1.20")}, {IP: net.ParseIP("127.0.0.1")}}, nil
 	}
-	_, err = OperatorDialContext(context.Background(), "tcp", "nas.example.test:80")
-	if !errors.Is(err, ErrBlocked) {
-		t.Fatalf("mixed answer containing loopback must be refused, got %v", err)
+	ips, err := resolveOperator(context.Background(), "nas.example.test")
+	if err != nil || len(ips) != 1 || !ips[0].Equal(net.ParseIP("192.168.1.20")) {
+		t.Fatalf("mixed answer must keep only the permitted address, got %v, %v", ips, err)
 	}
 }
 

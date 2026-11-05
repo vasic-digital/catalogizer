@@ -3845,7 +3845,7 @@ paths:
         '401':
           description: Not authenticated
         '403':
-          description: The caller's administrator status could not be established (fail closed, `FORBIDDEN`)
+          description: The caller's role lookup failed, so the request is refused (fail closed, `FORBIDDEN`). This is a server-side fail-closed answer, not a permission gate (a caller who is not allowed to delete the track gets 404, never 403).
         '404':
           description: Unknown subtitle, or a subtitle the caller may not delete (neither uploader nor administrator); the two cases are deliberately indistinguishable (`SUBTITLE_NOT_FOUND`). Deleting also invalidates the cached translations of that subtitle.
 
