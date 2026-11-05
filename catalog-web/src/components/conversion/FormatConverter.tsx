@@ -254,14 +254,14 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
 
                   {/* Error Message */}
                   {job.status === 'failed' && job.error && (
-                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300">
                       {job.error}
                     </div>
                   )}
 
                   {/* Success Message */}
                   {job.status === 'completed' && (
-                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+                    <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-sm text-green-700 dark:text-green-300">
                       Conversion completed successfully. File is ready for download.
                     </div>
                   )}
