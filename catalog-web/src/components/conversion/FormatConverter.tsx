@@ -185,10 +185,10 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <h3 className="font-medium text-gray-900 truncate">
-                        {job.sourceFile.name}
+                        {job.sourceFile?.name ?? 'unknown'}
                       </h3>
                       <p className="text-sm text-gray-600">
-                        {job.sourceFile.format.toUpperCase()} → {job.targetFormat.toUpperCase()} • {job.quality}
+                        {(job.sourceFile?.format ?? 'unknown').toUpperCase()} → {job.targetFormat.toUpperCase()} • {job.quality}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -234,7 +234,7 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
                     <div>
                       <span className="block font-medium">File Size</span>
-                      {formatFileSize(job.sourceFile.size)}
+                      {formatFileSize(job.sourceFile?.size ?? 0)}
                     </div>
                     <div>
                       <span className="block font-medium">Duration</span>
@@ -242,11 +242,11 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                     </div>
                     <div>
                       <span className="block font-medium">Resolution</span>
-                      {job.options.resolution}
+                      {job.options?.resolution}
                     </div>
                     <div>
                       <span className="block font-medium">Bitrate</span>
-                      {job.options.bitrate} kbps
+                      {job.options?.bitrate != null ? `${job.options.bitrate} kbps` : '---'}
                     </div>
                   </div>
 
