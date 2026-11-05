@@ -1,0 +1,11 @@
+stale refresher session (metrics.tok) logout: HTTP 200
+stale refresher session (previous.tok) logout: HTTP 200
+prometheus   http://127.0.0.1:39090/-/ready -> 200
+grafana      http://127.0.0.1:33030/api/health -> 200
+pgadmin      http://127.0.0.1:33050/misc/ping -> 200
+nginx        http://127.0.0.1:33080/edge-health -> 200
+7e31c388dfa3-infra	Up 16 seconds	
+catqa3mon-prometheus	Up 16 seconds	docker.io/prom/prometheus:v2.55.1
+catqa3mon-grafana	Up 15 seconds	docker.io/grafana/grafana:11.3.1
+catqa3mon-pgadmin	Up 15 seconds	docker.io/dpage/pgadmin4:8.13
+catqa3mon-nginx	Up 15 seconds	docker.io/library/nginx:1.27-alpine

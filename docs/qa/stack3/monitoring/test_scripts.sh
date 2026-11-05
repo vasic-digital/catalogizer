@@ -88,7 +88,7 @@ exit 0
 FP
 printf '#!/bin/sh\necho "curl $*" >> "$U_LOG"\ncase "$*" in *@-*) cat >> "$U_DIR/curl.stdin";; esac\nprintf 200\n' > "$U/bin/curl"; printf '#!/bin/sh\nexit 0\n' > "$U/bin/sleep"; printf '#!/bin/sh\nexit 0\n' > "$U/bin/ss"; chmod +x "$U/bin/"*
 ( umask 077; { echo ADMIN_USERNAME=a; echo ADMIN_PASSWORD=pw; echo POSTGRES_USER=c; echo POSTGRES_PASSWORD=pp; echo "METRICS_SCRAPE_TOKEN=$T32"; } > "$U/qa/qa.env" )
-PINS="$HERE/evidence/image_digests.txt" U_LOG="$U/log" U_DIR="$U" QA_DIR="$U/qa" PATH="$U/bin:$PATH" bash "$HERE/up.sh" >/dev/null 2>&1
+PINS="$HERE/evidence/image_digests.txt" U_LOG="$U/log" U_DIR="$U" QA_DIR="$U/qa" PATH="$U/bin:$PATH" timeout 60 bash "$HERE/up.sh" >/dev/null 2>&1 </dev/null   # </dev/null + timeout: a mutated up.sh that stops piping must FAIL the asserts below, never hang the stub
 [ "$(cat "$U/seed.stdin" 2>/dev/null)" = "$T32" ] && ok FU1.up_feeds_token_on_stdin || bad FU1.up_feeds_token_on_stdin "stdin=$(wc -c < "$U/seed.stdin" 2>/dev/null)"
 grep -qF -- "$T32" "$U/log" && bad FU1.token_value_never_in_argv "token value in podman argv" || ok FU1.token_value_never_in_argv
 grep -qE -- '(-e|--env)[= ]METRICS_SCRAPE_TOKEN' "$U/log" && bad FU1.token_never_passed_as_env_to_monitoring "env pass-through" || ok FU1.token_never_passed_as_env_to_monitoring
