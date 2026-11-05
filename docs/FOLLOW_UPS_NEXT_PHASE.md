@@ -1546,3 +1546,10 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - TAURI-F15 (nit): one tauri::test IPC test for make_http_request and set_server_url (mutant O4 survives).
 - TAURI-F16 (nit): test server single 2048-byte read; read until headers+Content-Length.
 - TAURI-F6: broader trust model (confirm on server URL change) needs operator decision.
+
+## S3 protocol follow-ups (review round 2, GO-with-follow-ups; unit-class evidence only, LIVE PENDING)
+- S3-R2-1: SkippedKeys() not wired to scanner/logs (skipped objects uncatalogued silently).
+- S3-R2-2 (F8): ReadFile/WriteFile lack per-operation/response-header timeouts.
+- S3-R2-3 (F10): rename tracker ProtocolHandlerFactory and web SUPPORTED_PROTOCOLS lack s3; UI/docs for s3 roots.
+- S3-R2-4 (nit): fake stripChunked no-op; no test with >1000 delete ids (N2 survivor).
+- S3-R2-5: live run needs a real S3 server: verify copy-source encoding and DeleteObjects checksum compatibility (MinIO/Ceph/Garage) - UNCONFIRMED.

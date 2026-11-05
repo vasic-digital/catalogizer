@@ -265,6 +265,10 @@ func generateSelfSignedCert() (tls.Certificate, []byte, []byte, error) {
 // @description Type "Bearer" followed by a space and JWT token.
 
 func main() {
+	if err := filesystem.RegisterS3Protocol(); err != nil {
+		fmt.Fprintf(os.Stderr, "register s3 storage protocol: %v\n", err)
+		os.Exit(1)
+	}
 	startTime := time.Now()
 
 	// Parse command line flags
