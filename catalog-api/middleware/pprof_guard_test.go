@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/http/pprof"
@@ -42,6 +43,31 @@ func getWithin(t *testing.T, url string, d time.Duration) (int, bool) {
 	}
 	defer resp.Body.Close()
 	return resp.StatusCode, true
+}
+
+// getDrained is getWithin that also reads the body to EOF, so the handler (and the guard's single slot) has finished
+// before the caller issues the next request. pprof.Trace flushes its 200 early, so returning on the status line alone
+// races the slot release.
+func getDrained(t *testing.T, url string, d time.Duration) (int, bool) {
+	t.Helper()
+	cl := &http.Client{Timeout: d}
+	resp, err := cl.Get(url)
+	if err != nil {
+		return 0, false
+	}
+	defer resp.Body.Close()
+	if _, err := io.Copy(io.Discard, resp.Body); err != nil {
+		return 0, false
+	}
+	return resp.StatusCode, true
+}
+
+// With cap 2 and no `seconds`, the guard must inject seconds (capped), so the stdlib default of 30 s never applies.
+func TestPprofGuard_MissingSecondsIsCappedViaRewrittenQuery(t *testing.T) {
+	srv := pprofGuardServer(t, 2)
+	code, answered := getDrained(t, srv.URL+"/debug/pprof/profile", 3*time.Second)
+	require.True(t, answered, "profile without seconds was held beyond the cap")
+	assert.Equal(t, http.StatusOK, code)
 }
 
 func TestPprofGuard_RejectsOversizedSamplingWindowImmediately(t *testing.T) {
@@ -127,16 +153,16 @@ func TestPprofGuard_DeltaProfilesShareTheSingleSlot(t *testing.T) {
 
 func TestPprofGuard_CapBoundary(t *testing.T) {
 	srv := pprofGuardServer(t, 2)
-	code, answered := getWithin(t, srv.URL+"/debug/pprof/profile?seconds=3", 2*time.Second)
+	code, answered := getDrained(t, srv.URL+"/debug/pprof/profile?seconds=3", 2*time.Second)
 	require.True(t, answered)
 	assert.Equal(t, http.StatusBadRequest, code, "cap+1 is refused")
-	code, answered = getWithin(t, srv.URL+"/debug/pprof/trace?seconds=2", 10*time.Second)
+	code, answered = getDrained(t, srv.URL+"/debug/pprof/trace?seconds=2", 10*time.Second)
 	require.True(t, answered)
 	assert.Equal(t, http.StatusOK, code, "exactly the cap is served")
-	code, answered = getWithin(t, srv.URL+"/debug/pprof/heap?seconds=3", 2*time.Second)
+	code, answered = getDrained(t, srv.URL+"/debug/pprof/heap?seconds=3", 2*time.Second)
 	require.True(t, answered)
 	assert.Equal(t, http.StatusBadRequest, code, "cap+1 on a delta profile is refused")
-	code, answered = getWithin(t, srv.URL+"/debug/pprof/heap?seconds=2", 10*time.Second)
+	code, answered = getDrained(t, srv.URL+"/debug/pprof/heap?seconds=2", 10*time.Second)
 	require.True(t, answered)
 	assert.Equal(t, http.StatusOK, code, "exactly the cap on a delta profile is served")
 }

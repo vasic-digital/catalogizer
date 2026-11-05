@@ -37,6 +37,7 @@ type PlaylistService struct {
 	// CAVEAT: the lock is IN-PROCESS only. Several server instances (or any other writer) sharing one database can still
 	// race; closing that needs a database-level guarantee (conditional insert or a unique constraint), tracked as SECQ-4.
 	// The wait is not context-aware: CreatePlaylist takes no context and the critical section is two short statements.
+	// One mutex per user id; entries are never pruned, so the map is bounded by the number of users.
 	smartCreateMu sync.Map // userID (int) -> *sync.Mutex
 }
 
