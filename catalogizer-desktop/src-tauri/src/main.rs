@@ -48,6 +48,9 @@ async fn update_config(
     new_config: AppConfig,
     config: State<'_, ConfigState>,
 ) -> Result<(), String> {
+    if let Some(u) = new_config.server_url.as_deref() {
+        url_guard::validate_server_url(u)?;
+    }
     let mut config = config.lock().await;
     *config = new_config;
     Ok(())
@@ -55,6 +58,7 @@ async fn update_config(
 
 #[tauri::command]
 async fn set_server_url(url: String, config: State<'_, ConfigState>) -> Result<(), String> {
+    let url = url_guard::validate_server_url(&url)?;
     let mut config = config.lock().await;
     config.server_url = Some(url);
     Ok(())
@@ -91,7 +95,7 @@ async fn make_http_request(
         return Err(format!("URL must be within configured server: {}", server_url));
     }
 
-    let client = reqwest::Client::new();
+    let client = url_guard::build_client(server_url)?;
 
     let mut request = match method.to_uppercase().as_str() {
         "GET" => client.get(&url),
@@ -722,74 +726,6 @@ mod tests {
             assert!(config.auth_token.as_ref().expect("Token should exist").contains('.'));
             let parts: Vec<&str> = config.auth_token.as_ref().expect("Token should exist").split('.').collect();
             assert_eq!(parts.len(), 3, "JWT should have 3 parts");
-        }
-    }
-
-    /// Tests for SSRF URL validation logic
-    mod ssrf_validation_tests {
-        #[test]
-        fn test_url_starts_with_configured_server() {
-            let server_url = "http://localhost:8080";
-            let request_url = "http://localhost:8080/api/v1/media";
-
-            let normalized_server = server_url.trim_end_matches('/');
-            let normalized_request = request_url.trim_end_matches('/');
-
-            assert!(normalized_request.starts_with(normalized_server));
-        }
-
-        #[test]
-        fn test_url_does_not_match_different_server() {
-            let server_url = "http://localhost:8080";
-            let request_url = "http://evil.com/api/v1/media";
-
-            let normalized_server = server_url.trim_end_matches('/');
-            let normalized_request = request_url.trim_end_matches('/');
-
-            assert!(!normalized_request.starts_with(normalized_server));
-        }
-
-        #[test]
-        fn test_url_trailing_slash_normalization() {
-            let server_url = "http://localhost:8080/";
-            let normalized = server_url.trim_end_matches('/');
-            assert_eq!(normalized, "http://localhost:8080");
-        }
-
-        #[test]
-        fn test_url_no_trailing_slash() {
-            let server_url = "http://localhost:8080";
-            let normalized = server_url.trim_end_matches('/');
-            assert_eq!(normalized, "http://localhost:8080");
-        }
-
-        #[test]
-        fn test_url_multiple_trailing_slashes() {
-            let server_url = "http://localhost:8080///";
-            let normalized = server_url.trim_end_matches('/');
-            assert_eq!(normalized, "http://localhost:8080");
-        }
-
-        #[test]
-        fn test_ssrf_prevention_port_mismatch() {
-            let server_url = "http://localhost:8080";
-            let request_url = "http://localhost:9090/api/v1/data";
-
-            let normalized_server = server_url.trim_end_matches('/');
-            let normalized_request = request_url.trim_end_matches('/');
-
-            assert!(!normalized_request.starts_with(normalized_server));
-        }
-
-        #[test]
-        fn test_ssrf_prevention_scheme_mismatch() {
-            let server_url = "https://localhost:8080";
-            let request_url = "http://localhost:8080/api/v1/data";
-
-            let normalized_server = server_url.trim_end_matches('/');
-            let normalized_request = request_url.trim_end_matches('/');
-
-            assert!(!normalized_request.starts_with(normalized_server));
         }
     }
 
