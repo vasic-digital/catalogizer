@@ -270,11 +270,45 @@ func (c *WebDAVClient) WriteFile(ctx context.Context, path string, data io.Reade
 	}
 
 	fullURL := c.resolveURL(path)
+	want, getBody, err := c.putOnce(ctx, fullURL, data)
+	if err != nil {
+		return err
+	}
+
+	// Defensive hardening (WD-F1/SECQ-2; NOT a proven fix, the loss was never reproduced live): a 2xx answer to a PUT is not taken as proof that the
+	// bytes are stored. HEAD the target; if it is absent, or its Content-Length differs from the bytes sent, PUT once more (only when the body can
+	// be replayed) and verify again; if still wrong, the write is an error instead of a silent success.
+	vErr := c.verifyStored(ctx, fullURL, want)
+	if vErr == nil {
+		return nil
+	}
+	if getBody == nil {
+		return fmt.Errorf("WebDAV upload of %s was acknowledged but not verified and the body cannot be replayed: %w", redactURL(fullURL), vErr)
+	}
+	body, gerr := getBody()
+	if gerr != nil {
+		return fmt.Errorf("WebDAV upload of %s was acknowledged but not verified: %w", redactURL(fullURL), vErr)
+	}
+	if _, _, err := c.putOnce(ctx, fullURL, body); err != nil {
+		return fmt.Errorf("WebDAV re-upload of %s after failed verification (%v): %w", redactURL(fullURL), vErr, err)
+	}
+	if err := c.verifyStored(ctx, fullURL, want); err != nil {
+		return fmt.Errorf("WebDAV upload of %s was acknowledged twice but verification still fails: %w", redactURL(fullURL), err)
+	}
+	return nil
+}
+
+// putOnce performs one PUT. It returns the declared body length (-1 when unknown) and a replay function (nil when the body cannot be replayed).
+func (c *WebDAVClient) putOnce(ctx context.Context, fullURL string, data io.Reader) (int64, func() (io.ReadCloser, error), error) {
 	ctx, guard := newIdleGuard(ctx, webdavIdleTimeout)
 	defer guard.stop()
 	req, err := http.NewRequestWithContext(ctx, "PUT", fullURL, data)
 	if err != nil {
-		return fmt.Errorf("failed to create PUT request: %w", err)
+		return 0, nil, fmt.Errorf("failed to create PUT request: %w", err)
+	}
+	want, getBody := req.ContentLength, req.GetBody
+	if req.ContentLength == 0 && (req.Body == nil || req.Body == http.NoBody) {
+		want = 0
 	}
 	// Wrap AFTER NewRequest so that Content-Length and GetBody it derived from the concrete reader type are kept (a wrapped reader passed in
 	// would make the upload chunked); every body read feeds the idle timer.
@@ -293,14 +327,42 @@ func (c *WebDAVClient) WriteFile(ctx context.Context, path string, data io.Reade
 	resp, err := c.client.Do(req)
 	if err != nil {
 		err = guard.idleErr(err, "upload, waiting for the server")
-		return fmt.Errorf("failed to upload WebDAV file %s: %w", redactURL(fullURL), err)
+		return 0, nil, fmt.Errorf("failed to upload WebDAV file %s: %w", redactURL(fullURL), err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("WebDAV server returned status %d for file %s", resp.StatusCode, redactURL(fullURL))
+		return 0, nil, fmt.Errorf("WebDAV server returned status %d for file %s", resp.StatusCode, redactURL(fullURL))
 	}
+	return want, getBody, nil
+}
 
+// verifyStored HEADs the target: present with 200, and, when both the sent length (want >= 0) and a Content-Length header are known, equal.
+func (c *WebDAVClient) verifyStored(ctx context.Context, fullURL string, want int64) error {
+	ctx, cancel := opContext(ctx)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, "HEAD", fullURL, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create HEAD request: %w", err)
+	}
+	if c.config.Username != "" {
+		req.SetBasicAuth(c.config.Username, c.config.Password)
+	}
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("read-back HEAD failed: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("read-back HEAD answered status %d (file absent after an acknowledged write)", resp.StatusCode)
+	}
+	if want >= 0 {
+		if cl := resp.Header.Get("Content-Length"); cl != "" {
+			if got, perr := strconv.ParseInt(cl, 10, 64); perr == nil && got != want {
+				return fmt.Errorf("read-back size %d differs from the %d bytes sent", got, want)
+			}
+		}
+	}
 	return nil
 }
 
