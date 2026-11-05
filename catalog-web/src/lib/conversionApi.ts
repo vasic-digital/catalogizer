@@ -27,7 +27,7 @@ export function mapConversionJob(raw: any): ConversionJob {
   const r = raw ?? {};
   const src = r.sourceFile ?? {};
   const sourcePath: string = src.path ?? r.source_path ?? '';
-  const status = STATUS_MAP[String(r.status ?? '').toLowerCase()] ?? 'pending';
+  const status = STATUS_MAP[String(r.status ?? '').toLowerCase()] ?? 'unknown';
   const quality = ['low', 'medium', 'high', 'ultra'].includes(r.quality) ? r.quality : 'medium';
   return {
     id: String(r.id ?? ''),

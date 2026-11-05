@@ -95,7 +95,7 @@ describe('FormatConverter', () => {
     )
 
     await user.click(screen.getByText('Download'))
-    expect(onDownloadFile).toHaveBeenCalledWith('/media/converted/test.mp4')
+    expect(onDownloadFile).toHaveBeenCalledWith(completedJob.id)
   })
 
   it('calls onCancelConversion when cancel is clicked', async () => {
