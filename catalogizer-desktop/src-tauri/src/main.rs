@@ -48,6 +48,10 @@ async fn update_config(
     new_config: AppConfig,
     config: State<'_, ConfigState>,
 ) -> Result<(), String> {
+    apply_config(&config, new_config).await
+}
+
+async fn apply_config(config: &ConfigState, new_config: AppConfig) -> Result<(), String> {
     if let Some(u) = new_config.server_url.as_deref() {
         url_guard::validate_server_url(u)?;
     }
@@ -58,6 +62,10 @@ async fn update_config(
 
 #[tauri::command]
 async fn set_server_url(url: String, config: State<'_, ConfigState>) -> Result<(), String> {
+    apply_server_url(&config, url).await
+}
+
+async fn apply_server_url(config: &ConfigState, url: String) -> Result<(), String> {
     let url = url_guard::validate_server_url(&url)?;
     let mut config = config.lock().await;
     config.server_url = Some(url);
@@ -86,23 +94,34 @@ async fn make_http_request(
     body: Option<String>,
     config: State<'_, ConfigState>,
 ) -> Result<String, String> {
-    // Validate URL against configured server URL to prevent SSRF
-    let config_guard = config.lock().await;
-    let server_url = config_guard.server_url.as_ref().ok_or("Server URL not configured")?;
-    
-    // Parsed-URL comparison (scheme, host, port, no userinfo, path boundary); TAURI-FU-5.
-    if !url_guard::is_within_server(server_url, &url) {
+    let server_url = {
+        let guard = config.lock().await;
+        guard.server_url.clone().ok_or("Server URL not configured")?
+    };
+    perform_request(&server_url, &url, &method, headers, body).await
+}
+
+/// SSRF-guarded request execution (testable without Tauri state); TAURI-FU-5.
+async fn perform_request(
+    server_url: &str,
+    url: &str,
+    method: &str,
+    headers: HashMap<String, String>,
+    body: Option<String>,
+) -> Result<String, String> {
+    // Parsed-URL comparison (scheme, host, port, no userinfo, path boundary).
+    if !url_guard::is_within_server(server_url, url) {
         return Err(format!("URL must be within configured server: {}", server_url));
     }
 
     let client = url_guard::build_client(server_url)?;
 
     let mut request = match method.to_uppercase().as_str() {
-        "GET" => client.get(&url),
-        "POST" => client.post(&url),
-        "PUT" => client.put(&url),
-        "DELETE" => client.delete(&url),
-        "PATCH" => client.patch(&url),
+        "GET" => client.get(url),
+        "POST" => client.post(url),
+        "PUT" => client.put(url),
+        "DELETE" => client.delete(url),
+        "PATCH" => client.patch(url),
         _ => return Err("Unsupported HTTP method".to_string()),
     };
 
@@ -505,6 +524,61 @@ mod tests {
     }
 
     /// Integration-style tests (still unit tests but test interactions)
+    /// Call-site tests: drive the same functions the Tauri commands call (TAURI-FU-5).
+    mod callsite_tests {
+        use super::*;
+        use std::sync::{atomic::{AtomicUsize, Ordering}, Arc};
+
+        #[tokio::test]
+        async fn perform_request_refuses_cross_origin_redirect_and_follows_in_scope() {
+            let a = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let b = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let (pa, pb) = (a.local_addr().unwrap().port(), b.local_addr().unwrap().port());
+            let hits_b = Arc::new(AtomicUsize::new(0));
+            tokio::spawn(crate::url_guard::tests::serve(a, pb, Arc::new(AtomicUsize::new(0))));
+            tokio::spawn(crate::url_guard::tests::serve(b, pa, hits_b.clone()));
+            let server = format!("http://127.0.0.1:{}", pa);
+
+            let r = perform_request(&server, &format!("{}/redir-out", server), "GET", HashMap::new(), None).await;
+            assert!(r.is_err(), "cross-origin redirect must be refused: {:?}", r);
+            assert_eq!(hits_b.load(Ordering::SeqCst), 0);
+
+            let r = perform_request(&server, &format!("{}/redir-in", server), "GET", HashMap::new(), None).await;
+            assert_eq!(r.unwrap(), "ok");
+
+            let r = perform_request(&server, "http://127.0.0.1:1/x", "GET", HashMap::new(), None).await;
+            assert!(r.unwrap_err().contains("within configured server"));
+            let r = perform_request(&server, &format!("{}/ok", server), "TRACE", HashMap::new(), None).await;
+            assert_eq!(r.unwrap_err(), "Unsupported HTTP method");
+        }
+
+        #[tokio::test]
+        async fn set_server_url_rejects_bad_urls_and_keeps_old_value() {
+            let state: ConfigState = Mutex::new(AppConfig::default());
+            assert!(apply_server_url(&state, "http://a.com".into()).await.is_ok());
+            for bad in ["ftp://a.com", "http://u@a.com", "http://u:p@a.com", "garbage", "file:///etc/passwd"] {
+                assert!(apply_server_url(&state, bad.into()).await.is_err(), "{}", bad);
+            }
+            assert_eq!(state.lock().await.server_url.as_deref(), Some("http://a.com"));
+        }
+
+        #[tokio::test]
+        async fn update_config_rejects_bad_server_url_and_keeps_old_config() {
+            let state: ConfigState = Mutex::new(AppConfig::default());
+            let good = AppConfig { server_url: Some("https://a.com".into()), ..AppConfig::default() };
+            assert!(apply_config(&state, good).await.is_ok());
+            for bad in ["ftp://a.com", "http://u@a.com"] {
+                let cfg = AppConfig { server_url: Some(bad.into()), theme: "light".into(), ..AppConfig::default() };
+                assert!(apply_config(&state, cfg).await.is_err(), "{}", bad);
+            }
+            let g = state.lock().await;
+            assert_eq!(g.server_url.as_deref(), Some("https://a.com"));
+            assert_eq!(g.theme, "dark");
+            drop(g);
+            assert!(apply_config(&state, AppConfig::default()).await.is_ok());
+        }
+    }
+
     mod integration_tests {
         use super::*;
 

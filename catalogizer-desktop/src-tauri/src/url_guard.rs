@@ -16,6 +16,10 @@ pub fn validate_server_url(raw: &str) -> Result<String, String> {
     if !u.username().is_empty() || u.password().is_some() {
         return Err("Server URL must not contain credentials".to_string());
     }
+    let lp = u.path().to_ascii_lowercase();
+    if lp.contains("%2f") || lp.contains("%5c") || lp.contains("%2e") {
+        return Err("Server URL path must not contain encoded separators".to_string());
+    }
     Ok(raw.to_string())
 }
 
@@ -23,7 +27,7 @@ pub fn validate_server_url(raw: &str) -> Result<String, String> {
 pub fn build_client(server: &str) -> Result<reqwest::Client, String> {
     let server = server.to_string();
     let policy = reqwest::redirect::Policy::custom(move |attempt| {
-        if attempt.previous().len() >= 10 {
+        if attempt.previous().len() > 10 {
             attempt.error("too many redirects")
         } else if is_within_server(&server, attempt.url().as_str()) {
             attempt.follow()
@@ -70,7 +74,7 @@ pub fn is_within_server(server: &str, request: &str) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::{build_client, is_within_server, validate_server_url};
 
     #[test]
@@ -163,12 +167,14 @@ mod tests {
         assert!(validate_server_url("file:///etc/passwd").is_err());
         assert!(validate_server_url("http://u:p@a.com").is_err());
         assert!(validate_server_url("http://u@a.com").is_err());
+        assert!(validate_server_url("http://a.com/api%2f..").is_err());
+        assert!(validate_server_url("http://a.com/a%5Cb").is_err());
         assert!(validate_server_url("garbage").is_err());
         assert!(validate_server_url("").is_err());
     }
 
     // LIVE: real sockets, real reqwest client.
-    async fn serve(listener: tokio::net::TcpListener, other_port: u16, hits: std::sync::Arc<std::sync::atomic::AtomicUsize>) {
+    pub(crate) async fn serve(listener: tokio::net::TcpListener, other_port: u16, hits: std::sync::Arc<std::sync::atomic::AtomicUsize>) {
         use tokio::io::{AsyncReadExt, AsyncWriteExt};
         loop {
             let Ok((mut sock, _)) = listener.accept().await else { return };
@@ -180,6 +186,14 @@ mod tests {
                 let path = req.split_whitespace().nth(1).unwrap_or("/").to_string();
                 hits.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                 let resp = match path.as_str() {
+                    p if p.starts_with("/chain/") => {
+                        let n: u32 = p[7..].parse().unwrap_or(0);
+                        if n == 0 {
+                            "HTTP/1.1 200 OK\r\nContent-Length: 3\r\nConnection: close\r\n\r\nend".to_string()
+                        } else {
+                            format!("HTTP/1.1 302 Found\r\nLocation: /chain/{}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n", n - 1)
+                        }
+                    }
                     "/redir-out" => format!("HTTP/1.1 302 Found\r\nLocation: http://127.0.0.1:{}/x\r\nContent-Length: 0\r\nConnection: close\r\n\r\n", other_port),
                     "/redir-in" => "HTTP/1.1 302 Found\r\nLocation: /ok\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".to_string(),
                     _ => "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok".to_string(),
@@ -187,6 +201,19 @@ mod tests {
                 let _ = sock.write_all(resp.as_bytes()).await;
             });
         }
+    }
+
+    #[tokio::test]
+    async fn live_hop_cap_is_exactly_ten() {
+        use std::sync::{atomic::AtomicUsize, Arc};
+        let a = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let pa = a.local_addr().unwrap().port();
+        tokio::spawn(serve(a, 1, Arc::new(AtomicUsize::new(0))));
+        let server = format!("http://127.0.0.1:{}", pa);
+        let client = build_client(&server).unwrap();
+        let ok = client.get(format!("{}/chain/10", server)).send().await.unwrap();
+        assert_eq!(ok.text().await.unwrap(), "end", "10 redirects must succeed");
+        assert!(client.get(format!("{}/chain/11", server)).send().await.is_err(), "11 redirects must fail");
     }
 
     #[tokio::test]
