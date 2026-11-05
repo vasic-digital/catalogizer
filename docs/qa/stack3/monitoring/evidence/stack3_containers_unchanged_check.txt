@@ -1,0 +1,5 @@
+catqa3-postgres Up About an hour (healthy)
+catqa3-redis Up About an hour (healthy)
+catqa3-api Up About an hour (healthy)
+catqa3-web Up About an hour
+catqa3-website Up About an hour

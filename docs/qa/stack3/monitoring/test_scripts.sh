@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Sandbox tests (no real container, port or credential): fake curl/podman on PATH inside a mktemp dir.
+#  N1: the admin bearer must never appear in curl argv (it arrives on stdin), logout retries are bounded, previous token is persisted/removed.
+#  N2: the digest check refuses an unlisted image unless ALLOW_UNPINNED_IMAGES=1 (loud warning), refuses a mismatch, accepts a match.
+# usage: test_scripts.sh [--script <path-to-token_refresher.sh>]   (the override lets the RED run target a pre-fix copy)  exit 0 = all pass
+set -u
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; SCRIPT="$HERE/token_refresher.sh"; [ "${1:-}" = --script ] && SCRIPT="$2"
+S="$(mktemp -d)"; : "${S:?}"; trap 'rm -rf -- "${S:?}"' EXIT
+fail=0; ok() { echo "PASS $1"; }; bad() { echo "FAIL $1 $2"; fail=1; }
+mkdir -p "$S/bin" "$S/tok"
+cat > "$S/bin/curl" <<'FC'
+#!/bin/sh
+# fake curl: records argv; stdin saved when the call reads it (@-); /login returns a rotating token, /logout returns $FAKE_LOGOUT_CODE
+echo "$*" >> "$FAKE_DIR/argv.log"
+case "$*" in *@-*) cat > "$FAKE_DIR/stdin.last"; cat "$FAKE_DIR/stdin.last" >> "$FAKE_DIR/stdin.log"; echo >> "$FAKE_DIR/stdin.log";; esac
+case "$*" in
+  */login*) n=$(($(cat "$FAKE_DIR/n" 2>/dev/null || echo 0)+1)); echo $n > "$FAKE_DIR/n"; printf '{"session_token":"SECRETTOKEN%s"}' "$n";;
+  */logout*) echo x >> "$FAKE_DIR/logout.calls"; printf '%s' "${FAKE_LOGOUT_CODE:-200}";;
+esac
+FC
+chmod +x "$S/bin/curl"; printf 'ADMIN_USERNAME=u"s\\er\nADMIN_PASSWORD=p"w\\d\n' > "$S/cred"
+run() { # <logout-code>
+  : > "$S/argv.log"; : > "$S/stdin.log"; : > "$S/logout.calls"; rm -f "$S/n" "$S/tok/"* 2>/dev/null
+  FAKE_DIR="$S" FAKE_LOGOUT_CODE="$1" PATH="$S/bin:$PATH" CRED_FILE="$S/cred" TOK_DIR="$S/tok" TOK_CHOWN= LOGOUT_DELAY=0 CYCLE_SLEEP=0 MAX_CYCLES=3 \
+    timeout "${TEST_RUN_TIMEOUT:-60}" sh "$SCRIPT" > "$S/out.log" 2> "$S/err.log"; }
+run 200
+grep -q SECRETTOKEN "$S/argv.log" && bad N1.bearer_not_in_argv "token found in curl argv" || ok N1.bearer_not_in_argv
+grep -q 'Authorization: Bearer SECRETTOKEN1' "$S/stdin.log" && ok N1.bearer_sent_on_stdin || bad N1.bearer_sent_on_stdin "no stdin header"
+grep -q 'u"s\\er' "$S/argv.log" && bad N1.credentials_not_in_argv "username in argv" || ok N1.credentials_not_in_argv
+[ "$(wc -l < "$S/logout.calls")" = 2 ] && ok N1.two_logouts_for_three_cycles || bad N1.two_logouts_for_three_cycles "calls=$(wc -l < "$S/logout.calls")"
+[ "$(cat "$S/tok/previous.tok" 2>/dev/null)" = SECRETTOKEN3 ] && ok N4.previous_token_persisted || bad N4.previous_token_persisted ""
+m="$(stat -c %a "$S/tok/previous.tok" 2>/dev/null)"; { [ "$m" = 600 ] || [ "$m" = 400 ]; } && ok N4.previous_token_file_mode_owner_only || bad N4.previous_token_file_mode_owner_only "mode=$m"
+[ "$(stat -c %a "$S/tok/metrics.tok" 2>/dev/null)" = 400 ] && ok F2.token_file_mode_0400 || bad F2.token_file_mode_0400 "$(stat -c %a "$S/tok/metrics.tok" 2>&1)"
+# JSON escaping of the login body (stdin of the login call): must parse and round-trip
+python3 -c 'import json,sys; d=json.loads(open(sys.argv[1]).read().splitlines()[0]); assert d=={"username":"u\"s\\er","password":"p\"w\\d"},d' "$S/stdin.log" 2>/dev/null && ok F3.login_json_escaped_roundtrip || bad F3.login_json_escaped_roundtrip ""
+# restart persistence: a pre-existing previous.tok is revoked on the first refresh
+: > "$S/argv.log"; : > "$S/stdin.log"; : > "$S/logout.calls"; rm -f "$S/n"; printf 'STALEOLD' > "$S/tok/previous.tok"
+FAKE_DIR="$S" FAKE_LOGOUT_CODE=200 PATH="$S/bin:$PATH" CRED_FILE="$S/cred" TOK_DIR="$S/tok" TOK_CHOWN= LOGOUT_DELAY=0 CYCLE_SLEEP=0 MAX_CYCLES=1 timeout "${TEST_RUN_TIMEOUT:-30}" sh "$SCRIPT" >/dev/null 2>&1
+grep -q 'Bearer STALEOLD' "$S/stdin.log" && ok N4.restart_revokes_persisted_previous || bad N4.restart_revokes_persisted_previous ""
+run 500   # logout always fails: bounded retries (3 per cycle), then dropped
+[ "$(wc -l < "$S/logout.calls")" = 6 ] && ok N1.failed_logout_retried_3x_per_cycle_then_dropped || bad N1.failed_logout_retried_3x_per_cycle_then_dropped "calls=$(wc -l < "$S/logout.calls")"
+grep -q 'NOT revoked' "$S/err.log" && ok N1.failed_logout_reported || bad N1.failed_logout_reported ""
+
+# N2: digest check
+mkdir -p "$S/p"; cat > "$S/p/podman" <<'FP'
+#!/bin/sh
+# fake podman: `image inspect <img> --format ...` -> digest table
+case "$3" in docker.io/a:1) echo sha256:AAA;; docker.io/b:1) echo sha256:BBB;; *) exit 1;; esac
+FP
+chmod +x "$S/p/podman"; printf 'docker.io/a:1 sha256:AAA\ndocker.io/b:1 sha256:WRONG\n' > "$S/pins"
+. "$HERE/digest_check.sh"; export PATH="$S/p:$PATH"
+check_image_digests "$S/pins" docker.io/a:1 >/dev/null 2>&1 && ok N2.matching_pin_accepted || bad N2.matching_pin_accepted ""
+check_image_digests "$S/pins" docker.io/b:1 >/dev/null 2>&1 && bad N2.mismatch_refused "accepted" || ok N2.mismatch_refused
+check_image_digests "$S/pins" docker.io/a:1 docker.io/unlisted:9 >"$S/o" 2>&1 && bad N2.unlisted_image_refused "accepted" || ok N2.unlisted_image_refused
+ALLOW_UNPINNED_IMAGES=1 check_image_digests "$S/pins" docker.io/a:1 docker.io/unlisted:9 >"$S/o" 2>&1 && grep -q 'WARNING.*unlisted:9.*unpinned' "$S/o" && ok N2.optout_allows_with_loud_warning || bad N2.optout_allows_with_loud_warning "$(cat "$S/o")"
+check_image_digests "$S/nonexistent-pins" docker.io/a:1 >/dev/null 2>&1 && bad N2.missing_pins_file_refused "accepted" || ok N2.missing_pins_file_refused
+[ "$fail" = 0 ] && echo "ALL PASS" || echo "SOME FAILED"; exit "$fail"

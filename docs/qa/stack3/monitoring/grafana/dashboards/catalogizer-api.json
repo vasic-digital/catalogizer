@@ -1,0 +1,292 @@
+{
+ "uid": "catalogizer-api-qa",
+ "title": "Catalogizer API (QA stack 3)",
+ "tags": [
+  "catalogizer",
+  "qa"
+ ],
+ "schemaVersion": 39,
+ "version": 1,
+ "time": {
+  "from": "now-1h",
+  "to": "now"
+ },
+ "refresh": "15s",
+ "panels": [
+  {
+   "id": 1,
+   "type": "timeseries",
+   "title": "Request rate (req/s, by status class)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus-qa"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus-qa"
+     },
+     "expr": "sum by (status) (rate(catalogizer_http_requests_total[1m]))",
+     "legendFormat": "{{status}}"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "reqps"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 2,
+   "type": "timeseries",
+   "title": "Error rate (5xx req/s)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus-qa"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 0,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus-qa"
+     },
+     "expr": "sum(rate(catalogizer_http_requests_total{status=~\"5..\"}[1m]))",
+     "legendFormat": "5xx"
+    },
+    {
+     "refId": "B",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus-qa"
+     },
+     "expr": "sum(rate(catalogizer_http_requests_total{status=~\"4..\"}[1m]))",
+     "legendFormat": "4xx"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "reqps"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 3,
+   "type": "timeseries",
+   "title": "Latency (p50 / p95 / p99)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus-qa"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 8,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus-qa"
+     },
+     "expr": "histogram_quantile(0.5, sum by (le) (rate(catalogizer_http_request_duration_seconds_bucket[5m])))",
+     "legendFormat": "p50"
+    },
+    {
+     "refId": "B",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus-qa"
+     },
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(catalogizer_http_request_duration_seconds_bucket[5m])))",
+     "legendFormat": "p95"
+    },
+    {
+     "refId": "C",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus-qa"
+     },
+     "expr": "histogram_quantile(0.99, sum by (le) (rate(catalogizer_http_request_duration_seconds_bucket[5m])))",
+     "legendFormat": "p99"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 4,
+   "type": "timeseries",
+   "title": "Active HTTP connections",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus-qa"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 8,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus-qa"
+     },
+     "expr": "catalogizer_http_active_connections",
+     "legendFormat": "active"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 5,
+   "type": "timeseries",
+   "title": "Go goroutines",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus-qa"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 16,
+    "w": 8,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus-qa"
+     },
+     "expr": "catalogizer_runtime_goroutines",
+     "legendFormat": "catalogizer"
+    },
+    {
+     "refId": "B",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus-qa"
+     },
+     "expr": "go_goroutines{job=\"catalogizer-api\"}",
+     "legendFormat": "go_goroutines"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 6,
+   "type": "timeseries",
+   "title": "Go memory (alloc / heap inuse / sys)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus-qa"
+   },
+   "gridPos": {
+    "x": 8,
+    "y": 16,
+    "w": 8,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus-qa"
+     },
+     "expr": "catalogizer_runtime_memory_alloc_bytes",
+     "legendFormat": "alloc"
+    },
+    {
+     "refId": "B",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus-qa"
+     },
+     "expr": "catalogizer_runtime_memory_heap_inuse_bytes",
+     "legendFormat": "heap inuse"
+    },
+    {
+     "refId": "C",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus-qa"
+     },
+     "expr": "catalogizer_runtime_memory_sys_bytes",
+     "legendFormat": "sys"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 7,
+   "type": "timeseries",
+   "title": "GC pause (avg seconds over 5m)",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus-qa"
+   },
+   "gridPos": {
+    "x": 16,
+    "y": 16,
+    "w": 8,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus-qa"
+     },
+     "expr": "rate(go_gc_duration_seconds_sum{job=\"catalogizer-api\"}[5m]) / rate(go_gc_duration_seconds_count{job=\"catalogizer-api\"}[5m])",
+     "legendFormat": "gc avg"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s"
+    },
+    "overrides": []
+   }
+  }
+ ],
+ "editable": false
+}

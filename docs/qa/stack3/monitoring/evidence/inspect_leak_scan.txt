@@ -1,0 +1,1 @@
+podman-inspect secret-value hits=0 (control: grafana image name hits=4)

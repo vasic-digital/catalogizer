@@ -1,0 +1,5 @@
+PASS N2.matching_pin_accepted
+PASS N2.mismatch_refused
+FAIL N2.unlisted_image_refused accepted
+FAIL N2.optout_allows_with_loud_warning 
+FAIL N2.missing_pins_file_refused accepted

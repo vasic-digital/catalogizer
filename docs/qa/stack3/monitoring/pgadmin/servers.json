@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "catqa3-postgres",
+      "Group": "Catalogizer QA",
+      "Host": "__PG_HOST__",
+      "Port": __PG_PORT__,
+      "MaintenanceDB": "postgres",
+      "Username": "__PG_USER__",
+      "PassFile": "/pgpass",
+      "SSLMode": "prefer"
+    }
+  }
+}
