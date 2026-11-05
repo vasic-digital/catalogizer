@@ -232,7 +232,7 @@ export const MediaCard: React.FC<MediaCardProps> = React.memo(({
               </div>
             )}
             {media.rating && (
-              <div className="flex items-center text-sm text-yellow-600">
+              <div className="flex items-center text-sm text-yellow-700 dark:text-yellow-500">
                 <Star className="h-4 w-4 mr-1 fill-current" />
                 {media.rating.toFixed(1)}
               </div>
@@ -285,7 +285,7 @@ export const MediaCard: React.FC<MediaCardProps> = React.memo(({
           )}
 
           {/* Last Updated */}
-          <div className="mt-3 text-xs text-gray-400">
+          <div className="mt-3 text-xs text-gray-600 dark:text-gray-400">
             Updated {media.updated_at ? formatDate(media.updated_at) : 'Unknown'}
           </div>
         </CardContent>

@@ -112,7 +112,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       </div>
 
       {/* Navigation Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="flex gap-x-4 sm:gap-x-8 overflow-x-auto" aria-label="Admin sections">
           {[
             { id: 'overview', label: 'Overview', icon: Activity },
@@ -125,8 +125,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               onClick={() => setActiveTab(id as 'overview' | 'users' | 'storage' | 'backups')}
               className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === id
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -145,8 +145,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <CardContent className="p-6">
                 <div className="flex items-center">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-600">Version</p>
-                    <p className="text-2xl font-bold text-gray-900 break-all">{systemInfo.version}</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Version</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white break-all">{systemInfo.version}</p>
                   </div>
                   <Settings className="w-8 h-8 flex-shrink-0 text-blue-500" aria-hidden="true" />
                 </div>
@@ -157,8 +157,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <CardContent className="p-6">
                 <div className="flex items-center">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-600">Uptime</p>
-                    <p className="text-2xl font-bold text-gray-900">{formatUptime(systemInfo.uptime)}</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Uptime</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatUptime(systemInfo.uptime)}</p>
                   </div>
                   <Activity className="w-8 h-8 text-green-500" />
                 </div>
@@ -169,8 +169,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <CardContent className="p-6">
                 <div className="flex items-center">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-600">Active Connections</p>
-                    <p className="text-2xl font-bold text-gray-900">{formatCountOrUnavailable(systemInfo.activeConnections)}</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Active Connections</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCountOrUnavailable(systemInfo.activeConnections)}</p>
                   </div>
                   <Users className="w-8 h-8 text-purple-500" />
                 </div>
@@ -181,8 +181,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <CardContent className="p-6">
                 <div className="flex items-center">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-600">Total Requests</p>
-                    <p className="text-2xl font-bold text-gray-900">{formatCountOrUnavailable(systemInfo.totalRequests)}</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Requests</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCountOrUnavailable(systemInfo.totalRequests)}</p>
                   </div>
                   <Activity className="w-8 h-8 text-orange-500" />
                 </div>
@@ -200,21 +200,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium">CPU Usage</span>
-                    <span className="text-sm text-gray-600">{formatPercentOrUnavailable(systemInfo.cpuUsage)}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">{formatPercentOrUnavailable(systemInfo.cpuUsage)}</span>
                   </div>
                   <Progress value={systemInfo.cpuUsage ?? 0} />
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium">API Process Memory (heap in use / reserved)</span>
-                    <span className="text-sm text-gray-600">{formatPercentOrUnavailable(systemInfo.memoryUsage)}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-300">{formatPercentOrUnavailable(systemInfo.memoryUsage)}</span>
                   </div>
                   <Progress value={systemInfo.memoryUsage ?? 0} />
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium">Disk Usage</span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
                       {systemInfo.diskUsage
                         ? `${formatFileSize(systemInfo.diskUsage.used)} / ${formatFileSize(systemInfo.diskUsage.total)}`
                         : UNAVAILABLE_LABEL}
@@ -350,19 +350,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Total Space</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Space</p>
                     <p className="text-lg font-semibold">{storage.totalSpace == null ? UNAVAILABLE_LABEL : formatFileSize(storage.totalSpace)}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Used Space</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Used Space</p>
                     <p className="text-lg font-semibold">{storage.usedSpace == null ? UNAVAILABLE_LABEL : formatFileSize(storage.usedSpace)}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Available</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Available</p>
                     <p className="text-lg font-semibold">{storage.availableSpace == null ? UNAVAILABLE_LABEL : formatFileSize(storage.availableSpace)}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Media Count</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Media Count</p>
                     <p className="text-lg font-semibold">{storage.mediaCount.toLocaleString()}</p>
                   </div>
                 </div>
@@ -371,7 +371,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     value={usagePercent(storage.usedSpace, storage.totalSpace) ?? 0} 
                     className="mb-2"
                   />
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-gray-600 dark:text-gray-300">
                     {storage.lastScan ? `Last scanned: ${new Date(storage.lastScan).toLocaleString()}` : 'Not scanned yet'}
                   </p>
                 </div>
@@ -405,7 +405,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 <div key={backup.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex-1">
                     <h4 className="font-medium">{backup.filename}</h4>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
                       {formatFileSize(backup.size)} • Created {new Date(backup.createdAt).toLocaleString()}
                     </p>
                   </div>

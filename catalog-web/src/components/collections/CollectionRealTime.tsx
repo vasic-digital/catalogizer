@@ -369,7 +369,7 @@ export const CollectionRealTime: React.FC<CollectionRealTimeProps> = ({
                     className={`w-full ${
                       isConnected 
                         ? 'bg-red-600 hover:bg-red-700' 
-                        : 'bg-green-600 hover:bg-green-700'
+                        : 'bg-green-700 hover:bg-green-800'
                     }`}
                   >
                     {isConnected ? (

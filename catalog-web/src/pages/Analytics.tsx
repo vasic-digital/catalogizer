@@ -382,19 +382,19 @@ export const Analytics: React.FC = () => {
                         <div className="text-xl font-bold text-gray-900 dark:text-white">
                           {duplicateStats.total_duplicate_groups}
                         </div>
-                        <div className="text-xs text-gray-500">Groups</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">Groups</div>
                       </div>
                       <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 text-center">
                         <div className="text-xl font-bold text-gray-900 dark:text-white">
                           {duplicateStats.total_duplicate_files}
                         </div>
-                        <div className="text-xs text-gray-500">Files</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">Files</div>
                       </div>
                       <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800 text-center">
                         <div className="text-xl font-bold text-orange-600">
                           {((duplicateStats.wasted_space || 0) / (1024 ** 3)).toFixed(1)} GB
                         </div>
-                        <div className="text-xs text-gray-500">Wasted</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">Wasted</div>
                       </div>
                     </div>
                   </div>
@@ -407,23 +407,23 @@ export const Analytics: React.FC = () => {
                         <div className="text-xl font-bold text-gray-900 dark:text-white">
                           {systemAnalytics.total_events.toLocaleString()}
                         </div>
-                        <div className="text-xs text-gray-500">Total Events</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">Total Events</div>
                       </div>
                       <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                         <div className="text-xl font-bold text-green-600">
                           {systemAnalytics.active_users_24h}
                         </div>
-                        <div className="text-xs text-gray-500">Active Users (24h)</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">Active Users (24h)</div>
                       </div>
                     </div>
                     {systemAnalytics.popular_media && systemAnalytics.popular_media.length > 0 && (
                       <div className="mt-3">
-                        <h5 className="text-xs font-medium text-gray-500 mb-2">Most Popular</h5>
+                        <h5 className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Most Popular</h5>
                         <div className="space-y-1">
                           {systemAnalytics.popular_media.slice(0, 5).map((m) => (
                             <div key={m.media_id} className="flex items-center justify-between text-sm">
                               <span className="text-gray-900 dark:text-white truncate flex-1">{m.title}</span>
-                              <span className="text-gray-500 ml-2">{m.access_count} views</span>
+                              <span className="text-gray-600 dark:text-gray-400 ml-2">{m.access_count} views</span>
                             </div>
                           ))}
                         </div>

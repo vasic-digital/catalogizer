@@ -481,7 +481,7 @@ export const SubtitleManager: React.FC = () => {
                     <button
                       onClick={() => handleDownload(result)}
                       disabled={downloadMutation.isLoading}
-                      className="ml-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 flex items-center gap-2"
+                      className="ml-4 px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 disabled:bg-gray-400 flex items-center gap-2"
                     >
                       {downloadMutation.isLoading ? (
                         <RefreshCw className="w-4 h-4 animate-spin" />

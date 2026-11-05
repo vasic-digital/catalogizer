@@ -168,7 +168,7 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
                   </div>
                   
                   <div className="flex items-center justify-between pt-2">
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
                       Updated {new Date(collection.updatedAt).toLocaleDateString()}
                     </span>
                     <Button
@@ -243,7 +243,7 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
                       {collection.isSmart && (
                         <Badge variant="secondary">Smart Collection</Badge>
                       )}
-                      <span className="text-sm text-gray-400">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
                         Updated {new Date(collection.updatedAt).toLocaleDateString()}
                       </span>
                     </div>

@@ -1525,3 +1525,11 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - UI-D5-FU-3: /admin 360px: a tab button right edge 405 inside the scrolling tab bar (document itself does not overflow) — decide if acceptable.
 - HELIXQA-FU-1: web Vision bank + CDP wiring for stack 3 (UI leg of §11.4.278); validated vision profile needs host capacity (llmctl capacity: does_not_fit while llmctl-onnx@decide-nli runs uncapped, load ~19) — operator decision.
 - HELIXQA-FU-2: upstream helix_qa `--admin-pass-file`/env credential option; stale docker-compose.qa.yml / scripts/run-helixqa-web.sh defaults (8080/3000).
+
+## D7 remaining-contrast follow-ups (review round 2, GO-with-follow-ups)
+- D7-R2-F1 (important, pre-existing): class-wide dark-mode text-gray-500/600 without dark variant (77 static strings; e.g. MediaDistributionChart empty text 3.04 dark, CollectionsManager 4 items 3.04, description 1.94). Resolve real ancestor backgrounds, drive with whole-element walker. Not yet fixed.
+- D7-R2-F2: contrastD7Shared should use the whole-element walker (land with R2-F1).
+- D7-R2-F3: contrast helper should throw on conflicting same-prefix colour classes (fail closed).
+- D7-R2-F4: CollectionsManager test uses button index; use accessible label.
+- D7-F3: hover/focus contrast and icon-only toggles.
+- D7-LIVE: live axe rerun on rebuilt web image owed (PROVISIONAL until then).
