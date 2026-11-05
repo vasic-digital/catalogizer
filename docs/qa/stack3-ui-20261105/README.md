@@ -88,3 +88,6 @@ Present (button "Switch to dark theme"): {"before":"|rgb(255, 255, 255)","after"
 | D6 | MEDIUM | a11y (axe critical): 78 unnamed buttons on /media; unlabeled selects on /collections, /favorites, /playlists | axe run |
 | D7 | LOW | color-contrast (serious) on all app and most website pages; svg-img-alt x6 on dashboard/analytics | axe run |
 | D8 | LOW | header search goes to /browse?search=a but results show unfiltered type counts (UNCONFIRMED whether the filter applies) | type "a" in header search, Enter |
+
+## Evidence-storage note (added by conductor, 2026-11-05)
+The 62 screenshots are NOT tracked in git: repository policy ignores `docs/qa/**/*.png` (.gitignore). Their hashes are in MANIFEST.screenshots.sha256 (verify with `sha256sum -c` from the archive directory); the files are kept at `/home/milosvasic/.cache/claude-tmp/evidence-archive/stack3-ui-20261105/screenshots/` on the QA host (outside the repo). MANIFEST.sha256 covers the tracked files only.
