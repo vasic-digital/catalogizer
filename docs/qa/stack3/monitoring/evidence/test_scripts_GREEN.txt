@@ -1,0 +1,16 @@
+PASS N1.bearer_not_in_argv
+PASS N1.bearer_sent_on_stdin
+PASS N1.credentials_not_in_argv
+PASS N1.two_logouts_for_three_cycles
+PASS N4.previous_token_persisted
+PASS F2.token_file_mode_0400
+PASS F3.login_json_escaped_roundtrip
+PASS N4.restart_revokes_persisted_previous
+PASS N1.failed_logout_retried_3x_per_cycle_then_dropped
+PASS N1.failed_logout_reported
+PASS N2.matching_pin_accepted
+PASS N2.mismatch_refused
+PASS N2.unlisted_image_refused
+PASS N2.optout_allows_with_loud_warning
+PASS N2.missing_pins_file_refused
+ALL PASS

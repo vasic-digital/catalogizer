@@ -17,9 +17,8 @@ fi
 set -a; . "$QENV"; . "$MENV"; set +a
 for i in "$PROM_IMAGE" "$GRAFANA_IMAGE" "$PGADMIN_IMAGE" "$NGINX_IMAGE" "$CURL_IMAGE"; do
   podman image exists "$i" || { echo "image $i missing - podman pull it (pinned tag)" >&2; exit 3; }; done
-for i in "$PROM_IMAGE" "$GRAFANA_IMAGE" "$PGADMIN_IMAGE" "$NGINX_IMAGE" "$CURL_IMAGE"; do   # F9: pinned digests recorded in evidence/image_digests.txt
-  exp="$(awk -v i="$i" '$1==i{print $2}' "$HERE/evidence/image_digests.txt" 2>/dev/null)"; got="$(podman image inspect "$i" --format '{{.Digest}}')"
-  [ -z "$exp" ] || [ "$exp" = "$got" ] || { echo "digest mismatch for $i: expected $exp got $got" >&2; exit 3; }; done
+. "$HERE/digest_check.sh"   # F9/N2: fail-closed digest pins
+check_image_digests "$HERE/evidence/image_digests.txt" "$PROM_IMAGE" "$GRAFANA_IMAGE" "$PGADMIN_IMAGE" "$NGINX_IMAGE" "$CURL_IMAGE" || exit 3
 [ "$(curl -s -m 5 -o /dev/null -w '%{http_code}' "http://127.0.0.1:${API_PORT}/health")" = 200 ] || { echo "stack 3 API not healthy on :${API_PORT}" >&2; exit 3; }
 avail_kb=$(awk '/MemAvailable/{print $2}' /proc/meminfo)
 [ "$avail_kb" -gt 4000000 ] || { echo "only $((avail_kb/1024)) MiB available (<4 GiB) - refusing" >&2; exit 4; }

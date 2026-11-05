@@ -1,0 +1,16 @@
+FAIL N1.bearer_not_in_argv token found in curl argv
+FAIL N1.bearer_sent_on_stdin no stdin header
+PASS N1.credentials_not_in_argv
+FAIL N1.two_logouts_for_three_cycles calls=28
+FAIL N4.previous_token_persisted 
+PASS F2.token_file_mode_0400
+FAIL F3.login_json_escaped_roundtrip 
+FAIL N4.restart_revokes_persisted_previous 
+FAIL N1.failed_logout_retried_3x_per_cycle_then_dropped calls=27
+FAIL N1.failed_logout_reported 
+PASS N2.matching_pin_accepted
+PASS N2.mismatch_refused
+PASS N2.unlisted_image_refused
+PASS N2.optout_allows_with_loud_warning
+PASS N2.missing_pins_file_refused
+SOME FAILED

@@ -16,11 +16,12 @@ Use it for manual QA only; both UIs are admin consoles that can be pointed at ot
 SSH tunnel (`ssh -L 33030:127.0.0.1:33030 host`).
 
 Pinned images (`lib.sh`): prom/prometheus v2.55.1, grafana/grafana 11.3.1, dpage/pgadmin4 8.13, nginx 1.27-alpine, curlimages/curl 8.10.1
-(digests recorded in `evidence/image_digests.txt`). Memory limits sum to 1.5 GiB. `up.sh` refuses to start if a pulled image's digest differs from `evidence/image_digests.txt`.
+(digests recorded in `evidence/image_digests.txt`). Memory limits sum to 1.5 GiB. `up.sh` refuses to start if a pulled image's digest differs from `evidence/image_digests.txt` OR the image has no recorded pin (fail closed; explicit override `ALLOW_UNPINNED_IMAGES=1` prints a loud warning).
 
 ## Use
 ```
 docs/qa/stack3/monitoring/up.sh          # idempotent; replaces only pod catqa3mon; secrets generated on first run
+docs/qa/stack3/monitoring/test_scripts.sh   # sandbox tests (fake curl/podman): bearer never in argv, logout retry, fail-closed digest pins
 docs/qa/stack3/monitoring/verify.py      # live checks, one PASS/FAIL line each (exit 0 = all PASS)
 docs/qa/stack3/monitoring/down.sh [--purge]
 ```
@@ -33,7 +34,7 @@ Postgres passwords and the `qa_admin` login used by the token refresher are podm
 ## Design notes (all measured 2026-11-05)
 * **`/metrics` auth.** The API accepts an admin bearer token or `METRICS_SCRAPE_TOKEN` (`catalog-api/main_metricsauth.go`). The running stack-3 API
   has no `METRICS_SCRAPE_TOKEN`, and it must not be restarted from here, so `token_refresher.sh` (sidecar) logs in as `qa_admin` every 6 h, writes the
-  24 h session token to a shared volume (owner 65534 = Prometheus uid, mode 0400), then logs the previous session out (`POST /api/v1/auth/logout`;
+  24 h session token to a shared volume (owner 65534 = Prometheus uid, mode 0400), then logs the previous session out (`POST /api/v1/auth/logout`, bearer and login body passed on curl's stdin - never in argv; up to 3 attempts, then dropped and logged; the superseded token is kept in a 0400 file on the token volume so a container restart still revokes it - if that also fails the session lives until its 24 h expiry);
   `verify.py` also logs out its own sessions and checks the token is rejected afterwards). Login JSON is escaped (`\` and `"`), failures back off
   30 s doubling to 900 s so a wrong password cannot hammer the login lockout. **Named follow-up `QA-MON-FU-1`**: set `METRICS_SCRAPE_TOKEN` (>= 32 chars) in
   stack 3's `up.sh` and scrape with it instead of an admin session (changes stack 3, so not done here). The refresher still holds admin credentials (as a secret).
@@ -43,10 +44,14 @@ Postgres passwords and the `qa_admin` login used by the token refresher are podm
   (`verify.py`: `pod.reaches_*` needles pass, `pod.CANNOT_reach_*` for 36381, 11434, 35433 pass). Residual: a pgAdmin or Grafana admin can still add
   servers/datasources pointing at those four ports (the pgpass entry only matches 127.0.0.1:35434; the API/web/website
   are LAN-reachable anyway) and the pod has full outbound internet via pasta. The default loopback bind makes that an operator-only capability.
-* **Client IP / shared limits (F4).** Stack 3's API has no `TRUSTED_PROXIES` (see `catalog-api/main.go` comment: unset = trust no proxy), and this
-  add-on does not change stack 3. Behind the nginx proxy the API therefore sees one source address (the pod's pasta egress) for every proxied user:
-  per-IP rate limits and login lockouts are shared across all proxy users and API audit logs record that address, not the real client. nginx still sets
-  `X-Forwarded-For`/`X-Real-IP`, which the API ignores. Fix (stack-3 change, not done): `TRUSTED_PROXIES=<explicit cidr>` in stack 3's `up.sh`.
+* **Client IP / shared limits (F4, N3).** Stack 3's API has no `TRUSTED_PROXIES` (`catalog-api/main.go`: unset = trust no proxy header), and this
+  add-on does not change stack 3. The wired routes (`LoginGin` etc.) use gin's `c.ClientIP()`, which therefore ignores `X-Forwarded-For`/`X-Real-IP`
+  and returns the TCP peer. Behind the nginx proxy the API consequently sees one source address (the pod's pasta egress) for every proxied user:
+  per-IP rate limits and login lockouts are shared across all proxy users and API audit logs record that address, not the real client.
+  (The legacy `net/http` handler `AuthHandler.Login` / `getClientIP` in `handlers/auth_handler.go` does trust `X-Real-IP` unconditionally, but it is not
+  registered in stack 3's router - only the `*Gin` handlers are.) nginx sets `X-Real-IP` to `$remote_addr` (overwriting any client value) and appends to
+  `X-Forwarded-For` (`$proxy_add_x_forwarded_for`, so a client-supplied prefix is preserved there). Fix (stack-3 change, not done):
+  `TRUSTED_PROXIES=<explicit cidr>` in stack 3's `up.sh`.
 * **pgAdmin.** `servers.json` is imported on first start of a fresh volume (`down.sh --purge` then `up.sh` re-imports). In server mode pgAdmin ignores
   the `PassFile` key, so `PGPASSFILE` is exported instead. Verify uses an unknown user for the wrong-password control: a wrong password on
   the real account trips pgAdmin's / Grafana's login lockout.
@@ -57,5 +62,5 @@ Postgres passwords and the `qa_admin` login used by the token refresher are podm
 ## Limits
 Stack 3's API limits `/auth/login` to 30 req/min per source IP, and every rejected request counts: run `verify.py` at most once a minute (the 3 evidence rounds were spaced 70 s apart), and never loop a login in a test container.
 Prometheus data lives in a named volume (retention 7 d); pgAdmin `servers.json` shows the single Postgres server; panels 2 and 3 (error rate, latency) may legitimately be empty
-when no matching series exists, so `verify.py` only requires data from panels 1, 4, 5, 6 (7 provisioned in total; all return HTTP 200, no query error); no SonarQube (out of scope); no TLS; `verify.py`
+when no matching series exists, so `verify.py` only requires data from panels 1, 4, 5, 6 (panel 7, GC pause, is provisioned and must return HTTP 200 without a query error; 7 panels in total); no SonarQube (out of scope); no TLS; `verify.py`
 needs the repo's `qa.env`/`mon.env` and runs on the QA host.

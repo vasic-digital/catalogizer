@@ -112,7 +112,7 @@ if sid: http(f"{pg}/browser/server/disconnect/{gid}/{sid}", "DELETE", hd, opener
 
 # ---------------- nginx
 nu, su = f"http://{H}:{P['ngx']}", f"http://{H}:{P['site']}"
-SEC = ["x-content-type-options", "x-frame-options", "referrer-policy", "permissions-policy"]
+SEC = ["x-content-type-options", "x-frame-options", "referrer-policy", "permissions-policy", "cross-origin-opener-policy"]
 def lc(h): return {k.lower(): v for k, v in h.items()}
 s, h, b = http(f"{nu}/health"); h = lc(h); rec("nginx.GET_/health_proxied_to_api", s == 200 and b'"status"' in b, f"http={s} body={b[:60]!r}")
 rec("nginx.security_headers_on_/health", all(k in h for k in SEC), f"missing={[k for k in SEC if k not in h]}")

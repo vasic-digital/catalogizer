@@ -1,7 +1,7 @@
-# round 1 2026-11-05T02:31:33Z host=anton
+# round 1 2026-11-05T02:46:09Z host=anton
 PASS prom.target_catalogizer-api_up health=up lastError=''
 PASS prom.query_up==1 ['1']
-PASS prom.query_http_requests_total_has_data sum=1734
+PASS prom.query_http_requests_total_has_data sum=1923
 PASS prom.query_goroutines_has_data value=32
 PASS prom.control_needle_absent_metric_empty result=[]
 PASS api.metrics_no_auth_rejected http=401
@@ -10,13 +10,13 @@ PASS api.metrics_valid_admin_bearer_ok http=200
 PASS grafana.datasource_health_OK http=200 msg='Successfully queried the Prometheus API.'
 PASS grafana.wrong_password_rejected http=401
 PASS grafana.dashboard_provisioned panels=7
-PASS grafana.panel1_Request_rate_(req/s,_by_stat http=200 datapoints=260 errors=[]
-PASS grafana.panel2_Error_rate_(5xx_req/s) http=200 datapoints=48 errors=[]
-PASS grafana.panel3_Latency_(p50_/_p95_/_p99) http=200 datapoints=72 errors=[]
-PASS grafana.panel4_Active_HTTP_connections http=200 datapoints=25 errors=[]
-PASS grafana.panel5_Go_goroutines http=200 datapoints=50 errors=[]
-PASS grafana.panel6_Go_memory_(alloc_/_heap_inus http=200 datapoints=75 errors=[]
-PASS grafana.panel7_GC_pause_(avg_seconds_over_5 http=200 datapoints=24 errors=[]
+PASS grafana.panel1_Request_rate_(req/s,_by_stat http=200 datapoints=757 errors=[]
+PASS grafana.panel2_Error_rate_(5xx_req/s) http=200 datapoints=136 errors=[]
+PASS grafana.panel3_Latency_(p50_/_p95_/_p99) http=200 datapoints=204 errors=[]
+PASS grafana.panel4_Active_HTTP_connections http=200 datapoints=69 errors=[]
+PASS grafana.panel5_Go_goroutines http=200 datapoints=138 errors=[]
+PASS grafana.panel6_Go_memory_(alloc_/_heap_inus http=200 datapoints=207 errors=[]
+PASS grafana.panel7_GC_pause_(avg_seconds_over_5 http=200 datapoints=68 errors=[]
 PASS pgadmin.login_page_reachable http=200
 PASS pgadmin.wrong_password_not_authenticated authenticated=False
 PASS pgadmin.login_ok_authenticated_session csrf_len=91
