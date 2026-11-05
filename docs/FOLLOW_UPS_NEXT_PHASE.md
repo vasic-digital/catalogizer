@@ -1573,3 +1573,8 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - D7-R3-M1 (test-instrumentation): connecting/disconnected/error badge colours unprotected (mutations N2/N3 survived); render one integration per status in contrastD7Populated.
 - D7-R3-M3 (visual): UploadManager queued row `dark:bg-gray-800` probably blends into Card; consider `dark:bg-gray-700/50`.
 - Live axe rerun on rebuilt web image (N>=3) still owed; PERFORMANCE/MediaFilters/Playlists fixes not render-tested.
+
+## Live UI rerun 2026-11-05 (image main-17ec3c1f; CAT-UI-AXE-LIVE-1, CAT-STACK3-REBUILD-1, CAT-PPROF-LIVE-1, CAT-PROM-LAN-1)
+- VERIFIED (3/3 identical machine evidence, evidence docs/qa/ui-live-rerun-20261105-b): D7 contrast 9 pages x light/dark 0 violations; D5/D6 names + 360px admin; D8 header search; D1 /conversion; D2 /identities; D3 /entity (background 404 retries on missing entity remain, order differs only); pprof gate 401/401/200.
+- Not exercised: pprof 60 s profile cap, non-admin 403, cover-art SSRF F2..F5, TRUSTED_PROXIES from a second LAN host. Prometheus /api/v1/targets answers without token on the LAN (only API /metrics needs the scrape token) - decide if Prometheus itself needs auth (new item CAT-PROM-AUTH-1).
+- Cleanup owed: qa.env.bak.pre-rotate in catqa3 dir (delete after confirm). Subagent printed unrelated env keys into its own tool output once; operator may rotate (not in repo/evidence).
