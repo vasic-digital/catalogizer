@@ -258,7 +258,7 @@ const KeyIdentityIndex = "identity_index"
 // keys the protocol's schema consumes, plus identity_index for smb. Anything else (a misspelling, a pin the protocol cannot honour) is an error.
 func optionKeys(protocol string, spec ProtocolSpec) map[string]bool {
 	out := map[string]bool{}
-	for _, k := range []string{KeyCredentialRef, KeyTLSMode, KeyHostKeyFingerprint, KeyCertSHA256} {
+	for _, k := range []string{KeyCredentialRef, KeyTLSMode, KeyHostKeyFingerprint, KeyCertSHA256, "region", "addressing"} {
 		if _, ok := spec.Keys[k]; ok {
 			out[k] = true
 		}
