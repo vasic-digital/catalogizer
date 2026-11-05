@@ -27,6 +27,10 @@ type memDAV struct {
 	truncate   int  // first N PUTs store only half of the body (acked)
 	noLength   bool // HEAD answers without Content-Length
 	headStatus int  // when non-zero HEAD answers this status (a server without HEAD support)
+	extra      int  // first N PUTs store MORE bytes than sent (acked)
+	headLen    int  // when non-zero HEAD reports this Content-Length regardless of the stored size
+	putLens    []string
+	putTE      [][]string
 }
 
 func (m *memDAV) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +42,12 @@ func (m *memDAV) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "PUT":
 		b, _ := io.ReadAll(r.Body)
 		m.puts++
+		m.putLens = append(m.putLens, r.Header.Get("Content-Length")+"|"+itoa(int(r.ContentLength)))
+		m.putTE = append(m.putTE, r.TransferEncoding)
 		switch {
+		case m.extra > 0:
+			m.extra--
+			m.files[r.URL.Path] = append(append([]byte{}, b...), 'X', 'X')
 		case m.dropPuts > 0:
 			m.dropPuts--
 		case m.truncate > 0:
@@ -60,7 +69,11 @@ func (m *memDAV) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if !m.noLength {
-			w.Header().Set("Content-Length", itoa(len(b)))
+			n := len(b)
+			if m.headLen != 0 {
+				n = m.headLen
+			}
+			w.Header().Set("Content-Length", itoa(n))
 		}
 		w.WriteHeader(http.StatusOK)
 	default:
@@ -165,4 +178,67 @@ func TestWriteFile_Verify_HeadNotSupported_AcceptsWithoutSecondPut(t *testing.T)
 		require.NoError(t, c.WriteFile(context.Background(), "/a.bin", bytes.NewReader(detBytes("v10", 100))))
 		assert.Equal(t, 1, m.puts, "HEAD %d: cannot verify, accept, no double upload", code)
 	}
+}
+
+// R2-1: the replay PUT must keep the known Content-Length and must not be chunked.
+func TestWriteFile_Verify_ReplayPut_KeepsContentLength_NotChunked(t *testing.T) {
+	m := &memDAV{dropPuts: 1}
+	c := newMemDAV(t, m)
+	data := detBytes("r21", 4000)
+	require.NoError(t, c.WriteFile(context.Background(), "/a.bin", bytes.NewReader(data)))
+	require.Equal(t, 2, m.puts)
+	require.Len(t, m.putLens, 2)
+	assert.Equal(t, "4000|4000", m.putLens[0])
+	assert.Equal(t, "4000|4000", m.putLens[1], "replay PUT must carry the original Content-Length")
+	assert.Empty(t, m.putTE[1], "replay PUT must not be chunked")
+}
+
+// R2-2: HEAD 401/403 after a 2xx PUT = cannot verify (like 405/501): accept, no second PUT, no false failure.
+func TestWriteFile_Verify_HeadForbidden_CannotVerify_NoSecondPut(t *testing.T) {
+	for _, code := range []int{http.StatusUnauthorized, http.StatusForbidden} {
+		m := &memDAV{headStatus: code}
+		c := newMemDAV(t, m)
+		require.NoError(t, c.WriteFile(context.Background(), "/a.bin", bytes.NewReader(detBytes("r22", 100))))
+		assert.Equal(t, 1, m.puts, "HEAD %d: cannot verify, no double upload", code)
+	}
+}
+
+// R2-2: the error never says "absent" when the server refused, and carries the real HEAD status.
+func TestVerifyStored_ErrorMessage_RealStatus(t *testing.T) {
+	m := &memDAV{headStatus: http.StatusForbidden}
+	c := newMemDAV(t, m)
+	err := c.verifyStored(context.Background(), c.resolveURL("/a.bin"), 10)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "403")
+	assert.NotContains(t, err.Error(), "absent")
+	m2 := &memDAV{headStatus: http.StatusNotFound}
+	c2 := newMemDAV(t, m2)
+	err = c2.verifyStored(context.Background(), c2.resolveURL("/a.bin"), 10)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "404")
+}
+
+// R2-3 (M2): a server storing MORE bytes than sent is a mismatch (replay), not success.
+func TestWriteFile_Verify_StoredMoreThanSent_IsRetried(t *testing.T) {
+	m := &memDAV{extra: 1}
+	c := newMemDAV(t, m)
+	data := detBytes("r23", 3000)
+	require.NoError(t, c.WriteFile(context.Background(), "/a.bin", bytes.NewReader(data)))
+	assert.Equal(t, data, m.files["/a.bin"])
+	assert.Equal(t, 2, m.puts)
+	m2 := &memDAV{extra: 99}
+	c2 := newMemDAV(t, m2)
+	require.Error(t, c2.WriteFile(context.Background(), "/a.bin", bytes.NewReader(detBytes("r23b", 3000))))
+}
+
+// R2-3 (M3): an empty upload has a KNOWN length of 0; a HEAD reporting Content-Length 1 is a mismatch.
+func TestWriteFile_Verify_EmptyUpload_LengthMismatchDetected(t *testing.T) {
+	m := &memDAV{headLen: 1}
+	c := newMemDAV(t, m)
+	require.Error(t, c.WriteFile(context.Background(), "/e.bin", bytes.NewReader(nil)))
+	assert.Equal(t, 2, m.puts, "empty body is replayable: one bounded retry before the error")
+	m2 := &memDAV{}
+	c2 := newMemDAV(t, m2)
+	require.NoError(t, c2.WriteFile(context.Background(), "/e.bin", bytes.NewReader(nil)))
+	assert.Equal(t, 1, m2.puts)
 }
