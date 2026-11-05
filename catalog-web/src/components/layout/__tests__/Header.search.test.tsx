@@ -21,6 +21,25 @@ vi.mock('@/lib/mediaApi', () => ({
   },
 }))
 
+const TRICKY = 'a&b #c/+'
+
+function mountApp() {
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  return render(
+    <QueryClientProvider client={qc}>
+      <ThemeProvider>
+        <MemoryRouter initialEntries={['/dashboard']}>
+          <Header />
+          <Routes>
+            <Route path="/dashboard" element={<div>dash</div>} />
+            <Route path="/browse" element={<EntityBrowser />} />
+          </Routes>
+        </MemoryRouter>
+      </ThemeProvider>
+    </QueryClientProvider>,
+  )
+}
+
 describe('Header search drives Browse (UI-D8)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -53,5 +72,25 @@ describe('Header search drives Browse (UI-D8)', () => {
     expect(entityApi.getEntities).toHaveBeenCalledWith(expect.objectContaining({ query: 'matrix' }))
     // filtered state: the unfiltered type selector is not what the user is left looking at
     expect(screen.queryByText(/across all types/i)).not.toBeInTheDocument()
+  })
+
+  it('desktop: a term with & # / + arrives intact and without stray params', async () => {
+    mountApp()
+    const user = userEvent.setup()
+    await user.type(document.getElementById('header-search') as HTMLInputElement, `${TRICKY}{Enter}`)
+    await waitFor(() => expect(entityApi.getEntities).toHaveBeenCalled())
+    expect(entityApi.getEntities).toHaveBeenLastCalledWith(expect.objectContaining({ query: TRICKY, offset: 0 }))
+    expect(entityApi.browseByType).not.toHaveBeenCalled() // no stray `type` param produced by an unescaped &
+  })
+
+  it('mobile menu: Enter in the mobile input queries entities, closes the menu, keeps the term intact', async () => {
+    mountApp()
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: 'Open menu' }))
+    await user.type(document.getElementById('mobile-search') as HTMLInputElement, `${TRICKY}{Enter}`)
+    await waitFor(() => expect(entityApi.getEntities).toHaveBeenCalled())
+    expect(entityApi.getEntities).toHaveBeenLastCalledWith(expect.objectContaining({ query: TRICKY, offset: 0 }))
+    expect(entityApi.browseByType).not.toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Open menu' })).toHaveAttribute('aria-expanded', 'false')
   })
 })

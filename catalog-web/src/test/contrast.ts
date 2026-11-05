@@ -47,24 +47,39 @@ function resolveToken(tok: string): Resolved | null {
   return { rgb, alpha: op ? Number(op) / 100 : 1 }
 }
 
+const NON_COLOR_TEXT = /^(xs|sm|base|lg|[2-9]?xl|center|left|right|justify|start|end|ellipsis|clip|wrap|nowrap|balance|pretty|opacity-\d+)$/
+const NON_COLOR_BG = /^(none|cover|contain|center|top|bottom|left|right|repeat.*|no-repeat|fixed|local|scroll|clip-.*|origin-.*|blend-.*|opacity-\d+|gradient-.*)$/
+
 function pick(el: Element, prefix: 'text' | 'bg', t: Theme): Resolved | null {
   const classes = Array.from(el.classList)
   const find = (pfx: string) => {
     for (const c of classes) {
       if (!c.startsWith(pfx)) continue
-      const r = resolveToken(c.slice(pfx.length))
+      const tok = c.slice(pfx.length)
+      if (!tok || (prefix === 'text' ? NON_COLOR_TEXT : NON_COLOR_BG).test(tok)) continue
+      const r = resolveToken(tok)
       if (r) return r
+      // A colour class we cannot resolve to a hex (hsl(var(--x)) token, arbitrary value) must never silently
+      // fall through to an ancestor: that would hide a real contrast problem.
+      const name = tok.split('/')[0]
+      if (name.startsWith('[') || name in PALETTE) {
+        throw new Error(`contrast helper cannot resolve colour class "${c}"`)
+      }
     }
     return null
   }
   return (t === 'dark' ? find(`dark:${prefix}-`) : null) ?? find(`${prefix}-`)
 }
 
-/** Effective background colour of el: nearest ancestor-or-self with a bg-* colour class, else the page default. */
-export function backgroundOf(el: Element, t: Theme): RGB {
+function blend(fg: RGB, alpha: number, under: RGB): RGB {
+  return fg.map((c, i) => Math.round(c * alpha + under[i] * (1 - alpha))) as RGB
+}
+
+/** Effective background colour of el: nearest ancestor-or-self with a bg-* colour class (alpha blended over what is behind it), else the page default. */
+export function backgroundOf(el: Element | null, t: Theme): RGB {
   for (let n: Element | null = el; n; n = n.parentElement) {
     const r = pick(n, 'bg', t)
-    if (r && r.alpha === 1) return r.rgb
+    if (r) return r.alpha === 1 ? r.rgb : blend(r.rgb, r.alpha, backgroundOf(n.parentElement, t))
   }
   return t === 'dark' ? resolveToken('gray-900')!.rgb : resolveToken('white')!.rgb
 }
@@ -74,7 +89,7 @@ export function foregroundOf(el: Element, t: Theme): RGB {
   const bg = backgroundOf(el, t)
   for (let n: Element | null = el; n; n = n.parentElement) {
     const r = pick(n, 'text', t)
-    if (r) return r.rgb.map((c, i) => Math.round(c * r.alpha + bg[i] * (1 - r.alpha))) as RGB
+    if (r) return blend(r.rgb, r.alpha, bg)
   }
   return t === 'dark' ? resolveToken('white')!.rgb : resolveToken('gray-900')!.rgb
 }

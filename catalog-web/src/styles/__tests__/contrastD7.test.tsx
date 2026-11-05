@@ -24,7 +24,7 @@ vi.mock('@/lib/statsApi', async () => ({
     getOverallStats: vi.fn().mockResolvedValue({ total_directories: 4, total_files: 9, total_size: 2 * 1024 ** 3 }),
     getDuplicateStats: vi.fn().mockResolvedValue({ total_duplicate_groups: 2 }),
     getGrowthTrends: vi.fn().mockResolvedValue([{ files_added: 3 }]),
-    getScanHistory: vi.fn().mockResolvedValue([{ id: 1, storage_root_name: 'root', files_found: 7, status: 'completed' }]),
+    getScanHistory: vi.fn().mockResolvedValue([{ id: 1, storage_root_name: 'root', files_found: 7, status: 'completed' }, { id: 2, storage_root_name: 'bad', files_found: 3, status: 'failed' }]),
   },
 }))
 
@@ -36,6 +36,10 @@ describe('contrast helper is a real WCAG computation', () => {
     expect(ratio([0x76, 0x76, 0x76], [255, 255, 255])).toBeCloseTo(4.54, 1)
   })
 })
+
+const ROW = {
+  id: 'a1', type: 'media_played' as const, title: 't', user: 'bob', timestamp: new Date(), metadata: { title: 'Matrix Row', quality: 'HD', duration: '2h' },
+}
 
 describe.each(THEMES)('UI-D7 contrast, %s theme (WCAG AA 4.5:1)', (theme) => {
   it('Layout version label (.fixed) meets AA', () => {
@@ -50,10 +54,17 @@ describe.each(THEMES)('UI-D7 contrast, %s theme (WCAG AA 4.5:1)', (theme) => {
     }
   })
 
+  it('ActivityFeed row title, user and metadata meet AA', () => {
+    render(<ActivityFeed activities={[ROW]} />)
+    for (const el of [screen.getByText(/Matrix Row/), screen.getByText('bob'), screen.getByText(/HD/)]) {
+      expect(contrastOf(el, theme), el.textContent ?? '').toBeGreaterThanOrEqual(WCAG_AA_NORMAL)
+    }
+  })
+
   it('Dashboard stat labels and scan rows meet AA', async () => {
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
     render(<QueryClientProvider client={qc}><MemoryRouter><Dashboard /></MemoryRouter></QueryClientProvider>)
-    const labels = ['movie', 'tv show', 'Directories', 'Total Files', 'Total Size', 'Duplicate Groups', 'Files This Week', '7 files', 'completed']
+    const labels = ['movie', 'tv show', 'Directories', 'Total Files', 'Total Size', 'Duplicate Groups', 'Files This Week', '7 files', 'completed', 'failed']
     for (const text of labels) {
       const el = await waitFor(() => screen.getByText(text))
       const r = contrastOf(el, theme)

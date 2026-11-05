@@ -96,14 +96,14 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
     const getMessage = ACTIVITY_MESSAGES[activity.type] || ((data: Record<string, unknown>) => data.title as string)
 
     return (
-      <div className="flex items-start space-x-3 p-4 hover:bg-gray-50 transition-colors">
+      <div className="flex items-start space-x-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
         <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${colorClass}`}>
           <Icon className="w-5 h-5" />
         </div>
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
               {getMessage(activity.metadata)}
             </p>
             <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2">

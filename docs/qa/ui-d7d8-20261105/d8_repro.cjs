@@ -1,7 +1,8 @@
-const NM='/home/milosvasic/.cache/claude-tmp/ui-d5d6.Z902AZ/repo/catalog-web/node_modules/';
+const NM=process.env.NM; // catalog-web/node_modules/ with trailing slash
+const CHROME=process.env.CHROME; // chrome-headless-shell executable
 const {chromium}=require(NM+'playwright-core');
 (async()=>{
- const b=await chromium.launch({executablePath:'/home/milosvasic/.cache/ms-playwright/chromium_headless_shell-1228/chrome-headless-shell-linux64/chrome-headless-shell'});
+ const b=await chromium.launch({executablePath:CHROME});
  const ctx=await b.newContext({viewport:{width:1440,height:900}});const p=await ctx.newPage();
  const calls=[];p.on('request',r=>{if(r.url().includes('/api/'))calls.push(r.method()+' '+r.url().replace(/^https?:\/\/[^/]+/,''))});
  await p.goto(process.env.BASE+'/login');
