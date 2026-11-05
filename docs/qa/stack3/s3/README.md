@@ -10,3 +10,6 @@ bound to `192.168.1.115:39320`. Independent of stacks catqa1/2/3.
 
 Fallbacks if Garage cannot run: SeaweedFS, then versitygw (not needed so far; Garage pulled and ran).
 Garage is an S3 implementation, not AWS: limits that AWS enforces (e.g. 1000 keys per DeleteObjects) are not all enforced here.
+
+`S3_PURGE_ROOT` (down.sh) is TEST-ONLY: the sandboxed `test_down_purge.sh` sets it to a mktemp dir. Operators must not set it.
+Tests: `test_down_purge.sh` proves the `--purge` guard (each layer, `..` / dirname / readlink, is independently load-bearing; mutation results in `docs/qa/s3-live-20261105/down_purge_mutations.txt`).

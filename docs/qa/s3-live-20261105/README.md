@@ -19,3 +19,12 @@ Target: real Garage v1.0.1 (see target_identity.txt). Test: catalog-api/filesyst
 - M2: batch size 1001 (AWS caps DeleteObjects at 1000) - Garage accepts it.
 - MC: '+' left unencoded in the CopySource header - Garage decodes it leniently.
 Tracked follow-up: re-run the live suite against AWS S3 (or a stricter second implementation such as MinIO/Ceph RGW) to kill M2 and MC.
+
+## Round-3 changes
+- The live file defines 4 tests: 3 run live, TestS3Live_SweepStaleRuns is an opt-in (S3_LIVE_SWEEP=1) test that SKIPs otherwise (that is the 4th line in each green run).
+- test_down_purge.sh: sandbox under claude-tmp (not /tmp); added cases so each guard layer stands alone: a `..` path that resolves to a legitimate dir (only the `..` check refuses it), a nested `..`-free path (only the dirname check), a `..`-free symlink (only the readlink layer). Mutations run only on copies inside the sandbox with podman shimmed: (a) drop the `..` check, (b) dirname test -> prefix test, (c) drop readlink: each makes the test FAIL (down_purge_mutations.txt).
+- Mutation MH: reviewer-named equivalent mutation. UNCONFIRMED: its definition was not given to the author; it is recorded here as "equivalent (no observable behaviour change), per reviewer" and must be re-stated by the reviewer.
+- Tracked follow-up (to be filed): run this live suite against AWS S3 or a second implementation (MinIO/Ceph RGW) to kill the surviving M2 and MC.
+
+## Incident record
+During review-round-1 work the author ran the RED check of the OLD down.sh with an empty argument. The old script defaulted S3_STATE to the real state dir and its string-match guard accepted it, so the run deleted /home/milosvasic/.cache/claude-tmp/catqa-s3live (the disposable test server's data and keys). Impact limited to that disposable state; the server and credentials were re-created and all evidence in this folder was regenerated against the new server. Cause: RED run of a destructive script without a sandboxed HOME/state path. Fix: guarded down.sh plus sandbox-only tests; destructive RED runs happen only inside a mktemp sandbox.

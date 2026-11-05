@@ -1,0 +1,24 @@
+== mutation a_drop_dotdot_check
+16c16
+<   case "/$s/" in */../*|*/./*) return 1 ;; esac
+---
+>   :
+FAIL dotdot-resolving-legit rc=0
+FAILED
+test exit=1
+== mutation b_dirname_to_prefix
+19c19
+<   [ "$(dirname -- "$c")" = "$rr" ] || return 1
+---
+>   case "$c" in "$rr"/*) ;; *) return 1 ;; esac
+FAIL nested rc=0
+FAILED
+test exit=1
+== mutation c_drop_readlink
+17c17
+<   c="$(readlink -m -- "$s")"; rr="$(readlink -m -- "$r")"
+---
+>   c="$s"; rr="$r"
+FAIL symlink rc=0
+FAILED
+test exit=1

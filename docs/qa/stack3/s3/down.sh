@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # down.sh - stop the live S3 server and remove ITS container + network only. Pass --purge to also delete the state dir.
+# S3_PURGE_ROOT is TEST-ONLY (the sandboxed test points it into a mktemp dir); operators must not set it.
 # --purge is guarded (§11.4.287): the state dir is canonicalised with readlink -m and must be strictly below the fixed root
 # $S3_PURGE_ROOT (default $HOME/.cache/claude-tmp) with a basename starting "catqa-s3live"; empty values and '..' segments are refused.
 set -euo pipefail
