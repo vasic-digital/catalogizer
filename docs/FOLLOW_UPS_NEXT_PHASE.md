@@ -1451,3 +1451,6 @@ PROVISIONAL-DONE until a live rerun on a rebuilt stack 3. Pre-existing, NOT caus
 - SECQ4B-FU-2 (doc, minor): the SECQ-4b entry is marked DONE but keeps the old "NOT reproduced or fixed" text in the same bullet; mark as history.
 - SECQ4B-FU-3 (nit): lock held while c.JSON writes the 201 (own-user delay only); optional explicit release after repo.Create.
 - SECQ4B-FU-4: DB-level cap (PostgreSQL / multi-instance) still owed; mutex is single-process.
+
+## NEW-1 live re-verification (2026-11-05, stack 3 image main-5c480072)
+- NEW-1: generated=2 then 0 (idempotent), cover_art rows video_thumbnail/is_default=true x2 on PostgreSQL; evidence docs/qa/new1-cover-thumbnails/green_main5c48.txt. VERIFIED on this stack for the batch endpoint. Still owed: SSRF-F2..F5 through the cover-art product path, SECQ-5 POST flows, pprof delta routes, SECQ-1 via POST /storage/roots; 10 stale video fixtures (files absent) should be reseeded or pruned.

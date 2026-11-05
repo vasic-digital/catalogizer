@@ -1,0 +1,9 @@
+# NEW-1 live GREEN on stack 3, API image main-5c480072 (health build_number 5c480072b2d5cda2102b7091a8f7422d941f24e2), 2026-11-05 11:46Z
+Real container binary, real PostgreSQL 15, real ffmpeg; admin login; POST /api/v1/admin/covers/generate-thumbnails {} twice.
+--- call 1
+{"generated":2,"message":"thumbnail generation completed"} http=200 t=5.068659
+--- call 2 (idempotent)
+{"generated":0,"message":"thumbnail generation completed"} http=200 t=4.267177
+--- cover_art rows (source|is_default|count)
+video_thumbnail|t|2
+--- note: 10 other video items log 'video path not readable: stat /media/...' (seed files from earlier QA runs absent on disk): honest per-item skip with WARN, no longer a silent no-op. Compare red_run1.txt (generated:0, no log).
