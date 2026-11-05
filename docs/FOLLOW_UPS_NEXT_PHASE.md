@@ -1464,3 +1464,14 @@ PROVISIONAL-DONE until a live rerun on a rebuilt stack 3. Pre-existing, NOT caus
 ## Stack-3 live browser pass (2026-11-05, image main-5c480072; evidence docs/qa/stack3-ui-20261105/)
 VERIFIED: GET /entities/types 200 from UI; 11 app pages render real data; website 47 pages / 31 internal URLs OK; theme toggle; no overflow except D5.
 FAIL (open, dispatched as UI-D1..D8): D1 HIGH /conversion crashes (TypeError reading 'name' in ConversionTools); D2 /identities calls missing GET /api/v1/identities (404); D3 /entity/35 (media-item id) 404s and spins forever; D4 /ws closes ~4x/25s idle -> red Disconnected badge; D5 /admin horizontal overflow at 360px; D6 a11y critical (78 unnamed buttons /media, unlabeled selects, 1 unnamed button /ai); D7 colour-contrast serious + svg-img-alt; D8 header search results unfiltered (UNCONFIRMED). Not covered: player subtitles panel. Note: reviewer agent printed QA-stack JWT_SECRET/METRICS token into its own session output (QA-only; rotate with next stack recreate).
+
+## Stack-3 browser pass follow-ups registered (2026-11-05)
+- UI-D1-FU-1 (F4): conversion cancel uses DELETE; API route is POST /conversion/jobs/:id/cancel.
+- UI-D1-FU-2 (F5): startConversion sends nested shape vs ConversionRequest snake_case; warning/progress/duration not mapped.
+- UI-D2-FU-1: identity create/update/delete and /discovery/* routes missing in API; Edit/Delete shown for read-only identities.
+- UI-D2-FU-2: non-admin identities empty-state wording misleading.
+- UI-D3-FU-1: queries retry on 404 for similar/duplicates/files; no API file-id -> entity-id lookup.
+- UI-FAV-1 (IMPORTANT, pre-existing): favourites store file id as entity_id and link /entity/${media.id} (wrong entity).
+- UI-D4-FU-1: /ws idle closes UNREPRODUCED; re-check on rebuilt stack. UI-D4-FU-2: WebSocketContext effect keyed on user identity causes login double-connect (key on user?.id/isAuthenticated). UI-D4-FU-3 (nit): server randomString connection ids near-constant.
+- UI-D7 (contrast, svg-img-alt), UI-D8 (header search unfiltered, UNCONFIRMED): open.
+- SECQ-3 pprof: re-run with HELIX_PPROF_ENABLED=true after rebuild.
