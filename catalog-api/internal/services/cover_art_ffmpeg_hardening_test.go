@@ -134,9 +134,11 @@ func TestGenerateAndSaveVideoThumbnail_HungToolIsBoundedByTimeout(t *testing.T) 
 	})
 }
 
-// SSRF-F3: a DIRECT http URL as video path reaches a listener without the protocol whitelist
-// (1 hit each for ffprobe and ffmpeg measured); with it, 0.
-func TestCoverArtFFmpeg_DirectURLVideoPathDoesNotReachNetwork(t *testing.T) {
+// SSRF-F3: the commands are built exactly as production builds them and handed an http:// URL
+// directly (requireRegularFile would refuse such a path before any tool runs, so the command
+// builders are driven here to keep the protocol whitelist under behavioural test). Without
+// -protocol_whitelist the real tools connect to the listener (1 hit each measured); with it, 0.
+func TestCoverArtFFCommands_DirectURLInputDoesNotReachNetwork(t *testing.T) {
 	needFFTools(t)
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	require.NoError(t, err)
@@ -153,12 +155,20 @@ func TestCoverArtFFmpeg_DirectURLVideoPathDoesNotReachNetwork(t *testing.T) {
 		}
 	}()
 	url := fmt.Sprintf("http://127.0.0.1:%d/v.mp4", ln.Addr().(*net.TCPAddr).Port)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	_ = ffprobeDurationCmdContext(ctx, url).Run()
+	_ = ffmpegFrameCmd(ctx, 1, url, filepath.Join(t.TempDir(), "o.jpg")).Run()
+	time.Sleep(200 * time.Millisecond)
+	assert.Zero(t, atomic.LoadInt32(&hits), "a URL given as input must never be contacted")
+
+	// and the service entry points refuse the URL before any tool runs
 	s := NewCoverArtService(nil, zap.NewNop())
 	s.cacheDir = t.TempDir()
-	_, _ = s.getVideoDuration(context.Background(), url)
-	_, _ = s.generateVideoThumbnail(context.Background(), &VideoThumbnailRequest{MediaItemID: 1, VideoPath: url}, 1, 0)
-	time.Sleep(200 * time.Millisecond)
-	assert.Zero(t, atomic.LoadInt32(&hits), "a URL named as video path must never be contacted")
+	_, derr := s.getVideoDuration(context.Background(), url)
+	assert.Error(t, derr)
+	_, terr := s.generateVideoThumbnail(context.Background(), &VideoThumbnailRequest{MediaItemID: 1, VideoPath: url}, 1, 0)
+	assert.Error(t, terr)
 }
 
 func argIndex(args []string, v string) int {
@@ -193,33 +203,6 @@ func TestCoverArtFFCommands_GuardArguments(t *testing.T) {
 func TestCoverArtMaxBytes_ProductionDefaultIs32MiB(t *testing.T) {
 	assert.Equal(t, int64(32<<20), coverArtMaxBytes, "production default (other tests restore the variable)")
 	assert.Equal(t, int64(32<<20), coverArtMaxBytesDefault)
-}
-
-// A frame extraction with a caller context that has no deadline is still bounded.
-func TestGenerateVideoThumbnail_BlockedInputIsBoundedByTimeout(t *testing.T) {
-	needFFTools(t)
-	fifo := filepath.Join(t.TempDir(), "v.mp4")
-	require.NoError(t, syscall.Mkfifo(fifo, 0o600))
-	old := coverArtFFmpegTimeout
-	coverArtFFmpegTimeout = 500 * time.Millisecond
-	t.Cleanup(func() { coverArtFFmpegTimeout = old })
-	t.Cleanup(func() {
-		if f, err := os.OpenFile(fifo, os.O_WRONLY|syscall.O_NONBLOCK, 0); err == nil {
-			f.Close()
-		}
-	})
-	s := NewCoverArtService(nil, zap.NewNop())
-	s.cacheDir = t.TempDir()
-	done := make(chan struct{})
-	go func() {
-		_, _ = s.generateVideoThumbnail(context.Background(), &VideoThumbnailRequest{MediaItemID: 1, VideoPath: fifo}, 1, 0)
-		close(done)
-	}()
-	select {
-	case <-done:
-	case <-time.After(10 * time.Second):
-		t.Fatal("generateVideoThumbnail blocked on a FIFO: ffmpeg has no deadline")
-	}
 }
 
 // F3: a non-regular file (FIFO) in a library root must be skipped at once; it used to cost the
@@ -275,4 +258,31 @@ func TestCoverArtDemuxers_MatchConverterHardeningList(t *testing.T) {
 	}
 	require.NotEmpty(t, want)
 	assert.Equal(t, want, coverArtDemuxers)
+}
+
+// G3: generateVideoThumbnail itself (not only the callers that probe the duration first)
+// refuses a non-regular path, so a FIFO is never handed to ffmpeg.
+func TestGenerateVideoThumbnail_RejectsNonRegularPath(t *testing.T) {
+	needFFTools(t)
+	fifo := filepath.Join(t.TempDir(), "v.mp4")
+	require.NoError(t, syscall.Mkfifo(fifo, 0o600))
+	t.Cleanup(func() {
+		if f, err := os.OpenFile(fifo, os.O_WRONLY|syscall.O_NONBLOCK, 0); err == nil {
+			f.Close()
+		}
+	})
+	s := NewCoverArtService(nil, zap.NewNop())
+	s.cacheDir = t.TempDir()
+	done := make(chan error, 1)
+	go func() {
+		_, err := s.generateVideoThumbnail(context.Background(), &VideoThumbnailRequest{MediaItemID: 1, VideoPath: fifo}, 1, 0)
+		done <- err
+	}()
+	select {
+	case err := <-done:
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "not a regular file")
+	case <-time.After(3 * time.Second):
+		t.Fatal("generateVideoThumbnail handed a FIFO to ffmpeg")
+	}
 }

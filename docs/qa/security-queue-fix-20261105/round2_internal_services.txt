@@ -1,0 +1,1 @@
+ok  	catalogizer/internal/services	38.672s

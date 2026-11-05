@@ -1,0 +1,1 @@
+Round 2: go vet internal/services clean; go test ./internal/services ok (full package).
