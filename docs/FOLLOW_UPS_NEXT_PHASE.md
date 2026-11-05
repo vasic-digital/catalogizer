@@ -1498,3 +1498,13 @@ FAIL (open, dispatched as UI-D1..D8): D1 HIGH /conversion crashes (TypeError rea
 - MP-FLAKE-1 (minor, pre-existing): MediaPlayer.test.tsx "seek after ticket near expiry gets a fresh ticket" fails only under full-suite load (35/35 alone x3); needs root cause / quarantine (§11.4.248).
 - WEB-DEPS-1: borrowed node_modules lacks @vasic-digital/* packages: 8 test files fail to load (Avatar, EmptyState, LoadingSpinner, AuthContext.integration, module-registry, websocket, WebSocketContext*) - verify on a real npm ci in the web image build.
 - UI-D7-FU-1 now includes AIDashboard/AdminPanel/MediaCard/Analytics dark contrast (owners: D5/D6 files).
+
+## Android QA boot landed (reviewed GO-with-follow-ups round 1/5; evidence docs/qa/android-boot-20261105/)
+VERIFIED: both debug APKs build in rootless JDK17 container; phone (API34) and TV (API34) AVDs boot headless with KVM; login screens render. UNCONFIRMED: qa_admin login on emulator (needs secret-safe path), LAN access to emulator display from a second machine.
+- AND-FU-1: persist debug keystore (adb install -r fails after rebuild). AND-FU-2: documented build-time way to supply/skip Firebase for androidtv (google-services.json placeholder is gitignored, Firebase disabled). AND-FU-3: real login test on emulator via secret-safe path. AND-FU-4: verify LAN display access (SSH tunnel + scrcpy). AND-FU-5: 11.4.173 remote-build-host offload not done.
+- AND-FU-6 (minor, pre-existing source-defect): LoginScreen shows "Connected: <url>" even when server unreachable (serverConnected=true on both branches, LoginScreen.kt:273-289); README line + tracked item.
+- AND-FU-7 (nit): build_apk.sh set -euo pipefail, id -u/id -g not hardcoded 1000, builder image digest, companion doc; trim 3.1K lines of logs (image-build.log).
+- Disk used by Android work ~20 GB (SDK system images 9.8G, gradle 3.3G, AVDs 2.4G, builder image 2.35G): prune pending operator approval.
+## Tauri QA boot / S3 follow-ups registered (branches under review)
+- TAURI-FU-1: desktop client vs API drift: /api/v1/smb/configs, /smb/status, /auth/logout return 404. 
+- S3-FU-1 (F8): read/write have no operation timeout; OperatorTransport lacks ResponseHeaderTimeout. S3-FU-2 (F10): rename tracker/ProtocolHandlerFactory and catalog-web SUPPORTED_PROTOCOLS lack s3. S3-FU-3: live MinIO/Garage evidence; verify copy-source encoding on a real server; SeekableClient/multipart/STS unsupported.

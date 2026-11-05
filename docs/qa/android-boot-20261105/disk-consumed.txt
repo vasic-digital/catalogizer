@@ -1,0 +1,5 @@
+== consumed (measured 2026-11-05T14:09:21+01:00) ==
+3.3G	/home/milosvasic/.cache/claude-tmp/andqa.Lo6bOU/gh
+2.4G	/home/milosvasic/.cache/claude-tmp/andqa.Lo6bOU/avd
+9.8G	/home/milosvasic/Android/Sdk/system-images
+localhost/catalogizer-android-builder:jdk17 2.35 GB

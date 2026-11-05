@@ -1,0 +1,679 @@
+--------- beginning of main
+11-05 14:08:51.326   528   811 I SdkSandboxManager: No SDKs used. Skipping SDK data reconcilation for CallingInfo{mUid=10123, mPackageName='com.catalogizer.androidtv, mAppProcessToken='null'}
+11-05 14:08:51.329   528   612 I InputReader: Reconfiguring input devices, changes=KEYBOARD_LAYOUTS
+--------- beginning of system
+11-05 14:08:51.331   528   528 D TransparencyService: Not an update. Skipping...
+11-05 14:08:51.334   528   528 V BackupManagerConstants: getFullBackupIntervalMilliseconds(...) returns 86400000
+11-05 14:08:51.334   528   528 V BackupManagerConstants: getFullBackupRequiredNetworkType(...) returns 2
+11-05 14:08:51.334   528   528 V BackupManagerConstants: getFullBackupRequireCharging(...) returns true
+11-05 14:08:51.340   528   602 I RoleService: Granting default roles...
+11-05 14:08:51.342   528   555 W TextServicesManagerService: no available spell checker services found
+11-05 14:08:51.343   844  4661 W Role    : Cannot get ApplicationInfo for default holder: com.android.messaging
+11-05 14:08:51.346   528   555 W Searchables: No web search activity found
+11-05 14:08:51.348   528   595 D CompatibilityChangeReporter: Compat change id reported: 218533173; UID 10123; state: ENABLED
+11-05 14:08:51.348   528   595 D CompatibilityChangeReporter: Compat change id reported: 262645982; UID 10123; state: ENABLED
+11-05 14:08:51.348   528   612 I InputReader: Reconfiguring input devices, changes=KEYBOARD_LAYOUTS
+11-05 14:08:51.349  1001  1001 V MediaPlayerList: mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_CHANGED
+11-05 14:08:51.349  1001  1001 V MediaPlayerList: mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_CHANGED
+11-05 14:08:51.350   844  4649 I PermissionControllerServiceImpl: Updating user sensitive for uid 10123
+11-05 14:08:51.352   844  4661 W Role    : Cannot get ApplicationInfo for default holder: com.google.android.gms.supervision
+11-05 14:08:51.354   844  4649 I PermissionControllerServiceImpl: Updating user sensitive for uid 10123
+11-05 14:08:51.363   528  3341 D CompatibilityChangeReporter: Compat change id reported: 161252188; UID 10123; state: DISABLED
+11-05 14:08:51.363   528  3341 W ActivityTaskManager: callingPackage for (uid=2000, pid=4713) has no WPC
+11-05 14:08:51.364   528  3341 D CompatibilityChangeReporter: Compat change id reported: 265464455; UID 10123; state: DISABLED
+11-05 14:08:51.364   528  3341 D CompatibilityChangeReporter: Compat change id reported: 265452344; UID 10123; state: DISABLED
+11-05 14:08:51.364   528  3341 D CompatibilityChangeReporter: Compat change id reported: 266124927; UID 10123; state: DISABLED
+11-05 14:08:51.364   528  3341 D CompatibilityChangeReporter: Compat change id reported: 265451093; UID 10123; state: DISABLED
+11-05 14:08:51.364   528  3341 D CompatibilityChangeReporter: Compat change id reported: 265456536; UID 10123; state: DISABLED
+11-05 14:08:51.364   528  3341 D CompatibilityChangeReporter: Compat change id reported: 255940284; UID 10123; state: DISABLED
+11-05 14:08:51.364   528  3341 D CompatibilityChangeReporter: Compat change id reported: 236283604; UID 10123; state: DISABLED
+11-05 14:08:51.365   528  3341 D CompatibilityChangeReporter: Compat change id reported: 263959004; UID 10123; state: DISABLED
+11-05 14:08:51.365   528  3341 D CompatibilityChangeReporter: Compat change id reported: 264304459; UID 10123; state: DISABLED
+11-05 14:08:51.365   528  3341 D CompatibilityChangeReporter: Compat change id reported: 264301586; UID 10123; state: DISABLED
+11-05 14:08:51.365   528  3341 D CompatibilityChangeReporter: Compat change id reported: 254631730; UID 10123; state: DISABLED
+11-05 14:08:51.365   528  3341 D CompatibilityChangeReporter: Compat change id reported: 273509367; UID 10123; state: DISABLED
+11-05 14:08:51.365   528  3341 D CompatibilityChangeReporter: Compat change id reported: 263259275; UID 10123; state: DISABLED
+11-05 14:08:51.365   528  3341 D CompatibilityChangeReporter: Compat change id reported: 174042980; UID 10123; state: DISABLED
+11-05 14:08:51.365   528  3341 D CompatibilityChangeReporter: Compat change id reported: 174042936; UID 10123; state: DISABLED
+11-05 14:08:51.365   528  3341 D CompatibilityChangeReporter: Compat change id reported: 181136395; UID 10123; state: DISABLED
+11-05 14:08:51.367   528  3341 D CompatibilityChangeReporter: Compat change id reported: 194480991; UID 10123; state: ENABLED
+11-05 14:08:51.367   528  3341 E CellBroadcastUtils: getDefaultCellBroadcastReceiverPackageName: no package found
+11-05 14:08:51.372   844  4661 W Role    : Cannot get ApplicationInfo for default holder: com.android.gallery3d
+11-05 14:08:51.373   528  3341 D CompatibilityChangeReporter: Compat change id reported: 184838306; UID 10123; state: DISABLED
+11-05 14:08:51.374   528  3341 D CompatibilityChangeReporter: Compat change id reported: 185004937; UID 10123; state: DISABLED
+11-05 14:08:51.375   528  3341 D CompatibilityChangeReporter: Compat change id reported: 205907456; UID 10123; state: ENABLED
+11-05 14:08:51.376   528  3341 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.catalogizer.androidtv/.ui.MainActivity} with LAUNCH_MULTIPLE from uid 2000 (BAL_ALLOW_PERMISSION) result code=0
+11-05 14:08:51.382   528   547 D CompatibilityChangeReporter: Compat change id reported: 135634846; UID 10123; state: DISABLED
+11-05 14:08:51.382   528   557 D CompatibilityChangeReporter: Compat change id reported: 143937733; UID 10123; state: ENABLED
+11-05 14:08:51.383   842   876 V WindowManagerShell: Transition requested: android.os.BinderProxy@7a9f781 TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=10 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.catalogizer.androidtv/.ui.MainActivity } baseActivity=ComponentInfo{com.catalogizer.androidtv/com.catalogizer.androidtv.ui.MainActivity} topActivity=ComponentInfo{com.catalogizer.androidtv/com.catalogizer.androidtv.ui.MainActivity} origActivity=null realActivity=ComponentInfo{com.catalogizer.androidtv/com.catalogizer.androidtv.ui.MainActivity} numActivities=1 lastActiveTime=359376 supportsMultiWindow=false resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@b8de026} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=true launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=null topActivityInfo=ActivityInfo{9183467 com.catalogizer.androidtv.ui.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+11-05 14:08:51.387   528   595 D CompatibilityChangeReporter: Compat change id reported: 265195908; UID 10123; state: ENABLED
+11-05 14:08:51.390   528   555 W TextServicesManagerService: no available spell checker services found
+11-05 14:08:51.393   363   363 D Zygote  : Forked child process 4716
+11-05 14:08:51.395   528   557 I ActivityManager: Start proc 4716:com.catalogizer.androidtv/u0a123 for next-top-activity {com.catalogizer.androidtv/com.catalogizer.androidtv.ui.MainActivity}
+11-05 14:08:51.415   528   555 W Searchables: No web search activity found
+11-05 14:08:51.417   528   555 W Searchables: No web search activity found
+11-05 14:08:51.424  4716  4716 I gizer.androidtv: Late-enabling -Xcheck:jni
+11-05 14:08:51.439  4716  4716 I gizer.androidtv: Using CollectorTypeCC GC.
+11-05 14:08:51.440  4716  4716 W gizer.androidtv: Unexpected CPU variant for x86: x86.
+11-05 14:08:51.440  4716  4716 W gizer.androidtv: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+11-05 14:08:51.443  1549  1583 I adbd    : jdwp connection from 4716
+11-05 14:08:51.450   528   537 I system_server: Background concurrent copying GC freed 178853(8711KB) AllocSpace objects, 13(260KB) LOS objects, 50% free, 17MB/35MB, paused 61us,71us total 148.707ms
+11-05 14:08:51.454   528   539 W System  : A resource failed to call close. 
+11-05 14:08:51.474  4716  4716 D CompatibilityChangeReporter: Compat change id reported: 171979766; UID 10123; state: ENABLED
+11-05 14:08:51.474  4716  4716 D CompatibilityChangeReporter: Compat change id reported: 242716250; UID 10123; state: ENABLED
+11-05 14:08:51.476   395   395 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+11-05 14:08:51.478   528  1296 D CompatibilityChangeReporter: Compat change id reported: 170503758; UID 10123; state: ENABLED
+11-05 14:08:51.481  4716  4716 W ziparchive: Unable to open '/data/app/~~S2Jk16_Ifj4fssi1zt0y-w==/com.catalogizer.androidtv-Abjab6u4rc-0m7pbXxmNuw==/base.dm': No such file or directory
+11-05 14:08:51.481  4716  4716 W ziparchive: Unable to open '/data/app/~~S2Jk16_Ifj4fssi1zt0y-w==/com.catalogizer.androidtv-Abjab6u4rc-0m7pbXxmNuw==/base.dm': No such file or directory
+11-05 14:08:51.486   842   876 D WindowManagerShell: TvPipController: onTaskStackChanged()
+11-05 14:08:51.808  3883  3883 I Finsky:background: [2] tdb - Received: android.intent.action.PACKAGE_ADDED, [GK4Uppmnd-3l1PcmRUKmm9DHh2A539N1ZWf-dKuxYbk]
+11-05 14:08:51.812  3860  3860 I Finsky  : [2] tdm - Received: android.intent.action.PACKAGE_ADDED, [GK4Uppmnd-3l1PcmRUKmm9DHh2A539N1ZWf-dKuxYbk]
+11-05 14:08:51.816  3883  4664 I Finsky:background: [98] Wrote row to frosting DB: 184
+11-05 14:08:51.817  3883  4664 I Finsky:background: [98] Wrote row to frosting DB: 185
+11-05 14:08:51.817  3860  3940 I Finsky  : [62] AIM: AppInfoManager-Perf > OnDeviceAppInfo > cacheHitCount=0, cacheMissCount=1. Missed  in cache (limit 10) : [com.catalogizer.androidtv]
+11-05 14:08:51.818  3860  3916 I Finsky  : [58] AIM: Got app ownership map. App counts: . Unique apps: 0
+11-05 14:08:51.818  3860  3916 E Finsky  : [58] [Counters] attempted to use a non-positive increment for: 4752
+11-05 14:08:51.818  3860  3916 E Finsky  : [58] [Counters] attempted to use a non-positive increment for: 4753
+11-05 14:08:51.820  3883  3883 I Finsky:background: [2] tdb - Received: android.intent.action.PACKAGE_CHANGED, [GK4Uppmnd-3l1PcmRUKmm9DHh2A539N1ZWf-dKuxYbk]
+11-05 14:08:51.821  3860  3860 I Finsky  : [2] Clearing split related stale data.
+11-05 14:08:51.821  3860  3860 I Finsky  : [2] AIM: AppInfoCacheUpdater -> invalidating apps: [com.catalogizer.androidtv]
+11-05 14:08:51.821  3860  3860 I Finsky  : [2] AIM: AppInfoManager-Perf > getApps > called for 1 apps
+11-05 14:08:51.822  3860  3937 I Finsky  : [60] AIM: AppInfoManager-Perf > OnDeviceAppInfo > cacheHitCount=0, cacheMissCount=1. Missed  in cache (limit 10) : [com.catalogizer.androidtv]
+11-05 14:08:51.822  3860  3860 I Finsky  : [2] DTU: Received onPackageAdded, replacing: false
+11-05 14:08:51.825  1239  1239 I katniss_interactor_PackageCache: Rebuilding package cache for Intent { act=android.intent.action.PACKAGE_ADDED dat=package: flg=0x4000010 (has extras) }
+11-05 14:08:51.827  3860  4691 I Finsky  : [196] [ContentSync] finished, scheduled=false
+11-05 14:08:51.829  3860  3937 I Finsky  : [60] AIM: AppInfoManager-Perf > ItemModel > CacheSize=142, cacheHitCount=1, cacheMissCount=0, total appsWithNoServerDataCount=128. Missed  in cache (limit 10) : []
+11-05 14:08:51.833  3860  3916 I Finsky  : [58] AIM: Got app ownership map. App counts: . Unique apps: 0
+11-05 14:08:51.834  3860  3916 E Finsky  : [58] [Counters] attempted to use a non-positive increment for: 4752
+11-05 14:08:51.834  3860  3916 E Finsky  : [58] [Counters] attempted to use a non-positive increment for: 4753
+11-05 14:08:51.835   528  2168 D CompatibilityChangeReporter: Compat change id reported: 161252188; UID 10123; state: DISABLED
+11-05 14:08:51.836  3883  4664 I Finsky:background: [98] Wrote row to frosting DB: 186
+11-05 14:08:51.842  3860  3937 I Finsky  : [60] AIM: AppInfoManager-Perf > ItemModel > CacheSize=142, cacheHitCount=1, cacheMissCount=0, total appsWithNoServerDataCount=128. Missed  in cache (limit 10) : []
+11-05 14:08:51.844  2255  2255 I katniss_search_PackageCache: Rebuilding package cache for Intent { act=android.intent.action.PACKAGE_ADDED dat=package: flg=0x4000010 (has extras) }
+11-05 14:08:51.846  3860  3860 I Finsky  : [2] tdm - Received: android.intent.action.PACKAGE_CHANGED, [GK4Uppmnd-3l1PcmRUKmm9DHh2A539N1ZWf-dKuxYbk]
+11-05 14:08:51.847  3883  4664 I Finsky:background: [98] Wrote row to frosting DB: 187
+11-05 14:08:51.850  2255  2255 I katniss_search_PackageCache: Rebuilding package cache for Intent { act=android.intent.action.PACKAGE_CHANGED dat=package: flg=0x5000010 (has extras) }
+11-05 14:08:51.851  3860  3860 I Finsky  : [2] AIM: AppInfoCacheUpdater -> invalidating apps: [com.catalogizer.androidtv]
+11-05 14:08:51.852  3883  3929 I Finsky:background: [55] RECEIVER_PACKAGE_MONITOR_BACKGROUND#logWorkEndAndFinishGoAsync: SUCCESS
+11-05 14:08:51.853  2255  2462 I katniss_search_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.LEANBACK_LAUNCHER] }: [AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0), AppInfo(applicationLabel=Live TV, enabled=true, isSystemApp=true, longVersionCode=417000452, packageName=com.android.tv, uid=10080, versionCode=417000452, versionName=1.24-asop), AppInfo(applicationLabel=Google Play Store, enabled=true, isSystemApp=true, longVersionCode=85341728, packageName=com.android.vending, uid=10085, versionCode=85341728, versionName=53.4.17-34 [8] [PR] 988500596), AppInfo(applicationLabel=YouTube, enabled=true, isSystemApp=true, longVersionCode=218009360, packageName=com.google.android.youtube.tv, uid=10094, versionCode=218009360, versionName=2.18.009), AppInfo(applicationLabel=YouTube Music, enabled=true, isSystemApp=true, longVersionCode=110003320, packageName=com.google.android.youtube.tvmusic, uid=10089, versionCode=110003320, versionName=1.10.03), AppInfo(applicationLabel=Google Play Games, enabled=true, isSystemApp=true, longVersionCode=462434070, packageName=com.google.android.play.games, uid=10093, versionCode=462434070, versionName=2023.08.46243 (567560229.567560229-000700)), AppInfo(applicationLabel=Catalogizer, enabled=true, isSystemApp=false, longVersionCode=8, packageName=com.catalogizer.androidtv, uid=10123, versionCode=8, versionName=2.4.0)]
+11-05 14:08:51.854  1239  1551 I katniss_interactor_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.LEANBACK_LAUNCHER] }: [AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0), AppInfo(applicationLabel=Live TV, enabled=true, isSystemApp=true, longVersionCode=417000452, packageName=com.android.tv, uid=10080, versionCode=417000452, versionName=1.24-asop), AppInfo(applicationLabel=Google Play Store, enabled=true, isSystemApp=true, longVersionCode=85341728, packageName=com.android.vending, uid=10085, versionCode=85341728, versionName=53.4.17-34 [8] [PR] 988500596), AppInfo(applicationLabel=YouTube, enabled=true, isSystemApp=true, longVersionCode=218009360, packageName=com.google.android.youtube.tv, uid=10094, versionCode=218009360, versionName=2.18.009), AppInfo(applicationLabel=YouTube Music, enabled=true, isSystemApp=true, longVersionCode=110003320, packageName=com.google.android.youtube.tvmusic, uid=10089, versionCode=110003320, versionName=1.10.03), AppInfo(applicationLabel=Google Play Games, enabled=true, isSystemApp=true, longVersionCode=462434070, packageName=com.google.android.play.games, uid=10093, versionCode=462434070, versionName=2023.08.46243 (567560229.567560229-000700)), AppInfo(applicationLabel=Catalogizer, enabled=true, isSystemApp=false, longVersionCode=8, packageName=com.catalogizer.androidtv, uid=10123, versionCode=8, versionName=2.4.0)]
+11-05 14:08:51.855  1239  1551 I katniss_interactor_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.LEANBACK_SETTINGS] }: [AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0), AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0)]
+11-05 14:08:51.857  1239  1551 I katniss_interactor_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] }: [AppInfo(applicationLabel=Android TV Home, enabled=true, isSystemApp=true, longVersionCode=1010919201, packageName=com.google.android.tvlauncher, uid=10078, versionCode=1010919201, versionName=6.4.6-580192592-f), AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0)]
+11-05 14:08:51.858  3860  3860 I Finsky  : [2] AIM: AppInfoManager-Perf > getApps > called for 1 apps
+11-05 14:08:51.858  2255  2472 I katniss_search_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.LEANBACK_LAUNCHER] }: [AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0), AppInfo(applicationLabel=Live TV, enabled=true, isSystemApp=true, longVersionCode=417000452, packageName=com.android.tv, uid=10080, versionCode=417000452, versionName=1.24-asop), AppInfo(applicationLabel=Google Play Store, enabled=true, isSystemApp=true, longVersionCode=85341728, packageName=com.android.vending, uid=10085, versionCode=85341728, versionName=53.4.17-34 [8] [PR] 988500596), AppInfo(applicationLabel=YouTube, enabled=true, isSystemApp=true, longVersionCode=218009360, packageName=com.google.android.youtube.tv, uid=10094, versionCode=218009360, versionName=2.18.009), AppInfo(applicationLabel=YouTube Music, enabled=true, isSystemApp=true, longVersionCode=110003320, packageName=com.google.android.youtube.tvmusic, uid=10089, versionCode=110003320, versionName=1.10.03), AppInfo(applicationLabel=Google Play Games, enabled=true, isSystemApp=true, longVersionCode=462434070, packageName=com.google.android.play.games, uid=10093, versionCode=462434070, versionName=2023.08.46243 (567560229.567560229-000700)), AppInfo(applicationLabel=Catalogizer, enabled=true, isSystemApp=false, longVersionCode=8, packageName=com.catalogizer.androidtv, uid=10123, versionCode=8, versionName=2.4.0)]
+11-05 14:08:51.858  3860  3940 I Finsky  : [62] AIM: AppInfoManager-Perf > OnDeviceAppInfo > cacheHitCount=0, cacheMissCount=1. Missed  in cache (limit 10) : [com.catalogizer.androidtv]
+11-05 14:08:51.858  3860  3916 I Finsky  : [58] AIM: Got app ownership map. App counts: . Unique apps: 0
+11-05 14:08:51.858  3860  3916 E Finsky  : [58] [Counters] attempted to use a non-positive increment for: 4752
+11-05 14:08:51.858  3860  3942 I Finsky  : [64] AIM: AppInfoManager-Perf > OnDeviceAppInfo > cacheHitCount=1, cacheMissCount=0. Missed  in cache (limit 10) : []
+11-05 14:08:51.859  3860  3916 E Finsky  : [58] [Counters] attempted to use a non-positive increment for: 4753
+11-05 14:08:51.859  3860  3916 I Finsky  : [58] AIM: Got app ownership map. App counts: . Unique apps: 0
+11-05 14:08:51.859  3860  3916 E Finsky  : [58] [Counters] attempted to use a non-positive increment for: 4752
+11-05 14:08:51.859  3860  3942 E Finsky  : [64] [Counters] attempted to use a non-positive increment for: 4753
+11-05 14:08:51.860  2255  2472 I katniss_search_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.LEANBACK_SETTINGS] }: [AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0), AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0)]
+11-05 14:08:51.861  3883  3929 I Finsky:background: [55] RECEIVER_ENGAGE_PACKAGE_CHANGED#logWorkEndAndFinishGoAsync: SKIPPED_PRECONDITIONS_UNMET
+11-05 14:08:51.861  2255  2472 I katniss_search_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] }: [AppInfo(applicationLabel=Android TV Home, enabled=true, isSystemApp=true, longVersionCode=1010919201, packageName=com.google.android.tvlauncher, uid=10078, versionCode=1010919201, versionName=6.4.6-580192592-f), AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0)]
+11-05 14:08:51.862  2255  2472 I katniss_search_PackageCache: Apps for Intent { act=com.google.assistant.DATA_SHARING_CONSENT }: [AppInfo(applicationLabel=Google, enabled=true, isSystemApp=true, longVersionCode=15000514, packageName=com.google.android.katniss, uid=10081, versionCode=15000514, versionName=7.9.20231101.4)]
+11-05 14:08:51.867  1683  1683 W View    : requestLayout() improperly called by android.support.v7.widget.AppCompatTextView{798c272 V.ED..... ..S...ID 0,108-192,140 #7f0b0078 app:id/app_title} during layout: running second layout pass
+11-05 14:08:51.869  2255  2462 I katniss_search_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.LEANBACK_SETTINGS] }: [AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0), AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0)]
+11-05 14:08:51.870  1239  1551 I katniss_interactor_PackageCache: Apps for Intent { act=com.google.assistant.DATA_SHARING_CONSENT }: [AppInfo(applicationLabel=Google, enabled=true, isSystemApp=true, longVersionCode=15000514, packageName=com.google.android.katniss, uid=10081, versionCode=15000514, versionName=7.9.20231101.4)]
+11-05 14:08:51.875  2255  2462 I katniss_search_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] }: [AppInfo(applicationLabel=Android TV Home, enabled=true, isSystemApp=true, longVersionCode=1010919201, packageName=com.google.android.tvlauncher, uid=10078, versionCode=1010919201, versionName=6.4.6-580192592-f), AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0)]
+11-05 14:08:51.876  2255  2462 I katniss_search_PackageCache: Apps for Intent { act=com.google.assistant.DATA_SHARING_CONSENT }: [AppInfo(applicationLabel=Google, enabled=true, isSystemApp=true, longVersionCode=15000514, packageName=com.google.android.katniss, uid=10081, versionCode=15000514, versionName=7.9.20231101.4)]
+11-05 14:08:51.876  1683  1771 D EGL_emulation: app_time_stats: avg=37.33ms min=2.77ms max=260.35ms count=22
+11-05 14:08:51.878  3860  3940 I Finsky  : [62] AIM: AppInfoManager-Perf > ItemModel > CacheSize=142, cacheHitCount=1, cacheMissCount=0, total appsWithNoServerDataCount=128. Missed  in cache (limit 10) : []
+11-05 14:08:51.883  3690  4667 W GCM     : Unexpected forwarded intent: Intent { act=android.intent.action.PACKAGE_ADDED dat=package: flg=0x4000010 pkg=com.google.android.gms cmp=com.google.android.gms/.chimera.PersistentIntentOperationService (has extras) }
+11-05 14:08:51.883  3690  4677 W GCM     : Unexpected forwarded intent: Intent { act=android.intent.action.PACKAGE_ADDED dat=package: flg=0x4000010 pkg=com.google.android.gms cmp=com.google.android.gms/.chimera.PersistentIntentOperationService (has extras) }
+11-05 14:08:51.884  3860  3916 I Finsky  : [58] AIM: AppInfoManager-Perf > ItemModel > CacheSize=142, cacheHitCount=1, cacheMissCount=0, total appsWithNoServerDataCount=128. Missed  in cache (limit 10) : []
+11-05 14:08:51.892  3730  4682 I Auth    : [SupervisedAccountIntentOperation] onHandleIntent(): android.intent.action.PACKAGE_ADDED
+11-05 14:08:51.892  3730  4681 I Blockstore: [PackageIntentOperation] Feature flags not enabled, skipping. [CONTEXT service_id=258 ]
+11-05 14:08:51.902  3860  3898 I Finsky  : [48] RECEIVER_PACKAGE_MONITOR#logWorkEndAndFinishGoAsync: SUCCESS
+11-05 14:08:51.902  3860  3942 I Finsky  : [64] AIM: AppInfoManager-Perf > getApps > data collection finished
+11-05 14:08:51.902  3860  3942 I Finsky  : [64] AIM: AppInfoManager-Perf > maybeDestroyAppInfoManager is called. actives = 2
+11-05 14:08:51.902  3860  3940 I Finsky  : [62] AIM: AppInfoManager-Perf > getApps > data collection finished
+11-05 14:08:51.902  3860  3940 I Finsky  : [62] AIM: AppInfoManager-Perf > maybeDestroyAppInfoManager is called. actives = 1
+11-05 14:08:51.929  3730  3730 D BoundBrokerSvc: onBind: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+11-05 14:08:51.933  1239  1239 I katniss_interactor_PackageCache: Rebuilding package cache for Intent { act=android.intent.action.PACKAGE_CHANGED dat=package: flg=0x5000010 (has extras) }
+11-05 14:08:51.935  1239  1550 I katniss_interactor_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.LEANBACK_LAUNCHER] }: [AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0), AppInfo(applicationLabel=Live TV, enabled=true, isSystemApp=true, longVersionCode=417000452, packageName=com.android.tv, uid=10080, versionCode=417000452, versionName=1.24-asop), AppInfo(applicationLabel=Google Play Store, enabled=true, isSystemApp=true, longVersionCode=85341728, packageName=com.android.vending, uid=10085, versionCode=85341728, versionName=53.4.17-34 [8] [PR] 988500596), AppInfo(applicationLabel=YouTube, enabled=true, isSystemApp=true, longVersionCode=218009360, packageName=com.google.android.youtube.tv, uid=10094, versionCode=218009360, versionName=2.18.009), AppInfo(applicationLabel=YouTube Music, enabled=true, isSystemApp=true, longVersionCode=110003320, packageName=com.google.android.youtube.tvmusic, uid=10089, versionCode=110003320, versionName=1.10.03), AppInfo(applicationLabel=Google Play Games, enabled=true, isSystemApp=true, longVersionCode=462434070, packageName=com.google.android.play.games, uid=10093, versionCode=462434070, versionName=2023.08.46243 (567560229.567560229-000700)), AppInfo(applicationLabel=Catalogizer, enabled=true, isSystemApp=false, longVersionCode=8, packageName=com.catalogizer.androidtv, uid=10123, versionCode=8, versionName=2.4.0)]
+11-05 14:08:51.936  1239  1550 I katniss_interactor_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.LEANBACK_SETTINGS] }: [AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0), AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0)]
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: Source not found for package: com.netflix.ninja
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: android.content.pm.PackageManager$NameNotFoundException: com.netflix.ninja
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfoAsUser(ApplicationPackageManager.java:256)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfo(ApplicationPackageManager.java:216)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfo(ApplicationPackageManager.java:210)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at llh.a(PG:4)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at ante.next(PG:1)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.a(PG:2)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.hasNext(PG:1)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.a(PG:1)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.hasNext(PG:1)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at antb.f(PG:1)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at antb.b(PG:1)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at llj.o(PG:3)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at llj.n(PG:2)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at kne.handleMessage(PG:132)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Looper.loopOnce(Looper.java:205)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Looper.loop(Looper.java:294)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at java.lang.reflect.Method.invoke(Native Method)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+11-05 14:08:51.937  2255  2255 W katniss_search_CloudSearchableSources: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+11-05 14:08:51.938  1239  1550 I katniss_interactor_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] }: [AppInfo(applicationLabel=Android TV Home, enabled=true, isSystemApp=true, longVersionCode=1010919201, packageName=com.google.android.tvlauncher, uid=10078, versionCode=1010919201, versionName=6.4.6-580192592-f), AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0)]
+11-05 14:08:51.939  1239  1550 I katniss_interactor_PackageCache: Apps for Intent { act=com.google.assistant.DATA_SHARING_CONSENT }: [AppInfo(applicationLabel=Google, enabled=true, isSystemApp=true, longVersionCode=15000514, packageName=com.google.android.katniss, uid=10081, versionCode=15000514, versionName=7.9.20231101.4)]
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: Source not found for package: com.netflix.ninja
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: android.content.pm.PackageManager$NameNotFoundException: com.netflix.ninja
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfoAsUser(ApplicationPackageManager.java:256)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfo(ApplicationPackageManager.java:216)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfo(ApplicationPackageManager.java:210)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at llh.a(PG:4)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at ante.next(PG:1)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.a(PG:2)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.hasNext(PG:1)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.a(PG:1)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.hasNext(PG:1)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at antb.f(PG:1)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at antb.b(PG:1)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at llj.o(PG:3)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at llj.n(PG:7)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at kne.handleMessage(PG:132)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Looper.loopOnce(Looper.java:205)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Looper.loop(Looper.java:294)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at java.lang.reflect.Method.invoke(Native Method)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+11-05 14:08:51.939  2255  2255 W katniss_search_CloudSearchableSources: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: Source not found for package: com.netflix.ninja
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: android.content.pm.PackageManager$NameNotFoundException: com.netflix.ninja
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfoAsUser(ApplicationPackageManager.java:256)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfo(ApplicationPackageManager.java:216)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfo(ApplicationPackageManager.java:210)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at llh.a(PG:4)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at ante.next(PG:1)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.a(PG:2)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.hasNext(PG:1)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.a(PG:1)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.hasNext(PG:1)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at antb.f(PG:1)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at antb.b(PG:1)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at llj.o(PG:3)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at llj.d(PG:1)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at llf.a(PG:1)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at llf.k(PG:1)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at llj.n(PG:20)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at kne.handleMessage(PG:132)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Looper.loopOnce(Looper.java:205)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Looper.loop(Looper.java:294)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at java.lang.reflect.Method.invoke(Native Method)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+11-05 14:08:51.940  2255  2255 W katniss_search_CloudSearchableSources: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+11-05 14:08:51.941  3730  3730 D BoundBrokerSvc: Loading bound service for intent: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+11-05 14:08:51.954  2255  2455 I katniss_search_GlobalEnvironmentProvider: Retrieved zero Google account from GMS.
+11-05 14:08:51.961  3730  3730 D BoundBrokerSvc: onUnbind: Intent { act=com.google.android.gms.common.BIND_SHARED_PREFS pkg=com.google.android.gms }
+11-05 14:08:51.989  3730  3796 I Icing   : Indexing com.google.android.gms-apps from com.google.android.gms
+11-05 14:08:52.006  3730  3796 I Icing   : Indexing done com.google.android.gms-apps
+11-05 14:08:52.006  3730  3796 I Icing   : Indexing com.google.android.gms-apps from com.google.android.gms
+11-05 14:08:52.007  3730  3796 I Icing   : Indexing done com.google.android.gms-apps
+11-05 14:08:52.146  4716  4716 D nativeloader: Configuring clns-6 for other apk /data/app/~~S2Jk16_Ifj4fssi1zt0y-w==/com.catalogizer.androidtv-Abjab6u4rc-0m7pbXxmNuw==/base.apk. target_sdk_version=34, uses_libraries=, library_path=/data/app/~~S2Jk16_Ifj4fssi1zt0y-w==/com.catalogizer.androidtv-Abjab6u4rc-0m7pbXxmNuw==/lib/x86:/data/app/~~S2Jk16_Ifj4fssi1zt0y-w==/com.catalogizer.androidtv-Abjab6u4rc-0m7pbXxmNuw==/base.apk!/lib/x86, permitted_path=/data:/mnt/expand:/data/user/0/com.catalogizer.androidtv
+11-05 14:08:52.159  4716  4716 V GraphicsEnvironment: Currently set values for:
+11-05 14:08:52.159  4716  4716 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+11-05 14:08:52.159  4716  4716 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+11-05 14:08:52.165  4716  4716 V GraphicsEnvironment: ANGLE GameManagerService for com.catalogizer.androidtv: false
+11-05 14:08:52.165  4716  4716 V GraphicsEnvironment: com.catalogizer.androidtv is not listed in per-application setting
+11-05 14:08:52.165  4716  4716 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+11-05 14:08:52.203  4716  4716 D CompatibilityChangeReporter: Compat change id reported: 183155436; UID 10123; state: ENABLED
+11-05 14:08:52.218  4716  4716 D SessionsDependencies: Dependency to CRASHLYTICS added.
+11-05 14:08:52.233  4716  4716 I FirebaseApp: Device unlocked: initializing all Firebase APIs for app [DEFAULT]
+11-05 14:08:52.284  4716  4716 I FirebaseCrashlytics: Initializing Firebase Crashlytics 18.6.0 for com.catalogizer.androidtv
+11-05 14:08:52.296  4716  4716 D SessionsDependencies: Subscriber CRASHLYTICS registered.
+11-05 14:08:52.310  4716  4716 D CompatibilityChangeReporter: Compat change id reported: 247079863; UID 10123; state: ENABLED
+11-05 14:08:52.322  4716  4745 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+11-05 14:08:52.322  4716  4745 W ziparchive: Unable to open '/data/user_de/0/com.google.android.gms/app_chimera/m/00000002/DynamiteLoader.dm': No such file or directory
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{689122b com.android.cts.priv.ctsshim/10109} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{50151e8 com.google.android.systemui.atvoverlay/10002} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{4280688 com.google.android.apps.mediashell/10077} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{17c3ea6 com.google.android.overlay.tvconfig/10020} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{c386821 com.google.android.ext.shared/10066} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{e449446 com.android.virtualmachine.res/10102} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{c84a607 com.google.android.federatedcompute/10114} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{e9d9f32 com.android.systemui.emulation.pixel_3_xl/10045} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{24a3483 com.android.systemui.emulation.pixel_4_xl/10036} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{5ea7600 com.android.systemui.emulation.pixel_fold/10006} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{f7b0334 com.android.htmlviewer/10065} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{92655d com.google.android.health.connect.backuprestore/10101} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{c25aed2 com.google.android.backdrop/10079} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{f80f22c com.android.networkstack.tethering.emulator/10013} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{fbb9ba3 com.google.android.configupdater/10076} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{945e28a com.android.internal.emulation.pixel_3a_xl/10003} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{e83b0fb com.android.internal.emulation.pixel_6_pro/10019} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{b210518 com.android.internal.emulation.pixel_7_pro/10040} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{52cab71 com.android.internal.emulation.pixel_8_pro/10021} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{aa79d56 com.android.internal.emulation.pixel_3a/10009} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{1d261d7 com.android.internal.emulation.pixel_4a/10014} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{3ad5ac4 com.android.internal.emulation.pixel_6a/10043} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{a0f8dad com.android.internal.emulation.pixel_7a/10042} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{69838e2 com.google.android.overlay.googlewebview/10024} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{f5f1ea0 com.google.android.hotspot2.osulogin/10120} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{694fa59 com.google.android.marvin.talkback/10095} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{c457a9 com.android.systemui.auto_generated_rro_vendor__/10052} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{c05012e com.android.internal.systemui.navbar.twobutton/10025} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{b8be61e com.android.settings.intelligence/10075} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{fbb3e5c com.android.systemui.emulation.pixel_3/10023} BLOCKED
+11-05 14:08:52.323   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{6e1c565 com.android.systemui.emulation.pixel_4/10017} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{964023a com.android.systemui.emulation.pixel_5/10022} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{b1eceeb com.android.systemui.emulation.pixel_6/10011} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{3ebe448 com.android.systemui.emulation.pixel_7/10044} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{2ae52e1 com.android.systemui.emulation.pixel_8/10037} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{3e24eff com.android.printspooler/10070} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{3a784cc com.android.dreams.basic/10067} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{8fefcf4 com.android.providers.settings.auto_generated_rro_product__/10047} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{a91e315 com.android.tv/10080} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{a8c462a com.google.android.devicelockcontroller/10118} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{996dc1b com.google.android.tvrecommendations/10083} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{488f460 com.android.internal.emulation.pixel_3/10039} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{b057d19 com.android.internal.emulation.pixel_4/10046} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{7ca11de com.android.internal.emulation.pixel_5/10027} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{22f6fbf com.android.internal.emulation.pixel_6/10031} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{ef8f68c com.android.internal.emulation.pixel_7/10004} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{767d1d5 com.android.internal.emulation.pixel_8/10048} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{42e21b8 com.google.android.captiveportallogin/10068} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{23a9b91 com.google.android.modulemetadata/10086} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{684ef78 com.android.providers.settings.auto_generated_rro_vendor__/10051} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{1809af6 com.google.android.tvlauncher/10078} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{33d1ef7 com.google.android.webview/10092} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{a7fa164 com.google.android.rkpdapp/10103} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{2dc5fcd com.google.android.youtube.tvmusic/10089} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{2937082 com.google.android.nearby.halfsheet/10116} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{b9ab393 com.google.android.safetycenter.resources/10105} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{a476fd0 com.google.android.connectivity.resources/10115} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{d071390 com.google.android.syncadapters.calendar/10090} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{3723590 com.android.systemui.emulation.pixel_3a_xl/10029} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{152de89 com.android.systemui.emulation.pixel_6_pro/10012} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{70cae8e com.android.systemui.emulation.pixel_7_pro/10010} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{d69c6af com.android.systemui.emulation.pixel_8_pro/10041} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{f5c2bc9 com.google.android.healthconnect.controller/10100} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{e81da45 com.android.internal.emulation.pixel_2_xl/10026} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{429259a com.android.internal.emulation.pixel_3_xl/10015} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{e161ecb com.android.internal.emulation.pixel_4_xl/10007} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{8cf26a8 com.android.internal.emulation.pixel_fold/10001} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{bead5c1 com.android.systemui.emulation.pixel_3a/10038} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{4640166 com.android.systemui.emulation.pixel_4a/10018} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{1e5dca7 com.android.systemui.emulation.pixel_6a/10033} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{8440554 com.android.systemui.emulation.pixel_7a/10032} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{60c12ce com.google.android.uwb.resources/10117} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{6bae8ec com.android.cts.ctsshim/10110} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{a32f5ef com.google.android.wifi.resources/10119} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{47bb8fc com.google.android.wifi.dialog/10121} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{9f2bb85 com.google.android.youtube.tv/10094} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{d337bf9 com.android.connectivity.resources.goldfish.overlay/10049} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{f5a8dda com.google.android.tv.remote.service/10082} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{c1fb99f android.auto_generated_rro_product__/10000} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{163020b com.google.android.play.games/10093} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{14968e8 com.google.android.inputmethod.latin/10091} BLOCKED
+11-05 14:08:52.324   528   817 I AppsFilter: interaction: PackageSetting{f4c4a7a com.catalogizer.androidtv/10123} -> PackageSetting{866294a android.auto_generated_rro_vendor__/10050} BLOCKED
+11-05 14:08:52.327  4716  4745 I DynamiteModule: Considering local module com.google.android.gms.measurement.dynamite:97 and remote module com.google.android.gms.measurement.dynamite:93
+11-05 14:08:52.328  4716  4745 I DynamiteModule: Selected local version of com.google.android.gms.measurement.dynamite
+11-05 14:08:52.449  4716  4748 D TrafficStats: tagSocket(73) with statsTag=0xffffffff, statsUid=-1
+11-05 14:08:52.451  4716  4716 D FirebaseSessions: Initializing Firebase Sessions SDK.
+11-05 14:08:52.453  4716  4716 I FirebaseInitProvider: FirebaseApp initialization successful
+11-05 14:08:52.459   528  3341 D OomAdjuster: Not killing cached processes
+11-05 14:08:52.469  4716  4716 D WM-WrkMgrInitializer: Initializing WorkManager with default configuration.
+11-05 14:08:52.517  4716  4739 D SessionConfigFetcher: Fetching settings from server.
+11-05 14:08:52.529  4716  4754 D TrafficStats: tagSocket(77) with statsTag=0xffffffff, statsUid=-1
+11-05 14:08:52.533  4716  4763 I FA      : App measurement initialized, version: 82001
+11-05 14:08:52.536  4716  4763 I FA      : To enable debug logging run: adb shell setprop log.tag.FA VERBOSE
+11-05 14:08:52.536  4716  4763 I FA      : To enable faster debug mode event logging run:
+11-05 14:08:52.536  4716  4763 I FA      :   adb shell setprop debug.firebase.analytics.app com.catalogizer.androidtv
+11-05 14:08:52.542  4716  4716 D WM-PackageManagerHelper: androidx.work.impl.background.systemjob.SystemJobService enabled
+11-05 14:08:52.542  4716  4716 D WM-Schedulers: Created SystemJobScheduler and enabled SystemJobService
+11-05 14:08:52.556  4716  4716 I CatalogizerTV: Application.onCreate() starting...
+11-05 14:08:52.556  4716  4716 I CatalogizerTV: Firebase initialized
+11-05 14:08:52.558  4716  4716 I CatalogizerTV: Crashlytics set to opt-in (disabled by default)
+11-05 14:08:52.565   528  1298 I ActivityManager: Flag disabled. Ignoring finishAttachApplication from uid: 10123. pid: 4716
+11-05 14:08:52.574  4716  4752 D TrafficStats: tagSocket(84) with statsTag=0x8001, statsUid=-1
+11-05 14:08:52.647  4716  4779 D libEGL  : loaded /vendor/lib/egl/libEGL_emulation.so
+11-05 14:08:52.654  4716  4779 D libEGL  : loaded /vendor/lib/egl/libGLESv1_CM_emulation.so
+11-05 14:08:52.656  4716  4779 D libEGL  : loaded /vendor/lib/egl/libGLESv2_emulation.so
+11-05 14:08:52.884  1683  1771 D EGL_emulation: app_time_stats: avg=8.74ms min=2.81ms max=29.33ms count=56
+11-05 14:08:52.901  4716  4768 D TrafficStats: tagSocket(95) with statsTag=0xffffffff, statsUid=-1
+11-05 14:08:52.905  4716  4768 D Discovery: HTTP probe failed for http://localhost:8080: Failed to connect to localhost/127.0.0.1:8080
+11-05 14:08:52.906  4716  4770 D DependencyContainer: No localhost server found - will use login screen
+11-05 14:08:52.906  4716  4770 I CatalogizerTV: Container initialization completed
+11-05 14:08:52.908  4716  4775 D CompatibilityChangeReporter: Compat change id reported: 160794467; UID 10123; state: ENABLED
+11-05 14:08:52.926  4716  4763 W gizer.androidtv: Verification of void com.google.android.gms.measurement.internal.zzo.<clinit>() took 229.782ms (34.82 bytecodes/s) (880B approximate peak alloc)
+11-05 14:08:53.042  4716  4767 I MainActivity: Auth hydrated from disk
+11-05 14:08:53.048  4716  4770 D TvChannelRepo: Default channel created: 5
+11-05 14:08:53.072  4716  4770 D TvChannelSync: Periodic sync enqueued (every 6h)
+11-05 14:08:53.072  4716  4770 I CatalogizerTV: Application.onCreate() completed in 516ms
+11-05 14:08:53.091  4716  4775 D CompatibilityChangeReporter: Compat change id reported: 194532703; UID 10123; state: ENABLED
+11-05 14:08:53.092  4716  4775 D CompatibilityChangeReporter: Compat change id reported: 253665015; UID 10123; state: ENABLED
+11-05 14:08:53.093   528  1298 D CompatibilityChangeReporter: Compat change id reported: 271850009; UID 10123; state: ENABLED
+11-05 14:08:53.093   528  1298 D CompatibilityChangeReporter: Compat change id reported: 253665015; UID 10123; state: ENABLED
+11-05 14:08:53.093   528  1298 D CompatibilityChangeReporter: Compat change id reported: 194532703; UID 10123; state: ENABLED
+11-05 14:08:53.094   528  1298 D ConnectivityService: requestNetwork for uid/pid:1000/528 asUid: 10123 activeRequest: null callbackRequest: 93 [NetworkRequest [ REQUEST id=94, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10123 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+11-05 14:08:53.096   528   775 D ConnectivityService: NetReassign [94 : null → 100] [c 0] [a 1] [i 0]
+11-05 14:08:53.096   528   774 D EthernetNetworkFactory: eth0: onNetworkNeeded for request: NetworkRequest [ REQUEST id=94, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10123 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+11-05 14:08:53.096   528   774 D EthernetNetworkFactory: IpClient already started
+11-05 14:08:53.096   528   767 D UntrustedWifiNetworkFactory: got request NetworkRequest [ REQUEST id=94, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10123 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+11-05 14:08:53.096   528   767 D OemPaidWifiNetworkFactory: got request NetworkRequest [ REQUEST id=94, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10123 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+11-05 14:08:53.096   528   767 D MultiInternetWifiNetworkFactory: got request NetworkRequest [ REQUEST id=94, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10123 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+11-05 14:08:53.136   528  1298 D CompatibilityChangeReporter: Compat change id reported: 161145287; UID 10123; state: ENABLED
+11-05 14:08:53.145   528  1298 D ConnectivityService: requestNetwork for uid/pid:10123/4716 activeRequest: null callbackRequest: 95 [NetworkRequest [ REQUEST id=96, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10123 RequestorUid: 10123 RequestorPkg: com.catalogizer.androidtv UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+11-05 14:08:53.146   528   774 D EthernetNetworkFactory: eth0: onNetworkNeeded for request: NetworkRequest [ REQUEST id=96, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10123 RequestorUid: 10123 RequestorPkg: com.catalogizer.androidtv UnderlyingNetworks: Null] ]
+11-05 14:08:53.146   528   774 D EthernetNetworkFactory: IpClient already started
+11-05 14:08:53.146   528   767 D UntrustedWifiNetworkFactory: got request NetworkRequest [ REQUEST id=96, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10123 RequestorUid: 10123 RequestorPkg: com.catalogizer.androidtv UnderlyingNetworks: Null] ]
+11-05 14:08:53.147   528   767 D OemPaidWifiNetworkFactory: got request NetworkRequest [ REQUEST id=96, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10123 RequestorUid: 10123 RequestorPkg: com.catalogizer.androidtv UnderlyingNetworks: Null] ]
+11-05 14:08:53.147   528   767 D MultiInternetWifiNetworkFactory: got request NetworkRequest [ REQUEST id=96, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10123 RequestorUid: 10123 RequestorPkg: com.catalogizer.androidtv UnderlyingNetworks: Null] ]
+11-05 14:08:53.147   528   775 D ConnectivityService: NetReassign [96 : null → 100] [c 0] [a 0] [i 1]
+11-05 14:08:53.158  4716  4775 D CompatibilityChangeReporter: Compat change id reported: 263076149; UID 10123; state: ENABLED
+11-05 14:08:53.174  4716  4716 D CompatibilityChangeReporter: Compat change id reported: 237531167; UID 10123; state: DISABLED
+11-05 14:08:53.192  4716  4716 W OpenGLRenderer: Unknown dataspace 0
+11-05 14:08:53.208  4716  4716 I Choreographer: Skipped 38 frames!  The application may be doing too much work on its main thread.
+11-05 14:08:53.395   528   817 D CompatibilityChangeReporter: Compat change id reported: 261072174; UID 10123; state: ENABLED
+11-05 14:08:53.397  3730  3730 D BoundBrokerSvc: onBind: Intent { act=com.google.android.gms.measurement.START pkg=com.google.android.gms }
+11-05 14:08:53.397  3730  3730 D BoundBrokerSvc: Loading bound service for intent: Intent { act=com.google.android.gms.measurement.START pkg=com.google.android.gms }
+11-05 14:08:53.537   528   817 E AutofillManagerServiceImpl: Bad service name: com.google.android.gms/.autofill.service.AutofillService
+11-05 14:08:53.551  1001  1001 V MediaPlayerList: mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_CHANGED
+11-05 14:08:53.551  1001  1001 V MediaPlayerList: mPackageChangedBroadcastReceiver: action: android.intent.action.PACKAGE_CHANGED
+11-05 14:08:53.555   528   612 I InputReader: Reconfiguring input devices, changes=KEYBOARD_LAYOUTS
+11-05 14:08:53.556   528   555 W Searchables: No web search activity found
+11-05 14:08:53.558   844   867 I PermissionControllerServiceImpl: Updating user sensitive for uid 10123
+11-05 14:08:53.568   528   602 I RoleService: Granting default roles...
+11-05 14:08:53.581   844  4661 W Role    : Cannot get ApplicationInfo for default holder: com.android.messaging
+11-05 14:08:53.591   844  4661 W Role    : Cannot get ApplicationInfo for default holder: com.google.android.gms.supervision
+11-05 14:08:53.603  4716  4763 I FA      : Tag Manager is not found and thus will not be used
+11-05 14:08:53.606   844  4661 W Role    : Cannot get ApplicationInfo for default holder: com.android.gallery3d
+11-05 14:08:53.620  4716  4754 E SessionConfigFetcher: Error failing to fetch the remote configs: Bad response code: 404
+11-05 14:08:53.632  4716  4749 D LifecycleServiceBinder: Binding service to application.
+11-05 14:08:53.639  4716  4749 D SessionLifecycleClient: Data Collection is disabled for all subscribers. Skipping this Event
+11-05 14:08:53.650  4716  4752 W Firebase-Installations: Error when communicating with the Firebase Installations server API. HTTP response: [400 Bad Request: {
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:   "error": {
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:     "code": 400,
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:     "message": "API key not valid. Please pass a valid API key.",
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:     "status": "INVALID_ARGUMENT",
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:     "details": [
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:       {
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:         "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:         "reason": "API_KEY_INVALID",
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:         "domain": "googleapis.com",
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:         "metadata": {
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:           "service": "firebaseinstallations.googleapis.com"
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:         }
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:       },
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:       {
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:         "@type": "type.googleapis.com/google.rpc.LocalizedMessage",
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:         "locale": "en-US",
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:         "message": "API key not valid. Please pass a valid API key."
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:       }
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:     ]
+11-05 14:08:53.650  4716  4752 W Firebase-Installations:   }
+11-05 14:08:53.650  4716  4752 W Firebase-Installations: }
+11-05 14:08:53.650  4716  4752 W Firebase-Installations: ]
+11-05 14:08:53.651  4716  4752 W Firebase-Installations: Firebase options used while communicating with Firebase server APIs: AIzaSyPLACEHOLDER-LOCAL-QA-000000000000, catalogizer-local-qa-placeholder, 1:000000000000:android:0000000000000000
+11-05 14:08:53.651  4716  4752 E Firebase-Installations: Firebase Installations can not communicate with Firebase server APIs due to invalid configuration. Please update your Firebase initialization process and set valid Firebase options (API key, Project ID, Application ID) when initializing Firebase.
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: Settings request failed.
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: java.io.FileNotFoundException: https://firebase-settings.crashlytics.com/spi/v2/platforms/android/gmp/1:000000000000:android:0000000000000000/settings?instance=d6cb5f8598dbc2dc66c3341e4228b157e7ce327d&build_version=8&display_version=2.4.0&source=1
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: 	at com.android.okhttp.internal.huc.HttpURLConnectionImpl.getInputStream(HttpURLConnectionImpl.java:255)
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: 	at com.android.okhttp.internal.huc.DelegatingHttpsURLConnection.getInputStream(DelegatingHttpsURLConnection.java:211)
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: 	at com.android.okhttp.internal.huc.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:30)
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: 	at com.google.firebase.crashlytics.internal.network.HttpGetRequest.execute(HttpGetRequest.java:82)
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: 	at com.google.firebase.crashlytics.internal.settings.DefaultSettingsSpiCall.invoke(DefaultSettingsSpiCall.java:112)
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: 	at com.google.firebase.crashlytics.internal.settings.SettingsController$1.then(SettingsController.java:200)
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: 	at com.google.firebase.crashlytics.internal.settings.SettingsController$1.then(SettingsController.java:193)
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: 	at com.google.android.gms.tasks.zzo.run(com.google.android.gms:play-services-tasks@@18.0.2:1)
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: 	at com.google.firebase.crashlytics.internal.common.ExecutorUtils$1$1.onRun(ExecutorUtils.java:67)
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: 	at com.google.firebase.crashlytics.internal.common.BackgroundPriorityRunnable.run(BackgroundPriorityRunnable.java:27)
+11-05 14:08:53.753  4716  4748 E FirebaseCrashlytics: 	at java.lang.Thread.run(Thread.java:1012)
+11-05 14:08:53.761  4716  4747 I FirebaseCrashlytics: No version control information found
+11-05 14:08:53.770   528  1384 D CoreBackPreview: Window{a54dd8c u0 com.catalogizer.androidtv/com.catalogizer.androidtv.ui.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@dbc3159, mPriority=0, mIsAnimationCallback=false}
+11-05 14:08:53.770  4716  4716 D Compose Focus: Owner FocusChanged(true)
+11-05 14:08:53.823   395   470 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10123 pid=0
+11-05 14:08:53.823   395   470 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10123 => denied (187 us)
+11-05 14:08:53.824   395   471 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10123 pid=4716
+11-05 14:08:53.824   395   471 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10123 => denied (80 us)
+11-05 14:08:53.824   395   471 W ServiceManagerCppClient: Permission failure: android.permission.INTERNAL_SYSTEM_WINDOW from uid=10123 pid=4716
+11-05 14:08:53.824   395   471 D PermissionCache: checking android.permission.INTERNAL_SYSTEM_WINDOW for uid=10123 => denied (70 us)
+11-05 14:08:53.824   395   470 W ServiceManagerCppClient: Permission failure: android.permission.INTERNAL_SYSTEM_WINDOW from uid=10123 pid=0
+11-05 14:08:53.824   395   470 D PermissionCache: checking android.permission.INTERNAL_SYSTEM_WINDOW for uid=10123 => denied (178 us)
+11-05 14:08:53.824   395   470 W ServiceManagerCppClient: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10123 pid=0
+11-05 14:08:53.824   395   470 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10123 => denied (79 us)
+11-05 14:08:53.824   395   471 W ServiceManagerCppClient: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10123 pid=4716
+11-05 14:08:53.824   395   471 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10123 => denied (199 us)
+11-05 14:08:53.834   169   169 I hwservicemanager: getTransport: Cannot find entry android.hardware.configstore@1.0::ISurfaceFlingerConfigs/default in either framework or device VINTF manifest.
+11-05 14:08:53.835  4716  4777 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-05 14:08:53.851   169   169 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+11-05 14:08:53.851  4716  4777 I Gralloc4: mapper 4.x is not supported
+11-05 14:08:53.914  1683  1771 D EGL_emulation: app_time_stats: avg=8.53ms min=2.75ms max=26.63ms count=52
+11-05 14:08:54.046  1239  1239 I katniss_interactor_PackageCache: Rebuilding package cache for Intent { act=android.intent.action.PACKAGE_CHANGED dat=package: flg=0x45000010 (has extras) }
+11-05 14:08:54.051  2255  2255 I katniss_search_PackageCache: Rebuilding package cache for Intent { act=android.intent.action.PACKAGE_CHANGED dat=package: flg=0x45000010 (has extras) }
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: Source not found for package: com.netflix.ninja
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: android.content.pm.PackageManager$NameNotFoundException: com.netflix.ninja
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfoAsUser(ApplicationPackageManager.java:256)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfo(ApplicationPackageManager.java:216)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfo(ApplicationPackageManager.java:210)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at llh.a(PG:4)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at ante.next(PG:1)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.a(PG:2)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.hasNext(PG:1)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.a(PG:1)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.hasNext(PG:1)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at antb.f(PG:1)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at antb.b(PG:1)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at llj.o(PG:3)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at llj.n(PG:2)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at kne.handleMessage(PG:132)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Looper.loopOnce(Looper.java:205)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Looper.loop(Looper.java:294)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at java.lang.reflect.Method.invoke(Native Method)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+11-05 14:08:54.057  2255  2255 W katniss_search_CloudSearchableSources: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: Source not found for package: com.netflix.ninja
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: android.content.pm.PackageManager$NameNotFoundException: com.netflix.ninja
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfoAsUser(ApplicationPackageManager.java:256)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfo(ApplicationPackageManager.java:216)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfo(ApplicationPackageManager.java:210)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at llh.a(PG:4)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at ante.next(PG:1)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.a(PG:2)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.hasNext(PG:1)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.a(PG:1)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.hasNext(PG:1)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at antb.f(PG:1)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at antb.b(PG:1)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at llj.o(PG:3)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at llj.n(PG:7)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at kne.handleMessage(PG:132)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Looper.loopOnce(Looper.java:205)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Looper.loop(Looper.java:294)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at java.lang.reflect.Method.invoke(Native Method)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+11-05 14:08:54.064  2255  2255 W katniss_search_CloudSearchableSources: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: Source not found for package: com.netflix.ninja
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: android.content.pm.PackageManager$NameNotFoundException: com.netflix.ninja
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfoAsUser(ApplicationPackageManager.java:256)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfo(ApplicationPackageManager.java:216)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ApplicationPackageManager.getPackageInfo(ApplicationPackageManager.java:210)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at llh.a(PG:4)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at ante.next(PG:1)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.a(PG:2)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.hasNext(PG:1)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.a(PG:1)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at ansg.hasNext(PG:1)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at antb.f(PG:1)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at antb.b(PG:1)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at llj.o(PG:3)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at llj.d(PG:1)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at llf.a(PG:1)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at llf.k(PG:1)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at llj.n(PG:20)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at kne.handleMessage(PG:132)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Looper.loopOnce(Looper.java:205)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at android.os.Looper.loop(Looper.java:294)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at java.lang.reflect.Method.invoke(Native Method)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+11-05 14:08:54.066  2255  2255 W katniss_search_CloudSearchableSources: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+11-05 14:08:54.076  1239  1544 I katniss_interactor_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.LEANBACK_LAUNCHER] }: [AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0), AppInfo(applicationLabel=Live TV, enabled=true, isSystemApp=true, longVersionCode=417000452, packageName=com.android.tv, uid=10080, versionCode=417000452, versionName=1.24-asop), AppInfo(applicationLabel=Google Play Store, enabled=true, isSystemApp=true, longVersionCode=85341728, packageName=com.android.vending, uid=10085, versionCode=85341728, versionName=53.4.17-34 [8] [PR] 988500596), AppInfo(applicationLabel=YouTube, enabled=true, isSystemApp=true, longVersionCode=218009360, packageName=com.google.android.youtube.tv, uid=10094, versionCode=218009360, versionName=2.18.009), AppInfo(applicationLabel=YouTube Music, enabled=true, isSystemApp=true, longVersionCode=110003320, packageName=com.google.android.youtube.tvmusic, uid=10089, versionCode=110003320, versionName=1.10.03), AppInfo(applicationLabel=Google Play Games, enabled=true, isSystemApp=true, longVersionCode=462434070, packageName=com.google.android.play.games, uid=10093, versionCode=462434070, versionName=2023.08.46243 (567560229.567560229-000700)), AppInfo(applicationLabel=Catalogizer, enabled=true, isSystemApp=false, longVersionCode=8, packageName=com.catalogizer.androidtv, uid=10123, versionCode=8, versionName=2.4.0)]
+11-05 14:08:54.077  2255  2472 I katniss_search_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.LEANBACK_LAUNCHER] }: [AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0), AppInfo(applicationLabel=Live TV, enabled=true, isSystemApp=true, longVersionCode=417000452, packageName=com.android.tv, uid=10080, versionCode=417000452, versionName=1.24-asop), AppInfo(applicationLabel=Google Play Store, enabled=true, isSystemApp=true, longVersionCode=85341728, packageName=com.android.vending, uid=10085, versionCode=85341728, versionName=53.4.17-34 [8] [PR] 988500596), AppInfo(applicationLabel=YouTube, enabled=true, isSystemApp=true, longVersionCode=218009360, packageName=com.google.android.youtube.tv, uid=10094, versionCode=218009360, versionName=2.18.009), AppInfo(applicationLabel=YouTube Music, enabled=true, isSystemApp=true, longVersionCode=110003320, packageName=com.google.android.youtube.tvmusic, uid=10089, versionCode=110003320, versionName=1.10.03), AppInfo(applicationLabel=Google Play Games, enabled=true, isSystemApp=true, longVersionCode=462434070, packageName=com.google.android.play.games, uid=10093, versionCode=462434070, versionName=2023.08.46243 (567560229.567560229-000700)), AppInfo(applicationLabel=Catalogizer, enabled=true, isSystemApp=false, longVersionCode=8, packageName=com.catalogizer.androidtv, uid=10123, versionCode=8, versionName=2.4.0)]
+11-05 14:08:54.078  1239  1544 I katniss_interactor_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.LEANBACK_SETTINGS] }: [AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0), AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0)]
+11-05 14:08:54.080  2255  2472 I katniss_search_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.LEANBACK_SETTINGS] }: [AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0), AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0)]
+11-05 14:08:54.083  2255  2472 I katniss_search_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] }: [AppInfo(applicationLabel=Android TV Home, enabled=true, isSystemApp=true, longVersionCode=1010919201, packageName=com.google.android.tvlauncher, uid=10078, versionCode=1010919201, versionName=6.4.6-580192592-f), AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0)]
+11-05 14:08:54.084  2255  2472 I katniss_search_PackageCache: Apps for Intent { act=com.google.assistant.DATA_SHARING_CONSENT }: [AppInfo(applicationLabel=Google, enabled=true, isSystemApp=true, longVersionCode=15000514, packageName=com.google.android.katniss, uid=10081, versionCode=15000514, versionName=7.9.20231101.4)]
+11-05 14:08:54.090  1239  1544 I katniss_interactor_PackageCache: Apps for Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] }: [AppInfo(applicationLabel=Android TV Home, enabled=true, isSystemApp=true, longVersionCode=1010919201, packageName=com.google.android.tvlauncher, uid=10078, versionCode=1010919201, versionName=6.4.6-580192592-f), AppInfo(applicationLabel=Settings, enabled=true, isSystemApp=true, longVersionCode=1, packageName=com.android.tv.settings, uid=1000, versionCode=1, versionName=1.0)]
+11-05 14:08:54.108  1239  1544 I katniss_interactor_PackageCache: Apps for Intent { act=com.google.assistant.DATA_SHARING_CONSENT }: [AppInfo(applicationLabel=Google, enabled=true, isSystemApp=true, longVersionCode=15000514, packageName=com.google.android.katniss, uid=10081, versionCode=15000514, versionName=7.9.20231101.4)]
+11-05 14:08:54.157  3730  3790 I Icing   : Indexing com.google.android.gms-apps from com.google.android.gms
+11-05 14:08:54.162  3730  3790 I Icing   : Indexing done com.google.android.gms-apps
+11-05 14:08:54.384   528  1913 E TaskPersister: File error accessing recents directory (directory doesn't exist?).
+11-05 14:08:54.793   528  2167 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10123 pid=0
+11-05 14:08:54.793   528  2167 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10123 => denied (216 us)
+11-05 14:08:54.793   528  2167 W ServiceManagerCppClient: Permission failure: android.permission.INTERNAL_SYSTEM_WINDOW from uid=10123 pid=0
+11-05 14:08:54.793   528  2167 D PermissionCache: checking android.permission.INTERNAL_SYSTEM_WINDOW for uid=10123 => denied (75 us)
+11-05 14:08:54.793   528  2167 W ServiceManagerCppClient: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10123 pid=0
+11-05 14:08:54.793   528  2167 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10123 => denied (64 us)
+11-05 14:08:54.803   528   544 W ziparchive: Unable to open '/data/app/~~S2Jk16_Ifj4fssi1zt0y-w==/com.catalogizer.androidtv-Abjab6u4rc-0m7pbXxmNuw==/base.dm': No such file or directory
+11-05 14:08:54.806   842   876 V WindowManagerShell: onTransitionReady android.os.BinderProxy@7a9f781: {id=6 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@f69b003} m=OPEN f=NONE leash=Surface(name=Task=10)/@0xdefe214 sb=Rect(0, 0 - 1920, 1080) eb=Rect(0, 0 - 1920, 1080) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@8f30b80} m=TO_BACK f=NONE leash=Surface(name=Task=1)/@0x57d8abd sb=Rect(0, 0 - 1920, 1080) eb=Rect(0, 0 - 1920, 1080) d=0}]}
+11-05 14:08:54.806   842   876 V WindowManagerShell: Playing animation for (#6)android.os.BinderProxy@7a9f781@0
+11-05 14:08:54.806   842   876 V WindowManagerShell:  try handler com.android.wm.shell.keyguard.KeyguardTransitionHandler@544eb78
+11-05 14:08:54.806   842   876 V WindowManagerShell:  try handler com.android.wm.shell.activityembedding.ActivityEmbeddingController@4e70251
+11-05 14:08:54.806   842   876 V WindowManagerShell:  try handler com.android.wm.shell.pip.tv.TvPipTransition@4b6dab6
+11-05 14:08:54.806   842   876 V WindowManagerShell:  try handler com.android.wm.shell.transition.RemoteTransitionHandler@742c3b7
+11-05 14:08:54.806   842   876 V WindowManagerShell: Transition doesn't have explicit remote, search filters for match for {id=6 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@f69b003} m=OPEN f=NONE leash=Surface(name=Task=10)/@0xdefe214 sb=Rect(0, 0 - 1920, 1080) eb=Rect(0, 0 - 1920, 1080) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@8f30b80} m=TO_BACK f=NONE leash=Surface(name=Task=1)/@0x57d8abd sb=Rect(0, 0 - 1920, 1080) eb=Rect(0, 0 - 1920, 1080) d=0}]}
+11-05 14:08:54.807   842   876 V WindowManagerShell:  Delegate animation for #6 to null
+11-05 14:08:54.807   842   876 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultTransitionHandler@5994724
+11-05 14:08:54.807   842   876 V WindowManagerShell: start default transition animation, info = {id=6 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@f69b003} m=OPEN f=NONE leash=Surface(name=Task=10)/@0xdefe214 sb=Rect(0, 0 - 1920, 1080) eb=Rect(0, 0 - 1920, 1080) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@8f30b80} m=TO_BACK f=NONE leash=Surface(name=Task=1)/@0x57d8abd sb=Rect(0, 0 - 1920, 1080) eb=Rect(0, 0 - 1920, 1080) d=0}]}
+11-05 14:08:54.808   842   876 V WindowManagerShell: loadAnimation: anim=android.view.animation.AlphaAnimation@4cd495f animAttr=0x9 type=OPEN isEntrance=false
+11-05 14:08:54.808   528   544 I ActivityTaskManager: Displayed com.catalogizer.androidtv/.ui.MainActivity for user 0: +3s433ms
+11-05 14:08:54.808   528   544 V WindowManager: Sent Transition #6 createdAt=11-05 14:08:51.367 via request=TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=10 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.catalogizer.androidtv/.ui.MainActivity } baseActivity=ComponentInfo{com.catalogizer.androidtv/com.catalogizer.androidtv.ui.MainActivity} topActivity=ComponentInfo{com.catalogizer.androidtv/com.catalogizer.androidtv.ui.MainActivity} origActivity=null realActivity=ComponentInfo{com.catalogizer.androidtv/com.catalogizer.androidtv.ui.MainActivity} numActivities=1 lastActiveTime=359376 supportsMultiWindow=false resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{726c5f3 Task{e6e8ddc #10 type=standard A=10123:com.catalogizer.androidtv}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=true launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=null topActivityInfo=ActivityInfo{8c482b0 com.catalogizer.androidtv.ui.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+11-05 14:08:54.809   528   544 V WindowManager:     startWCT=WindowContainerTransaction { changes = {} hops = [] errorCallbackToken=null taskFragmentOrganizer=null }
+11-05 14:08:54.809   528   544 V WindowManager:     info={id=6 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{RemoteToken{726c5f3 Task{e6e8ddc #10 type=standard A=10123:com.catalogizer.androidtv}}} m=OPEN f=NONE leash=Surface(name=Task=10)/@0x1774644 sb=Rect(0, 0 - 1920, 1080) eb=Rect(0, 0 - 1920, 1080) d=0},{WCT{RemoteToken{c7a70d8 Task{e557db1 #1 type=home}}} m=TO_BACK f=NONE leash=Surface(name=Task=1)/@0xf6d3ad7 sb=Rect(0, 0 - 1920, 1080) eb=Rect(0, 0 - 1920, 1080) d=0}]}
+11-05 14:08:54.814  4716  4729 I OpenGLRenderer: Davey! duration=2249ms; Flags=1, FrameTimelineVsyncId=15375, IntendedVsync=360559626069, Vsync=361192959377, InputEventId=0, HandleInputStart=361219523636, AnimationStart=361219531066, PerformTraversalsStart=361219737486, DrawStart=361905666001, FrameDeadline=360576292735, FrameInterval=361208471863, FrameStartTime=16666666, SyncQueued=361923581776, SyncStart=361923949056, IssueDrawCommandsStart=361925265977, SwapBuffers=362690846634, FrameCompleted=362809772275, DequeueBufferDuration=8490, QueueBufferDuration=967661, GpuCompleted=362809772275, SwapBuffersCompleted=362792414441, DisplayPresentTime=0, CommandSubmissionCompleted=362690846634, 
+11-05 14:08:54.815   842   876 V WindowManagerShell: loadAnimation: anim=android.view.animation.AlphaAnimation@9a71c7b animAttr=0x8 type=OPEN isEntrance=true
+11-05 14:08:54.816   842   876 V WindowManagerShell:  animated by com.android.wm.shell.transition.DefaultTransitionHandler@5994724
+11-05 14:08:54.832  4716  4716 I Choreographer: Skipped 92 frames!  The application may be doing too much work on its main thread.
+11-05 14:08:54.839  4716  4716 D SessionLifecycleService: Service bound to new client on process 4716
+11-05 14:08:54.843  4716  4798 D SessionLifecycleService: App has not yet foregrounded. Using previously stored session: null
+11-05 14:08:54.855  4716  4798 D SessionLifecycleService: Client android.os.Messenger@885b1b1 bound at 362840. Clients: 1
+11-05 14:08:54.856  4716  4770 D TvChannelSync: Sync worker started
+11-05 14:08:54.856  4716  4770 D TvChannelSync: User not authenticated, skipping sync
+11-05 14:08:54.856  4716  4716 D MainViewModel: Auth hydrated from disk
+11-05 14:08:54.856  4716  4716 D MainViewModel: App initialization complete, isLoading=false
+11-05 14:08:54.858  4716  4783 I WM-WorkerWrapper: Worker result SUCCESS for Work [ id=19a291de-7fc9-43d5-8bdd-cb0eb400ae2c, tags={ com.catalogizer.androidtv.data.tv.TvChannelSyncWorker } ]
+11-05 14:08:54.863  3690  4702 I FontLog : (REDACTED) Received query %s, URI %s
+11-05 14:08:54.864  3690  4702 I FontLog : (REDACTED) Query [%s] resolved to %s
+11-05 14:08:54.876  4716  4716 D SessionLifecycleClient: Connected to SessionLifecycleService. Queue size 0
+11-05 14:08:54.880  4716  4749 D SessionLifecycleClient: Data Collection is disabled for all subscribers. Skipping this Event
+11-05 14:08:54.904   528  1298 D CompatibilityChangeReporter: Compat change id reported: 214016041; UID 10123; state: ENABLED
+11-05 14:08:54.904   528  1298 I ImeTracker: com.catalogizer.androidtv:e1920748: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+11-05 14:08:54.904   528  1298 I ImeTracker: com.catalogizer.androidtv:e1920748: onCancelled at PHASE_SERVER_SHOULD_HIDE
+11-05 14:08:54.923  1122  1122 I GoogleInputMethodService: GoogleInputMethodService.onFinishInput():3264 
+11-05 14:08:54.925  1683  1771 D EGL_emulation: app_time_stats: avg=5.88ms min=2.75ms max=62.01ms count=58
+11-05 14:08:54.927  1122  1122 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2111 repeatCheckTimes = 0, locked = false
+11-05 14:08:54.931  1122  1122 I GoogleInputMethodService: GoogleInputMethodService.onStartInput():1899 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=com.catalogizer.androidtv fieldId=0 fieldName=null extras=null hintLocales=[]}, false)
+11-05 14:08:54.931  1122  1122 I GoogleInputMethodService: GoogleInputMethodService.shouldHideHeaderOnInitialState():4091 ShouldHideHeaderOnInitialState = false
+11-05 14:08:54.938  1122  1122 I GoogleInputMethodService: GoogleInputMethodService.updateDeviceLockedStatus():2111 repeatCheckTimes = 1, locked = false
+11-05 14:08:55.045   528  1384 W JobScheduler: Job didn't exist in JobStore: e471630 #u0a123/0 com.catalogizer.androidtv/androidx.work.impl.background.systemjob.SystemJobService
+11-05 14:08:55.108   528   774 D EthernetNetworkFactory: eth0: onNetworkUnneeded for request: NetworkRequest [ REQUEST id=96, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10123 RequestorUid: 10123 RequestorPkg: com.catalogizer.androidtv UnderlyingNetworks: Null] ]
+11-05 14:08:55.131  3860  3877 I Finsky  : [42] Package com.google.android.gms is verified.
+11-05 14:08:55.138  3730  4700 W FA-SVC  : Service response is missing Install Referrer install timestamp
+11-05 14:08:55.242   842   876 V WindowManagerShell: Transition animation finished (aborted=false), notifying core (#6)android.os.BinderProxy@7a9f781@0
+11-05 14:08:55.253   528   544 V WindowManager: Finish Transition #6: created at 11-05 14:08:51.367 collect-started=0.055ms request-sent=9.027ms started=27.219ms ready=102.532ms sent=3434.094ms finished=3876.851ms
+11-05 14:08:55.254   842   876 V WindowManagerShell: Track 0 became idle
+11-05 14:08:55.254   842   876 V WindowManagerShell: All active transition animations finished
+11-05 14:08:55.306   528   595 D CompatibilityChangeReporter: Compat change id reported: 265195908; UID 10078; state: ENABLED
+11-05 14:08:55.322  3690  4702 I FontLog : (REDACTED) Fetch %s end status %s
+11-05 14:08:55.329  3690  3817 I FontLog : (REDACTED) Pulling font file for id = %d, cache size = %d
+11-05 14:08:55.336  3690  3817 I FontLog : (REDACTED) Pulling font file for id = %d, cache size = %d
+11-05 14:08:56.053  4716  4777 D EGL_emulation: app_time_stats: avg=27.92ms min=14.64ms max=249.13ms count=43
+11-05 14:08:56.893   528   601 D ActivityManager: freezing 1782 android.process.media
+11-05 14:08:56.912   528  1384 W ProcessStats: Tracking association SourceState{6b1e20f com.google.android.gms/10084 BFgs #8187} whose proc state 4 is better than process ProcessState{ac88548 com.google.process.gservices/10084 pkg=com.google.android.gsf} proc state 13 (1575 skipped)
+11-05 14:08:56.917   528   831 W FileUtils: Failed to chmod(AtomicFile[/data/system_de/0/system/game-manager-service.xml]): android.system.ErrnoException: chmod failed: ENOENT (No such file or directory)
+11-05 14:08:57.059  4716  4777 D EGL_emulation: app_time_stats: avg=20.01ms min=15.11ms max=26.35ms count=46
+11-05 14:08:57.342  4716  4716 D SplashContent: Min duration timer complete (2500ms)
+11-05 14:08:57.370  4716  4716 I SplashContent: Splash completing after 3696ms (timer=true, ready=true, safety=false)
+11-05 14:08:57.440  4716  4716 W gizer.androidtv: Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-05 14:08:57.440  4716  4716 W gizer.androidtv: Common causes for lock verification issues are non-optimized dex code
+11-05 14:08:57.440  4716  4716 W gizer.androidtv: and incorrect proguard optimizations.
+11-05 14:08:57.441  4716  4716 W gizer.androidtv: Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+11-05 14:08:57.441  4716  4716 W gizer.androidtv: Method java.lang.Object androidx.compose.runtime.snapshots.SnapshotStateList.mutate(kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-05 14:08:57.441  4716  4716 W gizer.androidtv: Method void androidx.compose.runtime.snapshots.SnapshotStateList.update(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-05 14:08:57.441  4716  4716 W gizer.androidtv: Method void androidx.compose.runtime.snapshots.SnapshotStateList.update$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+11-05 14:08:57.511  4716  4716 D CompatibilityChangeReporter: Compat change id reported: 171228096; UID 10123; state: ENABLED
+11-05 14:08:57.617  4716  4716 D CompatibilityChangeReporter: Compat change id reported: 289878283; UID 10123; state: ENABLED
+11-05 14:08:57.973  4716  4770 D TrafficStats: tagSocket(121) with statsTag=0xffffffff, statsUid=-1
+11-05 14:08:57.975  4716  4770 D Discovery: HTTP probe failed for http://localhost:8080: Failed to connect to localhost/127.0.0.1:8080
+11-05 14:08:57.978  4716  4770 D TrafficStats: tagSocket(121) with statsTag=0xffffffff, statsUid=-1
+11-05 14:08:57.980  4716  4770 D Discovery: HTTP probe failed for http://localhost:8080: Failed to connect to localhost/127.0.0.1:8080
+11-05 14:08:57.982  4716  4770 D TrafficStats: tagSocket(121) with statsTag=0xffffffff, statsUid=-1
+11-05 14:08:57.984  4716  4770 D Discovery: HTTP probe failed for http://localhost:8080: Failed to connect to localhost/127.0.0.1:8080
+11-05 14:08:58.005  4716  4770 D TrafficStats: tagSocket(121) with statsTag=0xffffffff, statsUid=-1
+11-05 14:08:58.005  4716  4770 D Discovery: Sent UDP broadcast discovery to 255.255.255.255:19820
+11-05 14:08:58.006  4716  4716 I Choreographer: Skipped 37 frames!  The application may be doing too much work on its main thread.
+11-05 14:08:58.011  4716  4770 D Discovery: Sent UDP broadcast discovery to 10.0.2.255:19820
+11-05 14:08:58.522  4716  4777 D EGL_emulation: app_time_stats: avg=96.53ms min=16.02ms max=1131.20ms count=15
+11-05 14:08:58.552  4716  4716 I Choreographer: Skipped 32 frames!  The application may be doing too much work on its main thread.
+11-05 14:08:58.628  4716  4730 I OpenGLRenderer: Davey! duration=1163ms; Flags=0, FrameTimelineVsyncId=17657, IntendedVsync=365359625877, Vsync=365359625877, InputEventId=0, HandleInputStart=365372113428, AnimationStart=365372116708, PerformTraversalsStart=365845649876, DrawStart=365845801786, FrameDeadline=365426292541, FrameInterval=365372099538, FrameStartTime=16666666, SyncQueued=365962870567, SyncStart=365962968707, IssueDrawCommandsStart=365963076278, SwapBuffers=366514391656, FrameCompleted=366523599069, DequeueBufferDuration=9680, QueueBufferDuration=1000701, GpuCompleted=366523463519, SwapBuffersCompleted=366523599069, DisplayPresentTime=0, CommandSubmissionCompleted=366514391656, 
+11-05 14:08:58.652  4716  4730 I OpenGLRenderer: Davey! duration=904ms; Flags=0, FrameTimelineVsyncId=17665, IntendedVsync=365376292543, Vsync=365992959185, InputEventId=0, HandleInputStart=366006912229, AnimationStart=366006915809, PerformTraversalsStart=366143478906, DrawStart=366143658046, FrameDeadline=366542959163, FrameInterval=366006606929, FrameStartTime=16666666, SyncQueued=366168049233, SyncStart=366523749329, IssueDrawCommandsStart=366523833039, SwapBuffers=366629314067, FrameCompleted=366636529920, DequeueBufferDuration=5560, QueueBufferDuration=233900, GpuCompleted=366636471480, SwapBuffersCompleted=366636529920, DisplayPresentTime=0, CommandSubmissionCompleted=366629314067, 
+11-05 14:08:58.857  4716  4723 I gizer.androidtv: JIT allocated 83KB for compiled code of void com.catalogizer.androidtv.ui.screens.login.LoginScreenKt.LoginScreen(com.catalogizer.androidtv.ui.viewmodel.AuthViewModel, kotlin.jvm.functions.Function0, androidx.compose.runtime.Composer, int)
+11-05 14:08:58.858  4716  4723 I gizer.androidtv: JIT allocated 81KB for stack maps of void com.catalogizer.androidtv.ui.screens.login.LoginScreenKt.LoginScreen(com.catalogizer.androidtv.ui.viewmodel.AuthViewModel, kotlin.jvm.functions.Function0, androidx.compose.runtime.Composer, int)
+11-05 14:08:58.858  4716  4723 I gizer.androidtv: Compiler allocated 10MB to compile void com.catalogizer.androidtv.ui.screens.login.LoginScreenKt.LoginScreen(com.catalogizer.androidtv.ui.viewmodel.AuthViewModel, kotlin.jvm.functions.Function0, androidx.compose.runtime.Composer, int)
+11-05 14:08:59.018   528   547 D OomAdjuster: Not killing cached processes
+11-05 14:08:59.018  4716  4803 D ProfileInstaller: Installing profile for com.catalogizer.androidtv
+11-05 14:08:59.530  4716  4777 D EGL_emulation: app_time_stats: avg=38.02ms min=14.27ms max=112.94ms count=26
+11-05 14:09:00.039   528  1384 I WifiService: acquireMulticastLock uid=10123
+11-05 14:09:00.040  4716  4770 D Discovery: MulticastLock acquired
+11-05 14:09:00.040  4716  4770 D TrafficStats: tagSocket(120) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:00.544  4716  4777 D EGL_emulation: app_time_stats: avg=18.00ms min=11.41ms max=24.81ms count=50
+11-05 14:09:01.567  4716  4777 D EGL_emulation: app_time_stats: avg=17.41ms min=10.55ms max=39.28ms count=50
+11-05 14:09:01.815  4716  4726 W System  : A resource failed to call end. 
+11-05 14:09:01.816  4716  4726 W System  : A resource failed to call end. 
+11-05 14:09:02.569  4716  4777 D EGL_emulation: app_time_stats: avg=25.46ms min=12.54ms max=48.92ms count=37
+11-05 14:09:02.985   191  4651 I keystore2: system/security/keystore2/src/watchdog.rs:319 - Watchdog thread idle -> terminating. Have a great day.
+11-05 14:09:03.051   528  1384 I WifiService: releaseMulticastLock uid=10123
+11-05 14:09:03.057  4716  4770 D Discovery: MulticastLock released
+11-05 14:09:03.068  4716  4716 D Discovery: No servers found via broadcast/multicast, trying HTTP probe...
+11-05 14:09:03.073  4716  4716 D Discovery: Scanning subnet 10.0.2.0/24 on ports [8080, 8081, 8082, 80]
+11-05 14:09:03.115  4716  4768 D TrafficStats: tagSocket(124) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.118  4716  4784 D TrafficStats: tagSocket(127) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.121  4716  4770 D TrafficStats: tagSocket(149) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.123  4716  4806 D TrafficStats: tagSocket(143) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.130  4716  4767 D TrafficStats: tagSocket(148) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.130  4716  4812 D TrafficStats: tagSocket(150) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.130  4716  4807 D TrafficStats: tagSocket(151) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.131  4716  4811 D TrafficStats: tagSocket(155) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.134  4716  4809 D TrafficStats: tagSocket(154) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.134  4716  4814 D TrafficStats: tagSocket(152) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.140  4716  4813 D TrafficStats: tagSocket(153) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.142  4716  4810 D TrafficStats: tagSocket(157) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.151  4716  4817 D TrafficStats: tagSocket(156) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.156  4716  4816 D TrafficStats: tagSocket(158) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.158  4716  4820 D TrafficStats: tagSocket(159) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.162  4716  4808 D TrafficStats: tagSocket(160) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.162  4716  4815 D TrafficStats: tagSocket(161) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.163  4716  4821 D TrafficStats: tagSocket(162) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.163  4716  4818 D TrafficStats: tagSocket(163) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.169  4716  4819 D TrafficStats: tagSocket(165) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.170  4716  4822 D TrafficStats: tagSocket(168) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.172  4716  4824 D TrafficStats: tagSocket(166) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.175  4716  4823 D TrafficStats: tagSocket(164) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.177  4716  4825 D TrafficStats: tagSocket(169) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.180  4716  4830 D TrafficStats: tagSocket(167) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.183  4716  4829 D TrafficStats: tagSocket(170) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.193  4716  4828 D TrafficStats: tagSocket(171) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.231  4716  4832 D TrafficStats: tagSocket(172) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.235  4716  4831 D TrafficStats: tagSocket(173) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.263  4716  4826 D TrafficStats: tagSocket(146) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.267  4716  4827 D TrafficStats: tagSocket(126) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.268  4716  4833 D TrafficStats: tagSocket(144) with statsTag=0xffffffff, statsUid=-1
+11-05 14:09:03.530  4839  4839 W BpBinder: Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+11-05 14:09:03.530  4839  4839 W ProcessState: Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+11-05 14:09:03.559   169   169 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+11-05 14:09:03.559  4839  4840 I Gralloc4: mapper 4.x is not supported
+11-05 14:09:03.626  4716  4777 D EGL_emulation: app_time_stats: avg=24.04ms min=11.37ms max=146.95ms count=40
