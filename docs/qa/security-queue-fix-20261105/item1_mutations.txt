@@ -1,0 +1,8 @@
+Item 1 (SSRF-F1.. cover-art ffmpeg/ffprobe): mutations applied to catalog-api/internal/services/cover_art_service.go, each restored (cmp identical) after the run.
+BASE: ok
+M1 ffprobe without -format_whitelist: KILLED (TestCoverArtFFprobe_PlaylistToLocalFileIsRefused, TestCoverArtFFCommands_GuardArguments)
+M2 ffmpeg without -format_whitelist: KILLED (..PlaylistToLocalFileIsRefused, ..PlaylistToLocalFileMakesNoThumbnail, ..GuardArguments)
+M3 ffprobe ignores its timeout ctx: KILLED (TestGetVideoDuration_BlockedInputIsBoundedByTimeout, 10 s test bound)
+M4 frame extraction without default deadline (both call sites): KILLED (TestGenerateVideoThumbnail_BlockedInputIsBoundedByTimeout)
+M5 "hls" added to coverArtDemuxers: KILLED (three tests)
+M6 coverArtMaxBytesDefault 32 -> 64 MiB: KILLED (TestCoverArtMaxBytes_ProductionDefaultIs32MiB)

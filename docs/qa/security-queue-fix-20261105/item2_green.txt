@@ -1,0 +1,2 @@
+--- PASS: TestDownloadImage_Socks5DialHonoursContextCancellation (0.40s)
+ok  	catalogizer/internal/services	0.414s

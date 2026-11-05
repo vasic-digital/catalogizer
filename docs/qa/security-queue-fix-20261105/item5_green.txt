@@ -1,0 +1,14 @@
+=== RUN   TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware
+=== RUN   TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/default_is_the_secure___Host-_cookie
+=== RUN   TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/toggle_in_a_dev-like_env_reaches_the_middleware
+=== RUN   TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/toggle_is_refused_outside_a_dev-like_env
+--- PASS: TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware (21.03s)
+    --- PASS: TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/default_is_the_secure___Host-_cookie (3.63s)
+    --- PASS: TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/toggle_in_a_dev-like_env_reaches_the_middleware (5.15s)
+    --- PASS: TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/toggle_is_refused_outside_a_dev-like_env (4.66s)
+=== RUN   TestAdminCSRFOptions_PassesToggleThrough
+--- PASS: TestAdminCSRFOptions_PassesToggleThrough (0.00s)
+=== RUN   TestAdminCSRFOptions_UsesRawAppEnvNotTestModeOverride
+--- PASS: TestAdminCSRFOptions_UsesRawAppEnvNotTestModeOverride (0.00s)
+PASS
+ok  	catalogizer	21.059s

@@ -1,0 +1,8 @@
+Round 2 mutations (cover_art_service.go, each restored):
+BASE
+ok  	catalogizer/internal/services	3.193s 
+RB-http: http added to the protocol_whitelist of ffprobe and ffmpeg
+--- FAIL: TestCoverArtFFCommands_DirectURLInputDoesNotReachNetwork (0.30s) --- FAIL: TestCoverArtFFmpegCommands_ProtocolWhitelist (0.00s) 
+RM: requireRegularFile removed from generateVideoThumbnail
+--- FAIL: TestGenerateVideoThumbnail_RejectsNonRegularPath (3.00s) 
+restored

@@ -1,0 +1,1 @@
+Round 1: go vet clean on internal/services, logredact, middleware; go test internal/services, logredact, middleware, monitoring: ok.

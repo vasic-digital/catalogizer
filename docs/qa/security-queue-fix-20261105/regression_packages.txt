@@ -1,0 +1,308 @@
+ok  	catalogizer/internal/services	38.181s
+ok  	catalogizer/internal/monitoring	0.024s
+ok  	catalogizer/internal/middleware	0.205s
+ok  	catalogizer/internal/logredact	0.003s
+Unknown input format 'pdf'
+Pandoc can convert to PDF, but not from PDF.
+/usr/lib/libreoffice/program/soffice.bin: error while loading shared libraries: libreglo.so: cannot open shared object file: No such file or directory
+Unknown input format 'pdf'
+Pandoc can convert to PDF, but not from PDF.
+/usr/lib/libreoffice/program/soffice.bin: error while loading shared libraries: libreglo.so: cannot open shared object file: No such file or directory
+
+
+[31m2026/11/05 03:21:24 [Recovery] 2026/11/05 - 03:21:24 panic recovered:
+unexpected nil pointer dereference
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:244 (0x20bea24)
+	TestPanicRecoveryMiddleware_CatchesPanic.func1: panic("unexpected nil pointer dereference")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0xf5eb50)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0xf5d0bd)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0xf5c9bb)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:249 (0x201c9d7)
+	TestPanicRecoveryMiddleware_CatchesPanic: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/testing/testing.go:2036 (0x56e949)
+	tRunner: fn(t)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/05 03:21:24 [Recovery] 2026/11/05 - 03:21:24 panic recovered:
+%!s(int=42)
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:275 (0x20be904)
+	TestPanicRecoveryMiddleware_IntegerPanic.func1: panic(42)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0xf5eb50)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0xf5d0bd)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0xf5c9bb)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:280 (0x201cd57)
+	TestPanicRecoveryMiddleware_IntegerPanic: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/testing/testing.go:2036 (0x56e949)
+	tRunner: fn(t)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/05 03:21:24 [Recovery] 2026/11/05 - 03:21:24 panic recovered:
+fatal database error
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:290 (0x20be8ba)
+	TestPanicRecoveryMiddleware_ErrorPanic.func1: panic(errors.New("fatal database error"))
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0xf5eb50)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0xf5d0bd)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0xf5c9bb)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:295 (0x201cf17)
+	TestPanicRecoveryMiddleware_ErrorPanic: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/testing/testing.go:2036 (0x56e949)
+	tRunner: fn(t)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/05 03:21:24 [Recovery] 2026/11/05 - 03:21:24 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:466 (0x20be84d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0xf5eb50)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0xf5d0bd)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0xf5c9bb)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:486 (0x201ea17)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/05 03:21:24 [Recovery] 2026/11/05 - 03:21:24 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:466 (0x20be84d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0xf5eb50)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0xf5d0bd)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0xf5c9bb)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:486 (0x201ea17)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/05 03:21:24 [Recovery] 2026/11/05 - 03:21:24 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:466 (0x20be84d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0xf5eb50)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0xf5d0bd)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0xf5c9bb)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:486 (0x201ea17)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/05 03:21:24 [Recovery] 2026/11/05 - 03:21:24 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:466 (0x20be84d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0xf5eb50)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0xf5d0bd)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0xf5c9bb)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:486 (0x201ea17)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/05 03:21:24 [Recovery] 2026/11/05 - 03:21:24 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:466 (0x20be84d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0xf5eb50)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0xf5d0bd)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0xf5c9bb)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:486 (0x201ea17)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/05 03:21:24 [Recovery] 2026/11/05 - 03:21:24 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:466 (0x20be84d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0xf5eb50)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0xf5d0bd)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0xf5c9bb)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:486 (0x201ea17)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/05 03:21:24 [Recovery] 2026/11/05 - 03:21:24 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:466 (0x20be84d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0xf5eb50)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0xf5d0bd)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0xf5c9bb)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:486 (0x201ea17)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/05 03:21:24 [Recovery] 2026/11/05 - 03:21:24 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:466 (0x20be84d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0xf5eb50)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0xf5d0bd)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0xf5c9bb)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:486 (0x201ea17)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/05 03:21:24 [Recovery] 2026/11/05 - 03:21:24 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:466 (0x20be84d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0xf5eb50)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0xf5d0bd)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0xf5c9bb)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:486 (0x201ea17)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/05 03:21:24 [Recovery] 2026/11/05 - 03:21:24 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:466 (0x20be84d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0xf5eb50)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0xf4fa3e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0xf5d0bd)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0xf5c9bb)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/error_handling_integration_test.go:486 (0x201ea17)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+2026/11/05 03:21:24 auth: legacy password hash for user 1 changed concurrently; upgrade skipped
+Unknown input format 'pdf'
+Pandoc can convert to PDF, but not from PDF.
+/usr/lib/libreoffice/program/soffice.bin: error while loading shared libraries: libreglo.so: cannot open shared object file: No such file or directory
+--- FAIL: TestCAT002_Iso_LimitsAreHostAdaptiveAndBounded (0.00s)
+    pdf_text_isolation_test.go:323: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/sec.aT8F87/repo/catalog-api/services/pdf_text_isolation_test.go:323
+        	Error:      	Not equal: 
+        	            	expected: int(715827882)
+        	            	actual  : uint64(0x20000000)
+        	Test:       	TestCAT002_Iso_LimitsAreHostAdaptiveAndBounded
+        	Messages:   	MemAvailable/(2*slots)
+Unlicensed copy of UniPDF
+- Get a free trial license on https://unidoc.io
+Unlicensed copy of UniPDF
+- Get a free trial license on https://unidoc.io
+FAIL
+FAIL	catalogizer/services	222.177s
+FAIL

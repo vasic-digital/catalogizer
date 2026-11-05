@@ -1,0 +1,8 @@
+Item 5 mutations on catalog-api/main.go (each restored):
+M1 main() passes a blank getenv: KILLED by .../toggle_in_a_dev-like_env_reaches_the_middleware
+M2 (APP_ENV forced development): --- FAIL: TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware (16.67s)
+M2 (APP_ENV forced development):     --- FAIL: TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/toggle_is_refused_outside_a_dev-like_env (3.12s)
+M2 (APP_ENV forced development):             	            	--- Expected
+M2 (APP_ENV forced development): FAIL
+M2 (APP_ENV forced development): FAIL	catalogizer	16.702s
+M2 (APP_ENV forced development): FAIL

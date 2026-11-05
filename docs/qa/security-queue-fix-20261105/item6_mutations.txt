@@ -1,0 +1,8 @@
+Item 6 mutations in catalog-api/services/sync_service.go (each restored):
+M1 drop username comparison
+--- FAIL: TestSyncService_WebDAVClientIsRebuiltOnUsernameOrPasswordRotation (0.00s)
+FAIL
+M2 drop password comparison
+--- FAIL: TestSyncService_WebDAVClientIsRebuiltOnUsernameOrPasswordRotation (0.00s)
+FAIL
+restored

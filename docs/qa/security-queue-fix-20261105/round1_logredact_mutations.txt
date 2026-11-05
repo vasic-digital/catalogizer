@@ -1,0 +1,16 @@
+Round 1 logredact mutations:
+RF drop apikey
+--- FAIL: TestPath (0.00s)
+FAIL
+FAIL	catalogizer/internal/logredact	0.004s
+--- FAIL: TestLogger_CredentialQueryParametersAreRedacted (0.00s)
+FAIL
+FAIL	catalogizer/internal/middleware	0.204s
+FAIL
+F5 ';' not a separator
+--- FAIL: TestPath (0.00s)
+FAIL
+FAIL	catalogizer/internal/logredact	0.002s
+ok  	catalogizer/internal/middleware	0.207s
+FAIL
+restored

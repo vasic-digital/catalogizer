@@ -1,0 +1,6 @@
+Security queue fix 2026-11-05 (branch fix-security-queue). Regression runs:
+- regression_packages.txt: go test of internal/services, internal/monitoring, internal/middleware, internal/logredact, services.
+  internal/* all ok. services: ONE failure, TestCAT002_Iso_LimitsAreHostAdaptiveAndBounded (expected 715827882 got 0x20000000, MemAvailable/(2*slots)):
+  host-memory dependent, fails identically with this branch's only change in that package (one added test file) removed; not related.
+- regression_root_package.txt: go test . ; one failure, the known pre-existing TestOpenAPIContract_RealBinary_PathParamsAndUserRolePermissions.
+All runs under systemd-run --scope MemoryMax=5G MemorySwapMax=0, GOFLAGS=-buildvcs=false.

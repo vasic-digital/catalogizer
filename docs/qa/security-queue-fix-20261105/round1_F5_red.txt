@@ -1,0 +1,6 @@
+--- FAIL: TestPath (0.00s)
+    logredact_test.go:23: Path("a=1;password=x") = "/p?a=1;password=x", want "/p?a=1;password=REDACTED"
+    logredact_test.go:23: Path("a=1;b=2&token=t;c=3") = "/p?a=1;b=2&token=REDACTED", want "/p?a=1;b=2&token=REDACTED;c=3"
+FAIL
+FAIL	catalogizer/internal/logredact	0.004s
+FAIL
