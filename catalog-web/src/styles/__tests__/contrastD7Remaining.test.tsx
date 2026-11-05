@@ -34,7 +34,7 @@ vi.mock('@/lib/adminApi', () => ({
 vi.mock('@/lib/reportsApi', () => ({
   reportsApi: {
     getUsageReport: vi.fn(() => Promise.resolve({ active_users: 3, total_media_accessed: 9, total_downloads: 2, storage_growth_bytes: 1024 ** 3, top_media: [{ id: 1, title: 'Top One', access_count: 4 }] })),
-    getPerformanceReport: vi.fn(() => Promise.resolve({ p95_response_time_ms: 12, total_requests: 100, error_rate: 1, avg_response_time_ms: 5 })),
+    getPerformanceReport: vi.fn(() => Promise.resolve({ p95_response_time_ms: 12, total_requests: 100, error_rate: 1, avg_response_time_ms: 5, uptime_percentage: 99.5, slowest_endpoints: [{ path: '/api/x', avg_ms: 30, count: 4 }] })),
   },
 }))
 vi.mock('@/lib/mediaApi', async () => ({
@@ -72,7 +72,7 @@ function failing(root: Element, theme: Theme, min = WCAG_AA_NORMAL) {
     if (/\bbg-black\//.test(n.getAttribute('class') ?? '')) continue
     // WCAG "large text" (>=24px, or >=18.66px bold) needs 3:1.
     const cls = n.getAttribute('class') ?? ''
-    const large = /\btext-(2xl|3xl|4xl|5xl)\b/.test(cls) || (/\btext-xl\b/.test(cls) && /\bfont-(bold|semibold)\b/.test(cls))
+    const large = /\btext-(2xl|3xl|4xl|5xl)\b/.test(cls) || (/\btext-xl\b/.test(cls) && /\bfont-bold\b/.test(cls))
     const r = contrastOf(n, theme)
     if (r < (large ? 3 : min)) bad.push(`${n.tagName.toLowerCase()}.${n.getAttribute('class')} "${(n.textContent ?? '').trim().slice(0, 30)}" ${r.toFixed(2)}`)
   }
@@ -90,12 +90,18 @@ const MEDIA: MediaItem = {
 }
 
 describe.each(THEMES)('UI-D7-FU contrast, %s theme (WCAG AA 4.5:1)', (theme) => {
-  it('/ai: tabs and Quick Action buttons meet AA', () => {
+  it('/ai: tabs and every section (after lazy load) meet AA', async () => {
     const { container } = render(<AIDashboard />)
-    expect(failing(container, theme).join("\n")).toBe("")
-    for (const t of ['AI Suggestions', 'Natural Search', 'Analytics', 'Metadata', 'Automation']) {
-      fireEvent.click(screen.getByText(t))
-      expect(failing(container, theme).join("\n"), t).toBe("")
+    expect(failing(container, theme).join('\n')).toBe('')
+    const sections: [string, string][] = [
+      ['AI Suggestions', 'AI-Powered Suggestions'], ['Natural Search', 'Natural Language Search'],
+      ['Analytics', 'AI Analytics'], ['Metadata', 'AI Metadata Services'], ['Automation', 'AI Automation'],
+    ]
+    for (const [tab, heading] of sections) {
+      fireEvent.click(screen.getAllByText(tab)[0])
+      await screen.findByText(heading)
+      await waitFor(() => expect(container.querySelector('.animate-spin')).toBeNull())
+      expect(failing(container, theme).join('\n'), tab).toBe('')
     }
   })
 

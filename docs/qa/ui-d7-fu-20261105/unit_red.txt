@@ -1,10 +1,10 @@
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
 
  RUN  v4.0.18 /home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web
 
-[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
-(node:255784) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(node:993483) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
 (Use `node --trace-warnings ...` to show where the warning was created)
-stderr | src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, light theme (WCAG AA 4.5:1) > /ai: tabs and Quick Action buttons meet AA
+stderr | src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, light theme (WCAG AA 4.5:1) > /ai: tabs and every section (after lazy load) meet AA
 Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
 
 stderr | src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, light theme (WCAG AA 4.5:1) > /media: MediaCard text meets AA
@@ -14,21 +14,21 @@ Warning: React does not recognize the `whileHover` prop on a DOM element. If you
     at /home/milosvasic/.cache/claude-tmp/d7c.qGPTS5/repo/catalog-web/src/components/media/MediaCard.tsx:102:3
     at QueryClientProvider (file:///home/milosvasic/.cache/claude-tmp/lv.lRxQmt/repo/catalog-web/node_modules/@tanstack/react-query/build/lib/QueryClientProvider.mjs:41:3)
 
- ❯ src/styles/__tests__/contrastD7Remaining.test.tsx (10 tests | 6 failed) 462ms
-     × /ai: tabs and Quick Action buttons meet AA 80ms
-     ✓ /admin: panel (all tabs) meets AA 140ms
-     ✓ /admin page: usage and performance reports meet AA 68ms
-     × /media: MediaCard text meets AA 15ms
-     ✓ /analytics: stat labels meet AA 52ms
-     × /ai: tabs and Quick Action buttons meet AA 14ms
-     × /admin: panel (all tabs) meets AA 17ms
-     × /admin page: usage and performance reports meet AA 45ms
-     ✓ /media: MediaCard text meets AA 6ms
-     × /analytics: stat labels meet AA 23ms
+ ❯ src/styles/__tests__/contrastD7Remaining.test.tsx (10 tests | 6 failed) 721ms
+     × /ai: tabs and every section (after lazy load) meet AA 119ms
+     ✓ /admin: panel (all tabs) meets AA 233ms
+     ✓ /admin page: usage and performance reports meet AA 103ms
+     × /media: MediaCard text meets AA 20ms
+     ✓ /analytics: stat labels meet AA 97ms
+     × /ai: tabs and every section (after lazy load) meet AA 20ms
+     × /admin: panel (all tabs) meets AA 22ms
+     × /admin page: usage and performance reports meet AA 57ms
+     ✓ /media: MediaCard text meets AA 9ms
+     × /analytics: stat labels meet AA 35ms
 
 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
 
- FAIL  src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, light theme (WCAG AA 4.5:1) > /ai: tabs and Quick Action buttons meet AA
+ FAIL  src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, light theme (WCAG AA 4.5:1) > /ai: tabs and every section (after lazy load) meet AA
 AssertionError: expected 'button.px-3 py-2 bg-green-600 text-wh…' to be '' // Object.is equality
 
 - Expected
@@ -38,12 +38,12 @@ AssertionError: expected 'button.px-3 py-2 bg-green-600 text-wh…' to be '' // 
 + button.px-3 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition-colors "Manage Rules" 2.94
 
  ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:95:50
-     93|   it('/ai: tabs and Quick Action buttons meet AA', () => {
+     93|   it('/ai: tabs and every section (after lazy load) meet AA', async ()…
      94|     const { container } = render(<AIDashboard />)
-     95|     expect(failing(container, theme).join("\n")).toBe("")
+     95|     expect(failing(container, theme).join('\n')).toBe('')
        |                                                  ^
-     96|     for (const t of ['AI Suggestions', 'Natural Search', 'Analytics', …
-     97|       fireEvent.click(screen.getByText(t))
+     96|     const sections: [string, string][] = [
+     97|       ['AI Suggestions', 'AI-Powered Suggestions'], ['Natural Search',…
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
 
@@ -56,17 +56,17 @@ AssertionError: expected 'div.flex items-center text-sm text-ye…' to be '' // 
 + div.flex items-center text-sm text-yellow-600 "8.5" 2.94
 + div.mt-3 text-xs text-gray-400 "Updated January 1, 2024" 2.54
 
- ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:126:50
-    124|   it('/media: MediaCard text meets AA', () => {
-    125|     const { container } = wrap(<MediaCard media={MEDIA} />)
-    126|     expect(failing(container, theme).join("\n")).toBe("")
+ ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:132:50
+    130|   it('/media: MediaCard text meets AA', () => {
+    131|     const { container } = wrap(<MediaCard media={MEDIA} />)
+    132|     expect(failing(container, theme).join("\n")).toBe("")
        |                                                  ^
-    127|   })
-    128| 
+    133|   })
+    134| 
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
 
- FAIL  src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, dark theme (WCAG AA 4.5:1) > /ai: tabs and Quick Action buttons meet AA
+ FAIL  src/styles/__tests__/contrastD7Remaining.test.tsx > UI-D7-FU contrast, dark theme (WCAG AA 4.5:1) > /ai: tabs and every section (after lazy load) meet AA
 AssertionError: expected 'span.null "Overview" 2.82\nspan.null …' to be '' // Object.is equality
 
 - Expected
@@ -82,12 +82,12 @@ AssertionError: expected 'span.null "Overview" 2.82\nspan.null …' to be '' // 
 + button.px-3 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition-colors "Manage Rules" 2.94
 
  ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:95:50
-     93|   it('/ai: tabs and Quick Action buttons meet AA', () => {
+     93|   it('/ai: tabs and every section (after lazy load) meet AA', async ()…
      94|     const { container } = render(<AIDashboard />)
-     95|     expect(failing(container, theme).join("\n")).toBe("")
+     95|     expect(failing(container, theme).join('\n')).toBe('')
        |                                                  ^
-     96|     for (const t of ['AI Suggestions', 'Natural Search', 'Analytics', …
-     97|       fireEvent.click(screen.getByText(t))
+     96|     const sections: [string, string][] = [
+     97|       ['AI Suggestions', 'AI-Powered Suggestions'], ['Natural Search',…
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
 
@@ -113,13 +113,13 @@ AssertionError: expected 'button.flex flex-shrink-0 items-cente…' to be '' // 
 + span.text-sm text-gray-600 "62%" 1.94
 + span.text-sm text-gray-600 "50 Bytes / 100 Bytes" 1.94
 
- ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:110:50
-    108|     }
-    109|     const { container } = render(<AdminPanel {...props} />)
-    110|     expect(failing(container, theme).join("\n")).toBe("")
+ ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:116:50
+    114|     }
+    115|     const { container } = render(<AdminPanel {...props} />)
+    116|     expect(failing(container, theme).join("\n")).toBe("")
        |                                                  ^
-    111|     for (const t of ['Users', 'Storage', 'Backups']) {
-    112|       fireEvent.click(screen.getByText(t))
+    117|     for (const t of ['Users', 'Storage', 'Backups']) {
+    118|       fireEvent.click(screen.getByText(t))
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
 
@@ -153,14 +153,15 @@ AssertionError: expected 'button.flex flex-shrink-0 items-cente…' to be '' // 
 + div.text-xs text-gray-500 "Total Requests" 3.04
 + div.text-xs text-gray-500 "Error Rate" 3.04
 + div.text-xs text-gray-500 "Uptime" 3.04
++ span.text-gray-500 ml-2 "30ms (4x)" 3.04
 
- ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:121:50
-    119|     await screen.findByText('Usage Report')
-    120|     await screen.findByText('Performance Report')
-    121|     expect(failing(container, theme).join("\n")).toBe("")
+ ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:127:50
+    125|     await screen.findByText('Usage Report')
+    126|     await screen.findByText('Performance Report')
+    127|     expect(failing(container, theme).join("\n")).toBe("")
        |                                                  ^
-    122|   })
-    123| 
+    128|   })
+    129| 
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
 
@@ -178,19 +179,19 @@ AssertionError: expected 'div.text-xs text-gray-500 "Groups" 3.…' to be '' // 
 + h5.text-xs font-medium text-gray-500 mb-2 "Most Popular" 3.04
 + span.text-gray-500 ml-2 "7 views" 3.04
 
- ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:132:50
-    130|     const { container } = wrap(<Analytics />)
-    131|     await waitFor(() => expect(screen.getByText('Total Events')).toBeI…
-    132|     expect(failing(container, theme).join("\n")).toBe("")
+ ❯ src/styles/__tests__/contrastD7Remaining.test.tsx:138:50
+    136|     const { container } = wrap(<Analytics />)
+    137|     await waitFor(() => expect(screen.getByText('Total Events')).toBeI…
+    138|     expect(failing(container, theme).join("\n")).toBe("")
        |                                                  ^
-    133|   })
-    134| })
+    139|   })
+    140| })
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
 
 
  Test Files  1 failed (1)
       Tests  6 failed | 4 passed (10)
-   Start at  14:44:30
-   Duration  3.67s (transform 420ms, setup 193ms, import 1.69s, tests 462ms, environment 1.11s)
+   Start at  14:58:36
+   Duration  3.93s (transform 925ms, setup 132ms, import 1.92s, tests 721ms, environment 966ms)
 
