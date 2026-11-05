@@ -1517,3 +1517,11 @@ VERIFIED: both debug APKs build in rootless JDK17 container; phone (API34) and T
 - TAURI-FU-5 (source-defect, pre-existing, TRACKED): Rust `starts_with` URL prefix check in `main.rs` make_http_request accepts `http://a.com.evil` for `http://a.com`; fix with parsed-host comparison (RED-first, security-adjacent).
 - TAURI-FU-6 (documented gaps): apt pinning, GPG verification of publisher hashes, committing Cargo.lock.
 - TAURI-FU-7 (UNCONFIRMED): no image rebuild, no desktop rebuild with login fix, no native boot, no VNC run, no wizard binary yet.
+
+## Live UI rerun 2026-11-05 on stack 3 (main-1db4760f) — follow-ups
+
+Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS: D5/D6 axe, /admin 360px, D8 search, D1 /conversion, D2 /identities, D3 /entity/:id. D7 whole-check FAIL: remaining violations light /ai 2, light /media 24, dark /analytics 5, dark /admin 23, dark /ai 8 (fix in review as feat/d7-remaining-contrast f03b911d; re-run after rebuild).
+- UI-D3-FU-4: on a not-found entity, /entities/:id/duplicates and /recommendations/similar/:id are retried 3x each in background (404); gate retries on 404.
+- UI-D5-FU-3: /admin 360px: a tab button right edge 405 inside the scrolling tab bar (document itself does not overflow) — decide if acceptable.
+- HELIXQA-FU-1: web Vision bank + CDP wiring for stack 3 (UI leg of §11.4.278); validated vision profile needs host capacity (llmctl capacity: does_not_fit while llmctl-onnx@decide-nli runs uncapped, load ~19) — operator decision.
+- HELIXQA-FU-2: upstream helix_qa `--admin-pass-file`/env credential option; stale docker-compose.qa.yml / scripts/run-helixqa-web.sh defaults (8080/3000).

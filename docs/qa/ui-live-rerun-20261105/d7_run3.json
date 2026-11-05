@@ -1,0 +1,365 @@
+{
+ "light /dashboard []": [],
+ "light /analytics []": [],
+ "light /browse []": [],
+ "light /subtitles []": [],
+ "light /admin []": [],
+ "light /settings []": [],
+ "light /ai []": [
+  [
+   "color-contrast",
+   2,
+   [
+    {
+     "h": "<button class=\"px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors\">AI Search</button>",
+     "t": ".bg-green-600",
+     "s": "Element has insufficient color contrast of 3.29 (foreground color: #ffffff, background color: #16a34a, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<button class=\"px-3 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition-colors\">Manage Rules</button>",
+     "t": ".bg-yellow-600",
+     "s": "Element has insufficient color contrast of 2.93 (foreground color: #ffffff, background color: #ca8a04, font size: 10.5pt (14px), font weight: normal). Expected "
+    }
+   ]
+  ]
+ ],
+ "light /identities []": [],
+ "light /media []": [
+  [
+   "color-contrast",
+   24,
+   [
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-35\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-34\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-33\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-32\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 4, 2026</div>",
+     "t": "div[data-testid=\"media-item-6\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-31\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-18\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-17\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-42\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-5\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-4\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-27\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-46\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 5, 2026</div>",
+     "t": "div[data-testid=\"media-item-391\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 5, 2026</div>",
+     "t": "div[data-testid=\"media-item-339\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-26\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-25\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-24\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-23\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-22\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-21\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-3\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-16\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"mt-3 text-xs text-gray-400\">Updated November 3, 2026</div>",
+     "t": "div[data-testid=\"media-item-15\"] > .overflow-hidden.group.hover\\:shadow-xl > .p-4 > .mt-3.text-gray-400.text-xs",
+     "s": "Element has insufficient color contrast of 2.53 (foreground color: #9ca3af, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected c"
+    }
+   ]
+  ]
+ ],
+ "dark /dashboard [dark]": [],
+ "dark /analytics [dark]": [
+  [
+   "color-contrast",
+   5,
+   [
+    {
+     "h": "<div class=\"text-xs text-gray-500\">Groups</div>",
+     "t": ".text-center.bg-gray-50.p-3:nth-child(1) > .text-gray-500.text-xs",
+     "s": "Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"text-xs text-gray-500\">Files</div>",
+     "t": ".text-center.bg-gray-50.p-3:nth-child(2) > .text-gray-500.text-xs",
+     "s": "Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"text-xs text-gray-500\">Wasted</div>",
+     "t": ".text-center.bg-gray-50.p-3:nth-child(3) > .text-gray-500.text-xs",
+     "s": "Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"text-xs text-gray-500\">Total Events</div>",
+     "t": ".grid-cols-2 > .bg-gray-50.p-3.dark\\:bg-gray-800:nth-child(1) > .text-gray-500.text-xs",
+     "s": "Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"text-xs text-gray-500\">Active Users (24h)</div>",
+     "t": ".grid-cols-2 > .bg-gray-50.p-3.dark\\:bg-gray-800:nth-child(2) > .text-gray-500.text-xs",
+     "s": "Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font size: 9.0pt (12px), font weight: normal). Expected c"
+    }
+   ]
+  ]
+ ],
+ "dark /browse [dark]": [],
+ "dark /subtitles [dark]": [],
+ "dark /admin [dark]": [
+  [
+   "color-contrast",
+   23,
+   [
+    {
+     "h": "<button class=\"flex flex-shrink-0 items-center gap-2 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors border-blue-500 text-blue-600\"",
+     "t": ".border-blue-500",
+     "s": "Element has insufficient color contrast of 3.43 (foreground color: #2563eb, background color: #111827, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<button class=\"flex flex-shrink-0 items-center gap-2 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-5",
+     "t": ".border-transparent.hover\\:text-gray-700.hover\\:border-gray-300:nth-child(2)",
+     "s": "Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<button class=\"flex flex-shrink-0 items-center gap-2 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-5",
+     "t": ".border-transparent.hover\\:text-gray-700.hover\\:border-gray-300:nth-child(3)",
+     "s": "Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<button class=\"flex flex-shrink-0 items-center gap-2 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors border-transparent text-gray-5",
+     "t": ".border-transparent.hover\\:text-gray-700.hover\\:border-gray-300:nth-child(4)",
+     "s": "Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<p class=\"text-sm font-medium text-gray-600\">Version</p>",
+     "t": ".rounded-xl.shadow-lg.dark\\:border-gray-700:nth-child(1) > .p-6 > .flex.items-center > .flex-1.min-w-0 > .text-gray-600",
+     "s": "Element has insufficient color contrast of 1.94 (foreground color: #4b5563, background color: #1f2937, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<p class=\"text-2xl font-bold text-gray-900 break-all\">1db4760f40984d2b52324180c9dd2b8aa4d658a6</p>",
+     "t": ".break-all",
+     "s": "Element has insufficient color contrast of 1.2 (foreground color: #111827, background color: #1f2937, font size: 18.0pt (24px), font weight: bold). Expected con"
+    },
+    {
+     "h": "<p class=\"text-sm font-medium text-gray-600\">Uptime</p>",
+     "t": ".rounded-xl.shadow-lg.dark\\:border-gray-700:nth-child(2) > .p-6 > .flex.items-center > .flex-1.min-w-0 > .text-gray-600",
+     "s": "Element has insufficient color contrast of 1.94 (foreground color: #4b5563, background color: #1f2937, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<p class=\"text-2xl font-bold text-gray-900\">0d 0h 22m</p>",
+     "t": ".rounded-xl.shadow-lg.dark\\:border-gray-700:nth-child(2) > .p-6 > .flex.items-center > .flex-1.min-w-0 > .text-2xl",
+     "s": "Element has insufficient color contrast of 1.2 (foreground color: #111827, background color: #1f2937, font size: 18.0pt (24px), font weight: bold). Expected con"
+    },
+    {
+     "h": "<p class=\"text-sm font-medium text-gray-600\">Active Connections</p>",
+     "t": ".rounded-xl.shadow-lg.dark\\:border-gray-700:nth-child(3) > .p-6 > .flex.items-center > .flex-1.min-w-0 > .text-gray-600",
+     "s": "Element has insufficient color contrast of 1.94 (foreground color: #4b5563, background color: #1f2937, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<p class=\"text-2xl font-bold text-gray-900\">36</p>",
+     "t": ".rounded-xl.shadow-lg.dark\\:border-gray-700:nth-child(3) > .p-6 > .flex.items-center > .flex-1.min-w-0 > .text-2xl",
+     "s": "Element has insufficient color contrast of 1.2 (foreground color: #111827, background color: #1f2937, font size: 18.0pt (24px), font weight: bold). Expected con"
+    },
+    {
+     "h": "<p class=\"text-sm font-medium text-gray-600\">Total Requests</p>",
+     "t": ".rounded-xl.shadow-lg.dark\\:border-gray-700:nth-child(4) > .p-6 > .flex.items-center > .flex-1.min-w-0 > .text-gray-600",
+     "s": "Element has insufficient color contrast of 1.94 (foreground color: #4b5563, background color: #1f2937, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<p class=\"text-2xl font-bold text-gray-900\">Unavailable</p>",
+     "t": ".rounded-xl.shadow-lg.dark\\:border-gray-700:nth-child(4) > .p-6 > .flex.items-center > .flex-1.min-w-0 > .text-2xl",
+     "s": "Element has insufficient color contrast of 1.2 (foreground color: #111827, background color: #1f2937, font size: 18.0pt (24px), font weight: bold). Expected con"
+    },
+    {
+     "h": "<span class=\"text-sm text-gray-600\">61.32075471698113%</span>",
+     "t": "div:nth-child(1) > .mb-2.justify-between.flex > .text-gray-600",
+     "s": "Element has insufficient color contrast of 1.94 (foreground color: #4b5563, background color: #1f2937, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<span class=\"text-sm text-gray-600\">41.16284821227843%</span>",
+     "t": "div:nth-child(2) > .mb-2.justify-between.flex > .text-gray-600",
+     "s": "Element has insufficient color contrast of 1.94 (foreground color: #4b5563, background color: #1f2937, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<span class=\"text-sm text-gray-600\">Unavailable</span>",
+     "t": "div:nth-child(3) > .mb-2.justify-between.flex > .text-gray-600",
+     "s": "Element has insufficient color contrast of 1.94 (foreground color: #4b5563, background color: #1f2937, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<div class=\"text-xs text-gray-500\">Active Users</div>",
+     "t": ".rounded-xl.shadow-lg.dark\\:border-gray-700:nth-child(1) > .pt-0.p-6 > .space-y-4 > .grid-cols-2.gap-3.grid > .p-3.bg-gray-50.rounded-lg:nth-child(1) > .text-xs.text-gray-500",
+     "s": "Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"text-xs text-gray-500\">Media Accessed</div>",
+     "t": ".rounded-xl.shadow-lg.dark\\:border-gray-700:nth-child(1) > .pt-0.p-6 > .space-y-4 > .grid-cols-2.gap-3.grid > .p-3.bg-gray-50.rounded-lg:nth-child(2) > .text-xs.text-gray-500",
+     "s": "Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"text-xs text-gray-500\">Downloads</div>",
+     "t": ".rounded-xl.shadow-lg.dark\\:border-gray-700:nth-child(1) > .pt-0.p-6 > .space-y-4 > .grid-cols-2.gap-3.grid > .p-3.bg-gray-50.rounded-lg:nth-child(3) > .text-xs.text-gray-500",
+     "s": "Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"text-xs text-gray-500\">Storage Growth</div>",
+     "t": ".p-3.bg-gray-50.rounded-lg:nth-child(4) > .text-xs.text-gray-500",
+     "s": "Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"text-xs text-gray-500\">P95 Response</div>",
+     "t": ".rounded-xl.shadow-lg.dark\\:border-gray-700:nth-child(2) > .pt-0.p-6 > .space-y-4 > .grid-cols-2.gap-3.grid > .p-3.bg-gray-50.rounded-lg:nth-child(1) > .text-xs.text-gray-500",
+     "s": "Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"text-xs text-gray-500\">Total Requests</div>",
+     "t": ".rounded-xl.shadow-lg.dark\\:border-gray-700:nth-child(2) > .pt-0.p-6 > .space-y-4 > .grid-cols-2.gap-3.grid > .p-3.bg-gray-50.rounded-lg:nth-child(2) > .text-xs.text-gray-500",
+     "s": "Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"text-xs text-gray-500\">Error Rate</div>",
+     "t": ".rounded-xl.shadow-lg.dark\\:border-gray-700:nth-child(2) > .pt-0.p-6 > .space-y-4 > .grid-cols-2.gap-3.grid > .p-3.bg-gray-50.rounded-lg:nth-child(3) > .text-xs.text-gray-500",
+     "s": "Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font size: 9.0pt (12px), font weight: normal). Expected c"
+    },
+    {
+     "h": "<div class=\"text-xs text-gray-500\">Uptime</div>",
+     "t": ".space-y-4 > .p-3.bg-gray-50.rounded-lg > .text-xs.text-gray-500",
+     "s": "Element has insufficient color contrast of 3.03 (foreground color: #6b7280, background color: #1f2937, font size: 9.0pt (12px), font weight: normal). Expected c"
+    }
+   ]
+  ]
+ ],
+ "dark /settings [dark]": [],
+ "dark /ai [dark]": [
+  [
+   "color-contrast",
+   8,
+   [
+    {
+     "h": "<span>Overview</span>",
+     "t": ".border-indigo-500 > span",
+     "s": "Element has insufficient color contrast of 2.82 (foreground color: #4f46e5, background color: #111827, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<span>AI Suggestions</span>",
+     "t": ".border-transparent.hover\\:text-gray-700.hover\\:border-gray-300:nth-child(2) > span",
+     "s": "Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<span>Natural Search</span>",
+     "t": ".border-transparent.hover\\:text-gray-700.hover\\:border-gray-300:nth-child(3) > span",
+     "s": "Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<span>Analytics</span>",
+     "t": ".border-transparent.hover\\:text-gray-700.hover\\:border-gray-300:nth-child(4) > span",
+     "s": "Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<span>Metadata</span>",
+     "t": ".border-transparent.hover\\:text-gray-700.hover\\:border-gray-300:nth-child(5) > span",
+     "s": "Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<span>Automation</span>",
+     "t": ".border-transparent.hover\\:text-gray-700.hover\\:border-gray-300:nth-child(6) > span",
+     "s": "Element has insufficient color contrast of 3.66 (foreground color: #6b7280, background color: #111827, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<button class=\"px-3 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors\">AI Search</button>",
+     "t": ".bg-green-600",
+     "s": "Element has insufficient color contrast of 3.29 (foreground color: #ffffff, background color: #16a34a, font size: 10.5pt (14px), font weight: normal). Expected "
+    },
+    {
+     "h": "<button class=\"px-3 py-2 bg-yellow-600 text-white text-sm rounded-lg hover:bg-yellow-700 transition-colors\">Manage Rules</button>",
+     "t": ".bg-yellow-600",
+     "s": "Element has insufficient color contrast of 2.93 (foreground color: #ffffff, background color: #ca8a04, font size: 10.5pt (14px), font weight: normal). Expected "
+    }
+   ]
+  ]
+ ],
+ "dark /identities [dark]": [],
+ "dark /media [dark]": []
+}

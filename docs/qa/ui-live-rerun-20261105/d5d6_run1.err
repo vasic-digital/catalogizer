@@ -1,0 +1,39 @@
+URL http://192.168.1.115:33020/dashboard
+/media http://192.168.1.115:33020/media
+/collections http://192.168.1.115:33020/collections
+/favorites http://192.168.1.115:33020/favorites
+/playlists http://192.168.1.115:33020/playlists
+/ai http://192.168.1.115:33020/ai
+/dashboard http://192.168.1.115:33020/dashboard
+/analytics http://192.168.1.115:33020/analytics
+C
+Catalogizer
+Admin Panel
+Refresh
+Overview
+Users
+Storage
+Backups
+
+Version
+
+1db4760f40984d2b52324180c9dd2b8aa4d658a6
+
+Uptime
+
+0d 0h 6m
+
+Active Connections
+
+36
+
+Total Requests
+
+Unavailable
+
+System Resources
+CPU Usage
+64.24050632911393%
+API Process Memory (heap in use / reserved)
+50.141131626434856%
+Di

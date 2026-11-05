@@ -1,0 +1,10 @@
+{
+ "errs": [
+  "console:The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-fea"
+ ],
+ "reqs": [
+  "200 http://192.168.1.115:33080/conversion",
+  "200 http://192.168.1.115:33080/api/v1/conversion/jobs"
+ ],
+ "body": "C Catalogizer Dashboard Media Browse Favorites Playlists Analytics More Search media Format Converter Convert media files to different formats with customizable quality settings Format Converter New Conversion Plain Tone.wav WAV → MP3 • medium Completed Download File Size 0 Bytes Duration 0m 0s Reso"
+}

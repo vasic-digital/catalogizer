@@ -1,0 +1,59 @@
+{
+ "api /identities": 404,
+ "api /smb/identities": 200,
+ "api /entities/3": 200,
+ "api /entities/35": 404,
+ "api /entities/35/duplicates": 404,
+ "api /recommendations/similar/35": 404,
+ "ui /entity/3": {
+  "url": "/entity/3",
+  "alerts": [],
+  "notFoundText": 0,
+  "h1": [
+   "garbage"
+  ],
+  "body": "Music Album garbage garbage Music Album Favorite Refresh Play Download 1 Files 0 Children Files (1) File # Download1 file available Download",
+  "http4xx": []
+ },
+ "ui /entity/35": {
+  "url": "/entity/35",
+  "alerts": [],
+  "notFoundText": 1,
+  "h1": [],
+  "body": "Entity not found Back to Browse",
+  "http4xx": [
+   "404 /api/v1/entities/35",
+   "404 /api/v1/recommendations/similar/35",
+   "404 /api/v1/entities/35/duplicates",
+   "404 /api/v1/entities/35/duplicates",
+   "404 /api/v1/recommendations/similar/35",
+   "404 /api/v1/entities/35/duplicates",
+   "404 /api/v1/recommendations/similar/35"
+  ]
+ },
+ "ui /identities": {
+  "url": "/identities",
+  "alerts": [],
+  "notFoundText": 0,
+  "h1": [
+   "Identity & Share Discovery"
+  ],
+  "body": "Identity & Share Discovery Manage network identities and browse discovered shares Identity Manager Discovered Shares Identities Add Identity No identities configured. Add one to start probing network shares.",
+  "http4xx": []
+ },
+ "media entity links": 0,
+ "media sample hrefs": [
+  "/",
+  "/dashboard",
+  "/media",
+  "/browse",
+  "/favorites",
+  "/playlists",
+  "/analytics",
+  "/subtitles",
+  "/collections",
+  "/conversion",
+  "/admin",
+  "/browse"
+ ]
+}
