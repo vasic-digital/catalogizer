@@ -1,0 +1,14 @@
+Item 4 mutations:
+M1 drop password
+--- FAIL: TestPath (0.00s)
+FAIL
+FAIL	catalogizer/internal/logredact	0.002s
+M2 case-sensitive compare
+--- FAIL: TestPath (0.00s)
+FAIL
+FAIL	catalogizer/internal/logredact	0.002s
+M3 drop refresh_token
+ok  	catalogizer/internal/logredact	0.002s
+--- FAIL: TestLogger_CredentialQueryParametersAreRedacted (0.00s)
+FAIL
+restored

@@ -6,7 +6,13 @@ import (
 	"strings"
 )
 
-var sensitive = map[string]bool{"ticket": true, "access_token": true, "token": true, "api_key": true}
+// sensitive lists the query parameter names whose values never reach an access log. GET /smb/discover and
+// GET /smb/test accept username and password in the query string, so credential-shaped names are covered too.
+var sensitive = map[string]bool{
+	"ticket": true, "access_token": true, "token": true, "api_key": true, "apikey": true,
+	"password": true, "passwd": true, "pass": true, "pwd": true,
+	"secret": true, "client_secret": true, "refresh_token": true, "authorization": true,
+}
 
 // Query returns rawQuery with the value of every sensitive parameter replaced by "REDACTED"; everything else (order, escaping)
 // is preserved verbatim. Parameter names are compared after URL-unescaping, so "%74icket" does not slip through. A pair whose name

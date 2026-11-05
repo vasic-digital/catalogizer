@@ -1,0 +1,2 @@
+ok  	catalogizer/internal/logredact	0.002s
+ok  	catalogizer/internal/middleware	0.206s

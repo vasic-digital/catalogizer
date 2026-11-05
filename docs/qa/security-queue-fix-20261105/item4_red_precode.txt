@@ -1,0 +1,13 @@
+--- FAIL: TestLogger_CredentialQueryParametersAreRedacted (0.00s)
+    --- FAIL: TestLogger_CredentialQueryParametersAreRedacted/password (0.00s)
+    --- FAIL: TestLogger_CredentialQueryParametersAreRedacted/passwd (0.00s)
+    --- FAIL: TestLogger_CredentialQueryParametersAreRedacted/secret (0.00s)
+    --- FAIL: TestLogger_CredentialQueryParametersAreRedacted/client_secret (0.00s)
+    --- FAIL: TestLogger_CredentialQueryParametersAreRedacted/refresh_token (0.00s)
+    --- FAIL: TestLogger_CredentialQueryParametersAreRedacted/pass (0.00s)
+    --- FAIL: TestLogger_CredentialQueryParametersAreRedacted/pwd (0.00s)
+    --- FAIL: TestLogger_CredentialQueryParametersAreRedacted/authorization (0.00s)
+    --- FAIL: TestLogger_CredentialQueryParametersAreRedacted/PASSWORD (0.00s)
+FAIL
+FAIL	catalogizer/internal/middleware	0.008s
+FAIL
