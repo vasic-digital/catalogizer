@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"catalogizer/internal/netguard"
+	"catalogizer/internal/pathguard"
 	"context"
 	"crypto/sha256"
 	"database/sql"
@@ -1343,19 +1344,21 @@ func (s *CoverArtService) GenerateMissingVideoThumbnails(ctx context.Context, li
 	return generated, nil
 }
 
-// resolveLocalVideoPath joins a files.path onto its local storage root and refuses an empty root and any path that
-// leaves the root after cleaning (NEW1-F3).
+// resolveLocalVideoPath joins a files.path onto its local storage root and returns the symlink-RESOLVED path
+// (the one handed to ffprobe/ffmpeg). It refuses an empty or relative root and any path that, after resolving
+// symlinks, is not strictly below the root (NEW1-F3). Confinement is delegated to the project guard pathguard.ConfineFile.
+// Residual race: a component could be swapped for a symlink between this check and the tool opening the file
+// (check-to-use); the resolved path narrows but does not close that window.
 func resolveLocalVideoPath(root, rel string) (string, error) {
 	if root == "" {
 		return "", fmt.Errorf("cover_art: local storage root has no path")
 	}
 	root = filepath.Clean(root)
-	full := filepath.Join(root, rel)
-	r, err := filepath.Rel(root, full)
-	if err != nil || r == ".." || strings.HasPrefix(r, ".."+string(filepath.Separator)) {
-		return "", fmt.Errorf("cover_art: video path escapes the storage root")
+	resolved, err := pathguard.ConfineFile(filepath.Join(root, rel), []string{root})
+	if err != nil {
+		return "", fmt.Errorf("cover_art: video path refused: %w", err)
 	}
-	return full, nil
+	return resolved, nil
 }
 
 // thumbnailTask holds the data needed to generate a video thumbnail.

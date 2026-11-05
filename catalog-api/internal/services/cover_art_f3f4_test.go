@@ -135,7 +135,7 @@ func TestNEW1F3_InRootPathStillWorks(t *testing.T) {
 	require.Equal(t, 1, coverRows(t, db, id))
 }
 
-// (d) a relative path whose first character is "-" must be read as a file, not as an ffprobe option.
+// (d) defense in depth: callers pass absolute paths, but a relative path whose first character is "-" must be read as a file, not as an ffprobe option.
 func TestNEW1F3_LeadingDashIsNotAnOption(t *testing.T) {
 	cwd := t.TempDir()
 	makeTestVideo(t, filepath.Join(cwd, "-dir", "movie.mp4"))
@@ -175,4 +175,70 @@ func TestNEW1F4_SetDefaultFailureIsNotCountedAsGenerated(t *testing.T) {
 	n, err := svc.GenerateMissingVideoThumbnails(context.Background(), 10)
 	require.NoError(t, err)
 	require.Equal(t, 0, n, "a thumbnail that could not be made the default cover must not count as generated")
+}
+// Reviewer test: symlink planted inside the root pointing outside.
+func TestNEW1F3_SymlinkEscapeIsRefused(t *testing.T) {
+	db := newThumbSQLiteDB(t)
+	base := t.TempDir()
+	root := filepath.Join(base, "lib")
+	require.NoError(t, os.MkdirAll(root, 0o755))
+	makeTestVideo(t, filepath.Join(base, "secret", "movie.mp4"))
+	require.NoError(t, os.Symlink(filepath.Join(base, "secret"), filepath.Join(root, "link")))
+	id := seedRawItem(t, db, "local-symlink", "local", root, "link/movie.mp4")
+	svc := newThumbSvc(t, db)
+	n, err := svc.GenerateMissingVideoThumbnails(context.Background(), 10)
+	require.NoError(t, err)
+	require.Equal(t, 0, n, "symlink escape must be refused")
+	require.Equal(t, 0, coverRows(t, db, id))
+}
+
+// Reviewer test: sibling directory sharing the root as a string prefix.
+func TestNEW1F3_SiblingPrefixEscapeIsRefused(t *testing.T) {
+	db := newThumbSQLiteDB(t)
+	base := t.TempDir()
+	root := filepath.Join(base, "lib")
+	require.NoError(t, os.MkdirAll(root, 0o755))
+	makeTestVideo(t, filepath.Join(base, "lib-evil", "movie.mp4"))
+	id := seedRawItem(t, db, "local-sibling", "local", root, "../lib-evil/movie.mp4")
+	svc := newThumbSvc(t, db)
+	n, err := svc.GenerateMissingVideoThumbnails(context.Background(), 10)
+	require.NoError(t, err)
+	require.Equal(t, 0, n)
+	require.Equal(t, 0, coverRows(t, db, id))
+}
+
+// Reviewer test: primary file preferred even when a non-primary row has a lower id.
+func TestNEW1F4_PrimaryFilePreferred(t *testing.T) {
+	db := newThumbSQLiteDB(t)
+	root := t.TempDir()
+	makeTestVideo(t, filepath.Join(root, "m", "main.mp4"))
+	// non-primary file inserted FIRST (lower ids) and pointing at a missing file
+	id := seedRawItemPrimary(t, db, "prim", "local", root, "m/missing.mp4", false)
+	var rootID int64
+	require.NoError(t, db.QueryRowContext(context.Background(), `SELECT id FROM storage_roots WHERE name = 'prim'`).Scan(&rootID))
+	addFileToItem(t, db, rootID, id, "prim", "m/main.mp4", true)
+	svc := newThumbSvc(t, db)
+	n, err := svc.GenerateMissingVideoThumbnails(context.Background(), 10)
+	require.NoError(t, err)
+	require.Equal(t, 1, n, "the primary file must be chosen")
+}
+
+func seedRawItemPrimary(t *testing.T, db *database.DB, name, protocol, rootPath, rel string, primary bool) int64 {
+	t.Helper()
+	ctx := context.Background()
+	_, err := db.ExecContext(ctx, `INSERT INTO storage_roots (name, protocol, path, enabled) VALUES (?, ?, ?, ?)`, name, protocol, rootPath, true)
+	require.NoError(t, err)
+	var rootID int64
+	require.NoError(t, db.QueryRowContext(ctx, `SELECT id FROM storage_roots WHERE name = ?`, name).Scan(&rootID))
+	return addFileToItem(t, db, rootID, 0, name, rel, primary)
+}
+
+// toolInputPath: defense in depth (callers pass absolute paths); a relative "-" path is anchored, others are untouched.
+func TestToolInputPath(t *testing.T) {
+	require.Equal(t, "./-x/movie.mp4", toolInputPath("-x/movie.mp4"))
+	require.Equal(t, "/abs/-x.mp4", toolInputPath("/abs/-x.mp4"))
+	require.Equal(t, "a/movie.mp4", toolInputPath("a/movie.mp4"))
+	args := ffmpegFrameCmd(context.Background(), 5, "-x/movie.mp4", "/tmp/out.jpg").Args
+	require.Contains(t, args, "./-x/movie.mp4")
+	require.NotContains(t, args, "-x/movie.mp4")
 }
