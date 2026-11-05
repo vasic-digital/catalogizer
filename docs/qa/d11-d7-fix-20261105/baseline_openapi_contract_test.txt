@@ -1,0 +1,6 @@
+--- FAIL: TestOpenAPIContract_RealBinary_PathParamsAndUserRolePermissions (15.38s)
+        	            	expected: 500
+        	            	actual  : 404
+FAIL
+FAIL	catalogizer	15.408s
+FAIL
