@@ -1,0 +1,4 @@
+ FAIL  src/styles/__tests__/contrastD7Class.test.tsx > UI-D7-FU class-wide gray text, dark theme (WCAG AA 4.5:1) > UploadManager: empty and with a queued file
++ Received
++ p.text-sm text-gray-500 dark:text-gray-700 mb-4 "Max file size: 100 MB • Accept" 1.42
+      Tests  1 failed | 36 passed (37)

@@ -4,7 +4,7 @@ import React from 'react'
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { contrastOf, WCAG_AA_NORMAL, type Theme } from '@/test/contrast'
+import { failingElements, type Theme } from '@/test/contrast'
 import { SubtitleManager } from '@/pages/SubtitleManager'
 import { CollectionRealTime } from '@/components/collections/CollectionRealTime'
 import { CollectionsManager } from '@/components/collections/CollectionsManager'
@@ -27,7 +27,7 @@ vi.mock('@/components/subtitles/SubtitleUploadModal', () => ({ SubtitleUploadMod
 vi.mock('@/lib/mediaApi', () => ({
   mediaApi: { searchMedia: vi.fn(() => Promise.resolve({ items: [] })) },
   entityApi: {
-    getEntity: vi.fn(() => Promise.resolve({ id: 1, title: 'The Matrix', media_type: 'movie', media_type_id: 1, year: 1999, genre: [], status: 'movie', file_count: 0, children_count: 0, external_metadata: [], first_detected: '2024-01-01T00:00:00Z', last_updated: '2024-01-02T00:00:00Z' })),
+    getEntity: vi.fn(() => Promise.resolve({ id: 1, title: 'The Matrix', media_type: 'movie', media_type_id: 1, year: 1999, genre: [], status: 'movie', file_count: 0, children_count: 0, external_metadata: [{ id: 1, media_item_id: 1, provider: 'tmdb', external_id: '603', rating: 8.7, review_url: '', created_at: '2024-01-01T00:00:00Z' }], first_detected: '2024-01-01T00:00:00Z', last_updated: '2024-01-02T00:00:00Z' })),
     getEntityChildren: vi.fn(() => Promise.resolve({ items: [], total: 0, limit: 24, offset: 0 })),
     getEntityFiles: vi.fn(() => Promise.resolve({ files: [], total: 0 })),
     getEntityDuplicates: vi.fn(() => Promise.resolve({ duplicates: [], total: 0 })),
@@ -62,17 +62,9 @@ vi.mock('@/lib/identitiesApi', () => ({
 
 const THEMES: Theme[] = ['light', 'dark']
 
-/** Contrast of every element matching each text matcher (targeted: only the defects listed in review F7). */
-function failing(_root: Element, theme: Theme, matchers: (string | RegExp)[]) {
-  const bad: string[] = []
-  for (const m of matchers) {
-    const els = screen.getAllByText(m)
-    for (const el of els) {
-      const r = contrastOf(el, theme)
-      if (r < WCAG_AA_NORMAL) bad.push(`${el.tagName.toLowerCase()}.${el.getAttribute('class')} "${(el.textContent ?? '').trim().slice(0, 30)}" ${r.toFixed(2)}`)
-    }
-  }
-  return bad.join('\n')
+/** Whole-element walker (D7-R2-F2): every text-bearing element inside the rendered component, not a hand-picked list. */
+function failing(root: Element, theme: Theme) {
+  return failingElements(root, theme).join('\n')
 }
 
 const wrap = (ui: React.ReactElement) => {
@@ -88,35 +80,35 @@ describe.each(THEMES)('UI-D7-FU shared components, %s theme (WCAG AA 4.5:1)', (t
     fireEvent.change(screen.getByPlaceholderText(/Search subtitles by title/), { target: { value: 'Matrix' } })
     fireEvent.click(screen.getByText('Search'))
     await screen.findByText('Download')
-    expect(failing(container, theme, ['Download'])).toBe('')
+    expect(failing(container, theme)).toBe('')
   })
 
   it('CollectionRealTime: Connect button meets AA', () => {
     const c = { id: '1', name: 'T', description: '', is_smart: false, smart_rules: [], item_count: 5, created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z', is_public: false, primary_media_type: 'music', owner_id: 'u' }
     const { container } = render(<CollectionRealTime collection={c as any} />)
-    expect(failing(container, theme, [/^Connect$/])).toBe('')
+    expect(failing(container, theme)).toBe('')
   })
 
-  it('CollectionsManager: "Updated" text in grid and list view meets AA', () => {
+  it('CollectionsManager: every text element in grid and list view meets AA', () => {
     const props = { collections: COLLECTIONS, onCreateCollection: vi.fn(), onUpdateCollection: vi.fn(), onDeleteCollection: vi.fn(), onPlayCollection: vi.fn() }
     const { container } = render(<CollectionsManager {...props} />)
-    expect(failing(container, theme, [/^Updated /])).toBe('')
-    fireEvent.click(container.querySelectorAll('button')[1]) // list-view toggle
-    expect(failing(container, theme, [/^Updated /])).toBe('')
+    expect(failing(container, theme)).toBe('')
+    fireEvent.click(screen.getByRole('button', { name: 'List view' }))
+    expect(failing(container, theme)).toBe('')
   })
 
   it('MediaDistributionChart: empty-state hint meets AA', () => {
     const { container } = render(<MediaDistributionChart />)
-    expect(failing(container, theme, ['Media will appear here once scanned'])).toBe('')
+    expect(failing(container, theme)).toBe('')
   })
 
   it('DiscoveredShares: last-seen and filtered hint meet AA', async () => {
     const { container } = wrap(<DiscoveredShares />)
     await screen.findByText('media')
-    expect(failing(container, theme, [/^seen /])).toBe('')
+    expect(failing(container, theme)).toBe('')
     fireEvent.change(screen.getByPlaceholderText('Search host...'), { target: { value: '10.0' } })
     fireEvent.change(container.querySelector('select')!, { target: { value: 'smb' } })
-    expect(failing(container, theme, [/filtered from/])).toBe('')
+    expect(failing(container, theme)).toBe('')
   })
 
   it('EntityDetail: similar-items reason line meets AA', async () => {
@@ -125,6 +117,6 @@ describe.each(THEMES)('UI-D7-FU shared components, %s theme (WCAG AA 4.5:1)', (t
       <QueryClientProvider client={qc}><MemoryRouter initialEntries={['/entity/1']}><Routes><Route path="/entity/:id" element={<EntityDetail />} /></Routes></MemoryRouter></QueryClientProvider>,
     )
     await screen.findByText('Same director')
-    expect(failing(container, theme, ['Same director'])).toBe('')
+    expect(failing(container, theme)).toBe('')
   })
 })

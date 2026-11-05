@@ -1,0 +1,5 @@
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, dark theme (WCAG AA 4.5:1) > CollectionsManager: every text element in grid and list view meets AA
++ Received
++ span. "4 items" 3.04
++ span. "1m" 3.04
+      Tests  1 failed | 36 passed (37)

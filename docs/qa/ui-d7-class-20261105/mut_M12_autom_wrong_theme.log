@@ -1,0 +1,5 @@
+ FAIL  src/styles/__tests__/contrastD7Class.test.tsx > UI-D7-FU class-wide gray text, dark theme (WCAG AA 4.5:1) > CollectionAutomation
++ Received
++ p.font-medium text-gray-700 dark:text-gray-300 "Automation unavailable" 1.41
++ p.text-sm text-gray-500 dark:text-gray-400 "This server has no automation " 2.43
+      Tests  1 failed | 36 passed (37)

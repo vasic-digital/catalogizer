@@ -1,0 +1,10 @@
+ FAIL  src/styles/__tests__/contrastHelper.test.ts > contrast helper goldens > failingElements walker goldens (a walker that sees nothing would pass every component) > reports the exact measured defect and passes the fixed class string
++ Received
++ 0
+ FAIL  src/styles/__tests__/contrastHelper.test.ts > contrast helper goldens > failingElements walker goldens (a walker that sees nothing would pass every component) > a light panel without a dark bg stays light: dark:text-gray-400 on it is flagged (real ances
++ Received
++ 0
+ FAIL  src/styles/__tests__/contrastHelper.test.ts > contrast helper goldens > failingElements walker goldens (a walker that sees nothing would pass every component) > large text needs 3:1 only; svg content and disabled controls are exempt
++ Received
++ 0
+      Tests  3 failed | 9 passed (12)

@@ -4,7 +4,7 @@
 import React from 'react'
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { contrastOf, WCAG_AA_NORMAL, type Theme } from '@/test/contrast'
+import { failingElements, type Theme } from '@/test/contrast'
 import { AdminPanel } from '@/components/admin/AdminPanel'
 import { Admin } from '@/pages/Admin'
 import AIDashboard from '@/pages/AIDashboard'
@@ -60,24 +60,7 @@ vi.mock('@/lib/analyticsApi', async () => ({
 
 const THEMES: Theme[] = ['light', 'dark']
 
-/** Every element that directly holds visible text, with its WCAG ratio; returns those below `min`. */
-function failing(root: Element, theme: Theme, min = WCAG_AA_NORMAL) {
-  const bad: string[] = []
-  const w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT)
-  for (let n = w.currentNode as Element | null; n; n = w.nextNode() as Element | null) {
-    if (n.closest('svg')) continue
-    const own = Array.from(n.childNodes).some((c) => c.nodeType === 3 && (c.textContent ?? '').trim() !== '')
-    if (!own) continue
-    // Text over a translucent black overlay sits on user imagery: not computable from classes, skip it.
-    if (/\bbg-black\//.test(n.getAttribute('class') ?? '')) continue
-    // WCAG "large text" (>=24px, or >=18.66px bold) needs 3:1.
-    const cls = n.getAttribute('class') ?? ''
-    const large = /\btext-(2xl|3xl|4xl|5xl)\b/.test(cls) || (/\btext-xl\b/.test(cls) && /\bfont-bold\b/.test(cls))
-    const r = contrastOf(n, theme)
-    if (r < (large ? 3 : min)) bad.push(`${n.tagName.toLowerCase()}.${n.getAttribute('class')} "${(n.textContent ?? '').trim().slice(0, 30)}" ${r.toFixed(2)}`)
-  }
-  return bad
-}
+const failing = failingElements
 
 const wrap = (ui: React.ReactElement) => {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })

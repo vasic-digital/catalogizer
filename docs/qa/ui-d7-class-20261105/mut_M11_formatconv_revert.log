@@ -1,0 +1,4 @@
+ FAIL  src/styles/__tests__/contrastD7Class.test.tsx > UI-D7-FU class-wide gray text, dark theme (WCAG AA 4.5:1) > FormatConverter: empty list and a completed job
++ Received
++ p.text-gray-600 mb-4 "Start your first media format " 1.94
+      Tests  1 failed | 36 passed (37)

@@ -303,10 +303,10 @@ export const CollectionRealTime: React.FC<CollectionRealTimeProps> = ({
             <div className="flex items-center gap-2">
               <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
                 connectionStatus.status === 'connected' 
-                  ? 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                  ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
                   : connectionStatus.status === 'connecting'
-                  ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400'
-                  : 'bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400'
+                  ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400'
+                  : 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
               }`}>
                 {connectionStatus.status === 'connected' ? (
                   <Wifi className="w-4 h-4" />
@@ -397,7 +397,7 @@ export const CollectionRealTime: React.FC<CollectionRealTimeProps> = ({
               <Card className="p-4">
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Activity Stats</h3>
                 {connectionStatus.status === 'error' && (
-                  <p className="text-sm text-gray-500 mb-3" data-testid="realtime-unavailable">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-3" data-testid="realtime-unavailable">
                     Real-time updates are not available: the server has no real-time channel.
                   </p>
                 )}

@@ -14,8 +14,8 @@ const CollectionAutomation: React.FC = () => (
   <div className="space-y-4" data-testid="automation-unavailable">
     <div className="flex items-center justify-between">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900">Automation Rules</h3>
-        <p className="text-sm text-gray-500">Create workflows to automatically manage your collections</p>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Automation Rules</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Create workflows to automatically manage your collections</p>
       </div>
       <button
         type="button"
@@ -27,9 +27,9 @@ const CollectionAutomation: React.FC = () => (
         Create Rule
       </button>
     </div>
-    <div className="rounded border border-gray-200 bg-gray-50 p-6 text-center">
-      <p className="font-medium text-gray-700">Automation unavailable</p>
-      <p className="text-sm text-gray-500">
+    <div className="rounded border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-6 text-center">
+      <p className="font-medium text-gray-700 dark:text-gray-300">Automation unavailable</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400">
         This server has no automation engine, so rules cannot be created, stored or run.
       </p>
     </div>

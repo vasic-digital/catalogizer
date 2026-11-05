@@ -384,7 +384,7 @@ const ExternalIntegrations: React.FC = () => {
       case 'connecting':
         return { icon: RefreshCw, color: 'text-blue-500', bg: 'bg-blue-50' };
       default:
-        return { icon: Clock, color: 'text-gray-500', bg: 'bg-gray-50' };
+        return { icon: Clock, color: 'text-gray-500 dark:text-gray-400', bg: 'bg-gray-50' };
     }
   };
 
@@ -427,8 +427,8 @@ const ExternalIntegrations: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">External Integrations</h3>
-          <p className="text-sm text-gray-500 mt-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">External Integrations</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Connect with external services to extend functionality
           </p>
         </div>
@@ -443,20 +443,20 @@ const ExternalIntegrations: React.FC = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg border p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Total Integrations</p>
-              <p className="text-2xl font-bold text-gray-900">{integrations.length}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total Integrations</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{integrations.length}</p>
             </div>
             <Globe className="w-8 h-8 text-blue-500" />
           </div>
         </div>
         
-        <div className="bg-white rounded-lg border p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Connected</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Connected</p>
               <p className="text-2xl font-bold text-green-600">
                 {integrations.filter(i => i.status === 'connected').length}
               </p>
@@ -465,11 +465,11 @@ const ExternalIntegrations: React.FC = () => {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg border p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Active Syncs</p>
-              <p className="text-2xl font-bold text-blue-600">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Active Syncs</p>
+              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                 {integrations.filter(i => i.syncSettings.enabled).length}
               </p>
             </div>
@@ -477,11 +477,11 @@ const ExternalIntegrations: React.FC = () => {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg border p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-500">Success Rate</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-gray-500 dark:text-gray-400">Success Rate</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {integrations.length > 0 && integrations.some(i => i.statistics.totalSyncs > 0)
                   ? Math.round(
                       (integrations.reduce((sum, i) => sum + i.statistics.successfulSyncs, 0) / 
@@ -496,7 +496,7 @@ const ExternalIntegrations: React.FC = () => {
       </div>
 
       {/* Filters and Search */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-white rounded-lg border p-4">
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between bg-white dark:bg-gray-800 rounded-lg border p-4">
         <div className="flex flex-wrap gap-2">
           {(['all', 'connected', 'disconnected'] as const).map((filterOption) => (
             <Button
@@ -512,7 +512,7 @@ const ExternalIntegrations: React.FC = () => {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-3 py-1 text-sm border rounded-lg bg-white"
+            className="px-3 py-1 text-sm border rounded-lg bg-white dark:bg-gray-700 dark:text-white"
           >
             <option value="all">All Types</option>
             <option value="storage">Storage</option>
@@ -545,14 +545,14 @@ const ExternalIntegrations: React.FC = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="bg-white rounded-lg border hover:shadow-md transition-shadow"
+                className="bg-white dark:bg-gray-800 rounded-lg border hover:shadow-md transition-shadow"
               >
                 {/* Integration Header */}
                 <div className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h4 className="font-semibold text-gray-900">{integration.name}</h4>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">{integration.name}</h4>
                         <Badge variant="outline">{integration.provider}</Badge>
                         <Badge variant="secondary">{integration.type}</Badge>
                         <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
@@ -563,9 +563,9 @@ const ExternalIntegrations: React.FC = () => {
                         </div>
                       </div>
                       
-                      <p className="text-sm text-gray-600 mb-3">{integration.description}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{integration.description}</p>
                       
-                      <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+                      <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                         <div className="flex items-center gap-1">
                           <TypeIcon className="w-3 h-3" />
                           {integration.type}
@@ -659,12 +659,12 @@ const ExternalIntegrations: React.FC = () => {
                       <div className="p-4 bg-gray-50 space-y-4">
                         {/* Configuration */}
                         <div>
-                          <h5 className="font-medium text-sm text-gray-700 mb-2">Configuration</h5>
-                          <div className="bg-white rounded p-3 text-sm space-y-2">
+                          <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">Configuration</h5>
+                          <div className="bg-white dark:bg-gray-900 rounded p-3 text-sm space-y-2">
                             {integration.config.endpoint && (
                               <div className="flex items-center gap-2">
                                 <ExternalLink className="w-3 h-3 text-gray-400" />
-                                <span className="text-gray-600">Endpoint: </span>
+                                <span className="text-gray-600 dark:text-gray-300">Endpoint: </span>
                                 <code className="bg-gray-100 px-2 py-1 rounded text-xs">
                                   {integration.config.endpoint}
                                 </code>
@@ -673,7 +673,7 @@ const ExternalIntegrations: React.FC = () => {
                             {integration.config.webhookUrl && (
                               <div className="flex items-center gap-2">
                                 <Link className="w-3 h-3 text-gray-400" />
-                                <span className="text-gray-600">Webhook: </span>
+                                <span className="text-gray-600 dark:text-gray-300">Webhook: </span>
                                 <code className="bg-gray-100 px-2 py-1 rounded text-xs truncate max-w-xs">
                                   {integration.config.webhookUrl}
                                 </code>
@@ -682,7 +682,7 @@ const ExternalIntegrations: React.FC = () => {
                             {integration.config.apiKey && (
                               <div className="flex items-center gap-2">
                                 <Key className="w-3 h-3 text-gray-400" />
-                                <span className="text-gray-600">API Key: </span>
+                                <span className="text-gray-600 dark:text-gray-300">API Key: </span>
                                 <code className="bg-gray-100 px-2 py-1 rounded text-xs">
                                   {integration.config.apiKey}
                                 </code>
@@ -693,26 +693,26 @@ const ExternalIntegrations: React.FC = () => {
                         
                         {/* Sync Settings */}
                         <div>
-                          <h5 className="font-medium text-sm text-gray-700 mb-2">Sync Settings</h5>
-                          <div className="bg-white rounded p-3 text-sm">
+                          <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">Sync Settings</h5>
+                          <div className="bg-white dark:bg-gray-900 rounded p-3 text-sm">
                             <div className="grid grid-cols-2 gap-4 text-xs">
                               <div>
-                                <span className="text-gray-500">Enabled: </span>
-                                <span className={integration.syncSettings.enabled ? 'text-green-600' : 'text-gray-600'}>
+                                <span className="text-gray-500 dark:text-gray-400">Enabled: </span>
+                                <span className={integration.syncSettings.enabled ? 'text-green-600' : 'text-gray-600 dark:text-gray-300'}>
                                   {integration.syncSettings.enabled ? 'Yes' : 'No'}
                                 </span>
                               </div>
                               <div>
-                                <span className="text-gray-500">Frequency: </span>
-                                <span className="text-gray-600">{integration.syncSettings.frequency}</span>
+                                <span className="text-gray-500 dark:text-gray-400">Frequency: </span>
+                                <span className="text-gray-600 dark:text-gray-300">{integration.syncSettings.frequency}</span>
                               </div>
                               <div>
-                                <span className="text-gray-500">Direction: </span>
-                                <span className="text-gray-600">{integration.syncSettings.direction}</span>
+                                <span className="text-gray-500 dark:text-gray-400">Direction: </span>
+                                <span className="text-gray-600 dark:text-gray-300">{integration.syncSettings.direction}</span>
                               </div>
                               <div>
-                                <span className="text-gray-500">Filters: </span>
-                                <span className="text-gray-600">{integration.syncSettings.filters.length}</span>
+                                <span className="text-gray-500 dark:text-gray-400">Filters: </span>
+                                <span className="text-gray-600 dark:text-gray-300">{integration.syncSettings.filters.length}</span>
                               </div>
                             </div>
                           </div>
@@ -720,28 +720,28 @@ const ExternalIntegrations: React.FC = () => {
                         
                         {/* Statistics */}
                         <div>
-                          <h5 className="font-medium text-sm text-gray-700 mb-2">Statistics</h5>
-                          <div className="bg-white rounded p-3">
+                          <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-2">Statistics</h5>
+                          <div className="bg-white dark:bg-gray-900 rounded p-3">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                               <div className="text-center">
-                                <p className="text-2xl font-bold text-gray-900">{integration.statistics.totalSyncs}</p>
-                                <p className="text-xs text-gray-500">Total Syncs</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{integration.statistics.totalSyncs}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Total Syncs</p>
                               </div>
                               <div className="text-center">
                                 <p className="text-2xl font-bold text-green-600">{integration.statistics.successfulSyncs}</p>
-                                <p className="text-xs text-gray-500">Successful</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Successful</p>
                               </div>
                               <div className="text-center">
                                 <p className="text-2xl font-bold text-red-600">{integration.statistics.failedSyncs}</p>
-                                <p className="text-xs text-gray-500">Failed</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Failed</p>
                               </div>
                               <div className="text-center">
-                                <p className="text-2xl font-bold text-blue-600">{integration.statistics.itemsProcessed}</p>
-                                <p className="text-xs text-gray-500">Items</p>
+                                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{integration.statistics.itemsProcessed}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Items</p>
                               </div>
                             </div>
                             {integration.statistics.lastSyncDuration && (
-                              <div className="mt-3 pt-3 border-t text-xs text-gray-600">
+                              <div className="mt-3 pt-3 border-t text-xs text-gray-600 dark:text-gray-300">
                                 Last sync duration: {formatDuration(integration.statistics.lastSyncDuration)}
                                 {integration.statistics.bytesTransferred && (
                                   <span className="ml-3">
@@ -762,10 +762,10 @@ const ExternalIntegrations: React.FC = () => {
         </AnimatePresence>
         
         {filteredIntegrations.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-lg border">
+          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border">
             <Globe className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No integrations found</h3>
-            <p className="text-gray-500 mb-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No integrations found</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
               Connect with external services to extend your collection management capabilities
             </p>
             <Button onClick={() => setIsCreateModalOpen(true)}>
@@ -822,7 +822,7 @@ const ExternalIntegrations: React.FC = () => {
                       className="p-4 border rounded-lg hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-left transition-colors"
                     >
                       <div className="font-medium text-sm">{example.name}</div>
-                      <div className="text-xs text-gray-500 mt-1">{example.description}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{example.description}</div>
                       <div className="flex flex-wrap gap-1 mt-2">
                         {example.features.slice(0, 2).map(f => (
                           <span key={f} className="text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">{f}</span>
@@ -846,7 +846,7 @@ const ExternalIntegrations: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
             <h3 className="text-xl font-bold mb-4">Edit Integration</h3>
-            <p className="text-sm text-gray-500 mb-4">Configure {editingIntegration.name}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Configure {editingIntegration.name}</p>
 
             <div className="space-y-4">
               <div>

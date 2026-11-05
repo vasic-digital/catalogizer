@@ -1,0 +1,4 @@
+ FAIL  src/styles/__tests__/contrastD7Class.test.tsx > UI-D7-FU class-wide gray text, dark theme (WCAG AA 4.5:1) > Settings page: scans, SMB discovery result and sync statistics/sessions
++ Received
++ span.text-sm text-gray-500 ml-2 "10.0.0.5/m" 3.04
+      Tests  1 failed | 36 passed (37)

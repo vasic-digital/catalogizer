@@ -292,9 +292,9 @@ const AdvancedSearch: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="bg-white rounded-lg border p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Advanced Search</h3>
-        <p className="text-sm text-gray-600 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Advanced Search</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
           Build complex search queries with multiple rules and conditions
         </p>
 
@@ -307,8 +307,8 @@ const AdvancedSearch: React.FC = () => {
                 onClick={() => setActiveTab(tab as 'builder' | 'presets' | 'saved')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === tab
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -323,7 +323,7 @@ const AdvancedSearch: React.FC = () => {
             {/* Rules List */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-md font-medium text-gray-900">Search Rules</h4>
+                <h4 className="text-md font-medium text-gray-900 dark:text-white">Search Rules</h4>
                 <Button onClick={addRule} size="sm">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Rule
@@ -333,8 +333,8 @@ const AdvancedSearch: React.FC = () => {
               {rules.length === 0 ? (
                 <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                   <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-2">No search rules defined</p>
-                  <p className="text-sm text-gray-500 mb-4">Add rules to build your search query</p>
+                  <p className="text-gray-600 dark:text-gray-300 mb-2">No search rules defined</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Add rules to build your search query</p>
                   <Button onClick={addRule}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add First Rule
@@ -420,7 +420,7 @@ const AdvancedSearch: React.FC = () => {
             {/* Search Settings */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-md font-medium text-gray-900">Search Settings</h4>
+                <h4 className="text-md font-medium text-gray-900 dark:text-white">Search Settings</h4>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -433,7 +433,7 @@ const AdvancedSearch: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label htmlFor="adv-search-select-1" className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                  <label htmlFor="adv-search-select-1" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
                   <Select id="adv-search-select-1"
                     value={searchSettings.sortBy}
                     onChange={(value) => setSearchSettings({ ...searchSettings, sortBy: value })}
@@ -447,7 +447,7 @@ const AdvancedSearch: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="adv-search-select-2" className="block text-sm font-medium text-gray-700 mb-2">Order</label>
+                  <label htmlFor="adv-search-select-2" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Order</label>
                   <Select id="adv-search-select-2"
                     value={searchSettings.sortOrder}
                     onChange={(value) => setSearchSettings({ ...searchSettings, sortOrder: value as 'asc' | 'desc' })}
@@ -459,7 +459,7 @@ const AdvancedSearch: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="adv-search-select-3" className="block text-sm font-medium text-gray-700 mb-2">Items per page</label>
+                  <label htmlFor="adv-search-select-3" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Items per page</label>
                   <Select id="adv-search-select-3"
                     value={searchSettings.itemsPerPage.toString()}
                     onChange={(value) => setSearchSettings({ ...searchSettings, itemsPerPage: Number(value) })}
@@ -478,8 +478,8 @@ const AdvancedSearch: React.FC = () => {
 
         {activeTab === 'presets' && (
           <div className="space-y-4">
-            <h4 className="text-md font-medium text-gray-900 mb-4">Search Presets</h4>
-            <p className="text-sm text-gray-600 mb-6">Quick start with pre-configured search patterns</p>
+            <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Search Presets</h4>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">Quick start with pre-configured search patterns</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {SEARCH_PRESETS.map((preset) => (
@@ -493,9 +493,9 @@ const AdvancedSearch: React.FC = () => {
                       {preset.icon}
                     </div>
                     <div className="flex-1">
-                      <h5 className="font-semibold text-gray-900 text-sm">{preset.name}</h5>
-                      <p className="text-xs text-gray-500 mb-2">{preset.category}</p>
-                      <p className="text-sm text-gray-600 mb-2">{preset.description}</p>
+                      <h5 className="font-semibold text-gray-900 dark:text-white text-sm">{preset.name}</h5>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{preset.category}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{preset.description}</p>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline">{preset.rules.length} rules</Badge>
                       </div>
@@ -509,14 +509,14 @@ const AdvancedSearch: React.FC = () => {
 
         {activeTab === 'saved' && (
           <div className="space-y-4">
-            <h4 className="text-md font-medium text-gray-900 mb-4">Saved Searches</h4>
-            <p className="text-sm text-gray-600 mb-6">Access your previously saved search configurations</p>
+            <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Saved Searches</h4>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">Access your previously saved search configurations</p>
 
             {savedSearches.length === 0 ? (
               <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
                 <Bookmark className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-2">No saved searches yet</p>
-                <p className="text-sm text-gray-500 mb-4">Save your search rules to reuse them later</p>
+                <p className="text-gray-600 dark:text-gray-300 mb-2">No saved searches yet</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Save your search rules to reuse them later</p>
                 <Button onClick={() => setActiveTab('builder')}>
                   Create Search Rule
                 </Button>
@@ -531,9 +531,9 @@ const AdvancedSearch: React.FC = () => {
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <h5 className="font-semibold text-gray-900">{search.name}</h5>
-                        <p className="text-sm text-gray-600">{search.description}</p>
-                        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                        <h5 className="font-semibold text-gray-900 dark:text-white">{search.name}</h5>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">{search.description}</p>
+                        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                           <span>{search.rules.length} rules</span>
                           <span>Created {new Date(search.created_at).toLocaleDateString()}</span>
                         </div>
@@ -551,7 +551,7 @@ const AdvancedSearch: React.FC = () => {
 
         {/* Action Bar */}
         <div className="flex items-center justify-between pt-6 border-t">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-300">
             {rules.filter(rule => rule.enabled).length} active rule{rules.filter(rule => rule.enabled).length !== 1 ? 's' : ''}
           </div>
           <div className="flex items-center gap-2">

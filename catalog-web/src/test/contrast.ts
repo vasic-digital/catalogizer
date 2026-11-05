@@ -47,18 +47,28 @@ function resolveToken(tok: string): Resolved | null {
   return { rgb, alpha: op ? Number(op) / 100 : 1 }
 }
 
-const NON_COLOR_TEXT = /^(xs|sm|base|lg|[2-9]?xl|center|left|right|justify|start|end|ellipsis|clip|wrap|nowrap|balance|pretty|opacity-\d+)$/
-const NON_COLOR_BG = /^(none|cover|contain|center|top|bottom|left|right|repeat.*|no-repeat|fixed|local|scroll|clip-.*|origin-.*|blend-.*|opacity-\d+|gradient-.*)$/
+const NON_COLOR_TEXT = /^(xs|sm|base|lg|[2-9]?xl|center|left|right|justify|start|end|ellipsis|clip|wrap|nowrap|balance|pretty|opacity-\d+|current|inherit)$/
+const NON_COLOR_BG = /^(transparent|current|inherit|none|cover|contain|center|top|bottom|left|right|repeat.*|no-repeat|fixed|local|scroll|clip-.*|origin-.*|blend-.*|opacity-\d+|gradient-.*)$/
 
 function pick(el: Element, prefix: 'text' | 'bg', t: Theme): Resolved | null {
   const classes = Array.from(el.classList)
   const find = (pfx: string) => {
+    // D7-R2-F3: fail closed. Two different colour classes of the same prefix+variant on one element
+    // (e.g. "text-gray-500 text-gray-900") make the winner depend on CSS source order, which a class
+    // list cannot tell us; silently picking the first would hide a real contrast problem.
+    let found: { cls: string; res: Resolved } | null = null
     for (const c of classes) {
       if (!c.startsWith(pfx)) continue
       const tok = c.slice(pfx.length)
       if (!tok || (prefix === 'text' ? NON_COLOR_TEXT : NON_COLOR_BG).test(tok)) continue
       const r = resolveToken(tok)
-      if (r) return r
+      if (r) {
+        if (found && found.cls !== c) {
+          throw new Error(`contrast helper: conflicting colour classes "${found.cls}" and "${c}" on one element`)
+        }
+        found = found ?? { cls: c, res: r }
+        continue
+      }
       // A colour class we cannot resolve to a hex (hsl(var(--x)) token, arbitrary value) must never silently
       // fall through to an ancestor: that would hide a real contrast problem.
       const name = tok.split('/')[0]
@@ -66,7 +76,7 @@ function pick(el: Element, prefix: 'text' | 'bg', t: Theme): Resolved | null {
         throw new Error(`contrast helper cannot resolve colour class "${c}"`)
       }
     }
-    return null
+    return found ? found.res : null
   }
   return (t === 'dark' ? find(`dark:${prefix}-`) : null) ?? find(`${prefix}-`)
 }
@@ -99,3 +109,26 @@ export function contrastOf(el: Element, t: Theme): number {
 }
 
 export const WCAG_AA_NORMAL = 4.5
+
+/**
+ * Whole-element walker (D7-R2-F2): every element that directly holds visible text, with its WCAG ratio;
+ * returns descriptions of those below the AA threshold (4.5 normal, 3 for large text).
+ * Text over a translucent black overlay sits on user imagery and is not computable from classes: skipped.
+ */
+export function failingElements(root: Element, theme: Theme, min = WCAG_AA_NORMAL): string[] {
+  const bad: string[] = []
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT)
+  for (let n = w.currentNode as Element | null; n; n = w.nextNode() as Element | null) {
+    if (n.closest('svg')) continue
+    // WCAG 1.4.3: text of inactive (disabled) user-interface components is exempt from the contrast requirement.
+    if (n.closest('[disabled]')) continue
+    const own = Array.from(n.childNodes).some((c) => c.nodeType === 3 && (c.textContent ?? '').trim() !== '')
+    if (!own) continue
+    const cls = n.getAttribute('class') ?? ''
+    if (/\bbg-black\//.test(cls)) continue
+    const large = /\btext-(2xl|3xl|4xl|5xl)\b/.test(cls) || (/\btext-xl\b/.test(cls) && /\bfont-bold\b/.test(cls))
+    const r = contrastOf(n, theme)
+    if (r < (large ? 3 : min)) bad.push(`${n.tagName.toLowerCase()}.${cls} "${(n.textContent ?? '').trim().slice(0, 30)}" ${r.toFixed(2)}`)
+  }
+  return bad
+}

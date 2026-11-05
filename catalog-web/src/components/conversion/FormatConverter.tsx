@@ -139,7 +139,7 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
       case 'failed':
         return <AlertCircle className="w-5 h-5 text-red-500" />;
       case 'cancelled':
-        return <X className="w-5 h-5 text-gray-500" />;
+        return <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />;
       default:
         return <Clock className="w-5 h-5 text-gray-400" />;
     }
@@ -186,10 +186,10 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between mb-2">
                     <div>
-                      <h3 className="font-medium text-gray-900 truncate">
+                      <h3 className="font-medium text-gray-900 dark:text-white truncate">
                         {job.sourceFile?.name ?? 'unknown'}
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         {(job.sourceFile?.format ?? 'unknown').toUpperCase()} → {job.targetFormat.toUpperCase()} • {job.quality}
                       </p>
                     </div>
@@ -233,7 +233,7 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                   )}
 
                   {/* Details */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 dark:text-gray-300">
                     <div>
                       <span className="block font-medium">File Size</span>
                       {formatFileSize(job.sourceFile?.size ?? 0)}
@@ -281,10 +281,10 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                 <Settings className="w-8 h-8 text-gray-400" />
               </div>
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   No conversion jobs
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
                   Start your first media format conversion
                 </p>
                 <Button onClick={() => setShowCreateModal(true)}>
@@ -307,17 +307,17 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
             <CardContent className="space-y-6">
               {/* File Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Select File
                 </label>
                 <input
                   type="file"
                   accept="video/*,audio/*"
                   onChange={handleFileSelect}
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />
                 {selectedFile && (
-                  <p className="mt-2 text-sm text-gray-600">
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                     Selected: {selectedFile.name} ({formatFileSize(selectedFile.size)})
                   </p>
                 )}
@@ -325,7 +325,7 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
 
               {/* Target Format */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Target Format
                 </label>
                 <select
@@ -343,7 +343,7 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
 
               {/* Quality Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Quality Preset
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -366,7 +366,7 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                       />
                       <div>
                         <div className="font-medium">{preset.label}</div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-gray-600 dark:text-gray-300">
                           {preset.resolution} • {preset.bitrate}kbps
                         </div>
                       </div>
@@ -377,7 +377,7 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
 
               {/* Custom Options */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Custom Options (Optional)
                 </label>
                 <div className="grid grid-cols-2 gap-3">

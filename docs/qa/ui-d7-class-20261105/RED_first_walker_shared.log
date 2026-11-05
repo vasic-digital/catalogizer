@@ -1,0 +1,121 @@
+
+ RUN  v4.0.18 /home/milosvasic/.cache/claude-tmp/d7class.i6S42H/repo/catalog-web
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+(node:1473381) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, light theme (WCAG AA 4.5:1) > SubtitleManager: result Download button meets AA
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ❯ src/styles/__tests__/contrastD7Shared.test.tsx (12 tests | 5 failed) 983ms
+     ✓ SubtitleManager: result Download button meets AA 207ms
+     × CollectionRealTime: Connect button meets AA 77ms
+     ✓ CollectionsManager: every text element in grid and list view meets AA  372ms
+     ✓ MediaDistributionChart: empty-state hint meets AA 8ms
+     ✓ DiscoveredShares: last-seen and filtered hint meet AA 81ms
+     ✓ EntityDetail: similar-items reason line meets AA 38ms
+     ✓ SubtitleManager: result Download button meets AA 62ms
+     × CollectionRealTime: Connect button meets AA 28ms
+     × CollectionsManager: every text element in grid and list view meets AA 14ms
+     × MediaDistributionChart: empty-state hint meets AA 9ms
+     ✓ DiscoveredShares: last-seen and filtered hint meet AA 64ms
+     × EntityDetail: similar-items reason line meets AA 18ms
+(node:1479145) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/styles/__tests__/contrastHelper.test.ts (8 tests) 32ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, light theme (WCAG AA 4.5:1) > CollectionRealTime: Connect button meets AA
+AssertionError: expected 'span.text-sm font-medium "Error" 3.95' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ span.text-sm font-medium "Error" 3.95
+
+ ❯ src/styles/__tests__/contrastD7Shared.test.tsx:89:39
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, dark theme (WCAG AA 4.5:1) > CollectionRealTime: Connect button meets AA
+AssertionError: expected 'p.text-sm text-gray-500 mb-3 "Real-ti…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ p.text-sm text-gray-500 mb-3 "Real-time updates are not avai" 3.04
+
+ ❯ src/styles/__tests__/contrastD7Shared.test.tsx:89:39
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, dark theme (WCAG AA 4.5:1) > CollectionsManager: every text element in grid and list view meets AA
+AssertionError: expected 'h3.font-medium text-gray-900 group-ho…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ h3.font-medium text-gray-900 group-hover:text-blue-600 transition-colors "Movie Favorites" 1.21
++ p.text-sm text-gray-600 line-clamp-2 "d" 1.94
++ span. "4 items" 3.04
++ span. "1m" 3.04
+
+ ❯ src/styles/__tests__/contrastD7Shared.test.tsx:95:39
+     93|     const props = { collections: COLLECTIONS, onCreateCollection: vi.f…
+     94|     const { container } = render(<CollectionsManager {...props} />)
+     95|     expect(failing(container, theme)).toBe('')
+       |                                       ^
+     96|     fireEvent.click(screen.getByRole('button', { name: 'List view' }))
+     97|     expect(failing(container, theme)).toBe('')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, dark theme (WCAG AA 4.5:1) > MediaDistributionChart: empty-state hint meets AA
+AssertionError: expected 'p.text-gray-500 "No media data availa…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ p.text-gray-500 "No media data available" 3.04
+
+ ❯ src/styles/__tests__/contrastD7Shared.test.tsx:102:39
+    100|   it('MediaDistributionChart: empty-state hint meets AA', () => {
+    101|     const { container } = render(<MediaDistributionChart />)
+    102|     expect(failing(container, theme)).toBe('')
+       |                                       ^
+    103|   })
+    104| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, dark theme (WCAG AA 4.5:1) > EntityDetail: similar-items reason line meets AA
+AssertionError: expected 'span.text-sm text-gray-500 ml-2 "0 fi…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ span.text-sm text-gray-500 ml-2 "0 files available" 3.04
++ span.capitalize "movie" 3.04
++ span. "(2003)" 3.04
+
+ ❯ src/styles/__tests__/contrastD7Shared.test.tsx:120:39
+    118|     )
+    119|     await screen.findByText('Same director')
+    120|     expect(failing(container, theme)).toBe('')
+       |                                       ^
+    121|   })
+    122| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  5 failed | 15 passed (20)
+   Start at  18:06:26
+   Duration  6.60s (transform 912ms, setup 464ms, import 2.42s, tests 1.02s, environment 2.19s)
+
