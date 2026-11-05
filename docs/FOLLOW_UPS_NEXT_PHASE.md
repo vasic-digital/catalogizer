@@ -1339,3 +1339,11 @@ Status: PROVISIONAL-DONE (§11.4.290), not VERIFIED-DONE: a live re-run on a reb
 - D11-F4 (open): PostgreSQL migration v25 (`ADD COLUMN IF NOT EXISTS`) was not run against a real PostgreSQL here; the SQLite path is covered by the production-migration tests (UNCONFIRMED on PostgreSQL).
 
 - PRE-EXISTING (not this branch): root TestOpenAPIContract_RealBinary_PathParamsAndUserRolePermissions expects 500 for DELETE /api/v1/logs/share/999999, handler returns 404 (fails identically on base 40c07e60, see baseline_openapi_contract_test.txt). Needs separate fix.
+
+### D11/D7 review round 1 follow-ups (fix-d11-d7)
+Fixed in round 1: F1 race-safe sidecar read (O_NOFOLLOW|O_NONBLOCK open, fstat on the descriptor, SameFile vs the checked stat, /proc/self/fd realpath re-check); F2/F5 tests (FIFO, swap, BOM, forced); F3 subtitle save logs content length + sha256 only; F4 nil logger safe; F6 whitespace-prefixed XSS body control.
+Registered, NOT code:
+- F7: an admin-deleted sidecar subtitle track is re-imported on the next scan (no tombstone). Sidecars reached through symlinked directories are never imported (the scanner does not catalog them).
+- Product-owner awareness: anyone with write access to a scanned LOCAL library can now inject subtitle text via a sidecar without upload permission (openapi `GET /subtitles/media/{media_id}` documents the `sidecar` source).
+- F8 (D11a limit): the warning can false-positive when the source container's declared duration exceeds the converted stream (audio extracted from a video whose audio is shorter, dropped data/subtitle streams).
+- Leaf O_NOFOLLOW alone is redundant with the SameFile + fd realpath checks (single-layer mutant survives by design; the combined mutant is killed).

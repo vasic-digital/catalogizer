@@ -1,0 +1,2 @@
+ok  	catalogizer/internal/services	39.247s
+ok  	catalogizer/middleware	9.039s

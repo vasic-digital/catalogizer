@@ -405,6 +405,12 @@ func TestInputValidation_EmptyJSONBodyIsNotMalformed(t *testing.T) {
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
+	// control: a whitespace-prefixed NON-empty body with an XSS payload is still refused
+	req = httptest.NewRequest("POST", "/test", strings.NewReader(" {\"x\":\"<script>alert(1)</script>\"}"))
+	req.Header.Set("Content-Type", "application/json")
+	w = httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestInputValidation_GETRequestSkipsBodyValidation(t *testing.T) {

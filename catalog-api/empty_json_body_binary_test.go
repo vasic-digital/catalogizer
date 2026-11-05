@@ -87,6 +87,9 @@ func TestEmptyJSONBody_AuthDecidesBeforeBodyValidation_RealBinary(t *testing.T) 
 	code, body = rawRequest(t, "POST", base+"/api/v1/conversion/jobs/999999/cancel", tok, js, "{not json")
 	assert.Equal(t, 400, code, "malformed non-empty JSON must still be refused: %s", body)
 	assert.Contains(t, body, "validation_failed")
+	// whitespace-PREFIXED non-empty body is not "empty": the XSS payload must still be refused
+	code, body = rawRequest(t, "POST", base+"/api/v1/auth/login", "", js, " {\"username\":\"<script>alert(1)</script>\",\"password\":\"x\"}")
+	assert.Equal(t, 400, code, "a whitespace-prefixed XSS body must still be refused: %s", body)
 	code, body = rawRequest(t, "POST", base+"/api/v1/auth/login", "", js, `{"username":"<script>alert(1)</script>","password":"x"}`)
 	assert.Equal(t, 400, code, "an XSS payload must still be refused by the middleware: %s", body)
 }

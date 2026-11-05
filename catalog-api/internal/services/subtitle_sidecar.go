@@ -95,9 +95,22 @@ type sidecarMedia struct {
 	stem string
 }
 
-// confinedRegularFile resolves a catalog path under the storage root; ok only for a regular file
-// whose fully resolved path lies inside the fully resolved root.
-func confinedRegularFile(rootPath, catalogPath string) (string, bool) {
+// sidecarAfterCheck is a test seam run between the path checks and the open (nil in production).
+var sidecarAfterCheck func()
+
+// insideRoot reports whether real lies strictly inside realRoot.
+func insideRoot(realRoot, real string) bool {
+	rel, err := filepath.Rel(realRoot, real)
+	return err == nil && rel != "." && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)) && !filepath.IsAbs(rel)
+}
+
+// readConfinedSidecar resolves a catalog path under the storage root and reads it, race-safely:
+// the path is resolved and checked (inside the resolved root, regular file), then opened with
+// O_NOFOLLOW|O_NONBLOCK (a file swapped for a symlink fails the open, a swapped FIFO cannot block
+// it), and every further check and the read use the DESCRIPTOR: it must be a regular file, the
+// same file as the one checked (os.SameFile) and, where the OS exposes it, still resolve inside
+// the root. ok=false for anything else, oversize, non-UTF-8 or NUL-containing content.
+func readConfinedSidecar(rootPath, catalogPath string) (string, bool) {
 	absRoot, err := filepath.Abs(rootPath)
 	if err != nil {
 		return "", false
@@ -107,17 +120,37 @@ func confinedRegularFile(rootPath, catalogPath string) (string, bool) {
 		return "", false
 	}
 	real, err := filepath.EvalSymlinks(filepath.Join(absRoot, filepath.FromSlash(catalogPath)))
+	if err != nil || !insideRoot(realRoot, real) {
+		return "", false
+	}
+	checked, err := os.Stat(real)
+	if err != nil || !checked.Mode().IsRegular() {
+		return "", false
+	}
+	if sidecarAfterCheck != nil {
+		sidecarAfterCheck()
+	}
+	f, err := os.OpenFile(real, os.O_RDONLY|sidecarOpenFlags, 0)
 	if err != nil {
 		return "", false
 	}
-	rel, err := filepath.Rel(realRoot, real)
-	if err != nil || rel == "." || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) || filepath.IsAbs(rel) {
+	defer f.Close()
+	fst, err := f.Stat()
+	if err != nil || !fst.Mode().IsRegular() || !os.SameFile(checked, fst) {
 		return "", false
 	}
-	if st, err := os.Stat(real); err != nil || !st.Mode().IsRegular() {
+	if !descriptorInsideRoot(f, realRoot) {
 		return "", false
 	}
-	return real, true
+	b, err := io.ReadAll(io.LimitReader(f, sidecarMaxBytes+1))
+	if err != nil || len(b) > sidecarMaxBytes {
+		return "", false
+	}
+	s := strings.TrimPrefix(string(b), "\xef\xbb\xbf")
+	if !utf8.ValidString(s) || strings.ContainsRune(s, 0) {
+		return "", false
+	}
+	return s, true
 }
 
 // ImportSidecarSubtitles imports the sidecar subtitles of one local storage root.
@@ -197,12 +230,7 @@ func ImportSidecarSubtitles(ctx context.Context, db *database.DB, logger *zap.Lo
 		if best == nil {
 			continue // not a sidecar of any video here: not counted as skipped
 		}
-		real, ok := confinedRegularFile(rootPath, sc.path)
-		if !ok {
-			res.Skipped++
-			continue
-		}
-		content, ok := readSidecar(real)
+		content, ok := readConfinedSidecar(rootPath, sc.path)
 		if !ok {
 			res.Skipped++
 			continue
@@ -229,24 +257,6 @@ func ImportSidecarSubtitles(ctx context.Context, db *database.DB, logger *zap.Lo
 		}
 	}
 	return res, nil
-}
-
-// readSidecar reads a bounded UTF-8 text file; ok=false for oversize or non-UTF-8 content.
-func readSidecar(real string) (string, bool) {
-	f, err := os.Open(real)
-	if err != nil {
-		return "", false
-	}
-	defer f.Close()
-	b, err := io.ReadAll(io.LimitReader(f, sidecarMaxBytes+1))
-	if err != nil || len(b) > sidecarMaxBytes {
-		return "", false
-	}
-	s := strings.TrimPrefix(string(b), "\xef\xbb\xbf")
-	if !utf8.ValidString(s) || strings.ContainsRune(s, 0) {
-		return "", false
-	}
-	return s, true
 }
 
 // upsertSidecar inserts the track, or refreshes its content when the file changed.
