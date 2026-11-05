@@ -106,4 +106,7 @@ t2="$(grep '^METRICS_SCRAPE_TOKEN=' "$QA_DIR/qa.env" | cut -d= -f2-)"
 run_up; t3="$(grep '^METRICS_SCRAPE_TOKEN=' "$QA_DIR/qa.env" | cut -d= -f2-)"
 [ "$t3" = "$t2" ]; ok $? "re-run keeps the same token (idempotent)"
 
+# 6. pprof is opt-in per run: HELIX_PPROF_ENABLED reaches the api only when the caller sets it (by name), never by default
+setup t6; run_up; ! grep -q 'HELIX_PPROF_ENABLED' "$STUB_LOG"; ok $? "pprof env NOT passed by default"
+setup t6b; HELIX_PPROF_ENABLED=true run_up; grep -q -- '-e HELIX_PPROF_ENABLED ' "$STUB_LOG" && ! grep -q 'HELIX_PPROF_ENABLED=' "$STUB_LOG"; ok $? "pprof env passed by name when the caller sets it"
 echo "passed=$pass failed=$fail"; [ "$fail" = 0 ]
