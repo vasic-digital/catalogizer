@@ -1,0 +1,8 @@
+    [ok]   S3-SMOKE-001/GET /health: http: GET /health → 200 (193B)
+PASS  S3-SMOKE-001   Health endpoint is public and reports healthy (1/1 http steps)
+    [ok]   S3-SMOKE-002/GET /api/v1/media/stats without token: http: GET /api/v1/media/stats → 401 (57B)
+PASS  S3-SMOKE-002   Protected endpoint rejects an unauthenticated request (1/1 http steps)
+    [ok]   S3-SMOKE-003/GET /api/v1/media/stats with session token: http: GET /api/v1/media/stats → 200 (320B)
+PASS  S3-SMOKE-003   Authenticated stats are served with a total_items count (1/1 http steps)
+
+HTTP bank summary: 3 cases — 3 PASS, 0 FAIL, 0 SKIP  (base-url http://127.0.0.1:38082)

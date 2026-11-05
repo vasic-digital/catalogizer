@@ -1,0 +1,2 @@
+overall: SKIP credentials_absent (ADMIN_USERNAME/ADMIN_PASSWORD missing)
+exit: 3
