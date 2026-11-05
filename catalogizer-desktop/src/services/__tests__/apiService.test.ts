@@ -24,6 +24,16 @@ describe('apiService', () => {
     })
   })
 
+  describe('entity endpoints (CAT-TAURI-1)', () => {
+    it('requests entity progress at /api/v1/entities/:id/progress (no doubled v1)', async () => {
+      await apiService.getEntityProgress(7)
+
+      expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
+        url: 'http://localhost:8080/api/v1/entities/7/progress',
+      }))
+    })
+  })
+
   describe('makeRequest (via public methods)', () => {
     it('throws when server URL is not configured', async () => {
       mockInvoke.mockImplementation(async (cmd) => {
@@ -111,7 +121,7 @@ describe('apiService', () => {
       const result = await apiService.login({ username: 'admin', password: 'pass' })
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/auth/login',
+        url: 'http://localhost:8080/api/v1/auth/login',
         method: 'POST',
         body: JSON.stringify({ username: 'admin', password: 'pass' }),
       }))
@@ -130,7 +140,7 @@ describe('apiService', () => {
       await apiService.logout()
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/auth/logout',
+        url: 'http://localhost:8080/api/v1/auth/logout',
         method: 'POST',
       }))
     })
@@ -149,7 +159,7 @@ describe('apiService', () => {
       const result = await apiService.getAuthStatus()
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/auth/status',
+        url: 'http://localhost:8080/api/v1/auth/status',
         method: 'GET',
       }))
       expect(result.authenticated).toBe(true)
@@ -169,7 +179,7 @@ describe('apiService', () => {
       const result = await apiService.getProfile()
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/auth/profile',
+        url: 'http://localhost:8080/api/v1/auth/profile',
         method: 'GET',
       }))
       expect(result.username).toBe('admin')
@@ -187,7 +197,7 @@ describe('apiService', () => {
       await apiService.searchMedia()
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/media/search',
+        url: 'http://localhost:8080/api/v1/media/search',
         method: 'GET',
       }))
     })
@@ -258,7 +268,7 @@ describe('apiService', () => {
       const result = await apiService.getMediaById(42)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/media/42',
+        url: 'http://localhost:8080/api/v1/media/42',
         method: 'GET',
       }))
       expect(result.title).toBe('Test Film')
@@ -278,7 +288,7 @@ describe('apiService', () => {
       const result = await apiService.getMediaStats()
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/media/stats',
+        url: 'http://localhost:8080/api/v1/media/stats',
       }))
       expect(result.total_items).toBe(100)
     })
@@ -296,7 +306,7 @@ describe('apiService', () => {
       await apiService.updateWatchProgress(1, progress)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/media/1/progress',
+        url: 'http://localhost:8080/api/v1/media/1/progress',
         method: 'PUT',
         body: JSON.stringify(progress),
       }))
@@ -314,7 +324,7 @@ describe('apiService', () => {
       await apiService.toggleFavorite(5)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/media/5/favorite',
+        url: 'http://localhost:8080/api/v1/media/5/favorite',
         method: 'POST',
       }))
     })
@@ -331,7 +341,7 @@ describe('apiService', () => {
       const result = await apiService.getMediaUrl(1)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/media/1/stream',
+        url: 'http://localhost:8080/api/v1/media/1/stream',
       }))
       expect(result.url).toBe('http://stream/1')
     })
@@ -348,7 +358,7 @@ describe('apiService', () => {
       const result = await apiService.downloadMedia(7)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/media/7/download',
+        url: 'http://localhost:8080/api/v1/media/7/download',
         method: 'POST',
       }))
       expect(result.job_id).toBe(99)
@@ -368,7 +378,7 @@ describe('apiService', () => {
       await apiService.getSMBConfigs()
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/smb/configs',
+        url: 'http://localhost:8080/api/v1/smb/configs',
         method: 'GET',
       }))
     })
@@ -389,7 +399,7 @@ describe('apiService', () => {
       await apiService.createSMBConfig(config)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/smb/configs',
+        url: 'http://localhost:8080/api/v1/smb/configs',
         method: 'POST',
         body: JSON.stringify(config),
       }))
@@ -405,7 +415,7 @@ describe('apiService', () => {
       await apiService.updateSMBConfig(1, { name: 'updated' })
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/smb/configs/1',
+        url: 'http://localhost:8080/api/v1/smb/configs/1',
         method: 'PUT',
         body: JSON.stringify({ name: 'updated' }),
       }))
@@ -421,7 +431,7 @@ describe('apiService', () => {
       await apiService.deleteSMBConfig(3)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/smb/configs/3',
+        url: 'http://localhost:8080/api/v1/smb/configs/3',
         method: 'DELETE',
       }))
     })
@@ -430,7 +440,7 @@ describe('apiService', () => {
       await apiService.getSMBStatus()
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/smb/status',
+        url: 'http://localhost:8080/api/v1/smb/status',
       }))
     })
 
@@ -438,7 +448,7 @@ describe('apiService', () => {
       await apiService.getSMBStatus(2)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/smb/status/2',
+        url: 'http://localhost:8080/api/v1/smb/status/2',
       }))
     })
 
@@ -452,7 +462,7 @@ describe('apiService', () => {
       await apiService.connectSMB(1)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/smb/connect/1',
+        url: 'http://localhost:8080/api/v1/smb/connect/1',
         method: 'POST',
       }))
     })
@@ -467,7 +477,7 @@ describe('apiService', () => {
       await apiService.disconnectSMB(1)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/smb/disconnect/1',
+        url: 'http://localhost:8080/api/v1/smb/disconnect/1',
         method: 'POST',
       }))
     })
@@ -482,7 +492,7 @@ describe('apiService', () => {
       const result = await apiService.scanSMB(1)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/smb/scan/1',
+        url: 'http://localhost:8080/api/v1/smb/scan/1',
         method: 'POST',
       }))
       expect(result.job_id).toBe(10)
@@ -535,7 +545,7 @@ describe('apiService', () => {
       const result = await apiService.healthCheck()
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/health',
+        url: 'http://localhost:8080/api/v1/health',
         method: 'GET',
       }))
       expect(result.status).toBe('healthy')

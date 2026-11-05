@@ -98,7 +98,7 @@ describe('apiService (extended edge cases)', () => {
       await apiService.searchMedia({})
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/media/search',
+        url: 'http://localhost:8080/api/v1/media/search',
       }))
     })
   })
@@ -142,7 +142,7 @@ describe('apiService (extended edge cases)', () => {
       await apiService.getMediaById(99)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/media/99',
+        url: 'http://localhost:8080/api/v1/media/99',
       }))
     })
 
@@ -156,7 +156,7 @@ describe('apiService (extended edge cases)', () => {
       await apiService.toggleFavorite(42)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/media/42/favorite',
+        url: 'http://localhost:8080/api/v1/media/42/favorite',
         method: 'POST',
       }))
     })
@@ -172,7 +172,7 @@ describe('apiService (extended edge cases)', () => {
       await apiService.updateWatchProgress(10, progress)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/media/10/progress',
+        url: 'http://localhost:8080/api/v1/media/10/progress',
         method: 'PUT',
         body: JSON.stringify(progress),
       }))
@@ -190,7 +190,7 @@ describe('apiService (extended edge cases)', () => {
       await apiService.healthCheck()
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/health',
+        url: 'http://localhost:8080/api/v1/health',
       }))
     })
 
@@ -261,7 +261,7 @@ describe('apiService (extended edge cases)', () => {
       await apiService.getSMBStatus()
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/smb/status',
+        url: 'http://localhost:8080/api/v1/smb/status',
       }))
     })
 
@@ -276,7 +276,7 @@ describe('apiService (extended edge cases)', () => {
 
       // 0 is falsy, so it should hit the base endpoint
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/smb/status',
+        url: 'http://localhost:8080/api/v1/smb/status',
       }))
     })
 
@@ -290,7 +290,7 @@ describe('apiService (extended edge cases)', () => {
       await apiService.deleteSMBConfig(5)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/smb/configs/5',
+        url: 'http://localhost:8080/api/v1/smb/configs/5',
         method: 'DELETE',
       }))
     })
@@ -306,7 +306,7 @@ describe('apiService (extended edge cases)', () => {
       await apiService.updateSMBConfig(1, partialUpdate)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
-        url: 'http://localhost:8080/api/smb/configs/1',
+        url: 'http://localhost:8080/api/v1/smb/configs/1',
         method: 'PUT',
         body: JSON.stringify(partialUpdate),
       }))

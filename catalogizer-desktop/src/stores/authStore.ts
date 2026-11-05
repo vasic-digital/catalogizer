@@ -17,6 +17,21 @@ interface AuthState {
   setServerUrl: (url: string) => void;
 }
 
+// catalog-api serves the versioned REST surface under /api/v1.
+const API_PREFIX = '/api/v1';
+
+// The authoritative server URL lives in the Tauri config state (set by configStore); the auth store's own
+// copy is never populated by the app, so prefer the config and fall back to the store value.
+async function resolveServerUrl(stored: string | null): Promise<string | null> {
+  try {
+    const config = await invoke<any>('get_config');
+    if (config && config.server_url) return config.server_url;
+  } catch (e) {
+    // fall through to the stored value
+  }
+  return stored;
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
@@ -28,8 +43,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
+      const serverUrl = await resolveServerUrl(get().serverUrl);
       const response = await invoke<string>('make_http_request', {
-        url: `${get().serverUrl}/api/auth/login`,
+        url: `${serverUrl}${API_PREFIX}/auth/login`,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,7 +56,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const data = JSON.parse(response);
 
       // Store auth token
-      await invoke('set_auth_token', { token: data.token });
+      await invoke('set_auth_token', { token: data.token ?? data.session_token });
 
       set({
         user: data.user,
@@ -65,8 +81,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Optionally call logout endpoint
       try {
+        const serverUrl = await resolveServerUrl(get().serverUrl);
         await invoke<string>('make_http_request', {
-          url: `${get().serverUrl}/api/auth/logout`,
+          url: `${serverUrl}${API_PREFIX}/auth/logout`,
           method: 'POST',
           headers: {},
         });
@@ -106,7 +123,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       const response = await invoke<string>('make_http_request', {
-        url: `${config.server_url}/api/auth/status`,
+        url: `${config.server_url}${API_PREFIX}/auth/status`,
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${config.auth_token}`,

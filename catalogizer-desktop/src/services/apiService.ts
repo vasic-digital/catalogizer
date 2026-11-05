@@ -30,7 +30,7 @@ class ApiService {
       throw new Error('Server URL not configured');
     }
 
-    const url = `${config.server_url}/api${endpoint}`;
+    const url = `${config.server_url}/api/v1${endpoint}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -116,7 +116,7 @@ class ApiService {
   async getEntityProgress(mediaItemId: number): Promise<UiPlaybackProgress | null> {
     try {
       const resp = await this.makeRequest<{ progress: Record<string, unknown> | null }>(
-        `/v1/entities/${mediaItemId}/progress`,
+        `/entities/${mediaItemId}/progress`,
       );
       const raw = resp?.progress;
       if (!raw) return null;
@@ -142,7 +142,7 @@ class ApiService {
   async listEntityHistory(mediaItemId: number, limit = 50): Promise<UiPlaybackSession[]> {
     try {
       const resp = await this.makeRequest<{ sessions: Array<Record<string, unknown>> }>(
-        `/v1/entities/${mediaItemId}/history?limit=${limit}`,
+        `/entities/${mediaItemId}/history?limit=${limit}`,
       );
       const raw = resp?.sessions ?? [];
       return raw.map((r) => ({
