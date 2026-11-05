@@ -23,3 +23,14 @@ _re_name='^[a-z][a-z0-9_-]{0,30}$'; _re_host='^[A-Za-z0-9.:-]{1,64}$'; _re_port=
 [[ "$MON_HOST" =~ $_re_host && "$MON_PG_HOST" =~ $_re_host ]] || { echo "invalid MON_HOST/MON_PG_HOST" >&2; return 2 2>/dev/null || exit 2; }
 for _p in "$API_PORT" "$WEB_PORT" "$WEBSITE_PORT" "$PG_PORT" "$PROM_PORT" "$GRAFANA_PORT" "$PGADMIN_PORT" "$NGINX_PORT" "$NGINX_SITE_PORT"; do
   [[ "$_p" =~ $_re_port ]] || { echo "invalid port '$_p'" >&2; return 2 2>/dev/null || exit 2; }; done
+
+# ---- Prometheus basic auth (QA-PROM-AUTH): Prometheus' own web.config.file; the hash is derived from the password at up.sh time.
+PROM_AUTH_USER="${PROM_AUTH_USER:-qa_prom}"
+# prom_web_config <user>  (password on STDIN, never argv) -> prints web.yml with a bcrypt hash (hash is not a secret; the password never is written)
+prom_web_config() {
+  python3 -I -c '
+import sys, bcrypt
+user = sys.argv[1]; pw = sys.stdin.buffer.read().rstrip(b"\n")
+assert len(pw) >= 16, "prometheus password too short"
+print("basic_auth_users:\n  %s: %s" % (user, bcrypt.hashpw(pw, bcrypt.gensalt(rounds=10)).decode()))' "$1"
+}

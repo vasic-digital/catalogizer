@@ -14,7 +14,11 @@ if [ ! -f "$MENV" ]; then   # fresh random secrets, never printed
   echo "generated $MENV (0600)"
 fi
 [ "$(stat -c %a "$MENV")" = 600 ] || chmod 600 "$MENV"
+if ! grep -q '^PROM_AUTH_PASSWORD=' "$MENV"; then   # QA-PROM-AUTH: Prometheus basic-auth password, appended once, never printed
+  ( umask 077; echo "PROM_AUTH_PASSWORD=Pm-$(head -c 16 /dev/urandom | od -An -vtx1 | tr -d ' \n')-Zz9" >> "$MENV" ); echo "added PROM_AUTH_PASSWORD to $MENV"
+fi
 set -a; . "$QENV"; . "$MENV"; set +a
+export PROM_AUTH_USER
 for i in "$PROM_IMAGE" "$GRAFANA_IMAGE" "$PGADMIN_IMAGE" "$NGINX_IMAGE" "$CURL_IMAGE"; do
   podman image exists "$i" || { echo "image $i missing - podman pull it (pinned tag)" >&2; exit 3; }; done
 . "$HERE/digest_check.sh"   # F9/N2: fail-closed digest pins
@@ -32,8 +36,9 @@ for p in "$PROM_PORT" "$GRAFANA_PORT" "$PGADMIN_PORT" "$NGINX_PORT" "$NGINX_SITE
 R="$(mktemp -d "$QA_DIR/mon-render.XXXXXX")"; trap 'rm -rf -- "${R:?}"' EXIT
 mkdir -p "$R/prometheus" "$R/grafana" "$R/pgadmin" "$R/nginx"
 sub() { sed -e "s|__MON_HOST__|$MON_HOST|g" -e "s|__API_PORT__|$API_PORT|g" -e "s|__WEB_PORT__|$WEB_PORT|g" \
-  -e "s|__WEBSITE_PORT__|$WEBSITE_PORT|g" -e "s|__PG_HOST__|$MON_PG_HOST|g" -e "s|__PG_PORT__|$PG_PORT|g" -e "s|__PG_USER__|$POSTGRES_USER|g" "$1" > "$2"; }
+  -e "s|__WEBSITE_PORT__|$WEBSITE_PORT|g" -e "s|__PG_HOST__|$MON_PG_HOST|g" -e "s|__PG_PORT__|$PG_PORT|g" -e "s|__PG_USER__|$POSTGRES_USER|g" -e "s|__PROM_USER__|$PROM_AUTH_USER|g" "$1" > "$2"; }
 sub "$HERE/prometheus/prometheus.yml" "$R/prometheus/prometheus.yml"
+printf '%s' "$PROM_AUTH_PASSWORD" | prom_web_config "$PROM_AUTH_USER" > "$R/prometheus/web.yml" || { echo "bcrypt web.yml generation failed (python3 bcrypt?)" >&2; exit 3; }
 sub "$HERE/nginx/nginx.conf" "$R/nginx/nginx.conf"
 sub "$HERE/pgadmin/servers.json" "$R/pgadmin/servers.json"
 cp -r "$HERE/grafana/provisioning" "$HERE/grafana/dashboards" "$R/grafana/"
@@ -46,9 +51,11 @@ podman secret create "${MON_POD}-pgpass" "$R/pgpass" >/dev/null
 podman secret rm "${MON_POD}-qaadmin" >/dev/null 2>&1 || true
 ( umask 077; printf 'ADMIN_USERNAME=%s\nADMIN_PASSWORD=%s\n' "$ADMIN_USERNAME" "$ADMIN_PASSWORD" > "$R/qaadmin" )
 podman secret create "${MON_POD}-qaadmin" "$R/qaadmin" >/dev/null
-for s in gfpw pgapw; do podman secret rm "${MON_POD}-$s" >/dev/null 2>&1 || true; done
+for s in gfpw pgapw promauth promauthgf; do podman secret rm "${MON_POD}-$s" >/dev/null 2>&1 || true; done
 printf '%s' "$GF_SECURITY_ADMIN_PASSWORD" | podman secret create "${MON_POD}-gfpw" - >/dev/null
 printf '%s' "$PGADMIN_DEFAULT_PASSWORD" | podman secret create "${MON_POD}-pgapw" - >/dev/null
+printf '%s' "$PROM_AUTH_PASSWORD" | podman secret create "${MON_POD}-promauth" - >/dev/null
+printf '%s' "$PROM_AUTH_PASSWORD" | podman secret create "${MON_POD}-promauthgf" - >/dev/null
 rm -f -- "${R:?}/pgpass" "${R:?}/qaadmin"
 podman volume rm -f "${MON_POD}-cfg" >/dev/null 2>&1 || true
 podman volume create "${MON_POD}-cfg" >/dev/null; podman volume create "${MON_POD}-tok" >/dev/null 2>&1 || true
@@ -79,10 +86,11 @@ for i in $(seq 1 40); do podman run --rm --user 0 -v "${MON_POD}-tok:/tokens:ro"
 podman run --rm --user 0 -v "${MON_POD}-tok:/tokens:ro" "$CURL_IMAGE" test -s /tokens/metrics.tok || { echo "no scrape token available" >&2; exit 6; }
 
 podman run -d --pod "$MON_POD" --name "${MON_POD}-prometheus" --memory 512m \
+  --secret "${MON_POD}-promauth,target=/run/secrets/prom_pw,uid=65534,mode=0400" \
   -v "${MON_POD}-cfg:/cfg:ro" -v "${MON_POD}-tok:/tokens:ro" -v "${MON_POD}-prom:/prometheus" \
-  "$PROM_IMAGE" --config.file=/cfg/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=7d >/dev/null
+  "$PROM_IMAGE" --config.file=/cfg/prometheus/prometheus.yml --web.config.file=/cfg/prometheus/web.yml --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=7d >/dev/null
 podman run -d --pod "$MON_POD" --name "${MON_POD}-grafana" --memory 384m \
-  -e GF_SECURITY_ADMIN_USER -e GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/gfpw --secret "${MON_POD}-gfpw,target=/run/secrets/gfpw,uid=472,mode=0400" -e GF_USERS_ALLOW_SIGN_UP=false -e GF_ANALYTICS_REPORTING_ENABLED=false -e GF_ANALYTICS_CHECK_FOR_UPDATES=false \
+  -e GF_SECURITY_ADMIN_USER -e GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/gfpw --secret "${MON_POD}-gfpw,target=/run/secrets/gfpw,uid=472,mode=0400" --secret "${MON_POD}-promauthgf,target=/run/secrets/prom_pw,uid=472,mode=0400" -e PROM_AUTH_USER -e GF_USERS_ALLOW_SIGN_UP=false -e GF_ANALYTICS_REPORTING_ENABLED=false -e GF_ANALYTICS_CHECK_FOR_UPDATES=false \
   -e GF_PATHS_PROVISIONING=/cfg/grafana/provisioning -e GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/cfg/grafana/dashboards/catalogizer-api.json \
   -v "${MON_POD}-cfg:/cfg:ro" -v "${MON_POD}-graf:/var/lib/grafana" "$GRAFANA_IMAGE" >/dev/null
 podman run -d --pod "$MON_POD" --name "${MON_POD}-pgadmin" --memory 512m \
@@ -93,7 +101,9 @@ podman run -d --pod "$MON_POD" --name "${MON_POD}-pgadmin" --memory 512m \
 podman run -d --pod "$MON_POD" --name "${MON_POD}-nginx" --memory 64m -v "${MON_POD}-cfg:/cfg:ro" \
   "$NGINX_IMAGE" nginx -c /cfg/nginx/nginx.conf -g 'daemon off;' >/dev/null
 
-rc=0; probe() { local n="$1" u="$2" c i; for i in $(seq 1 90); do c="$(curl -s -m 5 -o /dev/null -w '%{http_code}' "$u" || true)"; [ "$c" = 200 ] && break; sleep 1; done
+rc=0; probe() { local n="$1" u="$2" c i; for i in $(seq 1 90); do
+    if [ "$n" = prometheus ]; then c="$(printf 'user = "%s:%s"\n' "$PROM_AUTH_USER" "$PROM_AUTH_PASSWORD" | curl -s -m 5 -o /dev/null -w '%{http_code}' -K - "$u" || true)"   # creds via stdin, not argv
+    else c="$(curl -s -m 5 -o /dev/null -w '%{http_code}' "$u" || true)"; fi; [ "$c" = 200 ] && break; sleep 1; done
   printf '%-12s %s -> %s\n' "$n" "$u" "$c"; [ "$c" = 200 ] || rc=6; }
 probe prometheus "http://127.0.0.1:${PROM_PORT}/-/ready"; probe grafana "http://127.0.0.1:${GRAFANA_PORT}/api/health"
 probe pgadmin "http://127.0.0.1:${PGADMIN_PORT}/misc/ping"; probe nginx "http://127.0.0.1:${NGINX_PORT}/edge-health"

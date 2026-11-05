@@ -14,5 +14,9 @@ scrape_configs:
       - targets: ['__MON_HOST__:__API_PORT__']
         labels: {stack: catqa3}
   - job_name: prometheus
+    # Prometheus itself is behind web.config.file basic auth (QA-PROM-AUTH); password mounted as a podman secret.
+    basic_auth:
+      username: __PROM_USER__
+      password_file: /run/secrets/prom_pw
     static_configs:
       - targets: ['127.0.0.1:9090']
