@@ -4,6 +4,8 @@
 # Env:   QA_BIND (default 127.0.0.1; set to the LAN IP to expose on the LAN - read the warning below)
 #        QA_VNC_PORT (default 6080 desktop / 6081 wizard)
 # The noVNC/VNC password lives in $OUT/vnc.pass.txt (mode 0600, generated on first run, never printed).
+# VNC auth only uses the first 8 characters of the password and noVNC/VNC traffic is NOT encrypted:
+# keep QA_BIND=127.0.0.1 (use an SSH tunnel) unless the LAN is trusted.
 # WARNING: with QA_BIND=<LAN IP> anyone on the LAN who knows the password controls the app session.
 set -euo pipefail
 APP="${1:?usage: run-qa.sh desktop|wizard [OUT_DIR]}"
@@ -22,14 +24,12 @@ fi
 chmod 600 "$OUT/vnc.pass.txt"
 NAME="catalogizer-tauri-qa-$APP"
 podman rm -f "$NAME" >/dev/null 2>&1 || true
-exec systemd-run --user --scope -p MemoryMax=2G -p MemorySwapMax=0 \
-  podman run -d --name "$NAME" -p "$BIND:$PORT:6080" \
+exec podman run -d --memory=2G --memory-swap=2G --cpus=2 --pids-limit=1024 --name "$NAME" -p "$BIND:$PORT:6080" \
     -v "$OUT/artifacts/$APP:/app:ro,Z" -v "$OUT/vnc.pass.txt:/run/vnc.pass:ro,Z" "$IMAGE" bash -c '
       export DISPLAY=:99 WEBKIT_DISABLE_COMPOSITING_MODE=1 WEBKIT_DISABLE_DMABUF_RENDERER=1 HOME=/tmp/h; mkdir -p $HOME
       Xvfb :99 -screen 0 1280x800x24 & sleep 1
       eval "$(dbus-launch --sh-syntax)"; openbox & sleep 1
-      x11vnc -storepasswd "$(cat /run/vnc.pass)" /tmp/rfb >/dev/null 2>&1
-      x11vnc -display :99 -rfbauth /tmp/rfb -forever -shared -localhost -rfbport 5900 -quiet &
+      x11vnc -display :99 -passwdfile /run/vnc.pass -forever -shared -localhost -rfbport 5900 -quiet &
       sleep 1; websockify --web /usr/share/novnc 6080 localhost:5900 &
       exec /app/'"$BIN"'
     '

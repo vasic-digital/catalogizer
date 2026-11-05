@@ -1,0 +1,6 @@
+# Dockerfile hash steps exercised in the existing image (no rebuild), 2026-11-05T14:14:51+01:00
+/tmp/n.tar.xz: OK
+/tmp/r: OK
+negative control:
+sha256sum: 'standard input': no properly formatted checksum lines found
+(mismatch correctly rejected)

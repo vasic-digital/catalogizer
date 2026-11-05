@@ -44,6 +44,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     try {
       const serverUrl = await resolveServerUrl(get().serverUrl);
+      if (!serverUrl) {
+        throw new Error('Server URL not configured');
+      }
       const response = await invoke<string>('make_http_request', {
         url: `${serverUrl}${API_PREFIX}/auth/login`,
         method: 'POST',
@@ -56,7 +59,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const data = JSON.parse(response);
 
       // Store auth token
-      await invoke('set_auth_token', { token: data.token ?? data.session_token });
+      const token = data.token ?? data.session_token;
+      if (!token) {
+        throw new Error('Login response contained no token');
+      }
+      await invoke('set_auth_token', { token });
 
       set({
         user: data.user,

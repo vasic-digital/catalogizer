@@ -1,10 +1,17 @@
 # Catalogizer Tauri build+boot image (CAT-TAURI-1, Constitution 11.4.173: builds run in a container).
 # Builds catalogizer-desktop and installer-wizard (Tauri 2) on Linux and provides Xvfb + x11vnc + noVNC
 # for LAN manual QA. Build with scripts/tauri/build.sh (rootless podman).
-ARG BASE_IMAGE=docker.io/library/debian:bookworm-slim
+# Base pinned by digest (debian bookworm-slim as recorded 2026-11-05).
+ARG BASE_IMAGE=docker.io/library/debian@sha256:f3034a6ec3c1205360777c4aae76234998866ad18806ae62b63a3f84ccad782b
 FROM ${BASE_IMAGE}
 ARG RUST_VERSION=1.90.0
 ARG NODE_VERSION=20.19.5
+ARG NODE_SHA256=315046739a513a70e03a4a55a8afda8cf979f30852e576075c340084e3f8ac0f
+ARG RUSTUP_VERSION=1.28.2
+ARG RUSTUP_SHA256=20a06e644b0d9bd2fbdbfd52d42540bdde820ea7df86e92e533c073da0cdd43c
+# KNOWN GAPS (supply chain): apt packages are not version-pinned (bookworm point releases drift);
+# the Node/rustup hashes below were taken from the publishers' SHASUMS256.txt / .sha256 over TLS, not GPG-verified;
+# crates are resolved from crates.io via the app's Cargo.lock only if one is committed (none is today).
 ENV DEBIAN_FRONTEND=noninteractive \
     RUSTUP_HOME=/opt/rustup CARGO_HOME=/opt/cargo \
     PATH=/opt/cargo/bin:/opt/node/bin:$PATH
@@ -14,7 +21,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       librsvg2-dev libayatana-appindicator3-dev libssl-dev libxdo-dev patchelf \
       xvfb x11vnc novnc websockify xdotool imagemagick openbox dbus-x11 \
     && rm -rf /var/lib/apt/lists/*
-RUN curl -fsSL https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz \
-      | tar -xJ -C /opt && mv /opt/node-v${NODE_VERSION}-linux-x64 /opt/node
-RUN curl -fsSL https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain ${RUST_VERSION}
+RUN curl -fsSLo /tmp/node.tar.xz https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.xz \
+    && echo "${NODE_SHA256}  /tmp/node.tar.xz" | sha256sum -c - \
+    && tar -xJf /tmp/node.tar.xz -C /opt && mv /opt/node-v${NODE_VERSION}-linux-x64 /opt/node && rm /tmp/node.tar.xz
+RUN curl -fsSLo /tmp/rustup-init https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init \
+    && echo "${RUSTUP_SHA256}  /tmp/rustup-init" | sha256sum -c - \
+    && chmod +x /tmp/rustup-init && /tmp/rustup-init -y --profile minimal --default-toolchain ${RUST_VERSION} && rm /tmp/rustup-init
 WORKDIR /work

@@ -113,6 +113,44 @@ describe('authStore', () => {
       expect(mockInvoke).toHaveBeenCalledWith('set_auth_token', { token: 'sess-1' })
       expect(useAuthStore.getState().isAuthenticated).toBe(true)
     })
+
+    it('prefers the config server_url over a different stored one', async () => {
+      useAuthStore.setState({ serverUrl: 'http://stale-store:1' })
+      mockInvoke.mockImplementation(async (cmd) => {
+        if (cmd === 'get_config') return { server_url: 'http://cfg-host:2', auth_token: null } as any
+        if (cmd === 'make_http_request') return JSON.stringify({ token: 't', user })
+        return undefined as any
+      })
+
+      await useAuthStore.getState().login('qa', 'pw')
+
+      expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
+        url: 'http://cfg-host:2/api/v1/auth/login',
+      }))
+    })
+
+    it('throws Server URL not configured instead of requesting null/api', async () => {
+      useAuthStore.setState({ serverUrl: null })
+      mockInvoke.mockImplementation(async (cmd) => {
+        if (cmd === 'get_config') return { server_url: null, auth_token: null } as any
+        return undefined as any
+      })
+
+      await expect(useAuthStore.getState().login('qa', 'pw')).rejects.toThrow('Server URL not configured')
+      expect(mockInvoke).not.toHaveBeenCalledWith('make_http_request', expect.anything())
+    })
+
+    it('fails explicitly when the response carries neither token nor session_token', async () => {
+      mockInvoke.mockImplementation(async (cmd) => {
+        if (cmd === 'get_config') return { server_url: 'http://qa-host:38082', auth_token: null } as any
+        if (cmd === 'make_http_request') return JSON.stringify({ user })
+        return undefined as any
+      })
+
+      await expect(useAuthStore.getState().login('qa', 'pw')).rejects.toThrow('no token')
+      expect(useAuthStore.getState().isAuthenticated).toBe(false)
+      expect(mockInvoke).not.toHaveBeenCalledWith('set_auth_token', expect.anything())
+    })
   })
 
   describe('login', () => {

@@ -1,0 +1,11 @@
+# memory.max inside container (CAT-TAURI-1 F1), 2026-11-05T14:14:37+01:00
+## old way: systemd-run scope only
+max
+max
+2048
+max 100000
+## new way: podman run limits (build.sh LIMITS, MEM=5G JOBS=2)
+5368709120
+0
+4096
+200000 100000
