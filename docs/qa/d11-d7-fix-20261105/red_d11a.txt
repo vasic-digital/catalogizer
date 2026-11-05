@@ -1,0 +1,12 @@
+=== RUN   TestD11a_TruncatedSourceIsFlaggedNotSilentlyCompleted
+    conversion_d11_realstack_test.go:79: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d11.jJ43tm/repo/catalog-api/handlers/conversion_d11_realstack_test.go:79
+        	Error:      	Should be true
+        	Test:       	TestD11a_TruncatedSourceIsFlaggedNotSilentlyCompleted
+        	Messages:   	a truncated source must carry a warning on the job: map[completed_at:2026-11-05T00:51:04.58989229+01:00 conversion_type:video created_at:2026-11-05T00:51:03.837235721+01:00 duration:0 id:1 priority:0 quality:low source_format:mp4 source_path:/home/milosvasic/.cache/claude-tmp/TestD11a_TruncatedSourceIsFlaggedNotSilentlyCompleted1116435529/001/trunc.mp4 started_at:2026-11-05T00:51:03.838183964+01:00 status:completed target_format:webm target_path:/home/milosvasic/.cache/claude-tmp/TestD11a_TruncatedSourceIsFlaggedNotSilentlyCompleted1116435529/001/trunc.webm user_id:1]
+--- FAIL: TestD11a_TruncatedSourceIsFlaggedNotSilentlyCompleted (1.36s)
+=== RUN   TestD11a_IntactSourceHasNoWarning
+--- PASS: TestD11a_IntactSourceHasNoWarning (2.25s)
+FAIL
+FAIL	catalogizer/handlers	3.644s
+FAIL

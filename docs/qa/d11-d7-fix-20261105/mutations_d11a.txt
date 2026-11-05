@@ -1,0 +1,20 @@
+== MUTANT M1-no-warning-call
+--- FAIL: TestD11a_TruncatedSourceIsFlaggedNotSilentlyCompleted (1.10s)
+FAIL
+FAIL	catalogizer/handlers	3.252s
+FAIL
+== MUTANT M2-always-warn
+--- FAIL: TestD11a_IntactSourceHasNoWarning (2.24s)
+FAIL
+FAIL	catalogizer/handlers	3.465s
+FAIL
+== MUTANT M4-ratio-too-low
+--- FAIL: TestD11a_TruncatedSourceIsFlaggedNotSilentlyCompleted (1.19s)
+FAIL
+FAIL	catalogizer/handlers	3.485s
+FAIL
+== MUTANT M3-warning-not-persisted (write guarded by false)
+--- FAIL: TestD11a_TruncatedSourceIsFlaggedNotSilentlyCompleted (1.39s)
+FAIL
+FAIL	catalogizer/handlers	3.960s
+FAIL

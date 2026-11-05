@@ -1,0 +1,7 @@
+# ffmpeg exit on truncated mp4 (moov first, declared 20s)
+20.000000
+[mov,mp4,m4a,3gp,3g2,mj2 @ 0x7ec1eb8d1000] stream 1, offset 0x12969: partial file
+[aac @ 0x7ec1eb8f0b00] Input buffer exhausted before END element found
+[aist#0:1/aac @ 0x7ec1eb8d6300] [dec:aac @ 0x7ec1eb841780] Error submitting packet to decoder: Invalid data found when processing input
+ffmpeg rc=0
+6.100000

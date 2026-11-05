@@ -959,6 +959,15 @@ components:
         created_at:
           type: string
           format: date-time
+        error_message:
+          type: string
+          description: Set on a failed job; server paths are replaced by `<path>/<basename>`.
+        warning:
+          type: string
+          description: >-
+            Set on a job that ended `completed` but whose output is suspect, for example an audio or
+            video output clearly shorter than the duration the source declares (the source is probably
+            truncated or damaged). The output file exists; the job did not fail. Absent when there is nothing to report.
 
     MediaBrowseItem:
       type: object
