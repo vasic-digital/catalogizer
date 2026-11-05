@@ -507,6 +507,7 @@ export const PlaylistsPage: React.FC = () => {
 
             {/* Media Type Filter */}
             <Select
+              aria-label="Filter by media type"
               value={filterMediaType}
               onChange={setFilterMediaType}
               options={MEDIA_TYPE_OPTIONS}

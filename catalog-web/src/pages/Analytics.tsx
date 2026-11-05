@@ -241,7 +241,7 @@ export const Analytics: React.FC = () => {
                       dataKey="value"
                     >
                       {mediaTypeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} aria-label={`${entry.name}: ${entry.value}`} />
                       ))}
                     </Pie>
                     <Tooltip formatter={(value) => [value, 'Items']} />

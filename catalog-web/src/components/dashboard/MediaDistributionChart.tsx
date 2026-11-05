@@ -160,7 +160,7 @@ export const MediaDistributionChart: React.FC<MediaDistributionChartProps> = ({
               dataKey="value"
             >
               {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
+                <Cell key={`cell-${index}`} fill={entry.color} aria-label={`${entry.name}: ${entry.value.toLocaleString()} items`} />
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />

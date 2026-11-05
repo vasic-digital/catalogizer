@@ -250,3 +250,13 @@ describe('AdminPanel - responsive tab strip', () => {
     }
   })
 })
+
+describe('AdminPanel narrow-viewport safety (CAT-UI-D5D6)', () => {
+  it('lets a long unbroken version string wrap inside its stat card instead of widening the page', () => {
+    const longVersion = '5c480072b2d5cda2102b7091a8f7422d941f24e2'
+    render(<AdminPanel {...defaultProps} systemInfo={{ ...defaultProps.systemInfo, version: longVersion }} />)
+    const value = screen.getByText(longVersion)
+    expect(value.className).toMatch(/break-all|break-words|truncate/)
+    expect(value.parentElement!.className).toMatch(/min-w-0/)
+  })
+})

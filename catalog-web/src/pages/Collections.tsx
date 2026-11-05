@@ -471,6 +471,8 @@ export const Collections: React.FC = () => {
               e.stopPropagation();
               handleSelectCollection(collection.id, !isSelected);
             }}
+            aria-label={`Select collection ${collection.name}`}
+            aria-pressed={isSelected}
             className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
               isSelected
                 ? 'bg-blue-600 border-blue-600 text-white'
@@ -589,6 +591,8 @@ export const Collections: React.FC = () => {
             {/* Selection Checkbox */}
             <button
               onClick={() => handleSelectCollection(collection.id, !isSelected)}
+              aria-label={`Select collection ${collection.name}`}
+              aria-pressed={isSelected}
               className={`w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ${
                 isSelected
                   ? 'bg-blue-600 border-blue-600 text-white'
@@ -900,6 +904,7 @@ export const Collections: React.FC = () => {
 
           {/* Media Type Filter */}
           <Select
+            aria-label="Filter by media type"
             value={filterMediaType}
             onChange={setFilterMediaType}
             options={MEDIA_TYPE_OPTIONS}
@@ -908,6 +913,7 @@ export const Collections: React.FC = () => {
 
           {/* Sort */}
           <Select
+            aria-label="Sort collections"
             value={sortBy}
             onChange={setSortBy}
             options={SORT_OPTIONS}

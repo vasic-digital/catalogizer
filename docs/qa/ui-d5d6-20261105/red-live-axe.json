@@ -1,0 +1,187 @@
+{
+ "/media": [
+  [
+   "button-name",
+   78,
+   [
+    "<button class=\"inline-flex items-ce...\" data-testid=\"grid-view-button\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"list-view-button\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"upload-button\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"refresh-button\">",
+    "<button class=\"inline-flex items-ce...\" disabled=\"\" data-testid=\"prev-page-button\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"next-page-button\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-35\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-35\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-35\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-34\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-34\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-34\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-33\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-33\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-33\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-32\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-32\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-32\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-6\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-6\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-6\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-31\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-31\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-31\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-18\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-18\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-18\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-17\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-17\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-17\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-42\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-42\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-42\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-5\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-5\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-5\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-4\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-4\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-4\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-27\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-27\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-27\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-46\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-46\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-46\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-391\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-391\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-391\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-339\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-339\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-339\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-26\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-26\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-26\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-25\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-25\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-25\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-24\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-24\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-24\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-23\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-23\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-23\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-22\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-22\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-22\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-21\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-21\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-21\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-3\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-3\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-3\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-16\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-16\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-16\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"play-button-15\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"view-button-15\">",
+    "<button class=\"inline-flex items-ce...\" data-testid=\"download-button-15\">"
+   ]
+  ]
+ ],
+ "/collections": [
+  [
+   "button-name",
+   2,
+   [
+    "<button class=\"w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-blue-400\"></button>",
+    "<button class=\"w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:border-blue-400\"></button>"
+   ]
+  ],
+  [
+   "select-name",
+   2,
+   [
+    "<select class=\"px-3 py-2 bg-white b...\">",
+    "<select class=\"px-3 py-2 bg-white b...\">"
+   ]
+  ]
+ ],
+ "/favorites": [
+  [
+   "select-name",
+   2,
+   [
+    "<select class=\"w-full px-3 py-2 bg-...\">",
+    "<select class=\"w-full px-3 py-2 bg-...\">"
+   ]
+  ]
+ ],
+ "/playlists": [
+  [
+   "button-name",
+   2,
+   [
+    "<button class=\"inline-flex items-ce...\">",
+    "<button class=\"inline-flex items-ce...\">"
+   ]
+  ],
+  [
+   "select-name",
+   4,
+   [
+    "<select class=\"px-3 py-2 bg-white b...\">",
+    "<select class=\"px-3 py-2 bg-white b...\">",
+    "<select class=\"px-3 py-2 bg-white b...\">",
+    "<select class=\"px-3 py-2 bg-white b...\">"
+   ]
+  ]
+ ],
+ "/ai": [
+  [
+   "button-name",
+   1,
+   [
+    "<button class=\"p-1 hover:bg-gray-100 rounded-full transition-colors\">"
+   ]
+  ]
+ ],
+ "/dashboard": [
+  [
+   "svg-img-alt",
+   6,
+   [
+    "<path cx=\"273\" cy=\"142\" name=\"Audio\" stroke=\"#fff\" fill=\"#10b981\" color=\"#10b981\" tabindex=\"-1\" class=\"recharts-sector\" d=\"M 373,142\n    A 100,100,0,\n    0,0,\n    308.9407772837513,48.68193889583975\n  L 273,142 Z\" role=\"img\"></path>",
+    "<path cx=\"273\" cy=\"142\" name=\"Book\" stroke=\"#fff\" fill=\"#ef4444\" color=\"#ef4444\" tabindex=\"-1\" class=\"recharts-sector\" d=\"M 308.9407772837513,48.68193889583975\n    A 100,100,0,\n    0,0,\n    256.367064541687,43.39297460099715\n  L 273,142 Z\" role=\"img\"></path>",
+    "<path cx=\"273\" cy=\"142\" name=\"Document\" stroke=\"#fff\" fill=\"#6b7280\" color=\"#6b7280\" tabindex=\"-1\" class=\"recharts-sector\" d=\"M 256.367064541687,43.39297460099715\n    A 100,100,0,\n    0,0,\n    219.19176468366274,57.71077285832028\n  L 273,142 Z\" role=\"img\"></pa",
+    "<path cx=\"273\" cy=\"142\" name=\"Image\" stroke=\"#fff\" fill=\"#f59e0b\" color=\"#f59e0b\" tabindex=\"-1\" class=\"recharts-sector\" d=\"M 219.19176468366274,57.71077285832028\n    A 100,100,0,\n    0,0,\n    173.22331213768467,135.32073662548783\n  L 273,142 Z\" role=\"img\"></pa",
+    "<path cx=\"273\" cy=\"142\" name=\"Other\" stroke=\"#fff\" fill=\"#ef4444\" color=\"#ef4444\" tabindex=\"-1\" class=\"recharts-sector\" d=\"M 173.22331213768467,135.32073662548783\n    A 100,100,0,\n    0,0,\n    243.3724419114366,237.51024972069126\n  L 273,142 Z\" role=\"img\"></pa",
+    "<path cx=\"273\" cy=\"142\" name=\"Video\" stroke=\"#fff\" fill=\"#3b82f6\" color=\"#3b82f6\" tabindex=\"-1\" class=\"recharts-sector\" d=\"M 243.3724419114366,237.51024972069126\n    A 100,100,0,\n    0,0,\n    373,142.00000000000003\n  L 273,142 Z\" role=\"img\"></path>"
+   ]
+  ]
+ ],
+ "/analytics": [
+  [
+   "svg-img-alt",
+   6,
+   [
+    "<path cx=\"273\" cy=\"160\" name=\"AUDIO\" stroke=\"#fff\" fill=\"#3B82F6\" tabindex=\"-1\" class=\"recharts-sector\" d=\"M 353,160\n    A 80,80,0,\n    0,0,\n    301.752621827001,85.3455511166718\n  L 273,160 Z\" role=\"img\"></path>",
+    "<path cx=\"273\" cy=\"160\" name=\"BOOK\" stroke=\"#fff\" fill=\"#EF4444\" tabindex=\"-1\" class=\"recharts-sector\" d=\"M 301.752621827001,85.3455511166718\n    A 80,80,0,\n    0,0,\n    259.6936516333496,81.11437968079771\n  L 273,160 Z\" role=\"img\"></path>",
+    "<path cx=\"273\" cy=\"160\" name=\"DOCUMENT\" stroke=\"#fff\" fill=\"#10B981\" tabindex=\"-1\" class=\"recharts-sector\" d=\"M 259.6936516333496,81.11437968079771\n    A 80,80,0,\n    0,0,\n    229.9534117469302,92.56861828665623\n  L 273,160 Z\" role=\"img\"></path>",
+    "<path cx=\"273\" cy=\"160\" name=\"IMAGE\" stroke=\"#fff\" fill=\"#F59E0B\" tabindex=\"-1\" class=\"recharts-sector\" d=\"M 229.9534117469302,92.56861828665623\n    A 80,80,0,\n    0,0,\n    193.17864971014774,154.65658930039027\n  L 273,160 Z\" role=\"img\"></path>",
+    "<path cx=\"273\" cy=\"160\" name=\"OTHER\" stroke=\"#fff\" fill=\"#8B5CF6\" tabindex=\"-1\" class=\"recharts-sector\" d=\"M 193.17864971014774,154.65658930039027\n    A 80,80,0,\n    0,0,\n    249.29795352914928,236.40819977655298\n  L 273,160 Z\" role=\"img\"></path>",
+    "<path cx=\"273\" cy=\"160\" name=\"VIDEO\" stroke=\"#fff\" fill=\"#EC4899\" tabindex=\"-1\" class=\"recharts-sector\" d=\"M 249.29795352914928,236.40819977655298\n    A 80,80,0,\n    0,0,\n    353,160.00000000000003\n  L 273,160 Z\" role=\"img\"></path>"
+   ]
+  ]
+ ],
+ "admin360": {
+  "sw": 618,
+  "bw": 618,
+  "cw": 360,
+  "wide": [
+   "BUTTON.flex flex-shrink-0 items-center gap-2 whitespace-nowrap py-2 405",
+   "DIV.flex-1 618",
+   "P.text-sm font-medium text-gray-600 618",
+   "P.text-2xl font-bold text-gray-900 618",
+   "svg.[object SVGAnimatedString] 618",
+   "path.[object SVGAnimatedString] 639",
+   "circle.[object SVGAnimatedString] 633"
+  ]
+ }
+}
