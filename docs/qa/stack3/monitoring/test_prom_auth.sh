@@ -1,23 +1,27 @@
 #!/usr/bin/env bash
 # QA-PROM-AUTH live test (11.4.289: real Prometheus image, real HTTP; no stubs). Starts a DISPOSABLE Prometheus (name catqa-promauth-test) bound to
-# 127.0.0.1 on a free high port, configured exactly as up.sh configures it (lib.sh prom_web_config + the real prometheus.yml), and asserts:
+# 127.0.0.1 on a free high port, configured as up.sh configures it (lib.sh prom_web_config, the real prometheus.yml, the password as a podman secret
+# target=/run/secrets/prom_pw uid=65534 mode=0400; config copied in with podman cp so the 0700 temp dir is never bind-mounted), and asserts:
 #   anonymous -> 401 (targets, query, ready), wrong password -> 401, right password -> 200, and scraping still works (self-scrape job up).
 # PROMAUTH_MUTATE=noauth starts it WITHOUT web.config.file: the test MUST then FAIL (paired mutation). Secrets are random, never printed.
 # usage: test_prom_auth.sh   exit 0 = all PASS
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; . "$HERE/lib.sh"
 CN=catqa-promauth-test; T="$(mktemp -d)"; : "${T:?}"
-cleanup() { podman rm -f "$CN" >/dev/null 2>&1 || true; rm -rf -- "${T:?}"; }; trap cleanup EXIT
-podman rm -f "$CN" >/dev/null 2>&1 || true
+SN=catqa-promauth-test-pw
+cleanup() { podman rm -f "$CN" >/dev/null 2>&1 || true; podman secret rm "$SN" >/dev/null 2>&1 || true; rm -rf -- "${T:?}"; }; trap cleanup EXIT
+podman rm -f "$CN" >/dev/null 2>&1 || true; podman secret rm "$SN" >/dev/null 2>&1 || true
 PORT=39791; while ss -ltnH "sport = :$PORT" | grep -q .; do PORT=$((PORT+1)); done
 PW="$(head -c 18 /dev/urandom | od -An -vtx1 | tr -d ' \n')"; BAD="wrong-$(head -c 6 /dev/urandom | od -An -vtx1 | tr -d ' \n')"
-mkdir -p "$T/cfg" "$T/tok"; chmod 755 "$T" "$T/cfg" "$T/tok"
+mkdir -p "$T/cfg" "$T/tok"
 sed -e 's|__MON_HOST__|127.0.0.1|g' -e 's|__API_PORT__|38082|g' -e "s|__PROM_USER__|$PROM_AUTH_USER|g" "$HERE/prometheus/prometheus.yml" > "$T/cfg/prometheus.yml"
-printf 'x' > "$T/tok/metrics.tok"; printf '%s' "$PW" > "$T/cfg/prom_pw"
+printf 'x' > "$T/tok/metrics.tok"
 if [ "${PROMAUTH_MUTATE:-}" = noauth ]; then : > "$T/cfg/web.yml"; else printf '%s' "$PW" | prom_web_config "$PROM_AUTH_USER" > "$T/cfg/web.yml" || { echo "FAIL setup.web_config"; exit 1; }; fi
-chmod 644 "$T/cfg/"* "$T/tok/"*
-podman run -d --name "$CN" --memory 256m -p "127.0.0.1:$PORT:9090" -v "$T/cfg:/cfg:ro" -v "$T/tok:/tokens:ro" -v "$T/cfg/prom_pw:/run/secrets/prom_pw:ro" \
-  "$PROM_IMAGE" --config.file=/cfg/prometheus.yml --web.config.file=/cfg/web.yml --storage.tsdb.path=/prometheus >/dev/null || { echo "FAIL setup.start"; exit 1; }
+chmod 644 "$T/cfg/"* "$T/tok/"*   # config + hash + dummy token only; the password itself exists only as the podman secret
+printf '%s' "$PW" | podman secret create "$SN" - >/dev/null || { echo "FAIL setup.secret"; exit 1; }
+podman create --name "$CN" --memory 256m -p "127.0.0.1:$PORT:9090" --secret "$SN,target=/run/secrets/prom_pw,uid=65534,mode=0400" \
+  "$PROM_IMAGE" --config.file=/cfg/prometheus.yml --web.config.file=/cfg/web.yml --storage.tsdb.path=/prometheus >/dev/null \
+  && podman cp "$T/cfg" "$CN:/cfg" && podman cp "$T/tok" "$CN:/tokens" && podman start "$CN" >/dev/null || { echo "FAIL setup.start"; exit 1; }
 fail=0; ok() { echo "PASS $1"; }; bad() { echo "FAIL $1 $2"; fail=1; }
 U="http://127.0.0.1:$PORT"
 code() { # code <path> [user pass]  - credentials via curl -K stdin, never argv

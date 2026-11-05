@@ -34,10 +34,11 @@ def jget(url, method="GET", headers=None, data=None, opener=None):
 
 # ---------------- Prometheus
 pu = f"http://{H}:{P['prom']}"
-PA = {"Authorization": "Basic " + base64.b64encode(f"{M.get('PROM_AUTH_USER', 'qa_prom')}:{M.get('PROM_AUTH_PASSWORD', '')}".encode()).decode()}
+PU = os.environ.get("PROM_AUTH_USER") or M.get("PROM_AUTH_USER") or "qa_prom"   # same precedence as up.sh (mon.env, else lib.sh default)
+PA = {"Authorization": "Basic " + base64.b64encode(f"{PU}:{M.get('PROM_AUTH_PASSWORD', '')}".encode()).decode()}
 s, _, _ = http(f"{pu}/api/v1/targets"); rec("prom.anonymous_targets_rejected", s == 401, f"http={s}")
 s, _, _ = http(f"{pu}/api/v1/query?query=up"); rec("prom.anonymous_query_rejected", s == 401, f"http={s}")
-s, _, _ = http(f"{pu}/api/v1/targets", headers={"Authorization": "Basic " + base64.b64encode(b"qa_prom:wrong-" + os.urandom(6).hex().encode()).decode()}); rec("prom.wrong_password_rejected", s == 401, f"http={s}")
+s, _, _ = http(f"{pu}/api/v1/targets", headers={"Authorization": "Basic " + base64.b64encode(PU.encode() + b":wrong-" + os.urandom(6).hex().encode()).decode()}); rec("prom.wrong_password_rejected", s == 401, f"http={s}")
 s, d = jget(f"{pu}/api/v1/targets", headers=PA)
 tg = [t for t in (d or {}).get("data", {}).get("activeTargets", []) if t["labels"].get("job") == "catalogizer-api"]
 rec("prom.target_catalogizer-api_up", s == 200 and len(tg) == 1 and tg[0]["health"] == "up", f"health={tg[0]['health'] if tg else None} lastError={tg[0]['lastError'] if tg else None!r}")

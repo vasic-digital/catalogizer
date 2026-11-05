@@ -3,6 +3,6 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; . "$HERE/lib.sh"
 podman pod rm -f "$MON_POD" >/dev/null 2>&1 || true
-for s in pgpass qaadmin gfpw pgapw; do podman secret rm "${MON_POD}-$s" >/dev/null 2>&1 || true; done
+for s in pgpass qaadmin gfpw pgapw promauth promauthgf; do podman secret rm "${MON_POD}-$s" >/dev/null 2>&1 || true; done
 if [ "${1:-}" = "--purge" ]; then for v in cfg tok prom graf pga; do podman volume rm -f "${MON_POD}-$v" >/dev/null 2>&1 || true; done; fi
 echo "removed pod $MON_POD"

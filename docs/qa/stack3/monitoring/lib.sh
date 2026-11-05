@@ -8,7 +8,7 @@ MON_HOST="${MON_HOST:-127.0.0.1}"; MON_PG_HOST="${MON_PG_HOST:-127.0.0.1}"
 API_PORT="${API_PORT:-38082}"; WEB_PORT="${WEB_PORT:-33020}"; WEBSITE_PORT="${WEBSITE_PORT:-33021}"; PG_PORT="${PG_PORT:-35434}"
 PROM_PORT="${PROM_PORT:-39090}"; GRAFANA_PORT="${GRAFANA_PORT:-33030}"; PGADMIN_PORT="${PGADMIN_PORT:-33050}"
 NGINX_PORT="${NGINX_PORT:-33080}"; NGINX_SITE_PORT="${NGINX_SITE_PORT:-33081}"
-# Bind policy: nginx is the LAN entry (0.0.0.0, like stack 3). Prometheus (no auth), Grafana and pgAdmin (authenticated admin UIs that can
+# Bind policy: nginx is the LAN entry (0.0.0.0, like stack 3). Prometheus (basic auth since QA-PROM-AUTH), Grafana and pgAdmin (authenticated admin UIs that can
 # be pointed at other targets) are LOOPBACK by default. LAN opt-in for manual QA: LAN_BIND=0.0.0.0 ./up.sh (Grafana+pgAdmin) and/or PROM_BIND=0.0.0.0.
 NGINX_BIND="${NGINX_BIND:-0.0.0.0}"; PROM_BIND="${PROM_BIND:-127.0.0.1}"
 GRAFANA_BIND="${GRAFANA_BIND:-${LAN_BIND:-127.0.0.1}}"; PGADMIN_BIND="${PGADMIN_BIND:-${LAN_BIND:-127.0.0.1}}"
@@ -26,11 +26,13 @@ for _p in "$API_PORT" "$WEB_PORT" "$WEBSITE_PORT" "$PG_PORT" "$PROM_PORT" "$GRAF
 
 # ---- Prometheus basic auth (QA-PROM-AUTH): Prometheus' own web.config.file; the hash is derived from the password at up.sh time.
 PROM_AUTH_USER="${PROM_AUTH_USER:-qa_prom}"
-# prom_web_config <user>  (password on STDIN, never argv) -> prints web.yml with a bcrypt hash (hash is not a secret; the password never is written)
+# prom_web_config <user>  (password on STDIN, never argv) -> prints web.yml with a bcrypt hash (hash is not a secret; the password is never written).
+# The user must match _re_name and the password a conservative charset, so it is safe in curl -K config lines, YAML and sed (F3).
 prom_web_config() {
+  [[ "$1" =~ $_re_name ]] || { echo "invalid PROM_AUTH_USER" >&2; return 2; }
   python3 -I -c '
-import sys, bcrypt
+import sys, re, bcrypt
 user = sys.argv[1]; pw = sys.stdin.buffer.read().rstrip(b"\n")
-assert len(pw) >= 16, "prometheus password too short"
+if not re.fullmatch(rb"[A-Za-z0-9._~-]{16,72}", pw): sys.exit("PROM_AUTH_PASSWORD must be 16-72 chars of [A-Za-z0-9._~-]")
 print("basic_auth_users:\n  %s: %s" % (user, bcrypt.hashpw(pw, bcrypt.gensalt(rounds=10)).decode()))' "$1"
 }
