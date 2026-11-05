@@ -6,8 +6,9 @@ import (
 	"strings"
 )
 
-// sensitive lists the query parameter names whose values never reach an access log. GET /smb/discover and
-// GET /smb/test accept username and password in the query string, so credential-shaped names are covered too.
+// sensitive lists the query parameter names whose values never reach an access log. credential-shaped names are covered
+// too: the retired GET /smb/discover and /smb/test forms (now 410) used to take username and password in the query
+// string, and a stale client may still send them.
 var sensitive = map[string]bool{
 	"ticket": true, "access_token": true, "token": true, "api_key": true, "apikey": true,
 	"password": true, "passwd": true, "pass": true, "pwd": true,

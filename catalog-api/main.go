@@ -1083,7 +1083,7 @@ func main() {
 	// Authz round 2: heap/goroutine/cmdline output exposes memory contents and
 	// process arguments; the flag turns the routes on, the admin gate decides who
 	// may read them.
-	pprofGroup.Use(jwtMiddleware.RequireAuth(), jwtMiddleware.RequireAdmin())
+	pprofGroup.Use(jwtMiddleware.RequireAuth(), jwtMiddleware.RequireAdmin(), root_middleware.PprofSamplingGuard(60)) // SECQ-3: sampling window capped at 60 s, one at a time
 	pprofGroup.GET("/", gin.WrapF(pprof.Index))
 	pprofGroup.GET("/cmdline", gin.WrapF(pprof.Cmdline))
 	pprofGroup.GET("/profile", gin.WrapF(pprof.Profile))

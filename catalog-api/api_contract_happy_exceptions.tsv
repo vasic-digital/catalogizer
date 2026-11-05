@@ -29,8 +29,8 @@ GET /api/v1/recommendations/by-type	501	documented 501: feature not implemented 
 GET /api/v1/recommendations/personalized/{user_id}	501	documented 501: feature not implemented in this build
 GET /api/v1/recommendations/trending	501	documented 501: feature not implemented in this build
 GET /api/v1/search/duplicates	400	generated request body/query not valid for this op (400); follow-up to hand-shape
-GET /api/v1/smb/discover	400	generated request body/query not valid for this op (400); follow-up to hand-shape
-GET /api/v1/smb/test	400	generated request body/query not valid for this op (400); follow-up to hand-shape
+GET /api/v1/smb/discover	410	retired credential-in-URL form (SECQ-5): always 410, POST is the supported form
+GET /api/v1/smb/test	410	retired credential-in-URL form (SECQ-5): always 410, POST is the supported form
 GET /api/v1/stats/directories/by-size	400	generated request body/query not valid for this op (400); follow-up to hand-shape
 GET /api/v1/stats/smb/{smb_root}	404	generator has no seeded resource for this id/path (404); follow-up to seed
 GET /api/v1/storage/list/{path}	404	generator has no seeded resource for this id/path (404); follow-up to seed

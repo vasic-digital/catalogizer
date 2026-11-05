@@ -219,10 +219,12 @@ api GET "/api/v1/challenges/auth-required" "200"
 api POST "/api/v1/challenges/api-docs/run" "200" '{}'
 
 # ==================== SECTION 15: DISCOVERY & SMB ====================
-echo ""; echo "=== 15. DISCOVERY & SMB (4 tests) ==="
+echo ""; echo "=== 15. DISCOVERY & SMB (5 tests) ==="
 api GET "/api/v1/discovery" "200"
-api GET "/api/v1/smb/discover" "200|400|503"
-api GET "/api/v1/smb/test" "200|400|503"
+api POST "/api/v1/smb/discover" "200|400|503" '{}'
+api POST "/api/v1/smb/test" "200|400|503" '{}'
+# The dummy password=x is intentional: this probes that credentials in the URL query are refused (410), not a real secret.
+api GET "/api/v1/smb/test?password=x" "410"
 api POST "/api/v1/smb/browse" "200|400" '{"host":"localhost","share":"test"}'
 
 # ==================== SECTION 16: RECOMMENDATIONS ====================

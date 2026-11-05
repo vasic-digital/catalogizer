@@ -4274,7 +4274,9 @@ paths:
           description: Discovered shares
     get:
       tags: [smb]
-      summary: Discover SMB shares (GET)
+      summary: Discover SMB shares (GET, retired)
+      description: Retired (SECQ-5). Credentials in a URL are never accepted; the handler answers 410 without reading any parameter. Use the POST form with a JSON body.
+      deprecated: true
       security:
         - BearerAuth: []
       responses:
@@ -4282,8 +4284,8 @@ paths:
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
           description: Caller is not an administrator (decided from the database on every request)
-        '200':
-          description: Discovered shares
+        '410':
+          description: Retired; use POST with a JSON body
 
   /api/v1/smb/test:
     post:
@@ -4305,7 +4307,9 @@ paths:
           description: Connection test result
     get:
       tags: [smb]
-      summary: Test SMB connection (GET)
+      summary: Test SMB connection (GET, retired)
+      description: Retired (SECQ-5). Credentials in a URL are never accepted; the handler answers 410 without reading any parameter. Use the POST form with a JSON body.
+      deprecated: true
       security:
         - BearerAuth: []
       responses:
@@ -4313,8 +4317,8 @@ paths:
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
           description: Caller is not an administrator (decided from the database on every request)
-        '200':
-          description: Connection test result
+        '410':
+          description: Retired; use POST with a JSON body
 
   /api/v1/smb/browse:
     post:

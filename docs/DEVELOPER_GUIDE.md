@@ -837,7 +837,7 @@ git commit -m "Update Filesystem submodule with new protocol"
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/v1/smb/discover` | Discover SMB shares |
-| GET | `/api/v1/smb/discover` | Discover shares (GET) |
+| GET | `/api/v1/smb/discover` | Retired: answers 410, use POST (no credentials in URLs) |
 | POST | `/api/v1/smb/test` | Test SMB connection |
 | GET | `/api/v1/smb/test` | Test connection (GET) |
 | POST | `/api/v1/smb/browse` | Browse an SMB share |

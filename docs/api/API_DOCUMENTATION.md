@@ -2475,22 +2475,11 @@ Discover available SMB shares on a host.
 
 ---
 
-### GET /api/v1/smb/discover
+### GET /api/v1/smb/discover (retired)
 
-Discover SMB shares using query parameters (convenience endpoint for testing).
+**Retired (SECQ-5).** Credentials in a URL leak into access logs, proxies and browser history, so this form is no longer accepted. It answers `410 Gone` (after the administrator check) without reading any parameter. Use `POST /api/v1/smb/discover` with a JSON body.
 
-**Description:** Same as POST but with query string parameters.
-**Auth:** Required
-**Rate Limit:** Standard (2000/min)
-
-**Query Parameters:**
-
-| Parameter | Type | Required |
-|---|---|---|
-| `host` | string | Yes |
-| `username` | string | Yes |
-| `password` | string | Yes |
-| `domain` | string | No |
+**Auth:** Required (administrator)
 
 ---
 
@@ -2529,24 +2518,11 @@ Test connectivity to an SMB share.
 
 ---
 
-### GET /api/v1/smb/test
+### GET /api/v1/smb/test (retired)
 
-Test SMB connection using query parameters.
+**Retired (SECQ-5).** Answers `410 Gone` without reading any parameter; credentials are never accepted in a URL. Use `POST /api/v1/smb/test` with a JSON body.
 
-**Description:** Same as POST but with query string parameters.
-**Auth:** Required
-**Rate Limit:** Standard (2000/min)
-
-**Query Parameters:**
-
-| Parameter | Type | Required | Default |
-|---|---|---|---|
-| `host` | string | Yes | - |
-| `share` | string | Yes | - |
-| `username` | string | Yes | - |
-| `password` | string | Yes | - |
-| `domain` | string | No | - |
-| `port` | int | No | `445` |
+**Auth:** Required (administrator)
 
 ---
 

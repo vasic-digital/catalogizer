@@ -122,7 +122,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/smb/discover` | Discover SMB shares on the local network |
+| POST | `/smb/discover` | Discover SMB shares on a host (credentials in the JSON body; the GET form is retired and answers 410) |
 | GET | `/smb/shares` | List shares on a specific SMB server |
 
 ### Sync

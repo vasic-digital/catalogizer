@@ -43,9 +43,6 @@ export const smbApi = {
   discover: (): Promise<SmbShare[]> =>
     api.post('/smb/discover').then((res) => asList<SmbShare>(res.data, 'shares')),
 
-  discoverGet: (): Promise<SmbShare[]> =>
-    api.get('/smb/discover').then((res) => asList<SmbShare>(res.data, 'shares')),
-
   testConnection: (body: SmbTestRequest): Promise<SmbTestResult> =>
     api.post('/smb/test', body).then((res) => res.data),
 
