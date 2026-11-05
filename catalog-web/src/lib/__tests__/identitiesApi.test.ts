@@ -37,13 +37,33 @@ describe('identitiesApi', () => {
   })
 
   describe('list', () => {
-    it('calls GET /identities and returns identity list', async () => {
-      mockApi.get.mockResolvedValue({ data: [mockIdentity] })
+    // Roadmap-Item CAT-UI-D2D3 (UI-D2). catalog-api has no /identities CRUD
+    // route (live: GET /api/v1/identities -> 404 "404 page not found"); the only
+    // identity listing is the admin-only, secret-free GET /api/v1/smb/identities
+    // (handlers.ListIdentityInfo: index, kind, username, label), live body `[]`
+    // on stack 3 when no identities are configured in the server environment.
+    it('lists identities from GET /smb/identities (never the non-existent /identities)', async () => {
+      mockApi.get.mockResolvedValue({
+        data: [
+          { index: 1, kind: 'credentials', username: 'nas-admin', label: 'nas-admin (SMB)' },
+          { index: 2, kind: 'guest', username: '', label: 'guest' },
+        ],
+      })
 
       const result = await identitiesApi.list()
 
-      expect(mockApi.get).toHaveBeenCalledWith('/identities')
-      expect(result).toEqual([mockIdentity])
+      expect(mockApi.get).toHaveBeenCalledTimes(1)
+      expect(mockApi.get).toHaveBeenCalledWith('/smb/identities')
+      expect(result).toEqual([
+        expect.objectContaining({ id: 1, name: 'nas-admin (SMB)', type: 'credentials', username: 'nas-admin', secret_ref: null, enabled: true }),
+        expect.objectContaining({ id: 2, name: 'guest', type: 'anonymous', username: null, secret_ref: null, enabled: true }),
+      ])
+      expect(JSON.stringify(result)).not.toMatch(/password|secret":"/i)
+    })
+
+    it('returns an empty list for the live empty response `[]`', async () => {
+      mockApi.get.mockResolvedValue({ data: [] })
+      await expect(identitiesApi.list()).resolves.toEqual([])
     })
 
     it('propagates errors', async () => {

@@ -1475,3 +1475,7 @@ FAIL (open, dispatched as UI-D1..D8): D1 HIGH /conversion crashes (TypeError rea
 - UI-D4-FU-1: /ws idle closes UNREPRODUCED; re-check on rebuilt stack. UI-D4-FU-2: WebSocketContext effect keyed on user identity causes login double-connect (key on user?.id/isAuthenticated). UI-D4-FU-3 (nit): server randomString connection ids near-constant.
 - UI-D7 (contrast, svg-img-alt), UI-D8 (header search unfiltered, UNCONFIRMED): open.
 - SECQ-3 pprof: re-run with HELIX_PPROF_ENABLED=true after rebuild.
+
+## UI-D2/D3 landed (reviewed GO-with-follow-ups, round 2/5; PROVISIONAL until live rerun)
+- UI-D3-FU-2 (nit): parseInt('5abc') opens entity 5; use strict ^\d+$ id check.
+- UI-D3-FU-3 (nit): after "Try again" the alert stays with no loading indicator during refetch (react-query v4).

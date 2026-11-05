@@ -18,11 +18,25 @@ export function EntityDetail() {
   const queryClient = useQueryClient()
   const entityId = parseInt(id || '0', 10)
 
-  const { data: entity, isLoading } = useQuery({
+  const {
+    data: entity,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['entity', entityId],
     queryFn: () => entityApi.getEntity(entityId),
     enabled: entityId > 0,
+    // A 4xx (not-found, forbidden, bad id) is a definitive answer: retrying
+    // it only keeps the spinner up. Transient failures keep the default retry.
+    retry: (failureCount, err) => {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status !== undefined && status >= 400 && status < 500) return false
+      return failureCount < 3
+    },
   })
+  const errorStatus = (error as { response?: { status?: number } } | null)?.response?.status
 
   const { data: childrenData } = useQuery({
     queryKey: ['entityChildren', entityId],
@@ -81,18 +95,33 @@ export function EntityDetail() {
     },
   })
 
-  if (isLoading) {
+  // v4: a disabled query (invalid id) reports isLoading, so gate on a valid id.
+  if (isLoading && entityId > 0) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-[400px]" data-testid="entity-loading">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     )
   }
 
+  if (isError && !(errorStatus && errorStatus >= 400 && errorStatus < 500)) {
+    return (
+      <div role="alert" className="text-center py-12">
+        <p className="text-gray-700 dark:text-gray-300">Failed to load this item. Please try again.</p>
+        <Button variant="outline" className="mt-4" onClick={() => refetch()}>
+          Try again
+        </Button>
+      </div>
+    )
+  }
+
   if (!entity) {
+    const denied = errorStatus === 401 || errorStatus === 403
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 dark:text-gray-400">Entity not found</p>
+        <p className="text-gray-500 dark:text-gray-400">
+          {denied ? 'You do not have access to this item' : 'Entity not found'}
+        </p>
         <Button variant="outline" className="mt-4" onClick={() => navigate('/browse')}>
           Back to Browse
         </Button>

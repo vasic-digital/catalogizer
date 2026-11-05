@@ -29,11 +29,40 @@ import type {
   ScanResult,
 } from '@/types/identity'
 
+/** Wire shape of GET /api/v1/smb/identities (handlers.ListIdentityInfo). */
+interface SmbIdentityInfo {
+  index: number
+  kind: string
+  username: string
+  label: string
+}
+
 export const identitiesApi = {
   // --- Identity CRUD ---
 
+  /**
+   * catalog-api exposes no /identities CRUD route. The identities it knows are
+   * loaded from the server environment and listed, without secrets, by the
+   * admin-only GET /smb/identities ({index, kind, username, label}); map that
+   * read-only view onto the Identity shape. Create/update/remove below still
+   * target routes the backend does not provide.
+   */
   list: (): Promise<Identity[]> =>
-    api.get('/identities').then((r) => r.data),
+    api.get<SmbIdentityInfo[]>('/smb/identities').then((r) =>
+      (r.data ?? []).map(
+        (i): Identity => ({
+          id: i.index,
+          name: i.label,
+          type: i.kind === 'guest' ? 'anonymous' : 'credentials',
+          username: i.username || null,
+          secret_ref: null,
+          domain: null,
+          key_path: null,
+          enabled: true,
+          priority: i.index,
+        })
+      )
+    ),
 
   get: (id: number): Promise<Identity> =>
     api.get(`/identities/${id}`).then((r) => r.data),
