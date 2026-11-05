@@ -1,5 +1,9 @@
 # SESSION RESUMPTION — Catalogizer
 
+> **CURRENT (2026-11-05):** the active program is the v2.4.0 release drive. The authoritative, up-to-date
+> state and the exact first steps for a bare `continue` are in [`docs/CONTINUATION.md`](./CONTINUATION.md)
+> Rev 10 (section 4 RESUME ORDER). The text below is older background and may be stale.
+
 > Standing, out-of-the-box resumption file per Constitution **§11.4.131**.
 > Use this to resume the active program in a fresh session with zero ramp-up.
 > The live, fine-grained work-state lives in
