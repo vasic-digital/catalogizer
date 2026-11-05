@@ -1,6 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod url_guard;
+
 #[cfg(feature = "vlc-player")]
 mod vlc;
 
@@ -84,11 +86,8 @@ async fn make_http_request(
     let config_guard = config.lock().await;
     let server_url = config_guard.server_url.as_ref().ok_or("Server URL not configured")?;
     
-    // Normalize URLs for comparison (remove trailing slashes)
-    let normalized_server_url = server_url.trim_end_matches('/');
-    let normalized_request_url = url.trim_end_matches('/');
-    
-    if !normalized_request_url.starts_with(normalized_server_url) {
+    // Parsed-URL comparison (scheme, host, port, no userinfo, path boundary); TAURI-FU-5.
+    if !url_guard::is_within_server(server_url, &url) {
         return Err(format!("URL must be within configured server: {}", server_url));
     }
 
@@ -791,20 +790,6 @@ mod tests {
             let normalized_request = request_url.trim_end_matches('/');
 
             assert!(!normalized_request.starts_with(normalized_server));
-        }
-
-        #[test]
-        fn test_ssrf_prevention_subdomain_attack() {
-            let server_url = "http://api.example.com";
-            let request_url = "http://api.example.com.evil.com/steal";
-
-            let normalized_server = server_url.trim_end_matches('/');
-            let normalized_request = request_url.trim_end_matches('/');
-
-            // This shows the prefix check alone can be bypassed by subdomain
-            // The actual code uses exact server URL from config, so this is acceptable
-            // for the current architecture where config is trusted
-            assert!(normalized_request.starts_with(normalized_server));
         }
     }
 
