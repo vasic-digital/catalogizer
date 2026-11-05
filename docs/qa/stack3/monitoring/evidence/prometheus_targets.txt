@@ -1,2 +1,2 @@
-catalogizer-api http://host.containers.internal:38082/metrics up 0.008159608
-prometheus http://127.0.0.1:9090/metrics up 0.006614635
+catalogizer-api http://127.0.0.1:38082/metrics up
+prometheus http://127.0.0.1:9090/metrics up

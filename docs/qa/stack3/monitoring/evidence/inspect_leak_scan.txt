@@ -1,0 +1,1 @@
+podman-inspect secret-value hits across 6 containers=0 (control: needle 'grafana/grafana' hits in grafana inspect=4; sanity: env NAME present: 2)

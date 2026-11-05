@@ -1,0 +1,15 @@
+# host-loopback reachability from inside a pod (nc -z), measured 2026-11-05T02:30:21Z
+## BEFORE: pasta --map-gw (old revision), target = default gateway address
+35434 reachable
+38082 reachable
+36381 reachable
+11434 reachable
+35433 reachable
+## AFTER: pasta -T 35434,38082,33020,33021 (current revision), target = pod 127.0.0.1 (live catqa3mon-nginx)
+35434 reachable
+38082 reachable
+33020 reachable
+33021 reachable
+36381 refused
+11434 refused
+35433 refused

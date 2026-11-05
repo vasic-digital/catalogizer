@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Bring up the QA monitoring add-on for stack 3: Prometheus + Grafana + pgAdmin + nginx reverse proxy (+ token refresher) as ONE rootless
-# pod `${STACK}mon` on pasta (`--map-gw`: the pod reaches the host's published stack-3 ports and loopback Postgres via MON_HOST).
+# pod `${STACK}mon` on pasta (pasta `-T` forwards ONLY the four stack-3 ports the add-on needs from the pod's loopback to the host; nothing else on host loopback is reachable).
 # Idempotent: replaces only its own pod; stack-3 containers are only READ from (HTTP/TCP clients), never modified.
 # Exit codes: 0 all probes ok | 3 image missing / stack 3 down | 4 low memory | 5 port held by a foreign owner | 6 a service not ready.
 set -euo pipefail
@@ -17,6 +17,9 @@ fi
 set -a; . "$QENV"; . "$MENV"; set +a
 for i in "$PROM_IMAGE" "$GRAFANA_IMAGE" "$PGADMIN_IMAGE" "$NGINX_IMAGE" "$CURL_IMAGE"; do
   podman image exists "$i" || { echo "image $i missing - podman pull it (pinned tag)" >&2; exit 3; }; done
+for i in "$PROM_IMAGE" "$GRAFANA_IMAGE" "$PGADMIN_IMAGE" "$NGINX_IMAGE" "$CURL_IMAGE"; do   # F9: pinned digests recorded in evidence/image_digests.txt
+  exp="$(awk -v i="$i" '$1==i{print $2}' "$HERE/evidence/image_digests.txt" 2>/dev/null)"; got="$(podman image inspect "$i" --format '{{.Digest}}')"
+  [ -z "$exp" ] || [ "$exp" = "$got" ] || { echo "digest mismatch for $i: expected $exp got $got" >&2; exit 3; }; done
 [ "$(curl -s -m 5 -o /dev/null -w '%{http_code}' "http://127.0.0.1:${API_PORT}/health")" = 200 ] || { echo "stack 3 API not healthy on :${API_PORT}" >&2; exit 3; }
 avail_kb=$(awk '/MemAvailable/{print $2}' /proc/meminfo)
 [ "$avail_kb" -gt 4000000 ] || { echo "only $((avail_kb/1024)) MiB available (<4 GiB) - refusing" >&2; exit 4; }
@@ -41,18 +44,24 @@ cp "$HERE/token_refresher.sh" "$R/token_refresher.sh"
 podman pod rm -f "$MON_POD" >/dev/null 2>&1 || true
 podman secret rm "${MON_POD}-pgpass" >/dev/null 2>&1 || true
 podman secret create "${MON_POD}-pgpass" "$R/pgpass" >/dev/null
-rm -f -- "${R:?}/pgpass"
+podman secret rm "${MON_POD}-qaadmin" >/dev/null 2>&1 || true
+( umask 077; printf 'ADMIN_USERNAME=%s\nADMIN_PASSWORD=%s\n' "$ADMIN_USERNAME" "$ADMIN_PASSWORD" > "$R/qaadmin" )
+podman secret create "${MON_POD}-qaadmin" "$R/qaadmin" >/dev/null
+for s in gfpw pgapw; do podman secret rm "${MON_POD}-$s" >/dev/null 2>&1 || true; done
+printf '%s' "$GF_SECURITY_ADMIN_PASSWORD" | podman secret create "${MON_POD}-gfpw" - >/dev/null
+printf '%s' "$PGADMIN_DEFAULT_PASSWORD" | podman secret create "${MON_POD}-pgapw" - >/dev/null
+rm -f -- "${R:?}/pgpass" "${R:?}/qaadmin"
 podman volume rm -f "${MON_POD}-cfg" >/dev/null 2>&1 || true
 podman volume create "${MON_POD}-cfg" >/dev/null; podman volume create "${MON_POD}-tok" >/dev/null 2>&1 || true
 podman run --rm --user 0 -v "$R:/src:ro" -v "${MON_POD}-cfg:/dst" "$CURL_IMAGE" sh -c 'cp -r /src/. /dst/ && chmod -R a+rX /dst' >/dev/null
 podman run --rm --user 0 -v "${MON_POD}-tok:/tokens" "$CURL_IMAGE" sh -c 'rm -f /tokens/metrics.tok; chmod 755 /tokens' >/dev/null
 
-podman pod create --name "$MON_POD" --network 'pasta:--map-gw' \
-  -p "${PROM_BIND}:${PROM_PORT}:9090" -p "${LAN_BIND}:${GRAFANA_PORT}:3000" -p "${LAN_BIND}:${PGADMIN_PORT}:5050" \
-  -p "${LAN_BIND}:${NGINX_PORT}:8088" -p "${LAN_BIND}:${NGINX_SITE_PORT}:8089" >/dev/null
+podman pod create --name "$MON_POD" --network "pasta:-T,${PG_PORT},-T,${API_PORT},-T,${WEB_PORT},-T,${WEBSITE_PORT}" \
+  -p "${PROM_BIND}:${PROM_PORT}:9090" -p "${GRAFANA_BIND}:${GRAFANA_PORT}:3000" -p "${PGADMIN_BIND}:${PGADMIN_PORT}:5050" \
+  -p "${NGINX_BIND}:${NGINX_PORT}:8088" -p "${NGINX_BIND}:${NGINX_SITE_PORT}:8089" >/dev/null
 
 export MON_HOST API_PORT
-podman run -d --pod "$MON_POD" --name "${MON_POD}-tokenrefresh" --memory 32m --user 0 -e ADMIN_USERNAME -e ADMIN_PASSWORD -e MON_HOST -e API_PORT \
+podman run -d --pod "$MON_POD" --name "${MON_POD}-tokenrefresh" --memory 32m --user 0 -e MON_HOST -e API_PORT --secret "${MON_POD}-qaadmin,target=/run/secrets/qa_admin,uid=0,mode=0400" \
   -v "${MON_POD}-cfg:/cfg:ro" -v "${MON_POD}-tok:/tokens" "$CURL_IMAGE" sh /cfg/token_refresher.sh >/dev/null
 for i in $(seq 1 40); do podman run --rm --user 0 -v "${MON_POD}-tok:/tokens:ro" "$CURL_IMAGE" test -s /tokens/metrics.tok 2>/dev/null && break; sleep 1; done
 podman run --rm --user 0 -v "${MON_POD}-tok:/tokens:ro" "$CURL_IMAGE" test -s /tokens/metrics.tok || { echo "token refresher produced no token" >&2; podman logs "${MON_POD}-tokenrefresh" >&2; exit 6; }
@@ -61,11 +70,11 @@ podman run -d --pod "$MON_POD" --name "${MON_POD}-prometheus" --memory 512m \
   -v "${MON_POD}-cfg:/cfg:ro" -v "${MON_POD}-tok:/tokens:ro" -v "${MON_POD}-prom:/prometheus" \
   "$PROM_IMAGE" --config.file=/cfg/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --storage.tsdb.retention.time=7d >/dev/null
 podman run -d --pod "$MON_POD" --name "${MON_POD}-grafana" --memory 384m \
-  -e GF_SECURITY_ADMIN_USER -e GF_SECURITY_ADMIN_PASSWORD -e GF_USERS_ALLOW_SIGN_UP=false -e GF_ANALYTICS_REPORTING_ENABLED=false -e GF_ANALYTICS_CHECK_FOR_UPDATES=false \
+  -e GF_SECURITY_ADMIN_USER -e GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/gfpw --secret "${MON_POD}-gfpw,target=/run/secrets/gfpw,uid=472,mode=0400" -e GF_USERS_ALLOW_SIGN_UP=false -e GF_ANALYTICS_REPORTING_ENABLED=false -e GF_ANALYTICS_CHECK_FOR_UPDATES=false \
   -e GF_PATHS_PROVISIONING=/cfg/grafana/provisioning -e GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/cfg/grafana/dashboards/catalogizer-api.json \
   -v "${MON_POD}-cfg:/cfg:ro" -v "${MON_POD}-graf:/var/lib/grafana" "$GRAFANA_IMAGE" >/dev/null
 podman run -d --pod "$MON_POD" --name "${MON_POD}-pgadmin" --memory 512m \
-  -e PGADMIN_DEFAULT_EMAIL -e PGADMIN_DEFAULT_PASSWORD -e PGADMIN_LISTEN_PORT=5050 -e PGADMIN_CONFIG_UPGRADE_CHECK_ENABLED=False \
+  -e PGADMIN_DEFAULT_EMAIL -e PGADMIN_DEFAULT_PASSWORD_FILE=/run/secrets/pgapw --secret "${MON_POD}-pgapw,target=/run/secrets/pgapw,uid=5050,mode=0400" -e PGADMIN_LISTEN_PORT=5050 -e PGADMIN_CONFIG_UPGRADE_CHECK_ENABLED=False \
   -e PGADMIN_SERVER_JSON_FILE=/cfg/pgadmin/servers.json -e PGPASSFILE=/pgpass \
   --secret "${MON_POD}-pgpass,target=/pgpass,uid=5050,mode=0600" \
   -v "${MON_POD}-cfg:/cfg:ro" -v "${MON_POD}-pga:/var/lib/pgadmin" "$PGADMIN_IMAGE" >/dev/null

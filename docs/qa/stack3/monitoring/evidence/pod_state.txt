@@ -1,14 +1,14 @@
-2026-11-05T02:15:13Z
-100f41df3ae5-infra	Up About a minute	
-catqa3mon-tokenrefresh	Up About a minute	docker.io/curlimages/curl:8.10.1
-catqa3mon-prometheus	Up About a minute	docker.io/prom/prometheus:v2.55.1
-catqa3mon-grafana	Up About a minute	docker.io/grafana/grafana:11.3.1
-catqa3mon-pgadmin	Up About a minute	docker.io/dpage/pgadmin4:8.13
-catqa3mon-nginx	Up About a minute	docker.io/library/nginx:1.27-alpine
+2026-11-05T02:30:23Z
+9cf8050f03ce-infra	Up 7 minutes	
+catqa3mon-tokenrefresh	Up 7 minutes	docker.io/curlimages/curl:8.10.1
+catqa3mon-prometheus	Up 7 minutes	docker.io/prom/prometheus:v2.55.1
+catqa3mon-grafana	Up 7 minutes	docker.io/grafana/grafana:11.3.1
+catqa3mon-pgadmin	Up 7 minutes	docker.io/dpage/pgadmin4:8.13
+catqa3mon-nginx	Up 7 minutes	docker.io/library/nginx:1.27-alpine
 
 listeners:
+LISTEN 0      128                            127.0.0.1:33050      0.0.0.0:*   
+LISTEN 0      128                            127.0.0.1:33030      0.0.0.0:*   
 LISTEN 0      128                            127.0.0.1:39090      0.0.0.0:*   
 LISTEN 0      128                                    *:33081            *:*   
 LISTEN 0      128                                    *:33080            *:*   
-LISTEN 0      128                                    *:33030            *:*   
-LISTEN 0      128                                    *:33050            *:*   

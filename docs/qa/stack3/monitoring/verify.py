@@ -120,12 +120,44 @@ rec("nginx.server_tokens_off", "nginx/" not in h.get("server", ""), f"server={h.
 s, h, b = http(f"{nu}/api/v1/auth/status"); s2, h2, b2 = http(f"{nu}/api/v1/auth/login", "POST", {"Content-Type": "application/json"}, json.dumps({"username": "nobody-x", "password": "wrong-pw-1"}).encode())
 rec("nginx.api_v1_route_reaches_api_(login_wrong_creds_401_json)", s2 == 401 and b2[:1] == b"{", f"http={s2} body={b2[:60]!r}")
 s, h, b = http(f"{nu}/api/v1/auth/login", "POST", {"Content-Type": "application/json"}, lg); rec("nginx.api_login_valid_creds_200", s == 200 and b"session_token" in b, f"http={s}")
-s, h, b = http(f"{nu}/"); h = lc(h); rec("nginx.web_index", s == 200 and b"<div id=\"root\"" in b or b"<!doctype html" in b.lower(), f"http={s} ctype={h.get('content-type')}")
+try: tok2 = json.loads(b).get("session_token") if s == 200 else None
+except Exception: tok2 = None
+if tok2:
+    s_, _, _ = http(f"{nu}/api/v1/auth/logout", "POST", {"Authorization": f"Bearer {tok2}"}); rec("nginx.logout_revokes_proxy_login_session", s_ == 200, f"logout={s_}")
+s, h, b = http(f"{nu}/"); h = lc(h); rec("nginx.web_index", s == 200 and (b"<div id=\"root\"" in b or b"<!doctype html" in b.lower()), f"http={s} ctype={h.get('content-type')}")
 s, h, b = http(f"{nu}/", headers={"Accept-Encoding": "gzip"}); h = lc(h); rec("nginx.gzip_applied_to_web_index", h.get("content-encoding") == "gzip" and gzip.decompress(b)[:1] == b"<", f"content-encoding={h.get('content-encoding')}")
 s, h, b = http(f"{su}/"); h = lc(h); rec("nginx.website_index_via_proxy", s == 200 and b"<html" in b.lower(), f"http={s}")
 rec("nginx.security_headers_on_website", all(k in h for k in SEC), f"missing={[k for k in SEC if k not in h]}")
-s, h, b = http(f"{nu}/this-path-needle-does-not-exist-xyz/../../x", headers={}); rec("nginx.control_unknown_API_path_not_200_JSON_health", not (s == 200 and b'"status":"healthy"' in b), f"http={s}")
-s, h, b = http(f"{nu}/api/v1/nonexistent-route-needle"); rec("nginx.control_unknown_api_route_404_from_api", s in (404, 401), f"http={s}")
+s, h, b = http(f"{nu}/api/v1/nonexistent-route-needle"); rec("nginx.control_unknown_api_route_404_from_api", s == 404, f"http={s}")
+
+# ---------------- F1/F8: exposure (what the pod can reach on host loopback; what is reachable on the LAN IP)
+import socket, subprocess
+def inpod(port):
+    r = subprocess.run(["podman", "exec", "catqa3mon-nginx", "sh", "-c", f"nc -z -w2 127.0.0.1 {port}"], capture_output=True, timeout=30)
+    return r.returncode == 0
+PGP, API = int(os.environ.get("PG_PORT", 35434)), P["api"]
+rec("pod.reaches_postgres_port_(control_needle_must_be_reachable)", inpod(PGP), f"port={PGP}")
+rec("pod.reaches_api_port_(control_needle_must_be_reachable)", inpod(API), f"port={API}")
+for port, what in ((36381, "catqa3 redis (host loopback)"), (11434, "host loopback 11434"), (35433, "host loopback 35433 (other listener)")):
+    s_ = socket.socket(); s_.settimeout(2); lo_listening = s_.connect_ex(("127.0.0.1", port)) == 0; s_.close()
+    rec(f"pod.CANNOT_reach_{port}_{what.split()[0]}", not inpod(port), f"host_listening={lo_listening}")
+lan = subprocess.run("ip -4 route get 1.1.1.1 | sed -n 's/.* src \\([0-9.]*\\).*/\\1/p'", shell=True, capture_output=True, text=True).stdout.strip()
+def lan_open(port):
+    s_ = socket.socket(); s_.settimeout(3); ok = s_.connect_ex((lan, port)) == 0; s_.close(); return ok
+lan_ok = bool(re.fullmatch(r"\d+\.\d+\.\d+\.\d+", lan))
+rec("lan.ip_detected", lan_ok, f"ip={lan}")
+if lan_ok:
+    rec("lan.nginx_reachable_(control_needle)", lan_open(P["ngx"]), f"{lan}:{P['ngx']}")
+    for name, port, bindvar in (("prometheus", P["prom"], "PROM_BIND"), ("grafana", P["graf"], "GRAFANA_BIND"), ("pgadmin", P["pga"], "PGADMIN_BIND")):
+        opt = os.environ.get(bindvar) or os.environ.get("LAN_BIND" if name != "prometheus" else bindvar)
+        if opt in ("0.0.0.0", lan): print(f"SKIP lan.{name}_not_reachable (LAN opt-in {bindvar}={opt})"); continue
+        rec(f"lan.{name}_NOT_reachable_on_LAN_IP", not lan_open(port), f"{lan}:{port}")
+
+# ---------------- F2: revoke the admin sessions this run created
+for t_ in [t for t in (tok,) if t]:
+    s_, _, _ = http(f"{au}/api/v1/auth/logout", "POST", {"Authorization": f"Bearer {t_}"})
+    s2_, _, _ = http(f"{au}/metrics", headers={"Authorization": f"Bearer {t_}"})
+    rec("api.logout_revokes_verify_session_token", s_ == 200 and s2_ in (401, 403), f"logout={s_} metrics_after={s2_}")
 
 print(f"SUMMARY pass={sum(res)} fail={len(res) - sum(res)} total={len(res)}")
 sys.exit(0 if all(res) else 1)

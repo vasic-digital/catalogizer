@@ -1,8 +1,8 @@
-catqa3mon-tokenrefresh mem=462.8kB / 33.55MB cpu=0.03%
-catqa3mon-prometheus mem=34.52MB / 536.9MB cpu=0.70%
-catqa3mon-grafana mem=64.81MB / 402.7MB cpu=5.50%
-catqa3mon-pgadmin mem=187.8MB / 536.9MB cpu=46.96%
-catqa3mon-nginx mem=14.73MB / 67.11MB cpu=0.09%
+catqa3mon-tokenrefresh mem=491.5kB / 33.55MB cpu=0.01%
+catqa3mon-prometheus mem=35.79MB / 536.9MB cpu=0.24%
+catqa3mon-grafana mem=62.12MB / 402.7MB cpu=1.12%
+catqa3mon-pgadmin mem=186.6MB / 536.9MB cpu=8.12%
+catqa3mon-nginx mem=14.55MB / 67.11MB cpu=0.06%
                total        used        free      shared  buff/cache   available
-Mem:           30974       10585        7559        1371       14656       20388
-Swap:           8191        4930        3261
+Mem:           30974       10642       10260        1375       11881       20331
+Swap:           8191        4966        3225
