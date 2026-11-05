@@ -1,0 +1,28 @@
+=== RUN   TestS3Live_SpecialKeysCRUD
+    s3_live_test.go:58: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/s3live.riTIta/repo/catalog-api/filesystem/s3_live_test.go:35
+        	            				/home/milosvasic/.cache/claude-tmp/s3live.riTIta/repo/catalog-api/filesystem/s3_live_test.go:58
+        	Error:      	Received unexpected error:
+        	            	s3 connect (HeadBucket): operation error S3: HeadBucket, exceeded maximum number of attempts, 2, https response error StatusCode: 0, RequestID: , HostID: , request send failed, Head "http://192.168.1.115:39320/catalogizer-live": dial tcp 192.168.1.115:39320: connect: connection refused
+        	Test:       	TestS3Live_SpecialKeysCRUD
+--- FAIL: TestS3Live_SpecialKeysCRUD (1.24s)
+=== RUN   TestS3Live_DeleteDirectoryOver1000
+    s3_live_test.go:111: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/s3live.riTIta/repo/catalog-api/filesystem/s3_live_test.go:35
+        	            				/home/milosvasic/.cache/claude-tmp/s3live.riTIta/repo/catalog-api/filesystem/s3_live_test.go:111
+        	Error:      	Received unexpected error:
+        	            	s3 connect (HeadBucket): operation error S3: HeadBucket, exceeded maximum number of attempts, 2, https response error StatusCode: 0, RequestID: , HostID: , request send failed, Head "http://192.168.1.115:39320/catalogizer-live": dial tcp 192.168.1.115:39320: connect: connection refused
+        	Test:       	TestS3Live_DeleteDirectoryOver1000
+--- FAIL: TestS3Live_DeleteDirectoryOver1000 (1.65s)
+=== RUN   TestS3Live_DirectoriesAndConfinement
+    s3_live_test.go:135: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/s3live.riTIta/repo/catalog-api/filesystem/s3_live_test.go:35
+        	            				/home/milosvasic/.cache/claude-tmp/s3live.riTIta/repo/catalog-api/filesystem/s3_live_test.go:135
+        	Error:      	Received unexpected error:
+        	            	s3 connect (HeadBucket): operation error S3: HeadBucket, exceeded maximum number of attempts, 2, https response error StatusCode: 0, RequestID: , HostID: , request send failed, Head "http://192.168.1.115:39320/catalogizer-live": dial tcp 192.168.1.115:39320: connect: connection refused
+        	Test:       	TestS3Live_DirectoriesAndConfinement
+--- FAIL: TestS3Live_DirectoriesAndConfinement (0.52s)
+FAIL
+FAIL	catalogizer/filesystem	3.427s
+FAIL
+exit=1

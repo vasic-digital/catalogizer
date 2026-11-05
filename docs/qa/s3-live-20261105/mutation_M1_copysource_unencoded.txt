@@ -1,0 +1,16 @@
+=== RUN   TestS3Live_SpecialKeysCRUD
+    s3_live_test.go:82: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/s3live.riTIta/repo/catalog-api/filesystem/s3_live_test.go:82
+        	Error:      	Received unexpected error:
+        	            	s3 copy /dir/a%20b.txt -> /copy/a%20b.txt: file does not exist
+        	Test:       	TestS3Live_SpecialKeysCRUD
+        	Messages:   	copy a%20b.txt
+--- FAIL: TestS3Live_SpecialKeysCRUD (0.41s)
+=== RUN   TestS3Live_DeleteDirectoryOver1000
+--- PASS: TestS3Live_DeleteDirectoryOver1000 (6.91s)
+=== RUN   TestS3Live_DirectoriesAndConfinement
+--- PASS: TestS3Live_DirectoriesAndConfinement (0.06s)
+FAIL
+FAIL	catalogizer/filesystem	7.390s
+FAIL
+exit=1

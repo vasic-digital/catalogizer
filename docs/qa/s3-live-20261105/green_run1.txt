@@ -1,0 +1,8 @@
+=== RUN   TestS3Live_SpecialKeysCRUD
+--- PASS: TestS3Live_SpecialKeysCRUD (0.50s)
+=== RUN   TestS3Live_DeleteDirectoryOver1000
+--- PASS: TestS3Live_DeleteDirectoryOver1000 (7.57s)
+=== RUN   TestS3Live_DirectoriesAndConfinement
+--- PASS: TestS3Live_DirectoriesAndConfinement (0.17s)
+PASS
+ok  	catalogizer/filesystem	8.249s
