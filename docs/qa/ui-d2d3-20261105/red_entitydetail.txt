@@ -1,0 +1,6 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/pages/__tests__/EntityDetail.notfound.test.tsx > EntityDetail terminal error states > shows not-found immediately on a 404 and does not retry it
+TestingLibraryElementError: Unable to find an element with the text: Entity not found. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+ FAIL  src/pages/__tests__/EntityDetail.notfound.test.tsx > EntityDetail terminal error states > shows a distinct error state with a retry control on a 500
+TestingLibraryElementError: Unable to find role="alert"
+      Tests  2 failed (2)

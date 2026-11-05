@@ -1,0 +1,4 @@
+       × lists identities from GET /smb/identities (never the non-existent /identities) 15ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/lib/__tests__/identitiesApi.test.ts > identitiesApi > list > lists identities from GET /smb/identities (never the non-existent /identities)
+      Tests  1 failed | 15 passed (16)
