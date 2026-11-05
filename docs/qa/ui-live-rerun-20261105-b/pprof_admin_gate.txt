@@ -1,0 +1,5 @@
+admin pprof 200
+admin pprof 200
+admin pprof 200
+noauth 401
+badtoken 401

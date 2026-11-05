@@ -1,0 +1,39 @@
+URL http://192.168.1.115:33080/dashboard
+/media http://192.168.1.115:33080/media
+/collections http://192.168.1.115:33080/collections
+/favorites http://192.168.1.115:33080/favorites
+/playlists http://192.168.1.115:33080/playlists
+/ai http://192.168.1.115:33080/ai
+/dashboard http://192.168.1.115:33080/dashboard
+/analytics http://192.168.1.115:33080/analytics
+C
+Catalogizer
+Admin Panel
+Refresh
+Overview
+Users
+Storage
+Backups
+
+Version
+
+17ec3c1f40e88f7a95b9ed924db7c007bba34c41
+
+Uptime
+
+0d 0h 8m
+
+Active Connections
+
+42
+
+Total Requests
+
+Unavailable
+
+System Resources
+CPU Usage
+98.43260188087774%
+API Process Memory (heap in use / reserved)
+51.66062568262926%
+Dis
