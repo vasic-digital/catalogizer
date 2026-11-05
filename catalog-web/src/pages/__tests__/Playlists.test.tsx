@@ -701,7 +701,7 @@ describe('Playlists Page', () => {
 })
 
 describe('Playlists page accessible names (CAT-UI-D5D6)', () => {
-  it('names the media-type filter inside the create form', async () => {
+  it('names the media-type filter select (create form media picker)', async () => {
     const user = userEvent.setup()
     render(<PlaylistsPage />)
     await user.click(screen.getByText('Grid Create'))

@@ -3,6 +3,9 @@ import { join } from 'node:path'
 
 // Every <Select> call site must be named at the source: aria-label, aria-labelledby, or an id
 // paired with <label htmlFor> in the same file, or be wrapped by a <label> (CAT-UI-D5D6).
+// LIMIT: this is a static scan. It cannot detect an id that is repeated at run time because the
+// call site sits inside a loop (rules.map ...); such cases need a rendering test with 2+ items
+// (see SmartPlaylistBuilder.test.tsx 'per-rule control ids').
 function walk(dir: string, out: string[] = []): string[] {
   for (const e of readdirSync(dir)) {
     const p = join(dir, e)
