@@ -1,0 +1,260 @@
+{
+  "total": 401,
+  "facets": [
+    {
+      "property": "severities",
+      "values": [
+        {
+          "val": "MAJOR",
+          "count": 219
+        },
+        {
+          "val": "MINOR",
+          "count": 157
+        },
+        {
+          "val": "BLOCKER",
+          "count": 16
+        },
+        {
+          "val": "CRITICAL",
+          "count": 9
+        },
+        {
+          "val": "INFO",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "property": "types",
+      "values": [
+        {
+          "val": "CODE_SMELL",
+          "count": 381
+        },
+        {
+          "val": "BUG",
+          "count": 15
+        },
+        {
+          "val": "VULNERABILITY",
+          "count": 5
+        }
+      ]
+    },
+    {
+      "property": "rules",
+      "values": [
+        {
+          "val": "typescript:S6853",
+          "count": 65
+        },
+        {
+          "val": "typescript:S5976",
+          "count": 47
+        },
+        {
+          "val": "typescript:S7773",
+          "count": 34
+        },
+        {
+          "val": "typescript:S5906",
+          "count": 34
+        },
+        {
+          "val": "typescript:S3358",
+          "count": 33
+        },
+        {
+          "val": "typescript:S6551",
+          "count": 21
+        },
+        {
+          "val": "typescript:S6479",
+          "count": 16
+        },
+        {
+          "val": "typescript:S2699",
+          "count": 16
+        },
+        {
+          "val": "typescript:S6754",
+          "count": 9
+        },
+        {
+          "val": "typescript:S1082",
+          "count": 9
+        },
+        {
+          "val": "typescript:S6478",
+          "count": 9
+        },
+        {
+          "val": "typescript:S6759",
+          "count": 9
+        },
+        {
+          "val": "typescript:S6848",
+          "count": 8
+        },
+        {
+          "val": "typescript:S7762",
+          "count": 7
+        },
+        {
+          "val": "typescript:S6582",
+          "count": 7
+        },
+        {
+          "val": "typescript:S1128",
+          "count": 5
+        },
+        {
+          "val": "typescript:S1854",
+          "count": 5
+        },
+        {
+          "val": "typescript:S1874",
+          "count": 5
+        },
+        {
+          "val": "typescript:S3776",
+          "count": 5
+        },
+        {
+          "val": "typescript:S2245",
+          "count": 5
+        },
+        {
+          "val": "typescript:S1444",
+          "count": 4
+        },
+        {
+          "val": "typescript:S3735",
+          "count": 4
+        },
+        {
+          "val": "typescript:S6767",
+          "count": 3
+        },
+        {
+          "val": "typescript:S2486",
+          "count": 3
+        },
+        {
+          "val": "typescript:S6481",
+          "count": 3
+        },
+        {
+          "val": "typescript:S4323",
+          "count": 2
+        },
+        {
+          "val": "typescript:S6660",
+          "count": 2
+        },
+        {
+          "val": "typescript:S7756",
+          "count": 2
+        },
+        {
+          "val": "typescript:S7741",
+          "count": 2
+        },
+        {
+          "val": "typescript:S2933",
+          "count": 2
+        },
+        {
+          "val": "typescript:S6959",
+          "count": 2
+        },
+        {
+          "val": "typescript:S8985",
+          "count": 2
+        },
+        {
+          "val": "typescript:S5843",
+          "count": 2
+        },
+        {
+          "val": "typescript:S8786",
+          "count": 1
+        },
+        {
+          "val": "typescript:S6847",
+          "count": 1
+        },
+        {
+          "val": "typescript:S1313",
+          "count": 1
+        },
+        {
+          "val": "typescript:S6594",
+          "count": 1
+        },
+        {
+          "val": "typescript:S7745",
+          "count": 1
+        },
+        {
+          "val": "typescript:S7721",
+          "count": 1
+        },
+        {
+          "val": "typescript:S9115",
+          "count": 1
+        },
+        {
+          "val": "typescript:S4043",
+          "count": 1
+        },
+        {
+          "val": "typescript:S6819",
+          "count": 1
+        },
+        {
+          "val": "typescript:S3923",
+          "count": 1
+        },
+        {
+          "val": "typescript:S1940",
+          "count": 1
+        },
+        {
+          "val": "typescript:S6564",
+          "count": 1
+        },
+        {
+          "val": "typescript:S8754",
+          "count": 1
+        },
+        {
+          "val": "typescript:S4084",
+          "count": 1
+        },
+        {
+          "val": "typescript:S6850",
+          "count": 1
+        },
+        {
+          "val": "typescript:S7761",
+          "count": 1
+        },
+        {
+          "val": "typescript:S7758",
+          "count": 1
+        },
+        {
+          "val": "typescript:S7770",
+          "count": 1
+        },
+        {
+          "val": "typescript:S7750",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}
