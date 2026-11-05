@@ -1,0 +1,43 @@
+== MUTANT B2-no-idempotency-lookup
+--- FAIL: TestD11b_RescanIsIdempotentAndRefreshesChangedContent (0.07s)
+FAIL
+FAIL	catalogizer/internal/services	0.459s
+FAIL
+== MUTANT B3-no-content-refresh
+--- FAIL: TestD11b_RescanIsIdempotentAndRefreshesChangedContent (0.09s)
+FAIL
+FAIL	catalogizer/internal/services	0.460s
+FAIL
+== MUTANT B4-import-not-called
+--- FAIL: TestD11b_ScanImportsSidecarSubtitles (0.08s)
+--- FAIL: TestD11b_RescanIsIdempotentAndRefreshesChangedContent (0.08s)
+--- FAIL: TestD11b_SkipsOrphansInvalidAndEscapingSidecars (0.07s)
+--- FAIL: TestD11b_LongestBaseNameWins (0.12s)
+FAIL
+FAIL	catalogizer/internal/services	0.441s
+FAIL
+== MUTANT B5-prefix-without-dot
+--- FAIL: TestD11b_SkipsOrphansInvalidAndEscapingSidecars (0.11s)
+FAIL
+FAIL	catalogizer/internal/services	0.500s
+FAIL
+== MUTANT B6-shortest-wins
+--- FAIL: TestD11b_LongestBaseNameWins (0.13s)
+FAIL
+FAIL	catalogizer/internal/services	0.473s
+FAIL
+== MUTANT B7-no-cue-validation
+--- FAIL: TestD11b_SkipsOrphansInvalidAndEscapingSidecars (0.08s)
+FAIL
+FAIL	catalogizer/internal/services	0.442s
+FAIL
+== MUTANT B8-remote-root-imported
+--- FAIL: TestD11b_RemoteRootIsNeverImported (0.08s)
+FAIL
+FAIL	catalogizer/internal/services	0.471s
+FAIL
+== MUTANT B1-no-confinement (escape check removed)
+--- FAIL: TestD11b_SkipsOrphansInvalidAndEscapingSidecars (0.08s)
+FAIL
+FAIL	catalogizer/internal/services	0.474s
+FAIL

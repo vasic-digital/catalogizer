@@ -1,0 +1,8 @@
+=== RUN   TestD11b_ScanImportsSidecarSubtitles
+--- PASS: TestD11b_ScanImportsSidecarSubtitles (0.08s)
+=== RUN   TestD11b_RescanIsIdempotentAndRefreshesChangedContent
+--- PASS: TestD11b_RescanIsIdempotentAndRefreshesChangedContent (0.07s)
+=== RUN   TestD11b_SkipsOrphansInvalidAndEscapingSidecars
+--- PASS: TestD11b_SkipsOrphansInvalidAndEscapingSidecars (0.09s)
+PASS
+ok  	catalogizer/internal/services	0.249s

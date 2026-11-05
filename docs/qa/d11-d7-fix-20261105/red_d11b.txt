@@ -1,0 +1,22 @@
+=== RUN   TestD11b_ScanImportsSidecarSubtitles
+    subtitle_sidecar_realscan_test.go:113: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d11.jJ43tm/repo/catalog-api/internal/services/subtitle_sidecar_realscan_test.go:113
+        	Error:      	"[]" should have 4 item(s), but has 0
+        	Test:       	TestD11b_ScanImportsSidecarSubtitles
+        	Messages:   	all four sidecar files must be listed for the media item
+--- FAIL: TestD11b_ScanImportsSidecarSubtitles (0.08s)
+=== RUN   TestD11b_RescanIsIdempotentAndRefreshesChangedContent
+    subtitle_sidecar_realscan_test.go:138: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d11.jJ43tm/repo/catalog-api/internal/services/subtitle_sidecar_realscan_test.go:138
+        	Error:      	"[]" should have 1 item(s), but has 0
+        	Test:       	TestD11b_RescanIsIdempotentAndRefreshesChangedContent
+--- FAIL: TestD11b_RescanIsIdempotentAndRefreshesChangedContent (0.09s)
+=== RUN   TestD11b_SkipsOrphansInvalidAndEscapingSidecars
+    subtitle_sidecar_realscan_test.go:170: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d11.jJ43tm/repo/catalog-api/internal/services/subtitle_sidecar_realscan_test.go:170
+        	Error:      	"[]" should have 1 item(s), but has 0
+        	Test:       	TestD11b_SkipsOrphansInvalidAndEscapingSidecars
+--- FAIL: TestD11b_SkipsOrphansInvalidAndEscapingSidecars (0.08s)
+FAIL
+FAIL	catalogizer/internal/services	0.264s
+FAIL
