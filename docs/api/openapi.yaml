@@ -959,6 +959,15 @@ components:
         created_at:
           type: string
           format: date-time
+        error_message:
+          type: string
+          description: Set on a failed job; server paths are replaced by `<path>/<basename>`.
+        warning:
+          type: string
+          description: >-
+            Set on a job that ended `completed` but whose output is suspect, for example an audio or
+            video output clearly shorter than the duration the source declares (the source is probably
+            truncated or damaged). The output file exists; the job did not fail. Absent when there is nothing to report.
 
     MediaBrowseItem:
       type: object
@@ -3731,6 +3740,12 @@ paths:
     get:
       tags: [subtitles]
       summary: Get subtitles for media
+      description: >-
+        Lists the subtitle tracks of a media item. A track's `source` is `upload`, an
+        embedded/extracted source, or `sidecar`: a subtitle file (.srt/.vtt/.ass/.ssa) found next to the
+        video in a LOCAL storage root and imported by the library scan (language from a dot tag such as
+        `Movie.en.srt`, `und` when absent). Anyone with write access to a scanned local library can
+        therefore add subtitle text without the upload permission.
       security:
         - BearerAuth: []
       parameters:

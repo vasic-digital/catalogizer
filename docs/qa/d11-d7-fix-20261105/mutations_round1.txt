@@ -1,0 +1,17 @@
+R1 drop both IsRegular checks (reviewer R1): FAIL FAIL	catalogizer/internal/services	0.770s --- FAIL: TestReadConfinedSidecar_FIFOReturnsPromptly (0.00s) 
+M2 drop SameFile: ok  	catalogizer/internal/services	0.756s 
+M3 drop O_NOFOLLOW|O_NONBLOCK: ok  	catalogizer/internal/services	0.835s 
+M4 drop /proc fd realpath check: FAIL FAIL	catalogizer/internal/services [build failed] 
+R3 drop BOM strip: FAIL FAIL	catalogizer/internal/services	0.812s --- FAIL: TestReadConfinedSidecar_RegularFileReadAndBOMStripped (0.00s) --- FAIL: TestRV_ForcedTagAndBOM (0.07s) 
+R2 break forced tag: FAIL FAIL	catalogizer/internal/services	0.793s --- FAIL: TestRV_ForcedTagAndBOM (0.07s) 
+--- re-run after adding isolating tests ---
+GREEN (no mutation): ok  	catalogizer/internal/services	0.785s 
+M2 drop SameFile: FAIL FAIL	catalogizer/internal/services	0.784s --- FAIL: TestReadConfinedSidecar_SwapToOtherRegularFileRefused (0.00s) 
+M3 drop O_NOFOLLOW|O_NONBLOCK: ok  	catalogizer/internal/services	0.729s 
+M23 drop SameFile and O_NOFOLLOW together: FAIL FAIL	catalogizer/internal/services	0.839s --- FAIL: TestReadConfinedSidecar_SwapToInsideSymlinkRefused (0.00s) --- FAIL: TestReadConfinedSidecar_SwapToOtherRegularFileRefused (0.00s) 
+M4 drop /proc fd realpath check: FAIL FAIL	catalogizer/internal/services	0.784s --- FAIL: TestReadConfinedSidecar_ParentDirSwapToOutsideRefused (0.00s) 
+R1 drop both IsRegular checks: FAIL FAIL	catalogizer/internal/services	1.021s --- FAIL: TestReadConfinedSidecar_FIFOReturnsPromptly (0.00s) 
+GREEN (all): ok  	catalogizer/internal/services	0.824s 
+M5 drop O_NONBLOCK only: FAIL FAIL	catalogizer/internal/services	5.793s --- FAIL: TestReadConfinedSidecar_SwapToFIFOAfterCheckDoesNotBlock (5.00s) 
+NOTE: dropping leaf O_NOFOLLOW alone (M3) survives by design: the SameFile identity check and the fd realpath check refuse the same swaps (defense in depth); M23 (both) is killed.
+R4 whitespace-prefix treated as empty: FAIL FAIL catalogizer/middleware 0.015s --- FAIL: TestInputValidation_EmptyJSONBodyIsNotMalformed (0.00s)

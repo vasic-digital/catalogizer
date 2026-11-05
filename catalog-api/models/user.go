@@ -1106,6 +1106,9 @@ type ConversionJob struct {
 	ScheduledFor   *time.Time     `json:"scheduled_for,omitempty" db:"scheduled_for"`
 	Duration       *time.Duration `json:"duration,omitempty" db:"duration"`
 	ErrorMessage   *string        `json:"error_message,omitempty" db:"error_message"`
+	// Warning is set on a job that reached `completed` but whose output is suspect (for example a
+	// truncated source produced a much shorter output). The job did not fail; the output exists.
+	Warning *string `json:"warning,omitempty" db:"warning"`
 }
 
 // ConversionRequest represents a request to create a conversion job

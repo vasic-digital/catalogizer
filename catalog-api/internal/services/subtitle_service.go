@@ -1,6 +1,8 @@
 package services
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"unicode/utf8"
 
 	"catalogizer/internal/netguard"
@@ -975,14 +977,24 @@ func (s *SubtitleService) saveSubtitleTrackOwned(ctx context.Context, mediaItemI
 		path = ""
 	}
 
-	s.logger.Info("Saving subtitle track",
+	contentLen, contentHash := 0, ""
+	if cs, ok := content.(string); ok {
+		sum := sha256.Sum256([]byte(cs))
+		contentLen, contentHash = len(cs), hex.EncodeToString(sum[:])
+	}
+	logger := s.logger
+	if logger == nil {
+		logger = zap.NewNop()
+	}
+	logger.Info("Saving subtitle track",
 		zap.Int64("media_item_id", mediaItemID),
 		zap.String("id", track.ID),
 		zap.String("language", track.Language),
 		zap.String("language_code", track.LanguageCode),
 		zap.String("source", track.Source),
 		zap.String("format", track.Format),
-		zap.Any("content", content),
+		zap.Int("content_bytes", contentLen),
+		zap.String("content_sha256", contentHash),
 		zap.Any("path", path),
 		zap.Int("is_default", isDefault),
 		zap.Int("is_forced", isForced),

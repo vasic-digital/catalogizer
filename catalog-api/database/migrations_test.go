@@ -271,18 +271,17 @@ func TestMigrationSequence_AllVersionsApplied(t *testing.T) {
 	err := db.RunMigrations(ctx)
 	require.NoError(t, err)
 
-	// v25 is reserved for the conversion_jobs.warning migration (branch fix-d11-d7); v26 adds
-	// file_text_index (D4). Until both branches are merged this tree has 25 rows (1..24, 26).
+	// v25 adds conversion_jobs.warning (D11a); v26 adds file_text_index (D4).
 	const latestVersion = 26
-	var maxV int
+	var count, maxV int
+	err = db.QueryRowContext(ctx, "SELECT COUNT(*) FROM migrations").Scan(&count)
+	assert.NoError(t, err)
+	assert.Equal(t, latestVersion, count)
 	err = db.QueryRowContext(ctx, "SELECT MAX(version) FROM migrations").Scan(&maxV)
 	assert.NoError(t, err)
 	assert.Equal(t, latestVersion, maxV)
 
 	for v := 1; v <= latestVersion; v++ {
-		if v == 25 {
-			continue // owned by the conversion warning migration, absent on this branch
-		}
 		var exists int
 		err := db.QueryRowContext(ctx, "SELECT COUNT(*) FROM migrations WHERE version = ?", v).Scan(&exists)
 		assert.NoError(t, err)

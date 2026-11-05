@@ -23,7 +23,7 @@ func newMockConversionRepo(t *testing.T) (*ConversionRepository, sqlmock.Sqlmock
 var conversionJobColumns = []string{
 	"id", "user_id", "source_path", "target_path", "source_format", "target_format",
 	"conversion_type", "quality", "settings", "priority", "status", "created_at",
-	"started_at", "completed_at", "scheduled_for", "duration", "error_message",
+	"started_at", "completed_at", "scheduled_for", "duration", "error_message", "warning",
 }
 
 // ---------------------------------------------------------------------------
@@ -127,7 +127,7 @@ func TestConversionRepository_GetJob(t *testing.T) {
 				rows := sqlmock.NewRows(conversionJobColumns).
 					AddRow(1, 1, "/src.avi", "/tgt.mp4", "avi", "mp4",
 						"video", "high", nil, 1, "completed", now,
-						now, now, nil, int64(120), nil)
+						now, now, nil, int64(120), nil, nil)
 				mock.ExpectQuery("SELECT .+ FROM conversion_jobs WHERE id").
 					WithArgs(1).
 					WillReturnRows(rows)
@@ -199,7 +199,7 @@ func TestConversionRepository_UpdateJob(t *testing.T) {
 			},
 			setup: func(mock sqlmock.Sqlmock) {
 				mock.ExpectExec("UPDATE conversion_jobs").
-					WithArgs("completed", sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), 1).
+					WithArgs("completed", sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), 1).
 					WillReturnResult(sqlmock.NewResult(0, 1))
 			},
 		},
@@ -251,7 +251,7 @@ func TestConversionRepository_GetJobsByStatus(t *testing.T) {
 				rows := sqlmock.NewRows(conversionJobColumns).
 					AddRow(1, 1, "/src.avi", "/tgt.mp4", "avi", "mp4",
 						"video", "high", nil, 1, "pending", now,
-						nil, nil, nil, nil, nil)
+						nil, nil, nil, nil, nil, nil)
 				mock.ExpectQuery("SELECT .+ FROM conversion_jobs WHERE status").
 					WithArgs("pending", 10, 0).
 					WillReturnRows(rows)
@@ -435,7 +435,7 @@ func TestConversionRepository_GetUserJobs(t *testing.T) {
 		rows := sqlmock.NewRows(conversionJobColumns).
 			AddRow(1, 1, "/src.avi", "/tgt.mp4", "avi", "mp4",
 				"video", "high", nil, 1, "pending", now,
-				nil, nil, nil, nil, nil)
+				nil, nil, nil, nil, nil, nil)
 		mock.ExpectQuery("SELECT .+ FROM conversion_jobs").
 			WithArgs(1, 10, 0).
 			WillReturnRows(rows)
@@ -452,7 +452,7 @@ func TestConversionRepository_GetUserJobs(t *testing.T) {
 		rows := sqlmock.NewRows(conversionJobColumns).
 			AddRow(1, 1, "/src.avi", "/tgt.mp4", "avi", "mp4",
 				"video", "high", nil, 1, "completed", now,
-				now, now, nil, int64(120), nil)
+				now, now, nil, int64(120), nil, nil)
 		mock.ExpectQuery("SELECT .+ FROM conversion_jobs").
 			WithArgs(1, "completed", 10, 0).
 			WillReturnRows(rows)

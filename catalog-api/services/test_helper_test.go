@@ -206,6 +206,7 @@ func setupTestDB(t *testing.T) *database.DB {
 			scheduled_for DATETIME,
 			duration INTEGER,
 			error_message TEXT,
+			warning TEXT,
 			FOREIGN KEY (user_id) REFERENCES users(id)
 		)`,
 		`CREATE TABLE IF NOT EXISTS log_collections (

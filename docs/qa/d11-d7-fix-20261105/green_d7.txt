@@ -1,0 +1,5 @@
+=== RUN   TestEmptyJSONBody_AuthDecidesBeforeBodyValidation_RealBinary
+--- PASS: TestEmptyJSONBody_AuthDecidesBeforeBodyValidation_RealBinary (10.89s)
+PASS
+ok  	catalogizer	10.909s
+done

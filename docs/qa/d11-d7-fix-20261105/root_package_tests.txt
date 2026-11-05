@@ -1,0 +1,27 @@
+rekey OK
+  active key file : /home/milosvasic/.cache/claude-tmp/TestRunDBMaintenance_RekeyAndRestore888309878/001/k/db.key
+  pre-rekey backup: /home/milosvasic/.cache/claude-tmp/TestRunDBMaintenance_RekeyAndRestore888309878/001/m.db.pre-rekey-20261105T001107Z (encrypted with the OLD key)
+  old key backup  : /home/milosvasic/.cache/claude-tmp/TestRunDBMaintenance_RekeyAndRestore888309878/001/k/db.key.pre-rekey-20261105T001107Z
+Keep the old key backup as long as you keep the pre-rekey backup; delete both securely when no longer needed.
+restore FAILED: backup cannot be used with the active key; the existing database was not touched: database cannot be decrypted with the configured key (wrong key or corrupted file)
+usage: catalog-api db-restore <backup-file>
+db maintenance commands apply to SQLite only (database.type must be sqlite)
+[GIN] 2026/11/05 - 01:11:15 | 200 |   29.3µs |                 | GET      "/health"
+[GIN] 2026/11/05 - 01:11:15 | 200 |  24.78µs |                 | GET      "/api/v1/catalog/media"
+[GIN] 2026/11/05 - 01:11:15 | 404 |   6.66µs |                 | GET      "/api/v1/catalog/nonexistent"
+[GIN] 2026/11/05 - 01:11:15 | 200 |  10.73µs |                 | GET      "/api/v1/catalog"
+[GIN] 2026/11/05 - 01:11:15 | 200 |     14µs |                 | GET      "/api/v1/search?q=movie"
+[GIN] 2026/11/05 - 01:11:15 | 400 |   5.05µs |                 | GET      "/api/v1/search"
+[GIN] 2026/11/05 - 01:11:15 | 200 |  11.66µs |                 | GET      "/api/v1/stats/summary"
+--- FAIL: TestOpenAPIContract_RealBinary_PathParamsAndUserRolePermissions (13.21s)
+    openapi_contract_binary_test.go:143: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/d11.jJ43tm/repo/catalog-api/openapi_contract_binary_test.go:143
+        	Error:      	Not equal: 
+        	            	expected: 500
+        	            	actual  : 404
+        	Test:       	TestOpenAPIContract_RealBinary_PathParamsAndUserRolePermissions
+        	Messages:   	DELETE /api/v1/logs/share/999999: failed to get log share: failed to get log share: sql: no rows in result set
+FAIL
+FAIL	catalogizer	492.521s
+FAIL
+done

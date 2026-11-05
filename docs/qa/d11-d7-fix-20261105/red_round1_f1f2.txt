@@ -1,0 +1,5 @@
+--- FAIL: TestRED_ReadSidecarOnFIFOHangs (3.00s)
+    subtitle_sidecar_race_red_test.go:21: readSidecar blocked on a FIFO (check-then-open race: swapped file hangs the scan worker)
+FAIL
+FAIL	catalogizer/internal/services	3.013s
+FAIL

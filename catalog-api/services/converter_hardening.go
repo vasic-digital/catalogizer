@@ -71,6 +71,15 @@ func ffmpegGuardArgs() []string {
 	}
 }
 
+// ffprobeGuardArgs: the same protocol/demuxer confinement as ffmpeg (ffprobe has no -nostdin/-nostats).
+func ffprobeGuardArgs() []string {
+	return []string{
+		"-hide_banner", "-loglevel", "error",
+		"-protocol_whitelist", "file,pipe",
+		"-format_whitelist", strings.Join(ffmpegDemuxers, ","),
+	}
+}
+
 var (
 	policyMu  sync.Mutex
 	policyDir string
@@ -126,6 +135,9 @@ func guardToolArgs(name string, args []string) []string {
 	if name == "ffmpeg" {
 		return append(ffmpegGuardArgs(), args...)
 	}
+	if name == "ffprobe" {
+		return append(ffprobeGuardArgs(), args...)
+	}
 	return args
 }
 
@@ -143,7 +155,7 @@ func converterMaxOutput() uint64 {
 // policy.
 func converterAddressSpace(name string) uint64 {
 	min, max := uint64(converterMagickMinAS), uint64(converterMagickMaxAS)
-	if name == "ffmpeg" {
+	if name == "ffmpeg" || name == "ffprobe" {
 		min, max = converterFFmpegMinAS, converterFFmpegMaxAS
 	}
 	as := min
@@ -193,7 +205,7 @@ func hardenedCommand(ctx context.Context, name, bin string, args []string) (*exe
 	cmd := exec.CommandContext(ctx, pl, full...)
 	setProcessGroup(cmd)
 	cmd.Env = pdfBaseEnv()
-	if name != "ffmpeg" {
+	if name != "ffmpeg" && name != "ffprobe" {
 		dir, perr := imageMagickPolicyDir()
 		if perr != nil {
 			return nil, fmt.Errorf("cannot install the ImageMagick security policy: %w", perr)

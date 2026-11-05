@@ -49,20 +49,20 @@ func (r *ConversionRepository) GetJob(jobID int) (*models.ConversionJob, error) 
 	query := `
 		SELECT id, user_id, source_path, target_path, source_format, target_format,
 			   conversion_type, quality, settings, priority, status, created_at,
-			   started_at, completed_at, scheduled_for, duration, error_message
+			   started_at, completed_at, scheduled_for, duration, error_message, warning
 		FROM conversion_jobs
 		WHERE id = ?
 	`
 
 	job := &models.ConversionJob{}
-	var settings, errorMessage sql.NullString
+	var settings, errorMessage, warning sql.NullString
 	var startedAt, completedAt, scheduledFor sql.NullTime
 	var durationSeconds sql.NullInt64
 
 	err := r.db.QueryRow(query, jobID).Scan(
 		&job.ID, &job.UserID, &job.SourcePath, &job.TargetPath, &job.SourceFormat, &job.TargetFormat,
 		&job.ConversionType, &job.Quality, &settings, &job.Priority, &job.Status, &job.CreatedAt,
-		&startedAt, &completedAt, &scheduledFor, &durationSeconds, &errorMessage)
+		&startedAt, &completedAt, &scheduledFor, &durationSeconds, &errorMessage, &warning)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -77,6 +77,10 @@ func (r *ConversionRepository) GetJob(jobID int) (*models.ConversionJob, error) 
 
 	if errorMessage.Valid {
 		job.ErrorMessage = &errorMessage.String
+	}
+
+	if warning.Valid {
+		job.Warning = &warning.String
 	}
 
 	if startedAt.Valid {
@@ -115,13 +119,13 @@ func (r *ConversionRepository) UpdateJobIf(job *models.ConversionJob, from ...st
 func (r *ConversionRepository) updateJob(job *models.ConversionJob, from []string) (bool, error) {
 	query := `
 		UPDATE conversion_jobs
-		SET status = ?, started_at = ?, completed_at = ?, duration = ?, error_message = ?
+		SET status = ?, started_at = ?, completed_at = ?, duration = ?, error_message = ?, warning = ?
 		WHERE id = ?
 	`
 
 	var startedAt, completedAt sql.NullTime
 	var durationSeconds sql.NullInt64
-	var errorMessage sql.NullString
+	var errorMessage, warning sql.NullString
 
 	if job.StartedAt != nil {
 		startedAt = sql.NullTime{Time: *job.StartedAt, Valid: true}
@@ -139,7 +143,11 @@ func (r *ConversionRepository) updateJob(job *models.ConversionJob, from []strin
 		errorMessage = sql.NullString{String: *job.ErrorMessage, Valid: true}
 	}
 
-	args := []interface{}{job.Status, startedAt, completedAt, durationSeconds, errorMessage, job.ID}
+	if job.Warning != nil {
+		warning = sql.NullString{String: *job.Warning, Valid: true}
+	}
+
+	args := []interface{}{job.Status, startedAt, completedAt, durationSeconds, errorMessage, warning, job.ID}
 	if len(from) > 0 {
 		marks := make([]string, len(from))
 		for i, f := range from {
@@ -165,7 +173,7 @@ func (r *ConversionRepository) GetDueJobs(now time.Time, limit int) ([]models.Co
 	rows, err := r.db.Query(`
 		SELECT id, user_id, source_path, target_path, source_format, target_format,
 			   conversion_type, quality, settings, priority, status, created_at,
-			   started_at, completed_at, scheduled_for, duration, error_message
+			   started_at, completed_at, scheduled_for, duration, error_message, warning
 		FROM conversion_jobs
 		WHERE status = ? AND (scheduled_for IS NULL OR scheduled_for <= ?)
 		ORDER BY priority DESC, created_at ASC
@@ -278,7 +286,7 @@ func (r *ConversionRepository) GetUserJobs(userID int, status *string, limit, of
 	query := fmt.Sprintf(`
 		SELECT id, user_id, source_path, target_path, source_format, target_format,
 			   conversion_type, quality, settings, priority, status, created_at,
-			   started_at, completed_at, scheduled_for, duration, error_message
+			   started_at, completed_at, scheduled_for, duration, error_message, warning
 		FROM conversion_jobs
 		%s
 		ORDER BY created_at DESC
@@ -300,7 +308,7 @@ func (r *ConversionRepository) GetJobsByStatus(status string, limit, offset int)
 	query := `
 		SELECT id, user_id, source_path, target_path, source_format, target_format,
 			   conversion_type, quality, settings, priority, status, created_at,
-			   started_at, completed_at, scheduled_for, duration, error_message
+			   started_at, completed_at, scheduled_for, duration, error_message, warning
 		FROM conversion_jobs
 		WHERE status = ?
 		ORDER BY priority DESC, created_at ASC
@@ -519,14 +527,14 @@ func (r *ConversionRepository) scanJobs(rows *sql.Rows) ([]models.ConversionJob,
 
 	for rows.Next() {
 		var job models.ConversionJob
-		var settings, errorMessage sql.NullString
+		var settings, errorMessage, warning sql.NullString
 		var startedAt, completedAt, scheduledFor sql.NullTime
 		var durationSeconds sql.NullInt64
 
 		err := rows.Scan(
 			&job.ID, &job.UserID, &job.SourcePath, &job.TargetPath, &job.SourceFormat, &job.TargetFormat,
 			&job.ConversionType, &job.Quality, &settings, &job.Priority, &job.Status, &job.CreatedAt,
-			&startedAt, &completedAt, &scheduledFor, &durationSeconds, &errorMessage)
+			&startedAt, &completedAt, &scheduledFor, &durationSeconds, &errorMessage, &warning)
 
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan job: %w", err)
@@ -538,6 +546,10 @@ func (r *ConversionRepository) scanJobs(rows *sql.Rows) ([]models.ConversionJob,
 
 		if errorMessage.Valid {
 			job.ErrorMessage = &errorMessage.String
+		}
+
+		if warning.Valid {
+			job.Warning = &warning.String
 		}
 
 		if startedAt.Valid {

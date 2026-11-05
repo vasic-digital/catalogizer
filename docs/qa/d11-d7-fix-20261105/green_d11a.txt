@@ -1,0 +1,6 @@
+=== RUN   TestD11a_TruncatedSourceIsFlaggedNotSilentlyCompleted
+--- PASS: TestD11a_TruncatedSourceIsFlaggedNotSilentlyCompleted (1.24s)
+=== RUN   TestD11a_IntactSourceHasNoWarning
+--- PASS: TestD11a_IntactSourceHasNoWarning (2.20s)
+PASS
+ok  	catalogizer/handlers	3.464s

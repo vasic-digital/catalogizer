@@ -210,6 +210,10 @@ func (s *ConversionService) executeJob(job *models.ConversionJob) {
 		return
 	}
 
+	// D11a: a clearly shorter output than the source declares is flagged, not failed
+	if w := s.truncationWarning(job); w != "" {
+		job.Warning = &w
+	}
 	s.handleConversionSuccess(job)
 }
 
@@ -851,6 +855,10 @@ func (s *ConversionService) handleConversionSuccess(job *models.ConversionJob) {
 		return
 	}
 
+	if job.Warning != nil {
+		s.notifyUser(job, "Conversion completed with a warning: "+*job.Warning)
+		return
+	}
 	s.notifyUser(job, "Conversion completed successfully")
 }
 

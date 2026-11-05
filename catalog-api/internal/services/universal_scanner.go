@@ -410,6 +410,10 @@ func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
 		return
 	}
 
+	// D11b: sidecar subtitle files next to the scanned videos (local roots only). A failure here
+	// never fails the scan.
+	s.importSidecars(job)
+
 	status.updateStatus("completed")
 	s.publishScanEvent(job, status, nil)
 	snapshot := status.GetSnapshot()
@@ -432,6 +436,31 @@ func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
 					errField(err, status.secrets))
 			}
 		}()
+	}
+}
+
+// importSidecars runs the D11b sidecar subtitle import for a finished scan of a local root.
+func (s *UniversalScanner) importSidecars(job ScanJob) {
+	if s.db == nil || job.StorageRoot == nil || job.StorageRoot.Protocol != "local" || job.StorageRoot.Path == nil {
+		return
+	}
+	ctx := job.Context
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	var rootID int64
+	if err := s.db.QueryRowContext(ctx, "SELECT id FROM storage_roots WHERE name = ? LIMIT 1", job.StorageRoot.Name).Scan(&rootID); err != nil {
+		return
+	}
+	res, err := ImportSidecarSubtitles(ctx, s.db, s.logger, rootID, *job.StorageRoot.Path)
+	if err != nil {
+		s.logger.Warn("Sidecar subtitle import failed", zap.String("job_id", job.ID), errField(err, secretsOf(job.StorageRoot)))
+		return
+	}
+	if res.Imported+res.Refreshed+res.Skipped > 0 {
+		s.logger.Info("Sidecar subtitles processed", zap.String("job_id", job.ID),
+			zap.Int("imported", res.Imported), zap.Int("refreshed", res.Refreshed),
+			zap.Int("unchanged", res.Unchanged), zap.Int("skipped", res.Skipped))
 	}
 }
 

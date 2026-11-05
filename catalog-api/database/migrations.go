@@ -36,6 +36,7 @@ func (db *DB) RunMigrations(ctx context.Context) error {
 		{Version: 22, Name: "create_runtime_tables", Up: db.createRuntimeTables},
 		{Version: 23, Name: "add_smart_collection_columns", Up: db.addSmartColumns},
 		{Version: 24, Name: "add_subtitle_uploaded_by", Up: db.addSubtitleUploadedBy},
+		{Version: 25, Name: "add_conversion_job_warning", Up: db.addConversionJobWarning},
 		{Version: 26, Name: "create_file_text_index", Up: db.createFileTextIndex},
 	}
 
