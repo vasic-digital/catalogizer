@@ -304,7 +304,7 @@ describe('EntityDetail', () => {
 
   it('shows not found for invalid entity', async () => {
     const { entityApi } = await import('@/lib/mediaApi')
-    ;(entityApi.getEntity as any).mockRejectedValueOnce(new Error('Not found'))
+    ;(entityApi.getEntity as any).mockRejectedValueOnce({ response: { status: 404, data: { success: false, error: 'Entity not found', details: 'media item not found' } } })
     renderWithProviders('999')
     await waitFor(() => {
       expect(screen.getByText('Entity not found')).toBeInTheDocument()
@@ -313,7 +313,7 @@ describe('EntityDetail', () => {
 
   it('shows back to browse button when entity not found', async () => {
     const { entityApi } = await import('@/lib/mediaApi')
-    ;(entityApi.getEntity as any).mockRejectedValueOnce(new Error('Not found'))
+    ;(entityApi.getEntity as any).mockRejectedValueOnce({ response: { status: 404, data: { success: false, error: 'Entity not found', details: 'media item not found' } } })
     renderWithProviders('999')
     await waitFor(() => {
       expect(screen.getByText('Back to Browse')).toBeInTheDocument()
