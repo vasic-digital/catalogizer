@@ -1,0 +1,13 @@
+## E1 query as in code, PG, LIMIT 50
+ERROR:  operator does not exist: boolean = integer
+LINE 1: ... ca ON mi.id = ca.media_item_id AND ca.is_default = 1 AND ca...
+                                                             ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+## E2 is_default boolean fixed
+ id |                             full_path                              
+----+--------------------------------------------------------------------
+ 20 | sec3/ctl/Control.Plain.Movie.2024.mp4/Control.Plain.Movie.2024.mp4
+ 17 | movies/Big.Seek.Movie.2026.140s.mp4/Big.Seek.Movie.2026.140s.mp4
+ 12 | books/Known Text Document.pdf/Known Text Document.pdf
+(3 rows)
+

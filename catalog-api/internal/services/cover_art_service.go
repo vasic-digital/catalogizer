@@ -935,38 +935,11 @@ func (s *CoverArtService) saveCoverArtToDB(ctx context.Context, coverArt *CoverA
 		return nil
 	}
 
-	query := `
-		INSERT INTO cover_art (id, media_item_id, source, url, local_path, width, height, format, size, quality, is_default, created_at, cached_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-		ON CONFLICT(id) DO UPDATE SET
-			source = excluded.source,
-			url = excluded.url,
-			local_path = excluded.local_path,
-			width = excluded.width,
-			height = excluded.height,
-			format = excluded.format,
-			size = excluded.size,
-			quality = excluded.quality,
-			is_default = excluded.is_default,
-			cached_at = excluded.cached_at
-	`
-	if s.db.Dialect().IsPostgres() {
-		query = `
-			INSERT INTO cover_art (id, media_item_id, source, url, local_path, width, height, format, size, quality, is_default, created_at, cached_at)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-			ON CONFLICT(id) DO UPDATE SET
-				source = excluded.source,
-				url = excluded.url,
-				local_path = excluded.local_path,
-				width = excluded.width,
-				height = excluded.height,
-				format = excluded.format,
-				size = excluded.size,
-				quality = excluded.quality,
-				is_default = excluded.is_default,
-				cached_at = excluded.cached_at
-		`
-	}
+	// The go-sqlcipher build predates SQLite 3.24 (no ON CONFLICT ... DO UPDATE): use the dialect upsert, which is
+	// INSERT OR REPLACE there and ON CONFLICT on PostgreSQL (NEW-1: every thumbnail save failed on SQLite).
+	query := s.db.Dialect().UpsertSQL("cover_art",
+		[]string{"id", "media_item_id", "source", "url", "local_path", "width", "height", "format", "size", "quality", "is_default", "created_at", "cached_at"},
+		[]string{"id"})
 
 	var url, localPath sql.NullString
 	var width, height sql.NullInt64
@@ -1253,7 +1226,7 @@ func (s *CoverArtService) GenerateMissingVideoThumbnails(ctx context.Context, li
 
 	// Find media items with no local cover art that have a primary video file
 	query := `
-		SELECT mi.id, f.path || '/' || f.name AS full_path,
+		SELECT mi.id, f.path AS full_path,
 		       ` + models.StorageRootConnColumnsFor("sr") + `
 		FROM media_items mi
 		JOIN media_types mt ON mi.media_type_id = mt.id
@@ -1282,9 +1255,17 @@ func (s *CoverArtService) GenerateMissingVideoThumbnails(ctx context.Context, li
 	var tasks []thumbnailTask
 	for rows.Next() {
 		var t thumbnailTask
-		if err := rows.Scan(&t.mediaItemID, &t.videoPath, &t.protocol, &t.rootPath, &t.host, &t.port, &t.username, &t.password, &t.domain, &t.url, &t.mountPoint, &t.options); err == nil {
-			tasks = append(tasks, t)
+		// Scan order MUST equal the select order: mi.id, f.path, then models.StorageRootConnColumnsFor
+		// (protocol, host, port, path, username, ...). A scan failure is returned, never swallowed (NEW-1).
+		if err := rows.Scan(&t.mediaItemID, &t.videoPath, &t.protocol, &t.host, &t.port, &t.rootPath, &t.username, &t.password, &t.domain, &t.url, &t.mountPoint, &t.options); err != nil {
+			s.logger.Error("Failed to scan missing-thumbnail row", zap.Error(err))
+			return 0, fmt.Errorf("failed to scan missing thumbnail row: %w", err)
 		}
+		tasks = append(tasks, t)
+	}
+	if err := rows.Err(); err != nil {
+		s.logger.Error("Failed to iterate missing-thumbnail rows", zap.Error(err))
+		return 0, fmt.Errorf("failed to read missing thumbnail rows: %w", err)
 	}
 
 	generated := 0
@@ -1392,6 +1373,9 @@ func (s *CoverArtService) copyRemoteFileToTemp(ctx context.Context, t thumbnailT
 	}
 	defer reader.Close()
 
+	if err := os.MkdirAll(s.cacheDir, 0o755); err != nil {
+		return "", fmt.Errorf("failed to create cover cache dir: %w", err)
+	}
 	tmpFile, err := os.CreateTemp(s.cacheDir, "video_thumb_*.tmp")
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %w", err)
@@ -1417,6 +1401,11 @@ func (s *CoverArtService) generateAndSaveVideoThumbnail(ctx context.Context, med
 	timestamp := duration * 0.25
 	if timestamp < 5 {
 		timestamp = 5
+	}
+
+	// ffmpeg does not create the output directory (exit 251 "Could not open file"), so make it first.
+	if err := os.MkdirAll(s.cacheDir, 0o755); err != nil {
+		return nil, fmt.Errorf("failed to create cover cache dir: %w", err)
 	}
 
 	coverID := fmt.Sprintf("video_thumb_%d", mediaItemID)

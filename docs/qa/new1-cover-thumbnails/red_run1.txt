@@ -1,0 +1,19 @@
+# RED live repro NEW-1 (run 1; command: POST /api/v1/admin/covers/generate-thumbnails with admin session_token)
+Thu Nov  5 09:47:56 AM UTC 2026
+{"build_date":"stack3","build_number":"015896fd89180a42cc6c1e794719bd04e39e9c40","status":"healthy","time":"2026-11-05T09:47:56.081131763Z","version":"015896fd89180a42cc6c1e794719bd04e39e9c40"}
+ cover_art_rows 
+----------------
+              0
+(1 row)
+
+200 {'generated': 0, 'message': 'thumbnail generation completed'} 0.03
+[GIN] 2026/11/05 - 09:47:29 | 401 |     740.097µs |     169.254.1.2 | POST    "/api/v1/admin/covers/generate-thumbnails"
+2026-11-05T09:47:29.131Z	[34mINFO[0m	gin@v1.12.0/context.go:192	HTTP Request	{"method": "POST", "path": "/api/v1/admin/covers/generate-thumbnails", "status": 401, "ip": "169.254.1.2", "latency": "611.436µs", "user_agent": "Python-urllib/3.14"}
+[GIN] 2026/11/05 - 09:47:56 | 200 |   23.390206ms |   192.168.1.115 | POST    "/api/v1/admin/covers/generate-thumbnails"
+2026-11-05T09:47:56.583Z	[34mINFO[0m	gin@v1.12.0/context.go:192	HTTP Request	{"method": "POST", "path": "/api/v1/admin/covers/generate-thumbnails", "status": 200, "ip": "192.168.1.115", "latency": "23.283286ms", "user_agent": "Python-urllib/3.14"}
+(end of cover/thumbnail log lines)
+ cover_art_rows_after 
+----------------------
+                    0
+(1 row)
+
