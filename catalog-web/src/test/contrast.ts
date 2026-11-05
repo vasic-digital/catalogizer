@@ -6,7 +6,7 @@ import tailwindConfig from '../../tailwind.config.js'
 
 export type Theme = 'light' | 'dark'
 
-const theme = (resolveConfig(tailwindConfig as never) as { theme: { colors: Record<string, unknown> } }).theme
+const theme = (resolveConfig(tailwindConfig as never) as unknown as { theme: { colors: Record<string, unknown> } }).theme
 
 function flatten(colors: Record<string, unknown>, prefix = '', out: Record<string, string> = {}) {
   for (const [k, v] of Object.entries(colors)) {
