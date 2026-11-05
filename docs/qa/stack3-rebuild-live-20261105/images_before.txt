@@ -1,0 +1,8 @@
+localhost/catqa3-web:main-4c79b7e3 bb1affdd75e1
+localhost/catqa3-api:main-4c79b7e3 4ff31faff825
+localhost/catqa3-web:main-b4d86546 308512680134
+localhost/catqa3-api:main-b4d86546 348a861e6600
+localhost/catqa3-web:main-e0cb1b36 ec971e38b0bc
+localhost/catqa3-api:main-e0cb1b36 a4b4dbb93dce
+localhost/catqa3-web:main-8e8cb9b1 c9a386c40cb2
+localhost/catqa3-api:main-8e8cb9b1 4c4dd6e72b53

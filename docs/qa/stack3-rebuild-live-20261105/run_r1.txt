@@ -1,0 +1,56 @@
+{"round": "1", "check": "env.health_build", "result": "PASS", "detail": "d9238b4743c85dbb9c987617bb4409041f41e840"}
+{"round": "1", "check": "D1.formats_truthful", "result": "PASS", "detail": {"input": ["pdf"], "output": ["txt"]}}
+{"round": "1", "check": "D1.pdf_to_txt_content", "result": "PASS", "detail": {"status": "completed", "dl": 200, "len": 150, "sha256": "a87a5b85dd8a20f51c045046895be33919e56e72e16b0204b9db414d12b9e32d", "err": null}}
+{"round": "1", "check": "D2.delete_completed", "result": "PASS", "detail": {"delete": 200, "get_after": 404, "delete_again": 404, "download_after": 404}}
+{"round": "1", "check": "D1.refused_pdf_to_png", "result": "PASS", "detail": [400, {"error": "Invalid conversion request", "reason": "conversion pdf -> png (document) is not supported on this server"}]}
+{"round": "1", "check": "D1.refused_txt_to_pdf", "result": "PASS", "detail": [400, {"error": "Invalid conversion request", "reason": "conversion txt -> pdf (document) is not supported on this server"}]}
+{"round": "1", "check": "D1.refused_epub_to_txt", "result": "PASS", "detail": [400, {"error": "Invalid conversion request", "reason": "conversion epub -> txt (document) is not supported on this server"}]}
+{"round": "1", "check": "D10.ext_mismatch_400", "result": "PASS", "detail": [400, {"error": "Invalid conversion request", "reason": "target_path extension does not match target_format"}]}
+{"round": "1", "check": "D10.matching_ext_ok", "result": "PASS", "detail": {"status": "completed", "len": 73196, "magic": "494433", "warning": null}}
+{"round": "1", "check": "D11a.truncated_warns", "result": "PASS", "detail": {"status": "completed", "warning": "The output is 2.2 s but the source declares 5.0 s: the output is much shorter than the source, which usually means the source file is truncated or damaged. Check the result before relying on it.", "err": null}}
+{"round": "1", "check": "D11a.control_good_no_warning", "result": "PASS", "detail": {"status": "completed", "warning": null, "err": null}}
+{"round": "1", "check": "D2.delete_running_409", "result": "PASS", "detail": {"status_before": "running", "delete": 409}}
+{"round": "1", "check": "D7.error_message_sanitised", "result": "PASS", "detail": {"status": "failed", "err": "ffmpeg audio conversion failed: ffmpeg: exit status 183: [mp3 @ 0x5fc75ca742c0] Failed to find two consecutive MPEG audio frames.\n[in#0 @ 0x5fc75ca74000] Error opening input: Invalid data found when p"}}
+{"round": "1", "check": "D8.anon_empty_json_body_401", "result": "PASS", "detail": {"/api/v1/conversion/jobs/1/cancel": 401, "/api/v1/conversion/jobs/1/retry": 401, "/api/v1/auth/logout": 401}}
+{"round": "1", "check": "D8.control_malformed_nonempty_still_rejected", "result": "PASS", "detail": 400}
+{"round": "1", "check": "D4.search_ZEBRA-4242", "result": "PASS", "detail": {"status": 200, "paths": ["books/Known Text Document.pdf"]}}
+{"round": "1", "check": "D4.search_OKAPI-1357", "result": "PASS", "detail": {"status": 200, "paths": ["books/Plain Notes.txt"]}}
+{"round": "1", "check": "D4.search_QUOKKA-9091", "result": "PASS", "detail": {"status": 200, "paths": ["live3/Live3 Markdown Note.md"]}}
+{"round": "1", "check": "D4.search_NARWHAL-5521", "result": "PASS", "detail": {"status": 200, "paths": ["live3/Live3 Text Note.txt"]}}
+{"round": "1", "check": "D4.control_absent_zero", "result": "PASS", "detail": 0}
+{"round": "1", "check": "D4.control_name_search", "result": "PASS", "detail": 200}
+{"round": "1", "check": "D3.page_count", "result": "PASS", "detail": [200, {"total_pages": 3}]}
+{"round": "1", "check": "D3.pages_png_distinct", "result": "PASS", "detail": [[200, true, "bdf3acd1b8c4399d", 17766], [200, true, "037f8edc878513b5", 21427], [200, true, "fcecfbc5a4815af4", 15968]]}
+{"round": "1", "check": "D3.page3_404", "result": "PASS", "detail": null}
+{"round": "1", "check": "D3.bad_index_400", "result": "PASS", "detail": null}
+{"round": "1", "check": "D3.malformed_422_no_leak", "result": "PASS", "detail": [422, "b'{\"success\":false,\"error\":\"File is not a readable PDF document\"}'"]}
+{"round": "1", "check": "D3.unauth_401", "result": "PASS", "detail": null}
+{"round": "1", "check": "D11b.sidecars_imported_idempotent", "result": "PASS", "detail": [["movies/Movie.Name.2020.1080p.en.ass", "en", "ass"], ["movies/Movie.Name.2020.1080p.en.srt", "en", "srt"], ["movies/Movie.Name.2020.1080p.en.vtt", "en", "vtt"], ["movies/Movie.Name.2020.1080p.out-of-sync.srt", "und", "srt"]]}
+{"round": "1", "check": "D6.upload_srt", "result": "PASS", "detail": [200, {"subtitle_id": "23", "success": true}]}
+{"round": "1", "check": "D6.upload_vtt", "result": "PASS", "detail": [200, {"subtitle_id": "24", "success": true}]}
+{"round": "1", "check": "D6.upload_ass", "result": "PASS", "detail": [200, {"subtitle_id": "25", "success": true}]}
+{"round": "1", "check": "D6.upload_oos", "result": "PASS", "detail": [200, {"subtitle_id": "26", "success": true}]}
+{"round": "1", "check": "D5.corpus_media15_honest_srt", "result": "PASS", "detail": {"http": 200, "status": "undetermined", "reason": "the audio has no speech-activity variation to align against", "conf": 0, "is_valid": false, "want_status": "undetermined", "note": "corpus audio is a continuous tone (silencedetect 0 events) -> undetermined by design; old tautology returned is_valid true conf 0.8"}}
+{"round": "1", "check": "D5.corpus_media15_honest_vtt", "result": "PASS", "detail": {"http": 200, "status": "undetermined", "reason": "the audio has no speech-activity variation to align against", "conf": 0, "is_valid": false, "want_status": "undetermined", "note": "corpus audio is a continuous tone (silencedetect 0 events) -> undetermined by design; old tautology returned is_valid true conf 0.8"}}
+{"round": "1", "check": "D5.corpus_media15_honest_ass", "result": "PASS", "detail": {"http": 200, "status": "undetermined", "reason": "the audio has no speech-activity variation to align against", "conf": 0, "is_valid": false, "want_status": "undetermined", "note": "corpus audio is a continuous tone (silencedetect 0 events) -> undetermined by design; old tautology returned is_valid true conf 0.8"}}
+{"round": "1", "check": "D5.corpus_media15_honest_oos", "result": "PASS", "detail": {"http": 200, "status": "invalid", "reason": "3 of 3 cues start beyond the media duration (5.0s); last cue ends at 11.5s", "conf": 0, "is_valid": false, "want_status": "invalid", "note": "corpus audio is a continuous tone (silencedetect 0 events) -> undetermined by design; old tautology returned is_valid true conf 0.8"}}
+{"round": "1", "check": "D11b.sidecars_media201", "result": "PASS", "detail": {"live3/Burst.Movie.2021.en.srt": "21", "live3/Burst.Movie.2021.out-of-sync.srt": "22"}}
+{"round": "1", "check": "D5.measured_sidecar_aligned", "result": "PASS", "detail": {"http": 200, "status": "measured", "offset_ms": 0, "conf": 0.5213989743443558, "method": "audio-activity", "want": 0, "dur": 26}}
+{"round": "1", "check": "D5.measured_sidecar_plus2000", "result": "PASS", "detail": {"http": 200, "status": "measured", "offset_ms": 2000, "conf": 0.5142641762976219, "method": "audio-activity", "want": 2000, "dur": 26}}
+{"round": "1", "check": "D5.measured_upload_plus3500", "result": "PASS", "detail": {"http": 200, "status": "measured", "offset_ms": 3500, "conf": 0.5308366394241244, "method": "audio-activity", "want": 3500, "dur": 26}}
+{"round": "1", "check": "D5.verify_unknown_sub_404", "result": "PASS", "detail": null}
+{"round": "1", "check": "D5.verify_unknown_media_404", "result": "PASS", "detail": null}
+{"round": "1", "check": "D6.unknown_media_404", "result": "PASS", "detail": [404, {"success": false, "error": "Media item not found", "code": "MEDIA_NOT_FOUND"}]}
+{"round": "1", "check": "D6.garbage_422", "result": "PASS", "detail": [422, {"success": false, "error": "The uploaded file is not a valid srt subtitle", "code": "INVALID_SUBTITLE_CONTENT"}]}
+{"round": "1", "check": "D7.sub_list_bad_id_no_err_echo", "result": "PASS", "detail": [400, {"success": false, "error": "Invalid media_id format", "code": "INVALID_MEDIA_ID"}]}
+{"round": "1", "check": "D7.translate_no_provider_503", "result": "PASS", "detail": [503, {"success": false, "error": "No translation provider is configured on this server", "code": "TRANSLATION_UNAVAILABLE"}]}
+{"round": "1", "check": "SUBDEL.unauth_401", "result": "PASS", "detail": null}
+{"round": "1", "check": "SUBDEL.delete_204_then_404", "result": "PASS", "detail": {"dd": [["srt", 204, 404], ["vtt", 204, 404], ["ass", 204, 404], ["oos", 204, 404]], "left": []}}
+{"round": "1", "check": "D9.list_shows_admin", "result": "PASS", "detail": [["qa_admin", "admin"]]}
+{"round": "1", "check": "D9.put_role_admin_applied", "result": "PASS", "detail": {"put": 200, "listed": "admin"}}
+{"round": "1", "check": "D9.unknown_role_400", "result": "PASS", "detail": 400}
+{"round": "1", "check": "D9.self_demotion_409", "result": "PASS", "detail": 409}
+{"round": "1", "check": "XUSER.admin2_by_design_access", "result": "PASS", "detail": {"admin2_on_admin1_job": {"get": 200, "download": 200, "cancel": 409, "delete": 200}, "owner_status_after": null, "note": "service allows non-owners holding view:media (FU-1 documented); delete succeeded so owner row gone"}}
+{"round": "1", "check": "XUSER.nonprivileged_isolation_404", "result": "SKIP", "detail": "no way to grant a plain user conversion permission via API (register -> 403 on every conversion route); isolation 404 unexercised"}
+{"round": "1", "check": "D9.cleanup_user", "result": "PASS", "detail": 281}
+ROUND 1 PASS 54 FAIL 0 SKIP 1

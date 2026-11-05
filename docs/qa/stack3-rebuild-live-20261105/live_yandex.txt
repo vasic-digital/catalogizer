@@ -1,0 +1,118 @@
+Running as unit: run-p2371716-i128108302.scope; invocation ID: b712ffa59a6848c8a6ace0cbbe7ecd76
+go: downloading github.com/hirochachacha/go-smb2 v1.1.0
+go: downloading github.com/jlaffaye/ftp v0.2.4
+go: downloading github.com/stretchr/testify v1.12.1
+go: downloading golang.org/x/crypto v0.54.0
+go: downloading github.com/geoffgarside/ber v1.1.0
+go: downloading go.yaml.in/yaml/v3 v3.0.5
+=== RUN   TestLiveYandex_Suite
+=== RUN   TestLiveYandex_Suite/01_connect_auth_success
+=== RUN   TestLiveYandex_Suite/02_auth_failure_wrong_password
+=== RUN   TestLiveYandex_Suite/03_mkdir
+=== RUN   TestLiveYandex_Suite/04_upload_known_sha256
+=== RUN   TestLiveYandex_Suite/05_list_sizes_mtimes
+=== RUN   TestLiveYandex_Suite/06_download_sha256_and_stat
+=== RUN   TestLiveYandex_Suite/07_range_partial_read
+=== RUN   TestLiveYandex_Suite/08_copy_rename_move
+=== RUN   TestLiveYandex_Suite/09_overwrite
+=== RUN   TestLiveYandex_Suite/10_nonexistent_errors
+=== RUN   TestLiveYandex_Suite/11_unicode_and_special_names
+=== RUN   TestLiveYandex_Suite/12_large_listing_200
+=== RUN   TestLiveYandex_Suite/13_concurrent_uploads_4
+=== RUN   TestLiveYandex_Suite/14_unsized_reader_upload
+=== RUN   TestLiveYandex_Suite/15_timeout_and_cancel
+=== RUN   TestLiveYandex_Suite/16_delete
+=== RUN   TestLiveYandex_Suite/17_guard_refuses_outside_sandbox
+--- PASS: TestLiveYandex_Suite (372.06s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (0.53s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (0.19s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (0.67s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (194.50s)
+    --- PASS: TestLiveYandex_Suite/05_list_sizes_mtimes (0.16s)
+    --- PASS: TestLiveYandex_Suite/06_download_sha256_and_stat (1.66s)
+    --- PASS: TestLiveYandex_Suite/07_range_partial_read (0.12s)
+    --- PASS: TestLiveYandex_Suite/08_copy_rename_move (30.85s)
+    --- PASS: TestLiveYandex_Suite/09_overwrite (2.10s)
+    --- PASS: TestLiveYandex_Suite/10_nonexistent_errors (1.22s)
+    --- PASS: TestLiveYandex_Suite/11_unicode_and_special_names (7.05s)
+    --- PASS: TestLiveYandex_Suite/12_large_listing_200 (54.93s)
+    --- PASS: TestLiveYandex_Suite/13_concurrent_uploads_4 (37.76s)
+    --- PASS: TestLiveYandex_Suite/14_unsized_reader_upload (6.68s)
+    --- PASS: TestLiveYandex_Suite/15_timeout_and_cancel (2.35s)
+    --- PASS: TestLiveYandex_Suite/16_delete (12.31s)
+    --- PASS: TestLiveYandex_Suite/17_guard_refuses_outside_sandbox (1.23s)
+=== RUN   TestLiveYandex_Suite
+=== RUN   TestLiveYandex_Suite/01_connect_auth_success
+=== RUN   TestLiveYandex_Suite/02_auth_failure_wrong_password
+=== RUN   TestLiveYandex_Suite/03_mkdir
+=== RUN   TestLiveYandex_Suite/04_upload_known_sha256
+=== RUN   TestLiveYandex_Suite/05_list_sizes_mtimes
+=== RUN   TestLiveYandex_Suite/06_download_sha256_and_stat
+=== RUN   TestLiveYandex_Suite/07_range_partial_read
+=== RUN   TestLiveYandex_Suite/08_copy_rename_move
+=== RUN   TestLiveYandex_Suite/09_overwrite
+=== RUN   TestLiveYandex_Suite/10_nonexistent_errors
+=== RUN   TestLiveYandex_Suite/11_unicode_and_special_names
+=== RUN   TestLiveYandex_Suite/12_large_listing_200
+=== RUN   TestLiveYandex_Suite/13_concurrent_uploads_4
+=== RUN   TestLiveYandex_Suite/14_unsized_reader_upload
+=== RUN   TestLiveYandex_Suite/15_timeout_and_cancel
+=== RUN   TestLiveYandex_Suite/16_delete
+=== RUN   TestLiveYandex_Suite/17_guard_refuses_outside_sandbox
+--- PASS: TestLiveYandex_Suite (351.92s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (2.33s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (0.21s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (1.45s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (194.63s)
+    --- PASS: TestLiveYandex_Suite/05_list_sizes_mtimes (0.33s)
+    --- PASS: TestLiveYandex_Suite/06_download_sha256_and_stat (1.48s)
+    --- PASS: TestLiveYandex_Suite/07_range_partial_read (0.11s)
+    --- PASS: TestLiveYandex_Suite/08_copy_rename_move (28.74s)
+    --- PASS: TestLiveYandex_Suite/09_overwrite (2.59s)
+    --- PASS: TestLiveYandex_Suite/10_nonexistent_errors (1.00s)
+    --- PASS: TestLiveYandex_Suite/11_unicode_and_special_names (8.89s)
+    --- PASS: TestLiveYandex_Suite/12_large_listing_200 (46.33s)
+    --- PASS: TestLiveYandex_Suite/13_concurrent_uploads_4 (35.97s)
+    --- PASS: TestLiveYandex_Suite/14_unsized_reader_upload (6.99s)
+    --- PASS: TestLiveYandex_Suite/15_timeout_and_cancel (1.78s)
+    --- PASS: TestLiveYandex_Suite/16_delete (9.07s)
+    --- PASS: TestLiveYandex_Suite/17_guard_refuses_outside_sandbox (0.59s)
+=== RUN   TestLiveYandex_Suite
+=== RUN   TestLiveYandex_Suite/01_connect_auth_success
+=== RUN   TestLiveYandex_Suite/02_auth_failure_wrong_password
+=== RUN   TestLiveYandex_Suite/03_mkdir
+=== RUN   TestLiveYandex_Suite/04_upload_known_sha256
+=== RUN   TestLiveYandex_Suite/05_list_sizes_mtimes
+=== RUN   TestLiveYandex_Suite/06_download_sha256_and_stat
+=== RUN   TestLiveYandex_Suite/07_range_partial_read
+=== RUN   TestLiveYandex_Suite/08_copy_rename_move
+=== RUN   TestLiveYandex_Suite/09_overwrite
+=== RUN   TestLiveYandex_Suite/10_nonexistent_errors
+=== RUN   TestLiveYandex_Suite/11_unicode_and_special_names
+=== RUN   TestLiveYandex_Suite/12_large_listing_200
+=== RUN   TestLiveYandex_Suite/13_concurrent_uploads_4
+=== RUN   TestLiveYandex_Suite/14_unsized_reader_upload
+=== RUN   TestLiveYandex_Suite/15_timeout_and_cancel
+=== RUN   TestLiveYandex_Suite/16_delete
+=== RUN   TestLiveYandex_Suite/17_guard_refuses_outside_sandbox
+--- PASS: TestLiveYandex_Suite (365.97s)
+    --- PASS: TestLiveYandex_Suite/01_connect_auth_success (0.43s)
+    --- PASS: TestLiveYandex_Suite/02_auth_failure_wrong_password (0.20s)
+    --- PASS: TestLiveYandex_Suite/03_mkdir (0.97s)
+    --- PASS: TestLiveYandex_Suite/04_upload_known_sha256 (194.13s)
+    --- PASS: TestLiveYandex_Suite/05_list_sizes_mtimes (0.18s)
+    --- PASS: TestLiveYandex_Suite/06_download_sha256_and_stat (1.52s)
+    --- PASS: TestLiveYandex_Suite/07_range_partial_read (0.12s)
+    --- PASS: TestLiveYandex_Suite/08_copy_rename_move (33.02s)
+    --- PASS: TestLiveYandex_Suite/09_overwrite (1.89s)
+    --- PASS: TestLiveYandex_Suite/10_nonexistent_errors (1.30s)
+    --- PASS: TestLiveYandex_Suite/11_unicode_and_special_names (6.17s)
+    --- PASS: TestLiveYandex_Suite/12_large_listing_200 (54.75s)
+    --- PASS: TestLiveYandex_Suite/13_concurrent_uploads_4 (42.21s)
+    --- PASS: TestLiveYandex_Suite/14_unsized_reader_upload (6.88s)
+    --- PASS: TestLiveYandex_Suite/15_timeout_and_cancel (1.58s)
+    --- PASS: TestLiveYandex_Suite/16_delete (9.72s)
+    --- PASS: TestLiveYandex_Suite/17_guard_refuses_outside_sandbox (0.69s)
+PASS
+ok  	catalogizer/filesystem	1089.958s
+rc=0
