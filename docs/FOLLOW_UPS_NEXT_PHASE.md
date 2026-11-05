@@ -1342,3 +1342,4 @@ Open items:
 - D4-10 (F6 residual): file reads go through one verified descriptor; the PDF child reopens that same inode via `/proc/<pid>/fd/N`, so a path swap after the open cannot redirect it. Not covered: a Linux-only `/proc` dependency (the indexer fails closed with status failed elsewhere).
 - D4-11 (F4/F5): fixed (F4 logs a tool-absent skip of the PDF leg; F5 does not persist missing-tool or cancelled runs as failed). Open: a `failed` row from a corrupt file is retried only when size or mtime changes.
 - Migration number: file_text_index is migration v26 (v25 is reserved for conversion_jobs.warning on fix-d11-d7).
+- D4-12 (round 2): the indexer holds at most one PDF reader slot globally (docIndexerGate), so interactive readers keep one of the two slots; the pure-Go child divisor in pdfChildLimits counts the indexer's slot. A per-file timeout is recorded failed and retried only on size/mtime change.

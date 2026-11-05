@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
@@ -308,13 +310,137 @@ func TestDocumentTextIndexer_UsesSharedPDFSlot(t *testing.T) {
 	}
 }
 
-type countingReader struct{ n int64 }
+type countingReader struct {
+	n, limit int64
+}
 
-func (c *countingReader) Read(p []byte) (int, error) { c.n += int64(len(p)); return len(p), nil }
+func (c *countingReader) Read(p []byte) (int, error) {
+	if c.n >= c.limit {
+		return 0, io.EOF
+	}
+	c.n += int64(len(p))
+	return len(p), nil
+}
 
-func TestReadPlainCapped_BoundsBytesRead(t *testing.T) { // kills RM5 on the read bound itself
-	cr := &countingReader{}
+func TestReadPlainCapped_BoundsBytesRead(t *testing.T) { // kills RM5 deterministically (R2-6)
+	cr := &countingReader{limit: 8 << 20}
 	_, err := readPlainCapped(cr)
 	require.NoError(t, err)
 	assert.LessOrEqual(t, cr.n, int64(docIndexMaxPlainBytes)+64*1024)
+}
+
+// R2-1: with two indexing roots hammering the PDF slots, an interactive non-blocking reader still gets in.
+func TestDocumentTextIndexer_DoesNotStarveInteractiveReaders(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	var wg sync.WaitGroup
+	for i := 0; i < 2; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for ctx.Err() == nil {
+				rel, err := acquireIndexerPDFSlot(ctx)
+				if err != nil {
+					return
+				}
+				time.Sleep(20 * time.Millisecond)
+				rel()
+			}
+		}()
+	}
+	ok := 0
+	for i := 0; i < 300; i++ {
+		if rel, got := AcquirePDFReaderSlot(); got {
+			ok++
+			rel()
+		}
+		time.Sleep(time.Millisecond)
+	}
+	cancel()
+	wg.Wait()
+	assert.Greater(t, ok, 250, "interactive readers must keep getting a slot")
+}
+
+type pathRecorder struct{ path string }
+
+func (p *pathRecorder) NumPages(_ context.Context, path string) (int, error) {
+	p.path = path
+	return 1, nil
+}
+func (p *pathRecorder) ExtractPages(_ context.Context, path string, _, _ int) ([]string, error) {
+	return []string{"T"}, nil
+}
+
+// R2-3: the child must be handed the verified descriptor, not the resolved path.
+func TestDocumentTextIndexer_ChildGetsVerifiedFdPath(t *testing.T) {
+	e := newIndexerEnv(t, "local")
+	e.addFile(t, "p.pdf", "pdf", []byte("%PDF-1.4 stub"), 13)
+	rec := &pathRecorder{}
+	x := NewDocumentTextIndexer(e.db)
+	x.extractor = rec
+	_, _, err := x.IndexStorageRoot(context.Background(), e.id)
+	require.NoError(t, err)
+	assert.Regexp(t, fmt.Sprintf(`^/proc/%d/fd/\d+$`, os.Getpid()), rec.path)
+}
+
+// the descriptor keeps the original inode after the path is replaced.
+func TestOpenInRoot_FdSurvivesPathSwap(t *testing.T) {
+	e := newIndexerEnv(t, "local")
+	require.NoError(t, os.WriteFile(filepath.Join(e.root, "a.txt"), []byte("ORIGINAL"), 0o644))
+	f, err := openInRoot(e.root, "a.txt")
+	require.NoError(t, err)
+	defer f.Close()
+	require.NoError(t, os.Remove(filepath.Join(e.root, "a.txt")))
+	require.NoError(t, os.WriteFile(filepath.Join(e.root, "a.txt"), []byte("JUNK"), 0o644))
+	b, err := os.ReadFile(fmt.Sprintf("/proc/%d/fd/%d", os.Getpid(), f.Fd()))
+	require.NoError(t, err)
+	assert.Equal(t, "ORIGINAL", string(b))
+}
+
+// R2-5: a per-file timeout is recorded failed (not retried forever); a missing tool is not recorded.
+func TestDocumentTextIndexer_PerFileTimeoutRecordedFailed(t *testing.T) {
+	e := newIndexerEnv(t, "local")
+	fid := e.addFile(t, "p.pdf", "pdf", []byte("%PDF-1.4 stub"), 13)
+	x := NewDocumentTextIndexer(e.db)
+	x.extractor = &fakeExtractor{err: context.DeadlineExceeded}
+	_, _, err := x.IndexStorageRoot(context.Background(), e.id)
+	require.NoError(t, err)
+	_, s, ok := e.text(t, fid)
+	assert.True(t, ok)
+	assert.Equal(t, "failed", s)
+}
+
+// R2-2: a call that lands while a pass is finishing is never dropped (kills `if true || again` and the pending loop removal).
+type blockExtractor struct {
+	enter chan struct{}
+	gate  chan struct{}
+	calls int32
+}
+
+func (b *blockExtractor) NumPages(context.Context, string) (int, error) {
+	if atomic.AddInt32(&b.calls, 1) == 1 {
+		b.enter <- struct{}{}
+		<-b.gate
+	}
+	return 0, nil
+}
+func (b *blockExtractor) ExtractPages(context.Context, string, int, int) ([]string, error) {
+	return nil, nil
+}
+
+func TestDocumentTextIndexer_CoalescedRequestRunsAgain(t *testing.T) {
+	e := newIndexerEnv(t, "local")
+	e.addFile(t, "p1.pdf", "pdf", []byte("%PDF-1.4 a"), 10)
+	bx := &blockExtractor{enter: make(chan struct{}), gate: make(chan struct{})}
+	x := NewDocumentTextIndexer(e.db)
+	x.extractor = bx
+	done := make(chan struct{})
+	go func() { _, _, _ = x.IndexStorageRoot(context.Background(), e.id); close(done) }()
+	<-bx.enter // first pass is inside the extractor
+	e.addFile(t, "p2.pdf", "pdf", []byte("%PDF-1.4 b"), 10)
+	_, _, _ = x.IndexStorageRoot(context.Background(), e.id) // coalesced: must cause a second pass
+	close(bx.gate)
+	<-done
+	var n int
+	require.NoError(t, e.db.QueryRow(`SELECT COUNT(*) FROM file_text_index`).Scan(&n))
+	assert.Equal(t, 2, n, "the file added during the first pass must be indexed by the follow-up pass")
 }

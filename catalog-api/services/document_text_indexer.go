@@ -65,23 +65,22 @@ func (x *DocumentTextIndexer) IndexStorageRoot(ctx context.Context, rootID int64
 	}
 	x.running[rootID] = true
 	x.mu.Unlock()
-	defer func() {
-		x.mu.Lock()
-		delete(x.running, rootID)
-		delete(x.pending, rootID)
-		x.mu.Unlock()
-	}()
 	for {
 		i, f, e := x.indexOnce(ctx, rootID)
 		indexed, failed = indexed+i, failed+f
+		// decide "again" and clear "running" in ONE critical section: a call landing after this
+		// either sees running (and sets pending before we read it) or starts its own pass (R2-2).
+		x.mu.Lock()
+		again := x.pending[rootID] && e == nil && ctx.Err() == nil
+		delete(x.pending, rootID)
+		if !again {
+			delete(x.running, rootID)
+		}
+		x.mu.Unlock()
 		if e != nil {
 			return indexed, failed, e
 		}
-		x.mu.Lock()
-		again := x.pending[rootID]
-		delete(x.pending, rootID)
-		x.mu.Unlock()
-		if !again || ctx.Err() != nil {
+		if !again {
 			return indexed, failed, nil
 		}
 	}
@@ -157,8 +156,9 @@ func (x *DocumentTextIndexer) indexOnce(ctx context.Context, rootID int64) (inde
 
 // isEnvironmentalErr reports errors caused by the host (missing tool, cancellation), not by the file.
 func isEnvironmentalErr(err error) bool {
-	return errors.Is(err, errPrlimitMissing) || errors.Is(err, exec.ErrNotFound) ||
-		errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)
+	// a per-file timeout is NOT environmental: it is recorded failed (R2-5); a cancelled parent
+	// context is handled by the caller through ctx.Err().
+	return errors.Is(err, errPrlimitMissing) || errors.Is(err, exec.ErrNotFound)
 }
 
 // openInRoot opens a regular file inside the root through ONE handle and verifies, on that handle,
@@ -230,7 +230,9 @@ func (x *DocumentTextIndexer) extract(ctx context.Context, root, rel, ext string
 			return "", errors.New("pdf too large to index")
 		}
 		// PDF extraction shares the reader slot budget (F1): the slot is counted in pdfToolLimits.
-		release, err := acquirePDFReaderSlotWait(ctx)
+		// R2-1: the indexer holds at most ONE reader slot globally, so one slot always stays free
+		// for interactive (non-blocking) HTTP readers.
+		release, err := acquireIndexerPDFSlot(ctx)
 		if err != nil {
 			return "", err
 		}
@@ -256,6 +258,28 @@ func (x *DocumentTextIndexer) extract(ctx context.Context, root, rel, ext string
 		return clampText(strings.Join(pages, "\n")), nil
 	}
 	return "", fmt.Errorf("unsupported extension %q", ext)
+}
+
+// docIndexerSlots is the number of reader slots the indexer may hold at once across all roots.
+// It must stay below PDFReaderSlots so interactive readers are never starved. The pure-Go child the
+// extractor may use is counted by pdfChildLimits through this constant.
+const docIndexerSlots = 1
+
+var docIndexerGate = make(chan struct{}, docIndexerSlots)
+
+// acquireIndexerPDFSlot takes the global indexer gate, then a shared reader slot.
+func acquireIndexerPDFSlot(ctx context.Context) (func(), error) {
+	select {
+	case docIndexerGate <- struct{}{}:
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+	rel, err := acquirePDFReaderSlotWait(ctx)
+	if err != nil {
+		<-docIndexerGate
+		return nil, err
+	}
+	return func() { rel(); <-docIndexerGate }, nil
 }
 
 // acquirePDFReaderSlotWait blocks (bounded by ctx) for a reader slot of the shared PDF budget.
