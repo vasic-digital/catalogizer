@@ -187,7 +187,7 @@ export const Header: React.FC = () => {
                   onChange={(e) => setSearchValue(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && searchValue.trim()) {
-                      navigate(`/browse?search=${encodeURIComponent(searchValue.trim())}`)
+                      navigate(`/browse?q=${encodeURIComponent(searchValue.trim())}`)
                     }
                   }}
                   placeholder="Search movies, shows, music..."
@@ -310,7 +310,7 @@ export const Header: React.FC = () => {
                     onChange={(e) => setSearchValue(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && searchValue.trim()) {
-                        navigate(`/browse?search=${encodeURIComponent(searchValue.trim())}`)
+                        navigate(`/browse?q=${encodeURIComponent(searchValue.trim())}`)
                         setIsMobileMenuOpen(false)
                       }
                     }}

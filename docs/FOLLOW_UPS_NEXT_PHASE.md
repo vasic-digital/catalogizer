@@ -1484,3 +1484,10 @@ FAIL (open, dispatched as UI-D1..D8): D1 HIGH /conversion crashes (TypeError rea
 - UI-D1-FU-3 (minor): "File is ready for download" shown for every completed job without checking output exists; job `warning` not shown (ties to FU-2).
 - UI-D1-FU-4 (nit): completed job with empty id/target_path still shows Download (requests /conversion/jobs//download); require job.id.
 - UI-D1-FU-5 (nit): mis-indented closing `})` in ConversionTools.liveshape.test.tsx status-mapping test.
+
+## UI-D7/D8 landed (reviewed GO round 2/5; PROVISIONAL until live rerun of d7_axe.cjs / d8_repro.cjs on rebuilt web image)
+- D8 fixed (Header ?search= -> ?q=). D7 fixed for Layout version label, ActivityFeed, Dashboard (light+dark).
+- UI-D7-FU-1: remaining contrast: /ai badges (green-600 3.29, yellow-600 2.93) and tabs (dark 3.66, 2.82), /admin dark (23 nodes), /media card text 2.53, /analytics dark labels (Analytics.tsx 381-412) - owned by UI-D5/D6 files; pie svg-img-alt handled by D5/D6.
+- UI-D8-FU-1: share one named constant for the search query param between Header.tsx and EntityBrowser.tsx.
+- UI-D8-FU-2: e2e/tests/critical-flows.spec.ts:352 asserts search= with `|| true` (cannot fail).
+- UI-D8-FU-3 (nit): no test for leading/trailing-space trim. UI-D7-FU-2 (minor): contrast helper may wrongly throw on text-current/inherit/transparent and text-[13px].

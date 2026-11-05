@@ -1,0 +1,10 @@
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 5 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[31m[1mAssertionError[22m: expected 2.6571243602050187 to be greater than or equal to 4.5[39m
+[31m[1mAssertionError[22m: expected 2.5388412065932826 to be greater than or equal to 4.5[39m
+[31m[1mAssertionError[22m: completed (light) ratio 3.30: expected 3.2957336053312796 to be greater than or equal to 4.5[39m
+    [90m 59| [39m      expect(r, `${text} (${theme}) ratio ${r.toFixed(2)}`).toBeGreate…
+[31m[1mAssertionError[22m: expected 3.295962496379647 to be greater than or equal to 4.5[39m
+[31m[1mAssertionError[22m: movie (dark) ratio 3.04: expected 3.0363323184866093 to be greater than or equal to 4.5[39m
+    [90m 59| [39m      expect(r, `${text} (${theme}) ratio ${r.toFixed(2)}`).toBeGreate…
+[2m      Tests [22m [1m[31m5 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (7)[39m
+[2m   Duration [22m 3.79s[2m (transform 521ms, setup 276ms, import 2.10s, tests 357ms, environment 747ms)[22m

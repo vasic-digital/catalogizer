@@ -74,8 +74,8 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
         <CardContent>
           <div className="flex flex-col items-center justify-center py-12" data-testid="activity-unavailable">
             <Activity className="h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500 text-center">Activity feed unavailable</p>
-            <p className="text-sm text-gray-400 text-center">
+            <p className="text-gray-500 dark:text-gray-400 text-center">Activity feed unavailable</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
               The server does not provide an activity feed yet.
             </p>
           </div>
@@ -96,35 +96,35 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
     const getMessage = ACTIVITY_MESSAGES[activity.type] || ((data: Record<string, unknown>) => data.title as string)
 
     return (
-      <div className="flex items-start space-x-3 p-4 hover:bg-gray-50 transition-colors">
+      <div className="flex items-start space-x-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
         <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${colorClass}`}>
           <Icon className="w-5 h-5" />
         </div>
         
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
               {getMessage(activity.metadata)}
             </p>
-            <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2">
               {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
             </span>
           </div>
           
           <div className="flex items-center space-x-2 mt-1">
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
               {activity.user}
             </span>
             
             {/* Additional metadata based on activity type */}
             {activity.type === 'media_played' && (
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
                 • {activity.metadata.quality} • {activity.metadata.duration}
               </span>
             )}
             
             {activity.type === 'media_uploaded' && (
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
                 • {activity.metadata.size} • {activity.metadata.format}
               </span>
             )}
@@ -173,7 +173,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
         {filteredActivities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <Activity className="h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500 text-center">
+            <p className="text-gray-500 dark:text-gray-400 text-center">
               No recent activity
               {filter !== 'all' && (
                 <span>
@@ -181,7 +181,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
                 </span>
               )}
             </p>
-            <p className="text-sm text-gray-400 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
               Activity will appear here as users interact with media
             </p>
           </div>

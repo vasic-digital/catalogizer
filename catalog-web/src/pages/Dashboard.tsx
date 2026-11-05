@@ -301,7 +301,7 @@ export const Dashboard: React.FC = () => {
                         <TypeIcon className="h-5 w-5 text-gray-500 flex-shrink-0" />
                         <div>
                           <div className="text-lg font-semibold text-gray-900 dark:text-white">{count}</div>
-                          <div className="text-xs text-gray-500 capitalize">{type.replace(/_/g, ' ')}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">{type.replace(/_/g, ' ')}</div>
                         </div>
                       </div>
                     )
@@ -335,21 +335,21 @@ export const Dashboard: React.FC = () => {
                       <div className="text-lg font-semibold text-gray-900 dark:text-white">
                         {(overallStats.total_directories ?? 0).toLocaleString()}
                       </div>
-                      <div className="text-xs text-gray-500">Directories</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Directories</div>
                     </div>
                     <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                       <FileType className="h-4 w-4 text-gray-500 mb-1" />
                       <div className="text-lg font-semibold text-gray-900 dark:text-white">
                         {(overallStats.total_files ?? 0).toLocaleString()}
                       </div>
-                      <div className="text-xs text-gray-500">Total Files</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Total Files</div>
                     </div>
                     <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                       <HardDrive className="h-4 w-4 text-gray-500 mb-1" />
                       <div className="text-lg font-semibold text-gray-900 dark:text-white">
                         {((overallStats.total_size || 0) / (1024 ** 3)).toFixed(1)} GB
                       </div>
-                      <div className="text-xs text-gray-500">Total Size</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Total Size</div>
                     </div>
                   </>
                 )}
@@ -359,7 +359,7 @@ export const Dashboard: React.FC = () => {
                     <div className="text-lg font-semibold text-gray-900 dark:text-white">
                       {duplicateStats.total_duplicate_groups}
                     </div>
-                    <div className="text-xs text-gray-500">Duplicate Groups</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Duplicate Groups</div>
                   </div>
                 )}
                 {growthTrends && growthTrends.length > 0 && (
@@ -368,7 +368,7 @@ export const Dashboard: React.FC = () => {
                     <div className="text-lg font-semibold text-gray-900 dark:text-white">
                       +{growthTrends.reduce((sum, t) => sum + t.files_added, 0)}
                     </div>
-                    <div className="text-xs text-gray-500">Files This Week</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Files This Week</div>
                   </div>
                 )}
               </div>
@@ -379,9 +379,9 @@ export const Dashboard: React.FC = () => {
                     {scanHistory.slice(0, 3).map((scan) => (
                       <div key={scan.id} className="flex items-center justify-between text-sm">
                         <span className="text-gray-900 dark:text-white">{scan.storage_root_name}</span>
-                        <div className="flex items-center gap-3 text-gray-500">
+                        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
                           <span>{scan.files_found} files</span>
-                          <span className={scan.status === 'completed' ? 'text-green-600' : scan.status === 'failed' ? 'text-red-600' : ''}>
+                          <span className={scan.status === 'completed' ? 'text-green-700 dark:text-green-400' : scan.status === 'failed' ? 'text-red-700 dark:text-red-400' : ''}>
                             {scan.status}
                           </span>
                         </div>
