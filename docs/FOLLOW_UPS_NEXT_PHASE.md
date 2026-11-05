@@ -1540,3 +1540,9 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - HQA-R3-3 (nit): record image digest, not only tag.
 - HQA-R3-4 (nit): QA_ENV/WEB_URL defaults are host-specific.
 - HELIXQA-FU-1/2 still open: web Vision bank + CDP leg (not implemented; PARTIAL verdict), upstream --admin-pass-file.
+
+## Tauri SSRF (TAURI-FU-5) follow-ups (review round 4, GO-with-follow-ups)
+- TAURI-F14 (nit, pre-existing): perform_request returns body regardless of status, no size cap (memory exhaustion by malicious server).
+- TAURI-F15 (nit): one tauri::test IPC test for make_http_request and set_server_url (mutant O4 survives).
+- TAURI-F16 (nit): test server single 2048-byte read; read until headers+Content-Length.
+- TAURI-F6: broader trust model (confirm on server URL change) needs operator decision.
