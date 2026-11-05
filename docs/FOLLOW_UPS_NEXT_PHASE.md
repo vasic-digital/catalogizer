@@ -1479,3 +1479,8 @@ FAIL (open, dispatched as UI-D1..D8): D1 HIGH /conversion crashes (TypeError rea
 ## UI-D2/D3 landed (reviewed GO-with-follow-ups, round 2/5; PROVISIONAL until live rerun)
 - UI-D3-FU-2 (nit): parseInt('5abc') opens entity 5; use strict ^\d+$ id check.
 - UI-D3-FU-3 (nit): after "Try again" the alert stays with no loading indicator during refetch (react-query v4).
+
+## UI-D1 landed (reviewed GO-with-follow-ups, round 2/5; PROVISIONAL until live rerun on rebuilt web image)
+- UI-D1-FU-3 (minor): "File is ready for download" shown for every completed job without checking output exists; job `warning` not shown (ties to FU-2).
+- UI-D1-FU-4 (nit): completed job with empty id/target_path still shows Download (requests /conversion/jobs//download); require job.id.
+- UI-D1-FU-5 (nit): mis-indented closing `})` in ConversionTools.liveshape.test.tsx status-mapping test.

@@ -61,9 +61,9 @@ export const ConversionTools: React.FC = () => {
     }
   };
 
-  const handleDownloadFile = async (path: string) => {
+  const handleDownloadFile = async (jobId: string) => {
     try {
-      await conversionApi.downloadFile(path);
+      await conversionApi.downloadFile(jobId);
       toast.success('File downloaded successfully');
     } catch (error) {
       toast.error(`Failed to download file: ${error instanceof Error ? error.message : 'Unknown error'}`);

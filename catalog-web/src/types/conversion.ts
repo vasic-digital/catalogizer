@@ -8,7 +8,7 @@ export interface ConversionJob {
   };
   targetFormat: string;
   quality: 'low' | 'medium' | 'high' | 'ultra';
-  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'unknown';
   progress: number;
   startTime?: string;
   endTime?: string;

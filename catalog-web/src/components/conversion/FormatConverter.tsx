@@ -16,7 +16,7 @@ interface ConversionJob {
   };
   targetFormat: string;
   quality: 'low' | 'medium' | 'high' | 'ultra';
-  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'unknown';
   progress: number;
   startTime?: string;
   endTime?: string;
@@ -37,7 +37,8 @@ interface FormatConverterProps {
   onStartConversion?: (job: Omit<ConversionJob, 'id' | 'status' | 'progress'>) => void;
   onCancelConversion?: (id: string) => void;
   onRetryConversion?: (id: string) => void;
-  onDownloadFile?: (path: string) => void;
+  /** Receives the job id; the download endpoint is addressed by job id, not by output path. */
+  onDownloadFile?: (jobId: string) => void;
 }
 
 /**
@@ -150,11 +151,12 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
       processing: 'default',
       completed: 'default',
       failed: 'destructive',
-      cancelled: 'outline'
+      cancelled: 'outline',
+      unknown: 'outline'
     } as const;
 
     return (
-      <Badge variant={variants[status]}>
+      <Badge variant={variants[status] ?? 'outline'}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
     );
@@ -173,8 +175,8 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
 
       {/* Active Jobs */}
       <div className="space-y-4">
-        {jobs.map(job => (
-          <Card key={job.id}>
+        {jobs.map((job, index) => (
+          <Card key={job.id ? job.id : `job-index-${index}`}>
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
                 <div className="mt-1">
@@ -185,19 +187,19 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <h3 className="font-medium text-gray-900 truncate">
-                        {job.sourceFile.name}
+                        {job.sourceFile?.name ?? 'unknown'}
                       </h3>
                       <p className="text-sm text-gray-600">
-                        {job.sourceFile.format.toUpperCase()} → {job.targetFormat.toUpperCase()} • {job.quality}
+                        {(job.sourceFile?.format ?? 'unknown').toUpperCase()} → {job.targetFormat.toUpperCase()} • {job.quality}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       {getStatusBadge(job.status)}
-                      {job.status === 'completed' && job.outputFile && (
+                      {job.status === 'completed' && (
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => { if (job.outputFile) onDownloadFile?.(job.outputFile) }}
+                          onClick={() => onDownloadFile?.(job.id)}
                         >
                           <Download className="w-4 h-4 mr-1" />
                           Download
@@ -234,7 +236,7 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
                     <div>
                       <span className="block font-medium">File Size</span>
-                      {formatFileSize(job.sourceFile.size)}
+                      {formatFileSize(job.sourceFile?.size ?? 0)}
                     </div>
                     <div>
                       <span className="block font-medium">Duration</span>
@@ -242,11 +244,11 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                     </div>
                     <div>
                       <span className="block font-medium">Resolution</span>
-                      {job.options.resolution}
+                      {job.options?.resolution}
                     </div>
                     <div>
                       <span className="block font-medium">Bitrate</span>
-                      {job.options.bitrate} kbps
+                      {job.options?.bitrate != null ? `${job.options.bitrate} kbps` : '---'}
                     </div>
                   </div>
 
@@ -258,7 +260,7 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                   )}
 
                   {/* Success Message */}
-                  {job.status === 'completed' && job.outputFile && (
+                  {job.status === 'completed' && (
                     <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
                       Conversion completed successfully. File is ready for download.
                     </div>
