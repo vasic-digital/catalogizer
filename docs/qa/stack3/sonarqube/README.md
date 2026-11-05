@@ -41,8 +41,8 @@ to curl via a 0600 netrc and to the scanner via a 0600 env-file, never in argv.
   `io.catalogizer.service=sonarqube`; `up.sh`/`down.sh` refuse to reuse or remove any existing pod/volume of the stack that lacks it
   (nothing is removed if any check fails). `up.sh`/`scan.sh` refuse to start with < 10 GB free or > 98 % disk used. `scan.sh` refuses a
   non-empty `RUN_ID` directory.
-* Tests: `test_guards.sh` (34 checks, podman/df/nproc/sleep shims in a mktemp sandbox, touches no real stack) and
-  `mutation_guards.sh` (20 paired mutations, all must be killed).
+* Tests: `test_guards.sh` (36 checks, podman/df/nproc/sleep shims in a mktemp sandbox, touches no real stack) and
+  `mutation_guards.sh` (23 paired mutations, all must be killed).
 
 ## Elasticsearch prerequisites (no sudo)
 

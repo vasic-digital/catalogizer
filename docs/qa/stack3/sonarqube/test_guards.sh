@@ -36,6 +36,12 @@ printf 'State Recv-Q Send-Q Local Peer\n'
 [ -n "${SHIM_LISTEN:-}" ] && printf 'LISTEN 0 4096 127.0.0.1:%s 0.0.0.0:*\n' "$SHIM_LISTEN"
 exit 0
 SH
+REAL_IP="$(command -v ip)"; export REAL_IP
+cat > "$BIN/ip" <<'SH'
+#!/usr/bin/env bash
+[ -n "${SHIM_IP:-}" ] && { printf '%s\n' "$SHIM_IP"; exit 0; }
+exec "$REAL_IP" "$@"
+SH
 chmod +x "$BIN"/*
 export SHIM_STATE="$S" PATH="$BIN:$PATH" SQ_DIR="$SB/sq" SHIM_FREE_GB=500 SHIM_USED_PCT=40 SONAR_BIND=127.0.0.1 SONAR_PORT=19877
 export SQ_UP_TRIES=1 SQ_LOAD_TIMEOUT=0 LOADAVG_FILE="$SB/load_lo"; echo "3.00 3.00 3.00 1/1 1" > "$SB/load_lo"
@@ -101,6 +107,15 @@ reset; touch "$S/vol_catsonar-pg"; echo other > "$S/vol_catsonar-pg"
 reset; SONAR_BIND=203.0.113.9 "$SRC/up.sh" >"$SB/o" 2>&1; rc=$?; { [ $rc -ne 0 ] && grep -q 'not a local address' "$SB/o" && ! created; } && ok "T12 non-local SONAR_BIND refused" || bad "T12 (rc=$rc)"
 reset; SHIM_LISTEN=19877 "$SRC/up.sh" >"$SB/o" 2>&1; rc=$?; { [ $rc -ne 0 ] && grep -q 'already in use' "$SB/o" && ! created; } && ok "T12b busy port refused" || bad "T12b (rc=$rc)"
 reset; SHIM_SS_FAIL=1 "$SRC/up.sh" >"$SB/o" 2>&1; rc=$?; { [ $rc -ne 0 ] && grep -q 'fail closed' "$SB/o" && ! created; } && ok "T12c ss failure fails closed" || bad "T12c (rc=$rc)"
+
+# T13 FU-1: plain down.sh (no --purge) removes the pod but NEVER a volume.
+reset; touch "$S/pod" "$S/vol_catsonar-pg" "$S/vol_catsonar-data"; echo sonarqube > "$S/pod_label"; echo sonarqube > "$S/vol_catsonar-pg"; echo sonarqube > "$S/vol_catsonar-data"
+"$SRC/down.sh" >/dev/null 2>&1; rc=$?; { [ $rc -eq 0 ] && grep -q '^pod rm' "$S/calls" && ! grep -q '^volume rm' "$S/calls"; } && ok "T13 plain down.sh never removes volumes" || bad "T13 (rc=$rc)"
+# T14 FU-2: SONAR_BIND=127.0.0.1 must not be satisfied by 127.0.0.10 (no prefix matching).
+reset; SHIM_IP='    inet 127.0.0.10/8 scope host lo' SONAR_BIND=127.0.0.1 "$SRC/up.sh" >"$SB/o" 2>&1; rc=$?
+{ [ $rc -ne 0 ] && grep -q 'not a local address' "$SB/o" && ! created; } && ok "T14 127.0.0.1 not satisfied by 127.0.0.10" || bad "T14 (rc=$rc)"
+# T15 FU-3: port 119877 listening must not count as 19877 in use (up.sh proceeds to pod create).
+reset; SHIM_LISTEN=119877 "$SRC/up.sh" >"$SB/o" 2>&1; grep -q '^pod create' "$S/calls" && ! grep -q 'already in use' "$SB/o" && ok "T15 port 119877 is not 19877" || bad "T15"
 
 # T6 F6: no_secret_in must REPORT a planted leak, and pass a clean file; scrub_file removes it.
 printf 'SONAR_ADMIN_PASSWORD=Aa1-planted-secret-value-xyz\nSONAR_DB_PASSWORD=dbplantedsecretvalue123456789\n' > "$SB/sq/sonar.env"; chmod 600 "$SB/sq/sonar.env"

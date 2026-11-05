@@ -36,4 +36,7 @@ mut M17-free-floor-ge-to-gt     lib.sh  '[ "$free" -ge "$DISK_MIN_FREE_GB" ]' '[
 mut M18-addr-check-removed      up.sh   '[[ "$ADDRS" == *"inet ${SONAR_BIND}/"* ]] ||' 'true ||'
 mut M19-port-check-removed      up.sh   'if grep -q "[:.]${SONAR_PORT}\$" <<<"$LISTEN" &&' 'if false &&'
 mut M20-ss-fail-open            up.sh   'LISTEN="$(ss -ltn | awk '"'"'{print $4}'"'"')" || die' 'LISTEN="$(ss -ltn | awk '"'"'{print $4}'"'"')" || true; : die'
+mut M21-down-purges-always      down.sh 'if [ "${1:-}" = "--purge" ]; then' 'if true; then'
+mut M22-addr-prefix-match       up.sh   '[[ "$ADDRS" == *"inet ${SONAR_BIND}/"* ]]' '[[ "$ADDRS" == *"inet ${SONAR_BIND}"* ]]'
+mut M23-port-grep-unanchored    up.sh   'grep -q "[:.]${SONAR_PORT}\$" <<<"$LISTEN"' 'grep -q "${SONAR_PORT}\$" <<<"$LISTEN"'
 echo "survivors: $SURV"; exit "$SURV"
