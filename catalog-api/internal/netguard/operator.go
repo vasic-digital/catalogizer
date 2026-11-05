@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -32,7 +33,7 @@ import (
 //     it names, in both modes; it can never re-admit the always-refused addresses above.
 const DenyPrivateEnv = "CATALOGIZER_OPERATOR_DENY_PRIVATE"
 
-var operatorMetadataNets = []*net.IPNet{mustCIDR("fd00:ec2::254/128"), mustCIDR("100.100.100.200/32")}
+var operatorMetadataNets = []*net.IPNet{mustCIDR("fd00:ec2::254/128"), mustCIDR("100.100.100.200/32"), mustCIDR("2001::/32") /* Teredo */}
 
 func denyPrivate() bool {
 	switch strings.ToLower(strings.TrimSpace(os.Getenv(DenyPrivateEnv))) {
@@ -89,6 +90,32 @@ func allowListed(ip net.IP) bool {
 	return false
 }
 
+// looksNumeric reports a host that is written like an address but is not a canonical IP literal (inet_aton forms:
+// 0177.0.0.1, 2130706433, 127.1, 0x7f.1, a zone suffix). The system resolver may read such a name as an address, a
+// proxy may read it differently from this code, so they are refused outright. A real DNS name never has an all-digit
+// or 0x-hex last label.
+func looksNumeric(host string) bool {
+	if strings.Contains(host, "%") {
+		return true
+	}
+	labels := strings.Split(strings.TrimSuffix(host, "."), ".")
+	last := labels[len(labels)-1]
+	if last == "" {
+		return false
+	}
+	if strings.HasPrefix(strings.ToLower(last), "0x") {
+		return true
+	}
+	for _, r := range last {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return true
+}
+
+var errUnverified = errors.New("destination could not be verified")
+
 func resolveOperator(ctx context.Context, host string) ([]net.IP, error) {
 	if host == "" {
 		return nil, fmt.Errorf("%w: empty host", ErrBlocked)
@@ -99,6 +126,9 @@ func resolveOperator(ctx context.Context, host string) ([]net.IP, error) {
 		}
 		return []net.IP{ip}, nil
 	}
+	if looksNumeric(host) {
+		return nil, fmt.Errorf("%w: %q is not a canonical IP address or DNS name", ErrBlocked, host)
+	}
 	addrs, err := lookupIPAddr(ctx, host)
 	if err != nil {
 		return nil, fmt.Errorf("resolve %q: %w", host, err)
@@ -106,7 +136,7 @@ func resolveOperator(ctx context.Context, host string) ([]net.IP, error) {
 	var ok []net.IP
 	for _, a := range addrs {
 		if IsBlockedOperatorIP(a.IP) {
-			return nil, fmt.Errorf("%w: %s resolves to %s (loopback, link-local, metadata or reserved)", ErrBlocked, host, a.IP)
+			return nil, fmt.Errorf("%w: %s resolves to a loopback, link-local, metadata or reserved address", ErrBlocked, host)
 		}
 		ok = append(ok, a.IP)
 	}
@@ -114,6 +144,52 @@ func resolveOperator(ctx context.Context, host string) ([]net.IP, error) {
 		return nil, fmt.Errorf("resolve %q: no addresses", host)
 	}
 	return ok, nil
+}
+
+// proxySet remembers the addresses of the proxies this transport was told to use, so the connection to a proxy
+// (operator configuration, often 127.0.0.1) is not judged by the destination policy.
+type proxySet struct{ m sync.Map }
+
+func proxyAddr(u *url.URL) string {
+	port := u.Port()
+	if port == "" {
+		switch strings.ToLower(u.Scheme) {
+		case "https":
+			port = "443"
+		case "socks5", "socks5h":
+			port = "1080"
+		default:
+			port = "80"
+		}
+	}
+	return net.JoinHostPort(u.Hostname(), port)
+}
+
+// proxy selects the environment proxy for req and, when one is used, FAILS CLOSED unless the destination host is a
+// canonical IP literal or a DNS name that resolves locally to permitted addresses only. A proxy resolves the destination
+// itself, so a name that does not resolve here, or a numeric spelling the proxy reads differently, must never be
+// forwarded. Residual risk (documented): the proxy resolves the name again, so a rebinding answer between this check and
+// the proxy's own lookup is not covered; set DenyPrivateEnv and/or run without a proxy where that matters.
+func (ps *proxySet) proxy(req *http.Request) (*url.URL, error) {
+	p, err := proxyFunc(req)
+	if err != nil || p == nil {
+		return p, err
+	}
+	if _, err := resolveOperator(req.Context(), req.URL.Hostname()); err != nil {
+		if errors.Is(err, ErrBlocked) {
+			return nil, err
+		}
+		return nil, fmt.Errorf("%w: %v", errUnverified, err)
+	}
+	ps.m.Store(proxyAddr(p), struct{}{})
+	return p, nil
+}
+
+func (ps *proxySet) dial(ctx context.Context, network, addr string) (net.Conn, error) {
+	if _, ok := ps.m.Load(addr); ok {
+		return (&net.Dialer{Timeout: 15 * time.Second, KeepAlive: 30 * time.Second}).DialContext(ctx, network, addr)
+	}
+	return OperatorDialContext(ctx, network, addr)
 }
 
 // OperatorDialContext resolves addr, refuses the whole answer when any address is refused by the operator
@@ -139,29 +215,15 @@ func OperatorDialContext(ctx context.Context, network, addr string) (net.Conn, e
 	return nil, last
 }
 
-// OperatorProxy is an http.Transport Proxy function: the environment proxy is honoured (a LAN may require it),
-// but because a proxy resolves the destination itself the dial-time check cannot apply, so the destination host is
-// resolved and checked here before the request is handed to the proxy.
-func OperatorProxy(req *http.Request) (*url.URL, error) {
-	p, err := http.ProxyFromEnvironment(req)
-	if err != nil || p == nil {
-		return p, err
-	}
-	if _, err := resolveOperator(req.Context(), req.URL.Hostname()); err != nil {
-		var dnsErr *net.DNSError
-		if !errors.As(err, &dnsErr) {
-			return nil, err
-		}
-	}
-	return p, nil
-}
-
 // OperatorTransport returns the transport for operator-chosen destinations: dial-time check on the resolved
-// address of every connection, environment proxy honoured through OperatorProxy.
+// address of every connection; an environment proxy is honoured, fail-closed (see proxySet.proxy), and the proxy's own
+// address is operator configuration and bypasses the destination policy. A direct connection to an address that equals
+// a proxy used earlier by the same transport is therefore not checked (narrow residual).
 func OperatorTransport() *http.Transport {
+	ps := &proxySet{}
 	return &http.Transport{
-		Proxy:                 OperatorProxy,
-		DialContext:           OperatorDialContext,
+		Proxy:                 ps.proxy,
+		DialContext:           ps.dial,
 		TLSHandshakeTimeout:   15 * time.Second,
 		MaxIdleConns:          16,
 		MaxIdleConnsPerHost:   8,
@@ -217,3 +279,7 @@ func CheckOperatorURL(ctx context.Context, raw string, schemes ...string) (*url.
 	}
 	return u, nil
 }
+
+// proxyFunc selects the environment proxy; a variable so tests can drive a real proxy listener
+// (http.ProxyFromEnvironment caches the process environment on first use).
+var proxyFunc = http.ProxyFromEnvironment

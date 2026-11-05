@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
@@ -39,4 +40,27 @@ func TestSECQ1_SyncWebDAVRefusesLoopbackAndMetadata(t *testing.T) {
 
 	m := NewWebDAVClient("http://169.254.169.254/", "u", "p")
 	require.True(t, errors.Is(m.TestConnection(), netguard.ErrBlocked))
+}
+
+// F8: GetQuota shares the client's transport: two calls reuse one connection.
+func TestSECQ1_F8_GetQuotaReusesOneTransport(t *testing.T) {
+	var conns atomic.Int32
+	srv := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusMultiStatus)
+		_, _ = w.Write([]byte(`<?xml version="1.0"?><D:multistatus xmlns:D="DAV:"><D:response><D:href>/</D:href><D:propstat><D:prop><D:quota-used-bytes>5</D:quota-used-bytes><D:quota-available-bytes>10</D:quota-available-bytes></D:prop><D:status>HTTP/1.1 200 OK</D:status></D:propstat></D:response></D:multistatus>`))
+	}))
+	srv.Config.ConnState = func(_ net.Conn, s http.ConnState) {
+		if s == http.StateNew {
+			conns.Add(1)
+		}
+	}
+	srv.Start()
+	defer srv.Close()
+	t.Setenv(netguard.AllowCIDRsEnv, "127.0.0.1/32")
+	c := NewWebDAVClient(srv.URL, "u", "p")
+	for i := 0; i < 3; i++ {
+		_, err := c.GetQuota()
+		require.NoError(t, err)
+	}
+	require.Equal(t, int32(1), conns.Load(), "three GetQuota calls must reuse one pooled connection")
 }

@@ -19,3 +19,18 @@ func TestSECQ1_StorageRootURLEarlyCheck(t *testing.T) {
 	}
 	require.Error(t, validateWebDAVRootURL(nil))
 }
+
+// F4: the request path itself. POST /storage/roots with a metadata URL is refused with 400 and nothing is stored; a LAN URL is created.
+func TestSECQ1_F4_CreateStorageRootRefusesMetadataURL(t *testing.T) {
+	t.Setenv(netguard.AllowCIDRsEnv, "")
+	h := newAPIHarness(t, false)
+	for _, u := range []string{"http://169.254.169.254/", "http://127.0.0.1:5005/dav", "http://[::ffff:169.254.169.254]/", "http://0177.0.0.1/"} {
+		code, body := h.do("POST", "/storage/roots", map[string]interface{}{"name": "ssrf-" + u, "protocol": "webdav", "url": u, "path": "/"})
+		require.Equal(t, 400, code, "%s: %v", u, body)
+	}
+	var n int
+	require.NoError(t, h.db.QueryRow(`SELECT COUNT(*) FROM storage_roots`).Scan(&n))
+	require.Equal(t, 0, n, "refused roots must not be stored")
+	code, body := h.do("POST", "/storage/roots", map[string]interface{}{"name": "lan-nas", "protocol": "webdav", "url": "http://192.168.1.20:5005/", "path": "/"})
+	require.Equal(t, 201, code, "LAN NAS root must still be created: %v", body)
+}

@@ -56,16 +56,7 @@ func newWebDAVHTTPClient() *http.Client {
 	// SECQ-1/W5: operator-class outbound policy. The dial checks the RESOLVED address of every connection (loopback, link-local and
 	// cloud-metadata addresses are refused, RFC 1918 / ULA / public stay reachable; see netguard/operator.go), every redirect hop is
 	// re-checked, and an environment proxy is honoured only after the destination host was checked.
-	return &http.Client{CheckRedirect: netguard.OperatorCheckRedirect, Transport: &http.Transport{
-		Proxy:                 netguard.OperatorProxy,
-		DialContext:           netguard.OperatorDialContext,
-		TLSHandshakeTimeout:   15 * time.Second,
-		MaxIdleConns:          16,
-		MaxIdleConnsPerHost:   8,
-		IdleConnTimeout:       90 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-		ForceAttemptHTTP2:     true,
-	}}
+	return &http.Client{CheckRedirect: netguard.OperatorCheckRedirect, Transport: netguard.OperatorTransport()}
 }
 
 // opContext bounds one metadata operation as a whole.
