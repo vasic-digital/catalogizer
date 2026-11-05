@@ -1,0 +1,10 @@
+timestamp: 2026-11-05T15:08:10+01:00
+helixqa_sha256: 23571506b20bcb634e98dfb7ec45034a5cb982caadc929a752794185c1828dc0
+helix_qa_commit_at_build: 8851c1aa9d840aa9b906e9ec1226c2971d9bd297 (build stamp written by the README build command)
+api_url: http://127.0.0.1:38082  web_url: http://192.168.1.115:33080
+target_build_number: 1db4760f40984d2b52324180c9dd2b8aa4d658a6
+target_version: 1db4760f40984d2b52324180c9dd2b8aa4d658a6
+answering_container: catqa3-api localhost/catqa3-api:main-1db4760f; (API container of the pod that publishes :38082)
+strict_check: report check: MISMATCH ids=['S3-SMOKE-001', 'S3-SMOKE-002', 'S3-SMOKE-003'] total=3 passed=2 skipped=0 failed=1 errored=0
+overall: FAIL api smoke (helixqa exit 1, report check 1)
+exit: 1

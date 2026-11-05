@@ -1,0 +1,42 @@
+version: "1.0"
+name: "Catalogizer QA stack 3 - HelixQA smoke (API, live HTTP)"
+description: "http: steps driven by `helixqa http` against the LIVE stack 3 API. No mocks. The bearer token placeholder __SESSION_TOKEN__ is substituted by run.sh into a 0600 temp copy (never argv). UI vision cases are not in this bank (run.sh reports that leg separately, 11.4.278/11.4.289)."
+test_cases:
+  - id: S3-SMOKE-001
+    name: "Health endpoint is public and reports healthy"
+    category: functional
+    priority: critical
+    platforms: [api]
+    steps:
+      - name: "GET /health"
+        action: "http: GET /health"
+        expected: "200 OK with status healthy"
+        expect_status: 200
+        expect_body_contains: "\"status\":\"healthy\""
+    tags: [smoke, health]
+  - id: S3-SMOKE-002
+    name: "Protected endpoint rejects an unauthenticated request"
+    category: security
+    priority: critical
+    platforms: [api]
+    steps:
+      - name: "GET /api/v1/media/stats without token"
+        action: "http: GET /api/v1/media/stats"
+        expected: "401"
+        expect_status: 200
+        expect_body_contains: "Authorization header required"
+    tags: [smoke, auth]
+  - id: S3-SMOKE-003
+    name: "Authenticated stats are served with a total_items count"
+    category: functional
+    priority: critical
+    platforms: [api]
+    steps:
+      - name: "GET /api/v1/media/stats with session token"
+        action: "http: GET /api/v1/media/stats"
+        expected: "200 OK, body has total_items and by_type"
+        auth: "raw:__SESSION_TOKEN__"
+        expect_status: 200
+        expect_json_path: "$.total_items"
+        expect_body_contains: "by_type"
+    tags: [smoke, auth]

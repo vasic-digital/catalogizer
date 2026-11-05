@@ -1,0 +1,40 @@
+{
+  "base_url": "http://127.0.0.1:38082",
+  "total_cases": 3,
+  "passed_cases": 2,
+  "failed_cases": 1,
+  "skipped_cases": 0,
+  "errored_cases": 0,
+  "cases": [
+    {
+      "id": "S3-SMOKE-001",
+      "name": "Health endpoint is public and reports healthy",
+      "verdict": "FAIL",
+      "http_steps": 1,
+      "passed_steps": 0,
+      "failed_steps": 1,
+      "skipped_steps": 0,
+      "detail": "http: GETT /health → status 404, expected 200 (body: 404 page not found)"
+    },
+    {
+      "id": "S3-SMOKE-002",
+      "name": "Protected endpoint rejects an unauthenticated request",
+      "verdict": "PASS",
+      "http_steps": 1,
+      "passed_steps": 1,
+      "failed_steps": 0,
+      "skipped_steps": 0,
+      "detail": ""
+    },
+    {
+      "id": "S3-SMOKE-003",
+      "name": "Authenticated stats are served with a total_items count",
+      "verdict": "PASS",
+      "http_steps": 1,
+      "passed_steps": 1,
+      "failed_steps": 0,
+      "skipped_steps": 0,
+      "detail": ""
+    }
+  ]
+}

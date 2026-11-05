@@ -1533,3 +1533,10 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - D7-R2-F4: CollectionsManager test uses button index; use accessible label.
 - D7-F3: hover/focus contrast and icon-only toggles.
 - D7-LIVE: live axe rerun on rebuilt web image owed (PROVISIONAL until then).
+
+## HelixQA stack3 wrapper follow-ups (review round 3, GO-with-follow-ups)
+- HQA-R3-1 (nit): record logout HTTP code in run.log/verdict.txt.
+- HQA-R3-2 (minor, process-doc): build stamp is hand-written HEAD; use `go version -m` or `git describe --dirty`.
+- HQA-R3-3 (nit): record image digest, not only tag.
+- HQA-R3-4 (nit): QA_ENV/WEB_URL defaults are host-specific.
+- HELIXQA-FU-1/2 still open: web Vision bank + CDP leg (not implemented; PARTIAL verdict), upstream --admin-pass-file.

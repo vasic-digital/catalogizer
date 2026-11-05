@@ -1,0 +1,8 @@
+baseline rc=2
+M1_401_to_200 rc=1
+M3_action_typo_GETT rc=1
+M7_action_typo_htp rc=1
+M5_fake_binary_exit0 rc=4
+M6_fake_binary_exit2 rc=4
+M4_missing_cred rc=3
+M9_sigterm rc=4
