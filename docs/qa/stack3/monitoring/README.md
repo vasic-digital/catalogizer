@@ -52,6 +52,7 @@ Postgres passwords and the `qa_admin` login used by the token refresher are podm
   registered in stack 3's router - only the `*Gin` handlers are.) nginx sets `X-Real-IP` to `$remote_addr` (overwriting any client value) and appends to
   `X-Forwarded-For` (`$proxy_add_x_forwarded_for`, so a client-supplied prefix is preserved there). Fix (stack-3 change, not done):
   `TRUSTED_PROXIES=<explicit cidr>` in stack 3's `up.sh`.
+* **Restart window (named follow-up `QA-MON-FU-2`).** If the refresher container dies after writing a new `metrics.tok` but before it updates `previous.tok` (or between revoking and re-persisting), one admin session can be left to expire on its own (<= 24 h). Closing it needs a two-entry revoke list; not done.
 * **pgAdmin.** `servers.json` is imported on first start of a fresh volume (`down.sh --purge` then `up.sh` re-imports). In server mode pgAdmin ignores
   the `PassFile` key, so `PGPASSFILE` is exported instead. Verify uses an unknown user for the wrong-password control: a wrong password on
   the real account trips pgAdmin's / Grafana's login lockout.
@@ -60,7 +61,7 @@ Postgres passwords and the `qa_admin` login used by the token refresher are podm
   brotli module; not faked. `X-Content-Type-Options` etc. come from nginx; the API's own headers pass through unchanged.
 
 ## Limits
-Stack 3's API limits `/auth/login` to 30 req/min per source IP, and every rejected request counts: run `verify.py` at most once a minute (the 3 evidence rounds were spaced 70 s apart), and never loop a login in a test container.
+Stack 3's API limits `/auth/login` to 30 req/min per source IP, and every rejected request counts: run `verify.py` at most once a minute (evidence: one live round on the current head, 45/45; three rounds spaced 70 s apart were run on the previous revision 0547347a), and never loop a login in a test container.
 Prometheus data lives in a named volume (retention 7 d); pgAdmin `servers.json` shows the single Postgres server; panels 2 and 3 (error rate, latency) may legitimately be empty
 when no matching series exists, so `verify.py` only requires data from panels 1, 4, 5, 6 (panel 7, GC pause, is provisioned and must return HTTP 200 without a query error; 7 panels in total); no SonarQube (out of scope); no TLS; `verify.py`
 needs the repo's `qa.env`/`mon.env` and runs on the QA host.

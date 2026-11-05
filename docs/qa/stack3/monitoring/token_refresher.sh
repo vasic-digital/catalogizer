@@ -3,7 +3,7 @@
 # $TOK_DIR/metrics.tok every 6h so Prometheus' credentials_file always holds a valid token, then LOGS OUT the previous session.
 # Secrets never appear in argv (/proc/<pid>/cmdline is world-readable): the login body AND the logout Authorization header are piped to curl
 # on stdin (`--data @-`, `-H @-`); admin credentials come from a podman secret file (CRED_FILE, KEY=VALUE lines), not env.
-# The superseded token is persisted (0400) in $TOK_DIR/previous.tok so a container restart can still revoke it; a failing logout is retried
+# The superseded token is persisted (0600, via umask 077) in $TOK_DIR/previous.tok so a container restart can still revoke it; a failing logout is retried
 # 3 times (10 s apart) and only then dropped (the session then lives until its 24 h expiry - logged). Failed logins back off 30 s doubling to 900 s.
 # Token file: owner $TOK_CHOWN (65534 = the Prometheus uid), mode 0400. Nothing secret is printed.
 # Test hooks (defaults are production values): TOK_DIR TOK_CHOWN LOGOUT_DELAY CYCLE_SLEEP MAX_CYCLES (0 = forever) BACKOFF_CAP.

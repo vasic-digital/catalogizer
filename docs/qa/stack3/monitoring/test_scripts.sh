@@ -29,6 +29,7 @@ grep -q 'Authorization: Bearer SECRETTOKEN1' "$S/stdin.log" && ok N1.bearer_sent
 grep -q 'u"s\\er' "$S/argv.log" && bad N1.credentials_not_in_argv "username in argv" || ok N1.credentials_not_in_argv
 [ "$(wc -l < "$S/logout.calls")" = 2 ] && ok N1.two_logouts_for_three_cycles || bad N1.two_logouts_for_three_cycles "calls=$(wc -l < "$S/logout.calls")"
 [ "$(cat "$S/tok/previous.tok" 2>/dev/null)" = SECRETTOKEN3 ] && ok N4.previous_token_persisted || bad N4.previous_token_persisted ""
+m="$(stat -c %a "$S/tok/previous.tok" 2>/dev/null)"; { [ "$m" = 600 ] || [ "$m" = 400 ]; } && ok N4.previous_token_file_mode_owner_only || bad N4.previous_token_file_mode_owner_only "mode=$m"
 [ "$(stat -c %a "$S/tok/metrics.tok" 2>/dev/null)" = 400 ] && ok F2.token_file_mode_0400 || bad F2.token_file_mode_0400 "$(stat -c %a "$S/tok/metrics.tok" 2>&1)"
 # JSON escaping of the login body (stdin of the login call): must parse and round-trip
 python3 -c 'import json,sys; d=json.loads(open(sys.argv[1]).read().splitlines()[0]); assert d=={"username":"u\"s\\er","password":"p\"w\\d"},d' "$S/stdin.log" 2>/dev/null && ok F3.login_json_escaped_roundtrip || bad F3.login_json_escaped_roundtrip ""

@@ -3,6 +3,7 @@ PASS N1.bearer_sent_on_stdin
 PASS N1.credentials_not_in_argv
 PASS N1.two_logouts_for_three_cycles
 PASS N4.previous_token_persisted
+PASS N4.previous_token_file_mode_owner_only
 PASS F2.token_file_mode_0400
 PASS F3.login_json_escaped_roundtrip
 PASS N4.restart_revokes_persisted_previous
