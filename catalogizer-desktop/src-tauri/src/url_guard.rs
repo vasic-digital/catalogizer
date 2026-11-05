@@ -4,8 +4,20 @@
 
 use url::Url;
 
-/// Validate a server URL at set time: parseable, http/https, host, no userinfo.
+/// Validate a server URL at set time: parseable, http/https, host, no userinfo,
+/// no control characters or whitespace in the RAW text (the URL parser silently
+/// strips tab/newline, which would let text shown to the user differ from what
+/// is stored). Returns the NORMALISED form (`Url::as_str`: lowercase scheme/host,
+/// IDN hosts as punycode), which is what is shown, confirmed and stored.
 pub fn validate_server_url(raw: &str) -> Result<String, String> {
+    if raw.chars().any(|c| {
+        c.is_control()
+            || c.is_whitespace()
+            // zero-width and bidi format characters (display spoofing)
+            || matches!(c, '\u{200B}'..='\u{200F}' | '\u{202A}'..='\u{202E}' | '\u{2066}'..='\u{2069}' | '\u{FEFF}')
+    }) {
+        return Err("Server URL must not contain whitespace or control characters".to_string());
+    }
     let u = Url::parse(raw).map_err(|e| format!("Invalid server URL: {}", e))?;
     if !matches!(u.scheme(), "http" | "https") {
         return Err("Server URL must use http or https".to_string());
@@ -20,7 +32,14 @@ pub fn validate_server_url(raw: &str) -> Result<String, String> {
     if lp.contains("%2f") || lp.contains("%5c") || lp.contains("%2e") {
         return Err("Server URL path must not contain encoded separators".to_string());
     }
-    Ok(raw.to_string())
+    // Canonical form: bare "/" path trimmed, because callers concatenate
+    // `${serverUrl}/api/v1/...` and a trailing slash would yield `//api/v1/...`
+    // (404 on the server). Same form is used for storage AND equality checks.
+    let mut out = u.as_str().to_string();
+    if u.path() == "/" && u.query().is_none() && u.fragment().is_none() {
+        out.pop();
+    }
+    Ok(out)
 }
 
 /// HTTP client that re-checks every redirect hop against the configured server.
@@ -174,6 +193,34 @@ pub(crate) mod tests {
         assert!(validate_server_url("").is_err());
     }
 
+    #[test]
+    fn canonical_form_has_no_trailing_slash_for_root_and_keeps_path_port() {
+        for (raw, want) in [
+            ("http://a.com", "http://a.com"),
+            ("http://a.com/", "http://a.com"),
+            ("HTTP://A.com:8080/", "http://a.com:8080"),
+            ("https://a.com:443", "https://a.com"),
+            ("https://a.com/api", "https://a.com/api"),
+            ("https://a.com/api/", "https://a.com/api/"),
+            ("http://[::1]:8080/", "http://[::1]:8080"),
+        ] {
+            let got = validate_server_url(raw).unwrap();
+            assert_eq!(got, want, "{}", raw);
+            // frontend shape: `${serverUrl}/api/v1/x` must not contain `//` after the origin
+            let joined = format!("{}/api/v1/x", got);
+            assert!(!url::Url::parse(&joined).unwrap().path().starts_with("//"), "{}", joined);
+        }
+    }
+
+    #[test]
+    fn server_url_is_normalised_and_control_chars_rejected() {
+        assert_eq!(validate_server_url("HTTP://A.com").unwrap(), "http://a.com");
+        assert_eq!(validate_server_url("https://c\u{0430}talogizer.example").unwrap(), "https://xn--ctalogizer-zqi.example");
+        for bad in ["http://a.com/\nNew: http://good.example", "http://a.com/\t", "http://a .com", "http://a.com/\u{202e}x", "http://a.com/\r"] {
+            assert!(validate_server_url(bad).is_err(), "{:?}", bad);
+        }
+    }
+
     // LIVE: real sockets, real reqwest client.
     pub(crate) async fn serve(listener: tokio::net::TcpListener, other_port: u16, hits: std::sync::Arc<std::sync::atomic::AtomicUsize>) {
         use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -181,9 +228,28 @@ pub(crate) mod tests {
             let Ok((mut sock, _)) = listener.accept().await else { return };
             let hits = hits.clone();
             tokio::spawn(async move {
-                let mut buf = [0u8; 2048];
-                let n = sock.read(&mut buf).await.unwrap_or(0);
-                let req = String::from_utf8_lossy(&buf[..n]).to_string();
+                // Read the full request: headers up to CRLFCRLF, then Content-Length bytes (TAURI-F16).
+                let mut data: Vec<u8> = Vec::new();
+                let mut buf = [0u8; 1024];
+                loop {
+                    let n = sock.read(&mut buf).await.unwrap_or(0);
+                    if n == 0 {
+                        break;
+                    }
+                    data.extend_from_slice(&buf[..n]);
+                    if let Some(pos) = data.windows(4).position(|w| w == b"\r\n\r\n") {
+                        let head = String::from_utf8_lossy(&data[..pos]).to_lowercase();
+                        let cl = head
+                            .lines()
+                            .find_map(|l| l.strip_prefix("content-length:"))
+                            .and_then(|v| v.trim().parse::<usize>().ok())
+                            .unwrap_or(0);
+                        if data.len() >= pos + 4 + cl {
+                            break;
+                        }
+                    }
+                }
+                let req = String::from_utf8_lossy(&data).to_string();
                 let path = req.split_whitespace().nth(1).unwrap_or("/").to_string();
                 hits.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                 let resp = match path.as_str() {

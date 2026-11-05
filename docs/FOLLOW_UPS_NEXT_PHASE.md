@@ -1558,3 +1558,10 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - S3-LIVE-FU-1: rerun suite against AWS S3 or a stricter server (MinIO/Ceph RGW/second impl) to kill survivors M2 (1001-key delete batch) and MC ('+' unencoded in CopySource); also virtual-host addressing, TLS, >5 GiB objects.
 - S3-LIVE-FU-2: MH (ListDirectory keeping names with '/') judged equivalent by reviewer; document definition in README.
 - Incident record: author's RED run of old down.sh purged the real disposable state dir (test data only; keys rotated) - see docs/qa/s3-live-20261105 incident record.
+
+## Tauri confirm-on-URL-change follow-ups (review round 3, GO-with-follow-ups; PROVISIONAL until native boot)
+- TAURI-F6 (important to verify): the real native DialogConfirmer was never shown on a display; live check on a desktop session with recording + OCR (dialog appears, Cancel/close return false, frontend cannot dismiss, blocking_show from spawn_blocking works on GTK). Mutant R5 (always approve) survives until then.
+- TAURI-F7: src-tauri/Cargo.lock is gitignored, dependency versions float (§11.4.246); track the lock.
+- TAURI-F9 (minor, functional): server URLs `https://a.com/api/` (trailing slash kept -> `/api//api/v1`), `http://a.com/?x=1` and `#f` produce broken request URLs. Trim all trailing '/', reject query/fragment, assert no '//' anywhere.
+- TAURI-F10 (minor): N9 survives - record `in_force` in the Scripted confirmer and assert; adopt reviewer probe P6 (/home/milosvasic/.cache/claude-tmp/rv_tauriconf.Op6VZR/reviewer_probes_r3.patch).
+- UX: config is in-memory so every launch prompts the first-time dialog; persist a trusted URL (and last_confirmed_url).
