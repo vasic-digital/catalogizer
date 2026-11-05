@@ -419,7 +419,7 @@ export const PerformanceOverlay: React.FC = () => {
         <span className="text-gray-400 font-bold">Performance</span>
         <button
           onClick={() => setVisible(false)}
-          className="text-gray-500 hover:text-gray-300 ml-2"
+          className="text-gray-400 hover:text-gray-200 ml-2"
         >
           x
         </button>

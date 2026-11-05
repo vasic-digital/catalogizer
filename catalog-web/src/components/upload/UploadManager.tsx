@@ -172,7 +172,7 @@ export const UploadManager: React.FC<UploadManagerProps> = ({
       case 'uploading':
         return <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent animate-spin" />;
       default:
-        return <File className="w-4 h-4 text-gray-500" />;
+        return <File className="w-4 h-4 text-gray-500 dark:text-gray-400" />;
     }
   };
 
@@ -201,7 +201,7 @@ export const UploadManager: React.FC<UploadManagerProps> = ({
         <div
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
             isDragOver 
-              ? 'border-blue-500 bg-blue-50' 
+              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
               : 'border-gray-300 hover:border-gray-400'
           }`}
           onDrop={handleDrop}
@@ -209,10 +209,10 @@ export const UploadManager: React.FC<UploadManagerProps> = ({
           onDragLeave={handleDragLeave}
         >
           <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-          <p className="text-lg font-medium text-gray-700 mb-2">
+          <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
             Drop files here or click to browse
           </p>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Max file size: {formatFileSize(maxFileSize)}
             {acceptedTypes.length > 0 && (
               <> • Accepted types: {acceptedTypes.join(', ')}</>
@@ -243,14 +243,14 @@ export const UploadManager: React.FC<UploadManagerProps> = ({
               {uploadQueue.map(item => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                  className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
                 >
                   {getStatusIcon(item.status)}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                       {item.file.name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {formatFileSize(item.file.size)}
                     </p>
                     {item.status === 'uploading' && (

@@ -1,0 +1,112 @@
+
+ RUN  v4.0.18 /home/milosvasic/.cache/claude-tmp/d7class.i6S42H/repo/catalog-web
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+(node:1259456) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+stderr | src/styles/__tests__/contrastD7Populated.test.tsx > UI-D7-FU populated states, light theme > ExternalIntegrations: cards (connected + pending badge), expanded panel, add modal
+Warning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+
+ ❯ src/styles/__tests__/contrastD7Populated.test.tsx (6 tests | 6 failed) 277ms
+     × ExternalIntegrations: cards (connected + pending badge), expanded panel, add modal 140ms
+     × UploadManager: queued file row and drag-over zone 22ms
+     × FormatConverter: selected quality preset (bg-blue-50 when selected) with the form open 11ms
+     × ExternalIntegrations: cards (connected + pending badge), expanded panel, add modal 85ms
+     × UploadManager: queued file row and drag-over zone 9ms
+     × FormatConverter: selected quality preset (bg-blue-50 when selected) with the form open 7ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/styles/__tests__/contrastD7Populated.test.tsx > UI-D7-FU populated states, light theme > ExternalIntegrations: cards (connected + pending badge), expanded panel, add modal
+AssertionError: cards: expected 'div.flex items-center gap-1 px-2 py-1…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ div.flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-green-50 text-green-500 "connected" 2.18
+
+ ❯ src/styles/__tests__/contrastD7Populated.test.tsx:39:38
+     37|     await screen.findByText('Dropbox Sync')
+     38|     expect(screen.getByText('Other')).toBeInTheDocument()
+     39|     expect(fail(container), 'cards').toBe('')
+       |                                      ^
+     40|     const info = container.querySelector('svg[data-icon="Info"]')!.clo…
+     41|     fireEvent.click(info)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Populated.test.tsx > UI-D7-FU populated states, light theme > UploadManager: queued file row and drag-over zone
+AssertionError: drag-over: expected 'p.text-sm text-gray-500 dark:text-gra…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ p.text-sm text-gray-500 dark:text-gray-400 mb-4 "Max file size: 100 MB • Accept" 4.44
+
+ ❯ src/styles/__tests__/contrastD7Populated.test.tsx:54:42
+     52|     fireEvent.dragOver(zone)
+     53|     expect(zone.className).toMatch(/bg-blue-50/)
+     54|     expect(fail(container), 'drag-over').toBe('')
+       |                                          ^
+     55|     fireEvent.dragLeave(zone)
+     56|     fireEvent.change(container.querySelector('input[type=file]')!, { t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Populated.test.tsx > UI-D7-FU populated states, light theme > FormatConverter: selected quality preset (bg-blue-50 when selected) with the form open
+ FAIL  src/styles/__tests__/contrastD7Populated.test.tsx > UI-D7-FU populated states, dark theme > FormatConverter: selected quality preset (bg-blue-50 when selected) with the form open
+AssertionError: expected 0 to be greater than 0
+ ❯ src/styles/__tests__/contrastD7Populated.test.tsx:64:27
+     62|     const { container } = render(<FormatConverter jobs={[JOB]} support…
+     63|     const radios = Array.from(container.querySelectorAll('input[type=r…
+     64|     expect(radios.length).toBeGreaterThan(0)
+       |                           ^
+     65|     const checked = radios.find((r) => (r as HTMLInputElement).checked…
+     66|     expect(checked.closest('label')!.className).toMatch(/bg-blue-50/)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Populated.test.tsx > UI-D7-FU populated states, dark theme > ExternalIntegrations: cards (connected + pending badge), expanded panel, add modal
+AssertionError: cards: expected 'div.flex items-center gap-1 px-2 py-1…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ div.flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-green-50 text-green-500 "connected" 2.18
++ div.flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-gray-50 text-gray-500 dark:text-gray-400 "pending" 2.43
+
+ ❯ src/styles/__tests__/contrastD7Populated.test.tsx:39:38
+     37|     await screen.findByText('Dropbox Sync')
+     38|     expect(screen.getByText('Other')).toBeInTheDocument()
+     39|     expect(fail(container), 'cards').toBe('')
+       |                                      ^
+     40|     const info = container.querySelector('svg[data-icon="Info"]')!.clo…
+     41|     fireEvent.click(info)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  src/styles/__tests__/contrastD7Populated.test.tsx > UI-D7-FU populated states, dark theme > UploadManager: queued file row and drag-over zone
+AssertionError: drag-over: expected 'p.text-lg font-medium text-gray-700 d…' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ p.text-lg font-medium text-gray-700 dark:text-gray-300 mb-2 "Drop files here or click to br" 1.35
++ p.text-sm text-gray-500 dark:text-gray-400 mb-4 "Max file size: 100 MB • Accept" 2.33
+
+ ❯ src/styles/__tests__/contrastD7Populated.test.tsx:54:42
+     52|     fireEvent.dragOver(zone)
+     53|     expect(zone.className).toMatch(/bg-blue-50/)
+     54|     expect(fail(container), 'drag-over').toBe('')
+       |                                          ^
+     55|     fireEvent.dragLeave(zone)
+     56|     fireEvent.change(container.querySelector('input[type=file]')!, { t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed (6)
+   Start at  18:45:24
+   Duration  3.38s (transform 383ms, setup 269ms, import 1.42s, tests 277ms, environment 1.16s)
+

@@ -1,0 +1,5 @@
+ FAIL  src/styles/__tests__/contrastD7Populated.test.tsx > UI-D7-FU populated states, dark theme > UploadManager: queued file row and drag-over zone
++ Received
++ p.text-sm font-medium text-gray-900 dark:text-white truncate "movie.mp4" 1.05
++ p.text-xs text-gray-500 dark:text-gray-400 "10 Bytes" 2.43
+      Tests  1 failed | 33 passed (34)

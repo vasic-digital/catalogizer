@@ -1,0 +1,12 @@
+ FAIL  src/styles/__tests__/contrastD7Class.test.tsx > UI-D7-FU class-wide gray text, dark theme (WCAG AA 4.5:1) > FormatConverter: empty list and a completed job
++ Received
++ p.text-gray-600 mb-4 "Start your first media format " 1.94
+ FAIL  src/styles/__tests__/contrastD7Populated.test.tsx > UI-D7-FU populated states, dark theme > FormatConverter: selected quality preset (bg-blue-50 when selected) with the form open
++ Received
++ p.text-sm text-gray-600 "MKV → MP4 • high" 1.94
++ div. "File Size1 MB" 1.94
++ span.block font-medium "File Size" 1.94
++ div. "Duration1m 0s" 1.94
++ span.block font-medium "Duration" 1.94
++ span.block font-medium "Resolution" 1.94
++ div. "Bitrate---" 1.94

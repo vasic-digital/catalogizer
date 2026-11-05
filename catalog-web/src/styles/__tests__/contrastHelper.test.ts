@@ -1,5 +1,5 @@
 // Golden fixtures for the contrast helper itself (an unvalidated oracle is a bluff).
-import { backgroundOf, foregroundOf, contrastOf, ratio } from '@/test/contrast'
+import { backgroundOf, foregroundOf, contrastOf, ratio, failingElements } from '@/test/contrast'
 
 function tree(parentCls: string, childCls: string) {
   const p = document.createElement('div'); p.className = parentCls
@@ -46,8 +46,72 @@ describe('contrast helper goldens', () => {
     expect(() => backgroundOf(tree('bg-background', 'x'), 'light')).toThrow(/cannot resolve/)
   })
 
+  it('conflicting same-prefix colour classes on one element throw (D7-R2-F3)', () => {
+    expect(() => foregroundOf(tree('bg-white', 'text-gray-500 text-gray-900'), 'light')).toThrow(/conflicting/)
+    expect(() => foregroundOf(tree('bg-white', 'text-gray-500 dark:text-gray-300 dark:text-gray-400'), 'dark')).toThrow(/conflicting/)
+    expect(() => backgroundOf(tree('bg-white bg-gray-800', 'x'), 'light')).toThrow(/conflicting/)
+    // same class twice, or one base + one dark variant, is NOT a conflict
+    expect(foregroundOf(tree('bg-white', 'text-gray-900 text-gray-900'), 'light')).toEqual([17, 24, 39])
+    expect(foregroundOf(tree('bg-white', 'text-gray-500 dark:text-gray-300'), 'light')).toEqual([107, 114, 128])
+  })
+
+  it('bg-transparent / text-current inherit from the ancestor instead of throwing', () => {
+    expect(backgroundOf(tree('bg-white', 'bg-transparent'), 'light')).toEqual([255, 255, 255])
+    expect(foregroundOf(tree('bg-white text-gray-900', 'text-current'), 'light')).toEqual([17, 24, 39])
+  })
+
   it('ratio is symmetric and 1:1 for identical colours', () => {
     expect(ratio([10, 20, 30], [10, 20, 30])).toBeCloseTo(1, 5)
     expect(ratio([0, 0, 0], [255, 255, 255])).toBeCloseTo(ratio([255, 255, 255], [0, 0, 0]), 8)
+  })
+
+  describe('failingElements walker goldens (a walker that sees nothing would pass every component)', () => {
+    const html = (inner: string) => { const d = document.createElement('div'); d.className = 'bg-white dark:bg-gray-800'; d.innerHTML = inner; return d }
+
+    it('reports the exact measured defect and passes the fixed class string', () => {
+      const bad = html('<p class="text-gray-500">No media data available</p>')
+      expect(failingElements(bad, 'light')).toEqual([])
+      const dark = failingElements(bad, 'dark')
+      expect(dark).toHaveLength(1)
+      expect(dark[0]).toMatch(/"No media data available" 3\.04$/)
+      expect(failingElements(html('<p class="text-gray-500 dark:text-gray-400">ok</p>'), 'dark')).toEqual([])
+    })
+
+    it('a light panel without a dark bg stays light: dark:text-gray-400 on it is flagged (real ancestor, not blind dark class)', () => {
+      const d = document.createElement('div'); d.className = 'bg-white'
+      d.innerHTML = '<p class="text-gray-500 dark:text-gray-400">x</p>'
+      expect(failingElements(d, 'dark')).toHaveLength(1)
+      expect(failingElements(d, 'light')).toEqual([])
+    })
+
+    it('an element with its own bg-* is still measured (badge text-red-600 on bg-red-100 = 3.95)', () => {
+      const d = document.createElement('div'); d.className = 'bg-white'
+      d.innerHTML = '<span class="bg-red-100 text-red-600">Error</span><span class="bg-red-100 text-red-700">Error</span>'
+      const out = failingElements(d, 'light')
+      expect(out).toHaveLength(1)
+      expect(out[0]).toMatch(/text-red-600.* 3\.95$/)
+    })
+
+    it('text-lg is NOT large text (needs 4.5, not 3); text-2xl is', () => {
+      const lg = failingElements(html('<p class="text-lg text-gray-500">x</p>'), 'dark')
+      expect(lg).toHaveLength(1) // 3.04 < 4.5
+      expect(failingElements(html('<p class="text-2xl text-gray-500">x</p>'), 'dark')).toEqual([])
+      expect(failingElements(html('<p class="text-xl font-bold text-gray-500">x</p>'), 'dark')).toEqual([])
+      expect(failingElements(html('<p class="text-xl text-gray-500">x</p>'), 'dark')).toHaveLength(1)
+    })
+
+    it('overlay skip is anchored: only a real bg-black/N or bg-black+bg-opacity-N skips, variant classes do not', () => {
+      expect(failingElements(html('<p class="text-gray-500 bg-black/50">x</p>'), 'dark')).toEqual([])
+      expect(failingElements(html('<p class="text-gray-500 bg-black bg-opacity-50">x</p>'), 'dark')).toEqual([])
+      expect(failingElements(html('<p class="text-gray-500 hover:bg-black/85">x</p>'), 'dark')).toHaveLength(1)
+      expect(failingElements(html('<p class="text-gray-500 group-hover:bg-black/85">x</p>'), 'dark')).toHaveLength(1)
+    })
+
+    it('large text needs 3:1 only; svg content and disabled controls are exempt', () => {
+      expect(failingElements(html('<p class="text-3xl text-gray-500">big</p>'), 'dark')).toEqual([])
+      expect(failingElements(html('<svg><text class="text-gray-500">s</text></svg>'), 'dark')).toEqual([])
+      expect(failingElements(html('<button disabled class="text-gray-500"><span>d</span>t</button>'), 'dark')).toEqual([])
+      expect(failingElements(html('<button class="text-gray-500">t</button>'), 'dark')).toHaveLength(1)
+    })
   })
 })

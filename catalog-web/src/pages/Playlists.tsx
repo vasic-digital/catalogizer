@@ -404,7 +404,7 @@ export const PlaylistsPage: React.FC = () => {
                           <MediaIcon className="w-4 h-4 text-gray-500 flex-shrink-0" />
                           <div className="min-w-0">
                             <div className="text-sm font-medium truncate">{media.title}</div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
                               {media.media_type} {media.year && `• ${media.year}`}
                             </div>
                           </div>

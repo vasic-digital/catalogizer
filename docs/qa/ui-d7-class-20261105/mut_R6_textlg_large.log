@@ -1,0 +1,4 @@
+ FAIL  src/styles/__tests__/contrastHelper.test.ts > contrast helper goldens > failingElements walker goldens (a walker that sees nothing would pass every component) > text-lg is NOT large text (needs 4.5, not 3); text-2xl is
++ Received
++ 0
+      Tests  1 failed | 48 passed (49)

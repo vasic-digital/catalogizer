@@ -1,0 +1,4 @@
+ FAIL  src/styles/__tests__/contrastD7Populated.test.tsx > UI-D7-FU populated states, dark theme > ExternalIntegrations: cards (connected + pending badge), expanded panel, add modal
++ Received
++ div.flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-gray-50 text-gray-600 dark:text-gray-300 "pending" 1.41
+      Tests  1 failed | 33 passed (34)

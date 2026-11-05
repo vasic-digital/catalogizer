@@ -180,7 +180,7 @@ export function EntityDetail() {
                 <div key={meta.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
                   <div className="flex-1">
                     <span className="font-medium text-gray-900 dark:text-white capitalize">{meta.provider}</span>
-                    <span className="text-sm text-gray-500 ml-2">ID: {meta.external_id}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">ID: {meta.external_id}</span>
                   </div>
                   {meta.rating != null && (
                     <span className="flex items-center gap-1 text-sm">
@@ -209,7 +209,7 @@ export function EntityDetail() {
         <CardContent className="p-4 flex items-center justify-between">
           <div>
             <span className="font-medium text-gray-900 dark:text-white">Download</span>
-            <span className="text-sm text-gray-500 ml-2">
+            <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
               {files.length} file{files.length !== 1 ? 's' : ''} available
             </span>
           </div>
@@ -245,7 +245,7 @@ export function EntityDetail() {
                     <div className="font-medium text-gray-900 dark:text-white truncate">
                       {item.title}
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                       <span className="capitalize">{item.media_type.replace(/_/g, ' ')}</span>
                       {item.year && <span>({item.year})</span>}
                       {item.similarity_score != null && (

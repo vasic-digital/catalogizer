@@ -92,6 +92,7 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
               variant={viewMode === 'grid' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('grid')}
+              aria-label="Grid view"
             >
               <Grid className="w-4 h-4" />
             </Button>
@@ -99,6 +100,7 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
               variant={viewMode === 'list' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('list')}
+              aria-label="List view"
             >
               <List className="w-4 h-4" />
             </Button>
@@ -131,7 +133,7 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
               <CardContent className="p-4">
                 <div className="space-y-2">
                   <div className="flex items-start justify-between">
-                    <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <h3 className="font-medium text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
                       {collection.name}
                     </h3>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -154,12 +156,12 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
                   </div>
                   
                   {collection.description && (
-                    <p className="text-sm text-gray-600 line-clamp-2">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
                       {collection.description}
                     </p>
                   )}
                   
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                  <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                     <span>{collection.mediaCount} items</span>
                     <span>{formatDuration(collection.duration)}</span>
                     {collection.isSmart && (
@@ -205,11 +207,11 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
                       <div className="min-w-0 flex-1">
-                        <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                        <h3 className="font-medium text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors truncate">
                           {collection.name}
                         </h3>
                         {collection.description && (
-                          <p className="text-sm text-gray-600 line-clamp-1 mt-1">
+                          <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-1 mt-1">
                             {collection.description}
                           </p>
                         )}
@@ -234,10 +236,10 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
                     </div>
                     
                     <div className="flex items-center gap-4 mt-2">
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         {collection.mediaCount} items
                       </span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         {formatDuration(collection.duration)}
                       </span>
                       {collection.isSmart && (
@@ -272,10 +274,10 @@ export const CollectionsManager: React.FC<CollectionsManagerProps> = ({
                 <Plus className="w-8 h-8 text-gray-400" />
               </div>
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   {searchQuery ? 'No collections found' : 'No collections yet'}
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
                   {searchQuery 
                     ? 'Try adjusting your search terms' 
                     : 'Create your first collection to organize your media'

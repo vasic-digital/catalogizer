@@ -1,0 +1,4 @@
+ FAIL  src/styles/__tests__/contrastD7Shared.test.tsx > UI-D7-FU shared components, dark theme (WCAG AA 4.5:1) > MediaDistributionChart: empty-state hint meets AA
++ Received
++ p.text-gray-500 "No media data available" 3.04
+      Tests  1 failed | 33 passed (34)

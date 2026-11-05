@@ -1565,3 +1565,9 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - TAURI-F9 (minor, functional): server URLs `https://a.com/api/` (trailing slash kept -> `/api//api/v1`), `http://a.com/?x=1` and `#f` produce broken request URLs. Trim all trailing '/', reject query/fragment, assert no '//' anywhere.
 - TAURI-F10 (minor): N9 survives - record `in_force` in the Scripted confirmer and assert; adopt reviewer probe P6 (/home/milosvasic/.cache/claude-tmp/rv_tauriconf.Op6VZR/reviewer_probes_r3.patch).
 - UX: config is in-memory so every launch prompts the first-time dialog; persist a trusted URL (and last_confirmed_url).
+
+## D7 class-wide contrast (landed PROVISIONAL, GO-with-follow-ups round 2/5)
+- D7-R3-FU1: FormatConverter job error/success boxes are light islands in dark mode (add `dark:bg-*-900/20 dark:text-*-300`).
+- D7-R3-M1 (test-instrumentation): connecting/disconnected/error badge colours unprotected (mutations N2/N3 survived); render one integration per status in contrastD7Populated.
+- D7-R3-M3 (visual): UploadManager queued row `dark:bg-gray-800` probably blends into Card; consider `dark:bg-gray-700/50`.
+- Live axe rerun on rebuilt web image (N>=3) still owed; PERFORMANCE/MediaFilters/Playlists fixes not render-tested.

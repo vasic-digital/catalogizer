@@ -144,16 +144,16 @@ export function EntityHero({
           <div className="flex gap-6 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
             <div className="text-center">
               <div className="text-lg font-semibold text-gray-900 dark:text-white">{entity.file_count}</div>
-              <div className="text-xs text-gray-500">Files</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">Files</div>
             </div>
             <div className="text-center">
               <div className="text-lg font-semibold text-gray-900 dark:text-white">{entity.children_count}</div>
-              <div className="text-xs text-gray-500">Children</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">Children</div>
             </div>
             {duplicateCount > 0 && (
               <div className="text-center">
-                <div className="text-lg font-semibold text-orange-600">{duplicateCount}</div>
-                <div className="text-xs text-gray-500">Duplicates</div>
+                <div className="text-lg font-semibold text-orange-700 dark:text-orange-400">{duplicateCount}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">Duplicates</div>
               </div>
             )}
           </div>
@@ -190,7 +190,7 @@ export function ChildrenList({
         <CardTitle className="flex items-center gap-2">
           <Folder className="h-5 w-5" />
           {label}
-          <span className="text-sm font-normal text-gray-500">({items.length})</span>
+          <span className="text-sm font-normal text-gray-500 dark:text-gray-400">({items.length})</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -201,7 +201,7 @@ export function ChildrenList({
               onClick={() => onChildClick(child.id)}
               className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
             >
-              <div className="w-8 h-8 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-sm font-medium text-gray-600 dark:text-gray-400">
+              <div className="w-8 h-8 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-sm font-medium text-gray-600 dark:text-gray-300">
                 {child.season_number || child.episode_number || child.track_number || '#'}
               </div>
               <div className="flex-1 min-w-0">
@@ -209,7 +209,7 @@ export function ChildrenList({
                   {child.title}
                 </span>
               </div>
-              {child.year && <span className="text-sm text-gray-500">{child.year}</span>}
+              {child.year && <span className="text-sm text-gray-500 dark:text-gray-400">{child.year}</span>}
               <ChevronRight className="h-4 w-4 text-gray-400" />
             </button>
           ))}
@@ -232,7 +232,7 @@ export function FilesList({ files }: { files: EntityFile[] }) {
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-5 w-5" />
           Files
-          <span className="text-sm font-normal text-gray-500">({files.length})</span>
+          <span className="text-sm font-normal text-gray-500 dark:text-gray-400">({files.length})</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -242,7 +242,7 @@ export function FilesList({ files }: { files: EntityFile[] }) {
               <FileText className="h-5 w-5 text-gray-400" />
               <div className="flex-1 min-w-0">
                 <span className="text-sm text-gray-900 dark:text-white">File #{file.file_id}</span>
-                {file.quality_info && <span className="ml-2 text-xs text-gray-500">{file.quality_info}</span>}
+                {file.quality_info && <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">{file.quality_info}</span>}
               </div>
               {file.language && (
                 <span className="text-xs px-2 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">{file.language}</span>
@@ -274,10 +274,10 @@ export function DuplicatesList({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-orange-600">
+        <CardTitle className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
           <Copy className="h-5 w-5" />
           Potential Duplicates
-          <span className="text-sm font-normal text-gray-500">({duplicates.length})</span>
+          <span className="text-sm font-normal text-gray-500 dark:text-gray-400">({duplicates.length})</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -290,9 +290,9 @@ export function DuplicatesList({
             >
               <div className="flex-1 min-w-0">
                 <span className="font-medium text-gray-900 dark:text-white">{dup.title}</span>
-                {dup.year && <span className="text-sm text-gray-500 ml-2">({dup.year})</span>}
+                {dup.year && <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">({dup.year})</span>}
               </div>
-              <span className="text-xs text-gray-500 capitalize">{dup.status}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 capitalize">{dup.status}</span>
               <ChevronRight className="h-4 w-4 text-gray-400" />
             </button>
           ))}

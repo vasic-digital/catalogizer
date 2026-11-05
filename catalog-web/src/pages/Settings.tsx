@@ -220,17 +220,17 @@ const SmbDiscoverySection: React.FC = () => {
               <div className="space-y-2 mt-4">
                 {discoverMutation.data.map((share, idx) => (
                   <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800">
-                    <Server className="h-4 w-4 text-gray-500" />
+                    <Server className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                     <div>
                       <span className="font-medium text-gray-900 dark:text-white">{share.name}</span>
-                      <span className="text-sm text-gray-500 ml-2">{share.host}{share.path}</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">{share.host}{share.path}</span>
                     </div>
                   </div>
                 ))}
               </div>
             )}
             {discoverMutation.data && discoverMutation.data.length === 0 && (
-              <p className="text-sm text-gray-500 mt-2">No shares discovered.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">No shares discovered.</p>
             )}
           </div>
         </CardContent>
@@ -352,25 +352,25 @@ const SyncSection: React.FC = () => {
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_syncs}</div>
-              <div className="text-sm text-gray-500">Total Syncs</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Total Syncs</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-green-600">{stats.successful_syncs}</div>
-              <div className="text-sm text-gray-500">Successful</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Successful</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-red-600">{stats.failed_syncs}</div>
-              <div className="text-sm text-gray-500">Failed</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Failed</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total_items_synced}</div>
-              <div className="text-sm text-gray-500">Items Synced</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">Items Synced</div>
             </CardContent>
           </Card>
         </div>
@@ -490,12 +490,12 @@ const SyncSection: React.FC = () => {
                       <span className="text-sm text-gray-900 dark:text-white">
                         Endpoint #{session.endpoint_id}
                       </span>
-                      <span className="text-xs text-gray-500 ml-2">
+                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                         {session.items_synced} items synced
                       </span>
                     </div>
                   </div>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     {new Date(session.started_at).toLocaleString()}
                   </span>
                 </div>

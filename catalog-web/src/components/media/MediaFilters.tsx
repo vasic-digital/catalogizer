@@ -53,7 +53,7 @@ export const MediaFilters: React.FC<MediaFiltersProps> = ({
               variant="ghost"
               size="sm"
               onClick={onReset}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
             >
               <X className="h-4 w-4 mr-1" />
               Clear all

@@ -1,0 +1,4 @@
+ FAIL  src/styles/__tests__/contrastHelper.test.ts > contrast helper goldens > failingElements walker goldens (a walker that sees nothing would pass every component) > overlay skip is anchored: only a real bg-black/N or bg-black+bg-opacity-N skips, variant cla
++ Received
++ 0
+      Tests  1 failed | 14 passed (15)
