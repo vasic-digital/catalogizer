@@ -31,7 +31,18 @@ to curl via a 0600 netrc and to the scanner via a 0600 env-file, never in argv.
   (`192.168.1.115:19000`, free high port) only. No custom podman network is created, so the shared aardvark-dns and the
   `catqa*` stacks are not touched.
 * `--memory/--memory-swap/--cpus`: SonarQube 4g (swap = memory, i.e. none) / 2 cpus (JVM heaps: web 768m, CE 1g, ES 512m), Postgres 512m / 1 cpu, scanner 6g / 2 cpus (JVM -Xmx5g; the Go analyzer OOMed at -Xmx1g and -Xmx3g on catalog-api: measured).
-* Run the scripts under `systemd-run --user --scope -p MemoryMax=5G -p MemorySwapMax=0` for a host-side cap as well.
+* The caps above are the **only** real memory/CPU limits on the containers (podman cgroups). Wrapping the scripts in
+  `systemd-run --user --scope -p MemoryMax=...` caps just the script processes (curl/jq/podman client), **not** the containers, which run
+  under podman's own cgroups; this README no longer claims otherwise.
+* Load gate: `up.sh`/`scan.sh` wait while the 1-min load is above `LOAD_MAX`, which defaults to 0.75 x `nproc` (12 on this 16-core host)
+  and gives up after `SQ_LOAD_TIMEOUT` seconds (default 900). Deviation recorded: the first (pre-review) runs used `LOAD_MAX=30`
+  because host load sat at 21-40; the re-runs after review used the derived default.
+* Safety guards: `SQ_STACK` must match `^catsonar[a-z0-9-]*$`; pod, containers and volumes carry the label
+  `io.catalogizer.service=sonarqube`; `up.sh`/`down.sh` refuse to reuse or remove any existing pod/volume of the stack that lacks it
+  (nothing is removed if any check fails). `up.sh`/`scan.sh` refuse to start with < 10 GB free or > 98 % disk used. `scan.sh` refuses a
+  non-empty `RUN_ID` directory.
+* Tests: `test_guards.sh` (21 checks, podman/df/nproc/sleep shims in a mktemp sandbox, touches no real stack) and
+  `mutation_guards.sh` (12 paired mutations, all must be killed).
 
 ## Elasticsearch prerequisites (no sudo)
 
@@ -47,8 +58,10 @@ to curl via a 0600 netrc and to the scanner via a 0600 env-file, never in argv.
 ## Results (`docs/qa/sonarqube-20261105/<RUN_ID>/`)
 
 `<project>.issues.json` (all open issues, `reported_total` vs `exported` recorded), `.measures.json`, `.issue_facets.json`,
-`.hotspots.json`, `.quality_gate.json`, `.ce_task.json`, `.scanner.log`, `gate_status.txt`, `run.json` (git HEAD, URL),
-image digests, `scrub_control.txt`, `SHA256SUMS`.
+`.hotspots.json`, `.quality_gate.json`, `.ce_task.json`, `.scanner.txt` (scrubbed log; `.txt` because `*.log` is gitignored and `SHA256SUMS`
+must verify from the committed tree), `gate_status.txt`, `run.json` (git HEAD, URL, `es_disk_threshold_disabled`, measured disk %/free GB, load),
+`image_digests.txt` (digests of the sonarqube and postgres containers actually running, plus the pinned scanner), `scrub_control.txt`, `SHA256SUMS`.
+All three images are pinned by digest (sonarqube and postgres identical to `docker-compose.security.yml`).
 Secret scrub: every secret value in `sonar.env` is replaced by `[REDACTED]`, then verified with a control needle (a planted token
 must vanish, a clean file must stay clean) and a final scan of every exported file.
 
