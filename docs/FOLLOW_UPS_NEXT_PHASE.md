@@ -1591,3 +1591,8 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - PROM-R2-2: flaky test_scripts.sh root cause UNCONFIRMED (stdin-drain removal did not reproduce in 6 runs); timeout raised 60->180 s may mask it - keep tracked, do not call fixed.
 - PROM-R2-3/4/5 (nits): verify.py vs up.sh user precedence wording; validate PROM_AUTH_USER before sed use in up.sh; --memory limit on grafana test containers.
 - Live: up.sh never run end to end until conductor applies (monitoring/up.sh, then verify.py + both tests). Basic auth over plain HTTP on LAN is sniffable.
+
+## Prometheus auth applied live (2026-11-05 22:15 CET; CAT-PROM-AUTH-1, CAT-PROM-LAN-1)
+- Applied: `GRAFANA_BIND=PGADMIN_BIND=PROM_BIND=192.168.1.115 monitoring/up.sh` (catqa3mon replaced). Live: anonymous /api/v1/targets -> 401; verify.py: prom.anonymous_targets/query/wrong_password 401 PASS, targets up, queries have data, grafana datasource health OK; test_prom_auth.sh PASS (single run).
+- verify.py 45 PASS / 3 FAIL: the 3 FAILs are the legacy assertions `lan.{prometheus,grafana,pgadmin}_NOT_reachable_on_LAN_IP` which contradict the operator LAN-exposure decision; make them conditional on the *_BIND settings (new item CAT-VERIFY-LANBIND-1). Prometheus password in mon.env (PROM_AUTH_PASSWORD, user qa_prom).
+- N>=3 repeat of the live auth checks owed for VERIFIED.
