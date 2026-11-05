@@ -1,2 +1,7 @@
 ok  	catalogizer/internal/services	39.247s
 ok  	catalogizer/middleware	9.039s
+ok  	catalogizer/services	232.912s
+ok  	catalogizer/handlers	324.091s
+ok  	catalogizer/repository	93.452s
+ok  	catalogizer/database	123.885s
+ok  	catalogizer/models	0.016s
