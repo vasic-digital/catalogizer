@@ -1,0 +1,11 @@
+221584033d92-infra		Up 20 minutes
+catqa3-postgres	docker.io/library/postgres:15-alpine	Up 20 minutes (healthy)
+catqa3-redis	docker.io/library/redis:7-alpine	Up 20 minutes (healthy)
+catqa3-api	localhost/catqa3-api:main-015896fd	Up 20 minutes (healthy)
+catqa3-web	localhost/catqa3-web:main-015896fd	Up 20 minutes
+catqa3-website	docker.io/library/nginx:alpine	Up 20 minutes
+265ee076b175-infra		Up 35 minutes
+catqa3mon-prometheus	docker.io/prom/prometheus:v2.55.1	Up 35 minutes
+catqa3mon-grafana	docker.io/grafana/grafana:11.3.1	Up 35 minutes
+catqa3mon-pgadmin	docker.io/dpage/pgadmin4:8.13	Up 35 minutes
+catqa3mon-nginx	docker.io/library/nginx:1.27-alpine	Up 35 minutes

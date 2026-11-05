@@ -1,0 +1,53 @@
+Running as unit: run-p2883821-i132822299.scope; invocation ID: 90ea6e9f9e0f4d7c9ff500bd650b088f
+# github.com/mutecomm/go-sqlcipher
+sqlite3.c: In function 'sqlite3SelectNew':
+sqlite3.c:120891:10: warning: function may return address of local variable [-Wreturn-local-addr]
+120891 |   return pNew;
+       |          ^~~~
+sqlite3.c:120852:10: note: declared here
+120852 |   Select standin;
+       |          ^~~~~~~
+sqlite3.c: In function 'sqlite3VdbeExpandSql':
+sqlite3.c:82156:10: warning: function may return address of local variable [-Wreturn-local-addr]
+82156 |   return sqlite3StrAccumFinish(&out);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+sqlite3.c:82052:8: note: declared here
+82052 |   char zBase[100];         /* Initial working space */
+      |        ^~~~~
+sqlite3.c:82156:10: warning: function may return address of local variable [-Wreturn-local-addr]
+82156 |   return sqlite3StrAccumFinish(&out);
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+sqlite3.c:82052:8: note: declared here
+82052 |   char zBase[100];         /* Initial working space */
+      |        ^~~~~
+sqlite3.c:82052:8: note: declared here
+sqlite3.c:82052:8: note: declared here
+sqlite3.c:82052:8: note: declared here
+=== RUN   TestAdminGate_RealBinary
+--- PASS: TestAdminGate_RealBinary (13.86s)
+=== RUN   TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware
+=== RUN   TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/default_is_the_secure___Host-_cookie
+=== RUN   TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/toggle_in_a_dev-like_env_reaches_the_middleware
+=== RUN   TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/toggle_is_refused_outside_a_dev-like_env
+--- PASS: TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware (14.94s)
+    --- PASS: TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/default_is_the_secure___Host-_cookie (2.07s)
+    --- PASS: TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/toggle_in_a_dev-like_env_reaches_the_middleware (2.07s)
+    --- PASS: TestAdminCSRFCookie_RealBinary_EnvToggleReachesMiddleware/toggle_is_refused_outside_a_dev-like_env (2.07s)
+=== RUN   TestRoutePerms_RealBinary_SelfOrAdmin
+--- PASS: TestRoutePerms_RealBinary_SelfOrAdmin (12.76s)
+=== RUN   TestRoutePerms_RealBinary_CollectionOwnership
+--- PASS: TestRoutePerms_RealBinary_CollectionOwnership (11.09s)
+=== RUN   TestRoutePerms_RealBinary_Round2_ObservabilityAdminOnly
+--- PASS: TestRoutePerms_RealBinary_Round2_ObservabilityAdminOnly (10.61s)
+=== RUN   TestRoutePerms_RealBinary_Round2_MetricsScrapeToken
+--- PASS: TestRoutePerms_RealBinary_Round2_MetricsScrapeToken (10.74s)
+=== RUN   TestRoutePerms_RealBinary_Round2_ShortScrapeTokenIgnored
+--- PASS: TestRoutePerms_RealBinary_Round2_ShortScrapeTokenIgnored (10.43s)
+=== RUN   TestRoutePerms_RealBinary_Round2_ScrapeTokenDoesNotOpenPprof
+--- PASS: TestRoutePerms_RealBinary_Round2_ScrapeTokenDoesNotOpenPprof (10.55s)
+=== RUN   TestSSRF_RealBinary_ImageProxy
+--- PASS: TestSSRF_RealBinary_ImageProxy (10.86s)
+=== RUN   TestSSRF_RealBinary_SyncEndpointURL
+--- PASS: TestSSRF_RealBinary_SyncEndpointURL (10.38s)
+PASS
+ok  	catalogizer	116.258s

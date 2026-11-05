@@ -1,0 +1,11 @@
+
+	// Find media items with no local cover art that have a primary video file
+	query := `
+		SELECT mi.id, f.path || '/' || f.name AS full_path,
+		       ` + models.StorageRootConnColumnsFor("sr") + `
+		FROM media_items mi
+		if err := rows.Scan(&t.mediaItemID, &t.videoPath, &t.protocol, &t.rootPath, &t.host, &t.port, &t.username, &t.password, &t.domain, &t.url, &t.mountPoint, &t.options); err == nil {
+func StorageRootConnColumnsFor(alias string) string {
+	return alias + ".protocol, " + alias + ".host, " + alias + ".port, " + alias + ".path, " + alias + ".username, " + alias + ".password, " +
+		alias + ".domain, " + alias + ".url, " + alias + ".mount_point, " + alias + ".options"
+}

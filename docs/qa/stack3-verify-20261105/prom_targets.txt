@@ -1,0 +1,2 @@
+catalogizer-api up 
+prometheus up 

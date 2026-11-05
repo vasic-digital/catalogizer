@@ -1,0 +1,3 @@
+2026-11-05T08:52:49.753Z	INFO	gin@v1.12.0/context.go:192	HTTP Request	{"method": "GET", "path": "/api/v1/nonexistent-d", "status": 404, "ip": "9.9.9.9", "latency": "11.42µs", "user_agent": "curl/8.18.0"}
+2026-11-05T08:52:49.767Z	INFO	gin@v1.12.0/context.go:192	HTTP Request	{"method": "GET", "path": "/nonexistent-c", "status": 404, "ip": "9.9.9.9", "latency": "11.84µs", "user_agent": "curl/8.18.0"}
+2026-11-05T08:52:49.779Z	INFO	gin@v1.12.0/context.go:192	HTTP Request	{"method": "GET", "path": "/nonexistent-b", "status": 404, "ip": "192.168.1.115", "latency": "10.65µs", "user_agent": "curl/8.18.0"}

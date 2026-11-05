@@ -1,0 +1,10 @@
+{"phase": "B", "round": "2", "check": "env.health_build", "result": "PASS", "detail": "015896fd89180a42cc6c1e794719bd04e39e9c40"}
+{"phase": "B", "round": "2", "check": "S2.pprof_anon_401 /debug/pprof/", "result": "PASS", "detail": 401}
+{"phase": "B", "round": "2", "check": "S2.pprof_anon_401 /debug/pprof/cmdline", "result": "PASS", "detail": 401}
+{"phase": "B", "round": "2", "check": "S2.pprof_anon_401 /debug/pprof/heap", "result": "PASS", "detail": 401}
+{"phase": "B", "round": "2", "check": "S2.pprof_anon_401 /debug/pprof/goroutine?debug=1", "result": "PASS", "detail": 401}
+{"phase": "B", "round": "2", "check": "S2.pprof_scrape_token_rejected", "result": "PASS", "detail": "scrape token only unlocks /metrics"}
+{"phase": "B", "round": "2", "check": "S2.pprof_plain_user_403", "result": "PASS", "detail": 403}
+{"phase": "B", "round": "2", "check": "S2.pprof_admin_200", "result": "PASS", "detail": {"status": 200, "bytes": 20}}
+{"phase": "B", "round": "2", "check": "S2.cleanup_user", "result": "PASS", "detail": null}
+SUMMARY B 2 9 PASS 0 FAIL 0 SKIP

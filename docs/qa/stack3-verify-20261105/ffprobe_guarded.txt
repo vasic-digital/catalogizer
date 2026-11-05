@@ -1,0 +1,2 @@
+[hls @ 0x568ef93b0140] Format not on whitelist 'mov,mp4,m4a,3gp,3g2,mj2,matroska,webm,avi,mpegts,flv,asf'
+/media/sec3/Hls.Evil.2021.m3u8: Invalid argument

@@ -1,0 +1,49 @@
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted/password
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted/passwd
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted/secret
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted/client_secret
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted/refresh_token
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted/api_key
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted/apikey
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted/access_token
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted/ticket
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted/token
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted/pass
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted/pwd
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted/authorization
+=== RUN   TestLogger_CredentialQueryParametersAreRedacted/PASSWORD
+--- PASS: TestLogger_CredentialQueryParametersAreRedacted (0.00s)
+    --- PASS: TestLogger_CredentialQueryParametersAreRedacted/password (0.00s)
+    --- PASS: TestLogger_CredentialQueryParametersAreRedacted/passwd (0.00s)
+    --- PASS: TestLogger_CredentialQueryParametersAreRedacted/secret (0.00s)
+    --- PASS: TestLogger_CredentialQueryParametersAreRedacted/client_secret (0.00s)
+    --- PASS: TestLogger_CredentialQueryParametersAreRedacted/refresh_token (0.00s)
+    --- PASS: TestLogger_CredentialQueryParametersAreRedacted/api_key (0.00s)
+    --- PASS: TestLogger_CredentialQueryParametersAreRedacted/apikey (0.00s)
+    --- PASS: TestLogger_CredentialQueryParametersAreRedacted/access_token (0.00s)
+    --- PASS: TestLogger_CredentialQueryParametersAreRedacted/ticket (0.00s)
+    --- PASS: TestLogger_CredentialQueryParametersAreRedacted/token (0.00s)
+    --- PASS: TestLogger_CredentialQueryParametersAreRedacted/pass (0.00s)
+    --- PASS: TestLogger_CredentialQueryParametersAreRedacted/pwd (0.00s)
+    --- PASS: TestLogger_CredentialQueryParametersAreRedacted/authorization (0.00s)
+    --- PASS: TestLogger_CredentialQueryParametersAreRedacted/PASSWORD (0.00s)
+=== RUN   TestCORS_CredentialsHeader
+--- PASS: TestCORS_CredentialsHeader (0.00s)
+=== RUN   TestLogger
+--- PASS: TestLogger (0.00s)
+=== RUN   TestLogger_PathIncludesQueryString
+--- PASS: TestLogger_PathIncludesQueryString (0.00s)
+=== RUN   TestLogger_NoQueryString
+--- PASS: TestLogger_NoQueryString (0.00s)
+=== RUN   TestLogger_LatencyIsPositive
+--- PASS: TestLogger_LatencyIsPositive (0.01s)
+=== RUN   TestLogger_RecordsStatusCode
+=== RUN   TestLogger_RecordsStatusCode/200_OK
+=== RUN   TestLogger_RecordsStatusCode/404_Not_Found
+=== RUN   TestLogger_RecordsStatusCode/500_Internal_Server_Error
+--- PASS: TestLogger_RecordsStatusCode (0.00s)
+    --- PASS: TestLogger_RecordsStatusCode/200_OK (0.00s)
+    --- PASS: TestLogger_RecordsStatusCode/404_Not_Found (0.00s)
+    --- PASS: TestLogger_RecordsStatusCode/500_Internal_Server_Error (0.00s)
+PASS

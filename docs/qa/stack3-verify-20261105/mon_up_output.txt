@@ -1,0 +1,10 @@
+Running as unit: run-p2062130-i131995324.scope; invocation ID: 651d8e536ec44a4188ac03cab8b29c79
+prometheus   http://127.0.0.1:39090/-/ready -> 200
+grafana      http://127.0.0.1:33030/api/health -> 200
+pgadmin      http://127.0.0.1:33050/misc/ping -> 200
+nginx        http://127.0.0.1:33080/edge-health -> 200
+dd096b91b0ae-infra	Up 23 seconds	
+catqa3mon-prometheus	Up 23 seconds	docker.io/prom/prometheus:v2.55.1
+catqa3mon-grafana	Up 22 seconds	docker.io/grafana/grafana:11.3.1
+catqa3mon-pgadmin	Up 22 seconds	docker.io/dpage/pgadmin4:8.13
+catqa3mon-nginx	Up 22 seconds	docker.io/library/nginx:1.27-alpine

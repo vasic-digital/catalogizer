@@ -1,0 +1,2 @@
+generate 200 {'generated': 0, 'message': 'thumbnail generation completed'} elapsed 0.0s
+[GIN] 2026/11/05 - 09:01:45 | 200 |   13.632785ms |   192.168.1.115 | POST    "/api/v1/admin/covers/generate-thumbnails"
