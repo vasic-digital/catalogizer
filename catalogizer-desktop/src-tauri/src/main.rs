@@ -94,11 +94,22 @@ async fn make_http_request(
     body: Option<String>,
     config: State<'_, ConfigState>,
 ) -> Result<String, String> {
+    request_via_config(&config, &url, &method, headers, body).await
+}
+
+/// Body of the `make_http_request` command (testable without Tauri state); TAURI-FU-5.
+async fn request_via_config(
+    config: &ConfigState,
+    url: &str,
+    method: &str,
+    headers: HashMap<String, String>,
+    body: Option<String>,
+) -> Result<String, String> {
     let server_url = {
         let guard = config.lock().await;
         guard.server_url.clone().ok_or("Server URL not configured")?
     };
-    perform_request(&server_url, &url, &method, headers, body).await
+    perform_request(&server_url, url, method, headers, body).await
 }
 
 /// SSRF-guarded request execution (testable without Tauri state); TAURI-FU-5.
@@ -550,6 +561,45 @@ mod tests {
             assert!(r.unwrap_err().contains("within configured server"));
             let r = perform_request(&server, &format!("{}/ok", server), "TRACE", HashMap::new(), None).await;
             assert_eq!(r.unwrap_err(), "Unsupported HTTP method");
+        }
+
+        #[tokio::test]
+        async fn request_via_config_guards_against_configured_server() {
+            let a = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let b = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let (pa, pb) = (a.local_addr().unwrap().port(), b.local_addr().unwrap().port());
+            let hits_b = Arc::new(AtomicUsize::new(0));
+            tokio::spawn(crate::url_guard::tests::serve(a, pb, Arc::new(AtomicUsize::new(0))));
+            tokio::spawn(crate::url_guard::tests::serve(b, pa, hits_b.clone()));
+
+            let state: ConfigState = Mutex::new(AppConfig::default());
+            let r = request_via_config(&state, &format!("http://127.0.0.1:{}/ok", pa), "GET", HashMap::new(), None).await;
+            assert_eq!(r.unwrap_err(), "Server URL not configured");
+
+            state.lock().await.server_url = Some(format!("http://127.0.0.1:{}", pa));
+            let r = request_via_config(&state, &format!("http://127.0.0.1:{}/ok", pb), "GET", HashMap::new(), None).await;
+            assert!(r.unwrap_err().contains("within configured server"));
+            assert_eq!(hits_b.load(Ordering::SeqCst), 0, "server B must receive zero requests");
+
+            let r = request_via_config(&state, &format!("http://127.0.0.1:{}/ok", pa), "GET", HashMap::new(), None).await;
+            assert_eq!(r.unwrap(), "ok");
+        }
+
+        #[tokio::test]
+        async fn perform_request_forwards_headers_and_body() {
+            let a = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+            let pa = a.local_addr().unwrap().port();
+            tokio::spawn(crate::url_guard::tests::serve(a, 1, Arc::new(AtomicUsize::new(0))));
+            let server = format!("http://127.0.0.1:{}", pa);
+            let mut h = HashMap::new();
+            h.insert("Authorization".to_string(), "Bearer tok-123".to_string());
+            let r = perform_request(&server, &format!("{}/echo", server), "POST", h, Some("payload-xyz".into()))
+                .await
+                .unwrap()
+                .to_lowercase();
+            assert!(r.contains("authorization: bearer tok-123"), "{}", r);
+            assert!(r.contains("payload-xyz"), "{}", r);
+            assert!(r.starts_with("post /echo"), "{}", r);
         }
 
         #[tokio::test]

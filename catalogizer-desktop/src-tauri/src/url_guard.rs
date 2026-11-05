@@ -169,6 +169,7 @@ pub(crate) mod tests {
         assert!(validate_server_url("http://u@a.com").is_err());
         assert!(validate_server_url("http://a.com/api%2f..").is_err());
         assert!(validate_server_url("http://a.com/a%5Cb").is_err());
+        assert!(validate_server_url("http://a.com/a%2Eb").is_err());
         assert!(validate_server_url("garbage").is_err());
         assert!(validate_server_url("").is_err());
     }
@@ -196,6 +197,7 @@ pub(crate) mod tests {
                     }
                     "/redir-out" => format!("HTTP/1.1 302 Found\r\nLocation: http://127.0.0.1:{}/x\r\nContent-Length: 0\r\nConnection: close\r\n\r\n", other_port),
                     "/redir-in" => "HTTP/1.1 302 Found\r\nLocation: /ok\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".to_string(),
+                    "/echo" => format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}", req.len(), req),
                     _ => "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok".to_string(),
                 };
                 let _ = sock.write_all(resp.as_bytes()).await;
