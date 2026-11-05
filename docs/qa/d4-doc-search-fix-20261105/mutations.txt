@@ -1,0 +1,8 @@
+M3_no_staleness_by_size => --- FAIL: TestDocumentTextIndexer_TxtMdPdfAndSkips (0.08s) FAIL FAIL	catalogizer/services	0.223s 
+M4_remote_roots_indexed => --- FAIL: TestDocumentTextIndexer_RefusesSymlinkEscapeAndRemoteRoots (0.05s) FAIL FAIL	catalogizer/services	0.173s 
+M5_all_extensions_indexed => --- FAIL: TestDocumentTextIndexer_TxtMdPdfAndSkips (0.09s) FAIL FAIL	catalogizer/services	0.183s 
+M7_deleted_files_indexed => --- FAIL: TestDocumentTextIndexer_DeletedFilesNotIndexed (0.01s) FAIL FAIL	catalogizer/services	0.118s 
+M2_symlink_escape_allowed => --- FAIL: TestDocumentTextIndexer_RefusesSymlinkEscapeAndRemoteRoots (0.04s) FAIL FAIL	catalogizer/services	0.307s 
+M1_search_ignores_extracted_text => --- FAIL: TestD4_FullTextSearchOverExtractedDocuments_RealBinary (13.33s) FAIL FAIL	catalogizer	13.358s 
+M1b_text_match_exact_not_substring => --- FAIL: TestD4_FullTextSearchOverExtractedDocuments_RealBinary (72.20s) FAIL FAIL	catalogizer	72.226s 
+M6_post_scan_hook_not_called => --- FAIL: TestD4_FullTextSearchOverExtractedDocuments_RealBinary (71.32s) FAIL FAIL	catalogizer	71.342s 

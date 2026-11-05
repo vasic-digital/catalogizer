@@ -27,6 +27,7 @@ type UniversalScanner struct {
 	renameTracker      *UniversalRenameTracker
 	clientFactory      filesystem.ClientFactory
 	aggregationService *AggregationService
+	postScanIndexer    func(ctx context.Context, storageRootID int64) error
 	eventBus           *eventbus.EventBus
 	scanQueue          chan ScanJob
 	workers            int
@@ -138,6 +139,12 @@ func NewUniversalScanner(db *database.DB, logger *zap.Logger, renameTracker *Uni
 // SetAggregationService sets the aggregation service for post-scan entity creation.
 func (s *UniversalScanner) SetAggregationService(svc *AggregationService) {
 	s.aggregationService = svc
+}
+
+// SetPostScanIndexer registers a function run in the background after every completed scan of a
+// storage root (the document text indexer, D4). The function receives the storage root id.
+func (s *UniversalScanner) SetPostScanIndexer(fn func(ctx context.Context, storageRootID int64) error) {
+	s.postScanIndexer = fn
 }
 
 // SetEventBus sets the system event bus for publishing scan lifecycle events.
@@ -405,6 +412,23 @@ func (s *UniversalScanner) processScanJob(job ScanJob, workerID int) {
 		zap.String("storage_root", job.StorageRoot.Name),
 		zap.Int64("files_processed", snapshot.FilesProcessed),
 		zap.Duration("duration", time.Since(snapshot.StartTime)))
+
+	// Post-scan document text indexing (D4): makes extracted document text searchable
+	if s.postScanIndexer != nil {
+		s.wg.Add(1)
+		go func() {
+			defer s.wg.Done()
+			ictx := job.Context
+			if ictx == nil {
+				ictx = context.Background()
+			}
+			if err := s.postScanIndexer(ictx, int64(job.StorageRoot.ID)); err != nil {
+				s.logger.Error("Post-scan document text indexing failed",
+					zap.String("job_id", job.ID),
+					errField(err, status.secrets))
+			}
+		}()
+	}
 
 	// Run post-scan aggregation to create media entities from scanned files
 	if s.aggregationService != nil {

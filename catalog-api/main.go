@@ -659,6 +659,16 @@ func main() {
 	aggregationService := services.NewAggregationService(databaseDB, logger, mediaItemRepo, mediaFileRepo, dirAnalysisRepo, extMetaRepo)
 	universalScanner.SetAggregationService(aggregationService)
 
+	// Document text indexing after each scan (D4): pdf/txt/md text of local roots becomes searchable
+	docTextIndexer := root_services.NewDocumentTextIndexer(databaseDB)
+	universalScanner.SetPostScanIndexer(func(ctx context.Context, rootID int64) error {
+		indexed, failed, err := docTextIndexer.IndexStorageRoot(ctx, rootID)
+		if err == nil {
+			logger.Info("Document text indexed", zap.Int64("storage_root_id", rootID), zap.Int("indexed", indexed), zap.Int("failed", failed))
+		}
+		return err
+	})
+
 	// System event bus for decoupled communication between components.
 	// Publishers (scanner) and subscribers (WebSocket bridge) are independent.
 	sysEventBusCfg := eventbus.DefaultConfig()

@@ -1012,7 +1012,7 @@ components:
       properties:
         query:
           type: string
-          description: Search query (searches in filename and path)
+          description: Search query (substring match on filename, path, and the extracted text of pdf, txt and md files of local storage roots)
         path:
           type: string
           description: Path filter (partial match)
@@ -2693,7 +2693,7 @@ paths:
       parameters:
         - name: q
           in: query
-          description: Search query (searches in filename and path)
+          description: Search query (substring match on filename, path, and the extracted text of pdf, txt and md files of local storage roots)
           schema:
             type: string
         - name: path
