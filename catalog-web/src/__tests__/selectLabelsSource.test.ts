@@ -29,7 +29,10 @@ describe('every <Select> call site is named', () => {
       const before = src.slice(Math.max(0, m.index - 400), m.index)
       const wrapped = /<label(?![^>]*htmlFor)[^>]*>(?:(?!<\/label>)[\s\S])*$/.test(before)
       const id = /\sid="([^"]+)"/.exec(tag)?.[1]
-      const ok = /aria-label=|aria-labelledby=/.test(tag) || wrapped || (id && src.includes(`htmlFor="${id}"`))
+      const idExpr = /\sid=\{([^}]*(?:\}[^}]*)*?)\}\s/.exec(tag)?.[1]
+      const ok = /aria-label=|aria-labelledby=/.test(tag) || wrapped
+        || (id && src.includes(`htmlFor="${id}"`))
+        || (idExpr && src.includes(`htmlFor={${idExpr}}`))
       if (!ok) offenders.push(`${f.split('src/')[1]}:${src.slice(0, m.index).split('\n').length}`)
     }
   }
