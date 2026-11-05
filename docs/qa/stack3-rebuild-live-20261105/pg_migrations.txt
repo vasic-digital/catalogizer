@@ -1,0 +1,10 @@
+conversion_jobs.warning|1
+subtitle_tracks.uploaded_by|1
+file_text_index rows|5
+file_text_index by status|ok|4
+file_text_index by status|failed|1
+books/Known Text Document.pdf|ok
+books/Plain Notes.txt|ok
+live3/Live3 Markdown Note.md|ok
+live3/Live3 Text Note.txt|ok
+negative/not-a-pdf.pdf|failed
