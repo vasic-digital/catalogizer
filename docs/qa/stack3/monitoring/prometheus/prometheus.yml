@@ -1,0 +1,18 @@
+# Stack-3 QA Prometheus. /metrics on catalog-api requires an admin bearer token (or METRICS_SCRAPE_TOKEN, which the running stack-3 API
+# does not have set). The token-refresher sidecar logs in as qa_admin every 6h and writes the 24h session token to /tokens/metrics.tok;
+# credentials_file is re-read on every scrape.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+scrape_configs:
+  - job_name: catalogizer-api
+    metrics_path: /metrics
+    authorization:
+      type: Bearer
+      credentials_file: /tokens/metrics.tok
+    static_configs:
+      - targets: ['__MON_HOST__:__API_PORT__']
+        labels: {stack: catqa3}
+  - job_name: prometheus
+    static_configs:
+      - targets: ['127.0.0.1:9090']
