@@ -1,0 +1,6 @@
+2026-11-05T14:04:23+01:00
+sys.boot_completed=1
+ro.build.version.release=14
+ro.build.version.sdk=34
+ro.product.cpu.abi=x86
+ro.build.characteristics=emulator

@@ -1,0 +1,2 @@
+7d86ef305213518854b4aa64ac6f94e1ef1a0a544c0130c32b79691c40ef20be  catalogizer-android/app/build/outputs/apk/debug/app-debug.apk
+28e4474a837f07c685dfd465dbec664e8d06446575475b28608b24852570f4e8  catalogizer-androidtv/app/build/outputs/apk/debug/app-debug.apk

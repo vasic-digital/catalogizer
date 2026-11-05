@@ -1,0 +1,10 @@
+2026-11-05T13:55:00+01:00
+List of devices attached
+emulator-5584	device
+
+sys.boot_completed=1
+ro.build.version.release=14
+ro.build.version.sdk=34
+ro.product.cpu.abi=x86_64
+ro.product.model=Android SDK built for x86_64
+ro.kernel.qemu=1

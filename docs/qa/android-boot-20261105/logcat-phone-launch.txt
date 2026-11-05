@@ -1,0 +1,217 @@
+--------- beginning of main
+11-05 13:55:20.214  2499  2499 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+11-05 13:55:20.219  2499  2499 I AndroidRuntime: Using default boot image
+11-05 13:55:20.219  2499  2499 I AndroidRuntime: Leaving lock profiling enabled
+11-05 13:55:20.221  2499  2499 I app_process: Core platform API reporting enabled, enforcing=false
+11-05 13:55:20.222  2499  2499 I app_process: Using CollectorTypeCC GC.
+11-05 13:55:20.295  2499  2499 D nativeloader: InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
+11-05 13:55:20.308  2499  2499 D app_process: Time zone APEX ICU file found: /apex/com.android.tzdata/etc/icu/icu_tzdata.dat
+11-05 13:55:20.308  2499  2499 D app_process: I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt72l.dat
+11-05 13:55:20.314  2499  2499 W app_process: Unexpected CPU variant for x86: x86_64.
+11-05 13:55:20.314  2499  2499 W app_process: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+11-05 13:55:20.335  2499  2499 W libc    : Access denied finding property "ro.product.name_for_attestation"
+11-05 13:55:20.335  2499  2499 W libc    : Access denied finding property "ro.product.brand_for_attestation"
+11-05 13:55:20.335  2499  2499 W libc    : Access denied finding property "ro.product.model_for_attestation"
+11-05 13:55:20.336  2499  2499 D AndroidRuntime: Calling main entry com.android.commands.monkey.Monkey
+11-05 13:55:20.337  2499  2499 W Monkey  : args: [-p, com.catalogizer.android, -c, android.intent.category.LAUNCHER, 1]
+11-05 13:55:20.337  2499  2499 W Monkey  :  arg: "-p"
+11-05 13:55:20.337  2499  2499 W Monkey  :  arg: "com.catalogizer.android"
+11-05 13:55:20.337  2499  2499 W Monkey  :  arg: "-c"
+11-05 13:55:20.338  2499  2499 W Monkey  :  arg: "android.intent.category.LAUNCHER"
+11-05 13:55:20.338  2499  2499 W Monkey  :  arg: "1"
+11-05 13:55:20.338  2499  2499 W Monkey  : data="com.catalogizer.android"
+11-05 13:55:20.338  2499  2499 W Monkey  : data="android.intent.category.LAUNCHER"
+11-05 13:55:20.331  2499  2499 W main    : type=1400 audit(0.0:15): avc:  denied  { read } for  name="u:object_r:build_attestation_prop:s0" dev="tmpfs" ino=86 scontext=u:r:shell:s0 tcontext=u:object_r:build_attestation_prop:s0 tclass=file permissive=0
+11-05 13:55:20.331  2499  2499 W main    : type=1400 audit(0.0:16): avc:  denied  { read } for  name="u:object_r:build_attestation_prop:s0" dev="tmpfs" ino=86 scontext=u:r:shell:s0 tcontext=u:object_r:build_attestation_prop:s0 tclass=file permissive=0
+11-05 13:55:20.335  2499  2499 W main    : type=1400 audit(0.0:17): avc:  denied  { read } for  name="u:object_r:build_attestation_prop:s0" dev="tmpfs" ino=86 scontext=u:r:shell:s0 tcontext=u:object_r:build_attestation_prop:s0 tclass=file permissive=0
+--------- beginning of system
+11-05 13:55:20.347   545  2282 W ActivityManager: registerReceiverWithFeature: no app for null
+11-05 13:55:20.349  2499  2499 W System  : No Compatibility callbacks set! Querying change 263076149
+11-05 13:55:20.349  2499  2499 W System  : No Compatibility callbacks set! Querying change 263076149
+11-05 13:55:20.349  2499  2499 W System  : No Compatibility callbacks set! Querying change 263076149
+11-05 13:55:20.352   545  2282 D CompatibilityChangeReporter: Compat change id reported: 161252188; UID 10141; state: DISABLED
+11-05 13:55:20.353   545  2282 W ActivityTaskManager: callingPackage for (uid=2000, pid=2499) has no WPC
+11-05 13:55:20.353   545  2282 D CompatibilityChangeReporter: Compat change id reported: 244637991; UID 2000; state: ENABLED
+11-05 13:55:20.353   545  2282 D CompatibilityChangeReporter: Compat change id reported: 265464455; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 265452344; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 266124927; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 265451093; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 265456536; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 255940284; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 236283604; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 263959004; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 264304459; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 264301586; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 254631730; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 273509367; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 263259275; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 174042980; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 174042936; UID 10141; state: DISABLED
+11-05 13:55:20.354   545  2282 D CompatibilityChangeReporter: Compat change id reported: 181136395; UID 10141; state: DISABLED
+11-05 13:55:20.356   545  2282 D CompatibilityChangeReporter: Compat change id reported: 194480991; UID 10141; state: ENABLED
+11-05 13:55:20.360   545  2282 D CompatibilityChangeReporter: Compat change id reported: 184838306; UID 10141; state: DISABLED
+11-05 13:55:20.360   545  2282 D CompatibilityChangeReporter: Compat change id reported: 185004937; UID 10141; state: DISABLED
+11-05 13:55:20.361   545  2282 D CompatibilityChangeReporter: Compat change id reported: 197654537; UID 10141; state: ENABLED
+11-05 13:55:20.361   545  2282 V SplashScreenExceptionList: SplashScreen checking exception for package com.catalogizer.android (target sdk:34) -> false
+11-05 13:55:20.361   545  2282 D CompatibilityChangeReporter: Compat change id reported: 205907456; UID 10141; state: ENABLED
+11-05 13:55:20.363   545  2282 D CompatibilityChangeReporter: Compat change id reported: 194833441; UID 10141; state: ENABLED
+11-05 13:55:20.363   856   889 V WindowManagerShell: Transition requested: android.os.BinderProxy@4b8293c TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=8 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.catalogizer.android/.ui.MainActivity } baseActivity=ComponentInfo{com.catalogizer.android/com.catalogizer.android.ui.MainActivity} topActivity=ComponentInfo{com.catalogizer.android/com.catalogizer.android.ui.MainActivity} origActivity=null realActivity=ComponentInfo{com.catalogizer.android/com.catalogizer.android.ui.MainActivity} numActivities=1 lastActiveTime=101403 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@f6206c5} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 128 - 0, 0) topActivityInfo=ActivityInfo{c2b181a com.catalogizer.android.ui.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+11-05 13:55:20.363   545  2282 I ActivityTaskManager: START u0 {act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.catalogizer.android/.ui.MainActivity} with LAUNCH_MULTIPLE from uid 2000 (BAL_ALLOW_PERMISSION) result code=0
+11-05 13:55:20.364   545   565 D CompatibilityChangeReporter: Compat change id reported: 135634846; UID 10141; state: DISABLED
+11-05 13:55:20.364  2499  2499 I Monkey  : Events injected: 1
+11-05 13:55:20.364   545   575 D CompatibilityChangeReporter: Compat change id reported: 143937733; UID 10141; state: ENABLED
+11-05 13:55:20.376   545   620 D CompatibilityChangeReporter: Compat change id reported: 265195908; UID 10141; state: ENABLED
+11-05 13:55:20.377  2499  2499 I Monkey  : ## Network stats: elapsed time=20ms (0ms mobile, 0ms wifi, 20ms not connected)
+11-05 13:55:20.378  2499  2499 I app_process: System.exit called, status: 0
+11-05 13:55:20.378  2499  2499 I AndroidRuntime: VM exiting with result code 0.
+11-05 13:55:20.378   346   346 D Zygote  : Forked child process 2514
+11-05 13:55:20.379   545   575 I ActivityManager: Start proc 2514:com.catalogizer.android/u0a141 for next-top-activity {com.catalogizer.android/com.catalogizer.android.ui.MainActivity}
+11-05 13:55:20.381   856   903 D SplashScreenView: Build android.window.SplashScreenView{fb7497d V.E...... ......ID 0,0-0,0}
+11-05 13:55:20.381   856   903 D SplashScreenView: Icon: view: android.widget.ImageView{d1c9072 V.ED..... ......I. 0,0-0,0 #10204f0 android:id/splashscreen_icon_view} drawable: com.android.wm.shell.startingsurface.SplashscreenIconDrawableFactory$ImmobileIconDrawable@3586cc3 size: 504
+11-05 13:55:20.381   856   903 D SplashScreenView: Branding: view: android.view.View{f9be940 G.ED..... ......I. 0,0-0,0 #10204ef android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+11-05 13:55:20.382   398   398 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+11-05 13:55:20.387   545  2282 D CoreBackPreview: Window{433157f u0 Splash Screen com.catalogizer.android}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@a412e11, mPriority=0, mIsAnimationCallback=false}
+11-05 13:55:20.424  2514  2514 I logizer.android: Late-enabling -Xcheck:jni
+11-05 13:55:20.427  1121  1630 D EGL_emulation: app_time_stats: avg=5767.34ms min=94.83ms max=11439.86ms count=2
+11-05 13:55:20.438  2514  2514 I logizer.android: Using CollectorTypeCC GC.
+11-05 13:55:20.439  2514  2514 W logizer.android: Unexpected CPU variant for x86: x86_64.
+11-05 13:55:20.439  2514  2514 W logizer.android: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+11-05 13:55:20.443   416   439 I adbd    : jdwp connection from 2514
+11-05 13:55:20.477  2514  2514 D CompatibilityChangeReporter: Compat change id reported: 171979766; UID 10141; state: ENABLED
+11-05 13:55:20.477  2514  2514 D CompatibilityChangeReporter: Compat change id reported: 242716250; UID 10141; state: ENABLED
+11-05 13:55:20.480   545  2282 D CompatibilityChangeReporter: Compat change id reported: 170503758; UID 10141; state: ENABLED
+11-05 13:55:20.484  2514  2514 W ziparchive: Unable to open '/data/app/~~Z9J-zz3CYK63HykrknBZAQ==/com.catalogizer.android-2YPvOL-XPsTePfHej4h-Ww==/base.dm': No such file or directory
+11-05 13:55:20.485  2514  2514 W ziparchive: Unable to open '/data/app/~~Z9J-zz3CYK63HykrknBZAQ==/com.catalogizer.android-2YPvOL-XPsTePfHej4h-Ww==/base.dm': No such file or directory
+11-05 13:55:20.509   545   562 V WindowManager: Sent Transition #7 createdAt=11-05 13:55:20.356 via request=TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=8 displayId=0 isRunning=true baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.catalogizer.android/.ui.MainActivity } baseActivity=ComponentInfo{com.catalogizer.android/com.catalogizer.android.ui.MainActivity} topActivity=ComponentInfo{com.catalogizer.android/com.catalogizer.android.ui.MainActivity} origActivity=null realActivity=ComponentInfo{com.catalogizer.android/com.catalogizer.android.ui.MainActivity} numActivities=1 lastActiveTime=101403 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{a528e49 Task{92ae16d #8 type=standard A=10141:com.catalogizer.android}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 128 - 0, 0) topActivityInfo=ActivityInfo{1f7034e com.catalogizer.android.ui.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+11-05 13:55:20.509   545   562 V WindowManager:     startWCT=WindowContainerTransaction { changes = {} hops = [] errorCallbackToken=null taskFragmentOrganizer=null }
+11-05 13:55:20.509   545   562 V WindowManager:     info={id=7 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{RemoteToken{a528e49 Task{92ae16d #8 type=standard A=10141:com.catalogizer.android}}} m=OPEN f=NONE leash=Surface(name=Task=8)/@0xbc8b213 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{RemoteToken{5825c6f Task{b52123d #1 type=home}}} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x1ea0d12 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-05 13:55:20.510   856   889 V WindowManagerShell: onTransitionReady android.os.BinderProxy@4b8293c: {id=7 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@57045b1} m=OPEN f=NONE leash=Surface(name=Task=8)/@0x9bbca sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@defca96} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x398b13b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-05 13:55:20.510   856   889 V WindowManagerShell: Playing animation for (#7)android.os.BinderProxy@4b8293c@0
+11-05 13:55:20.511   856   889 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultMixedHandler@4818304
+11-05 13:55:20.511   856   889 V WindowManagerShell:  try handler com.android.wm.shell.keyguard.KeyguardTransitionHandler@a2830ed
+11-05 13:55:20.511   856   889 V WindowManagerShell:  try handler com.android.wm.shell.activityembedding.ActivityEmbeddingController@6533b22
+11-05 13:55:20.511   856   889 V WindowManagerShell:  try handler com.android.wm.shell.recents.RecentsTransitionHandler@bc0b9b3
+11-05 13:55:20.511   856   889 V ShellRecents: RecentsTransitionHandler.startAnimation: no controller found
+11-05 13:55:20.511   856   889 V WindowManagerShell:  try handler com.android.wm.shell.pip.PipTransition@d15cb70
+11-05 13:55:20.511   856   889 V WindowManagerShell:  try handler com.android.wm.shell.splitscreen.StageCoordinator@ee3eee9
+11-05 13:55:20.511   856   889 V WindowManagerShell:  try handler com.android.wm.shell.transition.RemoteTransitionHandler@b0de76e
+11-05 13:55:20.511   856   889 V WindowManagerShell: Transition doesn't have explicit remote, search filters for match for {id=7 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@57045b1} m=OPEN f=NONE leash=Surface(name=Task=8)/@0x9bbca sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@defca96} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x398b13b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-05 13:55:20.512   856   889 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher}},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@4d72617, appThread = android.app.IApplicationThread$Stub$Proxy@a006a04, debugName = QuickstepLaunchHome }}
+11-05 13:55:20.512   856   889 V WindowManagerShell:  Delegate animation for #7 to null
+11-05 13:55:20.512   856   889 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultTransitionHandler@e8390a5
+11-05 13:55:20.512   856   889 V WindowManagerShell: start default transition animation, info = {id=7 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@57045b1} m=OPEN f=NONE leash=Surface(name=Task=8)/@0x9bbca sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0},{WCT{android.window.IWindowContainerToken$Stub$Proxy@defca96} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x398b13b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+11-05 13:55:20.512   856   889 V WindowManagerShell: loadAnimation: anim=android.view.animation.AnimationSet@c55fa22 animAttr=0x13 type=OPEN isEntrance=false
+11-05 13:55:20.513   856   889 V WindowManagerShell: loadAnimation: anim=android.view.animation.AnimationSet@7fd966e animAttr=0x12 type=OPEN isEntrance=true
+11-05 13:55:20.513   856   889 V WindowManagerShell:  animated by com.android.wm.shell.transition.DefaultTransitionHandler@e8390a5
+11-05 13:55:20.808   856   889 V WindowManagerShell: Transition animation finished (aborted=false), notifying core (#7)android.os.BinderProxy@4b8293c@0
+11-05 13:55:20.810   856   889 V WindowManagerShell: Track 0 became idle
+11-05 13:55:20.810   545   562 V WindowManager: Finish Transition #7: created at 11-05 13:55:20.356 collect-started=0.019ms request-sent=6.317ms started=13.458ms ready=106.3ms sent=152.267ms finished=452.399ms
+11-05 13:55:20.813   856   889 V WindowManagerShell: All active transition animations finished
+11-05 13:55:20.878   856   856 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+11-05 13:55:21.197  2514  2514 D nativeloader: Configuring clns-6 for other apk /data/app/~~Z9J-zz3CYK63HykrknBZAQ==/com.catalogizer.android-2YPvOL-XPsTePfHej4h-Ww==/base.apk. target_sdk_version=34, uses_libraries=, library_path=/data/app/~~Z9J-zz3CYK63HykrknBZAQ==/com.catalogizer.android-2YPvOL-XPsTePfHej4h-Ww==/lib/x86_64:/data/app/~~Z9J-zz3CYK63HykrknBZAQ==/com.catalogizer.android-2YPvOL-XPsTePfHej4h-Ww==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.catalogizer.android
+11-05 13:55:21.215  2514  2514 V GraphicsEnvironment: Currently set values for:
+11-05 13:55:21.215  2514  2514 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+11-05 13:55:21.215  2514  2514 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+11-05 13:55:21.216  2514  2514 V GraphicsEnvironment: ANGLE GameManagerService for com.catalogizer.android: false
+11-05 13:55:21.216  2514  2514 V GraphicsEnvironment: com.catalogizer.android is not listed in per-application setting
+11-05 13:55:21.216  2514  2514 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+11-05 13:55:21.259   545  2282 I ActivityManager: Flag disabled. Ignoring finishAttachApplication from uid: 10141. pid: 2514
+11-05 13:55:21.264  2514  2535 D libEGL  : loaded /vendor/lib64/egl/libEGL_emulation.so
+11-05 13:55:21.265  2514  2535 D libEGL  : loaded /vendor/lib64/egl/libGLESv1_CM_emulation.so
+11-05 13:55:21.266  2514  2535 D libEGL  : loaded /vendor/lib64/egl/libGLESv2_emulation.so
+11-05 13:55:21.338  2514  2514 W logizer.android: Accessing hidden method Ljava/lang/invoke/MethodHandles$Lookup;-><init>(Ljava/lang/Class;I)V (unsupported, reflection, allowed)
+11-05 13:55:21.455  2514  2514 W WindowOnBackDispatcher: OnBackInvokedCallback is not enabled for the application.
+11-05 13:55:21.455  2514  2514 W WindowOnBackDispatcher: Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.
+11-05 13:55:21.460  2514  2514 D CompatibilityChangeReporter: Compat change id reported: 237531167; UID 10141; state: DISABLED
+11-05 13:55:21.461  2514  2514 W OpenGLRenderer: Unknown dataspace 0
+11-05 13:55:21.613   545  2282 D AutofillManagerServiceImpl: Reset component for user 0:null
+11-05 13:55:21.614   545   563 D AutofillUI: destroySaveUiUiThread(): already destroyed
+11-05 13:55:21.614   545   545 D CompatibilityChangeReporter: Compat change id reported: 261072174; UID 1000; state: ENABLED
+11-05 13:55:21.748   545   608 D CoreBackPreview: Window{d991dac u0 com.catalogizer.android/com.catalogizer.android.ui.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@3808062, mPriority=0, mIsAnimationCallback=false}
+11-05 13:55:21.808   398   650 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10141 pid=0
+11-05 13:55:21.808   398   650 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10141 => denied (296 us)
+11-05 13:55:21.808   398   650 W ServiceManagerCppClient: Permission failure: android.permission.INTERNAL_SYSTEM_WINDOW from uid=10141 pid=0
+11-05 13:55:21.808   398   650 D PermissionCache: checking android.permission.INTERNAL_SYSTEM_WINDOW for uid=10141 => denied (84 us)
+11-05 13:55:21.808   398   650 W ServiceManagerCppClient: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10141 pid=0
+11-05 13:55:21.808   398   650 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10141 => denied (99 us)
+11-05 13:55:21.808   398   472 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10141 pid=2514
+11-05 13:55:21.808   398   472 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10141 => denied (233 us)
+11-05 13:55:21.822  2514  2533 W OpenGLRenderer: Failed to initialize 101010-2 format, error = EGL_SUCCESS
+11-05 13:55:21.837   345  2543 I resolv  : GetAddrInfoHandler::run: {101 101 101 983141 10141 0}
+11-05 13:55:21.839  2514  2540 D TrafficStats: tagSocket(82) with statsTag=0xffffffff, statsUid=-1
+11-05 13:55:21.841   149   149 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+11-05 13:55:21.841  2514  2533 I Gralloc4: mapper 4.x is not supported
+--------- beginning of kernel
+11-05 13:55:21.997     0     0 I servicemanager: Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest.
+11-05 13:55:22.208   843   843 I wpa_supplicant: wlan0: CTRL-EVENT-BEACON-LOSS 
+11-05 13:55:22.518   545   608 W ServiceManagerCppClient: Permission failure: android.permission.ROTATE_SURFACE_FLINGER from uid=10141 pid=0
+11-05 13:55:22.518   545   608 D PermissionCache: checking android.permission.ROTATE_SURFACE_FLINGER for uid=10141 => denied (586 us)
+11-05 13:55:22.518   545   608 W ServiceManagerCppClient: Permission failure: android.permission.INTERNAL_SYSTEM_WINDOW from uid=10141 pid=0
+11-05 13:55:22.518   545   608 D PermissionCache: checking android.permission.INTERNAL_SYSTEM_WINDOW for uid=10141 => denied (44 us)
+11-05 13:55:22.518   545   608 W ServiceManagerCppClient: Permission failure: android.permission.ACCESS_SURFACE_FLINGER from uid=10141 pid=0
+11-05 13:55:22.518   545   608 D PermissionCache: checking android.permission.ACCESS_SURFACE_FLINGER for uid=10141 => denied (29 us)
+11-05 13:55:22.523  2514  2514 I Choreographer: Skipped 36 frames!  The application may be doing too much work on its main thread.
+11-05 13:55:22.525   545   562 W ziparchive: Unable to open '/data/app/~~Z9J-zz3CYK63HykrknBZAQ==/com.catalogizer.android-2YPvOL-XPsTePfHej4h-Ww==/base.dm': No such file or directory
+11-05 13:55:22.527   545   562 I ActivityTaskManager: Displayed com.catalogizer.android/.ui.MainActivity for user 0: +2s172ms
+11-05 13:55:22.547  1121  1142 I ImeTracker: com.android.launcher3:a193772: onRequestHide at ORIGIN_CLIENT_HIDE_SOFT_INPUT reason HIDE_SOFT_INPUT
+11-05 13:55:22.548   545  2282 I ImeTracker: com.android.launcher3:a193772: onCancelled at PHASE_SERVER_SHOULD_HIDE
+11-05 13:55:22.558  2514  2530 I OpenGLRenderer: Davey! duration=1038ms; Flags=1, FrameTimelineVsyncId=3816, IntendedVsync=102540319099, Vsync=102940319083, InputEventId=0, HandleInputStart=102946212758, AnimationStart=102946219828, PerformTraversalsStart=102956296980, DrawStart=102958929351, FrameDeadline=102556985765, FrameInterval=102945800408, FrameStartTime=16666666, SyncQueued=102970603954, SyncStart=102970888655, IssueDrawCommandsStart=102971674815, SwapBuffers=103442558482, FrameCompleted=103578923609, DequeueBufferDuration=5280, QueueBufferDuration=622020, GpuCompleted=103578923609, SwapBuffersCompleted=103558263453, DisplayPresentTime=0, CommandSubmissionCompleted=103442558482, 
+11-05 13:55:22.674  2514  2527 I OpenGLRenderer: Davey! duration=733ms; Flags=0, FrameTimelineVsyncId=3861, IntendedVsync=102956985749, Vsync=103556985725, InputEventId=0, HandleInputStart=103565470475, AnimationStart=103565473675, PerformTraversalsStart=103567349616, DrawStart=103567638416, FrameDeadline=103606985723, FrameInterval=103565089715, FrameStartTime=16666666, SyncQueued=103569039526, SyncStart=103569065026, IssueDrawCommandsStart=103569938786, SwapBuffers=103599516814, FrameCompleted=103690445819, DequeueBufferDuration=2830, QueueBufferDuration=213390, GpuCompleted=103690445819, SwapBuffersCompleted=103679829576, DisplayPresentTime=0, CommandSubmissionCompleted=103599516814, 
+11-05 13:55:22.676   545   608 D CompatibilityChangeReporter: Compat change id reported: 214016041; UID 10141; state: ENABLED
+11-05 13:55:22.677   545   608 I ImeTracker: com.catalogizer.android:df683d59: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+11-05 13:55:22.677   545   608 I ImeTracker: com.catalogizer.android:df683d59: onCancelled at PHASE_SERVER_SHOULD_HIDE
+11-05 13:55:23.075   856   900 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=falsecallback=android.view.ViewRootImpl$$ExternalSyntheticLambda17@df40079
+11-05 13:55:23.075   545  2282 D CoreBackPreview: Window{433157f u0 Splash Screen com.catalogizer.android EXITING}: Setting back callback null
+11-05 13:55:23.076   856   856 D StatusBarIconController: ignoring old pipeline callbacks, because the new mobile icons are enabled
+11-05 13:55:23.077   545   608 W InputManager-JNI: Input channel object '433157f Splash Screen com.catalogizer.android (client)' was disposed without first being removed with the input manager!
+11-05 13:55:23.126   856   900 W FrameTracker: Missed App frame:UNKNOWN: 10, 3884, 0, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+11-05 13:55:23.126   856   900 W FrameTracker: Missed SF frame:UNKNOWN: 10, 3884, 0, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+11-05 13:55:23.126   856   900 W FrameTracker: Missing HWUI jank callback for vsyncId: 3884, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+11-05 13:55:23.126   856   900 W FrameTracker: Missed App frame:UNKNOWN: 88, 3898, 0, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+11-05 13:55:23.126   856   900 W FrameTracker: Missed SF frame:UNKNOWN: 88, 3898, 0, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+11-05 13:55:23.126   856   900 W FrameTracker: Missing HWUI jank callback for vsyncId: 3898, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+11-05 13:55:23.126   856   900 W FrameTracker: Missed App frame:UNKNOWN: 74, 3919, 448623640, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+11-05 13:55:23.126   856   900 W FrameTracker: Missed SF frame:UNKNOWN: 74, 3919, 448623640, CUJ=J<SPLASHSCREEN_EXIT_ANIM>
+11-05 13:55:23.128   856   893 V PerfettoTrigger: Not triggering com.android.telemetry.interaction-jank-monitor-39 - not enough time since last trigger
+11-05 13:55:23.189   856   870 I ndroid.systemui: Background young concurrent copying GC freed 188588(10MB) AllocSpace objects, 16(320KB) LOS objects, 37% free, 17MB/27MB, paused 1.835ms,54us total 129.498ms
+11-05 13:55:23.392   545  1931 E TaskPersister: File error accessing recents directory (directory doesn't exist?).
+11-05 13:55:23.652  2514  2533 D EGL_emulation: app_time_stats: avg=27.45ms min=13.36ms max=121.58ms count=35
+11-05 13:55:23.749   173  2477 I keystore2: system/security/keystore2/src/watchdog.rs:319 - Watchdog thread idle -> terminating. Have a great day.
+11-05 13:55:23.894   856   856 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+11-05 13:55:24.674  2514  2533 D EGL_emulation: app_time_stats: avg=20.04ms min=10.83ms max=51.60ms count=39
+11-05 13:55:25.406   545   627 D ActivityManager: freezing 1513 com.android.documentsui
+11-05 13:55:25.707  2514  2533 D EGL_emulation: app_time_stats: avg=21.90ms min=11.57ms max=43.29ms count=36
+11-05 13:55:26.110   545  2282 D OomAdjuster: Not killing cached processes
+11-05 13:55:26.725  2514  2533 D EGL_emulation: app_time_stats: avg=19.60ms min=10.66ms max=33.62ms count=42
+11-05 13:55:26.893   856   856 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+11-05 13:55:27.003  2514  2514 W logizer.android: Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-05 13:55:27.003  2514  2514 W logizer.android: Common causes for lock verification issues are non-optimized dex code
+11-05 13:55:27.003  2514  2514 W logizer.android: and incorrect proguard optimizations.
+11-05 13:55:27.003  2514  2514 W logizer.android: Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+11-05 13:55:27.003  2514  2514 W logizer.android: Method java.lang.Object androidx.compose.runtime.snapshots.SnapshotStateList.mutate(kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-05 13:55:27.004  2514  2514 W logizer.android: Method void androidx.compose.runtime.snapshots.SnapshotStateList.update(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+11-05 13:55:27.004  2514  2514 W logizer.android: Method void androidx.compose.runtime.snapshots.SnapshotStateList.update$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+11-05 13:55:27.143  2514  2514 D CompatibilityChangeReporter: Compat change id reported: 289878283; UID 10141; state: ENABLED
+11-05 13:55:27.564  2514  2554 D ProfileInstaller: Installing profile for com.catalogizer.android
+11-05 13:55:27.946   545   627 D ActivityManager: freezing 1940 com.android.traceur
+11-05 13:55:28.293   545   627 D ActivityManager: freezing 1302 com.android.cellbroadcastreceiver.module
+11-05 13:55:28.335   545   627 D ActivityManager: freezing 1860 com.android.imsserviceentitlement
+11-05 13:55:28.411   545   627 D ActivityManager: freezing 1907 com.android.messaging
+11-05 13:55:28.742   545   627 D ActivityManager: freezing 2014 com.android.camera2
+11-05 13:55:28.811   545   627 D ActivityManager: freezing 1981 com.android.calendar
+11-05 13:55:29.059   545   627 D ActivityManager: freezing 1739 com.android.providers.calendar
+11-05 13:55:29.148   545   627 D ActivityManager: freezing 2078 com.android.contacts
+11-05 13:55:29.541   545   627 D ActivityManager: freezing 2134 com.android.dynsystem:dynsystem
+11-05 13:55:29.543   545   627 D ActivityManager: freezing 2105 com.android.dynsystem
+11-05 13:55:29.543   545   627 D ActivityManager: freezing 1080 com.android.settings
+11-05 13:55:29.544   545   627 D ActivityManager: freezing 1994 com.android.localtransport
+11-05 13:55:29.544   545   627 D ActivityManager: freezing 1708 com.android.keychain
+11-05 13:55:29.906   856   856 D StatusBarIconController: ignoring old pipeline callback because the new wifi icon is enabled
+11-05 13:55:30.146   843   843 I wpa_supplicant: wlan0: CTRL-EVENT-BEACON-LOSS 
+11-05 13:55:30.572  2557  2557 W BpBinder: Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+11-05 13:55:30.572  2557  2557 W ProcessState: Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+11-05 13:55:30.580   398  1215 W ServiceManagerCppClient: Permission failure: android.permission.CAPTURE_BLACKOUT_CONTENT from uid=2000 pid=2557
+11-05 13:55:30.580   398  1215 D PermissionCache: checking android.permission.CAPTURE_BLACKOUT_CONTENT for uid=2000 => denied (2317 us)
+11-05 13:55:30.767     0     0 I servicemanager: Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest.
+11-05 13:55:30.612   149   149 I hwservicemanager: getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+11-05 13:55:30.613  2557  2558 I Gralloc4: mapper 4.x is not supported
