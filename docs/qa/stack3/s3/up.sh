@@ -4,9 +4,9 @@
 # Writes credentials ONLY to ${S3_STATE:?}/s3.env (mode 0600), never to stdout.
 set -euo pipefail
 S3_STATE="${S3_STATE:-$HOME/.cache/claude-tmp/catqa-s3live}"
-S3_BIND="${S3_BIND:-192.168.1.115}"
+S3_BIND="${S3_BIND:-127.0.0.1}"   # LAN opt-in: S3_BIND=192.168.1.115
 S3_PORT="${S3_PORT:-39320}"
-IMAGE="${S3_IMAGE:-docker.io/dxflrs/garage:v1.0.1}"
+IMAGE="${S3_IMAGE:-docker.io/dxflrs/garage@sha256:a5706cf1f3d7b349ac5133ec59ad8181b709270b75e5f2fa7b3e1a5c07d67137}"  # pinned by digest (= v1.0.1)
 NAME=catqa-s3live-garage
 NET=catqa-s3live
 BUCKET=catalogizer-live

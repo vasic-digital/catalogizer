@@ -1,0 +1,3 @@
+    s3_live_test.go:185: STALE_LIVE_PREFIXES_FOUND=0
+--- PASS: TestS3Live_SweepStaleRuns (0.04s)
+ok  	catalogizer/filesystem	0.049s

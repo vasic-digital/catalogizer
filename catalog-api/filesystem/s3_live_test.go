@@ -34,6 +34,16 @@ func liveClient(t *testing.T, prefix string) *S3Client {
 	require.NoError(t, err)
 	require.NoError(t, c.Connect(context.Background()))
 	t.Cleanup(func() { _ = c.Disconnect(context.Background()) })
+	if prefix != "" {
+		// sweep everything this run wrote under its unique prefix (a root-level client, so DeleteDirectory is not the refused root)
+		root, err := NewS3Client(&S3Config{Endpoint: ep, Region: region, Bucket: bucket, AccessKey: ak, SecretKey: sk, PathStyle: true})
+		require.NoError(t, err)
+		require.NoError(t, root.Connect(context.Background()))
+		t.Cleanup(func() {
+			_ = root.DeleteDirectory(context.Background(), "/"+prefix)
+			_ = root.Disconnect(context.Background())
+		})
+	}
 	return c
 }
 
@@ -115,10 +125,18 @@ func TestS3Live_DeleteDirectoryOver1000(t *testing.T) {
 		name := fmt.Sprintf("/big/k%05d+&=:@,.bin", i)
 		require.NoError(t, c.WriteFile(ctx, name, bytes.NewReader([]byte{byte(i)})), name)
 	}
+	// siblings whose names merely START with "big": a prefix delete without the trailing "/" would take them too
+	require.NoError(t, c.WriteFile(ctx, "/big2/keep", bytes.NewReader([]byte("keep"))))
+	require.NoError(t, c.WriteFile(ctx, "/bigger.bin", bytes.NewReader([]byte("keep"))))
 	list, err := c.ListDirectory(ctx, "/big")
 	require.NoError(t, err)
 	require.Len(t, list, n, "paginated listing must return every object")
 	require.NoError(t, c.DeleteDirectory(ctx, "/big"))
+	for _, sib := range []string{"/big2/keep", "/bigger.bin"} {
+		ok, err := c.FileExists(ctx, sib)
+		require.NoError(t, err)
+		require.True(t, ok, "sibling must survive DeleteDirectory(/big): "+sib)
+	}
 	left, err := c.ListDirectory(ctx, "/big")
 	require.NoError(t, err)
 	require.Empty(t, left, "every object must be gone after DeleteDirectory")
@@ -152,4 +170,23 @@ func TestS3Live_DirectoriesAndConfinement(t *testing.T) {
 	require.Contains(t, names, "escape.txt")
 	require.NoError(t, c.DeleteDirectory(ctx, "/d1"))
 	require.NoError(t, c.DeleteFile(ctx, "/escape.txt"))
+}
+
+// TestS3Live_SweepStaleRuns removes "live-*" run prefixes left by earlier or aborted runs. Only runs when S3_LIVE_SWEEP=1.
+func TestS3Live_SweepStaleRuns(t *testing.T) {
+	if os.Getenv("S3_LIVE_SWEEP") != "1" {
+		t.Skip("SKIP: S3_LIVE_SWEEP!=1")
+	}
+	c := liveClient(t, "")
+	ctx := context.Background()
+	top, err := c.ListDirectory(ctx, "/")
+	require.NoError(t, err)
+	stale := 0
+	defer func() { t.Logf("STALE_LIVE_PREFIXES_FOUND=%d", stale) }()
+	for _, f := range top {
+		if f.IsDir && len(f.Name) > 5 && f.Name[:5] == "live-" {
+			stale++
+			require.NoError(t, c.DeleteDirectory(ctx, "/"+f.Name), f.Name)
+		}
+	}
 }

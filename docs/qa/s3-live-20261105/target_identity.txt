@@ -1,18 +1,17 @@
 == garage version
 garage v1.0.1 [features: k2v, lmdb, sqlite, consul-discovery, kubernetes-discovery, metrics, telemetry-otlp, bundled-libs]
 == image
-image=docker.io/dxflrs/garage:v1.0.1 imageid=625da745433e16283b054db98a4ca662f75115e088d0f076f341e779b2ebdad2 digest=sha256:a5706cf1f3d7b349ac5133ec59ad8181b709270b75e5f2fa7b3e1a5c07d67137
+image=docker.io/dxflrs/garage@sha256:a5706cf1f3d7b349ac5133ec59ad8181b709270b75e5f2fa7b3e1a5c07d67137 imageid=625da745433e16283b054db98a4ca662f75115e088d0f076f341e779b2ebdad2 digest=sha256:a5706cf1f3d7b349ac5133ec59ad8181b709270b75e5f2fa7b3e1a5c07d67137
 == limits
-mem=1073741824 memswap=1073741824 nanocpus=1000000000 network=bridge ports=map[3900/tcp:[{192.168.1.115 39320}]]
-== exe sha256
-Error: crun: executable file `sh` not found in $PATH: No such file or directory: OCI runtime attempted to invoke a command that was not found
+mem=1073741824 memswap=1073741824 nanocpus=1000000000 ports=map[3900/tcp:[{192.168.1.115 39320}]]
+== networks
+catqa-s3live 
 == listener
-192.168.1.115:39320 
+192.168.1.115:39320
 == go
 go version go1.26.8 linux/amd64
-83a21e38e5e4aa5aabf81ca4f4ffcbce67affcc2
-== env-file mode
-600 /home/milosvasic/.cache/claude-tmp/catqa-s3live/s3.env
-== control needle (server answers HeadBucket unauth => 403, proves a real S3 front-end, not static)
+== control needle: unauthenticated HEAD bucket (real S3 front-end answers 403)
 403
-catqa-s3live 
+== env-file mode
+600
+== note: server re-created 2026-11-05 after an accidental purge of state by the author's RED run of the old down.sh (see README)

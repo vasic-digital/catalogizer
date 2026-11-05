@@ -1,12 +1,15 @@
 === RUN   TestS3Live_SpecialKeysCRUD
-    s3_live_test.go:58: SKIP(credentials_absent/hardware_not_present): S3_LIVE_ENDPOINT/BUCKET/ACCESS_KEY/SECRET_KEY not set; no real S3 server targeted
+    s3_live_test.go:68: SKIP(credentials_absent/hardware_not_present): S3_LIVE_ENDPOINT/BUCKET/ACCESS_KEY/SECRET_KEY not set; no real S3 server targeted
 --- SKIP: TestS3Live_SpecialKeysCRUD (0.00s)
 === RUN   TestS3Live_DeleteDirectoryOver1000
-    s3_live_test.go:111: SKIP(credentials_absent/hardware_not_present): S3_LIVE_ENDPOINT/BUCKET/ACCESS_KEY/SECRET_KEY not set; no real S3 server targeted
+    s3_live_test.go:121: SKIP(credentials_absent/hardware_not_present): S3_LIVE_ENDPOINT/BUCKET/ACCESS_KEY/SECRET_KEY not set; no real S3 server targeted
 --- SKIP: TestS3Live_DeleteDirectoryOver1000 (0.00s)
 === RUN   TestS3Live_DirectoriesAndConfinement
-    s3_live_test.go:135: SKIP(credentials_absent/hardware_not_present): S3_LIVE_ENDPOINT/BUCKET/ACCESS_KEY/SECRET_KEY not set; no real S3 server targeted
+    s3_live_test.go:153: SKIP(credentials_absent/hardware_not_present): S3_LIVE_ENDPOINT/BUCKET/ACCESS_KEY/SECRET_KEY not set; no real S3 server targeted
 --- SKIP: TestS3Live_DirectoriesAndConfinement (0.00s)
+=== RUN   TestS3Live_SweepStaleRuns
+    s3_live_test.go:178: SKIP: S3_LIVE_SWEEP!=1
+--- SKIP: TestS3Live_SweepStaleRuns (0.00s)
 PASS
-ok  	catalogizer/filesystem	0.008s
+ok  	catalogizer/filesystem	0.007s
 exit=0

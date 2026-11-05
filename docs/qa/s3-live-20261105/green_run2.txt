@@ -1,8 +1,12 @@
+# run_utc=2026-11-05T14:41:41Z image=docker.io/dxflrs/garage@sha256:a5706cf1f3d7b349ac5133ec59ad8181b709270b75e5f2fa7b3e1a5c07d67137 imageid=625da745433e16283b054db98a4ca662f75115e088d0f076f341e779b2ebdad2 digest=sha256:a5706cf1f3d7b349ac5133ec59ad8181b709270b75e5f2fa7b3e1a5c07d67137 garage=garage v1.0.1 
 === RUN   TestS3Live_SpecialKeysCRUD
---- PASS: TestS3Live_SpecialKeysCRUD (0.55s)
+--- PASS: TestS3Live_SpecialKeysCRUD (0.45s)
 === RUN   TestS3Live_DeleteDirectoryOver1000
---- PASS: TestS3Live_DeleteDirectoryOver1000 (7.24s)
+--- PASS: TestS3Live_DeleteDirectoryOver1000 (6.96s)
 === RUN   TestS3Live_DirectoriesAndConfinement
---- PASS: TestS3Live_DirectoriesAndConfinement (0.06s)
+--- PASS: TestS3Live_DirectoriesAndConfinement (0.09s)
+=== RUN   TestS3Live_SweepStaleRuns
+    s3_live_test.go:178: SKIP: S3_LIVE_SWEEP!=1
+--- SKIP: TestS3Live_SweepStaleRuns (0.00s)
 PASS
-ok  	catalogizer/filesystem	7.875s
+ok  	catalogizer/filesystem	7.510s
