@@ -4,8 +4,11 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; . "$HERE/lib.sh"
 command -v podman jq curl >/dev/null || die "need podman, jq, curl"
-ip -4 addr show | grep -q "inet ${SONAR_BIND}/" || die "SONAR_BIND ${SONAR_BIND} is not a local address"
-if ss -ltn | awk '{print $4}' | grep -q "[:.]${SONAR_PORT}\$" && ! podman pod exists "$POD"; then die "port ${SONAR_PORT} already in use by something else"; fi
+# NOTE: no `cmd | grep -q` under pipefail (grep -q exits early -> SIGPIPE -> random failures). Capture first, then match.
+ADDRS="$(ip -4 addr show)" || die "cannot list local addresses"
+[[ "$ADDRS" == *"inet ${SONAR_BIND}/"* ]] || die "SONAR_BIND ${SONAR_BIND} is not a local address"
+LISTEN="$(ss -ltn | awk '{print $4}')" || die "cannot list listening ports (ss failed) - refusing to start (fail closed)"
+if grep -q "[:.]${SONAR_PORT}\$" <<<"$LISTEN" && ! podman pod exists "$POD"; then die "port ${SONAR_PORT} already in use by something else"; fi
 require_owned_resources                          # F1: refuse to reuse/replace anything not labelled as ours
 ensure_secrets; load_secrets
 

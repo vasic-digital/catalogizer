@@ -4,7 +4,7 @@
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SB="$(mktemp -d /home/milosvasic/.cache/claude-tmp/sqmut.XXXXXX)"; : "${SB:?}"; trap 'rm -rf "${SB:?}"' EXIT
-"$HERE/test_guards.sh" "$HERE" >/dev/null 2>&1 || { echo "baseline suite is not green - abort"; exit 2; }
+for n in 1 2 3; do "$HERE/test_guards.sh" "$HERE" >/dev/null 2>&1 || { echo "baseline suite is not green (repeat $n) - abort"; exit 2; }; done
 SURV=0
 mut() { # name file python-expression-old new
   local n="$1" f="$2" old="$3" new="$4" d="$SB/$1"; mkdir -p "$d"; cp "$HERE"/*.sh "$d"/
@@ -30,4 +30,10 @@ mut M11-gate-status-append-only scan.sh ': > "$R/gate_status.txt"' ':'
 mut M12-up-skips-disk-floor     up.sh   'check_disk_floor "$VOLROOT"' 'DISK_USED_PCT=10; DISK_FREE_GB=999'
 mut M13-rate-limit-message-gone lib.sh  'toomanyrequests|rate limit' 'zzzneverzzz'
 mut M14-up-skips-image-check    up.sh   'ensure_images "$SONAR_IMAGE" "$PG_IMAGE"' ':'
+mut M15-owned-pod-any-label     lib.sh  'owned_pod() { [ "$(podman pod inspect "$POD" --format "{{index .Labels \"$LABEL_KEY\"}}" 2>/dev/null)" = "$LABEL_VAL" ]; }' 'owned_pod() { [ -n "$(podman pod inspect "$POD" --format "{{index .Labels \"$LABEL_KEY\"}}" 2>/dev/null)" ]; }'
+mut M16-owned-vol-any-label     lib.sh  'owned_vol() { [ "$(podman volume inspect "$1" --format "{{index .Labels \"$LABEL_KEY\"}}" 2>/dev/null)" = "$LABEL_VAL" ]; }' 'owned_vol() { [ -n "$(podman volume inspect "$1" --format "{{index .Labels \"$LABEL_KEY\"}}" 2>/dev/null)" ]; }'
+mut M17-free-floor-ge-to-gt     lib.sh  '[ "$free" -ge "$DISK_MIN_FREE_GB" ]' '[ "$free" -gt "$DISK_MIN_FREE_GB" ]'
+mut M18-addr-check-removed      up.sh   '[[ "$ADDRS" == *"inet ${SONAR_BIND}/"* ]] ||' 'true ||'
+mut M19-port-check-removed      up.sh   'if grep -q "[:.]${SONAR_PORT}\$" <<<"$LISTEN" &&' 'if false &&'
+mut M20-ss-fail-open            up.sh   'LISTEN="$(ss -ltn | awk '"'"'{print $4}'"'"')" || die' 'LISTEN="$(ss -ltn | awk '"'"'{print $4}'"'"')" || true; : die'
 echo "survivors: $SURV"; exit "$SURV"

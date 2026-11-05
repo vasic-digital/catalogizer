@@ -14,9 +14,9 @@ if [ "$1" = pull ]; then [ -f "$SHIM_STATE/pullmsg" ] && { cat "$SHIM_STATE/pull
 case "$1 $2" in
  "image exists") [ ! -f "$SHIM_STATE/noimg" ];;
  "pod exists") [ -f "$SHIM_STATE/pod" ];;
- "pod inspect") cat "$SHIM_STATE/pod_label" 2>/dev/null;;
+ "pod inspect") cat "$SHIM_STATE/pod_label" 2>/dev/null; exit 0;;
  "volume exists") [ -f "$SHIM_STATE/vol_$3" ];;
- "volume inspect") cat "$SHIM_STATE/vol_$3" 2>/dev/null;;
+ "volume inspect") cat "$SHIM_STATE/vol_$3" 2>/dev/null; exit 0;;
  *) exit 0;;
 esac
 SH
@@ -29,6 +29,13 @@ cat > "$BIN/nproc" <<'SH'
 echo "${SHIM_NPROC:-16}"
 SH
 printf '#!/usr/bin/env bash\nexit 0\n' > "$BIN/sleep"   # no real waiting in tests
+cat > "$BIN/ss" <<'SH'
+#!/usr/bin/env bash
+[ -n "${SHIM_SS_FAIL:-}" ] && exit 1
+printf 'State Recv-Q Send-Q Local Peer\n'
+[ -n "${SHIM_LISTEN:-}" ] && printf 'LISTEN 0 4096 127.0.0.1:%s 0.0.0.0:*\n' "$SHIM_LISTEN"
+exit 0
+SH
 chmod +x "$BIN"/*
 export SHIM_STATE="$S" PATH="$BIN:$PATH" SQ_DIR="$SB/sq" SHIM_FREE_GB=500 SHIM_USED_PCT=40 SONAR_BIND=127.0.0.1 SONAR_PORT=19877
 export SQ_UP_TRIES=1 SQ_LOAD_TIMEOUT=0 LOADAVG_FILE="$SB/load_lo"; echo "3.00 3.00 3.00 1/1 1" > "$SB/load_lo"
@@ -47,7 +54,7 @@ reset; SQ_STACK='catsonar;x' "$SRC/down.sh" >/dev/null 2>&1; [ $? -ne 0 ] && ok 
 reset; touch "$S/pod"
 "$SRC/down.sh" >/dev/null 2>&1; rc=$?; { [ $rc -ne 0 ] && ! removed; } && ok "T2 down.sh refuses unlabelled pod" || bad "T2 down.sh unlabelled pod (rc=$rc)"
 reset; touch "$S/pod"
-"$SRC/up.sh" >/dev/null 2>&1; rc=$?; { [ $rc -ne 0 ] && ! removed && ! created; } && ok "T2b up.sh refuses unlabelled pod" || bad "T2b up.sh unlabelled pod (rc=$rc)"
+"$SRC/up.sh" >"$SB/o" 2>&1; rc=$?; { [ $rc -ne 0 ] && grep -q 'without label' "$SB/o" && ! removed && ! created; } && ok "T2b up.sh refuses unlabelled pod" || bad "T2b up.sh unlabelled pod (rc=$rc)"
 
 # T3 F1: --purge with one unlabelled volume refuses BEFORE removing anything (even the labelled pod/volumes).
 reset; touch "$S/pod" "$S/vol_catsonar-pg" "$S/vol_catsonar-data"; echo sonarqube > "$S/pod_label"; echo sonarqube > "$S/vol_catsonar-pg"; : > "$S/vol_catsonar-data"
@@ -55,7 +62,7 @@ reset; touch "$S/pod" "$S/vol_catsonar-pg" "$S/vol_catsonar-data"; echo sonarqub
 reset; touch "$S/pod" "$S/vol_catsonar-pg"; echo sonarqube > "$S/pod_label"; echo sonarqube > "$S/vol_catsonar-pg"
 "$SRC/down.sh" --purge >/dev/null 2>&1; rc=$?; { [ $rc -eq 0 ] && grep -q '^pod rm' "$S/calls" && grep -q '^volume rm.*catsonar-pg' "$S/calls"; } && ok "T3b labelled resources are removed" || bad "T3b (rc=$rc)"
 reset; touch "$S/vol_catsonar-pg"; echo sonarqube > "$S/vol_catsonar-pg"; touch "$S/vol_catsonar-logs"
-"$SRC/up.sh" >/dev/null 2>&1; rc=$?; { [ $rc -ne 0 ] && ! created; } && ok "T3c up.sh refuses unlabelled existing volume" || bad "T3c (rc=$rc)"
+"$SRC/up.sh" >"$SB/o" 2>&1; rc=$?; { [ $rc -ne 0 ] && grep -q 'without label' "$SB/o" && ! created; } && ok "T3c up.sh refuses unlabelled existing volume" || bad "T3c (rc=$rc)"
 
 # T4 F2: load gate. High load must block (timeout 0), low load must pass; default LOAD_MAX = 0.75*nproc.
 echo "50.00 40.00 30.00 1/1 1" > "$SB/load_hi"; echo "3.00 3.00 3.00 1/1 1" > "$SB/load_lo"
@@ -64,13 +71,36 @@ echo "50.00 40.00 30.00 1/1 1" > "$SB/load_hi"; echo "3.00 3.00 3.00 1/1 1" > "$
 ( . "$SRC/lib.sh"; [ "$LOAD_MAX" = 12 ] ) && ok "T4c LOAD_MAX default 0.75*16 = 12" || bad "T4c LOAD_MAX default"
 ( export SHIM_NPROC=8; . "$SRC/lib.sh"; [ "$LOAD_MAX" = 6 ] ) && ok "T4d LOAD_MAX follows nproc (8 -> 6)" || bad "T4d"
 reset; echo "50.00 1 1 1/1 1" > "$SB/load_hi"
-LOADAVG_FILE="$SB/load_hi" LOAD_MAX=12 SQ_LOAD_TIMEOUT=0 "$SRC/up.sh" >/dev/null 2>&1; [ $? -ne 0 ] && ! created && ok "T4e up.sh does not start under high load" || bad "T4e"
+LOADAVG_FILE="$SB/load_hi" LOAD_MAX=12 SQ_LOAD_TIMEOUT=0 "$SRC/up.sh" >"$SB/o" 2>&1; [ $? -ne 0 ] && grep -q 'stayed above' "$SB/o" && ! created && ok "T4e up.sh does not start under high load" || bad "T4e"
 
 # T5 F4: disk floor.
 ( . "$SRC/lib.sh"; SHIM_FREE_GB=5 SHIM_USED_PCT=60 check_disk_floor / ) >/dev/null 2>&1; [ $? -ne 0 ] && ok "T5 <10 GB free refused" || bad "T5"
 ( . "$SRC/lib.sh"; SHIM_FREE_GB=50 SHIM_USED_PCT=99 check_disk_floor / ) >/dev/null 2>&1; [ $? -ne 0 ] && ok "T5b >98% used refused" || bad "T5b"
 ( . "$SRC/lib.sh"; SHIM_FREE_GB=37 SHIM_USED_PCT=98 check_disk_floor / ) >/dev/null 2>&1; [ $? -eq 0 ] && ok "T5c 37 GB / 98% accepted" || bad "T5c"
-reset; SHIM_FREE_GB=5 "$SRC/up.sh" >/dev/null 2>&1; [ $? -ne 0 ] && ! created && ok "T5d up.sh refuses on low disk" || bad "T5d"
+reset; SHIM_FREE_GB=5 "$SRC/up.sh" >"$SB/o" 2>&1; [ $? -ne 0 ] && grep -q 'refusing to start' "$SB/o" && ! created && ok "T5d up.sh refuses on low disk" || bad "T5d"
+
+( . "$SRC/lib.sh"; SHIM_FREE_GB=10 SHIM_USED_PCT=50 check_disk_floor / ) >/dev/null 2>&1; [ $? -eq 0 ] && ok "T5e exactly 10 GB free accepted" || bad "T5e"
+( . "$SRC/lib.sh"; SHIM_FREE_GB=9 SHIM_USED_PCT=50 check_disk_floor / ) >/dev/null 2>&1; [ $? -ne 0 ] && ok "T5f 9 GB free refused" || bad "T5f"
+
+# T10 N1: positive control - in a clean, labelled scenario up.sh must get PAST the address/port/ownership/disk/load/image checks and create
+# the pod, so the "refused / nothing created" tests above cannot pass because of an early random failure. Repeated 5x (was flaky 4/8).
+okc=0; for n in 1 2 3 4 5; do reset; "$SRC/up.sh" >/dev/null 2>&1; grep -q '^pod create' "$S/calls" && okc=$((okc+1)); done
+[ "$okc" = 5 ] && ok "T10 clean scenario reaches pod create 5/5" || bad "T10 reached pod create only $okc/5"
+
+# T11 N2: labels that exist but differ (io.catalogizer.service=other), pod AND volume, and empty label output with exit 0 (real podman).
+reset; touch "$S/pod"; echo other > "$S/pod_label"
+"$SRC/down.sh" >"$SB/o" 2>&1; rc=$?; { [ $rc -ne 0 ] && grep -q 'without label' "$SB/o" && ! removed; } && ok "T11 pod labelled 'other' refused (down)" || bad "T11 (rc=$rc)"
+reset; touch "$S/pod"; echo other > "$S/pod_label"
+"$SRC/up.sh" >"$SB/o" 2>&1; rc=$?; { [ $rc -ne 0 ] && grep -q 'without label' "$SB/o" && ! removed && ! created; } && ok "T11b pod labelled 'other' refused (up)" || bad "T11b (rc=$rc)"
+reset; touch "$S/vol_catsonar-pg"; echo other > "$S/vol_catsonar-pg"
+"$SRC/down.sh" --purge >"$SB/o" 2>&1; rc=$?; { [ $rc -ne 0 ] && grep -q 'without label' "$SB/o" && ! removed; } && ok "T11c volume labelled 'other' refused (purge)" || bad "T11c (rc=$rc)"
+reset; touch "$S/vol_catsonar-pg"; echo other > "$S/vol_catsonar-pg"
+"$SRC/up.sh" >"$SB/o" 2>&1; rc=$?; { [ $rc -ne 0 ] && grep -q 'without label' "$SB/o" && ! created; } && ok "T11d volume labelled 'other' refused (up)" || bad "T11d (rc=$rc)"
+
+# T12 N1: address / port / ss-failure checks (each must refuse for its own reason; nothing created).
+reset; SONAR_BIND=203.0.113.9 "$SRC/up.sh" >"$SB/o" 2>&1; rc=$?; { [ $rc -ne 0 ] && grep -q 'not a local address' "$SB/o" && ! created; } && ok "T12 non-local SONAR_BIND refused" || bad "T12 (rc=$rc)"
+reset; SHIM_LISTEN=19877 "$SRC/up.sh" >"$SB/o" 2>&1; rc=$?; { [ $rc -ne 0 ] && grep -q 'already in use' "$SB/o" && ! created; } && ok "T12b busy port refused" || bad "T12b (rc=$rc)"
+reset; SHIM_SS_FAIL=1 "$SRC/up.sh" >"$SB/o" 2>&1; rc=$?; { [ $rc -ne 0 ] && grep -q 'fail closed' "$SB/o" && ! created; } && ok "T12c ss failure fails closed" || bad "T12c (rc=$rc)"
 
 # T6 F6: no_secret_in must REPORT a planted leak, and pass a clean file; scrub_file removes it.
 printf 'SONAR_ADMIN_PASSWORD=Aa1-planted-secret-value-xyz\nSONAR_DB_PASSWORD=dbplantedsecretvalue123456789\n' > "$SB/sq/sonar.env"; chmod 600 "$SB/sq/sonar.env"

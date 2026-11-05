@@ -63,7 +63,7 @@ ensure_images() {
     podman image exists "$img" 2>/dev/null && continue
     echo "image not present locally, pulling: ${img##*/}"
     if ! out="$(podman pull "$img" 2>&1)"; then
-      if printf '%s' "$out" | grep -qiE 'toomanyrequests|rate limit'; then
+      if grep -qiE 'toomanyrequests|rate limit' <<<"$out"; then
         die "Docker Hub rate limit hit while pulling $img. Fix: run 'podman login docker.io' (authenticated pulls have a higher limit), or pre-pull/load the pinned image (podman pull / podman load) and re-run. Nothing was started."
       fi
       die "pull of $img failed: $(printf '%s' "$out" | tail -1)"
