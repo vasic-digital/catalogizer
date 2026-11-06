@@ -998,31 +998,8 @@ func main() {
 	//     private ranges (typical dev behind a local reverse
 	//     proxy / docker gateway).
 	//   - TRUSTED_PROXIES=<cidr>,...: explicit allow-list.
-	if tp := os.Getenv("TRUSTED_PROXIES"); tp == "" {
-	if err := router.SetTrustedProxies(nil); err != nil {
-			logger.Warn("SetTrustedProxies(nil) failed", zap.Error(err))
-	}
-	} else if tp == "auto" {
-	privates := []string{
-			"127.0.0.0/8", "10.0.0.0/8",
-			"172.16.0.0/12", "192.168.0.0/16",
-			"::1/128", "fc00::/7",
-	}
-	if err := router.SetTrustedProxies(privates); err != nil {
-			logger.Warn("SetTrustedProxies auto-RFC1918 failed", zap.Error(err))
-	}
-	} else {
-	list := strings.Split(tp, ",")
-	trimmed := list[:0]
-	for _, s := range list {
-			s = strings.TrimSpace(s)
-			if s != "" {
-				trimmed = append(trimmed, s)
-			}
-	}
-	if err := router.SetTrustedProxies(trimmed); err != nil {
-			logger.Warn("SetTrustedProxies custom list failed", zap.Error(err))
-	}
+	if err := applyTrustedProxies(router, os.Getenv("TRUSTED_PROXIES")); err != nil {
+		logger.Warn("SetTrustedProxies failed", zap.Error(err))
 	}
 
 	// Service discovery (PUBLIC - must respond in < 2 seconds for Android TV)
