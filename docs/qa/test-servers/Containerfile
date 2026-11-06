@@ -1,0 +1,2 @@
+FROM docker.io/library/alpine:3.20
+RUN apk add --no-cache samba rclone openssl py3-pyftpdlib py3-openssl
