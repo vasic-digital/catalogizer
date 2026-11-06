@@ -4,7 +4,7 @@
 > A fresh session that receives only the prompt `continue` MUST read this file first, then
 > `docs/FOLLOW_UPS_NEXT_PHASE.md`, then resume the §11.4.126 loop with the steps in "RESUME ORDER".
 
-**Revision:** 14
+**Revision:** 15
 **Last modified:** 2026-11-06 (end-of-day wrap-up)
 **Exports:** `CONTINUATION.html` / `CONTINUATION.pdf` are STALE (Rev 9). Regenerate from this file (owed, §11.4.65); this `.md` is authoritative.
 
@@ -35,6 +35,12 @@ Since Rev 11 (`109acde2`): D7 remaining contrast `c78c654a`; HelixQA stack-3 API
 
 Running at stop (if the host was not rebooted): pod catqa3 (images `localhost/catqa3-api|web:main-17ec3c1f`, do NOT contain the D7-R4 fixes or the TRUSTED_PROXIES hardening) and pod catqa3mon (Prometheus with basic auth, user `qa_prom`, password `PROM_AUTH_PASSWORD` in `mon.env`; LAN-bound Grafana/pgAdmin/Prometheus). After a reboot: `docs/qa/stack3/up.sh <tag>` then `GRAFANA_BIND=PGADMIN_BIND=PROM_BIND=192.168.1.115 docs/qa/stack3/monitoring/up.sh` (its exit 6 / `000` loopback line is only the loopback check on LAN-bound services; verify with LAN URLs).
 URL map (host 192.168.1.115): API :38082 (/health), web :33020, website :33021, nginx front door :33080 / :33081, Grafana :33030, pgAdmin :33050, Prometheus :39090 (auth required). PostgreSQL 127.0.0.1:35434 and Redis 127.0.0.1:36381 stay loopback. Logins: qa_admin (password only in `/home/milosvasic/.cache/claude-tmp/catqa3/qa.env`). Rebuild web+API from current `main` before the next live rerun (D7-R4 fixes, TRUSTED_PROXIES). Inactive throwaway users `qa_thrw_*` exist (CAT-QA-THRW-CLEAN-1). `verify.py` has 3 stale LAN-NOT-reachable assertions (CAT-VERIFY-LANBIND-1).
+
+## 4b. Live test servers + Anton SMB corpus (added Rev 15; containers do NOT survive reboot)
+
+- Test servers (rootless podman `cattsrv-*`, host 192.168.1.115): SMB :1445 share `corpus`, FTP :42021, FTPS (explicit) :42022, SFTP :42023, WebDAV :42080, HTTP :42081, NFS v3 :42049 (userspace rclone, read-only). Corpus `/home/milosvasic/Testing-servers/corpus` (12 files, `manifest.sha256`); writable only in `corpus/rw/`. Credentials (user `catsvc`) only in `/home/milosvasic/.cache/claude-tmp/catqa3/testservers.env` (0600). After a reboot: `docs/qa/test-servers/up.sh`, then `verify.sh` (NFS leg needs `TS_NFS_MNT=<premounted dir>`). Evidence in `/home/milosvasic/Testing-servers/evidence/` (outside git; `verify_20261106T125600.log` fail=0). Sudo used only for an NFS probe mount (undone); logged in `evidence/sudo_actions.log`. Catalogizer SMB non-445 port read from code, NOT yet run live.
+- Anton SMB (this host's own samba :445): `Public/Testing` corpus, evidence `docs/qa/anton-smb-20261106/`. CAT-SMB-SUBDIR-1 open (no subdir scoping).
+- Rate-limit isolation: substitute-source VERIFIED 3/3 (`docs/qa/second-host-20261106/`); real remote NIC UNCONFIRMED.
 
 ## 5. RESUME ORDER (what "continue" means)
 
