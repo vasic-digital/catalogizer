@@ -116,6 +116,8 @@ Each: Status Queued unless stated. Acceptance always requires machine evidence f
 | CAT-TRUSTEDPROXIES-FU-1 | Task | Queued | F3 pin auto ranges in tests; F4 capture API log line for ClientIP=169.254.1.2; F5 script: pre-flood 401 control, 'PASS (A only; B SKIP)' output, live-lockout warning; F6 quote $T, SC2034. | none |
 | CAT-QA-THRW-CLEAN-1 | Task | Queued | Prune inactive throwaway users `qa_thrw_*` (no delete route). | none |
 | CAT-SSRF-F2F5-LIVE-1 | Task | Queued | Live proof of cover-art ffmpeg/HLS/FIFO/size cap + dial-time/redirect SSRF needs seedable QA corpus with removable root. | corpus tooling |
+| CAT-TAURI-WIZARD-ACL-1 | Bug | In progress | Installer wizard Save Configuration fails 'plugin:dialog|save not allowed by ACL' (no capabilities dir); fix on branch feat/tauri-native-qa 389f8abe, GREEN live runs owed. | review + GREEN runs |
+| CAT-TAURI-FU-8 | Task | Queued | Desktop: Settings/Logout not sticky in sidebar; generic 'Login failed' no diagnostic; 'Invalid response format' in Storage Configuration (TAURI-FU-1 drift); poor contrast on Dark theme select; run-qa.sh container cannot reach host LAN IP (use host.containers.internal). | none |
 
 ## Part C — counts at Revision 1
 
