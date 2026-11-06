@@ -110,7 +110,7 @@ Each: Status Queued unless stated. Acceptance always requires machine evidence f
 | CAT-D7-R4-2 | Task | In progress | Restore global.fetch in contrast tests. | author in flight |
 | CAT-D7-R4-3 | Bug | In progress | ExternalIntegrations pending badge equals card bg in dark. | author in flight |
 | CAT-D7-R4-4 | Task | In progress | Contrast helper: light-bg island detector. | author in flight |
-| CAT-FRONTDOOR-RATELIMIT-1 | Bug | In progress | Stack-3 shared login bucket explained as same-host artefact (pasta alias 169.254.1.2); remote-LAN isolation UNCONFIRMED (needs 2nd host, = QA-MON-FU-4). Characterization landed. Item stays OPEN for F1/F2. | F1, F2 |
+| CAT-FRONTDOOR-RATELIMIT-1 | Bug | Ready for testing (PROVISIONAL) | Host-local clients share pasta alias 169.254.1.2 (by design). Substitute-source (extra IP 192.168.1.250 on this host, now removed) has its own bucket: VERIFIED 3/3 (docs/qa/second-host-20261106/). Real remote NIC path UNCONFIRMED (no second machine; = QA-MON-FU-4). Hardening for TRUSTED_PROXIES landed. | real second machine / phone-laptop on LAN |
 | CAT-TRUSTEDPROXIES-PROD-1 | Bug | Ready for testing (PROVISIONAL) | F1 (important): production docker-compose.yml runs nginx in front of api with TRUSTED_PROXIES unset -> all clients share nginx IP -> one 30/min login bucket. Set explicit CIDR in deploy configs. | none |
 | CAT-TRUSTEDPROXIES-AUTO-1 | Bug | Ready for testing (PROVISIONAL) | F2 (important): TRUSTED_PROXIES=auto (in .env.example) lets any RFC1918 client forge ClientIP via XFF 'x, <lan ip>' -> login limiter bypass. Fix/deprecate auto, document. | none |
 | CAT-TRUSTEDPROXIES-FU-1 | Task | Queued | F3 pin auto ranges in tests; F4 capture API log line for ClientIP=169.254.1.2; F5 script: pre-flood 401 control, 'PASS (A only; B SKIP)' output, live-lockout warning; F6 quote $T, SC2034. | none |
@@ -118,6 +118,8 @@ Each: Status Queued unless stated. Acceptance always requires machine evidence f
 | CAT-SSRF-F2F5-LIVE-1 | Task | Queued | Live proof of cover-art ffmpeg/HLS/FIFO/size cap + dial-time/redirect SSRF needs seedable QA corpus with removable root. | corpus tooling |
 | CAT-TAURI-WIZARD-ACL-1 | Bug | In progress | Installer wizard Save Configuration fails 'plugin:dialog|save not allowed by ACL' (no capabilities dir); fix on branch feat/tauri-native-qa 389f8abe, GREEN live runs owed. | review + GREEN runs |
 | CAT-TAURI-FU-8 | Task | Queued | Desktop: Settings/Logout not sticky in sidebar; generic 'Login failed' no diagnostic; 'Invalid response format' in Storage Configuration (TAURI-FU-1 drift); poor contrast on Dark theme select; run-qa.sh container cannot reach host LAN IP (use host.containers.internal). | none |
+| CAT-SMB-SUBDIR-1 | Task | Queued | SMB roots cannot be scoped to a subdirectory (storage_roots.path = share name); Anton Public/Testing corpus (docs/qa/anton-smb-20261106/) can only be added as the whole share `Public` (also indexes Misc/Incoming). Add subdir support or a dedicated `Testing` share (needs root smb.conf edit). | design |
+| CAT-FRONTDOOR-LOCALMODE-1 | Task | Queued | Extend test_clientip_frontdoor.sh with a local-second-IP (`--interface`) mode so leg B runs without ssh. | none |
 
 ## Part C — counts at Revision 1
 
