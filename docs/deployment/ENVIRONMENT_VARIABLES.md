@@ -198,7 +198,7 @@ These variables are used in `docker-compose.yml`, `docker-compose.dev.yml`, and 
 | `DATA_DIR` | Persistent data directory | `/var/lib/catalogizer` | No |
 | `WEB_PORT` | Web interface HTTP port | `80` | No |
 | `WEB_SSL_PORT` | Web interface HTTPS port | `443` | No |
-| `DOCKER_NETWORK` | Docker network name | `catalogizer-network` | No |
+| `DOCKER_NETWORK` | Docker network name (`deployment/docker-compose.yml`) | `catalogizer-frontdoor-net` | No |
 | `DOCKER_DATA_VOLUME` | Database volume name | `catalogizer-database-data` | No |
 | `DOCKER_CONFIG_VOLUME` | Config volume name | `catalogizer-server-config` | No |
 

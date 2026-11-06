@@ -244,28 +244,42 @@ func TestNginxConfigs_EveryProxyLocationSetsForwardedFor(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		lines := strings.Split(string(raw), "\n")
+		// strip comments, then find each location block by brace matching
+		// (the opening brace may sit on the next line)
+		var sb strings.Builder
+		for _, l := range strings.Split(string(raw), "\n") {
+			sb.WriteString(strings.SplitN(l, "#", 2)[0] + "\n")
+		}
+		src := sb.String()
 		locs := 0
-		for i := 0; i < len(lines); i++ {
-			if !regexp.MustCompile(`^\s*location\s.*\{\s*$`).MatchString(lines[i]) {
+		for _, m := range regexp.MustCompile(`(?m)^\s*location\s[^{;]*`).FindAllStringIndex(src, -1) {
+			open := strings.Index(src[m[1]:], "{")
+			if open < 0 {
 				continue
 			}
-			depth, block := 0, ""
-			for j := i; j < len(lines); j++ {
-				l := strings.SplitN(lines[j], "#", 2)[0]
-				depth += strings.Count(l, "{") - strings.Count(l, "}")
-				block += l + "\n"
-				if depth <= 0 {
-					break
+			depth, end := 0, -1
+			for k := m[1] + open; k < len(src); k++ {
+				if src[k] == '{' {
+					depth++
+				} else if src[k] == '}' {
+					if depth--; depth == 0 {
+						end = k
+						break
+					}
 				}
 			}
+			if end < 0 {
+				t.Errorf("%s: unbalanced braces after %q", f, strings.TrimSpace(src[m[0]:m[1]]))
+				continue
+			}
+			block := src[m[1]+open : end]
 			if !strings.Contains(block, "proxy_pass") {
 				continue
 			}
 			locs++
 			for _, h := range []string{"proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;", "proxy_set_header X-Real-IP $remote_addr;"} {
 				if !strings.Contains(block, h) {
-					t.Errorf("%s: %s lacks %q", f, strings.TrimSpace(lines[i]), h)
+					t.Errorf("%s: %s lacks %q", f, strings.TrimSpace(src[m[0]:m[1]]), h)
 				}
 			}
 		}
