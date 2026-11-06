@@ -1,0 +1,17 @@
+anon /api/v1/targets 401
+anon /api/v1/query?query=up 401
+anon /-/ready 401
+wrong-password qa_prom /api/v1/targets 401
+wrong-user nobody /api/v1/targets 401
+empty-password qa_prom /api/v1/targets 401
+right-creds /api/v1/targets 200
+right-creds /api/v1/query?query=up 200
+right-creds /-/ready 200
+targets [('catalogizer-api', 'up'), ('prometheus', 'up')]
+datasource Prometheus prometheus prometheus-qa
+ds-health OK Successfully queried the Prometheus API.
+grafana-anon-datasources 401
+lan 192.168.1.115:35434 CLOSED
+lan 192.168.1.115:36381 CLOSED
+control-loopback 127.0.0.1:35434 OPEN
+control-loopback 127.0.0.1:36381 OPEN

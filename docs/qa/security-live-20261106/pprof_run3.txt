@@ -1,0 +1,28 @@
+admin-login-token-len>0: yes
+pprof anon /debug/pprof/ 401
+pprof bad-token /debug/pprof/ 401
+pprof admin /debug/pprof/ 200
+pprof admin /debug/pprof/heap 200
+register throwaway -> 201
+login before approval -> no-token:account pending approval
+admin found throwaway id: yes csrf-header: yes
+admin approve (PUT status=active) -> 200
+non-admin login after approval: token
+pprof non-admin /debug/pprof/ 403
+pprof non-admin /debug/pprof/heap 403
+control non-admin /api/v1/auth/me 200
+control non-admin /api/v1/admin/users 403
+pprof admin /profile?seconds=120 400
+pprof admin /profile?seconds=61 400
+pprof admin /profile?seconds=0 400
+pprof admin /profile?seconds=abc 400
+pprof admin /profile?seconds=0.5 400
+pprof admin /trace?seconds=120 400
+pprof admin /heap?seconds=120 400
+pprof admin /profile?seconds=2 (positive control) 200
+cleanup throwaway deactivate -> 200
+metrics anon 401
+metrics bad-scrape-token 401
+metrics scrape-token 200
+metrics non-admin jwt 401
+metrics admin jwt 200
