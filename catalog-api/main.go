@@ -994,12 +994,16 @@ func main() {
 	// bypass per-IP rate limits. Policy:
 	//   - TRUSTED_PROXIES unset:    refuse to trust any proxy
 	//     header; c.ClientIP() returns the actual peer IP.
-	//   - TRUSTED_PROXIES=auto:     trust loopback + RFC-1918
-	//     private ranges (typical dev behind a local reverse
-	//     proxy / docker gateway).
+	//   - TRUSTED_PROXIES=auto:     DEPRECATED, client-forgeable
+	//     (CAT-TRUSTEDPROXIES-AUTO-1); trusts loopback + RFC-1918;
+	//     refused in release mode unless TRUSTED_PROXIES_ALLOW_AUTO=true.
 	//   - TRUSTED_PROXIES=<cidr>,...: explicit allow-list.
+	if os.Getenv("TRUSTED_PROXIES") == "auto" {
+		logger.Warn("TRUSTED_PROXIES=auto is DEPRECATED: any client inside a trusted private range can forge its client IP via X-Forwarded-For and bypass per-IP rate limits; use explicit proxy CIDR(s)")
+	}
 	if err := applyTrustedProxies(router, os.Getenv("TRUSTED_PROXIES")); err != nil {
-		logger.Warn("SetTrustedProxies failed", zap.Error(err))
+		// applyTrustedProxies has already failed closed (no proxy trusted).
+		logger.Error("TRUSTED_PROXIES rejected; trusting NO proxy header (every client behind a reverse proxy will share its address)", zap.Error(err))
 	}
 
 	// Service discovery (PUBLIC - must respond in < 2 seconds for Android TV)

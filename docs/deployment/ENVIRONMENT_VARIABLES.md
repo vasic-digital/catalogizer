@@ -92,7 +92,8 @@ Variables the Go code reads that the tables above did not list. Defaults and beh
 | `ADMIN_NEW_PASSWORD` | Replacement password read (by name, never printed) by the offline `admin-reset-password` subcommand; the subcommand exits 2 when it is unset or invalid | (empty) | `main_adminreset.go:37`, `main.go:376` |
 | `CATALOGIZER_ALLOW_INSECURE_DEFAULTS` | Only the exact value `true` allows insecure development defaults; ignored when `GIN_MODE=release` | unset | `config/config.go:487` |
 | `HELIX_PPROF_ENABLED` | `true` mounts the `/debug/pprof/*` handlers (operator-only, off by default) | unset (off) | `main.go:1055` |
-| `TRUSTED_PROXIES` | Unset: trust no proxy header; `auto`: trust loopback and RFC-1918/ULA ranges; otherwise a comma-separated CIDR allow-list | unset | `main.go:974` |
+| `TRUSTED_PROXIES` | Unset: trust no proxy header; otherwise a comma-separated CIDR allow-list of the reverse proxy address(es) (shipped compose files pin nginx and set it). `auto` (loopback + RFC-1918/ULA) is DEPRECATED and client-forgeable via `X-Forwarded-For`; it is refused in `GIN_MODE=release` unless `TRUSTED_PROXIES_ALLOW_AUTO=true`. An invalid or refused value fails closed (no proxy trusted) | unset (compose: nginx `/32`) | `trusted_proxies.go`, `main.go:1001` |
+| `TRUSTED_PROXIES_ALLOW_AUTO` | Exact value `true` acknowledges the forgeable `auto` policy in release mode | unset | `trusted_proxies.go` |
 | `REDIS_RATE_LIMIT` | `true` (with Redis available) switches the auth rate limiter to the Redis-backed distributed one | unset | `main.go:953` |
 | `MALLOC_ARENA_MAX` | glibc malloc arena cap. An explicit value always wins; when unset the API caps arenas at 2 at load time | 2 (applied by the binary) | `main_malloc_glibc.go:15-20` |
 | `STORAGE_TYPE` | Cover/asset storage backend override | `local` | `config/config.go:208,266` |

@@ -98,6 +98,12 @@ services:
       METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:-}
       CORS_ENABLED: ${CORS_ENABLED:-false}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
+      # Client-IP attribution behind the nginx front door (CAT-TRUSTEDPROXIES-PROD-1):
+      # trust X-Forwarded-For ONLY from the nginx container, pinned to a fixed address
+      # on catalogizer-network below. Without this every client shares nginx's address
+      # (one 30/min login bucket for everybody). Override the address via NGINX_IP, or
+      # the whole policy via TRUSTED_PROXIES (explicit CIDRs; never auto / 0.0.0.0/0).
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-172.28.0.10/32}
 
       # SMB/File System
       SMB_ENABLED: ${SMB_ENABLED:-true}
@@ -296,7 +302,8 @@ services:
       - api
     restart: unless-stopped
     networks:
-      - catalogizer-network
+      catalogizer-network:
+        ipv4_address: ${NGINX_IP:-172.28.0.10}
     profiles:
       - production
     deploy:
@@ -328,3 +335,9 @@ volumes:
 networks:
   catalogizer-network:
     driver: bridge
+    # Fixed subnet so the nginx front door has a stable address that the API can trust
+    # (TRUSTED_PROXIES). If it collides with a host network set CATALOGIZER_SUBNET and
+    # NGINX_IP (and TRUSTED_PROXIES if the address changes) together.
+    ipam:
+      config:
+        - subnet: ${CATALOGIZER_SUBNET:-172.28.0.0/24}
