@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,7 +20,7 @@ func clientIPFor(t *testing.T, tp, peer string, xff ...string) string {
 	var got string
 	r.GET("/", func(c *gin.Context) { got = c.ClientIP() })
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
-	req.RemoteAddr = peer + ":40000"
+	req.RemoteAddr = net.JoinHostPort(peer, "40000")
 	for _, v := range xff {
 		req.Header.Add("X-Forwarded-For", v)
 	}
