@@ -1,0 +1,24 @@
+== run 1 2026-11-06T12:43:21+01:00
+A-flood -> B-probe
+ctl probe(192.168.1.250) pre-flood=401 (must be 401)
+flooder()=429 (must be 429) other(192.168.1.250)=401 (must be 401)
+B-flood -> A-probe
+ctl probe() pre-flood=401 (must be 401)
+flooder(192.168.1.250)=429 (must be 429) other()=401 (must be 401)
+RESULT_PASS
+== run 2 2026-11-06T12:45:27+01:00
+A-flood -> B-probe
+ctl probe(192.168.1.250) pre-flood=401 (must be 401)
+flooder()=429 (must be 429) other(192.168.1.250)=401 (must be 401)
+B-flood -> A-probe
+ctl probe() pre-flood=401 (must be 401)
+flooder(192.168.1.250)=429 (must be 429) other()=401 (must be 401)
+RESULT_PASS
+== run 3 2026-11-06T12:47:32+01:00
+A-flood -> B-probe
+ctl probe(192.168.1.250) pre-flood=401 (must be 401)
+flooder()=429 (must be 429) other(192.168.1.250)=401 (must be 401)
+B-flood -> A-probe
+ctl probe() pre-flood=401 (must be 401)
+flooder(192.168.1.250)=429 (must be 429) other()=401 (must be 401)
+RESULT_PASS
