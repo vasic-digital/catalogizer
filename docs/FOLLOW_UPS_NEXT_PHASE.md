@@ -1608,3 +1608,8 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - D7-R4-FU-2 (minor): `LIGHT_BG_NAME` ignores -200 shades, `bg-white dark:bg-white`, `dark:bg-opacity-*`; widen/document.
 - D7-R4-FU-3 (nit): no fetch leak check in ExternalIntegrations/Class/Populated tests (M7 survives); reset mock history.
 - D7-R4-FU-4 (nit): give each UI-D7-R4-ISLAND row an id (register as CAT-D7-ISLAND-1).
+
+### TRUSTED_PROXIES hardening follow-ups (round 2 GO-with-follow-ups)
+- TP-FU-1: wildcard (0.0.0.0/0, ::/0) startup warning in main.go untested (needs logger-injectable helper).
+- TP-FU-2: live bring-up of root and deployment compose with new fixed subnets/ip_range (only rendered + throwaway compose proved); `catalogizer/web` image built from catalog-web/Dockerfile is assumed; deployment WS_URL port 8081 vs /ws upstream 8080 mismatch (pre-existing).
+- TP-FU-3: F4 capture API log line ClientIP=169.254.1.2; stack script leg B needs second LAN host (= QA-MON-FU-4).
