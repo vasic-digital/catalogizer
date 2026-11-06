@@ -28,6 +28,10 @@ const ITEM = {
 }
 const JOB: any = { id: 'j1', sourceFile: { path: '/a.mkv', name: 'a.mkv', format: 'mkv', size: 1048576 }, targetFormat: 'mp4', quality: 'high', status: 'completed', progress: 100, options: {}, startTime: '2024-01-01T00:00:00Z', endTime: '2024-01-01T00:01:00Z', outputFile: '/a.mp4' }
 
+// D7-R4-2: tests assign global.fetch; restore it so the mock never leaks into sibling tests.
+const realFetch = global.fetch
+afterEach(() => { global.fetch = realFetch })
+
 describe.each(['light', 'dark'] as Theme[])('UI-D7-FU populated states, %s theme', (theme) => {
   const fail = (c: Element) => failingElements(c, theme).join('\n')
 

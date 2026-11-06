@@ -257,7 +257,7 @@ export const UploadManager: React.FC<UploadManagerProps> = ({
                       <Progress value={item.progress} className="mt-2" />
                     )}
                     {item.status === 'error' && (
-                      <p className="text-xs text-red-500 mt-1">{item.error}</p>
+                      <p className="text-xs text-red-700 dark:text-red-300 mt-1">{item.error}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2">

@@ -38,11 +38,16 @@ vi.mock('lucide-react', () => {
   }
 })
 
-// Mock fetch for integration loading
+// Mock fetch for integration loading (D7-R4-2: the original is restored after the file, the file default after each test)
+const realFetch = global.fetch
 global.fetch = vi.fn().mockResolvedValue({
   ok: false,
   json: async () => ([]),
 })
+
+const defaultFetch = global.fetch
+afterEach(() => { global.fetch = defaultFetch })
+afterAll(() => { global.fetch = realFetch })
 
 import ExternalIntegrations from '../ExternalIntegrations'
 

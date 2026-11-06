@@ -1,5 +1,5 @@
 // Golden fixtures for the contrast helper itself (an unvalidated oracle is a bluff).
-import { backgroundOf, foregroundOf, contrastOf, ratio, failingElements } from '@/test/contrast'
+import { backgroundOf, foregroundOf, contrastOf, ratio, failingElements, islandsOf } from '@/test/contrast'
 
 function tree(parentCls: string, childCls: string) {
   const p = document.createElement('div'); p.className = parentCls
@@ -113,5 +113,26 @@ describe('contrast helper goldens', () => {
       expect(failingElements(html('<button disabled class="text-gray-500"><span>d</span>t</button>'), 'dark')).toEqual([])
       expect(failingElements(html('<button class="text-gray-500">t</button>'), 'dark')).toHaveLength(1)
     })
+  })
+})
+
+describe('D7-R4-4 light-island detector goldens', () => {
+  const mk = (cls: string) => { const r = document.createElement('div'); const c = document.createElement('div'); c.className = cls; c.textContent = 'x'; r.appendChild(c); return r }
+  it.each(['bg-white', 'bg-gray-50', 'bg-gray-100', 'bg-red-50', 'bg-blue-100'])('positive: %s without dark:bg is an island in dark', (cls) => {
+    expect(islandsOf(mk(cls), 'dark')).toHaveLength(1)
+  })
+  it.each(['bg-white dark:bg-gray-800', 'bg-gray-50 dark:bg-gray-700/50', 'bg-gray-900', 'bg-white/10', 'bg-red-600', 'text-gray-900'])('negative: %s is not an island', (cls) => {
+    expect(islandsOf(mk(cls), 'dark')).toHaveLength(0)
+  })
+  it('negative: a small white toggle knob is not a surface', () => {
+    expect(islandsOf(mk('inline-block h-4 w-4 rounded-full bg-white'), 'dark')).toHaveLength(0)
+  })
+  it('opt-in via failingElements: reported only with islands:true', () => {
+    const r = mk('bg-white text-gray-900')
+    expect(failingElements(r, 'dark')).toHaveLength(0)
+    expect(failingElements(r, 'dark', 4.5, { islands: true })).toHaveLength(1)
+  })
+  it('light theme never reports islands', () => {
+    expect(islandsOf(mk('bg-white'), 'light')).toHaveLength(0)
   })
 })
