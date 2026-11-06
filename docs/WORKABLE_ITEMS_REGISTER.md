@@ -110,7 +110,10 @@ Each: Status Queued unless stated. Acceptance always requires machine evidence f
 | CAT-D7-R4-2 | Task | In progress | Restore global.fetch in contrast tests. | author in flight |
 | CAT-D7-R4-3 | Bug | In progress | ExternalIntegrations pending badge equals card bg in dark. | author in flight |
 | CAT-D7-R4-4 | Task | In progress | Contrast helper: light-bg island detector. | author in flight |
-| CAT-FRONTDOOR-RATELIMIT-1 | Bug | Queued | Reproduced live: front door :33080 collapses all clients into one `/auth/login` bucket (nginx peer not in TRUSTED_PROXIES / XFF unused); one client locks out all for ~1 min. Evidence docs/qa/security-live-20261106/. Medium. | Root-cause then fix. |
+| CAT-FRONTDOOR-RATELIMIT-1 | Bug | In progress | Stack-3 shared login bucket explained as same-host artefact (pasta alias 169.254.1.2); remote-LAN isolation UNCONFIRMED (needs 2nd host, = QA-MON-FU-4). Characterization landed. Item stays OPEN for F1/F2. | F1, F2 |
+| CAT-TRUSTEDPROXIES-PROD-1 | Bug | Queued | F1 (important): production docker-compose.yml runs nginx in front of api with TRUSTED_PROXIES unset -> all clients share nginx IP -> one 30/min login bucket. Set explicit CIDR in deploy configs. | none |
+| CAT-TRUSTEDPROXIES-AUTO-1 | Bug | Queued | F2 (important): TRUSTED_PROXIES=auto (in .env.example) lets any RFC1918 client forge ClientIP via XFF 'x, <lan ip>' -> login limiter bypass. Fix/deprecate auto, document. | none |
+| CAT-TRUSTEDPROXIES-FU-1 | Task | Queued | F3 pin auto ranges in tests; F4 capture API log line for ClientIP=169.254.1.2; F5 script: pre-flood 401 control, 'PASS (A only; B SKIP)' output, live-lockout warning; F6 quote $T, SC2034. | none |
 | CAT-QA-THRW-CLEAN-1 | Task | Queued | Prune inactive throwaway users `qa_thrw_*` (no delete route). | none |
 | CAT-SSRF-F2F5-LIVE-1 | Task | Queued | Live proof of cover-art ffmpeg/HLS/FIFO/size cap + dial-time/redirect SSRF needs seedable QA corpus with removable root. | corpus tooling |
 
