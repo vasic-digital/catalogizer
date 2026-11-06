@@ -337,7 +337,10 @@ networks:
     driver: bridge
     # Fixed subnet so the nginx front door has a stable address that the API can trust
     # (TRUSTED_PROXIES). If it collides with a host network set CATALOGIZER_SUBNET and
-    # NGINX_IP (and TRUSTED_PROXIES if the address changes) together.
+    # NGINX_IP, CATALOGIZER_IP_RANGE (and TRUSTED_PROXIES if the address changes) together; a collision shows up as a "Pool overlaps" / address-in-use error on `up`.
     ipam:
       config:
         - subnet: ${CATALOGIZER_SUBNET:-172.28.0.0/24}
+          # Dynamic containers get addresses only from this upper half, so the pinned
+          # nginx address (.10) can never be taken by another container.
+          ip_range: ${CATALOGIZER_IP_RANGE:-172.28.0.128/25}

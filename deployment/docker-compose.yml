@@ -161,6 +161,10 @@ services:
     depends_on:
       - catalogizer-server
     environment:
+      # The web image's nginx proxies to API_UPSTREAM (catalog-web/nginx.conf.template, default
+      # host.containers.internal:8080 = via the host, which would hide the pinned web address
+      # from the API). Point it at the API container on the shared network.
+      API_UPSTREAM: catalogizer-server:8080
       API_URL: http://catalogizer-server:8080
       WS_URL: ws://catalogizer-server:8081
     ports:
@@ -278,10 +282,12 @@ services:
 networks:
   catalogizer-network:
     driver: bridge
-    name: ${DOCKER_NETWORK:-catalogizer-network}
+    name: ${DOCKER_NETWORK:-catalogizer-frontdoor-net}
     ipam:
       config:
         - subnet: ${DOCKER_SUBNET:-172.29.0.0/24}
+          # dynamic containers only from the upper half: the pinned web address (.10) stays free
+          ip_range: ${DOCKER_IP_RANGE:-172.29.0.128/25}
 
 # Volumes
 volumes:

@@ -998,6 +998,9 @@ func main() {
 	//     (CAT-TRUSTEDPROXIES-AUTO-1); trusts loopback + RFC-1918;
 	//     refused in release mode unless TRUSTED_PROXIES_ALLOW_AUTO=true.
 	//   - TRUSTED_PROXIES=<cidr>,...: explicit allow-list.
+	if trustsEverything(os.Getenv("TRUSTED_PROXIES")) {
+		logger.Warn("TRUSTED_PROXIES contains a catch-all CIDR (0.0.0.0/0 or ::/0): every peer may forge its client IP via X-Forwarded-For")
+	}
 	if os.Getenv("TRUSTED_PROXIES") == "auto" {
 		logger.Warn("TRUSTED_PROXIES=auto is DEPRECATED: any client inside a trusted private range can forge its client IP via X-Forwarded-For and bypass per-IP rate limits; use explicit proxy CIDR(s)")
 	}

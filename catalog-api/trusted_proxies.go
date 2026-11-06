@@ -57,3 +57,14 @@ func setTrustedProxies(r *gin.Engine, tp string) error {
 	}
 	return r.SetTrustedProxies(list)
 }
+
+// trustsEverything reports whether an explicit list contains a catch-all CIDR
+// (startup warning: it re-creates gin's trust-all default).
+func trustsEverything(tp string) bool {
+	for _, s := range strings.Split(tp, ",") {
+		if s = strings.TrimSpace(s); s == "0.0.0.0/0" || s == "::/0" {
+			return true
+		}
+	}
+	return false
+}

@@ -1,10 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/netip"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -92,26 +93,74 @@ func TestAuto_AllowedOutsideReleaseMode(t *testing.T) {
 	}
 }
 
-// F1 (CAT-TRUSTEDPROXIES-PROD-1): the shipped production compose must make the
-// API trust exactly the nginx front door. Reads the REAL compose file, resolves
-// the default of api's TRUSTED_PROXIES, and drives the real gin policy with the
-// nginx container's fixed address as the TCP peer.
+// F1 (CAT-TRUSTEDPROXIES-PROD-1): the shipped production compose files must make
+// the API trust exactly the proxy front door. Walks the REAL parsed YAML
+// structurally: proxy service -> its network entry -> ipv4_address, inside the
+// network's ipam subnet, outside its ip_range (so a dynamic container can never
+// take it), same network as the API, API default TRUSTED_PROXIES == that /32.
+type composeDoc struct {
+	Services map[string]struct {
+		Environment map[string]any `yaml:"environment"`
+		Networks    any            `yaml:"networks"`
+	} `yaml:"services"`
+	Networks map[string]struct {
+		Name string `yaml:"name"`
+		Ipam struct {
+			Config []struct {
+				Subnet  string `yaml:"subnet"`
+				IPRange string `yaml:"ip_range"`
+			} `yaml:"config"`
+		} `yaml:"ipam"`
+	} `yaml:"networks"`
+}
+
+var composeDefault = regexp.MustCompile(`^\$\{[A-Z_]+:-([^}]*)\}$`)
+
+func resolveDefault(t *testing.T, what string, v any) string {
+	t.Helper()
+	sv, ok := v.(string)
+	if !ok || sv == "" {
+		t.Fatalf("%s is unset", what)
+	}
+	m := composeDefault.FindStringSubmatch(sv)
+	if m == nil {
+		t.Fatalf("%s=%q must be an overridable ${VAR:-default}", what, sv)
+	}
+	return m[1]
+}
+
+// networkAttach returns (attached, ipv4_address) for service networks given as
+// either a list or a map.
+func networkAttach(n any, key string) (bool, any) {
+	switch v := n.(type) {
+	case []any:
+		for _, e := range v {
+			if e == key {
+				return true, nil
+			}
+		}
+	case map[string]any:
+		if e, ok := v[key]; ok {
+			if m, ok := e.(map[string]any); ok {
+				return true, m["ipv4_address"]
+			}
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 func TestProdCompose_APITrustsNginxFrontDoor(t *testing.T) {
-	for _, tc := range []struct{ file, proxySvc, apiSvc string }{
-		{"../docker-compose.yml", "nginx", "api"},
-		{"../deployment/docker-compose.yml", "web", "catalogizer-server"},
+	for _, tc := range []struct{ file, proxySvc, apiSvc, net string }{
+		{"../docker-compose.yml", "nginx", "api", "catalogizer-network"},
+		{"../deployment/docker-compose.yml", "web", "catalogizer-server", "catalogizer-network"},
 	} {
-		t.Run(filepath.Base(filepath.Dir(tc.file))+"/"+filepath.Base(tc.file), func(t *testing.T) {
+		t.Run(strings.TrimPrefix(tc.file, "../"), func(t *testing.T) {
 			raw, err := os.ReadFile(tc.file)
 			if err != nil {
 				t.Fatal(err)
 			}
-			var doc struct {
-				Services map[string]struct {
-					Environment map[string]any `yaml:"environment"`
-					Networks    any            `yaml:"networks"`
-				} `yaml:"services"`
-			}
+			var doc composeDoc
 			if err := yaml.Unmarshal(raw, &doc); err != nil {
 				t.Fatal(err)
 			}
@@ -119,20 +168,55 @@ func TestProdCompose_APITrustsNginxFrontDoor(t *testing.T) {
 			if !ok {
 				t.Fatalf("service %s missing", tc.apiSvc)
 			}
-			tpv, ok := api.Environment["TRUSTED_PROXIES"].(string)
-			if !ok || tpv == "" {
-				t.Fatalf("%s: %s.environment.TRUSTED_PROXIES is unset => ClientIP is the proxy container IP => one shared login bucket for all clients", tc.file, tc.apiSvc)
+			px, ok := doc.Services[tc.proxySvc]
+			if !ok {
+				t.Fatalf("service %s missing", tc.proxySvc)
 			}
-			def := regexp.MustCompile(`^\$\{[A-Z_]+:-([^}]*)\}$`).FindStringSubmatch(tpv)
-			if def == nil {
-				t.Fatalf("TRUSTED_PROXIES %q must be an overridable ${VAR:-default}", tpv)
+			tp := resolveDefault(t, tc.apiSvc+".environment.TRUSTED_PROXIES (shared bucket otherwise)", api.Environment["TRUSTED_PROXIES"])
+			if tp == "auto" || strings.Contains(tp, "0.0.0.0/0") || strings.Contains(tp, "::/0") || strings.Contains(tp, ",") {
+				t.Fatalf("default %q must be exactly one explicit non-wildcard CIDR", tp)
 			}
-			tp := def[1]
-			if tp == "" || tp == "auto" || strings.Contains(tp, "0.0.0.0/0") || strings.Contains(tp, "::/0") {
-				t.Fatalf("default %q must be an explicit non-wildcard CIDR", tp)
+			pfx, err := netip.ParsePrefix(tp)
+			if err != nil || pfx.Bits() != pfx.Addr().BitLen() {
+				t.Fatalf("default %q must be a single-host /32", tp)
 			}
-			// proxy peer = the first address in the default list
-			peer := strings.SplitN(strings.TrimSpace(strings.Split(tp, ",")[0]), "/", 2)[0]
+			if ok, _ := networkAttach(api.Networks, tc.net); !ok {
+				t.Fatalf("%s must attach to %s (same network as the proxy)", tc.apiSvc, tc.net)
+			}
+			ok, ipv := networkAttach(px.Networks, tc.net)
+			if !ok {
+				t.Fatalf("%s must attach to %s", tc.proxySvc, tc.net)
+			}
+			addr, err := netip.ParseAddr(resolveDefault(t, tc.proxySvc+" networks."+tc.net+".ipv4_address", ipv))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if addr != pfx.Addr() {
+				t.Fatalf("%s is pinned to %s but the API trusts %s", tc.proxySvc, addr, pfx)
+			}
+			n, ok := doc.Networks[tc.net]
+			if !ok || len(n.Ipam.Config) == 0 {
+				t.Fatalf("network %s has no ipam config", tc.net)
+			}
+			sub, err := netip.ParsePrefix(resolveDefault(t, "ipam subnet", n.Ipam.Config[0].Subnet))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !sub.Contains(addr) {
+				t.Fatalf("proxy address %s is outside subnet %s", addr, sub)
+			}
+			rng, err := netip.ParsePrefix(resolveDefault(t, "ipam ip_range (dynamic containers could take the proxy address)", n.Ipam.Config[0].IPRange))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !sub.Contains(rng.Addr()) || rng.Bits() < sub.Bits() {
+				t.Fatalf("ip_range %s is not inside subnet %s", rng, sub)
+			}
+			if rng.Contains(addr) {
+				t.Fatalf("proxy address %s lies inside the dynamic ip_range %s", addr, rng)
+			}
+			// behavioural link into the real gin policy
+			peer := addr.String()
 			if got := clientIPFor(t, tp, peer, "192.168.1.50"); got != "192.168.1.50" {
 				t.Fatalf("behind the front door ClientIP=%q want the real client", got)
 			}
@@ -142,11 +226,61 @@ func TestProdCompose_APITrustsNginxFrontDoor(t *testing.T) {
 			if got := clientIPFor(t, tp, "198.51.100.7", "9.9.9.9"); got != "198.51.100.7" {
 				t.Fatalf("non-proxy peer must not be trusted: ClientIP=%q", got)
 			}
-			// the proxy service must actually be pinned to that address
-			if !regexp.MustCompile(`(?s)` + tc.proxySvc + `:.*?ipv4_address:\s*\$\{[A-Z_]+:-` + regexp.QuoteMeta(peer) + `\}`).Match(raw) {
-				t.Fatalf("service %s is not pinned to ipv4_address %s via an overridable default", tc.proxySvc, peer)
+			if tc.proxySvc == "web" { // the web image proxies to API_UPSTREAM; the default is the host, bypassing this network
+				up := fmt.Sprint(px.Environment["API_UPSTREAM"])
+				if up != tc.apiSvc+":8080" {
+					t.Fatalf("web API_UPSTREAM=%q; must be %s:8080 so the API sees the pinned proxy address", up, tc.apiSvc)
+				}
 			}
 		})
+	}
+}
+
+// F-D: every nginx location that proxy_pass-es must forward the client address,
+// otherwise the API sees only the proxy (shared bucket) for that path.
+func TestNginxConfigs_EveryProxyLocationSetsForwardedFor(t *testing.T) {
+	for _, f := range []string{"../config/nginx.conf", "../catalog-web/nginx.conf.template"} {
+		raw, err := os.ReadFile(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		lines := strings.Split(string(raw), "\n")
+		locs := 0
+		for i := 0; i < len(lines); i++ {
+			if !regexp.MustCompile(`^\s*location\s.*\{\s*$`).MatchString(lines[i]) {
+				continue
+			}
+			depth, block := 0, ""
+			for j := i; j < len(lines); j++ {
+				l := strings.SplitN(lines[j], "#", 2)[0]
+				depth += strings.Count(l, "{") - strings.Count(l, "}")
+				block += l + "\n"
+				if depth <= 0 {
+					break
+				}
+			}
+			if !strings.Contains(block, "proxy_pass") {
+				continue
+			}
+			locs++
+			for _, h := range []string{"proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;", "proxy_set_header X-Real-IP $remote_addr;"} {
+				if !strings.Contains(block, h) {
+					t.Errorf("%s: %s lacks %q", f, strings.TrimSpace(lines[i]), h)
+				}
+			}
+		}
+		if locs == 0 {
+			t.Errorf("%s: parsed no proxy_pass location (instrument blind)", f)
+		}
+	}
+}
+
+// Optional: wildcard detector used for a startup warning.
+func TestTrustsEverything(t *testing.T) {
+	for tp, want := range map[string]bool{"0.0.0.0/0": true, "10.0.0.0/8, ::/0": true, "10.0.0.0/8": false, "": false, "auto": false, "172.28.0.10/32": false} {
+		if got := trustsEverything(tp); got != want {
+			t.Errorf("trustsEverything(%q)=%v want %v", tp, got, want)
+		}
 	}
 }
 
@@ -157,7 +291,7 @@ func TestApplyTrustedProxies_FailureFailsClosed(t *testing.T) {
 	gin.SetMode(gin.ReleaseMode)
 	t.Cleanup(func() { gin.SetMode(prev) })
 	t.Setenv("TRUSTED_PROXIES_ALLOW_AUTO", "")
-	for _, tp := range []string{"auto", "not-a-cidr"} {
+	for _, tp := range []string{"auto", "not-a-cidr", "10.0.0.0/8,not-a-cidr"} {
 		gin.SetMode(gin.ReleaseMode)
 		r := gin.New()
 		if err := applyTrustedProxies(r, tp); err == nil {
