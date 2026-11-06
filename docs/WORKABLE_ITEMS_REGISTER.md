@@ -99,6 +99,18 @@ Each: Status Queued unless stated. Acceptance always requires machine evidence f
 | CAT-TEST-PREEXIST-1 | Bug | Queued | Pre-existing root-package OpenAPI test failure; services `TestCAT002` is host-memory dependent (make hermetic or quarantine, §11.4.248). | Reproduce first. |
 | CAT-DOCS-EXPORT-1 | Task | Queued | Regenerate `CONTINUATION.html/.pdf` (stale at Rev 9) and the 90 owed script guides (D1). | none |
 
+### Added Revision 2 (2026-11-06)
+
+| Id | Type | Status | Description | Blocker |
+|---|---|---|---|---|
+| CAT-PROM-AUTH-1 | Task | In testing (PROVISIONAL) | Prometheus basic auth (landed 42933e6b, applied live; anonymous 401). N>=3 repeat in flight. | Live repeat. |
+| CAT-PROM-AUTH-FU-1 | Task | Queued | PROM-R2-1..5 follow-ups in FOLLOW_UPS_NEXT_PHASE.md. | none |
+| CAT-VERIFY-LANBIND-1 | Bug | Queued | `monitoring/verify.py` LAN-NOT-reachable assertions contradict the LAN decision; make them conditional on *_BIND. | Reproduce first (3 FAILs observed). |
+| CAT-D7-R4-1 | Bug | In progress | UploadManager failed-row error text contrast 3.60/3.29. | author in flight |
+| CAT-D7-R4-2 | Task | In progress | Restore global.fetch in contrast tests. | author in flight |
+| CAT-D7-R4-3 | Bug | In progress | ExternalIntegrations pending badge equals card bg in dark. | author in flight |
+| CAT-D7-R4-4 | Task | In progress | Contrast helper: light-bg island detector. | author in flight |
+
 ## Part C — counts at Revision 1
 
 Registered in Part B: 29 new ids. Already present (Part A rows, each a pointer to one or more existing ids): 22 rows covering the ids named in the CONTINUATION queue. Duplicates created: 0.
