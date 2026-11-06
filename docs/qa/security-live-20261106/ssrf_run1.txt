@@ -1,0 +1,56 @@
+control: listener reachable from API container netns: ok ; hits=1
+== image-proxy (public GET, expect 403 domain not allowed) ==
+image-proxy http://169.254.1.2:47931/x -> {"error":"domain not allowed"} 403
+image-proxy https://169.254.1.2:47931/x -> {"error":"domain not allowed"} 403
+image-proxy https://127.0.0.1/x -> {"error":"domain not allowed"} 403
+image-proxy https://localhost/x -> {"error":"domain not allowed"} 403
+image-proxy https://169.254.169.254/latest/meta-data/ -> {"error":"domain not allowed"} 403
+image-proxy https://[::1]/ -> {"error":"domain not allowed"} 403
+image-proxy https://10.0.0.5/ -> {"error":"domain not allowed"} 403
+image-proxy https://image.tmdb.org@127.0.0.1/ -> {"error":"domain not allowed"} 403
+image-proxy https://image.tmdb.org.127.0.0.1.nip.io/ -> {"error":"domain not allowed"} 403
+image-proxy https://127.0.0.1.nip.io/ -> {"error":"domain not allowed"} 403
+image-proxy https://169.254.169.254.nip.io/ -> {"error":"domain not allowed"} 403
+image-proxy https://169.254.1.2.nip.io/ -> {"error":"domain not allowed"} 403
+image-proxy http://image.tmdb.org/t/p/w500/x.jpg -> {"error":"domain not allowed"} 403
+image-proxy https://image.tmdb.org:8443/x -> {"error":"domain not allowed"} 403
+image-proxy https://[::ffff:127.0.0.1]/ -> {"error":"domain not allowed"} 403
+image-proxy https://0177.0.0.1/ -> {"error":"domain not allowed"} 403
+image-proxy https://2130706433/ -> {"error":"domain not allowed"} 403
+image-proxy file:///etc/passwd -> {"error":"domain not allowed"} 403
+control image-proxy allow-listed host (expect 200) -> 200
+control image-proxy missing url (expect 400) -> 400
+== POST /storage/roots webdav (expect 400 url refused) ==
+root http://127.0.0.1:47931/dav -> webdav url refused: outbound destination not allowed: 127.0.0.1 is a loopback, link-local, metadata or reserved address 400
+root http://localhost/dav -> webdav url refused: outbound destination not allowed: localhost resolves only to loopback, link-local, metadata or reserved addresses 400
+root http://169.254.169.254/latest/meta-data/ -> webdav url refused: outbound destination not allowed: 169.254.169.254 is a loopback, link-local, metadata or reserved address 400
+root http://[::1]/ -> webdav url refused: outbound destination not allowed: ::1 is a loopback, link-local, metadata or reserved address 400
+root http://[::ffff:127.0.0.1]/ -> webdav url refused: outbound destination not allowed: ::ffff:127.0.0.1 is a loopback, link-local, metadata or reserved address 400
+root http://0177.0.0.1/ -> webdav url refused: outbound destination not allowed: "0177.0.0.1" is not a canonical IP address or DNS name 400
+root http://2130706433/ -> webdav url refused: outbound destination not allowed: "2130706433" is not a canonical IP address or DNS name 400
+root http://127.1/ -> webdav url refused: outbound destination not allowed: "127.1" is not a canonical IP address or DNS name 400
+root http://127.0.0.1.nip.io/dav -> webdav url refused: outbound destination not allowed: 127.0.0.1.nip.io resolves only to loopback, link-local, metadata or reserved addresses 400
+root http://169.254.169.254.nip.io/dav -> webdav url refused: outbound destination not allowed: 169.254.169.254.nip.io resolves only to loopback, link-local, metadata or reserved addresses 400
+root http://localtest.me/dav -> webdav url refused: outbound destination not allowed: localtest.me resolves only to loopback, link-local, metadata or reserved addresses 400
+root http://100.100.100.200/ -> webdav url refused: outbound destination not allowed: 100.100.100.200 is a loopback, link-local, metadata or reserved address 400
+root http://[fd00:ec2::254]/ -> webdav url refused: outbound destination not allowed: fd00:ec2::254 is a loopback, link-local, metadata or reserved address 400
+root http://0.0.0.0/ -> webdav url refused: outbound destination not allowed: 0.0.0.0 is a loopback, link-local, metadata or reserved address 400
+root ftp://example.invalid/ -> webdav url refused: outbound destination not allowed: scheme "ftp" not permitted 400
+control storage-root missing url -> invalid webdav storage root: missing url 400
+control storage-root non-admin n/a; unauth -> 401
+roots count after probes: 2
+== POST /sync/endpoints (expect 400) ==
+sync http://127.0.0.1:47931/dav -> Failed to create sync endpoint | invalid sync endpoint: invalid endpoint URL: outbound destination not allowed: 127.0.0.1 is a loopback, private, link 400
+sync http://169.254.1.2:47931/dav -> Failed to create sync endpoint | invalid sync endpoint: invalid endpoint URL: outbound destination not allowed: 169.254.1.2 is a loopback, private, li 400
+sync http://169.254.1.2:47931/redir -> Failed to create sync endpoint | invalid sync endpoint: invalid endpoint URL: outbound destination not allowed: 169.254.1.2 is a loopback, private, li 400
+sync http://host.containers.internal:47931/dav -> Failed to create sync endpoint | invalid sync endpoint: invalid endpoint URL: outbound destination not allowed: host.containers.internal resolves to 1 400
+sync http://169.254.169.254/latest/meta-data/ -> Failed to create sync endpoint | invalid sync endpoint: invalid endpoint URL: outbound destination not allowed: 169.254.169.254 is a loopback, private 400
+sync http://[::1]/ -> Failed to create sync endpoint | invalid sync endpoint: invalid endpoint URL: outbound destination not allowed: ::1 is a loopback, private, link-local 400
+sync http://10.0.0.5/ -> Failed to create sync endpoint | invalid sync endpoint: invalid endpoint URL: outbound destination not allowed: 10.0.0.5 is a loopback, private, link- 400
+sync http://127.0.0.1.nip.io/ -> Failed to create sync endpoint | invalid sync endpoint: invalid endpoint URL: outbound destination not allowed: 127.0.0.1.nip.io resolves to 127.0.0.1 400
+sync http://169.254.1.2.nip.io:47931/ -> Failed to create sync endpoint | invalid sync endpoint: invalid endpoint URL: outbound destination not allowed: 169.254.1.2.nip.io resolves to 169.254 400
+sync http://169.254.169.254.nip.io/ -> Failed to create sync endpoint | invalid sync endpoint: invalid endpoint URL: outbound destination not allowed: 169.254.169.254.nip.io resolves to 169 400
+sync ftp://example.invalid/ -> Failed to create sync endpoint | invalid sync endpoint: invalid endpoint URL: outbound destination not allowed: scheme "ftp" not permitted 400
+control sync public url -> Failed to create sync endpoint | connection test failed: WebDAV connection test failed: PROPFIND /: 405 502
+control sync endpoints list (expect 200) -> 200
+LISTENER HITS from product paths (expect 0): 0

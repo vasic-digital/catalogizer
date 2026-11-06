@@ -1,0 +1,3 @@
+{"error":"seconds must be an integer between 1 and 60"}
+{"error":"another profile or trace is already running"} concurrent-status=429
+sec60 status=200 time=60.005035
