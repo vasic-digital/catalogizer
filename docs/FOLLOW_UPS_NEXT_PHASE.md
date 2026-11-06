@@ -1602,3 +1602,9 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - D7-R4-2 FIXED: global.fetch restored in afterEach (contrastD7FollowUps/Class/Populated, ExternalIntegrations.test) with a leak-check test.
 - D7-R4-3 FIXED: ExternalIntegrations default/pending chip `dark:bg-gray-700/50`; test asserts chip bg != card bg and ratio > 1.05 in dark.
 - D7-R4-4 DONE: `islandsOf()` in src/test/contrast.ts; `failingElements(root, theme, min, { islands: true })` opts in. Goldens in contrastHelper.test.ts. Opt-in only because it finds REAL islands in untouched files (dark theme), listed here as UI-D7-R4-ISLAND-1..: AdvancedSearch tab icon chips `bg-blue-100` (x5); FormatConverter empty-state circle `bg-gray-100`; AI unavailable panels `bg-white rounded-lg shadow p-6` (x3); AIDashboard icon chips `bg-indigo-100`/`bg-green-100`/`bg-yellow-100`. Toggle knobs (small white circles) are exempt by rule.
+
+### D7-R4 review round 1 follow-ups (GO-with-follow-ups)
+- D7-R4-FU-1 (minor, test-instrumentation): `islandsOf` knob exemption too broad (no bg-white check, one w/h class suffices); require bg-white + both w/h 1-6 + no text; add goldens `rounded-full w-16 h-16 bg-gray-100` and text badge `rounded-full h-6 px-2 bg-blue-100` as positives. Mutation M4 survives today.
+- D7-R4-FU-2 (minor): `LIGHT_BG_NAME` ignores -200 shades, `bg-white dark:bg-white`, `dark:bg-opacity-*`; widen/document.
+- D7-R4-FU-3 (nit): no fetch leak check in ExternalIntegrations/Class/Populated tests (M7 survives); reset mock history.
+- D7-R4-FU-4 (nit): give each UI-D7-R4-ISLAND row an id (register as CAT-D7-ISLAND-1).
