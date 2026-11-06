@@ -17,6 +17,10 @@ const JOB: any = { id: 'j1', sourceFile: { path: '/a.mkv', name: 'a.mkv', format
 // A dark-mode background brighter than this is a "light island" on the gray-900 page (gray-800 = 0.023).
 const LIGHT_ISLAND_LUM = 0.1
 
+// D7-R4-2: tests that assign global.fetch must restore it, never leak the mock into sibling tests.
+const realFetch = global.fetch
+afterEach(() => { global.fetch = realFetch })
+
 describe.each(['light', 'dark'] as Theme[])('D7-R3-FU1 FormatConverter job boxes, %s theme', (theme) => {
   it.each([
     ['failed', { status: 'failed', error: 'ffmpeg exited 1' }, 'ffmpeg exited 1', 5.91],
@@ -45,11 +49,16 @@ describe.each(['light', 'dark'] as Theme[])('D7-R3-M1 ExternalIntegrations statu
       const badge = Array.from(card.querySelectorAll('div.rounded-full')).find((e) => e.textContent?.trim() === s)
       expect(badge, `badge ${s}`).toBeTruthy()
       expect(contrastOf(badge!, theme), `badge ${s} contrast`).toBeGreaterThanOrEqual(4.5)
+      // D7-R4-3: the pending chip must be distinguishable from the card it sits on in dark (card = dark:bg-gray-800)
+      if (s === 'pending' && theme === 'dark') {
+        expect(backgroundOf(badge!, theme), 'pending chip bg != card bg').not.toEqual(backgroundOf(card, theme))
+        expect(ratio(backgroundOf(badge!, theme), backgroundOf(card, theme)), 'pending chip vs card').toBeGreaterThan(1.05)
+      }
       // status icon (svg) must carry the badge colour via inheritance, never its own low-contrast colour
       const svg = badge!.querySelector('svg')
       if (svg) expect(svg.getAttribute('class') ?? '', `icon ${s}`).not.toMatch(/text-(blue|red|green|gray)-[345]00/)
     }
-    expect(failingElements(container, theme).join('\n')).toBe('')
+    expect(failingElements(container, theme, 4.5, { islands: true }).join('\n')).toBe('')
   })
 })
 
@@ -68,5 +77,22 @@ describe('D7-R3-M3 UploadManager queued row vs Card, dark', () => {
     }
     expect(ratio(backgroundOf(row, 'dark'), backgroundOf(row.parentElement, 'dark'))).toBeGreaterThan(1.05)
     expect(failingElements(container, 'dark').join('\n')).toBe('')
+  })
+})
+
+describe.each(['light', 'dark'] as Theme[])('D7-R4-1 UploadManager FAILED row error text, %s theme', (theme) => {
+  it('error text has >= 4.5 on the real row background', async () => {
+    const { container } = render(<UploadManager onUpload={vi.fn(() => Promise.reject(new Error('Disk quota exceeded')))} />)
+    fireEvent.change(container.querySelector('input[type=file]')!, { target: { files: [new File(['x'], 'bad.mp4', { type: 'video/mp4' })] } })
+    const err = await screen.findByText('Disk quota exceeded')
+    expect(contrastOf(err, theme)).toBeGreaterThanOrEqual(4.5)
+    expect(failingElements(container, theme).join('\n')).toBe('')
+    expect(failingElements(container, theme, 4.5, { islands: true }).join('\n')).toBe('')
+  })
+})
+
+describe('D7-R4-2 global.fetch is restored after the mocking tests', () => {
+  it('fetch is the original again', () => {
+    expect(global.fetch).toBe(realFetch)
   })
 })

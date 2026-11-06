@@ -115,7 +115,7 @@ export const WCAG_AA_NORMAL = 4.5
  * returns descriptions of those below the AA threshold (4.5 normal, 3 for large text).
  * Text over a translucent black overlay sits on user imagery and is not computable from classes: skipped.
  */
-export function failingElements(root: Element, theme: Theme, min = WCAG_AA_NORMAL): string[] {
+export function failingElements(root: Element, theme: Theme, min = WCAG_AA_NORMAL, opts: { islands?: boolean } = {}): string[] {
   const bad: string[] = []
   const w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT)
   for (let n = w.currentNode as Element | null; n; n = w.nextNode() as Element | null) {
@@ -130,5 +130,39 @@ export function failingElements(root: Element, theme: Theme, min = WCAG_AA_NORMA
     const r = contrastOf(n, theme)
     if (r < (large ? 3 : min)) bad.push(`${n.tagName.toLowerCase()}.${cls} "${(n.textContent ?? '').trim().slice(0, 30)}" ${r.toFixed(2)}`)
   }
+  // D7-R4-4: opt-in (existing suites predate it and contain known islands, listed in FOLLOW_UPS): also report light islands.
+  if (opts.islands) bad.push(...islandsOf(root, theme))
   return bad
+}
+
+const LIGHT_BG_NAME = /^(white|[a-z]+-(50|100))$/
+
+/**
+ * D7-R4-4 light-island detector: in dark mode, an element whose OWN bg-* class is a light background
+ * (bg-white, bg-*-50, bg-*-100; opaque enough to matter, alpha >= 50%) and that has NO dark:bg-* class.
+ * backgroundOf() falls back to that light base colour in dark, so such an island passes the text-contrast
+ * check against itself while sitting as a bright box on the dark page. Light theme never has islands.
+ */
+export function islandsOf(root: Element, theme: Theme): string[] {
+  if (theme !== 'dark') return []
+  const found: string[] = []
+  const all = [root, ...Array.from(root.querySelectorAll('*'))]
+  for (const n of all) {
+    if (n.closest('svg')) continue
+    const classes = Array.from(n.classList)
+    if (classes.some((c) => c.startsWith('dark:bg-'))) continue
+    // A small fixed-size white circle is a toggle knob on a coloured track, not a surface.
+    if (classes.includes('rounded-full') && classes.some((c) => /^[wh]-[1-6]$/.test(c))) continue
+    for (const c of classes) {
+      if (!c.startsWith('bg-')) continue
+      const [name, op] = c.slice(3).split('/')
+      if (!LIGHT_BG_NAME.test(name)) continue
+      if (op && Number(op) < 50) continue
+      if (resolveToken(name) && luminance(resolveToken(name)!.rgb) > 0.5) {
+        found.push(`${n.tagName.toLowerCase()}.${n.getAttribute('class')} (light island: ${c})`)
+        break
+      }
+    }
+  }
+  return found
 }

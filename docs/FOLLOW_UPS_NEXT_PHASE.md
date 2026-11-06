@@ -1596,3 +1596,9 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - Applied: `GRAFANA_BIND=PGADMIN_BIND=PROM_BIND=192.168.1.115 monitoring/up.sh` (catqa3mon replaced). Live: anonymous /api/v1/targets -> 401; verify.py: prom.anonymous_targets/query/wrong_password 401 PASS, targets up, queries have data, grafana datasource health OK; test_prom_auth.sh PASS (single run).
 - verify.py 45 PASS / 3 FAIL: the 3 FAILs are the legacy assertions `lan.{prometheus,grafana,pgadmin}_NOT_reachable_on_LAN_IP` which contradict the operator LAN-exposure decision; make them conditional on the *_BIND settings (new item CAT-VERIFY-LANBIND-1). Prometheus password in mon.env (PROM_AUTH_PASSWORD, user qa_prom).
 - N>=3 repeat of the live auth checks owed for VERIFIED.
+
+## D7 R4 follow-ups landed (feat/d7-r4, PROVISIONAL-DONE; live axe re-run on a rebuilt web image owed)
+- D7-R4-1 FIXED: UploadManager failed-row error text `text-red-700 dark:text-red-300` (light 3.60 -> >=4.5; dark 3.29 -> >=4.5; red-400 gave 4.478 on the dark row so red-300 is used). Test renders a FAILED upload row in both themes.
+- D7-R4-2 FIXED: global.fetch restored in afterEach (contrastD7FollowUps/Class/Populated, ExternalIntegrations.test) with a leak-check test.
+- D7-R4-3 FIXED: ExternalIntegrations default/pending chip `dark:bg-gray-700/50`; test asserts chip bg != card bg and ratio > 1.05 in dark.
+- D7-R4-4 DONE: `islandsOf()` in src/test/contrast.ts; `failingElements(root, theme, min, { islands: true })` opts in. Goldens in contrastHelper.test.ts. Opt-in only because it finds REAL islands in untouched files (dark theme), listed here as UI-D7-R4-ISLAND-1..: AdvancedSearch tab icon chips `bg-blue-100` (x5); FormatConverter empty-state circle `bg-gray-100`; AI unavailable panels `bg-white rounded-lg shadow p-6` (x3); AIDashboard icon chips `bg-indigo-100`/`bg-green-100`/`bg-yellow-100`. Toggle knobs (small white circles) are exempt by rule.

@@ -384,7 +384,7 @@ const ExternalIntegrations: React.FC = () => {
       case 'connecting':
         return { icon: RefreshCw, color: 'text-blue-700 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20' };
       default:
-        return { icon: Clock, color: 'text-gray-600 dark:text-gray-300', bg: 'bg-gray-50 dark:bg-gray-800' };
+        return { icon: Clock, color: 'text-gray-600 dark:text-gray-300', bg: 'bg-gray-50 dark:bg-gray-700/50' };
     }
   };
 
