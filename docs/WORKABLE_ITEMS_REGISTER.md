@@ -110,6 +110,9 @@ Each: Status Queued unless stated. Acceptance always requires machine evidence f
 | CAT-D7-R4-2 | Task | In progress | Restore global.fetch in contrast tests. | author in flight |
 | CAT-D7-R4-3 | Bug | In progress | ExternalIntegrations pending badge equals card bg in dark. | author in flight |
 | CAT-D7-R4-4 | Task | In progress | Contrast helper: light-bg island detector. | author in flight |
+| CAT-FRONTDOOR-RATELIMIT-1 | Bug | Queued | Reproduced live: front door :33080 collapses all clients into one `/auth/login` bucket (nginx peer not in TRUSTED_PROXIES / XFF unused); one client locks out all for ~1 min. Evidence docs/qa/security-live-20261106/. Medium. | Root-cause then fix. |
+| CAT-QA-THRW-CLEAN-1 | Task | Queued | Prune inactive throwaway users `qa_thrw_*` (no delete route). | none |
+| CAT-SSRF-F2F5-LIVE-1 | Task | Queued | Live proof of cover-art ffmpeg/HLS/FIFO/size cap + dial-time/redirect SSRF needs seedable QA corpus with removable root. | corpus tooling |
 
 ## Part C — counts at Revision 1
 
