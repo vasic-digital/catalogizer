@@ -21,14 +21,14 @@ RUN_ID=run1 docs/qa/stack3/sonarqube/scan.sh        # [--fail-on-gate] -> docs/q
 docs/qa/stack3/sonarqube/down.sh
 ```
 
-UI: `http://192.168.1.115:19000` (login `admin`; generated password and scan token are in
+UI: `http://<LAN-IP>:19000` (LAN address auto-detected; override with `SONAR_BIND` or `QA_BIND`, see `docs/qa/lib/lan_ip.sh`) (login `admin`; generated password and scan token are in
 `~/.cache/claude-tmp/catsonar/sonar.env`, mode 0600, **outside the repo**; never printed, never committed). Credentials are passed
 to curl via a 0600 netrc and to the scanner via a 0600 env-file, never in argv.
 
 ## Isolation and caps
 
 * Rootless podman only; no sudo. Own pod `catsonar` -> own network namespace; the UI port is published on **one** LAN address
-  (`192.168.1.115:19000`, free high port) only. No custom podman network is created, so the shared aardvark-dns and the
+  (`<LAN-IP>:19000`, free high port) only. No custom podman network is created, so the shared aardvark-dns and the
   `catqa*` stacks are not touched.
 * `--memory/--memory-swap/--cpus`: SonarQube 4g (swap = memory, i.e. none) / 2 cpus (JVM heaps: web 768m, CE 1g, ES 512m), Postgres 512m / 1 cpu, scanner 6g / 2 cpus (JVM -Xmx5g; the Go analyzer OOMed at -Xmx1g and -Xmx3g on catalog-api: measured).
 * The caps above are the **only** real memory/CPU limits on the containers (podman cgroups). Wrapping the scripts in

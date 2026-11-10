@@ -5,7 +5,11 @@ set -uo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd); . "$HERE/ports.env"
 ROOT=${TS_ROOT:-/home/milosvasic/Testing-servers}
 ENVF=${TS_ENV:-/home/milosvasic/.cache/claude-tmp/catqa3/testservers.env}
+. "$HERE/../lib/lan_ip.sh"
+_ts_host_caller="${TS_HOST:-}"
 set -a; . "$ENVF"; set +a
+# TS_HOST: caller env wins, else the auto-detected LAN address (a value stored in the env file is not trusted; it goes stale)
+if [ -n "$_ts_host_caller" ]; then TS_HOST="$_ts_host_caller"; else TS_HOST="$(qa_lan_ip)" || exit 1; fi
 OUT=${TS_EVID:-$ROOT/evidence}; mkdir -p "$OUT"; W=$(mktemp -d); trap 'rm -rf "${W:?}"' EXIT
 LOG=$OUT/verify_$(date +%Y%m%dT%H%M%S).log; FAIL=0
 say(){ echo "$*" | tee -a "$LOG"; }

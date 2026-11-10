@@ -7,7 +7,10 @@ STACK="${SQ_STACK:-catsonar}"
 POD="$STACK"
 LABEL_KEY="io.catalogizer.service"; LABEL_VAL="sonarqube"   # ownership label on pod + volumes; nothing without it is ever removed
 SQ_DIR="${SQ_DIR:-$HOME/.cache/claude-tmp/${STACK}}"
-SONAR_BIND="${SONAR_BIND:-192.168.1.115}"      # LAN address the UI is published on (never 0.0.0.0)
+. "${QA_LAN_IP_LIB:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/lan_ip.sh}" || { echo "ERROR: cannot source docs/qa/lib/lan_ip.sh" >&2; exit 1; }
+# LAN address the UI is published on (never 0.0.0.0): explicit SONAR_BIND, else auto-detected (override with QA_BIND/LAN_BIND); fails loudly if undetectable.
+SONAR_BIND="${SONAR_BIND:-$(qa_lan_ip)}" || exit 1
+[ -n "${SONAR_BIND:-}" ] || { echo "ERROR: SONAR_BIND empty (set SONAR_BIND or QA_BIND)" >&2; exit 1; }
 SONAR_PORT="${SONAR_PORT:-19000}"
 # All three images pinned by digest. SonarQube and Postgres digests are identical to docker-compose.security.yml;
 # the scanner digest was read from the local image sonar-scanner-cli:12.2 (compose does not use a scanner).

@@ -50,7 +50,7 @@ chmod +x "$BIN"/*
 
 setup() { # <name>  -> fresh sandbox dirs + env
   T="$ROOT/${1:?}"; mkdir -p "$T/qa" "$T/media" "$T/stub"
-  export STUB_IP_SRC=192.168.1.115 STUB_LOG="$T/log" STUB_DIR="$T/stub" QA_DIR="$T/qa" MEDIA_DIR="$T/media" BUSY_PORTS="" CURL_CODE=200
+  export STUB_IP_SRC=192.0.2.15 STUB_LOG="$T/log" STUB_DIR="$T/stub" QA_DIR="$T/qa" MEDIA_DIR="$T/media" BUSY_PORTS="" CURL_CODE=200
   : > "$STUB_LOG"
   echo deadbeefcafe0123 > "$QA_DIR/BUILT_COMMIT"
 }
@@ -116,7 +116,7 @@ setup t6; run_up; ! grep -q 'HELIX_PPROF_ENABLED' "$STUB_LOG"; ok $? "pprof env 
 setup t6b; HELIX_PPROF_ENABLED=true run_up; grep -q -- '-e HELIX_PPROF_ENABLED ' "$STUB_LOG" && ! grep -q 'HELIX_PPROF_ENABLED=' "$STUB_LOG"; ok $? "pprof env passed by name when the caller sets it"
 # 7. F4: default TRUSTED_PROXIES never contains loopback (127.0.0.0/8, ::1); a host-local client could otherwise forge X-Forwarded-For through the proxy
 tp() { ( STUB_IP_SRC="$1"; export STUB_IP_SRC; unset TRUSTED_PROXIES; export PATH="$BIN:$PATH"; . "$HERE/lib.sh" >/dev/null 2>&1; printf '%s' "${TRUSTED_PROXIES-<unset>}" ); }
-v="$(tp 192.168.1.115)"; [ "$v" = 192.168.1.115/32 ]; ok $? "default TRUSTED_PROXIES = detected host address /32 (got '$v')"
+v="$(tp 192.0.2.15)"; [ "$v" = 192.0.2.15/32 ]; ok $? "default TRUSTED_PROXIES = detected host address /32 (got '$v')"
 printf '%s' "$v" | grep -qE '(^|,)(127\.|::1|0\.0\.0\.0|localhost)'; [ $? != 0 ]; ok $? "default TRUSTED_PROXIES excludes 127.0.0.0/8, ::1 and 0.0.0.0"
 v="$(tp "")"; [ "$v" = "" ]; ok $? "no detectable host address -> TRUSTED_PROXIES empty (trust nothing), not loopback (got '$v')"
 v="$( STUB_IP_SRC=; unset TRUSTED_PROXIES; export PATH="$BIN:$PATH"; TRUSTED_PROXIES=10.1.2.3/32; . "$HERE/lib.sh" >/dev/null 2>&1; printf '%s' "$TRUSTED_PROXIES")"; [ "$v" = 10.1.2.3/32 ]; ok $? "explicit TRUSTED_PROXIES override is kept"
@@ -124,4 +124,6 @@ v="$( STUB_IP_SRC=; unset TRUSTED_PROXIES; export PATH="$BIN:$PATH"; TRUSTED_PRO
 setup t8; export STUB_IP_SRC=""; unset TRUSTED_PROXIES; run_up
 grep -qE -- '-e TRUSTED_PROXIES= ' "$STUB_LOG"; ok $? "no host address -> up.sh passes -e TRUSTED_PROXIES= (empty)"
 grep -oE -- 'TRUSTED_PROXIES=[^ ]*' "$STUB_LOG" | grep -qE '127\.|::1|0\.0\.0\.0'; [ $? != 0 ]; ok $? "no host address -> no 127./::1/0.0.0.0 in the TRUSTED_PROXIES argument"
+# 9. CAT-LANIP-DYN-1: the shared LAN-address helper has its own sandbox test
+bash "$HERE/../lib/test_lan_ip.sh" >/dev/null 2>&1; ok $? "docs/qa/lib/test_lan_ip.sh passes"
 echo "passed=$pass failed=$fail"; [ "$fail" = 0 ]

@@ -4,6 +4,8 @@ Documents in this directory.
 
 Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 211 entries.
 
+**Host LAN address (CAT-LANIP-DYN-1).** Live QA scripts no longer hardcode the host's LAN IP (it changes with DHCP/reboots). They source [lib/lan_ip.sh](lib/lan_ip.sh): the address is auto-detected (`ip -4 route get 1.1.1.1` source address, validated as IPv4 and as locally assigned) and can be overridden with `QA_BIND` (or `LAN_BIND`); per-script variables (`SONAR_BIND`, `S3_BIND=lan`, `WEB_URL`, `TS_HOST`) still win. If the address cannot be resolved the scripts fail loudly. Addresses written in dated evidence packs and in the index rows below are historical and are not rewritten.
+
 | File | Description |
 |---|---|
 | [CATALOGIZER_QA.md](CATALOGIZER_QA.md) | Catalogizer AI QA System Integration Guide - The Catalogizer AI QA System is now fully integrated into your Catalogizer project, providing comprehensive zero-defect quality assurance for all components. This system... |
