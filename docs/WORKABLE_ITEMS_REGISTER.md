@@ -120,6 +120,9 @@ Each: Status Queued unless stated. Acceptance always requires machine evidence f
 | CAT-TAURI-FU-8 | Task | Queued | Desktop: Settings/Logout not sticky in sidebar; generic 'Login failed' no diagnostic; 'Invalid response format' in Storage Configuration (TAURI-FU-1 drift); poor contrast on Dark theme select; run-qa.sh container cannot reach host LAN IP (use host.containers.internal). | none |
 | CAT-SMB-SUBDIR-1 | Task | Queued | SMB roots cannot be scoped to a subdirectory (storage_roots.path = share name); Anton Public/Testing corpus (docs/qa/anton-smb-20261106/) can only be added as the whole share `Public` (also indexes Misc/Incoming). Add subdir support or a dedicated `Testing` share (needs root smb.conf edit). | design |
 | CAT-FRONTDOOR-LOCALMODE-1 | Task | Queued | Extend test_clientip_frontdoor.sh with a local-second-IP (`--interface`) mode so leg B runs without ssh. | none |
+| CAT-D7-ISLAND-1 | Bug | Queued | AdvancedSearch tab icon chips `bg-blue-100` (x5) are light islands in dark theme (found by `failingElements(..., {islands:true})`). | none |
+| CAT-D7-ISLAND-2 | Bug | Queued | FormatConverter empty-state circle `bg-gray-100` and the three AI unavailable panels `bg-white rounded-lg shadow p-6` are light islands in dark theme. | none |
+| CAT-D7-ISLAND-3 | Bug | Queued | AIDashboard icon chips `bg-indigo-100`/`bg-green-100`/`bg-yellow-100` are light islands in dark theme. | none |
 
 ## Part C — counts at Revision 1
 

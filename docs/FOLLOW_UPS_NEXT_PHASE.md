@@ -1623,3 +1623,9 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - TAURI-R1-FU-6 (process-doc/minor): installer-wizard/src-tauri/gen/schemas/capabilities.json tracked as `{}`; regenerate-and-commit or untrack after §11.4.124 investigation.
 - TAURI-R1-FU-7: GREEN live run of rebuilt wizard (same Save Configuration sequence, same target) still owed; item stays PROVISIONAL-DONE until then.
 - TAURI-R1-FU-8 (nit): guard header should say exit 2 = BLIND.
+
+## Follow-ups worked on feat/followups-20261110 (PROVISIONAL-DONE; live runs owed)
+- D7-R4-FU-1/2/3 DONE: `islandsOf` knob exemption now needs `rounded-full` + `bg-white` + w-1..6 AND h-1..6 + no text; `LIGHT_BG_NAME` includes -200 shades; a `dark:bg-*` that is itself light (`dark:bg-white`) or `dark:bg-opacity-*` no longer hides an island; fetch-leak tests in contrastD7Class/Populated/ExternalIntegrations (+ default mock history reset). Mutations killed (see commit body).
+- D7-R4-FU-4 DONE: island rows registered as ids CAT-D7-ISLAND-1..3 in WORKABLE_ITEMS_REGISTER.md: -1 AdvancedSearch tab icon chips `bg-blue-100` (x5), -2 FormatConverter empty-state circle `bg-gray-100` + AI unavailable panels `bg-white rounded-lg shadow p-6` (x3), -3 AIDashboard icon chips `bg-indigo-100`/`bg-green-100`/`bg-yellow-100`. (Grouping by component is the author's choice.)
+- CAT-VERIFY-LANBIND-1 DONE in code: `verify.py` derives the exposure expectation (env, else `podman port`, else loopback) via `lanbind.py`; LAN-bound Prometheus/Grafana/pgAdmin are asserted LAN-reachable + anonymous-rejected; PostgreSQL/Redis asserted loopback-only. Unit-tested (`test_lanbind.py`). Live re-run of verify.py owed: stack 3 was DOWN when this was authored (no containers, ports closed), so the live RED could not be re-captured.
+- CAT-FRONTDOOR-LOCALMODE-1 DONE: `--interface <ip>` mode + README note; sandbox test `test_frontdoor_interface.sh`. A live run against stack 3 is owed (stack down).
