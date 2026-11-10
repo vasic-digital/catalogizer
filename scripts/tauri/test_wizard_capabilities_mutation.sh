@@ -8,15 +8,16 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
 GUARD="${GUARD:-$HERE/test_wizard_capabilities.sh}"
 [ -f "$GUARD" ] || { echo "setup: guard missing: $GUARD" >&2; exit 2; }
-TMP="$(mktemp -d /home/milosvasic/.cache/claude-tmp/wizcap-mut.XXXXXX)"
+TMP="$(mktemp -d "${TMPDIR:-/tmp}/wizcap-mut.XXXXXX")" || { echo "setup: mktemp failed" >&2; exit 2; }
 trap 'rm -rf "${TMP:?}"' EXIT
 bad=0
 run_case() { # name expected_rc mutate_fn
   local name="$1" want="$2" fn="$3" R="$TMP/${1}"
   mkdir -p "${R:?}/scripts/tauri" "$R/installer-wizard/src/services" "$R/installer-wizard/src-tauri/capabilities"
-  cp "$GUARD" "$R/scripts/tauri/test_wizard_capabilities.sh"
-  cp "$ROOT/installer-wizard/src/services/tauri.ts" "$R/installer-wizard/src/services/tauri.ts"
-  cp "$ROOT/installer-wizard/src-tauri/capabilities/default.json" "$R/installer-wizard/src-tauri/capabilities/default.json"
+  { cp "$GUARD" "$R/scripts/tauri/test_wizard_capabilities.sh" \
+    && cp "$ROOT/installer-wizard/src/services/tauri.ts" "$R/installer-wizard/src/services/tauri.ts" \
+    && cp "$ROOT/installer-wizard/src-tauri/capabilities/default.json" "$R/installer-wizard/src-tauri/capabilities/default.json"; } \
+    || { echo "setup: copy failed" >&2; exit 2; }
   W="$R/installer-wizard"; "$fn"
   local rc=0; bash "$R/scripts/tauri/test_wizard_capabilities.sh" >/dev/null 2>&1 || rc=$?
   if [ "$rc" = "$want" ]; then echo "ok   $name (rc=$rc)"; else echo "BAD  $name: want rc=$want got rc=$rc"; bad=1; fi
@@ -46,6 +47,21 @@ m_dynamic_import() { only_open; setsrc "export const f = () => import('@tauri-ap
 m_alias_save() { only_open; setsrc "import { save as saveDlg } from '@tauri-apps/plugin-dialog'"; }
 m_blind() { setsrc "export const nothing = 1"; }
 m_open_only_dq_ok() { only_open; setsrc 'import { open } from "@tauri-apps/plugin-dialog"'; }
+cap() { printf '%s\n' "$1" >"$W/$CAP/default.json"; }
+P='"permissions":["dialog:allow-open","dialog:allow-save"]'
+m_windows_string_mainx() { cap '{"identifier":"d","windows":"mainx",'"$P"'}'; }
+m_windows_string_main_substr() { cap '{"identifier":"d","windows":"domain",'"$P"'}'; }
+m_windows_string_main_exact() { cap '{"identifier":"d","windows":"main",'"$P"'}'; }
+m_platforms_string_substr() { cap '{"identifier":"d","windows":["main"],"platforms":"linux-not",'"$P"'}'; }
+m_deny_save() { cap '{"identifier":"d","windows":["main"],"permissions":["dialog:allow-open","dialog:allow-save","dialog:deny-save"]}'; }
+m_deny_other_file() { cap '{"identifier":"d","windows":["main"],'"$P"'}'; printf '%s\n' '{"identifier":"x","windows":["main"],"permissions":["dialog:deny-open"]}' >"$W/$CAP/deny.json"; }
+m_local_false() { cap '{"identifier":"d","windows":["main"],"local":false,'"$P"'}'; }
+m_remote_urls() { cap '{"identifier":"d","windows":["main"],"remote":{"urls":["https://evil.example/*"]},'"$P"'}'; }
+m_glob_star_window() { cap '{"identifier":"d","windows":["*"],'"$P"'}'; }
+m_dialog_default() { cap '{"identifier":"d","windows":["main"],"permissions":["dialog:default"]}'; }
+m_raw_invoke() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+export const s = () => invoke('plugin:dialog|save', {})"; }
+m_raw_invoke_only() { only_open; setsrc "export const s = () => invoke('plugin:dialog|save', {})"; }
 run_case baseline_pass 0 m_baseline
 run_case other_window_plus_empty_main 1 m_other_window
 run_case platforms_macos_only 1 m_platforms_macos
@@ -61,5 +77,17 @@ run_case dynamic_import 1 m_dynamic_import
 run_case aliased_import_save 1 m_alias_save
 run_case no_dialog_import_is_blind 2 m_blind
 run_case open_only_double_quote_pass 0 m_open_only_dq_ok
+run_case windows_string_mainx 1 m_windows_string_mainx
+run_case windows_string_domain_substring 1 m_windows_string_main_substr
+run_case windows_bare_string_main 1 m_windows_string_main_exact
+run_case platforms_string_substring 1 m_platforms_string_substr
+run_case deny_save_same_cap 1 m_deny_save
+run_case deny_open_other_file 1 m_deny_other_file
+run_case local_false 1 m_local_false
+run_case remote_urls 1 m_remote_urls
+run_case window_glob_star_pass 0 m_glob_star_window
+run_case dialog_default_pass 0 m_dialog_default
+run_case raw_invoke_plugin_dialog_save 1 m_raw_invoke
+run_case raw_invoke_only_not_blind 1 m_raw_invoke_only
 [ "$bad" = 0 ] && echo "ALL CASES OK" || echo "MUTATION TEST FAILED"
 exit "$bad"
