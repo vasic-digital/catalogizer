@@ -1651,3 +1651,11 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - LIP-FU-4 (nit): stack3/lib.sh keeps its own STUB_IP_SRC detection duplicating lan_ip.sh; unify.
 - LIP-FU-5: pre-existing: rclone `--pass $TS_PASS` is on container argv (visible in host ps); use obscured env/config file.
 - LIP-FU-6: monitoring/lanbind.py fixtures keep .115 (test data only).
+
+## smb-subdir / tauri round-2 notes (2026-11-11)
+- TAURI-R2-FU-3: catalogizer-desktop/src-tauri/gen/schemas/capabilities.json has the same stale tracked-generated shape as the installer-wizard one; untrack or regenerate.
+- SMB-FU-1: unrouted root-package handlers/download.go, handlers/copy.go, CopyToSMB and /smb/list use catalogizer/smb (still confined) but are dead code; investigate history before any removal (§11.4.124).
+- SMB-FU-2: internal/services/smb.go and smb_discovery.go browse paths mount the request-body Share directly and have no sub-directory support.
+- SMB-FU-3 (optional): routed DownloadHandler test (needs a CatalogService seam).
+- SMB-FU-4: catalog-web form hint for entering share/sub/dir.
+- SMB-FU-5: live run of docs/qa/smb-subdir-20261110/run.sh against the Anton share (never executed yet).
