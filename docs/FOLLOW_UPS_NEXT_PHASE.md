@@ -1624,6 +1624,11 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - TAURI-R1-FU-7: GREEN live run of rebuilt wizard (same Save Configuration sequence, same target) still owed; item stays PROVISIONAL-DONE until then.
 - TAURI-R1-FU-8 (nit): guard header should say exit 2 = BLIND.
 
+## Follow-ups worked on feat/followups-20261110 (PROVISIONAL-DONE; live runs owed)
+- D7-R4-FU-1/2/3 DONE: `islandsOf` knob exemption now needs `rounded-full` + `bg-white` + w-1..6 AND h-1..6 + no text; `LIGHT_BG_NAME` includes -200 shades; a `dark:bg-*` that is itself light (`dark:bg-white`) or `dark:bg-opacity-*` no longer hides an island; fetch-leak tests in contrastD7Class/Populated/ExternalIntegrations (+ default mock history reset). Mutations killed (see commit body).
+- D7-R4-FU-4 DONE: island rows registered as ids CAT-D7-ISLAND-1..3 in WORKABLE_ITEMS_REGISTER.md: -1 AdvancedSearch tab icon chips `bg-blue-100` (x5), -2 FormatConverter empty-state circle `bg-gray-100` + AI unavailable panels `bg-white rounded-lg shadow p-6` (x3), -3 AIDashboard icon chips `bg-indigo-100`/`bg-green-100`/`bg-yellow-100`. (Grouping by component is the author's choice.)
+- CAT-VERIFY-LANBIND-1 DONE in code: `verify.py` derives the exposure expectation (env, else `podman port`, else loopback) via `lanbind.py`; LAN-bound Prometheus/Grafana/pgAdmin are asserted LAN-reachable + anonymous-rejected; PostgreSQL/Redis asserted loopback-only. Unit-tested (`test_lanbind.py`). Live re-run of verify.py owed: stack 3 was DOWN when this was authored (no containers, ports closed), so the live RED could not be re-captured.
+- CAT-FRONTDOOR-LOCALMODE-1 DONE: `--interface <ip>` mode + README note; sandbox test `test_frontdoor_interface.sh`. A live run against stack 3 is owed (stack down).
 ## Tauri follow-ups review (2026-11-10, Opus: GO-with-follow-ups; security-adjacent minors fixed before landing)
 - TAURI-R2-FU-1: guard ignores .toml/.json5 capability files and tauri.conf.json enabled-capability list / window label; add parsing + mutation cases.
 - TAURI-R2-FU-2: comments/strings containing a dialog import count as usage (conservative); `ask`/`confirm`/`message` not covered.
@@ -1631,3 +1636,10 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - TAURI-R2-FU-4: pre-flight-check.sh must run from repo root (fails closed 127 elsewhere); consider cd to root.
 - TAURI-R2-FU-5 (nit): `Out-of-scope:` trailer on c504d197 is a left-alone note, not a closed-list reason.
 - FU-5/FU-7 of review 1 (GREEN live wizard run) remain owed; CAT-TAURI-NATIVE-1 stays PROVISIONAL-DONE.
+
+## followups-20261110 review (Opus: GO-with-follow-ups; security-adjacent minors fixed before landing)
+- FU20-1: live verify.py run with declared *_BIND on rebuilt stack 3 (CAT-VERIFY-LANBIND-1 PROVISIONAL).
+- FU20-2: live test_clientip_frontdoor.sh --interface run; UNCONFIRMED whether a second local IP lands in a separate bucket given pasta aliasing (CAT-FRONTDOOR-LOCALMODE-1 PROVISIONAL).
+- FU20-3 (nit): contrast.ts alpha cutoff exactly 50 untested; fractional sizes like h-3.5; leak-check conditional-restore (L1) survives.
+- FU20-4 (process-doc): commit 9928be7f carries Roadmap-Item D7-R4-FU-1 only; it implements FU-1..4 (history not rewritten).
+- Live axe re-run on rebuilt web image still owed (D7-R4).

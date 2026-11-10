@@ -131,3 +131,10 @@ describe.each(THEMES)('UI-D7-FU class-wide gray text, %s theme (WCAG AA 4.5:1)',
     expect(fail(container, theme)).toBe('')
   })
 })
+
+// D7-R4-FU-3: runs after the fetch-mocking tests above; fails if the afterEach restore is removed (reviewer mutation M7).
+describe('D7-R4-FU-3 global.fetch does not leak out of the mocking tests', () => {
+  it('fetch is the original again', () => {
+    expect(global.fetch).toBe(realFetch)
+  })
+})

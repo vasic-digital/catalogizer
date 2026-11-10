@@ -135,7 +135,8 @@ export function failingElements(root: Element, theme: Theme, min = WCAG_AA_NORMA
   return bad
 }
 
-const LIGHT_BG_NAME = /^(white|[a-z]+-(50|100))$/
+// D7-R4-FU-2: 50, 100 and 200 shades count as light backgrounds; 300 and darker are deliberately out of scope.
+const LIGHT_BG_NAME = /^(white|[a-z]+-(50|100|200))$/
 
 /**
  * D7-R4-4 light-island detector: in dark mode, an element whose OWN bg-* class is a light background
@@ -150,9 +151,25 @@ export function islandsOf(root: Element, theme: Theme): string[] {
   for (const n of all) {
     if (n.closest('svg')) continue
     const classes = Array.from(n.classList)
-    if (classes.some((c) => c.startsWith('dark:bg-'))) continue
-    // A small fixed-size white circle is a toggle knob on a coloured track, not a surface.
-    if (classes.includes('rounded-full') && classes.some((c) => /^[wh]-[1-6]$/.test(c))) continue
+    // D7-R4-FU-2: a dark:bg-* class only counts when it is a real dark background: a dark:bg-* that is itself
+    // a light colour (dark:bg-white) or a >=50% alpha modifier (dark:bg-opacity-*) leaves the island bright in dark.
+    if (classes.some((c) => {
+      if (!c.startsWith('dark:bg-')) return false
+      const tok = c.slice('dark:bg-'.length)
+      // Tailwind 3: dark:bg-opacity-N is the alpha of the bg colour in dark: below 50% the island is faded away, from 50% up it stays bright.
+      const om = /^opacity-(\d+)$/.exec(tok)
+      if (om) return Number(om[1]) < 50
+      const [name, op] = tok.split('/')
+      const r = resolveToken(name)
+      return !(r && LIGHT_BG_NAME.test(name) && (!op || Number(op) >= 50))
+    })) continue
+    // D7-R4-FU-1: a toggle knob is a small (w-1..6 AND h-1..6), EMPTY, plain bg-white circle on a coloured track.
+    // Anything else round (other colour, one size class, any text) is a real surface.
+    if (
+      classes.includes('rounded-full') && classes.includes('bg-white') &&
+      classes.some((c) => /^w-[1-6]$/.test(c)) && classes.some((c) => /^h-[1-6]$/.test(c)) &&
+      (n.textContent ?? '').trim() === ''
+    ) continue
     for (const c of classes) {
       if (!c.startsWith('bg-')) continue
       const [name, op] = c.slice(3).split('/')
