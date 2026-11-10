@@ -10,6 +10,7 @@ _ts_host_caller="${TS_HOST:-}"
 set -a; . "$ENVF"; set +a
 # TS_HOST: caller env wins, else the auto-detected LAN address (a value stored in the env file is not trusted; it goes stale)
 if [ -n "$_ts_host_caller" ]; then TS_HOST="$_ts_host_caller"; else TS_HOST="$(qa_lan_ip)" || exit 1; fi
+qa_ip_is_ipv4 "$TS_HOST" || { echo "TS_HOST '$TS_HOST' is not an IPv4 address"; exit 1; }
 OUT=${TS_EVID:-$ROOT/evidence}; mkdir -p "$OUT"; W=$(mktemp -d); trap 'rm -rf "${W:?}"' EXIT
 LOG=$OUT/verify_$(date +%Y%m%dT%H%M%S).log; FAIL=0
 say(){ echo "$*" | tee -a "$LOG"; }
