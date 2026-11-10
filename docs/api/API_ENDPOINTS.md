@@ -160,6 +160,8 @@ All endpoints below require JWT authentication and are rate limited (2000 reques
 | GET | `/api/v1/storage-roots` | List all storage roots (alias) |
 | GET | `/api/v1/storage-roots/:id/status` | Get scan and connection status of a storage root |
 
+**SMB sub-directory roots.** For `protocol: "smb"` the `path` field is `share` (the whole share, as before) or `share/sub/dir`; the share is mounted and the root is confined to the sub-directory: scans, `GET /storage/list`, downloads and copies cannot reach anything outside it (`..` and backslash tricks are clamped to the sub root). `POST /storage/roots` answers 400 for a `path` that is absolute (`/share`), contains a backslash, a control character, or an empty, `.` or `..` segment (`share/../x`, `share//x`). The confinement is lexical: a symbolic link that the server itself resolves is not detected by the client.
+
 ---
 
 ## Statistics

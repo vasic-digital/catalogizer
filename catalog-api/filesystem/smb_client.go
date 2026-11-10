@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"catalogizer/smb"
+
 	"github.com/hirochachacha/go-smb2"
 )
 
@@ -17,7 +19,7 @@ import (
 type SmbConfig struct {
 	Host     string `json:"host"`
 	Port     int    `json:"port"`
-	Share    string `json:"share"`
+	Share    string `json:"share"` // "share" or "share/sub/dir": the root is confined to the sub-directory (smb.SplitShare)
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Domain   string `json:"domain"`
@@ -40,6 +42,10 @@ func NewSmbClient(config *SmbConfig) *SmbClient {
 
 // Connect establishes the SMB connection
 func (c *SmbClient) Connect(ctx context.Context) error {
+	shareName, _, err := smb.SplitShare(c.config.Share)
+	if err != nil {
+		return fmt.Errorf("invalid SMB share path: %w", err)
+	}
 	// Establish TCP connection with timeout
 	addr := net.JoinHostPort(c.config.Host, fmt.Sprintf("%d", c.config.Port))
 	if err := ctx.Err(); err != nil {
@@ -68,7 +74,7 @@ func (c *SmbClient) Connect(ctx context.Context) error {
 	}
 
 	// Mount share
-	share, err := session.WithContext(ctx).Mount(c.config.Share)
+	share, err := session.WithContext(ctx).Mount(shareName)
 	if err != nil {
 		session.Logoff()
 		conn.Close()
@@ -119,6 +125,15 @@ func (c *SmbClient) IsConnected() bool {
 	return c.share != nil && c.session != nil && c.conn != nil
 }
 
+// resolvePath maps a root-relative path to the share-relative path sent to the server. For a plain share name it is smbPath (unchanged
+// behaviour); for "share/sub/dir" the path is confined below sub (smb.ResolveSub), so no caller path can leave the sub-directory.
+func (c *SmbClient) resolvePath(p string) string {
+	if _, sub, err := smb.SplitShare(c.config.Share); err == nil && sub != "" {
+		return smb.ResolveSub(sub, p)
+	}
+	return smbPath(p)
+}
+
 // opShare is the entry of every SMB operation: a cancelled context fails at once without network traffic (ST-D1), and the returned
 // share handle is bound to ctx so a cancellation or deadline ends the request in flight.
 func (c *SmbClient) opShare(ctx context.Context) (*smb2.Share, error) {
@@ -138,7 +153,7 @@ func (c *SmbClient) TestConnection(ctx context.Context) error {
 		return err
 	}
 	// Try to list the root directory
-	_, err = share.ReadDir(".")
+	_, err = share.ReadDir(c.resolvePath("."))
 	return err
 }
 
@@ -150,7 +165,7 @@ func (c *SmbClient) ReadFile(ctx context.Context, path string) (io.ReadCloser, e
 	if !c.IsConnected() {
 		return nil, fmt.Errorf("not connected")
 	}
-	file, err := c.share.Open(smbPath(path))
+	file, err := c.share.Open(c.resolvePath(path))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open SMB file %s: %w", path, err)
 	}
@@ -167,7 +182,7 @@ func (c *SmbClient) OpenSeekable(ctx context.Context, path string) (ReadSeekClos
 	if !c.IsConnected() {
 		return nil, fmt.Errorf("not connected")
 	}
-	file, err := c.share.Open(smbPath(path))
+	file, err := c.share.Open(c.resolvePath(path))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open SMB file %s: %w", path, err)
 	}
@@ -181,7 +196,7 @@ func (c *SmbClient) WriteFile(ctx context.Context, path string, data io.Reader) 
 	if err != nil {
 		return err
 	}
-	file, err := share.Create(smbPath(path))
+	file, err := share.Create(c.resolvePath(path))
 	if err != nil {
 		return fmt.Errorf("failed to create SMB file %s: %w", path, err)
 	}
@@ -201,7 +216,7 @@ func (c *SmbClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, er
 	if err != nil {
 		return nil, err
 	}
-	stat, err := share.Stat(smbPath(path))
+	stat, err := share.Stat(c.resolvePath(path))
 	if err != nil {
 		return nil, fmt.Errorf("failed to stat SMB file %s: %w", path, err)
 	}
@@ -222,7 +237,7 @@ func (c *SmbClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo
 	if err != nil {
 		return nil, err
 	}
-	entries, err := share.ReadDir(smbPath(path))
+	entries, err := share.ReadDir(c.resolvePath(path))
 	if err != nil {
 		return nil, fmt.Errorf("failed to list SMB directory %s: %w", path, err)
 	}
@@ -248,7 +263,7 @@ func (c *SmbClient) FileExists(ctx context.Context, path string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	_, err = share.Stat(smbPath(path))
+	_, err = share.Stat(c.resolvePath(path))
 	if err != nil {
 		if isNotExistError(err) {
 			return false, nil
@@ -264,7 +279,7 @@ func (c *SmbClient) CreateDirectory(ctx context.Context, path string) error {
 	if err != nil {
 		return err
 	}
-	err = share.Mkdir(smbPath(path), 0755)
+	err = share.Mkdir(c.resolvePath(path), 0755)
 	if err != nil {
 		return fmt.Errorf("failed to create SMB directory %s: %w", path, err)
 	}
@@ -277,7 +292,7 @@ func (c *SmbClient) DeleteDirectory(ctx context.Context, path string) error {
 	if err != nil {
 		return err
 	}
-	err = share.Remove(smbPath(path))
+	err = share.Remove(c.resolvePath(path))
 	if err != nil {
 		return fmt.Errorf("failed to delete SMB directory %s: %w", path, err)
 	}
@@ -290,7 +305,7 @@ func (c *SmbClient) DeleteFile(ctx context.Context, path string) error {
 	if err != nil {
 		return err
 	}
-	err = share.Remove(smbPath(path))
+	err = share.Remove(c.resolvePath(path))
 	if err != nil {
 		return fmt.Errorf("failed to delete SMB file %s: %w", path, err)
 	}
@@ -306,14 +321,14 @@ func (c *SmbClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 		return fmt.Errorf("not connected")
 	}
 	// Read source file
-	srcFile, err := c.share.Open(smbPath(srcPath))
+	srcFile, err := c.share.Open(c.resolvePath(srcPath))
 	if err != nil {
 		return fmt.Errorf("failed to open source file %s: %w", srcPath, err)
 	}
 	defer srcFile.Close()
 
 	// Create destination file
-	dstFile, err := c.share.Create(smbPath(dstPath))
+	dstFile, err := c.share.Create(c.resolvePath(dstPath))
 	if err != nil {
 		return fmt.Errorf("failed to create destination file %s: %w", dstPath, err)
 	}

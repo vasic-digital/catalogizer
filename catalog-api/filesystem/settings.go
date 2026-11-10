@@ -17,6 +17,7 @@ import (
 	"sync"
 
 	"catalogizer/models"
+	"catalogizer/smb"
 )
 
 // The settings vocabulary. Every key a StorageConfig.Settings map may carry is one of these.
@@ -194,6 +195,14 @@ func ValidateSettings(protocol string, settings map[string]interface{}) error {
 		} else if k == KeyPort {
 			if n, _ := wholeNumber(v); n < 1 || n > 65535 {
 				wrong = append(wrong, fmt.Sprintf("%s (want a port 1-65535)", k))
+			}
+		}
+	}
+	if protocol == "smb" {
+		// share may be "share" or "share/sub/dir" (the root is confined to the sub-directory): refuse a spec that could escape it.
+		if sh, ok := settings[KeyShare].(string); ok && sh != "" {
+			if _, _, err := smb.SplitShare(sh); err != nil {
+				return err
 			}
 		}
 	}
