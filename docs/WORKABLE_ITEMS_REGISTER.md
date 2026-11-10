@@ -123,6 +123,7 @@ Each: Status Queued unless stated. Acceptance always requires machine evidence f
 | CAT-D7-ISLAND-1 | Bug | Queued | AdvancedSearch tab icon chips `bg-blue-100` (x5) are light islands in dark theme (found by `failingElements(..., {islands:true})`). | none |
 | CAT-D7-ISLAND-2 | Bug | Queued | FormatConverter empty-state circle `bg-gray-100` and the three AI unavailable panels `bg-white rounded-lg shadow p-6` are light islands in dark theme. | none |
 | CAT-D7-ISLAND-3 | Bug | Queued | AIDashboard icon chips `bg-indigo-100`/`bg-green-100`/`bg-yellow-100` are light islands in dark theme. | none |
+| CAT-LANIP-DYN-1 | Bug | Queued | Host LAN IP changed 192.168.1.115 (enp5s0) -> 192.168.1.17 (wifi) after the 2026-11-10 reboot; ~15 tracked QA scripts/docs (stack3 sonarqube/lib.sh, s3/up.sh, helixqa/run.sh, test-servers ports.env, security-live scripts, lanbind tests) hardcode .115. Derive the bind address dynamically (`ip route get 1.1.1.1` src, env override) in one shared lib, fix docs. | none |
 
 ## Part C — counts at Revision 1
 
