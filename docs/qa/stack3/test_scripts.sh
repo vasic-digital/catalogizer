@@ -126,4 +126,5 @@ grep -qE -- '-e TRUSTED_PROXIES= ' "$STUB_LOG"; ok $? "no host address -> up.sh 
 grep -oE -- 'TRUSTED_PROXIES=[^ ]*' "$STUB_LOG" | grep -qE '127\.|::1|0\.0\.0\.0'; [ $? != 0 ]; ok $? "no host address -> no 127./::1/0.0.0.0 in the TRUSTED_PROXIES argument"
 # 9. CAT-LANIP-DYN-1: the shared LAN-address helper has its own sandbox test
 bash "$HERE/../lib/test_lan_ip.sh" >/dev/null 2>&1; ok $? "docs/qa/lib/test_lan_ip.sh passes"
+bash "$HERE/test_lan_defaults.sh" >/dev/null 2>&1; ok $? "test_lan_defaults.sh passes (sonar/s3 bind defaults)"
 echo "passed=$pass failed=$fail"; [ "$fail" = 0 ]
