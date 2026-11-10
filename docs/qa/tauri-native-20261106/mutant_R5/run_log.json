@@ -1,0 +1,64 @@
+[
+ {
+  "file": "01_m1_start.png",
+  "expect": [
+   "Server URL"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Settings Configure your Catalogizer desktop client Server Configuration Server URL http://localhost:8080 \u00a7 Test Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. No storage sources configured yet. + Add Storage Sou",
+  "step": "see:m1_start"
+ },
+ {
+  "chars": 37,
+  "secret": false,
+  "text": "http://host.containers.internal:38082",
+  "step": "type"
+ },
+ {
+  "file": "02_m2_scrolled.png",
+  "expect": [
+   "Auto-start"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. No storage sources configured yet. + Add Storage Source General Auto-start Start Catalogizer when your computer starts oe ttings | Appearance Theme Storage Configur",
+  "step": "see:m2_scrolled"
+ },
+ {
+  "at": [
+   1006,
+   815
+  ],
+  "step": "save_button_at"
+ },
+ {
+  "file": "03_m3_after_save.png",
+  "expect": [
+   "Only continue"
+  ],
+  "absent": [],
+  "ok": false,
+  "ocr": "Welcome to Catalogizer Sign in to access your media library Connecting to: http://host.containers.internal:38082 Username Enter your username Password Enter your password \u00ae Configure server connection Made with @ by Vasic Digital \u00a9 2026 Vasic Digital. All rights reserved. | FB Welcome to Catalogizer",
+  "step": "see:m3_after_save"
+ },
+ {
+  "shown": false,
+  "step": "MUTANT_dialog_shown"
+ },
+ {
+  "file": "04_m4_state.png",
+  "expect": [
+   "Sign in",
+   "Connecting to"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Welcome to Catalogizer Sign in to access your media library Connecting to: http://host.containers.internal:38082 Username Enter your username Password Enter your password \u00ae Configure server connection Made with @ by Vasic Digital \u00a9 2026 Vasic Digital. All rights reserved. | FB Welcome to Catalogizer",
+  "step": "see:m4_state"
+ },
+ {
+  "went": true,
+  "step": "MUTANT_went_to_login_without_confirmation"
+ }
+]

@@ -124,8 +124,32 @@ describe('D7-R4-4 light-island detector goldens', () => {
   it.each(['bg-white dark:bg-gray-800', 'bg-gray-50 dark:bg-gray-700/50', 'bg-gray-900', 'bg-white/10', 'bg-red-600', 'text-gray-900'])('negative: %s is not an island', (cls) => {
     expect(islandsOf(mk(cls), 'dark')).toHaveLength(0)
   })
-  it('negative: a small white toggle knob is not a surface', () => {
-    expect(islandsOf(mk('inline-block h-4 w-4 rounded-full bg-white'), 'dark')).toHaveLength(0)
+  const mkEmpty = (cls: string) => { const r = document.createElement('div'); const c = document.createElement('div'); c.className = cls; r.appendChild(c); return r }
+  it('negative: a small, empty, white toggle knob is not a surface', () => {
+    expect(islandsOf(mkEmpty('inline-block h-4 w-4 rounded-full bg-white'), 'dark')).toHaveLength(0)
+  })
+  // D7-R4-FU-1: the knob exemption must not swallow real islands (reviewer mutation M4).
+  it.each([
+    ['large round chip', 'rounded-full w-16 h-16 bg-gray-100', mkEmpty],
+    ['text badge with only a height class', 'rounded-full h-6 px-2 bg-blue-100', mk],
+    ['small round NON-white chip', 'rounded-full w-4 h-4 bg-gray-100', mkEmpty],
+    ['round white with only one size class', 'rounded-full w-4 bg-white', mkEmpty],
+    ['small white circle that holds text', 'rounded-full w-4 h-4 bg-white', mk],
+    ['large white round surface (W7)', 'rounded-full w-16 h-16 bg-white', mkEmpty],
+    ['white round chip with only 2 of 4 size classes in range (W8)', 'rounded-full w-4 h-16 bg-white', mkEmpty],
+  ] as const)('positive: %s is still an island', (_n, cls, make) => {
+    expect(islandsOf(make(cls), 'dark')).toHaveLength(1)
+  })
+  // D7-R4-FU-2: -200 shades, light dark:bg, high dark:bg-opacity-* do not hide an island.
+  it.each(['bg-gray-200', 'bg-blue-200', 'bg-white dark:bg-white', 'bg-gray-100 dark:bg-gray-100', 'bg-white dark:bg-opacity-90'])('positive: %s is an island in dark', (cls) => {
+    expect(islandsOf(mk(cls), 'dark')).toHaveLength(1)
+  })
+  // Tailwind 3: bg-opacity-* is a modifier of the bg colour, so `bg-white dark:bg-opacity-10` renders white at 10% in dark = not an island.
+  it('negative: bg-white dark:bg-opacity-10 renders as 10% white in dark and is not a bright island', () => {
+    expect(islandsOf(mk('bg-white dark:bg-opacity-10'), 'dark')).toHaveLength(0)
+  })
+  it.each(['bg-gray-300', 'bg-gray-200 dark:bg-gray-700', 'bg-white dark:bg-gray-800 dark:bg-opacity-90'])('negative: %s is not an island', (cls) => {
+    expect(islandsOf(mk(cls), 'dark')).toHaveLength(0)
   })
   it('opt-in via failingElements: reported only with islands:true', () => {
     const r = mk('bg-white text-gray-900')

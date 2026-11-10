@@ -1,0 +1,127 @@
+[
+ {
+  "file": "01_x1_start.png",
+  "expect": [
+   "Server URL"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Settings Configure your Catalogizer desktop client Server Configuration Server URL http://localhost:8080 \u00a7 Test Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. No storage sources configured yet. + Add Storage Sou",
+  "step": "see:x1_start"
+ },
+ {
+  "chars": 37,
+  "secret": false,
+  "text": "http://host.containers.internal:38082",
+  "step": "type"
+ },
+ {
+  "file": "02_x_window_X_scrolled.png",
+  "expect": [
+   "Auto-start"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. No storage sources configured yet. + Add Storage Source General Auto-start Start Catalogizer when your computer starts oe ttings | Appearance Theme Storage Configur",
+  "step": "see:x_window_X_scrolled"
+ },
+ {
+  "at": [
+   1006,
+   815
+  ],
+  "step": "save_button_at"
+ },
+ {
+  "file": "03_x_window_X_dialog.png",
+  "expect": [
+   "Only continue"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "http://host.containers.internal:38082 \u00a7 Test Appearance Theme Confirm server change Storage Confi r wants to connect to this Catalog Configure storage so h contain internal FTP, NFS, WebDAV, Local. htt; p t.contain S internal:3 No storage sources | Only continue if you recognise this add Char Cancel",
+  "step": "see:x_window_X_dialog"
+ },
+ {
+  "g": [
+   [
+    543,
+    380,
+    355,
+    197
+   ]
+  ],
+  "step": "geom"
+ },
+ {
+  "file": "04_x_window_X_after.png",
+  "expect": [
+   "Auto-start"
+  ],
+  "absent": [
+   "Only continue",
+   "Sign in to access"
+  ],
+  "ok": true,
+  "ocr": "\u00a7 Test http://host.containers.internal:38082 Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. No storage sources configured yet. + Add Storage Source General Auto-start Start Catalogizer when your computer starts ",
+  "step": "see:x_window_X_after"
+ },
+ {
+  "file": "05_x_Escape_scrolled.png",
+  "expect": [
+   "Auto-start"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "\u00a7 Test http://host.containers.internal:38082 Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. No storage sources configured yet. + Add Storage Source General Auto-start Start Catalogizer when your computer starts ",
+  "step": "see:x_Escape_scrolled"
+ },
+ {
+  "at": [
+   1006,
+   815
+  ],
+  "step": "save_button_at"
+ },
+ {
+  "file": "06_x_Escape_dialog.png",
+  "expect": [
+   "Only continue"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "http://host.containers.internal:38082 \u00a7 Test Appearance Theme Confirm server change Storage Confi r wants to connect to this Catalog Configure storage so h contain internal FTP, NFS, WebDAV, Local. htt; p t.contain S internal:3 No storage sources | Only continue if you recognise this add Char Cancel",
+  "step": "see:x_Escape_dialog"
+ },
+ {
+  "g": [
+   [
+    543,
+    380,
+    355,
+    197
+   ]
+  ],
+  "step": "geom"
+ },
+ {
+  "file": "07_x_Escape_after.png",
+  "expect": [
+   "Auto-start"
+  ],
+  "absent": [
+   "Only continue",
+   "Sign in to access"
+  ],
+  "ok": true,
+  "ocr": "\u00a7 Test http://host.containers.internal:38082 Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. No storage sources configured yet. + Add Storage Source General Auto-start e Start Catalogizer when your computer start",
+  "step": "see:x_Escape_after"
+ },
+ {
+  "window_X_dialog_shown": true,
+  "window_X_stays_on_settings_no_navigation": true,
+  "Escape_dialog_shown": true,
+  "Escape_stays_on_settings_no_navigation": true,
+  "step": "RESULT"
+ }
+]

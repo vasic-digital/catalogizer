@@ -79,6 +79,14 @@ rc=0; bash scripts/docs/render_md_to_html.sh --check \
     docs/qa/findings_20260626/ui_critical_resolution.md > /dev/null 2>&1 || rc=$?
 check $rc "generated docs HTML equals render_md_to_html.sh output (--check)"
 
+# Installer wizard (CAT-TAURI-INSTALLER-1, TAURI-R1-FU-3): frontend dialog commands must be granted by a Tauri capability
+echo ""
+echo "Installer wizard (Tauri)..."
+rc=0; bash scripts/tauri/test_wizard_capabilities.sh > /dev/null 2>&1 || rc=$?
+check $rc "wizard dialog open/save granted by one capability for window main (scripts/tauri/test_wizard_capabilities.sh)"
+rc=0; bash scripts/tauri/test_wizard_capabilities_mutation.sh > /dev/null 2>&1 || rc=$?
+check $rc "wizard capability guard kills its paired mutations (scripts/tauri/test_wizard_capabilities_mutation.sh)"
+
 # Security checks
 echo ""
 echo "Security..."

@@ -78,7 +78,7 @@ Each: Status Queued unless stated. Acceptance always requires machine evidence f
 | Id | Type | Status | Description | Acceptance | Blocker |
 |---|---|---|---|---|---|
 | CAT-REL-V240-1 | Task | Queued | v2.4.0 pre-release steps: `versions.json` 2.3.0 -> 2.4.0, changelog with VERIFIED / PROVISIONAL / REOPENED / OVERDUE listed separately (§11.4.290), tag `v2.4.0` on all six upstreams only after live validation, §11.4.40 full-suite retest, §11.4.185 manual QA. | Tag exists on every upstream; changelog honest. | All verification items above; tag form still an open decision (default `v2.4.0`). |
-| CAT-REL-PERM-1 | Task | Queued | Throwaway pre-release tag test proving GitHub/GitLab release permission with a real create, then delete the test tag everywhere (also test GITHUB_TOKEN / GitLab token by a real create at release time). | Create+delete evidence on each host. | Credentials by variable name only. |
+| CAT-REL-PERM-1 | Task | Ready for testing (PROVISIONAL) | 2026-11-10 throwaway tag v0.0.0-permtest.1 (created, released, deleted, ls-remote clean on 4 repos): GitLab release create PASS on milos85vasic + vasic-digital; GitHub FAILS 403 with fine-grained GITHUB_TOKEN (lacks Contents: Read+write), PASSES with keyring gho_ token (run gh with GITHUB_TOKEN unset). Use that path at release time. | none |
 | CAT-KEYROT-WAIVER-1 | Task | Open risk, operator-accepted | Key-rotation waiver recorded as an operator-accepted open risk. NO expiry is set or invented. | Operator sets an expiry or closes the risk. | Operator decision. |
 
 ### Blocked by hardware
@@ -105,7 +105,7 @@ Each: Status Queued unless stated. Acceptance always requires machine evidence f
 |---|---|---|---|---|
 | CAT-PROM-AUTH-1 | Task | In testing (PROVISIONAL) | Prometheus basic auth (landed 42933e6b, applied live; anonymous 401). N>=3 repeat in flight. | Live repeat. |
 | CAT-PROM-AUTH-FU-1 | Task | Queued | PROM-R2-1..5 follow-ups in FOLLOW_UPS_NEXT_PHASE.md. | none |
-| CAT-VERIFY-LANBIND-1 | Bug | Queued | `monitoring/verify.py` LAN-NOT-reachable assertions contradict the LAN decision; make them conditional on *_BIND. | Reproduce first (3 FAILs observed). |
+| CAT-VERIFY-LANBIND-1 | Bug | Ready for testing | `monitoring/verify.py` LAN-NOT-reachable assertions contradict the LAN decision; make them conditional on *_BIND. | Reproduce first (3 FAILs observed). **Verification:** provisional — job: re-run `verify.py` live on a rebuilt stack 3 (stack was down when authored) — checks: lan.* reachable/auth/loopback rows PASS with expectation_source=env — layer: runtime — target: stack 3 monitoring pod — artifact: feat/followups-20261110 — due: next stack-3 bring-up. Unit-level only so far (test_lanbind.py). |
 | CAT-D7-R4-1 | Bug | In progress | UploadManager failed-row error text contrast 3.60/3.29. | author in flight |
 | CAT-D7-R4-2 | Task | In progress | Restore global.fetch in contrast tests. | author in flight |
 | CAT-D7-R4-3 | Bug | In progress | ExternalIntegrations pending badge equals card bg in dark. | author in flight |
@@ -119,7 +119,11 @@ Each: Status Queued unless stated. Acceptance always requires machine evidence f
 | CAT-TAURI-WIZARD-ACL-1 | Bug | In progress | Installer wizard Save Configuration fails 'plugin:dialog|save not allowed by ACL' (no capabilities dir); fix on branch feat/tauri-native-qa 389f8abe, GREEN live runs owed. | review + GREEN runs |
 | CAT-TAURI-FU-8 | Task | Queued | Desktop: Settings/Logout not sticky in sidebar; generic 'Login failed' no diagnostic; 'Invalid response format' in Storage Configuration (TAURI-FU-1 drift); poor contrast on Dark theme select; run-qa.sh container cannot reach host LAN IP (use host.containers.internal). | none |
 | CAT-SMB-SUBDIR-1 | Task | Queued | SMB roots cannot be scoped to a subdirectory (storage_roots.path = share name); Anton Public/Testing corpus (docs/qa/anton-smb-20261106/) can only be added as the whole share `Public` (also indexes Misc/Incoming). Add subdir support or a dedicated `Testing` share (needs root smb.conf edit). | design |
-| CAT-FRONTDOOR-LOCALMODE-1 | Task | Queued | Extend test_clientip_frontdoor.sh with a local-second-IP (`--interface`) mode so leg B runs without ssh. | none |
+| CAT-FRONTDOOR-LOCALMODE-1 | Task | Ready for testing | Extend test_clientip_frontdoor.sh with a local-second-IP (`--interface`) mode so leg B runs without ssh. | none **Verification:** provisional — job: run `test_clientip_frontdoor.sh URL --interface <2nd local IP>` live — checks: A and B(local) PASS — layer: runtime — target: stack 3 front door — artifact: feat/followups-20261110 — due: next stack-3 bring-up. Sandbox test only so far (test_frontdoor_interface.sh). |
+| CAT-D7-ISLAND-1 | Bug | Queued | AdvancedSearch tab icon chips `bg-blue-100` (x5) are light islands in dark theme (found by `failingElements(..., {islands:true})`). | none |
+| CAT-D7-ISLAND-2 | Bug | Queued | FormatConverter empty-state circle `bg-gray-100` and the three AI unavailable panels `bg-white rounded-lg shadow p-6` are light islands in dark theme. | none |
+| CAT-D7-ISLAND-3 | Bug | Queued | AIDashboard icon chips `bg-indigo-100`/`bg-green-100`/`bg-yellow-100` are light islands in dark theme. | none |
+| CAT-LANIP-DYN-1 | Bug | Queued | Host LAN IP changed 192.168.1.115 (enp5s0) -> 192.168.1.17 (wifi) after the 2026-11-10 reboot; ~15 tracked QA scripts/docs (stack3 sonarqube/lib.sh, s3/up.sh, helixqa/run.sh, test-servers ports.env, security-live scripts, lanbind tests) hardcode .115. Derive the bind address dynamically (`ip route get 1.1.1.1` src, env override) in one shared lib, fix docs. | none |
 
 ## Part C — counts at Revision 1
 

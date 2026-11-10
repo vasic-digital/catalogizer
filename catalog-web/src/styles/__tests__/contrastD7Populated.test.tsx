@@ -72,3 +72,10 @@ describe.each(['light', 'dark'] as Theme[])('UI-D7-FU populated states, %s theme
     expect(fail(container)).toBe('')
   })
 })
+
+// D7-R4-FU-3: runs after the fetch-mocking tests above; fails if the afterEach restore is removed (reviewer mutation M7).
+describe('D7-R4-FU-3 global.fetch does not leak out of the mocking tests', () => {
+  it('fetch is the original again', () => {
+    expect(global.fetch).toBe(realFetch)
+  })
+})
