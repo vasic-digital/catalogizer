@@ -158,18 +158,17 @@ if lan_ok:
     # CAT-VERIFY-LANBIND-1: LAN-bound Prometheus/Grafana/pgAdmin are an intentional operator decision. The expectation comes from the
     # *_BIND env (same precedence as up.sh), else from what the running pod really publishes, else the loopback default.
     mon = os.environ.get("MON_POD") or f"{os.environ.get('STACK', 'catqa3')}mon"
-    pp = subprocess.run(["podman", "port", mon], capture_output=True, text=True, timeout=30)
-    published = LB.parse_podman_port(pp.stdout) if pp.returncode == 0 else {}
+    published = LB.read_published(mon, subprocess.run)
     class _NoRedirect(urllib.request.HTTPRedirectHandler):
         def redirect_request(self, *a, **k): return None
     anon = {"prometheus": f"/api/v1/targets", "grafana": "/api/datasources", "pgadmin": "/browser/server_group/obj/"}
     for name, port in (("prometheus", P["prom"]), ("grafana", P["graf"]), ("pgadmin", P["pga"])):
-        bind = LB.resolve_bind(name, os.environ, published, port)
+        bind, src = LB.resolve_bind(name, os.environ, published, port)
         cls = LB.classify_bind(bind, lan)
-        v = LB.exposure_verdict(name, cls, lan_open(port))
+        v = LB.exposure_verdict(name, cls, lan_open(port), src)
         if v is None: print(f"SKIP lan.{name}_exposure (bound to {bind}, neither loopback nor the LAN IP)"); continue
-        rec(v[0], v[1], f"{lan}:{port} bind={bind}")
-        if cls == "lan":
+        rec(v[0], v[1], f"{lan}:{port} bind={bind} expectation_source={src}")
+        if cls == "lan":   # anonymous access must be refused whenever the service is LAN-reachable, declared or not
             st, _, _ = http(f"http://{lan}:{port}{anon[name]}", opener=urllib.request.build_opener(_NoRedirect))
             rec(f"lan.{name}_anonymous_rejected_via_LAN_IP", LB.auth_required_ok(name, st), f"http={st}")
     for svc, port in (("postgresql", int(os.environ.get("PG_PORT", 35434))), ("redis", int(os.environ.get("REDIS_PORT", 36381)))):
