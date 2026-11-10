@@ -78,7 +78,7 @@ Each: Status Queued unless stated. Acceptance always requires machine evidence f
 | Id | Type | Status | Description | Acceptance | Blocker |
 |---|---|---|---|---|---|
 | CAT-REL-V240-1 | Task | Queued | v2.4.0 pre-release steps: `versions.json` 2.3.0 -> 2.4.0, changelog with VERIFIED / PROVISIONAL / REOPENED / OVERDUE listed separately (§11.4.290), tag `v2.4.0` on all six upstreams only after live validation, §11.4.40 full-suite retest, §11.4.185 manual QA. | Tag exists on every upstream; changelog honest. | All verification items above; tag form still an open decision (default `v2.4.0`). |
-| CAT-REL-PERM-1 | Task | Queued | Throwaway pre-release tag test proving GitHub/GitLab release permission with a real create, then delete the test tag everywhere (also test GITHUB_TOKEN / GitLab token by a real create at release time). | Create+delete evidence on each host. | Credentials by variable name only. |
+| CAT-REL-PERM-1 | Task | Ready for testing (PROVISIONAL) | 2026-11-10 throwaway tag v0.0.0-permtest.1 (created, released, deleted, ls-remote clean on 4 repos): GitLab release create PASS on milos85vasic + vasic-digital; GitHub FAILS 403 with fine-grained GITHUB_TOKEN (lacks Contents: Read+write), PASSES with keyring gho_ token (run gh with GITHUB_TOKEN unset). Use that path at release time. | none |
 | CAT-KEYROT-WAIVER-1 | Task | Open risk, operator-accepted | Key-rotation waiver recorded as an operator-accepted open risk. NO expiry is set or invented. | Operator sets an expiry or closes the risk. | Operator decision. |
 
 ### Blocked by hardware
