@@ -3,7 +3,7 @@
 # Fake curl/ip/ssh on PATH inside a mktemp dir; no stack, no network, no credential.
 # usage: test_frontdoor_interface.sh [--script <path>]   (override lets the RED run target a pre-change copy)  exit 0 = all pass
 set -u
-HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; SCRIPT="$HERE/test_clientip_frontdoor.sh"; [ "${1:-}" = --script ] && SCRIPT="$2"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; export QA_LAN_IP_LIB="$HERE/../../lib/lan_ip.sh"; SCRIPT="$HERE/test_clientip_frontdoor.sh"; [ "${1:-}" = --script ] && SCRIPT="$2"
 S="$(mktemp -d)"; : "${S:?}"; trap 'rm -rf -- "${S:?}"' EXIT
 fail=0; ok() { echo "PASS $1"; }; bad() { echo "FAIL $1 $2"; fail=1; }
 mkdir -p "$S/bin"

@@ -1643,3 +1643,11 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - FU20-3 (nit): contrast.ts alpha cutoff exactly 50 untested; fractional sizes like h-3.5; leak-check conditional-restore (L1) survives.
 - FU20-4 (process-doc): commit 9928be7f carries Roadmap-Item D7-R4-FU-1 only; it implements FU-1..4 (history not rewritten).
 - Live axe re-run on rebuilt web image still owed (D7-R4).
+
+## lanip-dyn review (2026-11-10, Opus GO-with-follow-ups; S1-S4,M1-M4 fixed before landing)
+- LIP-FU-1: live run of test-servers up.sh (real cert swap) + strict-TLS FTPS client; remove stale TS_HOST line from untracked testservers.env.
+- LIP-FU-2 (nit): private-key .bak files accumulate in tls/ (mounted into containers) — add retention/cleanup.
+- LIP-FU-3 (nit): if default route moves to ppp/VPN, detection picks VPN address; consider preferring non-ppp interface or warn.
+- LIP-FU-4 (nit): stack3/lib.sh keeps its own STUB_IP_SRC detection duplicating lan_ip.sh; unify.
+- LIP-FU-5: pre-existing: rclone `--pass $TS_PASS` is on container argv (visible in host ps); use obscured env/config file.
+- LIP-FU-6: monitoring/lanbind.py fixtures keep .115 (test data only).

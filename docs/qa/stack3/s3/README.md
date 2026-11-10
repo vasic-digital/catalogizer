@@ -1,7 +1,7 @@
 # Live S3 server for Catalogizer (CAT-S3-1)
 
 Real Garage v1.0.1 (`docker.io/dxflrs/garage`) under rootless podman, `--memory 1g --memory-swap 1g --cpus 1`, own network `catqa-s3live`,
-bound to `192.168.1.115:39320`. Independent of stacks catqa1/2/3.
+bound to `<S3_BIND>:39320` (default `127.0.0.1`; `S3_BIND=lan` binds the auto-detected LAN address, see `docs/qa/lib/lan_ip.sh`). Independent of stacks catqa1/2/3.
 
 - `up.sh` starts it, creates bucket `catalogizer-live` and a key; credentials go ONLY to `$S3_STATE/s3.env` (0600, outside git).
 - `down.sh [--purge]` removes the container and network (and the state dir with `--purge`).

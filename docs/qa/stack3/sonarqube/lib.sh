@@ -7,7 +7,11 @@ STACK="${SQ_STACK:-catsonar}"
 POD="$STACK"
 LABEL_KEY="io.catalogizer.service"; LABEL_VAL="sonarqube"   # ownership label on pod + volumes; nothing without it is ever removed
 SQ_DIR="${SQ_DIR:-$HOME/.cache/claude-tmp/${STACK}}"
-SONAR_BIND="${SONAR_BIND:-192.168.1.115}"      # LAN address the UI is published on (never 0.0.0.0)
+. "${QA_LAN_IP_LIB:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/lan_ip.sh}" || { echo "ERROR: cannot source docs/qa/lib/lan_ip.sh" >&2; exit 1; }
+# LAN address the UI is published on (never 0.0.0.0): explicit SONAR_BIND, else auto-detected (override with QA_LAN_IP). Teardown/scan paths (down.sh, scan.sh)
+# do not need it, so an undetectable address is NOT fatal here: SONAR_BIND falls back to loopback and SONAR_BIND_UNRESOLVED=1; up.sh refuses to start in that case.
+SONAR_BIND_UNRESOLVED=0
+if [ -z "${SONAR_BIND:-}" ]; then SONAR_BIND="$(qa_lan_ip 2>/dev/null)" || { SONAR_BIND=127.0.0.1; SONAR_BIND_UNRESOLVED=1; }; fi
 SONAR_PORT="${SONAR_PORT:-19000}"
 # All three images pinned by digest. SonarQube and Postgres digests are identical to docker-compose.security.yml;
 # the scanner digest was read from the local image sonar-scanner-cli:12.2 (compose does not use a scanner).

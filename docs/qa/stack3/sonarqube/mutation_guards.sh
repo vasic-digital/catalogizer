@@ -3,6 +3,7 @@
 # A surviving mutation (suite still green) = the corresponding test is decoration. Exit 0 only if every mutation is killed.
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export QA_LAN_IP_LIB="$HERE/../../lib/lan_ip.sh"   # sandbox copies of lib.sh cannot find the shared helper by relative path
 SB="$(mktemp -d /home/milosvasic/.cache/claude-tmp/sqmut.XXXXXX)"; : "${SB:?}"; trap 'rm -rf "${SB:?}"' EXIT
 for n in 1 2 3; do "$HERE/test_guards.sh" "$HERE" >/dev/null 2>&1 || { echo "baseline suite is not green (repeat $n) - abort"; exit 2; }; done
 SURV=0

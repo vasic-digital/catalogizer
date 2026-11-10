@@ -12,6 +12,7 @@
 #   pasta alias 169.254.1.2) out of login for about a minute. Do not run it while someone is using the stack from this host.
 # Waits 62 s first so the 30/min login window is empty. Exit 0 PASS / 1 FAIL.
 set -u
+. "${QA_LAN_IP_LIB:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/lan_ip.sh}" || { echo "cannot source docs/qa/lib/lan_ip.sh" >&2; exit 2; }
 T=""; OTHER=""; IFACE=""
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -23,10 +24,9 @@ done
 [ -n "$T" ] || { echo "usage: $0 URL [SECOND_HOST_SSH] [--interface LOCAL_IP]" >&2; exit 2; }
 if [ -n "$IFACE" ]; then
   # whole-string IPv4 check in bash itself (a grep would test line by line and pass "10.0.0.5<newline>junk")
-  oct='(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])'
-  if ! [[ "$IFACE" =~ ^$oct\.$oct\.$oct\.$oct$ ]]; then echo "FAIL --interface must be an IPv4 address (four octets 0-255, nothing else), got '$IFACE'"; exit 1; fi
+  if ! qa_ip_is_ipv4 "$IFACE"; then echo "FAIL --interface must be an IPv4 address (four octets 0-255, nothing else), got '$IFACE'"; exit 1; fi
   # the address must be configured on a local interface: exact match "inet <ip>/" (so 10.0.0.5 never matches 10.0.0.50)
-  if ! ip -4 -o addr show 2>/dev/null | grep -Eq "[[:space:]]inet ${IFACE//./\\.}/"; then echo "FAIL --interface $IFACE is not assigned to this host (ip -4 addr); refusing to run B against an address the kernel cannot bind"; exit 1; fi
+  if ! qa_ip_is_assigned "$IFACE"; then echo "FAIL --interface $IFACE is not assigned to this host (ip -4 addr); refusing to run B against an address the kernel cannot bind"; exit 1; fi
 fi
 post(){ curl -s -o /dev/null -m 10 -w '%{http_code}' -X POST -H 'Content-Type: application/json' "$@" -d '{"username":"qa_nonexistent_fd","password":"x"}' "$T/api/v1/auth/login"; }
 sleep "${FD_WARMUP:-62}"   # FD_WARMUP only for the sandbox test (test_frontdoor_interface.sh)

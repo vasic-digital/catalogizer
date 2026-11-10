@@ -3,6 +3,7 @@
 # Pure script: no LLM/model calls. Run ./scan.sh next, then ./down.sh when the scan window is over.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; . "$HERE/lib.sh"
+[ "${SONAR_BIND_UNRESOLVED:-0}" = 0 ] || die "cannot determine the LAN address to publish on (set SONAR_BIND or QA_LAN_IP); refusing to start"
 command -v podman jq curl >/dev/null || die "need podman, jq, curl"
 # NOTE: no `cmd | grep -q` under pipefail (grep -q exits early -> SIGPIPE -> random failures). Capture first, then match.
 ADDRS="$(ip -4 addr show)" || die "cannot list local addresses"
