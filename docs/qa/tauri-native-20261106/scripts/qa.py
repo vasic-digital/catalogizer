@@ -98,7 +98,7 @@ def click(x, y):
 
 def typ(s, secret=False):
     px("xdotool", "type", "--delay", "40", "--", s)
-    log("type", chars=len(s), secret=secret, text=None if secret else s)
+    log("type", secret=secret, **({} if secret else {"chars": len(s), "text": s}))
 
 def key(k):
     px("xdotool", "key", k)
