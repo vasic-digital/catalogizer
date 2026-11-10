@@ -3,6 +3,7 @@
 Secrets are read from $QA_DIR/{qa,mon}.env and never printed. usage: verify.py [host]   exit 0 = all PASS."""
 import json, os, re, sys, time, urllib.request, urllib.parse, urllib.error, base64, gzip
 import http.cookiejar as cookiejar
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 QA = os.environ.get("QA_DIR", os.path.expanduser("~/.cache/claude-tmp/catqa3"))
 H = sys.argv[1] if len(sys.argv) > 1 else "127.0.0.1"
@@ -152,11 +153,28 @@ def lan_open(port):
 lan_ok = bool(re.fullmatch(r"\d+\.\d+\.\d+\.\d+", lan))
 rec("lan.ip_detected", lan_ok, f"ip={lan}")
 if lan_ok:
+    import lanbind as LB
     rec("lan.nginx_reachable_(control_needle)", lan_open(P["ngx"]), f"{lan}:{P['ngx']}")
-    for name, port, bindvar in (("prometheus", P["prom"], "PROM_BIND"), ("grafana", P["graf"], "GRAFANA_BIND"), ("pgadmin", P["pga"], "PGADMIN_BIND")):
-        opt = os.environ.get(bindvar) or os.environ.get("LAN_BIND" if name != "prometheus" else bindvar)
-        if opt in ("0.0.0.0", lan): print(f"SKIP lan.{name}_not_reachable (LAN opt-in {bindvar}={opt})"); continue
-        rec(f"lan.{name}_NOT_reachable_on_LAN_IP", not lan_open(port), f"{lan}:{port}")
+    # CAT-VERIFY-LANBIND-1: LAN-bound Prometheus/Grafana/pgAdmin are an intentional operator decision. The expectation comes from the
+    # *_BIND env (same precedence as up.sh), else from what the running pod really publishes, else the loopback default.
+    mon = os.environ.get("MON_POD") or f"{os.environ.get('STACK', 'catqa3')}mon"
+    pp = subprocess.run(["podman", "port", mon], capture_output=True, text=True, timeout=30)
+    published = LB.parse_podman_port(pp.stdout) if pp.returncode == 0 else {}
+    class _NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, *a, **k): return None
+    anon = {"prometheus": f"/api/v1/targets", "grafana": "/api/datasources", "pgadmin": "/browser/server_group/obj/"}
+    for name, port in (("prometheus", P["prom"]), ("grafana", P["graf"]), ("pgadmin", P["pga"])):
+        bind = LB.resolve_bind(name, os.environ, published, port)
+        cls = LB.classify_bind(bind, lan)
+        v = LB.exposure_verdict(name, cls, lan_open(port))
+        if v is None: print(f"SKIP lan.{name}_exposure (bound to {bind}, neither loopback nor the LAN IP)"); continue
+        rec(v[0], v[1], f"{lan}:{port} bind={bind}")
+        if cls == "lan":
+            st, _, _ = http(f"http://{lan}:{port}{anon[name]}", opener=urllib.request.build_opener(_NoRedirect))
+            rec(f"lan.{name}_anonymous_rejected_via_LAN_IP", LB.auth_required_ok(name, st), f"http={st}")
+    for svc, port in (("postgresql", int(os.environ.get("PG_PORT", 35434))), ("redis", int(os.environ.get("REDIS_PORT", 36381)))):
+        name, ok = LB.exposure_verdict(svc, LB.ALWAYS_LOOPBACK, lan_open(port))
+        rec(name, ok, f"{lan}:{port}")
 
 # ---------------- F2: revoke the admin sessions this run created
 for t_ in [t for t in (tok,) if t]:
