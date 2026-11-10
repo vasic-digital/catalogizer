@@ -1623,3 +1623,11 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - TAURI-R1-FU-6 (process-doc/minor): installer-wizard/src-tauri/gen/schemas/capabilities.json tracked as `{}`; regenerate-and-commit or untrack after §11.4.124 investigation.
 - TAURI-R1-FU-7: GREEN live run of rebuilt wizard (same Save Configuration sequence, same target) still owed; item stays PROVISIONAL-DONE until then.
 - TAURI-R1-FU-8 (nit): guard header should say exit 2 = BLIND.
+
+## Tauri follow-ups review (2026-11-10, Opus: GO-with-follow-ups; security-adjacent minors fixed before landing)
+- TAURI-R2-FU-1: guard ignores .toml/.json5 capability files and tauri.conf.json enabled-capability list / window label; add parsing + mutation cases.
+- TAURI-R2-FU-2: comments/strings containing a dialog import count as usage (conservative); `ask`/`confirm`/`message` not covered.
+- TAURI-R2-FU-3: catalogizer-desktop/src-tauri/gen/schemas/capabilities.json has the same stale tracked-generated shape; investigate (§11.4.124) then untrack/regenerate.
+- TAURI-R2-FU-4: pre-flight-check.sh must run from repo root (fails closed 127 elsewhere); consider cd to root.
+- TAURI-R2-FU-5 (nit): `Out-of-scope:` trailer on c504d197 is a left-alone note, not a closed-list reason.
+- FU-5/FU-7 of review 1 (GREEN live wizard run) remain owed; CAT-TAURI-NATIVE-1 stays PROVISIONAL-DONE.

@@ -1,0 +1,12 @@
+{
+ "W1_welcome_visible": true,
+ "W2_next_to_protocol_step2": true,
+ "W3_local_files_card_visible": true,
+ "W4_next_to_local_config_step3": true,
+ "W5_local_source_listed": true,
+ "W6_next_to_config_mgmt_step4": true,
+ "W7_save_and_load_buttons_visible": true,
+ "W8_RED_acl_error_shown": true,
+ "W13_next_to_summary_step5": true,
+ "W14_summary_visible": true
+}

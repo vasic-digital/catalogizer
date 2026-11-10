@@ -1,0 +1,14 @@
+{
+ "C1_native_dialog_first_time": true,
+ "C2_cancel_stays_on_settings": true,
+ "C3_confirm_applies_navigates_to_login": true,
+ "C4_login_works_home_shown": true,
+ "C5_change_dialog_has_current_and_new": true,
+ "C6_cancel_stays_on_settings": false,
+ "C7_old_url_still_current_after_cancel": true,
+ "C8_confirm_applies_session_ok": false,
+ "C9_s13_file_rejected_no_dialog": false,
+ "C9_s14_creds_rejected_no_dialog": false,
+ "C10_url_unchanged_after_rejects": true,
+ "ALL": false
+}
