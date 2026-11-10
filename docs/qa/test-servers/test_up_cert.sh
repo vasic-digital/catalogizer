@@ -20,7 +20,7 @@ PLOG="$R/plog"; export PLOG
 P=0; F=0; ok() { if [ "$1" = 0 ]; then P=$((P+1)); echo "PASS $2"; else F=$((F+1)); echo "FAIL $2"; fi; }
 mkcert() { openssl req -x509 -newkey rsa:2048 -nodes -days 2 -subj /CN=anton.local -addext "subjectAltName=DNS:anton.local,IP:$1" -keyout "$R/root/tls/key.pem" -out "$R/root/tls/cert.pem" >/dev/null 2>&1; }
 san() { openssl x509 -in "$R/root/tls/cert.pem" -noout -ext subjectAltName 2>/dev/null | tr '\n' ' '; }
-up() { : > "$PLOG"; ( unset TS_HOST QA_BIND LAN_BIND; for kv in "$@"; do export "${kv?}"; done
+up() { : > "$PLOG"; ( unset TS_HOST QA_LAN_IP QA_BIND LAN_BIND; for kv in "$@"; do export "${kv?}"; done
     PATH="$R/bin:$PATH" TS_ROOT="$R/root" TS_ENV="$R/env" bash "$UP" >"$R/out" 2>&1 ); echo $? > "$R/rc"; }
 # 1. stale cert (old IP) + route-derived current IP -> regenerated, SAN has the new IP, old pair kept
 mkcert 192.0.2.115; up FAKE_SRC=10.0.0.5 FAKE_ADDRS=10.0.0.5

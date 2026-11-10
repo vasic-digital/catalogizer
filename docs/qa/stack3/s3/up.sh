@@ -5,7 +5,7 @@
 set -euo pipefail
 S3_STATE="${S3_STATE:-$HOME/.cache/claude-tmp/catqa-s3live}"
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/lan_ip.sh"
-S3_BIND="${S3_BIND:-127.0.0.1}"   # LAN opt-in: S3_BIND=lan (auto-detected host LAN address; override with QA_BIND/LAN_BIND) or an explicit IPv4
+S3_BIND="${S3_BIND:-127.0.0.1}"   # LAN opt-in: S3_BIND=lan (auto-detected host LAN address; override with QA_LAN_IP) or an explicit IPv4
 if [ "$S3_BIND" = lan ]; then S3_BIND="$(qa_lan_ip)" || exit 1; fi
 S3_PORT="${S3_PORT:-39320}"
 IMAGE="${S3_IMAGE:-docker.io/dxflrs/garage@sha256:a5706cf1f3d7b349ac5133ec59ad8181b709270b75e5f2fa7b3e1a5c07d67137}"  # pinned by digest (= v1.0.1)

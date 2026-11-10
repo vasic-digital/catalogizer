@@ -14,7 +14,7 @@ REPO="$(cd "$HERE/../../../.." && pwd)"
 QA_ENV="${QA_ENV:-/home/milosvasic/.cache/claude-tmp/catqa3/qa.env}"
 API_URL="${API_URL:-http://127.0.0.1:38082}"
 . "$REPO/docs/qa/lib/lan_ip.sh"
-if [ -z "${WEB_URL:-}" ]; then _lan="$(qa_lan_ip)" || { echo "[helixqa-stack3] cannot detect the LAN address; set WEB_URL or QA_BIND" >&2; exit 4; }; WEB_URL="http://${_lan}:33080"; fi
+if [ -z "${WEB_URL:-}" ]; then _lan="$(qa_lan_ip)" || { echo "[helixqa-stack3] cannot detect the LAN address; set WEB_URL or QA_LAN_IP" >&2; exit 4; }; WEB_URL="http://${_lan}:33080"; fi
 BANK="${BANK:-$HERE/smoke_bank.yaml}"
 EXPECTED_IDS="${EXPECTED_IDS:-S3-SMOKE-001,S3-SMOKE-002,S3-SMOKE-003}"
 HELIXQA_BIN="${HELIXQA_BIN:-}"

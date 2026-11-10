@@ -1,4 +1,4 @@
-# Catalogizer live test servers (host anton; LAN address auto-detected, override with `TS_HOST` or `QA_BIND`)
+# Catalogizer live test servers (host anton; LAN address auto-detected, override with `TS_HOST` or `QA_LAN_IP`)
 
 All serve the SAME corpus `/home/milosvasic/Testing-servers/corpus` (manifest.sha256, 12 files incl. unicode/space names, 0-byte, 5 MB, wav/mp3/mp4/srt/jpg/png/pdf/txt). The corpus is mounted read-only; only `rw/` is writable (host dir mode 777, dedicated test dir). Credentials: user `catsvc`, password in the 0600 file `/home/milosvasic/.cache/claude-tmp/catqa3/testservers.env` (TS_USER/TS_PASS/TS_HOST). HTTP and NFS are anonymous read-only.
 
@@ -17,4 +17,4 @@ Scripts: `up.sh` (idempotent), `down.sh`, `verify.sh` (3 runs x 12 files sha256 
 
 ## LAN address
 
-`up.sh` and `verify.sh` take the host address from `TS_HOST` (caller env), else from `docs/qa/lib/lan_ip.sh` (`QA_BIND`/`LAN_BIND` override, else the kernel route source address; fails loudly when it cannot be resolved). `up.sh` regenerates the self-signed FTPS cert (SAN `anton.local` + current IP) whenever the cert lacks the current address; the previous pair is kept as `*.bak-<time>`.
+`up.sh` and `verify.sh` take the host address from `TS_HOST` (caller env), else from `docs/qa/lib/lan_ip.sh` (`QA_LAN_IP` override, else the kernel route source address; fails loudly when it cannot be resolved). `up.sh` regenerates the self-signed FTPS cert (SAN `anton.local` + current IP) whenever the cert lacks the current address; the previous pair is kept as `*.bak-<time>`.

@@ -21,7 +21,7 @@ RUN_ID=run1 docs/qa/stack3/sonarqube/scan.sh        # [--fail-on-gate] -> docs/q
 docs/qa/stack3/sonarqube/down.sh
 ```
 
-UI: `http://<LAN-IP>:19000` (LAN address auto-detected; override with `SONAR_BIND` or `QA_BIND`, see `docs/qa/lib/lan_ip.sh`) (login `admin`; generated password and scan token are in
+UI: `http://<LAN-IP>:19000` (LAN address auto-detected; override with `SONAR_BIND` or `QA_LAN_IP`, see `docs/qa/lib/lan_ip.sh`) (login `admin`; generated password and scan token are in
 `~/.cache/claude-tmp/catsonar/sonar.env`, mode 0600, **outside the repo**; never printed, never committed). Credentials are passed
 to curl via a 0600 netrc and to the scanner via a 0600 env-file, never in argv.
 
