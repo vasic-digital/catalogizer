@@ -18,6 +18,8 @@ func TestSplitShare(t *testing.T) {
 		{"Public/COM10", "Public", "COM10"},
 		{"Public/a.b./c", "Public", "a.b./c"}, // dots inside a name are fine
 		{"CD", "CD", ""},
+		{"Public/COM¹0", "Public", "COM¹0"},
+		{"Public/CONIN", "Public", "CONIN"},
 		{"C$x", "C$x", ""}, // ".." inside a name is not a segment
 	}
 	for _, c := range ok {
@@ -26,7 +28,7 @@ func TestSplitShare(t *testing.T) {
 			t.Errorf("SplitShare(%q) = %q,%q,%v want %q,%q", c.in, share, sub, err, c.share, c.sub)
 		}
 	}
-	bad := []string{"", "/", "//", "/Public/x", "/Public/Testing/", "Public/../x", "Public/..", "../Public", "Public/./x", "Public//x", `Public\x`, `Public/a\..\b`, "Public/x\x00y", "Public/x\ny", `\\host\Public`, "Public/a/../../b", "./Public", "Public/.. ", "Public/...", "Public/a/.. /b", "Public/ ", "Public/CON", "Public/a/nul.txt", "Public/COM1", "Public/lpt9.x", "Public/a:stream", "Public/a/b:$DATA", "IPC$", "ipc$/x", "ADMIN$", "C$", "d$/x", "Public/a\u0085b", "Public/a\u202eb", "Public/a\u2066b", `\\\\host\\Public`, "//host/Public", "//Public"}
+	bad := []string{"", "/", "//", "/Public/x", "/Public/Testing/", "Public/../x", "Public/..", "../Public", "Public/./x", "Public//x", `Public\x`, `Public/a\..\b`, "Public/x\x00y", "Public/x\ny", `\\host\Public`, "Public/a/../../b", "./Public", "Public/.. ", "Public/...", "Public/a/.. /b", "Public/ ", "Public/CON", "Public/a/nul.txt", "Public/COM1", "Public/lpt9.x", "Public/a:stream", "IPC$ ", "ipc$./x", "ADMIN$ .", "C$ ", "Pub:lic", "Public/COM0", "Public/LPT0", "Public/COM¹", "Public/com².txt", "Public/LPT³", "Public/CONIN$", "Public/conout$.x", "Public/a/CONOUT$", "Public/a/b:$DATA", "IPC$", "ipc$/x", "ADMIN$", "C$", "d$/x", "Public/a\u0085b", "Public/a\u202eb", "Public/a\u2066b", `\\\\host\\Public`, "//host/Public", "//Public"}
 	for _, in := range bad {
 		if share, sub, err := SplitShare(in); err == nil {
 			t.Errorf("SplitShare(%q) = %q,%q accepted, want error", in, share, sub)
@@ -48,6 +50,10 @@ func TestResolveSub(t *testing.T) {
 		{"Testing", `..\..\x`, "Testing/x"},
 		{"Testing", `a\..\..\x`, "Testing/x"},
 		{"a/b", "../../../c", "a/b/c"},
+		{"Testing", "a:stream", "Testing/" + RejectedSegment},
+		{"Testing", "docs/b.txt:$DATA", "Testing/docs/" + RejectedSegment},
+		{"Testing", `x\y:z`, "Testing/x/" + RejectedSegment},
+		{"", "a:b", "a:b"}, // no sub root: unchanged
 		{"Testing", "... /x", "Testing/x"},
 		{"Testing", "a/.. /../../x", "Testing/x"},
 		{"Testing", "..../etc", "Testing/etc"},

@@ -116,6 +116,7 @@ func inside(t *testing.T, m *memShare, root string) {
 	t.Helper()
 	for _, c := range m.calls {
 		cc := path.Clean(c)
+		require.NotContains(t, c, ":", "an ADS selector must not reach the share")
 		require.True(t, cc == root || strings.HasPrefix(cc, root+"/"), "share path %q escaped %q (all: %v)", c, root, m.calls)
 	}
 }
@@ -124,7 +125,7 @@ func TestSMBSubdir_RoutedOperationsAreConfined(t *testing.T) {
 	m := newMem()
 	var opened []string
 	s := svcFor(t, m, "Public/Testing", &opened)
-	hostile := []string{"", ".", "..", "../..", `..\..`, "docs/../../..", "/docs", "../Misc/secret.txt", `..\Misc\secret.txt`}
+	hostile := []string{"a:stream", "docs/book.txt:$DATA", "", ".", "..", "../..", `..\..`, "docs/../../..", "/docs", "../Misc/secret.txt", `..\Misc\secret.txt`}
 
 	for _, p := range hostile {
 		_, _ = s.ListFiles("h", p)

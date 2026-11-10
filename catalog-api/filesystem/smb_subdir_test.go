@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"catalogizer/models"
+	"catalogizer/smb"
 
 	"github.com/stretchr/testify/require"
 )
@@ -36,6 +37,7 @@ func TestSMBSubdir_ClientConfinement(t *testing.T) {
 	require.Equal(t, "Testing/etc/passwd", c.resolvePath("../../etc/passwd"))
 	require.Equal(t, "Testing/x", c.resolvePath(`..\..\x`))
 	require.Equal(t, "Testing/x", c.resolvePath("/x"))
+	require.Equal(t, "Testing/"+smb.RejectedSegment, c.resolvePath("a:stream"), "ADS selector never reaches the server")
 
 	plain := NewSmbClient(&SmbConfig{Host: "h", Port: 445, Share: "Public"})
 	_, err = plain.initShare()

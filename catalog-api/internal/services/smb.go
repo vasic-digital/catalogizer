@@ -387,6 +387,8 @@ func (s *SMBService) CopyFile(sourceHost, sourcePath, destHost, destPath string)
 	return nil
 }
 
+// CreateRemoteDir creates path and its parents on a RAW *smb2.Share. It applies no sub-directory confinement: a caller must pass a path it
+// has already confined (SMBService's own methods use createRemoteDir on a confined share). Nothing outside tests calls it.
 func (s *SMBService) CreateRemoteDir(share *smb2.Share, path string) error {
 	return s.createRemoteDir(smb2ShareAPI{share}, path)
 }

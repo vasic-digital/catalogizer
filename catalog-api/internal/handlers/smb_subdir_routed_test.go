@@ -79,6 +79,8 @@ func TestRoutedCopyToLocal_SMBSubdirRoot(t *testing.T) {
 	require.Equal(t, "book", string(got), "the file must come from the sub-directory, not from the share root")
 	require.Equal(t, []string{"Public"}, fk.mount, "only the share part is mounted (go-smb2 refuses a mount path with a slash)")
 
+	// Note: traversal sources are refused HERE by pathsafe.SafeRemotePath (400), before the service is reached; this loop does not exercise the
+	// sub-root confinement. That is covered by internal/services TestSMBSubdir_RoutedOperationsAreConfined (hostile paths, recorded share paths).
 	for _, src := range []string{"nas:../Misc/book.txt", `nas:..\Misc\book.txt`, "nas:docs/../../Misc/book.txt"} {
 		w = postJSON(r, "/api/v1/copy/local", map[string]any{"source_path": src, "destination_path": "out/x.txt", "overwrite": true})
 		require.NotEqual(t, http.StatusOK, w.Code, src)
