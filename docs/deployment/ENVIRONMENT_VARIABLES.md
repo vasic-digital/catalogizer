@@ -290,6 +290,7 @@ These are used only in integration and automation tests.
 | `SMB_TEST_SHARE` | SMB test share name | (none) | `tests/integration/protocol_rename_tests.go` |
 | `SMB_TEST_USER` | SMB test username | (none) | `tests/integration/protocol_rename_tests.go` |
 | `SMB_TEST_PASS` | SMB test password | (none) | `tests/integration/protocol_rename_tests.go` |
+| `SMB_LIVE_HOST` / `SMB_LIVE_PORT` / `SMB_LIVE_USER` / `SMB_LIVE_PASS` | Live SMB sub-directory test target (build tag `live_smb`, set by `docs/qa/smb-subdir-20261110/run.sh`; credentials come from a 0600 file, never from the repository) | (none) | `catalog-api/filesystem/smb_subdir_live_test.go` |
 | `FTP_TEST_SERVER` | FTP test server flag (set to enable FTP tests) | (empty) | `tests/integration/protocol_rename_tests.go` |
 | `NFS_TEST_SERVER` | NFS test server flag (set to enable NFS tests) | (empty) | `tests/integration/protocol_rename_tests.go` |
 | `WEBDAV_TEST_SERVER` | WebDAV test server flag (set to enable WebDAV tests) | (empty) | `tests/integration/protocol_rename_tests.go` |
