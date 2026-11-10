@@ -1659,3 +1659,6 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - SMB-FU-3 (optional): routed DownloadHandler test (needs a CatalogService seam).
 - SMB-FU-4: catalog-web form hint for entering share/sub/dir.
 - SMB-FU-5: live run of docs/qa/smb-subdir-20261110/run.sh against the Anton share (never executed yet).
+- SMB-FU-6 (test-instrumentation): routed copy test does not exercise sub-root traversal (pathsafe decides first); service-level tests cover it.
+- SMB-FU-7: ResolveSub rejects ':' via sentinel segment; CreateRemoteDir stays public (interface) and unconfined by contract.
+- SMB-FU-8: live SMB subdir tests unverified; CAT-SMB-SUBDIR-1 stays PROVISIONAL until docs/qa/smb-subdir-20261110/run.sh passes N>=3.
