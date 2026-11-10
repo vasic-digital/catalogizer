@@ -1629,3 +1629,10 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - D7-R4-FU-4 DONE: island rows registered as ids CAT-D7-ISLAND-1..3 in WORKABLE_ITEMS_REGISTER.md: -1 AdvancedSearch tab icon chips `bg-blue-100` (x5), -2 FormatConverter empty-state circle `bg-gray-100` + AI unavailable panels `bg-white rounded-lg shadow p-6` (x3), -3 AIDashboard icon chips `bg-indigo-100`/`bg-green-100`/`bg-yellow-100`. (Grouping by component is the author's choice.)
 - CAT-VERIFY-LANBIND-1 DONE in code: `verify.py` derives the exposure expectation (env, else `podman port`, else loopback) via `lanbind.py`; LAN-bound Prometheus/Grafana/pgAdmin are asserted LAN-reachable + anonymous-rejected; PostgreSQL/Redis asserted loopback-only. Unit-tested (`test_lanbind.py`). Live re-run of verify.py owed: stack 3 was DOWN when this was authored (no containers, ports closed), so the live RED could not be re-captured.
 - CAT-FRONTDOOR-LOCALMODE-1 DONE: `--interface <ip>` mode + README note; sandbox test `test_frontdoor_interface.sh`. A live run against stack 3 is owed (stack down).
+## Tauri follow-ups review (2026-11-10, Opus: GO-with-follow-ups; security-adjacent minors fixed before landing)
+- TAURI-R2-FU-1: guard ignores .toml/.json5 capability files and tauri.conf.json enabled-capability list / window label; add parsing + mutation cases.
+- TAURI-R2-FU-2: comments/strings containing a dialog import count as usage (conservative); `ask`/`confirm`/`message` not covered.
+- TAURI-R2-FU-3: catalogizer-desktop/src-tauri/gen/schemas/capabilities.json has the same stale tracked-generated shape; investigate (§11.4.124) then untrack/regenerate.
+- TAURI-R2-FU-4: pre-flight-check.sh must run from repo root (fails closed 127 elsewhere); consider cd to root.
+- TAURI-R2-FU-5 (nit): `Out-of-scope:` trailer on c504d197 is a left-alone note, not a closed-list reason.
+- FU-5/FU-7 of review 1 (GREEN live wizard run) remain owed; CAT-TAURI-NATIVE-1 stays PROVISIONAL-DONE.
