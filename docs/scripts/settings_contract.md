@@ -26,7 +26,7 @@ and the FTP and WebDAV `path` was never forwarded.
 | webdav | `url` `username` `password` `path` |
 | registered (sftp, ftps, nfs3, ...) | whatever its `ProtocolSpec.Keys` declares; the shared names are `host port path username credential_ref tls_mode host_key_fingerprint cert_sha256` |
 
-`share` is the SMB spelling of the root path: the share name, or `share/sub/dir` to confine the root to a sub-directory (validated by `smb.SplitShare` in `ValidateSettings`: relative, no backslash/control chars, no empty/`.`/`..` segment; all client operations are confined below the sub-directory, `smb.ResolveSub`). A retired spelling (`export_path`, `filepath`, `file_path`, `root`, ...) is rejected with a hint (`export_path (use path)`); the error names
+`share` is the SMB spelling of the root path: the share name, or `share/sub/dir` to confine the root to a sub-directory (validated by `smb.SplitShare` in `ValidateSettings`: relative, no backslash/control chars, no empty/`.`/`..` segment (also with trailing dots/spaces), no `IPC$`/`ADMIN$`/drive share, no device-name or `:` in a sub-directory; UNC forms are refused with a hint; all client operations are confined below the sub-directory, `smb.ResolveSub`). A retired spelling (`export_path`, `filepath`, `file_path`, `root`, ...) is rejected with a hint (`export_path (use path)`); the error names
 keys only, never values. A wrong type (`port` as a string) is rejected too, and so is a number outside the 32-bit range (a `port` of `1e300` is not a port); a `port` must be 1-65535 (a stored port of 0 means "not set": the mapping leaves it out). No key is
 required by the validator (Connect reports a missing host).
 

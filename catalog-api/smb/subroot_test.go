@@ -1,6 +1,9 @@
 package smb
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestSplitShare(t *testing.T) {
 	ok := []struct{ in, share, sub string }{
@@ -10,7 +13,12 @@ func TestSplitShare(t *testing.T) {
 		{"Public/Testing", "Public", "Testing"},
 		{"Public/Testing/", "Public", "Testing"},
 		{"Public/a/b c/d", "Public", "a/b c/d"},
-		{"Pub..lic/a..b", "Pub..lic", "a..b"}, // ".." inside a name is not a segment
+		{"Pub..lic/a..b", "Pub..lic", "a..b"},
+		{"Public/CONSOLE", "Public", "CONSOLE"}, // only the exact device names are reserved
+		{"Public/COM10", "Public", "COM10"},
+		{"Public/a.b./c", "Public", "a.b./c"}, // dots inside a name are fine
+		{"CD", "CD", ""},
+		{"C$x", "C$x", ""}, // ".." inside a name is not a segment
 	}
 	for _, c := range ok {
 		share, sub, err := SplitShare(c.in)
@@ -18,7 +26,7 @@ func TestSplitShare(t *testing.T) {
 			t.Errorf("SplitShare(%q) = %q,%q,%v want %q,%q", c.in, share, sub, err, c.share, c.sub)
 		}
 	}
-	bad := []string{"", "/", "//", "/Public/x", "/Public/Testing/", "Public/../x", "Public/..", "../Public", "Public/./x", "Public//x", `Public\x`, `Public/a\..\b`, "Public/x\x00y", "Public/x\ny", `\\host\Public`, "Public/a/../../b", "./Public"}
+	bad := []string{"", "/", "//", "/Public/x", "/Public/Testing/", "Public/../x", "Public/..", "../Public", "Public/./x", "Public//x", `Public\x`, `Public/a\..\b`, "Public/x\x00y", "Public/x\ny", `\\host\Public`, "Public/a/../../b", "./Public", "Public/.. ", "Public/...", "Public/a/.. /b", "Public/ ", "Public/CON", "Public/a/nul.txt", "Public/COM1", "Public/lpt9.x", "Public/a:stream", "Public/a/b:$DATA", "IPC$", "ipc$/x", "ADMIN$", "C$", "d$/x", "Public/a\u0085b", "Public/a\u202eb", "Public/a\u2066b", `\\\\host\\Public`, "//host/Public", "//Public"}
 	for _, in := range bad {
 		if share, sub, err := SplitShare(in); err == nil {
 			t.Errorf("SplitShare(%q) = %q,%q accepted, want error", in, share, sub)
@@ -40,6 +48,9 @@ func TestResolveSub(t *testing.T) {
 		{"Testing", `..\..\x`, "Testing/x"},
 		{"Testing", `a\..\..\x`, "Testing/x"},
 		{"a/b", "../../../c", "a/b/c"},
+		{"Testing", "... /x", "Testing/x"},
+		{"Testing", "a/.. /../../x", "Testing/x"},
+		{"Testing", "..../etc", "Testing/etc"},
 	}
 	for _, c := range cases {
 		if got := ResolveSub(c.sub, c.p); got != c.want {
@@ -58,5 +69,14 @@ func TestSmbClientRPConfinesToSub(t *testing.T) {
 	}
 	if got := (&SmbClient{}).rp("../a"); got != "../a" {
 		t.Errorf("no sub root must pass the path through unchanged, got %q", got)
+	}
+}
+
+func TestSplitShareUNCRefusedWithHint(t *testing.T) {
+	for _, in := range []string{`\\host\Public`, "//host/Public", `\\host\Public\Testing`} {
+		_, _, err := SplitShare(in)
+		if err == nil || !strings.Contains(err.Error(), "UNC") || !strings.Contains(err.Error(), "'host'") {
+			t.Errorf("SplitShare(%q) err=%v, want a UNC hint naming the host field", in, err)
+		}
 	}
 }

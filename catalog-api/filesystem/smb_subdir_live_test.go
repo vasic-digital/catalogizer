@@ -66,14 +66,17 @@ func TestLiveSMBSubdir(t *testing.T) {
 		require.Equal(t, in, names(t, sub, p), "traversal %q must be clamped to the sub root", p)
 	}
 	// a file that exists only OUTSIDE the subtree is unreachable by any spelling
+	probed := 0
 	for n := range top {
-		if n == "Testing" || n == ".DS_Store" {
+		if n == "Testing" || in[n] { // a name that also exists inside the subtree would legitimately resolve there
 			continue
 		}
+		probed++
 		ok, err := sub.FileExists(ctx, "../"+n)
 		require.NoError(t, err)
 		require.False(t, ok, "%s outside the sub root must not be reachable", n)
 	}
+	t.Logf("outside-name probes: %d", probed)
 	// download inside the subtree: byte-identical to the corpus manifest
 	rc, err := sub.ReadFile(ctx, "docs/book.txt")
 	require.NoError(t, err)

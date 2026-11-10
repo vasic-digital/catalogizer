@@ -31,6 +31,7 @@ type SmbClient struct {
 	session *smb2.Session
 	share   *smb2.Share
 	config  *SmbConfig
+	sub     string // sub-directory of the share this client is confined to, fixed by initShare (Connect) together with the mount
 }
 
 // NewSmbClient creates a new SMB client
@@ -42,9 +43,9 @@ func NewSmbClient(config *SmbConfig) *SmbClient {
 
 // Connect establishes the SMB connection
 func (c *SmbClient) Connect(ctx context.Context) error {
-	shareName, _, err := smb.SplitShare(c.config.Share)
+	shareName, err := c.initShare()
 	if err != nil {
-		return fmt.Errorf("invalid SMB share path: %w", err)
+		return err
 	}
 	// Establish TCP connection with timeout
 	addr := net.JoinHostPort(c.config.Host, fmt.Sprintf("%d", c.config.Port))
@@ -125,11 +126,23 @@ func (c *SmbClient) IsConnected() bool {
 	return c.share != nil && c.session != nil && c.conn != nil
 }
 
+// initShare validates the configured share path and fixes the sub-directory once, at the same moment the share name to mount is chosen, so
+// the mount and the confinement can never disagree (an invalid spec fails Connect; there is no later re-parse that could fail open).
+func (c *SmbClient) initShare() (shareName string, err error) {
+	shareName, sub, err := smb.SplitShare(c.config.Share)
+	if err != nil {
+		return "", fmt.Errorf("invalid SMB share path: %w", err)
+	}
+	c.sub = sub
+	return shareName, nil
+}
+
 // resolvePath maps a root-relative path to the share-relative path sent to the server. For a plain share name it is smbPath (unchanged
-// behaviour); for "share/sub/dir" the path is confined below sub (smb.ResolveSub), so no caller path can leave the sub-directory.
+// behaviour); for "share/sub/dir" the path is confined (ConfinePath) and joined below the sub-directory captured at Connect
+// (smb.ResolveSub), so no caller path can leave it.
 func (c *SmbClient) resolvePath(p string) string {
-	if _, sub, err := smb.SplitShare(c.config.Share); err == nil && sub != "" {
-		return smb.ResolveSub(sub, p)
+	if c.sub != "" {
+		return smb.ResolveSub(c.sub, ConfinePath(p))
 	}
 	return smbPath(p)
 }
