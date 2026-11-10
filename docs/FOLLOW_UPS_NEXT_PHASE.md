@@ -1613,3 +1613,13 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - TP-FU-1: wildcard (0.0.0.0/0, ::/0) startup warning in main.go untested (needs logger-injectable helper).
 - TP-FU-2: live bring-up of root and deployment compose with new fixed subnets/ip_range (only rendered + throwaway compose proved); `catalogizer/web` image built from catalog-web/Dockerfile is assumed; deployment WS_URL port 8081 vs /ws upstream 8080 mismatch (pre-existing).
 - TP-FU-3: F4 capture API log line ClientIP=169.254.1.2; stack script leg B needs second LAN host (= QA-MON-FU-4).
+
+## Tauri native QA review (2026-11-10, Opus: GO-with-follow-ups, 0 source-defects)
+- TAURI-R1-FU-1 (test-instrumentation/minor): test_wizard_capabilities.sh checks permissions and window "main" separately across all JSON; parse each capability and require one capability targeting main with both permissions and no excluding `platforms` (reviewer mutations M6, M7 survive).
+- TAURI-R1-FU-2 (test-instrumentation/minor): guard import detection matches only single-line single-quote imports; handle double quotes, multi-line, `import *`, dynamic import.
+- TAURI-R1-FU-3 (test-instrumentation/minor): wire test_wizard_capabilities.sh into a runner/pre-build sweep (nothing calls it).
+- TAURI-R1-FU-4 (process-doc/minor): docs/qa/tauri-boot-20261105/README.md links to docs/qa/tauri-native-20261106/README.md which does not exist; add it from the evidence archive (secret-scan first).
+- TAURI-R1-FU-5 (process-doc/minor): out-of-scope edits lack `Out-of-scope:` trailers; Roadmap-Item CAT-TAURI-NATIVE-1 covers them.
+- TAURI-R1-FU-6 (process-doc/minor): installer-wizard/src-tauri/gen/schemas/capabilities.json tracked as `{}`; regenerate-and-commit or untrack after §11.4.124 investigation.
+- TAURI-R1-FU-7: GREEN live run of rebuilt wizard (same Save Configuration sequence, same target) still owed; item stays PROVISIONAL-DONE until then.
+- TAURI-R1-FU-8 (nit): guard header should say exit 2 = BLIND.
