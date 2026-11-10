@@ -135,12 +135,18 @@ describe('D7-R4-4 light-island detector goldens', () => {
     ['small round NON-white chip', 'rounded-full w-4 h-4 bg-gray-100', mkEmpty],
     ['round white with only one size class', 'rounded-full w-4 bg-white', mkEmpty],
     ['small white circle that holds text', 'rounded-full w-4 h-4 bg-white', mk],
+    ['large white round surface (W7)', 'rounded-full w-16 h-16 bg-white', mkEmpty],
+    ['white round chip with only 2 of 4 size classes in range (W8)', 'rounded-full w-4 h-16 bg-white', mkEmpty],
   ] as const)('positive: %s is still an island', (_n, cls, make) => {
     expect(islandsOf(make(cls), 'dark')).toHaveLength(1)
   })
-  // D7-R4-FU-2: -200 shades, light dark:bg, dark:bg-opacity-* do not hide an island.
-  it.each(['bg-gray-200', 'bg-blue-200', 'bg-white dark:bg-white', 'bg-gray-100 dark:bg-gray-100', 'bg-white dark:bg-opacity-10'])('positive: %s is an island in dark', (cls) => {
+  // D7-R4-FU-2: -200 shades, light dark:bg, high dark:bg-opacity-* do not hide an island.
+  it.each(['bg-gray-200', 'bg-blue-200', 'bg-white dark:bg-white', 'bg-gray-100 dark:bg-gray-100', 'bg-white dark:bg-opacity-90'])('positive: %s is an island in dark', (cls) => {
     expect(islandsOf(mk(cls), 'dark')).toHaveLength(1)
+  })
+  // Tailwind 3: bg-opacity-* is a modifier of the bg colour, so `bg-white dark:bg-opacity-10` renders white at 10% in dark = not an island.
+  it('negative: bg-white dark:bg-opacity-10 renders as 10% white in dark and is not a bright island', () => {
+    expect(islandsOf(mk('bg-white dark:bg-opacity-10'), 'dark')).toHaveLength(0)
   })
   it.each(['bg-gray-300', 'bg-gray-200 dark:bg-gray-700', 'bg-white dark:bg-gray-800 dark:bg-opacity-90'])('negative: %s is not an island', (cls) => {
     expect(islandsOf(mk(cls), 'dark')).toHaveLength(0)

@@ -152,11 +152,13 @@ export function islandsOf(root: Element, theme: Theme): string[] {
     if (n.closest('svg')) continue
     const classes = Array.from(n.classList)
     // D7-R4-FU-2: a dark:bg-* class only counts when it is a real dark background: a dark:bg-* that is itself
-    // a light colour (dark:bg-white) or an alpha modifier (dark:bg-opacity-*) leaves the island bright in dark.
+    // a light colour (dark:bg-white) or a >=50% alpha modifier (dark:bg-opacity-*) leaves the island bright in dark.
     if (classes.some((c) => {
       if (!c.startsWith('dark:bg-')) return false
       const tok = c.slice('dark:bg-'.length)
-      if (/^opacity-\d+$/.test(tok)) return false
+      // Tailwind 3: dark:bg-opacity-N is the alpha of the bg colour in dark: below 50% the island is faded away, from 50% up it stays bright.
+      const om = /^opacity-(\d+)$/.exec(tok)
+      if (om) return Number(om[1]) < 50
       const [name, op] = tok.split('/')
       const r = resolveToken(name)
       return !(r && LIGHT_BG_NAME.test(name) && (!op || Number(op) >= 50))
