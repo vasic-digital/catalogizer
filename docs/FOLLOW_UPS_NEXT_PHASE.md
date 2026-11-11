@@ -1662,3 +1662,5 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - SMB-FU-6 (test-instrumentation): routed copy test does not exercise sub-root traversal (pathsafe decides first); service-level tests cover it.
 - SMB-FU-7: ResolveSub rejects ':' via sentinel segment; CreateRemoteDir stays public (interface) and unconfined by contract.
 - SMB-FU-8: live SMB subdir tests unverified; CAT-SMB-SUBDIR-1 stays PROVISIONAL until docs/qa/smb-subdir-20261110/run.sh passes N>=3.
+
+- SMB-FU-5/8 RESULT (2026-11-11): live run executed on cattsrv-smb (share corpus, sub corpus/nested), 3/3 identical PASS for TestLiveSMBSubdir + TestLiveSMBServiceSubdir, negative control (zeroed sha) FAILs as required. Evidence: docs/qa/smb-subdir-20261110/live-run-20261111T121104Z/. CAT-SMB-SUBDIR-1 is VERIFIED for that target; CAVEAT: the original Anton `Public/Testing` target was not run (tests now env-parametrised, defaults unchanged). Optional: one run on Anton Public/Testing.
