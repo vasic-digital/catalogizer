@@ -216,9 +216,11 @@ control, evidence
 (checksums verify) = VERIFIED for that target. (2)
 <code>4640ed37</code>: the host Samba <code>Public/Testing</code>
 ("Anton"), main <code>e5817850</code>, TestLiveSMBSubdir and
-TestLiveSMBServiceSubdir PASS, N=1, README and log sha256 only (log NOT
-committed) = PROVISIONAL. Neither is a bare-IP proof or a Synology run.
-The "Anton run held" wording in Rev 18 section 0.0 and in
+TestLiveSMBServiceSubdir PASS, N=1, log committed in
+<code>652928dc</code>, <code>sha256sum -c go_test.log.sha256</code>
+passes (run from repo root); single run, N=1 = PROVISIONAL (N=1 &lt;
+required N&gt;=3). Neither is a bare-IP proof or a Synology run. The
+"Anton run held" wording in Rev 18 section 0.0 and in
 <code>[2.4.0]</code> is superseded by this paragraph; the stale notes in
 FOLLOW_UPS (SMB-FU-5),
 <code>docs/PROVISIONAL_VERIFICATION_PLAN.md</code> 2.4 and section 4b
@@ -226,9 +228,9 @@ were annotated.</li>
 <li>Synology stays SKIP (<code>hardware_not_present</code>), drives off
 since 2026-11-05.</li>
 <li>Held/owed: live <code>stack3/up.sh</code> through the Containers
-backend; N&gt;=3 Anton re-run with committed logs; bare-IP SMB live leg;
-Tauri native GUI; Android real login; Vision/HelixQA UI QA;
-CAT-QA-SONAR-2 triage fixes.</li>
+backend; two more Anton runs with committed logs (N=1 &lt; N&gt;=3);
+bare-IP SMB live leg; Tauri native GUI; Android real login;
+Vision/HelixQA UI QA; CAT-QA-SONAR-2 triage fixes.</li>
 <li>Next steps: review the prep branch (11.4.209 substrate), merge to
 <code>main</code> fast-forward (11.4.288), run the PROVISIONAL plan,
 full-suite retest, manual QA, then decide tag <code>v2.4.1</code>
@@ -546,7 +548,8 @@ read from code, NOT yet run live.</li>
 <li>Anton SMB (this host's own samba :445): <code>Public/Testing</code>
 corpus, evidence <code>docs/qa/anton-smb-20261106/</code>.
 CAT-SMB-SUBDIR-1: sub-directory scoping is implemented; live runs are in
-the Rev 19 delta (cattsrv-smb 3/3; Anton N=1, log not committed).</li>
+the Rev 19 delta (cattsrv-smb 3/3; Anton N=1, log committed in
+<code>652928dc</code>).</li>
 <li>Rate-limit isolation: substitute-source VERIFIED 3/3
 (<code>docs/qa/second-host-20261106/</code>); real remote NIC
 UNCONFIRMED.</li>

@@ -19,3 +19,6 @@
 ## run3 (2026-11-11, main 0020ad3e) - CAT-QA-SONAR-1
 
 Stack brought up by the migrated `docs/qa/stack3/sonarqube/up.sh` (`ctr_up`); `qa_stack` reported `backend=podman DEVIATION 11.4.76/11.4.173` because the scan ran from a scratch clone whose `submodules/containers` was not checked out (not a host limitation). Re-checked afterwards from the main checkout: `QA_STACK_BACKEND=containers qa_stack_backend_info` -> `backend=containers ctrctl_sha256=15e268b5...` (ctrctl builds and resolves). So the Containers-submodule start path is build-verified only; a live stack start through it from the main checkout is still owed (PROVISIONAL). Quality gate OK for both projects: catalogizer-api 699 issues, catalogizer-web 404 issues. Scrub control needle PASS; SHA256SUMS verify; token/admin/DB passwords confirmed absent from all 19 files by literal search. Stack removed with `down.sh` afterwards. Status: PROVISIONAL-DONE for the scan itself (issue triage not done; gate OK does not mean zero issues).
+
+### Update (v2.4.1 prep, CAT-QA-SONAR-1b)
+CAT-QA-SONAR-1b later recorded one live start through the Containers backend from the main checkout: `backend=containers ctrctl_sha256=b6f69c8e6507757dfaa49680138c44451b56c81db0fcec73d6dd71363768ec7c`. The log was not committed, so this is PROVISIONAL. The stack3 `catqa3` `up.sh` via the Containers backend is still owed.

@@ -1,4 +1,4 @@
-# Catalogizer v2.4.0 - Deployment and Operations Guide
+# Catalogizer v2.4.1 - Deployment and Operations Guide
 
 ## Table of Contents
 1. [Overview](#overview)
@@ -21,7 +21,7 @@
 
 ## Overview
 
-This guide provides comprehensive instructions for deploying and operating Catalogizer v2.4.0 in various environments, from local development to large-scale production deployments.
+This guide provides comprehensive instructions for deploying and operating Catalogizer v2.4.1 in various environments, from local development to large-scale production deployments.
 
 ### Deployment Options
 

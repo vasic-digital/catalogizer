@@ -17,7 +17,7 @@
 
 ## Welcome Contributors
 
-Thank you for your interest in contributing to Catalogizer v2.4.0! This document provides guidelines and instructions for contributing to the project. Whether you're fixing bugs, adding features, improving documentation, or helping with testing, your contributions are welcome and appreciated.
+Thank you for your interest in contributing to Catalogizer v2.4.1! This document provides guidelines and instructions for contributing to the project. Whether you're fixing bugs, adding features, improving documentation, or helping with testing, your contributions are welcome and appreciated.
 
 ### Ways to Contribute
 
@@ -1414,7 +1414,7 @@ Examples:
 
 ---
 
-Thank you for contributing to Catalogizer v2.4.0! Your contributions help make this project better for everyone. If you have questions about contributing, please don't hesitate to ask in our GitHub Discussions or reach out to the maintainers.
+Thank you for contributing to Catalogizer v2.4.1! Your contributions help make this project better for everyone. If you have questions about contributing, please don't hesitate to ask in our GitHub Discussions or reach out to the maintainers.
 
 For more information, see:
 - [Architecture Overview](architecture/ARCHITECTURE.md)
