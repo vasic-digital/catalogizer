@@ -44,13 +44,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.4.0] - pre-release (candidate; tag `v2.4.0` is cut only after live validation; date set at tag time)
 
-Release class: **pre-release** (provisional-eligible, constitution 11.4.290(G)). Candidate state, computed from the repository at `17ec3c1f` (about 159 first-parent commits since 2026-10-28; no git tag exists yet).
+Release class: **pre-release** (provisional-eligible, constitution 11.4.290(G)). Candidate state, brought up to date with `main` `532c2ec8` (previously computed at `17ec3c1f`; about 159 first-parent commits since 2026-10-28 plus the landings listed below; no git tag exists yet).
 Version files: `versions.json` (global 2.4.0), `docs/api/openapi.yaml` (info.version 2.4.0). Components `catalog-web`, `catalogizer-desktop`, `installer-wizard` (package.json, tauri.conf.json, Cargo.toml) and the Android / Android TV `versionName` were already 2.4.0. Versioning is SemVer (operator decision 2026-11-03); the decimal-carry rule of 11.4.235(E.5) does not apply.
 
 ### VERIFIED (live evidence on QA stack 3, machine evidence under `docs/qa/`)
 - Stack 3 rebuilt from `main` `d9238b47`: 54 PASS / 0 FAIL / 1 SKIP, 3 identical rounds; Yandex WebDAV and Synology SMB/FTP read-only suites 3/3 (`docs/qa/stack3-rebuild-live-20261105/`). Promoted to VERIFIED: conversion D1, D2, D10; PDF pages D3; document full-text search D4; D5; subtitle D6 and DELETE route; admin role change D9; D7, D8, D11a, D11b; storage-client live suites (SMB/FTP/WebDAV).
 - NEW-1 cover thumbnails (batch endpoint): generated 2 then 0, `cover_art` rows on PostgreSQL (`docs/qa/new1-cover-thumbnails/green_main5c48.txt`).
 - On image `main-5c480072` (`docs/qa/stack3-live-20261105/`): SECQ-1 WebDAV storage-root SSRF guard, SECQ-5 (GET 410, 401/403), SECQ-4/4b smart-collection cap (51 creates at 16 concurrency gave exactly 50 x 201 + 1 x 409, 3 rounds), subtitle DELETE non-owner 404, subtitle contract.
+- Live pprof gate (SECQ-3 / CAT-QA-PPROF-1, 2026-11-11, stack 3 `catqa3-api` image `main-70d10721`): flag on gave 3 identical runs of 34 checks, 34 PASS / 0 FAIL (anonymous 401 on all six endpoints, scrape token 401, non-admin 403, admin 200, bad `seconds` 400, concurrent sampler 429, 60 s cap bounded); RED baseline with the flag off recorded (404); flag restored off afterwards. One host only (`docs/qa/live-pprof-20261111/`). This supersedes the earlier "SECQ-3 pprof is UNCONFIRMED live" note for that target.
+- SMB share/sub-directory roots (CAT-SMB-SUBDIR-1): live run on the `cattsrv-smb` test server (share `corpus`, sub `corpus/nested`), 3/3 identical PASS, zeroed-sha negative control FAILs as required (`docs/qa/smb-subdir-20261110/live-run-20261111T121104Z/`). Caveat: the original Anton `Public/Testing` target was not run.
 - Live browser pass (`docs/qa/stack3-ui-20261105/`): 11 app pages render real data, website 47 pages OK, theme toggle.
 - Live UI rerun on `main-1db4760f` (`docs/qa/ui-live-rerun-20261105/`, N=3 identical): D5/D6 axe, /admin at 360px, D8 search, /conversion, /identities, /entity/:id PASS.
 
@@ -58,6 +60,11 @@ Version files: `versions.json` (global 2.4.0), `docs/api/openapi.yaml` (info.ver
 Pending job for every row: the verifier named in the row runs on the rebuilt stack or device, N=3, machine evidence under `docs/qa/`; due before the `v2.4.0` tag. Command is the one recorded in `docs/CONTINUATION.md` section 3 unless stated.
 - UI contrast D7 (class-wide dark-gray surfaces, rounds 1-2) and D7 remaining-contrast: target rebuilt web image on stack 3; command `node docs/qa/ui-d5d6-20261105/axe_live.cjs` (D7 check: `d7_axe.cjs`), expecting 0 violations in light and dark on /ai, /media, /analytics, /admin.
 - UI-D1/D2/D3 (conversion page live shape, identities route, entity 404 handling), UI-D5/D6 accessible names, UI-D7/D8: PASS on the live rerun above for D1, D2, D3, D5, D6, D8; D7 pending as above.
+- SMB discovery confinement (SMB-FU-2, landed 2026-11-10/11, Opus GO-with-follow-ups): `TestConnection`/`BrowseShare` confined to the share/sub root, shared host vetting (bracket/colon forms, single resolve, all IPs, extended blocklist incl. 6to4/SIIT/NAT64/broadcast), port allowlist `CATALOG_SMB_ALLOWED_PORTS`, admin-share filter, generic errors. Evidence is unit-class; no live SMB run of the vetting paths.
+- SMB dial of the vetted IP (SMB-FU-9, Opus GO-with-follow-ups): the dial uses the vetted address, never re-resolves the name; one shared connect deadline, at most 4 IPs; Tailscale/CGNAT `100.64.0.0/10` targets allowed (operator decision 2026-11-11). Unit-class tests only. SMB over a bare IP relies on reading the go-smb2 source (its `Dialer.Dial` takes an established connection); there is NO live SMB run through `dialVetted`.
+- Tauri guard hardening: wizard capability guard (`scripts/tauri/test_wizard_capabilities*.sh`, paired mutants, pre-flight cwd test) after review rounds 1-4, generated `gen/schemas/capabilities.json` untracked and replaced by tracked `capabilities/default.json`; static guard only, Opus GO-with-follow-ups.
+- CAT-TAURI-NATIVE-1 (Tauri native boot, wizard dialog ACL fix): PROVISIONAL. No live GUI run is claimed here; the green live wizard run is owed and the binary was rebuilt since the earlier driver evidence. Pending job: native boot of desktop and wizard (`scripts/tauri/run-qa.sh`), N=3, recording + OCR; target desktop display session; due before the `v2.4.0` tag.
+- Other landed since `17ec3c1f` with unit/tooling-class evidence only: TRUSTED_PROXIES hardening, Prometheus basic auth (CAT-PROM-AUTH-1), dynamic LAN IP (CAT-LANIP-DYN-1), `verify.py` LAN-bind and pgAdmin checks, on-demand SonarQube QA service, rootless live test servers, loopback trust guard, D7-R4 contrast follow-ups.
 - Tauri desktop: QA boot tooling and login fixes, SSRF hardening (TAURI-FU-5), backend-enforced confirmation on server URL change: target native Tauri boot of the desktop app (container build exists; native boot not run); command per `docs/qa/` Tauri boot notes.
 - Android and Android TV QA boot (JDK 17 build, emulators; evidence `docs/qa/android-boot-20261105/`): target emulator/device live run of the full banks.
 - S3 storage protocol (aws-sdk-go-v2): unit-class evidence plus live N=3 on a real Garage v1.0.1 server only; target other S3 implementations.
@@ -66,12 +73,13 @@ Pending job for every row: the verifier named in the row runs on the rebuilt sta
 - Remaining landed series with review GO-with-follow-ups and no separate live rerun recorded: login/validator and password hashing, CAT-001 honest UI/API (R1-R6), CAT-002 isolated PDF text extraction, CAT-021 default credentials removal, smart collections, registration approval and converter tools, converter hardening, FTP `CopyFile` temp-name semantics (no live-NAS run), SQLite busy handler, Redis rate limiter, nil-slice `[]` serialisation, pool-deadlock class fix, live scaling/stress/chaos suite, docs link repair (111 links), runner scripts honest failure reporting.
 
 ### REOPENED
-- None recorded since the last review. Any live-rerun FAIL reopens its item and is listed here at tag time (UI-D7 is the one live check that failed on the last rerun and has since been re-fixed, see PROVISIONAL).
+- None recorded since the last review (still true at `532c2ec8`: no live-rerun FAIL after the landings above). Any live-rerun FAIL reopens its item and is listed here at tag time (UI-D7 is the one live check that failed on the last rerun and has since been re-fixed, see PROVISIONAL).
 
 ### OVERDUE
 - None: no verification job has a due date that has passed (no due dates were set before this candidate). Every PROVISIONAL row becomes overdue if it is still unverified when the tag is attempted; such a release would carry the label `verification OVERDUE`.
 
 ### Open follow-ups (not fixed; tracked in `docs/FOLLOW_UPS_NEXT_PHASE.md`, which is the authoritative list)
+- SMB follow-ups open: SMB-FU-9b (admin-configured by-name dials: storage roots, `SMBService.getConnection`, `smb/client.go`, `filesystem/smb_client.go` can still be rebound), SMB-FU-13 (`print$` shown in listing), SMB-FU-14 (no-`t.Parallel()` lint for global resolver tests), SMB-FU-10 (lexical-only path checks on plain shares), SMB-FU-11 (residual timing/leak distinctions), SMB-FU-12 (port allowlist vs configured storage-root ports). SMB-FU-15 (unwired `SMBHandler` returns `err.Error()`) is to be removed in a separate change.
 - Live gaps: LV3-1 non-privileged cross-user conversion isolation (SKIP); LV3-2 storage idle-deadline and cut-recovery against real Synology (loopback/unit only); LV3-3 D5 bursty-audio fixture; LV3-4 stale fixture rows; LV3-5 PostgreSQL multi-process last-admin race; STK3L2-FU-1 no delete API for storage roots; STK3L2-FU-2 `/smb/discover` returns 500 on timeout.
 - UI: UI-FAV-1 favourites link the wrong entity (pre-existing, important); UI-D4 `/ws` idle closes (unreproduced) and login double-connect; UI-D1-FU-1/2 conversion cancel verb and request shape; UI-D2-FU-1 identity CRUD routes missing; UI-D3-FU-1/4 retries on 404.
 - Security residuals: path-confinement TOCTOU (F4, `os.Root` sinks) and hard-link policy (operator decision); secrets scanner residuals; key-rotation waiver is an operator-accepted open risk with no expiry.
@@ -79,7 +87,7 @@ Pending job for every row: the verifier named in the row runs on the rebuilt sta
 - Not part of this release: SonarQube analysis (blocked on image access).
 
 ### Skipped live tests
-- **Synology SMB / FTP / NFS live tests are SKIPPED (`hardware_not_present`): the Synology drives were powered off by the operator on 2026-11-05 19:09 CET.** No test double was substituted; the earlier read-only Synology suites (3/3 on `d9238b47`) predate the power-off. NFS was already `topology_unsupported` (no exports).
+- **Synology SMB / FTP / NFS live tests are SKIPPED (`hardware_not_present`): the Synology drives were powered off by the operator on 2026-11-05 19:09 CET. Synology is NOT live-verified for this candidate.** No test double was substituted; the earlier read-only Synology suites (3/3 on `d9238b47`) predate the power-off. NFS was already `topology_unsupported` (no exports).
 
 ## [2.4.0-dev.20260414] - 2026-04-14 (historical heading, never tagged; folded into 2.4.0)
 
