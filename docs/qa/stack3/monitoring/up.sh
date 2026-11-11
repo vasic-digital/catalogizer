@@ -2,7 +2,7 @@
 # Bring up the QA monitoring add-on for stack 3: Prometheus + Grafana + pgAdmin + nginx reverse proxy (+ token refresher) as ONE rootless
 # pod `${STACK}mon` on pasta (pasta `-T` forwards ONLY the four stack-3 ports the add-on needs from the pod's loopback to the host; nothing else on host loopback is reachable).
 # Idempotent: replaces only its own pod; stack-3 containers are only READ from (HTTP/TCP clients), never modified.
-# Exit codes: 0 all probes ok | 3 image missing / stack 3 down | 4 low memory | 5 port held by a foreign owner | 6 a service not ready.
+# Exit codes: 0 all probes ok | 2 invalid PROM_AUTH_USER | 3 image missing / stack 3 down | 4 low memory | 5 port held by a foreign owner | 6 a service not ready.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; . "$HERE/lib.sh"
 QENV="$QA_DIR/qa.env"; MENV="$QA_DIR/mon.env"
@@ -18,6 +18,7 @@ if ! grep -q '^PROM_AUTH_PASSWORD=' "$MENV"; then   # QA-PROM-AUTH: Prometheus b
   ( umask 077; echo "PROM_AUTH_PASSWORD=Pm-$(head -c 16 /dev/urandom | od -An -vtx1 | tr -d ' \n')-Zz9" >> "$MENV" ); echo "added PROM_AUTH_PASSWORD to $MENV"
 fi
 set -a; . "$QENV"; . "$MENV"; set +a
+[[ "${PROM_AUTH_USER-}" =~ $_re_name ]] || { echo "invalid PROM_AUTH_USER (PROM-R2-4: must match $_re_name; refused before any sed/podman use)" >&2; exit 2; }
 export PROM_AUTH_USER
 for i in "$PROM_IMAGE" "$GRAFANA_IMAGE" "$PGADMIN_IMAGE" "$NGINX_IMAGE" "$CURL_IMAGE"; do
   podman image exists "$i" || { echo "image $i missing - podman pull it (pinned tag)" >&2; exit 3; }; done

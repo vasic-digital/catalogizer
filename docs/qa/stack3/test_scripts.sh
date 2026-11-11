@@ -43,7 +43,11 @@ exec "$@"
 S
 cat > "$BIN/ip" <<'S'
 #!/usr/bin/env bash
-# stub `ip -4 route get 1.1.1.1`: prints the route line with src $STUB_IP_SRC (nothing and rc 1 when unset)
+# stub `ip -4 route get 1.1.1.1` (route line with src $STUB_IP_SRC; nothing and rc 1 when unset) and `ip -4 -o addr show`
+# (one inet line per address in $STUB_IP_ASSIGNED, default = $STUB_IP_SRC), as the shared docs/qa/lib/lan_ip.sh queries both.
+case "$*" in
+  *"addr show"*) for a in ${STUB_IP_ASSIGNED-${STUB_IP_SRC:-}}; do echo "2: eth0    inet $a/24 brd 192.0.2.255 scope global eth0"; done; exit 0;;
+esac
 [ -n "${STUB_IP_SRC:-}" ] || exit 1; echo "1.1.1.1 via 10.0.0.1 dev eth0 src ${STUB_IP_SRC} uid 1000"
 S
 chmod +x "$BIN"/*
@@ -82,6 +86,7 @@ run_up
 
 # 4. build.sh in a tiny git repo that contains copies of the scripts
 R="$ROOT/repo"; mkdir -p "$R/docs/qa/stack3" "$R/catalog-api" "$R/catalog-web"
+mkdir -p "$R/docs/qa/lib"; cp "$HERE/../lib/lan_ip.sh" "$R/docs/qa/lib/"
 cp "$HERE/build.sh" "$HERE/lib.sh" "$R/docs/qa/stack3/"
 printf 'FROM scratch\nRUN go build -a -ldflags="-w -s" -o catalogizer-api .\n' > "$R/catalog-api/Dockerfile"
 printf 'FROM scratch\n' > "$R/catalog-web/Dockerfile"
@@ -120,6 +125,16 @@ v="$(tp 192.0.2.15)"; [ "$v" = 192.0.2.15/32 ]; ok $? "default TRUSTED_PROXIES =
 printf '%s' "$v" | grep -qE '(^|,)(127\.|::1|0\.0\.0\.0|localhost)'; [ $? != 0 ]; ok $? "default TRUSTED_PROXIES excludes 127.0.0.0/8, ::1 and 0.0.0.0"
 v="$(tp "")"; [ "$v" = "" ]; ok $? "no detectable host address -> TRUSTED_PROXIES empty (trust nothing), not loopback (got '$v')"
 v="$( STUB_IP_SRC=; unset TRUSTED_PROXIES; export PATH="$BIN:$PATH"; TRUSTED_PROXIES=10.1.2.3/32; . "$HERE/lib.sh" >/dev/null 2>&1; printf '%s' "$TRUSTED_PROXIES")"; [ "$v" = 10.1.2.3/32 ]; ok $? "explicit TRUSTED_PROXIES override is kept"
+# 7b. LIP-FU-4: detection is the SHARED lan_ip.sh (override, assigned-address check), not a private copy
+v="$( STUB_IP_SRC=192.0.2.15; QA_LAN_IP=192.0.2.77; STUB_IP_ASSIGNED="192.0.2.15 192.0.2.77"; export STUB_IP_SRC STUB_IP_ASSIGNED QA_LAN_IP; unset TRUSTED_PROXIES; export PATH="$BIN:$PATH"; . "$HERE/lib.sh" >/dev/null 2>&1; printf '%s' "${TRUSTED_PROXIES-<unset>}" )"; [ "$v" = 192.0.2.77/32 ]; ok $? "QA_LAN_IP override (assigned) is used for the default TRUSTED_PROXIES (got '$v')"
+v="$( STUB_IP_SRC=192.0.2.15; STUB_IP_ASSIGNED="192.0.2.99"; export STUB_IP_SRC STUB_IP_ASSIGNED; unset TRUSTED_PROXIES QA_LAN_IP; export PATH="$BIN:$PATH"; . "$HERE/lib.sh" >/dev/null 2>&1; printf '%s' "${TRUSTED_PROXIES-<unset>}" )"; [ "$v" = "" ]; ok $? "detected address NOT assigned to any interface -> empty (trust nothing) (got '$v')"
+v="$( STUB_IP_SRC=192.0.2.15; QA_LAN_IP='1.2.3.4;x'; export STUB_IP_SRC QA_LAN_IP; unset TRUSTED_PROXIES; export PATH="$BIN:$PATH"; . "$HERE/lib.sh" >/dev/null 2>&1; printf '%s' "${TRUSTED_PROXIES-<unset>}" )"; [ "$v" = "" ]; ok $? "invalid QA_LAN_IP override fails closed to empty, never falls through (got '$v')"
+# 7c. loopback / unspecified / link-local are never trusted as the proxy peer, even when assigned (lo) and given as QA_LAN_IP
+for bad in 127.0.0.1 127.1.2.3 0.0.0.0 0.1.2.3 169.254.1.2; do
+  v="$( STUB_IP_SRC=192.0.2.15; QA_LAN_IP=$bad; STUB_IP_ASSIGNED="192.0.2.15 $bad"; export STUB_IP_SRC STUB_IP_ASSIGNED QA_LAN_IP; unset TRUSTED_PROXIES; export PATH="$BIN:$PATH"; . "$HERE/lib.sh" >/dev/null 2>&1; printf '%s' "${TRUSTED_PROXIES-<unset>}" )"; [ "$v" = "" ]; ok $? "QA_LAN_IP=$bad (assigned) -> empty TRUSTED_PROXIES (got '$v')"
+done
+v="$( STUB_IP_SRC=127.0.0.1; export STUB_IP_SRC; unset TRUSTED_PROXIES QA_LAN_IP; export PATH="$BIN:$PATH"; . "$HERE/lib.sh" >/dev/null 2>&1; printf '%s' "${TRUSTED_PROXIES-<unset>}" )"; [ "$v" = "" ]; ok $? "route-detected loopback src -> empty (got '$v')"
+v="$( STUB_IP_SRC=10.20.30.40; QA_LAN_IP=172.16.5.9; STUB_IP_ASSIGNED="10.20.30.40 172.16.5.9"; export STUB_IP_SRC STUB_IP_ASSIGNED QA_LAN_IP; unset TRUSTED_PROXIES; export PATH="$BIN:$PATH"; . "$HERE/lib.sh" >/dev/null 2>&1; printf '%s' "${TRUSTED_PROXIES-<unset>}" )"; [ "$v" = 172.16.5.9/32 ]; ok $? "golden-good: private LAN override accepted (got '$v')"
 # 8. R-1: up.sh with NO detectable host address passes an EMPTY TRUSTED_PROXIES (trust nothing) and never a loopback/wildcard fallback
 setup t8; export STUB_IP_SRC=""; unset TRUSTED_PROXIES; run_up
 grep -qE -- '-e TRUSTED_PROXIES= ' "$STUB_LOG"; ok $? "no host address -> up.sh passes -e TRUSTED_PROXIES= (empty)"

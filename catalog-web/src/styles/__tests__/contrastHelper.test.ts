@@ -160,3 +160,35 @@ describe('D7-R4-4 light-island detector goldens', () => {
     expect(islandsOf(mk('bg-white'), 'light')).toHaveLength(0)
   })
 })
+
+// FU20-3: boundary characterization for the alpha cutoff (exactly 50) and fractional size classes.
+describe('FU20-3 island detector boundaries', () => {
+  const mk = (cls: string, text = 'x') => { const r = document.createElement('div'); const c = document.createElement('div'); c.className = cls; c.textContent = text; r.appendChild(c); return r }
+  it.each([
+    ['bg-white/50', 1], ['bg-white/51', 1], ['bg-white/100', 1],
+    ['bg-white/49', 0], ['bg-white/0', 0],
+  ] as const)('own bg alpha cutoff: %s -> %i island(s) (>=50 counts, <50 does not)', (cls, n) => {
+    expect(islandsOf(mk(cls), 'dark')).toHaveLength(n)
+  })
+  it.each([
+    ['bg-white dark:bg-white/50', 1], ['bg-white dark:bg-white/99', 1],
+    ['bg-white dark:bg-white/49', 0],
+    ['bg-white dark:bg-opacity-50', 1], ['bg-white dark:bg-opacity-49', 0],
+  ] as const)('dark:bg alpha cutoff: %s -> %i island(s)', (cls, n) => {
+    expect(islandsOf(mk(cls), 'dark')).toHaveLength(n)
+  })
+  const mkEmpty = (cls: string) => { const r = document.createElement('div'); const c = document.createElement('div'); c.className = cls; r.appendChild(c); return r }
+  it('whole-number knob sizes 1 and 6 are exempt, 0 and 7 are not', () => {
+    expect(islandsOf(mkEmpty('rounded-full bg-white w-1 h-1'), 'dark')).toHaveLength(0)
+    expect(islandsOf(mkEmpty('rounded-full bg-white w-6 h-6'), 'dark')).toHaveLength(0)
+    expect(islandsOf(mkEmpty('rounded-full bg-white w-7 h-7'), 'dark')).toHaveLength(1)
+    expect(islandsOf(mkEmpty('rounded-full bg-white w-0 h-0'), 'dark')).toHaveLength(1)
+    expect(islandsOf(mkEmpty('rounded-full bg-white w-4 h-0'), 'dark')).toHaveLength(1)
+    expect(islandsOf(mkEmpty('rounded-full bg-white w-0 h-4'), 'dark')).toHaveLength(1)
+    expect(islandsOf(mkEmpty('rounded-full bg-white w-4 h-7'), 'dark')).toHaveLength(1)
+  })
+  // KNOWN GAP (FU20-3b): the knob rule accepts only whole sizes 1..6, so a fractional knob (h-3.5 w-3.5, common in Tailwind
+  // toggles) is probably a false-positive island. Not asserted either way until the product decision is made; the boundary
+  // tests above stay intact. When decided, replace these todos with real assertions.
+  it.todo('FU20-3b: fractional knob sizes (w-3.5 h-3.5, w-2.5) - decide exempt or island')
+})

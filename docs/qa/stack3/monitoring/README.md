@@ -22,6 +22,7 @@ Pinned images (`lib.sh`): prom/prometheus v2.55.1, grafana/grafana 11.3.1, dpage
 ```
 docs/qa/stack3/monitoring/up.sh          # idempotent; replaces only pod catqa3mon; secrets generated on first run
 docs/qa/stack3/monitoring/test_scripts.sh   # sandbox tests (fake curl/podman): bearer never in argv, logout retry, fail-closed digest pins
+docs/qa/stack3/monitoring/test_prom_user_validation.sh   # real up.sh in a sandbox: hostile PROM_AUTH_USER is refused (exit 2) before any sed/podman use
 docs/qa/stack3/monitoring/verify.py      # live checks, one PASS/FAIL line each (exit 0 = all PASS)
 docs/qa/stack3/monitoring/down.sh [--purge]
 ```

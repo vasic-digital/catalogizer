@@ -1610,7 +1610,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - D7-R4-FU-4 (nit): give each UI-D7-R4-ISLAND row an id (register as CAT-D7-ISLAND-1).
 
 ### TRUSTED_PROXIES hardening follow-ups (round 2 GO-with-follow-ups)
-- TP-FU-1: wildcard (0.0.0.0/0, ::/0) startup warning in main.go untested (needs logger-injectable helper).
+- TP-FU-1 (DONE, CAT-FOLLOWUPS-UNIT-1): `warnTrustedProxies(logger, tp)` extracted from main.go (behaviour unchanged) and tested with an observer logger (catch-all, auto, quiet near-misses; 4 mutants killed).
 - TP-FU-2: live bring-up of root and deployment compose with new fixed subnets/ip_range (only rendered + throwaway compose proved); `catalogizer/web` image built from catalog-web/Dockerfile is assumed; deployment WS_URL port 8081 vs /ws upstream 8080 mismatch (pre-existing).
 - TP-FU-3: F4 capture API log line ClientIP=169.254.1.2; stack script leg B needs second LAN host (= QA-MON-FU-4).
 
@@ -1640,7 +1640,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 ## followups-20261110 review (Opus: GO-with-follow-ups; security-adjacent minors fixed before landing)
 - FU20-1: live verify.py run with declared *_BIND on rebuilt stack 3 (CAT-VERIFY-LANBIND-1 PROVISIONAL).
 - FU20-2: live test_clientip_frontdoor.sh --interface run; UNCONFIRMED whether a second local IP lands in a separate bucket given pasta aliasing (CAT-FRONTDOOR-LOCALMODE-1 PROVISIONAL).
-- FU20-3 (nit): contrast.ts alpha cutoff exactly 50 untested; fractional sizes like h-3.5; leak-check conditional-restore (L1) survives.
+- FU20-3 (PARTLY DONE, CAT-FOLLOWUPS-UNIT-1): alpha cutoff 50 (own bg and dark:bg, opacity-N) and knob size boundaries pinned in contrastHelper.test.ts; fractional knob sizes (h-3.5) are an explicit known gap `FU20-3b` (it.todo; likely false-positive islands, product decision). STILL OPEN: the leak-check conditional-restore mutant (L1) survives.
 - FU20-4 (process-doc): commit 9928be7f carries Roadmap-Item D7-R4-FU-1 only; it implements FU-1..4 (history not rewritten).
 - Live axe re-run on rebuilt web image still owed (D7-R4).
 
@@ -1648,7 +1648,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - LIP-FU-1: live run of test-servers up.sh (real cert swap) + strict-TLS FTPS client; remove stale TS_HOST line from untracked testservers.env.
 - LIP-FU-2 (nit): private-key .bak files accumulate in tls/ (mounted into containers) — add retention/cleanup.
 - LIP-FU-3 (nit): if default route moves to ppp/VPN, detection picks VPN address; consider preferring non-ppp interface or warn.
-- LIP-FU-4 (nit): stack3/lib.sh keeps its own STUB_IP_SRC detection duplicating lan_ip.sh; unify.
+- LIP-FU-4 (DONE, CAT-FOLLOWUPS-UNIT-1): stack3/lib.sh now uses qa_lan_ip from docs/qa/lib/lan_ip.sh (adds QA_LAN_IP override and assigned-address check; any failure -> empty = trust nothing); covered by test_scripts.sh 7/7b with a stub that also answers `ip -4 -o addr show`.
 - LIP-FU-5: pre-existing: rclone `--pass $TS_PASS` is on container argv (visible in host ps); use obscured env/config file.
 - LIP-FU-6: monitoring/lanbind.py fixtures keep .115 (test data only).
 
@@ -1664,3 +1664,10 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - SMB-FU-8: live SMB subdir tests unverified; CAT-SMB-SUBDIR-1 stays PROVISIONAL until docs/qa/smb-subdir-20261110/run.sh passes N>=3.
 
 - SMB-FU-5/8 RESULT (2026-11-11): live run executed on cattsrv-smb (share corpus, sub corpus/nested), 3/3 identical PASS for TestLiveSMBSubdir + TestLiveSMBServiceSubdir, negative control (zeroed sha) FAILs as required. Evidence: docs/qa/smb-subdir-20261110/live-run-20261111T121104Z/. CAT-SMB-SUBDIR-1 is VERIFIED for that target; CAVEAT: the original Anton `Public/Testing` target was not run (tests now env-parametrised, defaults unchanged). Optional: one run on Anton Public/Testing.
+
+## CAT-FOLLOWUPS-UNIT-1 review follow-ups (2026-11-11, Opus GO-with-follow-ups)
+- FU20-3b (test-instrumentation): decide whether fractional knob sizes (w-3.5 h-3.5) are exempt; replace the it.todo in contrastHelper.test.ts.
+- PROM-R3-1: PROM_AUTH_USER precedence differs: up.sh lets mon.env win over the environment, verify.py:38 lets the environment win; align and add a both-set test.
+- LIP-FU-7 (nit): `QA_LAN_IP_LIB` override in stack3/lib.sh (and sonarqube/lib.sh) is undocumented.
+- LIP-FU-8 (nit): lib.sh now hard-depends on docs/qa/lib/lan_ip.sh, so down.sh (which sources lib.sh) fails if that file is missing.
+- LIP-FU-9: loopback/unspecified/link-local rejection is in stack3/lib.sh only; IPv6 (::1, fe80::) not applicable (IPv4-only helper).
