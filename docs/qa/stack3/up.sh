@@ -57,19 +57,19 @@ wait_healthy() {  # <container> <timeout-s>
     sleep 1; done
   echo "$c not healthy after ${t}s" >&2; podman logs --tail 20 "$c" >&2 || true; return 1; }
 
-podman run -d --pod "$POD" --name "${STACK}-postgres" --memory 1g \
+ctr_up "${STACK}-postgres" --memory 1g \
   -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_DB -e PGDATA=/var/lib/postgresql/data/pgdata \
   -v "${STACK}-pg:/var/lib/postgresql/data" \
   --health-cmd 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"' --health-interval 5s --health-timeout 5s --health-retries 12 --health-start-period 5s \
   "$PG_IMAGE" >/dev/null
-podman run -d --pod "$POD" --name "${STACK}-redis" --memory 256m -v "${STACK}-rd:/data" \
+ctr_up "${STACK}-redis" --memory 256m -v "${STACK}-rd:/data" \
   --health-cmd 'redis-cli ping | grep -q PONG' --health-interval 5s --health-timeout 3s --health-retries 12 \
   "$REDIS_IMAGE" >/dev/null
 wait_healthy "${STACK}-postgres" 90; wait_healthy "${STACK}-redis" 60
 
 # QA stack only: CSRF_INSECURE_DEV=true because this stack is served over plain http on the LAN (Secure/__Host- cookies are dropped by browsers).
 # The API refuses the toggle when APP_ENV is production; never copy it to a production deployment.
-podman run -d --pod "$POD" --name "${STACK}-api" --memory 2g --restart on-failure:3 \
+ctr_up "${STACK}-api" --memory 2g --restart on-failure:3 \
   -e DATABASE_TYPE=postgres -e DATABASE_HOST=127.0.0.1 -e DATABASE_PORT=5432 \
   -e DATABASE_USER="$POSTGRES_USER" -e DATABASE_PASSWORD -e DATABASE_NAME="$POSTGRES_DB" \
   -e DATABASE_ENCRYPTION_KEY_FILE=/app/keys/db.key -e REDIS_HOST=127.0.0.1 -e REDIS_PORT=6379 \
@@ -81,10 +81,10 @@ podman run -d --pod "$POD" --name "${STACK}-api" --memory 2g --restart on-failur
   "localhost/${STACK}-api:$TAG" >/dev/null
 wait_healthy "${STACK}-api" 120
 
-podman run -d --pod "$POD" --name "${STACK}-web" --memory 256m -e API_UPSTREAM=127.0.0.1:8080 \
+ctr_up "${STACK}-web" --memory 256m -e API_UPSTREAM=127.0.0.1:8080 \
   "localhost/${STACK}-web:$TAG" >/dev/null
 if [ -f "$QA_DIR/website_dist/index.html" ]; then
-  podman run -d --pod "$POD" --name "${STACK}-website" --memory 128m -v "$QA_DIR/website_dist:/usr/share/nginx/html:ro,Z" "$NGINX_IMAGE" >/dev/null
+  ctr_up "${STACK}-website" --memory 128m -v "$QA_DIR/website_dist:/usr/share/nginx/html:ro,Z" "$NGINX_IMAGE" >/dev/null
 else echo "NOTE: no $QA_DIR/website_dist - website container not started (build.sh builds it)"; fi
 web_up=0   # web: nginx, image HEALTHCHECK is not honoured by podman (OCI format), so poll it
 for i in $(seq 1 30); do [ "$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:${WEB_PORT}/")" = 200 ] && { web_up=1; break; }; sleep 1; done

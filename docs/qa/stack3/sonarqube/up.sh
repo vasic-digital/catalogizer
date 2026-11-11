@@ -43,13 +43,13 @@ else
   ( umask 077
     printf 'POSTGRES_USER=sonar\nPOSTGRES_DB=sonar\nPOSTGRES_PASSWORD=%s\n' "$SONAR_DB_PASSWORD" > "$SQ_DIR/pg.env"
     printf 'SONAR_JDBC_URL=jdbc:postgresql://127.0.0.1:5432/sonar\nSONAR_JDBC_USERNAME=sonar\nSONAR_JDBC_PASSWORD=%s\n' "$SONAR_DB_PASSWORD" > "$SQ_DIR/sonar-container.env" )
-  podman run -d --pod "$POD" --name "${STACK}-db" --label "$LABEL_KEY=$LABEL_VAL" --memory "$PG_MEM" --memory-swap "$PG_MEM" --cpus "$PG_CPUS" \
+  ctr_up "${STACK}-db" --label "$LABEL_KEY=$LABEL_VAL" --memory "$PG_MEM" --memory-swap "$PG_MEM" --cpus "$PG_CPUS" \
     --env-file "$SQ_DIR/pg.env" -e PGDATA=/var/lib/postgresql/data/pgdata -v "${STACK}-pg:/var/lib/postgresql/data" \
     --health-cmd 'pg_isready -U sonar -d sonar' --health-interval 5s --health-timeout 5s --health-retries 12 "$PG_IMAGE" >/dev/null
   for i in $(seq 1 60); do [ "$(podman inspect -f '{{.State.Health.Status}}' "${STACK}-db")" = healthy ] && break; sleep 2; done
   [ "$(podman inspect -f '{{.State.Health.Status}}' "${STACK}-db")" = healthy ] || die "postgres not healthy"
   # 4g total: web 768m + CE 1g + ES 512m heaps leave headroom for off-heap/metaspace.
-  podman run -d --pod "$POD" --name "${STACK}-sonar" --label "$LABEL_KEY=$LABEL_VAL" --memory "$SONAR_MEM" --memory-swap "$SONAR_MEM" --cpus "$SONAR_CPUS" \
+  ctr_up "${STACK}-sonar" --label "$LABEL_KEY=$LABEL_VAL" --memory "$SONAR_MEM" --memory-swap "$SONAR_MEM" --cpus "$SONAR_CPUS" \
     --ulimit nofile=131072:131072 --env-file "$SQ_DIR/sonar-container.env" \
     -e SONAR_WEB_JAVAOPTS="-Xmx768m -Xms256m" -e SONAR_CE_JAVAOPTS="-Xmx1g -Xms256m" \
     -e SONAR_SEARCH_JAVAOPTS="-Xmx512m -Xms512m" ${ES_EXTRA:+-e SONAR_SEARCH_JAVAADDITIONALOPTS="$ES_EXTRA"} \

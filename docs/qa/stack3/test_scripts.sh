@@ -144,4 +144,6 @@ bash "$HERE/../lib/test_lan_ip.sh" >/dev/null 2>&1; ok $? "docs/qa/lib/test_lan_
 bash "$HERE/test_lan_defaults.sh" >/dev/null 2>&1; ok $? "test_lan_defaults.sh passes (sonar/s3 bind defaults)"
 bash "$HERE/../lib/test_podman_env.sh" >/dev/null 2>&1; ok $? "docs/qa/lib/test_podman_env.sh passes (guid-address RED/GREEN, wrapper safety)"
 bash "$HERE/../lib/test_podman_env_mutations.sh" >/dev/null 2>&1; ok $? "test_podman_env_mutations.sh: all mutants killed"
+bash "$HERE/test_ctrctl_routing.sh" >/dev/null 2>&1; ok $? "test_ctrctl_routing.sh passes (up.sh starts containers via qa_stack_start, no raw podman run -d)"
+bash "$HERE/test_ctrctl_routing_mutations.sh" >/dev/null 2>&1; ok $? "test_ctrctl_routing_mutations.sh: all mutants killed"
 echo "passed=$pass failed=$fail"; [ "$fail" = 0 ]

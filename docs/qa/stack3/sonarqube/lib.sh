@@ -126,3 +126,10 @@ sys.exit(1 if os.environ["SECRET"].encode() in open(sys.argv[1],"rb").read() els
 PY
   done
 }
+# Container creation + START go through the Containers-submodule path (CAT-QA-STACK-LIFECYCLE-1): `podman create` only builds the container in the pod;
+# the start (and health wait) is qa_stack_start -> ctrctl -> submodules/containers. Raw `podman run -d` is forbidden here (test_ctrctl_routing.sh).
+ctr_up() { # <name> <podman-create-args...>
+  local n="$1"; shift
+  podman create --pod "$POD" --name "$n" "$@" >/dev/null || return 1
+  qa_stack_start "$n" || { podman logs --tail 20 "$n" >&2 || true; return 1; }
+}
