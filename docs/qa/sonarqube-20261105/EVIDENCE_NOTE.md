@@ -22,3 +22,4 @@ Stack brought up by the migrated `docs/qa/stack3/sonarqube/up.sh` (`ctr_up`); `q
 
 ### Update (v2.4.1 prep, CAT-QA-SONAR-1b)
 CAT-QA-SONAR-1b later recorded one live start through the Containers backend from the main checkout: `backend=containers ctrctl_sha256=b6f69c8e6507757dfaa49680138c44451b56c81db0fcec73d6dd71363768ec7c`. The log was not committed, so this is PROVISIONAL. The stack3 `catqa3` `up.sh` via the Containers backend is still owed.
+The two ctrctl sha256 values in this note (`15e268b5...` in the run3 section, `b6f69c8e...` above) are from two separate ctrctl builds made at different times (a build check, then the live start). Whether their cache directories differed is UNCONFIRMED; the difference is not otherwise explained here.
