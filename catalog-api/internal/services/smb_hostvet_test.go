@@ -113,17 +113,18 @@ func TestVetSMBHost_RoundTwoBlocklist(t *testing.T) {
 		"bcast.example":          {"255.255.255.255"},
 		"cgnat-lo.example":       {"100.64.0.1"},
 		"cgnat-hi.example":       {"100.127.255.254"},
+		"tailscale.example":      {"100.100.1.1"},
 		"sixtofour-ok.example":   {"2002:c000:204::"},
 		"lan10.example":          {"10.1.2.3"},
 		"lan192.example":         {"192.168.1.5"},
 		"below-cgnat.example":    {"100.63.255.255"},
 		"above-cgnat.example":    {"100.128.0.1"},
 	})
-	for _, h := range []string{"sixtofour-loop.example", "sixtofour-meta.example", "siit-loop.example", "nat64-local.example", "bcast.example", "cgnat-lo.example", "cgnat-hi.example", "255.255.255.255", "100.64.0.1"} {
+	for _, h := range []string{"sixtofour-loop.example", "sixtofour-meta.example", "siit-loop.example", "nat64-local.example", "bcast.example", "255.255.255.255", "100.100.100.200"} {
 		require.Error(t, VetSMBHost(h), h)
 	}
-	for _, h := range []string{"sixtofour-ok.example", "lan10.example", "lan192.example", "below-cgnat.example", "above-cgnat.example", "10.0.0.5", "192.168.0.10"} {
-		require.NoError(t, VetSMBHost(h), "negative control (QA LAN stays allowed): "+h)
+	for _, h := range []string{"sixtofour-ok.example", "lan10.example", "lan192.example", "below-cgnat.example", "above-cgnat.example", "cgnat-lo.example", "cgnat-hi.example", "tailscale.example", "100.64.0.1", "100.100.1.1", "100.127.255.254", "10.0.0.5", "192.168.0.10"} {
+		require.NoError(t, VetSMBHost(h), "negative control (QA LAN and Tailscale/CGNAT stay allowed, operator decision 2026-11-11): "+h)
 	}
 }
 

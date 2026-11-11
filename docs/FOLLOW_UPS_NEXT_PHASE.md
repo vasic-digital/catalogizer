@@ -1675,7 +1675,8 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - SMB-FU-10: path checks are lexical only on plain shares (no sub root): pathsafe.SafeRemotePath rejects ".." but ':' (ADS) segments, device names and symlinks the server resolves are not handled. Opus review round 1, item 6.
 - SMB-FU-11: residual information leaks and timing on /smb/test and /smb/browse (connect failure vs auth failure vs mount failure remain distinguishable by latency and by the boolean/400/500 split). Opus review round 1, item 8.
 - SMB-FU-12: the SMB port allowlist (CATALOG_SMB_ALLOWED_PORTS, default 445) does not yet include the ports of configured SMB storage roots; read them from config.SMB.Hosts when the discovery service gets the config injected.
-- SMB-FU-9 (PRIORITISED, security): dial the vetted IP instead of re-resolving the name; closes the DNS-rebinding window between VetSMBHost and the dial. Opus round 2 asked to do this before the next release.
+- SMB-FU-9 (PRIORITISED, security): FIXED, pending review (branch fix/smb-dial-vetted-ip). `VetSMBHostIPs` returns the vetted addresses; `dialVetted` (services/smb_dial.go) dials those IPs in order through the `SMBDialer` seam and hands the net.Conn to go-smb2 (its Dialer.Dial takes a conn, no target name needed for NTLM). DiscoverShares, mountShare (openConfined) and ProbeHostWithIdentities resolve+vet exactly once per request (the probe shares one vetted list across guest and all identities). The service layer now refuses blocked hosts itself (defence in depth to the handler check). Tests: services/smb_dialvetted_test.go (rebinding resolver: allowed IP first, 127.0.0.1 afterwards). dialVetted shares ONE connect deadline across attempts and tries at most 4 vetted IPs. See SMB-FU-9b.
+- SMB-FU-9b (follow-up): admin-configured by-name dials can still be rebound: storage roots, `SMBService.getConnection` (services/smb.go), `smb/client.go`, `filesystem/smb_client.go`. They are not request-supplied, but each should resolve once, vet and dial the vetted IP the same way (reuse `VetSMBHostIPs` + `dialVetted`).
 - SMB-FU-13: the share listing still shows `print$` (SplitShare allows it; it is not administrative there). Decide whether discovery should hide printer shares.
 - SMB-FU-14 (test-instrumentation): tests that replace the global `services.SMBHostResolver` / `smbWarnf` must never use `t.Parallel()`. Add a lint or a locked helper.
 - SMB-FU-15: RESOLVED BY REMOVAL (2026-11-11): `internal/handlers/smb.go` SMBHandler was confirmed unwired (no caller outside its own tests, nothing in main.go) and was deleted with its tests.
@@ -1700,3 +1701,17 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - SMB-FU-16 (docs/clients, minor): the Android client and its API docs still call the never-routed `/api/v1/smb/sources/*` and `/api/v1/smb/health` endpoints; align or remove them (not touched here).
 - SMB-FU-16b (nit): the `.gitignore` convention differs between catalogizer-desktop (`src-tauri/gen/schemas/` in the app .gitignore) and installer-wizard (single file entry); pick one.
 - SMB-FU-16c (nit): `catalog-api/api_contract_happy_exceptions.tsv:61` has an ambiguous `download.go` reference after the root handlers/download.go removal; qualify it as `internal/handlers/download.go`.
+
+## CAT-QA-STACK-LIFECYCLE-1 follow-ups (Opus round 2, minor, 2026-11-11)
+- LIFE-FU-1: RESOLVED: ctrctl builds to `<bin>.tmp.<pid>` in the cache dir then `mv -f`; test with 6 concurrent builds (distinct tmp outputs) + mutants. A real cross-FS ETXTBSY reproduction needs an ELF binary (fake go writes scripts): documented skip. (was: ctrctl concurrent first builds race when TMPDIR is on another filesystem (build to `$bin.t...)
+- LIFE-FU-2: RESOLVED: tests+mutants for the inspect timeout (`QA_INSPECT_TIMEOUT`), per-checkout cache keying, ctrctl non-zero exit propagation (start and stop). (was: test gaps: `timeout 10` bound on inspect, per-checkout cache keying, ctrctl non-zero exit...)
+- LIFE-FU-3: RESOLVED: README and podman_env.sh header corrected (guid= only, per-checkout cache hash dir, mutant count). (was: doc drift (README/podman_env.sh header say "strips every ,key=val"; cache path now per-che...)
+- LIFE-FU-4: RESOLVED: `set -f` (restored) in `_qa_strip_guid`, FORCED vs unavailable DEVIATION text, local `rc`, clear missing-`timeout` error (rc 69). Not done by decision: faster unhealthy failure (risky). (was: nits): `_qa_strip_guid` unquoted glob expansion (use `set -f`); DEVIATION text when podman...)
+- up.sh/down.sh/build.sh still call podman directly (documented deviation, not yet run against real catqa3-api).
+
+## CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 (Opus review of LIFE-FU-1..4, minor, 2026-11-11)
+- LIFE-FU-5: test gap: nothing distinguishes atomic `mv -f` from copy+rm (assert inode equality or a logging fake mv).
+- LIFE-FU-6: test gap: hung-inspect test only hangs the first inspect; add shim mode hanging only the Health inspect.
+- LIFE-FU-7: test gap: no test calls `_qa_strip_guid` with `set -f` already on and checks it stays on.
+- LIFE-FU-8 (behaviour): missing-`timeout` check lives in `qa_stack_wait_healthy`, so `qa_stack_start` starts the container and only then returns 69 with it left running; pre-flight the check in `qa_stack_start` before `_qa_stack_run`.
+- LIFE-FU-9 (nits): unreachable tmp cleanup branch on build failure; a real ctrctl exit 69 would read as "backend unavailable" (latent).
