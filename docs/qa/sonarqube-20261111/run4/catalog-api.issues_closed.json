@@ -1,0 +1,542 @@
+{
+  "project": "catalogizer-api",
+  "closed_total": 12,
+  "issues": [
+    {
+      "key": "ba7b0540-072c-46c1-bf4c-1762db2f9f53",
+      "rule": "go:S1186",
+      "severity": "CRITICAL",
+      "component": "catalogizer-api:catalog-api/filesystem/s3_client.go",
+      "project": "catalogizer-api",
+      "hash": "aeb0f608dc0d5d5090296d3f55ffa8f8",
+      "textRange": {
+        "startLine": 327,
+        "endLine": 327,
+        "startOffset": 25,
+        "endOffset": 27
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add a nested comment explaining why this function is empty or complete the implementation.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "suspicious"
+      ],
+      "creationDate": "2026-11-05T13:24:07+0000",
+      "updateDate": "2026-11-11T22:23:13+0000",
+      "closeDate": "2026-11-11T22:23:13+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "e3d20232-eef2-4291-8f74-b412255e1a2b",
+      "rule": "go:S1186",
+      "severity": "CRITICAL",
+      "component": "catalogizer-api:catalog-api/filesystem/s3_client.go",
+      "project": "catalogizer-api",
+      "hash": "e05aa61af3832dc3f81e9bdfdcf8b389",
+      "textRange": {
+        "startLine": 324,
+        "endLine": 324,
+        "startOffset": 25,
+        "endOffset": 27
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add a nested comment explaining why this function is empty or complete the implementation.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "suspicious"
+      ],
+      "creationDate": "2026-11-05T13:24:07+0000",
+      "updateDate": "2026-11-11T22:23:13+0000",
+      "closeDate": "2026-11-11T22:23:13+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "1318dd4f-0dbb-4b01-b83e-4c7958d30157",
+      "rule": "go:S1186",
+      "severity": "CRITICAL",
+      "component": "catalogizer-api:catalog-api/filesystem/s3_client.go",
+      "project": "catalogizer-api",
+      "hash": "da743b5c615fe2042865a4fd4e92ff8c",
+      "textRange": {
+        "startLine": 343,
+        "endLine": 343,
+        "startOffset": 24,
+        "endOffset": 26
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add a nested comment explaining why this function is empty or complete the implementation.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "suspicious"
+      ],
+      "creationDate": "2026-11-05T12:57:42+0000",
+      "updateDate": "2026-11-11T22:23:13+0000",
+      "closeDate": "2026-11-11T22:23:13+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "74e8f8a3-c918-45a6-b8c5-fe42c3a76c06",
+      "rule": "go:S1186",
+      "severity": "CRITICAL",
+      "component": "catalogizer-api:catalog-api/filesystem/s3_client.go",
+      "project": "catalogizer-api",
+      "hash": "da743b5c615fe2042865a4fd4e92ff8c",
+      "textRange": {
+        "startLine": 339,
+        "endLine": 339,
+        "startOffset": 24,
+        "endOffset": 26
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add a nested comment explaining why this function is empty or complete the implementation.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "suspicious"
+      ],
+      "creationDate": "2026-11-05T12:57:42+0000",
+      "updateDate": "2026-11-11T22:23:13+0000",
+      "closeDate": "2026-11-11T22:23:13+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "7e58a20b-6371-4f43-80cb-948c6707031f",
+      "rule": "go:S1186",
+      "severity": "CRITICAL",
+      "component": "catalogizer-api:catalog-api/filesystem/s3_client.go",
+      "project": "catalogizer-api",
+      "hash": "367e24469ae865af5f909d850d83e981",
+      "textRange": {
+        "startLine": 329,
+        "endLine": 329,
+        "startOffset": 25,
+        "endOffset": 27
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add a nested comment explaining why this function is empty or complete the implementation.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "suspicious"
+      ],
+      "creationDate": "2026-11-05T12:57:42+0000",
+      "updateDate": "2026-11-11T22:23:13+0000",
+      "closeDate": "2026-11-11T22:23:13+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "9ee8105b-99cb-49d7-856c-327e2ffa1cfc",
+      "rule": "go:S1186",
+      "severity": "CRITICAL",
+      "component": "catalogizer-api:catalog-api/filesystem/s3_client.go",
+      "project": "catalogizer-api",
+      "hash": "da743b5c615fe2042865a4fd4e92ff8c",
+      "textRange": {
+        "startLine": 333,
+        "endLine": 333,
+        "startOffset": 24,
+        "endOffset": 26
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add a nested comment explaining why this function is empty or complete the implementation.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "suspicious"
+      ],
+      "creationDate": "2026-11-05T12:57:42+0000",
+      "updateDate": "2026-11-11T22:23:13+0000",
+      "closeDate": "2026-11-11T22:23:13+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "fa00a363-d211-41e8-8c34-6881e6acb87b",
+      "rule": "go:S1186",
+      "severity": "CRITICAL",
+      "component": "catalogizer-api:catalog-api/internal/services/cover_art_service.go",
+      "project": "catalogizer-api",
+      "hash": "841e609caff074afbd02f4ab993524fb",
+      "textRange": {
+        "startLine": 617,
+        "endLine": 617,
+        "startOffset": 21,
+        "endOffset": 23
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add a nested comment explaining why this function is empty or complete the implementation.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "suspicious"
+      ],
+      "creationDate": "2026-11-05T02:09:11+0000",
+      "updateDate": "2026-11-11T22:23:13+0000",
+      "closeDate": "2026-11-11T22:23:13+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "145fbfbd-5524-4127-8c02-64ac6a609c9b",
+      "rule": "go:S1186",
+      "severity": "CRITICAL",
+      "component": "catalogizer-api:catalog-api/services/pdf_page_render.go",
+      "project": "catalogizer-api",
+      "hash": "f96e604b9e3363822c1b821d069137a7",
+      "textRange": {
+        "startLine": 73,
+        "endLine": 73,
+        "startOffset": 16,
+        "endOffset": 18
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add a nested comment explaining why this function is empty or complete the implementation.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "suspicious"
+      ],
+      "creationDate": "2026-11-04T22:52:35+0000",
+      "updateDate": "2026-11-11T22:23:13+0000",
+      "closeDate": "2026-11-11T22:23:13+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "1f9809a6-c2da-4068-b8ad-b168d679f387",
+      "rule": "go:S1186",
+      "severity": "CRITICAL",
+      "component": "catalogizer-api:catalog-api/services/conversion_proc_pdeathsig_other.go",
+      "project": "catalogizer-api",
+      "hash": "6bef924b43e4ce0fe755ed603a8b9467",
+      "textRange": {
+        "startLine": 9,
+        "endLine": 9,
+        "startOffset": 48,
+        "endOffset": 50
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add a nested comment explaining why this function is empty or complete the implementation.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "suspicious"
+      ],
+      "creationDate": "2026-11-03T13:54:31+0000",
+      "updateDate": "2026-11-11T22:23:13+0000",
+      "closeDate": "2026-11-11T22:23:13+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "55520f6b-75b7-43e0-a2b4-8f6c78c2efaa",
+      "rule": "go:S1186",
+      "severity": "CRITICAL",
+      "component": "catalogizer-api:catalog-api/database/encryption.go",
+      "project": "catalogizer-api",
+      "hash": "db6eea095f72fbf0291f8d30cc4c47a3",
+      "textRange": {
+        "startLine": 524,
+        "endLine": 524,
+        "startOffset": 16,
+        "endOffset": 18
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add a nested comment explaining why this function is empty or complete the implementation.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "suspicious"
+      ],
+      "creationDate": "2026-10-28T17:41:54+0000",
+      "updateDate": "2026-11-11T22:23:13+0000",
+      "closeDate": "2026-11-11T22:23:13+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "3528fbe7-d93e-440f-a71b-04a769546d2a",
+      "rule": "go:S3923",
+      "severity": "MAJOR",
+      "component": "catalogizer-api:catalog-api/services/webdav_client_test.go",
+      "project": "catalogizer-api",
+      "hash": "0815594c3050ee5084e02af2d0bdacd6",
+      "textRange": {
+        "startLine": 594,
+        "endLine": 598,
+        "startOffset": 1,
+        "endOffset": 2
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Remove this conditional structure or edit its code blocks so that they're not all the same.",
+      "effort": "15min",
+      "debt": "15min",
+      "author": "i@mvasic.ru",
+      "tags": [],
+      "creationDate": "2026-02-26T22:30:49+0000",
+      "updateDate": "2026-11-11T22:23:13+0000",
+      "closeDate": "2026-11-11T22:23:13+0000",
+      "type": "BUG",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "0f01afd7-6f49-4165-994c-ab99bb2c5094",
+      "rule": "go:S3923",
+      "severity": "MAJOR",
+      "component": "catalogizer-api:catalog-api/services/configuration_wizard_service.go",
+      "project": "catalogizer-api",
+      "hash": "85218b5481b5a462f2656b9756362a18",
+      "textRange": {
+        "startLine": 1179,
+        "endLine": 1184,
+        "startOffset": 1,
+        "endOffset": 2
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Remove this conditional structure or edit its code blocks so that they're not all the same.",
+      "effort": "15min",
+      "debt": "15min",
+      "author": "i@mvasic.ru",
+      "tags": [],
+      "creationDate": "2025-10-09T19:41:23+0000",
+      "updateDate": "2026-11-11T22:23:13+0000",
+      "closeDate": "2026-11-11T22:23:13+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    }
+  ]
+}

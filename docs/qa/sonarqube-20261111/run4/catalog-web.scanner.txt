@@ -1,0 +1,135 @@
+22:24:22.299 WARN  Property 'sonar.working.directory' with value '/tmp/.scannerwork' is overridden with value '/work'
+22:24:22.307 INFO  Scanner configuration file: /opt/sonar-scanner/conf/sonar-scanner.properties
+22:24:22.308 INFO  Project root configuration file: /usr/src/docs/qa/stack3/sonarqube/sonar-catalog-web.properties
+22:24:22.323 INFO  SonarScanner CLI 8.1.0.6389
+22:24:22.327 INFO  Linux 7.0.0-42-generic amd64
+22:24:23.575 INFO  Communicating with SonarQube Community Build 26.9.0.129388
+22:24:23.576 INFO  JRE provisioning: os[linux], arch[x86_64]
+22:24:25.427 INFO  Starting SonarScanner Engine...
+22:24:25.428 INFO  Java 21.0.11 Eclipse Adoptium (64-bit)
+22:24:26.874 INFO  Load global settings
+22:24:26.952 INFO  Load global settings (done) | time=75ms
+22:24:26.955 INFO  Server id: 82338E1B-AaHMZAmWP20E9nB2KNY9
+22:24:26.966 INFO  Loading required plugins
+22:24:26.966 INFO  Load plugins index
+22:24:26.979 INFO  Load plugins index (done) | time=12ms
+22:24:26.979 INFO  Load/download plugins
+22:24:27.280 INFO  Load/download plugins (done) | time=301ms
+22:24:27.576 INFO  Process project properties
+22:24:27.587 INFO  Process project properties (done) | time=11ms
+22:24:27.597 INFO  Project key: catalogizer-web
+22:24:27.597 INFO  Base dir: /usr/src
+22:24:27.597 INFO  Working dir: /work
+22:24:27.604 INFO  Load project settings for component key: 'catalogizer-web'
+22:24:27.620 INFO  Load project settings for component key: 'catalogizer-web' (done) | time=16ms
+22:24:27.660 INFO  Load quality profiles
+22:24:27.702 INFO  Load quality profiles (done) | time=42ms
+22:24:27.751 INFO  Load active rules
+22:24:28.188 INFO  Load active rules (done) | time=437ms
+22:24:28.193 INFO  Load analysis cache
+22:24:28.232 INFO  Load analysis cache | time=38ms
+22:24:28.406 INFO  Preprocessing files...
+22:24:29.769 INFO  3 languages detected in 343 preprocessed files (done) | time=1362ms
+22:24:29.769 INFO  172 files ignored because of inclusion/exclusion patterns
+22:24:29.769 INFO  24 directories skipped because of exclusion patterns (content not counted)
+22:24:29.770 INFO  0 files ignored because of scm ignore settings
+22:24:29.770 INFO  Loading plugins for detected languages
+22:24:29.771 INFO  Load/download plugins
+22:24:30.424 INFO  Load/download plugins (done) | time=653ms
+22:24:30.523 INFO  Load project repositories
+22:24:30.651 INFO  Load project repositories (done) | time=128ms
+22:24:30.679 INFO  Indexing files...
+22:24:30.679 INFO  Project configuration:
+22:24:30.680 INFO    Excluded sources: **/node_modules/**, **/dist/**, **/coverage/**, **/*.min.js, **/*.test.ts, **/*.test.tsx, **/*.spec.ts, **/*.spec.tsx, **/__tests__/**, **/*.test.ts, **/*.test.tsx, **/*.spec.ts, **/*.spec.tsx, **/__tests__/**
+22:24:30.680 INFO    Included tests: **/*.test.ts, **/*.test.tsx, **/*.spec.ts, **/*.spec.tsx, **/__tests__/**
+22:24:30.720 INFO  341 files indexed (done) | time=40ms
+22:24:30.721 INFO  Quality profile for css: Sonar way
+22:24:30.721 INFO  Quality profile for json: Sonar way
+22:24:30.722 INFO  Quality profile for ts: Sonar way
+22:24:30.722 INFO  ------------- Run sensors on module Catalogizer Web (TS)
+22:24:30.780 INFO  Load metrics repository
+22:24:30.800 INFO  Load metrics repository (done) | time=20ms
+22:24:31.114 INFO  Sensor IaC YAML File Type Classification Sensor [iac]
+22:24:31.132 INFO  Sensor IaC YAML File Type Classification Sensor [iac] (done) | time=18ms
+22:24:31.132 INFO  Sensor IaC CloudFormation Sensor [iac]
+22:24:31.133 INFO  There are no files to be analyzed for the CloudFormation language
+22:24:31.133 INFO  Sensor IaC CloudFormation Sensor [iac] (done) | time=0ms
+22:24:31.133 INFO  Sensor IaC cfn-lint report Sensor [iac]
+22:24:31.133 INFO  Sensor IaC cfn-lint report Sensor [iac] (done) | time=0ms
+22:24:31.133 INFO  Sensor IaC hadolint report Sensor [iac]
+22:24:31.134 INFO  Sensor IaC hadolint report Sensor [iac] (done) | time=0ms
+22:24:31.150 INFO  Sensor IaC Azure Resource Manager Sensor [iac]
+22:24:31.150 INFO  There are no files to be analyzed for the Azure Resource Manager language
+22:24:31.150 INFO  Sensor IaC Azure Resource Manager Sensor [iac] (done) | time=0ms
+22:24:31.150 INFO  Sensor Java Config Sensor [iac]
+22:24:31.151 INFO  There are no files to be analyzed for the Java language
+22:24:31.151 INFO  Sensor Java Config Sensor [iac] (done) | time=0ms
+22:24:31.154 INFO  Sensor IaC Docker Sensor [iac]
+22:24:31.156 INFO  There are no files to be analyzed for the Docker language
+22:24:31.156 INFO  Sensor IaC Docker Sensor [iac] (done) | time=21ms
+22:24:31.156 INFO  Sensor TextAndSecretsSensor [text]
+22:24:31.182 INFO  Available processors: 2
+22:24:31.182 INFO  Using 2 threads for analysis.
+22:24:31.490 INFO  Start fetching files for the text and secrets analysis
+22:24:31.497 INFO  Using Git CLI to retrieve dirty files
+22:24:32.242 INFO  Retrieving language associated files and files included via "sonar.text.inclusions" that are tracked by git
+22:24:32.244 INFO  Starting the text and secrets analysis
+22:24:32.246 INFO  339 source files to be analyzed for the text and secrets analysis
+22:24:32.886 INFO  339/339 source files have been analyzed for the text and secrets analysis
+22:24:32.888 INFO  Sensor TextAndSecretsSensor [text] (done) | time=1732ms
+22:24:32.890 INFO  ------------- Run sensors on project
+22:24:33.130 INFO  Sensor JavaScript/TypeScript/CSS analysis [javascript]
+22:24:33.400 INFO  Detected os: Linux arch: amd64 alpine: false. Platform: LINUX_X64
+22:24:33.401 INFO  Deploy location /opt/sonar-scanner/.sonar/js/node-runtime, tagetRuntime: /opt/sonar-scanner/.sonar/js/node-runtime/node,  version: /opt/sonar-scanner/.sonar/js/node-runtime/version.txt
+22:24:36.452 INFO  Using embedded Node.js runtime.
+22:24:36.452 INFO  Using Node.js executable: '/opt/sonar-scanner/.sonar/js/node-runtime/node'.
+22:24:38.693 INFO  Memory configuration: OS (30974 MB), Docker (6144 MB), Node.js (2240 MB).
+22:24:38.718 INFO  gRPC analyze-project server listening on 127.0.0.1:35833
+22:24:38.976 INFO  Plugin version: [13.8.0.44569]
+22:24:42.294 INFO  Found 4 tsconfig.json file(s): [/usr/src/catalog-web/tsconfig.json, /usr/src/catalogizer-api-client/tsconfig.json, /usr/src/catalogizer-desktop/tsconfig.json, /usr/src/installer-wizard/tsconfig.json]
+22:25:12.945 INFO  316 source files to be analyzed
+22:25:12.946 INFO  Creating TypeScript(6.0.3) program with configuration file /usr/src/catalog-web/tsconfig.json [lib: lib.es2020.d.ts, lib.dom.d.ts, lib.dom.iterable.d.ts]
+22:25:12.946 INFO  Discovered referenced tsconfig: /usr/src/catalog-web/tsconfig.node.json
+22:25:12.946 INFO  Analyzing 144 file(s) from tsconfig /usr/src/catalog-web/tsconfig.json (214 total files in program)
+22:25:12.948 INFO  Creating TypeScript(6.0.3) program with configuration file /usr/src/catalogizer-api-client/tsconfig.json [lib: lib.es2020.d.ts]
+22:25:12.948 INFO  No files to analyze from tsconfig /usr/src/catalogizer-api-client/tsconfig.json
+22:25:12.948 INFO  Creating TypeScript(6.0.3) program with configuration file /usr/src/catalogizer-desktop/tsconfig.json [lib: lib.es2020.d.ts, lib.dom.d.ts, lib.dom.iterable.d.ts]
+22:25:12.949 INFO  Discovered referenced tsconfig: /usr/src/catalogizer-desktop/tsconfig.node.json
+22:25:12.949 INFO  No files to analyze from tsconfig /usr/src/catalogizer-desktop/tsconfig.json
+22:25:12.949 INFO  Creating TypeScript(6.0.3) program with configuration file /usr/src/installer-wizard/tsconfig.json [lib: lib.es2020.d.ts, lib.dom.d.ts, lib.dom.iterable.d.ts]
+22:25:12.949 INFO  Discovered referenced tsconfig: /usr/src/installer-wizard/tsconfig.node.json
+22:25:12.950 INFO  No files to analyze from tsconfig /usr/src/installer-wizard/tsconfig.json
+22:25:12.950 INFO  Creating TypeScript(6.0.3) program with configuration file /usr/src/catalog-web/tsconfig.node.json [lib: lib.es2023.d.ts, lib.dom.d.ts]
+22:25:12.950 INFO  No files to analyze from tsconfig /usr/src/catalog-web/tsconfig.node.json
+22:25:12.950 INFO  Creating TypeScript(6.0.3) program with configuration file /usr/src/catalogizer-desktop/tsconfig.node.json [lib: lib.esnext.d.ts, lib.dom.d.ts]
+22:25:12.950 INFO  No files to analyze from tsconfig /usr/src/catalogizer-desktop/tsconfig.node.json
+22:25:12.951 INFO  Creating TypeScript(6.0.3) program with configuration file /usr/src/installer-wizard/tsconfig.node.json [lib: lib.esnext.d.ts, lib.dom.d.ts]
+22:25:12.951 INFO  No files to analyze from tsconfig /usr/src/installer-wizard/tsconfig.node.json
+22:25:12.951 INFO  Analyzing 171 file(s) using merged compiler options [lib: lib.es2023.d.ts, lib.dom.d.ts]
+22:25:12.951 INFO  316/316 source files have been analyzed
+22:25:12.959 INFO  Hit the cache for 0 out of 315
+22:25:12.959 INFO  Miss the cache for 315 out of 315: ANALYSIS_MODE_INELIGIBLE [315/315]
+22:25:12.960 INFO  Sensor JavaScript/TypeScript/CSS analysis [javascript] (done) | time=39829ms
+22:25:12.960 INFO  Sensor IaC Project Sensor [iac]
+22:25:12.962 INFO  Sensor IaC Project Sensor [iac] (done) | time=2ms
+22:25:12.962 INFO  Sensor Zero Coverage Sensor
+22:25:13.008 INFO  Sensor Zero Coverage Sensor (done) | time=45ms
+22:25:13.008 INFO  ------------- Gather SCA dependencies on project
+22:25:13.013 INFO  Dependency analysis skipped
+22:25:13.056 INFO  SCM Publisher SCM provider for this project is: git
+22:25:13.057 INFO  SCM Publisher 43 source files to be analyzed
+22:25:14.518 INFO  SCM Publisher 43/43 source files have been analyzed (done) | time=1460ms
+22:25:14.565 INFO  CPD Executor 7 files had no CPD blocks
+22:25:14.566 INFO  CPD Executor Calculating CPD for 139 files
+22:25:14.662 INFO  CPD Executor CPD calculation finished (done) | time=97ms
+22:25:14.668 INFO  SCM revision ID '04c6d422b093a8beca5ae6ac0818b0a6ed41957a'
+22:25:14.914 INFO  Analysis report generated in 234ms, dir size=5.6 MB
+22:25:15.389 INFO  Analysis report compressed in 475ms, zip size=2.7 MB
+22:25:15.541 INFO  Analysis report uploaded in 151ms
+22:25:15.542 INFO  ANALYSIS SUCCESSFUL, you can find the results at: http://127.0.0.1:9000/dashboard?id=catalogizer-web
+22:25:15.542 INFO  Note that you will be able to access the updated dashboard once the server has processed the submitted analysis report
+22:25:15.542 INFO  More about the report processing at http://127.0.0.1:9000/api/ce/task?id=7741634a-ea0a-49e7-860b-da91f24d2047
+22:25:16.012 INFO  Analysis total time: 48.681 s
+22:25:16.015 INFO  SonarScanner Engine completed successfully
+22:25:16.072 INFO  EXECUTION SUCCESS
+22:25:16.072 INFO  Total time: 53.768s
