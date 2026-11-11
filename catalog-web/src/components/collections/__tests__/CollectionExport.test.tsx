@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { CollectionExport } from '../CollectionExport'
 import { toast } from 'react-hot-toast'
@@ -110,15 +110,14 @@ describe('CollectionExport', () => {
     const user = userEvent.setup()
     render(<CollectionExport {...defaultProps} />)
 
-    // Find the close button by looking for buttons near the header
-    const closeButtons = screen.getAllByRole('button')
-    const closeBtn = closeButtons.find(btn => {
-      return btn.closest('.flex.items-center.justify-between')
-    })
-    // Click the first ghost button (close) in the header
-    if (closeBtn) {
-      await user.click(closeBtn)
-    }
+    // The close button is the one in the header that renders the X icon
+    const closeBtn = screen
+      .getAllByRole('button')
+      .find(btn => btn.closest('.flex.items-center.justify-between') && btn.querySelector('svg'))
+    expect(closeBtn).toBeDefined()
+    expect(defaultProps.onClose).not.toHaveBeenCalled()
+    await user.click(closeBtn!)
+    expect(defaultProps.onClose).toHaveBeenCalled()
   })
 
   // --- Additional branch coverage tests ---
@@ -148,9 +147,28 @@ describe('CollectionExport', () => {
     const user = userEvent.setup()
     render(<CollectionExport {...defaultProps} />)
 
-    const exportBtn = screen.getByText('Export Collection')
-    await user.click(exportBtn)
-    // Should trigger export (may show success toast or progress)
+    const createUrl = vi.fn(() => 'blob:mock-url')
+    const revokeUrl = vi.fn()
+    const origCreate = URL.createObjectURL
+    const origRevoke = URL.revokeObjectURL
+    URL.createObjectURL = createUrl as any
+    URL.revokeObjectURL = revokeUrl as any
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined)
+    try {
+      await user.click(screen.getByText('Export Collection'))
+      await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Collection exported successfully'))
+      expect(createUrl).toHaveBeenCalledTimes(1)
+      const blob = (createUrl.mock.calls[0] as unknown[])[0] as Blob
+      expect(blob).toBeInstanceOf(Blob)
+      expect(blob.type).toBe('application/json')
+      expect(clickSpy).toHaveBeenCalledTimes(1)
+      expect(revokeUrl).toHaveBeenCalledWith('blob:mock-url')
+      expect(toast.error).not.toHaveBeenCalled()
+    } finally {
+      URL.createObjectURL = origCreate
+      URL.revokeObjectURL = origRevoke
+      clickSpy.mockRestore()
+    }
   })
 
   it('switches to Import tab and shows import UI', async () => {
@@ -176,7 +194,7 @@ describe('CollectionExport', () => {
 
   it('CAT-001: Import reports unavailable and never claims success', async () => {
     const user = userEvent.setup()
-    const { container } = render(<CollectionExport collection={mockCollection as any} onClose={() => {}} />)
+    const { container } = render(<CollectionExport collection={mockCollection as any} onClose={() => undefined} />)
     await user.click(screen.getByText('Import'))
     const input = container.querySelector('input[type="file"]') as HTMLInputElement
     const file = new File([JSON.stringify({ items: [{ id: 'a' }, { id: 'b' }] })], 'c.json', { type: 'application/json' })

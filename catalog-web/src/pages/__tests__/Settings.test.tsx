@@ -254,7 +254,7 @@ describe('Settings', () => {
       const user = (await import('@testing-library/user-event')).default.setup()
       render(<Settings />, { wrapper: createWrapper() })
       await user.click(screen.getByText('Sync'))
-      await screen.findByText('No sync endpoints configured.')
+      expect(await screen.findByText('No sync endpoints configured.')).toBeInTheDocument()
     })
 
     it('shows endpoint creation form when Add Endpoint is clicked', async () => {
@@ -308,7 +308,7 @@ describe('Settings', () => {
   describe('Scans Section Interactions', () => {
     it('renders empty scan history message', async () => {
       render(<Settings />, { wrapper: createWrapper() })
-      await screen.findByText('No scans recorded yet.')
+      expect(await screen.findByText('No scans recorded yet.')).toBeInTheDocument()
     })
 
     it('Start Scan button is disabled when no root selected', () => {

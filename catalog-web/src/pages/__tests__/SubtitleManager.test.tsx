@@ -1,6 +1,7 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SubtitleManager } from '../SubtitleManager'
+import { subtitleApi } from '@/lib/subtitleApi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 // Mock framer-motion
@@ -63,6 +64,10 @@ const createWrapper = () => {
 }
 
 describe('SubtitleManager Page', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('renders page heading', () => {
     render(<SubtitleManager />, { wrapper: createWrapper() })
     expect(screen.getByText('Subtitle Manager')).toBeInTheDocument()
@@ -155,17 +160,32 @@ describe('SubtitleManager Page', () => {
     const user = userEvent.setup()
     render(<SubtitleManager />, { wrapper: createWrapper() })
 
+    expect(screen.queryByText('Language')).not.toBeInTheDocument()
     await user.click(screen.getByText('Filters'))
-    // After clicking Filters, additional filter options should appear or collapse
+    // Opening Filters reveals the language selector with its "All Languages" default
+    expect(screen.getByText('Language')).toBeInTheDocument()
+    expect(screen.getByText('All Languages')).toBeInTheDocument()
+    await user.click(screen.getByText('Filters'))
+    expect(screen.queryByText('Language')).not.toBeInTheDocument()
   })
 
   it('renders search button and can click it', async () => {
     const user = userEvent.setup()
     render(<SubtitleManager />, { wrapper: createWrapper() })
 
-    const searchBtn = screen.getByText('Search')
+    const searchBtn = screen.getByText('Search').closest('button') as HTMLButtonElement
+    // Empty query: search is disabled and must not hit the API
+    expect(searchBtn).toBeDisabled()
     await user.click(searchBtn)
-    // Search should trigger (may show loading or results)
+    expect(subtitleApi.searchSubtitles).not.toHaveBeenCalled()
+
+    await user.type(screen.getByPlaceholderText(/Search subtitles by title/), 'Matrix')
+    expect(searchBtn).not.toBeDisabled()
+    await user.click(searchBtn)
+    await waitFor(() => expect(subtitleApi.searchSubtitles).toHaveBeenCalled())
+    expect(vi.mocked(subtitleApi.searchSubtitles).mock.calls[0][0]).toEqual(
+      expect.objectContaining({ query: 'Matrix' })
+    )
   })
 
   it('can type in subtitle search input', async () => {

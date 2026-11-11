@@ -94,26 +94,34 @@ describe('useCoverQuality', () => {
     await waitFor(() => expect(screen.getByTestId('signal')).toHaveTextContent('unknown|'));
   });
 
-  it('silently ignores AbortError so unmount mid-flight does not trigger state updates', async () => {
-    let abortedRejecter!: (err: Error) => void;
+  it('silently ignores AbortError: no fallback state is set while mounted', async () => {
+    let rejecter!: (err: Error) => void;
     vi.stubGlobal(
       'fetch',
       vi.fn(() =>
         new Promise((_resolve, reject) => {
-          abortedRejecter = reject;
+          rejecter = reject;
         }),
       ),
     );
-    const { unmount } = render(<TestConsumer id={88} debug={true} />);
-    unmount();
-    // Simulate the fetch rejecting with AbortError after unmount.
+    render(<TestConsumer id={88} debug={true} />);
+    expect(screen.getByTestId('signal')).toHaveTextContent('null');
     const abortErr = new Error('aborted');
     (abortErr as { name?: string }).name = 'AbortError';
     await act(async () => {
-      abortedRejecter(abortErr);
+      rejecter(abortErr);
     });
-    // No assertion on state — the point is that no React error is thrown
-    // and nothing else leaks. Vitest would surface any uncaught error.
+    // An AbortError must NOT be turned into the 'unknown|' fallback signal.
+    expect(screen.getByTestId('signal')).toHaveTextContent(/^null$/);
+  });
+
+  it('unmount aborts the in-flight request', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => undefined)));
+    const { unmount } = render(<TestConsumer id={89} debug={true} />);
+    const [, init] = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(init.signal.aborted).toBe(false);
+    unmount();
+    expect(init.signal.aborted).toBe(true);
   });
 
   it('encodes special characters in coverId before requesting', async () => {
