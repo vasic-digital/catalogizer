@@ -76,9 +76,9 @@ qa_stack_backend_info() {
 }
 
 _qa_stack_run() { # <start|stop|status> <container>
-  local b; b="$(_qa_stack_backend)"
+  local b r; b="$(_qa_stack_backend)"
   case "$b" in
-    containers\ *) _qa_stack_log "backend=containers ctrctl_sha256=$(sha256sum "${b#containers }" | cut -d' ' -f1)"; "${b#containers }" "$1" "$2";;
+    containers\ *) _qa_stack_log "backend=containers ctrctl_sha256=$(sha256sum "${b#containers }" | cut -d' ' -f1)"; "${b#containers }" "$1" "$2"; r=$?; [ "$r" = 69 ] && r=1; return "$r";;   # 69 is reserved for "backend unavailable"
     podman)
       if [ "${QA_STACK_BACKEND:-auto}" = podman ]; then _qa_stack_log "backend=podman FORCED by QA_STACK_BACKEND=podman DEVIATION 11.4.76/11.4.173: using rootless podman directly (Containers submodule runtime not used)"
       else _qa_stack_log "backend=podman DEVIATION 11.4.76/11.4.173: using rootless podman directly (Containers submodule runtime unavailable here)"; fi
@@ -90,12 +90,16 @@ _qa_stack_run() { # <start|stop|status> <container>
 _qa_stack_state() { # prints "<running|other> <health>"
   local s h
   s="$(timeout "${QA_INSPECT_TIMEOUT:-10}" podman inspect "$1" --format '{{.State.Status}}' 2>/dev/null)" || return 1
-  h="$(timeout "${QA_INSPECT_TIMEOUT:-10}" podman inspect "$1" --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' 2>/dev/null)"
-  echo "$s ${h:-none}"
+  h="$(timeout "${QA_INSPECT_TIMEOUT:-10}" podman inspect "$1" --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' 2>/dev/null)" || h=unknown  # timed-out/failed Health inspect is never "no healthcheck"
+  echo "$s ${h:-unknown}"
+}
+
+_qa_stack_need_timeout() {
+  command -v timeout >/dev/null 2>&1 || { _qa_stack_log "ERROR: 'timeout' command not found (coreutils required to bound podman inspect)"; return 69; }
 }
 
 qa_stack_wait_healthy() { # <container> [timeout]
-  command -v timeout >/dev/null 2>&1 || { _qa_stack_log "ERROR: 'timeout' command not found (coreutils required to bound podman inspect)"; return 69; }
+  _qa_stack_need_timeout || return $?
   local c="$1" t="${2:-${QA_HEALTH_TIMEOUT:-120}}" i=0 st end=$((SECONDS + ${2:-${QA_HEALTH_TIMEOUT:-120}}))
   while [ "$i" -lt "$t" ] && [ "$SECONDS" -lt "$end" ]; do
     st="$(_qa_stack_state "$c")" || { _qa_stack_log "$c not found"; return 1; }
@@ -110,6 +114,7 @@ qa_stack_wait_healthy() { # <container> [timeout]
 
 qa_stack_start() {
   _qa_stack_check_name "${1-}" || return $?
+  _qa_stack_need_timeout || return $?   # pre-flight: never start a container whose health cannot then be waited on
   qa_podman_env_normalize
   local rc; _qa_stack_run start "$1"; rc=$?; [ "$rc" = 69 ] && return 69; [ "$rc" = 0 ] || { _qa_stack_log "start $1 failed"; return 1; }
   qa_stack_wait_healthy "$1"

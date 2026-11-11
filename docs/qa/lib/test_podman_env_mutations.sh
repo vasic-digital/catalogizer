@@ -32,4 +32,11 @@ mut glob_flag_leaks 's|\[ "$noglob" = 0 \] \&\& set +f|:|'
 mut forced_wording_lost 's|= podman \]; then _qa_stack_log "backend=podman FORCED|= NOPE ]; then _qa_stack_log "backend=podman FORCED|'
 mut rc_global 's|local rc; _qa_stack_run|_qa_stack_run|'
 mut no_timeout_check 's|^  command -v timeout .*$|  :|'
+# LIFE-FU-5..9 mutants
+mut copy_instead_of_rename 's|mv -f "$tmpb" "$bin"|{ cp "$tmpb" "$bin" \&\& rm -f "$tmpb"; }|'
+mut health_hang_reads_none 's|2>/dev/null)" \|\| h=unknown|2>/dev/null)"|; s|${h:-unknown}|${h:-none}|'
+mut noglob_restore_unconditional 's|\[ "$noglob" = 0 \] \&\& set +f|set +f|'
+mut no_start_timeout_preflight '/^qa_stack_start() {/,/^}/ s|_qa_stack_need_timeout \|\| return \$?|:|'
+mut no_tmp_cleanup 's|^    rm -f -- "${tmpb:?}"$|    :|'
+mut ctrctl_69_unmapped 's|r=\$?; \[ "$r" = 69 \] \&\& r=1; return|r=$?; return|'
 exit $bad

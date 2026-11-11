@@ -22,7 +22,8 @@ case "$1" in
   inspect) [ -n "${SHIM_INSPECT_HANG-}" ] && exec /bin/sleep "$SHIM_INSPECT_HANG"
     [ -n "${SHIM_INSPECT_DELAY-}" ] && /bin/sleep "$SHIM_INSPECT_DELAY"; [ -f "$SHIM_STATE/$n" ] || exit 125
     case "$*" in
-      *Health*) c="$SHIM_STATE/$n.polls"; k=$(( $(cat "$c" 2>/dev/null || echo 0) + 1 )); echo $k > "$c"
+      *Health*) [ -n "${SHIM_HEALTH_HANG-}" ] && exec /bin/sleep "$SHIM_HEALTH_HANG"
+                c="$SHIM_STATE/$n.polls"; k=$(( $(cat "$c" 2>/dev/null || echo 0) + 1 )); echo $k > "$c"
                 if [ -n "${SHIM_HEALTH_OUT-}" ]; then echo "$SHIM_HEALTH_OUT"; elif [ "${SHIM_NEVER_HEALTHY:-0}" = 1 ] || [ "$k" -le "${SHIM_STARTING_POLLS:-0}" ]; then echo starting; else echo healthy; fi;;
       *) cat "$SHIM_STATE/$n";;
     esac;;
@@ -32,7 +33,7 @@ S
 printf '#!/usr/bin/env bash\nexit 0\n' > "$BIN/sleep"; chmod +x "$BIN"/*
 export SHIM_LOG="$ROOT/log" SHIM_STATE="$ROOT/state" QA_STACK_BACKEND=podman STACK=catqa3 PATH="$BIN:$PATH"
 G='unix:path=/run/user/1000/bus,guid=0123abcd'
-fresh() { : > "$SHIM_LOG"; rm -f "$SHIM_STATE"/*; echo exited > "$SHIM_STATE/catqa3-api"; unset SHIM_INSPECT_HANG SHIM_CTRCTL_FAIL SHIM_NEVER_HEALTHY SHIM_STARTING_POLLS SHIM_HEALTH_OUT SHIM_AFTER_START; }
+fresh() { : > "$SHIM_LOG"; rm -f "$SHIM_STATE"/*; echo exited > "$SHIM_STATE/catqa3-api"; unset SHIM_INSPECT_HANG SHIM_HEALTH_HANG SHIM_CTRCTL_FAIL SHIM_NEVER_HEALTHY SHIM_STARTING_POLLS SHIM_HEALTH_OUT SHIM_AFTER_START; }
 
 # 1. RED signature (shim sanity): raw podman start with the guid address fails with the measured message; without guid it works.
 fresh; out="$(DBUS_SESSION_BUS_ADDRESS="$G" podman start catqa3-api 2>&1)"; rc=$?
@@ -85,11 +86,12 @@ cat > "$BIN/go" <<'S'
 #!/usr/bin/env bash
 # fake go build -o OUT: refuses when main.go says BROKEN, else writes a "binary" embedding the content hash of main.go+go.mod
 echo "go $*" >> "$SHIM_LOG"; out=""; while [ $# -gt 0 ]; do [ "$1" = -o ] && out="$2"; shift; done
-grep -q BROKEN main.go && { echo "build error" >&2; exit 2; }
+grep -q BROKEN main.go && { [ -n "${SHIM_GO_PARTIAL-}" ] && echo partial > "$out"; echo "build error" >&2; exit 2; }
 echo "GOOUT $out" >> "$SHIM_LOG"
 case "$out" in *.tmp.*) ;; *) echo "fake go: refusing direct write to final path $out" >&2; exit 3;; esac
 h="$(cat main.go go.mod | sha256sum | cut -c1-16)"
-printf '#!/usr/bin/env bash\n[ -n "${SHIM_CTRCTL_FAIL-}" ] && exit 1\necho "ctrctl-bin %s $*" >> "$SHIM_LOG"\nprintf "%s" > "$SHIM_STATE/$2"\n' "$h" "${SHIM_AFTER_START:-running}" > "$out"; chmod +x "$out"
+printf '#!/usr/bin/env bash\n[ -n "${SHIM_CTRCTL_FAIL-}" ] && exit "${SHIM_CTRCTL_FAIL}"\necho "ctrctl-bin %s $*" >> "$SHIM_LOG"\nprintf "%s" > "$SHIM_STATE/$2"\n' "$h" "${SHIM_AFTER_START:-running}" > "$out"; chmod +x "$out"
+echo "TMPINODE $(stat -c %i "$out")" >> "$SHIM_LOG"
 S
 chmod +x "$BIN/go"
 export QA_REPO_ROOT="$FR" QA_CTRCTL_CACHE="$ROOT/cache" QA_STACK_BACKEND=auto
@@ -157,5 +159,33 @@ export QA_REPO_ROOT="$FR"
 NB="$ROOT/nobin"; mkdir -p "$NB"; ln -s "$BIN/podman" "$NB/podman"; ln -s "$BIN/sleep" "$NB/sleep"
 fresh; out="$( PATH="$NB"; qa_stack_wait_healthy catqa3-api 2 2>&1 )"; rc=$?
 [ "$rc" = 69 ] && [[ "$out" == *"'timeout' command not found"* ]]; ok $? "missing timeout -> clear error, rc 69 (rc=$rc)"
+
+# ---- LIFE-FU-5: the final path is renamed into place (same inode as the tmp file), not copied
+fresh; rm -rf "${ROOT:?}/cache"; export QA_STACK_BACKEND=auto QA_CTRCTL_CACHE="$ROOT/cache" QA_REPO_ROOT="$FR"; echo 'package main // v5' > "$FR/docs/qa/lib/ctrctl/main.go"
+qa_stack_start catqa3-api 2>/dev/null; ti="$(grep -m1 '^TMPINODE ' "$SHIM_LOG" | cut -d' ' -f2)"; fi_="$(stat -c %i "$ROOT/cache/ctrctl" 2>/dev/null)"
+[ -n "$ti" ] && [ "$ti" = "$fi_" ]; ok $? "final ctrctl has the tmp file's inode (atomic rename, not copy+rm): tmp=$ti final=$fi_"
+
+# ---- LIFE-FU-6: only the Health inspect hangs; it must be bounded and must NOT be read as healthy
+fresh; rm -rf "${ROOT:?}/cache"; export QA_STACK_BACKEND=podman SHIM_HEALTH_HANG=6
+t0=$SECONDS; QA_INSPECT_TIMEOUT=1 QA_HEALTH_TIMEOUT=3 qa_stack_start catqa3-api 2>/dev/null; rc=$?; el=$((SECONDS-t0)); unset SHIM_HEALTH_HANG
+[ "$rc" = 1 ] && [ "$el" -le 6 ]; ok $? "hung Health inspect is cut off and not treated as healthy (rc=$rc elapsed=${el}s <= 6)"
+
+# ---- LIFE-FU-7: set -f already on in the caller stays on
+out="$(set -f; _qa_strip_guid 'unix:path=/x,a*,guid=1' >/dev/null; case $- in *f*) echo on;; *) echo off;; esac)"
+[ "$out" = on ]; ok $? "caller's pre-existing set -f is preserved by _qa_strip_guid ($out)"
+
+# ---- LIFE-FU-8: missing timeout is pre-flighted in qa_stack_start: rc 69 and the container is NOT started
+fresh; export QA_STACK_BACKEND=podman
+out="$( PATH="$NB"; qa_stack_start catqa3-api 2>&1 )"; rc=$?
+[ "$rc" = 69 ] && [[ "$out" == *"'timeout' command not found"* ]] && ! grep -q '^podman start' "$SHIM_LOG" && [ "$(cat "$SHIM_STATE/catqa3-api")" = exited ]; ok $? "qa_stack_start without timeout -> rc 69 before any start (rc=$rc, state=$(cat "$SHIM_STATE/catqa3-api"))"
+
+# ---- LIFE-FU-9a: a partial tmp left by a failed build is removed
+fresh; rm -rf "${ROOT:?}/cache"; export QA_STACK_BACKEND=auto SHIM_GO_PARTIAL=1; echo 'package main // BROKEN' > "$FR/docs/qa/lib/ctrctl/main.go"
+qa_stack_start catqa3-api 2>/dev/null; unset SHIM_GO_PARTIAL
+[ -z "$(ls "$ROOT/cache" 2>/dev/null | grep '\.tmp\.')" ] && grep -q '^GOOUT\|^go ' "$SHIM_LOG"; ok $? "failed build leaves no partial tmp file in the cache dir"
+# ---- LIFE-FU-9b: a real ctrctl exit 69 must not read as "backend unavailable" (69)
+fresh; rm -rf "${ROOT:?}/cache"; echo 'package main // v6' > "$FR/docs/qa/lib/ctrctl/main.go"; export SHIM_CTRCTL_FAIL=69
+qa_stack_stop catqa3-api 2>/dev/null; r1=$?; echo running > "$SHIM_STATE/catqa3-api"; qa_stack_start catqa3-api 2>/dev/null; r2=$?; unset SHIM_CTRCTL_FAIL
+{ [ "$r1" = 1 ] && [ "$r2" = 1 ]; }; ok $? "ctrctl's own exit 69 maps to 1, 69 stays reserved for backend unavailable (stop=$r1 start=$r2)"
 export QA_STACK_BACKEND=podman
 echo "passed=$pass failed=$fail"; [ "$fail" = 0 ]
