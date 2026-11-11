@@ -9,14 +9,15 @@ Applies to `POST /api/v1/smb/discover`, `/smb/test`, `/smb/browse` and `/smb/pro
 
 ## Port rules
 - Default allowed port: 445 (an omitted or 0 port means 445).
-- `CATALOG_SMB_ALLOWED_PORTS` adds ports: a comma list, each 1-65535, for example `445,1445`. Any invalid entry makes the whole value invalid; the service then falls back to 445 only and logs one warning per distinct invalid value.
+- `CATALOG_SMB_ALLOWED_PORTS` adds ports: a comma list, each 1-65535, for example `445,1445`. Any invalid entry makes the whole value invalid; that value is then dropped (445 and the configured roots stay) and one warning is logged per distinct invalid value.
+- The ports of configured SMB storage roots (`config.SMB.Hosts[].Port`, valid range 1-65535, 0 = default) are allowed too (SMB-FU-12); malformed entries are ignored and no other port is opened.
 
 ## Share and path rules
 - `share` is `share` or `share/sub/dir` (`smb.SplitShare`). Administrative shares (IPC$, ADMIN$, C$ and other drive shares), `..`, backslashes and UNC spellings give HTTP 400. Only the share name is mounted; the sub-directory is enforced by `confinedShare`.
-- `path` may not contain `..` segments.
+- `path` may not contain `..` segments, a `:` in any segment (alternate data streams), or a Windows device name (CON, PRN, AUX, NUL, COM1-9, LPT1-9, with or without extension) as any segment (SMB-FU-10).
 - Discovery lists only shares that SplitShare accepts.
 
 ## Errors
 Client input errors are HTTP 400 with a fixed message. Connection, mount and read failures are HTTP 500 with a fixed message; details go to the server log only.
 
-Open items: see SMB-FU-9 to SMB-FU-12 and later in `FOLLOW_UPS_NEXT_PHASE.md`.
+Open items: see SMB-FU-11, SMB-FU-13 and later in `FOLLOW_UPS_NEXT_PHASE.md`.

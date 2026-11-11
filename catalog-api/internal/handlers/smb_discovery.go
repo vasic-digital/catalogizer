@@ -322,7 +322,7 @@ func validateSMBTarget(host string, port int, share, path string) string {
 	if _, _, err := smb.SplitShare(share); err != nil {
 		return "Invalid share"
 	}
-	if err := pathsafe.SafeRemotePath(path); err != nil {
+	if err := pathsafe.SafeRemoteSharePath(path); err != nil {
 		return "Invalid path"
 	}
 	return ""

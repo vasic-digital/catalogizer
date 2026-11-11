@@ -133,10 +133,10 @@ func VetSMBHost(host string) error {
 	return err
 }
 
-// SMBAllowedPorts is {445} plus the ports in CATALOG_SMB_ALLOWED_PORTS (comma list, each 1-65535). Any invalid entry makes the whole
-// value invalid and the result falls back to the default {445} (fail closed).
+// SMBAllowedPorts is {445}, plus the ports of configured SMB storage roots (SMB-FU-12), plus the ports in CATALOG_SMB_ALLOWED_PORTS (comma list, each 1-65535). Any invalid entry makes the whole
+// value invalid and the env part is dropped (fail closed; 445 and the configured roots stay).
 func SMBAllowedPorts() []int {
-	out := []int{smbPort}
+	out := append([]int{smbPort}, SMBConfiguredPorts()...) // SMB-FU-12: configured storage-root ports
 	raw := strings.TrimSpace(os.Getenv("CATALOG_SMB_ALLOWED_PORTS"))
 	if raw == "" {
 		return out
@@ -146,7 +146,7 @@ func SMBAllowedPorts() []int {
 		p, err := strconv.Atoi(strings.TrimSpace(f))
 		if err != nil || p < 1 || p > 65535 {
 			warnInvalidSMBPorts(raw)
-			return []int{smbPort}
+			return out
 		}
 		extra = append(extra, p)
 	}

@@ -14,9 +14,7 @@ import (
 
 func withResolver(t *testing.T, m map[string][]string) {
 	t.Helper()
-	old := SMBHostResolver
-	t.Cleanup(func() { SMBHostResolver = old })
-	SMBHostResolver = func(h string) ([]net.IP, error) {
+	withSMBHostResolver(t, func(h string) ([]net.IP, error) {
 		v, ok := m[h]
 		if !ok {
 			return nil, errors.New("no such host")
@@ -26,7 +24,7 @@ func withResolver(t *testing.T, m map[string][]string) {
 			out = append(out, net.ParseIP(s))
 		}
 		return out, nil
-	}
+	})
 }
 
 func TestVetSMBHost_RefusesBracketAndPortForms(t *testing.T) {
@@ -129,12 +127,10 @@ func TestVetSMBHost_RoundTwoBlocklist(t *testing.T) {
 }
 
 func TestVetSMBHost_EmptyAnswerAndLongNameRefused(t *testing.T) {
-	old := SMBHostResolver
-	t.Cleanup(func() { SMBHostResolver = old })
-	SMBHostResolver = func(string) ([]net.IP, error) { return []net.IP{}, nil }
+	withSMBHostResolver(t, func(string) ([]net.IP, error) { return []net.IP{}, nil })
 	require.Error(t, VetSMBHost("empty.example"), "empty answer with nil error is refused (N3)")
 
-	SMBHostResolver = func(string) ([]net.IP, error) { return []net.IP{net.ParseIP("192.0.2.10")}, nil }
+	withSMBHostResolver(t, func(string) ([]net.IP, error) { return []net.IP{net.ParseIP("192.0.2.10")}, nil })
 	long254 := strings.Repeat("a.", 127)
 	long253 := strings.Repeat("a.", 126) + "a"
 	require.Len(t, long254, 254)
@@ -144,11 +140,8 @@ func TestVetSMBHost_EmptyAnswerAndLongNameRefused(t *testing.T) {
 }
 
 func TestSMBAllowedPorts_InvalidValueWarns(t *testing.T) {
-	oldW, oldR := smbWarnf, smbWarnedRaw
-	t.Cleanup(func() { smbWarnf, smbWarnedRaw = oldW, oldR })
 	var msgs []string
-	smbWarnf = func(f string, a ...any) { msgs = append(msgs, fmt.Sprintf(f, a...)) }
-	smbWarnedRaw = ""
+	withSMBWarnf(t, func(f string, a ...any) { msgs = append(msgs, fmt.Sprintf(f, a...)) })
 
 	t.Setenv("CATALOG_SMB_ALLOWED_PORTS", "445,abc")
 	require.Equal(t, []int{445}, SMBAllowedPorts())
@@ -159,7 +152,7 @@ func TestSMBAllowedPorts_InvalidValueWarns(t *testing.T) {
 	require.Len(t, msgs, 1, "the same invalid value warns once, not on every request")
 
 	msgs = nil
-	smbWarnedRaw = ""
+	resetSMBWarnedRaw(t)
 	t.Setenv("CATALOG_SMB_ALLOWED_PORTS", "1445")
 	require.Equal(t, []int{445, 1445}, SMBAllowedPorts())
 	t.Setenv("CATALOG_SMB_ALLOWED_PORTS", "")

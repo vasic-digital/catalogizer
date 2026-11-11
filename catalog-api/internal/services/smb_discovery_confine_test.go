@@ -144,3 +144,15 @@ func TestSMBDiscovery_MountErrorIsGeneric(t *testing.T) {
 	require.NotContains(t, err.Error(), "STATUS_")
 	require.False(t, errors.Is(err, ErrInvalidSMBInput), "a mount failure is not a client input error")
 }
+
+// SMB-FU-10: ADS and Windows device names are refused on plain-share browse paths before any mount.
+func TestSMBDiscovery_BrowseRefusesADSAndDeviceNamePaths(t *testing.T) {
+	for _, bad := range []string{"a:b", "f.txt:stream", "CON", "dir/nul.txt", `dir\COM1`, "LPT9"} {
+		m := newMem()
+		var opened []string
+		_, err := discSvc(m, &opened).BrowseShare(context.Background(), discCfg("Public"), bad)
+		require.Error(t, err, bad)
+		require.True(t, errors.Is(err, ErrInvalidSMBInput), "%q: %v", bad, err)
+		require.Empty(t, opened, "%q must never reach a mount", bad)
+	}
+}

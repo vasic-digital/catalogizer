@@ -203,7 +203,7 @@ func (s *SMBDiscoveryService) BrowseShare(ctx context.Context, config SMBConnect
 		zap.String("share", config.Share),
 		zap.String("path", path))
 
-	if err := pathsafe.SafeRemotePath(path); err != nil {
+	if err := pathsafe.SafeRemoteSharePath(path); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrInvalidSMBInput, err)
 	}
 	share, release, err := s.openConfined(ctx, config)

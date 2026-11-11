@@ -131,3 +131,34 @@ func CreateNoFollow(p string, overwrite bool) (*os.File, error) {
 	}
 	return os.OpenFile(p, flags, 0o644)
 }
+
+var smbDeviceNames = func() map[string]bool {
+	m := map[string]bool{"CON": true, "PRN": true, "AUX": true, "NUL": true}
+	for i := '1'; i <= '9'; i++ {
+		m["COM"+string(i)] = true
+		m["LPT"+string(i)] = true
+	}
+	return m
+}()
+
+// SafeRemoteSharePath is SafeRemotePath plus the checks a Windows/Samba server applies itself but a lexical check must not leave to it
+// (SMB-FU-10): a ':' in any segment (alternate data stream or drive form) and a segment whose base name (text before the first '.',
+// trailing dots and spaces ignored, case-insensitive) is a Windows device name CON, PRN, AUX, NUL, COM1-9 or LPT1-9.
+func SafeRemoteSharePath(p string) error {
+	if err := SafeRemotePath(p); err != nil {
+		return err
+	}
+	for _, seg := range strings.FieldsFunc(p, func(r rune) bool { return r == '/' || r == '\\' }) {
+		if strings.ContainsRune(seg, ':') {
+			return fmt.Errorf("path %q contains a ':' (alternate data stream)", p)
+		}
+		base := strings.TrimRight(seg, ". ")
+		if i := strings.IndexByte(base, '.'); i >= 0 {
+			base = base[:i]
+		}
+		if smbDeviceNames[strings.ToUpper(strings.TrimRight(base, " "))] {
+			return fmt.Errorf("path %q contains a Windows device name", p)
+		}
+	}
+	return nil
+}

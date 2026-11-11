@@ -24,9 +24,7 @@ type rebindRig struct {
 func newRebindRig(t *testing.T, first []string) *rebindRig {
 	t.Helper()
 	r := &rebindRig{}
-	oldR, oldD := SMBHostResolver, SMBDialer
-	t.Cleanup(func() { SMBHostResolver, SMBDialer = oldR, oldD })
-	SMBHostResolver = func(h string) ([]net.IP, error) {
+	withSMBHostResolver(t, func(h string) ([]net.IP, error) {
 		r.mu.Lock()
 		defer r.mu.Unlock()
 		r.lookups++
@@ -39,13 +37,13 @@ func newRebindRig(t *testing.T, first []string) *rebindRig {
 			out = []net.IP{net.ParseIP("127.0.0.1")}
 		}
 		return out, nil
-	}
-	SMBDialer = func(_ context.Context, addr string, _ time.Duration) (net.Conn, error) {
+	})
+	withSMBDialer(t, func(_ context.Context, addr string, _ time.Duration) (net.Conn, error) {
 		r.mu.Lock()
 		defer r.mu.Unlock()
 		r.dialed = append(r.dialed, addr)
 		return nil, errors.New("recorded, not dialed")
-	}
+	})
 	return r
 }
 
@@ -110,7 +108,7 @@ func TestMountShare_PortRefusedBeforeAnyLookupOrDial(t *testing.T) {
 func TestDialVetted_FallsThroughToNextVettedIPOnly(t *testing.T) {
 	r := newRebindRig(t, []string{"192.0.2.10", "192.0.2.11"})
 	calls := 0
-	SMBDialer = func(_ context.Context, addr string, _ time.Duration) (net.Conn, error) {
+	withSMBDialer(t, func(_ context.Context, addr string, _ time.Duration) (net.Conn, error) {
 		r.mu.Lock()
 		defer r.mu.Unlock()
 		r.dialed = append(r.dialed, addr)
@@ -121,7 +119,7 @@ func TestDialVetted_FallsThroughToNextVettedIPOnly(t *testing.T) {
 		c, other := net.Pipe()
 		t.Cleanup(func() { _ = other.Close() })
 		return c, nil
-	}
+	})
 	ips, err := VetSMBHostIPs("rebind.example")
 	require.NoError(t, err)
 	conn, err := dialVetted(context.Background(), ips, 445, time.Second)
@@ -145,18 +143,16 @@ func TestVetSMBHostIPs_ReturnsTheVettedAddresses(t *testing.T) {
 func TestDialVetted_OneSharedDeadlineAcrossAttempts(t *testing.T) {
 	r := newRebindRig(t, []string{"192.0.2.10", "192.0.2.11", "192.0.2.12"})
 	now := time.Unix(1000, 0)
-	oldNow := smbNow
-	t.Cleanup(func() { smbNow = oldNow })
-	smbNow = func() time.Time { return now }
+	withSMBNow(t, func() time.Time { return now })
 	var budgets []time.Duration
-	SMBDialer = func(_ context.Context, addr string, to time.Duration) (net.Conn, error) {
+	withSMBDialer(t, func(_ context.Context, addr string, to time.Duration) (net.Conn, error) {
 		r.mu.Lock()
 		defer r.mu.Unlock()
 		r.dialed = append(r.dialed, addr)
 		budgets = append(budgets, to)
 		now = now.Add(to) // a blackholed address consumes everything it was given
 		return nil, errors.New("blackhole")
-	}
+	})
 	ips, err := VetSMBHostIPs("rebind.example")
 	require.NoError(t, err)
 	start := now
@@ -170,18 +166,16 @@ func TestDialVetted_OneSharedDeadlineAcrossAttempts(t *testing.T) {
 func TestDialVetted_RemainingBudgetShrinksAndAttemptsAreCapped(t *testing.T) {
 	r := newRebindRig(t, []string{"192.0.2.1", "192.0.2.2", "192.0.2.3", "192.0.2.4", "192.0.2.5", "192.0.2.6"})
 	now := time.Unix(1000, 0)
-	oldNow := smbNow
-	t.Cleanup(func() { smbNow = oldNow })
-	smbNow = func() time.Time { return now }
+	withSMBNow(t, func() time.Time { return now })
 	var budgets []time.Duration
-	SMBDialer = func(_ context.Context, addr string, to time.Duration) (net.Conn, error) {
+	withSMBDialer(t, func(_ context.Context, addr string, to time.Duration) (net.Conn, error) {
 		r.mu.Lock()
 		defer r.mu.Unlock()
 		r.dialed = append(r.dialed, addr)
 		budgets = append(budgets, to)
 		now = now.Add(time.Second) // fast refusals
 		return nil, errors.New("refused")
-	}
+	})
 	ips, err := VetSMBHostIPs("rebind.example")
 	require.NoError(t, err)
 	_, err = dialVetted(context.Background(), ips, 445, 10*time.Second)
