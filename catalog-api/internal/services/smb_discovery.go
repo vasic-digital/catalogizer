@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
 	"strings"
 	"time"
 
@@ -110,11 +109,12 @@ func NewSMBDiscoveryService(logger *zap.Logger) *SMBDiscoveryService {
 func (s *SMBDiscoveryService) DiscoverShares(ctx context.Context, host string, username, password string, domain *string) ([]SMBShareInfo, error) {
 	s.logger.Info("Discovering SMB shares", zap.String("host", host), zap.String("username", username))
 
-	if err := ValidateSMBHostSyntax(host); err != nil {
+	ips, err := VetSMBHostIPs(host)
+	if err != nil {
 		return nil, err
 	}
-	// Establish connection
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, "445"), s.timeout)
+	// Establish connection to a vetted address (no second lookup of the name, SMB-FU-9)
+	conn, err := dialVetted(ctx, ips, smbPort, s.timeout)
 	if err != nil {
 		return nil, fmt.Errorf("connect to %s:445: %w", host, err)
 	}
@@ -251,7 +251,11 @@ func (s *SMBDiscoveryService) mountShare(ctx context.Context, config SMBConnecti
 	if s.openShare != nil {
 		return s.openShare(ctx, config, shareName)
 	}
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(config.Host, fmt.Sprintf("%d", config.Port)), s.timeout)
+	ips, err := VetSMBHostIPs(config.Host)
+	if err != nil {
+		return nil, nil, err
+	}
+	conn, err := dialVetted(ctx, ips, config.Port, s.timeout)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to connect to SMB host %s: %w", config.Host, err)
 	}

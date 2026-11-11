@@ -72,7 +72,6 @@ func embeddedV4(ip net.IP) net.IP {
 }
 
 var (
-	cgnatNet     = &net.IPNet{IP: net.IPv4(100, 64, 0, 0), Mask: net.CIDRMask(10, 32)}
 	nat64LocalNe = &net.IPNet{IP: net.ParseIP("64:ff9b:1::"), Mask: net.CIDRMask(48, 128)}
 )
 
@@ -85,8 +84,8 @@ func smbIPBlockedBase(ip net.IP) bool {
 			return true
 		}
 	}
-	if ip.Equal(net.IPv4bcast) || cgnatNet.Contains(ip) || nat64LocalNe.Contains(ip) {
-		return true // limited broadcast, CGNAT 100.64.0.0/10, local-use NAT64 64:ff9b:1::/48
+	if ip.Equal(net.IPv4bcast) || nat64LocalNe.Contains(ip) {
+		return true // limited broadcast, local-use NAT64 64:ff9b:1::/48
 	}
 	return false
 }
@@ -101,12 +100,13 @@ func smbIPBlocked(ip net.IP) bool {
 	return false
 }
 
-// VetSMBHost is the ONE host check for every discovery/probe route: syntax, then resolve (an IPv4 literal is its own answer), then
+// VetSMBHostIPs is the ONE host check for every discovery/probe route: syntax, then resolve (an IPv4 literal is its own answer), then
 // refuse if the lookup fails or ANY resolved address is blocked (loopback, link-local, multicast, unspecified, 0/8, cloud metadata,
-// embedded-IPv4 forms of those). RFC1918 stays allowed (LAN NAS targets).
-func VetSMBHost(host string) error {
+// embedded-IPv4 forms of those). RFC1918 stays allowed (LAN NAS targets). It returns the vetted addresses, in resolver order; callers
+// MUST dial exactly these addresses and never re-resolve the name (SMB-FU-9: DNS rebinding between vet and dial).
+func VetSMBHostIPs(host string) ([]net.IP, error) {
 	if err := ValidateSMBHostSyntax(host); err != nil {
-		return err
+		return nil, err
 	}
 	var ips []net.IP
 	if ip := net.ParseIP(host); ip != nil {
@@ -115,15 +115,22 @@ func VetSMBHost(host string) error {
 		var err error
 		ips, err = SMBHostResolver(host)
 		if err != nil || len(ips) == 0 {
-			return fmt.Errorf("%w: host does not resolve", ErrInvalidSMBInput)
+			return nil, fmt.Errorf("%w: host does not resolve", ErrInvalidSMBInput)
 		}
 	}
 	for _, ip := range ips {
 		if smbIPBlocked(ip) {
-			return fmt.Errorf("%w: host not allowed", ErrInvalidSMBInput)
+			return nil, fmt.Errorf("%w: host not allowed", ErrInvalidSMBInput)
 		}
 	}
-	return nil
+	return ips, nil
+}
+
+// VetSMBHost reports whether host passes VetSMBHostIPs; it does not return the addresses, so it is for pre-checks only (handlers). A
+// dial must use VetSMBHostIPs and its result.
+func VetSMBHost(host string) error {
+	_, err := VetSMBHostIPs(host)
+	return err
 }
 
 // SMBAllowedPorts is {445} plus the ports in CATALOG_SMB_ALLOWED_PORTS (comma list, each 1-65535). Any invalid entry makes the whole
