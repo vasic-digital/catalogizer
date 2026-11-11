@@ -27,3 +27,10 @@ _hip="$(qa_lan_ip 2>/dev/null || true)"
 # Never trust loopback / unspecified / link-local as the proxy peer (an assigned `lo` address would pass the helper): empty = trust nothing.
 case "$_hip" in 127.*|0.*|169.254.*) _hip="";; esac
 TRUSTED_PROXIES="${TRUSTED_PROXIES-${_hip:+${_hip}/32}}"
+# Container creation + START go through the Containers-submodule path (CAT-QA-STACK-LIFECYCLE-1): `podman create` only builds the container in the pod;
+# the start (and health wait) is qa_stack_start -> ctrctl -> submodules/containers. Raw `podman run -d` is forbidden here (test_ctrctl_routing.sh).
+ctr_up() { # <name> <podman-create-args...>
+  local n="$1"; shift
+  podman create --pod "$POD" --name "$n" "$@" >/dev/null || return 1
+  qa_stack_start "$n" || { podman logs --tail 20 "$n" >&2 || true; return 1; }
+}

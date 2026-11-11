@@ -1730,3 +1730,21 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - LIFE-FU-13: `_qa_strip_guid` (:22/:28) leaves IFS set-but-empty globally after `unset IFS`; use `local IFS`.
 - LIFE-FU-14: timeout message in qa_stack_wait_healthy should log the last state.
 - LIFE-FU-15: LIFE-FU-6 test bound `el <= 6` equals the 6 s hang; use a longer hang for margin.
+## CAT-QA-STACK-LIFECYCLE-1: stack scripts via ctrctl (branch feat/stack-scripts-via-ctrctl, 2026-11-11)
+Migrated: container START of `docs/qa/stack3/up.sh` (postgres, redis, api, web, website) and `docs/qa/stack3/sonarqube/up.sh` (db, sonar): `podman run -d` became `podman create` + `qa_stack_start` (helper `ctr_up` in both lib.sh) = ctrctl over submodules/containers. Guard: `docs/qa/stack3/test_ctrctl_routing.sh` + `_mutations.sh`.
+ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go) and the helper adds a `${STACK}-` name guard and a health wait. Everything below is left on raw podman because no helper/ctrctl verb exists (UNKNOWN whether the Containers runtime offers it; not checked, not guessed):
+- STACK-CTR-FU-1: pod create/rm/exists/inspect, `podman port`, `podman ps --filter pod=`, volume create/rm/exists/inspect, image exists/inspect/pull/build, `podman run --rm` (scanner, build.sh, monitoring helper runs), logs, exec, cp, secret create/rm, network create/rm, info (up.sh, down.sh, build.sh, sonarqube/*, monitoring/*, s3/*, helixqa/run.sh) need new ctrctl verbs and helpers; helper changes belong to branch fix/lifecycle-followups-2 (podman_env.sh not edited here).
+- STACK-CTR-FU-2: `monitoring/up.sh` and `s3/up.sh` `podman run -d` (names `${MON_POD}-*` / `catqa-s3live-garage`) are NOT migrated: need per-call `QA_STACK_PREFIX` and shim updates; candidates for the same create+qa_stack_start pattern.
+- STACK-CTR-FU-3: `down.sh` stops by `pod rm -f` (no ctrctl stop-then-remove path); `qa_stack_stop` could be used before the pod removal.
+- STACK-CTR-FU-4: `lifecycle_probe.sh` keeps raw podman on purpose (RED control proving the raw start fails with a guid= DBUS address, and live assertions).
+- STACK-CTR-FU-5: `ctr_up` start waits twice (helper wait + the script's own `wait_healthy`); `qa_stack_wait_healthy` accepts "running none", so web/website are not health-gated by the helper. Not run live (host load); the first real `up.sh` run must be evidence-checked (backend= line in output, `podman ps` shows catqa3-api healthy, DBUS guid= address exported).
+
+## STACK-CTR-FU-6..12 (Opus round-1 review of feat/stack-scripts-via-ctrctl, 2026-11-11; all minor, open)
+- STACK-CTR-FU-6 (test): static guard in test_ctrctl_routing.sh must match any `podman … run` with `-d`/`--detach` in any position and `podman container start|run` (mutants N1, N2 survive).
+- STACK-CTR-FU-7 (test): add create-failure mode using `SHIM_CREATE_RC` (expect non-zero, no `podman start`) (mutants N3, N5).
+- STACK-CTR-FU-8 (test): run up.sh with a recording shim and diff each container's `create` argv against a golden list, proving flags preserved (mutants N4 `--restart`, N6 `--health-cmd`).
+- STACK-CTR-FU-9 (nit): run the `${STACK}-` name guard before `podman create` in `ctr_up` so a refused name leaves no created container.
+- STACK-CTR-FU-10 (test): sonarqube/test_guards.sh:52 `created()` pattern should include container `create `.
+- STACK-CTR-FU-11 (perf): `_qa_stack_backend` runs `go build` on every `qa_stack_start`; build once per script run.
+- STACK-CTR-FU-12 (nit): test_ctrctl_routing*.sh mode 644 (cosmetic).
+- Live check owed: first real up.sh run — verify `backend=` line, catqa3-api healthy in `podman ps`, DBUS address without `guid=`.

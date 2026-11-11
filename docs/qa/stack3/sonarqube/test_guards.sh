@@ -17,6 +17,7 @@ case "$1 $2" in
  "pod inspect") cat "$SHIM_STATE/pod_label" 2>/dev/null; exit 0;;
  "volume exists") [ -f "$SHIM_STATE/vol_$3" ];;
  "volume inspect") cat "$SHIM_STATE/vol_$3" 2>/dev/null; exit 0;;
+ "inspect "*) case "$*" in *"--format"*Health*) echo healthy;; *"--format"*) echo running;; esac; exit 0;;  # qa_stack_wait_healthy (--format); up.sh itself uses -f
  *) exit 0;;
 esac
 SH
