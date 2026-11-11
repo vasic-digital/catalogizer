@@ -4,5 +4,7 @@
 --- PASS: TestLiveCoverArt_F4_Redirects/private-rfc1918 (0.00s)
 --- PASS: TestLiveCoverArt_F4_Redirects/ipv6-loopback (0.00s)
 --- PASS: TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted (0.00s)
+--- PASS: TestLiveCoverArt_F4_RedirectChainLimit (0.00s)
 --- PASS: TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback (0.00s)
+--- PASS: TestLiveCoverArt_F4_StrictDialLayerOfProductionClient (0.00s)
 PASS

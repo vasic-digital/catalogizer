@@ -1,8 +1,0 @@
---- /home/milosvasic/.cache/claude-tmp/coverart.faVQnM/repo/catalog-api/internal/services/cover_art_service.go	2026-11-11 22:34:52.856533818 +0100
-+++ /home/milosvasic/.cache/claude-tmp/coverart-ovl.PAp6f0/m.go	2026-11-11 22:41:19.941139213 +0100
-@@ -1784,4 +1784,4 @@
- var ffprobeTimeout = 30 * time.Second
- 
- // coverArtMaxBytesDefault is the production cap of one downloaded cover image.
--const coverArtMaxBytesDefault int64 = 32 << 20
-+const coverArtMaxBytesDefault int64 = 1 << 40

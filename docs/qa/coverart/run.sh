@@ -2,7 +2,7 @@
 # CAT-COVERART-LIVE-1: live cover-art fetch checks (F2 32 MiB cap, F4 redirect/private blocking)
 # through the REAL CoverArtService.downloadImage. See README.md for scope and limits.
 #
-# Usage: run.sh [--out DIR] [--mutate cap|strict|netguard] | --parse FILE | --help
+# Usage: run.sh [--out DIR] [--mutate cap|strict|netguard|m1|m2|m5|m7|m8] | --parse FILE | --help
 # Exit: 0 PASS, 1 FAIL, 64 usage error, 2 environment problem (cannot determine).
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -18,7 +18,9 @@ REQUIRED=(
   TestLiveCoverArt_F4_Redirects/private-rfc1918
   TestLiveCoverArt_F4_Redirects/ipv6-loopback
   TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted
+  TestLiveCoverArt_F4_RedirectChainLimit
   TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback
+  TestLiveCoverArt_F4_StrictDialLayerOfProductionClient
 )
 
 usage() { sed -n '2,7p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
@@ -45,7 +47,7 @@ while [ $# -gt 0 ]; do
     *) echo "unknown option: $1" >&2; usage >&2; exit 64 ;;
   esac
 done
-case "$MUT" in ""|cap|strict|netguard) ;; *) echo "unknown mutation: $MUT" >&2; exit 64 ;; esac
+case "$MUT" in ""|cap|strict|netguard|m1|m2|m5|m7|m8) ;; *) echo "unknown mutation: $MUT" >&2; exit 64 ;; esac
 
 [ -d "$API/../submodules/security" ] && [ -n "$(ls -A "$API/../submodules/security" 2>/dev/null)" ] || {
   echo "submodules (replace targets of catalog-api/go.mod) are not initialised" >&2; exit 2; }
@@ -66,6 +68,16 @@ if [ -n "$MUT" ]; then
               SRC="$API/internal/services/cover_art_service.go"
               sed 's/netguard.StrictClient(30\*time.Second, 3, netguard.HTTPOrHTTPS), \/\/ image URLs/netguard.Client(30*time.Second, 3, netguard.HTTPOrHTTPS), \/\/ image URLs/' "$SRC" \
                 | sed '/^func (s \*CoverArtService) downloadImage/,/^}/{/GuardProviderURL(imageURL/,/^\t}/d}' > "$SCR/m.go" ;;
+    m1)       SRC="$API/internal/services/cover_art_service.go"
+              sed 's/netguard.StrictClient(30\*time.Second, 3, netguard.HTTPOrHTTPS), \/\/ image URLs/netguard.Client(30*time.Second, 3, netguard.HTTPOrHTTPS), \/\/ image URLs/' "$SRC" > "$SCR/m.go" ;;
+    m2)       SRC="$API/internal/netguard/netguard.go"
+              sed 's/ip.IsMulticast() || ip.IsLinkLocalUnicast() ||/ip.IsMulticast() ||/' "$SRC" > "$SCR/m.go" ;;
+    m5)       SRC="$API/internal/netguard/netguard.go"
+              sed 's/len(via) > maxRedirects || //' "$SRC" > "$SCR/m.go" ;;
+    m7)       SRC="$API/internal/netguard/netguard.go"
+              sed 's/^\tif alwaysBlocked(ip) {$/\tif ip.To4() == nil {\n\t\treturn false\n\t}\n&/' "$SRC" > "$SCR/m.go" ;;
+    m8)       SRC="$API/internal/netguard/netguard.go"
+              sed 's/ip.IsLoopback() || ip.IsPrivate() || cgnat/ip.IsLoopback() || cgnat/' "$SRC" > "$SCR/m.go" ;;
     netguard) SRC="$API/internal/netguard/netguard.go"
               sed 's/^func isBlocked(ip net.IP, honorAllow bool) bool {$/&\n\treturn false/' "$SRC" > "$SCR/m.go" ;;
   esac
@@ -76,7 +88,8 @@ if [ -n "$MUT" ]; then
 fi
 
 { echo "date_utc=$TS"; echo "mutation=${MUT:-none}"; echo "go=$(go version)"; echo "git_head=$(git -C "$REPO" rev-parse HEAD)";
-  echo "git_dirty=$(git -C "$REPO" status --porcelain | wc -l)"; echo "host=$(uname -srm)"; } > "$OUT/ENV.txt"
+  echo "git_tree=$(git -C "$REPO" rev-parse 'HEAD^{tree}')"; echo "git_dirty_outside_results=$(git -C "$REPO" status --porcelain | grep -vc 'docs/qa/coverart/results/')";
+  echo "test_file_sha256=$(sha256sum "$API/internal/services/coverart_live_ssrf_test.go" | cut -d' ' -f1)"; echo "run_sh_sha256=$(sha256sum "${BASH_SOURCE[0]}" | cut -d' ' -f1)"; echo "host=$(uname -srm)"; } > "$OUT/ENV.txt"
 
 PRE=(env GOMAXPROCS="${GOMAXPROCS:-2}" nice -n 10)
 if command -v systemd-run >/dev/null && [ -S /run/user/$(id -u)/bus ]; then
@@ -87,6 +100,13 @@ fi
 echo "go_test_exit=$?" >> "$OUT/ENV.txt"
 ( cd "$API" && "${PRE[@]}" go test -count=1 -tags live_coverart "${OVL[@]}" -run "$RUN_RE" -json "$PKG" ) > "$OUT/go_test.json.txt" 2>&1
 
+for f in "$OUT"/go_test.txt "$OUT"/go_test.json.txt "$OUT"/mutation.diff.txt; do
+  [ -f "$f" ] && sed -i "s#$HOME#~#g" "$f"; done
+sed -i "s#$HOME#~#g" "$OUT/ENV.txt"
+if ! grep -q '^=== RUN' "$OUT/go_test.txt"; then
+  echo "VERDICT: BLIND (no test started: build failure or empty selection)" | tee "$OUT/verdict.txt"
+  ( cd "$OUT" && sha256sum -- * > SHA256SUMS.txt 2>/dev/null; true ); exit 2
+fi
 parse_verdict "$OUT/go_test.txt" > "$OUT/verdict.txt"; rc=$?
 cat "$OUT/verdict.txt"
 ( cd "$OUT" && sha256sum -- * > SHA256SUMS.txt 2>/dev/null; true )

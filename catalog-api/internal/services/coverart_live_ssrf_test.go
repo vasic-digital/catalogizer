@@ -14,6 +14,8 @@ package services
 import (
 	"bytes"
 	"context"
+	"errors"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -136,12 +138,28 @@ func TestLiveCoverArt_F4_Redirects(t *testing.T) {
 	assert.Equal(t, "ALLOWED-IMAGE", string(b))
 	assert.EqualValues(t, 1, atomic.LoadInt32(&hOK), "control: allowed redirect target was contacted")
 
-	// bad cases: refused, target never contacted
+	// counted [::1] listener (when IPv6 loopback exists): must see 0 hits
+	var hV6 int32
+	v6target := "http://[::1]:1/x"
+	if l6, e6 := net.Listen("tcp6", "[::1]:0"); e6 == nil {
+		v6 := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			atomic.AddInt32(&hV6, 1)
+			io.WriteString(w, "V6-SECRET")
+		}))
+		v6.Listener = l6
+		v6.Start()
+		defer v6.Close()
+		v6target = v6.URL + "/x"
+	} else {
+		t.Logf("no IPv6 loopback (%v): ::1 case uses a closed port, error class only", e6)
+	}
+
+	// bad cases: refused by the netguard dial layer (error class asserted), target never contacted
 	for name, to := range map[string]string{
 		"loopback-not-allowlisted": internal.URL + "/x",
 		"link-local-metadata":      "http://169.254.169.254/latest/meta-data/",
 		"private-rfc1918":          "http://10.0.0.5/x",
-		"ipv6-loopback":            "http://[::1]:1/x",
+		"ipv6-loopback":            v6target,
 	} {
 		t.Run(name, func(t *testing.T) {
 			rs := redir(to)
@@ -149,9 +167,44 @@ func TestLiveCoverArt_F4_Redirects(t *testing.T) {
 			b, err := s.downloadImage(context.Background(), rs.URL)
 			require.Error(t, err)
 			assert.Empty(t, b)
+			assert.True(t, errors.Is(err, netguard.ErrBlocked), "must be refused by the guard, got: %v", err)
 		})
 	}
 	assert.Zero(t, atomic.LoadInt32(&hInternal), "the non-allow-listed internal server must never be contacted")
+	assert.Zero(t, atomic.LoadInt32(&hV6), "the [::1] server must never be contacted")
+}
+
+// Redirect chains: 3 hops are followed (control), 5 hops are not (limit enforced).
+func TestLiveCoverArt_F4_RedirectChainLimit(t *testing.T) {
+	s := liveService(t, "127.0.0.1/32")
+	var hFinal int32
+	final := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&hFinal, 1)
+		io.WriteString(w, "END")
+	}))
+	defer final.Close()
+	chain := func(hops int) string {
+		var mux http.ServeMux
+		srv := httptest.NewServer(&mux)
+		t.Cleanup(srv.Close)
+		for i := 0; i < hops; i++ {
+			next := fmt.Sprintf("%s/h%d", srv.URL, i+1)
+			if i == hops-1 {
+				next = final.URL
+			}
+			to := next
+			mux.HandleFunc(fmt.Sprintf("/h%d", i), func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, to, http.StatusFound) })
+		}
+		return srv.URL + "/h0"
+	}
+	b, err := s.downloadImage(context.Background(), chain(3))
+	require.NoError(t, err, "control: a 3-hop chain is followed")
+	assert.Equal(t, "END", string(b))
+	assert.EqualValues(t, 1, atomic.LoadInt32(&hFinal))
+	b, err = s.downloadImage(context.Background(), chain(5))
+	require.Error(t, err, "a 5-hop chain exceeds the limit of 3")
+	assert.Empty(t, b)
+	assert.EqualValues(t, 1, atomic.LoadInt32(&hFinal), "the end of the over-long chain must not be reached")
 }
 
 // Production configuration: the default strict client refuses a loopback origin outright.
@@ -167,5 +220,23 @@ func TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback(t *testing.T) {
 	b, err := s.downloadImage(context.Background(), srv.URL)
 	require.Error(t, err)
 	assert.Empty(t, b)
+	assert.True(t, errors.Is(err, ErrSSRFBlocked), "string guard must refuse, got: %v", err)
 	assert.Zero(t, atomic.LoadInt32(&hits), "loopback origin must not be contacted by the production client")
+}
+
+// Dial layer of the untouched production client (StrictClient): the string guard is relaxed so
+// it cannot be what refuses; the operator allow-list admits loopback and must not matter.
+func TestLiveCoverArt_F4_StrictDialLayerOfProductionClient(t *testing.T) {
+	restore := SetTestAllowPrivateNetworks(true) // string guard off
+	defer restore()
+	t.Setenv(netguard.AllowCIDRsEnv, "127.0.0.0/8")
+	var hits int32
+	srv := httptest.NewServer(repeatHandler(1024, &hits))
+	defer srv.Close()
+	s := NewCoverArtService(nil, zap.NewNop()) // production client, not replaced
+	b, err := s.downloadImage(context.Background(), srv.URL)
+	require.Error(t, err)
+	assert.Empty(t, b)
+	assert.True(t, errors.Is(err, netguard.ErrBlocked), "dial layer must refuse with ErrBlocked, got: %v", err)
+	assert.Zero(t, atomic.LoadInt32(&hits))
 }
