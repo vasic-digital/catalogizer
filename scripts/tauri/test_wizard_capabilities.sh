@@ -16,7 +16,9 @@
 # invoke('plugin:dialog|<cmd>') demands <cmd>. Structural fallback (review round 4): ANY other occurrence of "plugin-dialog" or "plugin:dialog"
 # (dynamic import(), require(), `import * as`, re-exports, constants, 'plugin:dialog|'+x, comments, strings) and ANY "__TAURI__" text, and
 # app.withGlobalTauri true in tauri.conf.json, demand ALL five dialog permissions. Only vi.mock/jest.mock/doMock/unmock of the package are
-# explained away (test-only). Trade-off: a mention in a comment or string demands extra permissions (false positive accepted), a false negative is not.
+# explained away (test-only). *.html anywhere under the wizard root (index.html, public/; not node_modules/dist/target/.git) is scanned the
+# same way; extensions match case-insensitively. A non-empty src-tauri/permissions/ (app-defined permission sets) is BLIND (exit 2).
+# Capability "webviews" fields are ignored (conservative); a remote capability with urls [] FAILs (conservative). Trade-off: a mention in a comment or string demands extra permissions (false positive accepted), a false negative is not.
 # Parse problems in ANY capability file or tauri.conf.json are fatal (exit 2, BLIND), never ignored. Import detection handles single/double quotes, multi-line and aliased named imports; `import * as` and dynamic `import()` need all five
 # commands (conservative); `export {..} from` / `export * from` re-exports count like imports.
 # Capability files: Tauri CapabilityFile = Capability | List | NamedList {"capabilities":[..]}; all three are parsed per capability. Type errors in
@@ -68,16 +70,25 @@ need, seen = set(), False
 def walk_error(e):
     raise e
 real_seen = set()
-for dp, dns, fns in os.walk(SRC, followlinks=True, onerror=walk_error):
+SKIPDIRS = ("node_modules", "dist", "target", ".git")
+PERMS = os.path.join(W, "src-tauri", "permissions")
+if os.path.isdir(PERMS) and os.listdir(PERMS):
+    print("BLIND: %s holds app-defined permission sets (not parsed); the guard cannot see what they grant" % PERMS, file=sys.stderr)
+    sys.exit(2)
+for dp, dns, fns in os.walk(W, followlinks=True, onerror=walk_error):
     keep = []
     for d in dns:
+        if d in SKIPDIRS:
+            continue
         rp = os.path.realpath(os.path.join(dp, d))
         if rp not in real_seen:  # symlink-loop guard: every real directory is walked once
             real_seen.add(rp)
             keep.append(d)
     dns[:] = keep
     for fn in fns:
-        if not fn.endswith(EXTS):
+        lo = fn.lower()
+        in_src = dp == SRC or dp.startswith(SRC + os.sep)  # lexical: symlinked dirs under src/ count as src/
+        if not (lo.endswith(".html") or (in_src and lo.endswith(EXTS))):
             continue
         t0 = open(os.path.join(dp, fn), encoding="utf-8", errors="replace").read()
         t1 = unescape(t0)

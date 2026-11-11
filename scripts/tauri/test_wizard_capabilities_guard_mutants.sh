@@ -15,7 +15,7 @@ M = {
  "M1_mask_comments_again": ('t1 = unescape(t0)', 't0 = re.sub(r"/\\*.*?\\*/|//[^\\n]*", "", t0, flags=re.S)\n        t1 = unescape(t0)'),
  "M2_drop_namedlist_form": ('if isinstance(d, dict) and "capabilities" in d:', 'if False:'),
  "M3_substring_window_match": ('fnmatch.fnmatchcase(target, w)', '(w == "*" or target in w)'),
- "M4_skip_test_dirs": ('    for fn in fns:\n        if not fn.endswith(EXTS):', '    dns[:] = [d for d in dns if d not in ("test", "__tests__")]\n    for fn in fns:\n        if not fn.endswith(EXTS):'),
+ "M4_skip_test_dirs": ('    for fn in fns:\n        lo = fn.lower()', '    dns[:] = [d for d in dns if d not in ("test", "__tests__")]\n    for fn in fns:\n        lo = fn.lower()'),
  "M5_ts_only": ('EXTS = (".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts")', 'EXTS = (".ts", ".tsx")'),
  "M6_unterminated_comment_tolerated": ('raise ValueError("unterminated /* comment")', 'j = n - 2'),
  "M7_no_excepthook": ('sys.excepthook = _blind', 'pass'),
@@ -33,6 +33,14 @@ M = {
  "M19_mock_exemption_dropped": ('for m in mock.finditer(t):\n                explained.append((m.start(), m.end()))', 'for m in mock.finditer(t):\n                pass'),
  "M20_deny_flag_ignored": ('if target is not None and not denied_hit:', 'if target is not None:'),
  "M21_mock_exempts_everything": ('mock = re.compile(r"\\b(?:vi|jest)\\.(?:mock|doMock|unmock)\\s*\\(\\s*" + PKG)', 'mock = re.compile(r"(?s).*")'),
+ "M23_case_sensitive_ext": ('lo = fn.lower()', 'lo = fn'),
+ "M24_html_not_scanned": ('lo.endswith(".html") or ', ''),
+ "M25_html_in_node_modules": ('if d in SKIPDIRS:', 'if False:'),
+ "M26_permissions_dir_ignored": ('if os.path.isdir(PERMS) and os.listdir(PERMS):', 'if False:'),
+ "M27_prefer_last_label": ('"main" if "main" in labels else labels[0]', 'labels[-1]'),
+ "M28_prefer_first_label": ('"main" if "main" in labels else labels[0]', 'labels[0]'),
+ "M29_html_outside_src_only_ts": ('(lo.endswith(".html") or (in_src and lo.endswith(EXTS)))', '(in_src and (lo.endswith(".html") or lo.endswith(EXTS)))'),
+ "M30_no_unicode_escape": ('ESC = re.compile(r"\\\\x([0-9a-fA-F]{2})|\\\\u([0-9a-fA-F]{4})|\\\\u\\{([0-9a-fA-F]{1,6})\\}")', 'ESC = re.compile(r"\\\\x([0-9a-fA-F]{2})")'),
  "M22_unmentioned_fallback_dropped_unescaped": ('mention = re.compile(r"plugin[-:]dialog")', 'mention = re.compile(r"plugin-dialog")'),
 }
 for k, (a, b) in M.items():

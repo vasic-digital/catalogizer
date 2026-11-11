@@ -309,5 +309,28 @@ run_case y_escaped_plugin_word_needs_decoding 1 m_y_escaped_plugin_word
 run_case y_symlinked_src_dir_scanned 1 m_y_symlink_dir_c
 run_case y_symlink_loop_terminates 0 m_y_symlink_loop
 run_case y_unreadable_src_dir_blind 2 m_y_unreadable_dir
+# --- coordinator follow-ups after Opus round 4: html scan, app permission dir BLIND, label choice, uppercase ext, escapes, re-export ---
+m_z_html_index() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'"; printf '%s\n' '<script>window.__TAURI__.dialog.message("x")</script>' >"$W/index.html"; }
+m_z_html_public() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'"; mkdir -p "$W/public"; printf '%s\n' '<script type="module">import("@tauri-apps/plugin-dialog")</script>' >"$W/public/p.html"; }
+m_z_html_node_modules_ignored() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'"; mkdir -p "$W/node_modules/x"; printf '%s\n' '<p>plugin-dialog</p>' >"$W/node_modules/x/r.html"; }
+m_z_perm_dir_file() { mkdir -p "$W/src-tauri/permissions"; printf '%s\n' '[[permission]]' 'identifier = "x"' >"$W/src-tauri/permissions/x.toml"; }
+m_z_perm_dir_empty() { mkdir -p "$W/src-tauri/permissions"; }
+m_z_upper_ext() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'"; printf '%s\n' "import { save } from '@tauri-apps/plugin-dialog'" >"$W/src/services/X.TS"; }
+m_z_unicode_in_word() { only_open; setsrc "export const f = () => import('@tauri-apps/\\u0070lugin-dialog')"; }
+m_z_reexport_open_pass() { only_open; setsrc "export { open } from '@tauri-apps/plugin-dialog'"; }
+m_z_main_first_grant_main() { setconf 'd["app"]["windows"]=[{"label":"main"},{"label":"other"}]'; cap '{"identifier":"d","windows":["main"],'"$P"'}'; }
+m_z_other_first_grant_other_only() { setconf 'd["app"]["windows"]=[{"label":"other"},{"label":"main"}]'; cap '{"identifier":"d","windows":["other"],'"$P"'}'; }
+m_z_first_label_used_when_no_main() { setconf 'd["app"]["windows"]=[{"label":"a"},{"label":"b"}]'; cap '{"identifier":"d","windows":["a"],'"$P"'}'; }
+run_case z_html_index_global_tauri 1 m_z_html_index
+run_case z_html_public_dynamic_import 1 m_z_html_public
+run_case z_html_in_node_modules_ignored 0 m_z_html_node_modules_ignored
+run_case z_app_permission_dir_with_file_blind 2 m_z_perm_dir_file
+run_case z_app_permission_dir_empty_pass 0 m_z_perm_dir_empty
+run_case z_uppercase_extension_scanned 1 m_z_upper_ext
+run_case z_unicode_escape_in_plugin_word 1 m_z_unicode_in_word
+run_case z_reexport_open_granted_pass 0 m_z_reexport_open_pass
+run_case z_main_first_prefers_main 0 m_z_main_first_grant_main
+run_case z_other_first_main_preferred_other_only_fails 1 m_z_other_first_grant_other_only
+run_case z_no_main_uses_first_label 0 m_z_first_label_used_when_no_main
 [ "$bad" = 0 ] && echo "ALL CASES OK" || echo "MUTATION TEST FAILED"
 exit "$bad"
