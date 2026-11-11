@@ -1,0 +1,5051 @@
+{
+  "project": "catalogizer-web",
+  "closed_total": 66,
+  "issues": [
+    {
+      "key": "bacbadc9-d213-4670-8a25-2c0adf475399",
+      "rule": "typescript:S3776",
+      "severity": "CRITICAL",
+      "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+      "project": "catalogizer-web",
+      "hash": "f0d2b0b260ee752bab44bd9908ab4bbd",
+      "textRange": {
+        "startLine": 147,
+        "endLine": 147,
+        "startOffset": 16,
+        "endOffset": 25
+      },
+      "flows": [
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 148,
+                "endLine": 148,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 151,
+                "endLine": 151,
+                "startOffset": 2,
+                "endOffset": 5
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 152,
+                "endLine": 152,
+                "startOffset": 4,
+                "endOffset": 6
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 156,
+                "endLine": 156,
+                "startOffset": 4,
+                "endOffset": 6
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 168,
+                "endLine": 168,
+                "startOffset": 4,
+                "endOffset": 6
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 169,
+                "endLine": 169,
+                "startOffset": 39,
+                "endOffset": 41
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 173,
+                "endLine": 173,
+                "startOffset": 4,
+                "endOffset": 7
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 174,
+                "endLine": 174,
+                "startOffset": 6,
+                "endOffset": 8
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 176,
+                "endLine": 176,
+                "startOffset": 6,
+                "endOffset": 8
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 177,
+                "endLine": 177,
+                "startOffset": 6,
+                "endOffset": 8
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 177,
+                "endLine": 177,
+                "startOffset": 13,
+                "endOffset": 15
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 178,
+                "endLine": 178,
+                "startOffset": 6,
+                "endOffset": 8
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 178,
+                "endLine": 178,
+                "startOffset": 29,
+                "endOffset": 31
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        }
+      ],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.",
+      "effort": "15min",
+      "debt": "15min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "brain-overload",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-10T22:10:14+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "FOCUSED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "4b53b9ec-2dd9-4481-bcc1-55b5f81d0747",
+      "rule": "typescript:S3776",
+      "severity": "CRITICAL",
+      "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+      "project": "catalogizer-web",
+      "hash": "f34effbf944b0736148e64ddf6e368e0",
+      "textRange": {
+        "startLine": 118,
+        "endLine": 118,
+        "startOffset": 16,
+        "endOffset": 31
+      },
+      "flows": [
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 121,
+                "endLine": 121,
+                "startOffset": 2,
+                "endOffset": 5
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 122,
+                "endLine": 122,
+                "startOffset": 4,
+                "endOffset": 6
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 124,
+                "endLine": 124,
+                "startOffset": 4,
+                "endOffset": 6
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 126,
+                "endLine": 126,
+                "startOffset": 4,
+                "endOffset": 6
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 128,
+                "endLine": 128,
+                "startOffset": 4,
+                "endOffset": 6
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 128,
+                "endLine": 128,
+                "startOffset": 74,
+                "endOffset": 76
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 129,
+                "endLine": 129,
+                "startOffset": 85,
+                "endOffset": 87
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 131,
+                "endLine": 131,
+                "startOffset": 4,
+                "endOffset": 6
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 131,
+                "endLine": 131,
+                "startOffset": 19,
+                "endOffset": 20
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 134,
+                "endLine": 134,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        }
+      ],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "effort": "6min",
+      "debt": "6min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "brain-overload",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-06T08:06:09+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "FOCUSED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "5794346a-fad8-4a22-9d95-2f73dbfc1033",
+      "rule": "typescript:S3776",
+      "severity": "CRITICAL",
+      "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+      "project": "catalogizer-web",
+      "hash": "b64a4703e9db030a1b1493ab9bf202f9",
+      "textRange": {
+        "startLine": 112,
+        "endLine": 112,
+        "startOffset": 3,
+        "endOffset": 5
+      },
+      "flows": [
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 306,
+                "endLine": 306,
+                "startOffset": 18,
+                "endOffset": 19
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 308,
+                "endLine": 308,
+                "startOffset": 18,
+                "endOffset": 19
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 311,
+                "endLine": 311,
+                "startOffset": 57,
+                "endOffset": 58
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 313,
+                "endLine": 313,
+                "startOffset": 61,
+                "endOffset": 62
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 336,
+                "endLine": 336,
+                "startOffset": 37,
+                "endOffset": 38
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 339,
+                "endLine": 339,
+                "startOffset": 36,
+                "endOffset": 37
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 371,
+                "endLine": 371,
+                "startOffset": 24,
+                "endOffset": 25
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 375,
+                "endLine": 375,
+                "startOffset": 33,
+                "endOffset": 34
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 408,
+                "endLine": 408,
+                "startOffset": 59,
+                "endOffset": 60
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 414,
+                "endLine": 414,
+                "startOffset": 59,
+                "endOffset": 60
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 420,
+                "endLine": 420,
+                "startOffset": 59,
+                "endOffset": 60
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 426,
+                "endLine": 426,
+                "startOffset": 59,
+                "endOffset": 60
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 468,
+                "endLine": 468,
+                "startOffset": 65,
+                "endOffset": 66
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 503,
+                "endLine": 503,
+                "startOffset": 32,
+                "endOffset": 33
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 537,
+                "endLine": 537,
+                "startOffset": 36,
+                "endOffset": 37
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+              "textRange": {
+                "startLine": 550,
+                "endLine": 550,
+                "startOffset": 51,
+                "endOffset": 52
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        }
+      ],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.",
+      "effort": "8min",
+      "debt": "8min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "brain-overload",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-05T17:29:29+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "FOCUSED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "e4194f54-21d4-400b-bf41-05a83d25faf1",
+      "rule": "typescript:S3358",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+      "project": "catalogizer-web",
+      "hash": "75c7f6fb5f9e2446e0764b40bfffc052",
+      "textRange": {
+        "startLine": 307,
+        "endLine": 309,
+        "startOffset": 20,
+        "endOffset": 82
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Extract this nested ternary operation into an independent statement.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "editable-source",
+        "confusing"
+      ],
+      "creationDate": "2026-11-05T17:29:29+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "c4d6b0c1-2836-4ff7-b694-532259c7e58b",
+      "rule": "typescript:S3776",
+      "severity": "CRITICAL",
+      "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+      "project": "catalogizer-web",
+      "hash": "ce5d581fdf4e557a3b38109181ced28c",
+      "textRange": {
+        "startLine": 55,
+        "endLine": 55,
+        "startOffset": 29,
+        "endOffset": 31
+      },
+      "flows": [
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 60,
+                "endLine": 60,
+                "startOffset": 4,
+                "endOffset": 7
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 61,
+                "endLine": 61,
+                "startOffset": 6,
+                "endOffset": 8
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 63,
+                "endLine": 63,
+                "startOffset": 6,
+                "endOffset": 8
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 63,
+                "endLine": 63,
+                "startOffset": 37,
+                "endOffset": 38
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 65,
+                "endLine": 65,
+                "startOffset": 6,
+                "endOffset": 8
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 66,
+                "endLine": 66,
+                "startOffset": 8,
+                "endOffset": 10
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 66,
+                "endLine": 66,
+                "startOffset": 18,
+                "endOffset": 20
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 75,
+                "endLine": 75,
+                "startOffset": 6,
+                "endOffset": 8
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/test/contrast.ts",
+              "textRange": {
+                "startLine": 79,
+                "endLine": 79,
+                "startOffset": 17,
+                "endOffset": 18
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        }
+      ],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+      "effort": "6min",
+      "debt": "6min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "brain-overload",
+        "editable-source"
+      ],
+      "creationDate": "2026-11-05T17:29:29+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "FOCUSED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "2a97ed90-9c49-4187-90a7-6ba22ac80aa8",
+      "rule": "typescript:S1082",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/components/identity/DiscoveredShares.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 150,
+        "endLine": 153,
+        "startOffset": 10,
+        "endOffset": 11
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Visible, non-interactive elements with click handlers must have at least one keyboard listener.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-06-26T11:54:27+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "70e3bc1d-73d9-4750-a596-0cc1b209059f",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/identity/DiscoveredShares.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 150,
+        "endLine": 153,
+        "startOffset": 10,
+        "endOffset": 11
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-06-26T11:54:27+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        },
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "edf658d8-fcec-4fe0-b4a4-823b164c4b3c",
+      "rule": "typescript:S3923",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/identity/IdentityManager.tsx",
+      "project": "catalogizer-web",
+      "hash": "cb283a0ea4fb6e0857bb03dd60c4a609",
+      "textRange": {
+        "startLine": 203,
+        "endLine": 203,
+        "startOffset": 21,
+        "endOffset": 75
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "This conditional operation returns the same value whether the condition is \"true\" or \"false\".",
+      "effort": "15min",
+      "debt": "15min",
+      "author": "i@mvasic.ru",
+      "tags": [],
+      "creationDate": "2026-06-26T11:54:27+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "a18d525b-facc-4659-bcc6-263c50233b29",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/__tests__/useCoverQuality.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "e00709ff993f8596ac217d474ecc761c",
+      "textRange": {
+        "startLine": 97,
+        "endLine": 97,
+        "startOffset": 2,
+        "endOffset": 4
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "dev@catalogizer.local",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-04-18T10:59:52+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "af4eca2b-b60d-4bca-9813-d1c23a3ff4dd",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/components/media/__tests__/HistoryDrawer.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "367724eb8e3df1661cc145e4e7269eb3",
+      "textRange": {
+        "startLine": 210,
+        "endLine": 210,
+        "startOffset": 2,
+        "endOffset": 4
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "dev@catalogizer.local",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-04-14T09:31:38+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "2de5443c-917a-4e57-b595-94386706407c",
+      "rule": "typescript:S1082",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/components/media/HistoryDrawer.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 66,
+        "endLine": 70,
+        "startOffset": 4,
+        "endOffset": 5
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Visible, non-interactive elements with click handlers must have at least one keyboard listener.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "dev@catalogizer.local",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-04-11T21:39:13+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "453f74ee-406c-454d-85a1-006f89275e76",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/media/HistoryDrawer.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 66,
+        "endLine": 70,
+        "startOffset": 4,
+        "endOffset": 5
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "dev@catalogizer.local",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-04-11T21:39:13+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        },
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "76d187d1-b308-4a97-a46e-c4334b411478",
+      "rule": "typescript:S6847",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/media/HistoryDrawer.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 71,
+        "endLine": 77,
+        "startOffset": 6,
+        "endOffset": 7
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Non-interactive elements should not be assigned mouse or keyboard event listeners.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "dev@catalogizer.local",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-04-11T21:39:13+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "d42ff742-d7e9-436d-ba41-858fe1c320df",
+      "rule": "typescript:S1082",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/components/media/HistoryDrawer.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 71,
+        "endLine": 77,
+        "startOffset": 6,
+        "endOffset": 7
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Visible, non-interactive elements with click handlers must have at least one keyboard listener.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "dev@catalogizer.local",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-04-11T21:39:13+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "52792830-e51b-46ed-af71-58137f9d63a2",
+      "rule": "typescript:S3735",
+      "severity": "CRITICAL",
+      "component": "catalogizer-web:catalog-web/src/components/auth/RegisterForm.tsx",
+      "project": "catalogizer-web",
+      "hash": "edb916a749894cbd94c6d0669232f750",
+      "textRange": {
+        "startLine": 93,
+        "endLine": 93,
+        "startOffset": 6,
+        "endOffset": 10
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Remove this use of the \"void\" operator.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "editable-source",
+        "type-dependent",
+        "confusing"
+      ],
+      "creationDate": "2026-04-03T18:13:34+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "2dcb24c8-fb9a-45cc-8d1d-45d9d2d5f2d7",
+      "rule": "typescript:S3735",
+      "severity": "CRITICAL",
+      "component": "catalogizer-web:catalog-web/src/components/collections/BulkOperations.tsx",
+      "project": "catalogizer-web",
+      "hash": "edb916a749894cbd94c6d0669232f750",
+      "textRange": {
+        "startLine": 137,
+        "endLine": 137,
+        "startOffset": 6,
+        "endOffset": 10
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Remove this use of the \"void\" operator.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "editable-source",
+        "type-dependent",
+        "confusing"
+      ],
+      "creationDate": "2026-04-03T18:13:34+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "4e735e8a-c713-4758-a2d0-13f15c44955f",
+      "rule": "typescript:S3735",
+      "severity": "CRITICAL",
+      "component": "catalogizer-web:catalog-web/src/components/collections/CollectionSettings.tsx",
+      "project": "catalogizer-web",
+      "hash": "edb916a749894cbd94c6d0669232f750",
+      "textRange": {
+        "startLine": 159,
+        "endLine": 159,
+        "startOffset": 8,
+        "endOffset": 12
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Remove this use of the \"void\" operator.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "editable-source",
+        "type-dependent",
+        "confusing"
+      ],
+      "creationDate": "2026-04-03T18:13:34+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "4f275e04-3e33-41cd-8850-6c8c2b088988",
+      "rule": "typescript:S3735",
+      "severity": "CRITICAL",
+      "component": "catalogizer-web:catalog-web/src/components/collections/CollectionSettings.tsx",
+      "project": "catalogizer-web",
+      "hash": "edb916a749894cbd94c6d0669232f750",
+      "textRange": {
+        "startLine": 184,
+        "endLine": 184,
+        "startOffset": 6,
+        "endOffset": 10
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Remove this use of the \"void\" operator.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "editable-source",
+        "type-dependent",
+        "confusing"
+      ],
+      "creationDate": "2026-04-03T18:13:34+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "094485df-5e3e-41ab-ae5c-8f139b25baea",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/components/collections/__tests__/CollectionExport.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "15b8bbe89dff1cfca4cb7cc0671319b9",
+      "textRange": {
+        "startLine": 147,
+        "endLine": 147,
+        "startOffset": 2,
+        "endOffset": 4
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-03-31T11:42:45+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "4a452211-2700-48cf-8412-3915b03f0614",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/components/collections/__tests__/SmartCollectionBuilder.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "1eeda282fdc6c1458b502b749e416acb",
+      "textRange": {
+        "startLine": 233,
+        "endLine": 233,
+        "startOffset": 2,
+        "endOffset": 4
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-03-31T11:42:45+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "897e4175-7f3e-470d-b7a6-26837d76d036",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/components/collections/__tests__/SmartCollectionBuilder.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "fbf8528bdcfba4ce1eca35e26a1f210d",
+      "textRange": {
+        "startLine": 138,
+        "endLine": 138,
+        "startOffset": 2,
+        "endOffset": 4
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-03-31T11:42:45+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "844f6a8b-2de7-4aaf-9b34-c46d495034db",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/components/playlists/__tests__/PlaylistPlayer.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "2a10d7922b5d45c03aec4acfb248210f",
+      "textRange": {
+        "startLine": 196,
+        "endLine": 196,
+        "startOffset": 2,
+        "endOffset": 4
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-03-31T11:42:45+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "96b442ee-b32b-4998-84c9-de59670fb5e4",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/components/playlists/__tests__/PlaylistPlayer.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "31930eb675a2a0824ee68750c0af033f",
+      "textRange": {
+        "startLine": 177,
+        "endLine": 177,
+        "startOffset": 2,
+        "endOffset": 4
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-03-31T11:42:45+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "c1d26d4d-dba2-4cb0-ae40-0a0979295fde",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/components/playlists/__tests__/PlaylistPlayer.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "77ddd71173aaba4c4fe7221e6d5e2bcf",
+      "textRange": {
+        "startLine": 161,
+        "endLine": 161,
+        "startOffset": 2,
+        "endOffset": 4
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-03-31T11:42:45+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "e028dafb-9a02-41e4-bdc5-eb948a1d2b8c",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/components/playlists/__tests__/PlaylistPlayer.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "dee6b5ea33b97dfb6201e09525a720e7",
+      "textRange": {
+        "startLine": 147,
+        "endLine": 147,
+        "startOffset": 2,
+        "endOffset": 4
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-03-31T11:42:45+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "3917db91-6b7b-46a0-8f3f-3ad4b9bbac70",
+      "rule": "typescript:S3776",
+      "severity": "CRITICAL",
+      "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+      "project": "catalogizer-web",
+      "hash": "f493d2aafb39b59d46de853d03f634aa",
+      "textRange": {
+        "startLine": 342,
+        "endLine": 342,
+        "startOffset": 61,
+        "endOffset": 63
+      },
+      "flows": [
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 345,
+                "endLine": 345,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 349,
+                "endLine": 349,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 356,
+                "endLine": 356,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 356,
+                "endLine": 356,
+                "startOffset": 35,
+                "endOffset": 37
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 369,
+                "endLine": 369,
+                "startOffset": 4,
+                "endOffset": 6
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 375,
+                "endLine": 375,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 375,
+                "endLine": 375,
+                "startOffset": 29,
+                "endOffset": 31
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 376,
+                "endLine": 376,
+                "startOffset": 4,
+                "endOffset": 6
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 381,
+                "endLine": 381,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 381,
+                "endLine": 381,
+                "startOffset": 27,
+                "endOffset": 29
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 382,
+                "endLine": 382,
+                "startOffset": 4,
+                "endOffset": 6
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 383,
+                "endLine": 383,
+                "startOffset": 6,
+                "endOffset": 8
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 385,
+                "endLine": 385,
+                "startOffset": 13,
+                "endOffset": 15
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 388,
+                "endLine": 388,
+                "startOffset": 11,
+                "endOffset": 13
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 388,
+                "endLine": 388,
+                "startOffset": 41,
+                "endOffset": 43
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 396,
+                "endLine": 396,
+                "startOffset": 6,
+                "endOffset": 8
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+              "textRange": {
+                "startLine": 396,
+                "endLine": 396,
+                "startOffset": 41,
+                "endOffset": 43
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        }
+      ],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 24 to the 15 allowed.",
+      "effort": "14min",
+      "debt": "14min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "brain-overload",
+        "editable-source"
+      ],
+      "creationDate": "2026-03-31T11:42:45+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "FOCUSED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "e3086520-7558-4814-a983-8ebbc1b2858f",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+      "project": "catalogizer-web",
+      "hash": "06f43d63147b5c8c8d30bede008d65b6",
+      "textRange": {
+        "startLine": 396,
+        "endLine": 396,
+        "startOffset": 44,
+        "endOffset": 49
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Prefer `Number.isNaN` over `isNaN`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2026-03-31T11:42:45+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        },
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "beabe740-34e6-4074-9475-5b4c73ce7356",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/pages/__tests__/Settings.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "6a83f03b480ae95ba6b5e6bfe5ea0c12",
+      "textRange": {
+        "startLine": 253,
+        "endLine": 253,
+        "startOffset": 4,
+        "endOffset": 6
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-03-31T11:42:45+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "fd2c42ed-bd29-40e9-8640-d7746440b927",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/pages/__tests__/Settings.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "f1751c7a0d675e63e890724ed535c7d3",
+      "textRange": {
+        "startLine": 309,
+        "endLine": 309,
+        "startOffset": 4,
+        "endOffset": 6
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-03-31T11:42:45+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "43f05e85-4fb2-4625-a725-8879fd04b9c7",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/pages/__tests__/SubtitleManager.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "33db0978f4d1bad1b75a978e1da94805",
+      "textRange": {
+        "startLine": 162,
+        "endLine": 162,
+        "startOffset": 2,
+        "endOffset": 4
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-03-31T11:42:45+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "6e865128-0a54-46ef-b95c-0827d43cd8f7",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/pages/__tests__/SubtitleManager.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "cce9c7f45115ae6664c3374777a967d5",
+      "textRange": {
+        "startLine": 154,
+        "endLine": 154,
+        "startOffset": 2,
+        "endOffset": 4
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-03-31T11:42:45+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "daeb7e5b-ba0b-41c3-a92b-e5bc21ce2dff",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+      "project": "catalogizer-web",
+      "hash": "e9aafbd7c92a959a94e8330804ad365f",
+      "textRange": {
+        "startLine": 385,
+        "endLine": 385,
+        "startOffset": 48,
+        "endOffset": 53
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Prefer `Number.isNaN` over `isNaN`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2026-03-06T13:22:23+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        },
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "9ca1876b-db42-4680-875a-d6c808e02751",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/components/collections/__tests__/CollectionExport.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "0b26f39c98361eca5a1e9dd01c7321e7",
+      "textRange": {
+        "startLine": 109,
+        "endLine": 109,
+        "startOffset": 2,
+        "endOffset": 4
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-02-16T21:14:35+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "de8e180b-eb53-47c4-a15b-8e1022abc308",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/components/playlists/__tests__/PlaylistItem.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "50634f40bccd35cae6f7d42154f6ab04",
+      "textRange": {
+        "startLine": 70,
+        "endLine": 70,
+        "startOffset": 2,
+        "endOffset": 4
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-02-16T21:14:35+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "791a6ffe-5cb5-4403-a5cb-d1a46ea2fdf3",
+      "rule": "typescript:S2699",
+      "severity": "BLOCKER",
+      "component": "catalogizer-web:catalog-web/src/components/playlists/__tests__/PlaylistPlayer.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "0b26f39c98361eca5a1e9dd01c7321e7",
+      "textRange": {
+        "startLine": 111,
+        "endLine": 111,
+        "startOffset": 2,
+        "endOffset": 4
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add at least one assertion to this test case.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "chai",
+        "type-dependent",
+        "mocha",
+        "jasmine",
+        "jest",
+        "cypress",
+        "node",
+        "sinon",
+        "tests",
+        "playwright",
+        "editable-source",
+        "bun",
+        "supertest",
+        "vitest"
+      ],
+      "creationDate": "2026-02-16T21:14:35+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "TEST",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TESTED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "BLOCKER"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "00441e3c-211d-436a-8e28-74a882ea51ee",
+      "rule": "typescript:S2245",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/test-setup.ts",
+      "project": "catalogizer-web",
+      "hash": "0e5a4f1daaf68e310745736beffa4cdf",
+      "textRange": {
+        "startLine": 132,
+        "endLine": 132,
+        "startOffset": 37,
+        "endOffset": 50
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Make sure that using this pseudorandom number generator is safe here.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "cwe",
+        "former-hotspot"
+      ],
+      "creationDate": "2026-02-03T14:47:12+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "3f9be87c-78c2-42de-bd79-13cc3a22d91d",
+      "rule": "typescript:S2245",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/test-setup.ts",
+      "project": "catalogizer-web",
+      "hash": "898ced15c1f3d0776a0c64cc885388da",
+      "textRange": {
+        "startLine": 135,
+        "endLine": 135,
+        "startOffset": 28,
+        "endOffset": 41
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Make sure that using this pseudorandom number generator is safe here.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "cwe",
+        "former-hotspot"
+      ],
+      "creationDate": "2026-02-03T14:47:12+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "939c3138-af74-4f6b-9c51-fa8f7f7f87fe",
+      "rule": "typescript:S1874",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/test-setup.ts",
+      "project": "catalogizer-web",
+      "hash": "0e5a4f1daaf68e310745736beffa4cdf",
+      "textRange": {
+        "startLine": 132,
+        "endLine": 132,
+        "startOffset": 64,
+        "endOffset": 70
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "'(from: number, length?: number | undefined): string' is deprecated.",
+      "effort": "15min",
+      "debt": "15min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "cwe",
+        "type-dependent",
+        "obsolete"
+      ],
+      "creationDate": "2026-02-03T14:47:12+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "ca0f33b5-b1a0-4d60-906b-3f53d1a63e16",
+      "rule": "typescript:S3776",
+      "severity": "CRITICAL",
+      "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+      "project": "catalogizer-web",
+      "hash": "9b055cd1308bffcf96f450374bbad521",
+      "textRange": {
+        "startLine": 104,
+        "endLine": 104,
+        "startOffset": 40,
+        "endOffset": 42
+      },
+      "flows": [
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+              "textRange": {
+                "startLine": 696,
+                "endLine": 696,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+              "textRange": {
+                "startLine": 708,
+                "endLine": 708,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+              "textRange": {
+                "startLine": 732,
+                "endLine": 732,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+              "textRange": {
+                "startLine": 740,
+                "endLine": 740,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+              "textRange": {
+                "startLine": 748,
+                "endLine": 748,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+              "textRange": {
+                "startLine": 756,
+                "endLine": 756,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+              "textRange": {
+                "startLine": 896,
+                "endLine": 896,
+                "startOffset": 47,
+                "endOffset": 48
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+              "textRange": {
+                "startLine": 1021,
+                "endLine": 1021,
+                "startOffset": 87,
+                "endOffset": 88
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+              "textRange": {
+                "startLine": 1057,
+                "endLine": 1057,
+                "startOffset": 19,
+                "endOffset": 20
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+              "textRange": {
+                "startLine": 1061,
+                "endLine": 1061,
+                "startOffset": 45,
+                "endOffset": 46
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+              "textRange": {
+                "startLine": 1071,
+                "endLine": 1071,
+                "startOffset": 16,
+                "endOffset": 17
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+              "textRange": {
+                "startLine": 1091,
+                "endLine": 1091,
+                "startOffset": 46,
+                "endOffset": 47
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+              "textRange": {
+                "startLine": 1095,
+                "endLine": 1095,
+                "startOffset": 16,
+                "endOffset": 17
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/pages/Collections.tsx",
+              "textRange": {
+                "startLine": 1098,
+                "endLine": 1098,
+                "startOffset": 62,
+                "endOffset": 63
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        }
+      ],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 23 to the 15 allowed.",
+      "effort": "13min",
+      "debt": "13min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "brain-overload",
+        "editable-source"
+      ],
+      "creationDate": "2025-12-10T10:50:06+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "FOCUSED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "0415a529-c757-405a-9816-48e5625c7996",
+      "rule": "typescript:S6959",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/performance/MemoCache.tsx",
+      "project": "catalogizer-web",
+      "hash": "fb5be9ed32345c492a688b6070c4dbfc",
+      "textRange": {
+        "startLine": 40,
+        "endLine": 40,
+        "startOffset": 48,
+        "endOffset": 54
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add an initial value to this \"reduce()\" call.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "type-dependent"
+      ],
+      "creationDate": "2025-12-10T10:17:50+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "00511629-edab-4dab-97da-3c771777cec2",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/AdvancedSearch.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 527,
+        "endLine": 531,
+        "startOffset": 18,
+        "endOffset": 19
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2025-12-10T08:27:52+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        },
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "1bbfcabb-e3ad-4fb5-870c-882af55bce8d",
+      "rule": "typescript:S1082",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/AdvancedSearch.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 486,
+        "endLine": 490,
+        "startOffset": 16,
+        "endOffset": 17
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Visible, non-interactive elements with click handlers must have at least one keyboard listener.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2025-12-10T08:27:52+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "5c98ba79-1dc9-4d59-a9f2-dbfb42f0bbff",
+      "rule": "typescript:S2245",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/AdvancedSearch.tsx",
+      "project": "catalogizer-web",
+      "hash": "1aa3df352fbf7b851ca452cf41cfb1f3",
+      "textRange": {
+        "startLine": 199,
+        "endLine": 199,
+        "startOffset": 27,
+        "endOffset": 40
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Make sure that using this pseudorandom number generator is safe here.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "cwe",
+        "former-hotspot"
+      ],
+      "creationDate": "2025-12-10T08:27:52+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "96430088-a197-481d-b588-2fc765fbb492",
+      "rule": "typescript:S1082",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/AdvancedSearch.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 527,
+        "endLine": 531,
+        "startOffset": 18,
+        "endOffset": 19
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Visible, non-interactive elements with click handlers must have at least one keyboard listener.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2025-12-10T08:27:52+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "b905e4d0-519f-43a0-a90d-2aca3c5dd77e",
+      "rule": "typescript:S1874",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/AdvancedSearch.tsx",
+      "project": "catalogizer-web",
+      "hash": "1aa3df352fbf7b851ca452cf41cfb1f3",
+      "textRange": {
+        "startLine": 199,
+        "endLine": 199,
+        "startOffset": 54,
+        "endOffset": 60
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "'(from: number, length?: number | undefined): string' is deprecated.",
+      "effort": "15min",
+      "debt": "15min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "cwe",
+        "type-dependent",
+        "obsolete"
+      ],
+      "creationDate": "2025-12-10T08:27:52+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "cf8c0e76-735e-4f18-8b3d-bf46fbef6c06",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/AdvancedSearch.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 486,
+        "endLine": 490,
+        "startOffset": 16,
+        "endOffset": 17
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2025-12-10T08:27:52+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        },
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "7d6a1ab9-90da-4950-bde8-44338c6893c7",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/CollectionTemplates.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 493,
+        "endLine": 497,
+        "startOffset": 16,
+        "endOffset": 17
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2025-12-10T08:27:52+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        },
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "ff54b812-28dd-46df-b2de-e7537885ec1d",
+      "rule": "typescript:S1082",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/CollectionTemplates.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 493,
+        "endLine": 497,
+        "startOffset": 16,
+        "endOffset": 17
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Visible, non-interactive elements with click handlers must have at least one keyboard listener.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2025-12-10T08:27:52+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "5e626a3c-1477-4742-a810-6a29d70da8cd",
+      "rule": "typescript:S1082",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/CollectionExport.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 722,
+        "endLine": 725,
+        "startOffset": 20,
+        "endOffset": 21
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Visible, non-interactive elements with click handlers must have at least one keyboard listener.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2025-12-10T00:09:53+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "d6290a9c-c37c-4816-a9df-6565cdeefa32",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/CollectionExport.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 722,
+        "endLine": 725,
+        "startOffset": 20,
+        "endOffset": 21
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2025-12-10T00:09:53+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        },
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "e937ee41-56cc-439a-b6b5-11fc3def64c7",
+      "rule": "typescript:S3358",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/CollectionRealTime.tsx",
+      "project": "catalogizer-web",
+      "hash": "12bb78d1afa9a4a3116234cc869a7583",
+      "textRange": {
+        "startLine": 313,
+        "endLine": 317,
+        "startOffset": 20,
+        "endOffset": 17
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Extract this nested ternary operation into an independent statement.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "editable-source",
+        "confusing"
+      ],
+      "creationDate": "2025-12-10T00:09:53+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CLEAR",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "e110e96b-4ad8-4791-bb4e-dfc104e22d9a",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/CollectionPreview.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 215,
+        "endLine": 218,
+        "startOffset": 22,
+        "endOffset": 23
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2025-12-09T23:46:09+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        },
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "fbc0346f-1e6d-4f08-99e5-ba63142c3681",
+      "rule": "typescript:S1082",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/CollectionPreview.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 215,
+        "endLine": 218,
+        "startOffset": 22,
+        "endOffset": 23
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Visible, non-interactive elements with click handlers must have at least one keyboard listener.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2025-12-09T23:46:09+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "333275c1-41c8-4370-bd0b-7acb65cbc5c0",
+      "rule": "typescript:S2245",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/SmartCollectionBuilder.tsx",
+      "project": "catalogizer-web",
+      "hash": "96de64fd67092f341b0a7a5f385373be",
+      "textRange": {
+        "startLine": 100,
+        "endLine": 100,
+        "startOffset": 53,
+        "endOffset": 66
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Make sure that using this pseudorandom number generator is safe here.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "cwe",
+        "former-hotspot"
+      ],
+      "creationDate": "2025-12-09T22:47:35+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "e4e20c23-dd1e-4397-a158-fdddfd5e0a06",
+      "rule": "typescript:S1874",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/components/collections/SmartCollectionBuilder.tsx",
+      "project": "catalogizer-web",
+      "hash": "96de64fd67092f341b0a7a5f385373be",
+      "textRange": {
+        "startLine": 100,
+        "endLine": 100,
+        "startOffset": 80,
+        "endOffset": 86
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "'(from: number, length?: number | undefined): string' is deprecated.",
+      "effort": "15min",
+      "debt": "15min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "cwe",
+        "type-dependent",
+        "obsolete"
+      ],
+      "creationDate": "2025-12-09T22:47:35+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "9602ee2c-6917-4fca-a543-b0ff98a6c1ce",
+      "rule": "typescript:S7773",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/lib/collectionRules.ts",
+      "project": "catalogizer-web",
+      "hash": "2c56f0b979d3c6d5965cc9c418c22c26",
+      "textRange": {
+        "startLine": 376,
+        "endLine": 376,
+        "startOffset": 8,
+        "endOffset": 13
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Prefer `Number.isNaN` over `isNaN`.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "convention",
+        "es2015",
+        "editable-source"
+      ],
+      "creationDate": "2025-12-09T22:47:35+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        },
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "87e1c43b-1092-410b-9e6d-b213bdaa87cb",
+      "rule": "typescript:S3776",
+      "severity": "CRITICAL",
+      "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+      "project": "catalogizer-web",
+      "hash": "b64a4703e9db030a1b1493ab9bf202f9",
+      "textRange": {
+        "startLine": 30,
+        "endLine": 30,
+        "startOffset": 3,
+        "endOffset": 5
+      },
+      "flows": [
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 55,
+                "endLine": 55,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 62,
+                "endLine": 62,
+                "startOffset": 21,
+                "endOffset": 23
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 63,
+                "endLine": 63,
+                "startOffset": 22,
+                "endOffset": 24
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 64,
+                "endLine": 64,
+                "startOffset": 20,
+                "endOffset": 22
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 65,
+                "endLine": 65,
+                "startOffset": 19,
+                "endOffset": 21
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 72,
+                "endLine": 72,
+                "startOffset": 26,
+                "endOffset": 27
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 74,
+                "endLine": 74,
+                "startOffset": 19,
+                "endOffset": 20
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 80,
+                "endLine": 80,
+                "startOffset": 25,
+                "endOffset": 26
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 81,
+                "endLine": 81,
+                "startOffset": 24,
+                "endOffset": 26
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 89,
+                "endLine": 89,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 106,
+                "endLine": 106,
+                "startOffset": 23,
+                "endOffset": 25
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 107,
+                "endLine": 107,
+                "startOffset": 24,
+                "endOffset": 26
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 108,
+                "endLine": 108,
+                "startOffset": 22,
+                "endOffset": 24
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 109,
+                "endLine": 109,
+                "startOffset": 21,
+                "endOffset": 23
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 113,
+                "endLine": 113,
+                "startOffset": 28,
+                "endOffset": 29
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 115,
+                "endLine": 115,
+                "startOffset": 21,
+                "endOffset": 22
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 121,
+                "endLine": 121,
+                "startOffset": 27,
+                "endOffset": 28
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 122,
+                "endLine": 122,
+                "startOffset": 26,
+                "endOffset": 28
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 134,
+                "endLine": 134,
+                "startOffset": 26,
+                "endOffset": 27
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 142,
+                "endLine": 142,
+                "startOffset": 19,
+                "endOffset": 21
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 143,
+                "endLine": 143,
+                "startOffset": 20,
+                "endOffset": 22
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 147,
+                "endLine": 147,
+                "startOffset": 17,
+                "endOffset": 18
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 158,
+                "endLine": 158,
+                "startOffset": 25,
+                "endOffset": 26
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 159,
+                "endLine": 159,
+                "startOffset": 24,
+                "endOffset": 26
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 162,
+                "endLine": 162,
+                "startOffset": 21,
+                "endOffset": 23
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoriteToggle.tsx",
+              "textRange": {
+                "startLine": 163,
+                "endLine": 163,
+                "startOffset": 23,
+                "endOffset": 24
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        }
+      ],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 36 to the 15 allowed.",
+      "effort": "26min",
+      "debt": "26min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "brain-overload",
+        "editable-source"
+      ],
+      "creationDate": "2025-12-09T18:33:04+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "FOCUSED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "9f18bc1e-47aa-4f51-a781-1c1444f03a5a",
+      "rule": "typescript:S3776",
+      "severity": "CRITICAL",
+      "component": "catalogizer-web:catalog-web/src/components/favorites/FavoritesGrid.tsx",
+      "project": "catalogizer-web",
+      "hash": "b64a4703e9db030a1b1493ab9bf202f9",
+      "textRange": {
+        "startLine": 41,
+        "endLine": 41,
+        "startOffset": 3,
+        "endOffset": 5
+      },
+      "flows": [
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoritesGrid.tsx",
+              "textRange": {
+                "startLine": 62,
+                "endLine": 62,
+                "startOffset": 34,
+                "endOffset": 36
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoritesGrid.tsx",
+              "textRange": {
+                "startLine": 152,
+                "endLine": 152,
+                "startOffset": 2,
+                "endOffset": 4
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoritesGrid.tsx",
+              "textRange": {
+                "startLine": 263,
+                "endLine": 263,
+                "startOffset": 53,
+                "endOffset": 54
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoritesGrid.tsx",
+              "textRange": {
+                "startLine": 265,
+                "endLine": 265,
+                "startOffset": 39,
+                "endOffset": 40
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoritesGrid.tsx",
+              "textRange": {
+                "startLine": 272,
+                "endLine": 272,
+                "startOffset": 47,
+                "endOffset": 48
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoritesGrid.tsx",
+              "textRange": {
+                "startLine": 280,
+                "endLine": 280,
+                "startOffset": 47,
+                "endOffset": 48
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoritesGrid.tsx",
+              "textRange": {
+                "startLine": 321,
+                "endLine": 321,
+                "startOffset": 58,
+                "endOffset": 59
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoritesGrid.tsx",
+              "textRange": {
+                "startLine": 326,
+                "endLine": 326,
+                "startOffset": 21,
+                "endOffset": 22
+              },
+              "msg": "+1",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoritesGrid.tsx",
+              "textRange": {
+                "startLine": 336,
+                "endLine": 336,
+                "startOffset": 45,
+                "endOffset": 46
+              },
+              "msg": "+2 (incl. 1 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoritesGrid.tsx",
+              "textRange": {
+                "startLine": 340,
+                "endLine": 340,
+                "startOffset": 29,
+                "endOffset": 30
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoritesGrid.tsx",
+              "textRange": {
+                "startLine": 344,
+                "endLine": 344,
+                "startOffset": 18,
+                "endOffset": 19
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        },
+        {
+          "locations": [
+            {
+              "component": "catalogizer-web:catalog-web/src/components/favorites/FavoritesGrid.tsx",
+              "textRange": {
+                "startLine": 356,
+                "endLine": 356,
+                "startOffset": 35,
+                "endOffset": 36
+              },
+              "msg": "+3 (incl. 2 for nesting)",
+              "msgFormattings": []
+            }
+          ]
+        }
+      ],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Refactor this function to reduce its Cognitive Complexity from 19 to the 15 allowed.",
+      "effort": "9min",
+      "debt": "9min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "brain-overload",
+        "editable-source"
+      ],
+      "creationDate": "2025-12-09T18:33:04+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "FOCUSED",
+      "cleanCodeAttributeCategory": "ADAPTABLE",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "HIGH"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "f08976b5-9262-4ea4-8093-2fc05cbc5fd1",
+      "rule": "typescript:S6959",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/pages/Favorites.tsx",
+      "project": "catalogizer-web",
+      "hash": "60110986e36863db0c4fa318c56f77de",
+      "textRange": {
+        "startLine": 196,
+        "endLine": 196,
+        "startOffset": 70,
+        "endOffset": 76
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Add an initial value to this \"reduce()\" call.",
+      "effort": "2min",
+      "debt": "2min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "type-dependent"
+      ],
+      "creationDate": "2025-12-09T18:33:04+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "2cf804b7-76d7-4c13-9b37-d96da71ab0f9",
+      "rule": "typescript:S2245",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/components/upload/UploadManager.tsx",
+      "project": "catalogizer-web",
+      "hash": "b6408dfacdb6d157d63e3a70b244eb39",
+      "textRange": {
+        "startLine": 50,
+        "endLine": 50,
+        "startOffset": 27,
+        "endOffset": 40
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Make sure that using this pseudorandom number generator is safe here.",
+      "effort": "10min",
+      "debt": "10min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "cwe",
+        "former-hotspot"
+      ],
+      "creationDate": "2025-12-09T17:19:25+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "VULNERABILITY",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "TRUSTWORTHY",
+      "cleanCodeAttributeCategory": "RESPONSIBLE",
+      "impacts": [
+        {
+          "softwareQuality": "SECURITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "5a9cabf0-2486-4e81-a2f9-ab5ca9a7235f",
+      "rule": "typescript:S1874",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/components/upload/UploadManager.tsx",
+      "project": "catalogizer-web",
+      "hash": "b6408dfacdb6d157d63e3a70b244eb39",
+      "textRange": {
+        "startLine": 50,
+        "endLine": 50,
+        "startOffset": 54,
+        "endOffset": 60
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "'(from: number, length?: number | undefined): string' is deprecated.",
+      "effort": "15min",
+      "debt": "15min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "cwe",
+        "type-dependent",
+        "obsolete"
+      ],
+      "creationDate": "2025-12-09T17:19:25+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "2b91dbdb-d106-4785-aaa4-5441d819a9f7",
+      "rule": "typescript:S6848",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/pages/SubtitleManager.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 277,
+        "endLine": 281,
+        "startOffset": 18,
+        "endOffset": 19
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Avoid non-native interactive elements. If using native HTML is not possible, add an appropriate role and support for tabbing, mouse, keyboard, and touch inputs to an interactive content element.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2025-12-09T13:08:41+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        },
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "3255247d-5108-4201-a650-949d692171dc",
+      "rule": "typescript:S1082",
+      "severity": "MINOR",
+      "component": "catalogizer-web:catalog-web/src/pages/SubtitleManager.tsx",
+      "project": "catalogizer-web",
+      "hash": "d90c26198ff23a5c54f81269ceed5c01",
+      "textRange": {
+        "startLine": 277,
+        "endLine": 281,
+        "startOffset": 18,
+        "endOffset": 19
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Visible, non-interactive elements with click handlers must have at least one keyboard listener.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2025-12-09T13:08:41+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "COMPLETE",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "bd2a98fa-4a97-4f75-870f-8b40e3598862",
+      "rule": "typescript:S8985",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/pages/__tests__/MediaBrowser.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "8df67a826ddb8168734378935906c1fb",
+      "textRange": {
+        "startLine": 475,
+        "endLine": 475,
+        "startOffset": 8,
+        "endOffset": 41
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Avoid using side effects within `waitFor` callback",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "tests",
+        "testing-library"
+      ],
+      "creationDate": "2025-11-27T15:29:11+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "TEST",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "LOGICAL",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "49d162b3-94c7-42c9-b9e7-d9287eb6f742",
+      "rule": "typescript:S8985",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/pages/__tests__/MediaBrowser.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "5bd6a35c992751a3ea2ac4ec80af8d6a",
+      "textRange": {
+        "startLine": 375,
+        "endLine": 375,
+        "startOffset": 8,
+        "endOffset": 36
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Avoid using side effects within `waitFor` callback",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "tests",
+        "testing-library"
+      ],
+      "creationDate": "2025-11-27T07:22:31+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "TEST",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "LOGICAL",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "7bcdf23c-3bec-42f8-8aee-d493e4668680",
+      "rule": "typescript:S9115",
+      "severity": "MAJOR",
+      "component": "catalogizer-web:catalog-web/src/pages/__tests__/MediaBrowser.test.tsx",
+      "project": "catalogizer-web",
+      "hash": "5bd6a35c992751a3ea2ac4ec80af8d6a",
+      "textRange": {
+        "startLine": 375,
+        "endLine": 375,
+        "startOffset": 8,
+        "endOffset": 23
+      },
+      "flows": [],
+      "resolution": "FIXED",
+      "status": "CLOSED",
+      "message": "Handle the promise returned by async event method `click` so the test waits for the interaction to finish.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "i@mvasic.ru",
+      "tags": [
+        "tests",
+        "testing-library"
+      ],
+      "creationDate": "2025-11-27T07:22:31+0000",
+      "updateDate": "2026-11-11T22:24:27+0000",
+      "closeDate": "2026-11-11T22:24:27+0000",
+      "type": "BUG",
+      "scope": "TEST",
+      "quickFixAvailable": true,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "LOGICAL",
+      "cleanCodeAttributeCategory": "INTENTIONAL",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        }
+      ],
+      "issueStatus": "FIXED",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    }
+  ]
+}

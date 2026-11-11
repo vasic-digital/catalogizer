@@ -1,0 +1,2 @@
+catalog-api OK
+catalog-web ERROR
