@@ -4,7 +4,7 @@ Applies to `POST /api/v1/smb/discover`, `/smb/test`, `/smb/browse` and `/smb/pro
 
 ## Host rules (one shared check, `services.VetSMBHost`)
 - `host` must be an IPv4 literal or a plain DNS name (letters, digits, `-`, `_`, `.`, at most 253 characters). Brackets, colons (IPv6 literals, `host:port`), `@`, slashes, spaces and `%` give HTTP 400.
-- The name is resolved once and EVERY resolved address is checked. A host that does not resolve (lookup error or empty answer) is refused with HTTP 400 "Host not allowed". This is a change from the earlier behaviour, which let unresolvable names through to the dial.
+- The name is resolved once per request, EVERY resolved address is checked, and the connection is dialed to those vetted IPs (in resolver order, on the validated port) - the name is never looked up a second time, so DNS rebinding between check and connect cannot redirect the dial (SMB-FU-9). The SMB session runs on that connection; the host name is not needed for NTLM. The services (not only the handlers) apply this check. A host that does not resolve (lookup error or empty answer) is refused with HTTP 400 "Host not allowed". This is a change from the earlier behaviour, which let unresolvable names through to the dial.
 - Refused addresses: loopback, link-local, multicast, unspecified, 0.0.0.0/8, 255.255.255.255, CGNAT 100.64.0.0/10, cloud metadata addresses (169.254.169.254, 100.100.100.200, 168.63.129.16, fd00:ec2::254), and IPv6 forms that embed a refused IPv4 address (IPv4-mapped, IPv4-compatible, SIIT `::ffff:0:a.b.c.d`, NAT64 `64:ff9b::/96`, 6to4 `2002::/16`); local-use NAT64 `64:ff9b:1::/48` is refused as a whole. RFC1918 ranges (10.x, 172.16/12, 192.168.x) stay allowed.
 
 ## Port rules
