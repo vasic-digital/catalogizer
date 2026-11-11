@@ -49,7 +49,7 @@ export SQ_UP_TRIES=1 SQ_LOAD_TIMEOUT=0 LOADAVG_FILE="$SB/load_lo"; echo "3.00 3.
 FAIL=0; ok() { echo "PASS $1"; }; bad() { echo "FAIL $1"; FAIL=1; }
 reset() { rm -f "$S"/* ; : > "$S/calls"; }
 removed() { grep -qE '^(pod rm|volume rm|rm )' "$S/calls"; }
-created() { grep -qE '^(pod create|volume create|run )' "$S/calls"; }
+created() { grep -qE '^(pod create|volume create|run |create |container create )' "$S/calls"; }   # FU-10: ctr_up uses `podman create` for containers
 
 # T1 F1: stack name outside ^catsonar[a-z0-9-]*$ is refused by down.sh --purge, nothing removed.
 reset; touch "$S/pod" "$S/vol_catqa3-pg"; echo sonarqube > "$S/pod_label"
@@ -62,6 +62,12 @@ reset; touch "$S/pod"
 "$SRC/down.sh" >/dev/null 2>&1; rc=$?; { [ $rc -ne 0 ] && ! removed; } && ok "T2 down.sh refuses unlabelled pod" || bad "T2 down.sh unlabelled pod (rc=$rc)"
 reset; touch "$S/pod"
 "$SRC/up.sh" >"$SB/o" 2>&1; rc=$?; { [ $rc -ne 0 ] && grep -q 'without label' "$SB/o" && ! removed && ! created; } && ok "T2b up.sh refuses unlabelled pod" || bad "T2b up.sh unlabelled pod (rc=$rc)"
+
+# T2c FU-9/FU-10: ctr_up refuses a container name outside the stack prefix BEFORE `podman create`; nothing is created or started.
+reset; ( . "$SRC/lib.sh" >/dev/null 2>&1; ctr_up "otherstack-x" img >/dev/null 2>&1 ); rc=$?
+{ [ $rc -ne 0 ] && ! created && ! grep -q '^start ' "$S/calls"; } && ok "T2c ctr_up refuses a foreign container name before create" || bad "T2c ctr_up foreign name (rc=$rc)"
+reset; ( . "$SRC/lib.sh" >/dev/null 2>&1; ctr_up "${STACK}-x" img >/dev/null 2>&1 ); rc=$?
+{ [ $rc -eq 0 ] && created; } && ok "T2d ctr_up on an in-prefix name creates the container (created() matches container create)" || bad "T2d (rc=$rc)"
 
 # T3 F1: --purge with one unlabelled volume refuses BEFORE removing anything (even the labelled pod/volumes).
 reset; touch "$S/pod" "$S/vol_catsonar-pg" "$S/vol_catsonar-data"; echo sonarqube > "$S/pod_label"; echo sonarqube > "$S/vol_catsonar-pg"; : > "$S/vol_catsonar-data"

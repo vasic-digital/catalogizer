@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Shared settings for the Catalogizer QA "stack 3" scripts (sourced by up.sh / down.sh / build.sh).
 # Lifecycle env hygiene (CAT-QA-STACK-LIFECYCLE-1): strip ",guid=" from DBUS_SESSION_BUS_ADDRESS so rootless podman/crun works in agent shells.
-. "${QA_PODMAN_ENV_LIB:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/podman_env.sh}" || { echo "ERROR: cannot source docs/qa/lib/podman_env.sh" >&2; return 1 2>/dev/null || exit 1; }
+_QA_PENV="${QA_PODMAN_ENV_LIB:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/podman_env.sh}"; . "$_QA_PENV" || { echo "ERROR: cannot source docs/qa/lib/podman_env.sh" >&2; return 1 2>/dev/null || exit 1; }
 qa_podman_env_normalize
 # Everything is overridable from the environment; secrets live ONLY in $QA_DIR/qa.env (mode 0600, outside the repo).
 STACK="${STACK:-catqa3}"
@@ -27,10 +27,30 @@ _hip="$(qa_lan_ip 2>/dev/null || true)"
 # Never trust loopback / unspecified / link-local as the proxy peer (an assigned `lo` address would pass the helper): empty = trust nothing.
 case "$_hip" in 127.*|0.*|169.254.*) _hip="";; esac
 TRUSTED_PROXIES="${TRUSTED_PROXIES-${_hip:+${_hip}/32}}"
+# FU-11: resolve the Containers-submodule backend ONCE per script run (the go build of ctrctl is not repeated per container). ctr_up runs in the main shell,
+# so the cached result is inherited by the subshells where podman_env.sh resolves it. podman_env.sh itself is untouched (wrapper lives here only).
+# STACK-CTR-FU-13/F1: the cache is NEVER trusted from the inherited environment (reset when this file is sourced), is keyed on "$QA_STACK_BACKEND|$QA_REPO_ROOT",
+# and holds ONLY a successful "containers <bin>" result (a failed build / "none" is never cached, so a forced no-fallback run cannot be defeated by a stale value).
+unset _QA_STACK_BACKEND_CACHE _QA_STACK_BACKEND_CACHE_KEY
+_qa_stack_cache_key() { printf '%s|%s' "${QA_STACK_BACKEND:-auto}" "${QA_REPO_ROOT:-$(cd "$(dirname "$_QA_PENV")/../../.." && pwd)}"; }
+if declare -F _qa_stack_backend >/dev/null && ! declare -F _qa_stack_backend_uncached >/dev/null; then
+  eval "_qa_stack_backend_uncached() $(declare -f _qa_stack_backend | sed '1d')"
+  _qa_stack_backend() {
+    [ -n "${_QA_STACK_BACKEND_CACHE:-}" ] && [ "${_QA_STACK_BACKEND_CACHE_KEY:-}" = "$(_qa_stack_cache_key)" ] && { echo "$_QA_STACK_BACKEND_CACHE"; return; }
+    QA_REPO_ROOT="${QA_REPO_ROOT:-$(cd "$(dirname "$_QA_PENV")/../../.." && pwd)}" _qa_stack_backend_uncached   # the eval'd copy has no BASH_SOURCE of its own
+  }
+fi
 # Container creation + START go through the Containers-submodule path (CAT-QA-STACK-LIFECYCLE-1): `podman create` only builds the container in the pod;
 # the start (and health wait) is qa_stack_start -> ctrctl -> submodules/containers. Raw `podman run -d` is forbidden here (test_ctrctl_routing.sh).
 ctr_up() { # <name> <podman-create-args...>
   local n="$1"; shift
+  _qa_stack_check_name "$n" || return $?   # FU-9: refuse a foreign name BEFORE anything is created
+  if declare -F _qa_stack_backend_uncached >/dev/null; then
+    local b; b="$(_qa_stack_backend)" || b=none
+    if [[ "$b" == containers\ * ]]; then _QA_STACK_BACKEND_CACHE="$b"; _QA_STACK_BACKEND_CACHE_KEY="$(_qa_stack_cache_key)"; fi
+    # F6: a forced Containers backend that is unusable resolves to "none": refuse BEFORE anything is created (no half-created container, no podman fallback).
+    [ "$b" = none ] && { echo "ctr_up: ERROR: Containers-submodule backend unavailable for $n (no fallback to podman); nothing created" >&2; return 1; }
+  fi
   podman create --pod "$POD" --name "$n" "$@" >/dev/null || return 1
   qa_stack_start "$n" || { podman logs --tail 20 "$n" >&2 || true; return 1; }
 }
