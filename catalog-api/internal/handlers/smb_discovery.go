@@ -330,3 +330,7 @@ func validateSMBTarget(host string, port int, share, path string) string {
 	}
 	return ""
 }
+
+func smbErrorStatus(err error, generic string) (int, string) {
+	return http.StatusInternalServerError, generic
+}
