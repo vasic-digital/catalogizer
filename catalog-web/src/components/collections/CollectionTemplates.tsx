@@ -498,6 +498,9 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
                   key={template.id}
                   className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:shadow-lg transition-shadow"
                   onClick={() => setSelectedTemplate(template)}
+                  onKeyDown={onActivateKey(() => setSelectedTemplate(template))}
+                  role="button"
+                  tabIndex={0}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`p-3 rounded-lg bg-${CATEGORIES.find(c => c.id === template.category)?.color}-100 dark:bg-${CATEGORIES.find(c => c.id === template.category)?.color}-900`}>

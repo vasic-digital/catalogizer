@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { onActivateKey } from '../keyboard';
 
-const ev = (key: string, same = true) => {
+const ev = (key: string, same = true, repeat = false) => {
   const el = {};
-  return { key, target: el, currentTarget: same ? el : {}, preventDefault: vi.fn() } as never;
+  return { key, repeat, target: el, currentTarget: same ? el : {}, preventDefault: vi.fn() } as never;
 };
 
 describe('onActivateKey', () => {
@@ -18,6 +18,11 @@ describe('onActivateKey', () => {
     const action = vi.fn();
     onActivateKey(action)(ev('a'));
     onActivateKey(action)(ev('Enter', false));
+    expect(action).not.toHaveBeenCalled();
+  });
+  it('ignores auto-repeated key events', () => {
+    const action = vi.fn();
+    onActivateKey(action)(ev('Enter', true, true));
     expect(action).not.toHaveBeenCalled();
   });
 });

@@ -6,7 +6,7 @@ import type { KeyboardEvent } from 'react';
  */
 export function onActivateKey<T extends Element = Element>(action: (e: KeyboardEvent<T>) => void) {
   return (e: KeyboardEvent<T>) => {
-    if (e.target !== e.currentTarget) return;
+    if (e.target !== e.currentTarget || e.repeat) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       action(e);

@@ -282,4 +282,27 @@ describe('CollectionTemplates', () => {
     render(<CollectionTemplates {...defaultProps} />)
     expect(screen.queryByText('~50-200')).not.toBeInTheDocument()
   })
+
+  describe('keyboard operability (S1082)', () => {
+    it.each([['{Enter}'], [' ']])('opens a grid-view template via key %j', async (key) => {
+      const user = userEvent.setup()
+      render(<CollectionTemplates {...defaultProps} />)
+      const card = screen.getByText('Recent Movies').closest('[role="button"]') as HTMLElement
+      expect(card).toHaveAttribute('tabindex', '0')
+      card.focus()
+      await user.keyboard(key)
+      expect(screen.getByText('Description')).toBeInTheDocument()
+    })
+
+    it.each([['{Enter}'], [' ']])('opens a list-view template via key %j', async (key) => {
+      const user = userEvent.setup()
+      render(<CollectionTemplates {...defaultProps} />)
+      await user.click(screen.getByTestId('icon-list').closest('button') as HTMLElement)
+      const card = screen.getByText('Recent Movies').closest('[role="button"]') as HTMLElement
+      expect(card).toHaveAttribute('tabindex', '0')
+      card.focus()
+      await user.keyboard(key)
+      expect(screen.getByText('Description')).toBeInTheDocument()
+    })
+  })
 })

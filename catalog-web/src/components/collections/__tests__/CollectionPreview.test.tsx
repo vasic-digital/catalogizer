@@ -149,4 +149,20 @@ describe('CollectionPreview', () => {
       expect(toast.success).not.toHaveBeenCalled()
     })
   })
+
+  describe('keyboard operability (S1082)', () => {
+    it.each([['{Enter}'], [' ']])('toggles item selection via key %j and updates aria-checked', async (key) => {
+      const user = userEvent.setup()
+      render(<CollectionPreview {...defaultProps} />)
+      const boxes = screen.getAllByRole('checkbox')
+      expect(boxes[0]).toHaveAttribute('aria-checked', 'false')
+      boxes[0].focus()
+      await user.keyboard(key)
+      expect(screen.getAllByRole('checkbox')[0]).toHaveAttribute('aria-checked', 'true')
+      expect(screen.getByText('1 selected')).toBeInTheDocument()
+      screen.getAllByRole('checkbox')[0].focus()
+      await user.keyboard(key)
+      expect(screen.getAllByRole('checkbox')[0]).toHaveAttribute('aria-checked', 'false')
+    })
+  })
 })

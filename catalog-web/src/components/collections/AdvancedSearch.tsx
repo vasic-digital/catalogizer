@@ -546,9 +546,9 @@ const AdvancedSearch: React.FC = () => {
                           <span>Created {new Date(search.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
-                      <Button variant="outline" size="sm">
+                      <span className="inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 px-3 py-1 text-sm font-medium text-gray-700 dark:text-gray-200">
                         Load
-                      </Button>
+                      </span>
                     </div>
                   </div>
                 ))}
