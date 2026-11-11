@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # Shared settings/helpers for the on-demand SonarQube QA service (sourced by up.sh / scan.sh / down.sh).
+# Lifecycle env hygiene (CAT-QA-STACK-LIFECYCLE-1): strip ",guid=" from DBUS_SESSION_BUS_ADDRESS so rootless podman/crun works in agent shells.
+. "${QA_PODMAN_ENV_LIB:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/podman_env.sh}" || { echo "ERROR: cannot source docs/qa/lib/podman_env.sh" >&2; return 1 2>/dev/null || exit 1; }
+qa_podman_env_normalize
 # Pure shell + curl + jq + podman: NO model/LLM calls. Secrets live ONLY in $SQ_DIR (mode 0600, outside the repo).
 STACK="${SQ_STACK:-catsonar}"
 # Data-safety guard: this service may only ever touch resources named catsonar* (never catqa1/2/3 or any other stack).

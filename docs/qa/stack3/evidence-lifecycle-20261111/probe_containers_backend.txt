@@ -1,0 +1,19 @@
+date: 2026-11-11T16:11:41+01:00
+podman: podman version 5.7.0
+DBUS before: unix:path=/run/user/1000/bus,guid=0123456789abcdef0123456789abcdef
+backend info: backend=containers ctrctl_sha256=c7ab7172ff51642878dfb3de9b56bf2d2cc24caed4df80c996e1c525735e7fc8 path=/home/milosvasic/.cache/catalogizer-qa/6e0cf4e74269/ctrctl
+--- control: raw podman start with the guid address (expected to FAIL in an agent shell; informational)
+raw: Error: unable to start container "d69aec739d9f9ca66c9b4f2762d28744a885a0e5ccd1ec0942771f7d5f24aee6": crun: sd-bus call: Operation not permitted: Permission denied: OCI permission denied
+raw rc=125
+--- wrapper start
+qa_stack: backend=containers ctrctl_sha256=c7ab7172ff51642878dfb3de9b56bf2d2cc24caed4df80c996e1c525735e7fc8
+qa_stack: catqa-lifecycle-probe running none after 0s
+qa_stack_start rc=0  DBUS after: unix:path=/run/user/1000/bus
+state: running
+--- wrapper stop
+qa_stack: backend=containers ctrctl_sha256=c7ab7172ff51642878dfb3de9b56bf2d2cc24caed4df80c996e1c525735e7fc8
+qa_stack_stop rc=0  state: exited
+--- refusal of another stack
+qa_stack: refused: 'catqa1-api' is outside prefix 'catqa-lifecycle-' (other stacks are never touched)
+rc=64 (64 expected)
+cleanup ok: catqa-lifecycle-probe removed
