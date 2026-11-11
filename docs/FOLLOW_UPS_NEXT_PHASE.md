@@ -1722,3 +1722,11 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - SMB-FU-19a (test): pathsafe mutant "ancestor walk stops one level early" survives; only a false rejection when root is a top-level dir (never an escape). Add a test with the deepest existing ancestor a direct child of `/` or record equivalent-for-escapes.
 - SMB-FU-19b (docs): README lines ~405-425 (Connection States table, SMB_RETRY_* / SMB_OFFLINE_CACHE_SIZE env block) may still describe the removed per-source SMB state; check whether those env vars are still read and fix the drift.
 - SMB-FU-19c (nit): dangling-symlink test passes on any error; assert the reason ("cannot resolve path" vs ErrPathEscapes).
+
+## LIFE-FU-10..15 (Opus round-1 review of LIFE-FU-5..9, 2026-11-11; all minor, open)
+- LIFE-FU-10: `docs/qa/lib/podman_env.sh` (~:81, start/stop wrappers ~:119/:126): under `set -e` a bare `qa_stack_stop` exits on the raw ctrctl code before the 69→1 remap. Use `"$bin" … || r=$?` pattern or document non-errexit use; add test.
+- LIFE-FU-11: test gap (mutant R8): no test that a transient `unknown` Health state recovers to healthy; add shim mode failing the first N polls.
+- LIFE-FU-12: test gap (mutant R3): Health inspect empty output with exit 0 not covered (`${h:-unknown}` default).
+- LIFE-FU-13: `_qa_strip_guid` (:22/:28) leaves IFS set-but-empty globally after `unset IFS`; use `local IFS`.
+- LIFE-FU-14: timeout message in qa_stack_wait_healthy should log the last state.
+- LIFE-FU-15: LIFE-FU-6 test bound `el <= 6` equals the 6 s hang; use a longer hang for margin.
