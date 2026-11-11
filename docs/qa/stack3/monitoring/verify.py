@@ -169,8 +169,8 @@ if lan_ok:
         if v is None: print(f"SKIP lan.{name}_exposure (bound to {bind}, neither loopback nor the LAN IP)"); continue
         rec(v[0], v[1], f"{lan}:{port} bind={bind} expectation_source={src}")
         if cls == "lan":   # anonymous access must be refused whenever the service is LAN-reachable, declared or not
-            st, _, _ = http(f"http://{lan}:{port}{anon[name]}", opener=urllib.request.build_opener(_NoRedirect))
-            rec(f"lan.{name}_anonymous_rejected_via_LAN_IP", LB.auth_required_ok(name, st), f"http={st}")
+            st, _, bd = http(f"http://{lan}:{port}{anon[name]}", opener=urllib.request.build_opener(_NoRedirect))
+            rec(f"lan.{name}_anonymous_rejected_via_LAN_IP", LB.auth_required_ok(name, st, bd), f"http={st}")
     for svc, port in (("postgresql", int(os.environ.get("PG_PORT", 35434))), ("redis", int(os.environ.get("REDIS_PORT", 36381)))):
         name, ok = LB.exposure_verdict(svc, LB.ALWAYS_LOOPBACK, lan_open(port))
         rec(name, ok, f"{lan}:{port}")

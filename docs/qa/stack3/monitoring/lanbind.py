@@ -21,9 +21,14 @@ def parse_podman_port(text):
     return out
 
 def read_published(pod, run):
-    """What the running pod publishes. Any failure (timeout, no podman, non-zero) -> {} (then the loopback default applies, source 'default')."""
+    """What the running pod publishes. A pod's published ports live on its INFRA container: `podman port <podname>` fails rc=125
+    ('no container with name'), so resolve the infra container id first (as up.sh does). Any failure -> {} (then the loopback default
+    applies, source 'default')."""
     try:
-        r = run(["podman", "port", pod], capture_output=True, text=True, timeout=30)
+        i = run(["podman", "pod", "inspect", pod, "--format", "{{.InfraContainerID}}"], capture_output=True, text=True, timeout=30)
+        infra = (i.stdout or "").strip() if i.returncode == 0 else ""
+        if not re.fullmatch(r"[0-9A-Za-z_.-]+", infra): return {}
+        r = run(["podman", "port", infra], capture_output=True, text=True, timeout=30)
     except Exception:   # subprocess.TimeoutExpired, FileNotFoundError, OSError
         return {}
     return parse_podman_port(r.stdout) if r.returncode == 0 else {}
@@ -46,8 +51,11 @@ def exposure_verdict(name, bind_class, reachable, source="env"):
         return (f"lan.{name}_LAN_exposure_undeclared_(source={source};_set_{BIND_VARS[name][0]})", False)
     return None
 
-def auth_required_ok(name, status):
+def auth_required_ok(name, status, body=b""):
     """Anonymous request through the LAN IP must be refused: 401 (pgAdmin also a redirect to login or 403). 403/404/5xx/0 are not proof for the others
-    (anonymous-Viewer Grafana, a wrong path and a dead service all look different from 'login required')."""
-    if name == "pgadmin": return status in (302, 401, 403)
+    (anonymous-Viewer Grafana, a wrong path and a dead service all look different from 'login required').
+    pgAdmin 8.13 refuses an anonymous GET with 400 'The CSRF token is missing.' (no data served): accepted for pgAdmin only and only with that body."""
+    if name == "pgadmin":
+        if status == 400: return b"CSRF token is missing" in (body or b"")
+        return status in (302, 401, 403)
     return status == 401
