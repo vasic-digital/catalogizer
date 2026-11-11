@@ -1695,3 +1695,8 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - TAURI-R4-FU-3: a mention in a comment/string/test file other than vi/jest module mocks demands all five permissions (accepted false positive); no source lexing by design.
 - TAURI-R4-FU-4: capability "webviews" field is ignored (conservative: only "windows" is matched); a remote capability with urls [] FAILs (conservative: any "remote" object is treated as granting to remote origins).
 - TAURI-R4-FU-5: html scan covers *.html under installer-wizard (excluding node_modules, dist, target, .git); a non-empty src-tauri/permissions/ is BLIND (app-defined permission sets not parsed). Pre-flight runs the guard mutants only when tauri guard/wizard files changed (PRE_FLIGHT_FORCE_TAURI_MUTANTS=1 forces).
+
+## Dead-SMB cleanup review follow-ups (branch fix/dead-smb-and-schema)
+- SMB-FU-16 (docs/clients, minor): the Android client and its API docs still call the never-routed `/api/v1/smb/sources/*` and `/api/v1/smb/health` endpoints; align or remove them (not touched here).
+- SMB-FU-16b (nit): the `.gitignore` convention differs between catalogizer-desktop (`src-tauri/gen/schemas/` in the app .gitignore) and installer-wizard (single file entry); pick one.
+- SMB-FU-16c (nit): `catalog-api/api_contract_happy_exceptions.tsv:61` has an ambiguous `download.go` reference after the root handlers/download.go removal; qualify it as `internal/handlers/download.go`.

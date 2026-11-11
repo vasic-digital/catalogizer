@@ -395,9 +395,9 @@ func (c *OfflineCache) GetOrFetch(key string, fetcher func() interface{}) interf
 
 #### 📊 Real-time Status Monitoring
 ```bash
-# Check SMB source health via API
+# Check overall status via API (the former /api/v1/smb/sources/status endpoint was never routed and was removed)
 curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:8080/api/v1/smb/sources/status
+  http://localhost:8080/api/v1/status
 
 # Response shows detailed connection state
 {
@@ -447,9 +447,8 @@ SMB_OFFLINE_CACHE_SIZE=1000
 
 #### Manual Recovery
 ```bash
-# Force reconnection attempt
-curl -X POST -H "Authorization: Bearer $TOKEN" \
-  http://localhost:8080/api/v1/smb/sources/{id}/reconnect
+# Force reconnection: the former /api/v1/smb/sources/{id}/reconnect endpoint was never routed and was removed;
+# restart catalog-api or re-test the storage root instead.
 
 # Reset circuit breaker
 curl -X POST -H "Authorization: Bearer $TOKEN" \

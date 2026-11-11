@@ -118,9 +118,8 @@ sudo systemctl status nmbd
 
 #### 3. Circuit Breaker Reset
 ```bash
-# Force reconnection via API
-curl -X POST -H "Authorization: Bearer $TOKEN" \
-  http://localhost:8080/api/v1/smb/sources/smb_123/reconnect
+# The former /api/v1/smb/sources/<id>/reconnect endpoint was never routed and was removed:
+# restart catalog-api (or re-test the storage root) to force a reconnection.
 ```
 
 #### 4. SMB Protocol Version Issues
@@ -560,9 +559,9 @@ curl http://localhost:8080/health
 # Detailed status
 curl http://localhost:8080/api/v1/status
 
-# SMB sources health
+# Storage roots (the former /api/v1/smb/health endpoint was never routed and was removed)
 curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:8080/api/v1/smb/health
+  http://localhost:8080/api/v1/storage/roots
 
 # Database health
 curl -H "Authorization: Bearer $TOKEN" \
@@ -681,7 +680,7 @@ echo "" >> debug-info.txt
 
 echo "=== SMB Status ===" >> debug-info.txt
 curl -s -H "Authorization: Bearer $TOKEN" \
-  http://localhost:8080/api/v1/smb/sources/status >> debug-info.txt
+  http://localhost:8080/api/v1/storage/roots >> debug-info.txt
 echo "" >> debug-info.txt
 
 echo "=== Database Info ===" >> debug-info.txt
@@ -886,12 +885,7 @@ smbclient //server/share -N  # Test with no password
 When SMB passwords change:
 
 1. Update credentials in the Catalogizer configuration.
-2. Restart the catalog-api server or trigger a reconnection:
-
-```bash
-curl -X POST -H "Authorization: Bearer $TOKEN" \
-  http://localhost:8080/api/v1/smb/sources/{source_id}/reconnect
-```
+2. Restart the catalog-api server (the former /api/v1/smb/sources/{id}/reconnect endpoint was never routed and was removed).
 
 3. Monitor the circuit breaker state -- it should transition from Open to Half-Open to Closed.
 

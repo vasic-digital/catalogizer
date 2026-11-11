@@ -3,6 +3,7 @@ package pathsafe
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -124,6 +125,75 @@ func TestWithin_ExportedCleansBothArguments(t *testing.T) {
 	for _, c := range cases {
 		if got := Within(c.root, c.p); got != c.want {
 			t.Errorf("Within(%q, %q) = %v, want %v", c.root, c.p, got, c.want)
+		}
+	}
+}
+
+// Ported from the removed root handlers/copy_security_test.go (live confinement guard, direct calls).
+
+func TestContainedJoin_RejectsTraversal(t *testing.T) {
+	root := t.TempDir()
+	for _, p := range []string{"../escape", "a/../../escape", "a/b/../../../escape", "/etc/passwd", root + "/../escape", "a\x00b", ".."} {
+		if got, err := ContainedJoin(root, p); err == nil {
+			t.Errorf("path %q must be rejected (got %q)", p, got)
+		}
+	}
+}
+
+func TestContainedJoin_AcceptsContained(t *testing.T) {
+	root := t.TempDir()
+	for _, p := range []string{"a.txt", "sub/dir/a.txt", root + "/x/y", "./a/./b"} {
+		got, err := ContainedJoin(root, p)
+		if err != nil {
+			t.Fatalf("%q rejected: %v", p, err)
+		}
+		if got != root && !strings.HasPrefix(got, root+string(os.PathSeparator)) {
+			t.Errorf("%q escaped root: %q", p, got)
+		}
+	}
+}
+
+func TestContainedJoin_SymlinkEscapeNonexistentTail(t *testing.T) {
+	root := t.TempDir()
+	outside := t.TempDir()
+	if err := os.Symlink(outside, filepath.Join(root, "link")); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range []string{"link/file.txt", "link/new/dir/file.txt"} {
+		if got, err := ContainedJoin(root, p); err == nil {
+			t.Errorf("%q through escaping symlink accepted: %q", p, got)
+		}
+	}
+}
+
+func TestContainedJoin_EmptyRootRejected(t *testing.T) {
+	if _, err := ContainedJoin("", "a.txt"); err == nil {
+		t.Fatal("empty root accepted")
+	}
+}
+
+func TestSafeChildName_Extended(t *testing.T) {
+	for _, n := range []string{"", ".", "..", "../x", "a/b", `a\b`, `..\x`, "x\x00y", "/abs"} {
+		if _, err := SafeChildName(n); err == nil {
+			t.Errorf("name %q must be rejected", n)
+		}
+	}
+	for _, n := range []string{"movie.mkv", "a b.txt", "..hidden", "ü.mp3"} {
+		if got, err := SafeChildName(n); err != nil || got != n {
+			t.Errorf("%q: %q, %v", n, got, err)
+		}
+	}
+}
+
+func TestSafeRemotePath_Extended(t *testing.T) {
+	for _, p := range []string{"../x", "a/../../x", `a\..\x`, "a\x00b", "/a/b/../../.."} {
+		if err := SafeRemotePath(p); err == nil {
+			t.Errorf("remote path %q must be rejected", p)
+		}
+	}
+	for _, p := range []string{"/media/movies", "a/b", "a/..b/c", "/"} {
+		if err := SafeRemotePath(p); err != nil {
+			t.Errorf("%q rejected: %v", p, err)
 		}
 	}
 }

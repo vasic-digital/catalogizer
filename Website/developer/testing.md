@@ -94,7 +94,7 @@ The test helper at `internal/tests/test_helper.go` provides convenience function
 go test -v -run TestMediaDetection ./internal/media/detector/
 
 # Run tests matching a pattern
-go test -v -run "TestSMB.*" ./internal/services/ ./smb/
+go test -v -run "TestSMB.*" ./internal/services/
 
 # Run with race detection
 go test -race ./internal/services/
