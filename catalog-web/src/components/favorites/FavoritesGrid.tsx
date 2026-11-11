@@ -28,6 +28,58 @@ interface FavoritesGridProps {
   onSelectChange?: (selectedItems: MediaItem[]) => void
 }
 
+type FavoritesStatsData = NonNullable<ReturnType<typeof useFavorites>['stats']>
+
+const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: number }> = ({ icon, label, value }) => (
+  <Card>
+    <CardContent className="p-4">
+      <div className="flex items-center gap-2">
+        {icon}
+        <div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{label}</p>
+          <p className="text-xl font-semibold">{value}</p>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+)
+
+const FavoritesStats: React.FC<{ stats: FavoritesStatsData }> = ({ stats }) => (
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <StatCard icon={<Heart className="w-5 h-5 text-red-500" />} label="Total" value={stats.total_count} />
+    <StatCard icon={<Star className="w-5 h-5 text-yellow-500" />} label="Movies" value={stats.media_type_breakdown.movie} />
+    <StatCard icon={<Award className="w-5 h-5 text-blue-500" />} label="TV Shows" value={stats.media_type_breakdown.tv_show} />
+    <StatCard icon={<Calendar className="w-5 h-5 text-green-500" />} label="Music" value={stats.media_type_breakdown.music} />
+  </div>
+)
+
+const FavoritesSkeleton: React.FC = () => (
+  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+    {Array.from({ length: 12 }).map((_, index) => (
+      <div key={index} className="animate-pulse">
+        <div className="bg-gray-200 dark:bg-gray-700 rounded-lg aspect-video mb-2"></div>
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-1"></div>
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+      </div>
+    ))}
+  </div>
+)
+
+const FavoritesEmpty: React.FC<{ hasSearch: boolean }> = ({ hasSearch }) => (
+  <div className="text-center py-12">
+    <Heart className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+    <h3 className="text-lg font-semibold mb-2">
+      {hasSearch ? 'No favorites found' : 'No favorites yet'}
+    </h3>
+    <p className="text-gray-600 dark:text-gray-400">
+      {hasSearch
+        ? 'Try adjusting your search or filters'
+        : 'Start adding items to your favorites to see them here'
+      }
+    </p>
+  </div>
+)
+
 /**
  * FavoritesGrid displays the user's favorited media items in a filterable,
  * sortable grid with search and view mode toggling.
@@ -166,57 +218,7 @@ export const FavoritesGrid: React.FC<FavoritesGridProps> = ({
   return (
     <div className={className}>
       {/* Stats Section */}
-      {showStats && stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Heart className="w-5 h-5 text-red-500" />
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Total</p>
-                  <p className="text-xl font-semibold">{stats.total_count}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Star className="w-5 h-5 text-yellow-500" />
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Movies</p>
-                  <p className="text-xl font-semibold">{stats.media_type_breakdown.movie}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Award className="w-5 h-5 text-blue-500" />
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">TV Shows</p>
-                  <p className="text-xl font-semibold">{stats.media_type_breakdown.tv_show}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-green-500" />
-                <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Music</p>
-                  <p className="text-xl font-semibold">{stats.media_type_breakdown.music}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {showStats && stats && <FavoritesStats stats={stats} />}
 
       {/* Filters Section */}
       {showFilters && (
@@ -324,28 +326,9 @@ export const FavoritesGrid: React.FC<FavoritesGridProps> = ({
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {Array.from({ length: 12 }).map((_, index) => (
-                <div key={index} className="animate-pulse">
-                  <div className="bg-gray-200 dark:bg-gray-700 rounded-lg aspect-video mb-2"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-1"></div>
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                </div>
-              ))}
-            </div>
+            <FavoritesSkeleton />
           ) : filteredFavorites.length === 0 ? (
-            <div className="text-center py-12">
-              <Heart className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-lg font-semibold mb-2">
-                {searchQuery ? 'No favorites found' : 'No favorites yet'}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                {searchQuery 
-                  ? 'Try adjusting your search or filters'
-                  : 'Start adding items to your favorites to see them here'
-                }
-              </p>
-            </div>
+            <FavoritesEmpty hasSearch={Boolean(searchQuery)} />
           ) : (
             <MediaGrid
               media={enhancedMediaItems}

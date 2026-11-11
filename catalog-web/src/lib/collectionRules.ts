@@ -339,66 +339,56 @@ export const getFieldType = (fieldValue: string) => {
   return field?.type || 'text';
 };
 
+// Operators that take a relative date and therefore need no value.
+const RELATIVE_DATE_OPERATORS = new Set([
+  'today', 'yesterday', 'this_week', 'this_month', 'this_year',
+  'last_7_days', 'last_30_days', 'last_90_days',
+]);
+
+// Operators that take no value at all.
+const VALUELESS_OPERATORS = new Set(['is_empty', 'is_not_empty', 'is_true', 'is_false', ...RELATIVE_DATE_OPERATORS]);
+
+const hasNoValue = (value: unknown): boolean => value === null || value === undefined || value === '';
+
+const validateDateValue = (rule: CollectionRule): string[] => {
+  if (rule.operator === 'between' || rule.operator === 'not_between') {
+    if (!Array.isArray(rule.value) || rule.value.length !== 2) {
+      return ['Date range must have 2 values'];
+    }
+    return rule.value.some((v: string) => isNaN(Date.parse(v))) ? ['Invalid date format in range'] : [];
+  }
+  if (RELATIVE_DATE_OPERATORS.has(rule.operator)) return [];
+  return typeof rule.value === 'string' && isNaN(Date.parse(rule.value)) ? ['Invalid date format'] : [];
+};
+
 export const validateRule = (rule: CollectionRule): string[] => {
   const errors: string[] = [];
-  
+
   if (!rule.field) {
     errors.push('Field is required');
   }
-  
+
   if (!rule.operator) {
     errors.push('Operator is required');
   }
-  
+
   const fieldType = getFieldType(rule.field);
-  
+
   // Check value requirements based on operator
-  if (rule.operator !== 'is_empty' && 
-      rule.operator !== 'is_not_empty' && 
-      rule.operator !== 'is_true' && 
-      rule.operator !== 'is_false' &&
-      rule.operator !== 'today' &&
-      rule.operator !== 'yesterday' &&
-      rule.operator !== 'this_week' &&
-      rule.operator !== 'this_month' &&
-      rule.operator !== 'this_year' &&
-      rule.operator !== 'last_7_days' &&
-      rule.operator !== 'last_30_days' &&
-      rule.operator !== 'last_90_days') {
-    
-    if (rule.value === null || rule.value === undefined || rule.value === '') {
-      errors.push('Value is required for this operator');
-    }
+  if (!VALUELESS_OPERATORS.has(rule.operator) && hasNoValue(rule.value)) {
+    errors.push('Value is required for this operator');
   }
-  
+
   // Type-specific validation
-  if (fieldType === 'number' && rule.value !== null && rule.value !== undefined) {
-    if (isNaN(Number(rule.value))) {
+  if (rule.value !== null && rule.value !== undefined) {
+    if (fieldType === 'number' && isNaN(Number(rule.value))) {
       errors.push('Value must be a number');
     }
-  }
-  
-  if (fieldType === 'date' && rule.value !== null && rule.value !== undefined) {
-    if (rule.operator === 'between' || rule.operator === 'not_between') {
-      if (!Array.isArray(rule.value) || rule.value.length !== 2) {
-        errors.push('Date range must have 2 values');
-      } else if (rule.value.some((v: string) => isNaN(Date.parse(v)))) {
-        errors.push('Invalid date format in range');
-      }
-    } else if (rule.operator !== 'today' && 
-               rule.operator !== 'yesterday' &&
-               rule.operator !== 'this_week' &&
-               rule.operator !== 'this_month' &&
-               rule.operator !== 'this_year' &&
-               rule.operator !== 'last_7_days' &&
-               rule.operator !== 'last_30_days' &&
-               rule.operator !== 'last_90_days') {
-      if (typeof rule.value === 'string' && isNaN(Date.parse(rule.value))) {
-        errors.push('Invalid date format');
-      }
+    if (fieldType === 'date') {
+      errors.push(...validateDateValue(rule));
     }
   }
-  
+
   return errors;
 };
 
