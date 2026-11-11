@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # Shared settings for the Catalogizer QA "stack 3" scripts (sourced by up.sh / down.sh / build.sh).
+# Lifecycle env hygiene (CAT-QA-STACK-LIFECYCLE-1): strip ",guid=" from DBUS_SESSION_BUS_ADDRESS so rootless podman/crun works in agent shells.
+. "${QA_PODMAN_ENV_LIB:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/podman_env.sh}" || { echo "ERROR: cannot source docs/qa/lib/podman_env.sh" >&2; return 1 2>/dev/null || exit 1; }
+qa_podman_env_normalize
 # Everything is overridable from the environment; secrets live ONLY in $QA_DIR/qa.env (mode 0600, outside the repo).
 STACK="${STACK:-catqa3}"
 POD="${STACK}"

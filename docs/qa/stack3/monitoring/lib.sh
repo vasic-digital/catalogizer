@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # Shared settings for the stack-3 monitoring add-on (sourced by up.sh / down.sh). Secrets live ONLY in $QA_DIR/mon.env (0600, outside repo).
+# Lifecycle env hygiene (CAT-QA-STACK-LIFECYCLE-1): strip ",guid=" from DBUS_SESSION_BUS_ADDRESS so rootless podman/crun works in agent shells.
+. "${QA_PODMAN_ENV_LIB:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/podman_env.sh}" || { echo "ERROR: cannot source docs/qa/lib/podman_env.sh" >&2; return 1 2>/dev/null || exit 1; }
+qa_podman_env_normalize
 STACK="${STACK:-catqa3}"; MON_POD="${MON_POD:-${STACK}mon}"
 QA_DIR="${QA_DIR:-$HOME/.cache/claude-tmp/${STACK}}"
 # The pod reaches ONLY these four host loopback/published ports (pasta `-T`: pod-loopback port N -> host-loopback port N), so MON_HOST and the

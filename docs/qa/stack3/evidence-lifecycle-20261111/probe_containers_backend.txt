@@ -1,0 +1,16 @@
+date: 2026-11-11T15:55:43+01:00
+podman: podman version 5.7.0
+DBUS before: unix:path=/run/user/1000/bus,guid=0123456789abcdef0123456789abcdef
+--- control: raw podman start with the guid address (expected to FAIL in an agent shell; informational)
+raw: Error: unable to start container "2e0d1c59455df316dbc19dfd02c12c5b7745721448eb5572ab9bb5fe8e91026c": crun: sd-bus call: Operation not permitted: Permission denied: OCI permission denied
+raw rc=125
+--- wrapper start
+qa_stack: catqa-lifecycle-probe running none after 0s
+qa_stack_start rc=0  DBUS after: unix:path=/run/user/1000/bus
+state: running
+--- wrapper stop
+qa_stack_stop rc=0  state: exited
+--- refusal of another stack
+qa_stack: refused: 'catqa1-api' is outside prefix 'catqa-lifecycle-' (other stacks are never touched)
+rc=64 (64 expected)
+cleanup ok: catqa-lifecycle-probe removed
