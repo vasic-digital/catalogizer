@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // applyTrustedProxies configures which TCP peers may supply X-Forwarded-For
@@ -67,4 +68,16 @@ func trustsEverything(tp string) bool {
 		}
 	}
 	return false
+}
+
+// warnTrustedProxies emits the startup warnings for risky TRUSTED_PROXIES
+// values (catch-all CIDR, deprecated "auto"). Extracted from main() so the
+// warnings are testable with an injected logger (TP-FU-1); behaviour unchanged.
+func warnTrustedProxies(logger *zap.Logger, tp string) {
+	if trustsEverything(tp) {
+		logger.Warn("TRUSTED_PROXIES contains a catch-all CIDR (0.0.0.0/0 or ::/0): every peer may forge its client IP via X-Forwarded-For")
+	}
+	if tp == "auto" {
+		logger.Warn("TRUSTED_PROXIES=auto is DEPRECATED: any client inside a trusted private range can forge its client IP via X-Forwarded-For and bypass per-IP rate limits; use explicit proxy CIDR(s)")
+	}
 }
