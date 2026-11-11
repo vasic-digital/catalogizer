@@ -19,7 +19,8 @@ case "$1" in
   start) case "${DBUS_SESSION_BUS_ADDRESS-}" in *,guid=*) echo "crun: sd-bus call: Operation not permitted: Permission denied: OCI permission denied" >&2; exit 126;; esac
          echo "${SHIM_AFTER_START:-running}" > "$SHIM_STATE/$n"; exit 0;;
   stop)  n="${4-$n}"; echo exited > "$SHIM_STATE/$n"; exit 0;;
-  inspect) [ -n "${SHIM_INSPECT_DELAY-}" ] && /bin/sleep "$SHIM_INSPECT_DELAY"; [ -f "$SHIM_STATE/$n" ] || exit 125
+  inspect) [ -n "${SHIM_INSPECT_HANG-}" ] && exec /bin/sleep "$SHIM_INSPECT_HANG"
+    [ -n "${SHIM_INSPECT_DELAY-}" ] && /bin/sleep "$SHIM_INSPECT_DELAY"; [ -f "$SHIM_STATE/$n" ] || exit 125
     case "$*" in
       *Health*) c="$SHIM_STATE/$n.polls"; k=$(( $(cat "$c" 2>/dev/null || echo 0) + 1 )); echo $k > "$c"
                 if [ -n "${SHIM_HEALTH_OUT-}" ]; then echo "$SHIM_HEALTH_OUT"; elif [ "${SHIM_NEVER_HEALTHY:-0}" = 1 ] || [ "$k" -le "${SHIM_STARTING_POLLS:-0}" ]; then echo starting; else echo healthy; fi;;
@@ -31,7 +32,7 @@ S
 printf '#!/usr/bin/env bash\nexit 0\n' > "$BIN/sleep"; chmod +x "$BIN"/*
 export SHIM_LOG="$ROOT/log" SHIM_STATE="$ROOT/state" QA_STACK_BACKEND=podman STACK=catqa3 PATH="$BIN:$PATH"
 G='unix:path=/run/user/1000/bus,guid=0123abcd'
-fresh() { : > "$SHIM_LOG"; rm -f "$SHIM_STATE"/*; echo exited > "$SHIM_STATE/catqa3-api"; unset SHIM_NEVER_HEALTHY SHIM_STARTING_POLLS SHIM_HEALTH_OUT SHIM_AFTER_START; }
+fresh() { : > "$SHIM_LOG"; rm -f "$SHIM_STATE"/*; echo exited > "$SHIM_STATE/catqa3-api"; unset SHIM_INSPECT_HANG SHIM_CTRCTL_FAIL SHIM_NEVER_HEALTHY SHIM_STARTING_POLLS SHIM_HEALTH_OUT SHIM_AFTER_START; }
 
 # 1. RED signature (shim sanity): raw podman start with the guid address fails with the measured message; without guid it works.
 fresh; out="$(DBUS_SESSION_BUS_ADDRESS="$G" podman start catqa3-api 2>&1)"; rc=$?
@@ -85,8 +86,10 @@ cat > "$BIN/go" <<'S'
 # fake go build -o OUT: refuses when main.go says BROKEN, else writes a "binary" embedding the content hash of main.go+go.mod
 echo "go $*" >> "$SHIM_LOG"; out=""; while [ $# -gt 0 ]; do [ "$1" = -o ] && out="$2"; shift; done
 grep -q BROKEN main.go && { echo "build error" >&2; exit 2; }
+echo "GOOUT $out" >> "$SHIM_LOG"
+case "$out" in *.tmp.*) ;; *) echo "fake go: refusing direct write to final path $out" >&2; exit 3;; esac
 h="$(cat main.go go.mod | sha256sum | cut -c1-16)"
-printf '#!/usr/bin/env bash\necho "ctrctl-bin %s $*" >> "$SHIM_LOG"\nprintf "%s" > "$SHIM_STATE/$2"\n' "$h" "${SHIM_AFTER_START:-running}" > "$out"; chmod +x "$out"
+printf '#!/usr/bin/env bash\n[ -n "${SHIM_CTRCTL_FAIL-}" ] && exit 1\necho "ctrctl-bin %s $*" >> "$SHIM_LOG"\nprintf "%s" > "$SHIM_STATE/$2"\n' "$h" "${SHIM_AFTER_START:-running}" > "$out"; chmod +x "$out"
 S
 chmod +x "$BIN/go"
 export QA_REPO_ROOT="$FR" QA_CTRCTL_CACHE="$ROOT/cache" QA_STACK_BACKEND=auto
@@ -105,4 +108,54 @@ fresh; QA_STACK_BACKEND=containers qa_stack_start catqa3-api 2>"$ROOT/err"; rc=$
 [ "$rc" = 69 ] && ! grep -q '^podman start' "$SHIM_LOG" && grep -q 'no fallback to podman' "$ROOT/err"; ok $? "forced containers + broken build -> rc 69, no podman fallback (rc=$rc)"
 fresh; QA_STACK_BACKEND=containers qa_stack_stop catqa3-api 2>/dev/null; rc=$?; [ "$rc" = 69 ] && ! grep -q '^podman stop' "$SHIM_LOG"; ok $? "forced containers stop + broken build -> rc 69, no fallback"
 fresh; qa_stack_start catqa3-api 2>"$ROOT/err"; rc=$?; [ "$rc" = 0 ] && grep -q 'DEVIATION' "$ROOT/err"; ok $? "auto + broken build -> logged podman fallback (rc=$rc)"
+# ---- LIFE-FU-1: atomic ctrctl build (tmp in cache dir + mv -f), concurrent builds, TMPDIR irrelevant
+fresh; rm -rf "${ROOT:?}/cache"; echo 'package main // v3' > "$FR/docs/qa/lib/ctrctl/main.go"
+export QA_STACK_BACKEND=auto
+qa_stack_start catqa3-api 2>/dev/null; rc=$?
+o="$(grep -m1 '^GOOUT ' "$SHIM_LOG" | cut -d' ' -f2)"
+[ "$rc" = 0 ] && [ "$(dirname "$o")" = "$ROOT/cache" ] && [ "$o" != "$ROOT/cache/ctrctl" ] && [ -x "$ROOT/cache/ctrctl" ] && [ -z "$(ls "$ROOT/cache" | grep '\.tmp\.')" ]; ok $? "build goes to tmp file in cache dir then mv -f; no tmp left (out=$(basename "$o"))"
+fresh; rm -rf "${ROOT:?}/cache"; mkdir -p "$ROOT/othertmp"
+( TMPDIR="$ROOT/othertmp"; for i in 1 2 3 4 5 6; do ( _qa_stack_backend > "$ROOT/conc.$i" 2>/dev/null ) & done; wait )
+good=0; for i in 1 2 3 4 5 6; do grep -q "^containers $ROOT/cache/ctrctl$" "$ROOT/conc.$i" && good=$((good+1)); done
+tot="$(grep -c '^GOOUT ' "$SHIM_LOG")"; uq="$(grep '^GOOUT ' "$SHIM_LOG" | sort -u | wc -l)"
+[ "$good" = 6 ] && [ "$tot" = 6 ] && [ "$uq" = 6 ] && [ -x "$ROOT/cache/ctrctl" ] && [ -z "$(ls "$ROOT/cache" | grep '\.tmp\.')" ]; ok $? "6 concurrent first builds (TMPDIR elsewhere): all ok, 6 distinct tmp outputs, no tmp left (good=$good tot=$tot uniq=$uq)"
+# NOTE: a true cross-filesystem text-file-busy reproduction needs a real ELF binary being executed; the fake go writes scripts, so that
+# exact kernel behaviour is a documented skip. The contract tested here is the cause: the final path is only ever written by atomic rename.
+
+# ---- LIFE-FU-2a: inspect bound is enforced (QA_INSPECT_TIMEOUT, default 10)
+fresh; rm -rf "${ROOT:?}/cache"; export QA_STACK_BACKEND=podman SHIM_INSPECT_HANG=6
+t0=$SECONDS; QA_INSPECT_TIMEOUT=1 QA_HEALTH_TIMEOUT=2 qa_stack_start catqa3-api 2>/dev/null; rc=$?; el=$((SECONDS-t0)); unset SHIM_INSPECT_HANG
+[ "$rc" = 1 ] && [ "$el" -le 4 ]; ok $? "hung inspect is cut off by the timeout bound (rc=$rc elapsed=${el}s <= 4)"
+
+# ---- LIFE-FU-2b: per-checkout cache keying without QA_CTRCTL_CACHE
+FR2="$ROOT/fakerepo2"; mkdir -p "$FR2/docs/qa/lib/ctrctl" "$FR2/submodules/containers/pkg/runtime"; : > "$FR2/submodules/containers/pkg/runtime/podman.go"
+echo 'package main // other checkout' > "$FR2/docs/qa/lib/ctrctl/main.go"; echo 'module y' > "$FR2/docs/qa/lib/ctrctl/go.mod"
+fresh; export QA_STACK_BACKEND=auto
+ba="$(unset QA_CTRCTL_CACHE; XDG_CACHE_HOME="$ROOT/xdg" QA_REPO_ROOT="$FR" _qa_stack_backend 2>/dev/null)"
+bb="$(unset QA_CTRCTL_CACHE; XDG_CACHE_HOME="$ROOT/xdg" QA_REPO_ROOT="$FR2" _qa_stack_backend 2>/dev/null)"
+da="$(dirname "${ba#containers }")"; db="$(dirname "${bb#containers }")"
+[ "$da" != "$db" ] && [ "$(dirname "$da")" = "$ROOT/xdg/catalogizer-qa" ] && [ "$(dirname "$db")" = "$ROOT/xdg/catalogizer-qa" ] && [ -x "${ba#containers }" ] && [ -x "${bb#containers }" ] && ! cmp -s "${ba#containers }" "${bb#containers }"; ok $? "two checkouts get distinct cache dirs under XDG_CACHE_HOME and distinct binaries"
+
+# ---- LIFE-FU-2c: ctrctl non-zero exit propagates
+fresh; export QA_STACK_BACKEND=auto QA_CTRCTL_CACHE="$ROOT/cache"; rm -rf "${ROOT:?}/cache"; echo 'package main // v4' > "$FR/docs/qa/lib/ctrctl/main.go"
+export SHIM_CTRCTL_FAIL=1
+qa_stack_stop catqa3-api 2>/dev/null; r=$?; [ "$r" = 1 ]; ok $? "failing ctrctl stop -> qa_stack_stop returns 1 (rc=$r)"
+echo running > "$SHIM_STATE/catqa3-api"   # container looks healthy: only the ctrctl exit code can fail the start
+qa_stack_start catqa3-api 2>/dev/null; r=$?; [ "$r" = 1 ]; ok $? "failing ctrctl start -> qa_stack_start returns 1 (rc=$r)"
+unset SHIM_CTRCTL_FAIL
+# rc must not leak as a global
+unset rc; fresh; qa_stack_stop catqa3-api 2>/dev/null; qa_stack_start catqa3-api 2>/dev/null; [ -z "${rc+x}" ]; ok $? "qa_stack_start/stop keep rc local (no global leak)"
+
+# ---- LIFE-FU-4: glob safety in _qa_strip_guid, DEVIATION wording, missing timeout message
+GD="$ROOT/globdir"; mkdir -p "$GD"; : > "$GD/abc"
+out="$(cd "$GD" && _qa_strip_guid 'unix:path=/x,a*,guid=1')"
+[ "$out" = 'unix:path=/x,a*' ]; ok $? "glob-looking param is not expanded against cwd files: '$out'"
+( cd "$GD" && _qa_strip_guid 'unix:path=/x,a*,guid=1' >/dev/null; case $- in *f*) exit 1;; esac ); ok $? "set -f does not leak into the caller shell"
+fresh; export QA_STACK_BACKEND=podman; qa_stack_stop catqa3-api 2>"$ROOT/err"; grep -q 'FORCED' "$ROOT/err" && ! grep -q 'unavailable' "$ROOT/err"; ok $? "forced podman logs FORCED wording, not 'unavailable'"
+fresh; export QA_STACK_BACKEND=auto QA_REPO_ROOT="$ROOT/norepo"; qa_stack_stop catqa3-api 2>"$ROOT/err"; grep -q 'unavailable' "$ROOT/err" && ! grep -q 'FORCED' "$ROOT/err"; ok $? "auto fallback logs 'unavailable' wording"
+export QA_REPO_ROOT="$FR"
+NB="$ROOT/nobin"; mkdir -p "$NB"; ln -s "$BIN/podman" "$NB/podman"; ln -s "$BIN/sleep" "$NB/sleep"
+fresh; out="$( PATH="$NB"; qa_stack_wait_healthy catqa3-api 2 2>&1 )"; rc=$?
+[ "$rc" = 69 ] && [[ "$out" == *"'timeout' command not found"* ]]; ok $? "missing timeout -> clear error, rc 69 (rc=$rc)"
+export QA_STACK_BACKEND=podman
 echo "passed=$pass failed=$fail"; [ "$fail" = 0 ]

@@ -1699,8 +1699,8 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - TAURI-R4-FU-5: html scan covers *.html under installer-wizard (excluding node_modules, dist, target, .git); a non-empty src-tauri/permissions/ is BLIND (app-defined permission sets not parsed). Pre-flight runs the guard mutants only when tauri guard/wizard files changed (PRE_FLIGHT_FORCE_TAURI_MUTANTS=1 forces).
 
 ## CAT-QA-STACK-LIFECYCLE-1 follow-ups (Opus round 2, minor, 2026-11-11)
-- LIFE-FU-1: ctrctl concurrent first builds race when TMPDIR is on another filesystem (build to `$bin.tmp.$$` then `mv -f`, or flock). Latent: no caller is concurrent.
-- LIFE-FU-2: test gaps: `timeout 10` bound on inspect, per-checkout cache keying, ctrctl non-zero exit propagation (mutants survived).
-- LIFE-FU-3: doc drift (README/podman_env.sh header say "strips every ,key=val"; cache path now per-checkout hash dir; "11 mutants" = baseline + 10).
-- LIFE-FU-4 (nits): `_qa_strip_guid` unquoted glob expansion (use `set -f`); DEVIATION text when podman forced; global `rc`; unhealthy waits full timeout; missing `timeout` message.
+- LIFE-FU-1: RESOLVED: ctrctl builds to `<bin>.tmp.<pid>` in the cache dir then `mv -f`; test with 6 concurrent builds (distinct tmp outputs) + mutants. A real cross-FS ETXTBSY reproduction needs an ELF binary (fake go writes scripts): documented skip. (was: ctrctl concurrent first builds race when TMPDIR is on another filesystem (build to `$bin.t...)
+- LIFE-FU-2: RESOLVED: tests+mutants for the inspect timeout (`QA_INSPECT_TIMEOUT`), per-checkout cache keying, ctrctl non-zero exit propagation (start and stop). (was: test gaps: `timeout 10` bound on inspect, per-checkout cache keying, ctrctl non-zero exit...)
+- LIFE-FU-3: RESOLVED: README and podman_env.sh header corrected (guid= only, per-checkout cache hash dir, mutant count). (was: doc drift (README/podman_env.sh header say "strips every ,key=val"; cache path now per-che...)
+- LIFE-FU-4: RESOLVED: `set -f` (restored) in `_qa_strip_guid`, FORCED vs unavailable DEVIATION text, local `rc`, clear missing-`timeout` error (rc 69). Not done by decision: faster unhealthy failure (risky). (was: nits): `_qa_strip_guid` unquoted glob expansion (use `set -f`); DEVIATION text when podman...)
 - up.sh/down.sh/build.sh still call podman directly (documented deviation, not yet run against real catqa3-api).
