@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="pandoc" />
+  <meta name="generator" content="pandoc 3.11" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Catalogizer — Continuation</title>
   <style>
@@ -41,7 +41,6 @@
       body {
         background-color: transparent;
         color: black;
-        font-size: 12pt;
       }
       p, h2, h3 {
         orphans: 3;
@@ -91,6 +90,7 @@
       color: #606060;
     }
     code {
+      white-space: pre-wrap;
       font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
       font-size: 85%;
       margin: 0;
@@ -154,10 +154,13 @@
     #TOC a:not(:hover) {
       text-decoration: none;
     }
-    code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
-    div.columns{display: flex; gap: min(4vw, 1.5em);}
-    div.column{flex: auto; overflow-x: auto;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
     /* The extra [class] is a hack that increases specificity enough to
        override a similar rule in reveal.js */
@@ -168,7 +171,6 @@
       margin: 0 0.8em 0.2em -1.6em;
       vertical-align: middle;
     }
-    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
   </style>
 </head>
 <body>
@@ -178,244 +180,367 @@
 <h1 id="continuation-catalogizer">CONTINUATION — Catalogizer</h1>
 <blockquote>
 <p>Live work-state document per Constitution <strong>§12.10
-(CONTINUATION)</strong> and <strong>§11.4.131 (standing resumption
-file)</strong>. Read this first, then continue §11.4.126 loop.</p>
+(CONTINUATION)</strong> and <strong>§11.4.131</strong>. A fresh session
+that receives only the prompt <code>continue</code> MUST read this file
+first, then <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>, then resume the
+§11.4.126 loop with the steps in “RESUME ORDER”.</p>
 </blockquote>
-<p><strong>Revision:</strong> 9 <strong>Last modified:</strong>
-2026-06-29T14:35:00Z</p>
-<h2 id="short-resumption">SHORT RESUMPTION</h2>
-<p>Read this, <code>git fetch --all --prune</code>, then continue
-§11.4.126 autonomous loop. <strong>HEAD: <code>e5019c68</code></strong>
-— all 6 remotes in sync. Submodules reorganized under
-<code>submodules/</code> with snake_case names. git-lfs installed at
-<code>~/.local/bin</code> (required for push — see
-[[git-lfs-prepush-hook-blocker]] memory). catalog-api runs from durable
-tmux window <code>api-server</code> (socket
-<code>tmx-catalogizer</code>); enrichment loop in window
-<code>enrich2</code>.</p>
-<h2 id="system-state">SYSTEM STATE</h2>
-<table>
-<colgroup>
-<col style="width: 40%" />
-<col style="width: 29%" />
-<col style="width: 29%" />
-</colgroup>
-<thead>
-<tr>
-<th>Component</th>
-<th>Status</th>
-<th>Detail</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>catalog-api</strong></td>
-<td>✅ Running</td>
-<td>Port 28080, SQLite, identity credentials loaded, enrichment
-async</td>
-</tr>
-<tr>
-<td><strong>catalog-web</strong></td>
-<td>✅ Running</td>
-<td>Port 3000, React TypeScript, 2398/2398 tests PASS, TS/lint
-clean</td>
-</tr>
-<tr>
-<td><strong>Android TV</strong></td>
-<td>✅ Running</td>
-<td>192.168.0.214:5555, Firebase Crashlytics WIRED+verified (runtime
-sig, settings.json fetched), crash-on-first-run FIXED</td>
-</tr>
-<tr>
-<td><strong>Catalog covers</strong></td>
-<td>✅ FIXED</td>
-<td>Was: 0 covers (no TMDB key + DeepSeek 402). Now: TMDB key +
-LEFT-JOIN reachability + LLM failover + progress-marker. Real 64KB JPEG
-posters serving. Enrichment loop grinding backlog.</td>
-</tr>
-<tr>
-<td><strong>NAS DATA8 scan</strong></td>
-<td>✅ Completed</td>
-<td><strong>119,000 files indexed</strong></td>
-</tr>
-<tr>
-<td><strong>NAS music</strong></td>
-<td>❌ Access denied</td>
-<td>Requires CATALOGIZER_IDENTITY credentials update</td>
-</tr>
-<tr>
-<td><strong>NAS usbshare2</strong></td>
-<td>❌ Access denied</td>
-<td>Requires CATALOGIZER_IDENTITY credentials update</td>
-</tr>
-<tr>
-<td><strong>Go test suite</strong></td>
-<td>✅ 44/44 PASS + vet zero warnings</td>
-<td></td>
-</tr>
-<tr>
-<td><strong>Memory submodule tests</strong></td>
-<td>✅ 10/10 PASS</td>
-<td></td>
-</tr>
-<tr>
-<td><strong>AndroidTV instr. test</strong></td>
-<td>✅ 1/1 PASS</td>
-<td>MediaCardLayout regression guard</td>
-</tr>
-<tr>
-<td><strong>Backend tests</strong></td>
-<td>✅ Running</td>
-<td>Current</td>
-</tr>
-<tr>
-<td><strong>Web tests</strong></td>
-<td>✅ 137/137 files, 2398/2398 tests PASS</td>
-<td></td>
-</tr>
-<tr>
-<td><strong>HelixQA API campaign</strong></td>
-<td>✅ 185 PASS, 0 FAIL, 95 SKIP</td>
-<td></td>
-</tr>
-<tr>
-<td><strong>API keys</strong></td>
-<td>✅ Synced</td>
-<td>36 keys from ~/api_keys.sh to .env</td>
-</tr>
-<tr>
-<td><strong>Submodules</strong></td>
-<td>✅ Reorganized</td>
-<td>Top-level → submodules/ with snake_case names</td>
-</tr>
-<tr>
-<td><strong>Git remotes</strong></td>
-<td>✅ In sync</td>
-<td>All upstreams aligned, binary removed from history</td>
-</tr>
-</tbody>
-</table>
-<h2 id="commits-this-session">COMMITS THIS SESSION</h2>
-<table>
-<colgroup>
-<col style="width: 38%" />
-<col style="width: 61%" />
-</colgroup>
-<thead>
-<tr>
-<th>Commit</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>e5019c68</code></td>
-<td>fix(covers): TMDB enrichment + reachability LEFT JOIN + LLM failover
-+ progress marker (all TDD RED→GREEN)</td>
-</tr>
-<tr>
-<td><code>4d434e0a</code></td>
-<td>docs(qa): Crashlytics on-device wiring evidence + security incident
-(redacted Firebase key) + feature ledger</td>
-</tr>
-<tr>
-<td><code>06254f8d</code></td>
-<td>chore: add git-lfs tracking for build binaries</td>
-</tr>
-<tr>
-<td><code>779239da</code></td>
-<td>chore: update submodule pointers — helix_qa and
-ui_components_react</td>
-</tr>
-<tr>
-<td><code>43d4bdf0</code></td>
-<td>chore: extend .gitignore — remove tracked QA session databases/logs,
-deployment local envs</td>
-</tr>
-</tbody>
-</table>
-<h2 id="open-items-operator-actions">OPEN ITEMS / OPERATOR ACTIONS</h2>
+<p><strong>Revision:</strong> 16 <strong>Last modified:</strong>
+2026-11-11 <strong>Exports:</strong> <code>CONTINUATION.html</code> /
+<code>CONTINUATION.pdf</code> regenerated at Rev 16 with
+<code>pandoc -s</code> (HTML) and <code>weasyprint</code> (PDF) from
+this file; this <code>.md</code> is authoritative.</p>
+<h2 id="rev-16-delta-since-rev-15-70d10721">0. Rev 16 delta (since Rev
+15, <code>70d10721</code>)</h2>
 <ul>
-<li><strong>Firebase API key exposure</strong>
-(<code>docs/security/firebase-api-key-exposure-20260629.md</code>): the
-live Android key is published in history commit <code>4cbc1311</code>
-(prior session). Operator chose ACCEPT-AS-IS (no rotation, no history
-purge). Recommended eventual fix: restrict the key in Google Cloud
-Console (package + SHA-256 + App Check). See
-[[firebase-api-key-in-git-history]] memory.</li>
-<li><strong>Cover enrichment backlog</strong>: continuous loop (tmux
-<code>enrich2</code>) grinding all 27750 items. Most are
-music/comics/episodes TMDB can’t match (marked
-<code>enrichment_attempted</code>); the 1192 movies + 177 TV shows get
-real posters as the queue reaches them. Mechanism proven; full coverage
-takes time.</li>
-<li><strong>SMB music + usbshare2 shares</strong>: still ACCESS DENIED
-(the “2” the operator excluded from debugging). | <code>ae2c633e</code>
-| Auto-commit | | <code>365d6dfa</code> | sync: auto-commit before
-cross-host sync 20260628 | | <code>c74a633e</code> | Auto-commit |</li>
+<li>Landed on <code>main</code> (all PROVISIONAL-DONE):
+<code>d215da53</code> merge feat/tauri-native-qa (wizard dialog ACL
+capability, QA screen default); <code>0591b0ca</code> release-permission
+test result recorded (GitHub needs keyring token); <code>f6a73897</code>
+merge feat/tauri-followups (hardened wizard capability guard, evidence
+README, untracked generated schema); <code>f8ec59fc</code> merge
+feat/followups-20261110 (D7-R4 FU-1..4, verify.py LAN-bind expectation
+source, front-door <code>--interface</code> mode); <code>a8401cdc</code>
+register CAT-LANIP-DYN-1; <code>60756277</code> merge feat/lanip-dyn
+(dynamic LAN IP lib, atomic FTPS cert regeneration);
+<code>0af2ee9a</code> register smb-subdir and tauri r2 follow-ups;
+<code>c89c195c</code> docs SMB-FU-6..8 (smb-subdir review follow-ups);
+<code>7498b212</code> merge feat/smb-subdir (SMB share/sub root
+confinement, CAT-SMB-SUBDIR-1). Each merge carried Opus
+GO-with-follow-ups.</li>
+<li>CAT-SMB-SUBDIR-1 is <strong>PROVISIONAL</strong> until
+<code>docs/qa/smb-subdir-20261110/run.sh</code> passes live N&gt;=3
+(SMB-FU-5 / SMB-FU-8; never executed yet). Open SMB follow-ups:
+SMB-FU-1..8 in <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>.</li>
+<li><strong>Host LAN IP changed</strong>: 192.168.1.115 -&gt;
+<strong>192.168.1.17</strong> (verified with <code>ip addr</code>).
+Wherever sections 2, 4, 4b and 5 below say <code>192.168.1.115</code>,
+read the current LAN IP (the QA scripts now auto-detect it; override
+only via <code>QA_LAN_IP</code>).</li>
+<li><strong>Containers do NOT survive a reboot.</strong> Recovery:
+<code>docs/qa/stack3/up.sh &lt;tag&gt;</code>;
+<code>docs/qa/stack3/monitoring/up.sh</code> with LAN binds
+(GRAFANA_BIND/PGADMIN_BIND/PROM_BIND = current LAN IP);
+<code>docs/qa/test-servers/up.sh</code> then
+<code>docs/qa/test-servers/verify.sh</code>.</li>
+<li>Open threads: (1) SonarQube scan (CAT-QA-SONAR-1) needs load &lt;
+12; scratch clone
+<code>/home/milosvasic/.cache/claude-tmp/sonar-scan-nefe8O/repo/docs/qa/stack3/sonarqube</code>:
+<code>./up.sh</code>, then <code>RUN_ID=run3 ./scan.sh</code>, then
+<code>./down.sh</code>. (2) Live reruns: axe, pprof 401/403,
+<code>verify.py</code>, cover-art SSRF F2-F5, rate-limit isolation
+(needs a real second LAN host). (3) Vision/HelixQA UI leg
+(CAT-HELIXQA-VISION-1). (4) Android real login (CAT-ANDROID-LOGIN-1).
+(5) Tauri wizard live GREEN runs (TAURI-R1-FU-7). (6) Synology: SKIP
+<code>hardware_not_present</code> (drives OFF). (7)
+<code>release/v2.4.0-prep</code> HELD at <code>b334ebd0</code>; tag
+<code>v2.4.0</code> only after live validation.</li>
+<li>Note: section 2 still describes the Tauri scratch clone state as of
+Rev 15; <code>feat/tauri-native-qa</code> has since been merged
+(<code>d215da53</code>) - re-check before acting on that row.</li>
 </ul>
-<h2 id="critical-fixes">CRITICAL FIXES</h2>
+<h2 id="state-at-stop">1. State at stop</h2>
+<ul>
+<li><code>main</code> = <code>7498b212</code> (Rev 15 text said
+<code>5713effb</code>) + the Rev 16 doc commit; upstream parity must be
+re-verified (not checked while writing Rev 16) (origin, github-milos,
+gitlab-milos, gitlab-vasic, gitflic-vasic, gitverse-vasic). Verify
+parity first (section 5 step 1).</li>
+<li>Release target: first tag <code>v2.4.0</code> (pre-release, SemVer),
+only after live validation. Everything landed is
+<strong>PROVISIONAL-DONE</strong> (§11.4.290) until its live rerun
+passes N&gt;=3 with machine evidence.</li>
+<li>SonarQube on-demand tooling is LANDED (df7e2dd1, PROVISIONAL); the
+fresh scan on digest-pinned images is still owed (Docker Hub rate limit;
+CAT-QA-SONAR-1).</li>
+<li>Landed 2026-11-06: D7-R4 contrast fixes + island detector (round 1
+GO-with-follow-ups, D7-R4-FU-1..4); live security evidence
+(<code>docs/qa/security-live-20261106/</code>: Prometheus auth, pprof
+401/403/60 s cap, SSRF on image proxy / storage roots / sync endpoints
+VERIFIED 3/3); TRUSTED_PROXIES hardening (explicit <code>/32</code> for
+the proxy with fixed compose subnet + <code>ip_range</code>,
+<code>auto</code> refused in release unless
+<code>TRUSTED_PROXIES_ALLOW_AUTO=true</code>, fail-closed on bad value,
+nginx XFF on every proxied location; round 2 GO-with-follow-ups;
+PROVISIONAL, compose files only rendered + throwaway project, never
+brought up as real stacks); workable-items register Rev 2; disk prune
+(18 dangling images, ~18 GB reclaimed).</li>
+<li>The front-door “shared login bucket” is explained as a same-host
+artefact (pasta alias 169.254.1.2); remote-LAN isolation UNCONFIRMED
+(needs a second LAN host, = QA-MON-FU-4).
+<code>CAT-FRONTDOOR-RATELIMIT-1</code> stays open.</li>
+<li><strong>Tauri desktop/installer native QA agent</strong>: see
+section 2 for its exact state at stop.</li>
+<li><strong>Synology drives are OFF</strong> (operator 2026-11-05 19:09
+CET): Synology SMB/FTP/NFS live tests = SKIP
+<code>hardware_not_present</code>.</li>
+<li>Constitution pin 92a9ecf8 (v73.2). Periodic fetch still owed.</li>
+<li>Binding rules: memory
+<code>feedback_release_completion_mandate</code>,
+<code>feedback_review_budget_policy</code> (max 5 rounds, minors -&gt;
+follow-ups; security-adjacent minors still block),
+<code>feedback_all_work_on_main</code>,
+<code>project_decisions_2026_11_03</code>,
+<code>project_decisions_2026_11_05</code>,
+<code>feedback_pkill_self_match</code>. Never force-push; never print
+credentials (Yandex WebDAV creds only in scratchpad
+<code>yandex_webdav.env</code>, stack in
+<code>catqa3/qa.env</code>/<code>mon.env</code> 0600). No sudo, rootless
+podman only; do not touch stacks catqa1/catqa2 or shared
+aardvark-dns.</li>
+</ul>
+<h2 id="not-on-main">2. NOT ON MAIN</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Branch</th>
+<th>Where</th>
+<th>Item</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tauri native QA (branch <code>feat/tauri-native-qa</code>, local,
+never pushed)</td>
+<td>scratch clone under <code>/home/milosvasic/.cache/claude-tmp/</code>
+(path in agent report below)</td>
+<td>CAT-TAURI-NATIVE-1, CAT-TAURI-INSTALLER-1</td>
+<td>Clone
+<code>/home/milosvasic/.cache/claude-tmp/tauriqa.hw0Kco/repo</code>,
+HEAD <code>389f8abe</code> (base df7e2dd1; contains run-qa.sh QA_SCREEN
+default, <code>test_wizard_capabilities.sh</code> guard, wizard
+<code>capabilities/default.json</code> dialog:allow-open/save,
+tauri-boot README note). NEEDS Opus review (max 5 rounds) then landing.
+DESKTOP (CAT-TAURI-NATIVE-1): VERIFIED 3/3 live on binary sha 9832e3eb
+(confirm dialog on URL change, Cancel/Esc keep URL, confirm applies,
+login with real data, file:// and userinfo URLs rejected, mutant
+always-approve killed; caveats: xdotool-driven, slideshow not
+screencast, binary since rebuilt to fa794e1c so re-verify). WIZARD
+(CAT-TAURI-INSTALLER-1): REAL DEFECT reproduced live 3/3 (Save
+Configuration fails ’Command plugin:dialog</td>
+</tr>
+<tr>
+<td><code>release/v2.4.0-prep</code> HEAD <code>b334ebd0</code>
+(local)</td>
+<td><code>/home/milosvasic/.cache/claude-tmp/relprep.EtmMzF/repo</code></td>
+<td>CAT-REL-V240-1</td>
+<td>HELD: versions.json 2.4.0, openapi version, CHANGELOG
+<code>[2.4.0] - pre-release</code>; re-check VERIFIED/PROVISIONAL rows
+against the live results (add D7-R4, TRUSTED_PROXIES, security-live)
+before landing; no git tags exist yet.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="landed-all-provisional-done-until-live-rerun">3. Landed (all
+PROVISIONAL-DONE until live rerun)</h2>
+<p>Since Rev 11 (<code>109acde2</code>): D7 remaining contrast
+<code>c78c654a</code>; HelixQA stack-3 API smoke wrapper
+<code>fc1192fe</code> (UI vision leg not implemented, honest SKIP);
+Tauri SSRF hardening <code>4ccead68</code> (TAURI-FU-5); S3 storage
+protocol <code>83a21e38</code> (unit-class); S3 live evidence on real
+Garage <code>0a4fb76a</code> (N=3 live); Tauri backend-enforced
+confirmation on server URL change <code>865287f4</code> (needs native
+boot); D7 class-wide dark-gray contrast <code>6ffc4593</code>. Earlier:
+UI-D1/D2/D3/D5/D6/D7/D8, Android QA boot
+(<code>docs/qa/android-boot-20261105</code>), Tauri container build + QA
+boot tooling (<code>109acde2</code>), SECQ-1/3/4/5/6, WD-F1, NEW-1,
+stack-3 verify pack. Follow-ups are in
+<code>docs/FOLLOW_UPS_NEXT_PHASE.md</code> (the authoritative pending
+list).</p>
+<h2 id="stack-3-containers-do-not-survive-reboot">4. Stack 3 (containers
+do NOT survive reboot)</h2>
+<p>Running at stop (if the host was not rebooted): pod catqa3 (images
+<code>localhost/catqa3-api|web:main-17ec3c1f</code>, do NOT contain the
+D7-R4 fixes or the TRUSTED_PROXIES hardening) and pod catqa3mon
+(Prometheus with basic auth, user <code>qa_prom</code>, password
+<code>PROM_AUTH_PASSWORD</code> in <code>mon.env</code>; LAN-bound
+Grafana/pgAdmin/Prometheus). After a reboot:
+<code>docs/qa/stack3/up.sh &lt;tag&gt;</code> then
+<code>GRAFANA_BIND=PGADMIN_BIND=PROM_BIND=192.168.1.115 docs/qa/stack3/monitoring/up.sh</code>
+(its exit 6 / <code>000</code> loopback line is only the loopback check
+on LAN-bound services; verify with LAN URLs). URL map (host
+192.168.1.115): API :38082 (/health), web :33020, website :33021, nginx
+front door :33080 / :33081, Grafana :33030, pgAdmin :33050, Prometheus
+:39090 (auth required). PostgreSQL 127.0.0.1:35434 and Redis
+127.0.0.1:36381 stay loopback. Logins: qa_admin (password only in
+<code>/home/milosvasic/.cache/claude-tmp/catqa3/qa.env</code>). Rebuild
+web+API from current <code>main</code> before the next live rerun (D7-R4
+fixes, TRUSTED_PROXIES). Inactive throwaway users <code>qa_thrw_*</code>
+exist (CAT-QA-THRW-CLEAN-1). <code>verify.py</code> has 3 stale
+LAN-NOT-reachable assertions (CAT-VERIFY-LANBIND-1).</p>
+<h2
+id="b.-live-test-servers-anton-smb-corpus-added-rev-15-containers-do-not-survive-reboot">4b.
+Live test servers + Anton SMB corpus (added Rev 15; containers do NOT
+survive reboot)</h2>
+<ul>
+<li>Test servers (rootless podman <code>cattsrv-*</code>, host
+192.168.1.115): SMB :1445 share <code>corpus</code>, FTP :42021, FTPS
+(explicit) :42022, SFTP :42023, WebDAV :42080, HTTP :42081, NFS v3
+:42049 (userspace rclone, read-only). Corpus
+<code>/home/milosvasic/Testing-servers/corpus</code> (12 files,
+<code>manifest.sha256</code>); writable only in <code>corpus/rw/</code>.
+Credentials (user <code>catsvc</code>) only in
+<code>/home/milosvasic/.cache/claude-tmp/catqa3/testservers.env</code>
+(0600). After a reboot: <code>docs/qa/test-servers/up.sh</code>, then
+<code>verify.sh</code> (NFS leg needs
+<code>TS_NFS_MNT=&lt;premounted dir&gt;</code>). Evidence in
+<code>/home/milosvasic/Testing-servers/evidence/</code> (outside git;
+<code>verify_20261106T125600.log</code> fail=0). Sudo used only for an
+NFS probe mount (undone); logged in
+<code>evidence/sudo_actions.log</code>. Catalogizer SMB non-445 port
+read from code, NOT yet run live.</li>
+<li>Anton SMB (this host’s own samba :445): <code>Public/Testing</code>
+corpus, evidence <code>docs/qa/anton-smb-20261106/</code>.
+CAT-SMB-SUBDIR-1 open (no subdir scoping).</li>
+<li>Rate-limit isolation: substitute-source VERIFIED 3/3
+(<code>docs/qa/second-host-20261106/</code>); real remote NIC
+UNCONFIRMED.</li>
+</ul>
+<h2 id="resume-order-what-continue-means">5. RESUME ORDER (what
+“continue” means)</h2>
 <ol type="1">
-<li><strong>Firebase crash-on-first-run</strong> —
-<code>google-services.json</code> had dummy API key
-(<code>AIzaSyDummyKey...</code>). Real credentials generated from live
-project <code>catalogizer-7a3f1</code>. FirebaseInitProvider
-auto-initializes via ContentProvider before
-<code>Application.onCreate()</code> — our try-catch could not intercept
-it.</li>
-<li><strong>Memory leak detector false positives</strong> —
-<code>initialGoroutines</code> read <code>samples[0].NumGC</code> (GC
-counter ~4) instead of real goroutine count. Stored on struct at
-<code>Start()</code> time.</li>
-<li><strong>NAS scan credentials</strong> — server lacked
-<code>CATALOGIZER_IDENTITY_*</code> env vars. Restarted with credentials
-→ scanner authenticated → 119,000 files indexed.</li>
-<li><strong>Binding ingester boolean fix</strong> — corrected boolean
-field handling in ingester.</li>
-<li><strong>Favorites 409 conflict</strong> — resolved HTTP 409 on
-favorites operations.</li>
-<li><strong>Scan error reporting</strong> — improved error visibility
-during SMB scans.</li>
-<li><strong>Web TypeScript/lint fixes</strong> — type corrections across
-multiple components.</li>
-<li><strong>.gitignore hardening</strong> — cleaned tracked QA
-databases/logs, deployment envs.</li>
-<li><strong>Enrichment async</strong> — made enrichment pipeline
-asynchronous for non-blocking operation.</li>
-<li><strong>Dependency updates</strong> — updated project dependencies
-to latest compatible versions.</li>
-<li><strong>Git history cleanup</strong> — removed tracked binary from
-history, all upstreams re-synced.</li>
+<li><code>cd /home/milosvasic/Projects/catalogizer &amp;&amp; git fetch --all --prune --recurse-submodules=no</code>;
+confirm six-upstream parity of <code>main</code>;
+<code>git status --short --ignore-submodules=all</code> clean. Check
+disk and load (&lt;~12 before dispatching; hold dispatch while
+&gt;20).</li>
+<li>Rebuild the web (and API) images from <code>main</code>, then
+<code>docs/qa/stack3/up.sh &lt;new-tag&gt;</code> and
+<code>docs/qa/stack3/monitoring/up.sh</code> with LAN binds. Verify the
+URL map with curl on the LAN URLs.</li>
+<li>Live re-verify (dispatch a Sonnet verifier; evidence to
+<code>docs/qa/ui-live-rerun-20261105/</code>, screenshots to
+<code>/home/milosvasic/.cache/claude-tmp/evidence-archive/</code>):
+<code>node docs/qa/ui-d5d6-20261105/axe_live.cjs</code> (env
+NODE_MODULES_DIR=/home/milosvasic/.cache/claude-tmp/ui-d1.nNlTmm/pw/node_modules,
+CHROMIUM_PATH), <code>docs/qa/ui-d7d8-20261105/d7_axe.cjs</code> +
+<code>d8_repro.cjs</code>, UI-D1 repro
+<code>/home/milosvasic/.cache/claude-tmp/ui-d1.nNlTmm/pw/repro.js</code>,
+D2/D3 pages. N&gt;=3 identical runs -&gt; promote PROVISIONAL to
+VERIFIED; contrary evidence reopens. Restart API with
+HELIX_PPROF_ENABLED=true for pprof 401/403 + 60 s cap; cover-art
+SSRF-F2..F5; TRUSTED_PROXIES from a second LAN host.</li>
+<li>Open work items (Sonnet authors in scratch clones via
+<code>git clone --no-hardlinks</code>, then Opus reviewers, max 5
+rounds): (a) SonarQube (section 2; unblock image pull first); (b)
+Vision/HelixQA UI leg: stop <code>llmctl-onnx@decide-nli</code> ONLY via
+<code>llmctl stop</code>/<code>start</code> (never <code>enable</code>),
+CPU-capped, do not harm other sessions; (c) Tauri native boot of the
+confirm-on-URL-change and SSRF changes
+(<code>TAURI_BUILD_JOBS=2 scripts/tauri/build.sh &lt;out&gt;</code>,
+<code>QA_BIND=192.168.1.115 scripts/tauri/run-qa.sh desktop</code>); (d)
+Android real login via secret-safe path; (e) S3 UI/docs/web
+SUPPORTED_PROTOCOLS follow-ups (S3-FU); (f) throwaway pre-release tag
+test to prove GitHub/GitLab release permission (then delete the test tag
+everywhere).</li>
+<li>Landing procedure:
+<code>git fetch -q --recurse-submodules=no &lt;clone&gt; &lt;branch&gt;</code>;
+<code>git diff --raw HEAD...FETCH_HEAD -- submodules constitution | wc -l</code>
+must be 0; <code>git merge --no-ff --no-commit FETCH_HEAD</code>; append
+follow-ups to docs/FOLLOW_UPS_NEXT_PHASE.md; commit with
+<code>Roadmap-Item:</code> +
+<code>Co-Authored-By: Claude Sonnet 5.5 &lt;noreply@anthropic.com&gt;</code>;
+push SERIALLY to six upstreams with <code>sleep 4</code> (parallel push
+fails “failed to lock”); verify
+<code>git ls-remote &lt;r&gt; refs/heads/main</code> parity; delete any
+wip branch on every upstream after landing.</li>
+<li>Remaining release scope (memory
+<code>feedback_release_completion_mandate</code>): WL13 player
+follow-ups + subtitles panel; responsive/a11y live matrix across
+devices/browsers; desktop+installer wizard; Android/Android TV; HelixQA
+with Vision; performance/security/chaos; N&gt;=3 determinism ledger;
+retire stacks catqa1/catqa2 (docs note only); LV3-1..5; D5 bursty-audio
+fixture; Synology idle-deadline/cut-recovery live and Synology
+SMB/FTP/NFS live tests (SKIP <code>hardware_not_present</code> while the
+drives are OFF); PostgreSQL last-admin race; key-rotation waiver =
+operator-accepted open risk, no expiry, never invent a date;
+<code>versions.json</code> 2.3.0 -&gt; 2.4.0 + changelog (VERIFIED /
+PROVISIONAL / REOPENED / OVERDUE separately); test GITHUB_TOKEN / GitLab
+release permission with a real create at release time; tag
+<code>v2.4.0</code> on all upstreams only after live validation.</li>
+<li>Queue: every open item is a registered workable item in
+<code>docs/WORKABLE_ITEMS_REGISTER.md</code> (Part A = existing
+follow-up ids with pointers into
+<code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>; Part B = items registered at
+Rev 13). Do not keep a parallel list here.</li>
 </ol>
-<h2 id="firebase-env-vars">FIREBASE ENV VARS</h2>
-<p>5 vars added to <code>.env</code> for
-<code>scripts/generate_google_services.sh</code>: -
-<code>FIREBASE_PROJECT_NUMBER=881377664729</code> -
-<code>FIREBASE_PROJECT_ID=catalogizer-7a3f1</code> -
-<code>FIREBASE_STORAGE_BUCKET=catalogizer-7a3f1.firebasestorage.app</code>
--
-<code>FIREBASE_MOBILE_SDK_APP_ID=1:881377664729:android:751a0d0e2d873db47768c8</code>
--
-<code>FIREBASE_API_KEY=&lt;redacted-per-§11.4.10 — value lives only in gitignored .env + ~/api_keys.sh&gt;</code></p>
-<h2 id="next">NEXT</h2>
-<ol type="1">
-<li><strong>Fix SMB share access</strong> — music and usbshare2 shares
-need credential updates (currently access denied)</li>
-<li><strong>Full §11.4.169 test matrix</strong> — Challenges + HelixQA
-bank expansion; 95 HelixQA SKIPs need investigation</li>
-<li><strong>Firebase service account</strong> — backend Crashlytics API
-access for server-side monitoring</li>
-<li><strong>Catalog web UI</strong> — verify WebSocket bridge delivering
-real-time events to connected clients</li>
-<li><strong>Feature Status video confirmations</strong> — per §11.4.153,
-record real-use videos for each feature</li>
-<li><strong>Coverage audit</strong> — reconcile feature coverage ledger
-against codebase</li>
-<li><strong>Submodule pointer alignment</strong> — helix_qa and
-ui_components_react have local changes (dirty submodules)</li>
-</ol>
-<h2 id="constraints">CONSTRAINTS</h2>
-<p>No force-push (§11.4.113). NEVER <code>git add -A</code>. 8 remotes.
-§12.6 60% memory. NO sudo/root. T7 volume.</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Group</th>
+<th>Item ids (see register)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Verification (PROVISIONAL until live)</td>
+<td>CAT-UI-AXE-LIVE-1, CAT-STACK3-REBUILD-1, CAT-PROM-LAN-1,
+CAT-PPROF-LIVE-1, CAT-DETERMINISM-LEDGER-1, CAT-TAURI-NATIVE-1</td>
+</tr>
+<tr>
+<td>Blocked</td>
+<td>CAT-QA-SONAR-1 (Docker Hub rate limit), CAT-SYN-LIVE-1 + ST-NFS
+(drives OFF, SKIP hardware_not_present), CAT-HELIXQA-VISION-1 (host
+capacity)</td>
+</tr>
+<tr>
+<td>Features / coverage</td>
+<td>CAT-TAURI-INSTALLER-1, CAT-ANDROID-LOGIN-1, CAT-S3-LIVE-2,
+CAT-RESPONSIVE-A11Y-MATRIX-1, CAT-PERF-CHAOS-1, CAT-WL13-PLAYER-1,
+CAT-D5-BURSTY-AUDIO-1, CAT-PG-LASTADMIN-1, CAT-QA-MON-FU-2,
+CAT-STACK-RETIRE-1</td>
+</tr>
+<tr>
+<td>Release</td>
+<td>CAT-REL-V240-1, CAT-REL-PERM-1, CAT-KEYROT-WAIVER-1
+(operator-accepted open risk, no expiry)</td>
+</tr>
+<tr>
+<td>Governance</td>
+<td>CAT-WI-ENGINE-1, CAT-CONST-FETCH-1, CAT-LLMS-VERIFIER-1,
+CAT-WAIVER-GATE-DESIGN-1, CAT-LLMCTL-PINS-1, CAT-TEST-PREEXIST-1,
+CAT-DOCS-EXPORT-1</td>
+</tr>
+<tr>
+<td>Existing follow-up ids</td>
+<td>SECQ-2/4b/7/8, SUB-H1..H7, ST-R4-1..4, LW3-1, WL13-R*,
+MON-G4/G5/PROV, QA-MON-FU-3/4, LE3-B/D, D8-F1, CAT-D9-SUSPEND, D9-F1,
+D4-3, UI-D4, UI-FAV-1, MP-FLAKE-1, WEB-DEPS-1, AND-FU-1..7, S3-FU-1..3,
+TAURI-FU-1..7, D11-R2-2..5, D7-R3-FU1/M1/M3, LV3-1..5</td>
+</tr>
+</tbody>
+</table>
+<h2 id="disk">6. Disk</h2>
+<p>Operator decision 2026-11-05: prune APPROVED for Go build/module
+caches, Android SDK system images, and NAMED unused podman
+images/volumes. NEVER a blanket prune (<code>podman system prune</code>
+is forbidden); other projects’ dirs and anything not named stay
+untouched. Re-run the idempotent guarded scratchpad
+<code>run_prune.sh</code> for the earlier approved set. Scratch under
+<code>/home/milosvasic/.cache/claude-tmp/</code> (survives reboot):
+<code>sonarqa.FG8Tji</code> (KEEP, unlanded SonarQube work),
+<code>s3proto.y6Du6d</code> and <code>tauri.yV0oud</code> (landed;
+deletable with guarded <code>${D:?}</code> paths after confirming main
+has them), <code>andqa.Lo6bOU</code> (Android, ~7 GB),
+<code>d7b.PybOvV</code> (empty), reviewer roots <code>rvroot</code>.</p>
+<h2 id="open-operator-decisions">7. Open operator decisions</h2>
+<p>Decided 2026-11-05: SonarQube = on-demand QA service with minimal
+tokens; prune scope (section 6); Prometheus LAN-only; live S3 on Garage;
+throwaway pre-release tag test; Tauri confirm on URL change (done).
+Still open: tag form (default <code>v2.4.0</code>); horizontal-authz /
+second-LAN-host measurement; when the Synology drives are powered back
+on; Docker Hub access method for the SonarQube images (login, mirror, or
+wait).</p>
 </body>
 </html>

@@ -4,13 +4,22 @@
 > A fresh session that receives only the prompt `continue` MUST read this file first, then
 > `docs/FOLLOW_UPS_NEXT_PHASE.md`, then resume the §11.4.126 loop with the steps in "RESUME ORDER".
 
-**Revision:** 15
-**Last modified:** 2026-11-06 (end-of-day wrap-up)
-**Exports:** `CONTINUATION.html` / `CONTINUATION.pdf` are STALE (Rev 9). Regenerate from this file (owed, §11.4.65); this `.md` is authoritative.
+**Revision:** 16
+**Last modified:** 2026-11-11
+**Exports:** `CONTINUATION.html` / `CONTINUATION.pdf` regenerated at Rev 16 with `pandoc -s` (HTML) and `weasyprint` (PDF) from this file; this `.md` is authoritative.
+
+## 0. Rev 16 delta (since Rev 15, `70d10721`)
+
+* Landed on `main` (all PROVISIONAL-DONE): `d215da53` merge feat/tauri-native-qa (wizard dialog ACL capability, QA screen default); `0591b0ca` release-permission test result recorded (GitHub needs keyring token); `f6a73897` merge feat/tauri-followups (hardened wizard capability guard, evidence README, untracked generated schema); `f8ec59fc` merge feat/followups-20261110 (D7-R4 FU-1..4, verify.py LAN-bind expectation source, front-door `--interface` mode); `a8401cdc` register CAT-LANIP-DYN-1; `60756277` merge feat/lanip-dyn (dynamic LAN IP lib, atomic FTPS cert regeneration); `0af2ee9a` register smb-subdir and tauri r2 follow-ups; `c89c195c` docs SMB-FU-6..8 (smb-subdir review follow-ups); `7498b212` merge feat/smb-subdir (SMB share/sub root confinement, CAT-SMB-SUBDIR-1). Each merge carried Opus GO-with-follow-ups.
+* CAT-SMB-SUBDIR-1 is **PROVISIONAL** until `docs/qa/smb-subdir-20261110/run.sh` passes live N>=3 (SMB-FU-5 / SMB-FU-8; never executed yet). Open SMB follow-ups: SMB-FU-1..8 in `docs/FOLLOW_UPS_NEXT_PHASE.md`.
+* **Host LAN IP changed**: 192.168.1.115 -> **192.168.1.17** (verified with `ip addr`). Wherever sections 2, 4, 4b and 5 below say `192.168.1.115`, read the current LAN IP (the QA scripts now auto-detect it; override only via `QA_LAN_IP`).
+* **Containers do NOT survive a reboot.** Recovery: `docs/qa/stack3/up.sh <tag>`; `docs/qa/stack3/monitoring/up.sh` with LAN binds (GRAFANA_BIND/PGADMIN_BIND/PROM_BIND = current LAN IP); `docs/qa/test-servers/up.sh` then `docs/qa/test-servers/verify.sh`.
+* Open threads: (1) SonarQube scan (CAT-QA-SONAR-1) needs load < 12; scratch clone `/home/milosvasic/.cache/claude-tmp/sonar-scan-nefe8O/repo/docs/qa/stack3/sonarqube`: `./up.sh`, then `RUN_ID=run3 ./scan.sh`, then `./down.sh`. (2) Live reruns: axe, pprof 401/403, `verify.py`, cover-art SSRF F2-F5, rate-limit isolation (needs a real second LAN host). (3) Vision/HelixQA UI leg (CAT-HELIXQA-VISION-1). (4) Android real login (CAT-ANDROID-LOGIN-1). (5) Tauri wizard live GREEN runs (TAURI-R1-FU-7). (6) Synology: SKIP `hardware_not_present` (drives OFF). (7) `release/v2.4.0-prep` HELD at `b334ebd0`; tag `v2.4.0` only after live validation.
+* Note: section 2 still describes the Tauri scratch clone state as of Rev 15; `feat/tauri-native-qa` has since been merged (`d215da53`) - re-check before acting on that row.
 
 ## 1. State at stop
 
-* `main` = `5713effb` + this doc commit, on all six upstreams (origin, github-milos, gitlab-milos, gitlab-vasic, gitflic-vasic, gitverse-vasic). Verify parity first (section 5 step 1).
+* `main` = `7498b212` (Rev 15 text said `5713effb`) + the Rev 16 doc commit; upstream parity must be re-verified (not checked while writing Rev 16) (origin, github-milos, gitlab-milos, gitlab-vasic, gitflic-vasic, gitverse-vasic). Verify parity first (section 5 step 1).
 * Release target: first tag `v2.4.0` (pre-release, SemVer), only after live validation. Everything landed is **PROVISIONAL-DONE** (§11.4.290) until its live rerun passes N>=3 with machine evidence.
 * SonarQube on-demand tooling is LANDED (df7e2dd1, PROVISIONAL); the fresh scan on digest-pinned images is still owed (Docker Hub rate limit; CAT-QA-SONAR-1).
 * Landed 2026-11-06: D7-R4 contrast fixes + island detector (round 1 GO-with-follow-ups, D7-R4-FU-1..4); live security evidence (`docs/qa/security-live-20261106/`: Prometheus auth, pprof 401/403/60 s cap, SSRF on image proxy / storage roots / sync endpoints VERIFIED 3/3); TRUSTED_PROXIES hardening (explicit `/32` for the proxy with fixed compose subnet + `ip_range`, `auto` refused in release unless `TRUSTED_PROXIES_ALLOW_AUTO=true`, fail-closed on bad value, nginx XFF on every proxied location; round 2 GO-with-follow-ups; PROVISIONAL, compose files only rendered + throwaway project, never brought up as real stacks); workable-items register Rev 2; disk prune (18 dangling images, ~18 GB reclaimed).
