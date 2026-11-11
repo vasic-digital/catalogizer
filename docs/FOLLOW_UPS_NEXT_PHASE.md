@@ -1697,3 +1697,10 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - TAURI-R4-FU-3: a mention in a comment/string/test file other than vi/jest module mocks demands all five permissions (accepted false positive); no source lexing by design.
 - TAURI-R4-FU-4: capability "webviews" field is ignored (conservative: only "windows" is matched); a remote capability with urls [] FAILs (conservative: any "remote" object is treated as granting to remote origins).
 - TAURI-R4-FU-5: html scan covers *.html under installer-wizard (excluding node_modules, dist, target, .git); a non-empty src-tauri/permissions/ is BLIND (app-defined permission sets not parsed). Pre-flight runs the guard mutants only when tauri guard/wizard files changed (PRE_FLIGHT_FORCE_TAURI_MUTANTS=1 forces).
+
+## CAT-QA-STACK-LIFECYCLE-1 follow-ups (Opus round 2, minor, 2026-11-11)
+- LIFE-FU-1: ctrctl concurrent first builds race when TMPDIR is on another filesystem (build to `$bin.tmp.$$` then `mv -f`, or flock). Latent: no caller is concurrent.
+- LIFE-FU-2: test gaps: `timeout 10` bound on inspect, per-checkout cache keying, ctrctl non-zero exit propagation (mutants survived).
+- LIFE-FU-3: doc drift (README/podman_env.sh header say "strips every ,key=val"; cache path now per-checkout hash dir; "11 mutants" = baseline + 10).
+- LIFE-FU-4 (nits): `_qa_strip_guid` unquoted glob expansion (use `set -f`); DEVIATION text when podman forced; global `rc`; unhealthy waits full timeout; missing `timeout` message.
+- up.sh/down.sh/build.sh still call podman directly (documented deviation, not yet run against real catqa3-api).
