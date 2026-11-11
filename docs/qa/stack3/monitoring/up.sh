@@ -18,6 +18,7 @@ if ! grep -q '^PROM_AUTH_PASSWORD=' "$MENV"; then   # QA-PROM-AUTH: Prometheus b
   ( umask 077; echo "PROM_AUTH_PASSWORD=Pm-$(head -c 16 /dev/urandom | od -An -vtx1 | tr -d ' \n')-Zz9" >> "$MENV" ); echo "added PROM_AUTH_PASSWORD to $MENV"
 fi
 set -a; . "$QENV"; . "$MENV"; set +a
+[[ "${PROM_AUTH_USER-}" =~ $_re_name ]] || { echo "invalid PROM_AUTH_USER (PROM-R2-4: must match $_re_name; refused before any sed/podman use)" >&2; exit 2; }
 export PROM_AUTH_USER
 for i in "$PROM_IMAGE" "$GRAFANA_IMAGE" "$PGADMIN_IMAGE" "$NGINX_IMAGE" "$CURL_IMAGE"; do
   podman image exists "$i" || { echo "image $i missing - podman pull it (pinned tag)" >&2; exit 3; }; done
