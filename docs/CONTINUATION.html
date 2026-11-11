@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc 3.11" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>Catalogizer — Continuation</title>
+  <title>CONTINUATION</title>
   <style>
     /* Default styles provided by pandoc.
     ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -175,7 +175,7 @@
 </head>
 <body>
 <header id="title-block-header">
-<h1 class="title">Catalogizer — Continuation</h1>
+<h1 class="title">CONTINUATION</h1>
 </header>
 <h1 id="continuation-catalogizer">CONTINUATION — Catalogizer</h1>
 <blockquote>
@@ -185,13 +185,73 @@ that receives only the prompt <code>continue</code> MUST read this file
 first, then <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>, then resume the
 §11.4.126 loop with the steps in “RESUME ORDER”.</p>
 </blockquote>
-<p><strong>Revision:</strong> 16 <strong>Last modified:</strong>
+<p><strong>Revision:</strong> 17 <strong>Last modified:</strong>
 2026-11-11 <strong>Exports:</strong> <code>CONTINUATION.html</code> /
-<code>CONTINUATION.pdf</code> regenerated at Rev 16 with
+<code>CONTINUATION.pdf</code> regenerated at Rev 17 with
 <code>pandoc -s</code> (HTML) and <code>weasyprint</code> (PDF) from
 this file; this <code>.md</code> is authoritative.</p>
-<h2 id="rev-16-delta-since-rev-15-70d10721">0. Rev 16 delta (since Rev
-15, <code>70d10721</code>)</h2>
+<h2 id="rev-17-delta-since-rev-16-e3683a37-main-e933ec5c">0. Rev 17
+delta (since Rev 16, <code>e3683a37</code>; main =
+<code>e933ec5c</code>)</h2>
+<ul>
+<li>Landed on <code>main</code> (all PROVISIONAL-DONE, each merge
+carried Opus GO-with-follow-ups): <code>7d895e62</code> merge
+fix/smb-discovery-confine (SMB-FU-2: shared host vetting, port allowlist
+<code>CATALOG_SMB_ALLOWED_PORTS</code>, admin-share filter, generic
+errors; rules in <code>docs/SMB_DISCOVERY_ROUTES.md</code>);
+<code>79e171bc</code> merge fix/tauri-guard-followups (wizard capability
+guard hardening, round 4); <code>4760d527</code> live pprof verification
+3x34 PASS on stack3 with the flag on, RED baseline with it off
+(<code>docs/qa/live-pprof-20261111/</code>); <code>532c2ec8</code> merge
+fix/smb-dial-vetted-ip (SMB-FU-9: dial the vetted IP, one shared connect
+deadline; CGNAT/Tailscale 100.64.0.0/10 allowed, only 100.100.100.200
+refused); <code>73d1f825</code> merge feat/stack3-containers-lifecycle
+(CAT-QA-STACK-LIFECYCLE-1: stack start/stop through
+<code>docs/qa/lib/ctrctl</code>, built on the
+<code>submodules/containers</code> runtime abstraction);
+<code>e933ec5c</code> LIFE-FU-1..4 registered in
+<code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>.</li>
+<li><strong>Root cause of the podman start failure in agent shells
+(measured 2026-11-11, recorded in
+<code>docs/qa/lib/podman_env.sh</code>)</strong>: the harness exports
+<code>DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/1000/bus,guid=&lt;hex&gt;'</code>;
+the <code>,guid=</code> suffix makes crun’s sd-bus call fail with “OCI
+permission denied”. Fix: strip <code>guid=</code>
+(<code>qa_podman_env_normalize</code> in
+<code>docs/qa/lib/podman_env.sh</code>, which also defaults
+<code>XDG_RUNTIME_DIR</code>) or
+<code>export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus</code>.
+No sudo and no user action is needed. Open follow-ups LIFE-FU-1..4.</li>
+<li><strong>Operator decisions 2026-11-11</strong> (relayed, not
+verbatim): (1) <code>verify.py</code> keeps FAIL on undeclared pod-read
+LAN exposure. (2) CGNAT/Tailscale 100.64.0.0/10 is allowed for SMB
+targets (done in <code>58e597c3</code>). (3) Dead SMB code removal is
+approved (SMB-FU-1; not yet executed, check the register). (4) Untrack
+and gitignore
+<code>catalogizer-desktop/src-tauri/gen/schemas/capabilities.json</code>
+(approved; NOT yet done: that path is still tracked on main at
+<code>e933ec5c</code>, while <code>installer-wizard/.gitignore</code>
+already ignores its own copy). (5) <code>v2.4.0</code> is published as a
+labelled pre-release now, with the PROVISIONAL items listed in the
+changelog (this supersedes the “tag only after live validation” hold in
+section 1 and the HELD <code>release/v2.4.0-prep</code> row; CHANGELOG
+must list VERIFIED, PROVISIONAL, REOPENED, OVERDUE separately per
+§11.4.290). (6) Synology: honest SKIP <code>hardware_not_present</code>,
+ship without it. (7) SonarQube scan (CAT-QA-SONAR-1), the Anton
+<code>Public/Testing</code> SMB run and the Vision/HelixQA UI QA are to
+run when host load allows (load was about 30 when Rev 17 was written;
+hold while above ~12).</li>
+<li>Section 2 (Tauri row) and the LAN IP in sections 4/4b were refreshed
+in this revision; the IP is <code>192.168.1.17</code> (verified with
+<code>ip -4 addr</code> at Rev 17), and the QA scripts auto-detect
+it.</li>
+<li>Not verified while writing Rev 17: six-upstream parity of
+<code>main</code>, whether any pod from stack3 is currently running, and
+whether <code>release/v2.4.0-prep</code> still exists in the scratch
+clone.</li>
+</ul>
+<h2 id="b.-rev-16-delta-history-since-rev-15-70d10721">0b. Rev 16 delta
+(history) (since Rev 15, <code>70d10721</code>)</h2>
 <ul>
 <li>Landed on <code>main</code> (all PROVISIONAL-DONE):
 <code>d215da53</code> merge feat/tauri-native-qa (wizard dialog ACL
@@ -214,9 +274,9 @@ GO-with-follow-ups.</li>
 SMB-FU-1..8 in <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>.</li>
 <li><strong>Host LAN IP changed</strong>: 192.168.1.115 -&gt;
 <strong>192.168.1.17</strong> (verified with <code>ip addr</code>).
-Wherever sections 2, 4, 4b and 5 below say <code>192.168.1.115</code>,
-read the current LAN IP (the QA scripts now auto-detect it; override
-only via <code>QA_LAN_IP</code>).</li>
+Sections 2, 4, 4b and 5 below were updated at Rev 17 to say “current LAN
+IP”; read the current LAN IP (the QA scripts now auto-detect it;
+override only via <code>QA_LAN_IP</code>).</li>
 <li><strong>Containers do NOT survive a reboot.</strong> Recovery:
 <code>docs/qa/stack3/up.sh &lt;tag&gt;</code>;
 <code>docs/qa/stack3/monitoring/up.sh</code> with LAN binds
@@ -235,21 +295,21 @@ only via <code>QA_LAN_IP</code>).</li>
 <code>hardware_not_present</code> (drives OFF). (7)
 <code>release/v2.4.0-prep</code> HELD at <code>b334ebd0</code>; tag
 <code>v2.4.0</code> only after live validation.</li>
-<li>Note: section 2 still describes the Tauri scratch clone state as of
-Rev 15; <code>feat/tauri-native-qa</code> has since been merged
-(<code>d215da53</code>) - re-check before acting on that row.</li>
+<li>(Superseded at Rev 17: the section 2 Tauri row now reflects the
+merge.)</li>
 </ul>
 <h2 id="state-at-stop">1. State at stop</h2>
 <ul>
-<li><code>main</code> = <code>7498b212</code> (Rev 15 text said
-<code>5713effb</code>) + the Rev 16 doc commit; upstream parity must be
+<li><code>main</code> = <code>e933ec5c</code> at Rev 17 start (Rev 16:
+<code>7498b212</code>) + the Rev 17 doc commit; upstream parity must be
 re-verified (not checked while writing Rev 16) (origin, github-milos,
 gitlab-milos, gitlab-vasic, gitflic-vasic, gitverse-vasic). Verify
 parity first (section 5 step 1).</li>
 <li>Release target: first tag <code>v2.4.0</code> (pre-release, SemVer),
-only after live validation. Everything landed is
-<strong>PROVISIONAL-DONE</strong> (§11.4.290) until its live rerun
-passes N&gt;=3 with machine evidence.</li>
+published now as a labelled pre-release per the 2026-11-11 decision (see
+Rev 17 delta). Everything landed is <strong>PROVISIONAL-DONE</strong>
+(§11.4.290) until its live rerun passes N&gt;=3 with machine
+evidence.</li>
 <li>SonarQube on-demand tooling is LANDED (df7e2dd1, PROVISIONAL); the
 fresh scan on digest-pinned images is still owed (Docker Hub rate limit;
 CAT-QA-SONAR-1).</li>
@@ -307,31 +367,28 @@ aardvark-dns.</li>
 </thead>
 <tbody>
 <tr>
-<td>Tauri native QA (branch <code>feat/tauri-native-qa</code>, local,
-never pushed)</td>
-<td>scratch clone under <code>/home/milosvasic/.cache/claude-tmp/</code>
-(path in agent report below)</td>
+<td>(none on main-line work) Tauri native QA</td>
+<td>landed</td>
 <td>CAT-TAURI-NATIVE-1, CAT-TAURI-INSTALLER-1</td>
-<td>Clone
-<code>/home/milosvasic/.cache/claude-tmp/tauriqa.hw0Kco/repo</code>,
-HEAD <code>389f8abe</code> (base df7e2dd1; contains run-qa.sh QA_SCREEN
-default, <code>test_wizard_capabilities.sh</code> guard, wizard
-<code>capabilities/default.json</code> dialog:allow-open/save,
-tauri-boot README note). NEEDS Opus review (max 5 rounds) then landing.
-DESKTOP (CAT-TAURI-NATIVE-1): VERIFIED 3/3 live on binary sha 9832e3eb
-(confirm dialog on URL change, Cancel/Esc keep URL, confirm applies,
-login with real data, file:// and userinfo URLs rejected, mutant
-always-approve killed; caveats: xdotool-driven, slideshow not
-screencast, binary since rebuilt to fa794e1c so re-verify). WIZARD
-(CAT-TAURI-INSTALLER-1): REAL DEFECT reproduced live 3/3 (Save
-Configuration fails ’Command plugin:dialog</td>
+<td><code>feat/tauri-native-qa</code> was merged as
+<code>d215da53</code>, with later guard work in <code>f6a73897</code>
+and <code>79e171bc</code> (wizard capability guard rounds 1-4). The
+scratch clone
+<code>/home/milosvasic/.cache/claude-tmp/tauriqa.hw0Kco/repo</code>
+(HEAD <code>389f8abe</code>) is superseded; confirm before deleting.
+Open: wizard live GREEN runs (TAURI-R1-FU-7), desktop re-verify on the
+current binary, secret-scan of the wizard evidence in
+<code>/home/milosvasic/.cache/claude-tmp/evidence-archive/tauri-native-20261106/</code>.
+QA displays:
+<code>QA_BIND=&lt;current LAN IP&gt; scripts/tauri/run-qa.sh desktop|wizard &lt;out&gt;</code>.</td>
 </tr>
 <tr>
 <td><code>release/v2.4.0-prep</code> HEAD <code>b334ebd0</code>
 (local)</td>
 <td><code>/home/milosvasic/.cache/claude-tmp/relprep.EtmMzF/repo</code></td>
 <td>CAT-REL-V240-1</td>
-<td>HELD: versions.json 2.4.0, openapi version, CHANGELOG
+<td>Was HELD; per 2026-11-11 decision to publish as pre-release now.
+versions.json 2.4.0, openapi version, CHANGELOG
 <code>[2.4.0] - pre-release</code>; re-check VERIFIED/PROVISIONAL rows
 against the live results (add D7-R4, TRUSTED_PROXIES, security-live)
 before landing; no git tags exist yet.</td>
@@ -363,13 +420,14 @@ D7-R4 fixes or the TRUSTED_PROXIES hardening) and pod catqa3mon
 <code>PROM_AUTH_PASSWORD</code> in <code>mon.env</code>; LAN-bound
 Grafana/pgAdmin/Prometheus). After a reboot:
 <code>docs/qa/stack3/up.sh &lt;tag&gt;</code> then
-<code>GRAFANA_BIND=PGADMIN_BIND=PROM_BIND=192.168.1.115 docs/qa/stack3/monitoring/up.sh</code>
+<code>GRAFANA_BIND=PGADMIN_BIND=PROM_BIND=&lt;current LAN IP, 192.168.1.17 at Rev 17&gt; docs/qa/stack3/monitoring/up.sh</code>
 (its exit 6 / <code>000</code> loopback line is only the loopback check
-on LAN-bound services; verify with LAN URLs). URL map (host
-192.168.1.115): API :38082 (/health), web :33020, website :33021, nginx
-front door :33080 / :33081, Grafana :33030, pgAdmin :33050, Prometheus
-:39090 (auth required). PostgreSQL 127.0.0.1:35434 and Redis
-127.0.0.1:36381 stay loopback. Logins: qa_admin (password only in
+on LAN-bound services; verify with LAN URLs). URL map (host &lt;current
+LAN IP, 192.168.1.17 at Rev 17&gt;): API :38082 (/health), web :33020,
+website :33021, nginx front door :33080 / :33081, Grafana :33030,
+pgAdmin :33050, Prometheus :39090 (auth required). PostgreSQL
+127.0.0.1:35434 and Redis 127.0.0.1:36381 stay loopback. Logins:
+qa_admin (password only in
 <code>/home/milosvasic/.cache/claude-tmp/catqa3/qa.env</code>). Rebuild
 web+API from current <code>main</code> before the next live rerun (D7-R4
 fixes, TRUSTED_PROXIES). Inactive throwaway users <code>qa_thrw_*</code>
@@ -381,10 +439,10 @@ Live test servers + Anton SMB corpus (added Rev 15; containers do NOT
 survive reboot)</h2>
 <ul>
 <li>Test servers (rootless podman <code>cattsrv-*</code>, host
-192.168.1.115): SMB :1445 share <code>corpus</code>, FTP :42021, FTPS
-(explicit) :42022, SFTP :42023, WebDAV :42080, HTTP :42081, NFS v3
-:42049 (userspace rclone, read-only). Corpus
-<code>/home/milosvasic/Testing-servers/corpus</code> (12 files,
+&lt;current LAN IP, 192.168.1.17 at Rev 17&gt;): SMB :1445 share
+<code>corpus</code>, FTP :42021, FTPS (explicit) :42022, SFTP :42023,
+WebDAV :42080, HTTP :42081, NFS v3 :42049 (userspace rclone, read-only).
+Corpus <code>/home/milosvasic/Testing-servers/corpus</code> (12 files,
 <code>manifest.sha256</code>); writable only in <code>corpus/rw/</code>.
 Credentials (user <code>catsvc</code>) only in
 <code>/home/milosvasic/.cache/claude-tmp/catqa3/testservers.env</code>
@@ -435,8 +493,8 @@ Vision/HelixQA UI leg: stop <code>llmctl-onnx@decide-nli</code> ONLY via
 CPU-capped, do not harm other sessions; (c) Tauri native boot of the
 confirm-on-URL-change and SSRF changes
 (<code>TAURI_BUILD_JOBS=2 scripts/tauri/build.sh &lt;out&gt;</code>,
-<code>QA_BIND=192.168.1.115 scripts/tauri/run-qa.sh desktop</code>); (d)
-Android real login via secret-safe path; (e) S3 UI/docs/web
+<code>QA_BIND=&lt;current LAN IP, 192.168.1.17 at Rev 17&gt; scripts/tauri/run-qa.sh desktop</code>);
+(d) Android real login via secret-safe path; (e) S3 UI/docs/web
 SUPPORTED_PROTOCOLS follow-ups (S3-FU); (f) throwaway pre-release tag
 test to prove GitHub/GitLab release permission (then delete the test tag
 everywhere).</li>
