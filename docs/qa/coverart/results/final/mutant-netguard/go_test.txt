@@ -1,0 +1,29 @@
+=== RUN   TestLiveCoverArt_CapIsProductionDefault
+--- PASS: TestLiveCoverArt_CapIsProductionDefault (0.00s)
+=== RUN   TestLiveCoverArt_F2_Cap
+--- PASS: TestLiveCoverArt_F2_Cap (0.10s)
+=== RUN   TestLiveCoverArt_F4_Redirects
+=== RUN   TestLiveCoverArt_F4_Redirects/link-local-metadata
+=== RUN   TestLiveCoverArt_F4_Redirects/private-rfc1918
+=== RUN   TestLiveCoverArt_F4_Redirects/ipv6-loopback
+=== RUN   TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted
+    coverart_live_ssrf_test.go:150: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/coverart.faVQnM/repo/catalog-api/internal/services/coverart_live_ssrf_test.go:150
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted
+=== NAME  TestLiveCoverArt_F4_Redirects
+    coverart_live_ssrf_test.go:154: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/coverart.faVQnM/repo/catalog-api/internal/services/coverart_live_ssrf_test.go:154
+        	Error:      	Should be zero, but was 1
+        	Test:       	TestLiveCoverArt_F4_Redirects
+        	Messages:   	the non-allow-listed internal server must never be contacted
+--- FAIL: TestLiveCoverArt_F4_Redirects (13.18s)
+    --- PASS: TestLiveCoverArt_F4_Redirects/link-local-metadata (10.05s)
+    --- PASS: TestLiveCoverArt_F4_Redirects/private-rfc1918 (3.13s)
+    --- PASS: TestLiveCoverArt_F4_Redirects/ipv6-loopback (0.00s)
+    --- FAIL: TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted (0.00s)
+=== RUN   TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback
+--- PASS: TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback (0.00s)
+FAIL
+FAIL	catalogizer/internal/services	13.296s
+FAIL

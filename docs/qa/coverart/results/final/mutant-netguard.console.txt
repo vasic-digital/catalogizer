@@ -1,0 +1,5 @@
+VERDICT: FAIL (a FAIL line is present)
+missing PASS: TestLiveCoverArt_F4_Redirects
+missing PASS: TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted
+VERDICT: FAIL
+evidence: results/final/mutant-netguard
