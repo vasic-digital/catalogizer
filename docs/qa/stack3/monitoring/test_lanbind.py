@@ -16,7 +16,7 @@ PODMAN_PORT = """9090/tcp -> 192.168.1.115:39090
 class PodRun:
     """Models real podman: `podman port <pod-name>` fails rc=125 (a pod name is not a container); the pod's ports are read from
     its infra container (as up.sh does). Records the commands run."""
-    def __init__(self, pod="catqa3mon", infra="infra123", out=PODMAN_PORT): self.pod, self.infra, self.out, self.calls = pod, infra, out, []
+    def __init__(self, pod="catqa3mon", infra="95325aab87bb", out=PODMAN_PORT): self.pod, self.infra, self.out, self.calls = pod, infra, out, []
     def __call__(self, cmd, **k):
         self.calls.append(cmd)
         class R: pass
@@ -103,6 +103,17 @@ class Resolve(unittest.TestCase):
         self.assertEqual(L.read_published("catqa3mon", run)[39090], "192.168.1.115")      # golden-good
         self.assertNotIn(["podman", "port", "catqa3mon"], run.calls)                      # the pod name is never passed to `podman port`
 
+    def test_inspect_failure_with_id_on_stdout_is_empty(self):
+        class Bad(PodRun):
+            def __call__(self, cmd, **k):
+                r = super().__call__(cmd, **k)
+                if cmd[:3] == ["podman", "pod", "inspect"]: r.returncode = 125; r.stdout = "0123456789ab\n"
+                return r
+        self.assertEqual(L.read_published("catqa3mon", Bad(infra="0123456789ab")), {})
+    def test_infra_id_must_be_hex(self):
+        self.assertEqual(L.read_published("catqa3mon", PodRun(infra="--all")), {})
+        for bad in ("short", "abc123", "a" * 65): self.assertEqual(L.read_published("catqa3mon", PodRun(infra=bad)), {}, bad)
+
     def test_unknown_pod_or_empty_infra_is_empty(self):
         self.assertEqual(L.read_published("nosuchpod", PodRun()), {})                    # golden-bad: unresolvable pod -> {} (default applies)
         self.assertEqual(L.read_published("catqa3mon", PodRun(infra="")), {})            # negative control: no infra id -> never `podman port ""`
@@ -126,6 +137,35 @@ class Resolve(unittest.TestCase):
             val, src = L.resolve_bind(name, {"PROM_BIND": LAN, "GRAFANA_BIND": LAN}, pub, port)
             self.assertTrue(L.exposure_verdict(name, L.classify_bind(val, LAN), True, src)[1])  # declared: pass
 
+LOGIN_HTML = b'<script>window.x={"csrfToken": "tok123"}</script>'
+
+def pg_double(login=(200, LOGIN_HTML), tokenless=(400, {}), tokened=(302, {"Location": "/login?next=%2Fbrowser"})):
+    seen = []
+    def get_login(): return login
+    def get_protected(csrf):
+        seen.append(csrf); return tokened if csrf else tokenless
+    return get_login, get_protected, seen
+
+class PgAnon(unittest.TestCase):
+    def test_golden_good_redirect_to_login(self):
+        g, p, seen = pg_double()
+        self.assertTrue(L.pgadmin_anonymous_rejected(g, p)); self.assertEqual(seen, ["tok123"])   # the request carried the CSRF token
+        self.assertTrue(L.pgadmin_anonymous_rejected(*pg_double(tokened=(303, {"Location": "http://h:1/login"}))[:2]))
+        self.assertTrue(L.pgadmin_anonymous_rejected(*pg_double(tokened=(401, {}))[:2]))
+    def test_login_disabled_pgadmin_must_fail(self):
+        # tokenless -> 400 (CSRF), tokened anonymous -> 200 + data: login is NOT required
+        self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(tokened=(200, {}))[:2]))
+    def test_redirect_elsewhere_fails(self):
+        for loc in ("/somewhere", "http://evil/x", "/loginx", ""):
+            self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(tokened=(302, {"Location": loc}))[:2]), loc)
+        self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(tokened=(302, {}))[:2]))
+    def test_no_token_or_dead_login_fails(self):
+        self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(login=(200, b"no token here"))[:2]))
+        self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(login=(0, b"refused"))[:2]))
+        self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(tokened=(400, {}))[:2]))   # still CSRF-rejected even with token: proves nothing
+        self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(tokened=(0, {}))[:2]))
+        self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(tokened=(500, {}))[:2]))
+
 class Auth(unittest.TestCase):
     def test_auth_required_verdicts(self):
         self.assertTrue(L.auth_required_ok("prometheus", 401))
@@ -137,14 +177,10 @@ class Auth(unittest.TestCase):
         for n in ("prometheus", "grafana", "pgadmin"):
             self.assertFalse(L.auth_required_ok(n, 404), n)           # wrong path / dead route is a failure, not a rejection
             self.assertFalse(L.auth_required_ok(n, 500), n)
-        self.assertTrue(L.auth_required_ok("pgadmin", 302))
-        # pgAdmin 8.13 refuses anonymous GET with 400 'The CSRF token is missing.' - accepted ONLY for pgadmin AND only with that body
-        csrf = b"<title>400 Bad Request</title><p>The CSRF token is missing.</p>"
-        self.assertTrue(L.auth_required_ok("pgadmin", 400, csrf))                            # golden-good
-        self.assertFalse(L.auth_required_ok("pgadmin", 400, b"<p>Bad Request: malformed</p>"))  # golden-bad: other 400
-        self.assertFalse(L.auth_required_ok("pgadmin", 400))                                 # no body = no proof
-        self.assertFalse(L.auth_required_ok("pgadmin", 200, csrf))                           # negative control: status still decides
-        for n in ("prometheus", "grafana"): self.assertFalse(L.auth_required_ok(n, 400, csrf), n)   # never generalised
+        # a bare 400 (CSRF checked before auth) proves nothing about login being required: never an auth-required PASS, for any service
+        for n in ("prometheus", "grafana", "pgadmin"): self.assertFalse(L.auth_required_ok(n, 400), n)
+        self.assertFalse(L.auth_required_ok("pgadmin", 302))      # a bare 302 (no Location check) is not enough either
+        self.assertTrue(L.auth_required_ok("pgadmin", 401))
         self.assertTrue(L.auth_required_ok("pgadmin", 401))
         self.assertFalse(L.auth_required_ok("pgadmin", 200))
 

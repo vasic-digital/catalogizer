@@ -1,7 +1,7 @@
 """LAN-exposure policy for verify.py (CAT-VERIFY-LANBIND-1). Pure functions, unit-tested by test_lanbind.py.
 Operator decision: Prometheus (basic auth), Grafana and pgAdmin MAY be LAN-bound (PROM_BIND / GRAFANA_BIND / PGADMIN_BIND / LAN_BIND);
 a LAN-bound service must then be LAN-reachable AND still reject anonymous access. PostgreSQL and Redis are always loopback-only."""
-import re
+import re, urllib.parse
 
 ALWAYS_LOOPBACK = "always-loopback"
 BIND_VARS = {"prometheus": ("PROM_BIND",), "grafana": ("GRAFANA_BIND", "LAN_BIND"), "pgadmin": ("PGADMIN_BIND", "LAN_BIND")}
@@ -27,7 +27,7 @@ def read_published(pod, run):
     try:
         i = run(["podman", "pod", "inspect", pod, "--format", "{{.InfraContainerID}}"], capture_output=True, text=True, timeout=30)
         infra = (i.stdout or "").strip() if i.returncode == 0 else ""
-        if not re.fullmatch(r"[0-9A-Za-z_.-]+", infra): return {}
+        if not re.fullmatch(r"[0-9a-f]{12,64}", infra): return {}
         r = run(["podman", "port", infra], capture_output=True, text=True, timeout=30)
     except Exception:   # subprocess.TimeoutExpired, FileNotFoundError, OSError
         return {}
@@ -51,11 +51,25 @@ def exposure_verdict(name, bind_class, reachable, source="env"):
         return (f"lan.{name}_LAN_exposure_undeclared_(source={source};_set_{BIND_VARS[name][0]})", False)
     return None
 
-def auth_required_ok(name, status, body=b""):
-    """Anonymous request through the LAN IP must be refused: 401 (pgAdmin also a redirect to login or 403). 403/404/5xx/0 are not proof for the others
-    (anonymous-Viewer Grafana, a wrong path and a dead service all look different from 'login required').
-    pgAdmin 8.13 refuses an anonymous GET with 400 'The CSRF token is missing.' (no data served): accepted for pgAdmin only and only with that body."""
-    if name == "pgadmin":
-        if status == 400: return b"CSRF token is missing" in (body or b"")
-        return status in (302, 401, 403)
+def auth_required_ok(name, status):
+    """Anonymous request through the LAN IP must be refused: 401. 403/404/5xx/0 are not proof (anonymous-Viewer Grafana, a wrong path and a
+    dead service all look different from 'login required'). A bare 400 is never proof (pgAdmin checks CSRF before auth); pgAdmin has its own
+    check, pgadmin_anonymous_rejected."""
     return status == 401
+
+_CSRF = re.compile(rb'"csrfToken"\s*:\s*"([^"]+)"')
+
+def pgadmin_anonymous_rejected(get_login, get_protected):
+    """pgAdmin refuses a tokenless request with 400 'CSRF token is missing' BEFORE any authentication check, so that 400 proves nothing.
+    Take a real CSRF token + session from an anonymous GET /login, then do the anonymous protected GET carrying it (redirects not followed):
+    login is required iff that gets 401, or a 302/303 whose Location path is /login. get_login() -> (status, body);
+    get_protected(csrf) -> (status, headers). Anything else (200, 400, 0, 5xx, a redirect elsewhere) is not proof."""
+    st, body = get_login()
+    m = _CSRF.search(body or b"") if st == 200 else None
+    if not m: return False
+    st, h = get_protected(m.group(1).decode())
+    if st == 401: return True
+    if st in (302, 303):
+        loc = {k.lower(): v for k, v in (h or {}).items()}.get("location", "")
+        return urllib.parse.urlsplit(loc).path == "/login"
+    return False

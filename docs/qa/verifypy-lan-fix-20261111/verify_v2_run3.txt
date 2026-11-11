@@ -1,0 +1,52 @@
+PASS prom.anonymous_targets_rejected http=401
+PASS prom.anonymous_query_rejected http=401
+PASS prom.wrong_password_rejected http=401
+PASS prom.target_catalogizer-api_up health=up lastError=''
+PASS prom.query_up==1 ['1']
+PASS prom.query_http_requests_total_has_data sum=11599
+PASS prom.query_goroutines_has_data value=36
+PASS prom.control_needle_absent_metric_empty result=[]
+PASS api.metrics_no_auth_rejected http=401
+PASS api.metrics_wrong_bearer_rejected http=401
+FAIL api.metrics_valid_admin_bearer_ok http=0
+PASS grafana.datasource_health_OK http=200 msg='Successfully queried the Prometheus API.'
+PASS grafana.wrong_password_rejected http=401
+PASS grafana.dashboard_provisioned panels=7
+PASS grafana.panel1_Request_rate_(req/s,_by_stat http=200 datapoints=337 errors=[]
+PASS grafana.panel2_Error_rate_(5xx_req/s) http=200 datapoints=88 errors=[]
+PASS grafana.panel3_Latency_(p50_/_p95_/_p99) http=200 datapoints=543 errors=[]
+PASS grafana.panel4_Active_HTTP_connections http=200 datapoints=181 errors=[]
+PASS grafana.panel5_Go_goroutines http=200 datapoints=362 errors=[]
+PASS grafana.panel6_Go_memory_(alloc_/_heap_inus http=200 datapoints=543 errors=[]
+PASS grafana.panel7_GC_pause_(avg_seconds_over_5 http=200 datapoints=181 errors=[]
+PASS pgadmin.login_page_reachable http=200
+PASS pgadmin.wrong_password_not_authenticated authenticated=False
+PASS pgadmin.login_ok_authenticated_session csrf_len=91
+PASS pgadmin.preconfigured_server_listed http=200 group=2 servers=['catqa3-postgres']
+PASS pgadmin.server_connection_works http=200 success=1 connected=True
+PASS nginx.GET_/health_proxied_to_api http=200 body=b'{"build_date":"stack3","build_number":"70d10721dde373d70e6e4'
+PASS nginx.security_headers_on_/health missing=[]
+PASS nginx.server_tokens_off server='nginx'
+FAIL nginx.api_v1_route_reaches_api_(login_wrong_creds_401_json) http=429 body=b'{"error":"Rate limit exceeded. Please try again later.","ret'
+FAIL nginx.api_login_valid_creds_200 http=429
+PASS nginx.web_index http=200 ctype=text/html
+PASS nginx.gzip_applied_to_web_index content-encoding=gzip
+PASS nginx.website_index_via_proxy http=200
+PASS nginx.security_headers_on_website missing=[]
+PASS nginx.control_unknown_api_route_404_from_api http=404
+PASS pod.reaches_postgres_port_(control_needle_must_be_reachable) port=35434
+PASS pod.reaches_api_port_(control_needle_must_be_reachable) port=38082
+PASS pod.CANNOT_reach_36381_catqa3 host_listening=True
+PASS pod.CANNOT_reach_11434_host host_listening=True
+PASS pod.CANNOT_reach_35433_host host_listening=False
+PASS lan.ip_detected ip=192.168.1.17
+PASS lan.nginx_reachable_(control_needle) 192.168.1.17:33080
+FAIL lan.prometheus_LAN_exposure_undeclared_(source=pod;_set_PROM_BIND) 192.168.1.17:39090 bind=192.168.1.17 expectation_source=pod
+PASS lan.prometheus_anonymous_rejected_via_LAN_IP http=401
+FAIL lan.grafana_LAN_exposure_undeclared_(source=pod;_set_GRAFANA_BIND) 192.168.1.17:33030 bind=192.168.1.17 expectation_source=pod
+PASS lan.grafana_anonymous_rejected_via_LAN_IP http=401
+FAIL lan.pgadmin_LAN_exposure_undeclared_(source=pod;_set_PGADMIN_BIND) 192.168.1.17:33050 bind=192.168.1.17 expectation_source=pod
+PASS lan.pgadmin_anonymous_rejected_via_LAN_IP http=302 location=/login?next=/browser/server_group/obj/ (anon+csrf-token)
+PASS lan.postgresql_NOT_reachable_on_LAN_IP 192.168.1.17:35434
+PASS lan.redis_NOT_reachable_on_LAN_IP 192.168.1.17:36381
+SUMMARY pass=45 fail=6 total=51
