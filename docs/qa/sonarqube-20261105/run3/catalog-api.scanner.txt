@@ -1,0 +1,140 @@
+21:00:03.930 WARN  Property 'sonar.working.directory' with value '/tmp/.scannerwork' is overridden with value '/work'
+21:00:03.939 INFO  Scanner configuration file: /opt/sonar-scanner/conf/sonar-scanner.properties
+21:00:03.940 INFO  Project root configuration file: /usr/src/docs/qa/stack3/sonarqube/sonar-catalog-api.properties
+21:00:03.956 INFO  SonarScanner CLI 8.1.0.6389
+21:00:03.961 INFO  Linux 7.0.0-42-generic amd64
+21:00:05.379 INFO  Communicating with SonarQube Community Build 26.9.0.129388
+21:00:05.380 INFO  JRE provisioning: os[linux], arch[x86_64]
+21:00:07.649 INFO  Starting SonarScanner Engine...
+21:00:07.650 INFO  Java 21.0.11 Eclipse Adoptium (64-bit)
+21:00:09.199 INFO  Load global settings
+21:00:09.296 INFO  Load global settings (done) | time=95ms
+21:00:09.299 INFO  Server id: 82338E1B-AaHMZAmWP20E9nB2KNY9
+21:00:09.309 INFO  Loading required plugins
+21:00:09.309 INFO  Load plugins index
+21:00:09.339 INFO  Load plugins index (done) | time=29ms
+21:00:09.339 INFO  Load/download plugins
+21:00:09.675 INFO  Load/download plugins (done) | time=336ms
+21:00:10.039 INFO  Process project properties
+21:00:10.056 INFO  Process project properties (done) | time=17ms
+21:00:10.065 INFO  Project key: catalogizer-api
+21:00:10.066 INFO  Base dir: /usr/src
+21:00:10.066 INFO  Working dir: /work
+21:00:10.074 INFO  Load project settings for component key: 'catalogizer-api'
+21:00:10.111 INFO  Load quality profiles
+21:00:10.178 INFO  Load quality profiles (done) | time=68ms
+21:00:10.234 INFO  Load active rules
+21:00:10.662 INFO  Load active rules (done) | time=428ms
+21:00:10.668 INFO  Load analysis cache
+21:00:10.674 INFO  Load analysis cache (404) | time=6ms
+21:00:10.865 INFO  Preprocessing files...
+21:00:12.441 INFO  5 languages detected in 1194 preprocessed files (done) | time=1576ms
+21:00:12.441 INFO  1217 files ignored because of inclusion/exclusion patterns
+21:00:12.441 INFO  4 directories skipped because of exclusion patterns (content not counted)
+21:00:12.442 INFO  7 files ignored because of scm ignore settings
+21:00:12.456 INFO  Loading plugins for detected languages
+21:00:12.456 INFO  Load/download plugins
+21:00:13.363 INFO  Load/download plugins (done) | time=906ms
+21:00:13.510 INFO  Load project repositories
+21:00:13.516 INFO  Load project repositories (done) | time=7ms
+21:00:13.555 INFO  Indexing files...
+21:00:13.556 INFO  Project configuration:
+21:00:13.556 INFO    Excluded sources: **/vendor/**, **/*_test.go, **/node_modules/**, **/testdata/**, **/*.pb.go, **/*_test.go
+21:00:13.556 INFO    Included tests: **/*_test.go
+21:00:13.750 INFO  1194 files indexed (done) | time=195ms
+21:00:13.752 INFO  Quality profile for docker: Sonar way
+21:00:13.753 INFO  Quality profile for go: Sonar way
+21:00:13.753 INFO  Quality profile for json: Sonar way
+21:00:13.753 INFO  Quality profile for xml: Sonar way
+21:00:13.754 INFO  Quality profile for yaml: Sonar way
+21:00:13.754 INFO  ------------- Run sensors on module Catalogizer API (Go)
+21:00:13.799 INFO  Load metrics repository
+21:00:13.822 INFO  Load metrics repository (done) | time=23ms
+21:00:14.270 INFO  Sensor IaC YAML File Type Classification Sensor [iac]
+21:00:14.296 INFO  Sensor IaC YAML File Type Classification Sensor [iac] (done) | time=26ms
+21:00:14.296 INFO  Sensor Code Quality and Security for Go [go]
+21:00:14.374 INFO  61 folders (1107 files) to be analyzed
+21:00:24.374 INFO  11 / 61 folders analyzed, current folder: /usr/src/catalog-api/handlers (122 files, analyzing)
+21:00:34.374 INFO  22 / 61 folders analyzed, current folder: /usr/src/catalog-api/internal/lifecycle (4 files, parsing)
+21:00:44.374 INFO  38 / 61 folders analyzed, current folder: /usr/src/catalog-api/challenges (110 files, analyzing)
+21:00:52.353 INFO  61/61 folders (1107 files) have been analyzed
+21:00:52.353 INFO  Sensor Code Quality and Security for Go [go] (done) | time=38057ms
+21:00:52.353 INFO  Sensor IaC CloudFormation Sensor [iac]
+21:00:52.355 INFO  There are no files to be analyzed for the CloudFormation language
+21:00:52.355 INFO  Sensor IaC CloudFormation Sensor [iac] (done) | time=1ms
+21:00:52.355 INFO  Sensor IaC cfn-lint report Sensor [iac]
+21:00:52.356 INFO  Sensor IaC cfn-lint report Sensor [iac] (done) | time=0ms
+21:00:52.356 INFO  Sensor IaC hadolint report Sensor [iac]
+21:00:52.357 INFO  Sensor IaC hadolint report Sensor [iac] (done) | time=0ms
+21:00:52.358 INFO  Sensor IaC Azure Resource Manager Sensor [iac]
+21:00:52.358 INFO  There are no files to be analyzed for the Azure Resource Manager language
+21:00:52.359 INFO  Sensor IaC Azure Resource Manager Sensor [iac] (done) | time=1ms
+21:00:52.360 INFO  Sensor Java Config Sensor [iac]
+21:00:52.360 INFO  There are no files to be analyzed for the Java language
+21:00:52.360 INFO  Sensor Java Config Sensor [iac] (done) | time=0ms
+21:00:52.361 INFO  Sensor IaC Docker Sensor [iac]
+21:00:52.434 INFO  3 source files to be analyzed
+21:00:52.678 INFO  3/3 source files have been analyzed
+21:00:52.678 INFO  Sensor IaC Docker Sensor [iac] (done) | time=321ms
+21:00:52.678 INFO  Sensor XML Sensor [xml]
+21:00:52.682 INFO  2 source files to be analyzed
+21:00:52.840 INFO  2/2 source files have been analyzed
+21:00:52.840 INFO  Sensor XML Sensor [xml] (done) | time=161ms
+21:00:52.840 INFO  Sensor TextAndSecretsSensor [text]
+21:00:52.882 INFO  Available processors: 2
+21:00:52.882 INFO  Using 2 threads for analysis.
+21:00:53.198 INFO  Start fetching files for the text and secrets analysis
+21:00:53.206 INFO  Using Git CLI to retrieve dirty files
+21:00:55.227 INFO  Retrieving language associated files and files included via "sonar.text.inclusions" that are tracked by git
+21:00:55.234 INFO  Starting the text and secrets analysis
+21:00:55.236 INFO  1127 source files to be analyzed for the text and secrets analysis
+21:00:56.979 INFO  1127/1127 source files have been analyzed for the text and secrets analysis
+21:00:56.981 INFO  Sensor TextAndSecretsSensor [text] (done) | time=4141ms
+21:00:56.983 INFO  ------------- Run sensors on project
+21:00:57.220 INFO  Sensor GoProjectSensor [go]
+21:00:57.221 INFO  Sensor GoProjectSensor [go] (done) | time=0ms
+21:00:57.221 INFO  Sensor IaC Project Sensor [iac]
+21:00:57.223 INFO  Sensor IaC Project Sensor [iac] (done) | time=1ms
+21:00:57.223 INFO  Sensor Zero Coverage Sensor
+21:00:57.320 INFO  Sensor Zero Coverage Sensor (done) | time=97ms
+21:00:57.320 INFO  ------------- Gather SCA dependencies on project
+21:00:57.324 INFO  Dependency analysis skipped
+21:00:57.329 INFO  SCM Publisher SCM provider for this project is: git
+21:00:57.330 INFO  SCM Publisher 1112 source files to be analyzed
+21:01:02.483 INFO  SCM Publisher 1112/1112 source files have been analyzed (done) | time=5152ms
+21:01:02.662 INFO  CPD Executor 57 files had no CPD blocks
+21:01:02.663 INFO  CPD Executor Calculating CPD for 387 files
+21:01:02.726 WARN  Too many duplication references on file catalog-api/challenges/ch201_220_performance_challenges.go for block at line 130. Keep only the first 100 references.
+21:01:02.737 WARN  Too many duplication references on file catalog-api/challenges/ch201_220_performance_challenges.go for block at line 130. Keep only the first 100 references.
+21:01:02.826 WARN  Too many duplication references on file catalog-api/challenges/ch111_conversion_challenges.go for block at line 38. Keep only the first 100 references.
+21:01:02.826 WARN  Too many duplication references on file catalog-api/challenges/ch111_conversion_challenges.go for block at line 38. Keep only the first 100 references.
+21:01:02.845 WARN  Too many duplication references on file catalog-api/challenges/ch221_250_multiplatform_challenges.go for block at line 47. Keep only the first 100 references.
+21:01:02.846 WARN  Too many duplication references on file catalog-api/challenges/ch221_250_multiplatform_challenges.go for block at line 47. Keep only the first 100 references.
+21:01:02.877 WARN  Too many duplication references on file catalog-api/challenges/ch153_module_integration.go for block at line 160. Keep only the first 100 references.
+21:01:02.877 WARN  Too many duplication references on file catalog-api/challenges/ch153_module_integration.go for block at line 160. Keep only the first 100 references.
+21:01:02.900 WARN  Too many duplication references on file catalog-api/challenges/ch159_170_playlist_challenges.go for block at line 43. Keep only the first 100 references.
+21:01:02.900 WARN  Too many duplication references on file catalog-api/challenges/ch159_170_playlist_challenges.go for block at line 43. Keep only the first 100 references.
+21:01:02.944 WARN  Too many duplication references on file catalog-api/challenges/ch186_200_security_challenges.go for block at line 133. Keep only the first 100 references.
+21:01:02.945 WARN  Too many duplication references on file catalog-api/challenges/ch186_200_security_challenges.go for block at line 133. Keep only the first 100 references.
+21:01:02.971 WARN  Too many duplication references on file catalog-api/challenges/ch131_middleware_challenges.go for block at line 829. Keep only the first 100 references.
+21:01:02.971 WARN  Too many duplication references on file catalog-api/challenges/ch131_middleware_challenges.go for block at line 829. Keep only the first 100 references.
+21:01:02.998 WARN  Too many duplication references on file catalog-api/challenges/ch100_admin_challenges.go for block at line 38. Keep only the first 100 references.
+21:01:02.998 WARN  Too many duplication references on file catalog-api/challenges/ch100_admin_challenges.go for block at line 38. Keep only the first 100 references.
+21:01:03.013 WARN  Too many duplication references on file catalog-api/challenges/ch141_phase1_endpoints.go for block at line 44. Keep only the first 100 references.
+21:01:03.013 WARN  Too many duplication references on file catalog-api/challenges/ch141_phase1_endpoints.go for block at line 44. Keep only the first 100 references.
+21:01:03.050 WARN  Too many duplication references on file catalog-api/challenges/ch121_entity_challenges.go for block at line 37. Keep only the first 100 references.
+21:01:03.050 WARN  Too many duplication references on file catalog-api/challenges/ch121_entity_challenges.go for block at line 37. Keep only the first 100 references.
+21:01:03.074 WARN  Too many duplication references on file catalog-api/challenges/ch171_185_media_analysis_challenges.go for block at line 42. Keep only the first 100 references.
+21:01:03.074 WARN  Too many duplication references on file catalog-api/challenges/ch171_185_media_analysis_challenges.go for block at line 42. Keep only the first 100 references.
+21:01:03.091 INFO  CPD Executor CPD calculation finished (done) | time=429ms
+21:01:03.096 INFO  SCM revision ID '0020ad3e39b996384657cb097d830cfbc7fa3279'
+21:01:03.811 INFO  Analysis report generated in 683ms, dir size=24.2 MB
+21:01:05.346 INFO  Analysis report compressed in 1534ms, zip size=11.5 MB
+21:01:06.085 INFO  Analysis report uploaded in 739ms
+21:01:06.087 INFO  ANALYSIS SUCCESSFUL, you can find the results at: http://127.0.0.1:9000/dashboard?id=catalogizer-api
+21:01:06.088 INFO  Note that you will be able to access the updated dashboard once the server has processed the submitted analysis report
+21:01:06.089 INFO  More about the report processing at http://127.0.0.1:9000/api/ce/task?id=d3cf1efe-d74d-4a44-9bf5-ebe347bd2c70
+21:01:06.287 INFO  Analysis total time: 56.552 s
+21:01:06.290 INFO  SonarScanner Engine completed successfully
+21:01:06.380 INFO  EXECUTION SUCCESS
+21:01:06.381 INFO  Total time: 1:02.444s

@@ -15,3 +15,7 @@
   the time, so they probably are a manifest digest vs an index digest of the same release, but that is UNCONFIRMED (the image is gone, so it
   cannot be re-checked here).
 * Postgres: no digest was recorded in the old run.
+
+## run3 (2026-11-11, main 0020ad3e) - CAT-QA-SONAR-1
+
+Stack brought up by the migrated `docs/qa/stack3/sonarqube/up.sh` (`ctr_up`); `qa_stack` reported `backend=podman DEVIATION 11.4.76/11.4.173` (Containers submodule runtime unavailable on this host), so the Containers-submodule path is NOT live-verified, only the podman fallback. Quality gate OK for both projects: catalogizer-api 699 issues, catalogizer-web 404 issues. Scrub control needle PASS; SHA256SUMS verify; token/admin/DB passwords confirmed absent from all 19 files by literal search. Stack removed with `down.sh` afterwards. Status: PROVISIONAL-DONE for the scan itself (issue triage not done; gate OK does not mean zero issues).
