@@ -255,6 +255,12 @@ func (s *SMBDiscoveryService) mountShare(ctx context.Context, config SMBConnecti
 	if err != nil {
 		return nil, nil, err
 	}
+	// A configured non-global port is decided on THESE vetted addresses (not on a second lookup) and only the addresses of the storage
+	// root are dialed (SMB-FU-12, same class as SMB-FU-9).
+	ips, err = bindVettedIPsToPort(config.Host, config.Port, ips)
+	if err != nil {
+		return nil, nil, err
+	}
 	conn, err := dialVetted(ctx, ips, config.Port, s.timeout)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to connect to SMB host %s: %w", config.Host, err)

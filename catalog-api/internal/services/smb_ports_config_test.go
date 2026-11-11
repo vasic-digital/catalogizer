@@ -3,6 +3,9 @@ package services
 import (
 	"context"
 	"errors"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"net"
 	"os"
 	"strings"
@@ -106,17 +109,38 @@ func TestNewSMBDiscoveryServiceFromConfig_RegistersPorts(t *testing.T) {
 	require.NotNil(t, NewSMBDiscoveryService(nil))
 }
 
-func mainWiresConfiguredPorts(src string) bool {
-	return strings.Contains(src, "services.NewSMBDiscoveryServiceFromConfig(") && !strings.Contains(src, "services.NewSMBDiscoveryService(")
+// calledSelectors returns the names of selector calls (pkg.Name(...)) in Go source; comments never count.
+func calledSelectors(t *testing.T, src string) map[string]bool {
+	t.Helper()
+	f, err := parser.ParseFile(token.NewFileSet(), "main.go", src, 0)
+	require.NoError(t, err)
+	out := map[string]bool{}
+	ast.Inspect(f, func(n ast.Node) bool {
+		if c, ok := n.(*ast.CallExpr); ok {
+			if se, ok := c.Fun.(*ast.SelectorExpr); ok {
+				out[se.Sel.Name] = true
+			}
+		}
+		return true
+	})
+	return out
+}
+
+func mainWiresConfiguredPorts(t *testing.T, src string) bool {
+	c := calledSelectors(t, src)
+	return c["NewSMBDiscoveryServiceFromConfig"] && !c["NewSMBDiscoveryService"]
 }
 
 func TestMainWiresSMBConfiguredPorts(t *testing.T) {
 	b, err := os.ReadFile("../../main.go")
 	require.NoError(t, err)
-	require.True(t, mainWiresConfiguredPorts(string(b)), "main.go must build the discovery service with NewSMBDiscoveryServiceFromConfig")
-	// self-check: golden-bad (old constructor) must be flagged, golden-good must pass
-	require.False(t, mainWiresConfiguredPorts("x := services.NewSMBDiscoveryService(logger)"))
-	require.True(t, mainWiresConfiguredPorts("x := services.NewSMBDiscoveryServiceFromConfig(cfg, logger)"))
+	require.True(t, mainWiresConfiguredPorts(t, string(b)), "main.go must build the discovery service with NewSMBDiscoveryServiceFromConfig")
+	// self-check: golden-bad forms (old constructor, commented-out call) must be flagged, golden-good must pass
+	wrap := func(body string) string { return "package main\nfunc f() {\n" + body + "\n}\n" }
+	require.False(t, mainWiresConfiguredPorts(t, wrap("x := services.NewSMBDiscoveryService(logger)")))
+	require.False(t, mainWiresConfiguredPorts(t, wrap("// x := services.NewSMBDiscoveryServiceFromConfig(cfg, logger)\n_ = services.NewSMBDiscoveryService(l)")))
+	require.False(t, mainWiresConfiguredPorts(t, wrap("/* services.NewSMBDiscoveryServiceFromConfig(cfg, logger) */")))
+	require.True(t, mainWiresConfiguredPorts(t, wrap("x := services.NewSMBDiscoveryServiceFromConfig(cfg, logger)")))
 }
 
 // Service layer (defence in depth to the handler check): the configured port is accepted for its host and refused for another host

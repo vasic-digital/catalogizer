@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"net"
 	"strings"
 	"sync"
@@ -118,4 +119,48 @@ func ValidateSMBPortForHost(host string, port int) error {
 		}
 	}
 	return err
+}
+
+// bindVettedIPsToPort is the dial-time half of the per-host port binding. A global port (445, CATALOG_SMB_ALLOWED_PORTS) keeps every
+// vetted address. For a port that only a storage root configures, the vetted addresses are narrowed to the root's address set: a request
+// host with the root's own name (case-insensitive) keeps its vetted addresses, any other host keeps only the vetted addresses that are also
+// root addresses. An empty result is refused, so a name that resolved to the root at pre-check time but to another host at dial time
+// (rebinding), or to several hosts, can never reach a non-root address on that port.
+func bindVettedIPsToPort(host string, port int, vetted []net.IP) ([]net.IP, error) {
+	if ValidateSMBPort(port) == nil {
+		return vetted, nil
+	}
+	var out []net.IP
+	add := func(ip net.IP) {
+		for _, o := range out {
+			if o.Equal(ip) {
+				return
+			}
+		}
+		out = append(out, ip)
+	}
+	for _, r := range SMBConfiguredRoots() {
+		if r.Port != port {
+			continue
+		}
+		if strings.EqualFold(host, r.Host) {
+			for _, ip := range vetted {
+				add(ip)
+			}
+			continue
+		}
+		rootIPs := smbHostIPSet(r.Host)
+		for _, ip := range vetted {
+			for _, rip := range rootIPs {
+				if ip.Equal(rip) {
+					add(ip)
+					break
+				}
+			}
+		}
+	}
+	if len(out) == 0 {
+		return nil, fmt.Errorf("%w: port not allowed", ErrInvalidSMBInput)
+	}
+	return out, nil
 }
