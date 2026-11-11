@@ -1776,3 +1776,9 @@ ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go
 ## CAT-QA-SONAR-7 (SonarQube run4 on v2.4.1, 13 new web smells; PROVISIONAL static)
 - typescript:S6819 x8 (CollectionTemplates.tsx:497, AdvancedSearch.tsx:488/532, CollectionExport.tsx:723, CollectionPreview.tsx:216, DiscoveredShares.tsx:151, HistoryDrawer.tsx:66, SubtitleManager.tsx:278): likely role="button"/"checkbox" divs; prefer native elements.
 - S3358 FavoriteToggle.tsx:134 (nested ternary), S4323 FavoriteToggle.tsx:11 (type alias), S7773 collectionRules.ts:358/361/384 (Number.isNaN). Cause UNCONFIRMED.
+
+## CAT-QA-SONAR-7 follow-ups (Opus GO-with-follow-ups, 2026-11-11; fixes PROVISIONAL, no new Sonar scan yet)
+- FU-1: no test that checkbox click/Space in CollectionPreview does not fire onPreviewItem (mutant survives on base too).
+- FU-2: user-visible change: Enter no longer toggles the CollectionPreview selection checkbox (native, Space only); note in changelog.
+- FU-3: HistoryDrawer backdrop stacking depends on `relative` on dialog; needs browser check (jsdom blind).
+- FU-4: FavoriteToggle "Loading..." label untested. FU-5: buttons wrap block elements (HTML content model nit). FU-6: CollectionTemplates grid motion.div still role=button. FU-7: CollectionExport says "drag and drop" but has no drag handlers (pre-existing).
