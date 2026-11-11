@@ -1,0 +1,3 @@
+VERDICT: FAIL (a FAIL line is present)
+missing PASS: TestLiveCoverArt_F4_StrictDialLayerOfProductionClient
+VERDICT: FAIL

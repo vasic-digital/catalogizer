@@ -1,0 +1,11 @@
+baseline (expect rc=0): rc=0
+mutant cap: KILLED (rc=1, assertion FAIL seen)
+mutant strict: KILLED (rc=1, assertion FAIL seen)
+mutant netguard: KILLED (rc=1, assertion FAIL seen)
+mutant m1: KILLED (rc=1, assertion FAIL seen)
+mutant m2: KILLED (rc=1, assertion FAIL seen)
+mutant m5: KILLED (rc=1, assertion FAIL seen)
+mutant m7: KILLED (rc=1, assertion FAIL seen)
+mutant m8: KILLED (rc=1, assertion FAIL seen)
+mutant n1: KILLED (rc=1, assertion FAIL seen)
+MUTATION-SUITE: PASS

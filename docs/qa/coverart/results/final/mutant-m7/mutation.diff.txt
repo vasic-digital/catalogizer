@@ -1,0 +1,12 @@
+--- ~/.cache/claude-tmp/coverart.faVQnM/repo/catalog-api/internal/netguard/netguard.go	2026-11-11 22:34:52.849836543 +0100
++++ ~/.cache/claude-tmp/coverart-ovl.TqkDAP/m.go	2026-11-11 23:06:32.853885424 +0100
+@@ -120,6 +120,9 @@
+ 	if v4 := ip.To4(); v4 != nil {
+ 		ip = v4 // unwraps ::ffff:a.b.c.d
+ 	}
++	if ip.To4() == nil {
++		return false
++	}
+ 	if alwaysBlocked(ip) {
+ 		return true
+ 	}
