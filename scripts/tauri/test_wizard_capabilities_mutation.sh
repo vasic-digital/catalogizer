@@ -9,7 +9,7 @@ ROOT="$(cd "$HERE/../.." && pwd)"
 GUARD="${GUARD:-$HERE/test_wizard_capabilities.sh}"
 [ -f "$GUARD" ] || { echo "setup: guard missing: $GUARD" >&2; exit 2; }
 TMP="$(mktemp -d "${TMPDIR:-/tmp}/wizcap-mut.XXXXXX")" || { echo "setup: mktemp failed" >&2; exit 2; }
-trap 'rm -rf "${TMP:?}"' EXIT
+trap 'chmod -R u+rwx "${TMP:?}" 2>/dev/null; rm -rf "${TMP:?}"' EXIT
 bad=0
 run_case() { # name expected_rc mutate_fn
   local name="$1" want="$2" fn="$3" R="$TMP/${1}"
@@ -20,7 +20,7 @@ run_case() { # name expected_rc mutate_fn
     && cp "$ROOT/installer-wizard/src-tauri/tauri.conf.json" "$R/installer-wizard/src-tauri/tauri.conf.json"; } \
     || { echo "setup: copy failed" >&2; exit 2; }
   W="$R/installer-wizard"; "$fn"
-  local rc=0; bash "$R/scripts/tauri/test_wizard_capabilities.sh" >/dev/null 2>&1 || rc=$?
+  local rc=0; timeout 30 bash "$R/scripts/tauri/test_wizard_capabilities.sh" >/dev/null 2>&1 || rc=$?
   if [ "$rc" = "$want" ]; then echo "ok   $name (rc=$rc)"; else echo "BAD  $name: want rc=$want got rc=$rc"; bad=1; fi
 }
 CAP="src-tauri/capabilities"
@@ -145,7 +145,7 @@ run_case real_import_after_comment_needs_save 1 m_real_import_after_comment
 run_case ask_import_needs_allow_ask 1 m_ask_import
 run_case confirm_import_needs_allow_confirm 1 m_confirm_import
 run_case aliased_message_import_needs_allow_message 1 m_message_import
-run_case ask_granted_pass 0 m_ask_granted
+run_case ask_granted_without_message_fails 1 m_ask_granted
 run_case raw_invoke_message 1 m_raw_message
 run_case star_import_needs_all_five 1 m_star_needs_ask
 # --- review round 1: masking must never be weaker than the raw scan; parse problems are fatal ---
@@ -255,5 +255,59 @@ run_case x_cap_unhashable_identifier_blind 2 m_x_cap_enabled_unhashable_id
 m_x_unreadable_src() { printf '%s\n' "export const x = 1" >"$W/src/services/locked.ts"; chmod 000 "$W/src/services/locked.ts"; }
 run_case x_unreadable_source_file_blind_not_traceback 2 m_x_unreadable_src
 run_case x_json5_unterminated_comment_blind 2 m_x_json5_unterminated_comment
+# --- review round 4 (structural): raw-substring fallback, NamedList-first, dialog:default conservative, symlinks/onerror ---
+m_y_backtick_dyn() { only_open; setsrc "export const f = () => import(\`@tauri-apps/plugin-dialog\`)"; }
+m_y_backtick_require() { only_open; setsrc "const d = require(\`@tauri-apps/plugin-dialog\`)"; }
+m_y_dyn_comment() { only_open; setsrc "export const f = () => import(/* @vite-ignore */ '@tauri-apps/plugin-dialog')"; }
+m_y_dyn_via_const() { only_open; setsrc "const P = '@tauri-apps/plugin-dialog'
+export const f = async () => (await import(P)).save"; }
+m_y_escaped_hex() { only_open; setsrc "export const f = () => import('\\x40tauri-apps/plugin-dialog')"; }
+m_y_escaped_unicode() { only_open; setsrc "export const f = () => import('\\u0040tauri-apps/plugin-dialog')"; }
+m_y_concat() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+export const g = (x) => invoke('plugin:dialog|' + x)"; }
+m_y_global_tauri_text() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+export const g = () => window.__TAURI__.dialog.message('x')"; }
+m_y_global_tauri_only() { only_open; setsrc "export const g = () => window.__TAURI__.dialog.message('x')"; }
+m_y_with_global_conf() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'"; setconf 'd["app"]["withGlobalTauri"]=True'; }
+m_y_with_global_conf_nonbool() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'"; setconf 'd["app"]["withGlobalTauri"]="yes"'; }
+m_y_with_global_false_ok() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'"; setconf 'd["app"]["withGlobalTauri"]=False'; }
+m_y_vi_mock_not_usage() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'"; mkdir -p "$W/src/test"; printf '%s\n' "vi.mock('@tauri-apps/plugin-dialog', () => ({ open: vi.fn() }))" >"$W/src/test/setup.ts"; }
+m_y_namedlist_wins() { cap '{"identifier":"d","windows":["main"],'"$P"',"capabilities":[{"identifier":"x","windows":["main"],"permissions":["dialog:deny-save"]}]}'; }
+m_y_namedlist_wins_nonlist() { cap '{"identifier":"d","windows":["main"],'"$P"',"capabilities":5}'; }
+m_y_default_not_ask() { cap '{"identifier":"d","windows":["main"],"permissions":["dialog:default"]}'; setsrc "import { ask } from '@tauri-apps/plugin-dialog'"; }
+m_y_default_open_save_message_pass() { cap '{"identifier":"d","windows":["main"],"permissions":["dialog:default"]}'; setsrc "import { open, save, message } from '@tauri-apps/plugin-dialog'"; }
+m_y_ask_allow_ask_only() { cap '{"identifier":"d","windows":["main"],"permissions":["dialog:allow-open","dialog:allow-ask"]}'; setsrc "import { open, ask } from '@tauri-apps/plugin-dialog'"; }
+m_y_ask_with_message_pass() { cap '{"identifier":"d","windows":["main"],"permissions":["dialog:allow-open","dialog:allow-ask","dialog:allow-message"]}'; setsrc "import { open, ask } from '@tauri-apps/plugin-dialog'"; }
+m_y_confirm_allow_confirm_only() { cap '{"identifier":"d","windows":["main"],"permissions":["dialog:allow-confirm"]}'; setsrc "import { confirm } from '@tauri-apps/plugin-dialog'"; }
+m_y_symlink_dir() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'"; mkdir -p "$TMP/$1_ext"; printf '%s\n' "import { save } from '@tauri-apps/plugin-dialog'" >"$TMP/$1_ext/x.ts"; ln -s "$TMP/$1_ext" "$W/src/linked"; }
+m_y_symlink_loop() { m_y_symlink_dir_loop_setup; }
+m_y_symlink_dir_loop_setup() { mkdir -p "$W/src/a"; ln -s .. "$W/src/a/up1"; ln -s .. "$W/src/a/up2"; ln -s .. "$W/src/a/up3"; ln -s ../a "$W/src/a/self"; }
+m_y_unreadable_dir() { only_open; mkdir -p "$W/src/locked"; printf '%s\n' "import { save } from '@tauri-apps/plugin-dialog'" >"$W/src/locked/x.ts"; chmod 000 "$W/src/locked"; }
+run_case y_backtick_dynamic_import 1 m_y_backtick_dyn
+run_case y_backtick_require 1 m_y_backtick_require
+run_case y_dynamic_import_with_comment 1 m_y_dyn_comment
+run_case y_dynamic_import_via_const 1 m_y_dyn_via_const
+run_case y_escaped_hex_specifier 1 m_y_escaped_hex
+run_case y_escaped_unicode_specifier 1 m_y_escaped_unicode
+run_case y_concat_command 1 m_y_concat
+run_case y___TAURI___text_with_import 1 m_y_global_tauri_text
+run_case y___TAURI___text_alone 1 m_y_global_tauri_only
+run_case y_withGlobalTauri_true_needs_all 1 m_y_with_global_conf
+run_case y_withGlobalTauri_nonbool_blind 2 m_y_with_global_conf_nonbool
+run_case y_withGlobalTauri_false_pass 0 m_y_with_global_false_ok
+run_case y_vi_mock_only_is_not_usage 0 m_y_vi_mock_not_usage
+run_case y_namedlist_key_wins_over_identifier 1 m_y_namedlist_wins
+run_case y_namedlist_key_nonlist_blind 2 m_y_namedlist_wins_nonlist
+run_case y_default_does_not_cover_ask 1 m_y_default_not_ask
+run_case y_default_covers_open_save_message 0 m_y_default_open_save_message_pass
+run_case y_ask_needs_allow_message_too 1 m_y_ask_allow_ask_only
+run_case y_ask_plus_message_pass 0 m_y_ask_with_message_pass
+run_case y_confirm_needs_allow_message_too 1 m_y_confirm_allow_confirm_only
+m_y_symlink_dir_c() { m_y_symlink_dir symlinkdir; }
+m_y_escaped_plugin_word() { only_open; setsrc "export const f = () => import('@tauri-apps/\\x70lugin-dialog')"; }
+run_case y_escaped_plugin_word_needs_decoding 1 m_y_escaped_plugin_word
+run_case y_symlinked_src_dir_scanned 1 m_y_symlink_dir_c
+run_case y_symlink_loop_terminates 0 m_y_symlink_loop
+run_case y_unreadable_src_dir_blind 2 m_y_unreadable_dir
 [ "$bad" = 0 ] && echo "ALL CASES OK" || echo "MUTATION TEST FAILED"
 exit "$bad"
