@@ -2,6 +2,10 @@
 # shellcheck source=/dev/null
 . "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")/lib/cgo_flags.sh" || { echo "FATAL: lib/cgo_flags.sh missing (cgo define for go-sqlcipher)" >&2; exit 1; }   # 2026-11-02 decision; scripts/lib/cgo_flags.sh
 
+# TAURI-R2-FU-4: always run from the repository root, whatever the caller's cwd (relative paths below depend on it)
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")/.." || { echo "FATAL: cannot cd to repo root" >&2; exit 1; }
+[ -z "${PRE_FLIGHT_CHDIR_ONLY:-}" ] || { pwd; exit 3; }   # test hook only: distinct non-zero exit, never reads as a passing run
+
 # Pre-Flight Check Script
 # Runs all quality checks before committing code
 
@@ -86,6 +90,23 @@ rc=0; bash scripts/tauri/test_wizard_capabilities.sh > /dev/null 2>&1 || rc=$?
 check $rc "wizard dialog open/save granted by one capability for window main (scripts/tauri/test_wizard_capabilities.sh)"
 rc=0; bash scripts/tauri/test_wizard_capabilities_mutation.sh > /dev/null 2>&1 || rc=$?
 check $rc "wizard capability guard kills its paired mutations (scripts/tauri/test_wizard_capabilities_mutation.sh)"
+# The mutant run is slow: only when the tauri guard / wizard capability files changed (vs merge-base with main, plus worktree), else an explicit SKIP line.
+tauri_changed=0
+if [ "${PRE_FLIGHT_FORCE_TAURI_MUTANTS:-}" = 1 ]; then tauri_changed=1
+else
+  mb=$(git merge-base HEAD main 2>/dev/null || git rev-parse HEAD 2>/dev/null || true)
+  if [ -n "$mb" ] && [ -n "$({ git diff --name-only "$mb" -- scripts/tauri installer-wizard/src-tauri/capabilities installer-wizard/src-tauri/tauri.conf.json installer-wizard/src-tauri/permissions installer-wizard/src installer-wizard/index.html installer-wizard/public 2>/dev/null; git ls-files --others --exclude-standard -- scripts/tauri installer-wizard/src-tauri installer-wizard/src installer-wizard/index.html installer-wizard/public 2>/dev/null; } | head -1)" ]; then tauri_changed=1; fi
+  [ -n "$mb" ] || tauri_changed=1   # cannot tell: run it
+fi
+if [ "$tauri_changed" = 1 ]; then
+  rc=0; bash scripts/tauri/test_wizard_capabilities_guard_mutants.sh > /dev/null 2>&1 || rc=$?
+  check $rc "wizard capability suite kills mutants of the guard itself (scripts/tauri/test_wizard_capabilities_guard_mutants.sh)"
+else
+  echo "SKIPPED (no tauri guard changes): wizard capability guard mutants (set PRE_FLIGHT_FORCE_TAURI_MUTANTS=1 to force)"
+fi
+
+rc=0; bash scripts/tauri/test_preflight_cwd.sh > /dev/null 2>&1 || rc=$?
+check $rc "pre-flight-check.sh chdirs to repo root from any cwd (scripts/tauri/test_preflight_cwd.sh)"
 
 # Security checks
 echo ""
