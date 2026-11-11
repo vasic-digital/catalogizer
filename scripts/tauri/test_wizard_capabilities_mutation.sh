@@ -70,7 +70,7 @@ run_case perms_split_across_caps 1 m_split_caps
 run_case save_missing 1 m_no_save
 run_case no_main_window 1 m_no_main
 run_case linux_in_platforms_and_object_perm_pass 0 m_linux_platform_ok
-run_case invalid_json_fails 1 m_bad_json
+run_case invalid_json_fails 2 m_bad_json
 run_case double_quote_import_save 1 m_dq_save
 run_case multiline_import_save 1 m_multiline_save
 run_case star_import 1 m_star_import
@@ -126,20 +126,20 @@ m_star_needs_ask() { cap '{"identifier":"d","windows":["main"],'"$P"'}'; setsrc 
 run_case toml_cap_pass 0 m_toml_ok
 run_case toml_cap_missing_save 1 m_toml_missing_save
 run_case toml_table_perms_pass 0 m_toml_table_perms_ok
-run_case toml_invalid_fails 1 m_toml_bad
+run_case toml_invalid_fails 2 m_toml_bad
 run_case json5_cap_pass 0 m_json5_ok
 run_case json5_cap_missing_save 1 m_json5_missing_save
-run_case json5_unparsable_fails_closed 1 m_json5_unparsable
+run_case json5_unparsable_fails_closed 2 m_json5_unparsable
 run_case conf_enables_only_other 1 m_conf_lists_other
 run_case conf_enables_default_pass 0 m_conf_lists_default
 run_case conf_inline_capability_pass 0 m_conf_inline_cap_ok
 run_case conf_window_label_wizard_cap_main 1 m_conf_label_wizard_cap_main
 run_case conf_window_label_wizard_cap_wizard_pass 0 m_conf_label_wizard_cap_wizard
-run_case conf_invalid_json_fails 1 m_conf_bad
+run_case conf_invalid_json_fails 2 m_conf_bad
 run_case line_comment_import_ignored 0 m_comment_line_import
 run_case block_comment_import_ignored 0 m_comment_block_import
-run_case string_literal_import_ignored 0 m_string_import
-run_case template_literal_import_ignored 0 m_template_import
+run_case string_literal_import_conservative 1 m_string_import
+run_case template_literal_import_conservative 1 m_template_import
 run_case comment_only_import_is_blind 2 m_comment_only_is_blind
 run_case real_import_after_comment_needs_save 1 m_real_import_after_comment
 run_case ask_import_needs_allow_ask 1 m_ask_import
@@ -148,5 +148,39 @@ run_case aliased_message_import_needs_allow_message 1 m_message_import
 run_case ask_granted_pass 0 m_ask_granted
 run_case raw_invoke_message 1 m_raw_message
 run_case star_import_needs_all_five 1 m_star_needs_ask
+# --- review round 1: masking must never be weaker than the raw scan; parse problems are fatal ---
+m_r_const_cmd() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+const CMD='plugin:dialog|save'; invoke(CMD)"; }
+m_r_array_map() { only_open; setsrc "export const f = () => ['plugin:dialog|save'].map(c=>invoke(c))"; }
+m_r_tsx_apostrophe_raw() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+export const A = () => <p>Don't</p>
+invoke(\"plugin:dialog|save\")"; }
+m_r_tsx_apostrophe_dyn() { only_open; setsrc "export const A = () => <p>Don't</p>
+export const f = () => import(\"@tauri-apps/plugin-dialog\")"; }
+m_r_template_expr_dyn() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+export const t = \`x \${await import('@tauri-apps/plugin-dialog')}\`"; }
+m_r_backtick_invoke() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+invoke(\`plugin:dialog|ask\`)"; }
+m_r_aliased_invoke() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+const inv = invoke; inv('plugin:dialog|ask')"; }
+m_r_reexport() { only_open; setsrc "export { ask } from '@tauri-apps/plugin-dialog'"; }
+m_r_reexport_star() { only_open; setsrc "export * from '@tauri-apps/plugin-dialog'"; }
+m_r_broken_extra_json5() { printf '%s\n' "{ identifier: 'deny', windows: ['main'], permissions: ['dialog:deny-save'] }" >"$W/$CAP/deny.json5"; }
+m_r_broken_extra_toml() { printf '%s\n' 'identifier = = x' >"$W/$CAP/extra.toml"; }
+m_r_two_windows_main_second() { setconf 'd["app"]["windows"]=[{"label":"a"},{"label":"main"}]'; }
+m_r_inline_deny() { setconf 'd["app"]["security"]["capabilities"]=["default",{"identifier":"x","windows":["main"],"permissions":["dialog:deny-save"]}]'; }
+run_case r_const_cmd_invoke 1 m_r_const_cmd
+run_case r_array_map_invoke 1 m_r_array_map
+run_case r_tsx_apostrophe_then_raw_invoke 1 m_r_tsx_apostrophe_raw
+run_case r_tsx_apostrophe_then_dynamic_import 1 m_r_tsx_apostrophe_dyn
+run_case r_dynamic_import_in_template_expr 1 m_r_template_expr_dyn
+run_case r_backtick_invoke_ask 1 m_r_backtick_invoke
+run_case r_aliased_invoke_ask 1 m_r_aliased_invoke
+run_case r_reexport_named_ask 1 m_r_reexport
+run_case r_reexport_star 1 m_r_reexport_star
+run_case r_valid_default_plus_broken_json5 2 m_r_broken_extra_json5
+run_case r_valid_default_plus_broken_toml 2 m_r_broken_extra_toml
+run_case r_two_windows_main_is_second_pass 0 m_r_two_windows_main_second
+run_case r_inline_capability_deny_wins 1 m_r_inline_deny
 [ "$bad" = 0 ] && echo "ALL CASES OK" || echo "MUTATION TEST FAILED"
 exit "$bad"

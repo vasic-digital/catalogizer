@@ -8,10 +8,13 @@
 # window label from tauri.conf.json app.windows; globs allowed), grant EVERY needed permission (dialog:default counts), be local (local true,
 # no remote), carry no "platforms" list excluding linux, and NO capability may deny a needed permission (dialog:deny-*). If tauri.conf.json
 # sets app.security.capabilities only those identifiers are enabled, otherwise every file in capabilities/ is. Raw invoke('plugin:dialog|<cmd>')
-# strings count as usage. Comments and string/template literals are masked before import detection (an import inside them is NOT usage);
-# import detection handles single/double quotes, multi-line and aliased named imports; `import * as` and dynamic `import()` need all five
-# commands (conservative). Limitation: regex literals containing quotes are not lexed.
-# Exit codes: 0 PASS / 1 FAIL / 2 BLIND (no plugin-dialog use found, the scan cannot see anything; NOT a pass).
+# strings count as usage wherever they appear in code or in string/template literals (any quoting, aliased invoke, constants, arrays).
+# Only COMMENTS are masked; text inside string/template literals is scanned (conservative: a quoted import/command counts as usage).
+# Parse problems in ANY capability file or tauri.conf.json are fatal (exit 2, BLIND), never ignored. Import detection handles single/double quotes, multi-line and aliased named imports; `import * as` and dynamic `import()` need all five
+# commands (conservative); `export {..} from` / `export * from` re-exports count like imports.
+# Known limits (not detected): a command name built at run time (e.g. 'plugin:dialog|' + x), imports via a differently named re-export module,
+# regex literals containing quotes or comment markers, capabilities/ subdirectories, tauri.<platform>.conf.json / Tauri.toml, multi-window apps.
+# Exit codes: 0 PASS / 1 FAIL / 2 BLIND (no plugin-dialog use found, or a config parse problem; NOT a pass).
 # Paired mutation test: scripts/tauri/test_wizard_capabilities_mutation.sh
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -28,13 +31,13 @@ CAPS = os.path.join(W, "src-tauri", "capabilities")
 CONF = os.path.join(W, "src-tauri", "tauri.conf.json")
 CMDS = ("open", "save", "ask", "confirm", "message")
 PKG = r"""['"]@tauri-apps/plugin-dialog['"]"""
-named = re.compile(r"import\s+(?:type\s+)?\{([^}]*)\}\s*from\s*" + PKG)
-star = re.compile(r"import\s+\*\s+as\s+\w+\s+from\s*" + PKG)
+named = re.compile(r"(?:import|export)\s+(?:type\s+)?\{([^}]*)\}\s*from\s*" + PKG)
+star = re.compile(r"(?:import\s+\*\s+as\s+\w+|export\s+\*(?:\s+as\s+\w+)?)\s+from\s*" + PKG)
 dyn = re.compile(r"import\s*\(\s*" + PKG + r"\s*\)")
 raw = re.compile(r"plugin:dialog\|(" + "|".join(CMDS) + r")\b")
-KEEP = re.compile(r"(?:\bfrom|\bimport|\bimport\s*\(|\binvoke\s*\(|\binvoke\s*<[^>]*>\s*\()\s*$")
 def mask(t):
-    """Blank comments and string/template bodies, except module specifiers / invoke command strings."""
+    """Blank COMMENTS only. String/template bodies are kept verbatim (a string may hold command text: false positive is
+    acceptable, false negative is not). ' and " strings end at a newline, so a JSX apostrophe cannot swallow later code."""
     out, i, n = [], 0, len(t)
     while i < n:
         c = t[i]
@@ -46,13 +49,10 @@ def mask(t):
             out.append(re.sub(r"[^\n]", " ", t[i:j])); i = j
         elif c in "'\"`":
             j = i + 1
-            while j < n and t[j] != c:
+            while j < n and t[j] != c and (c == "`" or t[j] != "\n"):
                 j += 2 if t[j] == "\\" else 1
             j = min(j + 1, n)
-            lit = t[i:j]
-            keep = c != "`" and KEEP.search("".join(out)[-40:]) is not None
-            out.append(lit if keep else c + re.sub(r"[^\n]", " ", lit[1:-1]) + (c if lit.endswith(c) and len(lit) > 1 else ""))
-            i = j
+            out.append(t[i:j]); i = j
         else:
             out.append(c); i += 1
     return "".join(out)
@@ -78,7 +78,7 @@ for dp, dns, fns in os.walk(SRC):
 if not seen or not need:
     print("BLIND: no plugin-dialog import found under %s" % SRC, file=sys.stderr)
     sys.exit(2)
-ok, problems = [], []
+ok, problems, fatal = [], [], []
 EXPAND = {"dialog:default": {"dialog:allow-" + c for c in CMDS}}
 def strlist(v):
     return isinstance(v, list) and all(isinstance(x, str) for x in v)
@@ -115,7 +115,7 @@ if os.path.exists(CONF):
             enabled = {x for x in cl if isinstance(x, str)}
             inline = [("tauri.conf.json", x) for x in cl if isinstance(x, dict)]
     except Exception as e:
-        problems.append("tauri.conf.json: invalid (%s)" % e)
+        fatal.append("tauri.conf.json: invalid (%s)" % e)
         labels = None
 target = None if labels is None else ("main" if "main" in labels else labels[0])
 if not os.path.isdir(CAPS) and not inline:
@@ -136,7 +136,7 @@ else:
             else:
                 continue
         except Exception as e:
-            problems.append("%s: unparsable (%s)" % (fn, e))
+            fatal.append("%s: unparsable (%s)" % (fn, e))
             continue
         for c in (d if isinstance(d, list) else [d]):
             if isinstance(c, dict) and (enabled is None or c.get("identifier") in enabled):
@@ -169,6 +169,11 @@ else:
                 problems.append("%s: missing %s" % (fn, sorted(need - perms)))
             else:
                 ok.append(fn)
+if fatal:
+    print("BLIND: capability/config parse problem(s); the guard cannot see the real ACL, refusing to pass or fail:", file=sys.stderr)
+    for p in fatal:
+        print("  - " + p, file=sys.stderr)
+    sys.exit(2)
 if ok:
     print("PASS: %s granted to window %s by %s" % (" ".join(sorted(need)), target, ", ".join(ok)))
     sys.exit(0)

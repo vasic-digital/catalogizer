@@ -4,7 +4,7 @@
 
 # TAURI-R2-FU-4: always run from the repository root, whatever the caller's cwd (relative paths below depend on it)
 cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")/.." || { echo "FATAL: cannot cd to repo root" >&2; exit 1; }
-[ -z "${PRE_FLIGHT_CHDIR_ONLY:-}" ] || { pwd; exit 0; }
+[ -z "${PRE_FLIGHT_CHDIR_ONLY:-}" ] || { pwd; exit 3; }   # test hook only: distinct non-zero exit, never reads as a passing run
 
 # Pre-Flight Check Script
 # Runs all quality checks before committing code
