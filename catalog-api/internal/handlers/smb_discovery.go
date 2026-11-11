@@ -98,7 +98,8 @@ func (h *SMBDiscoveryHandler) DiscoverShares(c *gin.Context) {
 	shares, err := h.service.DiscoverShares(c.Request.Context(), req.Host, req.Username, req.Password, req.Domain)
 	if err != nil {
 		h.logger.Error("Failed to discover SMB shares", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to discover shares"})
+		st, msg := smbErrorStatus(err, "Failed to discover shares")
+		c.JSON(st, gin.H{"error": msg})
 		return
 	}
 
@@ -206,11 +207,8 @@ func (h *SMBDiscoveryHandler) BrowseShare(c *gin.Context) {
 	entries, err := h.service.BrowseShare(c.Request.Context(), config, req.Path)
 	if err != nil {
 		h.logger.Error("Failed to browse SMB share", zap.Error(err))
-		if errors.Is(err, services.ErrInvalidSMBInput) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid share, path or port"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to browse share"})
+		st, msg := smbErrorStatus(err, "Failed to browse share")
+		c.JSON(st, gin.H{"error": msg})
 		return
 	}
 
@@ -281,9 +279,8 @@ func (h *SMBDiscoveryHandler) ProbeHost(c *gin.Context) {
 	result, err := h.service.ProbeHostWithIdentities(c.Request.Context(), req.Host, idents)
 	if err != nil {
 		h.logger.Error("Failed to probe SMB host", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to probe host",
-		})
+		st, msg := smbErrorStatus(err, "Failed to probe host")
+		c.JSON(st, gin.H{"error": msg})
 		return
 	}
 
@@ -331,6 +328,11 @@ func validateSMBTarget(host string, port int, share, path string) string {
 	return ""
 }
 
+// smbErrorStatus maps a service error to an HTTP status and a fixed client-safe message: client input errors are 400, everything else
+// is 500 with the generic text (no server, network or path detail).
 func smbErrorStatus(err error, generic string) (int, string) {
+	if errors.Is(err, services.ErrInvalidSMBInput) {
+		return http.StatusBadRequest, "Invalid share, path, host or port"
+	}
 	return http.StatusInternalServerError, generic
 }

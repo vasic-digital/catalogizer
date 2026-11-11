@@ -59,17 +59,25 @@ var ErrInvalidSMBInput = errors.New("invalid SMB request")
 // smbPort is the only SMB-over-TCP port the discovery routes may dial (a free port choice would make them a port scanner).
 const smbPort = 445
 
-// ValidateSMBPort accepts 0 (default) and 445, and refuses everything else.
+// ValidateSMBPort accepts 0 (default 445) and any port in SMBAllowedPorts; everything else is refused.
 func ValidateSMBPort(port int) error {
-	if port != 0 && port != smbPort {
-		return fmt.Errorf("%w: only port %d is supported", ErrInvalidSMBInput, smbPort)
+	if port == 0 {
+		return nil
 	}
-	return nil
+	for _, p := range SMBAllowedPorts() {
+		if p == port {
+			return nil
+		}
+	}
+	return fmt.Errorf("%w: port not allowed", ErrInvalidSMBInput)
 }
 
 // openConfined validates the request-supplied port and share, mounts the SHARE part only (smb.SplitShare: refuses IPC$, C$, ADMIN$, device
 // names, "..", backslashes) and returns the share confined to the sub-directory of a "share/sub/dir" spec, exactly like SMBService.withShare.
 func (s *SMBDiscoveryService) openConfined(ctx context.Context, config SMBConnectionConfig) (ShareAPI, func(), error) {
+	if err := ValidateSMBHostSyntax(config.Host); err != nil {
+		return nil, nil, err
+	}
 	if err := ValidateSMBPort(config.Port); err != nil {
 		return nil, nil, err
 	}
@@ -102,8 +110,11 @@ func NewSMBDiscoveryService(logger *zap.Logger) *SMBDiscoveryService {
 func (s *SMBDiscoveryService) DiscoverShares(ctx context.Context, host string, username, password string, domain *string) ([]SMBShareInfo, error) {
 	s.logger.Info("Discovering SMB shares", zap.String("host", host), zap.String("username", username))
 
+	if err := ValidateSMBHostSyntax(host); err != nil {
+		return nil, err
+	}
 	// Establish connection
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:445", host), s.timeout)
+	conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, "445"), s.timeout)
 	if err != nil {
 		return nil, fmt.Errorf("connect to %s:445: %w", host, err)
 	}
@@ -144,23 +155,7 @@ func (s *SMBDiscoveryService) enumerateShares(session *smb2.Session, host string
 		return nil, fmt.Errorf("enumerate shares on %s: %w", host, err)
 	}
 
-	var availableShares []SMBShareInfo
-	for _, shareName := range names {
-		// IPC$ is the named-pipe control share, not a browsable data share.
-		if strings.EqualFold(shareName, "IPC$") {
-			continue
-		}
-		availableShares = append(availableShares, SMBShareInfo{
-			Host:        host,
-			ShareName:   shareName,
-			Path:        fmt.Sprintf("\\\\%s\\%s", host, shareName),
-			// Writable is determined later by a per-share access probe; the
-			// SRVSVC listing does not carry write permission.
-			Writable:    false,
-			Description: getShareDescription(shareName),
-		})
-	}
-
+	availableShares := filterShareInfos(host, names)
 	return availableShares, nil
 }
 

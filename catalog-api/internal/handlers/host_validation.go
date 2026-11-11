@@ -1,8 +1,6 @@
 package handlers
 
-import (
-	"net"
-)
+import "catalogizer/internal/services"
 
 // isHostAllowed validates that a hostname/IP is a legitimate SMB probe target.
 // It blocks loopback, link-local, multicast, cloud-metadata IPs, and
@@ -17,39 +15,8 @@ import (
 //   - Unqualified single-label name ("localhost", "nas") — allowed but
 //     DNS resolution is performed server-side. The main protection is IP-level.
 //   - Empty host — blocked (caller should validate required field first)
+//
+// The implementation is the shared services.VetSMBHost (syntax, single resolution, all addresses checked, lookup failure refused).
 func isHostAllowed(host string) bool {
-	if host == "" {
-		return false
-	}
-
-	// Resolve hostname to IPs. On failure the host is either unresolvable
-	// (will fail at dial time) or a single-label name — allow it through
-	// to the probe so SMB can attempt it; DNS rebinding is mitigated by
-	// the IP-level checks below.
-	ips, err := net.LookupIP(host)
-	if err != nil {
-		// Unresolvable — let the dial fail naturally.
-		return true
-	}
-
-	for _, ip := range ips {
-		if ip.IsLoopback() {
-			return false
-		}
-		if ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
-			return false
-		}
-		if ip.IsMulticast() {
-			return false
-		}
-		if ip.IsUnspecified() {
-			return false
-		}
-		// Cloud metadata /169.254.169.254 is link-local-unicast and caught above,
-		// but check explicitly as a defence-in-depth measure.
-		if ip.To4() != nil && ip.String() == "169.254.169.254" {
-			return false
-		}
-	}
-	return true
+	return services.VetSMBHost(host) == nil
 }

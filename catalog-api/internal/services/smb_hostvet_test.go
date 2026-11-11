@@ -37,19 +37,20 @@ func TestVetSMBHost_RefusesBracketAndPortForms(t *testing.T) {
 
 func TestVetSMBHost_BlocklistAndResolver(t *testing.T) {
 	withResolver(t, map[string][]string{
-		"loop.example":  {"127.0.0.1"},
-		"mixed.example": {"192.0.2.10", "127.0.0.1"},
+		"loop.example":   {"127.0.0.1"},
+		"mixed.example":  {"192.0.2.10", "127.0.0.1"},
 		"mixed6.example": {"192.0.2.10", "::1"},
-		"meta.example":  {"169.254.169.254"},
-		"ali.example":   {"100.100.100.200"},
-		"az.example":    {"168.63.129.16"},
-		"ec2v6.example": {"fd00:ec2::254"},
-		"nat64.example": {"64:ff9b::7f00:1"},
+		"meta.example":   {"169.254.169.254"},
+		"ali.example":    {"100.100.100.200"},
+		"az.example":     {"168.63.129.16"},
+		"ec2v6.example":  {"fd00:ec2::254"},
+		"nat64.example":  {"64:ff9b::7f00:1"},
 		"compat.example": {"::127.0.0.1"},
 		"mapped.example": {"::ffff:127.0.0.1"},
-		"good.example":  {"192.0.2.10", "198.51.100.7"},
+		"good.example":   {"192.0.2.10", "198.51.100.7"},
+		"zero.example":   {"0.1.2.3"},
 	})
-	for _, h := range []string{"loop.example", "mixed.example", "mixed6.example", "meta.example", "ali.example", "az.example", "ec2v6.example", "nat64.example", "compat.example", "mapped.example", "127.0.0.1", "169.254.169.254", "100.100.100.200", "0.0.0.0", "224.0.0.1"} {
+	for _, h := range []string{"loop.example", "mixed.example", "mixed6.example", "meta.example", "ali.example", "az.example", "ec2v6.example", "nat64.example", "compat.example", "mapped.example", "zero.example", "127.0.0.1", "169.254.169.254", "100.100.100.200", "0.0.0.0", "224.0.0.1"} {
 		require.Error(t, VetSMBHost(h), h)
 	}
 	require.Error(t, VetSMBHost("unresolvable.example"), "lookup failure is refused")
