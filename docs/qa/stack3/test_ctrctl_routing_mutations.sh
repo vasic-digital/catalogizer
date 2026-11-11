@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Mutants for test_ctrctl_routing.sh: each reintroduces a raw podman call or bypasses the helper; the routing test must FAIL on every one.
 set -uo pipefail
+unset GOLDEN_UPDATE
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(mktemp -d "${TMPDIR:-/tmp}/ctrmut.XXXXXX")"; : "${ROOT:?}"; trap 'rm -rf -- "${ROOT:?}"' EXIT
 pass=0; fail=0
@@ -24,6 +25,32 @@ mut N4-restart-dropped         up.sh           's/ --restart on-failure:3//'
 mut N6-redis-health-dropped    up.sh           "s/--health-cmd 'redis-cli ping \| grep -q PONG' //"
 mut N7-name-guard-removed      lib.sh          '/_qa_stack_check_name "\$n"/d'
 mut N8-sonar-name-guard-removed sonarqube/lib.sh '/_qa_stack_check_name "\$n"/d'
-mut N9-backend-cache-off       lib.sh          's/_QA_STACK_BACKEND_CACHE="\$\(_qa_stack_backend\)"/_QA_STACK_BACKEND_CACHE=""/'
-mut N10-sonar-backend-cache-off sonarqube/lib.sh 's/_QA_STACK_BACKEND_CACHE="\$\(_qa_stack_backend\)"/_QA_STACK_BACKEND_CACHE=""/'
+mut N9-backend-cache-off       lib.sh          's/_QA_STACK_BACKEND_CACHE="\$b"; /_QA_STACK_BACKEND_CACHE=""; /'
+mut N10-sonar-backend-cache-off sonarqube/lib.sh 's/_QA_STACK_BACKEND_CACHE="\$b"; /_QA_STACK_BACKEND_CACHE=""; /'
+# round-1 review mutants (F1/F3/F4/F6)
+mut R1-cache-reset-removed       lib.sh           '/^unset _QA_STACK_BACKEND_CACHE/d'
+mut R1b-sonar-cache-reset-removed sonarqube/lib.sh '/^unset _QA_STACK_BACKEND_CACHE/d'
+mut R4-cache-key-ignored         lib.sh           's/ && \[ "\$\{_QA_STACK_BACKEND_CACHE_KEY:-\}" = "\$\(_qa_stack_cache_key\)" \]//'
+mut R4b-sonar-cache-key-ignored  sonarqube/lib.sh 's/ && \[ "\$\{_QA_STACK_BACKEND_CACHE_KEY:-\}" = "\$\(_qa_stack_cache_key\)" \]//'
+mut R6-failure-cached            lib.sh           's/\[\[ "\$b" == containers\\ \* \]\]/true/'
+mut R6b-sonar-failure-cached     sonarqube/lib.sh 's/\[\[ "\$b" == containers\\ \* \]\]/true/'
+mut R7-none-not-refused          lib.sh           's/\[ "\$b" = none \] && \{/false \&\& {/'
+mut R7b-sonar-none-not-refused   sonarqube/lib.sh 's/\[ "\$b" = none \] && \{/false \&\& {/'
+mut R2-pod-start                 up.sh            '$a podman pod start "$POD"'
+mut R3-restart                   up.sh            '$a podman restart "${STACK}-api"'
+mut R5-root-derivation           lib.sh           '/_qa_stack_cache_key()/s#/\.\./\.\./\.\.#/../..#'
+mut R5b-sonar-root-derivation    sonarqube/lib.sh '/_qa_stack_cache_key()/s#/\.\./\.\./\.\.#/../..#'
+# F2: GOLDEN_UPDATE must be refused with --root and must never read as a pass after regenerating (run on a COPY, the real golden is never touched)
+f2check() { # <label> <sed-expr or ''>   -> 0 when the F2 protections hold
+  local d="$ROOT/f2$1"; mkdir -p "$d"; cp -r "$HERE/../lib" "$d/lib"; mkdir -p "$d/stack3"; ( cd "$HERE" && cp -r lib.sh up.sh sonarqube golden test_ctrctl_routing.sh "$d/stack3/" )
+  [ -n "$2" ] && sed -i -E "$2" "$d/stack3/test_ctrctl_routing.sh"
+  local r1 r2; echo "# stale" >> "$d/stack3/golden/up_create_argv.txt"
+  GOLDEN_UPDATE=1 bash "$d/stack3/test_ctrctl_routing.sh" --root "$d/stack3" >/dev/null 2>"$d/err1"; r1=$?
+  [ "$r1" = 2 ] && grep -q 'refused together with --root' "$d/err1" && grep -q '^# stale' "$d/stack3/golden/up_create_argv.txt" || return 1   # refused, golden untouched
+  GOLDEN_UPDATE=1 bash "$d/stack3/test_ctrctl_routing.sh" >"$d/out" 2>"$d/err"; r2=$?
+  [ "$r1" != 0 ] && [ "$r2" != 0 ] && grep -q 'golden regenerated, review the diff' "$d/err" && ! grep -q '^# stale' "$d/stack3/golden/up_create_argv.txt"
+}
+f2check ok '' && { echo "PASS F2 protections hold on the real test"; pass=$((pass+1)); } || { echo "FAIL F2 protections"; fail=$((fail+1)); }
+f2check m1 's/GOLDEN_UPDATE:-0\}" = 1 \] && \{ echo "ERROR/GOLDEN_UPDATE:-0}" = 9 ] \&\& { echo "ERROR/' && { echo "FAIL F2-M1 root-refusal removed SURVIVED"; fail=$((fail+1)); } || { echo "PASS F2-M1 root-refusal removed killed"; pass=$((pass+1)); }
+f2check m2 's/exit 3; fi/exit 0; fi/' && { echo "FAIL F2-M2 update-exit-zero SURVIVED"; fail=$((fail+1)); } || { echo "PASS F2-M2 update-exit-zero killed"; pass=$((pass+1)); }
 echo "pass=$pass fail=$fail"; [ "$fail" = 0 ]
