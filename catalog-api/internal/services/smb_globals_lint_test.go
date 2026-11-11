@@ -14,8 +14,8 @@ import (
 // t.Parallel(), and no test file other than the helper file may assign the globals directly.
 var smbGlobalNames = map[string]bool{
 	"SMBHostResolver": true, "SMBDialer": true, "smbWarnf": true, "smbWarnedRaw": true,
-	"SetSMBConfiguredPorts": true, "withSMBHostResolver": true, "withSMBDialer": true, "withSMBWarnf": true,
-	"withSMBConfiguredPorts": true, "resetSMBWarnedRaw": true, "withResolver": true, "smbNow": true, "withSMBNow": true, "newRebindRig": true,
+	"SetSMBConfiguredRoots": true, "ConfigureSMBPortsFromConfig": true, "withSMBHostResolver": true, "withSMBDialer": true, "withSMBWarnf": true,
+	"withSMBConfiguredRoots": true, "resetSMBWarnedRaw": true, "withResolver": true, "smbNow": true, "withSMBNow": true, "newRebindRig": true,
 }
 
 const smbHelperFile = "smb_globals_testhelper_test.go"

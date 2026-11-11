@@ -10,11 +10,11 @@ Applies to `POST /api/v1/smb/discover`, `/smb/test`, `/smb/browse` and `/smb/pro
 ## Port rules
 - Default allowed port: 445 (an omitted or 0 port means 445).
 - `CATALOG_SMB_ALLOWED_PORTS` adds ports: a comma list, each 1-65535, for example `445,1445`. Any invalid entry makes the whole value invalid; that value is then dropped (445 and the configured roots stay) and one warning is logged per distinct invalid value.
-- The ports of configured SMB storage roots (`config.SMB.Hosts[].Port`, valid range 1-65535, 0 = default) are allowed too (SMB-FU-12); malformed entries are ignored and no other port is opened.
+- A non-default port of a configured SMB storage root (`config.SMB.Hosts[]`, port 1-65535) is allowed ONLY for that root's host (same name, or a common resolved address); it is not opened for any other host (SMB-FU-12). Ports from `CATALOG_SMB_ALLOWED_PORTS` stay global. Malformed entries are ignored. The configuration is read once at start-up: a root created at runtime needs a restart before discovery accepts its non-default port.
 
 ## Share and path rules
 - `share` is `share` or `share/sub/dir` (`smb.SplitShare`). Administrative shares (IPC$, ADMIN$, C$ and other drive shares), `..`, backslashes and UNC spellings give HTTP 400. Only the share name is mounted; the sub-directory is enforced by `confinedShare`.
-- `path` may not contain `..` segments, a `:` in any segment (alternate data streams), or a Windows device name (CON, PRN, AUX, NUL, COM1-9, LPT1-9, with or without extension) as any segment (SMB-FU-10).
+- `path` may not contain `..` segments, a `:` in any segment (alternate data streams), a segment made only of dots and spaces (other than `.`), or a Windows device name (CON, PRN, AUX, NUL, CONIN$, CONOUT$, CLOCK$, COM0-9, LPT0-9, COM/LPT with superscript 1-3; with or without extension) as any segment (SMB-FU-10).
 - Discovery lists only shares that SplitShare accepts.
 
 ## Errors

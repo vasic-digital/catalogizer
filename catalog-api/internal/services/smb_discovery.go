@@ -77,7 +77,7 @@ func (s *SMBDiscoveryService) openConfined(ctx context.Context, config SMBConnec
 	if err := ValidateSMBHostSyntax(config.Host); err != nil {
 		return nil, nil, err
 	}
-	if err := ValidateSMBPort(config.Port); err != nil {
+	if err := ValidateSMBPortForHost(config.Host, config.Port); err != nil {
 		return nil, nil, err
 	}
 	if config.Port == 0 {

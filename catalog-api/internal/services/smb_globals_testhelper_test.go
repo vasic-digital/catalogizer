@@ -62,12 +62,12 @@ func resetSMBWarnedRaw(t *testing.T) {
 	smbWarnedRaw = ""
 }
 
-func withSMBConfiguredPorts(t *testing.T, ports []int) {
+func withSMBConfiguredRoots(t *testing.T, roots []SMBRootPort) {
 	t.Helper()
 	lockSMBGlobals(t)
-	old := SMBConfiguredPorts()
-	t.Cleanup(func() { SetSMBConfiguredPorts(old) })
-	SetSMBConfiguredPorts(ports)
+	old := SMBConfiguredRoots()
+	t.Cleanup(func() { SetSMBConfiguredRoots(old) })
+	SetSMBConfiguredRoots(roots)
 }
 
 func withSMBNow(t *testing.T, fn func() time.Time) {

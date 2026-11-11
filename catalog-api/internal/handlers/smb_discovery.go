@@ -316,7 +316,7 @@ func validateSMBTarget(host string, port int, share, path string) string {
 	if !isHostAllowed(host) {
 		return hostAllowedErr
 	}
-	if err := services.ValidateSMBPort(port); err != nil {
+	if err := services.ValidateSMBPortForHost(host, port); err != nil {
 		return "Unsupported port"
 	}
 	if _, _, err := smb.SplitShare(share); err != nil {

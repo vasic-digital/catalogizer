@@ -147,7 +147,7 @@ func TestSMBDiscovery_MountErrorIsGeneric(t *testing.T) {
 
 // SMB-FU-10: ADS and Windows device names are refused on plain-share browse paths before any mount.
 func TestSMBDiscovery_BrowseRefusesADSAndDeviceNamePaths(t *testing.T) {
-	for _, bad := range []string{"a:b", "f.txt:stream", "CON", "dir/nul.txt", `dir\COM1`, "LPT9"} {
+	for _, bad := range []string{"a:b", "f.txt:stream", "CON", "dir/nul.txt", `dir\COM1`, "LPT9", "COM¹", "LPT0", "CONIN$", ".. ", "..."} {
 		m := newMem()
 		var opened []string
 		_, err := discSvc(m, &opened).BrowseShare(context.Background(), discCfg("Public"), bad)

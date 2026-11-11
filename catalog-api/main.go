@@ -521,9 +521,8 @@ func main() {
 
 	catalogService := services.NewCatalogService(internalCfg, logger)
 	catalogService.SetDB(databaseDB)
-	services.ConfigureSMBPortsFromConfig(internalCfg) // SMB-FU-12: configured SMB storage-root ports are dialable by discovery
 	smbService := services.NewSMBService(internalCfg, logger)
-	smbDiscoveryService := services.NewSMBDiscoveryService(logger)
+	smbDiscoveryService := services.NewSMBDiscoveryServiceFromConfig(internalCfg, logger)
 	bindingIngester := services.NewBindingIngester(databaseDB, logger)
 
 	// fileRepository is shared by stats, browse, and recommendation handlers

@@ -132,18 +132,20 @@ func CreateNoFollow(p string, overwrite bool) (*os.File, error) {
 	return os.OpenFile(p, flags, 0o644)
 }
 
+// smbDeviceNames are the reserved Windows device names. COM0/LPT0 are treated as reserved conservatively (UNCONFIRMED against the
+// current Microsoft "Naming Files, Paths, and Namespaces" page); COM10 and above are ordinary names.
 var smbDeviceNames = func() map[string]bool {
-	m := map[string]bool{"CON": true, "PRN": true, "AUX": true, "NUL": true}
-	for i := '1'; i <= '9'; i++ {
-		m["COM"+string(i)] = true
-		m["LPT"+string(i)] = true
+	m := map[string]bool{"CON": true, "PRN": true, "AUX": true, "NUL": true, "CONIN$": true, "CONOUT$": true, "CLOCK$": true}
+	for _, d := range []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "\u00b9", "\u00b2", "\u00b3"} {
+		m["COM"+d] = true
+		m["LPT"+d] = true
 	}
 	return m
 }()
 
 // SafeRemoteSharePath is SafeRemotePath plus the checks a Windows/Samba server applies itself but a lexical check must not leave to it
 // (SMB-FU-10): a ':' in any segment (alternate data stream or drive form) and a segment whose base name (text before the first '.',
-// trailing dots and spaces ignored, case-insensitive) is a Windows device name CON, PRN, AUX, NUL, COM1-9 or LPT1-9.
+// trailing dots and spaces ignored, case-insensitive) is a Windows device name (CON, PRN, AUX, NUL, CONIN$, CONOUT$, CLOCK$, COM0-9, LPT0-9, COM/LPT with superscript 1-3), and a segment made only of dots and spaces other than ".".
 func SafeRemoteSharePath(p string) error {
 	if err := SafeRemotePath(p); err != nil {
 		return err
@@ -153,6 +155,9 @@ func SafeRemoteSharePath(p string) error {
 			return fmt.Errorf("path %q contains a ':' (alternate data stream)", p)
 		}
 		base := strings.TrimRight(seg, ". ")
+		if base == "" && seg != "." { // only dots/spaces ("..", ".. ", "..."): Windows strips them to ".."/empty
+			return fmt.Errorf("path %q contains a segment made only of dots and spaces", p)
+		}
 		if i := strings.IndexByte(base, '.'); i >= 0 {
 			base = base[:i]
 		}
