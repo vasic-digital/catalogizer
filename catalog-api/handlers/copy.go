@@ -348,7 +348,7 @@ func (h *CopyHandler) createSmbClient(storageRoot *models.StorageRoot) (*smb.Smb
 	if storageRoot.Path != nil {
 		share = *storageRoot.Path
 	}
-		user, pass, dom := services.ResolveSMBIdentity(storageRoot)
+	user, pass, dom := services.ResolveSMBIdentity(storageRoot)
 	if storageRoot.Username != nil {
 		user = *storageRoot.Username
 	}

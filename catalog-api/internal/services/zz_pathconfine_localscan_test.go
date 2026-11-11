@@ -69,7 +69,9 @@ func TestPathConfine_LocalScanResolverConfinedToReadRoots(t *testing.T) {
 	}
 }
 
-func containsPath(msg, p string) bool { return len(p) > 0 && (len(msg) >= len(p)) && (indexOf(msg, p) >= 0) }
+func containsPath(msg, p string) bool {
+	return len(p) > 0 && (len(msg) >= len(p)) && (indexOf(msg, p) >= 0)
+}
 
 func indexOf(s, sub string) int {
 	for i := 0; i+len(sub) <= len(s); i++ {

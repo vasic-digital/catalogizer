@@ -181,10 +181,10 @@ func TestGuardProviderURL_RejectsIntegerEncodedLoopback(t *testing.T) {
 func TestGuardProviderURL_RejectsShortDottedLoopback(t *testing.T) {
 	withStrictSSRFGuard(t)
 	for _, target := range []string{
-		"http://127.1/",      // 127.0.0.1
-		"http://127.0.1/",    // 127.0.0.1
-		"http://10.1/",       // 10.0.0.1
-		"http://192.168.1/",  // 192.168.0.1
+		"http://127.1/",     // 127.0.0.1
+		"http://127.0.1/",   // 127.0.0.1
+		"http://10.1/",      // 10.0.0.1
+		"http://192.168.1/", // 192.168.0.1
 	} {
 		err := GuardProviderURL(target, SSRFGuardConfig{})
 		if err == nil || !errors.Is(err, ErrSSRFBlocked) {

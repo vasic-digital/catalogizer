@@ -106,9 +106,9 @@ func (s *SMBDiscoveryService) enumerateShares(session *smb2.Session, host string
 			continue
 		}
 		availableShares = append(availableShares, SMBShareInfo{
-			Host:        host,
-			ShareName:   shareName,
-			Path:        fmt.Sprintf("\\\\%s\\%s", host, shareName),
+			Host:      host,
+			ShareName: shareName,
+			Path:      fmt.Sprintf("\\\\%s\\%s", host, shareName),
 			// Writable is determined later by a per-share access probe; the
 			// SRVSVC listing does not carry write permission.
 			Writable:    false,

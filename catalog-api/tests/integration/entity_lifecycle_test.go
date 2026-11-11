@@ -324,9 +324,9 @@ func TestEntityLifecycle_SearchSpecialCharacters(t *testing.T) {
 		{"Москва слезам не верит", "movie"},
 		{"Брат", "movie"},
 		// CJK (Chinese/Japanese/Korean)
-		{"千と千尋の神隠し", "movie"},       // Spirited Away
-		{"寄生虫", "movie"},               // Parasite
-		{"진격의 거인", "tv_show"},           // Attack on Titan
+		{"千と千尋の神隠し", "movie"}, // Spirited Away
+		{"寄生虫", "movie"},      // Parasite
+		{"진격의 거인", "tv_show"}, // Attack on Titan
 		// Emoji in titles
 		{"Movie With Stars ★★★★★", "movie"},
 		// Accented characters

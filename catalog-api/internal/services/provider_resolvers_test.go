@@ -85,7 +85,7 @@ func TestIGDBResolver_ActivatesForGameEntities(t *testing.T) {
 func TestNormalizeIGDBImageURL(t *testing.T) {
 	cases := map[string]string{
 		"//images.igdb.com/igdb/image/upload/t_thumb/abc.jpg": "https://images.igdb.com/igdb/image/upload/t_cover_big/abc.jpg",
-		"https://x.test/y.png":                               "https://x.test/y.png",
+		"https://x.test/y.png":                                "https://x.test/y.png",
 	}
 	for in, want := range cases {
 		if got := normalizeIGDBImageURL(in); got != want {

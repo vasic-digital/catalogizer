@@ -90,6 +90,8 @@ rc=0; bash scripts/tauri/test_wizard_capabilities.sh > /dev/null 2>&1 || rc=$?
 check $rc "wizard dialog open/save granted by one capability for window main (scripts/tauri/test_wizard_capabilities.sh)"
 rc=0; bash scripts/tauri/test_wizard_capabilities_mutation.sh > /dev/null 2>&1 || rc=$?
 check $rc "wizard capability guard kills its paired mutations (scripts/tauri/test_wizard_capabilities_mutation.sh)"
+rc=0; bash scripts/tauri/test_wizard_capabilities_guard_mutants.sh > /dev/null 2>&1 || rc=$?
+check $rc "wizard capability suite kills mutants of the guard itself (scripts/tauri/test_wizard_capabilities_guard_mutants.sh)"
 
 rc=0; bash scripts/tauri/test_preflight_cwd.sh > /dev/null 2>&1 || rc=$?
 check $rc "pre-flight-check.sh chdirs to repo root from any cwd (scripts/tauri/test_preflight_cwd.sh)"

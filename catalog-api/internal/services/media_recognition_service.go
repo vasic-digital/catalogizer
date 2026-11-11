@@ -1169,13 +1169,13 @@ func (s *MediaRecognitionService) storeRecognitionResult(ctx context.Context, re
 // including local files, TMDB, and MusicBrainz based on media type
 func (s *MediaRecognitionService) getAdditionalCoverArt(ctx context.Context, result *MediaRecognitionResult) ([]models.CoverArtResult, error) {
 	var coverArtResults []models.CoverArtResult
-	
+
 	// Search for local cover art files
 	if result.MediaID != "" {
 		localCovers := s.searchLocalCoverArt(result.MediaID)
 		coverArtResults = append(coverArtResults, localCovers...)
 	}
-	
+
 	// Fetch from TMDB for movies/TV
 	if result.MediaType == MediaTypeMovie || result.MediaType == MediaTypeTV {
 		tmdbCovers, err := s.fetchTMDBCoverArt(ctx, result)
@@ -1187,7 +1187,7 @@ func (s *MediaRecognitionService) getAdditionalCoverArt(ctx context.Context, res
 			coverArtResults = append(coverArtResults, tmdbCovers...)
 		}
 	}
-	
+
 	// Fetch from MusicBrainz for music
 	if result.MediaType == MediaTypeMusic {
 		musicCovers, err := s.fetchMusicBrainzCoverArt(ctx, result)
@@ -1200,14 +1200,14 @@ func (s *MediaRecognitionService) getAdditionalCoverArt(ctx context.Context, res
 			coverArtResults = append(coverArtResults, musicCovers...)
 		}
 	}
-	
+
 	return coverArtResults, nil
 }
 
 // getEnhancedMetadata retrieves additional metadata from external sources
 func (s *MediaRecognitionService) getEnhancedMetadata(ctx context.Context, result *MediaRecognitionResult) (map[string]string, error) {
 	enhancedData := make(map[string]string)
-	
+
 	// Fetch TMDB metadata for movies/TV
 	if result.MediaType == MediaTypeMovie || result.MediaType == MediaTypeTV {
 		tmdbData, err := s.fetchTMDBMetadata(ctx, result)
@@ -1221,7 +1221,7 @@ func (s *MediaRecognitionService) getEnhancedMetadata(ctx context.Context, resul
 			}
 		}
 	}
-	
+
 	// Fetch MusicBrainz metadata for music
 	if result.MediaType == MediaTypeMusic {
 		musicData, err := s.fetchMusicBrainzMetadata(ctx, result)
@@ -1236,7 +1236,7 @@ func (s *MediaRecognitionService) getEnhancedMetadata(ctx context.Context, resul
 			}
 		}
 	}
-	
+
 	return enhancedData, nil
 }
 

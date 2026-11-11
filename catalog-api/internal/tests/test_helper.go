@@ -704,7 +704,6 @@ func runTestMigrations(db *sql.DB) error {
 			UNIQUE(content_type, content_id, language)
 		)`,
 
-
 		// Share identity bindings table (identity-share-discovery epic)
 		`CREATE TABLE IF NOT EXISTS share_identity_bindings (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,

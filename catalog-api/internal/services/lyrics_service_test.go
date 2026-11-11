@@ -155,7 +155,6 @@ func TestLyricsService_SortLyricsResults(t *testing.T) {
 	}
 }
 
-
 func TestGenerateLyricsID(t *testing.T) {
 	id1 := generateLyricsID()
 	id2 := generateLyricsID()

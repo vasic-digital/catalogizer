@@ -1,11 +1,11 @@
 package services
 
 import (
-	"errors"
 	"catalogizer/database"
 	"catalogizer/internal/config"
 	"catalogizer/internal/models"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"

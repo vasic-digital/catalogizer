@@ -8,9 +8,9 @@ import (
 // ProviderCooldown tracks temporary failures per provider and enforces
 // a cooldown period before the provider can be used again.
 type ProviderCooldown struct {
-	mu        sync.RWMutex
-	failures  map[string]time.Time // provider name -> last failure time
-	cooldown  time.Duration
+	mu       sync.RWMutex
+	failures map[string]time.Time // provider name -> last failure time
+	cooldown time.Duration
 }
 
 // NewProviderCooldown creates a cooldown tracker with the given duration.

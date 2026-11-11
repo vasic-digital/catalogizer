@@ -45,7 +45,10 @@ func TestSMBChangeWatcher_CheckMediaItemIntegrity_UpdatesWhileProductionJournalM
 	w := NewSMBChangeWatcher(mediaDB, nil, zap.NewNop())
 	start := time.Now()
 	done := make(chan struct{})
-	go func() { defer close(done); w.checkMediaItemIntegrity(context.Background(), "/sparse/movie1.mp4", "test_storage") }()
+	go func() {
+		defer close(done)
+		w.checkMediaItemIntegrity(context.Background(), "/sparse/movie1.mp4", "test_storage")
+	}()
 	select {
 	case <-done:
 	case <-time.After(60 * time.Second):

@@ -30,7 +30,7 @@ func sanitiseSeeds() []string {
 		"plain ascii",
 		"<script>alert(1)</script>",
 		nul + " null bytes " + nul,
-		invalidUtf8 + " 0",                                      // FIX-QA-2026-04-21-009 kind of input
+		invalidUtf8 + " 0", // FIX-QA-2026-04-21-009 kind of input
 		"\xff\xfe invalid utf8",
 		strings.Repeat("A", 10_000),
 		"日本語",

@@ -115,8 +115,8 @@ type measurementAnalytics struct {
 }
 
 type mpPayload struct {
-	ClientID string       `json:"client_id"`
-	Events   []mpEvent    `json:"events"`
+	ClientID string    `json:"client_id"`
+	Events   []mpEvent `json:"events"`
 }
 
 type mpEvent struct {

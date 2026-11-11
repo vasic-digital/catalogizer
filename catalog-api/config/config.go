@@ -74,15 +74,15 @@ type AuthConfig struct {
 
 // CatalogConfig contains catalog-specific configuration
 type CatalogConfig struct {
-	DefaultPageSize      int      `json:"default_page_size"`
-	MaxPageSize          int      `json:"max_page_size"`
-	EnableCache          bool     `json:"enable_cache"`
-	CacheTTLMinutes      int      `json:"cache_ttl_minutes"`
-	MaxConcurrentScans   int      `json:"max_concurrent_scans"`
-	ScannerConcurrency   int      `json:"scanner_concurrency"`
-	DownloadChunkSize    int      `json:"download_chunk_size"`
-	MaxArchiveSize int64  `json:"max_archive_size"`
-	TempDir        string `json:"temp_dir"`
+	DefaultPageSize    int    `json:"default_page_size"`
+	MaxPageSize        int    `json:"max_page_size"`
+	EnableCache        bool   `json:"enable_cache"`
+	CacheTTLMinutes    int    `json:"cache_ttl_minutes"`
+	MaxConcurrentScans int    `json:"max_concurrent_scans"`
+	ScannerConcurrency int    `json:"scanner_concurrency"`
+	DownloadChunkSize  int    `json:"download_chunk_size"`
+	MaxArchiveSize     int64  `json:"max_archive_size"`
+	TempDir            string `json:"temp_dir"`
 }
 
 // LoggingConfig contains logging configuration
@@ -98,11 +98,11 @@ type LoggingConfig struct {
 
 // StorageConfig contains storage configuration.
 type StorageConfig struct {
-	Type      string `json:"type"`      // "local" or "s3"
-	Endpoint  string `json:"endpoint"`  // e.g. "minio:9000"
+	Type      string `json:"type"`     // "local" or "s3"
+	Endpoint  string `json:"endpoint"` // e.g. "minio:9000"
 	AccessKey string `json:"access_key"`
 	SecretKey string `json:"secret_key"`
-	Bucket    string `json:"bucket"`    // e.g. "catalogizer-covers"
+	Bucket    string `json:"bucket"` // e.g. "catalogizer-covers"
 	UseSSL    bool   `json:"use_ssl"`
 	Region    string `json:"region"`
 }
@@ -116,9 +116,9 @@ type ProxyConfig struct {
 	Password string `json:"password"`
 }
 
-func (p ProxyConfig) IsEnabled() bool   { return p.Enabled }
-func (p ProxyConfig) GetURL() string    { return p.URL }
-func (p ProxyConfig) GetHTTPURL() string { return p.HTTPURL }
+func (p ProxyConfig) IsEnabled() bool     { return p.Enabled }
+func (p ProxyConfig) GetURL() string      { return p.URL }
+func (p ProxyConfig) GetHTTPURL() string  { return p.HTTPURL }
 func (p ProxyConfig) GetUsername() string { return p.Username }
 func (p ProxyConfig) GetPassword() string { return p.Password }
 
@@ -168,7 +168,7 @@ func getDefaultConfig() *Config {
 			WriteTimeout: 900,
 			IdleTimeout:  120,
 			EnableCORS:   true,
-			EnableHTTPS: true, // Enable HTTPS by default for security
+			EnableHTTPS:  true, // Enable HTTPS by default for security
 		},
 		Database: DatabaseConfig{
 			Type:               "postgres",
@@ -195,15 +195,15 @@ func getDefaultConfig() *Config {
 			AdminPassword:      "",   // Must be set via environment variable
 		},
 		Catalog: CatalogConfig{
-			DefaultPageSize:      100,
-			MaxPageSize:          1000,
-			EnableCache:          true,
-			CacheTTLMinutes:      15,
-			MaxConcurrentScans:   3,
-			ScannerConcurrency:   4,
-			DownloadChunkSize:    1024 * 1024,            // 1MB
-			MaxArchiveSize:       1024 * 1024 * 1024 * 5, // 5GB
-			TempDir: os.TempDir() + "/catalog-api", // Use system temp directory
+			DefaultPageSize:    100,
+			MaxPageSize:        1000,
+			EnableCache:        true,
+			CacheTTLMinutes:    15,
+			MaxConcurrentScans: 3,
+			ScannerConcurrency: 4,
+			DownloadChunkSize:  1024 * 1024,                   // 1MB
+			MaxArchiveSize:     1024 * 1024 * 1024 * 5,        // 5GB
+			TempDir:            os.TempDir() + "/catalog-api", // Use system temp directory
 		},
 		Storage: StorageConfig{
 			Type:   "local",

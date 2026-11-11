@@ -46,7 +46,7 @@ func TestSettingsContract_ScannerSettingsReachTheClient(t *testing.T) {
 		t.Run(proto, func(t *testing.T) {
 			root := contractRoot(proto)
 			settings, serr := scanner.storageRootToSettings(root)
-		require.NoError(t, serr)
+			require.NoError(t, serr)
 			c, err := factory.CreateClient(&filesystem.StorageConfig{ID: root.Name, Name: root.Name, Protocol: proto, Settings: settings})
 			require.NoError(t, err, "the factory must accept every key the scanner writes")
 			switch proto {

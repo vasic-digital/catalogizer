@@ -527,10 +527,10 @@ func (s *PlaybackPositionService) CleanupOldPositions(ctx context.Context, older
 // automatically merged into a single authoritative row via UPSERT in
 // UpdatePosition. Cross-device "sync" is therefore implicit at the SQL
 // level — this method exists to:
-//   1. Verify the DB is reachable and the user has a consistent state.
-//   2. Surface a structured error if the user reference is invalid.
-//   3. Give future callers an explicit RPC they can trigger if a UI
-//      needs to force-refresh without re-polling.
+//  1. Verify the DB is reachable and the user has a consistent state.
+//  2. Surface a structured error if the user reference is invalid.
+//  3. Give future callers an explicit RPC they can trigger if a UI
+//     needs to force-refresh without re-polling.
 //
 // Returns an error if the database is unavailable or if the user lookup
 // fails. Returns nil on success regardless of how many positions exist

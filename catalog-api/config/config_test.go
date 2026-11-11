@@ -544,7 +544,7 @@ func TestValidateConfig_DevModeAllowsPlaceholderAdmin(t *testing.T) {
 func TestIsPlaceholderPassword_TemplateAndUnicodeVariants(t *testing.T) {
 	for _, v := range []string{
 		"<ADMIN_PASSWORD>", "<your-password>", "${ADMIN_PASSWORD}", "$(cat x)", "{{ .Password }}",
-		"admin１２３",       // fullwidth digits (NFKC -> published default)
+		"admin１２３", // fullwidth digits (NFKC -> published default)
 		"ＡＤＭＩＮ１２３", // fullwidth upper
 		"Admin-123", "ADMIN_123", " admin 123 ",
 	} {

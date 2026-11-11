@@ -16,10 +16,10 @@ import (
 	"catalogizer/services"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/mutecomm/go-sqlcipher"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
-	_ "github.com/mutecomm/go-sqlcipher"
 )
 
 func setupTestRouter() *gin.Engine {

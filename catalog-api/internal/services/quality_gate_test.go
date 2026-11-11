@@ -49,7 +49,7 @@ type fakeResolver struct {
 	mu       sync.Mutex
 }
 
-func (f *fakeResolver) Name() string { return f.name }
+func (f *fakeResolver) Name() string  { return f.name }
 func (f *fakeResolver) Priority() int { return f.priority }
 func (f *fakeResolver) CanResolve(_ context.Context, _ *resolver.ResolveRequest) bool {
 	return f.can

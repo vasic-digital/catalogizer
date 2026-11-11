@@ -489,13 +489,13 @@ func TestSecurity_AuthBypassAttempts(t *testing.T) {
 
 	t.Run("InvalidTokenFormat", func(t *testing.T) {
 		invalidTokens := []string{
-			"Basic dXNlcjpwYXNz",                 // Basic auth instead of Bearer
-			"Bearer invalid-token-format",         // Nonsense token
-			"Bearer eyJhbGciOiJub25lIn0.e30.",     // Algorithm none attack
-			"Bearer ../../../../etc/passwd",       // Path traversal in token
-			"Bearer <script>alert(1)</script>",    // XSS in token
-			"Bearer ' OR '1'='1",                  // SQLi in token
-			"Bearer \x00\x01\x02\x03",             // Null bytes in token
+			"Basic dXNlcjpwYXNz",               // Basic auth instead of Bearer
+			"Bearer invalid-token-format",      // Nonsense token
+			"Bearer eyJhbGciOiJub25lIn0.e30.",  // Algorithm none attack
+			"Bearer ../../../../etc/passwd",    // Path traversal in token
+			"Bearer <script>alert(1)</script>", // XSS in token
+			"Bearer ' OR '1'='1",               // SQLi in token
+			"Bearer \x00\x01\x02\x03",          // Null bytes in token
 		}
 
 		for _, token := range invalidTokens {
@@ -680,8 +680,8 @@ func TestSecurity_InputValidation(t *testing.T) {
 		// Send various Unicode edge cases
 		queries := []string{
 			"\xef\xbb\xbf", // BOM
-			"\x00",          // null
-			"\xff\xfe",      // UTF-16 LE BOM
+			"\x00",         // null
+			"\xff\xfe",     // UTF-16 LE BOM
 		}
 		for _, q := range queries {
 			resp, err := http.Get(ts.URL + "/api/v1/search?q=" + q)

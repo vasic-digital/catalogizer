@@ -136,11 +136,11 @@ run_case conf_inline_capability_pass 0 m_conf_inline_cap_ok
 run_case conf_window_label_wizard_cap_main 1 m_conf_label_wizard_cap_main
 run_case conf_window_label_wizard_cap_wizard_pass 0 m_conf_label_wizard_cap_wizard
 run_case conf_invalid_json_fails 2 m_conf_bad
-run_case line_comment_import_ignored 0 m_comment_line_import
-run_case block_comment_import_ignored 0 m_comment_block_import
+run_case line_comment_import_conservative 1 m_comment_line_import
+run_case block_comment_import_conservative 1 m_comment_block_import
 run_case string_literal_import_conservative 1 m_string_import
 run_case template_literal_import_conservative 1 m_template_import
-run_case comment_only_import_is_blind 2 m_comment_only_is_blind
+run_case comment_only_import_counts_as_usage 0 m_comment_only_is_blind
 run_case real_import_after_comment_needs_save 1 m_real_import_after_comment
 run_case ask_import_needs_allow_ask 1 m_ask_import
 run_case confirm_import_needs_allow_confirm 1 m_confirm_import
@@ -182,5 +182,78 @@ run_case r_valid_default_plus_broken_json5 2 m_r_broken_extra_json5
 run_case r_valid_default_plus_broken_toml 2 m_r_broken_extra_toml
 run_case r_two_windows_main_is_second_pass 0 m_r_two_windows_main_second
 run_case r_inline_capability_deny_wins 1 m_r_inline_deny
+# --- review round 3 (structural): NO masking, per-capability parsing of all CapabilityFile shapes, glob pinning, BLIND on type errors ---
+m_x_jsx_comment_open() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+export const A = () => <p>matches /* files</p>
+export const f = () => invoke('plugin:dialog|save', {})"; }
+m_x_jsx_slashes() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+export const A = () => <p>see http://x {invoke('plugin:dialog|save')}</p>"; }
+m_x_apostrophe_url() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+export const A = () => <p>Don't</p>; const u = 'https://h'; invoke('plugin:dialog|save')"; }
+m_x_backtick_kbd() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+export const K = () => <kbd>\`</kbd>
+const u = \`https://h\`; invoke('plugin:dialog|save')"; }
+m_x_regex_literal() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+const r = /^https?:\/\//; invoke('plugin:dialog|save')"; }
+m_x_test_dir_component() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'"; mkdir -p "$W/src/components/test"; printf '%s\n' "import { save } from '@tauri-apps/plugin-dialog'" >"$W/src/components/test/Save.tsx"; }
+m_x_jsx_file() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'"; printf '%s\n' "import { save } from '@tauri-apps/plugin-dialog'" >"$W/src/services/x.jsx"; }
+m_x_mjs_file() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'"; printf '%s\n' "import { save } from '@tauri-apps/plugin-dialog'" >"$W/src/services/x.mjs"; }
+m_x_js_file() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'"; printf '%s\n' "export const s = () => invoke('plugin:dialog|save')" >"$W/src/services/x.js"; }
+m_x_comment_in_import_braces() { only_open; setsrc "import { open, // }
+  save } from '@tauri-apps/plugin-dialog'"; }
+m_x_named_list_deny() { cap '{"capabilities":[{"identifier":"d","windows":["main"],'"$P"'},{"identifier":"x","windows":["main"],"permissions":["dialog:deny-save"]}]}'; }
+m_x_named_list_pass() { cap '{"capabilities":[{"identifier":"d","windows":["main"],'"$P"'}]}'; }
+m_x_named_list_missing() { cap '{"capabilities":[{"identifier":"d","windows":["main"],"permissions":["dialog:allow-open"]}]}'; }
+m_x_list_form_deny() { cap '[{"identifier":"d","windows":["main"],'"$P"'},{"identifier":"x","windows":["main"],"permissions":["dialog:deny-open"]}]'; }
+m_x_list_form_pass() { cap '[{"identifier":"d","windows":["main"],'"$P"'}]'; }
+m_x_named_list_conf_filter() { cap '{"capabilities":[{"identifier":"d","windows":["main"],'"$P"'},{"identifier":"x","windows":["main"],"permissions":["dialog:deny-save"]}]}'; setconf 'd["app"]["security"]["capabilities"]=["d"]'; }
+m_x_win_mainwin() { cap '{"identifier":"d","windows":["mainwin"],'"$P"'}'; }
+m_x_win_glob_q() { cap '{"identifier":"d","windows":["ma?n"],'"$P"'}'; }
+m_x_win_glob_q_nomatch() { cap '{"identifier":"d","windows":["ma?"],'"$P"'}'; }
+m_x_win_glob_prefix() { cap '{"identifier":"d","windows":["ma*"],'"$P"'}'; }
+m_x_conf_label_int() { setconf 'd["app"]["windows"][0]["label"]=5'; }
+m_x_conf_caps_nonlist() { setconf 'd["app"]["security"]["capabilities"]="default"'; }
+m_x_conf_caps_unhashable() { setconf 'd["app"]["security"]["capabilities"]=[["a"]]'; }
+m_x_conf_windows_nonlist() { setconf 'd["app"]["windows"]="main"'; }
+m_x_conf_app_nonobj() { setconf 'd["app"]=7'; }
+m_x_cap_identifier_list() { cap '{"identifier":["d"],"windows":["main"],'"$P"'}'; }
+m_x_cap_perms_nonlist() { cap '{"identifier":"d","windows":["main"],"permissions":"dialog:allow-open"}'; }
+m_x_cap_perm_entry_int() { cap '{"identifier":"d","windows":["main"],"permissions":[5]}'; }
+m_x_cap_toplevel_scalar() { cap '5'; }
+m_x_cap_enabled_unhashable_id() { setconf 'd["app"]["security"]["capabilities"]=["d"]'; cap '{"identifier":{"a":1},"windows":["main"],'"$P"'}'; }
+m_x_json5_unterminated_comment() { rm "$W/$CAP/default.json"; printf '%s\n' '{ "identifier": "default", "windows": ["main"], "permissions": ["dialog:allow-open","dialog:allow-save"] } /* oops' >"$W/$CAP/default.json5"; }
+run_case x_jsx_text_block_comment_open_then_invoke 1 m_x_jsx_comment_open
+run_case x_jsx_text_slashes_then_invoke 1 m_x_jsx_slashes
+run_case x_apostrophe_url_then_invoke 1 m_x_apostrophe_url
+run_case x_backtick_kbd_then_invoke 1 m_x_backtick_kbd
+run_case x_regex_literal_then_invoke 1 m_x_regex_literal
+run_case x_components_test_dir_scanned 1 m_x_test_dir_component
+run_case x_jsx_file_scanned 1 m_x_jsx_file
+run_case x_mjs_file_scanned 1 m_x_mjs_file
+run_case x_js_file_scanned 1 m_x_js_file
+run_case x_comment_inside_import_braces 1 m_x_comment_in_import_braces
+run_case x_named_list_deny_seen 1 m_x_named_list_deny
+run_case x_named_list_pass 0 m_x_named_list_pass
+run_case x_named_list_missing_save 1 m_x_named_list_missing
+run_case x_list_form_deny_seen 1 m_x_list_form_deny
+run_case x_list_form_pass 0 m_x_list_form_pass
+run_case x_named_list_conf_filter_excludes_deny 0 m_x_named_list_conf_filter
+run_case x_window_mainwin_no_match 1 m_x_win_mainwin
+run_case x_window_glob_qmark_matches_main 0 m_x_win_glob_q
+run_case x_window_glob_qmark_too_short 1 m_x_win_glob_q_nomatch
+run_case x_window_glob_star_prefix_matches 0 m_x_win_glob_prefix
+run_case x_conf_label_int_blind 2 m_x_conf_label_int
+run_case x_conf_caps_nonlist_blind 2 m_x_conf_caps_nonlist
+run_case x_conf_caps_unhashable_blind 2 m_x_conf_caps_unhashable
+run_case x_conf_windows_nonlist_blind 2 m_x_conf_windows_nonlist
+run_case x_conf_app_nonobject_blind 2 m_x_conf_app_nonobj
+run_case x_cap_identifier_list_blind 2 m_x_cap_identifier_list
+run_case x_cap_permissions_nonlist_blind 2 m_x_cap_perms_nonlist
+run_case x_cap_perm_entry_int_blind 2 m_x_cap_perm_entry_int
+run_case x_cap_toplevel_scalar_blind 2 m_x_cap_toplevel_scalar
+run_case x_cap_unhashable_identifier_blind 2 m_x_cap_enabled_unhashable_id
+m_x_unreadable_src() { printf '%s\n' "export const x = 1" >"$W/src/services/locked.ts"; chmod 000 "$W/src/services/locked.ts"; }
+run_case x_unreadable_source_file_blind_not_traceback 2 m_x_unreadable_src
+run_case x_json5_unterminated_comment_blind 2 m_x_json5_unterminated_comment
 [ "$bad" = 0 ] && echo "ALL CASES OK" || echo "MUTATION TEST FAILED"
 exit "$bad"

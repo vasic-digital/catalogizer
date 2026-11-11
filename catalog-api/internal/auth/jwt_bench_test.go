@@ -55,9 +55,9 @@ func BenchmarkGenerateToken(b *testing.B) {
 func BenchmarkGenerateRefreshToken(b *testing.B) {
 	service := setupBenchAuthService(b)
 	user := &User{
-		ID:       1,
-		Username: "benchuser",
-		Role:     RoleAdmin,
+		ID:          1,
+		Username:    "benchuser",
+		Role:        RoleAdmin,
 		Permissions: GetRolePermissions(RoleAdmin),
 	}
 

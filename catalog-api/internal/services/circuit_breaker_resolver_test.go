@@ -20,8 +20,8 @@ type stubResolver struct {
 	calls    int
 }
 
-func (s *stubResolver) Name() string     { return s.name }
-func (s *stubResolver) Priority() int    { return s.priority }
+func (s *stubResolver) Name() string  { return s.name }
+func (s *stubResolver) Priority() int { return s.priority }
 func (s *stubResolver) CanResolve(_ context.Context, _ *resolver.ResolveRequest) bool {
 	if s.canFn != nil {
 		return s.canFn()

@@ -87,10 +87,10 @@ func TestPlaybackSessionRepository_StartProgressEnd(t *testing.T) {
 	// aggregate_amount — demonstrates the ON CONFLICT DO UPDATE
 	// path in PlaybackSessionRepository.End.
 	secondID, err := repo.Start(ctx, PlaybackStart{
-		UserID:      1,
-		MediaItemID: 42,
+		UserID:       1,
+		MediaItemID:  42,
 		PositionUnit: "seconds",
-		StartedAt:   now.Add(time.Hour),
+		StartedAt:    now.Add(time.Hour),
 	})
 	require.NoError(t, err)
 	require.NoError(t, repo.End(ctx, PlaybackEnd{

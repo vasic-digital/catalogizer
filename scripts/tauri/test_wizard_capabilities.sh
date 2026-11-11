@@ -9,11 +9,16 @@
 # no remote), carry no "platforms" list excluding linux, and NO capability may deny a needed permission (dialog:deny-*). If tauri.conf.json
 # sets app.security.capabilities only those identifiers are enabled, otherwise every file in capabilities/ is. Raw invoke('plugin:dialog|<cmd>')
 # strings count as usage wherever they appear in code or in string/template literals (any quoting, aliased invoke, constants, arrays).
-# Only COMMENTS are masked; text inside string/template literals is scanned (conservative: a quoted import/command counts as usage).
+# NO lexing/masking of source text at all (review rounds 1-2 found every comment/string masker hides real usage somewhere: JSX text with
+# "/*" or "//", apostrophe/backtick parity, regex literals). Usage detection scans the RAW text of EVERY file under src/ (.ts .tsx .js .jsx .mjs
+# .cjs .mts .cts, every directory incl. test/ and __tests__/). Trade-off: a dialog import or plugin:dialog|<cmd> string mentioned in a comment,
+# string or test file now counts as usage (false positive -> FAIL/extra permission demanded; accepted), a false negative is not.
 # Parse problems in ANY capability file or tauri.conf.json are fatal (exit 2, BLIND), never ignored. Import detection handles single/double quotes, multi-line and aliased named imports; `import * as` and dynamic `import()` need all five
 # commands (conservative); `export {..} from` / `export * from` re-exports count like imports.
+# Capability files: Tauri CapabilityFile = Capability | List | NamedList {"capabilities":[..]}; all three are parsed per capability. Type errors in
+# tauri.conf.json / capability data and an unterminated json5 block comment are BLIND (exit 2), never a traceback or a pass.
 # Known limits (not detected): a command name built at run time (e.g. 'plugin:dialog|' + x), imports via a differently named re-export module,
-# regex literals containing quotes or comment markers, capabilities/ subdirectories, tauri.<platform>.conf.json / Tauri.toml, multi-window apps.
+# non-JS/TS source (.vue/.svelte), capabilities/ subdirectories, tauri.<platform>.conf.json / Tauri.toml, multi-window apps.
 # Exit codes: 0 PASS / 1 FAIL / 2 BLIND (no plugin-dialog use found, or a config parse problem; NOT a pass).
 # Paired mutation test: scripts/tauri/test_wizard_capabilities_mutation.sh
 set -euo pipefail
@@ -25,6 +30,10 @@ try:
     import tomllib
 except ImportError:
     tomllib = None
+def _blind(t, v, tb):
+    print("BLIND: internal guard error (%s: %s); refusing to pass or fail" % (t.__name__, v), file=sys.stderr)
+    os._exit(2)
+sys.excepthook = _blind
 W = sys.argv[1]
 SRC = os.path.join(W, "src")
 CAPS = os.path.join(W, "src-tauri", "capabilities")
@@ -35,46 +44,33 @@ named = re.compile(r"(?:import|export)\s+(?:type\s+)?\{([^}]*)\}\s*from\s*" + PK
 star = re.compile(r"(?:import\s+\*\s+as\s+\w+|export\s+\*(?:\s+as\s+\w+)?)\s+from\s*" + PKG)
 dyn = re.compile(r"import\s*\(\s*" + PKG + r"\s*\)")
 raw = re.compile(r"plugin:dialog\|(" + "|".join(CMDS) + r")\b")
-def mask(t):
-    """Blank COMMENTS only. String/template bodies are kept verbatim (a string may hold command text: false positive is
-    acceptable, false negative is not). ' and " strings end at a newline, so a JSX apostrophe cannot swallow later code."""
-    out, i, n = [], 0, len(t)
-    while i < n:
-        c = t[i]
-        if t.startswith("//", i):
-            j = t.find("\n", i); j = n if j < 0 else j
-            out.append(" " * (j - i)); i = j
-        elif t.startswith("/*", i):
-            j = t.find("*/", i + 2); j = n if j < 0 else j + 2
-            out.append(re.sub(r"[^\n]", " ", t[i:j])); i = j
-        elif c in "'\"`":
-            j = i + 1
-            while j < n and t[j] != c and (c == "`" or t[j] != "\n"):
-                j += 2 if t[j] == "\\" else 1
-            j = min(j + 1, n)
-            out.append(t[i:j]); i = j
-        else:
-            out.append(c); i += 1
-    return "".join(out)
+EXTS = (".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts")
+# an occurrence of the package string in import/export-from/require position that no precise form above explained => assume all five
+loose = re.compile(r"(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*)" + PKG)
 need, seen = set(), False
 for dp, dns, fns in os.walk(SRC):
-    dns[:] = [d for d in dns if d != "test"]
     for fn in fns:
-        if not fn.endswith((".ts", ".tsx")):
+        if not fn.endswith(EXTS):
             continue
-        t = mask(open(os.path.join(dp, fn), encoding="utf-8", errors="replace").read())
+        t = open(os.path.join(dp, fn), encoding="utf-8", errors="replace").read()
+        covered = set()
         for m in named.finditer(t):
             seen = True
-            for item in m.group(1).split(","):
-                name = item.strip().split(" as ")[0].replace("type ", "").strip()
-                if name in CMDS:
-                    need.add("dialog:allow-" + name)
+            covered.add(m.end())
+            for w in re.findall(r"[A-Za-z_$][\w$]*", m.group(1)):
+                if w in CMDS:
+                    need.add("dialog:allow-" + w)
         for m in raw.finditer(t):
             seen = True
             need.add("dialog:allow-" + m.group(1))
-        if star.search(t) or dyn.search(t):
+        for m in list(star.finditer(t)) + list(dyn.finditer(t)):
             seen = True
+            covered.add(m.end())
             need.update("dialog:allow-" + c for c in CMDS)
+        for m in loose.finditer(t):
+            if m.end() not in covered:
+                seen = True
+                need.update("dialog:allow-" + c for c in CMDS)
 if not seen or not need:
     print("BLIND: no plugin-dialog import found under %s" % SRC, file=sys.stderr)
     sys.exit(2)
@@ -82,9 +78,6 @@ ok, problems, fatal = [], [], []
 EXPAND = {"dialog:default": {"dialog:allow-" + c for c in CMDS}}
 def strlist(v):
     return isinstance(v, list) and all(isinstance(x, str) for x in v)
-def json5_load(txt):
-    txt = mask_json5(txt)
-    return json.loads(re.sub(r",(\s*[}\]])", r"\1", txt))
 def mask_json5(t):
     out, i, n = [], 0, len(t)
     while i < n:
@@ -92,7 +85,10 @@ def mask_json5(t):
         if t.startswith("//", i):
             j = t.find("\n", i); i = n if j < 0 else j
         elif t.startswith("/*", i):
-            j = t.find("*/", i + 2); i = n if j < 0 else j + 2
+            j = t.find("*/", i + 2)
+            if j < 0:
+                raise ValueError("unterminated /* comment")
+            i = j + 2
         elif c == '"':
             j = i + 1
             while j < n and t[j] != '"':
@@ -101,19 +97,67 @@ def mask_json5(t):
         else:
             out.append(c); i += 1
     return "".join(out)
+def json5_load(txt):
+    return json.loads(re.sub(r",(\s*[}\]])", r"\1", mask_json5(txt)))
+def check_cap(c, where):
+    """Shape validation: anything Tauri could not load as a Capability is a BLIND problem, never a crash or a pass."""
+    if not isinstance(c, dict):
+        raise ValueError("%s: capability is not an object" % where)
+    if not isinstance(c.get("identifier"), str):
+        raise ValueError("%s: capability identifier missing or not a string" % where)
+    perms = c.get("permissions", [])
+    if not isinstance(perms, list):
+        raise ValueError("%s: permissions is not a list" % where)
+    for p in perms:
+        if not (isinstance(p, str) or (isinstance(p, dict) and isinstance(p.get("identifier"), str))):
+            raise ValueError("%s: permission entry %r is neither a string nor an object with a string identifier" % (where, p))
+def cap_file_caps(d, where):
+    """Tauri CapabilityFile = Capability | List(Vec<Capability>) | NamedList{capabilities:Vec<Capability>}."""
+    if isinstance(d, list):
+        items = d
+    elif isinstance(d, dict) and "identifier" in d:
+        items = [d]
+    elif isinstance(d, dict) and isinstance(d.get("capabilities"), list):
+        items = d["capabilities"]
+    else:
+        raise ValueError("%s: not a Capability, a list of them, or {\"capabilities\": [..]}" % where)
+    for c in items:
+        check_cap(c, where)
+    return items
 # tauri.conf.json: window labels + enabled capabilities
 labels, enabled, inline = ["main"], None, []
 if os.path.exists(CONF):
     try:
         conf = json.load(open(CONF, encoding="utf-8"))
-        app = conf.get("app", {}) if isinstance(conf, dict) else {}
-        wl = [w.get("label", "main") for w in app.get("windows", []) if isinstance(w, dict)]
+        if not isinstance(conf, dict):
+            raise ValueError("top level is not an object")
+        app = conf.get("app", {})
+        if not isinstance(app, dict):
+            raise ValueError("app is not an object")
+        wins = app.get("windows", [])
+        if not isinstance(wins, list) or not all(isinstance(w, dict) for w in wins):
+            raise ValueError("app.windows is not a list of objects")
+        wl = []
+        for w in wins:
+            if not isinstance(w.get("label", "main"), str):
+                raise ValueError("app.windows[].label is not a string")
+            wl.append(w.get("label", "main"))
         if wl:
             labels = wl
-        cl = (app.get("security") or {}).get("capabilities")
-        if isinstance(cl, list):
+        sec = app.get("security")
+        if sec is None:
+            sec = {}
+        if not isinstance(sec, dict):
+            raise ValueError("app.security is not an object")
+        cl = sec.get("capabilities")
+        if cl is not None:
+            if not isinstance(cl, list) or not all(isinstance(x, (str, dict)) for x in cl):
+                raise ValueError("app.security.capabilities is not a list of identifiers/objects")
             enabled = {x for x in cl if isinstance(x, str)}
-            inline = [("tauri.conf.json", x) for x in cl if isinstance(x, dict)]
+            for x in cl:
+                if isinstance(x, dict):
+                    check_cap(x, "tauri.conf.json")
+                    inline.append(("tauri.conf.json", x))
     except Exception as e:
         fatal.append("tauri.conf.json: invalid (%s)" % e)
         labels = None
@@ -135,15 +179,14 @@ else:
                 d = tomllib.load(open(path, "rb"))
             else:
                 continue
+            for c in cap_file_caps(d, fn):
+                if enabled is None or c["identifier"] in enabled:
+                    caps.append((fn, c))
         except Exception as e:
-            fatal.append("%s: unparsable (%s)" % (fn, e))
-            continue
-        for c in (d if isinstance(d, list) else [d]):
-            if isinstance(c, dict) and (enabled is None or c.get("identifier") in enabled):
-                caps.append((fn, c))
+            fatal.append("%s: unparsable/invalid (%s)" % (fn, e))
     caps += inline
     def ids(c):
-        return [p if isinstance(p, str) else p.get("identifier") for p in c.get("permissions", []) if isinstance(p, (str, dict))]
+        return [p if isinstance(p, str) else p["identifier"] for p in c.get("permissions", [])]
     denied = {"dialog:deny-" + n.split("-", 1)[1] for n in need}
     for fn, c in caps:
         hit = denied & set(ids(c))
