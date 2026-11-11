@@ -1704,3 +1704,10 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - LIFE-FU-3: RESOLVED: README and podman_env.sh header corrected (guid= only, per-checkout cache hash dir, mutant count). (was: doc drift (README/podman_env.sh header say "strips every ,key=val"; cache path now per-che...)
 - LIFE-FU-4: RESOLVED: `set -f` (restored) in `_qa_strip_guid`, FORCED vs unavailable DEVIATION text, local `rc`, clear missing-`timeout` error (rc 69). Not done by decision: faster unhealthy failure (risky). (was: nits): `_qa_strip_guid` unquoted glob expansion (use `set -f`); DEVIATION text when podman...)
 - up.sh/down.sh/build.sh still call podman directly (documented deviation, not yet run against real catqa3-api).
+
+## CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 (Opus review of LIFE-FU-1..4, minor, 2026-11-11)
+- LIFE-FU-5: test gap: nothing distinguishes atomic `mv -f` from copy+rm (assert inode equality or a logging fake mv).
+- LIFE-FU-6: test gap: hung-inspect test only hangs the first inspect; add shim mode hanging only the Health inspect.
+- LIFE-FU-7: test gap: no test calls `_qa_strip_guid` with `set -f` already on and checks it stays on.
+- LIFE-FU-8 (behaviour): missing-`timeout` check lives in `qa_stack_wait_healthy`, so `qa_stack_start` starts the container and only then returns 69 with it left running; pre-flight the check in `qa_stack_start` before `_qa_stack_run`.
+- LIFE-FU-9 (nits): unreachable tmp cleanup branch on build failure; a real ctrctl exit 69 would read as "backend unavailable" (latent).
