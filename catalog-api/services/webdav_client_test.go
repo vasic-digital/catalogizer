@@ -590,12 +590,11 @@ func TestWebDAVClient_SyncDirectory_Download(t *testing.T) {
 
 	// Test sync directory download - will have failures without real server
 	result, err := client.SyncDirectory(tmpDir, "/remote/dir", "download")
-	// The function may not return an error directly, but failures are tracked in result
-	if err == nil {
-		assert.NotNil(t, result)
-	} else {
-		assert.NotNil(t, result)
-	}
+	// Listing the remote directory fails without a server; the error must be
+	// surfaced (wrapped) and a non-nil result returned.
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to list remote files")
+	assert.NotNil(t, result)
 }
 
 func TestWebDAVClient_SyncDirectory_Bidirectional(t *testing.T) {
