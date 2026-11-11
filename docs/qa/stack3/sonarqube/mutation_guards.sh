@@ -40,4 +40,5 @@ mut M20-ss-fail-open            up.sh   'LISTEN="$(ss -ltn | awk '"'"'{print $4}
 mut M21-down-purges-always      down.sh 'if [ "${1:-}" = "--purge" ]; then' 'if true; then'
 mut M22-addr-prefix-match       up.sh   '[[ "$ADDRS" == *"inet ${SONAR_BIND}/"* ]]' '[[ "$ADDRS" == *"inet ${SONAR_BIND}"* ]]'
 mut M23-port-grep-unanchored    up.sh   'grep -q "[:.]${SONAR_PORT}\$" <<<"$LISTEN"' 'grep -q "${SONAR_PORT}\$" <<<"$LISTEN"'
+mut M24-ctr_up-name-guard-removed lib.sh '  _qa_stack_check_name "$n" || return $?' ':'
 echo "survivors: $SURV"; exit "$SURV"

@@ -1739,12 +1739,12 @@ ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go
 - STACK-CTR-FU-4: `lifecycle_probe.sh` keeps raw podman on purpose (RED control proving the raw start fails with a guid= DBUS address, and live assertions).
 - STACK-CTR-FU-5: `ctr_up` start waits twice (helper wait + the script's own `wait_healthy`); `qa_stack_wait_healthy` accepts "running none", so web/website are not health-gated by the helper. Not run live (host load); the first real `up.sh` run must be evidence-checked (backend= line in output, `podman ps` shows catqa3-api healthy, DBUS guid= address exported).
 
-## STACK-CTR-FU-6..12 (Opus round-1 review of feat/stack-scripts-via-ctrctl, 2026-11-11; all minor, open)
-- STACK-CTR-FU-6 (test): static guard in test_ctrctl_routing.sh must match any `podman … run` with `-d`/`--detach` in any position and `podman container start|run` (mutants N1, N2 survive).
-- STACK-CTR-FU-7 (test): add create-failure mode using `SHIM_CREATE_RC` (expect non-zero, no `podman start`) (mutants N3, N5).
-- STACK-CTR-FU-8 (test): run up.sh with a recording shim and diff each container's `create` argv against a golden list, proving flags preserved (mutants N4 `--restart`, N6 `--health-cmd`).
-- STACK-CTR-FU-9 (nit): run the `${STACK}-` name guard before `podman create` in `ctr_up` so a refused name leaves no created container.
-- STACK-CTR-FU-10 (test): sonarqube/test_guards.sh:52 `created()` pattern should include container `create `.
-- STACK-CTR-FU-11 (perf): `_qa_stack_backend` runs `go build` on every `qa_stack_start`; build once per script run.
-- STACK-CTR-FU-12 (nit): test_ctrctl_routing*.sh mode 644 (cosmetic).
+## STACK-CTR-FU-6..12 (Opus round-1 review of feat/stack-scripts-via-ctrctl, 2026-11-11; all minor; RESOLVED on fix/stack-ctr-followups 2026-11-11, FU-8 for stack3 up.sh only)
+- STACK-CTR-FU-6 (test): static guard in test_ctrctl_routing.sh must match any `podman … run` with `-d`/`--detach` in any position and `podman container start|run` (mutants N1, N2 survive). RESOLVED: raw_start detector (continuation-joined, any flag position, `container run|start`) with golden-bad/good self-test; mutants N1, N2 killed.
+- STACK-CTR-FU-7 (test): add create-failure mode using `SHIM_CREATE_RC` (expect non-zero, no `podman start`) (mutants N3, N5). RESOLVED: createfail mode (SHIM_CREATE_RC=1: rc!=0, no start/inspect) for both libs; mutants N3, N5 killed.
+- STACK-CTR-FU-8 (test): run up.sh with a recording shim and diff each container's `create` argv against a golden list, proving flags preserved (mutants N4 `--restart`, N6 `--health-cmd`). RESOLVED for stack3/up.sh: recording-shim run diffed against docs/qa/stack3/golden/up_create_argv.txt (per-argument bracketed argv; regenerate with GOLDEN_UPDATE=1); mutants N4, N6 killed. OPEN: the same golden for sonarqube/up.sh (needs ip/ss/df/load shims, not yet built).
+- STACK-CTR-FU-9 (nit): run the `${STACK}-` name guard before `podman create` in `ctr_up` so a refused name leaves no created container. RESOLVED: both ctr_up call _qa_stack_check_name before `podman create`; foreign-name test asserts no create; mutants N7, N8, sonarqube M24 killed.
+- STACK-CTR-FU-10 (test): sonarqube/test_guards.sh:52 `created()` pattern should include container `create `. RESOLVED: created() includes `create `/`container create `; T2c/T2d added; dropping the pattern fails T2d, M24 killed.
+- STACK-CTR-FU-11 (perf): `_qa_stack_backend` runs `go build` on every `qa_stack_start`; build once per script run. RESOLVED in the stack3 lib.sh wrappers only (podman_env.sh untouched): _qa_stack_backend is wrapped, resolved once in ctr_up (main shell) and cached in _QA_STACK_BACKEND_CACHE; perf test with counting go shim (builds=1); mutants N9, N10 killed.
+- STACK-CTR-FU-12 (nit): test_ctrctl_routing*.sh mode 644 (cosmetic). RESOLVED: test_ctrctl_routing*.sh mode 755.
 - Live check owed: first real up.sh run — verify `backend=` line, catqa3-api healthy in `podman ps`, DBUS address without `guid=`.
