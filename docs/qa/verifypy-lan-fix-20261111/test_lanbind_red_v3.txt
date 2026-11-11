@@ -1,0 +1,7 @@
+ERROR: test_golden_good_redirect_to_login (__main__.PgAnon.test_golden_good_redirect_to_login)
+ERROR: test_login_disabled_pgadmin_must_fail (__main__.PgAnon.test_login_disabled_pgadmin_must_fail)
+ERROR: test_no_token_or_dead_login_fails (__main__.PgAnon.test_no_token_or_dead_login_fails)
+ERROR: test_only_302_303_redirects_accepted (__main__.PgAnon.test_only_302_303_redirects_accepted)
+ERROR: test_redirect_elsewhere_fails (__main__.PgAnon.test_redirect_elsewhere_fails)
+Ran 23 tests in 0.008s
+FAILED (errors=5)

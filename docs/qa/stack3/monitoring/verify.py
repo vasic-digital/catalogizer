@@ -175,7 +175,7 @@ if lan_ok:
                 def _gl(): s_, _, b_ = http(f"{base}/login", opener=op); return s_, b_
                 def _gp(c_): s_, h_, _ = http(f"{base}{anon[name]}", headers={"X-pgA-CSRFToken": c_}, opener=op); _last.update(st=s_, loc=h_.get("Location")); return s_, h_
                 _last = {}
-                ok_ = LB.pgadmin_anonymous_rejected(_gl, _gp); st = f"{_last.get('st')} location={_last.get('loc')} (anon+csrf-token)"
+                ok_ = LB.pgadmin_anonymous_rejected(_gl, _gp, f"{lan}:{port}"); st = f"{_last.get('st')} location={_last.get('loc')} (anon+csrf-token)"
             else:
                 st, _, _ = http(f"{base}{anon[name]}", opener=urllib.request.build_opener(_NoRedirect))
                 ok_ = LB.auth_required_ok(name, st)

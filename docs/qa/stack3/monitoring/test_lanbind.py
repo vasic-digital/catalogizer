@@ -146,25 +146,36 @@ def pg_double(login=(200, LOGIN_HTML), tokenless=(400, {}), tokened=(302, {"Loca
         seen.append(csrf); return tokened if csrf else tokenless
     return get_login, get_protected, seen
 
+HOST = "192.168.1.17:33050"   # the host:port actually probed
+
+def chk(host=HOST, **kw):
+    g, p, seen = pg_double(**kw); return L.pgadmin_anonymous_rejected(g, p, host)
+
 class PgAnon(unittest.TestCase):
     def test_golden_good_redirect_to_login(self):
         g, p, seen = pg_double()
-        self.assertTrue(L.pgadmin_anonymous_rejected(g, p)); self.assertEqual(seen, ["tok123"])   # the request carried the CSRF token
-        self.assertTrue(L.pgadmin_anonymous_rejected(*pg_double(tokened=(303, {"Location": "http://h:1/login"}))[:2]))
-        self.assertTrue(L.pgadmin_anonymous_rejected(*pg_double(tokened=(401, {}))[:2]))
+        self.assertTrue(L.pgadmin_anonymous_rejected(g, p, HOST)); self.assertEqual(seen, ["tok123"])   # the request carried the CSRF token
+        self.assertTrue(chk(tokened=(303, {"Location": "/login"})))
+        self.assertTrue(chk(tokened=(302, {"Location": f"http://{HOST}/login?next=%2Fx"})))       # absolute URL on the REAL host:port
+        self.assertTrue(chk(tokened=(401, {})))
     def test_login_disabled_pgadmin_must_fail(self):
         # tokenless -> 400 (CSRF), tokened anonymous -> 200 + data: login is NOT required
-        self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(tokened=(200, {}))[:2]))
+        self.assertFalse(chk(tokened=(200, {})))
     def test_redirect_elsewhere_fails(self):
-        for loc in ("/somewhere", "http://evil/x", "/loginx", ""):
-            self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(tokened=(302, {"Location": loc}))[:2]), loc)
-        self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(tokened=(302, {}))[:2]))
+        for loc in ("/somewhere", "http://evil/x", "/loginx", "", "/x/login", "/login/", "//evil/login", "http://evil.example/login",
+                    "http://192.168.1.17:9999/login", "http://192.168.1.17/login", "https://192.168.1.17:33050/login"):
+            self.assertFalse(chk(tokened=(302, {"Location": loc})), loc)
+        self.assertFalse(chk(tokened=(302, {})))
+    def test_only_302_303_redirects_accepted(self):
+        for st in (301, 307, 308): self.assertFalse(chk(tokened=(st, {"Location": "/login"})), st)   # pinned decision
     def test_no_token_or_dead_login_fails(self):
-        self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(login=(200, b"no token here"))[:2]))
-        self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(login=(0, b"refused"))[:2]))
-        self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(tokened=(400, {}))[:2]))   # still CSRF-rejected even with token: proves nothing
-        self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(tokened=(0, {}))[:2]))
-        self.assertFalse(L.pgadmin_anonymous_rejected(*pg_double(tokened=(500, {}))[:2]))
+        self.assertFalse(chk(login=(200, b"no token here")))
+        self.assertFalse(chk(login=(0, b"refused")))
+        self.assertFalse(chk(login=(500, LOGIN_HTML)))          # a non-200 /login carrying a token is not trusted
+        self.assertFalse(chk(login=(302, LOGIN_HTML)))
+        self.assertFalse(chk(tokened=(400, {})))   # still CSRF-rejected even with token: proves nothing
+        self.assertFalse(chk(tokened=(0, {})))
+        self.assertFalse(chk(tokened=(500, {})))
 
 class Auth(unittest.TestCase):
     def test_auth_required_verdicts(self):
@@ -180,7 +191,6 @@ class Auth(unittest.TestCase):
         # a bare 400 (CSRF checked before auth) proves nothing about login being required: never an auth-required PASS, for any service
         for n in ("prometheus", "grafana", "pgadmin"): self.assertFalse(L.auth_required_ok(n, 400), n)
         self.assertFalse(L.auth_required_ok("pgadmin", 302))      # a bare 302 (no Location check) is not enough either
-        self.assertTrue(L.auth_required_ok("pgadmin", 401))
         self.assertTrue(L.auth_required_ok("pgadmin", 401))
         self.assertFalse(L.auth_required_ok("pgadmin", 200))
 

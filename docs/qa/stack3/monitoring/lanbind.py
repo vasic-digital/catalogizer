@@ -59,11 +59,11 @@ def auth_required_ok(name, status):
 
 _CSRF = re.compile(rb'"csrfToken"\s*:\s*"([^"]+)"')
 
-def pgadmin_anonymous_rejected(get_login, get_protected):
+def pgadmin_anonymous_rejected(get_login, get_protected, host):
     """pgAdmin refuses a tokenless request with 400 'CSRF token is missing' BEFORE any authentication check, so that 400 proves nothing.
     Take a real CSRF token + session from an anonymous GET /login, then do the anonymous protected GET carrying it (redirects not followed):
-    login is required iff that gets 401, or a 302/303 whose Location path is /login. get_login() -> (status, body);
-    get_protected(csrf) -> (status, headers). Anything else (200, 400, 0, 5xx, a redirect elsewhere) is not proof."""
+    login is required iff that gets 401, or a 302/303 (not 301/307/308) whose Location path is exactly /login on the probed host. get_login() -> (status, body);
+    get_protected(csrf) -> (status, headers); host = the 'host:port' actually probed (an absolute Location must name exactly it, scheme http). Anything else (200, 400, 0, 5xx, a redirect elsewhere) is not proof."""
     st, body = get_login()
     m = _CSRF.search(body or b"") if st == 200 else None
     if not m: return False
@@ -71,5 +71,6 @@ def pgadmin_anonymous_rejected(get_login, get_protected):
     if st == 401: return True
     if st in (302, 303):
         loc = {k.lower(): v for k, v in (h or {}).items()}.get("location", "")
-        return urllib.parse.urlsplit(loc).path == "/login"
+        u = urllib.parse.urlsplit(loc)
+        return u.path == "/login" and (u.netloc == "" and u.scheme == "" or u.scheme == "http" and u.netloc.lower() == host.lower())
     return False
