@@ -336,11 +336,11 @@ func (c *S3Client) seekable(ctx context.Context, data io.Reader) (io.ReadSeeker,
 	n, err := io.Copy(f, s3CtxReader{ctx: ctx, r: data})
 	if err != nil {
 		cleanup()
-		return nil, 0, func() { /* no-op cleanup: nothing was acquired for this source, so there is nothing to release */ }, err
+		return nil, 0, func() { /* no-op cleanup: the temp file was already released by cleanup() above */ }, err
 	}
 	if _, err := f.Seek(0, io.SeekStart); err != nil {
 		cleanup()
-		return nil, 0, func() { /* no-op cleanup: nothing was acquired for this source, so there is nothing to release */ }, err
+		return nil, 0, func() { /* no-op cleanup: the temp file was already released by cleanup() above */ }, err
 	}
 	return f, n, cleanup, nil
 }
