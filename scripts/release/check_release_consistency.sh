@@ -27,7 +27,7 @@ usage: check_release_consistency.sh [--repo DIR] [--version X.Y.Z] [--prev-tag T
   --prev-tag  git tag; versionCode of each Android app must be an integer strictly
               greater than its value at that tag
   --section   CHANGELOG section version (default: topmost numbered section)
-exit: 0 OK, 1 FAIL, 2 usage/blind.  Last line printed is "VERDICT: ...".
+exit: 0 OK, 1 FAIL, 2 usage/blind.  Last line printed is "VERDICT: ..." (help: "VERDICT: HELP").
 U
 }
 
@@ -36,12 +36,12 @@ blind() { echo "BLIND: $*"; echo "VERDICT: BLIND $*"; exit 2; }
 while [ $# -gt 0 ]; do
   case "$1" in
     --repo) [ $# -ge 2 ] || blind "--repo needs a value"; REPO="$2"; shift 2 ;;
-    --version) [ $# -ge 2 ] || blind "--version needs a value"; EXPECTED="$2"; shift 2 ;;
+    --version) { [ $# -ge 2 ] && [ -n "$2" ]; } || blind "--version needs a non-empty value"; EXPECTED="$2"; shift 2 ;;
     --prev-tag) [ $# -ge 2 ] || blind "--prev-tag needs a value"; PREV_TAG="$2"; shift 2 ;;
     --section) [ $# -ge 2 ] || blind "--section needs a value"; SECTION="$2"; shift 2 ;;
     --check) [ $# -ge 2 ] || blind "--check needs a value"; CHECK="$2"; shift 2 ;;
     --selftest) SELFTEST=1; shift ;;
-    -h|--help) usage; exit 0 ;;
+    -h|--help) usage; echo "VERDICT: HELP"; exit 0 ;;
     *) usage >&2; blind "unknown option $1" ;;
   esac
 done
@@ -89,15 +89,8 @@ note_blind() { BLINDS="$BLINDS ${1}"; echo "BLIND: $1"; }
 # ---------------------------------------------------------------- (1) versions
 run_versions() {
   echo "== version consistency"
-  local kind label detail
-  while IFS=$'\t' read -r kind label detail; do
-    case "$kind" in
-      OK)   V_OK=$((V_OK+1));   echo "OK    $label: $detail" ;;
-      FAIL) V_FAIL=$((V_FAIL+1)); echo "FAIL  $label: $detail" ;;
-      INFO) echo "INFO  $label: $detail" ;;
-      BLIND) note_blind "$label $detail" ;;
-    esac
-  done < <(python3 -I - "$REPO" "$EXPECTED" "$PREV_TAG" <<'PY'
+  local kind label detail vout vrc
+  vout="$(python3 -I - "$REPO" "$EXPECTED" "$PREV_TAG" <<'PY'
 import json, os, re, subprocess, sys, tomllib
 
 repo, expected, prevtag = sys.argv[1:4]
@@ -135,6 +128,13 @@ def check(label, getter):
     else:
         emit("FAIL", label, f"found {actual!r} expected {expected!r}")
 
+NPM = ("catalog-web", "catalogizer-desktop", "installer-wizard")
+TAURI = ("catalogizer-desktop", "installer-wizard")
+CARGO = ("catalogizer-desktop", "installer-wizard")
+APPS = ("catalogizer-android", "catalogizer-androidtv")
+# versions.json + openapi + 3 rows per npm component + tauri + cargo + (name, code) per app
+emit("PLAN", str(2 + 3 * len(NPM) + len(TAURI) + len(CARGO) + 2 * len(APPS)))
+
 # versions.json global
 check("versions.json global", lambda: (_ for _ in ()).throw(ValueError(vj_err)) if not vj_ok else derived)
 
@@ -142,6 +142,7 @@ check("versions.json global", lambda: (_ for _ in ()).throw(ValueError(vj_err)) 
 def openapi():
     lines = read("docs/api/openapi.yaml").splitlines()
     inside = False
+    found = []
     for ln in lines:
         if re.match(r"^info:\s*(#.*)?$", ln):
             inside = True
@@ -151,12 +152,14 @@ def openapi():
                 break
             m = re.match(r"^  version:\s*[\"']?([^\"'#\s]+)[\"']?\s*(#.*)?$", ln)
             if m:
-                return m.group(1)
-    raise ValueError("info.version not found")
+                found.append(m.group(1))
+    if len(found) != 1:
+        raise ValueError(f"expected exactly one info.version, found {len(found)}")
+    return found[0]
 check("docs/api/openapi.yaml info.version", openapi)
 
 # npm packages and lockfiles
-for comp in ("catalog-web", "catalogizer-desktop", "installer-wizard"):
+for comp in NPM:
     check(f"{comp}/package.json version", lambda c=comp: json.loads(read(f"{c}/package.json"))["version"])
     check(f"{comp}/package-lock.json version", lambda c=comp: json.loads(read(f"{c}/package-lock.json"))["version"])
     check(f"{comp}/package-lock.json packages[\"\"].version",
@@ -168,7 +171,7 @@ def tauri(path):
     if "version" in d:
         return d["version"]
     return d["package"]["version"]
-for comp in ("catalogizer-desktop", "installer-wizard"):
+for comp in TAURI:
     check(f"{comp}/src-tauri/tauri.conf.json version", lambda c=comp: tauri(f"{c}/src-tauri/tauri.conf.json"))
 
 # Cargo.toml [package] version
@@ -177,7 +180,7 @@ def cargo(path):
     if not isinstance(v, str):
         raise ValueError(f"non-literal package.version {v!r}")
     return v
-for comp in ("catalogizer-desktop", "installer-wizard"):
+for comp in CARGO:
     check(f"{comp}/src-tauri/Cargo.toml [package] version", lambda c=comp: cargo(f"{c}/src-tauri/Cargo.toml"))
 
 # Gradle versionName / versionCode
@@ -202,8 +205,12 @@ if prevtag:
         tag_ok = False
         emit("FAIL", "--prev-tag", f"tag {prevtag!r} not found")
 
-for app in ("catalogizer-android", "catalogizer-androidtv"):
+for app in APPS:
     path = f"{app}/app/build.gradle.kts"
+    both = (os.path.exists(os.path.join(repo, path))
+            and os.path.exists(os.path.join(repo, f"{app}/app/build.gradle")))
+    if both:
+        emit("FAIL", f"{app}/app", "both build.gradle.kts and build.gradle exist; ambiguous")
     if not os.path.exists(os.path.join(repo, path)):
         path = f"{app}/app/build.gradle"
     check(f"{path} versionName", lambda p=path: gradle_field(read(p), "versionName"))
@@ -236,7 +243,25 @@ for app in ("catalogizer-android", "catalogizer-androidtv"):
     else:
         emit("FAIL", label, f"{cur} is not > {prev_s} at {prevtag}")
 PY
-)
+)"
+  vrc=$?
+  local plan="" rows=0
+  while IFS=$'\t' read -r kind label detail; do
+    case "$kind" in
+      PLAN) plan="$label" ;;
+      OK)   rows=$((rows+1)); V_OK=$((V_OK+1));   echo "OK    $label: $detail" ;;
+      FAIL) rows=$((rows+1)); V_FAIL=$((V_FAIL+1)); echo "FAIL  $label: $detail" ;;
+      INFO) rows=$((rows+1)); echo "INFO  $label: $detail" ;;
+      BLIND) note_blind "$label $detail" ;;
+    esac
+  done <<< "$vout"
+  # B1: a crashed or silent helper must never read as PASS.
+  if [ "$vrc" -ne 0 ]; then note_blind "version helper exited $vrc (rows seen: $rows)"; return; fi
+  if ! [[ "$plan" =~ ^[0-9]+$ ]]; then
+    case "$BLINDS" in *versions.json*) ;; *) note_blind "version helper emitted no PLAN line" ;; esac
+    return
+  fi
+  if [ "$rows" -lt "$plan" ]; then note_blind "version helper produced $rows of $plan planned field rows"; fi
 }
 
 # ---------------------------------------------------------------- (2) changelog
@@ -252,9 +277,11 @@ run_changelog() {
   # 11.4.273 control needles: the existence instrument must see a known-present tracked
   # path and must not see a fabricated one.
   local pos neg
-  pos="$(git -C "$REPO" ls-files | head -1)"
+  # tracked-instrument needle: first tracked path with a plain name (no quoting issues), judged
+  # by git only; existence-instrument needle: the changelog itself, which was just found.
+  pos="$(git -C "$REPO" ls-files | grep -m1 -E '^[A-Za-z0-9._/-]+$')"
   neg="__no_such_path_$$__/none"
-  if [ -z "$pos" ] || ! { [ -e "$REPO/$pos" ] && tracked "$pos"; } || { [ -e "$REPO/$neg" ] || tracked "$neg"; }; then
+  if [ -z "$pos" ] || ! tracked "$pos" || [ ! -e "$cl" ] || [ -e "$REPO/$neg" ] || tracked "$neg"; then
     note_blind "control needle failed: existence/tracked instrument cannot be trusted"; return
   fi
 
@@ -280,23 +307,26 @@ for j in range(start + 1, len(lines)):
         end = j
         break
 body = lines[start + 1:end]
-sub = None
-for k, ln in enumerate(body):
+vlines = []
+nsub = 0
+inv = False
+for ln in body:
     if re.match(r"^###\s+VERIFIED\b", ln):
-        sub = k
-        break
-if sub is None:
+        inv = True
+        nsub += 1
+        continue
+    if re.match(r"^#{1,3} ", ln):
+        inv = False
+        continue
+    if inv:
+        vlines.append(ln)
+if nsub == 0:
     print(f"ERR\tno VERIFIED subsection in section {name}")
     sys.exit(0)
-vlines = []
-for ln in body[sub + 1:]:
-    if re.match(r"^#{1,3} ", ln):
-        break
-    vlines.append(ln)
 print(f"SECTION\t{name}")
 tops = set()
-r = subprocess.run(["git", "-C", repo, "ls-files"], capture_output=True, text=True)
-for p in r.stdout.splitlines():
+r = subprocess.run(["git", "-C", repo, "ls-files", "-z"], capture_output=True, text=True)
+for p in r.stdout.split("\0"):
     if "/" in p:
         tops.add(p.split("/", 1)[0])
 known = re.compile(r"^(docs|scripts|challenges|tests?|tools|specs|catalog[a-z0-9_-]*|installer-wizard|submodules|constitution|Website|config|deployment|\.github)$")
@@ -304,11 +334,13 @@ seen = set()
 for ln in vlines:
     for tok in re.findall(r"`([^`\n]+)`", ln):
         t = tok.strip()
-        if "/" not in t or re.search(r"[\s*?<>${}|\\=(),;\"']", t):
+        if "/" not in t:
             continue
-        if re.match(r"^[a-z][a-z0-9+.-]*://", t) or t.startswith(("/", "~", "-")):
+        if re.search(r"[\s*?<>${}|\\=(),;\"']", t) or re.match(r"^[a-z][a-z0-9+.-]*://", t) \
+                or t.startswith(("/", "~", "-")):
+            print(f"SKIP\t{tok.strip()}")
             continue
-        t = re.sub(r":\d+(-\d+)?$", "", t.rstrip(".,;:)"))
+        t = re.sub(r":\d+(-\d+)?$", "", t.rstrip(".,;:"))
         if t.startswith("./"):
             t = t[2:]
         top = t.split("/", 1)[0]
@@ -358,9 +390,21 @@ PY
   done
 
   local line name status rc o
+  local esc ent
   for d in "${!seen_dir[@]}"; do
-    o="$(cd "$REPO/$d" && sha256sum -c SHA256SUMS 2>&1)"; rc=$?
-    local sawfail=0
+    # F4: manifest entries must stay inside the manifest's directory.
+    esc=0
+    while IFS= read -r line || [ -n "$line" ]; do
+      if [[ "$line" =~ ^[0-9a-fA-F]{64}\ [\ \*](.*)$ ]]; then
+        ent="${BASH_REMATCH[1]}"
+        if [[ "$ent" == /* || "$ent" == ../* || "$ent" == */../* || "$ent" == */.. || "$ent" == .. ]]; then
+          S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/SHA256SUMS entry escapes its directory: $ent"
+        fi
+      fi
+    done < "$REPO/$d/SHA256SUMS"
+    [ "$esc" = 0 ] || continue
+    o="$(cd "$REPO/$d" && sha256sum --strict -c SHA256SUMS 2>&1)"; rc=$?
+    local sawfail=0 sawunv=0
     while IFS= read -r line; do
       if [[ "$line" =~ ^(.*):\ (OK|FAILED\ open\ or\ read|FAILED)$ ]]; then
         name="${BASH_REMATCH[1]}"; status="${BASH_REMATCH[2]}"
@@ -370,15 +414,15 @@ PY
             S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)" ;;
           *)
             if git -C "$REPO" check-ignore -q -- "$d/$name"; then
-              S_UNV=$((S_UNV+1)); echo "UNVERIFIABLE-FROM-CLONE  $d/$name (gitignored, absent/unreadable)"
+              S_UNV=$((S_UNV+1)); sawunv=1; echo "UNVERIFIABLE-FROM-CLONE  $d/$name (gitignored, absent/unreadable)"
             else
               S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (missing/unreadable, not gitignored)"
             fi ;;
         esac
       fi
     done <<< "$o"
-    if [ "$rc" -ne 0 ] && [ "$sawfail" = 0 ] && ! grep -q 'FAILED open or read' <<< "$o"; then
-      S_FAIL=$((S_FAIL+1)); echo "SHAFAIL  $d/SHA256SUMS (sha256sum error: $(head -1 <<< "$o"))"
+    if grep -q 'improperly formatted' <<< "$o" || { [ "$rc" -ne 0 ] && [ "$sawfail" = 0 ] && [ "$sawunv" = 0 ]; }; then
+      S_FAIL=$((S_FAIL+1)); echo "SHAFAIL  $d/SHA256SUMS (malformed or sha256sum error: $(grep -m1 -E 'improperly|sha256sum:' <<< "$o" || head -1 <<< "$o"))"
     fi
   done
 }

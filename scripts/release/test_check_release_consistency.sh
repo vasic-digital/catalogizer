@@ -107,12 +107,42 @@ echo "== negative controls: changelog"
 d=$(fresh); expect "PROVISIONAL / Unreleased / dev-heading / older-section fakes not checked" 0 "miss=0" "$d" --check changelog
 d=$(fresh); expect "default is topmost version section, not Unreleased" 0 "section=2.4.0" "$d" --check changelog
 d=$(fresh); mut "$d" docs/CHANGELOG.md 's#`docs/qa/run2/c.txt:12`#`docs/qa/run2/c.txt:12-20`#' && expect "line suffix stripped" 0 "miss=0" "$d" --check changelog
-d=$(fresh); mut "$d" docs/CHANGELOG.md 's#`scripts/tool.sh`#`nonexistent-top/x.sh`#' && expect "unknown top-level dir is skipped not MISS" 0 "skipped=1" "$d" --check changelog
+d=$(fresh); mut "$d" docs/CHANGELOG.md 's#`scripts/tool.sh`#`nonexistent-top/x.sh`#' && expect "unknown top-level dir is skipped not MISS" 0 "skipped=3" "$d" --check changelog
 
 echo "== usage"
 d=$(fresh); expect "unknown option -> 2" 2 "VERDICT: BLIND" "$d" --bogus
 d=$(fresh); expect "bad --check value -> 2" 2 "VERDICT: BLIND" "$d" --check nothing
 expect "nonexistent repo -> 2" 2 "VERDICT: BLIND" "$ROOT/does-not-exist"
+
+echo "== round-1 review fixes (B1, F1-F5)"
+mkstub() { local sd; sd="$(mktemp -d "$ROOT/stub.XXXXXX")"; printf '#!/bin/sh\n%s\n' "$1" > "$sd/python3"; chmod +x "$sd/python3"; echo "$sd"; }
+# B1: a crashed / silent / short python helper must be BLIND, never PASS
+sd=$(mkstub 'exit 1');  d=$(fresh); PATH="$sd:$PATH" expect "B1 python3 crashes silently -> BLIND" 2 "VERDICT: BLIND" "$d" --check version
+sd=$(mkstub 'exit 0');  d=$(fresh); PATH="$sd:$PATH" expect "B1 python3 silent exit 0 -> BLIND" 2 "VERDICT: BLIND" "$d" --check version
+sd=$(mkstub 'printf "PLAN\t19\n"; i=0; while [ $i -lt 19 ]; do printf "OK\tx%s\ty\n" $i; i=$((i+1)); done; exit 1')
+d=$(fresh); PATH="$sd:$PATH" expect "B1 helper emits all rows then exits 1 -> BLIND" 2 "version helper exited 1" "$d" --check version
+sd=$(mkstub 'printf "PLAN\t19\n"; printf "OK\ta\tb\n"; exit 0')
+d=$(fresh); PATH="$sd:$PATH" expect "B1 helper emits fewer rows than planned -> BLIND" 2 "of 19 planned" "$d" --check version
+sd=$(mkstub 'exit 1');  d=$(fresh); PATH="$sd:$PATH" expect "B1 python3 crash also BLIND for changelog" 2 "VERDICT: BLIND" "$d" --check changelog
+# F1/F4: SHA256SUMS hygiene
+d=$(fresh); echo 'this is not a checksum line' >> "$d/docs/qa/run1/SHA256SUMS"; expect "F1 malformed SHA256SUMS line FAIL" 1 "SHAFAIL" "$d" --check changelog
+z=$(printf '0%.0s' $(seq 64))
+d=$(fresh); echo "$z  ../../etc/passwd" >> "$d/docs/qa/run1/SHA256SUMS"; expect "F4 SHA256SUMS ../ escape FAIL" 1 "escapes its directory" "$d" --check changelog
+d=$(fresh); echo "$z  /etc/hostname" >> "$d/docs/qa/run1/SHA256SUMS"; expect "F4 SHA256SUMS absolute path FAIL" 1 "escapes its directory" "$d" --check changelog
+d=$(fresh); echo "$z  /etc/hostname" >> "$d/docs/qa/run1/SHA256SUMS"
+if "$CHECKER" --repo "$d" --check changelog 2>&1 | grep -q 'etc/hostname (checksum mismatch'; then bad "F4 escaping manifest must not be executed"; else ok; fi
+# F2: every dropped slash-token is counted
+d=$(fresh); expect "F2 url and spaced token counted as skipped" 0 "skipped=2" "$d" --check changelog
+d=$(fresh); mut "$d" docs/CHANGELOG.md 's#^- Tool#- Glob `docs/qa/*/a.txt` and `~/x/y`; Tool#' && expect "F2 glob and ~ tokens counted" 0 "skipped=4" "$d" --check changelog
+# F3: all VERIFIED subsections are read
+d=$(fresh); mut "$d" docs/CHANGELOG.md 's@^### REOPENED@\n### VERIFIED (more)\n- `docs/nope_second.txt`\n\n### REOPENED@' && expect "F3 second VERIFIED subsection checked" 1 "docs/nope_second.txt" "$d" --check changelog
+# F5
+d=$(fresh); mut "$d" docs/api/openapi.yaml 's#^  version: 2.4.0#  version: 2.4.0\n  version: 2.4.0#' && expect "F5 duplicate openapi info.version FAIL" 1 "exactly one info.version" "$d" --check version
+expect "F5 empty --version is a usage error" 2 "VERDICT: BLIND" "$GOLD" --version ""
+d=$(fresh); : > "$d/catalogizer-android/app/build.gradle"; expect "F5 both build.gradle and .kts -> FAIL" 1 "ambiguous" "$d" --check version
+d=$(fresh); echo q > "$d/\"q\".txt"; (cd "$d" && git add -A); expect "F5 needle survives a quoted tracked name" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); echo b > "$d/.0first.txt"; (cd "$d" && git add -A) ; rm "$d/.0first.txt"; expect "F5 needle survives first tracked file deleted from tree" 0 "VERDICT: PASS" "$d" --check changelog
+expect "F5 -h prints VERDICT: HELP" 0 "VERDICT: HELP" "$GOLD" -h
 
 echo "== selftest (11.4.273 control needles built into the tool)"
 out="$("$CHECKER" --selftest 2>&1)"; got=$?

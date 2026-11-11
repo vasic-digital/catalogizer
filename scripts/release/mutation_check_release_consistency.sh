@@ -37,14 +37,32 @@ MUTANTS=(
 'section-not-found not blind|||ERR) note_blind "$a"; return ;;|||ERR) : ;;'
 'section heading accepts Unreleased|||^## \[(\d[^\]]*)\]|||^## \[([^\]]*)\]'
 'VERIFIED subsection bleeds into next|||    if re.match(r"^#{1,3} ", ln):
-        break
-    vlines.append(ln)|||    vlines.append(ln)'
+        inv = False
+        continue|||    if re.match(r"^#{1,3} ", ln):
+        continue'
 'sha mismatch not counted|||S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)"|||sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)"'
 'sha missing counted unverifiable|||S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (missing/unreadable, not gitignored)"|||S_UNV=$((S_UNV+1)); sawfail=1'
 'sha ignored file counted as fail|||if git -C "$REPO" check-ignore -q -- "$d/$name"; then|||if false; then'
 'FAIL verdict exits 0|||echo "VERDICT: FAIL $SUMMARY"; exit 1|||echo "VERDICT: FAIL $SUMMARY"; exit 0'
 'blind verdict exits 0|||echo "VERDICT: BLIND $SUMMARY reason:$BLINDS"; exit 2|||echo "VERDICT: BLIND $SUMMARY reason:$BLINDS"; exit 0'
 'unknown option ignored|||*) usage >&2; blind "unknown option $1" ;;|||*) shift ;;'
+'B1 helper exit status ignored|||if [ "$vrc" -ne 0 ]; then|||if false; then'
+'B1 missing PLAN not blind|||if ! [[ "$plan" =~ ^[0-9]+$ ]]; then|||if false; then'
+'B1 short row count accepted|||if [ "$rows" -lt "$plan" ]; then|||if false; then'
+'F1 malformed manifest not failed|||if grep -q '"'"'improperly formatted'"'"' <<< "$o" || { [ "$rc" -ne 0 ] && [ "$sawfail" = 0 ] && [ "$sawunv" = 0 ]; }; then|||if false; then'
+'F4 manifest escape detection off|||if [[ "$ent" == /*|||if false && [[ "$ent" == /*'
+'F4 escaping manifest still executed|||[ "$esc" = 0 ] || continue|||:'
+'F3 only first VERIFIED read|||        inv = True
+        nsub += 1|||        inv = nsub == 0
+        nsub += 1'
+'F5 duplicate info.version accepted|||if len(found) != 1:|||if len(found) < 1:'
+'F5 empty --version accepted|||{ [ $# -ge 2 ] && [ -n "$2" ]; }|||{ [ $# -ge 2 ]; }'
+'F5 both gradle files ignored|||    if both:|||    if False:'
+'F2 dropped tokens not counted|||            print(f"SKIP\t{tok.strip()}")
+            continue|||            continue'
+'F5 needle takes first tracked name|||| grep -m1 -E '"'"'^[A-Za-z0-9._/-]+$'"'"')|||| head -1)'
+'F5 needle needs tree presence|||! tracked "$pos"|||! tracked "$pos" || [ ! -e "$REPO/$pos" ]'
+'help has no VERDICT|||usage; echo "VERDICT: HELP"; exit 0|||usage; exit 0'
 )
 
 killed=0; survived=0; n=0
