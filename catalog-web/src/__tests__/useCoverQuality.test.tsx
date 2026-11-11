@@ -116,7 +116,7 @@ describe('useCoverQuality', () => {
   });
 
   it('unmount aborts the in-flight request', async () => {
-    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})));
+    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => undefined)));
     const { unmount } = render(<TestConsumer id={89} debug={true} />);
     const [, init] = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(init.signal.aborted).toBe(false);

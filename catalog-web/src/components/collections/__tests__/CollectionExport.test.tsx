@@ -153,7 +153,7 @@ describe('CollectionExport', () => {
     const origRevoke = URL.revokeObjectURL
     URL.createObjectURL = createUrl as any
     URL.revokeObjectURL = revokeUrl as any
-    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined)
     try {
       await user.click(screen.getByText('Export Collection'))
       await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Collection exported successfully'))
@@ -194,7 +194,7 @@ describe('CollectionExport', () => {
 
   it('CAT-001: Import reports unavailable and never claims success', async () => {
     const user = userEvent.setup()
-    const { container } = render(<CollectionExport collection={mockCollection as any} onClose={() => {}} />)
+    const { container } = render(<CollectionExport collection={mockCollection as any} onClose={() => undefined} />)
     await user.click(screen.getByText('Import'))
     const input = container.querySelector('input[type="file"]') as HTMLInputElement
     const file = new File([JSON.stringify({ items: [{ id: 'a' }, { id: 'b' }] })], 'c.json', { type: 'application/json' })
