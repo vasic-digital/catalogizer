@@ -96,7 +96,7 @@ func TestLiveCoverArt_F2_Cap(t *testing.T) {
 	// one byte over rejected with the documented error, no body returned
 	b, err = s.downloadImage(context.Background(), over.URL)
 	require.Error(t, err, "a body of 32 MiB + 1 must be rejected")
-	assert.Nil(t, b)
+	assert.True(t, len(b) == 0, "a rejected fetch returned %d body bytes", len(b))
 	assert.Contains(t, err.Error(), "cover_art: download exceeds 33554432 bytes")
 	assert.EqualValues(t, 1, atomic.LoadInt32(&hOver), "control: the oversize server was really contacted")
 }
@@ -166,7 +166,7 @@ func TestLiveCoverArt_F4_Redirects(t *testing.T) {
 			defer rs.Close()
 			b, err := s.downloadImage(context.Background(), rs.URL)
 			require.Error(t, err)
-			assert.Empty(t, b)
+			assert.True(t, len(b) == 0, "a refused fetch returned %d body bytes", len(b))
 			assert.True(t, errors.Is(err, netguard.ErrBlocked), "must be refused by the guard, got: %v", err)
 		})
 	}
@@ -201,9 +201,13 @@ func TestLiveCoverArt_F4_RedirectChainLimit(t *testing.T) {
 	require.NoError(t, err, "control: a 3-hop chain is followed")
 	assert.Equal(t, "END", string(b))
 	assert.EqualValues(t, 1, atomic.LoadInt32(&hFinal))
+	b, err = s.downloadImage(context.Background(), chain(4))
+	require.Error(t, err, "a 4-hop chain is one over the limit of 3")
+	assert.True(t, len(b) == 0, "refused chain returned %d body bytes", len(b))
+	assert.EqualValues(t, 1, atomic.LoadInt32(&hFinal), "the end of a 4-hop chain must not be reached")
 	b, err = s.downloadImage(context.Background(), chain(5))
 	require.Error(t, err, "a 5-hop chain exceeds the limit of 3")
-	assert.Empty(t, b)
+	assert.True(t, len(b) == 0, "a refused fetch returned %d body bytes", len(b))
 	assert.EqualValues(t, 1, atomic.LoadInt32(&hFinal), "the end of the over-long chain must not be reached")
 }
 
@@ -219,7 +223,7 @@ func TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback(t *testing.T) {
 	s := NewCoverArtService(nil, zap.NewNop()) // untouched production client
 	b, err := s.downloadImage(context.Background(), srv.URL)
 	require.Error(t, err)
-	assert.Empty(t, b)
+	assert.True(t, len(b) == 0, "a refused fetch returned %d body bytes", len(b))
 	assert.True(t, errors.Is(err, ErrSSRFBlocked), "string guard must refuse, got: %v", err)
 	assert.Zero(t, atomic.LoadInt32(&hits), "loopback origin must not be contacted by the production client")
 }
@@ -236,7 +240,7 @@ func TestLiveCoverArt_F4_StrictDialLayerOfProductionClient(t *testing.T) {
 	s := NewCoverArtService(nil, zap.NewNop()) // production client, not replaced
 	b, err := s.downloadImage(context.Background(), srv.URL)
 	require.Error(t, err)
-	assert.Empty(t, b)
+	assert.True(t, len(b) == 0, "a refused fetch returned %d body bytes", len(b))
 	assert.True(t, errors.Is(err, netguard.ErrBlocked), "dial layer must refuse with ErrBlocked, got: %v", err)
 	assert.Zero(t, atomic.LoadInt32(&hits))
 }

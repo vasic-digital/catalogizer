@@ -40,7 +40,7 @@ empty output is FAIL (instrument-blind), never PASS.
   on a scratch copy of one file (the working tree is never edited):
   `cap` (32 MiB becomes 1 TiB), `strict` (production client made allow-list-aware AND string guard removed),
   `netguard` (block predicate returns false), `m1` (StrictClient replaced by Client), `m2` (link-local check removed),
-  `m5` (redirect limit removed), `m7` (IPv6 never blocked), `m8` (IsPrivate removed).
+  `m5` (redirect limit removed), `m7` (IPv6 never blocked), `m8` (IsPrivate removed), `n1` (redirect off-by-one, killed by the 4-hop case).
   A mutant counts as KILLED only if the tests ran and an assertion FAILed; a compile failure (BLIND, exit 2) does not.
 
 ## Evidence
@@ -49,6 +49,8 @@ mutants add `mutation.diff.txt`. Runtime parameters: `GOMAXPROCS=2`, `nice -n 10
 `MemorySwapMax=0` when a user bus exists.
 
 ## Scope and limits (honest)
+- Network safety: two cases use real IP literals (169.254.169.254, 10.0.0.5). If the guard regressed (or a mutant removes it) the test binary would attempt real off-host TCP connects (LAN gateway, VPN, cloud metadata). `run.sh` therefore runs `go test` inside an empty network namespace (`bwrap --unshare-net`, loopback only; `unshare -rn` and rootless podman are denied on this host by AppArmor) and refuses to run without such isolation unless `COVERART_ALLOW_HOST_NET=1`. Every run records `netns=` in `ENV.txt`. Tests never print response bodies of refused fetches (length only).
+- Not feasible: a production-client (StrictClient) redirect-chain-limit leg, because StrictClient refuses loopback origins so no local fixture can start a chain.
 - Requires initialised submodules (the `replace` targets of `catalog-api/go.mod`) and a Go toolchain on the host.
   Constitution 11.4.173 wants builds in a container: this runs `go test` on the host, a recorded deviation, like the SMB runner.
 - Real: the product download function, guards and client. Not real: the origin servers (fixtures), and

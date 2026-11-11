@@ -2,7 +2,7 @@
 # CAT-COVERART-LIVE-1: live cover-art fetch checks (F2 32 MiB cap, F4 redirect/private blocking)
 # through the REAL CoverArtService.downloadImage. See README.md for scope and limits.
 #
-# Usage: run.sh [--out DIR] [--mutate cap|strict|netguard|m1|m2|m5|m7|m8] | --parse FILE | --help
+# Usage: run.sh [--out DIR] [--mutate cap|strict|netguard|m1|m2|m5|m7|m8|n1] | --parse FILE | --help
 # Exit: 0 PASS, 1 FAIL, 64 usage error, 2 environment problem (cannot determine).
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -47,7 +47,7 @@ while [ $# -gt 0 ]; do
     *) echo "unknown option: $1" >&2; usage >&2; exit 64 ;;
   esac
 done
-case "$MUT" in ""|cap|strict|netguard|m1|m2|m5|m7|m8) ;; *) echo "unknown mutation: $MUT" >&2; exit 64 ;; esac
+case "$MUT" in ""|cap|strict|netguard|m1|m2|m5|m7|m8|n1) ;; *) echo "unknown mutation: $MUT" >&2; exit 64 ;; esac
 
 [ -d "$API/../submodules/security" ] && [ -n "$(ls -A "$API/../submodules/security" 2>/dev/null)" ] || {
   echo "submodules (replace targets of catalog-api/go.mod) are not initialised" >&2; exit 2; }
@@ -72,6 +72,8 @@ if [ -n "$MUT" ]; then
               sed 's/netguard.StrictClient(30\*time.Second, 3, netguard.HTTPOrHTTPS), \/\/ image URLs/netguard.Client(30*time.Second, 3, netguard.HTTPOrHTTPS), \/\/ image URLs/' "$SRC" > "$SCR/m.go" ;;
     m2)       SRC="$API/internal/netguard/netguard.go"
               sed 's/ip.IsMulticast() || ip.IsLinkLocalUnicast() ||/ip.IsMulticast() ||/' "$SRC" > "$SCR/m.go" ;;
+    n1)       SRC="$API/internal/netguard/netguard.go"
+              sed 's/len(via) > maxRedirects ||/len(via) > maxRedirects+1 ||/' "$SRC" > "$SCR/m.go" ;;
     m5)       SRC="$API/internal/netguard/netguard.go"
               sed 's/len(via) > maxRedirects || //' "$SRC" > "$SCR/m.go" ;;
     m7)       SRC="$API/internal/netguard/netguard.go"
@@ -87,8 +89,8 @@ if [ -n "$MUT" ]; then
   diff -u "$SRC" "$SCR/m.go" > "$OUT/mutation.diff.txt"
 fi
 
-{ echo "date_utc=$TS"; echo "mutation=${MUT:-none}"; echo "go=$(go version)"; echo "git_head=$(git -C "$REPO" rev-parse HEAD)";
-  echo "git_tree=$(git -C "$REPO" rev-parse 'HEAD^{tree}')"; echo "git_dirty_outside_results=$(git -C "$REPO" status --porcelain | grep -vc 'docs/qa/coverart/results/')";
+{ echo "date_utc=$TS"; echo "mutation=${MUT:-none}"; echo "go=$(go version)"; echo "git_head=$(git -C "$REPO" rev-parse HEAD 2>/dev/null || echo UNKNOWN)";
+  echo "git_tree=$(git -C "$REPO" rev-parse 'HEAD^{tree}' 2>/dev/null || echo UNKNOWN)"; echo "git_dirty_outside_results=$(git -C "$REPO" rev-parse --git-dir >/dev/null 2>&1 && git -C "$REPO" status --porcelain | grep -vc 'docs/qa/coverart/results/' || echo UNKNOWN)";
   echo "test_file_sha256=$(sha256sum "$API/internal/services/coverart_live_ssrf_test.go" | cut -d' ' -f1)"; echo "run_sh_sha256=$(sha256sum "${BASH_SOURCE[0]}" | cut -d' ' -f1)"; echo "host=$(uname -srm)"; } > "$OUT/ENV.txt"
 
 PRE=(env GOMAXPROCS="${GOMAXPROCS:-2}" nice -n 10)
@@ -96,9 +98,22 @@ if command -v systemd-run >/dev/null && [ -S /run/user/$(id -u)/bus ]; then
   PRE=(env GOMAXPROCS="${GOMAXPROCS:-2}" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
        systemd-run --user --scope -q -p MemoryMax=4G -p MemorySwapMax=0 nice -n 10)
 fi
-( cd "$API" && "${PRE[@]}" go test -count=1 -tags live_coverart "${OVL[@]}" -run "$RUN_RE" -v "$PKG" ) > "$OUT/go_test.txt" 2>&1
+# Network isolation: the IP-literal cases (169.254.169.254, 10.0.0.5) would make real off-host TCP
+# attempts under a guard regression/mutant. The test binary therefore runs in an empty network
+# namespace (bubblewrap --unshare-net; only loopback exists). Without it the run is refused unless
+# COVERART_ALLOW_HOST_NET=1 is set explicitly.
+NETNS="none"
+if command -v bwrap >/dev/null && bwrap --unshare-net --bind / / --dev-bind /dev /dev --proc /proc true 2>/dev/null; then
+  NETNS="bwrap-unshare-net"
+  PRE+=(bwrap --unshare-net --bind / / --dev-bind /dev /dev --proc /proc)
+elif [ "${COVERART_ALLOW_HOST_NET:-}" != "1" ]; then
+  echo "no network isolation available (bwrap --unshare-net); refusing (set COVERART_ALLOW_HOST_NET=1 to accept off-host risk)" >&2; exit 2
+fi
+echo "netns=$NETNS" >> "$OUT/ENV.txt"
+RACE=(); [ "${COVERART_RACE:-}" = "1" ] && RACE=(-race) && echo "race=1" >> "$OUT/ENV.txt"
+( cd "$API" && "${PRE[@]}" go test -count=1 "${RACE[@]}" -tags live_coverart "${OVL[@]}" -run "$RUN_RE" -v "$PKG" ) > "$OUT/go_test.txt" 2>&1
 echo "go_test_exit=$?" >> "$OUT/ENV.txt"
-( cd "$API" && "${PRE[@]}" go test -count=1 -tags live_coverart "${OVL[@]}" -run "$RUN_RE" -json "$PKG" ) > "$OUT/go_test.json.txt" 2>&1
+( cd "$API" && "${PRE[@]}" go test -count=1 "${RACE[@]}" -tags live_coverart "${OVL[@]}" -run "$RUN_RE" -json "$PKG" ) > "$OUT/go_test.json.txt" 2>&1
 
 for f in "$OUT"/go_test.txt "$OUT"/go_test.json.txt "$OUT"/mutation.diff.txt; do
   [ -f "$f" ] && sed -i "s#$HOME#~#g" "$f"; done

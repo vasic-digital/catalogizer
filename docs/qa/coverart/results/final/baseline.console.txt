@@ -1,2 +1,0 @@
-VERDICT: PASS (10 required tests passed, no FAIL)
-evidence: results/final/baseline
