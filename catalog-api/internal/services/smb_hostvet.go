@@ -72,7 +72,6 @@ func embeddedV4(ip net.IP) net.IP {
 }
 
 var (
-	cgnatNet     = &net.IPNet{IP: net.IPv4(100, 64, 0, 0), Mask: net.CIDRMask(10, 32)}
 	nat64LocalNe = &net.IPNet{IP: net.ParseIP("64:ff9b:1::"), Mask: net.CIDRMask(48, 128)}
 )
 
@@ -85,8 +84,8 @@ func smbIPBlockedBase(ip net.IP) bool {
 			return true
 		}
 	}
-	if ip.Equal(net.IPv4bcast) || cgnatNet.Contains(ip) || nat64LocalNe.Contains(ip) {
-		return true // limited broadcast, CGNAT 100.64.0.0/10, local-use NAT64 64:ff9b:1::/48
+	if ip.Equal(net.IPv4bcast) || nat64LocalNe.Contains(ip) {
+		return true // limited broadcast, local-use NAT64 64:ff9b:1::/48
 	}
 	return false
 }
