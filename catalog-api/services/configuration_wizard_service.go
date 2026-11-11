@@ -1174,9 +1174,10 @@ func (s *ConfigurationWizardService) createConfigurationFile(params map[string]i
 		return err
 	}
 
-	// NOTE: the "template" parameter is accepted for forward compatibility but
-	// template loading/merging has never been implemented (git: 5bbaeae9); the
-	// session configuration is always what gets written.
+	// NOTE: a "template" parameter is accepted but template loading/merging has
+	// never been implemented (git: 5bbaeae9), so a declared template (e.g. the
+	// built-in PostInstall step naming config_template.json) is silently ignored;
+	// the session configuration is always what gets written. See CAT-QA-SONAR-5.
 	_ = template
 	data := session.Configuration
 
