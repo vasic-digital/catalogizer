@@ -4,11 +4,21 @@
 > A fresh session that receives only the prompt `continue` MUST read this file first, then
 > `docs/FOLLOW_UPS_NEXT_PHASE.md`, then resume the §11.4.126 loop with the steps in "RESUME ORDER".
 
-**Revision:** 18
+**Revision:** 19
 **Last modified:** 2026-11-11
-**Exports:** `CONTINUATION.html` / `CONTINUATION.pdf` regenerated at Rev 18 with `pandoc -s` (HTML) and `weasyprint` (PDF) from this file; this `.md` is authoritative.
+**Exports:** `CONTINUATION.html` / `CONTINUATION.pdf` regenerated at Rev 19 with `pandoc -s` (HTML) and `weasyprint` (PDF) from this file; this `.md` is authoritative.
 
-## 0.0 Rev 18 delta (since Rev 17; main = `031045eb`)
+## 0.00 Rev 19 delta (since Rev 18; main = `791a5fba`; release prep branch `release/v2.4.1-prep`)
+
+* **v2.4.1 content is prepared, not tagged.** Branch `release/v2.4.1-prep` (from `main` `791a5fba`) bumps every product version to 2.4.1 (Android `versionCode` 7, Android TV 9) and adds `[2.4.1]` to `docs/CHANGELOG.md` with separate VERIFIED / PROVISIONAL / REOPENED / OVERDUE sections. It is a pre-release candidate. The full-suite retest (11.4.40) and 11.4.185 manual QA are still owed; nothing is production-ready.
+* Landed on `main` since Rev 18 (all PROVISIONAL-DONE): SMB-FU-10/12/14 (Opus round 5 GO-with-follow-ups, F1/F2/F4 in `15a5735c`), LIFE-FU-5..9 and LIFE-FU-10..15 (shim-verified), stack scripts via ctrctl STACK-CTR-FU-6..13 (shim-verified), dead-SMB follow-up register entries, `docs/PROVISIONAL_VERIFICATION_PLAN.md`, SonarQube run3 evidence and triage (CAT-QA-SONAR-1 / -2), CAT-QA-SONAR-1b note.
+* **SMB live-run status reconciled.** Two different live runs exist and the old text conflated them: (1) `26e38446`: `cattsrv-smb` test server, share `corpus`, sub `corpus/nested`, 3/3 identical PASS plus a failing negative control, evidence `docs/qa/smb-subdir-20261110/live-run-20261111T121104Z/` (checksums verify) = VERIFIED for that target. (2) `4640ed37`: the host Samba `Public/Testing` ("Anton"), main `e5817850`, TestLiveSMBSubdir and TestLiveSMBServiceSubdir PASS, N=1, README and log sha256 only (log NOT committed) = PROVISIONAL. Neither is a bare-IP proof or a Synology run. The "Anton run held" wording in Rev 18 section 0.0 and in `[2.4.0]` is superseded by this paragraph; the stale notes in FOLLOW_UPS (SMB-FU-5), `docs/PROVISIONAL_VERIFICATION_PLAN.md` 2.4 and section 4b were annotated.
+* Synology stays SKIP (`hardware_not_present`), drives off since 2026-11-05.
+* Held/owed: live `stack3/up.sh` through the Containers backend; N>=3 Anton re-run with committed logs; bare-IP SMB live leg; Tauri native GUI; Android real login; Vision/HelixQA UI QA; CAT-QA-SONAR-2 triage fixes.
+* Next steps: review the prep branch (11.4.209 substrate), merge to `main` fast-forward (11.4.288), run the PROVISIONAL plan, full-suite retest, manual QA, then decide tag `v2.4.1` (pre-release or production) per `docs/PROVISIONAL_VERIFICATION_PLAN.md` section 4.
+* Not verified while writing Rev 19: upstream parity of `main`, whether any stack 3 or test-server container is running, and whether the prep branch has been pushed anywhere (it has not been by this change).
+
+## 0.0 Rev 18 delta (history) (since Rev 17; main = `031045eb`)
 
 * **`v2.4.0` is released as a labelled pre-release.** `main` HEAD = `031045eb` (merge of `release/v2.4.0-prep`: version files 2.4.0, v2.4.0 pre-release changelog; Opus GO-with-follow-ups). The annotated tag `v2.4.0` is on `031045eb` and pushed to the six upstreams. Pre-release objects created: GitHub (`vasic-digital/catalogizer`, `milos85vasic/Catalogizer`) and GitLab (`milos85vasic/Catalogizer`, `vasic-digital/catalogizer`). GitFlic and GitVerse carry the tag only; their releases are OWED.
 * Landed in this window (all PROVISIONAL-DONE): `73d1f825` (stack3 containers lifecycle; DBUS `guid=` root cause, see Rev 17 delta), `2379d5aa` (CONTINUATION Rev 17), `2117fcb5` (LIFE-FU-1..4 registered), `acb95e2f` and `80d9b2d8` (dead SMB code removal, generated schema untracked), `031045eb` (release prep).
@@ -67,7 +77,7 @@ URL map (host <current LAN IP, 192.168.1.17 at Rev 17>): API :38082 (/health), w
 ## 4b. Live test servers + Anton SMB corpus (added Rev 15; containers do NOT survive reboot)
 
 - Test servers (rootless podman `cattsrv-*`, host <current LAN IP, 192.168.1.17 at Rev 17>): SMB :1445 share `corpus`, FTP :42021, FTPS (explicit) :42022, SFTP :42023, WebDAV :42080, HTTP :42081, NFS v3 :42049 (userspace rclone, read-only). Corpus `/home/milosvasic/Testing-servers/corpus` (12 files, `manifest.sha256`); writable only in `corpus/rw/`. Credentials (user `catsvc`) only in `/home/milosvasic/.cache/claude-tmp/catqa3/testservers.env` (0600). After a reboot: `docs/qa/test-servers/up.sh`, then `verify.sh` (NFS leg needs `TS_NFS_MNT=<premounted dir>`). Evidence in `/home/milosvasic/Testing-servers/evidence/` (outside git; `verify_20261106T125600.log` fail=0). Sudo used only for an NFS probe mount (undone); logged in `evidence/sudo_actions.log`. Catalogizer SMB non-445 port read from code, NOT yet run live.
-- Anton SMB (this host's own samba :445): `Public/Testing` corpus, evidence `docs/qa/anton-smb-20261106/`. CAT-SMB-SUBDIR-1 open (no subdir scoping).
+- Anton SMB (this host's own samba :445): `Public/Testing` corpus, evidence `docs/qa/anton-smb-20261106/`. CAT-SMB-SUBDIR-1: sub-directory scoping is implemented; live runs are in the Rev 19 delta (cattsrv-smb 3/3; Anton N=1, log not committed).
 - Rate-limit isolation: substitute-source VERIFIED 3/3 (`docs/qa/second-host-20261106/`); real remote NIC UNCONFIRMED.
 
 ## 5. RESUME ORDER (what "continue" means)

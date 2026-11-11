@@ -1663,6 +1663,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - SMB-FU-8: live SMB subdir tests unverified; CAT-SMB-SUBDIR-1 stays PROVISIONAL until docs/qa/smb-subdir-20261110/run.sh passes N>=3.
 
 - SMB-FU-5/8 RESULT (2026-11-11): live run executed on cattsrv-smb (share corpus, sub corpus/nested), 3/3 identical PASS for TestLiveSMBSubdir + TestLiveSMBServiceSubdir, negative control (zeroed sha) FAILs as required. Evidence: docs/qa/smb-subdir-20261110/live-run-20261111T121104Z/. CAT-SMB-SUBDIR-1 is VERIFIED for that target; CAVEAT: the original Anton `Public/Testing` target was not run (tests now env-parametrised, defaults unchanged). Optional: one run on Anton Public/Testing.
+- SMB-FU-5 UPDATE (2026-11-11, later): one run on the Anton host Samba share `Public`, sub `Testing` was recorded on main e5817850 (TestLiveSMBSubdir 4 outside-name probes PASS, TestLiveSMBServiceSubdir PASS), evidence `docs/qa/smb-subdir-20261110/live-run-anton-20261111T190325Z/` (README + log sha256 only; the log file itself was NOT committed; N=1). Scope: host Samba by host name, not a bare-IP proof, not Synology. PROVISIONAL until re-run N>=3 with logs committed. The earlier line "never executed yet" is superseded.
 
 ## CAT-FOLLOWUPS-UNIT-1 review follow-ups (2026-11-11, Opus GO-with-follow-ups)
 - FU20-3b (test-instrumentation): decide whether fractional knob sizes (w-3.5 h-3.5) are exempt; replace the it.todo in contrastHelper.test.ts.
