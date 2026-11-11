@@ -13,6 +13,13 @@ vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: any) => <>{children}</>,
 }))
 
+// Icons carry a data-icon marker (the real lucide icons drop their identifying
+// class when a className is passed), so controls can be located by icon.
+vi.mock('lucide-react', () => {
+  const names = ['GripVertical','Play','Pause','SkipForward','SkipBack','Volume2','Maximize2','MoreHorizontal','Shuffle','Repeat','List','Share','BarChart3','X','ChevronLeft','ChevronRight','Music','FileText']
+  return Object.fromEntries(names.map(n => [n, ({ className }: { className?: string }) => <svg data-icon={n} className={className} />]))
+})
+
 vi.mock('../../media/MediaPlayer', () => ({
   MediaPlayer: () => <div data-testid="media-player">Media Player</div>,
 }))
@@ -86,6 +93,13 @@ const mockItems = [
   },
 ]
 
+// Controls have no accessible names, so locate them by their icon.
+const buttonWithIcon = (icon: string): HTMLButtonElement => {
+  const svg = document.querySelector(`button svg[data-icon="${icon}"]`)
+  expect(svg).not.toBeNull()
+  return svg!.closest('button') as HTMLButtonElement
+}
+
 describe('PlaylistPlayer', () => {
   it('renders playlist name', () => {
     render(<PlaylistPlayer playlist={mockPlaylist as any} items={mockItems as any} />)
@@ -119,12 +133,9 @@ describe('PlaylistPlayer', () => {
       />
     )
 
-    // Find close button
-    const buttons = screen.getAllByRole('button')
-    const closeBtn = buttons.find(btn => btn.querySelector('svg'))
-    if (closeBtn) {
-      await user.click(closeBtn)
-    }
+    expect(onClose).not.toHaveBeenCalled()
+    await user.click(buttonWithIcon('X'))
+    expect(onClose).toHaveBeenCalledTimes(1)
   })
 
   it('displays track list', () => {
@@ -148,30 +159,28 @@ describe('PlaylistPlayer', () => {
     const user = userEvent.setup()
     render(<PlaylistPlayer playlist={mockPlaylist as any} items={mockItems as any} />)
 
-    // Find the main play/pause button (large, rounded-full)
-    const buttons = screen.getAllByRole('button')
-    const playBtn = buttons.find(btn => btn.classList.contains('rounded-full'))
-    if (playBtn) {
-      await user.click(playBtn)
-      // After click, it should toggle play state
-      await user.click(playBtn)
-    }
+    const playBtn = screen.getAllByRole('button').find(btn => btn.classList.contains('rounded-full'))!
+    expect(playBtn).toBeDefined()
+    expect(playBtn.querySelector('svg[data-icon="Play"]')).not.toBeNull()
+    await user.click(playBtn)
+    expect(playBtn.querySelector('svg[data-icon="Pause"]')).not.toBeNull()
+    expect(playBtn.querySelector('svg[data-icon="Play"]')).toBeNull()
+    await user.click(playBtn)
+    expect(playBtn.querySelector('svg[data-icon="Play"]')).not.toBeNull()
+    expect(playBtn.querySelector('svg[data-icon="Pause"]')).toBeNull()
   })
 
   it('handles next track navigation', async () => {
     const user = userEvent.setup()
     render(<PlaylistPlayer playlist={mockPlaylist as any} items={mockItems as any} />)
 
-    // Find the skip forward button (not disabled when there are more tracks)
-    const buttons = screen.getAllByRole('button')
-    const nextBtn = buttons.find(btn => {
-      const svg = btn.querySelector('svg')
-      return svg && !btn.disabled
-    })
-    // Click to advance
-    if (nextBtn) {
-      await user.click(nextBtn)
-    }
+    expect(screen.getByText('1 of 2')).toBeInTheDocument()
+    const nextBtn = buttonWithIcon('SkipForward')
+    expect(nextBtn).not.toBeDisabled()
+    await user.click(nextBtn)
+    expect(screen.getByText('2 of 2')).toBeInTheDocument()
+    // Last track: next is now disabled
+    expect(nextBtn).toBeDisabled()
   })
 
   it('handles shuffle toggle', async () => {
@@ -185,12 +194,14 @@ describe('PlaylistPlayer', () => {
       />
     )
 
-    // Find shuffle button (first ghost button in controls)
-    const buttons = screen.getAllByRole('button')
-    // Shuffle is typically the first small button
-    if (buttons.length > 0) {
-      await user.click(buttons[0])
-    }
+    const shuffleBtn = buttonWithIcon('Shuffle')
+    expect(shuffleBtn.className).not.toContain('text-blue-600')
+    await user.click(shuffleBtn)
+    expect(onShuffle).toHaveBeenCalledTimes(1)
+    expect(shuffleBtn.className).toContain('text-blue-600')
+    await user.click(shuffleBtn)
+    expect(onShuffle).toHaveBeenCalledTimes(2)
+    expect(shuffleBtn.className).not.toContain('text-blue-600')
   })
 
   it('handles repeat mode cycling', async () => {
@@ -204,13 +215,19 @@ describe('PlaylistPlayer', () => {
       />
     )
 
-    // Find the repeat button
-    const buttons = screen.getAllByRole('button')
-    // Repeat button is typically the last small button in controls
-    if (buttons.length > 3) {
-      const lastSmallBtn = buttons[buttons.length - 1]
-      await user.click(lastSmallBtn)
-    }
+    const repeatBtn = buttonWithIcon('Repeat')
+    const icon = () => repeatBtn.querySelector('svg')!.getAttribute('class') ?? ''
+    expect(repeatBtn.className).not.toContain('text-blue-600')
+    await user.click(repeatBtn) // off -> all
+    expect(onRepeat).toHaveBeenCalledTimes(1)
+    expect(repeatBtn.className).toContain('text-blue-600')
+    expect(icon()).not.toContain('scale-x-[-1]')
+    await user.click(repeatBtn) // all -> one
+    expect(onRepeat).toHaveBeenCalledTimes(2)
+    expect(icon()).toContain('scale-x-[-1]')
+    await user.click(repeatBtn) // one -> off
+    expect(onRepeat).toHaveBeenCalledTimes(3)
+    expect(repeatBtn.className).not.toContain('text-blue-600')
   })
 
   it('renders with initialIndex prop', () => {

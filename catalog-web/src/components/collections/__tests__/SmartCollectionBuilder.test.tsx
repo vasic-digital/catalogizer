@@ -142,15 +142,13 @@ describe('SmartCollectionBuilder', () => {
     // Add a second rule first
     await user.click(screen.getByText('Add Rule'))
 
-    // Find remove buttons (trash icon buttons)
-    const removeButtons = document.querySelectorAll('button')
-    const trashButtons = Array.from(removeButtons).filter(btn =>
-      btn.querySelector('svg') && btn.closest('.border.border-gray-200')
-    )
+    const before = screen.getAllByLabelText('Rule field').length
+    expect(before).toBeGreaterThanOrEqual(2)
+    const removeButtons = screen.getAllByTitle('Remove rule')
+    expect(removeButtons).toHaveLength(before)
+    await user.click(removeButtons[removeButtons.length - 1])
 
-    if (trashButtons.length > 0) {
-      await user.click(trashButtons[trashButtons.length - 1] as HTMLElement)
-    }
+    expect(screen.getAllByLabelText('Rule field')).toHaveLength(before - 1)
   })
 
   it('toggles Quick Start Templates section visibility', async () => {
@@ -235,10 +233,11 @@ describe('SmartCollectionBuilder', () => {
     render(<SmartCollectionBuilder {...defaultProps} />)
 
     // Find the first field select (should exist from initial rule)
-    const selects = document.querySelectorAll('select')
-    if (selects.length > 0) {
-      await user.selectOptions(selects[0] as HTMLSelectElement, 'year')
-    }
+    const fieldSelect = screen.getAllByLabelText('Rule field')[0] as HTMLSelectElement
+    const initial = fieldSelect.value
+    expect(initial).not.toBe('year')
+    await user.selectOptions(fieldSelect, 'year')
+    expect((screen.getAllByLabelText('Rule field')[0] as HTMLSelectElement).value).toBe('year')
   })
 
   it('renders with initial rules', () => {

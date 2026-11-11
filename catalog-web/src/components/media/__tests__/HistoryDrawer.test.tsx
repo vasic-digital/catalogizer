@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { HistoryDrawer } from '../HistoryDrawer'
@@ -216,12 +216,35 @@ describe('HistoryDrawer', () => {
     )
     mockListEntityHistory.mockResolvedValue([])
 
-    const { unmount } = render(<HistoryDrawer {...defaultProps} />)
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { unmount, container } = render(<HistoryDrawer {...defaultProps} />)
+    expect(mockGetEntityProgress).toHaveBeenCalledWith(42)
     unmount()
 
     resolveProgress(sampleProgress)
-    // No assertion needed -- the test verifies no React state update errors
-    // occur after unmount (the cancelled flag prevents setState after unmount)
+    await act(async () => { await Promise.resolve() })
+    // The late resolution must not render anything nor trigger a React error
+    // (the cancelled flag prevents setState after unmount).
+    expect(container).toBeEmptyDOMElement()
+    expect(screen.queryByText('Total reproduced')).not.toBeInTheDocument()
+    expect(errorSpy).not.toHaveBeenCalled()
+    errorSpy.mockRestore()
+
+    // A superseded request must not overwrite newer state: while the request for
+    // item 42 is pending, switch to item 43 (no sessions), then let 42 resolve late.
+    let resolveStale: (v: UiPlaybackSession[]) => void = (_v) => { /* noop default */ }
+    mockGetEntityProgress.mockResolvedValue(null)
+    mockListEntityHistory.mockReset()
+    mockListEntityHistory.mockImplementation((id: number) =>
+      id === 42
+        ? new Promise((resolve) => { resolveStale = resolve })
+        : Promise.resolve([]),
+    )
+    const view = render(<HistoryDrawer {...defaultProps} />)
+    view.rerender(<HistoryDrawer {...defaultProps} mediaItemId={43} />)
+    await screen.findByText('No sessions yet. Press Play to record your first.')
+    await act(async () => { resolveStale(sampleSessions) })
+    expect(screen.getByText('No sessions yet. Press Play to record your first.')).toBeInTheDocument()
   })
 
   it('re-fetches when mediaItemId changes', async () => {

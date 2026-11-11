@@ -104,16 +104,22 @@ describe('useCoverQuality', () => {
         }),
       ),
     );
-    const { unmount } = render(<TestConsumer id={88} debug={true} />);
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { unmount, container } = render(<TestConsumer id={88} debug={true} />);
+    const [, init] = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(init.signal.aborted).toBe(false);
     unmount();
+    // Unmount must abort the in-flight request.
+    expect(init.signal.aborted).toBe(true);
     // Simulate the fetch rejecting with AbortError after unmount.
     const abortErr = new Error('aborted');
     (abortErr as { name?: string }).name = 'AbortError';
     await act(async () => {
       abortedRejecter(abortErr);
     });
-    // No assertion on state — the point is that no React error is thrown
-    // and nothing else leaks. Vitest would surface any uncaught error.
+    // The rejection is swallowed: nothing is rendered and React logged no error.
+    expect(container).toBeEmptyDOMElement();
+    expect(errorSpy).not.toHaveBeenCalled();
   });
 
   it('encodes special characters in coverId before requesting', async () => {
