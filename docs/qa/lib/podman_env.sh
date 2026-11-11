@@ -19,13 +19,14 @@
 
 # Remove ONLY the "guid=" key from each ';'-separated D-Bus address, keeping every other parameter and the transport.
 _qa_strip_guid() {
-  local in="${1-}" out="" part tr kept p oldifs="$IFS" more=1 noglob=1
+  local IFS   # function-local: the caller's IFS (even unset) is restored on return
+  local in="${1-}" out="" part tr kept p more=1 noglob=1
   case $- in *f*) ;; *) noglob=0; set -f;; esac   # params like "a*" must never glob against cwd files
   while [ "$more" = 1 ]; do
     part="${in%%;*}"; if [ "$in" = "$part" ]; then more=0; else in="${in#*;}"; fi
     tr="${part%%:*}"
     if [ "$tr" != "$part" ]; then
-      kept=""; IFS=,; for p in ${part#*:}; do case "$p" in guid=*) ;; *) kept="${kept:+$kept,}$p";; esac; done; IFS="$oldifs"
+      kept=""; IFS=,; for p in ${part#*:}; do case "$p" in guid=*) ;; *) kept="${kept:+$kept,}$p";; esac; done
       part="$tr:$kept"
     fi
     out="${out:+$out;}$part"
@@ -76,13 +77,13 @@ qa_stack_backend_info() {
 }
 
 _qa_stack_run() { # <start|stop|status> <container>
-  local b r; b="$(_qa_stack_backend)"
+  local b r=0; b="$(_qa_stack_backend)"
   case "$b" in
-    containers\ *) _qa_stack_log "backend=containers ctrctl_sha256=$(sha256sum "${b#containers }" | cut -d' ' -f1)"; "${b#containers }" "$1" "$2"; r=$?; [ "$r" = 69 ] && r=1; return "$r";;   # 69 is reserved for "backend unavailable"
+    containers\ *) _qa_stack_log "backend=containers ctrctl_sha256=$(sha256sum "${b#containers }" | cut -d' ' -f1)"; "${b#containers }" "$1" "$2" || r=$?; [ "$r" = 69 ] && r=1; return "$r";;   # 69 is reserved for "backend unavailable"
     podman)
       if [ "${QA_STACK_BACKEND:-auto}" = podman ]; then _qa_stack_log "backend=podman FORCED by QA_STACK_BACKEND=podman DEVIATION 11.4.76/11.4.173: using rootless podman directly (Containers submodule runtime not used)"
       else _qa_stack_log "backend=podman DEVIATION 11.4.76/11.4.173: using rootless podman directly (Containers submodule runtime unavailable here)"; fi
-      podman "$1" "$2" >/dev/null;;
+      podman "$1" "$2" >/dev/null || { r=$?; [ "$r" = 69 ] && r=1; return "$r"; };;
     *) return 69;;
   esac
 }
@@ -100,7 +101,7 @@ _qa_stack_need_timeout() {
 
 qa_stack_wait_healthy() { # <container> [timeout]
   _qa_stack_need_timeout || return $?
-  local c="$1" t="${2:-${QA_HEALTH_TIMEOUT:-120}}" i=0 st end=$((SECONDS + ${2:-${QA_HEALTH_TIMEOUT:-120}}))
+  local c="$1" t="${2:-${QA_HEALTH_TIMEOUT:-120}}" i=0 st="" end=$((SECONDS + ${2:-${QA_HEALTH_TIMEOUT:-120}}))
   while [ "$i" -lt "$t" ] && [ "$SECONDS" -lt "$end" ]; do
     st="$(_qa_stack_state "$c")" || { _qa_stack_log "$c not found"; return 1; }
     case "$st" in
@@ -109,19 +110,19 @@ qa_stack_wait_healthy() { # <container> [timeout]
     esac
     sleep 1; i=$((i+1))
   done
-  _qa_stack_log "$c not healthy after ${t}s"; return 1
+  _qa_stack_log "$c not healthy after ${t}s (last state: ${st:-unobserved})"; return 1
 }
 
 qa_stack_start() {
   _qa_stack_check_name "${1-}" || return $?
   _qa_stack_need_timeout || return $?   # pre-flight: never start a container whose health cannot then be waited on
   qa_podman_env_normalize
-  local rc; _qa_stack_run start "$1"; rc=$?; [ "$rc" = 69 ] && return 69; [ "$rc" = 0 ] || { _qa_stack_log "start $1 failed"; return 1; }
+  local rc=0; _qa_stack_run start "$1" || rc=$?; [ "$rc" = 69 ] && return 69; [ "$rc" = 0 ] || { _qa_stack_log "start $1 failed"; return 1; }
   qa_stack_wait_healthy "$1"
 }
 
 qa_stack_stop() {
   _qa_stack_check_name "${1-}" || return $?
   qa_podman_env_normalize
-  local rc; _qa_stack_run stop "$1"; rc=$?; [ "$rc" = 69 ] && return 69; [ "$rc" = 0 ] || { _qa_stack_log "stop $1 failed"; return 1; }
+  local rc=0; _qa_stack_run stop "$1" || rc=$?; [ "$rc" = 69 ] && return 69; [ "$rc" = 0 ] || { _qa_stack_log "stop $1 failed"; return 1; }
 }
