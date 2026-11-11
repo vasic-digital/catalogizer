@@ -221,8 +221,7 @@ describe('SubtitleManager Page', () => {
       render(<SubtitleManager />, { wrapper: createWrapper() })
       await user.click(screen.getByText('Select Media'))
       await user.type(screen.getByPlaceholderText(/Search for movies/), 'alien')
-      const result = (await screen.findByText('Alien Resurrection')).closest('[role="button"]') as HTMLElement
-      expect(result).toHaveAttribute('tabindex', '0')
+      const result = (await screen.findByText('Alien Resurrection')).closest('button') as HTMLElement
       result.focus()
       await user.keyboard(key)
       expect(screen.queryByText('Search for Media')).not.toBeInTheDocument()

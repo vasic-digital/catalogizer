@@ -5,10 +5,12 @@ import { useFavoriteStatus, useFavorites } from '@/hooks/useFavorites'
 import { cn } from '@/lib/utils'
 import type { MediaItem } from '@/types/media'
 
+type FavoriteToggleSize = 'sm' | 'md' | 'lg'
+
 interface FavoriteToggleProps {
   mediaId: number
   mediaItem?: MediaItem
-  size?: 'sm' | 'md' | 'lg'
+  size?: FavoriteToggleSize
   variant?: 'button' | 'icon' | 'card'
   className?: string
   showLabel?: boolean
@@ -26,7 +28,7 @@ const ToggleIcon: React.FC<{
   isLoading: boolean
   isFavorite: boolean
   isHovered: boolean
-  size: 'sm' | 'md' | 'lg'
+  size: FavoriteToggleSize
   spaced?: boolean
 }> = ({ isLoading, isFavorite, isHovered, size, spaced = false }) => {
   if (isLoading) {
@@ -45,7 +47,7 @@ const ToggleIcon: React.FC<{
 }
 
 interface VariantProps {
-  size: 'sm' | 'md' | 'lg'
+  size: FavoriteToggleSize
   className?: string
   showLabel: boolean
   disabled: boolean
@@ -114,6 +116,9 @@ const CardVariant: React.FC<VariantProps> = ({ size, className, disabled, isFavo
 }
 
 const ButtonVariant: React.FC<VariantProps> = ({ size, className, showLabel, disabled, isFavorite, isLoading, isHovered, handleToggle, handleMouseEnter, handleMouseLeave }) => {
+  let label = isFavorite ? 'Remove from Favorites' : 'Add to Favorites'
+  if (isLoading) label = 'Loading...'
+
   return (
     <Button
       variant={isFavorite ? 'primary' : 'outline'}
@@ -130,9 +135,7 @@ const ButtonVariant: React.FC<VariantProps> = ({ size, className, showLabel, dis
       )}
     >
       <ToggleIcon isLoading={isLoading} isFavorite={isFavorite} isHovered={isHovered} size={size} spaced />
-      {showLabel && (
-        isLoading ? 'Loading...' : (isFavorite ? 'Remove from Favorites' : 'Add to Favorites')
-      )}
+      {showLabel && label}
     </Button>
   )
 }

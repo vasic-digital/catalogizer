@@ -4,7 +4,6 @@ import { Play, Pause, Volume2, Eye, MoreHorizontal, Music, Film, Image, FileText
 import { SmartCollection } from '../../types/collections'
 import { useCollection } from '../../hooks/useCollections'
 import { Button } from '../ui/Button'
-import { onActivateKey } from '../../lib/keyboard'
 
 interface CollectionItem {
   id: string
@@ -213,29 +212,14 @@ export const CollectionPreview: React.FC<CollectionPreviewProps> = ({
                       onClick={() => handlePreviewItem(item.id, { stopPropagation: () => { /* noop */ } } as React.MouseEvent)}
                     >
                       {/* Selection Checkbox */}
-                      <div 
-                        className="absolute left-2 top-1/2 -translate-y-1/2"
+                      <input
+                        type="checkbox"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 cursor-pointer accent-blue-500"
+                        checked={isSelected}
+                        onChange={() => { /* handled in onClick to keep stopPropagation semantics */ }}
                         onClick={(e) => handleItemSelect(item.id, e)}
-                        onKeyDown={onActivateKey((e) => handleItemSelect(item.id, e))}
-                        role="checkbox"
-                        aria-checked={isSelected}
                         aria-label="Select item"
-                        tabIndex={0}
-                      >
-                        <div className={`
-                          w-4 h-4 rounded border-2 transition-colors
-                          ${isSelected 
-                            ? 'bg-blue-500 border-blue-500' 
-                            : 'border-gray-300 dark:border-gray-600'
-                          }
-                        `}>
-                          {isSelected && (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <div className="w-2 h-2 bg-white rounded-sm"></div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                      />
 
                       {/* Thumbnail/Icon */}
                       <div className="relative ml-6">

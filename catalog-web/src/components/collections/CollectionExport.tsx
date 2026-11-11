@@ -21,7 +21,6 @@ import { Card } from '../ui/Card'
 import { SmartCollection } from '../../types/collections'
 import { useCollection } from '../../hooks/useCollections'
 import { toast } from 'react-hot-toast'
-import { onActivateKey } from '../../lib/keyboard';
 
 interface CollectionExportProps {
   collection: SmartCollection
@@ -720,12 +719,9 @@ export const CollectionExport: React.FC<CollectionExportProps> = ({
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Import File</h3>
                   
                   <div className="space-y-4">
-                    <div
+                    <button type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      onKeyDown={onActivateKey(() => fileInputRef.current?.click())}
-                      role="button"
-                      tabIndex={0}
-                      className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition-colors"
+                      className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition-colors w-full"
                     >
                       <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <div className="text-gray-900 dark:text-white font-medium mb-2">
@@ -734,14 +730,14 @@ export const CollectionExport: React.FC<CollectionExportProps> = ({
                       <div className="text-sm text-gray-600 dark:text-gray-400">
                         JSON, CSV, M3U, or ZIP files
                       </div>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".json,.csv,.m3u,.m3u8,.zip"
-                        onChange={handleImportFile}
-                        className="hidden"
-                      />
-                    </div>
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".json,.csv,.m3u,.m3u8,.zip"
+                      onChange={handleImportFile}
+                      className="hidden"
+                    />
                     
                     {importFile && (
                       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">

@@ -20,7 +20,6 @@ import { Switch } from '../ui/Switch';
 import { Badge } from '../ui/Badge';
 import { toast } from 'react-hot-toast';
 import { randomId } from '../../lib/randomId';
-import { onActivateKey } from '../../lib/keyboard';
 
 interface SearchRule {
   id: string;
@@ -485,13 +484,10 @@ const AdvancedSearch: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {SEARCH_PRESETS.map((preset) => (
-                <div
+                <button type="button"
                   key={preset.id}
-                  className="border rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
+                  className="border rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow text-left"
                   onClick={() => applyPreset(preset)}
-                  onKeyDown={onActivateKey(() => applyPreset(preset))}
-                  role="button"
-                  tabIndex={0}
                 >
                   <div className="flex items-start gap-3">
                     <div className="p-2 rounded-lg bg-blue-100">
@@ -506,7 +502,7 @@ const AdvancedSearch: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -529,13 +525,10 @@ const AdvancedSearch: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 {savedSearches.map((search) => (
-                  <div
+                  <button type="button"
                     key={search.id}
-                    className="border rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
+                    className="border rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow w-full text-left"
                     onClick={() => loadSavedSearch(search)}
-                    onKeyDown={onActivateKey(() => loadSavedSearch(search))}
-                    role="button"
-                    tabIndex={0}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
@@ -550,7 +543,7 @@ const AdvancedSearch: React.FC = () => {
                         Load
                       </span>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             )}

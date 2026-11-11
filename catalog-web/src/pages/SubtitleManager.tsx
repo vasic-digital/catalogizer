@@ -12,7 +12,6 @@ import type {
 } from '@/types/subtitles'
 import type { MediaItem, MediaSearchRequest } from '@/types/media'
 import { COMMON_LANGUAGES } from '@/types/subtitles'
-import { onActivateKey } from '../lib/keyboard';
 
 export const SubtitleManager: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
@@ -275,13 +274,10 @@ export const SubtitleManager: React.FC = () => {
             {mediaSearchResults && mediaSearchResults.items.length > 0 && (
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {mediaSearchResults.items.map((media: MediaItem) => (
-                  <div
+                  <button type="button"
                     key={media.id}
                     onClick={() => handleMediaSelect(media)}
-                    onKeyDown={onActivateKey(() => handleMediaSelect(media))}
-                    role="button"
-                    tabIndex={0}
-                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer transition-colors"
+                    className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer transition-colors w-full text-left"
                   >
                     <h4 className="font-medium text-gray-900 dark:text-white">
                       {media.title}
@@ -291,7 +287,7 @@ export const SubtitleManager: React.FC = () => {
                       {media.year && <span>{media.year}</span>}
                       {media.quality && <span>{media.quality}</span>}
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             )}

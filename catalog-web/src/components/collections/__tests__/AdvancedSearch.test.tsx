@@ -140,8 +140,7 @@ describe('AdvancedSearch accessible names (CAT-UI-D5D6)', () => {
       vi.mocked(toast.success).mockClear()
       render(<AdvancedSearch />)
       await user.click(screen.getByText('Presets'))
-      const card = screen.getByText('HD Movies').closest('[role="button"]') as HTMLElement
-      expect(card).toHaveAttribute('tabindex', '0')
+      const card = screen.getByText('HD Movies').closest('button') as HTMLElement
       card.focus()
       await user.keyboard(key)
       expect(toast.success).toHaveBeenCalledWith('Applied preset: HD Movies')
@@ -154,7 +153,7 @@ describe('AdvancedSearch accessible names (CAT-UI-D5D6)', () => {
       await user.click(screen.getByText('Save Search').closest('button') as HTMLElement)
       await user.click(screen.getByText('Saved'))
       vi.mocked(toast.success).mockClear()
-      const card = screen.getByText(/Custom search with 1 rules/).closest('[role="button"]') as HTMLElement
+      const card = screen.getByText(/Custom search with 1 rules/).closest('button') as HTMLElement
       card.focus()
       await user.keyboard(key)
       expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('Loaded search'))

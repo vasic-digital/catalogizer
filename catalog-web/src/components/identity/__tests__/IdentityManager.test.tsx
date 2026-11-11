@@ -147,7 +147,7 @@ describe('DiscoveredShares keyboard operability (S1082)', () => {
     ] as never)
     const user = userEvent.setup()
     render(<DiscoveredShares />, { wrapper: createWrapper() })
-    const header = (await screen.findByText('nas')).closest('[role="button"]') as HTMLElement
+    const header = (await screen.findByText('nas')).closest('button') as HTMLElement
     expect(header).toHaveAttribute('aria-expanded', 'true')
     header.focus()
     await user.keyboard(key)
