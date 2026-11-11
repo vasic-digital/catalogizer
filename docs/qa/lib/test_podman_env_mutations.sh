@@ -30,7 +30,7 @@ mut start_rc_ignored '/^qa_stack_start() {/,/^}/ s|start $1 failed"; return 1;|s
 mut glob_not_disabled 's|case $- in \*f\*) ;; \*) noglob=0; set -f;; esac|noglob=1|'
 mut glob_flag_leaks 's|\[ "$noglob" = 0 \] \&\& set +f|:|'
 mut forced_wording_lost 's|= podman \]; then _qa_stack_log "backend=podman FORCED|= NOPE ]; then _qa_stack_log "backend=podman FORCED|'
-mut rc_global 's|local rc; _qa_stack_run|_qa_stack_run|'
+mut rc_global 's|local rc=0; _qa_stack_run|_qa_stack_run|'
 mut no_timeout_check 's|^  command -v timeout .*$|  :|'
 # LIFE-FU-5..9 mutants
 mut copy_instead_of_rename 's|mv -f "$tmpb" "$bin"|{ cp "$tmpb" "$bin" \&\& rm -f "$tmpb"; }|'
@@ -39,4 +39,12 @@ mut noglob_restore_unconditional 's|\[ "$noglob" = 0 \] \&\& set +f|set +f|'
 mut no_start_timeout_preflight '/^qa_stack_start() {/,/^}/ s|_qa_stack_need_timeout \|\| return \$?|:|'
 mut no_tmp_cleanup 's|^    rm -f -- "${tmpb:?}"$|    :|'
 mut ctrctl_69_unmapped 's|r=\$?; \[ "$r" = 69 \] \&\& r=1; return|r=$?; return|'
+# LIFE-FU-10..15 mutants
+mut errexit_run_raw 's/"\$2" || r=\$?;/"$2"; r=$?;/'
+mut errexit_wrapper_stop '/^qa_stack_stop() {/,/^}/ s/ || rc=\$?;/; rc=$?;/'
+mut errexit_wrapper_start '/^qa_stack_start() {/,/^}/ s/ || rc=\$?;/; rc=$?;/'
+mut unknown_health_fails 's/"exited "\*|"stopped "\*/"running unknown"|"exited "*|"stopped "*/'
+mut empty_health_reads_none 's/${h:-unknown}/${h:-none}/'
+mut ifs_not_local 's/^  local IFS .*$/  :/'
+mut no_last_state 's/ (last state: ${st:-none})//'
 exit $bad

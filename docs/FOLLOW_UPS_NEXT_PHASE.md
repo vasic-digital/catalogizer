@@ -1723,13 +1723,13 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - SMB-FU-19b (docs): README lines ~405-425 (Connection States table, SMB_RETRY_* / SMB_OFFLINE_CACHE_SIZE env block) may still describe the removed per-source SMB state; check whether those env vars are still read and fix the drift.
 - SMB-FU-19c (nit): dangling-symlink test passes on any error; assert the reason ("cannot resolve path" vs ErrPathEscapes).
 
-## LIFE-FU-10..15 (Opus round-1 review of LIFE-FU-5..9, 2026-11-11; all minor, open)
-- LIFE-FU-10: `docs/qa/lib/podman_env.sh` (~:81, start/stop wrappers ~:119/:126): under `set -e` a bare `qa_stack_stop` exits on the raw ctrctl code before the 69→1 remap. Use `"$bin" … || r=$?` pattern or document non-errexit use; add test.
-- LIFE-FU-11: test gap (mutant R8): no test that a transient `unknown` Health state recovers to healthy; add shim mode failing the first N polls.
-- LIFE-FU-12: test gap (mutant R3): Health inspect empty output with exit 0 not covered (`${h:-unknown}` default).
-- LIFE-FU-13: `_qa_strip_guid` (:22/:28) leaves IFS set-but-empty globally after `unset IFS`; use `local IFS`.
-- LIFE-FU-14: timeout message in qa_stack_wait_healthy should log the last state.
-- LIFE-FU-15: LIFE-FU-6 test bound `el <= 6` equals the 6 s hang; use a longer hang for margin.
+## LIFE-FU-10..15 (Opus round-1 review of LIFE-FU-5..9, 2026-11-11; all minor; RESOLVED on fix/lifecycle-followups-3, each with a test and a killing mutant in test_podman_env_mutations.sh)
+- LIFE-FU-10 (RESOLVED): `docs/qa/lib/podman_env.sh` (~:81, start/stop wrappers ~:119/:126): under `set -e` a bare `qa_stack_stop` exits on the raw ctrctl code before the 69→1 remap. Use `"$bin" … || r=$?` pattern or document non-errexit use; add test.
+- LIFE-FU-11 (RESOLVED): test gap (mutant R8): no test that a transient `unknown` Health state recovers to healthy; add shim mode failing the first N polls.
+- LIFE-FU-12 (RESOLVED): test gap (mutant R3): Health inspect empty output with exit 0 not covered (`${h:-unknown}` default).
+- LIFE-FU-13 (RESOLVED): `_qa_strip_guid` (:22/:28) leaves IFS set-but-empty globally after `unset IFS`; use `local IFS`.
+- LIFE-FU-14 (RESOLVED): timeout message in qa_stack_wait_healthy should log the last state.
+- LIFE-FU-15 (RESOLVED): LIFE-FU-6 test bound `el <= 6` equals the 6 s hang; use a longer hang for margin.
 ## CAT-QA-STACK-LIFECYCLE-1: stack scripts via ctrctl (branch feat/stack-scripts-via-ctrctl, 2026-11-11)
 Migrated: container START of `docs/qa/stack3/up.sh` (postgres, redis, api, web, website) and `docs/qa/stack3/sonarqube/up.sh` (db, sonar): `podman run -d` became `podman create` + `qa_stack_start` (helper `ctr_up` in both lib.sh) = ctrctl over submodules/containers. Guard: `docs/qa/stack3/test_ctrctl_routing.sh` + `_mutations.sh`.
 ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go) and the helper adds a `${STACK}-` name guard and a health wait. Everything below is left on raw podman because no helper/ctrctl verb exists (UNKNOWN whether the Containers runtime offers it; not checked, not guessed):

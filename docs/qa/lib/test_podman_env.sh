@@ -24,7 +24,8 @@ case "$1" in
     case "$*" in
       *Health*) [ -n "${SHIM_HEALTH_HANG-}" ] && exec /bin/sleep "$SHIM_HEALTH_HANG"
                 c="$SHIM_STATE/$n.polls"; k=$(( $(cat "$c" 2>/dev/null || echo 0) + 1 )); echo $k > "$c"
-                if [ -n "${SHIM_HEALTH_OUT-}" ]; then echo "$SHIM_HEALTH_OUT"; elif [ "${SHIM_NEVER_HEALTHY:-0}" = 1 ] || [ "$k" -le "${SHIM_STARTING_POLLS:-0}" ]; then echo starting; else echo healthy; fi;;
+                [ "$k" -le "${SHIM_HEALTH_FAIL_POLLS:-0}" ] && exit 1
+                if [ -n "${SHIM_HEALTH_EMPTY-}" ]; then :; elif [ -n "${SHIM_HEALTH_OUT-}" ]; then echo "$SHIM_HEALTH_OUT"; elif [ "${SHIM_NEVER_HEALTHY:-0}" = 1 ] || [ "$k" -le "${SHIM_STARTING_POLLS:-0}" ]; then echo starting; else echo healthy; fi;;
       *) cat "$SHIM_STATE/$n";;
     esac;;
 esac
@@ -33,7 +34,7 @@ S
 printf '#!/usr/bin/env bash\nexit 0\n' > "$BIN/sleep"; chmod +x "$BIN"/*
 export SHIM_LOG="$ROOT/log" SHIM_STATE="$ROOT/state" QA_STACK_BACKEND=podman STACK=catqa3 PATH="$BIN:$PATH"
 G='unix:path=/run/user/1000/bus,guid=0123abcd'
-fresh() { : > "$SHIM_LOG"; rm -f "$SHIM_STATE"/*; echo exited > "$SHIM_STATE/catqa3-api"; unset SHIM_INSPECT_HANG SHIM_HEALTH_HANG SHIM_CTRCTL_FAIL SHIM_NEVER_HEALTHY SHIM_STARTING_POLLS SHIM_HEALTH_OUT SHIM_AFTER_START; }
+fresh() { : > "$SHIM_LOG"; rm -f "$SHIM_STATE"/*; echo exited > "$SHIM_STATE/catqa3-api"; unset SHIM_INSPECT_HANG SHIM_HEALTH_HANG SHIM_CTRCTL_FAIL SHIM_NEVER_HEALTHY SHIM_STARTING_POLLS SHIM_HEALTH_OUT SHIM_AFTER_START SHIM_HEALTH_FAIL_POLLS SHIM_HEALTH_EMPTY; }
 
 # 1. RED signature (shim sanity): raw podman start with the guid address fails with the measured message; without guid it works.
 fresh; out="$(DBUS_SESSION_BUS_ADDRESS="$G" podman start catqa3-api 2>&1)"; rc=$?
@@ -166,9 +167,9 @@ qa_stack_start catqa3-api 2>/dev/null; ti="$(grep -m1 '^TMPINODE ' "$SHIM_LOG" |
 [ -n "$ti" ] && [ "$ti" = "$fi_" ]; ok $? "final ctrctl has the tmp file's inode (atomic rename, not copy+rm): tmp=$ti final=$fi_"
 
 # ---- LIFE-FU-6: only the Health inspect hangs; it must be bounded and must NOT be read as healthy
-fresh; rm -rf "${ROOT:?}/cache"; export QA_STACK_BACKEND=podman SHIM_HEALTH_HANG=6
+fresh; rm -rf "${ROOT:?}/cache"; export QA_STACK_BACKEND=podman SHIM_HEALTH_HANG=30
 t0=$SECONDS; QA_INSPECT_TIMEOUT=1 QA_HEALTH_TIMEOUT=3 qa_stack_start catqa3-api 2>/dev/null; rc=$?; el=$((SECONDS-t0)); unset SHIM_HEALTH_HANG
-[ "$rc" = 1 ] && [ "$el" -le 6 ]; ok $? "hung Health inspect is cut off and not treated as healthy (rc=$rc elapsed=${el}s <= 6)"
+[ "$rc" = 1 ] && [ "$el" -le 6 ]; ok $? "hung Health inspect is cut off and not treated as healthy (rc=$rc elapsed=${el}s <= 6, hang 30s)"
 
 # ---- LIFE-FU-7: set -f already on in the caller stays on
 out="$(set -f; _qa_strip_guid 'unix:path=/x,a*,guid=1' >/dev/null; case $- in *f*) echo on;; *) echo off;; esac)"
@@ -187,5 +188,24 @@ qa_stack_start catqa3-api 2>/dev/null; unset SHIM_GO_PARTIAL
 fresh; rm -rf "${ROOT:?}/cache"; echo 'package main // v6' > "$FR/docs/qa/lib/ctrctl/main.go"; export SHIM_CTRCTL_FAIL=69
 qa_stack_stop catqa3-api 2>/dev/null; r1=$?; echo running > "$SHIM_STATE/catqa3-api"; qa_stack_start catqa3-api 2>/dev/null; r2=$?; unset SHIM_CTRCTL_FAIL
 { [ "$r1" = 1 ] && [ "$r2" = 1 ]; }; ok $? "ctrctl's own exit 69 maps to 1, 69 stays reserved for backend unavailable (stop=$r1 start=$r2)"
+
+# ---- LIFE-FU-10: bare call under errexit yields 1, never ctrctl's raw 69
+fresh; rm -rf "${ROOT:?}/cache"; export QA_STACK_BACKEND=auto; echo 'package main // v7' > "$FR/docs/qa/lib/ctrctl/main.go"; export SHIM_CTRCTL_FAIL=69
+( set -e; qa_stack_stop catqa3-api 2>"$ROOT/err1" ); r1=$?
+echo running > "$SHIM_STATE/catqa3-api"; ( set -e; qa_stack_start catqa3-api 2>"$ROOT/err2" ); r2=$?; unset SHIM_CTRCTL_FAIL
+{ [ "$r1" = 1 ] && [ "$r2" = 1 ] && grep -q 'stop catqa3-api failed' "$ROOT/err1" && grep -q 'start catqa3-api failed' "$ROOT/err2"; }; ok $? "bare qa_stack_stop/start under set -e: ctrctl 69 -> 1 (stop=$r1 start=$r2)"
+export QA_STACK_BACKEND=podman
+# ---- LIFE-FU-11: transient failing Health inspect (unknown) recovers to healthy
+fresh; export SHIM_HEALTH_FAIL_POLLS=3; QA_HEALTH_TIMEOUT=20 qa_stack_start catqa3-api 2>"$ROOT/err"; rc=$?; unset SHIM_HEALTH_FAIL_POLLS
+[ "$rc" = 0 ] && [ "$(grep -c Health "$SHIM_LOG")" -ge 4 ]; ok $? "Health inspect failing first 3 polls then healthy -> rc 0 (rc=$rc)"
+# ---- LIFE-FU-12: Health inspect with empty output and exit 0 is unknown, not 'none'
+fresh; export SHIM_HEALTH_EMPTY=1; QA_HEALTH_TIMEOUT=2 qa_stack_start catqa3-api 2>"$ROOT/err"; rc=$?; unset SHIM_HEALTH_EMPTY
+[ "$rc" = 1 ] && ! grep -q 'running none' "$ROOT/err"; ok $? "empty Health output (exit 0) is not read as none (rc=$rc)"
+# ---- LIFE-FU-13: _qa_strip_guid leaves an unset IFS unset
+( unset IFS; _qa_strip_guid 'unix:path=/x,guid=1' >/dev/null; [ -z "${IFS+x}" ] ); ok $? "_qa_strip_guid does not leave IFS set-but-empty after unset IFS"
+( IFS=:; _qa_strip_guid 'unix:path=/x,guid=1' >/dev/null; [ "$IFS" = : ] ); ok $? "_qa_strip_guid preserves a custom IFS"
+# ---- LIFE-FU-14: timeout message carries the last observed state
+fresh; export SHIM_NEVER_HEALTHY=1; QA_HEALTH_TIMEOUT=2 qa_stack_start catqa3-api 2>"$ROOT/err"
+grep -q 'not healthy after 2s (last state: running starting)' "$ROOT/err"; ok $? "timeout message logs last state: $(grep 'not healthy' "$ROOT/err")"
 export QA_STACK_BACKEND=podman
 echo "passed=$pass failed=$fail"; [ "$fail" = 0 ]
