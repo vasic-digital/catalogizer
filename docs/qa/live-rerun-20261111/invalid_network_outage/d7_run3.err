@@ -1,0 +1,16 @@
+node:internal/process/promises:324
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+page.goto: net::ERR_INTERNET_DISCONNECTED at http://192.168.1.17:33020/login
+Call log:
+[2m  - navigating to "http://192.168.1.17:33020/login", waiting until "load"[22m
+
+    at /home/milosvasic/Projects/catalogizer/docs/qa/ui-d7d8-20261105/d7_axe.cjs:9:10 {
+  log: [
+    '  - navigating to "http://192.168.1.17:33020/login", waiting until "load"'
+  ],
+  name: 'Error'
+}
+
+Node.js v26.8.1

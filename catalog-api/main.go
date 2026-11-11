@@ -994,35 +994,14 @@ func main() {
 	// bypass per-IP rate limits. Policy:
 	//   - TRUSTED_PROXIES unset:    refuse to trust any proxy
 	//     header; c.ClientIP() returns the actual peer IP.
-	//   - TRUSTED_PROXIES=auto:     trust loopback + RFC-1918
-	//     private ranges (typical dev behind a local reverse
-	//     proxy / docker gateway).
+	//   - TRUSTED_PROXIES=auto:     DEPRECATED, client-forgeable
+	//     (CAT-TRUSTEDPROXIES-AUTO-1); trusts loopback + RFC-1918;
+	//     refused in release mode unless TRUSTED_PROXIES_ALLOW_AUTO=true.
 	//   - TRUSTED_PROXIES=<cidr>,...: explicit allow-list.
-	if tp := os.Getenv("TRUSTED_PROXIES"); tp == "" {
-	if err := router.SetTrustedProxies(nil); err != nil {
-			logger.Warn("SetTrustedProxies(nil) failed", zap.Error(err))
-	}
-	} else if tp == "auto" {
-	privates := []string{
-			"127.0.0.0/8", "10.0.0.0/8",
-			"172.16.0.0/12", "192.168.0.0/16",
-			"::1/128", "fc00::/7",
-	}
-	if err := router.SetTrustedProxies(privates); err != nil {
-			logger.Warn("SetTrustedProxies auto-RFC1918 failed", zap.Error(err))
-	}
-	} else {
-	list := strings.Split(tp, ",")
-	trimmed := list[:0]
-	for _, s := range list {
-			s = strings.TrimSpace(s)
-			if s != "" {
-				trimmed = append(trimmed, s)
-			}
-	}
-	if err := router.SetTrustedProxies(trimmed); err != nil {
-			logger.Warn("SetTrustedProxies custom list failed", zap.Error(err))
-	}
+	warnTrustedProxies(logger, os.Getenv("TRUSTED_PROXIES"))
+	if err := applyTrustedProxies(router, os.Getenv("TRUSTED_PROXIES")); err != nil {
+		// applyTrustedProxies has already failed closed (no proxy trusted).
+		logger.Error("TRUSTED_PROXIES rejected; trusting NO proxy header (every client behind a reverse proxy will share its address)", zap.Error(err))
 	}
 
 	// Service discovery (PUBLIC - must respond in < 2 seconds for Android TV)

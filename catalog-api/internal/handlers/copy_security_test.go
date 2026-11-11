@@ -30,7 +30,12 @@ import (
 func newProductionCopyRouter(t *testing.T, root string) *gin.Engine {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
-	h := NewCopyHandler(nil, nil, root, zap.NewNop())
+	return newProductionCopyRouterWith(NewCopyHandler(nil, nil, root, zap.NewNop()))
+}
+
+// newProductionCopyRouterWith registers the same routes for an already-built handler.
+func newProductionCopyRouterWith(h *CopyHandler) *gin.Engine {
+	gin.SetMode(gin.TestMode)
 	r := gin.New()
 	r.Use(gin.Recovery())
 	api := r.Group("/api/v1")

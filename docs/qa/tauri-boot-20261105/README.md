@@ -24,7 +24,7 @@
 - Build (container, ~6-12 min, needs ~2.5 GB disk): `scripts/tauri/build.sh [OUT]`
 - Browser QA: servers bind 127.0.0.1 by default. For LAN: `QA_HOST=0.0.0.0 QA_ALLOWED_HOSTS=192.168.1.115,localhost` (no wildcard). `cd catalogizer-desktop && npm ci && QA_PORT=1420 QA_API_URL=http://127.0.0.1:38082 npx vite --config vite.qa.config.ts` -> :1420 ; `cd installer-wizard && QA_PORT=1421 npx vite --config vite.qa.config.ts` -> :1421. Plain HTTP, no auth on the vite server itself: LAN only on a trusted network. Login qa_admin (password in the QA env file).
 - Driver: `( set -a; . qa.env; set +a; node docs/qa/tauri-boot-20261105/drive_ui.cjs <dir containing @playwright/test> <outdir> http://192.168.1.115:1420 http://192.168.1.115:1421 )`
-- Native under VNC (unverified): `QA_BIND=192.168.1.115 scripts/tauri/run-qa.sh desktop` -> http://192.168.1.115:6080/vnc.html, password in `<OUT>/vnc.pass.txt` (0600). The app starts on Settings; enter server URL http://192.168.1.115:38082.
+- Native under VNC (unverified): `QA_BIND=192.168.1.115 scripts/tauri/run-qa.sh desktop` -> http://192.168.1.115:6080/vnc.html, password in `<OUT>/vnc.pass.txt` (0600). The app starts on Settings; enter server URL http://host.containers.internal:38082 (NOT the LAN IP: under rootless pasta the host LAN IP resolves to the container itself, measured connection refused; see docs/qa/tauri-native-20261106/README.md).
 
 Screenshots are gitignored (`docs/qa/**/*.png`); hashes in MANIFEST.screenshots.sha256, files in /home/milosvasic/.cache/claude-tmp/evidence-archive/tauri-boot-20261105/.
 

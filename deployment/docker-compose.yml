@@ -79,6 +79,11 @@ services:
       # Security
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set (see .env.example)}
       METRICS_SCRAPE_TOKEN: ${METRICS_SCRAPE_TOKEN:-}
+      # Client-IP attribution behind the nginx `web` front door (CAT-TRUSTEDPROXIES-PROD-1):
+      # trust X-Forwarded-For only from the web container, pinned to WEB_IP on the
+      # fixed-subnet network below. If you change WEB_IP/DOCKER_SUBNET also set
+      # TRUSTED_PROXIES (explicit CIDRs; never auto / 0.0.0.0/0).
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-172.29.0.10/32}
 
       # Media configuration
       MEDIA_DIRECTORIES: ${MEDIA_DIRECTORIES:-/media}
@@ -156,6 +161,10 @@ services:
     depends_on:
       - catalogizer-server
     environment:
+      # The web image's nginx proxies to API_UPSTREAM (catalog-web/nginx.conf.template, default
+      # host.containers.internal:8080 = via the host, which would hide the pinned web address
+      # from the API). Point it at the API container on the shared network.
+      API_UPSTREAM: catalogizer-server:8080
       API_URL: http://catalogizer-server:8080
       WS_URL: ws://catalogizer-server:8081
     ports:
@@ -165,7 +174,8 @@ services:
       - web_config:/etc/nginx/conf.d
       - ${SSL_CERT_PATH:-./ssl}:/etc/nginx/ssl:ro
     networks:
-      - catalogizer-network
+      catalogizer-network:
+        ipv4_address: ${WEB_IP:-172.29.0.10}
 
   # Monitoring — Prometheus is now enabled by default (previously gated
   # behind the `monitoring` profile). ReportingService reads its metrics
@@ -272,7 +282,12 @@ services:
 networks:
   catalogizer-network:
     driver: bridge
-    name: ${DOCKER_NETWORK:-catalogizer-network}
+    name: ${DOCKER_NETWORK:-catalogizer-frontdoor-net}
+    ipam:
+      config:
+        - subnet: ${DOCKER_SUBNET:-172.29.0.0/24}
+          # dynamic containers only from the upper half: the pinned web address (.10) stays free
+          ip_range: ${DOCKER_IP_RANGE:-172.29.0.128/25}
 
 # Volumes
 volumes:

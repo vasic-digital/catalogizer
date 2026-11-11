@@ -115,7 +115,7 @@ export const WCAG_AA_NORMAL = 4.5
  * returns descriptions of those below the AA threshold (4.5 normal, 3 for large text).
  * Text over a translucent black overlay sits on user imagery and is not computable from classes: skipped.
  */
-export function failingElements(root: Element, theme: Theme, min = WCAG_AA_NORMAL): string[] {
+export function failingElements(root: Element, theme: Theme, min = WCAG_AA_NORMAL, opts: { islands?: boolean } = {}): string[] {
   const bad: string[] = []
   const w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT)
   for (let n = w.currentNode as Element | null; n; n = w.nextNode() as Element | null) {
@@ -130,5 +130,56 @@ export function failingElements(root: Element, theme: Theme, min = WCAG_AA_NORMA
     const r = contrastOf(n, theme)
     if (r < (large ? 3 : min)) bad.push(`${n.tagName.toLowerCase()}.${cls} "${(n.textContent ?? '').trim().slice(0, 30)}" ${r.toFixed(2)}`)
   }
+  // D7-R4-4: opt-in (existing suites predate it and contain known islands, listed in FOLLOW_UPS): also report light islands.
+  if (opts.islands) bad.push(...islandsOf(root, theme))
   return bad
+}
+
+// D7-R4-FU-2: 50, 100 and 200 shades count as light backgrounds; 300 and darker are deliberately out of scope.
+const LIGHT_BG_NAME = /^(white|[a-z]+-(50|100|200))$/
+
+/**
+ * D7-R4-4 light-island detector: in dark mode, an element whose OWN bg-* class is a light background
+ * (bg-white, bg-*-50, bg-*-100; opaque enough to matter, alpha >= 50%) and that has NO dark:bg-* class.
+ * backgroundOf() falls back to that light base colour in dark, so such an island passes the text-contrast
+ * check against itself while sitting as a bright box on the dark page. Light theme never has islands.
+ */
+export function islandsOf(root: Element, theme: Theme): string[] {
+  if (theme !== 'dark') return []
+  const found: string[] = []
+  const all = [root, ...Array.from(root.querySelectorAll('*'))]
+  for (const n of all) {
+    if (n.closest('svg')) continue
+    const classes = Array.from(n.classList)
+    // D7-R4-FU-2: a dark:bg-* class only counts when it is a real dark background: a dark:bg-* that is itself
+    // a light colour (dark:bg-white) or a >=50% alpha modifier (dark:bg-opacity-*) leaves the island bright in dark.
+    if (classes.some((c) => {
+      if (!c.startsWith('dark:bg-')) return false
+      const tok = c.slice('dark:bg-'.length)
+      // Tailwind 3: dark:bg-opacity-N is the alpha of the bg colour in dark: below 50% the island is faded away, from 50% up it stays bright.
+      const om = /^opacity-(\d+)$/.exec(tok)
+      if (om) return Number(om[1]) < 50
+      const [name, op] = tok.split('/')
+      const r = resolveToken(name)
+      return !(r && LIGHT_BG_NAME.test(name) && (!op || Number(op) >= 50))
+    })) continue
+    // D7-R4-FU-1: a toggle knob is a small (w-1..6 AND h-1..6), EMPTY, plain bg-white circle on a coloured track.
+    // Anything else round (other colour, one size class, any text) is a real surface.
+    if (
+      classes.includes('rounded-full') && classes.includes('bg-white') &&
+      classes.some((c) => /^w-[1-6]$/.test(c)) && classes.some((c) => /^h-[1-6]$/.test(c)) &&
+      (n.textContent ?? '').trim() === ''
+    ) continue
+    for (const c of classes) {
+      if (!c.startsWith('bg-')) continue
+      const [name, op] = c.slice(3).split('/')
+      if (!LIGHT_BG_NAME.test(name)) continue
+      if (op && Number(op) < 50) continue
+      if (resolveToken(name) && luminance(resolveToken(name)!.rgb) > 0.5) {
+        found.push(`${n.tagName.toLowerCase()}.${n.getAttribute('class')} (light island: ${c})`)
+        break
+      }
+    }
+  }
+  return found
 }

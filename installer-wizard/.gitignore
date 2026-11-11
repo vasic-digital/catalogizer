@@ -54,3 +54,5 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+# Tauri build output rewritten by tauri-build on every build (TAURI-R1-FU-6): the tracked copy was a stale `{}`
+src-tauri/gen/schemas/capabilities.json

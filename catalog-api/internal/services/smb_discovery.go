@@ -2,10 +2,13 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"net"
 	"strings"
 	"time"
+
+	"catalogizer/internal/pathsafe"
+	"catalogizer/smb"
 
 	"github.com/hirochachacha/go-smb2"
 	"go.uber.org/zap"
@@ -43,6 +46,55 @@ type SMBConnectionConfig struct {
 type SMBDiscoveryService struct {
 	logger  *zap.Logger
 	timeout time.Duration
+	// openShare is a unit-class seam: it replaces only dial + session + mount. Everything above it
+	// (validation, SplitShare, confinement) is the real code. nil means the real SMB network path.
+	openShare func(ctx context.Context, cfg SMBConnectionConfig, shareName string) (ShareAPI, func(), error)
+}
+
+// ErrInvalidSMBInput marks a request the caller got wrong (admin or malformed share, parent-directory path, port other than 445). Handlers
+// map it to 400; every other error from this service is an operational failure and carries no server or network detail.
+var ErrInvalidSMBInput = errors.New("invalid SMB request")
+
+// smbPort is the only SMB-over-TCP port the discovery routes may dial (a free port choice would make them a port scanner).
+const smbPort = 445
+
+// ValidateSMBPort accepts 0 (default 445) and any port in SMBAllowedPorts; everything else is refused.
+func ValidateSMBPort(port int) error {
+	if port == 0 {
+		return nil
+	}
+	for _, p := range SMBAllowedPorts() {
+		if p == port {
+			return nil
+		}
+	}
+	return fmt.Errorf("%w: port not allowed", ErrInvalidSMBInput)
+}
+
+// openConfined validates the request-supplied port and share, mounts the SHARE part only (smb.SplitShare: refuses IPC$, C$, ADMIN$, device
+// names, "..", backslashes) and returns the share confined to the sub-directory of a "share/sub/dir" spec, exactly like SMBService.withShare.
+func (s *SMBDiscoveryService) openConfined(ctx context.Context, config SMBConnectionConfig) (ShareAPI, func(), error) {
+	if err := ValidateSMBHostSyntax(config.Host); err != nil {
+		return nil, nil, err
+	}
+	if err := ValidateSMBPort(config.Port); err != nil {
+		return nil, nil, err
+	}
+	if config.Port == 0 {
+		config.Port = smbPort
+	}
+	shareName, sub, err := smb.SplitShare(config.Share)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%w: %v", ErrInvalidSMBInput, err)
+	}
+	raw, release, err := s.mountShare(ctx, config, shareName)
+	if err != nil {
+		return nil, nil, err
+	}
+	if sub == "" {
+		return raw, release, nil
+	}
+	return confinedShare{in: raw, sub: sub}, release, nil
 }
 
 // NewSMBDiscoveryService creates a new SMB discovery service
@@ -57,8 +109,12 @@ func NewSMBDiscoveryService(logger *zap.Logger) *SMBDiscoveryService {
 func (s *SMBDiscoveryService) DiscoverShares(ctx context.Context, host string, username, password string, domain *string) ([]SMBShareInfo, error) {
 	s.logger.Info("Discovering SMB shares", zap.String("host", host), zap.String("username", username))
 
-	// Establish connection
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:445", host), s.timeout)
+	ips, err := VetSMBHostIPs(host)
+	if err != nil {
+		return nil, err
+	}
+	// Establish connection to a vetted address (no second lookup of the name, SMB-FU-9)
+	conn, err := dialVetted(ctx, ips, smbPort, s.timeout)
 	if err != nil {
 		return nil, fmt.Errorf("connect to %s:445: %w", host, err)
 	}
@@ -99,23 +155,7 @@ func (s *SMBDiscoveryService) enumerateShares(session *smb2.Session, host string
 		return nil, fmt.Errorf("enumerate shares on %s: %w", host, err)
 	}
 
-	var availableShares []SMBShareInfo
-	for _, shareName := range names {
-		// IPC$ is the named-pipe control share, not a browsable data share.
-		if strings.EqualFold(shareName, "IPC$") {
-			continue
-		}
-		availableShares = append(availableShares, SMBShareInfo{
-			Host:        host,
-			ShareName:   shareName,
-			Path:        fmt.Sprintf("\\\\%s\\%s", host, shareName),
-			// Writable is determined later by a per-share access probe; the
-			// SRVSVC listing does not carry write permission.
-			Writable:    false,
-			Description: getShareDescription(shareName),
-		})
-	}
-
+	availableShares := filterShareInfos(host, names)
 	return availableShares, nil
 }
 
@@ -139,41 +179,15 @@ func (s *SMBDiscoveryService) TestConnection(ctx context.Context, config SMBConn
 		zap.String("share", config.Share),
 		zap.String("username", config.Username))
 
-	// Establish connection
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(config.Host, fmt.Sprintf("%d", config.Port)), s.timeout)
+	share, release, err := s.openConfined(ctx, config)
 	if err != nil {
-		s.logger.Debug("Failed to connect to SMB host", zap.String("host", config.Host), zap.Error(err))
+		s.logger.Debug("Failed to open SMB share", zap.String("host", config.Host), zap.String("share", config.Share), zap.Error(err))
 		return false
 	}
-	defer conn.Close()
-
-	// Create SMB session
-	d := &smb2.Dialer{
-		Initiator: &smb2.NTLMInitiator{
-			User:     config.Username,
-			Password: config.Password,
-			Domain:   getStringValue(config.Domain),
-		},
-	}
-
-	session, err := d.Dial(conn)
-	if err != nil {
-		s.logger.Debug("Failed to create SMB session", zap.String("host", config.Host), zap.Error(err))
-		return false
-	}
-	defer session.Logoff()
-
-	// Try to mount the share
-	share, err := session.Mount(config.Share)
-	if err != nil {
-		s.logger.Debug("Failed to mount SMB share", zap.String("share", config.Share), zap.Error(err))
-		return false
-	}
-	defer share.Umount()
+	defer release()
 
 	// Try to list the root directory
-	_, err = share.ReadDir(".")
-	if err != nil {
+	if _, err = share.ReadDir("."); err != nil {
 		s.logger.Debug("Failed to read SMB share directory", zap.String("share", config.Share), zap.Error(err))
 		return false
 	}
@@ -189,39 +203,24 @@ func (s *SMBDiscoveryService) BrowseShare(ctx context.Context, config SMBConnect
 		zap.String("share", config.Share),
 		zap.String("path", path))
 
-	// Establish connection
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(config.Host, fmt.Sprintf("%d", config.Port)), s.timeout)
+	if err := pathsafe.SafeRemotePath(path); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrInvalidSMBInput, err)
+	}
+	share, release, err := s.openConfined(ctx, config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to SMB host %s: %w", config.Host, err)
+		if errors.Is(err, ErrInvalidSMBInput) {
+			return nil, err
+		}
+		s.logger.Debug("Failed to open SMB share", zap.String("host", config.Host), zap.Error(err))
+		return nil, errors.New("failed to mount SMB share")
 	}
-	defer conn.Close()
+	defer release()
 
-	// Create SMB session
-	d := &smb2.Dialer{
-		Initiator: &smb2.NTLMInitiator{
-			User:     config.Username,
-			Password: config.Password,
-			Domain:   getStringValue(config.Domain),
-		},
-	}
-
-	session, err := d.Dial(conn)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create SMB session: %w", err)
-	}
-	defer session.Logoff()
-
-	// Mount the share
-	share, err := session.Mount(config.Share)
-	if err != nil {
-		return nil, fmt.Errorf("failed to mount SMB share: %w", err)
-	}
-	defer share.Umount()
-
-	// List directory contents
+	// List directory contents (confined below the sub-directory of a share/sub root)
 	entries, err := share.ReadDir(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read directory %s: %w", path, err)
+		s.logger.Debug("Failed to read SMB directory", zap.String("host", config.Host), zap.Error(err))
+		return nil, errors.New("failed to read directory")
 	}
 
 	// Convert to our format
@@ -245,6 +244,40 @@ func (s *SMBDiscoveryService) BrowseShare(ctx context.Context, config SMBConnect
 	}
 
 	return fileEntries, nil
+}
+
+// mountShare dials the host, opens a session and mounts shareName, returning the share and a release func.
+func (s *SMBDiscoveryService) mountShare(ctx context.Context, config SMBConnectionConfig, shareName string) (ShareAPI, func(), error) {
+	if s.openShare != nil {
+		return s.openShare(ctx, config, shareName)
+	}
+	ips, err := VetSMBHostIPs(config.Host)
+	if err != nil {
+		return nil, nil, err
+	}
+	conn, err := dialVetted(ctx, ips, config.Port, s.timeout)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to connect to SMB host %s: %w", config.Host, err)
+	}
+	d := &smb2.Dialer{
+		Initiator: &smb2.NTLMInitiator{
+			User:     config.Username,
+			Password: config.Password,
+			Domain:   getStringValue(config.Domain),
+		},
+	}
+	session, err := d.Dial(conn)
+	if err != nil {
+		conn.Close()
+		return nil, nil, fmt.Errorf("failed to create SMB session: %w", err)
+	}
+	sh, err := session.Mount(shareName)
+	if err != nil {
+		session.Logoff()
+		conn.Close()
+		return nil, nil, fmt.Errorf("failed to mount SMB share: %w", err)
+	}
+	return smb2ShareAPI{sh}, func() { sh.Umount(); session.Logoff(); conn.Close() }, nil
 }
 
 // Helper functions

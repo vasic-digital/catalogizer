@@ -5,6 +5,8 @@ Small items left after independent review rounds, documented per the operator ru
 land and are listed here. Layers follow constitution §11.4.235(D).
 Status values: OPEN until a commit on `main` closes the item.
 
+> **Index (2026-11-05):** the id register is `docs/WORKABLE_ITEMS_REGISTER.md` (Part A points here for every existing follow-up id; Part B registers items that had no entry, e.g. `CAT-QA-SONAR-1`, `CAT-UI-AXE-LIVE-1`, `CAT-REL-V240-1`, `CAT-SYN-LIVE-1`). `docs/CONTINUATION.md` section 5.7 points to the same register. Add every new follow-up to the register as well as to the section below it.
+
 ## Container hygiene guard (`scripts/tests/test_container_hygiene.sh`) — test-instrumentation
 Found by the round-3 reviewer (landed series `a9e5248b`). Commit `8c73f797` claimed O1-O4 CLOSED; the
 independent review of that commit returned NO-GO (a regression in the R3 exemption, `|| exit 256` exempted, and
@@ -1571,3 +1573,127 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - D7-R3-M1 (test-instrumentation): connecting/disconnected/error badge colours unprotected (mutations N2/N3 survived); render one integration per status in contrastD7Populated.
 - D7-R3-M3 (visual): UploadManager queued row `dark:bg-gray-800` probably blends into Card; consider `dark:bg-gray-700/50`.
 - Live axe rerun on rebuilt web image (N>=3) still owed; PERFORMANCE/MediaFilters/Playlists fixes not render-tested.
+
+## Live UI rerun 2026-11-05 (image main-17ec3c1f; CAT-UI-AXE-LIVE-1, CAT-STACK3-REBUILD-1, CAT-PPROF-LIVE-1, CAT-PROM-LAN-1)
+- VERIFIED (3/3 identical machine evidence, evidence docs/qa/ui-live-rerun-20261105-b): D7 contrast 9 pages x light/dark 0 violations; D5/D6 names + 360px admin; D8 header search; D1 /conversion; D2 /identities; D3 /entity (background 404 retries on missing entity remain, order differs only); pprof gate 401/401/200.
+- Not exercised: pprof 60 s profile cap, non-admin 403, cover-art SSRF F2..F5, TRUSTED_PROXIES from a second LAN host. Prometheus /api/v1/targets answers without token on the LAN (only API /metrics needs the scrape token) - decide if Prometheus itself needs auth (new item CAT-PROM-AUTH-1).
+- Cleanup owed: qa.env.bak.pre-rotate in catqa3 dir (delete after confirm). Subagent printed unrelated env keys into its own tool output once; operator may rotate (not in repo/evidence).
+
+## D7 follow-ups landed (PROVISIONAL; GO-with-follow-ups round 1/5)
+- D7-R4-1 (source-defect minor): UploadManager.tsx:260 failed-row error text `text-red-500` no dark variant: 3.60 light / 3.29 dark. Fix `text-red-700 dark:text-red-400` + error-row test (pre-existing).
+- D7-R4-2 (test nit): ExternalIntegrations test assigns global.fetch without restore; use vi.stubGlobal/afterEach.
+- D7-R4-3: "pending" badge dark:bg-gray-800 equals card bg (shape invisible, text passes).
+- D7-R4-4: contrast helper dark fallback to light bg-*-50 lets islands pass; add class-wide check. Decorative status icons unmeasured (WCAG 1.4.11 3:1).
+- Live check on rebuilt web image (includes these fixes) owed (CAT-UI-AXE-LIVE-1 rerun).
+
+## Prometheus auth landed (CAT-PROM-AUTH-1; PROVISIONAL; GO-with-follow-ups round 2/5)
+- PROM-R2-1 (test minor): test_prom_auth_grafana.sh `nosecret` mutation kills by crashing Grafana (provisioning error, ~4 min wait), not by auth failure; use wrong-password secret (401) and fail fast if Grafana exits.
+- PROM-R2-2: flaky test_scripts.sh root cause UNCONFIRMED (stdin-drain removal did not reproduce in 6 runs); timeout raised 60->180 s may mask it - keep tracked, do not call fixed.
+- PROM-R2-3/4/5 (nits): verify.py vs up.sh user precedence wording; validate PROM_AUTH_USER before sed use in up.sh; --memory limit on grafana test containers.
+- Live: up.sh never run end to end until conductor applies (monitoring/up.sh, then verify.py + both tests). Basic auth over plain HTTP on LAN is sniffable.
+
+## Prometheus auth applied live (2026-11-05 22:15 CET; CAT-PROM-AUTH-1, CAT-PROM-LAN-1)
+- Applied: `GRAFANA_BIND=PGADMIN_BIND=PROM_BIND=192.168.1.115 monitoring/up.sh` (catqa3mon replaced). Live: anonymous /api/v1/targets -> 401; verify.py: prom.anonymous_targets/query/wrong_password 401 PASS, targets up, queries have data, grafana datasource health OK; test_prom_auth.sh PASS (single run).
+- verify.py 45 PASS / 3 FAIL: the 3 FAILs are the legacy assertions `lan.{prometheus,grafana,pgadmin}_NOT_reachable_on_LAN_IP` which contradict the operator LAN-exposure decision; make them conditional on the *_BIND settings (new item CAT-VERIFY-LANBIND-1). Prometheus password in mon.env (PROM_AUTH_PASSWORD, user qa_prom).
+- N>=3 repeat of the live auth checks owed for VERIFIED.
+
+## D7 R4 follow-ups landed (feat/d7-r4, PROVISIONAL-DONE; live axe re-run on a rebuilt web image owed)
+- D7-R4-1 FIXED: UploadManager failed-row error text `text-red-700 dark:text-red-300` (light 3.60 -> >=4.5; dark 3.29 -> >=4.5; red-400 gave 4.478 on the dark row so red-300 is used). Test renders a FAILED upload row in both themes.
+- D7-R4-2 FIXED: global.fetch restored in afterEach (contrastD7FollowUps/Class/Populated, ExternalIntegrations.test) with a leak-check test.
+- D7-R4-3 FIXED: ExternalIntegrations default/pending chip `dark:bg-gray-700/50`; test asserts chip bg != card bg and ratio > 1.05 in dark.
+- D7-R4-4 DONE: `islandsOf()` in src/test/contrast.ts; `failingElements(root, theme, min, { islands: true })` opts in. Goldens in contrastHelper.test.ts. Opt-in only because it finds REAL islands in untouched files (dark theme), listed here as UI-D7-R4-ISLAND-1..: AdvancedSearch tab icon chips `bg-blue-100` (x5); FormatConverter empty-state circle `bg-gray-100`; AI unavailable panels `bg-white rounded-lg shadow p-6` (x3); AIDashboard icon chips `bg-indigo-100`/`bg-green-100`/`bg-yellow-100`. Toggle knobs (small white circles) are exempt by rule.
+
+### D7-R4 review round 1 follow-ups (GO-with-follow-ups)
+- D7-R4-FU-1 (minor, test-instrumentation): `islandsOf` knob exemption too broad (no bg-white check, one w/h class suffices); require bg-white + both w/h 1-6 + no text; add goldens `rounded-full w-16 h-16 bg-gray-100` and text badge `rounded-full h-6 px-2 bg-blue-100` as positives. Mutation M4 survives today.
+- D7-R4-FU-2 (minor): `LIGHT_BG_NAME` ignores -200 shades, `bg-white dark:bg-white`, `dark:bg-opacity-*`; widen/document.
+- D7-R4-FU-3 (nit): no fetch leak check in ExternalIntegrations/Class/Populated tests (M7 survives); reset mock history.
+- D7-R4-FU-4 (nit): give each UI-D7-R4-ISLAND row an id (register as CAT-D7-ISLAND-1).
+
+### TRUSTED_PROXIES hardening follow-ups (round 2 GO-with-follow-ups)
+- TP-FU-1 (DONE, CAT-FOLLOWUPS-UNIT-1): `warnTrustedProxies(logger, tp)` extracted from main.go (behaviour unchanged) and tested with an observer logger (catch-all, auto, quiet near-misses; 4 mutants killed).
+- TP-FU-2: live bring-up of root and deployment compose with new fixed subnets/ip_range (only rendered + throwaway compose proved); `catalogizer/web` image built from catalog-web/Dockerfile is assumed; deployment WS_URL port 8081 vs /ws upstream 8080 mismatch (pre-existing).
+- TP-FU-3: F4 capture API log line ClientIP=169.254.1.2; stack script leg B needs second LAN host (= QA-MON-FU-4).
+
+## Tauri native QA review (2026-11-10, Opus: GO-with-follow-ups, 0 source-defects)
+- TAURI-R1-FU-1 (test-instrumentation/minor): test_wizard_capabilities.sh checks permissions and window "main" separately across all JSON; parse each capability and require one capability targeting main with both permissions and no excluding `platforms` (reviewer mutations M6, M7 survive).
+- TAURI-R1-FU-2 (test-instrumentation/minor): guard import detection matches only single-line single-quote imports; handle double quotes, multi-line, `import *`, dynamic import.
+- TAURI-R1-FU-3 (test-instrumentation/minor): wire test_wizard_capabilities.sh into a runner/pre-build sweep (nothing calls it).
+- TAURI-R1-FU-4 (process-doc/minor): docs/qa/tauri-boot-20261105/README.md links to docs/qa/tauri-native-20261106/README.md which does not exist; add it from the evidence archive (secret-scan first).
+- TAURI-R1-FU-5 (process-doc/minor): out-of-scope edits lack `Out-of-scope:` trailers; Roadmap-Item CAT-TAURI-NATIVE-1 covers them.
+- TAURI-R1-FU-6 (process-doc/minor): installer-wizard/src-tauri/gen/schemas/capabilities.json tracked as `{}`; regenerate-and-commit or untrack after §11.4.124 investigation.
+- TAURI-R1-FU-7: GREEN live run of rebuilt wizard (same Save Configuration sequence, same target) still owed; item stays PROVISIONAL-DONE until then.
+- TAURI-R1-FU-8 (nit): guard header should say exit 2 = BLIND.
+
+## Follow-ups worked on feat/followups-20261110 (PROVISIONAL-DONE; live runs owed)
+- D7-R4-FU-1/2/3 DONE: `islandsOf` knob exemption now needs `rounded-full` + `bg-white` + w-1..6 AND h-1..6 + no text; `LIGHT_BG_NAME` includes -200 shades; a `dark:bg-*` that is itself light (`dark:bg-white`) or `dark:bg-opacity-*` no longer hides an island; fetch-leak tests in contrastD7Class/Populated/ExternalIntegrations (+ default mock history reset). Mutations killed (see commit body).
+- D7-R4-FU-4 DONE: island rows registered as ids CAT-D7-ISLAND-1..3 in WORKABLE_ITEMS_REGISTER.md: -1 AdvancedSearch tab icon chips `bg-blue-100` (x5), -2 FormatConverter empty-state circle `bg-gray-100` + AI unavailable panels `bg-white rounded-lg shadow p-6` (x3), -3 AIDashboard icon chips `bg-indigo-100`/`bg-green-100`/`bg-yellow-100`. (Grouping by component is the author's choice.)
+- CAT-VERIFY-LANBIND-1 DONE in code: `verify.py` derives the exposure expectation (env, else `podman port`, else loopback) via `lanbind.py`; LAN-bound Prometheus/Grafana/pgAdmin are asserted LAN-reachable + anonymous-rejected; PostgreSQL/Redis asserted loopback-only. Unit-tested (`test_lanbind.py`). Live re-run of verify.py owed: stack 3 was DOWN when this was authored (no containers, ports closed), so the live RED could not be re-captured.
+- CAT-FRONTDOOR-LOCALMODE-1 DONE: `--interface <ip>` mode + README note; sandbox test `test_frontdoor_interface.sh`. A live run against stack 3 is owed (stack down).
+## Tauri follow-ups review (2026-11-10, Opus: GO-with-follow-ups; security-adjacent minors fixed before landing)
+- TAURI-R2-FU-1: guard ignores .toml/.json5 capability files and tauri.conf.json enabled-capability list / window label; add parsing + mutation cases.
+- TAURI-R2-FU-2: comments/strings containing a dialog import count as usage (conservative); `ask`/`confirm`/`message` not covered.
+- TAURI-R2-FU-3: catalogizer-desktop/src-tauri/gen/schemas/capabilities.json has the same stale tracked-generated shape; investigate (§11.4.124) then untrack/regenerate.
+- TAURI-R2-FU-4: pre-flight-check.sh must run from repo root (fails closed 127 elsewhere); consider cd to root.
+- TAURI-R2-FU-5 (nit): `Out-of-scope:` trailer on c504d197 is a left-alone note, not a closed-list reason.
+- FU-5/FU-7 of review 1 (GREEN live wizard run) remain owed; CAT-TAURI-NATIVE-1 stays PROVISIONAL-DONE.
+
+## followups-20261110 review (Opus: GO-with-follow-ups; security-adjacent minors fixed before landing)
+- FU20-1: live verify.py run with declared *_BIND on rebuilt stack 3 (CAT-VERIFY-LANBIND-1 PROVISIONAL).
+- FU20-2: live test_clientip_frontdoor.sh --interface run; UNCONFIRMED whether a second local IP lands in a separate bucket given pasta aliasing (CAT-FRONTDOOR-LOCALMODE-1 PROVISIONAL).
+- FU20-3 (PARTLY DONE, CAT-FOLLOWUPS-UNIT-1): alpha cutoff 50 (own bg and dark:bg, opacity-N) and knob size boundaries pinned in contrastHelper.test.ts; fractional knob sizes (h-3.5) are an explicit known gap `FU20-3b` (it.todo; likely false-positive islands, product decision). STILL OPEN: the leak-check conditional-restore mutant (L1) survives.
+- FU20-4 (process-doc): commit 9928be7f carries Roadmap-Item D7-R4-FU-1 only; it implements FU-1..4 (history not rewritten).
+- Live axe re-run on rebuilt web image still owed (D7-R4).
+
+## lanip-dyn review (2026-11-10, Opus GO-with-follow-ups; S1-S4,M1-M4 fixed before landing)
+- LIP-FU-1: live run of test-servers up.sh (real cert swap) + strict-TLS FTPS client; remove stale TS_HOST line from untracked testservers.env.
+- LIP-FU-2 (nit): private-key .bak files accumulate in tls/ (mounted into containers) — add retention/cleanup.
+- LIP-FU-3 (nit): if default route moves to ppp/VPN, detection picks VPN address; consider preferring non-ppp interface or warn.
+- LIP-FU-4 (DONE, CAT-FOLLOWUPS-UNIT-1): stack3/lib.sh now uses qa_lan_ip from docs/qa/lib/lan_ip.sh (adds QA_LAN_IP override and assigned-address check; any failure -> empty = trust nothing); covered by test_scripts.sh 7/7b with a stub that also answers `ip -4 -o addr show`.
+- LIP-FU-5: pre-existing: rclone `--pass $TS_PASS` is on container argv (visible in host ps); use obscured env/config file.
+- LIP-FU-6: monitoring/lanbind.py fixtures keep .115 (test data only).
+
+## smb-subdir / tauri round-2 notes (2026-11-11)
+- TAURI-R2-FU-3: catalogizer-desktop/src-tauri/gen/schemas/capabilities.json has the same stale tracked-generated shape as the installer-wizard one; untrack or regenerate.
+- SMB-FU-1: unrouted root-package handlers/download.go, handlers/copy.go, CopyToSMB and /smb/list use catalogizer/smb (still confined) but are dead code; investigate history before any removal (§11.4.124).
+- SMB-FU-2: internal/services/smb.go and smb_discovery.go browse paths mount the request-body Share directly and have no sub-directory support.
+- SMB-FU-3 (optional): routed DownloadHandler test (needs a CatalogService seam).
+- SMB-FU-4: catalog-web form hint for entering share/sub/dir.
+- SMB-FU-5: live run of docs/qa/smb-subdir-20261110/run.sh against the Anton share (never executed yet).
+- SMB-FU-6 (test-instrumentation): routed copy test does not exercise sub-root traversal (pathsafe decides first); service-level tests cover it.
+- SMB-FU-7: ResolveSub rejects ':' via sentinel segment; CreateRemoteDir stays public (interface) and unconfined by contract.
+- SMB-FU-8: live SMB subdir tests unverified; CAT-SMB-SUBDIR-1 stays PROVISIONAL until docs/qa/smb-subdir-20261110/run.sh passes N>=3.
+
+- SMB-FU-5/8 RESULT (2026-11-11): live run executed on cattsrv-smb (share corpus, sub corpus/nested), 3/3 identical PASS for TestLiveSMBSubdir + TestLiveSMBServiceSubdir, negative control (zeroed sha) FAILs as required. Evidence: docs/qa/smb-subdir-20261110/live-run-20261111T121104Z/. CAT-SMB-SUBDIR-1 is VERIFIED for that target; CAVEAT: the original Anton `Public/Testing` target was not run (tests now env-parametrised, defaults unchanged). Optional: one run on Anton Public/Testing.
+
+## CAT-FOLLOWUPS-UNIT-1 review follow-ups (2026-11-11, Opus GO-with-follow-ups)
+- FU20-3b (test-instrumentation): decide whether fractional knob sizes (w-3.5 h-3.5) are exempt; replace the it.todo in contrastHelper.test.ts.
+- PROM-R3-1: PROM_AUTH_USER precedence differs: up.sh lets mon.env win over the environment, verify.py:38 lets the environment win; align and add a both-set test.
+- LIP-FU-7 (nit): `QA_LAN_IP_LIB` override in stack3/lib.sh (and sonarqube/lib.sh) is undocumented.
+- LIP-FU-8 (nit): lib.sh now hard-depends on docs/qa/lib/lan_ip.sh, so down.sh (which sources lib.sh) fails if that file is missing.
+- LIP-FU-9: loopback/unspecified/link-local rejection is in stack3/lib.sh only; IPv6 (::1, fe80::) not applicable (IPv4-only helper).
+
+- SMB-FU-9: DNS-rebinding TOCTOU. services.VetSMBHost resolves once, but the dial (net.JoinHostPort(host,"445")) resolves the name again. Dial the vetted IP instead (keep the name for logging only). Opus review round 1, item 2.
+- SMB-FU-10: path checks are lexical only on plain shares (no sub root): pathsafe.SafeRemotePath rejects ".." but ':' (ADS) segments, device names and symlinks the server resolves are not handled. Opus review round 1, item 6.
+- SMB-FU-11: residual information leaks and timing on /smb/test and /smb/browse (connect failure vs auth failure vs mount failure remain distinguishable by latency and by the boolean/400/500 split). Opus review round 1, item 8.
+- SMB-FU-12: the SMB port allowlist (CATALOG_SMB_ALLOWED_PORTS, default 445) does not yet include the ports of configured SMB storage roots; read them from config.SMB.Hosts when the discovery service gets the config injected.
+- SMB-FU-9 (PRIORITISED, security): FIXED, pending review (branch fix/smb-dial-vetted-ip). `VetSMBHostIPs` returns the vetted addresses; `dialVetted` (services/smb_dial.go) dials those IPs in order through the `SMBDialer` seam and hands the net.Conn to go-smb2 (its Dialer.Dial takes a conn, no target name needed for NTLM). DiscoverShares, mountShare (openConfined) and ProbeHostWithIdentities resolve+vet exactly once per request (the probe shares one vetted list across guest and all identities). The service layer now refuses blocked hosts itself (defence in depth to the handler check). Tests: services/smb_dialvetted_test.go (rebinding resolver: allowed IP first, 127.0.0.1 afterwards). dialVetted shares ONE connect deadline across attempts and tries at most 4 vetted IPs. See SMB-FU-9b.
+- SMB-FU-9b (follow-up): admin-configured by-name dials can still be rebound: storage roots, `SMBService.getConnection` (services/smb.go), `smb/client.go`, `filesystem/smb_client.go`. They are not request-supplied, but each should resolve once, vet and dial the vetted IP the same way (reuse `VetSMBHostIPs` + `dialVetted`).
+- SMB-FU-13: the share listing still shows `print$` (SplitShare allows it; it is not administrative there). Decide whether discovery should hide printer shares.
+- SMB-FU-14 (test-instrumentation): tests that replace the global `services.SMBHostResolver` / `smbWarnf` must never use `t.Parallel()`. Add a lint or a locked helper.
+- SMB-FU-15: `internal/handlers/smb.go` `SMBHandler.TestConnection` returns `err.Error()` to the client. Verified 2026-11-11: `SMBHandler` is UNWIRED (`NewSMBHandler` has no non-test caller and no route uses it). Per operator decision it is being removed in a separate change.
+
+## Tauri guard follow-ups (branch fix/tauri-guard-followups, PROVISIONAL-DONE)
+- TAURI-R1-FU-1/2/3/4/6/8: already resolved on main before this branch (per-capability parsing, import forms, pre-flight wiring, docs/qa/tauri-native-20261106/README.md present, installer-wizard capabilities.json untracked+ignored in c504d197, header states exit 2 = BLIND); verified by re-running guard + mutation test.
+- TAURI-R2-FU-1 DONE: .toml and .json5 capability files (json5 = comments/trailing commas only, other syntax fails closed), tauri.conf.json app.security.capabilities (enabled list + inline caps) and app.windows[].label.
+- TAURI-R2-FU-2 DONE (review round 3, structural): the source lexer was REMOVED. Usage detection scans the RAW text of every .ts/.tsx/.js/.jsx/.mjs/.cjs/.mts/.cts under installer-wizard/src (all directories, tests included): dialog-plugin imports/export-from/dynamic imports/require and `plugin:dialog|<cmd>` strings count wherever they appear, so a mention in a comment or string is a deliberate false positive (demands the permission); no false negative from masking is possible. ask/confirm/message covered (star/dynamic/unrecognised-position import need all five). Capability files are parsed per capability in all Tauri CapabilityFile shapes (Capability | List | NamedList {"capabilities":[..]}); type errors in tauri.conf.json/capabilities and an unterminated json5 /* comment, or any internal error, exit 2 (BLIND). Window match is fnmatch (pinned by mainwin / ma?n cases). Remaining honest limits: command names built at run time, differently named re-export modules, .vue/.svelte sources, capabilities/ subdirectories, tauri.<platform>.conf.json; a non-string `windows`/`platforms` in a capability is a FAIL (not BLIND). Guard-of-the-guard: scripts/tauri/test_wizard_capabilities_guard_mutants.sh (9 mutants, all killed).
+- TAURI-R2-FU-4 DONE: pre-flight-check.sh cds to repo root; test_preflight_cwd.sh wired in.
+- TAURI-R2-FU-3 / R1-FU-6 desktop: catalogizer-desktop/src-tauri/gen/schemas/capabilities.json is tracked as `{}` since 2b182b01 (Tauri build output; no capabilities/ dir; installer-wizard ignores the same path in installer-wizard/.gitignore). Recommendation: add the path to catalogizer-desktop's .gitignore and `git rm --cached` it (operator/reviewer decision; NOT done here per §11.4.124).
+- TAURI-R2-FU-5: WONTFIX/corrected-in-later-commits (a pushed trailer cannot be changed; later commits carry correct closed-list trailers).
+- TAURI-R3-FU-1..4 (register): guard does not recurse into capabilities/ subdirs; ignores tauri.<platform>.conf.json / Tauri.toml; empty enabled list semantics (currently treated as enabling nothing; Tauri may differ, verify); multi-window apps (only main/first label checked).
+- Review round 1 (Opus NO-GO) fixed: masking weaker than parent (5 repros + backtick/aliased/re-export cases), fail-open parse errors (now exit 2), PRE_FLIGHT_CHDIR_ONLY exit 0 (now 3), mutants E/J/M killed by cases.
+- TAURI-R4 (review round 4, structural, Opus round-3 NO-GO closed): usage detection is now precise-forms + structural fallback (any unexplained "plugin-dialog"/"plugin:dialog" mention incl. after \xNN/\uNNNN decoding, any "__TAURI__" text, app.withGlobalTauri true => all five permissions; only vi/jest module mocks are explained away); "capabilities" key checked before "identifier" (Tauri NamedList first); dialog:default counted as open/save/message only and ask/confirm also demand allow-message; symlinked src dirs followed with realpath loop guard, unreadable dirs BLIND; gofmt-only sweep of 44 catalog-api files reverted from the branch (§11.4.293); denies detection uses a flag instead of message text.
+- TAURI-R4-FU-1: split plugin names ('plugin:' + 'dialog'), a package alias re-exported from a differently named module, and non-JS sources (.vue/.svelte) remain undetected (documented guard limits).
+- TAURI-R4-FU-2: the guard's dialog:default expansion and the ask/confirm=>message rule follow upstream tauri-plugin-dialog as read in review (v2.6.0 vs v2 head); pin the Rust crate and track Cargo.lock, then replace the conservative assumption with the pinned crate's actual default set.
+- TAURI-R4-FU-3: a mention in a comment/string/test file other than vi/jest module mocks demands all five permissions (accepted false positive); no source lexing by design.
+- TAURI-R4-FU-4: capability "webviews" field is ignored (conservative: only "windows" is matched); a remote capability with urls [] FAILs (conservative: any "remote" object is treated as granting to remote origins).
+- TAURI-R4-FU-5: html scan covers *.html under installer-wizard (excluding node_modules, dist, target, .git); a non-empty src-tauri/permissions/ is BLIND (app-defined permission sets not parsed). Pre-flight runs the guard mutants only when tauri guard/wizard files changed (PRE_FLIGHT_FORCE_TAURI_MUTANTS=1 forces).

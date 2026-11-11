@@ -75,8 +75,8 @@ func LoadSMBIdentitiesFromEnv() []SMBIdentity {
 
 // dialAndEnumerate opens an SMB session as the given identity and returns the
 // host's real shares, or an error if dial/auth/enumeration fails.
-func (s *SMBDiscoveryService) dialAndEnumerate(ctx context.Context, host string, id SMBIdentity) ([]SMBShareInfo, error) {
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:445", host), s.timeout)
+func (s *SMBDiscoveryService) dialAndEnumerate(ctx context.Context, host string, ips []net.IP, id SMBIdentity) ([]SMBShareInfo, error) {
+	conn, err := dialVetted(ctx, ips, smbPort, s.timeout)
 	if err != nil {
 		return nil, fmt.Errorf("dial %s: %w", host, err)
 	}
@@ -115,13 +115,21 @@ func (s *SMBDiscoveryService) dialAndEnumerate(ctx context.Context, host string,
 // the returned error carries the last failure for diagnostics (§11.4.6 — the
 // caller records an honest "no identity authenticated", never a guess).
 func (s *SMBDiscoveryService) ProbeHostWithIdentities(ctx context.Context, host string, identities []SMBIdentity) (*SMBProbeResult, error) {
+	if err := ValidateSMBHostSyntax(host); err != nil {
+		return nil, err
+	}
+	// Resolve + vet ONCE; every identity attempt dials these addresses (no second lookup, SMB-FU-9).
+	ips, err := VetSMBHostIPs(host)
+	if err != nil {
+		return &SMBProbeResult{Host: host}, err
+	}
 	candidates := make([]SMBIdentity, 0, len(identities)+1)
 	candidates = append(candidates, SMBIdentity{Index: 0, Kind: "guest", Username: "guest"})
 	candidates = append(candidates, identities...)
 
 	var lastErr error
 	for _, id := range candidates {
-		shares, err := s.dialAndEnumerate(ctx, host, id)
+		shares, err := s.dialAndEnumerate(ctx, host, ips, id)
 		if err != nil {
 			lastErr = err
 			s.logger.Debug("SMB probe identity did not authenticate",

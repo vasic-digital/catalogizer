@@ -1,0 +1,18 @@
+--- FAIL: TestLiveSMBSubdir (0.04s)
+    smb_subdir_live_test.go:86: outside-name probes: 7
+    smb_subdir_live_test.go:94: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/smbfu5.gcgL/repo/catalog-api/filesystem/smb_subdir_live_test.go:94
+        	Error:      	Not equal: 
+        	            	expected: "0000000000000000000000000000000000000000000000000000000000000000"
+        	            	actual  : "64896f89fd11190013b70103e603a1c5826e56b7fb7d2197ab279b0690043599"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-0000000000000000000000000000000000000000000000000000000000000000
+        	            	+64896f89fd11190013b70103e603a1c5826e56b7fb7d2197ab279b0690043599
+        	Test:       	TestLiveSMBSubdir
+FAIL
+FAIL	catalogizer/filesystem	0.049s
+FAIL

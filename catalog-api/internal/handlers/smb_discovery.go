@@ -1,7 +1,10 @@
 package handlers
 
 import (
+	"catalogizer/internal/pathsafe"
 	"catalogizer/internal/services"
+	"catalogizer/smb"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -84,12 +87,19 @@ func (h *SMBDiscoveryHandler) DiscoverShares(c *gin.Context) {
 		return
 	}
 
+	if !isHostAllowed(req.Host) {
+		h.logger.Warn("Blocked discovery of disallowed host", zap.String("host", req.Host))
+		c.JSON(http.StatusBadRequest, gin.H{"error": hostAllowedErr})
+		return
+	}
+
 	h.logger.Info("Discovering SMB shares", zap.String("host", req.Host), zap.String("username", req.Username))
 
 	shares, err := h.service.DiscoverShares(c.Request.Context(), req.Host, req.Username, req.Password, req.Domain)
 	if err != nil {
 		h.logger.Error("Failed to discover SMB shares", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to discover shares: " + err.Error()})
+		st, msg := smbErrorStatus(err, "Failed to discover shares")
+		c.JSON(st, gin.H{"error": msg})
 		return
 	}
 
@@ -118,6 +128,12 @@ func (h *SMBDiscoveryHandler) TestConnection(c *gin.Context) {
 	// Set default port if not provided
 	if req.Port == 0 {
 		req.Port = 445
+	}
+
+	if msg := validateSMBTarget(req.Host, req.Port, req.Share, "."); msg != "" {
+		h.logger.Warn("Rejected SMB connection test", zap.String("host", req.Host), zap.String("reason", msg))
+		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+		return
 	}
 
 	h.logger.Info("Testing SMB connection", zap.String("host", req.Host), zap.String("share", req.Share))
@@ -171,6 +187,12 @@ func (h *SMBDiscoveryHandler) BrowseShare(c *gin.Context) {
 		req.Path = "."
 	}
 
+	if msg := validateSMBTarget(req.Host, req.Port, req.Share, req.Path); msg != "" {
+		h.logger.Warn("Rejected SMB browse", zap.String("host", req.Host), zap.String("reason", msg))
+		c.JSON(http.StatusBadRequest, gin.H{"error": msg})
+		return
+	}
+
 	h.logger.Info("Browsing SMB share", zap.String("host", req.Host), zap.String("share", req.Share), zap.String("path", req.Path))
 
 	config := services.SMBConnectionConfig{
@@ -185,7 +207,8 @@ func (h *SMBDiscoveryHandler) BrowseShare(c *gin.Context) {
 	entries, err := h.service.BrowseShare(c.Request.Context(), config, req.Path)
 	if err != nil {
 		h.logger.Error("Failed to browse SMB share", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to browse share: " + err.Error()})
+		st, msg := smbErrorStatus(err, "Failed to browse share")
+		c.JSON(st, gin.H{"error": msg})
 		return
 	}
 
@@ -256,9 +279,8 @@ func (h *SMBDiscoveryHandler) ProbeHost(c *gin.Context) {
 	result, err := h.service.ProbeHostWithIdentities(c.Request.Context(), req.Host, idents)
 	if err != nil {
 		h.logger.Error("Failed to probe SMB host", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to probe host",
-		})
+		st, msg := smbErrorStatus(err, "Failed to probe host")
+		c.JSON(st, gin.H{"error": msg})
 		return
 	}
 
@@ -286,4 +308,31 @@ func smbCredentialsInURLGone(c *gin.Context) {
 	c.JSON(http.StatusGone, gin.H{
 		"error": "credentials in the URL are no longer accepted; use POST " + c.Request.URL.Path + " with a JSON body",
 	})
+}
+
+// validateSMBTarget applies to the discovery routes the same SSRF host check ProbeHost uses, plus the port and share/path rules of the
+// service (SMB-FU-2). It returns "" when the request may proceed, else a fixed client-safe message.
+func validateSMBTarget(host string, port int, share, path string) string {
+	if !isHostAllowed(host) {
+		return hostAllowedErr
+	}
+	if err := services.ValidateSMBPort(port); err != nil {
+		return "Unsupported port"
+	}
+	if _, _, err := smb.SplitShare(share); err != nil {
+		return "Invalid share"
+	}
+	if err := pathsafe.SafeRemotePath(path); err != nil {
+		return "Invalid path"
+	}
+	return ""
+}
+
+// smbErrorStatus maps a service error to an HTTP status and a fixed client-safe message: client input errors are 400, everything else
+// is 500 with the generic text (no server, network or path detail).
+func smbErrorStatus(err error, generic string) (int, string) {
+	if errors.Is(err, services.ErrInvalidSMBInput) {
+		return http.StatusBadRequest, "Invalid share, path, host or port"
+	}
+	return http.StatusInternalServerError, generic
 }

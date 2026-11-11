@@ -1,0 +1,4 @@
+A: after flood no-XFF=429 spoof=429 chain-spoof=429 (all must be 429)
+B(local): probe from second local IP 127.0.0.1 (default source 192.168.1.17) got 401 (must be 401, not 429)
+PASS (A and B(local))
+rc=0

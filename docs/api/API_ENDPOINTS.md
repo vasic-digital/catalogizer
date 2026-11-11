@@ -160,6 +160,8 @@ All endpoints below require JWT authentication and are rate limited (2000 reques
 | GET | `/api/v1/storage-roots` | List all storage roots (alias) |
 | GET | `/api/v1/storage-roots/:id/status` | Get scan and connection status of a storage root |
 
+**SMB sub-directory roots.** For `protocol: "smb"` the `path` field is `share` (the whole share, as before) or `share/sub/dir`. Only the share part is mounted; every operation is confined below the sub-directory, in the scanner / `GET /storage/list` (`filesystem.SmbClient`) and in the routed download and copy endpoints (`/download/file/:id`, `/copy/*`, archives: `internal/services.SMBService`). `..` and backslash tricks are clamped to the sub root. `POST /storage/roots` answers 400 for a `path` that: has a leading `/` followed by a sub-directory (`/share` alone is tolerated for old roots, `/share/sub` is refused); contains a backslash, a control, C1 or bidi-control character; has an empty, `.` or `..` segment (also with trailing dots or spaces, e.g. `...`); is an administrative share (`IPC$`, `ADMIN$`, `C$`); has a sub-directory segment that is a Windows device name (`CON`, `NUL`, `COM1`..) or contains `:`; or is a UNC form (`\\host\share`, `//host/share`; put the server in `host`). Stored roots that were created in a UNC form are refused at use with the same message. The confinement is lexical: a symbolic link that the server itself resolves is not detected by the client.
+
 ---
 
 ## Statistics

@@ -56,6 +56,10 @@ const CHILD: any = { id: 2, title: 'Reloaded', media_type: 'movie', media_type_i
 const FILE: any = { id: 1, media_item_id: 1, file_id: 1, quality_info: '1080p', language: 'en', is_primary: true, created_at: '2024-01-01T00:00:00Z' }
 const JOB: any = { id: 'j1', sourceFile: { path: '/a.mkv', name: 'a.mkv', format: 'mkv', size: 1048576 }, targetFormat: 'mp4', quality: 'high', status: 'completed', progress: 100, options: {}, startTime: '2024-01-01T00:00:00Z', endTime: '2024-01-01T00:01:00Z', outputFile: '/a.mp4' }
 
+// D7-R4-2: tests assign global.fetch; restore it so the mock never leaks into sibling tests.
+const realFetch = global.fetch
+afterEach(() => { global.fetch = realFetch })
+
 describe.each(THEMES)('UI-D7-FU class-wide gray text, %s theme (WCAG AA 4.5:1)', (theme) => {
   it('ExternalIntegrations: whole panel incl. integration cards', async () => {
     global.fetch = vi.fn().mockResolvedValue({ ok: false, json: async () => ([]) }) as any
@@ -125,5 +129,12 @@ describe.each(THEMES)('UI-D7-FU class-wide gray text, %s theme (WCAG AA 4.5:1)',
     await screen.findByText('Total Syncs')
     await screen.findByText(/items synced/)
     expect(fail(container, theme)).toBe('')
+  })
+})
+
+// D7-R4-FU-3: runs after the fetch-mocking tests above; fails if the afterEach restore is removed (reviewer mutation M7).
+describe('D7-R4-FU-3 global.fetch does not leak out of the mocking tests', () => {
+  it('fetch is the original again', () => {
+    expect(global.fetch).toBe(realFetch)
   })
 })

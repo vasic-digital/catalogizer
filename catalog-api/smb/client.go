@@ -19,6 +19,7 @@ type SmbClient struct {
 	session *smb2.Session
 	share   *smb2.Share
 	config  *SmbConfig
+	sub     string // sub-directory of the share this client is confined to ("" = whole share)
 }
 
 // SmbConfig contains SMB connection configuration
@@ -48,6 +49,12 @@ func NewSmbClient(config *SmbConfig) (*SmbClient, error) {
 		return nil, fmt.Errorf("SMB config: Share is required")
 	}
 
+	// Share may be "share" or "share/sub/dir": the share is mounted, every path is confined below the sub-directory.
+	shareName, sub, err := SplitShare(config.Share)
+	if err != nil {
+		return nil, fmt.Errorf("SMB config: %w", err)
+	}
+
 	// Establish TCP connection with a bounded timeout.
 	addr := net.JoinHostPort(config.Host, fmt.Sprintf("%d", config.Port))
 	conn, err := net.DialTimeout("tcp", addr, defaultDialTimeout)
@@ -71,7 +78,7 @@ func NewSmbClient(config *SmbConfig) (*SmbClient, error) {
 	}
 
 	// Mount share
-	share, err := session.Mount(config.Share)
+	share, err := session.Mount(shareName)
 	if err != nil {
 		session.Logoff()
 		conn.Close()
@@ -83,19 +90,23 @@ func NewSmbClient(config *SmbConfig) (*SmbClient, error) {
 		session: session,
 		share:   share,
 		config:  config,
+		sub:     sub,
 	}, nil
 }
+
+// rp maps a root-relative path to the share-relative path sent to the server (confined below the sub-directory, see ResolveSub).
+func (c *SmbClient) rp(p string) string { return ResolveSub(c.sub, p) }
 
 // TestConnection tests the SMB connection
 func (c *SmbClient) TestConnection() error {
 	// Try to list the root directory
-	_, err := c.share.ReadDir(".")
+	_, err := c.share.ReadDir(c.rp("."))
 	return err
 }
 
 // ReadFile reads a file from the SMB share
 func (c *SmbClient) ReadFile(path string) (io.ReadCloser, error) {
-	file, err := c.share.Open(path)
+	file, err := c.share.Open(c.rp(path))
 	if err != nil {
 		return nil, fmt.Errorf("failed to open SMB file %s: %w", path, err)
 	}
@@ -104,7 +115,7 @@ func (c *SmbClient) ReadFile(path string) (io.ReadCloser, error) {
 
 // WriteFile writes a file to the SMB share
 func (c *SmbClient) WriteFile(path string, data io.Reader) error {
-	file, err := c.share.Create(path)
+	file, err := c.share.Create(c.rp(path))
 	if err != nil {
 		return fmt.Errorf("failed to create SMB file %s: %w", path, err)
 	}
@@ -120,7 +131,7 @@ func (c *SmbClient) WriteFile(path string, data io.Reader) error {
 
 // GetFileInfo gets information about a file
 func (c *SmbClient) GetFileInfo(path string) (*FileInfo, error) {
-	stat, err := c.share.Stat(path)
+	stat, err := c.share.Stat(c.rp(path))
 	if err != nil {
 		return nil, fmt.Errorf("failed to stat SMB file %s: %w", path, err)
 	}
@@ -136,7 +147,7 @@ func (c *SmbClient) GetFileInfo(path string) (*FileInfo, error) {
 
 // ListDirectory lists files in a directory
 func (c *SmbClient) ListDirectory(path string) ([]*FileInfo, error) {
-	entries, err := c.share.ReadDir(path)
+	entries, err := c.share.ReadDir(c.rp(path))
 	if err != nil {
 		return nil, fmt.Errorf("failed to list SMB directory %s: %w", path, err)
 	}
@@ -157,7 +168,7 @@ func (c *SmbClient) ListDirectory(path string) ([]*FileInfo, error) {
 
 // FileExists checks if a file exists
 func (c *SmbClient) FileExists(path string) (bool, error) {
-	_, err := c.share.Stat(path)
+	_, err := c.share.Stat(c.rp(path))
 	if err != nil {
 		if isNotExistError(err) {
 			return false, nil
@@ -169,7 +180,7 @@ func (c *SmbClient) FileExists(path string) (bool, error) {
 
 // CreateDirectory creates a directory
 func (c *SmbClient) CreateDirectory(path string) error {
-	err := c.share.Mkdir(path, 0755)
+	err := c.share.Mkdir(c.rp(path), 0755)
 	if err != nil {
 		return fmt.Errorf("failed to create SMB directory %s: %w", path, err)
 	}
@@ -178,7 +189,7 @@ func (c *SmbClient) CreateDirectory(path string) error {
 
 // DeleteFile deletes a file
 func (c *SmbClient) DeleteFile(path string) error {
-	err := c.share.Remove(path)
+	err := c.share.Remove(c.rp(path))
 	if err != nil {
 		return fmt.Errorf("failed to delete SMB file %s: %w", path, err)
 	}
@@ -188,14 +199,14 @@ func (c *SmbClient) DeleteFile(path string) error {
 // CopyFile copies a file within the SMB share
 func (c *SmbClient) CopyFile(srcPath, dstPath string) error {
 	// Read source file
-	srcFile, err := c.share.Open(srcPath)
+	srcFile, err := c.share.Open(c.rp(srcPath))
 	if err != nil {
 		return fmt.Errorf("failed to open source file %s: %w", srcPath, err)
 	}
 	defer srcFile.Close()
 
 	// Create destination file
-	dstFile, err := c.share.Create(dstPath)
+	dstFile, err := c.share.Create(c.rp(dstPath))
 	if err != nil {
 		return fmt.Errorf("failed to create destination file %s: %w", dstPath, err)
 	}

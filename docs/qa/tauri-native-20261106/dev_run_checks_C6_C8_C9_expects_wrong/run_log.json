@@ -1,0 +1,622 @@
+[
+ {
+  "file": "01_s1_start.png",
+  "expect": [
+   "Server URL"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Settings Configure your Catalogizer desktop client Server Configuration Server URL http://localhost:8080 \u00a7 Test Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. No storage sources configured yet. + Add Storage Sou",
+  "step": "see:s1_start"
+ },
+ {
+  "chars": 37,
+  "secret": false,
+  "text": "http://host.containers.internal:38082",
+  "step": "type"
+ },
+ {
+  "file": "02_s2_scrolled.png",
+  "expect": [
+   "Auto-start"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. No storage sources configured yet. + Add Storage Source General Auto-start Start Catalogizer when your computer starts oe ttings | Appearance Theme Storage Configur",
+  "step": "see:s2_scrolled"
+ },
+ {
+  "at": [
+   1006,
+   815
+  ],
+  "step": "save_button_at"
+ },
+ {
+  "file": "03_s2_dialog_first.png",
+  "expect": [
+   "Only continue"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "http://host.containers.internal:38082 \u00a7 Test Appearance Theme Confirm server change Storage Confi r wants to connect to this Catalog Configure storage so h contain internal FTP, NFS, WebDAV, Local. htt; p t.contain S internal:3 No storage sources | Only continue if you recognise this add Char Cancel",
+  "step": "see:s2_dialog_first"
+ },
+ {
+  "ok": true,
+  "note": "",
+  "step": "CHECK:C1_native_dialog_first_time"
+ },
+ {
+  "geometries": [
+   [
+    543,
+    380,
+    355,
+    197
+   ]
+  ],
+  "step": "native_dialog_windows"
+ },
+ {
+  "button": "Cancel",
+  "at": [
+   809,
+   538
+  ],
+  "step": "press"
+ },
+ {
+  "file": "04_s3_after_cancel.png",
+  "expect": [
+   "Auto-start"
+  ],
+  "absent": [
+   "Only continue",
+   "Welcome to Catalogizer"
+  ],
+  "ok": true,
+  "ocr": "\u00a7 Test http://host.containers.internal:38082 Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. No storage sources configured yet. + Add Storage Source General Auto-start Start Catalogizer when your computer starts ",
+  "step": "see:s3_after_cancel"
+ },
+ {
+  "ok": true,
+  "note": "",
+  "step": "CHECK:C2_cancel_stays_on_settings"
+ },
+ {
+  "file": "05_s4_scrolled.png",
+  "expect": [
+   "Auto-start"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "\u00a7 Test http://host.containers.internal:38082 Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. No storage sources configured yet. + Add Storage Source General Auto-start Start Catalogizer when your computer starts ",
+  "step": "see:s4_scrolled"
+ },
+ {
+  "at": [
+   1006,
+   815
+  ],
+  "step": "save_button_at"
+ },
+ {
+  "file": "06_s4_dialog_again.png",
+  "expect": [
+   "Only continue"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "http://host.containers.internal:38082 \u00a7 Test Appearance Theme Confirm server change Storage Confi r wants to connect to this Catalog Configure storage so h contain internal FTP, NFS, WebDAV, Local. htt; p t.contain S internal:3 No storage sources | Only continue if you recognise this add Char Cancel",
+  "step": "see:s4_dialog_again"
+ },
+ {
+  "geometries": [
+   [
+    543,
+    380,
+    355,
+    197
+   ]
+  ],
+  "step": "native_dialog_windows"
+ },
+ {
+  "button": "Chang",
+  "at": [
+   631,
+   538
+  ],
+  "step": "press"
+ },
+ {
+  "file": "07_s5_login_screen.png",
+  "expect": [
+   "Sign in",
+   "Connecting to"
+  ],
+  "absent": [
+   "Only continue"
+  ],
+  "ok": true,
+  "ocr": "Welcome to Catalogizer Sign in to access your media library Connecting to: http://host.containers.internal:38082 Username Enter your username Password Enter your password \u00ae Configure server connection Made with @ by Vasic Digital \u00a9 2026 Vasic Digital. All rights reserved. | FB Welcome to Catalogizer",
+  "step": "see:s5_login_screen"
+ },
+ {
+  "ok": true,
+  "note": "",
+  "step": "CHECK:C3_confirm_applies_navigates_to_login"
+ },
+ {
+  "chars": 8,
+  "secret": false,
+  "text": "qa_admin",
+  "step": "type"
+ },
+ {
+  "secret": true,
+  "text": null,
+  "step": "type"
+ },
+ {
+  "file": "08_s6_filled.png",
+  "expect": [
+   "Username"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Welcome to Catalogizer Sign in to access your media library Connecting to: http://host.containers.internal:38082 Username qa_admin Password Configure server connection | FB Welcome to Catalogizer Sign in to access your media library Connecting to: http://host.containers.internal:38082 Username qa_ad",
+  "step": "see:s6_filled"
+ },
+ {
+  "file": "09_s7_home.png",
+  "expect": [
+   "Welcome back"
+  ],
+  "absent": [
+   "Login failed",
+   "Sign in to access"
+  ],
+  "ok": true,
+  "ocr": "fH] Catalogizer Good morning! Welcome back Here's what's new in your media library \u201c Total Items liI\\_ Library Recent Additions yw Movies [> TV Shows 47 47 0 0 Q Search Media files This week In collection Series available Recently Added > > > > > Playlist.Evil.... Control.Plai... Plain.Conttr... Hls",
+  "step": "see:s7_home"
+ },
+ {
+  "ok": true,
+  "note": "",
+  "step": "CHECK:C4_login_works_home_shown"
+ },
+ {
+  "file": "10_s7b_scan0.png",
+  "expect": [
+   "Logout"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "> > > > > > Burst.Movie... Live3 Markd... Live3 Text N Live3 Big.Seek.M... Show Name... Highly Rated > > > > > zero-byte.m truncated.png truncated-t. not-a-pdf.pdf manifest.json corrupt-gar... System Administrator qa_admin@catalogizer.local Settings Ultra.HD.M. Third.Movie... (> Logout | > > > > > >",
+  "step": "see:s7b_scan0"
+ },
+ {
+  "file": "11_s8_top.png",
+  "expect": [
+   "Server URL"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "fF Catalogizer Settings Configure your Catalogizer desktop client @ Home Library Server Configuration Server URL Q Search http://host.containers.internal:38082 \u00a7 Test Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Loca",
+  "step": "see:s8_top"
+ },
+ {
+  "chars": 37,
+  "secret": false,
+  "text": "http://host.containers.internal:33080",
+  "step": "type"
+ },
+ {
+  "file": "12_s8_typed.png",
+  "expect": [
+   "Server URL"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "fF Catalogizer Settings Configure your Catalogizer desktop client Home Library Server Configuration Server URL Q Search Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. Invalid response format No storage sources c",
+  "step": "see:s8_typed"
+ },
+ {
+  "file": "13_s9_scrolled.png",
+  "expect": [
+   "Auto-start"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. Invalid response format No storage sources configured yet. + Add Storage Source General Auto-start System Administrator Start Catalogizer when your computer starts ",
+  "step": "see:s9_scrolled"
+ },
+ {
+  "words": [
+   "Save",
+   "Settings"
+  ],
+  "step": "save_region_ocr"
+ },
+ {
+  "at": [
+   1072,
+   813
+  ],
+  "step": "save_button_at"
+ },
+ {
+  "file": "14_s9_dialog_change.png",
+  "expect": [
+   "Only continue"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Appearance Theme Confirm server change er SMB, FTP, NFS, WebDAV, Catalogi wants to change it! urrent htt host.container internal:38082 N h ho co in na 8 ale) ontain in na ll req ncluding your -in, would go to the new rver. Only continue | you rt 1 this change. Cancel Change server General Auto-start",
+  "step": "see:s9_dialog_change"
+ },
+ {
+  "ok": true,
+  "note": "",
+  "step": "CHECK:C5_change_dialog_has_current_and_new"
+ },
+ {
+  "geometries": [
+   [
+    462,
+    355,
+    517,
+    248
+   ]
+  ],
+  "step": "native_dialog_windows"
+ },
+ {
+  "button": "Cancel",
+  "at": [
+   849,
+   564
+  ],
+  "step": "press"
+ },
+ {
+  "file": "15_s10_after_cancel.png",
+  "expect": [
+   "Server URL"
+  ],
+  "absent": [
+   "Only continue"
+  ],
+  "ok": false,
+  "ocr": "Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. Invalid response format No storage sources configured yet. + Add Storage Source General Auto-start System Administrator Start Catalogizer when your computer starts ",
+  "step": "see:s10_after_cancel"
+ },
+ {
+  "ok": false,
+  "note": "",
+  "step": "CHECK:C6_cancel_stays_on_settings"
+ },
+ {
+  "file": "16_s11_scrolled.png",
+  "expect": [
+   "Auto-start"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. Invalid response format No storage sources configured yet. + Add Storage Source General Auto-start System Administrator Start Catalogizer when your computer starts ",
+  "step": "see:s11_scrolled"
+ },
+ {
+  "words": [
+   "Save",
+   "Settings"
+  ],
+  "step": "save_region_ocr"
+ },
+ {
+  "at": [
+   1072,
+   813
+  ],
+  "step": "save_button_at"
+ },
+ {
+  "file": "17_s11_dialog_again.png",
+  "expect": [
+   "Only continue"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Appearance Theme Confirm server change er SMB, FTP, NFS, WebDAV, Catalogi wants to change it! urrent htt host.container internal:38082 N h ho co in na 8 ale) ontain in na ll req ncluding your -in, would go to the new rver. Only continue | you rt 1 this change. Cancel Change server General Auto-start",
+  "step": "see:s11_dialog_again"
+ },
+ {
+  "ok": true,
+  "note": "",
+  "step": "CHECK:C7_old_url_still_current_after_cancel"
+ },
+ {
+  "geometries": [
+   [
+    462,
+    355,
+    517,
+    248
+   ]
+  ],
+  "step": "native_dialog_windows"
+ },
+ {
+  "button": "Chang",
+  "at": [
+   591,
+   564
+  ],
+  "step": "press"
+ },
+ {
+  "file": "18_s12_after_confirm.png",
+  "expect": [
+   "Welcome back"
+  ],
+  "absent": [
+   "Only continue",
+   "Sign in to access"
+  ],
+  "ok": false,
+  "ocr": "> > > > > > Burst.Movie... Live3 Markd... Live3 Text N Live3 Big.Seek.M... Show Name... Highly Rated > > > > > zero-byte.m truncated.png truncated-t. not-a-pdf.pdf manifest.json corrupt-gar... System Administrator qa_admin@catalogizer.local Settings Ultra.HD.M. Third.Movie... (> Logout | > > > > > >",
+  "step": "see:s12_after_confirm"
+ },
+ {
+  "ok": false,
+  "note": "",
+  "step": "CHECK:C8_confirm_applies_session_ok"
+ },
+ {
+  "file": "19_s13_file_nav_scan0.png",
+  "expect": [
+   "Logout"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "> > > > > > Burst.Movie... Live3 Markd... Live3 Text N Live3 Big.Seek.M... Show Name... Highly Rated > > > > > zero-byte.m truncated.png truncated-t. not-a-pdf.pdf manifest.json corrupt-gar... System Administrator qa_admin@catalogizer.local Settings Ultra.HD.M. Third.Movie... (> Logout | > > > > > >",
+  "step": "see:s13_file_nav_scan0"
+ },
+ {
+  "file": "20_s13_file_top.png",
+  "expect": [
+   "Server URL"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "fF Catalogizer Settings Configure your Catalogizer desktop client @ Home Library Server Configuration Server URL Q Search http://host.containers.internal:33080 \u00a7 Test Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Loca",
+  "step": "see:s13_file_top"
+ },
+ {
+  "chars": 18,
+  "secret": false,
+  "text": "file:///etc/passwd",
+  "step": "type"
+ },
+ {
+  "file": "21_s13_file_typed.png",
+  "expect": [
+   "Server URL"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "fF Catalogizer Settings Configure your Catalogizer desktop client Home Library Server Configuration Server URL Q Search Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. Invalid response format No storage sources c",
+  "step": "see:s13_file_typed"
+ },
+ {
+  "file": "22_s13_file_save_scrolled.png",
+  "expect": [
+   "Auto-start"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. Invalid response format No storage sources configured yet. + Add Storage Source General Auto-start System Administrator Start Catalogizer when your computer starts ",
+  "step": "see:s13_file_save_scrolled"
+ },
+ {
+  "words": [
+   "Save",
+   "Settings"
+  ],
+  "step": "save_region_ocr"
+ },
+ {
+  "at": [
+   1072,
+   813
+  ],
+  "step": "save_button_at"
+ },
+ {
+  "file": "23_s13_file_result.png",
+  "expect": [
+   "Server URL"
+  ],
+  "absent": [
+   "Only continue",
+   "Catalogizer wants"
+  ],
+  "ok": false,
+  "ocr": "Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. Invalid response format No storage sources configured yet. + Add Storage Source General Auto-start System Administrator Start Catalogizer when your computer starts ",
+  "step": "see:s13_file_result"
+ },
+ {
+  "ok": false,
+  "note": "",
+  "step": "CHECK:C9_s13_file_rejected_no_dialog"
+ },
+ {
+  "file": "24_s14_creds_top.png",
+  "expect": [
+   "Server URL"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "fF Catalogizer Settings Configure your Catalogizer desktop client @ Home Library Server Configuration Q Search Server URL \u00a7 Test file:///etc/passwd Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. Invalid response",
+  "step": "see:s14_creds_top"
+ },
+ {
+  "chars": 27,
+  "secret": false,
+  "text": "http://user:pw@evil.example",
+  "step": "type"
+ },
+ {
+  "file": "25_s14_creds_typed.png",
+  "expect": [
+   "Server URL"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "fF Catalogizer Settings Configure your Catalogizer desktop client Home Library Server Configuration Server URL Q Search Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. Invalid response format No storage sources c",
+  "step": "see:s14_creds_typed"
+ },
+ {
+  "file": "26_s14_creds_save_scrolled.png",
+  "expect": [
+   "Auto-start"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. Invalid response format No storage sources configured yet. + Add Storage Source General Auto-start System Administrator Start Catalogizer when your computer starts ",
+  "step": "see:s14_creds_save_scrolled"
+ },
+ {
+  "words": [
+   "Save",
+   "Settings"
+  ],
+  "step": "save_region_ocr"
+ },
+ {
+  "at": [
+   1072,
+   813
+  ],
+  "step": "save_button_at"
+ },
+ {
+  "file": "27_s14_creds_result.png",
+  "expect": [
+   "Server URL"
+  ],
+  "absent": [
+   "Only continue",
+   "Catalogizer wants"
+  ],
+  "ok": false,
+  "ocr": "Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. Invalid response format No storage sources configured yet. + Add Storage Source General Auto-start System Administrator Start Catalogizer when your computer starts ",
+  "step": "see:s14_creds_result"
+ },
+ {
+  "ok": false,
+  "note": "",
+  "step": "CHECK:C9_s14_creds_rejected_no_dialog"
+ },
+ {
+  "file": "28_s15_top.png",
+  "expect": [
+   "Server URL"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "fF Catalogizer Settings Configure your Catalogizer desktop client @ Home liI\\_ Library Server Configuration Q Search Server URL \u00a7 Test http://user:pw@evil.example Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. I",
+  "step": "see:s15_top"
+ },
+ {
+  "chars": 37,
+  "secret": false,
+  "text": "http://host.containers.internal:38082",
+  "step": "type"
+ },
+ {
+  "file": "29_s15_typed.png",
+  "expect": [
+   "Server URL"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "fF Catalogizer Settings Configure your Catalogizer desktop client (@) Home liI\\_ Library Server Configuration Server URL Q Search Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. Invalid response format No storage",
+  "step": "see:s15_typed"
+ },
+ {
+  "file": "30_s15_save_scrolled.png",
+  "expect": [
+   "Auto-start"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. Invalid response format No storage sources configured yet. + Add Storage Source General Auto-start System Administrator Start Catalogizer when your computer starts ",
+  "step": "see:s15_save_scrolled"
+ },
+ {
+  "words": [
+   "Save",
+   "Settings"
+  ],
+  "step": "save_region_ocr"
+ },
+ {
+  "at": [
+   1072,
+   813
+  ],
+  "step": "save_button_at"
+ },
+ {
+  "file": "31_s15_dialog_after_rejects.png",
+  "expect": [
+   "Only continue"
+  ],
+  "absent": [],
+  "ok": true,
+  "ocr": "Appearance Theme Confirm server change er SMB, FTP, NFS, WebDAV, Catalogi wants to change it! urrent htt host.container internal:33080 N h ho co in nal:38082 ale) ontain in na ll req ncluding your -in, would go to the new rver. Only continue | you rt 1 this change. Cancel Change server General Auto-",
+  "step": "see:s15_dialog_after_rejects"
+ },
+ {
+  "ok": true,
+  "note": "",
+  "step": "CHECK:C10_url_unchanged_after_rejects"
+ },
+ {
+  "geometries": [
+   [
+    462,
+    355,
+    517,
+    248
+   ]
+  ],
+  "step": "native_dialog_windows"
+ },
+ {
+  "button": "Cancel",
+  "at": [
+   849,
+   564
+  ],
+  "step": "press"
+ },
+ {
+  "file": "32_s16_end.png",
+  "expect": [],
+  "absent": [
+   "Only continue"
+  ],
+  "ok": true,
+  "ocr": "Appearance Theme Storage Configuration Configure storage sources for media scanning. Supported protocols: SMB, FTP, NFS, WebDAV, Local. Invalid response format No storage sources configured yet. + Add Storage Source General Auto-start System Administrator Start Catalogizer when your computer starts ",
+  "step": "see:s16_end"
+ },
+ {
+  "ok": false,
+  "note": "",
+  "step": "CHECK:ALL"
+ }
+]

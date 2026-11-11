@@ -1,0 +1,96 @@
+{
+  "total": 709,
+  "facets": [
+    {
+      "property": "severities",
+      "values": [
+        {
+          "val": "CRITICAL",
+          "count": 666
+        },
+        {
+          "val": "MAJOR",
+          "count": 32
+        },
+        {
+          "val": "MINOR",
+          "count": 11
+        },
+        {
+          "val": "INFO",
+          "count": 0
+        },
+        {
+          "val": "BLOCKER",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "property": "types",
+      "values": [
+        {
+          "val": "CODE_SMELL",
+          "count": 707
+        },
+        {
+          "val": "BUG",
+          "count": 2
+        },
+        {
+          "val": "VULNERABILITY",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "property": "rules",
+      "values": [
+        {
+          "val": "go:S1192",
+          "count": 343
+        },
+        {
+          "val": "go:S3776",
+          "count": 313
+        },
+        {
+          "val": "go:S4144",
+          "count": 16
+        },
+        {
+          "val": "go:S107",
+          "count": 12
+        },
+        {
+          "val": "go:S1186",
+          "count": 10
+        },
+        {
+          "val": "go:S100",
+          "count": 6
+        },
+        {
+          "val": "go:S3923",
+          "count": 2
+        },
+        {
+          "val": "go:S1871",
+          "count": 2
+        },
+        {
+          "val": "go:S117",
+          "count": 2
+        },
+        {
+          "val": "docker:S7031",
+          "count": 2
+        },
+        {
+          "val": "go:S1125",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

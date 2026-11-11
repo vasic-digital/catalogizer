@@ -1,5 +1,5 @@
 // Golden fixtures for the contrast helper itself (an unvalidated oracle is a bluff).
-import { backgroundOf, foregroundOf, contrastOf, ratio, failingElements } from '@/test/contrast'
+import { backgroundOf, foregroundOf, contrastOf, ratio, failingElements, islandsOf } from '@/test/contrast'
 
 function tree(parentCls: string, childCls: string) {
   const p = document.createElement('div'); p.className = parentCls
@@ -114,4 +114,81 @@ describe('contrast helper goldens', () => {
       expect(failingElements(html('<button class="text-gray-500">t</button>'), 'dark')).toHaveLength(1)
     })
   })
+})
+
+describe('D7-R4-4 light-island detector goldens', () => {
+  const mk = (cls: string) => { const r = document.createElement('div'); const c = document.createElement('div'); c.className = cls; c.textContent = 'x'; r.appendChild(c); return r }
+  it.each(['bg-white', 'bg-gray-50', 'bg-gray-100', 'bg-red-50', 'bg-blue-100'])('positive: %s without dark:bg is an island in dark', (cls) => {
+    expect(islandsOf(mk(cls), 'dark')).toHaveLength(1)
+  })
+  it.each(['bg-white dark:bg-gray-800', 'bg-gray-50 dark:bg-gray-700/50', 'bg-gray-900', 'bg-white/10', 'bg-red-600', 'text-gray-900'])('negative: %s is not an island', (cls) => {
+    expect(islandsOf(mk(cls), 'dark')).toHaveLength(0)
+  })
+  const mkEmpty = (cls: string) => { const r = document.createElement('div'); const c = document.createElement('div'); c.className = cls; r.appendChild(c); return r }
+  it('negative: a small, empty, white toggle knob is not a surface', () => {
+    expect(islandsOf(mkEmpty('inline-block h-4 w-4 rounded-full bg-white'), 'dark')).toHaveLength(0)
+  })
+  // D7-R4-FU-1: the knob exemption must not swallow real islands (reviewer mutation M4).
+  it.each([
+    ['large round chip', 'rounded-full w-16 h-16 bg-gray-100', mkEmpty],
+    ['text badge with only a height class', 'rounded-full h-6 px-2 bg-blue-100', mk],
+    ['small round NON-white chip', 'rounded-full w-4 h-4 bg-gray-100', mkEmpty],
+    ['round white with only one size class', 'rounded-full w-4 bg-white', mkEmpty],
+    ['small white circle that holds text', 'rounded-full w-4 h-4 bg-white', mk],
+    ['large white round surface (W7)', 'rounded-full w-16 h-16 bg-white', mkEmpty],
+    ['white round chip with only 2 of 4 size classes in range (W8)', 'rounded-full w-4 h-16 bg-white', mkEmpty],
+  ] as const)('positive: %s is still an island', (_n, cls, make) => {
+    expect(islandsOf(make(cls), 'dark')).toHaveLength(1)
+  })
+  // D7-R4-FU-2: -200 shades, light dark:bg, high dark:bg-opacity-* do not hide an island.
+  it.each(['bg-gray-200', 'bg-blue-200', 'bg-white dark:bg-white', 'bg-gray-100 dark:bg-gray-100', 'bg-white dark:bg-opacity-90'])('positive: %s is an island in dark', (cls) => {
+    expect(islandsOf(mk(cls), 'dark')).toHaveLength(1)
+  })
+  // Tailwind 3: bg-opacity-* is a modifier of the bg colour, so `bg-white dark:bg-opacity-10` renders white at 10% in dark = not an island.
+  it('negative: bg-white dark:bg-opacity-10 renders as 10% white in dark and is not a bright island', () => {
+    expect(islandsOf(mk('bg-white dark:bg-opacity-10'), 'dark')).toHaveLength(0)
+  })
+  it.each(['bg-gray-300', 'bg-gray-200 dark:bg-gray-700', 'bg-white dark:bg-gray-800 dark:bg-opacity-90'])('negative: %s is not an island', (cls) => {
+    expect(islandsOf(mk(cls), 'dark')).toHaveLength(0)
+  })
+  it('opt-in via failingElements: reported only with islands:true', () => {
+    const r = mk('bg-white text-gray-900')
+    expect(failingElements(r, 'dark')).toHaveLength(0)
+    expect(failingElements(r, 'dark', 4.5, { islands: true })).toHaveLength(1)
+  })
+  it('light theme never reports islands', () => {
+    expect(islandsOf(mk('bg-white'), 'light')).toHaveLength(0)
+  })
+})
+
+// FU20-3: boundary characterization for the alpha cutoff (exactly 50) and fractional size classes.
+describe('FU20-3 island detector boundaries', () => {
+  const mk = (cls: string, text = 'x') => { const r = document.createElement('div'); const c = document.createElement('div'); c.className = cls; c.textContent = text; r.appendChild(c); return r }
+  it.each([
+    ['bg-white/50', 1], ['bg-white/51', 1], ['bg-white/100', 1],
+    ['bg-white/49', 0], ['bg-white/0', 0],
+  ] as const)('own bg alpha cutoff: %s -> %i island(s) (>=50 counts, <50 does not)', (cls, n) => {
+    expect(islandsOf(mk(cls), 'dark')).toHaveLength(n)
+  })
+  it.each([
+    ['bg-white dark:bg-white/50', 1], ['bg-white dark:bg-white/99', 1],
+    ['bg-white dark:bg-white/49', 0],
+    ['bg-white dark:bg-opacity-50', 1], ['bg-white dark:bg-opacity-49', 0],
+  ] as const)('dark:bg alpha cutoff: %s -> %i island(s)', (cls, n) => {
+    expect(islandsOf(mk(cls), 'dark')).toHaveLength(n)
+  })
+  const mkEmpty = (cls: string) => { const r = document.createElement('div'); const c = document.createElement('div'); c.className = cls; r.appendChild(c); return r }
+  it('whole-number knob sizes 1 and 6 are exempt, 0 and 7 are not', () => {
+    expect(islandsOf(mkEmpty('rounded-full bg-white w-1 h-1'), 'dark')).toHaveLength(0)
+    expect(islandsOf(mkEmpty('rounded-full bg-white w-6 h-6'), 'dark')).toHaveLength(0)
+    expect(islandsOf(mkEmpty('rounded-full bg-white w-7 h-7'), 'dark')).toHaveLength(1)
+    expect(islandsOf(mkEmpty('rounded-full bg-white w-0 h-0'), 'dark')).toHaveLength(1)
+    expect(islandsOf(mkEmpty('rounded-full bg-white w-4 h-0'), 'dark')).toHaveLength(1)
+    expect(islandsOf(mkEmpty('rounded-full bg-white w-0 h-4'), 'dark')).toHaveLength(1)
+    expect(islandsOf(mkEmpty('rounded-full bg-white w-4 h-7'), 'dark')).toHaveLength(1)
+  })
+  // KNOWN GAP (FU20-3b): the knob rule accepts only whole sizes 1..6, so a fractional knob (h-3.5 w-3.5, common in Tailwind
+  // toggles) is probably a false-positive island. Not asserted either way until the product decision is made; the boundary
+  // tests above stay intact. When decided, replace these todos with real assertions.
+  it.todo('FU20-3b: fractional knob sizes (w-3.5 h-3.5, w-2.5) - decide exempt or island')
 })

@@ -4,6 +4,7 @@ import (
 	"catalogizer/internal/config"
 	"catalogizer/internal/models"
 	"catalogizer/internal/pathsafe"
+	"catalogizer/smb"
 	"context"
 	"fmt"
 	"io"
@@ -39,6 +40,14 @@ type SMBServiceInterface interface {
 type SMBService struct {
 	config *config.Config
 	logger *zap.Logger
+	// openShare, when set, replaces the network dial + share mount (unit-class tests only; nil in production).
+	openShare func(hostName, shareName string) (ShareAPI, func(), error)
+}
+
+// NewSMBServiceWithOpener builds a service whose dial + share mount is replaced by open (unit-class tests of the confinement; production
+// code uses NewSMBService). Everything above the mount - SplitShare, sub-directory confinement - is the real code path.
+func NewSMBServiceWithOpener(cfg *config.Config, logger *zap.Logger, open func(hostName, shareName string) (ShareAPI, func(), error)) *SMBService {
+	return &SMBService{config: cfg, logger: logger, openShare: open}
 }
 
 func NewSMBService(cfg *config.Config, logger *zap.Logger) *SMBService {
@@ -89,26 +98,113 @@ func (s *SMBService) getConnection(hostName string) (*smb2.Session, error) {
 	return session, nil
 }
 
-func (s *SMBService) ListFiles(hostName, path string) ([]os.FileInfo, error) {
-	session, err := s.getConnection(hostName)
+// RemoteFile is the read side of an open remote file (what *smb2.File provides).
+type RemoteFile interface {
+	io.Reader
+	io.Seeker
+	io.Closer
+	Stat() (os.FileInfo, error)
+}
+
+// ShareAPI is the set of share operations SMBService uses. The real implementation wraps *smb2.Share; confinedShare wraps any ShareAPI
+// and confines every path below the storage root's sub-directory.
+type ShareAPI interface {
+	ReadDir(name string) ([]os.FileInfo, error)
+	Open(name string) (RemoteFile, error)
+	Create(name string) (io.WriteCloser, error)
+	Stat(name string) (os.FileInfo, error)
+	Mkdir(name string, perm os.FileMode) error
+	Remove(name string) error
+	Umount() error
+}
+
+type smb2ShareAPI struct{ sh *smb2.Share }
+
+func (a smb2ShareAPI) ReadDir(n string) ([]os.FileInfo, error) { return a.sh.ReadDir(n) }
+func (a smb2ShareAPI) Open(n string) (RemoteFile, error) {
+	f, err := a.sh.Open(n)
 	if err != nil {
 		return nil, err
 	}
-	defer session.Logoff()
+	return f, nil
+}
+func (a smb2ShareAPI) Create(n string) (io.WriteCloser, error) {
+	f, err := a.sh.Create(n)
+	if err != nil {
+		return nil, err
+	}
+	return f, nil
+}
+func (a smb2ShareAPI) Stat(n string) (os.FileInfo, error)     { return a.sh.Stat(n) }
+func (a smb2ShareAPI) Mkdir(n string, perm os.FileMode) error { return a.sh.Mkdir(n, perm) }
+func (a smb2ShareAPI) Remove(n string) error                  { return a.sh.Remove(n) }
+func (a smb2ShareAPI) Umount() error                          { return a.sh.Umount() }
 
+// confinedShare maps every root-relative path to a share-relative one below sub (smb.ResolveSub), so no caller path can leave the
+// sub-directory of a "share/sub/dir" storage root.
+type confinedShare struct {
+	in  ShareAPI
+	sub string
+}
+
+func (c confinedShare) rp(p string) string                      { return smb.ResolveSub(c.sub, p) }
+func (c confinedShare) ReadDir(n string) ([]os.FileInfo, error) { return c.in.ReadDir(c.rp(n)) }
+func (c confinedShare) Open(n string) (RemoteFile, error)       { return c.in.Open(c.rp(n)) }
+func (c confinedShare) Create(n string) (io.WriteCloser, error) { return c.in.Create(c.rp(n)) }
+func (c confinedShare) Stat(n string) (os.FileInfo, error)      { return c.in.Stat(c.rp(n)) }
+func (c confinedShare) Mkdir(n string, perm os.FileMode) error  { return c.in.Mkdir(c.rp(n), perm) }
+func (c confinedShare) Remove(n string) error                   { return c.in.Remove(c.rp(n)) }
+func (c confinedShare) Umount() error                           { return c.in.Umount() }
+
+// withShare connects to hostName, mounts the SHARE part of its storage-root path ("share" or "share/sub/dir", smb.SplitShare) and
+// returns the share confined to the sub-directory plus a release func that unmounts and logs off. An invalid path is refused.
+func (s *SMBService) withShare(hostName string) (ShareAPI, func(), error) {
 	var smbHost *config.SMBHost
-	for _, host := range s.config.SMB.Hosts {
-		if host.Name == hostName {
-			smbHost = &host
+	for i := range s.config.SMB.Hosts {
+		if s.config.SMB.Hosts[i].Name == hostName {
+			smbHost = &s.config.SMB.Hosts[i]
 			break
 		}
 	}
-
-	share, err := session.Mount(smbHost.Share)
-	if err != nil {
-		return nil, fmt.Errorf("failed to mount share: %w", err)
+	if smbHost == nil {
+		return nil, nil, fmt.Errorf("SMB host not found: %s", hostName)
 	}
-	defer share.Umount()
+	shareName, sub, err := smb.SplitShare(smbHost.Share)
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid SMB storage root path: %w", err)
+	}
+	var raw ShareAPI
+	var release func()
+	if s.openShare != nil { // unit-class seam: replaces only dial + mount
+		raw, release, err = s.openShare(hostName, shareName)
+		if err != nil {
+			return nil, nil, err
+		}
+	} else {
+		session, err := s.getConnection(hostName)
+		if err != nil {
+			return nil, nil, err
+		}
+		sh, err := session.Mount(shareName)
+		if err != nil {
+			session.Logoff()
+			return nil, nil, fmt.Errorf("failed to mount share: %w", err)
+		}
+		raw = smb2ShareAPI{sh}
+		release = func() { sh.Umount(); session.Logoff() }
+	}
+	if sub == "" {
+		return raw, release, nil
+	}
+	return confinedShare{in: raw, sub: sub}, release, nil
+}
+
+func (s *SMBService) ListFiles(hostName, path string) ([]os.FileInfo, error) {
+	share, release, err := s.withShare(hostName)
+	if err != nil {
+		return nil, err
+	}
+	defer release()
 
 	files, err := share.ReadDir(path)
 	if err != nil {
@@ -122,37 +218,21 @@ func (s *SMBService) ListFiles(hostName, path string) ([]os.FileInfo, error) {
 // streams directly from the SMB share. The caller MUST call Close() on the
 // returned reader when done; Close tears down the share mount and session.
 func (s *SMBService) StreamFile(hostName, remotePath string) (*smbStreamCloser, int64, error) {
-	session, err := s.getConnection(hostName)
+	share, release, err := s.withShare(hostName)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	var smbHost *config.SMBHost
-	for _, host := range s.config.SMB.Hosts {
-		if host.Name == hostName {
-			smbHost = &host
-			break
-		}
-	}
-
-	share, err := session.Mount(smbHost.Share)
-	if err != nil {
-		session.Logoff()
-		return nil, 0, fmt.Errorf("failed to mount share: %w", err)
-	}
-
 	remoteFile, err := share.Open(remotePath)
 	if err != nil {
-		share.Umount()
-		session.Logoff()
+		release()
 		return nil, 0, fmt.Errorf("failed to open remote file: %w", err)
 	}
 
 	stat, err := remoteFile.Stat()
 	if err != nil {
 		remoteFile.Close()
-		share.Umount()
-		session.Logoff()
+		release()
 		return nil, 0, fmt.Errorf("failed to stat remote file: %w", err)
 	}
 	size := stat.Size()
@@ -160,17 +240,15 @@ func (s *SMBService) StreamFile(hostName, remotePath string) (*smbStreamCloser, 
 	// Wrap in a closer that tears down SMB resources
 	closer := &smbStreamCloser{
 		file:    remoteFile,
-		share:   share,
-		session: session,
+		release: release,
 	}
 	return closer, size, nil
 }
 
 // smbStreamCloser wraps an SMB file reader with cleanup of share + session.
 type smbStreamCloser struct {
-	file    *smb2.File
-	share   *smb2.Share
-	session *smb2.Session
+	file    RemoteFile
+	release func()
 }
 
 func (sc *smbStreamCloser) Read(p []byte) (int, error) {
@@ -183,31 +261,16 @@ func (sc *smbStreamCloser) Seek(offset int64, whence int) (int64, error) {
 
 func (sc *smbStreamCloser) Close() error {
 	sc.file.Close()
-	sc.share.Umount()
-	sc.session.Logoff()
+	sc.release()
 	return nil
 }
 
 func (s *SMBService) DownloadFile(hostName, remotePath, localPath string) error {
-	session, err := s.getConnection(hostName)
+	share, release, err := s.withShare(hostName)
 	if err != nil {
 		return err
 	}
-	defer session.Logoff()
-
-	var smbHost *config.SMBHost
-	for _, host := range s.config.SMB.Hosts {
-		if host.Name == hostName {
-			smbHost = &host
-			break
-		}
-	}
-
-	share, err := session.Mount(smbHost.Share)
-	if err != nil {
-		return fmt.Errorf("failed to mount share: %w", err)
-	}
-	defer share.Umount()
+	defer release()
 
 	// Create local directory if it doesn't exist
 	if err := os.MkdirAll(filepath.Dir(localPath), 0755); err != nil {
@@ -253,30 +316,16 @@ func copyRemoteToLocalNoFollow(localPath string, src io.Reader, chunkSize int) e
 }
 
 func (s *SMBService) UploadFile(hostName, localPath, remotePath string) error {
-	session, err := s.getConnection(hostName)
+	share, release, err := s.withShare(hostName)
 	if err != nil {
 		return err
 	}
-	defer session.Logoff()
-
-	var smbHost *config.SMBHost
-	for _, host := range s.config.SMB.Hosts {
-		if host.Name == hostName {
-			smbHost = &host
-			break
-		}
-	}
-
-	share, err := session.Mount(smbHost.Share)
-	if err != nil {
-		return fmt.Errorf("failed to mount share: %w", err)
-	}
-	defer share.Umount()
+	defer release()
 
 	// Create remote directory if it doesn't exist
 	remoteDir := filepath.Dir(remotePath)
 	if remoteDir != "." && remoteDir != "/" {
-		if err := s.CreateRemoteDir(share, remoteDir); err != nil {
+		if err := s.createRemoteDir(share, remoteDir); err != nil {
 			return fmt.Errorf("failed to create remote directory: %w", err)
 		}
 	}
@@ -338,7 +387,13 @@ func (s *SMBService) CopyFile(sourceHost, sourcePath, destHost, destPath string)
 	return nil
 }
 
+// CreateRemoteDir creates path and its parents on a RAW *smb2.Share. It applies no sub-directory confinement: a caller must pass a path it
+// has already confined (SMBService's own methods use createRemoteDir on a confined share). Nothing outside tests calls it.
 func (s *SMBService) CreateRemoteDir(share *smb2.Share, path string) error {
+	return s.createRemoteDir(smb2ShareAPI{share}, path)
+}
+
+func (s *SMBService) createRemoteDir(share ShareAPI, path string) error {
 	parts := strings.Split(path, "/")
 	currentPath := ""
 
@@ -364,25 +419,11 @@ func (s *SMBService) CreateRemoteDir(share *smb2.Share, path string) error {
 }
 
 func (s *SMBService) FileExists(hostName, path string) (bool, error) {
-	session, err := s.getConnection(hostName)
+	share, release, err := s.withShare(hostName)
 	if err != nil {
 		return false, err
 	}
-	defer session.Logoff()
-
-	var smbHost *config.SMBHost
-	for _, host := range s.config.SMB.Hosts {
-		if host.Name == hostName {
-			smbHost = &host
-			break
-		}
-	}
-
-	share, err := session.Mount(smbHost.Share)
-	if err != nil {
-		return false, fmt.Errorf("failed to mount share: %w", err)
-	}
-	defer share.Umount()
+	defer release()
 
 	_, err = share.Stat(path)
 	if err != nil {
@@ -502,32 +543,14 @@ func (s *SMBService) GetFileSize(hostName, path string) (int64, error) {
 
 // CreateDirectory creates a directory on an SMB host
 func (s *SMBService) CreateDirectory(hostName, path string) error {
-	session, err := s.getConnection(hostName)
+	share, release, err := s.withShare(hostName)
 	if err != nil {
 		return err
 	}
-	defer session.Logoff()
-
-	var smbHost *config.SMBHost
-	for _, host := range s.config.SMB.Hosts {
-		if host.Name == hostName {
-			smbHost = &host
-			break
-		}
-	}
-
-	if smbHost == nil {
-		return fmt.Errorf("SMB host not found: %s", hostName)
-	}
-
-	share, err := session.Mount(smbHost.Share)
-	if err != nil {
-		return fmt.Errorf("failed to mount share: %w", err)
-	}
-	defer share.Umount()
+	defer release()
 
 	// Use CreateRemoteDir to create the directory (handles parent directories too)
-	if err := s.CreateRemoteDir(share, path); err != nil {
+	if err := s.createRemoteDir(share, path); err != nil {
 		return fmt.Errorf("failed to create directory: %w", err)
 	}
 
@@ -540,29 +563,11 @@ func (s *SMBService) CreateDirectory(hostName, path string) error {
 
 // DeleteDirectory deletes a directory on an SMB host
 func (s *SMBService) DeleteDirectory(hostName, path string) error {
-	session, err := s.getConnection(hostName)
+	share, release, err := s.withShare(hostName)
 	if err != nil {
 		return err
 	}
-	defer session.Logoff()
-
-	var smbHost *config.SMBHost
-	for _, host := range s.config.SMB.Hosts {
-		if host.Name == hostName {
-			smbHost = &host
-			break
-		}
-	}
-
-	if smbHost == nil {
-		return fmt.Errorf("SMB host not found: %s", hostName)
-	}
-
-	share, err := session.Mount(smbHost.Share)
-	if err != nil {
-		return fmt.Errorf("failed to mount share: %w", err)
-	}
-	defer share.Umount()
+	defer release()
 
 	// Check if the directory exists first
 	stat, err := share.Stat(path)
@@ -592,29 +597,11 @@ func (s *SMBService) DeleteDirectory(hostName, path string) error {
 
 // DirectoryExists checks if a directory exists on an SMB host
 func (s *SMBService) DirectoryExists(hostName, path string) (bool, error) {
-	session, err := s.getConnection(hostName)
+	share, release, err := s.withShare(hostName)
 	if err != nil {
 		return false, err
 	}
-	defer session.Logoff()
-
-	var smbHost *config.SMBHost
-	for _, host := range s.config.SMB.Hosts {
-		if host.Name == hostName {
-			smbHost = &host
-			break
-		}
-	}
-
-	if smbHost == nil {
-		return false, fmt.Errorf("SMB host not found: %s", hostName)
-	}
-
-	share, err := session.Mount(smbHost.Share)
-	if err != nil {
-		return false, fmt.Errorf("failed to mount share: %w", err)
-	}
-	defer share.Umount()
+	defer release()
 
 	stat, err := share.Stat(path)
 	if err != nil {

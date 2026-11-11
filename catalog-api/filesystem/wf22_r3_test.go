@@ -107,7 +107,7 @@ func TestWF22R3_A_WebDAVAndSMBConfine(t *testing.T) {
 var pathParamNames = map[string]bool{"path": true, "srcPath": true, "dstPath": true, "src": true, "dst": true, "p": true}
 
 // resolverNames are the confining resolvers: a path parameter must be an argument of one of these calls.
-var resolverNames = map[string]bool{"resolvePath": true, "resolveConfined": true, "resolveURL": true, "smbPath": true, "ConfinePath": true, "JoinConfined": true}
+var resolverNames = map[string]bool{"resolvePath": true, "resolveConfined": true, "resolveURL": true, "smbPath": true, "rp": true, "ConfinePath": true, "JoinConfined": true}
 
 // unconfinedPathMethods is the class-A classifier: for every method of the client types in src, every string parameter that looks like a path
 // and is used in the body must be passed to a confining resolver. It returns "Type.Method(param)" for each violation.
@@ -209,7 +209,7 @@ func TestWF22R3_A_EveryResolverUsesTheSharedRule(t *testing.T) {
 		"nfs_client_darwin.go": {"func (c *NFSClient) resolvePath"},
 		"ftp_client.go":        {"func (c *FTPClient) resolvePath"},
 		"webdav_client.go":     {"func (c *WebDAVClient) resolveURL"},
-		"smb_client.go":        {"func smbPath"},
+		"smb_client.go":        {"func smbPath", "func (c *SmbClient) resolvePath"},
 	}
 	for file, heads := range needles {
 		b, err := os.ReadFile(file)

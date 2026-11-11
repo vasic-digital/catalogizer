@@ -38,11 +38,16 @@ vi.mock('lucide-react', () => {
   }
 })
 
-// Mock fetch for integration loading
+// Mock fetch for integration loading (D7-R4-2: the original is restored after the file, the file default after each test)
+const realFetch = global.fetch
 global.fetch = vi.fn().mockResolvedValue({
   ok: false,
   json: async () => ([]),
 })
+
+const defaultFetch = global.fetch
+afterEach(() => { global.fetch = defaultFetch; vi.mocked(defaultFetch).mockClear() })
+afterAll(() => { global.fetch = realFetch })
 
 import ExternalIntegrations from '../ExternalIntegrations'
 
@@ -144,5 +149,13 @@ describe('ExternalIntegrations', () => {
       expect(toast.success).not.toHaveBeenCalled()
       expect(screen.getByText('My Plex')).toBeInTheDocument()
     })
+  })
+})
+
+// D7-R4-FU-3: runs after the fetch-replacing tests; fails if the restore is removed (M7) or the default's call history is not reset.
+describe('D7-R4-FU-3 global.fetch does not leak between tests', () => {
+  it('the file default is back and its history is clean', () => {
+    expect(global.fetch).toBe(defaultFetch)
+    expect(vi.mocked(defaultFetch).mock.calls).toHaveLength(0)
   })
 })

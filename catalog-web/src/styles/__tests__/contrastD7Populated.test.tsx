@@ -28,6 +28,10 @@ const ITEM = {
 }
 const JOB: any = { id: 'j1', sourceFile: { path: '/a.mkv', name: 'a.mkv', format: 'mkv', size: 1048576 }, targetFormat: 'mp4', quality: 'high', status: 'completed', progress: 100, options: {}, startTime: '2024-01-01T00:00:00Z', endTime: '2024-01-01T00:01:00Z', outputFile: '/a.mp4' }
 
+// D7-R4-2: tests assign global.fetch; restore it so the mock never leaks into sibling tests.
+const realFetch = global.fetch
+afterEach(() => { global.fetch = realFetch })
+
 describe.each(['light', 'dark'] as Theme[])('UI-D7-FU populated states, %s theme', (theme) => {
   const fail = (c: Element) => failingElements(c, theme).join('\n')
 
@@ -66,5 +70,12 @@ describe.each(['light', 'dark'] as Theme[])('UI-D7-FU populated states, %s theme
     const checked = radios.find((r) => (r as HTMLInputElement).checked)!
     expect(checked.closest('label')!.className).toMatch(/bg-blue-50/)
     expect(fail(container)).toBe('')
+  })
+})
+
+// D7-R4-FU-3: runs after the fetch-mocking tests above; fails if the afterEach restore is removed (reviewer mutation M7).
+describe('D7-R4-FU-3 global.fetch does not leak out of the mocking tests', () => {
+  it('fetch is the original again', () => {
+    expect(global.fetch).toBe(realFetch)
   })
 })
