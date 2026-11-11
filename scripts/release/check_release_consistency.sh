@@ -185,7 +185,7 @@ for comp in CARGO:
 
 # Gradle versionName / versionCode
 def gradle_field(text, name):
-    pat = re.compile(r"^\s*" + name + r"\s*(?:=\s*)?(\"[^\"]*\"|[^\s/]+)")
+    pat = re.compile(r"^\s*" + name + r"(?![A-Za-z0-9_])\s*(?:=\s*)?(\"[^\"]*\"|[^\s/]+)\s*(?://.*)?$")
     hits = []
     for ln in text.splitlines():
         if ln.lstrip().startswith("//"):
@@ -245,23 +245,62 @@ for app in APPS:
 PY
 )"
   vrc=$?
-  local plan="" rows=0
+  local plan="" rows=0 nplan=0 key base dup="" miss="" foreign="" expected_n=19
+  local -A seen=() kinds=()
+  # N1: the expected field rows are fixed here, independent of the helper's own PLAN.
+  local -a want=("versions.json global" "docs/api/openapi.yaml info.version")
+  local c a
+  for c in catalog-web catalogizer-desktop installer-wizard; do
+    want+=("$c/package.json version" "$c/package-lock.json version" "$c/package-lock.json packages[\"\"].version")
+  done
+  for c in catalogizer-desktop installer-wizard; do
+    want+=("$c/src-tauri/tauri.conf.json version" "$c/src-tauri/Cargo.toml [package] version")
+  done
+  for a in catalogizer-android catalogizer-androidtv; do
+    want+=("$a/app/build.gradle versionName" "$a/app/build.gradle versionCode")
+  done
   while IFS=$'\t' read -r kind label detail; do
     case "$kind" in
-      PLAN) plan="$label" ;;
-      OK)   rows=$((rows+1)); V_OK=$((V_OK+1));   echo "OK    $label: $detail" ;;
-      FAIL) rows=$((rows+1)); V_FAIL=$((V_FAIL+1)); echo "FAIL  $label: $detail" ;;
-      INFO) rows=$((rows+1)); echo "INFO  $label: $detail" ;;
+      PLAN) nplan=$((nplan+1)); plan="$label" ;;
+      OK|FAIL|INFO)
+        rows=$((rows+1))
+        key="${label/build.gradle.kts/build.gradle}"
+        seen["$key"]=$(( ${seen["$key"]:-0} + 1 ))
+        kinds["$key"]="$kind"
+        if [ "$kind" = OK ]; then V_OK=$((V_OK+1)); echo "OK    $label: $detail"
+        elif [ "$kind" = FAIL ]; then V_FAIL=$((V_FAIL+1)); echo "FAIL  $label: $detail"
+        else echo "INFO  $label: $detail"; fi ;;
       BLIND) note_blind "$label $detail" ;;
     esac
   done <<< "$vout"
   # B1: a crashed or silent helper must never read as PASS.
   if [ "$vrc" -ne 0 ]; then note_blind "version helper exited $vrc (rows seen: $rows)"; return; fi
+  if [ "$nplan" -gt 1 ]; then note_blind "version helper emitted more than one PLAN line"; return; fi
   if ! [[ "$plan" =~ ^[0-9]+$ ]]; then
     case "$BLINDS" in *versions.json*) ;; *) note_blind "version helper emitted no PLAN line" ;; esac
     return
   fi
-  if [ "$rows" -lt "$plan" ]; then note_blind "version helper produced $rows of $plan planned field rows"; fi
+  if [ "$plan" -ne "$expected_n" ]; then note_blind "version helper plan $plan, expected $expected_n"; return; fi
+  if [ "$rows" -lt "$plan" ]; then note_blind "version helper produced $rows of $plan planned field rows"; return; fi
+  for key in "${want[@]}"; do
+    base="${seen["$key"]:-0}"
+    if [ "$base" -eq 0 ]; then miss="$miss [$key]"
+    elif [ "$base" -gt 1 ]; then dup="$dup [$key]"; fi
+    case "$key" in
+      *" versionCode") ;;
+      *) [ "${kinds["$key"]:-}" = INFO ] && foreign="$foreign [$key INFO]" ;;
+    esac
+  done
+  for key in "${!seen[@]}"; do
+    case "$key" in
+      "--prev-tag"|*"/app") [ "${kinds["$key"]}" = FAIL ] || foreign="$foreign [$key]" ;;
+      *) c=0; for a in "${want[@]}"; do [ "$a" = "$key" ] && c=1; done
+         [ "$c" -eq 1 ] || foreign="$foreign [$key]" ;;
+    esac
+  done
+  if [ -n "$miss" ]; then note_blind "version helper rows missing:$miss"; fi
+  if [ -n "$dup" ]; then note_blind "version helper duplicate rows:$dup"; fi
+  if [ -n "$foreign" ]; then note_blind "version helper unexpected rows:$foreign"; fi
 }
 
 # ---------------------------------------------------------------- (2) changelog
@@ -301,6 +340,9 @@ for i, ln in enumerate(lines):
 if start is None:
     print("ERR\tsection not found" + (f": {want}" if want else " (no numbered section)"))
     sys.exit(0)
+if sum(1 for ln in lines if (hm := head.match(ln)) and hm.group(1) == name) > 1:
+    print(f"ERR\tduplicate section heading [{name}] in CHANGELOG")
+    sys.exit(0)
 end = len(lines)
 for j in range(start + 1, len(lines)):
     if lines[j].startswith("## "):
@@ -331,6 +373,7 @@ for p in r.stdout.split("\0"):
         tops.add(p.split("/", 1)[0])
 known = re.compile(r"^(docs|scripts|challenges|tests?|tools|specs|catalog[a-z0-9_-]*|installer-wizard|submodules|constitution|Website|config|deployment|\.github)$")
 seen = set()
+nskip = 0
 for ln in vlines:
     for tok in re.findall(r"`([^`\n]+)`", ln):
         t = tok.strip()
@@ -339,6 +382,7 @@ for ln in vlines:
         if re.search(r"[\s*?<>${}|\\=(),;\"']", t) or re.match(r"^[a-z][a-z0-9+.-]*://", t) \
                 or t.startswith(("/", "~", "-")):
             print(f"SKIP\t{tok.strip()}")
+            nskip += 1
             continue
         t = re.sub(r":\d+(-\d+)?$", "", t.rstrip(".,;:"))
         if t.startswith("./"):
@@ -350,30 +394,44 @@ for ln in vlines:
                 print(f"PATH\t{t}")
         else:
             print(f"SKIP\t{t}")
+            nskip += 1
+print(f"END\t{len(seen)}\t{nskip}")
 PY
 )" || { note_blind "changelog extraction crashed"; return; }
 
-  local paths=() skips=()
+  local paths=() skips=() nsec=0 nend=0 endp=-1 ends=-1 lastkind=""
   while IFS=$'\t' read -r kind a b; do
     case "$kind" in
       ERR) note_blind "$a"; return ;;
-      SECTION) SECTION_USED="$a" ;;
+      SECTION) nsec=$((nsec+1)); SECTION_USED="$a" ;;
       PATH) paths+=("$a") ;;
       SKIP) skips+=("$a") ;;
+      END) nend=$((nend+1)); endp="$a"; ends="$b" ;;
     esac
+    [ -z "$kind" ] || lastkind="$kind"
   done <<< "$out"
-  : "${b:-}"
+  # N1: the helper must prove it ran to completion (one SECTION, one trailing END with matching counts).
+  if [ "$nsec" -ne 1 ] || [ "$nend" -ne 1 ] || [ "$lastkind" != END ] \
+     || [ "$endp" != "${#paths[@]}" ] || [ "$ends" != "${#skips[@]}" ]; then
+    SECTION_USED="-"; note_blind "changelog helper output incomplete (sections=$nsec ends=$nend paths=${#paths[@]} skips=${#skips[@]})"; return
+  fi
   C_SKIP=${#skips[@]}
   if [ "${#paths[@]}" -eq 0 ]; then
     note_blind "zero repo paths extracted from VERIFIED subsection of section $SECTION_USED"; return
   fi
   echo "section $SECTION_USED: ${#paths[@]} path(s) in VERIFIED; skipped non-repo-looking: ${skips[*]:-none}"
 
-  local p q d
+  local p q d rp
+  local REPO_REAL; REPO_REAL="$(cd "$REPO" && pwd -P)"
   declare -A seen_dir=()
   for p in "${paths[@]}"; do
     C_PATHS=$((C_PATHS+1))
     q="${p%/}"
+    # N3: a tracked symlink must not lead outside the repository.
+    rp="$(readlink -f -- "$REPO/$q" 2>/dev/null || true)"
+    if [ -e "$REPO/$q" ] && { [ -z "$rp" ] || { [ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"/* ]]; }; }; then
+      C_MISS=$((C_MISS+1)); echo "MISS  $p (resolves outside the repository)"; continue
+    fi
     if [ ! -e "$REPO/$q" ]; then
       C_MISS=$((C_MISS+1)); echo "MISS  $p (not in working tree)"
     elif ! tracked "$q"; then
@@ -395,8 +453,13 @@ PY
     # F4: manifest entries must stay inside the manifest's directory.
     esc=0
     while IFS= read -r line || [ -n "$line" ]; do
+      ent=""
       if [[ "$line" =~ ^[0-9a-fA-F]{64}\ [\ \*](.*)$ ]]; then
         ent="${BASH_REMATCH[1]}"
+      elif [[ "$line" =~ ^[A-Za-z0-9-]+\ \((.*)\)\ =\ [0-9a-fA-F]+$ ]]; then
+        ent="${BASH_REMATCH[1]}"   # N2: BSD-tag form is parsed too
+      fi
+      if [ -n "$ent" ]; then
         if [[ "$ent" == /* || "$ent" == ../* || "$ent" == */../* || "$ent" == */.. || "$ent" == .. ]]; then
           S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/SHA256SUMS entry escapes its directory: $ent"
         fi

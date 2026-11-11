@@ -118,7 +118,7 @@ echo "== round-1 review fixes (B1, F1-F5)"
 mkstub() { local sd; sd="$(mktemp -d "$ROOT/stub.XXXXXX")"; printf '#!/bin/sh\n%s\n' "$1" > "$sd/python3"; chmod +x "$sd/python3"; echo "$sd"; }
 # B1: a crashed / silent / short python helper must be BLIND, never PASS
 sd=$(mkstub 'exit 1');  d=$(fresh); PATH="$sd:$PATH" expect "B1 python3 crashes silently -> BLIND" 2 "VERDICT: BLIND" "$d" --check version
-sd=$(mkstub 'exit 0');  d=$(fresh); PATH="$sd:$PATH" expect "B1 python3 silent exit 0 -> BLIND" 2 "VERDICT: BLIND" "$d" --check version
+sd=$(mkstub 'exit 0');  d=$(fresh); PATH="$sd:$PATH" expect "B1 python3 silent exit 0 -> BLIND" 2 "no PLAN line" "$d" --check version
 sd=$(mkstub 'printf "PLAN\t19\n"; i=0; while [ $i -lt 19 ]; do printf "OK\tx%s\ty\n" $i; i=$((i+1)); done; exit 1')
 d=$(fresh); PATH="$sd:$PATH" expect "B1 helper emits all rows then exits 1 -> BLIND" 2 "version helper exited 1" "$d" --check version
 sd=$(mkstub 'printf "PLAN\t19\n"; printf "OK\ta\tb\n"; exit 0')
@@ -143,6 +143,53 @@ d=$(fresh); : > "$d/catalogizer-android/app/build.gradle"; expect "F5 both build
 d=$(fresh); echo q > "$d/\"q\".txt"; (cd "$d" && git add -A); expect "F5 needle survives a quoted tracked name" 0 "VERDICT: PASS" "$d" --check changelog
 d=$(fresh); echo b > "$d/.0first.txt"; (cd "$d" && git add -A) ; rm "$d/.0first.txt"; expect "F5 needle survives first tracked file deleted from tree" 0 "VERDICT: PASS" "$d" --check changelog
 expect "F5 -h prints VERDICT: HELP" 0 "VERDICT: HELP" "$GOLD" -h
+
+echo "== round-2 review follow-ups (N1-N5)"
+REALPY="$(command -v python3)"
+# filtstub <shell filter applied to the real helper's stdout>: runs the REAL helper, then forges its output.
+filtstub() { local sd; sd="$(mktemp -d "$ROOT/fstub.XXXXXX")"; printf '#!/bin/sh\n%s -I "$@" | { %s; }\nexit 0\n' "$REALPY" "$1" > "$sd/python3"; chmod +x "$sd/python3"; echo "$sd"; }
+# N1: forged / incomplete version-helper output must be BLIND or FAIL, never PASS
+sd=$(mkstub 'printf "PLAN\t0\n"; exit 0');  d=$(fresh); PATH="$sd:$PATH" expect "N1 PLAN 0 and no rows -> BLIND" 2 "VERDICT: BLIND" "$d" --check version
+sd=$(mkstub 'printf "PLAN\t19\n"; i=0; while [ $i -lt 19 ]; do printf "INFO\tx%s\ty\n" $i; i=$((i+1)); done; exit 0')
+d=$(fresh); PATH="$sd:$PATH" expect "N1 19 INFO rows with foreign labels -> BLIND" 2 "VERDICT: BLIND" "$d" --check version
+sd=$(filtstub 'cat; printf "PLAN\t19\n"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 duplicate PLAN line -> BLIND" 2 "more than one PLAN" "$d" --check version
+sd=$(filtstub 'sed "s/^PLAN.*/PLAN\t18/" | grep -v "openapi.yaml info.version"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 helper plan not 19 -> BLIND" 2 "expected 19" "$d" --check version
+sd=$(filtstub 'grep -v "openapi.yaml info.version"; printf "OK\tdocs/api/openapi.yaml info.version\t2.4.0\n"; printf "OK\tdocs/api/openapi.yaml info.version\t2.4.0\n"'); d=$(fresh)
+PATH="$sd:$PATH" expect "N1 duplicate label forged to keep row count -> BLIND" 2 "duplicate" "$d" --check version
+sd=$(filtstub 'grep -v "openapi.yaml info.version" | sed "s/^OK\tversions.json global/OK\tversions.json global/"; printf "OK\tinvented label\t2.4.0\n"'); d=$(fresh)
+PATH="$sd:$PATH" expect "N1 expected label replaced by invented one -> BLIND" 2 "missing" "$d" --check version
+sd=$(filtstub 'grep -v "versionCode"; '); d=$(fresh); PATH="$sd:$PATH" expect "N1 versionCode rows dropped (plan intact) -> BLIND" 2 "VERDICT: BLIND" "$d" --check version --prev-tag fx-prev
+sd=$(filtstub 'sed "s/^INFO\t/OK\t/"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 INFO relabelled OK without prev-tag stays consistent" 0 "VERDICT: PASS" "$d" --check version
+sd=$(filtstub 'sed "s/^OK\t\(catalog-web\/package.json version\)/INFO\t\1/"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 INFO on a non-versionCode field -> BLIND" 2 "VERDICT: BLIND" "$d" --check version
+# N1 changelog helper completeness
+sd=$(filtstub 'grep -v "^END"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog helper without END -> BLIND" 2 "incomplete" "$d" --check changelog
+sd=$(filtstub 'sed "s/^END.*/END\t99\t0/"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog END counts mismatch -> BLIND" 2 "incomplete" "$d" --check changelog
+sd=$(filtstub 'awk "/^PATH/ && !done {done=1; next} {print}"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog PATH row dropped -> BLIND" 2 "incomplete" "$d" --check changelog
+sd=$(filtstub 'cat; printf "SECTION\t1.0.0\n"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog second SECTION -> BLIND" 2 "incomplete" "$d" --check changelog
+sd=$(filtstub 'sed "s/^END.*/&\n&/"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog duplicate END -> BLIND" 2 "incomplete" "$d" --check changelog
+sd=$(filtstub 'cat; printf "BOGUS\tx\n"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog trailing non-END row -> BLIND" 2 "incomplete" "$d" --check changelog
+sd=$(filtstub 'awk "/^SKIP/ && !done {done=1; next} {print}"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog SKIP row dropped -> BLIND" 2 "incomplete" "$d" --check changelog
+sd=$(filtstub 'sed "s/^END/SECTION\t1.0.0\nEND/"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog second SECTION before END -> BLIND" 2 "incomplete" "$d" --check changelog
+sd=$(filtstub 'cat; printf "OK\t--prev-tag\tforged\n"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 forged OK on the --prev-tag row -> BLIND" 2 "unexpected rows" "$d" --check version
+sd=$(mkstub 'printf "SECTION\t2.4.0\nPATH\tdocs/qa/run2/c.txt\n"; exit 0'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog hand-forged output -> BLIND" 2 "incomplete" "$d" --check changelog
+# N2: BSD-tag manifest lines
+d=$(fresh); echo "SHA256 (../../etc/passwd) = $z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "N2 BSD-tag ../ escape FAIL" 1 "escapes its directory" "$d" --check changelog
+d=$(fresh); echo "SHA256 (/etc/hostname) = $z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "N2 BSD-tag absolute escape FAIL" 1 "escapes its directory" "$d" --check changelog
+d=$(fresh); h="$(sha256sum < "$d/docs/qa/run1/a.txt" | cut -d' ' -f1)"; echo "SHA256 (a.txt) = $h" >> "$d/docs/qa/run1/SHA256SUMS"; expect "N2 valid BSD-tag line accepted" 0 "VERDICT: PASS" "$d" --check changelog
+# N3: tracked symlink pointing outside the repository
+d=$(fresh); mkdir -p "$ROOT/outside1"; echo x > "$ROOT/outside1/f.txt"; ( cd "$ROOT/outside1" && sha256sum f.txt | sed 's/^./1/' > SHA256SUMS )
+ln -s "$ROOT/outside1" "$d/docs/qa/linkout"; (cd "$d" && git add -A)
+mut "$d" docs/CHANGELOG.md 's#^- Tool `scripts/tool.sh`#- Link `docs/qa/linkout/`; Tool `scripts/tool.sh`#' && expect "N3 symlinked dir outside repo -> MISS" 1 "resolves outside the repository" "$d" --check changelog
+d=$(fresh); ln -s run2 "$d/docs/qa/linkin"; (cd "$d" && git add -A)
+mut "$d" docs/CHANGELOG.md 's#^- Tool `scripts/tool.sh`#- Link `docs/qa/linkin/`; Tool `scripts/tool.sh`#' && expect "N3 symlinked dir inside repo accepted" 0 "VERDICT: PASS" "$d" --check changelog
+# N4: versionCode must be a bare literal
+d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionCode = 7$/versionCode = 7 - 2/' && expect "N4 versionCode expression -> FAIL" 1 "FAIL" "$d" --check version
+d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionCode = 7$/versionCode = 7 \/\/ bumped/' && expect "N4 versionCode with trailing comment accepted" 0 "VERDICT: PASS" "$d" --check version
+# N5: duplicate changelog heading; versionNameSuffix is not a second versionName
+d=$(fresh); printf '\n## [2.4.0] - duplicate\n\n### VERIFIED\n- `docs/qa/run2/c.txt`\n' >> "$d/docs/CHANGELOG.md"; expect "N5 duplicate section heading -> BLIND" 2 "duplicate" "$d" --check changelog
+d=$(fresh); printf '\n## [2.3.0] - duplicate\n\n### VERIFIED\n- `docs/qa/run2/c.txt`\n' >> "$d/docs/CHANGELOG.md"; expect "N5 duplicate of a non-selected section ignored" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/^\( *\)versionName = "2.4.0"/&\n\1versionNameSuffix = "-dev"/' && expect "N5 versionNameSuffix is not ambiguity" 0 "VERDICT: PASS" "$d" --check version
+d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/^\( *\)versionName = "2.4.0"/&\n\1versionNameSuffix/' && expect "N5 bare versionNameSuffix token is not versionName" 0 "VERDICT: PASS" "$d" --check version
 
 echo "== selftest (11.4.273 control needles built into the tool)"
 out="$("$CHECKER" --selftest 2>&1)"; got=$?
