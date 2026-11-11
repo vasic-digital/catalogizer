@@ -1610,7 +1610,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - D7-R4-FU-4 (nit): give each UI-D7-R4-ISLAND row an id (register as CAT-D7-ISLAND-1).
 
 ### TRUSTED_PROXIES hardening follow-ups (round 2 GO-with-follow-ups)
-- TP-FU-1: wildcard (0.0.0.0/0, ::/0) startup warning in main.go untested (needs logger-injectable helper).
+- TP-FU-1 (DONE, CAT-FOLLOWUPS-UNIT-1): `warnTrustedProxies(logger, tp)` extracted from main.go (behaviour unchanged) and tested with an observer logger (catch-all, auto, quiet near-misses; 4 mutants killed).
 - TP-FU-2: live bring-up of root and deployment compose with new fixed subnets/ip_range (only rendered + throwaway compose proved); `catalogizer/web` image built from catalog-web/Dockerfile is assumed; deployment WS_URL port 8081 vs /ws upstream 8080 mismatch (pre-existing).
 - TP-FU-3: F4 capture API log line ClientIP=169.254.1.2; stack script leg B needs second LAN host (= QA-MON-FU-4).
 
@@ -1640,7 +1640,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 ## followups-20261110 review (Opus: GO-with-follow-ups; security-adjacent minors fixed before landing)
 - FU20-1: live verify.py run with declared *_BIND on rebuilt stack 3 (CAT-VERIFY-LANBIND-1 PROVISIONAL).
 - FU20-2: live test_clientip_frontdoor.sh --interface run; UNCONFIRMED whether a second local IP lands in a separate bucket given pasta aliasing (CAT-FRONTDOOR-LOCALMODE-1 PROVISIONAL).
-- FU20-3 (nit): contrast.ts alpha cutoff exactly 50 untested; fractional sizes like h-3.5; leak-check conditional-restore (L1) survives.
+- FU20-3 (PARTLY DONE, CAT-FOLLOWUPS-UNIT-1): alpha cutoff 50 (own bg and dark:bg, opacity-N) and knob size boundaries pinned in contrastHelper.test.ts; fractional knob sizes (h-3.5) are pinned as CURRENT behaviour (reported as islands; changing it is a product decision). STILL OPEN: the leak-check conditional-restore mutant (L1) survives.
 - FU20-4 (process-doc): commit 9928be7f carries Roadmap-Item D7-R4-FU-1 only; it implements FU-1..4 (history not rewritten).
 - Live axe re-run on rebuilt web image still owed (D7-R4).
 
@@ -1648,7 +1648,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - LIP-FU-1: live run of test-servers up.sh (real cert swap) + strict-TLS FTPS client; remove stale TS_HOST line from untracked testservers.env.
 - LIP-FU-2 (nit): private-key .bak files accumulate in tls/ (mounted into containers) — add retention/cleanup.
 - LIP-FU-3 (nit): if default route moves to ppp/VPN, detection picks VPN address; consider preferring non-ppp interface or warn.
-- LIP-FU-4 (nit): stack3/lib.sh keeps its own STUB_IP_SRC detection duplicating lan_ip.sh; unify.
+- LIP-FU-4 (DONE, CAT-FOLLOWUPS-UNIT-1): stack3/lib.sh now uses qa_lan_ip from docs/qa/lib/lan_ip.sh (adds QA_LAN_IP override and assigned-address check; any failure -> empty = trust nothing); covered by test_scripts.sh 7/7b with a stub that also answers `ip -4 -o addr show`.
 - LIP-FU-5: pre-existing: rclone `--pass $TS_PASS` is on container argv (visible in host ps); use obscured env/config file.
 - LIP-FU-6: monitoring/lanbind.py fixtures keep .115 (test data only).
 

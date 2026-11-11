@@ -18,5 +18,7 @@ NGINX_IMAGE="${NGINX_IMAGE:-docker.io/library/nginx:alpine}"
 # any process on the QA host can forge X-Forwarded-For, which defeats per-IP rate limits, login lockout and audit attribution for requests originating
 # on the host. UNCONFIRMED (not yet measured from a second LAN host): that a REMOTE LAN client keeps its own source address and is therefore not trusted.
 # If no host address can be detected the value is EMPTY = trust no proxy header (fail closed). Override: TRUSTED_PROXIES=...
-_hip="$(ip -4 route get 1.1.1.1 2>/dev/null | sed -n 's/.* src \([0-9.]*\).*/\1/p' | head -n1 || true)"
+# Detection is the ONE shared helper (LIP-FU-4): QA_LAN_IP override, validated IPv4, must be assigned to a local interface; any failure -> empty.
+. "${QA_LAN_IP_LIB:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/lan_ip.sh}" || { echo "ERROR: cannot source docs/qa/lib/lan_ip.sh" >&2; return 1 2>/dev/null || exit 1; }
+_hip="$(qa_lan_ip 2>/dev/null || true)"
 TRUSTED_PROXIES="${TRUSTED_PROXIES-${_hip:+${_hip}/32}}"
