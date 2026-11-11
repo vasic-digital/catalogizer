@@ -1,0 +1,11 @@
+--- ~/.cache/claude-tmp/coverart.faVQnM/repo/catalog-api/internal/netguard/netguard.go	2026-11-11 22:34:52.849836543 +0100
++++ ~/.cache/claude-tmp/coverart-ovl.3g2yQj/m.go	2026-11-11 23:06:53.189922337 +0100
+@@ -131,7 +131,7 @@
+ 	if v4 := embeddedV4(ip); v4 != nil {
+ 		return isBlocked(v4, honorAllow)
+ 	}
+-	if ip.IsLoopback() || ip.IsPrivate() || cgnat.Contains(ip) {
++	if ip.IsLoopback() || cgnat.Contains(ip) {
+ 		if honorAllow {
+ 			for _, n := range allowedNets() {
+ 				if n.Contains(ip) {

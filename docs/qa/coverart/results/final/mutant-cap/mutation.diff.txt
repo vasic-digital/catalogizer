@@ -1,0 +1,8 @@
+--- ~/.cache/claude-tmp/coverart.faVQnM/repo/catalog-api/internal/services/cover_art_service.go	2026-11-11 22:34:52.856533818 +0100
++++ ~/.cache/claude-tmp/coverart-ovl.LahEcR/m.go	2026-11-11 23:04:48.852696643 +0100
+@@ -1784,4 +1784,4 @@
+ var ffprobeTimeout = 30 * time.Second
+ 
+ // coverArtMaxBytesDefault is the production cap of one downloaded cover image.
+-const coverArtMaxBytesDefault int64 = 32 << 20
++const coverArtMaxBytesDefault int64 = 1 << 40

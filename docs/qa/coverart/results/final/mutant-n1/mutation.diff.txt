@@ -1,0 +1,11 @@
+--- ~/.cache/claude-tmp/coverart.faVQnM/repo/catalog-api/internal/netguard/netguard.go	2026-11-11 22:34:52.849836543 +0100
++++ ~/.cache/claude-tmp/coverart-ovl.EJ5bXv/m.go	2026-11-11 23:07:07.301947953 +0100
+@@ -254,7 +254,7 @@
+ 		Timeout:   timeout,
+ 		Transport: Transport(),
+ 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+-			if redirectOK == nil || len(via) > maxRedirects || !redirectOK(req.URL) {
++			if redirectOK == nil || len(via) > maxRedirects+1 || !redirectOK(req.URL) {
+ 				return http.ErrUseLastResponse
+ 			}
+ 			return nil
