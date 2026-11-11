@@ -396,26 +396,10 @@ func (c *OfflineCache) GetOrFetch(key string, fetcher func() interface{}) interf
 
 #### 📊 Real-time Status Monitoring
 ```bash
-# Check overall status via API (the former /api/v1/smb/sources/status endpoint was never routed and was removed)
+# List storage roots (the former /api/v1/smb/sources/status endpoint was never routed and was removed;
+# per-source connection state, retry counters and circuit-breaker summaries are no longer exposed)
 curl -H "Authorization: Bearer $TOKEN" \
-  http://localhost:8080/api/v1/status
-
-# Response shows detailed connection state
-{
-  "sources": {
-    "smb_123": {
-      "state": "connected",
-      "last_connected": "2024-01-15T10:30:00Z",
-      "retry_attempts": 0,
-      "is_enabled": true
-    }
-  },
-  "summary": {
-    "total": 2,
-    "connected": 2,
-    "offline": 0
-  }
-}
+  http://localhost:8080/api/v1/storage/roots
 ```
 
 ### Connection States

@@ -197,3 +197,32 @@ func TestSafeRemotePath_Extended(t *testing.T) {
 		}
 	}
 }
+
+// A symlink OUTSIDE root that points INTO root must not be reachable through "..": the lexical check is the only defence.
+func TestContainedJoin_DotDotThroughSymlinkIntoRoot(t *testing.T) {
+	p := t.TempDir()
+	root := filepath.Join(p, "root")
+	if err := os.Mkdir(root, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(root, filepath.Join(p, "back")); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := ContainedJoin(root, "../back/new.txt"); err == nil {
+		t.Fatalf("escape via ../back accepted: %q", got)
+	}
+}
+
+// A dangling symlink inside root whose (nonexistent) target is outside root must be rejected, including below it.
+func TestContainedJoin_DanglingEscapingSymlink(t *testing.T) {
+	root := t.TempDir()
+	outside := t.TempDir()
+	if err := os.Symlink(filepath.Join(outside, "notyet"), filepath.Join(root, "dl")); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range []string{"dl", "dl/file.txt", "dl/a/b.txt"} {
+		if got, err := ContainedJoin(root, p); err == nil {
+			t.Errorf("%q through dangling escaping symlink accepted: %q", p, got)
+		}
+	}
+}

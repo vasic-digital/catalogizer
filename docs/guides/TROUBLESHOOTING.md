@@ -557,7 +557,7 @@ kubectl get endpoints -n catalogizer
 curl http://localhost:8080/health
 
 # Detailed status
-curl http://localhost:8080/api/v1/status
+curl http://localhost:8080/health/deep
 
 # Storage roots (the former /api/v1/smb/health endpoint was never routed and was removed)
 curl -H "Authorization: Bearer $TOKEN" \

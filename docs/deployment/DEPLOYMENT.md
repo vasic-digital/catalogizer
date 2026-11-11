@@ -963,7 +963,7 @@ sudo systemctl restart catalogizer-api
 curl http://localhost:8080/health
 
 # Check detailed status
-curl http://localhost:8080/api/v1/status
+curl http://localhost:8080/health/deep
 
 # Check storage root status (the former /api/v1/smb/sources/status endpoint was never routed and was removed)
 curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/v1/storage/roots
