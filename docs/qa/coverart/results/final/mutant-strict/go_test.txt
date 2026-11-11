@@ -1,0 +1,31 @@
+=== RUN   TestLiveCoverArt_CapIsProductionDefault
+--- PASS: TestLiveCoverArt_CapIsProductionDefault (0.00s)
+=== RUN   TestLiveCoverArt_F2_Cap
+--- PASS: TestLiveCoverArt_F2_Cap (0.11s)
+=== RUN   TestLiveCoverArt_F4_Redirects
+=== RUN   TestLiveCoverArt_F4_Redirects/link-local-metadata
+=== RUN   TestLiveCoverArt_F4_Redirects/private-rfc1918
+=== RUN   TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted
+=== RUN   TestLiveCoverArt_F4_Redirects/ipv6-loopback
+--- PASS: TestLiveCoverArt_F4_Redirects (0.00s)
+    --- PASS: TestLiveCoverArt_F4_Redirects/link-local-metadata (0.00s)
+    --- PASS: TestLiveCoverArt_F4_Redirects/private-rfc1918 (0.00s)
+    --- PASS: TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted (0.00s)
+    --- PASS: TestLiveCoverArt_F4_Redirects/ipv6-loopback (0.00s)
+=== RUN   TestLiveCoverArt_F4_RedirectChainLimit
+--- PASS: TestLiveCoverArt_F4_RedirectChainLimit (0.00s)
+=== RUN   TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback
+    coverart_live_ssrf_test.go:221: 
+        	Error Trace:	~/.cache/claude-tmp/coverart.faVQnM/repo/catalog-api/internal/services/coverart_live_ssrf_test.go:221
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback
+--- FAIL: TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback (0.00s)
+=== RUN   TestLiveCoverArt_F4_StrictDialLayerOfProductionClient
+    coverart_live_ssrf_test.go:238: 
+        	Error Trace:	~/.cache/claude-tmp/coverart.faVQnM/repo/catalog-api/internal/services/coverart_live_ssrf_test.go:238
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestLiveCoverArt_F4_StrictDialLayerOfProductionClient
+--- FAIL: TestLiveCoverArt_F4_StrictDialLayerOfProductionClient (0.00s)
+FAIL
+FAIL	catalogizer/internal/services	0.145s
+FAIL

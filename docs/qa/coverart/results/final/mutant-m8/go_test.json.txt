@@ -1,0 +1,49 @@
+{"Time":"2026-11-11T22:54:42.367510308+01:00","Action":"start","Package":"catalogizer/internal/services"}
+{"Time":"2026-11-11T22:54:42.381276144+01:00","Action":"run","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_CapIsProductionDefault"}
+{"Time":"2026-11-11T22:54:42.381334734+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_CapIsProductionDefault","Output":"=== RUN   TestLiveCoverArt_CapIsProductionDefault\n"}
+{"Time":"2026-11-11T22:54:42.381354104+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_CapIsProductionDefault","Output":"--- PASS: TestLiveCoverArt_CapIsProductionDefault (0.00s)\n"}
+{"Time":"2026-11-11T22:54:42.381361714+01:00","Action":"pass","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_CapIsProductionDefault","Elapsed":0}
+{"Time":"2026-11-11T22:54:42.381369434+01:00","Action":"run","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F2_Cap"}
+{"Time":"2026-11-11T22:54:42.381376704+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F2_Cap","Output":"=== RUN   TestLiveCoverArt_F2_Cap\n"}
+{"Time":"2026-11-11T22:54:42.46713978+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F2_Cap","Output":"--- PASS: TestLiveCoverArt_F2_Cap (0.09s)\n"}
+{"Time":"2026-11-11T22:54:42.4671793+01:00","Action":"pass","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F2_Cap","Elapsed":0.09}
+{"Time":"2026-11-11T22:54:42.46719511+01:00","Action":"run","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects"}
+{"Time":"2026-11-11T22:54:42.46720122+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects","Output":"=== RUN   TestLiveCoverArt_F4_Redirects\n"}
+{"Time":"2026-11-11T22:54:42.467876961+01:00","Action":"run","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted"}
+{"Time":"2026-11-11T22:54:42.467889601+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted","Output":"=== RUN   TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted\n"}
+{"Time":"2026-11-11T22:54:42.468238652+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted","Output":"--- PASS: TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted (0.00s)\n"}
+{"Time":"2026-11-11T22:54:42.468248172+01:00","Action":"pass","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted","Elapsed":0}
+{"Time":"2026-11-11T22:54:42.468259952+01:00","Action":"run","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/ipv6-loopback"}
+{"Time":"2026-11-11T22:54:42.468266582+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/ipv6-loopback","Output":"=== RUN   TestLiveCoverArt_F4_Redirects/ipv6-loopback\n"}
+{"Time":"2026-11-11T22:54:42.468585753+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/ipv6-loopback","Output":"--- PASS: TestLiveCoverArt_F4_Redirects/ipv6-loopback (0.00s)\n"}
+{"Time":"2026-11-11T22:54:42.468597463+01:00","Action":"pass","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/ipv6-loopback","Elapsed":0}
+{"Time":"2026-11-11T22:54:42.468603753+01:00","Action":"run","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/link-local-metadata"}
+{"Time":"2026-11-11T22:54:42.468609023+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/link-local-metadata","Output":"=== RUN   TestLiveCoverArt_F4_Redirects/link-local-metadata\n"}
+{"Time":"2026-11-11T22:54:42.469030545+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/link-local-metadata","Output":"--- PASS: TestLiveCoverArt_F4_Redirects/link-local-metadata (0.00s)\n"}
+{"Time":"2026-11-11T22:54:42.469055135+01:00","Action":"pass","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/link-local-metadata","Elapsed":0}
+{"Time":"2026-11-11T22:54:42.469061955+01:00","Action":"run","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/private-rfc1918"}
+{"Time":"2026-11-11T22:54:42.469067285+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/private-rfc1918","Output":"=== RUN   TestLiveCoverArt_F4_Redirects/private-rfc1918\n"}
+{"Time":"2026-11-11T22:54:43.879260988+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/private-rfc1918","Output":"    coverart_live_ssrf_test.go:170: \n"}
+{"Time":"2026-11-11T22:54:43.879297618+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/private-rfc1918","Output":"        \tError Trace:\t~/.cache/claude-tmp/coverart.faVQnM/repo/catalog-api/internal/services/coverart_live_ssrf_test.go:170\n"}
+{"Time":"2026-11-11T22:54:43.879313588+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/private-rfc1918","Output":"        \tError:      \tShould be true\n"}
+{"Time":"2026-11-11T22:54:43.879319878+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/private-rfc1918","Output":"        \tTest:       \tTestLiveCoverArt_F4_Redirects/private-rfc1918\n"}
+{"Time":"2026-11-11T22:54:43.879326188+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/private-rfc1918","Output":"        \tMessages:   \tmust be refused by the guard, got: Get \"http://10.0.0.5/x\": dial tcp 10.0.0.5:80: connect: no route to host\n"}
+{"Time":"2026-11-11T22:54:43.879379558+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/private-rfc1918","Output":"--- FAIL: TestLiveCoverArt_F4_Redirects/private-rfc1918 (1.41s)\n"}
+{"Time":"2026-11-11T22:54:43.879402938+01:00","Action":"fail","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects/private-rfc1918","Elapsed":1.41}
+{"Time":"2026-11-11T22:54:43.879616199+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects","Output":"--- FAIL: TestLiveCoverArt_F4_Redirects (1.41s)\n"}
+{"Time":"2026-11-11T22:54:43.879626689+01:00","Action":"fail","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_Redirects","Elapsed":1.41}
+{"Time":"2026-11-11T22:54:43.879635239+01:00","Action":"run","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_RedirectChainLimit"}
+{"Time":"2026-11-11T22:54:43.879640459+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_RedirectChainLimit","Output":"=== RUN   TestLiveCoverArt_F4_RedirectChainLimit\n"}
+{"Time":"2026-11-11T22:54:43.882157856+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_RedirectChainLimit","Output":"--- PASS: TestLiveCoverArt_F4_RedirectChainLimit (0.00s)\n"}
+{"Time":"2026-11-11T22:54:43.882170406+01:00","Action":"pass","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_RedirectChainLimit","Elapsed":0}
+{"Time":"2026-11-11T22:54:43.882178566+01:00","Action":"run","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback"}
+{"Time":"2026-11-11T22:54:43.882185056+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback","Output":"=== RUN   TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback\n"}
+{"Time":"2026-11-11T22:54:43.882343836+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback","Output":"--- PASS: TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback (0.00s)\n"}
+{"Time":"2026-11-11T22:54:43.882368316+01:00","Action":"pass","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_StrictProductionClientRefusesLoopback","Elapsed":0}
+{"Time":"2026-11-11T22:54:43.882376506+01:00","Action":"run","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_StrictDialLayerOfProductionClient"}
+{"Time":"2026-11-11T22:54:43.882381536+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_StrictDialLayerOfProductionClient","Output":"=== RUN   TestLiveCoverArt_F4_StrictDialLayerOfProductionClient\n"}
+{"Time":"2026-11-11T22:54:43.882731977+01:00","Action":"output","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_StrictDialLayerOfProductionClient","Output":"--- PASS: TestLiveCoverArt_F4_StrictDialLayerOfProductionClient (0.00s)\n"}
+{"Time":"2026-11-11T22:54:43.882743377+01:00","Action":"pass","Package":"catalogizer/internal/services","Test":"TestLiveCoverArt_F4_StrictDialLayerOfProductionClient","Elapsed":0}
+{"Time":"2026-11-11T22:54:43.883145348+01:00","Action":"output","Package":"catalogizer/internal/services","Output":"FAIL\n"}
+{"Time":"2026-11-11T22:54:43.899810602+01:00","Action":"output","Package":"catalogizer/internal/services","Output":"FAIL\tcatalogizer/internal/services\t1.532s\n"}
+{"Time":"2026-11-11T22:54:43.899855562+01:00","Action":"fail","Package":"catalogizer/internal/services","Elapsed":1.532}

@@ -1,0 +1,4 @@
+VERDICT: FAIL (a FAIL line is present)
+missing PASS: TestLiveCoverArt_CapIsProductionDefault
+missing PASS: TestLiveCoverArt_F2_Cap
+VERDICT: FAIL

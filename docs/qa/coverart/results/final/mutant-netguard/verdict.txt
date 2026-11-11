@@ -1,0 +1,8 @@
+VERDICT: FAIL (a FAIL line is present)
+missing PASS: TestLiveCoverArt_F4_Redirects
+missing PASS: TestLiveCoverArt_F4_Redirects/link-local-metadata
+missing PASS: TestLiveCoverArt_F4_Redirects/private-rfc1918
+missing PASS: TestLiveCoverArt_F4_Redirects/ipv6-loopback
+missing PASS: TestLiveCoverArt_F4_Redirects/loopback-not-allowlisted
+missing PASS: TestLiveCoverArt_F4_StrictDialLayerOfProductionClient
+VERDICT: FAIL
