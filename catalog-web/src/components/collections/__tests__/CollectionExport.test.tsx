@@ -233,7 +233,7 @@ describe('CollectionExport', () => {
       const zone = screen.getByText('Click to upload or drag and drop').closest('[role="button"]') as HTMLElement
       expect(zone).toHaveAttribute('tabindex', '0')
       const input = document.querySelector('input[type="file"]') as HTMLInputElement
-      const clickSpy = vi.spyOn(input, 'click').mockImplementation(() => {})
+      const clickSpy = vi.spyOn(input, 'click').mockImplementation(() => undefined)
       zone.focus()
       await user.keyboard(key)
       expect(clickSpy).toHaveBeenCalledTimes(1)
