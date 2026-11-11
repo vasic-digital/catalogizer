@@ -37,9 +37,10 @@ class MemoCacheManager {
   set(key: string, value: unknown, ttl = 300000): void { // Default TTL: 5 minutes
     if (Object.keys(this.cache).length >= this.maxSize) {
       // Remove oldest entry
-      const oldestKey = Object.keys(this.cache).reduce((oldest, current) => {
+      const keys = Object.keys(this.cache);
+      const oldestKey = keys.reduce((oldest, current) => {
         return this.cache[current].timestamp < this.cache[oldest].timestamp ? current : oldest;
-      });
+      }, keys[0]);
       delete this.cache[oldestKey];
     }
 

@@ -3,6 +3,7 @@ import { Upload, File, CheckCircle, AlertCircle, Trash2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Progress } from '../ui/Progress';
+import { randomId } from '../../lib/randomId';
 
 interface UploadItem {
   id: string;
@@ -47,7 +48,7 @@ export const UploadManager: React.FC<UploadManagerProps> = ({
 
   const processFiles = useCallback((files: FileList) => {
     const newItems: UploadItem[] = Array.from(files).map(file => ({
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `${Date.now()}-${randomId()}`,
       file,
       progress: 0,
       status: 'pending'

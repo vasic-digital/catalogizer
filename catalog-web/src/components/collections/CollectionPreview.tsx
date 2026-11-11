@@ -4,6 +4,7 @@ import { Play, Pause, Volume2, Eye, MoreHorizontal, Music, Film, Image, FileText
 import { SmartCollection } from '../../types/collections'
 import { useCollection } from '../../hooks/useCollections'
 import { Button } from '../ui/Button'
+import { onActivateKey } from '../../lib/keyboard'
 
 interface CollectionItem {
   id: string
@@ -93,7 +94,7 @@ export const CollectionPreview: React.FC<CollectionPreviewProps> = ({
   // Fetch collection items using the hook
   const { collectionItems, isLoadingItems } = useCollection(collection.id)
 
-  const handleItemSelect = (itemId: string, event: React.MouseEvent) => {
+  const handleItemSelect = (itemId: string, event: React.SyntheticEvent) => {
     event.stopPropagation()
     const newSelected = new Set(selectedItems)
     if (newSelected.has(itemId)) {
@@ -215,6 +216,11 @@ export const CollectionPreview: React.FC<CollectionPreviewProps> = ({
                       <div 
                         className="absolute left-2 top-1/2 -translate-y-1/2"
                         onClick={(e) => handleItemSelect(item.id, e)}
+                        onKeyDown={onActivateKey((e) => handleItemSelect(item.id, e))}
+                        role="checkbox"
+                        aria-checked={isSelected}
+                        aria-label="Select item"
+                        tabIndex={0}
                       >
                         <div className={`
                           w-4 h-4 rounded border-2 transition-colors

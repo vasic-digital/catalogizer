@@ -12,6 +12,7 @@ import type {
 } from '@/types/subtitles'
 import type { MediaItem, MediaSearchRequest } from '@/types/media'
 import { COMMON_LANGUAGES } from '@/types/subtitles'
+import { onActivateKey } from '../lib/keyboard';
 
 export const SubtitleManager: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
@@ -277,6 +278,9 @@ export const SubtitleManager: React.FC = () => {
                   <div
                     key={media.id}
                     onClick={() => handleMediaSelect(media)}
+                    onKeyDown={onActivateKey(() => handleMediaSelect(media))}
+                    role="button"
+                    tabIndex={0}
                     className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:bg-gray-50 dark:hover:bg-gray-750 cursor-pointer transition-colors"
                   >
                     <h4 className="font-medium text-gray-900 dark:text-white">

@@ -21,6 +21,7 @@ import { Card } from '../ui/Card'
 import { SmartCollection } from '../../types/collections'
 import { useCollection } from '../../hooks/useCollections'
 import { toast } from 'react-hot-toast'
+import { onActivateKey } from '../../lib/keyboard';
 
 interface CollectionExportProps {
   collection: SmartCollection
@@ -721,6 +722,9 @@ export const CollectionExport: React.FC<CollectionExportProps> = ({
                   <div className="space-y-4">
                     <div
                       onClick={() => fileInputRef.current?.click()}
+                      onKeyDown={onActivateKey(() => fileInputRef.current?.click())}
+                      role="button"
+                      tabIndex={0}
                       className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition-colors"
                     >
                       <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />

@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { useFavorites } from '@/hooks/useFavorites'
 import { cn } from '@/lib/utils'
 import toast from 'react-hot-toast'
+import { mostCommonType } from '@/lib/mostCommonType'
 
 const FavoritesPage: React.FC = () => {
   const [showBulkActions, setShowBulkActions] = useState(false)
@@ -193,9 +194,7 @@ const FavoritesPage: React.FC = () => {
                       </h4>
                       {stats && (
                         <p className="text-blue-700 dark:text-blue-300">
-                          {Object.entries(stats.media_type_breakdown).reduce((a, b) => 
-                            a[1] > b[1] ? a : b
-                          )[0].replace('_', ' ')}
+                          {mostCommonType(stats.media_type_breakdown)}
                         </p>
                       )}
                     </div>

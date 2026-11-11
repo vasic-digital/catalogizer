@@ -200,7 +200,7 @@ const IdentityForm: React.FC<IdentityFormProps> = ({ initial, onDone }) => {
               icon={<User className="h-4 w-4" />}
             />
             <Input
-              label={form.type === 'webdav_basic' ? 'Password' : 'Password'}
+              label="Password"
               type="password"
               placeholder={
                 isEdit ? 'Leave blank to keep current' : 'Enter secret'

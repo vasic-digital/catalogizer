@@ -39,6 +39,7 @@ import {
 } from '../../lib/collectionRules';
 import { CollectionRule, CollectionTemplate } from '../../types/collections';
 import { toast } from 'react-hot-toast';
+import { randomId } from '../../lib/randomId';
 
 interface SmartCollectionBuilderProps {
   initialName?: string;
@@ -97,7 +98,7 @@ export const SmartCollectionBuilder: React.FC<SmartCollectionBuilderProps> = ({
   const [cacheResults, setCacheResults] = useState(true);
 
   // Generate unique ID for new rules
-  const generateRuleId = () => `rule_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const generateRuleId = () => `rule_${Date.now()}_${randomId()}`;
 
   // Initialize with at least one rule if none provided
   useEffect(() => {

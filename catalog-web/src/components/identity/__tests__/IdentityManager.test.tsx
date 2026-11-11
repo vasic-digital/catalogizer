@@ -8,6 +8,7 @@
 
 import React from 'react'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
@@ -133,4 +134,24 @@ describe('DiscoveredShares', () => {
     const emptyText = await screen.findByText(/No shares discovered/i)
     expect(emptyText).toBeTruthy()
   })
+
+
+describe('DiscoveredShares keyboard operability (S1082)', () => {
+  it.each([['{Enter}'], [' ']])('toggles a host group via key %j', async (key) => {
+    const { identitiesApi } = await import('@/lib/identitiesApi')
+    vi.mocked(identitiesApi.listHosts).mockResolvedValue([
+      { id: 1, ip: '10.0.0.5', hostname: 'nas', first_seen: 'a', last_seen: 'b', reachable: true, ifaces_json: null },
+    ] as never)
+    vi.mocked(identitiesApi.listShares).mockResolvedValue([
+      { id: 9, host_id: 1, host_ip: '10.0.0.5', host_hostname: 'nas', protocol: 'smb', share_name: 'media', port: 445, first_seen: 'a', last_seen: 'b', enumeration_evidence_path: null },
+    ] as never)
+    const user = userEvent.setup()
+    render(<DiscoveredShares />, { wrapper: createWrapper() })
+    const header = (await screen.findByText('nas')).closest('[role="button"]') as HTMLElement
+    expect(header).toHaveAttribute('aria-expanded', 'true')
+    header.focus()
+    await user.keyboard(key)
+    expect(header).toHaveAttribute('aria-expanded', 'false')
+  })
+})
 })

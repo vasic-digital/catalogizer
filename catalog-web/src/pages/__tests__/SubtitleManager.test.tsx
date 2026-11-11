@@ -210,4 +210,23 @@ describe('SubtitleManager Page', () => {
     expect(screen.getByText('Selected Media')).toBeInTheDocument()
     expect(screen.getByText('Search Subtitles')).toBeInTheDocument()
   })
+
+  describe('keyboard operability (S1082)', () => {
+    it.each([['{Enter}'], [' ']])('selects a media search result via key %j', async (key) => {
+      const { mediaApi } = await import('@/lib/mediaApi')
+      vi.mocked(mediaApi.searchMedia).mockResolvedValue({
+        items: [{ id: 7, title: 'Alien Resurrection', media_type: 'movie' }],
+      } as never)
+      const user = userEvent.setup()
+      render(<SubtitleManager />, { wrapper: createWrapper() })
+      await user.click(screen.getByText('Select Media'))
+      await user.type(screen.getByPlaceholderText(/Search for movies/), 'alien')
+      const result = (await screen.findByText('Alien Resurrection')).closest('[role="button"]') as HTMLElement
+      expect(result).toHaveAttribute('tabindex', '0')
+      result.focus()
+      await user.keyboard(key)
+      expect(screen.queryByText('Search for Media')).not.toBeInTheDocument()
+      expect(screen.getByText('Alien Resurrection')).toBeInTheDocument()
+    })
+  })
 })
