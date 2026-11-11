@@ -1782,3 +1782,10 @@ ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go
 - FU-2: user-visible change: Enter no longer toggles the CollectionPreview selection checkbox (native, Space only); note in changelog.
 - FU-3: HistoryDrawer backdrop stacking depends on `relative` on dialog; needs browser check (jsdom blind).
 - FU-4: FavoriteToggle "Loading..." label untested. FU-5: buttons wrap block elements (HTML content model nit). FU-6: CollectionTemplates grid motion.div still role=button. FU-7: CollectionExport says "drag and drop" but has no drag handlers (pre-existing).
+
+## CAT-REL-CHECK-1 round-2 follow-ups (N1-N5 landed; Opus GO-with-follow-ups, 2026-11-12)
+- F1 (fix soon): backslash-prefixed BSD manifest lines (`\SHA256 (../x) = h`) bypass the escape check on uutils sha256sum; fail closed on any non-blank line not matching the two unescaped forms; README currently inaccurate for escaped BSD lines.
+- F2: manifest entries that are in-dir symlinks to outside the repo are followed (pre-existing); apply the readlink -f under-$REPO check to manifest entries.
+- F3: tests for 4 surviving reviewer mutants (prefix check without `/`, repo-root symlink branch, BSD lowercase-only hex, `//`->`/` comment regex).
+- F4: under --prev-tag, forged INFO on a versionCode row passes; bash should reject INFO there absent a --prev-tag FAIL row.
+- F5 (nit): fenced `## [x]` heading triggers duplicate BLIND; `versionCode = 7 /* c */` and `7;` FAIL (all fail safe).
