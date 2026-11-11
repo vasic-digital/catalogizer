@@ -36,7 +36,6 @@ import {
   Monitor,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { onActivateKey } from '../../lib/keyboard'
 
 /* ------------------------------------------------------------------ */
 /*  Protocol icon helper                                               */
@@ -148,12 +147,9 @@ const HostGroup: React.FC<HostGroupProps> = ({ host, shares }) => {
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div
-            className="flex items-center gap-3 cursor-pointer select-none"
+          <button type="button"
+            className="flex items-center gap-3 cursor-pointer select-none text-left bg-transparent border-0 p-0"
             onClick={() => setExpanded(!expanded)}
-            onKeyDown={onActivateKey(() => setExpanded(!expanded))}
-            role="button"
-            tabIndex={0}
             aria-expanded={expanded}
           >
             <Server
@@ -186,7 +182,7 @@ const HostGroup: React.FC<HostGroupProps> = ({ host, shares }) => {
                 )}
               </div>
             </div>
-          </div>
+          </button>
           <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <span>{shares.length} share{shares.length !== 1 ? 's' : ''}</span>
           </div>

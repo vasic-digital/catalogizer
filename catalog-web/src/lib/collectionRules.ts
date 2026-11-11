@@ -355,10 +355,10 @@ const validateDateValue = (rule: CollectionRule): string[] => {
     if (!Array.isArray(rule.value) || rule.value.length !== 2) {
       return ['Date range must have 2 values'];
     }
-    return rule.value.some((v: string) => isNaN(Date.parse(v))) ? ['Invalid date format in range'] : [];
+    return rule.value.some((v: string) => Number.isNaN(Date.parse(v))) ? ['Invalid date format in range'] : [];
   }
   if (RELATIVE_DATE_OPERATORS.has(rule.operator)) return [];
-  return typeof rule.value === 'string' && isNaN(Date.parse(rule.value)) ? ['Invalid date format'] : [];
+  return typeof rule.value === 'string' && Number.isNaN(Date.parse(rule.value)) ? ['Invalid date format'] : [];
 };
 
 export const validateRule = (rule: CollectionRule): string[] => {
@@ -381,7 +381,7 @@ export const validateRule = (rule: CollectionRule): string[] => {
 
   // Type-specific validation
   if (rule.value !== null && rule.value !== undefined) {
-    if (fieldType === 'number' && isNaN(Number(rule.value))) {
+    if (fieldType === 'number' && Number.isNaN(Number(rule.value))) {
       errors.push('Value must be a number');
     }
     if (fieldType === 'date') {

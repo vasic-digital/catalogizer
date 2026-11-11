@@ -298,8 +298,7 @@ describe('CollectionTemplates', () => {
       const user = userEvent.setup()
       render(<CollectionTemplates {...defaultProps} />)
       await user.click(screen.getByTestId('icon-list').closest('button') as HTMLElement)
-      const card = screen.getByText('Recent Movies').closest('[role="button"]') as HTMLElement
-      expect(card).toHaveAttribute('tabindex', '0')
+      const card = screen.getByText('Recent Movies').closest('button') as HTMLElement
       card.focus()
       await user.keyboard(key)
       expect(screen.getByText('Description')).toBeInTheDocument()

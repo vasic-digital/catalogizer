@@ -151,18 +151,19 @@ describe('CollectionPreview', () => {
   })
 
   describe('keyboard operability (S1082)', () => {
-    it.each([['{Enter}'], [' ']])('toggles item selection via key %j and updates aria-checked', async (key) => {
+    it('toggles item selection via the Space key on a native checkbox', async () => {
       const user = userEvent.setup()
       render(<CollectionPreview {...defaultProps} />)
       const boxes = screen.getAllByRole('checkbox')
-      expect(boxes[0]).toHaveAttribute('aria-checked', 'false')
+      expect(boxes[0].tagName).toBe('INPUT')
+      expect(boxes[0]).not.toBeChecked()
       boxes[0].focus()
-      await user.keyboard(key)
-      expect(screen.getAllByRole('checkbox')[0]).toHaveAttribute('aria-checked', 'true')
+      await user.keyboard(' ')
+      expect(screen.getAllByRole('checkbox')[0]).toBeChecked()
       expect(screen.getByText('1 selected')).toBeInTheDocument()
       screen.getAllByRole('checkbox')[0].focus()
-      await user.keyboard(key)
-      expect(screen.getAllByRole('checkbox')[0]).toHaveAttribute('aria-checked', 'false')
+      await user.keyboard(' ')
+      expect(screen.getAllByRole('checkbox')[0]).not.toBeChecked()
     })
   })
 })
