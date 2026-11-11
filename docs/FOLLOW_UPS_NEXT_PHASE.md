@@ -1631,7 +1631,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 ## Tauri follow-ups review (2026-11-10, Opus: GO-with-follow-ups; security-adjacent minors fixed before landing)
 - TAURI-R2-FU-1: guard ignores .toml/.json5 capability files and tauri.conf.json enabled-capability list / window label; add parsing + mutation cases.
 - TAURI-R2-FU-2: comments/strings containing a dialog import count as usage (conservative); `ask`/`confirm`/`message` not covered.
-- TAURI-R2-FU-3: catalogizer-desktop/src-tauri/gen/schemas/capabilities.json has the same stale tracked-generated shape; investigate (§11.4.124) then untrack/regenerate.
+- TAURI-R2-FU-3: RESOLVED (2026-11-11, operator decision): catalogizer-desktop/src-tauri/gen/schemas/capabilities.json untracked and src-tauri/gen/schemas/ added to catalogizer-desktop/.gitignore. The other three tracked files in that directory (acl-manifests.json, desktop-schema.json, linux-schema.json) stay tracked; .gitignore does not affect tracked files.
 - TAURI-R2-FU-4: pre-flight-check.sh must run from repo root (fails closed 127 elsewhere); consider cd to root.
 - TAURI-R2-FU-5 (nit): `Out-of-scope:` trailer on c504d197 is a left-alone note, not a closed-list reason.
 - FU-5/FU-7 of review 1 (GREEN live wizard run) remain owed; CAT-TAURI-NATIVE-1 stays PROVISIONAL-DONE.
@@ -1652,7 +1652,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - LIP-FU-6: monitoring/lanbind.py fixtures keep .115 (test data only).
 
 ## smb-subdir / tauri round-2 notes (2026-11-11)
-- TAURI-R2-FU-3: catalogizer-desktop/src-tauri/gen/schemas/capabilities.json has the same stale tracked-generated shape as the installer-wizard one; untrack or regenerate.
+- TAURI-R2-FU-3: RESOLVED (2026-11-11, operator decision): catalogizer-desktop/src-tauri/gen/schemas/capabilities.json untracked and src-tauri/gen/schemas/ added to catalogizer-desktop/.gitignore. The other three tracked files in that directory (acl-manifests.json, desktop-schema.json, linux-schema.json) stay tracked; .gitignore does not affect tracked files.
 - SMB-FU-1: RESOLVED BY REMOVAL (2026-11-11, operator decision, commit Roadmap-Item CAT-SMB-SUBDIR-1): root-package handlers/download.go and handlers/copy.go, CopyToSMB / ListSMBPath / GetSMBHosts and the orphans they alone kept alive (catalog-api/smb SmbClient + SmbConnectionPool, internal/smb resilience package) were deleted with their tests. Evidence of unreachability is in the commit message; history is in docs/FOLLOW_UPS_SMB_FU1_FU2_INVESTIGATION.md.
 - SMB-FU-2: the dead copies of this gap (root handlers, SmbClient) are RESOLVED BY REMOVAL (2026-11-11). The live browse/test paths in internal/services/smb_discovery.go were already confined by openConfined (smb.SplitShare + ResolveSub) in the SMB discovery confine work; no open code path mounts the request-body Share unconfined.
 - SMB-FU-3 (optional): routed DownloadHandler test (needs a CatalogService seam).
