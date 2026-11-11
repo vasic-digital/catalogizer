@@ -614,7 +614,7 @@ var socks5DialTimeout = socks5DialTimeoutDefault
 // withFFmpegDeadline gives ctx the coverArtFFmpegTimeout deadline when it has none.
 func withFFmpegDeadline(ctx context.Context) (context.Context, context.CancelFunc) {
 	if _, ok := ctx.Deadline(); ok {
-		return ctx, func() {}
+		return ctx, func() { /* no-op cancel: the caller context already has a deadline and no timer was created */ }
 	}
 	return context.WithTimeout(ctx, coverArtFFmpegTimeout)
 }

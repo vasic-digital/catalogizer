@@ -321,26 +321,26 @@ func (c *S3Client) seekable(ctx context.Context, data io.Reader) (io.ReadSeeker,
 	if rs, ok := data.(io.ReadSeeker); ok {
 		end, err := rs.Seek(0, io.SeekEnd)
 		if err != nil {
-			return nil, 0, func() {}, fmt.Errorf("size the source: %w", err)
+			return nil, 0, func() { /* no-op cleanup: nothing was acquired for this source, so there is nothing to release */ }, fmt.Errorf("size the source: %w", err)
 		}
 		if _, err = rs.Seek(0, io.SeekStart); err != nil {
-			return nil, 0, func() {}, fmt.Errorf("rewind the source: %w", err)
+			return nil, 0, func() { /* no-op cleanup: nothing was acquired for this source, so there is nothing to release */ }, fmt.Errorf("rewind the source: %w", err)
 		}
-		return rs, end, func() {}, nil
+		return rs, end, func() { /* no-op cleanup: nothing was acquired for this source, so there is nothing to release */ }, nil
 	}
 	f, err := os.CreateTemp("", "catalogizer-s3-spool-*")
 	if err != nil {
-		return nil, 0, func() {}, err
+		return nil, 0, func() { /* no-op cleanup: nothing was acquired for this source, so there is nothing to release */ }, err
 	}
 	cleanup := func() { _ = f.Close(); _ = os.Remove(f.Name()) }
 	n, err := io.Copy(f, s3CtxReader{ctx: ctx, r: data})
 	if err != nil {
 		cleanup()
-		return nil, 0, func() {}, err
+		return nil, 0, func() { /* no-op cleanup: nothing was acquired for this source, so there is nothing to release */ }, err
 	}
 	if _, err := f.Seek(0, io.SeekStart); err != nil {
 		cleanup()
-		return nil, 0, func() {}, err
+		return nil, 0, func() { /* no-op cleanup: nothing was acquired for this source, so there is nothing to release */ }, err
 	}
 	return f, n, cleanup, nil
 }

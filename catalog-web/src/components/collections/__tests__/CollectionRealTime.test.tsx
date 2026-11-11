@@ -35,4 +35,15 @@ describe('CollectionRealTime (CAT-001: no simulated users or events)', () => {
     }
     expect(screen.getAllByText('Unavailable').length).toBeGreaterThan(0)
   })
+
+  // Characterization (CAT-QA-SONAR-2 stage 2): pins the rendered status/controls before the complexity refactor.
+  it('renders the error status badge, four Unavailable stats, Connect and Enable controls', () => {
+    render(<CollectionRealTime collection={collection as any} />)
+    expect(screen.getByText('Error')).toBeInTheDocument()
+    expect(screen.getAllByText('Unavailable')).toHaveLength(4)
+    expect(screen.getByRole('button', { name: /^Connect$/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Enable' })).toBeInTheDocument()
+    expect(screen.getByText('Online Users (0)')).toBeInTheDocument()
+    expect(screen.queryByText(/Last connected/)).not.toBeInTheDocument()
+  })
 })

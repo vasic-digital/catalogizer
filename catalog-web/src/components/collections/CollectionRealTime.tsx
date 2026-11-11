@@ -106,6 +106,35 @@ const EVENT_DESCRIPTIONS = {
   rating_added: (userName: string, itemTitle: string, rating: number) => `${userName} rated "${itemTitle}" ${rating} stars`
 }
 
+const STATUS_BADGE_CLASSES: Record<string, string> = {
+  connected: 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400',
+  connecting: 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400'
+}
+const STATUS_BADGE_FALLBACK = 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+
+const StatusIcon: React.FC<{ status: string }> = ({ status }) => {
+  if (status === 'connected') return <Wifi className="w-4 h-4" />
+  if (status === 'connecting') return <RefreshCw className="w-4 h-4 animate-spin" />
+  return <WifiOff className="w-4 h-4" />
+}
+
+/** A stat value, or "Unavailable" while the real-time channel is in the error state. */
+const statValue = (status: string, value: number): string | number =>
+  status === 'error' ? 'Unavailable' : value
+
+const DesktopNotificationControl: React.FC<{
+  enabled: boolean
+  onDisable: () => void
+  onEnable: () => void
+}> = ({ enabled, onDisable, onEnable }) =>
+  enabled ? (
+    <Switch checked={true} onCheckedChange={onDisable} />
+  ) : (
+    <Button variant="ghost" size="sm" onClick={onEnable} className="text-xs">
+      Enable
+    </Button>
+  )
+
 export const CollectionRealTime: React.FC<CollectionRealTimeProps> = ({
   collection,
   onClose
@@ -302,19 +331,9 @@ export const CollectionRealTime: React.FC<CollectionRealTimeProps> = ({
             {/* Connection Status */}
             <div className="flex items-center gap-2">
               <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
-                connectionStatus.status === 'connected' 
-                  ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
-                  : connectionStatus.status === 'connecting'
-                  ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400'
-                  : 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+                STATUS_BADGE_CLASSES[connectionStatus.status] ?? STATUS_BADGE_FALLBACK
               }`}>
-                {connectionStatus.status === 'connected' ? (
-                  <Wifi className="w-4 h-4" />
-                ) : connectionStatus.status === 'connecting' ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                ) : (
-                  <WifiOff className="w-4 h-4" />
-                )}
+                <StatusIcon status={connectionStatus.status} />
                 <span className="text-sm font-medium">
                   {connectionStatus.status.charAt(0).toUpperCase() + connectionStatus.status.slice(1)}
                 </span>
@@ -405,25 +424,25 @@ export const CollectionRealTime: React.FC<CollectionRealTimeProps> = ({
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Active Users</span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {connectionStatus.status === 'error' ? 'Unavailable' : activityStats.activeUsers}
+                      {statValue(connectionStatus.status, activityStats.activeUsers)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Total Interactions</span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {connectionStatus.status === 'error' ? 'Unavailable' : activityStats.totalInteractions}
+                      {statValue(connectionStatus.status, activityStats.totalInteractions)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Recent Activity</span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {connectionStatus.status === 'error' ? 'Unavailable' : activityStats.recentActivity}
+                      {statValue(connectionStatus.status, activityStats.recentActivity)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600 dark:text-gray-400">Peak Concurrent</span>
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {connectionStatus.status === 'error' ? 'Unavailable' : activityStats.peakConcurrent}
+                      {statValue(connectionStatus.status, activityStats.peakConcurrent)}
                     </span>
                   </div>
                 </div>
@@ -465,24 +484,14 @@ export const CollectionRealTime: React.FC<CollectionRealTimeProps> = ({
                     
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-700 dark:text-gray-300">Desktop</span>
-                      {notificationSettings.desktopNotifications ? (
-                        <Switch
-                          checked={true}
-                          onCheckedChange={() => setNotificationSettings(prev => ({
-                            ...prev,
-                            desktopNotifications: false
-                          }))}
-                        />
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={requestDesktopNotifications}
-                          className="text-xs"
-                        >
-                          Enable
-                        </Button>
-                      )}
+                      <DesktopNotificationControl
+                        enabled={notificationSettings.desktopNotifications}
+                        onDisable={() => setNotificationSettings(prev => ({
+                          ...prev,
+                          desktopNotifications: false
+                        }))}
+                        onEnable={requestDesktopNotifications}
+                      />
                     </div>
                   </div>
                 </div>

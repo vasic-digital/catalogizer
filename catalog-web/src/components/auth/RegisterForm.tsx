@@ -88,9 +88,8 @@ export const RegisterForm: React.FC = () => {
         last_name: formData.lastName.trim(),
       })
       navigate('/login')
-    } catch (error) {
+    } catch {
       // Error is handled by the auth context which sets error state for UI display
-      void error;
     } finally {
       setIsLoading(false)
     }

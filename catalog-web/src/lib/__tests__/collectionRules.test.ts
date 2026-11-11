@@ -280,6 +280,29 @@ describe('collectionRules', () => {
       const errors = validateRule(rule)
       expect(errors).toContain('Date range must have 2 values')
     })
+
+    // Characterization (CAT-QA-SONAR-2 stage 2): date branches pinned before the complexity refactor.
+    const dateRule = (operator: string, value: unknown) => ({
+      id: '1', field: 'date_added', operator, value, field_type: 'date' as const, label: 'Date Added',
+    })
+
+    it('flags an unparsable date inside a valid-length between range', () => {
+      expect(validateRule(dateRule('between', ['2024-01-01', 'nope']) as never)).toEqual(['Invalid date format in range'])
+      expect(validateRule(dateRule('not_between', ['2024-01-01', '2024-02-01']) as never)).toEqual([])
+    })
+
+    it('flags a single unparsable date, accepts a valid one, ignores relative-date operators', () => {
+      expect(validateRule(dateRule('equals', 'nope') as never)).toEqual(['Invalid date format'])
+      expect(validateRule(dateRule('equals', '2024-01-01') as never)).toEqual([])
+      expect(validateRule(dateRule('this_week', 'nope') as never)).toEqual([])
+      expect(validateRule(dateRule('last_90_days', 'nope') as never)).toEqual([])
+    })
+
+    it('requires a value unless the operator is value-less', () => {
+      expect(validateRule(dateRule('equals', '') as never)).toEqual(['Value is required for this operator', 'Invalid date format'])
+      expect(validateRule(dateRule('is_empty', '') as never)).toEqual(['Invalid date format'])
+      expect(validateRule(dateRule('last_30_days', undefined) as never)).toEqual([])
+    })
   })
 
   describe('validateRules', () => {

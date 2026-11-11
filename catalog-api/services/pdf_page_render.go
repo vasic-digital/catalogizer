@@ -70,7 +70,7 @@ func AcquirePDFReaderSlot() (release func(), ok bool) {
 		var once sync.Once
 		return func() { once.Do(func() { <-pdfReaderSem }) }, true
 	default:
-		return func() {}, false
+		return func() { /* no-op release: the semaphore slot was not acquired, so nothing to free */ }, false
 	}
 }
 

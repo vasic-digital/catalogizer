@@ -101,6 +101,108 @@ const SORT_OPTIONS = [
   { value: 'item_count', label: 'Item Count' },
 ];
 
+// Components worth preloading for a tab the user opened.
+const PRELOAD_BY_TAB: Record<string, string> = {
+  templates: 'CollectionTemplates',
+  automation: 'CollectionAutomation',
+  integrations: 'ExternalIntegrations',
+};
+
+const toggleSelection = (ids: string[], id: string, selected: boolean): string[] =>
+  selected ? [...ids, id] : ids.filter(existing => existing !== id);
+
+const DEFAULT_SHARE_REQUEST: ShareCollectionRequest = { can_view: true, can_comment: false, can_download: false };
+
+const itemHeightFor = (viewMode: 'grid' | 'list'): number => (viewMode === 'grid' ? 200 : 80);
+
+const listContainerClass = (viewMode: 'grid' | 'list'): string =>
+  viewMode === 'grid'
+    ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'
+    : 'space-y-4';
+
+/** The page number shown in slot i of the (at most 5) pagination buttons, keeping the current page centred. */
+const pageNumberForSlot = (i: number, currentPage: number, totalPages: number): number => {
+  if (totalPages <= 5 || currentPage <= 3) return i + 1;
+  if (currentPage >= totalPages - 2) return totalPages - 4 + i;
+  return currentPage - 2 + i;
+};
+
+const CollectionsPagination: React.FC<{
+  currentPage: number
+  totalPages: number
+  totalItems: number
+  onPrev: () => void
+  onNext: () => void
+  onGoTo: (page: number) => void
+}> = ({ currentPage, totalPages, totalItems, onPrev, onNext, onGoTo }) => (
+  <div className="mt-6 flex items-center justify-between">
+    <div className="text-sm text-gray-600 dark:text-gray-400">
+      Showing {((currentPage - 1) * 20) + 1} to {Math.min(currentPage * 20, totalItems)} of {totalItems} collections
+    </div>
+    <div className="flex items-center gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onPrev}
+        disabled={currentPage === 1}
+      >
+        Previous
+      </Button>
+      <div className="flex items-center gap-1">
+        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+          const pageNum = pageNumberForSlot(i, currentPage, totalPages);
+          return (
+            <Button
+              key={pageNum}
+              variant={currentPage === pageNum ? "default" : "outline"}
+              size="sm"
+              onClick={() => onGoTo(pageNum)}
+              className="min-w-[2.5rem]"
+            >
+              {pageNum}
+            </Button>
+          );
+        })}
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onNext}
+        disabled={currentPage === totalPages}
+      >
+        Next
+      </Button>
+    </div>
+  </div>
+);
+
+/** Shown when no collection matches; offers creating one only when no search or filter is active. */
+const CollectionsEmptyState: React.FC<{ isFiltered: boolean; onCreate: () => void }> = ({ isFiltered, onCreate }) => (
+  <div className="text-center py-12">
+    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+      <Grid className="w-8 h-8 text-gray-400" />
+    </div>
+    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+      No collections found
+    </h3>
+    <p className="text-gray-600 dark:text-gray-400 mb-6">
+      {isFiltered
+        ? 'Try adjusting your search or filters'
+        : 'Create your first collection to get started'
+      }
+    </p>
+    {!isFiltered && (
+      <Button
+        onClick={onCreate}
+        className="flex items-center gap-2"
+      >
+        <Plus className="w-4 h-4" />
+        Create Smart Collection
+      </Button>
+    )}
+  </div>
+);
+
 export const Collections: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -217,30 +319,13 @@ export const Collections: React.FC = () => {
 
   // Preload components based on active tab
   React.useEffect(() => {
-    switch (activeTab) {
-      case 'templates':
-        preloadComponent('CollectionTemplates');
-        break;
-      case 'automation':
-        preloadComponent('CollectionAutomation');
-        break;
-      case 'integrations':
-        preloadComponent('ExternalIntegrations');
-        break;
-      default:
-        break;
-    }
+    const componentName = PRELOAD_BY_TAB[activeTab];
+    if (componentName) preloadComponent(componentName);
   }, [activeTab]);
 
   // Selection handlers
   const handleSelectCollection = useCallback((collectionId: string, selected: boolean) => {
-    setSelectedCollections(prev => {
-      if (selected) {
-        return [...prev, collectionId];
-      } else {
-        return prev.filter(id => id !== collectionId);
-      }
-    });
+    setSelectedCollections(prev => toggleSelection(prev, collectionId, selected));
   }, []);
 
   const handleSelectAll = useCallback(() => {
@@ -335,35 +420,35 @@ export const Collections: React.FC = () => {
   };
 
   const handleBulkOperation = async (operation: string, options?: unknown) => {
+    const count = selectedCollections.length;
+    const operations: Record<string, { past: string; run: () => Promise<unknown> }> = {
+      delete: { past: 'deleted', run: () => bulkDeleteCollections({ collectionIds: selectedCollections }) },
+      share: {
+        past: 'shared',
+        run: () => bulkShareCollections({
+          collectionIds: selectedCollections,
+          shareRequest: ((options as unknown) as ShareCollectionRequest | undefined) || DEFAULT_SHARE_REQUEST
+        })
+      },
+      export: {
+        past: 'exported',
+        run: () => bulkExportCollections({
+          collectionIds: selectedCollections,
+          format: ((options as { format?: string } | undefined)?.format as 'json' | 'csv' | 'm3u') || 'json'
+        })
+      },
+      duplicate: {
+        past: 'duplicated',
+        run: () => bulkUpdateCollections({ collectionIds: selectedCollections, action: 'duplicate' })
+      },
+    };
     try {
-      switch (operation) {
-        case 'delete':
-          await bulkDeleteCollections({ collectionIds: selectedCollections });
-          toast.success(`${selectedCollections.length} collections deleted`);
-          break;
-        case 'share':
-          await bulkShareCollections({ 
-            collectionIds: selectedCollections,
-            shareRequest: ((options as unknown) as ShareCollectionRequest | undefined) || { can_view: true, can_comment: false, can_download: false }
-          });
-          toast.success(`${selectedCollections.length} collections shared`);
-          break;
-        case 'export':
-          await bulkExportCollections({ 
-            collectionIds: selectedCollections,
-            format: ((options as { format?: string } | undefined)?.format as 'json' | 'csv' | 'm3u') || 'json'
-          });
-          toast.success(`${selectedCollections.length} collections exported`);
-          break;
-        case 'duplicate':
-          await bulkUpdateCollections({ 
-            collectionIds: selectedCollections,
-            action: 'duplicate'
-          });
-          toast.success(`${selectedCollections.length} collections duplicated`);
-          break;
-        default:
-          toast.error('Unknown operation');
+      const entry = Object.prototype.hasOwnProperty.call(operations, operation) ? operations[operation] : undefined;
+      if (entry) {
+        await entry.run();
+        toast.success(`${count} collections ${entry.past}`);
+      } else {
+        toast.error('Unknown operation');
       }
       handleClearSelection();
     } catch (error) {
@@ -1059,96 +1144,34 @@ export const Collections: React.FC = () => {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         ) : filteredCollections.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Grid className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              No collections found
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {searchQuery || filterMediaType !== 'all' || activeTab !== 'all'
-                ? 'Try adjusting your search or filters'
-                : 'Create your first collection to get started'
-              }
-            </p>
-            {!searchQuery && filterMediaType === 'all' && activeTab === 'all' && (
-              <Button
-                onClick={handleCreateSmartCollection}
-                className="flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                Create Smart Collection
-              </Button>
-            )}
-          </div>
+          <CollectionsEmptyState
+            isFiltered={Boolean(searchQuery) || filterMediaType !== 'all' || activeTab !== 'all'}
+            onCreate={handleCreateSmartCollection}
+          />
         ) : (
           <>
             <PerformanceOptimizer
               itemCount={paginatedCollections.length}
               threshold={50}
               loadingStrategy="lazy"
-              itemHeight={viewMode === 'grid' ? 200 : 80}
+              itemHeight={itemHeightFor(viewMode)}
               containerHeight={600}
             >
-              <div className={viewMode === 'grid' 
-                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4' 
-                : 'space-y-4'
-              }>
+              <div className={listContainerClass(viewMode)}>
                 {paginatedCollections.map(viewMode === 'grid' ? renderCollectionCard : renderCollectionListItem)}
               </div>
             </PerformanceOptimizer>
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="mt-6 flex items-center justify-between">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Showing {((currentPage - 1) * 20) + 1} to {Math.min(currentPage * 20, filteredCollections.length)} of {filteredCollections.length} collections
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={prevPage}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </Button>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      let pageNum: number;
-                      if (totalPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i;
-                      } else {
-                        pageNum = currentPage - 2 + i;
-                      }
-                      return (
-                        <Button
-                          key={pageNum}
-                          variant={currentPage === pageNum ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => goToPage(pageNum)}
-                          className="min-w-[2.5rem]"
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={nextPage}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
+              <CollectionsPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={filteredCollections.length}
+                onPrev={prevPage}
+                onNext={nextPage}
+                onGoTo={goToPage}
+              />
             )}
           </>
         )}
