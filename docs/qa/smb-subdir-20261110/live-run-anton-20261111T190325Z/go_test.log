@@ -1,0 +1,9 @@
+=== RUN   TestLiveSMBSubdir
+    smb_subdir_live_test.go:86: outside-name probes: 4
+--- PASS: TestLiveSMBSubdir (0.17s)
+PASS
+ok  	catalogizer/filesystem	0.192s
+=== RUN   TestLiveSMBServiceSubdir
+--- PASS: TestLiveSMBServiceSubdir (0.06s)
+PASS
+ok  	catalogizer/internal/services	0.290s
