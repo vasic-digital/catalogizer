@@ -79,19 +79,19 @@ sd-bus call then fails (`sd-bus call: Operation not permitted: Permission denied
 alpine container. The same address without `,guid=...` works. Live control: `evidence-lifecycle-20261111/probe_containers_backend.txt` (raw
 `podman start` rc=125 with the guid address; wrapper rc=0).
 
-**Fix:** `docs/qa/lib/podman_env.sh` (sourced by `lib.sh`, `monitoring/lib.sh`, `sonarqube/lib.sh`): `qa_podman_env_normalize` strips every
-`,key=val` suffix from the address and defaults `XDG_RUNTIME_DIR`; `qa_stack_start <c>` / `qa_stack_stop <c>` normalise, run the lifecycle op, and
+**Fix:** `docs/qa/lib/podman_env.sh` (sourced by `lib.sh`, `monitoring/lib.sh`, `sonarqube/lib.sh`): `qa_podman_env_normalize` strips ONLY the
+`guid=` parameter from each `;`-separated address (transport and other `,key=val` params are kept) and defaults `XDG_RUNTIME_DIR`; `qa_stack_start <c>` / `qa_stack_stop <c>` normalise, run the lifecycle op, and
 (start) wait for health with a bounded loop (`QA_HEALTH_TIMEOUT`, default 120 s). They only address the one named container, which must start with
 `${QA_STACK_PREFIX:-${STACK}-}` (hyphen included, so catqa1/catqa2/cattsrv-* are refused with rc 64); nothing prunes or acts pod-wide.
 Usage: `. docs/qa/lib/podman_env.sh; qa_stack_start catqa3-api`.
 
 **Backend / deviation status:** when `go` and `submodules/containers` are present, start/stop go through the Containers submodule's runtime abstraction
-(`digital.vasic.containers/pkg/runtime` `PodmanRuntime`, via `docs/qa/lib/ctrctl`, a tiny Go CLI built into `~/.cache/catalogizer-qa/ctrctl`). Otherwise
+(`digital.vasic.containers/pkg/runtime` `PodmanRuntime`, via `docs/qa/lib/ctrctl`, a tiny Go CLI built into a per-checkout cache dir `~/.cache/catalogizer-qa/<12-hex sha256 of the repo root>/ctrctl`, built to `ctrctl.tmp.<pid>` and atomically renamed; override with `QA_CTRCTL_CACHE`). Otherwise
 (or `QA_STACK_BACKEND=podman`) rootless podman is called directly and a `DEVIATION 11.4.76/11.4.173` line is logged. `up.sh`/`down.sh`/`build.sh`
 still call podman directly (pod create, run, build) - the submodule has no pod/run-spec API that fits them today; see
 `docs/CONTAINERS_SUBMODULE_PROPOSAL.md`. Tracked follow-up: full submodule-driven stack lifecycle (CAT-QA-STACK-LIFECYCLE-1 part 2). The `go build`
 of `ctrctl` itself runs on the host, not in a build container (same class of 11.4.173 deviation as `build.sh`).
 
 **Tests:** `docs/qa/lib/test_podman_env.sh` (gate-logic unit test with a fake podman shim that fails on `,guid=`; not proof that containers start) and
-`test_podman_env_mutations.sh` (11 mutants incl. stale-cache, forced-backend fallback, no wall-clock bound, guid-only stripping; all killed). The ctrctl binary is rebuilt on every call into a per-checkout cache; forced `QA_STACK_BACKEND=containers` never falls back to podman (rc 69).
+`test_podman_env_mutations.sh` (baseline + 21 mutants incl. stale-cache, non-atomic build, forced-backend fallback, no wall-clock bound, no inspect timeout (`QA_INSPECT_TIMEOUT`, default 10 s), non-per-checkout cache, ignored ctrctl failure, glob expansion, guid-only stripping; all killed). The ctrctl binary is rebuilt on every call into a per-checkout cache; forced `QA_STACK_BACKEND=containers` never falls back to podman (rc 69).
 Live proof: `lifecycle_probe.sh` -> `evidence-lifecycle-20261111/`.

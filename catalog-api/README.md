@@ -363,17 +363,6 @@ curl "http://localhost:8080/api/v1/stats/directories/by-size?smb_root=nas1&limit
 curl "http://localhost:8080/api/v1/search/duplicates?smb_root=nas1&min_count=2"
 ```
 
-#### Copy file between SMB shares
-```bash
-curl -X POST http://localhost:8080/api/v1/copy/smb \
-  -H "Content-Type: application/json" \
-  -d '{
-    "source_path": "nas1:/documents/file.pdf",
-    "destination_path": "nas2:/backup/file.pdf",
-    "overwrite": false
-  }'
-```
-
 ## Architecture
 
 The API is structured with the following components:

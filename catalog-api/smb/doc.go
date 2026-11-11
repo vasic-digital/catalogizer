@@ -1,7 +1,7 @@
-// Package smb provides legacy SMB support types and connection handling for the Catalogizer API.
+// Package smb provides the SMB share-path helpers (SplitShare, ResolveSub) that confine
+// storage roots to a share sub-directory for the Catalogizer API.
 //
-// It defines data structures for SMB share configuration and connection parameters used
-// when accessing media files on SMB/CIFS network shares. This package works in conjunction
-// with the filesystem package and the internal/smb resilience layer to provide reliable
-// access to Windows and Samba file shares.
+// The legacy SmbClient and SmbConnectionPool were removed (SMB-FU-1/2/15): they were reachable
+// only from handlers that no route served, and those were deleted with them. Live SMB access
+// goes through the services and filesystem packages.
 package smb

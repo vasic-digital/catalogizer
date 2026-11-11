@@ -35,3 +35,5 @@ coverage
 .env
 .env.local
 .env.production
+# Tauri build output rewritten by tauri-build on every build (TAURI-R2-FU-3): tracked copy was a stale `{}`
+src-tauri/gen/schemas/

@@ -35,7 +35,6 @@ This document provides guidance for AI agents (Claude Code, Copilot, Cursor, etc
 | `internal/metrics/` | Prometheus metrics exposed at `/metrics` | HTTP instrumentation is `GinMiddleware()`; runtime stats via `StartRuntimeCollector()`. Snapshot helpers in `snapshot.go` feed `services/reporting_service.go`. |
 | `internal/lifecycle/` | `LazyServiceRegistry` for deferred service init | Use this for any service that depends on another service's eventual construction. |
 | `internal/concurrency/` | Semaphore-based bounded parallelism | Use semaphores here; do not hand-roll buffered channels for concurrency limits. |
-| `internal/smb/` | Circuit breaker, offline cache, exponential-backoff retry | Uses `net.DialTimeout` with a bounded 5 s connect — never raw `net.Dial`. |
 | `internal/httpclient/` | Pooled HTTP client | Always use this instead of `http.DefaultClient` (which has no timeout). |
 
 ## Dependency Graph

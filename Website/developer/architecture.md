@@ -97,7 +97,7 @@ Scanner -> Detector -> Analyzer -> Providers -> Aggregation
 
 **SMB Resilience**
 
-`internal/smb/` implements circuit breaker, offline cache, and exponential backoff retry for unreliable network storage.
+The former `internal/smb/` resilience layer (circuit breaker, offline cache, backoff retry) was removed in SMB-FU-1/2/15 because nothing referenced it; live SMB access goes through `internal/services/smb.go` and the `filesystem` package.
 
 ---
 
