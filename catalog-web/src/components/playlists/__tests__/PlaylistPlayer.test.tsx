@@ -183,6 +183,34 @@ describe('PlaylistPlayer', () => {
     expect(nextBtn).toBeDisabled()
   })
 
+  it('previous button goes back and is disabled at the first track', async () => {
+    const user = userEvent.setup()
+    render(<PlaylistPlayer playlist={mockPlaylist as any} items={mockItems as any} />)
+    const prevBtn = buttonWithIcon('SkipBack')
+    expect(screen.getByText('1 of 2')).toBeInTheDocument()
+    expect(prevBtn).toBeDisabled()
+    await user.click(buttonWithIcon('SkipForward'))
+    expect(screen.getByText('2 of 2')).toBeInTheDocument()
+    expect(prevBtn).not.toBeDisabled()
+    await user.click(prevBtn)
+    expect(screen.getByText('1 of 2')).toBeInTheDocument()
+    expect(prevBtn).toBeDisabled()
+  })
+
+  it('repeat-all wraps next from last to first and previous from first to last', async () => {
+    const user = userEvent.setup()
+    render(<PlaylistPlayer playlist={mockPlaylist as any} items={mockItems as any} />)
+    await user.click(buttonWithIcon('Repeat')) // off -> all
+    const nextBtn = buttonWithIcon('SkipForward')
+    const prevBtn = buttonWithIcon('SkipBack')
+    expect(prevBtn).not.toBeDisabled()
+    await user.click(prevBtn) // first -> last
+    expect(screen.getByText('2 of 2')).toBeInTheDocument()
+    expect(nextBtn).not.toBeDisabled()
+    await user.click(nextBtn) // last -> first
+    expect(screen.getByText('1 of 2')).toBeInTheDocument()
+  })
+
   it('handles shuffle toggle', async () => {
     const onShuffle = vi.fn()
     const user = userEvent.setup()

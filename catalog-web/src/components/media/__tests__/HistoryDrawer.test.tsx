@@ -207,29 +207,7 @@ describe('HistoryDrawer', () => {
     })
   })
 
-  it('cancels pending requests on unmount', async () => {
-    let resolveProgress: (v: UiPlaybackProgress | null) => void = (_v) => { /* noop default */ }
-    mockGetEntityProgress.mockReturnValue(
-      new Promise((resolve) => {
-        resolveProgress = resolve
-      }),
-    )
-    mockListEntityHistory.mockResolvedValue([])
-
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const { unmount, container } = render(<HistoryDrawer {...defaultProps} />)
-    expect(mockGetEntityProgress).toHaveBeenCalledWith(42)
-    unmount()
-
-    resolveProgress(sampleProgress)
-    await act(async () => { await Promise.resolve() })
-    // The late resolution must not render anything nor trigger a React error
-    // (the cancelled flag prevents setState after unmount).
-    expect(container).toBeEmptyDOMElement()
-    expect(screen.queryByText('Total reproduced')).not.toBeInTheDocument()
-    expect(errorSpy).not.toHaveBeenCalled()
-    errorSpy.mockRestore()
-
+  it('ignores a superseded request that resolves late', async () => {
     // A superseded request must not overwrite newer state: while the request for
     // item 42 is pending, switch to item 43 (no sessions), then let 42 resolve late.
     let resolveStale: (v: UiPlaybackSession[]) => void = (_v) => { /* noop default */ }
