@@ -1708,7 +1708,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - LIFE-FU-3: RESOLVED: README and podman_env.sh header corrected (guid= only, per-checkout cache hash dir, mutant count). (was: doc drift (README/podman_env.sh header say "strips every ,key=val"; cache path now per-che...)
 - LIFE-FU-4: RESOLVED: `set -f` (restored) in `_qa_strip_guid`, FORCED vs unavailable DEVIATION text, local `rc`, clear missing-`timeout` error (rc 69). Not done by decision: faster unhealthy failure (risky). (was: nits): `_qa_strip_guid` unquoted glob expansion (use `set -f`); DEVIATION text when podman...)
 - up.sh/down.sh/build.sh still call podman directly (documented deviation, not yet run against real catqa3-api).
-- SMB-FU-17: `internal/handlers/copy.go` (about lines 63, 133, 233, 316) still uses plain `pathsafe.SafeRemotePath`, so ADS write targets and device names are accepted there. Switch to `SafeRemoteSharePath` once the dead-code removal branch has landed (or delete the code).
+- SMB-FU-17: `internal/handlers/copy.go` (about lines 62 and 162 after the dead-code removal) still uses plain `pathsafe.SafeRemotePath`, so ADS write targets and device names are accepted there. Switch to `SafeRemoteSharePath` once the dead-code removal branch has landed (or delete the code).
 - SMB-FU-18 (minor): the SMB-FU-14 lint can be bypassed via a helper function or pointer writes to the globals; handlers tests still assign `services.SMBHostResolver` unlocked and have no lint; `lockSMBGlobals` can deadlock when a subtest of a test that holds the lock calls a helper (different `*testing.T`).
 
 ## CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 (Opus review of LIFE-FU-1..4, minor, 2026-11-11)
