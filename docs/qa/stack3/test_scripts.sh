@@ -86,7 +86,7 @@ run_up
 
 # 4. build.sh in a tiny git repo that contains copies of the scripts
 R="$ROOT/repo"; mkdir -p "$R/docs/qa/stack3" "$R/catalog-api" "$R/catalog-web"
-mkdir -p "$R/docs/qa/lib"; cp "$HERE/../lib/lan_ip.sh" "$R/docs/qa/lib/"
+mkdir -p "$R/docs/qa/lib"; cp "$HERE/../lib/lan_ip.sh" "$HERE/../lib/podman_env.sh" "$R/docs/qa/lib/"
 cp "$HERE/build.sh" "$HERE/lib.sh" "$R/docs/qa/stack3/"
 printf 'FROM scratch\nRUN go build -a -ldflags="-w -s" -o catalogizer-api .\n' > "$R/catalog-api/Dockerfile"
 printf 'FROM scratch\n' > "$R/catalog-web/Dockerfile"
@@ -142,4 +142,6 @@ grep -oE -- 'TRUSTED_PROXIES=[^ ]*' "$STUB_LOG" | grep -qE '127\.|::1|0\.0\.0\.0
 # 9. CAT-LANIP-DYN-1: the shared LAN-address helper has its own sandbox test
 bash "$HERE/../lib/test_lan_ip.sh" >/dev/null 2>&1; ok $? "docs/qa/lib/test_lan_ip.sh passes"
 bash "$HERE/test_lan_defaults.sh" >/dev/null 2>&1; ok $? "test_lan_defaults.sh passes (sonar/s3 bind defaults)"
+bash "$HERE/../lib/test_podman_env.sh" >/dev/null 2>&1; ok $? "docs/qa/lib/test_podman_env.sh passes (guid-address RED/GREEN, wrapper safety)"
+bash "$HERE/../lib/test_podman_env_mutations.sh" >/dev/null 2>&1; ok $? "test_podman_env_mutations.sh: all mutants killed"
 echo "passed=$pass failed=$fail"; [ "$fail" = 0 ]

@@ -43,7 +43,7 @@ When a client implements `SeekableClient`, the stream handler can serve HTTP Ran
 
 ### SMB/CIFS
 
-Windows and Samba file shares. The SMB client in `internal/smb/` includes connection resilience patterns:
+Windows and Samba file shares. The SMB service (`internal/services/smb.go`) confines every path to the configured share and sub-directory (`smb.SplitShare`, `smb.ResolveSub`). The former `internal/smb/` resilience layer (circuit breaker, offline cache, backoff) was removed as unreferenced; the notes below describe the retired design:
 
 - **Circuit breaker**: Prevents repeated connection attempts to downed servers. Configurable failure threshold, half-open probing interval, and state restoration from persistent storage.
 - **Offline cache**: Serves previously loaded directory listings and metadata during storage outages, so users can continue browsing.

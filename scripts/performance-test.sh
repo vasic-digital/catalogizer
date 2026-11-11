@@ -41,7 +41,6 @@ echo "Running service-specific benchmarks..."
 go test -bench=. -benchmem -benchtime=2s ./services/auth_service_bench_test.go 2>&1 | tee ../performance-results-auth.txt || true
 go test -bench=. -benchmem -benchtime=2s ./internal/media/detector/engine_bench_test.go 2>&1 | tee ../performance-results-detector.txt || true
 go test -bench=. -benchmem -benchtime=2s ./internal/media/providers/providers_bench_test.go 2>&1 | tee ../performance-results-providers.txt || true
-go test -bench=. -benchmem -benchtime=2s ./internal/smb/resilience_bench_test.go 2>&1 | tee ../performance-results-smb.txt || true
 
 echo -e "${COLOR_GREEN}✓ Go benchmarks complete${COLOR_RESET}"
 echo ""

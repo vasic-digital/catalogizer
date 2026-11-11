@@ -40,7 +40,6 @@ The Catalog API is a REST service for browsing, searching, and managing SMB file
 
 ### Copy Endpoints
 
-- `POST /api/copy/smb` - Copy files between SMB locations
 - `POST /api/copy/local` - Copy files from SMB to local computer
 - `POST /api/copy/upload` - Upload files from local computer to SMB
 

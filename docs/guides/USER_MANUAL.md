@@ -1288,7 +1288,7 @@ location /ws {
 - Test manually: `smbclient -L //server -U username`
 - Check SMB protocol version: some servers require SMB2 or SMB3.
 - Review circuit breaker state via server logs.
-- Force reconnection: `POST /api/v1/smb/sources/:id/reconnect`.
+- Force reconnection: restart catalog-api (the former `/api/v1/smb/sources/:id/reconnect` endpoint was never routed and was removed).
 
 ### Diagnostic Commands
 

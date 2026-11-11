@@ -45,7 +45,6 @@ Routes are registered under `/api/v1` in `main.go`. The Gin engine is the HTTP f
 | `internal/auth/` | JWT authentication with role-based access |
 | `internal/services/` | Aggregation, title parsing, scanning, media detection pipeline |
 | `internal/media/` | Detection (`detector/`) -> analysis (`analyzer/`) -> providers (TMDB, IMDB, etc.) |
-| `internal/smb/` | Circuit breaker, offline cache, exponential backoff retry |
 | `internal/metrics/` | Prometheus metrics (exposed at `/metrics`) |
 | `internal/lifecycle/` | `LazyServiceRegistry` for deferred service init with dependency ordering |
 | `internal/concurrency/` | Semaphore-based concurrency control |

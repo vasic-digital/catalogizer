@@ -24,9 +24,7 @@ import (
 // the assertions treat as a failure of the guard.
 //
 // It registers /copy/storage, /copy/local, /copy/upload (the routes wired in
-// catalog-api/main.go) plus /copy/smb and /smb/list/*path, which are NOT
-// routed in main.go today; they are registered here so the SMB handlers'
-// validation stays covered should they be routed.
+// catalog-api/main.go).
 func newProductionCopyRouter(t *testing.T, root string) *gin.Engine {
 	t.Helper()
 	gin.SetMode(gin.TestMode)
@@ -42,8 +40,6 @@ func newProductionCopyRouterWith(h *CopyHandler) *gin.Engine {
 	api.POST("/copy/storage", h.CopyToStorage)
 	api.POST("/copy/local", h.CopyToLocal)
 	api.POST("/copy/upload", h.CopyFromLocal)
-	api.POST("/copy/smb", h.CopyToSMB)
-	api.GET("/smb/list/*path", h.ListSMBPath)
 	return r
 }
 
@@ -105,17 +101,6 @@ func TestRoutedCopyToLocal_RejectsTraversalInRemoteSource(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code, "body=%s", w.Body.String())
 }
 
-func TestRoutedCopyToSMB_RejectsTraversalInRemotePaths(t *testing.T) {
-	r := newProductionCopyRouter(t, t.TempDir())
-	for _, c := range []map[string]any{
-		{"source_path": "a:/s/../../x", "destination_path": "b:/d/f"},
-		{"source_path": "a:/s/f", "destination_path": `b:\d\..\..\f`},
-	} {
-		w := postJSON(r, "/api/v1/copy/smb", c)
-		assert.Equal(t, http.StatusBadRequest, w.Code, "case=%v body=%s", c, w.Body.String())
-	}
-}
-
 func upload(r *gin.Engine, filename, destination string) *httptest.ResponseRecorder {
 	var buf bytes.Buffer
 	mw := multipart.NewWriter(&buf)
@@ -145,12 +130,4 @@ func TestRoutedCopyFromLocal_RejectsUnsafeNamesAndDestinations(t *testing.T) {
 			assert.Equal(t, http.StatusBadRequest, w.Code, "body=%s", w.Body.String())
 		})
 	}
-}
-
-func TestRoutedListSMBPath_RejectsTraversal(t *testing.T) {
-	r := newProductionCopyRouter(t, t.TempDir())
-	req := httptest.NewRequest("GET", "/api/v1/smb/list/share/..%2f..%2fetc?host=nas", nil)
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusBadRequest, w.Code, "body=%s", w.Body.String())
 }

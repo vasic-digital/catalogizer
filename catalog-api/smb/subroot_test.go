@@ -65,19 +65,6 @@ func TestResolveSub(t *testing.T) {
 	}
 }
 
-// The client maps every operation through rp; a client with a sub root can never ask the server for a path outside it.
-func TestSmbClientRPConfinesToSub(t *testing.T) {
-	c := &SmbClient{sub: "Testing"}
-	for p, want := range map[string]string{"a": "Testing/a", ".": "Testing", "": "Testing", "../../x": "Testing/x", `..\y`: "Testing/y"} {
-		if got := c.rp(p); got != want {
-			t.Errorf("rp(%q)=%q want %q", p, got, want)
-		}
-	}
-	if got := (&SmbClient{}).rp("../a"); got != "../a" {
-		t.Errorf("no sub root must pass the path through unchanged, got %q", got)
-	}
-}
-
 func TestSplitShareUNCRefusedWithHint(t *testing.T) {
 	for _, in := range []string{`\\host\Public`, "//host/Public", `\\host\Public\Testing`} {
 		_, _, err := SplitShare(in)

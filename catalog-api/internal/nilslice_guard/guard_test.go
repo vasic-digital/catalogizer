@@ -213,7 +213,6 @@ var accepted = map[string]string{
 	"service_adapters.go:87:6 var warns":                   "models.ValidationResult.Warnings is `json:\"warnings,omitempty\"`: nil is omitted, not null",
 	"music_player_service.go:412:6 var tracks":             "PlayArtist returns an error when tracks is empty, so a nil slice is never serialised",
 	"translation_service.go:168:6 var results":             "TranslateBatch has no HTTP caller in the tree (service-internal); tracked, not on a served path",
-	"internal/handlers/copy.go:337:6 var fileList":         "unrouted: CopyHandler.ListSMBPath has no route in main.go (legacy internal/handlers); not a served path today",
 	"localization_handlers.go:452:6 var providers":         "unrouted: LocalizationHandlers is never constructed outside tests; not a served path today",
 	"internal/handlers/media.go:280:6 var mediaItems":      "unrouted: internal/handlers.MediaHandler is never constructed outside tests; not a served path today",
 	"internal/handlers/media.go:56:6 var mediaTypes":       "unrouted: internal/handlers.MediaHandler is never constructed outside tests; not a served path today",

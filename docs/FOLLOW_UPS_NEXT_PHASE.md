@@ -1163,8 +1163,7 @@ Threat model unchanged: COOPERATIVE PRODUCER. F1 (loader keys bind every process
   is seeded); (2) `POST /download/archive` happy path ends 400 (the body is a `models.DownloadRequest` the generator does not shape);
   (3) a real directory under a non-SMB root still builds its archive through the SMB service (`createZipArchive`/`createTarArchive`
   call `smbService.DownloadFile`), so such an archive would be empty or fail.
-- `catalog-api/handlers/download.go` (constructor `NewDownloadHandler(fileRepo, tempDir, ...)`) is not wired in main.go (main uses
-  `internal/handlers/download.go`). Investigate git history (how it was wired, how it died) before proposing removal (constitution 11.4.124).
+- `catalog-api/handlers/download.go` (constructor `NewDownloadHandler(fileRepo, tempDir, ...)`) was not wired in main.go; REMOVED 2026-11-11 (SMB-FU-1, history in docs/FOLLOW_UPS_SMB_FU1_FU2_INVESTIGATION.md).
 - Happy-path ratchet: `catalog-api/api_contract_happy_exceptions.tsv` lists the 81 operations whose happy probe is not 2xx, with
   a reason each; many reasons are generic (generator cannot seed a valid body/resource). Seed them and shrink the list; a stale entry is a violation.
 - `GET /api/v1/logs/stream` flake (F5): the SSE handler writes nothing until the first log entry, and the sweep used to `ReadAll` the
@@ -1632,7 +1631,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 ## Tauri follow-ups review (2026-11-10, Opus: GO-with-follow-ups; security-adjacent minors fixed before landing)
 - TAURI-R2-FU-1: guard ignores .toml/.json5 capability files and tauri.conf.json enabled-capability list / window label; add parsing + mutation cases.
 - TAURI-R2-FU-2: comments/strings containing a dialog import count as usage (conservative); `ask`/`confirm`/`message` not covered.
-- TAURI-R2-FU-3: catalogizer-desktop/src-tauri/gen/schemas/capabilities.json has the same stale tracked-generated shape; investigate (§11.4.124) then untrack/regenerate.
+- TAURI-R2-FU-3: RESOLVED (2026-11-11, operator decision): catalogizer-desktop/src-tauri/gen/schemas/capabilities.json untracked and src-tauri/gen/schemas/ added to catalogizer-desktop/.gitignore. The other three tracked files in that directory (acl-manifests.json, desktop-schema.json, linux-schema.json) stay tracked; .gitignore does not affect tracked files.
 - TAURI-R2-FU-4: pre-flight-check.sh must run from repo root (fails closed 127 elsewhere); consider cd to root.
 - TAURI-R2-FU-5 (nit): `Out-of-scope:` trailer on c504d197 is a left-alone note, not a closed-list reason.
 - FU-5/FU-7 of review 1 (GREEN live wizard run) remain owed; CAT-TAURI-NATIVE-1 stays PROVISIONAL-DONE.
@@ -1653,9 +1652,9 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - LIP-FU-6: monitoring/lanbind.py fixtures keep .115 (test data only).
 
 ## smb-subdir / tauri round-2 notes (2026-11-11)
-- TAURI-R2-FU-3: catalogizer-desktop/src-tauri/gen/schemas/capabilities.json has the same stale tracked-generated shape as the installer-wizard one; untrack or regenerate.
-- SMB-FU-1: unrouted root-package handlers/download.go, handlers/copy.go, CopyToSMB and /smb/list use catalogizer/smb (still confined) but are dead code; investigate history before any removal (§11.4.124).
-- SMB-FU-2: internal/services/smb.go and smb_discovery.go browse paths mount the request-body Share directly and have no sub-directory support.
+- TAURI-R2-FU-3: RESOLVED (2026-11-11, operator decision): catalogizer-desktop/src-tauri/gen/schemas/capabilities.json untracked and src-tauri/gen/schemas/ added to catalogizer-desktop/.gitignore. The other three tracked files in that directory (acl-manifests.json, desktop-schema.json, linux-schema.json) stay tracked; .gitignore does not affect tracked files.
+- SMB-FU-1: RESOLVED BY REMOVAL (2026-11-11, operator decision, commit Roadmap-Item CAT-SMB-SUBDIR-1): root-package handlers/download.go and handlers/copy.go, CopyToSMB / ListSMBPath / GetSMBHosts and the orphans they alone kept alive (catalog-api/smb SmbClient + SmbConnectionPool, internal/smb resilience package) were deleted with their tests. Evidence of unreachability is in the commit message; history is in docs/FOLLOW_UPS_SMB_FU1_FU2_INVESTIGATION.md.
+- SMB-FU-2: the dead copies of this gap (root handlers, SmbClient) are RESOLVED BY REMOVAL (2026-11-11). The live browse/test paths in internal/services/smb_discovery.go were already confined by openConfined (smb.SplitShare + ResolveSub) in the SMB discovery confine work; no open code path mounts the request-body Share unconfined.
 - SMB-FU-3 (optional): routed DownloadHandler test (needs a CatalogService seam).
 - SMB-FU-4: catalog-web form hint for entering share/sub/dir.
 - SMB-FU-5: live run of docs/qa/smb-subdir-20261110/run.sh against the Anton share (never executed yet).
@@ -1680,7 +1679,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - SMB-FU-9b (follow-up): admin-configured by-name dials can still be rebound: storage roots, `SMBService.getConnection` (services/smb.go), `smb/client.go`, `filesystem/smb_client.go`. They are not request-supplied, but each should resolve once, vet and dial the vetted IP the same way (reuse `VetSMBHostIPs` + `dialVetted`).
 - SMB-FU-13: the share listing still shows `print$` (SplitShare allows it; it is not administrative there). Decide whether discovery should hide printer shares.
 - SMB-FU-14 (test-instrumentation): tests that replace the global `services.SMBHostResolver` / `smbWarnf` must never use `t.Parallel()`. Add a lint or a locked helper.
-- SMB-FU-15: `internal/handlers/smb.go` `SMBHandler.TestConnection` returns `err.Error()` to the client. Verified 2026-11-11: `SMBHandler` is UNWIRED (`NewSMBHandler` has no non-test caller and no route uses it). Per operator decision it is being removed in a separate change.
+- SMB-FU-15: RESOLVED BY REMOVAL (2026-11-11): `internal/handlers/smb.go` SMBHandler was confirmed unwired (no caller outside its own tests, nothing in main.go) and was deleted with its tests.
 
 ## Tauri guard follow-ups (branch fix/tauri-guard-followups, PROVISIONAL-DONE)
 - TAURI-R1-FU-1/2/3/4/6/8: already resolved on main before this branch (per-capability parsing, import forms, pre-flight wiring, docs/qa/tauri-native-20261106/README.md present, installer-wizard capabilities.json untracked+ignored in c504d197, header states exit 2 = BLIND); verified by re-running guard + mutation test.
@@ -1697,3 +1696,27 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - TAURI-R4-FU-3: a mention in a comment/string/test file other than vi/jest module mocks demands all five permissions (accepted false positive); no source lexing by design.
 - TAURI-R4-FU-4: capability "webviews" field is ignored (conservative: only "windows" is matched); a remote capability with urls [] FAILs (conservative: any "remote" object is treated as granting to remote origins).
 - TAURI-R4-FU-5: html scan covers *.html under installer-wizard (excluding node_modules, dist, target, .git); a non-empty src-tauri/permissions/ is BLIND (app-defined permission sets not parsed). Pre-flight runs the guard mutants only when tauri guard/wizard files changed (PRE_FLIGHT_FORCE_TAURI_MUTANTS=1 forces).
+
+## Dead-SMB cleanup review follow-ups (branch fix/dead-smb-and-schema)
+- SMB-FU-16 (docs/clients, minor): the Android client and its API docs still call the never-routed `/api/v1/smb/sources/*` and `/api/v1/smb/health` endpoints; align or remove them (not touched here).
+- SMB-FU-16b (nit): the `.gitignore` convention differs between catalogizer-desktop (`src-tauri/gen/schemas/` in the app .gitignore) and installer-wizard (single file entry); pick one.
+- SMB-FU-16c (nit): `catalog-api/api_contract_happy_exceptions.tsv:61` has an ambiguous `download.go` reference after the root handlers/download.go removal; qualify it as `internal/handlers/download.go`.
+
+## CAT-QA-STACK-LIFECYCLE-1 follow-ups (Opus round 2, minor, 2026-11-11)
+- LIFE-FU-1: RESOLVED: ctrctl builds to `<bin>.tmp.<pid>` in the cache dir then `mv -f`; test with 6 concurrent builds (distinct tmp outputs) + mutants. A real cross-FS ETXTBSY reproduction needs an ELF binary (fake go writes scripts): documented skip. (was: ctrctl concurrent first builds race when TMPDIR is on another filesystem (build to `$bin.t...)
+- LIFE-FU-2: RESOLVED: tests+mutants for the inspect timeout (`QA_INSPECT_TIMEOUT`), per-checkout cache keying, ctrctl non-zero exit propagation (start and stop). (was: test gaps: `timeout 10` bound on inspect, per-checkout cache keying, ctrctl non-zero exit...)
+- LIFE-FU-3: RESOLVED: README and podman_env.sh header corrected (guid= only, per-checkout cache hash dir, mutant count). (was: doc drift (README/podman_env.sh header say "strips every ,key=val"; cache path now per-che...)
+- LIFE-FU-4: RESOLVED: `set -f` (restored) in `_qa_strip_guid`, FORCED vs unavailable DEVIATION text, local `rc`, clear missing-`timeout` error (rc 69). Not done by decision: faster unhealthy failure (risky). (was: nits): `_qa_strip_guid` unquoted glob expansion (use `set -f`); DEVIATION text when podman...)
+- up.sh/down.sh/build.sh still call podman directly (documented deviation, not yet run against real catqa3-api).
+
+## CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 (Opus review of LIFE-FU-1..4, minor, 2026-11-11)
+- LIFE-FU-5: test gap: nothing distinguishes atomic `mv -f` from copy+rm (assert inode equality or a logging fake mv).
+- LIFE-FU-6: test gap: hung-inspect test only hangs the first inspect; add shim mode hanging only the Health inspect.
+- LIFE-FU-7: test gap: no test calls `_qa_strip_guid` with `set -f` already on and checks it stays on.
+- LIFE-FU-8 (behaviour): missing-`timeout` check lives in `qa_stack_wait_healthy`, so `qa_stack_start` starts the container and only then returns 69 with it left running; pre-flight the check in `qa_stack_start` before `_qa_stack_run`.
+- LIFE-FU-9 (nits): unreachable tmp cleanup branch on build failure; a real ctrctl exit 69 would read as "backend unavailable" (latent).
+
+## CAT-SMB-SUBDIR-1 follow-ups (Opus round 3 of dead-code removal, minor, 2026-11-11)
+- SMB-FU-19a (test): pathsafe mutant "ancestor walk stops one level early" survives; only a false rejection when root is a top-level dir (never an escape). Add a test with the deepest existing ancestor a direct child of `/` or record equivalent-for-escapes.
+- SMB-FU-19b (docs): README lines ~405-425 (Connection States table, SMB_RETRY_* / SMB_OFFLINE_CACHE_SIZE env block) may still describe the removed per-source SMB state; check whether those env vars are still read and fix the drift.
+- SMB-FU-19c (nit): dangling-symlink test passes on any error; assert the reason ("cannot resolve path" vs ErrPathEscapes).
