@@ -115,10 +115,11 @@ func TestDialVetted_FallsThroughToNextVettedIPOnly(t *testing.T) {
 		defer r.mu.Unlock()
 		r.dialed = append(r.dialed, addr)
 		calls++
-		c, _ := net.Pipe()
 		if calls == 1 {
 			return nil, errors.New("first refused")
 		}
+		c, other := net.Pipe()
+		t.Cleanup(func() { _ = other.Close() })
 		return c, nil
 	}
 	ips, err := VetSMBHostIPs("rebind.example")
@@ -138,4 +139,107 @@ func TestVetSMBHostIPs_ReturnsTheVettedAddresses(t *testing.T) {
 	lit, err := VetSMBHostIPs("192.168.0.5")
 	require.NoError(t, err)
 	require.Equal(t, "192.168.0.5", lit[0].String())
+}
+
+// F1: one shared connect deadline and a cap on attempts.
+func TestDialVetted_OneSharedDeadlineAcrossAttempts(t *testing.T) {
+	r := newRebindRig(t, []string{"192.0.2.10", "192.0.2.11", "192.0.2.12"})
+	now := time.Unix(1000, 0)
+	oldNow := smbNow
+	t.Cleanup(func() { smbNow = oldNow })
+	smbNow = func() time.Time { return now }
+	var budgets []time.Duration
+	SMBDialer = func(_ context.Context, addr string, to time.Duration) (net.Conn, error) {
+		r.mu.Lock()
+		defer r.mu.Unlock()
+		r.dialed = append(r.dialed, addr)
+		budgets = append(budgets, to)
+		now = now.Add(to) // a blackholed address consumes everything it was given
+		return nil, errors.New("blackhole")
+	}
+	ips, err := VetSMBHostIPs("rebind.example")
+	require.NoError(t, err)
+	start := now
+	_, err = dialVetted(context.Background(), ips, 445, 10*time.Second)
+	require.Error(t, err)
+	require.Equal(t, []string{"192.0.2.10:445"}, r.dialed, "first attempt used the whole budget; the others get none")
+	require.Equal(t, []time.Duration{10 * time.Second}, budgets)
+	require.LessOrEqual(t, now.Sub(start), 10*time.Second, "total cost bounded by ONE timeout")
+}
+
+func TestDialVetted_RemainingBudgetShrinksAndAttemptsAreCapped(t *testing.T) {
+	r := newRebindRig(t, []string{"192.0.2.1", "192.0.2.2", "192.0.2.3", "192.0.2.4", "192.0.2.5", "192.0.2.6"})
+	now := time.Unix(1000, 0)
+	oldNow := smbNow
+	t.Cleanup(func() { smbNow = oldNow })
+	smbNow = func() time.Time { return now }
+	var budgets []time.Duration
+	SMBDialer = func(_ context.Context, addr string, to time.Duration) (net.Conn, error) {
+		r.mu.Lock()
+		defer r.mu.Unlock()
+		r.dialed = append(r.dialed, addr)
+		budgets = append(budgets, to)
+		now = now.Add(time.Second) // fast refusals
+		return nil, errors.New("refused")
+	}
+	ips, err := VetSMBHostIPs("rebind.example")
+	require.NoError(t, err)
+	_, err = dialVetted(context.Background(), ips, 445, 10*time.Second)
+	require.Error(t, err)
+	require.Len(t, r.dialed, maxVettedDials, "at most 4 of the 6 vetted answers are tried")
+	require.Equal(t, []time.Duration{10 * time.Second, 9 * time.Second, 8 * time.Second, 7 * time.Second}, budgets)
+}
+
+// F2: port 0 means 445 all the way to the dial.
+func TestMountShare_PortZeroDials445(t *testing.T) {
+	r := newRebindRig(t, []string{"192.0.2.10"})
+	_, _, err := rebindSvc().openConfined(context.Background(), SMBConnectionConfig{Host: "rebind.example", Port: 0, Share: "Data", Username: "u"})
+	require.Error(t, err)
+	r.assertVettedOnly(t, []string{"192.0.2.10:445"}, 1)
+}
+
+// F2: the PRODUCTION dialer, against a real loopback listener (loopback is reachable here only because the test calls the dialer seam
+// directly; the vetting layer is not involved).
+func TestProductionSMBDialer_ConnectsToIPLiteral(t *testing.T) {
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	defer ln.Close()
+	accepted := make(chan net.Conn, 1)
+	go func() {
+		c, aerr := ln.Accept()
+		if aerr == nil {
+			accepted <- c
+		}
+	}()
+	conn, err := SMBDialer(context.Background(), ln.Addr().String(), 2*time.Second)
+	require.NoError(t, err)
+	defer conn.Close()
+	require.Equal(t, ln.Addr().String(), conn.RemoteAddr().String(), "connected to the IP literal given")
+	select {
+	case c := <-accepted:
+		_ = c.Close()
+	case <-time.After(2 * time.Second):
+		t.Fatal("listener saw no connection")
+	}
+}
+
+func TestProductionSMBDialer_EnforcesTimeout(t *testing.T) {
+	// 192.0.2.1 is TEST-NET-1 (never routed). Depending on the host the SYN is blackholed (timeout) or refused at once with
+	// "network unreachable"; either way the dial MUST return within a small multiple of the timeout, never the OS default (~2 minutes).
+	start := time.Now()
+	conn, err := SMBDialer(context.Background(), "192.0.2.1:445", 300*time.Millisecond)
+	if err == nil {
+		_ = conn.Close()
+		t.Skip("TEST-NET-1 is reachable on this host")
+	}
+	require.Less(t, time.Since(start), 5*time.Second, "timeout enforced: %v", err)
+}
+
+func TestProductionSMBDialer_HonoursContextCancel(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	start := time.Now()
+	_, err := SMBDialer(ctx, "192.0.2.1:445", time.Minute)
+	require.Error(t, err)
+	require.Less(t, time.Since(start), 2*time.Second)
 }
