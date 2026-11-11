@@ -16,7 +16,8 @@ run_case() { # name expected_rc mutate_fn
   mkdir -p "${R:?}/scripts/tauri" "$R/installer-wizard/src/services" "$R/installer-wizard/src-tauri/capabilities"
   { cp "$GUARD" "$R/scripts/tauri/test_wizard_capabilities.sh" \
     && cp "$ROOT/installer-wizard/src/services/tauri.ts" "$R/installer-wizard/src/services/tauri.ts" \
-    && cp "$ROOT/installer-wizard/src-tauri/capabilities/default.json" "$R/installer-wizard/src-tauri/capabilities/default.json"; } \
+    && cp "$ROOT/installer-wizard/src-tauri/capabilities/default.json" "$R/installer-wizard/src-tauri/capabilities/default.json" \
+    && cp "$ROOT/installer-wizard/src-tauri/tauri.conf.json" "$R/installer-wizard/src-tauri/tauri.conf.json"; } \
     || { echo "setup: copy failed" >&2; exit 2; }
   W="$R/installer-wizard"; "$fn"
   local rc=0; bash "$R/scripts/tauri/test_wizard_capabilities.sh" >/dev/null 2>&1 || rc=$?
@@ -89,5 +90,63 @@ run_case window_glob_star_pass 0 m_glob_star_window
 run_case dialog_default_pass 0 m_dialog_default
 run_case raw_invoke_plugin_dialog_save 1 m_raw_invoke
 run_case raw_invoke_only_not_blind 1 m_raw_invoke_only
+# --- TAURI-R2-FU-1/2: capability formats, tauri.conf.json, comments/strings, ask/confirm/message ---
+CONF="src-tauri/tauri.conf.json"
+setconf() { python3 -I -c 'import json,sys;p=sys.argv[1];d=json.load(open(p));exec(sys.argv[2]);json.dump(d,open(p,"w"))' "$W/$CONF" "$1"; }
+m_toml_ok() { rm "$W/$CAP/default.json"; printf '%s\n' 'identifier = "default"' 'windows = ["main"]' 'permissions = ["dialog:allow-open", "dialog:allow-save"]' >"$W/$CAP/default.toml"; }
+m_toml_missing_save() { rm "$W/$CAP/default.json"; printf '%s\n' 'identifier = "default"' 'windows = ["main"]' 'permissions = ["dialog:allow-open"]' >"$W/$CAP/default.toml"; }
+m_toml_table_perms_ok() { rm "$W/$CAP/default.json"; printf '%s\n' 'identifier = "default"' 'windows = ["main"]' '[[permissions]]' 'identifier = "dialog:allow-open"' '[[permissions]]' 'identifier = "dialog:allow-save"' >"$W/$CAP/default.toml"; }
+m_toml_bad() { rm "$W/$CAP/default.json"; printf '%s\n' 'identifier = = broken' >"$W/$CAP/default.toml"; }
+m_json5_ok() { rm "$W/$CAP/default.json"; printf '%s\n' '// comment' '{ "identifier": "default", /* c */ "windows": ["main"], "permissions": ["dialog:allow-open", "dialog:allow-save",], }' >"$W/$CAP/default.json5"; }
+m_json5_missing_save() { rm "$W/$CAP/default.json"; printf '%s\n' '{ "identifier": "default", "windows": ["main"], "permissions": ["dialog:allow-open",], }' >"$W/$CAP/default.json5"; }
+m_json5_unparsable() { rm "$W/$CAP/default.json"; printf '%s\n' "{ identifier: 'default', windows: ['main'], permissions: ['dialog:allow-open','dialog:allow-save'] }" >"$W/$CAP/default.json5"; }
+m_conf_lists_other() { setconf 'd["app"]["security"]["capabilities"]=["other"]'; }
+m_conf_lists_default() { setconf 'd["app"]["security"]["capabilities"]=["default"]'; }
+m_conf_inline_cap_ok() { rm "$W/$CAP/default.json"; setconf 'd["app"]["security"]["capabilities"]=[{"identifier":"inl","windows":["main"],"permissions":["dialog:allow-open","dialog:allow-save"]}]'; }
+m_conf_label_wizard_cap_main() { setconf 'd["app"]["windows"][0]["label"]="wizard"'; }
+m_conf_label_wizard_cap_wizard() { setconf 'd["app"]["windows"][0]["label"]="wizard"'; cap '{"identifier":"d","windows":["wizard"],'"$P"'}'; }
+m_conf_bad() { printf '%s\n' '{nope' >"$W/$CONF"; }
+m_comment_line_import() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+// import { save } from '@tauri-apps/plugin-dialog'"; }
+m_comment_block_import() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+/* import { save } from '@tauri-apps/plugin-dialog' */"; }
+m_string_import() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+export const doc = \"import { save } from '@tauri-apps/plugin-dialog'\""; }
+m_template_import() { only_open; setsrc "import { open } from '@tauri-apps/plugin-dialog'
+export const doc = \`import { save } from '@tauri-apps/plugin-dialog'\`"; }
+m_comment_only_is_blind() { only_open; setsrc "// import { open } from '@tauri-apps/plugin-dialog'"; }
+m_real_import_after_comment() { only_open; setsrc "// header
+import { open, save } from '@tauri-apps/plugin-dialog' // trailing"; }
+m_ask_import() { only_open; setsrc "import { open, ask } from '@tauri-apps/plugin-dialog'"; }
+m_confirm_import() { only_open; setsrc "import { open, confirm } from '@tauri-apps/plugin-dialog'"; }
+m_message_import() { only_open; setsrc "import { open, message as msg } from '@tauri-apps/plugin-dialog'"; }
+m_ask_granted() { cap '{"identifier":"d","windows":["main"],"permissions":["dialog:allow-open","dialog:allow-ask"]}'; setsrc "import { open, ask } from '@tauri-apps/plugin-dialog'"; }
+m_raw_message() { only_open; setsrc "export const s = () => invoke('plugin:dialog|message', {})"; }
+m_star_needs_ask() { cap '{"identifier":"d","windows":["main"],'"$P"'}'; setsrc "import * as dlg from '@tauri-apps/plugin-dialog'"; }
+run_case toml_cap_pass 0 m_toml_ok
+run_case toml_cap_missing_save 1 m_toml_missing_save
+run_case toml_table_perms_pass 0 m_toml_table_perms_ok
+run_case toml_invalid_fails 1 m_toml_bad
+run_case json5_cap_pass 0 m_json5_ok
+run_case json5_cap_missing_save 1 m_json5_missing_save
+run_case json5_unparsable_fails_closed 1 m_json5_unparsable
+run_case conf_enables_only_other 1 m_conf_lists_other
+run_case conf_enables_default_pass 0 m_conf_lists_default
+run_case conf_inline_capability_pass 0 m_conf_inline_cap_ok
+run_case conf_window_label_wizard_cap_main 1 m_conf_label_wizard_cap_main
+run_case conf_window_label_wizard_cap_wizard_pass 0 m_conf_label_wizard_cap_wizard
+run_case conf_invalid_json_fails 1 m_conf_bad
+run_case line_comment_import_ignored 0 m_comment_line_import
+run_case block_comment_import_ignored 0 m_comment_block_import
+run_case string_literal_import_ignored 0 m_string_import
+run_case template_literal_import_ignored 0 m_template_import
+run_case comment_only_import_is_blind 2 m_comment_only_is_blind
+run_case real_import_after_comment_needs_save 1 m_real_import_after_comment
+run_case ask_import_needs_allow_ask 1 m_ask_import
+run_case confirm_import_needs_allow_confirm 1 m_confirm_import
+run_case aliased_message_import_needs_allow_message 1 m_message_import
+run_case ask_granted_pass 0 m_ask_granted
+run_case raw_invoke_message 1 m_raw_message
+run_case star_import_needs_all_five 1 m_star_needs_ask
 [ "$bad" = 0 ] && echo "ALL CASES OK" || echo "MUTATION TEST FAILED"
 exit "$bad"

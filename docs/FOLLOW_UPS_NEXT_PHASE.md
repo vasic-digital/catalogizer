@@ -1664,3 +1664,10 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - SMB-FU-8: live SMB subdir tests unverified; CAT-SMB-SUBDIR-1 stays PROVISIONAL until docs/qa/smb-subdir-20261110/run.sh passes N>=3.
 
 - SMB-FU-5/8 RESULT (2026-11-11): live run executed on cattsrv-smb (share corpus, sub corpus/nested), 3/3 identical PASS for TestLiveSMBSubdir + TestLiveSMBServiceSubdir, negative control (zeroed sha) FAILs as required. Evidence: docs/qa/smb-subdir-20261110/live-run-20261111T121104Z/. CAT-SMB-SUBDIR-1 is VERIFIED for that target; CAVEAT: the original Anton `Public/Testing` target was not run (tests now env-parametrised, defaults unchanged). Optional: one run on Anton Public/Testing.
+
+## Tauri guard follow-ups (branch fix/tauri-guard-followups, PROVISIONAL-DONE)
+- TAURI-R1-FU-1/2/3/4/6/8 and TAURI-R2-FU-5: already resolved on main before this branch (per-capability parsing, import forms, pre-flight wiring, docs/qa/tauri-native-20261106/README.md present, installer-wizard capabilities.json untracked+ignored in c504d197, header states exit 2 = BLIND); verified by re-running guard + mutation test.
+- TAURI-R2-FU-1 DONE: .toml and .json5 capability files (json5 = comments/trailing commas only, other syntax fails closed), tauri.conf.json app.security.capabilities (enabled list + inline caps) and app.windows[].label.
+- TAURI-R2-FU-2 DONE: comments/string/template literals masked before import detection; ask/confirm/message covered (star/dynamic import need all five). Limitation: regex literals with quotes not lexed.
+- TAURI-R2-FU-4 DONE: pre-flight-check.sh cds to repo root; test_preflight_cwd.sh wired in.
+- TAURI-R2-FU-3 / R1-FU-6 desktop: catalogizer-desktop/src-tauri/gen/schemas/capabilities.json is tracked as `{}` since 2b182b01 (Tauri build output; no capabilities/ dir; installer-wizard ignores the same path in installer-wizard/.gitignore). Recommendation: add the path to catalogizer-desktop's .gitignore and `git rm --cached` it (operator/reviewer decision; NOT done here per §11.4.124).

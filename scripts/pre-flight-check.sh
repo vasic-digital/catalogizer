@@ -2,6 +2,10 @@
 # shellcheck source=/dev/null
 . "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")/lib/cgo_flags.sh" || { echo "FATAL: lib/cgo_flags.sh missing (cgo define for go-sqlcipher)" >&2; exit 1; }   # 2026-11-02 decision; scripts/lib/cgo_flags.sh
 
+# TAURI-R2-FU-4: always run from the repository root, whatever the caller's cwd (relative paths below depend on it)
+cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]:-$0}")")/.." || { echo "FATAL: cannot cd to repo root" >&2; exit 1; }
+[ -z "${PRE_FLIGHT_CHDIR_ONLY:-}" ] || { pwd; exit 0; }
+
 # Pre-Flight Check Script
 # Runs all quality checks before committing code
 
@@ -86,6 +90,9 @@ rc=0; bash scripts/tauri/test_wizard_capabilities.sh > /dev/null 2>&1 || rc=$?
 check $rc "wizard dialog open/save granted by one capability for window main (scripts/tauri/test_wizard_capabilities.sh)"
 rc=0; bash scripts/tauri/test_wizard_capabilities_mutation.sh > /dev/null 2>&1 || rc=$?
 check $rc "wizard capability guard kills its paired mutations (scripts/tauri/test_wizard_capabilities_mutation.sh)"
+
+rc=0; bash scripts/tauri/test_preflight_cwd.sh > /dev/null 2>&1 || rc=$?
+check $rc "pre-flight-check.sh chdirs to repo root from any cwd (scripts/tauri/test_preflight_cwd.sh)"
 
 # Security checks
 echo ""
