@@ -4,11 +4,22 @@
 > A fresh session that receives only the prompt `continue` MUST read this file first, then
 > `docs/FOLLOW_UPS_NEXT_PHASE.md`, then resume the §11.4.126 loop with the steps in "RESUME ORDER".
 
-**Revision:** 17
+**Revision:** 18
 **Last modified:** 2026-11-11
-**Exports:** `CONTINUATION.html` / `CONTINUATION.pdf` regenerated at Rev 17 with `pandoc -s` (HTML) and `weasyprint` (PDF) from this file; this `.md` is authoritative.
+**Exports:** `CONTINUATION.html` / `CONTINUATION.pdf` regenerated at Rev 18 with `pandoc -s` (HTML) and `weasyprint` (PDF) from this file; this `.md` is authoritative.
 
-## 0. Rev 17 delta (since Rev 16, `e3683a37`; main = `e933ec5c`)
+## 0.0 Rev 18 delta (since Rev 17; main = `031045eb`)
+
+* **`v2.4.0` is released as a labelled pre-release.** `main` HEAD = `031045eb` (merge of `release/v2.4.0-prep`: version files 2.4.0, v2.4.0 pre-release changelog; Opus GO-with-follow-ups). The annotated tag `v2.4.0` is on `031045eb` and pushed to the six upstreams. Pre-release objects created: GitHub (`vasic-digital/catalogizer`, `milos85vasic/Catalogizer`) and GitLab (`milos85vasic/Catalogizer`, `vasic-digital/catalogizer`). GitFlic and GitVerse carry the tag only; their releases are OWED.
+* Landed in this window (all PROVISIONAL-DONE): `73d1f825` (stack3 containers lifecycle; DBUS `guid=` root cause, see Rev 17 delta), `2379d5aa` (CONTINUATION Rev 17), `2117fcb5` (LIFE-FU-1..4 registered), `acb95e2f` and `80d9b2d8` (dead SMB code removal, generated schema untracked), `031045eb` (release prep).
+* In flight: SMB-FU-10/12/14 on branch `fix/smb-followups-10-12-14` (not on main). Opus round 3 returned NO-GO on one test gap; round 4 fixes are in progress; round 5 is the last permitted round.
+* Held live legs (host load): SonarQube scan CAT-QA-SONAR-1, the Anton `Public/Testing` SMB run, and Vision/HelixQA UI QA. Run when load allows (hold while above ~12).
+* **PROVISIONAL at v2.4.0** (not VERIFIED): Tauri desktop and wizard live GUI; Android real login; Synology (honest SKIP `hardware_not_present`); SMB over a bare IP; stack scripts not yet run against a real `catqa3-api` through the Containers submodule; cover-art SSRF live proof; follow-ups LIFE-FU-5..9 and SMB-FU-9b/11/13/17/18/19 (see `docs/FOLLOW_UPS_NEXT_PHASE.md`).
+* **Plan for v2.4.1 / v2.5.0:** call a release production only after the PROVISIONAL items above are VERIFIED, the full-suite retest passes, and §11.4.185 manual QA confirms.
+* Supersedes: the `release/v2.4.0-prep` HELD row in section 2 and the "tag only after live validation" text in sections 1 and 5 step 6 (decision 5 of Rev 17); the tag now exists.
+* Not verified while writing Rev 18: six-upstream branch parity of `main` after the Rev 18 commit, and the presence of the scratch clones named in sections 2 and 6.
+
+## 0. Rev 17 delta (history) (since Rev 16, `e3683a37`; main = `e933ec5c`)
 
 * Landed on `main` (all PROVISIONAL-DONE, each merge carried Opus GO-with-follow-ups): `7d895e62` merge fix/smb-discovery-confine (SMB-FU-2: shared host vetting, port allowlist `CATALOG_SMB_ALLOWED_PORTS`, admin-share filter, generic errors; rules in `docs/SMB_DISCOVERY_ROUTES.md`); `79e171bc` merge fix/tauri-guard-followups (wizard capability guard hardening, round 4); `4760d527` live pprof verification 3x34 PASS on stack3 with the flag on, RED baseline with it off (`docs/qa/live-pprof-20261111/`); `532c2ec8` merge fix/smb-dial-vetted-ip (SMB-FU-9: dial the vetted IP, one shared connect deadline; CGNAT/Tailscale 100.64.0.0/10 allowed, only 100.100.100.200 refused); `73d1f825` merge feat/stack3-containers-lifecycle (CAT-QA-STACK-LIFECYCLE-1: stack start/stop through `docs/qa/lib/ctrctl`, built on the `submodules/containers` runtime abstraction); `e933ec5c` LIFE-FU-1..4 registered in `docs/FOLLOW_UPS_NEXT_PHASE.md`.
 * **Root cause of the podman start failure in agent shells (measured 2026-11-11, recorded in `docs/qa/lib/podman_env.sh`)**: the harness exports `DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/1000/bus,guid=<hex>'`; the `,guid=` suffix makes crun's sd-bus call fail with "OCI permission denied". Fix: strip `guid=` (`qa_podman_env_normalize` in `docs/qa/lib/podman_env.sh`, which also defaults `XDG_RUNTIME_DIR`) or `export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus`. No sudo and no user action is needed. Open follow-ups LIFE-FU-1..4.
@@ -27,7 +38,7 @@
 
 ## 1. State at stop
 
-* `main` = `e933ec5c` at Rev 17 start (Rev 16: `7498b212`) + the Rev 17 doc commit; upstream parity must be re-verified (not checked while writing Rev 16) (origin, github-milos, gitlab-milos, gitlab-vasic, gitflic-vasic, gitverse-vasic). Verify parity first (section 5 step 1).
+* `main` = `031045eb` at Rev 18 (Rev 17 start: `e933ec5c`) (Rev 16: `7498b212`) + the Rev 17 doc commit; upstream parity must be re-verified (not checked while writing Rev 16) (origin, github-milos, gitlab-milos, gitlab-vasic, gitflic-vasic, gitverse-vasic). Verify parity first (section 5 step 1).
 * Release target: first tag `v2.4.0` (pre-release, SemVer), published now as a labelled pre-release per the 2026-11-11 decision (see Rev 17 delta). Everything landed is **PROVISIONAL-DONE** (§11.4.290) until its live rerun passes N>=3 with machine evidence.
 * SonarQube on-demand tooling is LANDED (df7e2dd1, PROVISIONAL); the fresh scan on digest-pinned images is still owed (Docker Hub rate limit; CAT-QA-SONAR-1).
 * Landed 2026-11-06: D7-R4 contrast fixes + island detector (round 1 GO-with-follow-ups, D7-R4-FU-1..4); live security evidence (`docs/qa/security-live-20261106/`: Prometheus auth, pprof 401/403/60 s cap, SSRF on image proxy / storage roots / sync endpoints VERIFIED 3/3); TRUSTED_PROXIES hardening (explicit `/32` for the proxy with fixed compose subnet + `ip_range`, `auto` refused in release unless `TRUSTED_PROXIES_ALLOW_AUTO=true`, fail-closed on bad value, nginx XFF on every proxied location; round 2 GO-with-follow-ups; PROVISIONAL, compose files only rendered + throwaway project, never brought up as real stacks); workable-items register Rev 2; disk prune (18 dangling images, ~18 GB reclaimed).
@@ -42,7 +53,7 @@
 | Branch | Where | Item | State |
 |---|---|---|---|
 | (none on main-line work) Tauri native QA | landed | CAT-TAURI-NATIVE-1, CAT-TAURI-INSTALLER-1 | `feat/tauri-native-qa` was merged as `d215da53`, with later guard work in `f6a73897` and `79e171bc` (wizard capability guard rounds 1-4). The scratch clone `/home/milosvasic/.cache/claude-tmp/tauriqa.hw0Kco/repo` (HEAD `389f8abe`) is superseded; confirm before deleting. Open: wizard live GREEN runs (TAURI-R1-FU-7), desktop re-verify on the current binary, secret-scan of the wizard evidence in `/home/milosvasic/.cache/claude-tmp/evidence-archive/tauri-native-20261106/`. QA displays: `QA_BIND=<current LAN IP> scripts/tauri/run-qa.sh desktop|wizard <out>`. |
-| `release/v2.4.0-prep` HEAD `b334ebd0` (local) | `/home/milosvasic/.cache/claude-tmp/relprep.EtmMzF/repo` | CAT-REL-V240-1 | Was HELD; per 2026-11-11 decision to publish as pre-release now. versions.json 2.4.0, openapi version, CHANGELOG `[2.4.0] - pre-release`; re-check VERIFIED/PROVISIONAL rows against the live results (add D7-R4, TRUSTED_PROXIES, security-live) before landing; no git tags exist yet. |
+| (LANDED at Rev 18, `031045eb`) `release/v2.4.0-prep` HEAD `b334ebd0` (local) | `/home/milosvasic/.cache/claude-tmp/relprep.EtmMzF/repo` | CAT-REL-V240-1 | LANDED as `031045eb`, tag `v2.4.0` published (Rev 18). Was HELD; per 2026-11-11 decision to publish as pre-release now. versions.json 2.4.0, openapi version, CHANGELOG `[2.4.0] - pre-release`; re-check VERIFIED/PROVISIONAL rows against the live results (add D7-R4, TRUSTED_PROXIES, security-live) before landing; no git tags exist yet. |
 
 ## 3. Landed (all PROVISIONAL-DONE until live rerun)
 

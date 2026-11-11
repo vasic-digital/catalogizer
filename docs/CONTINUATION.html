@@ -185,13 +185,57 @@ that receives only the prompt <code>continue</code> MUST read this file
 first, then <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>, then resume the
 §11.4.126 loop with the steps in “RESUME ORDER”.</p>
 </blockquote>
-<p><strong>Revision:</strong> 17 <strong>Last modified:</strong>
+<p><strong>Revision:</strong> 18 <strong>Last modified:</strong>
 2026-11-11 <strong>Exports:</strong> <code>CONTINUATION.html</code> /
-<code>CONTINUATION.pdf</code> regenerated at Rev 17 with
+<code>CONTINUATION.pdf</code> regenerated at Rev 18 with
 <code>pandoc -s</code> (HTML) and <code>weasyprint</code> (PDF) from
 this file; this <code>.md</code> is authoritative.</p>
-<h2 id="rev-17-delta-since-rev-16-e3683a37-main-e933ec5c">0. Rev 17
-delta (since Rev 16, <code>e3683a37</code>; main =
+<h2 id="rev-18-delta-since-rev-17-main-031045eb">0.0 Rev 18 delta (since
+Rev 17; main = <code>031045eb</code>)</h2>
+<ul>
+<li><strong><code>v2.4.0</code> is released as a labelled
+pre-release.</strong> <code>main</code> HEAD = <code>031045eb</code>
+(merge of <code>release/v2.4.0-prep</code>: version files 2.4.0, v2.4.0
+pre-release changelog; Opus GO-with-follow-ups). The annotated tag
+<code>v2.4.0</code> is on <code>031045eb</code> and pushed to the six
+upstreams. Pre-release objects created: GitHub
+(<code>vasic-digital/catalogizer</code>,
+<code>milos85vasic/Catalogizer</code>) and GitLab
+(<code>milos85vasic/Catalogizer</code>,
+<code>vasic-digital/catalogizer</code>). GitFlic and GitVerse carry the
+tag only; their releases are OWED.</li>
+<li>Landed in this window (all PROVISIONAL-DONE): <code>73d1f825</code>
+(stack3 containers lifecycle; DBUS <code>guid=</code> root cause, see
+Rev 17 delta), <code>2379d5aa</code> (CONTINUATION Rev 17),
+<code>2117fcb5</code> (LIFE-FU-1..4 registered), <code>acb95e2f</code>
+and <code>80d9b2d8</code> (dead SMB code removal, generated schema
+untracked), <code>031045eb</code> (release prep).</li>
+<li>In flight: SMB-FU-10/12/14 on branch
+<code>fix/smb-followups-10-12-14</code> (not on main). Opus round 3
+returned NO-GO on one test gap; round 4 fixes are in progress; round 5
+is the last permitted round.</li>
+<li>Held live legs (host load): SonarQube scan CAT-QA-SONAR-1, the Anton
+<code>Public/Testing</code> SMB run, and Vision/HelixQA UI QA. Run when
+load allows (hold while above ~12).</li>
+<li><strong>PROVISIONAL at v2.4.0</strong> (not VERIFIED): Tauri desktop
+and wizard live GUI; Android real login; Synology (honest SKIP
+<code>hardware_not_present</code>); SMB over a bare IP; stack scripts
+not yet run against a real <code>catqa3-api</code> through the
+Containers submodule; cover-art SSRF live proof; follow-ups LIFE-FU-5..9
+and SMB-FU-9b/11/13/17/18/19 (see
+<code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>).</li>
+<li><strong>Plan for v2.4.1 / v2.5.0:</strong> call a release production
+only after the PROVISIONAL items above are VERIFIED, the full-suite
+retest passes, and §11.4.185 manual QA confirms.</li>
+<li>Supersedes: the <code>release/v2.4.0-prep</code> HELD row in section
+2 and the “tag only after live validation” text in sections 1 and 5 step
+6 (decision 5 of Rev 17); the tag now exists.</li>
+<li>Not verified while writing Rev 18: six-upstream branch parity of
+<code>main</code> after the Rev 18 commit, and the presence of the
+scratch clones named in sections 2 and 6.</li>
+</ul>
+<h2 id="rev-17-delta-history-since-rev-16-e3683a37-main-e933ec5c">0. Rev
+17 delta (history) (since Rev 16, <code>e3683a37</code>; main =
 <code>e933ec5c</code>)</h2>
 <ul>
 <li>Landed on <code>main</code> (all PROVISIONAL-DONE, each merge
@@ -300,11 +344,12 @@ merge.)</li>
 </ul>
 <h2 id="state-at-stop">1. State at stop</h2>
 <ul>
-<li><code>main</code> = <code>e933ec5c</code> at Rev 17 start (Rev 16:
-<code>7498b212</code>) + the Rev 17 doc commit; upstream parity must be
-re-verified (not checked while writing Rev 16) (origin, github-milos,
-gitlab-milos, gitlab-vasic, gitflic-vasic, gitverse-vasic). Verify
-parity first (section 5 step 1).</li>
+<li><code>main</code> = <code>031045eb</code> at Rev 18 (Rev 17 start:
+<code>e933ec5c</code>) (Rev 16: <code>7498b212</code>) + the Rev 17 doc
+commit; upstream parity must be re-verified (not checked while writing
+Rev 16) (origin, github-milos, gitlab-milos, gitlab-vasic,
+gitflic-vasic, gitverse-vasic). Verify parity first (section 5 step
+1).</li>
 <li>Release target: first tag <code>v2.4.0</code> (pre-release, SemVer),
 published now as a labelled pre-release per the 2026-11-11 decision (see
 Rev 17 delta). Everything landed is <strong>PROVISIONAL-DONE</strong>
@@ -383,12 +428,13 @@ QA displays:
 <code>QA_BIND=&lt;current LAN IP&gt; scripts/tauri/run-qa.sh desktop|wizard &lt;out&gt;</code>.</td>
 </tr>
 <tr>
-<td><code>release/v2.4.0-prep</code> HEAD <code>b334ebd0</code>
-(local)</td>
+<td>(LANDED at Rev 18, <code>031045eb</code>)
+<code>release/v2.4.0-prep</code> HEAD <code>b334ebd0</code> (local)</td>
 <td><code>/home/milosvasic/.cache/claude-tmp/relprep.EtmMzF/repo</code></td>
 <td>CAT-REL-V240-1</td>
-<td>Was HELD; per 2026-11-11 decision to publish as pre-release now.
-versions.json 2.4.0, openapi version, CHANGELOG
+<td>LANDED as <code>031045eb</code>, tag <code>v2.4.0</code> published
+(Rev 18). Was HELD; per 2026-11-11 decision to publish as pre-release
+now. versions.json 2.4.0, openapi version, CHANGELOG
 <code>[2.4.0] - pre-release</code>; re-check VERIFIED/PROVISIONAL rows
 against the live results (add D7-R4, TRUSTED_PROXIES, security-live)
 before landing; no git tags exist yet.</td>
