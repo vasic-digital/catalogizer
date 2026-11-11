@@ -77,7 +77,7 @@ func (s *SMBDiscoveryService) openConfined(ctx context.Context, config SMBConnec
 	if err := ValidateSMBHostSyntax(config.Host); err != nil {
 		return nil, nil, err
 	}
-	if err := ValidateSMBPort(config.Port); err != nil {
+	if err := ValidateSMBPortForHost(config.Host, config.Port); err != nil {
 		return nil, nil, err
 	}
 	if config.Port == 0 {
@@ -203,7 +203,7 @@ func (s *SMBDiscoveryService) BrowseShare(ctx context.Context, config SMBConnect
 		zap.String("share", config.Share),
 		zap.String("path", path))
 
-	if err := pathsafe.SafeRemotePath(path); err != nil {
+	if err := pathsafe.SafeRemoteSharePath(path); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrInvalidSMBInput, err)
 	}
 	share, release, err := s.openConfined(ctx, config)
@@ -252,6 +252,12 @@ func (s *SMBDiscoveryService) mountShare(ctx context.Context, config SMBConnecti
 		return s.openShare(ctx, config, shareName)
 	}
 	ips, err := VetSMBHostIPs(config.Host)
+	if err != nil {
+		return nil, nil, err
+	}
+	// A configured non-global port is decided on THESE vetted addresses (not on a second lookup) and only the addresses of the storage
+	// root are dialed (SMB-FU-12, same class as SMB-FU-9).
+	ips, err = bindVettedIPsToPort(config.Host, config.Port, ips)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -9,14 +9,15 @@ Applies to `POST /api/v1/smb/discover`, `/smb/test`, `/smb/browse` and `/smb/pro
 
 ## Port rules
 - Default allowed port: 445 (an omitted or 0 port means 445).
-- `CATALOG_SMB_ALLOWED_PORTS` adds ports: a comma list, each 1-65535, for example `445,1445`. Any invalid entry makes the whole value invalid; the service then falls back to 445 only and logs one warning per distinct invalid value.
+- `CATALOG_SMB_ALLOWED_PORTS` adds ports: a comma list, each 1-65535, for example `445,1445`. Any invalid entry makes the whole value invalid; that value is then dropped (445 and the configured roots stay) and one warning is logged per distinct invalid value.
+- A non-default port of a configured SMB storage root (`config.SMB.Hosts[]`, port 1-65535) is allowed ONLY for that root's host (same name, or a common resolved address); it is not opened for any other host (SMB-FU-12). The binding is enforced again at dial time on the vetted addresses: for such a port only the vetted addresses that are also addresses of the root are dialed (a name that rebinds, or answers with several hosts, never reaches a non-root address); no match means HTTP 400. Ports from `CATALOG_SMB_ALLOWED_PORTS` stay global. Malformed entries are ignored. The configuration is read once at start-up: a root created at runtime needs a restart before discovery accepts its non-default port.
 
 ## Share and path rules
 - `share` is `share` or `share/sub/dir` (`smb.SplitShare`). Administrative shares (IPC$, ADMIN$, C$ and other drive shares), `..`, backslashes and UNC spellings give HTTP 400. Only the share name is mounted; the sub-directory is enforced by `confinedShare`.
-- `path` may not contain `..` segments.
+- `path` may not contain `..` segments, a `:` in any segment (alternate data streams), a segment made only of dots and spaces (other than `.`), or a Windows device name (CON, PRN, AUX, NUL, CONIN$, CONOUT$, CLOCK$, COM0-9, LPT0-9, COM/LPT with superscript 1-3; with or without extension) as any segment (SMB-FU-10).
 - Discovery lists only shares that SplitShare accepts.
 
 ## Errors
 Client input errors are HTTP 400 with a fixed message. Connection, mount and read failures are HTTP 500 with a fixed message; details go to the server log only.
 
-Open items: see SMB-FU-9 to SMB-FU-12 and later in `FOLLOW_UPS_NEXT_PHASE.md`.
+Open items: see SMB-FU-11, SMB-FU-13 and later in `FOLLOW_UPS_NEXT_PHASE.md`.

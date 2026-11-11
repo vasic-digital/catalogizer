@@ -316,13 +316,13 @@ func validateSMBTarget(host string, port int, share, path string) string {
 	if !isHostAllowed(host) {
 		return hostAllowedErr
 	}
-	if err := services.ValidateSMBPort(port); err != nil {
+	if err := services.ValidateSMBPortForHost(host, port); err != nil {
 		return "Unsupported port"
 	}
 	if _, _, err := smb.SplitShare(share); err != nil {
 		return "Invalid share"
 	}
-	if err := pathsafe.SafeRemotePath(path); err != nil {
+	if err := pathsafe.SafeRemoteSharePath(path); err != nil {
 		return "Invalid path"
 	}
 	return ""
