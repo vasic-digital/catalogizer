@@ -73,9 +73,11 @@ describe('PlaylistItemComponent', () => {
     render(<PlaylistItemComponent {...defaultProps} onPlay={onPlay} />)
 
     const buttons = screen.getAllByRole('button')
-    if (buttons.length > 0) {
-      await user.click(buttons[0])
-    }
+    expect(buttons.length).toBeGreaterThan(0)
+    expect(onPlay).not.toHaveBeenCalled()
+    await user.click(buttons[0])
+    expect(onPlay).toHaveBeenCalledTimes(1)
+    expect(onPlay).toHaveBeenCalledWith(mockItem, 0)
   })
 
   it('calls onRemove when remove is clicked', async () => {
