@@ -83,7 +83,7 @@ _qa_stack_run() { # <start|stop|status> <container>
     podman)
       if [ "${QA_STACK_BACKEND:-auto}" = podman ]; then _qa_stack_log "backend=podman FORCED by QA_STACK_BACKEND=podman DEVIATION 11.4.76/11.4.173: using rootless podman directly (Containers submodule runtime not used)"
       else _qa_stack_log "backend=podman DEVIATION 11.4.76/11.4.173: using rootless podman directly (Containers submodule runtime unavailable here)"; fi
-      podman "$1" "$2" >/dev/null || return $?;;
+      podman "$1" "$2" >/dev/null || { r=$?; [ "$r" = 69 ] && r=1; return "$r"; };;
     *) return 69;;
   esac
 }
@@ -110,7 +110,7 @@ qa_stack_wait_healthy() { # <container> [timeout]
     esac
     sleep 1; i=$((i+1))
   done
-  _qa_stack_log "$c not healthy after ${t}s (last state: ${st:-none})"; return 1
+  _qa_stack_log "$c not healthy after ${t}s (last state: ${st:-unobserved})"; return 1
 }
 
 qa_stack_start() {

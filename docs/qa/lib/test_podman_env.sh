@@ -16,9 +16,9 @@ cat > "$BIN/podman" <<'S'
 echo "podman $*" >> "$SHIM_LOG"
 n="${2-}"
 case "$1" in
-  start) case "${DBUS_SESSION_BUS_ADDRESS-}" in *,guid=*) echo "crun: sd-bus call: Operation not permitted: Permission denied: OCI permission denied" >&2; exit 126;; esac
+  start) [ -n "${SHIM_PODMAN_FAIL-}" ] && exit "$SHIM_PODMAN_FAIL"; case "${DBUS_SESSION_BUS_ADDRESS-}" in *,guid=*) echo "crun: sd-bus call: Operation not permitted: Permission denied: OCI permission denied" >&2; exit 126;; esac
          echo "${SHIM_AFTER_START:-running}" > "$SHIM_STATE/$n"; exit 0;;
-  stop)  n="${4-$n}"; echo exited > "$SHIM_STATE/$n"; exit 0;;
+  stop)  [ -n "${SHIM_PODMAN_FAIL-}" ] && exit "$SHIM_PODMAN_FAIL"; n="${4-$n}"; echo exited > "$SHIM_STATE/$n"; exit 0;;
   inspect) [ -n "${SHIM_INSPECT_HANG-}" ] && exec /bin/sleep "$SHIM_INSPECT_HANG"
     [ -n "${SHIM_INSPECT_DELAY-}" ] && /bin/sleep "$SHIM_INSPECT_DELAY"; [ -f "$SHIM_STATE/$n" ] || exit 125
     case "$*" in
@@ -34,7 +34,7 @@ S
 printf '#!/usr/bin/env bash\nexit 0\n' > "$BIN/sleep"; chmod +x "$BIN"/*
 export SHIM_LOG="$ROOT/log" SHIM_STATE="$ROOT/state" QA_STACK_BACKEND=podman STACK=catqa3 PATH="$BIN:$PATH"
 G='unix:path=/run/user/1000/bus,guid=0123abcd'
-fresh() { : > "$SHIM_LOG"; rm -f "$SHIM_STATE"/*; echo exited > "$SHIM_STATE/catqa3-api"; unset SHIM_INSPECT_HANG SHIM_HEALTH_HANG SHIM_CTRCTL_FAIL SHIM_NEVER_HEALTHY SHIM_STARTING_POLLS SHIM_HEALTH_OUT SHIM_AFTER_START SHIM_HEALTH_FAIL_POLLS SHIM_HEALTH_EMPTY; }
+fresh() { : > "$SHIM_LOG"; rm -f "$SHIM_STATE"/*; echo exited > "$SHIM_STATE/catqa3-api"; unset SHIM_INSPECT_HANG SHIM_HEALTH_HANG SHIM_CTRCTL_FAIL SHIM_PODMAN_FAIL SHIM_NEVER_HEALTHY SHIM_STARTING_POLLS SHIM_HEALTH_OUT SHIM_AFTER_START SHIM_HEALTH_FAIL_POLLS SHIM_HEALTH_EMPTY; }
 
 # 1. RED signature (shim sanity): raw podman start with the guid address fails with the measured message; without guid it works.
 fresh; out="$(DBUS_SESSION_BUS_ADDRESS="$G" podman start catqa3-api 2>&1)"; rc=$?
@@ -207,5 +207,19 @@ fresh; export SHIM_HEALTH_EMPTY=1; QA_HEALTH_TIMEOUT=2 qa_stack_start catqa3-api
 # ---- LIFE-FU-14: timeout message carries the last observed state
 fresh; export SHIM_NEVER_HEALTHY=1; QA_HEALTH_TIMEOUT=2 qa_stack_start catqa3-api 2>"$ROOT/err"
 grep -q 'not healthy after 2s (last state: running starting)' "$ROOT/err"; ok $? "timeout message logs last state: $(grep 'not healthy' "$ROOT/err")"
+# ---- LIFE-FU-10b: _qa_stack_run called DIRECTLY under errexit returns the remapped 1 (not ctrctl's raw 69)
+fresh; rm -rf "${ROOT:?}/cache"; export QA_STACK_BACKEND=auto; echo 'package main // v8' > "$FR/docs/qa/lib/ctrctl/main.go"; export SHIM_CTRCTL_FAIL=69
+( set -e; _qa_stack_run stop catqa3-api 2>/dev/null ); r3=$?; unset SHIM_CTRCTL_FAIL
+[ "$r3" = 1 ]; ok $? "_qa_stack_run direct under set -e: ctrctl 69 -> 1 (rc=$r3)"
+# ---- LIFE-FU-16/17: podman-backend failures propagate as 1; raw podman exit 69 is remapped to 1
+export QA_STACK_BACKEND=podman
+for code in 3 69; do
+  fresh; export SHIM_PODMAN_FAIL=$code; echo running > "$SHIM_STATE/catqa3-api"
+  qa_stack_stop catqa3-api 2>/dev/null; r1=$?; qa_stack_start catqa3-api 2>/dev/null; r2=$?; unset SHIM_PODMAN_FAIL
+  { [ "$r1" = 1 ] && [ "$r2" = 1 ]; }; ok $? "podman backend exit $code -> stop/start return 1 (stop=$r1 start=$r2)"
+done
+# ---- LIFE-FU-18: QA_HEALTH_TIMEOUT=0 reports an unobserved state
+fresh; QA_HEALTH_TIMEOUT=0 qa_stack_start catqa3-api 2>"$ROOT/err"
+grep -q 'last state: unobserved' "$ROOT/err"; ok $? "timeout 0 message says unobserved: $(grep 'not healthy' "$ROOT/err")"
 export QA_STACK_BACKEND=podman
 echo "passed=$pass failed=$fail"; [ "$fail" = 0 ]
