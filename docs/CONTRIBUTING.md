@@ -114,7 +114,7 @@ export CATALOGIZER_DB_CONNECTION="host=localhost port=5432 user=dev_user passwor
 mkdir -p config
 cat > config/dev.json << EOF
 {
-  "version": "2.4.0",
+  "version": "2.4.1",
   "configuration": {
     "server": {
       "port": 8080,
@@ -831,7 +831,7 @@ Use Swagger/OpenAPI 3.0 annotations:
 
 ```go
 // @title Catalogizer API
-// @version 2.4.0
+// @version 2.4.1
 // @description Comprehensive media management and cataloging system
 // @contact.name API Support
 // @contact.email api-support@catalogizer.com
@@ -1081,7 +1081,7 @@ A clear and concise description of what actually happened.
 ## Environment
 - OS: [e.g. Ubuntu 20.04]
 - Go Version: [e.g. 1.21.5]
-- Catalogizer Version: [e.g. 2.4.0]
+- Catalogizer Version: [e.g. 2.4.1]
 - Database: [e.g. PostgreSQL 14]
 
 ## Logs
