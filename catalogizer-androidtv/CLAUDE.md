@@ -6,7 +6,7 @@ Android TV application for Catalogizer, optimized for big-screen viewing and D-p
 
 - **Package**: `com.catalogizer.androidtv`
 - **SDK**: compileSdk 34, minSdk 26, targetSdk 34
-- **Version**: 2.4.0 (versionCode 8)
+- **Version**: 2.4.1 (versionCode 9)
 
 ## Commands
 

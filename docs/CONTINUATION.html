@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc 3.11" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>CONTINUATION</title>
+  <title>CONTINUATION — Catalogizer</title>
   <style>
     /* Default styles provided by pandoc.
     ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -174,24 +174,88 @@
   </style>
 </head>
 <body>
-<header id="title-block-header">
-<h1 class="title">CONTINUATION</h1>
-</header>
-<h1 id="continuation-catalogizer">CONTINUATION — Catalogizer</h1>
+<h1 id="continuation--catalogizer">CONTINUATION — Catalogizer</h1>
 <blockquote>
 <p>Live work-state document per Constitution <strong>§12.10
 (CONTINUATION)</strong> and <strong>§11.4.131</strong>. A fresh session
 that receives only the prompt <code>continue</code> MUST read this file
 first, then <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>, then resume the
-§11.4.126 loop with the steps in “RESUME ORDER”.</p>
+§11.4.126 loop with the steps in "RESUME ORDER".</p>
 </blockquote>
-<p><strong>Revision:</strong> 18 <strong>Last modified:</strong>
+<p><strong>Revision:</strong> 19 <strong>Last modified:</strong>
 2026-11-11 <strong>Exports:</strong> <code>CONTINUATION.html</code> /
-<code>CONTINUATION.pdf</code> regenerated at Rev 18 with
+<code>CONTINUATION.pdf</code> regenerated at Rev 19 with
 <code>pandoc -s</code> (HTML) and <code>weasyprint</code> (PDF) from
 this file; this <code>.md</code> is authoritative.</p>
-<h2 id="rev-18-delta-since-rev-17-main-031045eb">0.0 Rev 18 delta (since
-Rev 17; main = <code>031045eb</code>)</h2>
+<h2
+id="000-rev-19-delta-since-rev-18-main--1397d5b9-release-prep-branch-releasev241-prep">0.00
+Rev 19 delta (since Rev 18; main = <code>1397d5b9</code>; release prep
+branch <code>release/v2.4.1-prep</code>)</h2>
+<ul>
+<li><strong>v2.4.1 content is prepared, not tagged.</strong> Branch
+<code>release/v2.4.1-prep</code> (from <code>main</code>
+<code>1397d5b9</code>) bumps every product version to 2.4.1 (Android
+<code>versionCode</code> 7, Android TV 9) and adds <code>[2.4.1]</code>
+to <code>docs/CHANGELOG.md</code> with separate VERIFIED / PROVISIONAL /
+REOPENED / OVERDUE sections. It is a pre-release candidate. The
+full-suite retest (11.4.40) and 11.4.185 manual QA are still owed;
+nothing is production-ready.</li>
+<li>Landed on <code>main</code> since Rev 18 (all PROVISIONAL-DONE):
+SMB-FU-10/12/14 (Opus round 5 GO-with-follow-ups, F1/F2/F4 in
+<code>15a5735c</code>), LIFE-FU-5..9 and LIFE-FU-10..15 (shim-verified),
+stack scripts via ctrctl STACK-CTR-FU-6..13 (shim-verified), dead-SMB
+follow-up register entries,
+<code>docs/PROVISIONAL_VERIFICATION_PLAN.md</code>, SonarQube run3
+evidence and the triage document (CAT-QA-SONAR-1 / -2; the triage fixes
+are still open apart from the S2699 and S3923 fixes noted below),
+CAT-QA-SONAR-1b note.</li>
+<li><strong>SMB live-run status reconciled.</strong> Two different live
+runs exist and the old text conflated them: (1) <code>26e38446</code>:
+<code>cattsrv-smb</code> test server, share <code>corpus</code>, sub
+<code>corpus/nested</code>, 3/3 identical PASS plus a failing negative
+control, evidence
+<code>docs/qa/smb-subdir-20261110/live-run-20261111T121104Z/</code>
+(checksums verify) = VERIFIED for that target. (2)
+<code>4640ed37</code>: the host Samba <code>Public/Testing</code>
+("Anton"), main <code>e5817850</code>, TestLiveSMBSubdir and
+TestLiveSMBServiceSubdir PASS, N=1, log committed in
+<code>652928dc</code>, <code>sha256sum -c go_test.log.sha256</code>
+passes (run from repo root); single run, N=1 = PROVISIONAL (N=1 &lt;
+required N&gt;=3). Neither is a bare-IP proof or a Synology run. The
+"Anton run held" wording in Rev 18 section 0.0 and in
+<code>[2.4.0]</code> is superseded by this paragraph; the stale notes in
+FOLLOW_UPS (SMB-FU-5),
+<code>docs/PROVISIONAL_VERIFICATION_PLAN.md</code> 2.4 and section 4b
+were annotated.</li>
+<li>Landed on <code>main</code> after the first Rev 19 draft: the 16
+SonarQube S2699 (assertion-free) web tests: a fix landed in
+<code>765d6544</code> and <code>6b3d706e</code> (merged in
+<code>c80e35dd</code>) and <code>23b842d0</code> (direct follow-up on
+<code>main</code>) (Opus GO-with-follow-ups, CAT-QA-SONAR-3 follow-ups);
+PROVISIONAL, a Sonar re-run is owed. <code>e81e5cc6</code> itself is
+docs-only. <code>git rev-list --count v2.4.0..1397d5b9</code> = 37. Also
+landed: the 2 API go:S3923 bugs have a fix in <code>79547302</code>
+(merge <code>b304304b</code>), PROVISIONAL, Sonar re-run owed (follow-up
+CAT-QA-SONAR-5, an operator decision on an ignored wizard
+template).</li>
+<li>Synology stays SKIP (<code>hardware_not_present</code>), drives off
+since 2026-11-05.</li>
+<li>Held/owed: live <code>stack3/up.sh</code> through the Containers
+backend; two more Anton runs with committed logs (N=1 &lt; N&gt;=3);
+bare-IP SMB live leg; Tauri native GUI; Android real login;
+Vision/HelixQA UI QA; CAT-QA-SONAR-2 triage fixes.</li>
+<li>Next steps: review the prep branch (11.4.209 substrate), merge to
+<code>main</code> fast-forward (11.4.288), run the PROVISIONAL plan,
+full-suite retest, manual QA, then decide tag <code>v2.4.1</code>
+(pre-release or production) per
+<code>docs/PROVISIONAL_VERIFICATION_PLAN.md</code> section 4.</li>
+<li>Not verified while writing Rev 19: upstream parity of
+<code>main</code>, whether any stack 3 or test-server container is
+running, and whether the prep branch has been pushed anywhere (it has
+not been by this change).</li>
+</ul>
+<h2 id="00-rev-18-delta-history-since-rev-17-main--031045eb">0.0 Rev 18
+delta (history) (since Rev 17; main = <code>031045eb</code>)</h2>
 <ul>
 <li><strong><code>v2.4.0</code> is released as a labelled
 pre-release.</strong> <code>main</code> HEAD = <code>031045eb</code>
@@ -228,14 +292,14 @@ and SMB-FU-9b/11/13/17/18/19 (see
 only after the PROVISIONAL items above are VERIFIED, the full-suite
 retest passes, and §11.4.185 manual QA confirms.</li>
 <li>Supersedes: the <code>release/v2.4.0-prep</code> HELD row in section
-2 and the “tag only after live validation” text in sections 1 and 5 step
+2 and the "tag only after live validation" text in sections 1 and 5 step
 6 (decision 5 of Rev 17); the tag now exists.</li>
 <li>Not verified while writing Rev 18: six-upstream branch parity of
 <code>main</code> after the Rev 18 commit, and the presence of the
 scratch clones named in sections 2 and 6.</li>
 </ul>
-<h2 id="rev-17-delta-history-since-rev-16-e3683a37-main-e933ec5c">0. Rev
-17 delta (history) (since Rev 16, <code>e3683a37</code>; main =
+<h2 id="0-rev-17-delta-history-since-rev-16-e3683a37-main--e933ec5c">0.
+Rev 17 delta (history) (since Rev 16, <code>e3683a37</code>; main =
 <code>e933ec5c</code>)</h2>
 <ul>
 <li>Landed on <code>main</code> (all PROVISIONAL-DONE, each merge
@@ -259,8 +323,8 @@ refused); <code>73d1f825</code> merge feat/stack3-containers-lifecycle
 (measured 2026-11-11, recorded in
 <code>docs/qa/lib/podman_env.sh</code>)</strong>: the harness exports
 <code>DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/1000/bus,guid=&lt;hex&gt;'</code>;
-the <code>,guid=</code> suffix makes crun’s sd-bus call fail with “OCI
-permission denied”. Fix: strip <code>guid=</code>
+the <code>,guid=</code> suffix makes crun's sd-bus call fail with "OCI
+permission denied". Fix: strip <code>guid=</code>
 (<code>qa_podman_env_normalize</code> in
 <code>docs/qa/lib/podman_env.sh</code>, which also defaults
 <code>XDG_RUNTIME_DIR</code>) or
@@ -277,7 +341,7 @@ and gitignore
 <code>e933ec5c</code>, while <code>installer-wizard/.gitignore</code>
 already ignores its own copy). (5) <code>v2.4.0</code> is published as a
 labelled pre-release now, with the PROVISIONAL items listed in the
-changelog (this supersedes the “tag only after live validation” hold in
+changelog (this supersedes the "tag only after live validation" hold in
 section 1 and the HELD <code>release/v2.4.0-prep</code> row; CHANGELOG
 must list VERIFIED, PROVISIONAL, REOPENED, OVERDUE separately per
 §11.4.290). (6) Synology: honest SKIP <code>hardware_not_present</code>,
@@ -294,7 +358,7 @@ it.</li>
 whether <code>release/v2.4.0-prep</code> still exists in the scratch
 clone.</li>
 </ul>
-<h2 id="b.-rev-16-delta-history-since-rev-15-70d10721">0b. Rev 16 delta
+<h2 id="0b-rev-16-delta-history-since-rev-15-70d10721">0b. Rev 16 delta
 (history) (since Rev 15, <code>70d10721</code>)</h2>
 <ul>
 <li>Landed on <code>main</code> (all PROVISIONAL-DONE):
@@ -318,8 +382,8 @@ GO-with-follow-ups.</li>
 SMB-FU-1..8 in <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>.</li>
 <li><strong>Host LAN IP changed</strong>: 192.168.1.115 -&gt;
 <strong>192.168.1.17</strong> (verified with <code>ip addr</code>).
-Sections 2, 4, 4b and 5 below were updated at Rev 17 to say “current LAN
-IP”; read the current LAN IP (the QA scripts now auto-detect it;
+Sections 2, 4, 4b and 5 below were updated at Rev 17 to say "current LAN
+IP"; read the current LAN IP (the QA scripts now auto-detect it;
 override only via <code>QA_LAN_IP</code>).</li>
 <li><strong>Containers do NOT survive a reboot.</strong> Recovery:
 <code>docs/qa/stack3/up.sh &lt;tag&gt;</code>;
@@ -342,7 +406,7 @@ override only via <code>QA_LAN_IP</code>).</li>
 <li>(Superseded at Rev 17: the section 2 Tauri row now reflects the
 merge.)</li>
 </ul>
-<h2 id="state-at-stop">1. State at stop</h2>
+<h2 id="1-state-at-stop">1. State at stop</h2>
 <ul>
 <li><code>main</code> = <code>031045eb</code> at Rev 18 (Rev 17 start:
 <code>e933ec5c</code>) (Rev 16: <code>7498b212</code>) + the Rev 17 doc
@@ -370,7 +434,7 @@ nginx XFF on every proxied location; round 2 GO-with-follow-ups;
 PROVISIONAL, compose files only rendered + throwaway project, never
 brought up as real stacks); workable-items register Rev 2; disk prune
 (18 dangling images, ~18 GB reclaimed).</li>
-<li>The front-door “shared login bucket” is explained as a same-host
+<li>The front-door "shared login bucket" is explained as a same-host
 artefact (pasta alias 169.254.1.2); remote-LAN isolation UNCONFIRMED
 (needs a second LAN host, = QA-MON-FU-4).
 <code>CAT-FRONTDOOR-RATELIMIT-1</code> stays open.</li>
@@ -394,14 +458,8 @@ credentials (Yandex WebDAV creds only in scratchpad
 podman only; do not touch stacks catqa1/catqa2 or shared
 aardvark-dns.</li>
 </ul>
-<h2 id="not-on-main">2. NOT ON MAIN</h2>
+<h2 id="2-not-on-main">2. NOT ON MAIN</h2>
 <table>
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
 <thead>
 <tr>
 <th>Branch</th>
@@ -441,7 +499,7 @@ before landing; no git tags exist yet.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="landed-all-provisional-done-until-live-rerun">3. Landed (all
+<h2 id="3-landed-all-provisional-done-until-live-rerun">3. Landed (all
 PROVISIONAL-DONE until live rerun)</h2>
 <p>Since Rev 11 (<code>109acde2</code>): D7 remaining contrast
 <code>c78c654a</code>; HelixQA stack-3 API smoke wrapper
@@ -457,8 +515,8 @@ boot tooling (<code>109acde2</code>), SECQ-1/3/4/5/6, WD-F1, NEW-1,
 stack-3 verify pack. Follow-ups are in
 <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code> (the authoritative pending
 list).</p>
-<h2 id="stack-3-containers-do-not-survive-reboot">4. Stack 3 (containers
-do NOT survive reboot)</h2>
+<h2 id="4-stack-3-containers-do-not-survive-reboot">4. Stack 3
+(containers do NOT survive reboot)</h2>
 <p>Running at stop (if the host was not rebooted): pod catqa3 (images
 <code>localhost/catqa3-api|web:main-17ec3c1f</code>, do NOT contain the
 D7-R4 fixes or the TRUSTED_PROXIES hardening) and pod catqa3mon
@@ -480,7 +538,7 @@ fixes, TRUSTED_PROXIES). Inactive throwaway users <code>qa_thrw_*</code>
 exist (CAT-QA-THRW-CLEAN-1). <code>verify.py</code> has 3 stale
 LAN-NOT-reachable assertions (CAT-VERIFY-LANBIND-1).</p>
 <h2
-id="b.-live-test-servers-anton-smb-corpus-added-rev-15-containers-do-not-survive-reboot">4b.
+id="4b-live-test-servers--anton-smb-corpus-added-rev-15-containers-do-not-survive-reboot">4b.
 Live test servers + Anton SMB corpus (added Rev 15; containers do NOT
 survive reboot)</h2>
 <ul>
@@ -500,15 +558,17 @@ Credentials (user <code>catsvc</code>) only in
 NFS probe mount (undone); logged in
 <code>evidence/sudo_actions.log</code>. Catalogizer SMB non-445 port
 read from code, NOT yet run live.</li>
-<li>Anton SMB (this host’s own samba :445): <code>Public/Testing</code>
+<li>Anton SMB (this host's own samba :445): <code>Public/Testing</code>
 corpus, evidence <code>docs/qa/anton-smb-20261106/</code>.
-CAT-SMB-SUBDIR-1 open (no subdir scoping).</li>
+CAT-SMB-SUBDIR-1: sub-directory scoping is implemented; live runs are in
+the Rev 19 delta (cattsrv-smb 3/3; Anton N=1, log committed in
+<code>652928dc</code>).</li>
 <li>Rate-limit isolation: substitute-source VERIFIED 3/3
 (<code>docs/qa/second-host-20261106/</code>); real remote NIC
 UNCONFIRMED.</li>
 </ul>
-<h2 id="resume-order-what-continue-means">5. RESUME ORDER (what
-“continue” means)</h2>
+<h2 id="5-resume-order-what-continue-means">5. RESUME ORDER (what
+"continue" means)</h2>
 <ol type="1">
 <li><code>cd /home/milosvasic/Projects/catalogizer &amp;&amp; git fetch --all --prune --recurse-submodules=no</code>;
 confirm six-upstream parity of <code>main</code>;
@@ -552,7 +612,7 @@ follow-ups to docs/FOLLOW_UPS_NEXT_PHASE.md; commit with
 <code>Roadmap-Item:</code> +
 <code>Co-Authored-By: Claude Sonnet 5.5 &lt;noreply@anthropic.com&gt;</code>;
 push SERIALLY to six upstreams with <code>sleep 4</code> (parallel push
-fails “failed to lock”); verify
+fails "failed to lock"); verify
 <code>git ls-remote &lt;r&gt; refs/heads/main</code> parity; delete any
 wip branch on every upstream after landing.</li>
 <li>Remaining release scope (memory
@@ -576,10 +636,6 @@ follow-up ids with pointers into
 Rev 13). Do not keep a parallel list here.</li>
 </ol>
 <table>
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
 <thead>
 <tr>
 <th>Group</th>
@@ -625,11 +681,11 @@ TAURI-FU-1..7, D11-R2-2..5, D7-R3-FU1/M1/M3, LV3-1..5</td>
 </tr>
 </tbody>
 </table>
-<h2 id="disk">6. Disk</h2>
+<h2 id="6-disk">6. Disk</h2>
 <p>Operator decision 2026-11-05: prune APPROVED for Go build/module
 caches, Android SDK system images, and NAMED unused podman
 images/volumes. NEVER a blanket prune (<code>podman system prune</code>
-is forbidden); other projects’ dirs and anything not named stay
+is forbidden); other projects' dirs and anything not named stay
 untouched. Re-run the idempotent guarded scratchpad
 <code>run_prune.sh</code> for the earlier approved set. Scratch under
 <code>/home/milosvasic/.cache/claude-tmp/</code> (survives reboot):
@@ -638,7 +694,7 @@ untouched. Re-run the idempotent guarded scratchpad
 deletable with guarded <code>${D:?}</code> paths after confirming main
 has them), <code>andqa.Lo6bOU</code> (Android, ~7 GB),
 <code>d7b.PybOvV</code> (empty), reviewer roots <code>rvroot</code>.</p>
-<h2 id="open-operator-decisions">7. Open operator decisions</h2>
+<h2 id="7-open-operator-decisions">7. Open operator decisions</h2>
 <p>Decided 2026-11-05: SonarQube = on-demand QA service with minimal
 tokens; prune scope (section 6); Prometheus LAN-only; live S3 on Garage;
 throwaway pre-release tag test; Tauri confirm on URL change (done).
