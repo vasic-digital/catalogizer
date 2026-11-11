@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { webcrypto as nodeCrypto } from 'node:crypto';
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -129,12 +130,9 @@ global.fetch = vi.fn();
 // Mock crypto.randomUUID
 Object.defineProperty(global, 'crypto', {
   value: {
-    randomUUID: () => 'mock-uuid-' + Math.random().toString(36).substr(2, 9),
+    randomUUID: () => nodeCrypto.randomUUID(),
     getRandomValues: (arr: Uint8Array) => {
-      for (let i = 0; i < arr.length; i++) {
-        arr[i] = Math.floor(Math.random() * 256);
-      }
-      return arr;
+      return nodeCrypto.getRandomValues(arr);
     },
   },
 });

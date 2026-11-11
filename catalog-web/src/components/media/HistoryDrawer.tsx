@@ -65,12 +65,14 @@ export const HistoryDrawer: React.FC<HistoryDrawerProps> = ({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      onClick={onClose}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+      role="presentation"
       data-testid="history-drawer-backdrop"
     >
       <div
         className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-neutral-900 p-6 text-white shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="history-drawer-title"

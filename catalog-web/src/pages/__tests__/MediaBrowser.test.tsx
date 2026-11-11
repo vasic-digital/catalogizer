@@ -370,10 +370,8 @@ describe('MediaBrowser', () => {
       await userEvent.click(filtersButton)
       
       // Reset filters
-      await waitFor(() => {
-        const resetButton = screen.getByText('Reset Filters')
-        userEvent.click(resetButton)
-      })
+      const resetButton = await screen.findByText('Reset Filters')
+      await userEvent.click(resetButton)
       
       expect(mockMediaApi.searchMedia).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -470,10 +468,8 @@ describe('MediaBrowser', () => {
     it('handles next page navigation', async () => {
       renderWithQueryClient(<MediaBrowser />)
       
-      await waitFor(async () => {
-        const nextButton = screen.getByTestId('next-page-button-main')
-        await userEvent.click(nextButton)
-      })
+      const nextButton = await screen.findByTestId('next-page-button-main')
+      await userEvent.click(nextButton)
       
       expect(mockMediaApi.searchMedia).toHaveBeenCalledWith(
         expect.objectContaining({

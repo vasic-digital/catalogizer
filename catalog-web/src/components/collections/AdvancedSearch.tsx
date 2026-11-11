@@ -19,6 +19,8 @@ import { Select } from '../ui/Select';
 import { Switch } from '../ui/Switch';
 import { Badge } from '../ui/Badge';
 import { toast } from 'react-hot-toast';
+import { randomId } from '../../lib/randomId';
+import { onActivateKey } from '../../lib/keyboard';
 
 interface SearchRule {
   id: string;
@@ -196,7 +198,7 @@ const AdvancedSearch: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'builder' | 'presets' | 'saved'>('builder');
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const generateId = () => Math.random().toString(36).substr(2, 9);
+  const generateId = () => randomId();
 
   const getFieldType = (field: string): string => {
     const fieldDef = SEARCH_FIELDS.find(f => f.value === field);
@@ -487,6 +489,9 @@ const AdvancedSearch: React.FC = () => {
                   key={preset.id}
                   className="border rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => applyPreset(preset)}
+                  onKeyDown={onActivateKey(() => applyPreset(preset))}
+                  role="button"
+                  tabIndex={0}
                 >
                   <div className="flex items-start gap-3">
                     <div className="p-2 rounded-lg bg-blue-100">
@@ -528,6 +533,9 @@ const AdvancedSearch: React.FC = () => {
                     key={search.id}
                     className="border rounded-lg p-4 cursor-pointer hover:shadow-md transition-shadow"
                     onClick={() => loadSavedSearch(search)}
+                    onKeyDown={onActivateKey(() => loadSavedSearch(search))}
+                    role="button"
+                    tabIndex={0}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
