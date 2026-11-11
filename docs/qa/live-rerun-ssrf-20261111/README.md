@@ -1,0 +1,12 @@
+# Live rerun 2026-11-11: SSRF-F2..F5, verify.py, front-door client-IP (stack 3, 192.168.1.17, build 70d10721; contains security-queue commits 4e6bc170/0a0a747c/08629078)
+No container restarted, no production code edited. N=3 each; per-run outputs are the raw files. Secrets only sourced in subshells; none printed/stored.
+## SSRF-F2..F5 (run_f2f5.sh): the live API has no route that feeds a crafted library file to cover-art without writing a file into a library mount, so
+the DEPLOYED ffprobe/ffmpeg 7.1.5 and deployed binary inside catqa3-api were driven with the exact guard args of cover_art_service.go (scratch dir in container /tmp, removed after).
+- F5 (HLS playlist -> local file): unguarded ffprobe gives duration 2.0 (RED reproduced); guarded: "[hls] Format not on whitelist", no duration; guarded ffmpeg thumbnail NO. 3/3 fixed at tool level.
+- F3 (direct http URL reaches listener): unguarded 1 hit (RED), guarded ffprobe 0, guarded ffmpeg 0; guarded playlist naming http segment 0. 3/3.
+- F4: `-nostdin` string present in deployed binary (behaviour not probed). F2 (32 MiB cap): UNCONFIRMED live (only the "download exceeds" string is present; cap needs a >32 MiB allow-listed download).
+- Not shown live: that the product code path (generate-thumbnails on a real m3u8 library row, FIFO, deadlines) applies these args; needs a file in a library (mutation) = UNCONFIRMED. Unguarded ffmpeg thumbnail RED did not reproduce (NO) on 7.1.5; only ffprobe RED did.
+## verify.py (3 runs each)
+- default env: pass=47 fail=3: lan.{prometheus,grafana,pgadmin}_NOT_reachable FAIL, expectation_source=default. Root cause: lanbind.read_published runs `podman port catqa3mon` (pod name) -> "no container with name" rc=125 -> {} -> loopback default; the pod really publishes 192.168.1.17 (podman port <container>). Verifier defect, not a stack defect.
+- with PROM_BIND/GRAFANA_BIND/PGADMIN_BIND=192.168.1.17 declared: pass=52 fail=1: lan.pgadmin_anonymous_rejected_via_LAN_IP http=400 (body "CSRF token is missing"; anonymous IS refused, LB.auth_required_ok does not accept 400 for pgAdmin 8.13). Verifier expectation gap.
+## test_clientip_frontdoor.sh --interface 127.0.0.1 (3 runs): PASS (A and B(local)) 3/3. Host has ONE LAN IP (192.168.1.17; no second address assignable by me), so 127.0.0.1 is the only "second local source": B(local) shows a distinct bucket for a loopback-source client; remote-LAN-host isolation stays UNCONFIRMED. The floods briefly locked the shared login bucket (~1 min each, 3 times) for any host-local client.

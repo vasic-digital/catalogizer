@@ -1,0 +1,17 @@
+setup rc=0
+control: listener reachable from container: ok hits=1
+== F5 playlist->local file (control = real.mp4 directly must give a duration)
+ctl ffprobe guarded real.mp4 -> 2.000000
+unguarded ffprobe pl.m3u8 (RED: expect duration) -> 2.000000
+GUARDED ffprobe pl.m3u8 (expect refused, no duration) -> [hls @ 0x6496a4b590c0] Format not on whitelist 'mov,mp4,m4a,3gp,3g2,mj2,matroska,webm,avi,asf,flv,mpegts,mpeg,mpegvideo,ogg,wav,flac,mp3,aac,ac3,eac3,dts,ape,wv
+GUARDED ffmpeg pl.m3u8 thumbnail produced? NO
+UNGUARDED ffmpeg pl.m3u8 thumbnail produced? (RED) NO
+== F3/F5 network reach
+UNGUARDED ffprobe direct URL listener hits (RED expect >=1): 1
+GUARDED ffprobe direct URL hits (expect 0): 0
+GUARDED ffmpeg direct URL hits (expect 0): 0
+GUARDED ffprobe net.m3u8 (playlist naming http seg) hits (expect 0): 0
+UNGUARDED ffprobe net.m3u8 hits (informational): 0
+== deployed binary string presence (F2/F4/F5 code in the running image; not behaviour)
+format_whitelist=1 download_exceeds=1 not_regular_file=6 nostdin=1
+ffprobe version: ffprobe version 7.1.5-0+deb13u1 Copyright (c) 2007-2026 the FFmpeg developers
