@@ -188,13 +188,13 @@ first, then <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>, then resume the
 <code>pandoc -s</code> (HTML) and <code>weasyprint</code> (PDF) from
 this file; this <code>.md</code> is authoritative.</p>
 <h2
-id="000-rev-19-delta-since-rev-18-main--791a5fba-release-prep-branch-releasev241-prep">0.00
-Rev 19 delta (since Rev 18; main = <code>791a5fba</code>; release prep
+id="000-rev-19-delta-since-rev-18-main--e81e5cc6-release-prep-branch-releasev241-prep">0.00
+Rev 19 delta (since Rev 18; main = <code>e81e5cc6</code>; release prep
 branch <code>release/v2.4.1-prep</code>)</h2>
 <ul>
 <li><strong>v2.4.1 content is prepared, not tagged.</strong> Branch
 <code>release/v2.4.1-prep</code> (from <code>main</code>
-<code>791a5fba</code>) bumps every product version to 2.4.1 (Android
+<code>e81e5cc6</code>) bumps every product version to 2.4.1 (Android
 <code>versionCode</code> 7, Android TV 9) and adds <code>[2.4.1]</code>
 to <code>docs/CHANGELOG.md</code> with separate VERIFIED / PROVISIONAL /
 REOPENED / OVERDUE sections. It is a pre-release candidate. The
@@ -225,6 +225,13 @@ required N&gt;=3). Neither is a bare-IP proof or a Synology run. The
 FOLLOW_UPS (SMB-FU-5),
 <code>docs/PROVISIONAL_VERIFICATION_PLAN.md</code> 2.4 and section 4b
 were annotated.</li>
+<li>Landed on <code>main</code> after the first Rev 19 draft: the 16
+SonarQube S2699 (assertion-free) web tests were fixed by
+<code>765d6544</code>, <code>6b3d706e</code>, <code>23b842d0</code>,
+merged in <code>c80e35dd</code> (Opus GO-with-follow-ups, CAT-QA-SONAR-3
+follow-ups); PROVISIONAL, a Sonar re-run is owed. <code>e81e5cc6</code>
+itself is docs-only. <code>git rev-list --count v2.4.0..e81e5cc6</code>
+= 34.</li>
 <li>Synology stays SKIP (<code>hardware_not_present</code>), drives off
 since 2026-11-05.</li>
 <li>Held/owed: live <code>stack3/up.sh</code> through the Containers
