@@ -1174,14 +1174,11 @@ func (s *ConfigurationWizardService) createConfigurationFile(params map[string]i
 		return err
 	}
 
-	// Use template if specified, otherwise use session configuration
-	var data interface{}
-	if template != "" {
-		// Load template and merge with configuration
-		data = session.Configuration
-	} else {
-		data = session.Configuration
-	}
+	// NOTE: the "template" parameter is accepted for forward compatibility but
+	// template loading/merging has never been implemented (git: 5bbaeae9); the
+	// session configuration is always what gets written.
+	_ = template
+	data := session.Configuration
 
 	return s.writeConfigFile(filePath, map[string]interface{}{"config": data})
 }

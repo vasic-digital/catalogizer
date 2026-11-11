@@ -1546,3 +1546,21 @@ func listeningPort(t *testing.T) int {
 	t.Cleanup(func() { ln.Close() })
 	return ln.Addr().(*net.TCPAddr).Port
 }
+
+// Characterization (SonarQube go:S3923): the "template" param must not change
+// the written file, since template loading is not implemented.
+func TestConfigurationWizardService_CreateConfigurationFile_TemplateParamDoesNotChangeOutput(t *testing.T) {
+	service := NewConfigurationWizardService(nil)
+	tmpDir := t.TempDir()
+	session := &models.WizardSession{Configuration: map[string]interface{}{"db_type": "sqlite"}}
+
+	assert.NoError(t, service.createConfigurationFile(map[string]interface{}{"file_path": tmpDir + "/a.json"}, session))
+	assert.NoError(t, service.createConfigurationFile(map[string]interface{}{"file_path": tmpDir + "/b.json", "template": "basic"}, session))
+
+	a, err := os.ReadFile(tmpDir + "/a.json")
+	assert.NoError(t, err)
+	b, err := os.ReadFile(tmpDir + "/b.json")
+	assert.NoError(t, err)
+	assert.Contains(t, string(a), "sqlite")
+	assert.Equal(t, string(a), string(b))
+}
