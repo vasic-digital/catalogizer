@@ -10,8 +10,12 @@ mut() { # name sed-expr
   sed "$2" "$H" > "$M/$1.sh"; cmp -s "$H" "$M/$1.sh" && { echo "FAIL $1: mutation did not change the helper"; bad=1; return; }
   if run "$M/$1.sh"; then echo "FAIL $1 SURVIVED"; bad=1; else echo "PASS $1 killed"; fi
 }
-mut no_normalize 's|DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS%%,\*}"|:|'
-mut first_param_only 's|\${DBUS_SESSION_BUS_ADDRESS%%,\*}|${DBUS_SESSION_BUS_ADDRESS%,*}|'
+mut no_normalize 's|DBUS_SESSION_BUS_ADDRESS="$(_qa_strip_guid "$DBUS_SESSION_BUS_ADDRESS")"|:|'
+mut strip_from_first_comma 's|guid=\*) ;; \*)|*) ;; *)|'
+mut keep_guid 's|guid=\*) ;;|NOMATCH=*) ;;|'
+mut stale_cache 's|( cd "$root/docs/qa/lib/ctrctl" \&\& GOFLAGS=-mod=mod go build -o "$bin" . ) >\&2 \&\& \[ -x "$bin" \]|[ -x "$bin" ] \|\| ( cd "$root/docs/qa/lib/ctrctl" \&\& go build -o "$bin" . ) >\&2|'
+mut forced_falls_back 's|if \[ "$forced" = containers \]; then|if false; then|'
+mut no_wallclock 's| \&\& \[ "$SECONDS" -lt "$end" \]||'
 mut skip_health_wait 's|^  qa_stack_wait_healthy "\$1"$|  true|'
 mut no_name_check_start '/^qa_stack_start() {/,/^}/ s|_qa_stack_check_name "${1-}" \|\| return \$?|:|'
 mut no_name_check_stop '/^qa_stack_stop() {/,/^}/ s|_qa_stack_check_name "${1-}" \|\| return \$?|:|'

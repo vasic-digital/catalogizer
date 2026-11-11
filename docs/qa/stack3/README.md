@@ -93,5 +93,5 @@ still call podman directly (pod create, run, build) - the submodule has no pod/r
 of `ctrctl` itself runs on the host, not in a build container (same class of 11.4.173 deviation as `build.sh`).
 
 **Tests:** `docs/qa/lib/test_podman_env.sh` (gate-logic unit test with a fake podman shim that fails on `,guid=`; not proof that containers start) and
-`test_podman_env_mutations.sh` (6 mutants: no normalisation, first-param-only, no health wait, no name check start/stop, loose prefix; all killed).
+`test_podman_env_mutations.sh` (11 mutants incl. stale-cache, forced-backend fallback, no wall-clock bound, guid-only stripping; all killed). The ctrctl binary is rebuilt on every call into a per-checkout cache; forced `QA_STACK_BACKEND=containers` never falls back to podman (rc 69).
 Live proof: `lifecycle_probe.sh` -> `evidence-lifecycle-20261111/`.

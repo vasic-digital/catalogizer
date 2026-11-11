@@ -14,9 +14,24 @@
 # submodule checkout are present; otherwise plain rootless podman with a logged DEVIATION line (see docs/CONTAINERS_SUBMODULE_PROPOSAL.md).
 # Force with QA_STACK_BACKEND=podman|containers.
 
+# Remove ONLY the "guid=" key from each ';'-separated D-Bus address, keeping every other parameter and the transport.
+_qa_strip_guid() {
+  local in="${1-}" out="" part tr kept p oldifs="$IFS" more=1
+  while [ "$more" = 1 ]; do
+    part="${in%%;*}"; if [ "$in" = "$part" ]; then more=0; else in="${in#*;}"; fi
+    tr="${part%%:*}"
+    if [ "$tr" != "$part" ]; then
+      kept=""; IFS=,; for p in ${part#*:}; do case "$p" in guid=*) ;; *) kept="${kept:+$kept,}$p";; esac; done; IFS="$oldifs"
+      part="$tr:$kept"
+    fi
+    out="${out:+$out;}$part"
+  done
+  printf '%s' "$out"
+}
+
 qa_podman_env_normalize() {
   if [ -n "${DBUS_SESSION_BUS_ADDRESS-}" ]; then
-    DBUS_SESSION_BUS_ADDRESS="${DBUS_SESSION_BUS_ADDRESS%%,*}"
+    DBUS_SESSION_BUS_ADDRESS="$(_qa_strip_guid "$DBUS_SESSION_BUS_ADDRESS")"
     export DBUS_SESSION_BUS_ADDRESS
   fi
   : "${XDG_RUNTIME_DIR:=/run/user/$(id -u)}"; export XDG_RUNTIME_DIR
@@ -30,40 +45,49 @@ _qa_stack_check_name() {
   case "$c" in "$pfx"*) ;; *) _qa_stack_log "refused: '$c' is outside prefix '$pfx' (other stacks are never touched)"; return 64;; esac
 }
 
-_qa_stack_backend() { # prints "containers <bin>" or "podman"
-  local here root bin
-  here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; root="$here/../../.."
-  case "${QA_STACK_BACKEND:-auto}" in podman) echo podman; return;; esac
-  if command -v go >/dev/null 2>&1 && [ -f "$root/submodules/containers/pkg/runtime/podman.go" ]; then
-    bin="${QA_CTRCTL_BIN:-${XDG_CACHE_HOME:-$HOME/.cache}/catalogizer-qa/ctrctl}"
-    if [ ! -x "$bin" ] || [ -n "$(find "$here/ctrctl/main.go" -newer "$bin" 2>/dev/null)" ]; then
-      mkdir -p "$(dirname "$bin")" && ( cd "$here/ctrctl" && GOFLAGS=-mod=mod go build -o "$bin" . ) >&2 || { echo podman; return; }
+# Prints "containers <bin>", "podman", or "none". The ctrctl binary is rebuilt on EVERY call (go build is incremental, so this tracks main.go, go.mod and
+# the whole Containers submodule source) into a per-checkout cache dir. Forced QA_STACK_BACKEND=containers never falls back to podman.
+_qa_stack_backend() {
+  local root bin forced="${QA_STACK_BACKEND:-auto}" cdir
+  [ "$forced" = podman ] && { echo podman; return; }
+  root="${QA_REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}"
+  if command -v go >/dev/null 2>&1 && [ -f "$root/submodules/containers/pkg/runtime/podman.go" ] && [ -f "$root/docs/qa/lib/ctrctl/main.go" ]; then
+    cdir="${QA_CTRCTL_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/catalogizer-qa/$(printf %s "$root" | sha256sum | cut -c1-12)}"
+    bin="$cdir/ctrctl"
+    if mkdir -p "$cdir" && ( cd "$root/docs/qa/lib/ctrctl" && GOFLAGS=-mod=mod go build -o "$bin" . ) >&2 && [ -x "$bin" ]; then
+      echo "containers $bin"; return
     fi
-    echo "containers $bin"; return
+    _qa_stack_log "ctrctl build FAILED"
   fi
-  [ "${QA_STACK_BACKEND:-auto}" = containers ] && { _qa_stack_log "containers backend requested but unavailable"; echo none; return; }
+  if [ "$forced" = containers ]; then _qa_stack_log "ERROR: QA_STACK_BACKEND=containers but the Containers-submodule backend is unavailable (no fallback to podman)"; echo none; return; fi
   echo podman
+}
+
+# One-line backend identity for logs/evidence: "backend=containers ctrctl_sha256=<hex> path=<bin>" or "backend=podman".
+qa_stack_backend_info() {
+  local b; b="$(_qa_stack_backend)"
+  case "$b" in containers\ *) echo "backend=containers ctrctl_sha256=$(sha256sum "${b#containers }" | cut -d' ' -f1) path=${b#containers }";; *) echo "backend=$b";; esac
 }
 
 _qa_stack_run() { # <start|stop|status> <container>
   local b; b="$(_qa_stack_backend)"
   case "$b" in
-    containers\ *) "${b#containers }" "$1" "$2";;
-    podman) _qa_stack_log "DEVIATION 11.4.76/11.4.173: using rootless podman directly (Containers submodule runtime unavailable here)"; podman "$1" "$2" >/dev/null;;
+    containers\ *) _qa_stack_log "backend=containers ctrctl_sha256=$(sha256sum "${b#containers }" | cut -d' ' -f1)"; "${b#containers }" "$1" "$2";;
+    podman) _qa_stack_log "backend=podman DEVIATION 11.4.76/11.4.173: using rootless podman directly (Containers submodule runtime unavailable here)"; podman "$1" "$2" >/dev/null;;
     *) return 69;;
   esac
 }
 
 _qa_stack_state() { # prints "<running|other> <health>"
   local s h
-  s="$(podman inspect "$1" --format '{{.State.Status}}' 2>/dev/null)" || return 1
-  h="$(podman inspect "$1" --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' 2>/dev/null)"
+  s="$(timeout 10 podman inspect "$1" --format '{{.State.Status}}' 2>/dev/null)" || return 1
+  h="$(timeout 10 podman inspect "$1" --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' 2>/dev/null)"
   echo "$s ${h:-none}"
 }
 
 qa_stack_wait_healthy() { # <container> [timeout]
-  local c="$1" t="${2:-${QA_HEALTH_TIMEOUT:-120}}" i=0 st
-  while [ "$i" -lt "$t" ]; do
+  local c="$1" t="${2:-${QA_HEALTH_TIMEOUT:-120}}" i=0 st end=$((SECONDS + ${2:-${QA_HEALTH_TIMEOUT:-120}}))
+  while [ "$i" -lt "$t" ] && [ "$SECONDS" -lt "$end" ]; do
     st="$(_qa_stack_state "$c")" || { _qa_stack_log "$c not found"; return 1; }
     case "$st" in
       "running healthy"|"running none") _qa_stack_log "$c $st after ${i}s"; return 0;;
@@ -77,12 +101,12 @@ qa_stack_wait_healthy() { # <container> [timeout]
 qa_stack_start() {
   _qa_stack_check_name "${1-}" || return $?
   qa_podman_env_normalize
-  _qa_stack_run start "$1" || { _qa_stack_log "start $1 failed"; return 1; }
+  _qa_stack_run start "$1"; rc=$?; [ "$rc" = 69 ] && return 69; [ "$rc" = 0 ] || { _qa_stack_log "start $1 failed"; return 1; }
   qa_stack_wait_healthy "$1"
 }
 
 qa_stack_stop() {
   _qa_stack_check_name "${1-}" || return $?
   qa_podman_env_normalize
-  _qa_stack_run stop "$1" || { _qa_stack_log "stop $1 failed"; return 1; }
+  _qa_stack_run stop "$1"; rc=$?; [ "$rc" = 69 ] && return 69; [ "$rc" = 0 ] || { _qa_stack_log "stop $1 failed"; return 1; }
 }

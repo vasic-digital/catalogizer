@@ -8,6 +8,7 @@ export DBUS_SESSION_BUS_ADDRESS="${PROBE_DBUS:-unix:path=/run/user/$(id -u)/bus,
 echo "date: $(date -Is)"; echo "podman: $(podman --version)"; echo "DBUS before: $DBUS_SESSION_BUS_ADDRESS"
 . "$HERE/../lib/podman_env.sh"
 export QA_STACK_PREFIX=catqa-lifecycle-
+echo "backend info: $(qa_stack_backend_info 2>/dev/null)"
 podman rm -f "$C" >/dev/null 2>&1 || true
 podman create --name "$C" "$IMG" >/dev/null || { echo "create failed"; exit 2; }
 echo "--- control: raw podman start with the guid address (expected to FAIL in an agent shell; informational)"
