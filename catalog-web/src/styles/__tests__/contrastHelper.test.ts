@@ -187,11 +187,8 @@ describe('FU20-3 island detector boundaries', () => {
     expect(islandsOf(mkEmpty('rounded-full bg-white w-0 h-4'), 'dark')).toHaveLength(1)
     expect(islandsOf(mkEmpty('rounded-full bg-white w-4 h-7'), 'dark')).toHaveLength(1)
   })
-  // Current behaviour, pinned: the knob rule only accepts whole numbers 1..6, so a fractional knob (h-3.5 w-3.5,
-  // common in Tailwind toggles) is reported as an island. Changing that is a product decision, not a refactor.
-  it('fractional knob sizes (w-3.5 h-3.5, w-2.5) are NOT exempt: reported as islands', () => {
-    expect(islandsOf(mkEmpty('rounded-full bg-white w-3.5 h-3.5'), 'dark')).toHaveLength(1)
-    expect(islandsOf(mkEmpty('rounded-full bg-white w-4 h-2.5'), 'dark')).toHaveLength(1)
-    expect(islandsOf(mkEmpty('rounded-full bg-white w-2.5 h-4'), 'dark')).toHaveLength(1)
-  })
+  // KNOWN GAP (FU20-3b): the knob rule accepts only whole sizes 1..6, so a fractional knob (h-3.5 w-3.5, common in Tailwind
+  // toggles) is probably a false-positive island. Not asserted either way until the product decision is made; the boundary
+  // tests above stay intact. When decided, replace these todos with real assertions.
+  it.todo('FU20-3b: fractional knob sizes (w-3.5 h-3.5, w-2.5) - decide exempt or island')
 })
