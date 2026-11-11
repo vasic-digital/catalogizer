@@ -77,7 +77,7 @@ func (s *ReportingService) generateUserAnalyticsData(params map[string]interface
 	if s.userRepo == nil || s.analyticsRepo == nil {
 		return nil, fmt.Errorf("repository not initialized")
 	}
-
+	
 	userID, ok := params["user_id"].(int)
 	if !ok {
 		return nil, fmt.Errorf("user_id parameter required")
@@ -125,7 +125,7 @@ func (s *ReportingService) generateSystemOverviewData(params map[string]interfac
 	if s.analyticsRepo == nil {
 		return nil, fmt.Errorf("analytics repository not initialized")
 	}
-
+	
 	startDate, endDate, err := s.extractDateRange(params)
 	if err != nil {
 		return nil, err
@@ -218,7 +218,7 @@ func (s *ReportingService) generateUserActivityData(params map[string]interface{
 	if s.analyticsRepo == nil || s.userRepo == nil {
 		return nil, fmt.Errorf("repository not initialized")
 	}
-
+	
 	startDate, endDate, err := s.extractDateRange(params)
 	if err != nil {
 		return nil, err
@@ -291,7 +291,7 @@ func (s *ReportingService) generatePerformanceMetricsData(params map[string]inte
 	if s.analyticsRepo == nil {
 		return nil, fmt.Errorf("analytics repository not initialized")
 	}
-
+	
 	startDate, endDate, err := s.extractDateRange(params)
 	if err != nil {
 		return nil, err
@@ -1109,7 +1109,7 @@ func (s *ReportingService) calculateUsageStatistics(startDate, endDate time.Time
 	if s.analyticsRepo == nil {
 		return models.UsageStatistics{}
 	}
-
+	
 	// Get actual access logs to calculate peak hours
 	logs, err := s.analyticsRepo.GetAllMediaAccessLogs(startDate, endDate)
 	if err != nil {
@@ -1140,7 +1140,7 @@ func (s *ReportingService) calculateUsageStatistics(startDate, endDate time.Time
 			}
 		}
 	}
-
+	
 	peakHours := []int{}
 	for i := 0; i < 5 && i < len(hours); i++ {
 		peakHours = append(peakHours, hours[i].hour)
@@ -1195,6 +1195,7 @@ func (s *ReportingService) calculatePerformanceMetrics(startDate, endDate time.T
 		ErrorRate:    errorRate,
 	}
 }
+
 
 func (s *ReportingService) analyzeAccessPatterns(logs []models.MediaAccessLog) map[string]interface{} {
 	return s.analyzeUserAccessPatterns(logs)
@@ -1518,3 +1519,4 @@ func (s *ReportingService) calculateErrorRates(startDate, endDate time.Time) mod
 		Total:    total,
 	}
 }
+

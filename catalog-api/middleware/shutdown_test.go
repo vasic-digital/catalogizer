@@ -68,3 +68,4 @@ func TestRateLimiterRegistersStop(t *testing.T) {
 	// Give the goroutine a moment to actually exit.
 	time.Sleep(20 * time.Millisecond)
 }
+

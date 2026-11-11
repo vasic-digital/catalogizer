@@ -338,3 +338,4 @@ func TestNewMediaQueryHandler(t *testing.T) {
 	assert.NotNil(t, handler.itemRepo)
 	assert.NotNil(t, handler.userRepo)
 }
+

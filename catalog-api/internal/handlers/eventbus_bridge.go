@@ -32,7 +32,7 @@ type EventBusBridge struct {
 
 // wsRoute describes how a system event is mapped to a WebSocket message.
 type wsRoute struct {
-	wsType string // The "type" field in the client-facing message
+	wsType string        // The "type" field in the client-facing message
 	build  func(*eventbus.Event) map[string]interface{}
 }
 

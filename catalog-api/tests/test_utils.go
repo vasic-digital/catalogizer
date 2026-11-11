@@ -245,6 +245,7 @@ func AssertJSONResponse(t *testing.T, response *httptest.ResponseRecorder, expec
 	}
 }
 
+
 // WaitForCondition waits for a condition to be true with timeout
 func WaitForCondition(t *testing.T, condition func() bool, timeout time.Duration, message string) {
 	start := time.Now()

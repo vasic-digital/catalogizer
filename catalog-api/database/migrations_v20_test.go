@@ -8,10 +8,10 @@
 // before creating the index, and is idempotent across repeated runs.
 //
 // These property tests assert all three obligations:
-//  1. the unique index exists after the full migration chain;
-//  2. it rejects a duplicate (media_item_id, provider) at the DB layer;
-//  3. it self-heals an environment that already has duplicate rows, and
-//     re-running it is a no-op.
+//   1. the unique index exists after the full migration chain;
+//   2. it rejects a duplicate (media_item_id, provider) at the DB layer;
+//   3. it self-heals an environment that already has duplicate rows, and
+//      re-running it is a no-op.
 package database
 
 import (

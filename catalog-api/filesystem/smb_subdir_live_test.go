@@ -69,7 +69,7 @@ func TestLiveSMBSubdir(t *testing.T) {
 	require.False(t, in[envOr("SMB_LIVE_SUBNAME", "Testing")], "sub root must not show the share root: %v", in)
 
 	// traversal attempts stay inside the subtree: ".." clamps to the root, so the listing equals the root listing
-	for _, p := range []string{"..", "../..", `..\..`, envOr("SMB_LIVE_ENTRY", "docs") + "/../../.."} {
+	for _, p := range []string{"..", "../..", `..\..`, envOr("SMB_LIVE_ENTRY", "docs")+"/../../.."} {
 		require.Equal(t, in, names(t, sub, p), "traversal %q must be clamped to the sub root", p)
 	}
 	// a file that exists only OUTSIDE the subtree is unreachable by any spelling

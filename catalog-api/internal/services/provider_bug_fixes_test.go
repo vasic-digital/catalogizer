@@ -150,10 +150,10 @@ func TestIGDBResolver_B2_HeadersSentOnV4(t *testing.T) {
 // do not silently strip backslashes or quotes from search queries.
 func TestEscapeApicalypse(t *testing.T) {
 	cases := map[string]string{
-		`Portal`:       `Portal`,
-		`"Portal" 2`:   `\"Portal\" 2`,
-		`path\to\game`: `path\\to\\game`,
-		`\"weird\"`:    `\\\"weird\\\"`,
+		`Portal`:             `Portal`,
+		`"Portal" 2`:         `\"Portal\" 2`,
+		`path\to\game`:       `path\\to\\game`,
+		`\"weird\"`:          `\\\"weird\\\"`,
 	}
 	for in, want := range cases {
 		if got := escapeApicalypse(in); got != want {

@@ -95,8 +95,8 @@ func RegisterAll(svc *services.ChallengeService) error {
 
 	// Nexus-authored Catalogizer challenges (CH-NX-WEBFLOW-*, ...)
 	RegisterNexusChallenges(svc)
-	svc.Register(NewSecurityChallenge())     // CH-034: Security
-	svc.Register(NewConfigWizardChallenge()) // CH-035: Configuration wizard
+	svc.Register(NewSecurityChallenge())             // CH-034: Security
+	svc.Register(NewConfigWizardChallenge())         // CH-035: Configuration wizard
 
 	// Security validation challenges (CH-036 to CH-040)
 	svc.Register(NewAuthRequiredChallenge())      // CH-036: Auth required on endpoints

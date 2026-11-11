@@ -29,9 +29,9 @@ func TestCalculateSystemHealthScore_FullScore(t *testing.T) {
 	s := newAnalyticsPureTestService()
 	analytics := &models.SystemAnalytics{
 		TotalUsers:             10,
-		ActiveUsers:            10,               // 100% active → +40
-		TotalMediaAccesses:     500,              // +30
-		TotalEvents:            200,              // +20
+		ActiveUsers:            10, // 100% active → +40
+		TotalMediaAccesses:     500, // +30
+		TotalEvents:            200, // +20
 		AverageSessionDuration: 10 * time.Minute, // +10
 	}
 	score := s.calculateSystemHealthScore(analytics)

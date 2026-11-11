@@ -23,10 +23,10 @@ import (
 //
 // Priority 21 — after the existing metadata resolver, before IGDB.
 type CoverArtArchiveResolver struct {
-	priority  int
+	priority int
 	userAgent string
-	http      *http.Client
-	client    *caa.CAAClient
+	http     *http.Client
+	client   *caa.CAAClient
 }
 
 // NewCoverArtArchiveResolver returns a resolver using the shared

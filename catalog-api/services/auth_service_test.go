@@ -495,3 +495,4 @@ func TestAuthService_GenerateSalt(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotEqual(t, salt, salt2)
 }
+

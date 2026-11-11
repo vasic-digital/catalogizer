@@ -81,7 +81,7 @@ func TestIsBlockedIP_EmbeddedAndReservedRanges(t *testing.T) {
 	for _, s := range []string{
 		"::7f00:1", "::127.0.0.1", "::a00:1", // ::/96 IPv4-compatible
 		"64:ff9b::7f00:1", "64:ff9b::a9fe:a9fe", "64:ff9b::a00:1", // NAT64 well-known prefix
-		"64:ff9b:1::1",                                          // local-use NAT64
+		"64:ff9b:1::1", // local-use NAT64
 		"2002:7f00:1::1", "2002:a9fe:a9fe::1", "2002:c0a8:1::1", // 6to4 wrapping loopback / metadata / private
 		"fec0::1", "feff::1", // deprecated site-local
 		"198.18.0.1", "198.19.255.255", "192.0.0.1", // benchmarking, IETF assignments
