@@ -11,7 +11,7 @@ func TestSafeRemoteSharePath(t *testing.T) {
 		"CON.txt", "nul.tar.gz", "dir/AUX", `dir\COM3.log`, "ok/LPT5.x/more",
 		"COM0", "LPT0", "com0.txt", "COM¹", "COM²", "COM³", "LPT¹", "LPT²", "LPT³", "COM¹.txt", "dir/lpt³.log",
 		"CONIN$", "CONOUT$", "CLOCK$", "conin$.txt", "..  ", "... ", "...", ".. ", "a/.. /b", "a/ /b", "a/.../b",
-		"CON.", "NUL ", "con . ", // Windows strips trailing dots and spaces
+		"CON .txt", "nul .tar", "CON.", "NUL ", "con . ", // Windows strips trailing dots and spaces
 	}
 	for _, p := range bad {
 		if err := SafeRemoteSharePath(p); err == nil {

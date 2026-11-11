@@ -27,13 +27,15 @@ var (
 )
 
 // SetSMBConfiguredRoots replaces the set. Entries with an empty or syntactically invalid host, or a port outside 1-65535 or equal to
-// 445, are ignored; duplicates are dropped.
+// 445, are ignored with a warning; duplicates are dropped silently.
 func SetSMBConfiguredRoots(roots []SMBRootPort) {
 	var clean []SMBRootPort
 	seen := map[SMBRootPort]bool{}
 	for _, r := range roots {
 		r.Host = strings.TrimSpace(r.Host)
 		if r.Port < 1 || r.Port > 65535 || r.Port == smbPort || ValidateSMBHostSyntax(r.Host) != nil {
+			// no credentials are part of the entry; host and port are safe to log
+			smbWarnf("WARNING: ignoring malformed SMB storage root entry for discovery ports (host=%q port=%d)", r.Host, r.Port)
 			continue
 		}
 		key := SMBRootPort{Host: strings.ToLower(r.Host), Port: r.Port}
@@ -75,7 +77,8 @@ func NewSMBDiscoveryServiceFromConfig(cfg *config.Config, logger *zap.Logger) *S
 	return NewSMBDiscoveryService(logger)
 }
 
-// smbHostIPSet resolves host the way vetting does (an IPv4 literal is its own answer); a failed lookup yields an empty set.
+// smbHostIPSet resolves host the way vetting does (an IP literal is its own answer; net.ParseIP also accepts IPv6, but the syntax check
+// refuses colons before any request host gets here); a failed lookup yields an empty set.
 func smbHostIPSet(host string) []net.IP {
 	if ip := net.ParseIP(host); ip != nil {
 		return []net.IP{ip}

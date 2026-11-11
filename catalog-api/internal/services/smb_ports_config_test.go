@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -109,16 +110,29 @@ func TestNewSMBDiscoveryServiceFromConfig_RegistersPorts(t *testing.T) {
 	require.NotNil(t, NewSMBDiscoveryService(nil))
 }
 
-// calledSelectors returns the names of selector calls (pkg.Name(...)) in Go source; comments never count.
-func calledSelectors(t *testing.T, src string) map[string]bool {
+// serviceCall is a call services.<Name>(args...) found in Go source; comments never count.
+type serviceCall struct {
+	Name     string
+	FirstNil bool
+}
+
+func servicesCalls(t *testing.T, src string) []serviceCall {
 	t.Helper()
 	f, err := parser.ParseFile(token.NewFileSet(), "main.go", src, 0)
 	require.NoError(t, err)
-	out := map[string]bool{}
+	var out []serviceCall
 	ast.Inspect(f, func(n ast.Node) bool {
 		if c, ok := n.(*ast.CallExpr); ok {
 			if se, ok := c.Fun.(*ast.SelectorExpr); ok {
-				out[se.Sel.Name] = true
+				if x, ok := se.X.(*ast.Ident); ok && x.Name == "services" {
+					first := false
+					if len(c.Args) > 0 {
+						if id, ok := c.Args[0].(*ast.Ident); ok && id.Name == "nil" {
+							first = true
+						}
+					}
+					out = append(out, serviceCall{se.Sel.Name, first})
+				}
 			}
 		}
 		return true
@@ -127,8 +141,18 @@ func calledSelectors(t *testing.T, src string) map[string]bool {
 }
 
 func mainWiresConfiguredPorts(t *testing.T, src string) bool {
-	c := calledSelectors(t, src)
-	return c["NewSMBDiscoveryServiceFromConfig"] && !c["NewSMBDiscoveryService"]
+	ok := false
+	for _, c := range servicesCalls(t, src) {
+		switch c.Name {
+		case "NewSMBDiscoveryService":
+			return false
+		case "NewSMBDiscoveryServiceFromConfig":
+			if !c.FirstNil {
+				ok = true
+			}
+		}
+	}
+	return ok
 }
 
 func TestMainWiresSMBConfiguredPorts(t *testing.T) {
@@ -140,6 +164,8 @@ func TestMainWiresSMBConfiguredPorts(t *testing.T) {
 	require.False(t, mainWiresConfiguredPorts(t, wrap("x := services.NewSMBDiscoveryService(logger)")))
 	require.False(t, mainWiresConfiguredPorts(t, wrap("// x := services.NewSMBDiscoveryServiceFromConfig(cfg, logger)\n_ = services.NewSMBDiscoveryService(l)")))
 	require.False(t, mainWiresConfiguredPorts(t, wrap("/* services.NewSMBDiscoveryServiceFromConfig(cfg, logger) */")))
+	require.False(t, mainWiresConfiguredPorts(t, wrap("x := services.NewSMBDiscoveryServiceFromConfig(nil, logger)")), "nil config registers nothing")
+	require.False(t, mainWiresConfiguredPorts(t, wrap("x := other.NewSMBDiscoveryServiceFromConfig(cfg, logger)")), "receiver must be services")
 	require.True(t, mainWiresConfiguredPorts(t, wrap("x := services.NewSMBDiscoveryServiceFromConfig(cfg, logger)")))
 }
 
@@ -161,4 +187,14 @@ func TestSMBDiscovery_BrowseConfiguredPortBoundToHost(t *testing.T) {
 	_, err = discSvc(m, &opened).BrowseShare(context.Background(), cfg, ".")
 	require.True(t, errors.Is(err, ErrInvalidSMBInput), "another host must be refused: %v", err)
 	require.Empty(t, opened)
+}
+
+func TestSetSMBConfiguredRoots_WarnsOnMalformedEntryWithoutSecrets(t *testing.T) {
+	var msgs []string
+	withSMBWarnf(t, func(f string, a ...any) { msgs = append(msgs, fmt.Sprintf(f, a...)) })
+	withSMBConfiguredRoots(t, nil)
+	SetSMBConfiguredRoots([]SMBRootPort{{Host: "bad host!", Port: 2445}, {Host: "192.168.1.10", Port: 70000}, {Host: "192.168.1.10", Port: 2445}, {Host: "192.168.1.10", Port: 2445}})
+	require.Len(t, msgs, 2, "one warning per malformed entry; the valid entry and its duplicate stay silent")
+	require.Contains(t, msgs[0], "bad host!")
+	require.Contains(t, msgs[1], "70000")
 }

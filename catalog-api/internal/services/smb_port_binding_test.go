@@ -56,6 +56,21 @@ func TestSMBPortBinding_RebindingNameNeverDialsOtherHost(t *testing.T) {
 	require.Empty(t, *dialed)
 }
 
+// Two roots on different ports: the port filter must keep a root on ANOTHER port from vouching for this port.
+func TestSMBPortBinding_OtherRootsPortDoesNotVouch(t *testing.T) {
+	t.Setenv("CATALOG_SMB_ALLOWED_PORTS", "")
+	withSMBConfiguredRoots(t, []SMBRootPort{{Host: "192.168.1.10", Port: 1445}, {Host: "192.168.1.20", Port: 2445}})
+	dialed := bindingRig(t, func(n int, _ string) []net.IP {
+		if n == 1 { // pre-check: the root of port 1445
+			return []net.IP{net.ParseIP("192.168.1.10")}
+		}
+		return []net.IP{net.ParseIP("192.168.1.20")} // dial time: the root of ANOTHER port
+	})
+	_, err := rebindSvc().BrowseShare(context.Background(), bindingCfg("evil.lan"), ".")
+	require.Error(t, err)
+	require.Empty(t, *dialed, "192.168.1.20 is a root address, but only for port 2445")
+}
+
 func TestSMBPortBinding_MultiIPDialsOnlyRootAddress(t *testing.T) {
 	t.Setenv("CATALOG_SMB_ALLOWED_PORTS", "")
 	withSMBConfiguredRoots(t, []SMBRootPort{{Host: "192.168.1.10", Port: 1445}})
