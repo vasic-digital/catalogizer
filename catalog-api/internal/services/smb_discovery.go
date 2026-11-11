@@ -8,6 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"catalogizer/internal/pathsafe"
+	"catalogizer/smb"
+
 	"github.com/hirochachacha/go-smb2"
 	"go.uber.org/zap"
 )
@@ -49,10 +52,43 @@ type SMBDiscoveryService struct {
 	openShare func(ctx context.Context, cfg SMBConnectionConfig, shareName string) (ShareAPI, func(), error)
 }
 
-// RED-step stubs (replaced by the real implementation in the fix commit).
+// ErrInvalidSMBInput marks a request the caller got wrong (admin or malformed share, parent-directory path, port other than 445). Handlers
+// map it to 400; every other error from this service is an operational failure and carries no server or network detail.
 var ErrInvalidSMBInput = errors.New("invalid SMB request")
 
-func ValidateSMBPort(int) error { return nil }
+// smbPort is the only SMB-over-TCP port the discovery routes may dial (a free port choice would make them a port scanner).
+const smbPort = 445
+
+// ValidateSMBPort accepts 0 (default) and 445, and refuses everything else.
+func ValidateSMBPort(port int) error {
+	if port != 0 && port != smbPort {
+		return fmt.Errorf("%w: only port %d is supported", ErrInvalidSMBInput, smbPort)
+	}
+	return nil
+}
+
+// openConfined validates the request-supplied port and share, mounts the SHARE part only (smb.SplitShare: refuses IPC$, C$, ADMIN$, device
+// names, "..", backslashes) and returns the share confined to the sub-directory of a "share/sub/dir" spec, exactly like SMBService.withShare.
+func (s *SMBDiscoveryService) openConfined(ctx context.Context, config SMBConnectionConfig) (ShareAPI, func(), error) {
+	if err := ValidateSMBPort(config.Port); err != nil {
+		return nil, nil, err
+	}
+	if config.Port == 0 {
+		config.Port = smbPort
+	}
+	shareName, sub, err := smb.SplitShare(config.Share)
+	if err != nil {
+		return nil, nil, fmt.Errorf("%w: %v", ErrInvalidSMBInput, err)
+	}
+	raw, release, err := s.mountShare(ctx, config, shareName)
+	if err != nil {
+		return nil, nil, err
+	}
+	if sub == "" {
+		return raw, release, nil
+	}
+	return confinedShare{in: raw, sub: sub}, release, nil
+}
 
 // NewSMBDiscoveryService creates a new SMB discovery service
 func NewSMBDiscoveryService(logger *zap.Logger) *SMBDiscoveryService {
@@ -148,7 +184,7 @@ func (s *SMBDiscoveryService) TestConnection(ctx context.Context, config SMBConn
 		zap.String("share", config.Share),
 		zap.String("username", config.Username))
 
-	share, release, err := s.mountShare(ctx, config, config.Share)
+	share, release, err := s.openConfined(ctx, config)
 	if err != nil {
 		s.logger.Debug("Failed to open SMB share", zap.String("host", config.Host), zap.String("share", config.Share), zap.Error(err))
 		return false
@@ -172,16 +208,24 @@ func (s *SMBDiscoveryService) BrowseShare(ctx context.Context, config SMBConnect
 		zap.String("share", config.Share),
 		zap.String("path", path))
 
-	share, release, err := s.mountShare(ctx, config, config.Share)
+	if err := pathsafe.SafeRemotePath(path); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrInvalidSMBInput, err)
+	}
+	share, release, err := s.openConfined(ctx, config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to mount SMB share: %w", err)
+		if errors.Is(err, ErrInvalidSMBInput) {
+			return nil, err
+		}
+		s.logger.Debug("Failed to open SMB share", zap.String("host", config.Host), zap.Error(err))
+		return nil, errors.New("failed to mount SMB share")
 	}
 	defer release()
 
-	// List directory contents
+	// List directory contents (confined below the sub-directory of a share/sub root)
 	entries, err := share.ReadDir(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read directory %s: %w", path, err)
+		s.logger.Debug("Failed to read SMB directory", zap.String("host", config.Host), zap.Error(err))
+		return nil, errors.New("failed to read directory")
 	}
 
 	// Convert to our format

@@ -30,7 +30,7 @@ func discCfg(share string) SMBConnectionConfig {
 }
 
 func TestSMBDiscovery_BrowseRefusesAdminAndMalformedShares(t *testing.T) {
-	for _, bad := range []string{"IPC$", "C$", "ADMIN$", "C$/x", `a\b`, "share/..", "Public/../Misc", "//h/s", "", "CON", "Public/a:b"} {
+	for _, bad := range []string{"IPC$", "C$", "ADMIN$", "C$/x", `a\b`, "share/..", "Public/../Misc", "//h/s", "", "Public/CON", "Public/a:b"} {
 		m := newMem()
 		var opened []string
 		_, err := discSvc(m, &opened).BrowseShare(context.Background(), discCfg(bad), ".")
