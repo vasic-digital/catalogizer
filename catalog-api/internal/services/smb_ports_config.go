@@ -33,9 +33,17 @@ func SetSMBConfiguredRoots(roots []SMBRootPort) {
 	seen := map[SMBRootPort]bool{}
 	for _, r := range roots {
 		r.Host = strings.TrimSpace(r.Host)
-		if r.Port < 1 || r.Port > 65535 || r.Port == smbPort || ValidateSMBHostSyntax(r.Host) != nil {
-			// no credentials are part of the entry; host and port are safe to log
-			smbWarnf("WARNING: ignoring malformed SMB storage root entry for discovery ports (host=%q port=%d)", r.Host, r.Port)
+		if r.Port == smbPort || r.Port == 0 {
+			// 445 is the global default and 0 means "default": nothing to add, not malformed
+			continue
+		}
+		if r.Port < 1 || r.Port > 65535 || ValidateSMBHostSyntax(r.Host) != nil {
+			logHost := r.Host
+			if strings.ContainsAny(logHost, "@:") {
+				// may be credentials typed into the host field; never log it
+				logHost = "<redacted>"
+			}
+			smbWarnf("WARNING: ignoring malformed SMB storage root entry for discovery ports (host=%q port=%d)", logHost, r.Port)
 			continue
 		}
 		key := SMBRootPort{Host: strings.ToLower(r.Host), Port: r.Port}

@@ -198,3 +198,14 @@ func TestSetSMBConfiguredRoots_WarnsOnMalformedEntryWithoutSecrets(t *testing.T)
 	require.Contains(t, msgs[0], "bad host!")
 	require.Contains(t, msgs[1], "70000")
 }
+
+func TestSetSMBConfiguredRoots_NoFalseWarningFor445AndRedactsCredentialLikeHost(t *testing.T) {
+	var msgs []string
+	withSMBWarnf(t, func(f string, a ...any) { msgs = append(msgs, fmt.Sprintf(f, a...)) })
+	withSMBConfiguredRoots(t, nil)
+	SetSMBConfiguredRoots([]SMBRootPort{{Host: "nas.lan", Port: 445}, {Host: "nas.lan", Port: 0}, {Host: "user:secret@nas.lan", Port: 2445}, {Host: " 192.168.1.10 ", Port: 2445}})
+	require.Len(t, msgs, 1, "445 and 0 are silent; only the credential-like host warns")
+	require.NotContains(t, msgs[0], "secret")
+	require.Contains(t, msgs[0], "<redacted>")
+	require.Equal(t, "192.168.1.10", smbConfiguredRoots[0].Host, "padded host is trimmed")
+}
