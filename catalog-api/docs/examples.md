@@ -227,34 +227,6 @@ Response:
 
 ## Copy Examples
 
-### Copy Between SMB Locations
-
-```bash
-curl -X POST http://localhost:8080/api/copy/smb \
-  -H "Content-Type: application/json" \
-  -d '{
-    "source_file_id": 1001,
-    "destination_smb_root": "backup-server",
-    "destination_path": "/Backups/Documents/report.pdf",
-    "overwrite_existing": false
-  }'
-```
-
-Response:
-```json
-{
-  "success": true,
-  "data": {
-    "success": true,
-    "bytes_copied": 2048576,
-    "files_count": 1,
-    "time_taken": "2.5s",
-    "source_path": "/Documents/report.pdf",
-    "dest_path": "/Backups/Documents/report.pdf"
-  }
-}
-```
-
 ### Copy to Local Computer
 
 ```bash

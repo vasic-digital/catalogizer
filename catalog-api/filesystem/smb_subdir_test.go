@@ -2,8 +2,6 @@ package filesystem
 
 import (
 	"context"
-	"os"
-	"strings"
 	"testing"
 
 	"catalogizer/models"
@@ -51,20 +49,6 @@ func TestSMBSubdir_ClientConfinement(t *testing.T) {
 	// an invalid spec fails Connect before any network traffic
 	bad := NewSmbClient(&SmbConfig{Host: "h", Port: 445, Share: "Public/../x"})
 	require.Error(t, bad.Connect(context.Background()))
-}
-
-// F3/F2: the smb package client (download / copy) is under the same confinement classifier as the filesystem clients.
-func TestSMBSubdir_PackageClientEveryPathGoesThroughRP(t *testing.T) {
-	b, err := os.ReadFile("../smb/client.go")
-	require.NoError(t, err)
-	require.Empty(t, unconfinedPathMethods(t, "client.go", string(b), map[string]bool{"SmbClient": true}))
-	// control needle: the classifier flags a method that hands the raw path to the share
-	bad := strings.Replace(string(b), "c.share.Remove(c.rp(path))", "c.share.Remove(path)", 1)
-	require.NotEqual(t, string(b), bad)
-	require.Equal(t, []string{"SmbClient.DeleteFile(path)"}, unconfinedPathMethods(t, "client.go", bad, map[string]bool{"SmbClient": true}))
-	bad2 := strings.Replace(string(b), "c.share.Create(c.rp(dstPath))", "c.share.Create(dstPath)", 1)
-	require.NotEqual(t, string(b), bad2)
-	require.Equal(t, []string{"SmbClient.CopyFile(dstPath)"}, unconfinedPathMethods(t, "client.go", bad2, map[string]bool{"SmbClient": true}))
 }
 
 // F6: legacy UNC-form roots are refused with a hint (not silently re-interpreted).

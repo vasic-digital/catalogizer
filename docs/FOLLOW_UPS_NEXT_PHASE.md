@@ -1163,8 +1163,7 @@ Threat model unchanged: COOPERATIVE PRODUCER. F1 (loader keys bind every process
   is seeded); (2) `POST /download/archive` happy path ends 400 (the body is a `models.DownloadRequest` the generator does not shape);
   (3) a real directory under a non-SMB root still builds its archive through the SMB service (`createZipArchive`/`createTarArchive`
   call `smbService.DownloadFile`), so such an archive would be empty or fail.
-- `catalog-api/handlers/download.go` (constructor `NewDownloadHandler(fileRepo, tempDir, ...)`) is not wired in main.go (main uses
-  `internal/handlers/download.go`). Investigate git history (how it was wired, how it died) before proposing removal (constitution 11.4.124).
+- `catalog-api/handlers/download.go` (constructor `NewDownloadHandler(fileRepo, tempDir, ...)`) was not wired in main.go; REMOVED 2026-11-11 (SMB-FU-1, history in docs/FOLLOW_UPS_SMB_FU1_FU2_INVESTIGATION.md).
 - Happy-path ratchet: `catalog-api/api_contract_happy_exceptions.tsv` lists the 81 operations whose happy probe is not 2xx, with
   a reason each; many reasons are generic (generator cannot seed a valid body/resource). Seed them and shrink the list; a stale entry is a violation.
 - `GET /api/v1/logs/stream` flake (F5): the SSE handler writes nothing until the first log entry, and the sweep used to `ReadAll` the
@@ -1654,8 +1653,8 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 
 ## smb-subdir / tauri round-2 notes (2026-11-11)
 - TAURI-R2-FU-3: catalogizer-desktop/src-tauri/gen/schemas/capabilities.json has the same stale tracked-generated shape as the installer-wizard one; untrack or regenerate.
-- SMB-FU-1: unrouted root-package handlers/download.go, handlers/copy.go, CopyToSMB and /smb/list use catalogizer/smb (still confined) but are dead code; investigate history before any removal (§11.4.124).
-- SMB-FU-2: internal/services/smb.go and smb_discovery.go browse paths mount the request-body Share directly and have no sub-directory support.
+- SMB-FU-1: RESOLVED BY REMOVAL (2026-11-11, operator decision, commit Roadmap-Item CAT-SMB-SUBDIR-1): root-package handlers/download.go and handlers/copy.go, CopyToSMB / ListSMBPath / GetSMBHosts and the orphans they alone kept alive (catalog-api/smb SmbClient + SmbConnectionPool, internal/smb resilience package) were deleted with their tests. Evidence of unreachability is in the commit message; history is in docs/FOLLOW_UPS_SMB_FU1_FU2_INVESTIGATION.md.
+- SMB-FU-2: the dead copies of this gap (root handlers, SmbClient) are RESOLVED BY REMOVAL (2026-11-11). The live browse/test paths in internal/services/smb_discovery.go were already confined by openConfined (smb.SplitShare + ResolveSub) in the SMB discovery confine work; no open code path mounts the request-body Share unconfined.
 - SMB-FU-3 (optional): routed DownloadHandler test (needs a CatalogService seam).
 - SMB-FU-4: catalog-web form hint for entering share/sub/dir.
 - SMB-FU-5: live run of docs/qa/smb-subdir-20261110/run.sh against the Anton share (never executed yet).
@@ -1679,7 +1678,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - SMB-FU-9 (PRIORITISED, security): dial the vetted IP instead of re-resolving the name; closes the DNS-rebinding window between VetSMBHost and the dial. Opus round 2 asked to do this before the next release.
 - SMB-FU-13: the share listing still shows `print$` (SplitShare allows it; it is not administrative there). Decide whether discovery should hide printer shares.
 - SMB-FU-14 (test-instrumentation): tests that replace the global `services.SMBHostResolver` / `smbWarnf` must never use `t.Parallel()`. Add a lint or a locked helper.
-- SMB-FU-15: `internal/handlers/smb.go` `SMBHandler.TestConnection` (~:187) returns `err.Error()` to the client. Earlier investigation found the handler not constructed in `main.go`; confirm it is unwired, then remove it or make its errors generic.
+- SMB-FU-15: RESOLVED BY REMOVAL (2026-11-11): `internal/handlers/smb.go` SMBHandler was confirmed unwired (no caller outside its own tests, nothing in main.go) and was deleted with its tests.
 
 ## Tauri guard follow-ups (branch fix/tauri-guard-followups, PROVISIONAL-DONE)
 - TAURI-R1-FU-1/2/3/4/6/8: already resolved on main before this branch (per-capability parsing, import forms, pre-flight wiring, docs/qa/tauri-native-20261106/README.md present, installer-wizard capabilities.json untracked+ignored in c504d197, header states exit 2 = BLIND); verified by re-running guard + mutation test.
