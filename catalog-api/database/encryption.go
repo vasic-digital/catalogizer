@@ -521,7 +521,7 @@ func classifyProbeError(err error) (func(), error) {
 	case isBusyErr(err):
 		return nil, fmt.Errorf("database is in use by another process (stop the server first): %v", err)
 	case isNotADBErr(err):
-		return func() {}, nil
+		return func() { /* no-op release: no probe handle was opened for a non-SQLCipher database */ }, nil
 	default:
 		return nil, fmt.Errorf("cannot determine whether the database is in use: %v", scrubDSN(err))
 	}
