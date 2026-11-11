@@ -3,7 +3,9 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -100,4 +102,66 @@ func TestBrowseShare_ReadDirErrorIsExactlyGeneric(t *testing.T) {
 	m := newMem()
 	_, err := discSvc(m, nil).BrowseShare(context.Background(), discCfg("Public"), "no/such/dir")
 	require.EqualError(t, err, "failed to read directory", "no path and no cause in the client-visible error")
+}
+
+func TestVetSMBHost_RoundTwoBlocklist(t *testing.T) {
+	withResolver(t, map[string][]string{
+		"sixtofour-loop.example": {"2002:7f00:1::"},
+		"sixtofour-meta.example": {"2002:a9fe:a9fe::"},
+		"siit-loop.example":      {"::ffff:0:127.0.0.1"},
+		"nat64-local.example":    {"64:ff9b:1::1"},
+		"bcast.example":          {"255.255.255.255"},
+		"cgnat-lo.example":       {"100.64.0.1"},
+		"cgnat-hi.example":       {"100.127.255.254"},
+		"sixtofour-ok.example":   {"2002:c000:204::"},
+		"lan10.example":          {"10.1.2.3"},
+		"lan192.example":         {"192.168.1.5"},
+		"below-cgnat.example":    {"100.63.255.255"},
+		"above-cgnat.example":    {"100.128.0.1"},
+	})
+	for _, h := range []string{"sixtofour-loop.example", "sixtofour-meta.example", "siit-loop.example", "nat64-local.example", "bcast.example", "cgnat-lo.example", "cgnat-hi.example", "255.255.255.255", "100.64.0.1"} {
+		require.Error(t, VetSMBHost(h), h)
+	}
+	for _, h := range []string{"sixtofour-ok.example", "lan10.example", "lan192.example", "below-cgnat.example", "above-cgnat.example", "10.0.0.5", "192.168.0.10"} {
+		require.NoError(t, VetSMBHost(h), "negative control (QA LAN stays allowed): "+h)
+	}
+}
+
+func TestVetSMBHost_EmptyAnswerAndLongNameRefused(t *testing.T) {
+	old := SMBHostResolver
+	t.Cleanup(func() { SMBHostResolver = old })
+	SMBHostResolver = func(string) ([]net.IP, error) { return []net.IP{}, nil }
+	require.Error(t, VetSMBHost("empty.example"), "empty answer with nil error is refused (N3)")
+
+	SMBHostResolver = func(string) ([]net.IP, error) { return []net.IP{net.ParseIP("192.0.2.10")}, nil }
+	long254 := strings.Repeat("a.", 127)
+	long253 := strings.Repeat("a.", 126) + "a"
+	require.Len(t, long254, 254)
+	require.Len(t, long253, 253)
+	require.Error(t, VetSMBHost(long254), "254 chars refused (N10)")
+	require.NoError(t, VetSMBHost(long253), "253 chars allowed (negative control)")
+}
+
+func TestSMBAllowedPorts_InvalidValueWarns(t *testing.T) {
+	oldW, oldR := smbWarnf, smbWarnedRaw
+	t.Cleanup(func() { smbWarnf, smbWarnedRaw = oldW, oldR })
+	var msgs []string
+	smbWarnf = func(f string, a ...any) { msgs = append(msgs, fmt.Sprintf(f, a...)) }
+	smbWarnedRaw = ""
+
+	t.Setenv("CATALOG_SMB_ALLOWED_PORTS", "445,abc")
+	require.Equal(t, []int{445}, SMBAllowedPorts())
+	require.Len(t, msgs, 1)
+	require.Contains(t, msgs[0], "CATALOG_SMB_ALLOWED_PORTS")
+	require.Contains(t, msgs[0], "445")
+	_ = SMBAllowedPorts()
+	require.Len(t, msgs, 1, "the same invalid value warns once, not on every request")
+
+	msgs = nil
+	smbWarnedRaw = ""
+	t.Setenv("CATALOG_SMB_ALLOWED_PORTS", "1445")
+	require.Equal(t, []int{445, 1445}, SMBAllowedPorts())
+	t.Setenv("CATALOG_SMB_ALLOWED_PORTS", "")
+	_ = SMBAllowedPorts()
+	require.Empty(t, msgs, "valid or empty value does not warn (negative control)")
 }

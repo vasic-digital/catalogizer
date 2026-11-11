@@ -1668,3 +1668,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - SMB-FU-10: path checks are lexical only on plain shares (no sub root): pathsafe.SafeRemotePath rejects ".." but ':' (ADS) segments, device names and symlinks the server resolves are not handled. Opus review round 1, item 6.
 - SMB-FU-11: residual information leaks and timing on /smb/test and /smb/browse (connect failure vs auth failure vs mount failure remain distinguishable by latency and by the boolean/400/500 split). Opus review round 1, item 8.
 - SMB-FU-12: the SMB port allowlist (CATALOG_SMB_ALLOWED_PORTS, default 445) does not yet include the ports of configured SMB storage roots; read them from config.SMB.Hosts when the discovery service gets the config injected.
+- SMB-FU-9 (PRIORITISED, security): dial the vetted IP instead of re-resolving the name; closes the DNS-rebinding window between VetSMBHost and the dial. Opus round 2 asked to do this before the next release.
+- SMB-FU-13: the share listing still shows `print$` (SplitShare allows it; it is not administrative there). Decide whether discovery should hide printer shares.
+- SMB-FU-14 (test-instrumentation): tests that replace the global `services.SMBHostResolver` / `smbWarnf` must never use `t.Parallel()`. Add a lint or a locked helper.
+- SMB-FU-15: `internal/handlers/smb.go` `SMBHandler.TestConnection` (~:187) returns `err.Error()` to the client. Earlier investigation found the handler not constructed in `main.go`; confirm it is unwired, then remove it or make its errors generic.

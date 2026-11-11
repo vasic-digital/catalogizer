@@ -3,10 +3,12 @@ package services
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"net"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	"catalogizer/smb"
 )
@@ -53,14 +55,26 @@ func embeddedV4(ip net.IP) net.IP {
 			allZero = false
 		}
 	}
-	if allZero {
+	if allZero { // IPv4-compatible ::a.b.c.d
 		return ip16[12:]
 	}
-	if bytes.Equal(ip16[:12], net.ParseIP("64:ff9b::").To16()[:12]) {
+	if bytes.Equal(ip16[:12], net.ParseIP("64:ff9b::").To16()[:12]) { // NAT64 64:ff9b::/96
+		return ip16[12:]
+	}
+	if ip16[0] == 0x20 && ip16[1] == 0x02 { // 6to4 2002::/16: the IPv4 address is bytes 2..5
+		return ip16[2:6]
+	}
+	// SIIT ::ffff:0:a.b.c.d (IPv4-translated, ::ffff:0:0/96)
+	if bytes.Equal(ip16[:8], make([]byte, 8)) && ip16[8] == 0xff && ip16[9] == 0xff && ip16[10] == 0 && ip16[11] == 0 {
 		return ip16[12:]
 	}
 	return nil
 }
+
+var (
+	cgnatNet     = &net.IPNet{IP: net.IPv4(100, 64, 0, 0), Mask: net.CIDRMask(10, 32)}
+	nat64LocalNe = &net.IPNet{IP: net.ParseIP("64:ff9b:1::"), Mask: net.CIDRMask(48, 128)}
+)
 
 func smbIPBlockedBase(ip net.IP) bool {
 	if ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified() {
@@ -70,6 +84,9 @@ func smbIPBlockedBase(ip net.IP) bool {
 		if ip.Equal(b) {
 			return true
 		}
+	}
+	if ip.Equal(net.IPv4bcast) || cgnatNet.Contains(ip) || nat64LocalNe.Contains(ip) {
+		return true // limited broadcast, CGNAT 100.64.0.0/10, local-use NAT64 64:ff9b:1::/48
 	}
 	return false
 }
@@ -121,6 +138,7 @@ func SMBAllowedPorts() []int {
 	for _, f := range strings.Split(raw, ",") {
 		p, err := strconv.Atoi(strings.TrimSpace(f))
 		if err != nil || p < 1 || p > 65535 {
+			warnInvalidSMBPorts(raw)
 			return []int{smbPort}
 		}
 		extra = append(extra, p)
@@ -144,4 +162,22 @@ func filterShareInfos(host string, names []string) []SMBShareInfo {
 		})
 	}
 	return out
+}
+
+var (
+	// smbWarnf reports a configuration problem; tests replace it.
+	smbWarnf         = log.Printf
+	smbWarnedRaw     string
+	smbWarnedRawLock sync.Mutex
+)
+
+// warnInvalidSMBPorts logs once per distinct invalid CATALOG_SMB_ALLOWED_PORTS value that the allowlist fell back to {445}.
+func warnInvalidSMBPorts(raw string) {
+	smbWarnedRawLock.Lock()
+	defer smbWarnedRawLock.Unlock()
+	if smbWarnedRaw == raw {
+		return
+	}
+	smbWarnedRaw = raw
+	smbWarnf("WARNING: CATALOG_SMB_ALLOWED_PORTS=%q is invalid (comma list of ports 1-65535 expected); falling back to the default port 445 only", raw)
 }
