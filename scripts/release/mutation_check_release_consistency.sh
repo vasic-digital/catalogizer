@@ -59,9 +59,27 @@ MUTANTS=(
 'F5 empty --version accepted|||{ [ $# -ge 2 ] && [ -n "$2" ]; }|||{ [ $# -ge 2 ]; }'
 'F5 both gradle files ignored|||    if both:|||    if False:'
 'F2 dropped tokens not counted|||            print(f"SKIP\t{tok.strip()}")
+            nskip += 1
             continue|||            continue'
 'F5 needle takes first tracked name|||| grep -m1 -E '"'"'^[A-Za-z0-9._/-]+$'"'"')|||| head -1)'
 'F5 needle needs tree presence|||! tracked "$pos"|||! tracked "$pos" || [ ! -e "$REPO/$pos" ]'
+'N1 duplicate PLAN accepted|||if [ "$nplan" -gt 1 ]; then|||if false; then'
+'N1 plan count not pinned to 19|||if [ "$plan" -ne "$expected_n" ]; then|||if false; then'
+'N1 missing expected label accepted|||if [ -n "$miss" ]; then|||if false; then'
+'N1 duplicate label accepted|||if [ -n "$dup" ]; then|||if false; then'
+'N1 foreign label accepted|||if [ -n "$foreign" ]; then|||if false; then'
+'N1 INFO allowed on non-versionCode field|||*" versionCode") ;;|||*) ;;'
+'N1 extra FAIL-only rows not enforced|||"--prev-tag"|*"/app") [ "${kinds["$key"]}" = FAIL ] || foreign="$foreign [$key]" ;;|||"--prev-tag"|*"/app") ;;'
+'N1 changelog section count unchecked|||[ "$nsec" -ne 1 ] || |||false || '
+'N1 changelog END count unchecked|||[ "$nend" -ne 1 ] || |||false || '
+'N1 changelog END not last|||[ "$lastkind" != END ]|||false'
+'N1 changelog path count unchecked|||[ "$endp" != "${#paths[@]}" ] || |||false || '
+'N1 changelog skip count unchecked|||[ "$ends" != "${#skips[@]}" ]; then|||false; then'
+'N2 BSD-tag lines not parsed|||elif [[ "$line" =~ ^[A-Za-z0-9-]+\ \((.*)\)\ =\ [0-9a-fA-F]+$ ]]; then|||elif false; then'
+'N3 outside-repo symlink accepted|||if [ -e "$REPO/$q" ] && { [ -z "$rp" ]|||if false && { [ -z "$rp" ]'
+'N4 versionCode expression accepted|||\s*(?://.*)?$")|||")'
+'N5 duplicate heading accepted|||hm.group(1) == name) > 1:|||hm.group(1) == name) > 99:'
+'N5 versionNameSuffix ambiguity|||(?![A-Za-z0-9_])|||'
 'help has no VERDICT|||usage; echo "VERDICT: HELP"; exit 0|||usage; exit 0'
 )
 

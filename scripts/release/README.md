@@ -83,5 +83,17 @@ Temporary files go under `$RELCHK_TMP` (default `~/.cache/relchk-tmp`).
 * Existence and tracking prove a path is present, not that its content supports the claim.
 * The selftest verdict logic is not mutation-tested. The `--strict` flag and the
   'improperly formatted' text check are redundant layers; the mutant removes both together.
-* The version helper plan count is derived inside the same python helper from its component
-  lists; a helper that is edited to drop a check and its plan row together is not detected.
+* Helper-output integrity (N1): bash pins the expected 19 version rows by label (exactly one
+  PLAN line equal to 19, every expected label exactly once, no foreign labels, INFO only on
+  versionCode rows) and requires the changelog helper to end with a matching END trailer
+  (one SECTION, path/skip counts equal). A helper that is edited to emit a complete,
+  correct-looking but wrong row set (a forged OK with the right label) is still not
+  detected: bash cannot re-derive the field values.
+* SHA256SUMS: GNU and BSD-tag (`SHA256 (name) = hash`) lines both get the directory-escape
+  check; GNU filenames written with a leading backslash escape are not parsed.
+* A tracked path that resolves (symlink) outside the repository is a `MISS`.
+* `versionCode`/`versionName` must be a bare literal (optional trailing `//` comment);
+  `versionNameSuffix` is not mistaken for a second `versionName`. Expressions such as
+  `7 - 2` are a FAIL.
+* A duplicated `## [x.y.z]` heading for the selected section is BLIND.
+* The selected version-code monotonicity is still checked only against `--prev-tag`.
