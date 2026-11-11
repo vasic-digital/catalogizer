@@ -13,6 +13,18 @@ PODMAN_PORT = """9090/tcp -> 192.168.1.115:39090
 8088/tcp -> 0.0.0.0:33080
 """
 
+class PodRun:
+    """Models real podman: `podman port <pod-name>` fails rc=125 (a pod name is not a container); the pod's ports are read from
+    its infra container (as up.sh does). Records the commands run."""
+    def __init__(self, pod="catqa3mon", infra="95325aab87bb", out=PODMAN_PORT): self.pod, self.infra, self.out, self.calls = pod, infra, out, []
+    def __call__(self, cmd, **k):
+        self.calls.append(cmd)
+        class R: pass
+        r = R(); r.stdout = ""; r.returncode = 125
+        if cmd[:3] == ["podman", "pod", "inspect"] and cmd[3] == self.pod: r.stdout, r.returncode = self.infra + "\n", 0
+        elif cmd[:2] == ["podman", "port"] and cmd[2] == self.infra: r.stdout, r.returncode = self.out, 0
+        return r
+
 class FakeRun:
     def __init__(self, exc=None, out="", rc=0): self.exc, self.out, self.rc = exc, out, rc
     def __call__(self, *a, **k):
@@ -83,7 +95,29 @@ class Resolve(unittest.TestCase):
         self.assertEqual(L.read_published("catqa3mon", FakeRun(exc=subprocess.TimeoutExpired("podman", 30))), {})
         self.assertEqual(L.read_published("catqa3mon", FakeRun(exc=FileNotFoundError())), {})
         self.assertEqual(L.read_published("catqa3mon", FakeRun(rc=125, out=PODMAN_PORT)), {})
-        self.assertEqual(L.read_published("catqa3mon", FakeRun(out=PODMAN_PORT))[39090], "192.168.1.115")
+        self.assertEqual(L.read_published("catqa3mon", PodRun())[39090], "192.168.1.115")
+
+    def test_pod_name_resolves_via_infra_container(self):
+        # defect (live, stack3): `podman port catqa3mon` -> rc=125 'no container with name' -> {} -> false loopback default
+        run = PodRun()
+        self.assertEqual(L.read_published("catqa3mon", run)[39090], "192.168.1.115")      # golden-good
+        self.assertNotIn(["podman", "port", "catqa3mon"], run.calls)                      # the pod name is never passed to `podman port`
+
+    def test_inspect_failure_with_id_on_stdout_is_empty(self):
+        class Bad(PodRun):
+            def __call__(self, cmd, **k):
+                r = super().__call__(cmd, **k)
+                if cmd[:3] == ["podman", "pod", "inspect"]: r.returncode = 125; r.stdout = "0123456789ab\n"
+                return r
+        self.assertEqual(L.read_published("catqa3mon", Bad(infra="0123456789ab")), {})
+    def test_infra_id_must_be_hex(self):
+        self.assertEqual(L.read_published("catqa3mon", PodRun(infra="--all")), {})
+        for bad in ("short", "abc123", "a" * 65): self.assertEqual(L.read_published("catqa3mon", PodRun(infra=bad)), {}, bad)
+
+    def test_unknown_pod_or_empty_infra_is_empty(self):
+        self.assertEqual(L.read_published("nosuchpod", PodRun()), {})                    # golden-bad: unresolvable pod -> {} (default applies)
+        self.assertEqual(L.read_published("catqa3mon", PodRun(infra="")), {})            # negative control: no infra id -> never `podman port ""`
+        self.assertEqual(L.read_published("catqa3mon", PodRun(out="")), {})
 
     def test_ipv6_wildcard_published_parses(self):
         self.assertEqual(L.parse_podman_port("5050/tcp -> [::]:33050\n")[33050], "[::]")
@@ -103,6 +137,46 @@ class Resolve(unittest.TestCase):
             val, src = L.resolve_bind(name, {"PROM_BIND": LAN, "GRAFANA_BIND": LAN}, pub, port)
             self.assertTrue(L.exposure_verdict(name, L.classify_bind(val, LAN), True, src)[1])  # declared: pass
 
+LOGIN_HTML = b'<script>window.x={"csrfToken": "tok123"}</script>'
+
+def pg_double(login=(200, LOGIN_HTML), tokenless=(400, {}), tokened=(302, {"Location": "/login?next=%2Fbrowser"})):
+    seen = []
+    def get_login(): return login
+    def get_protected(csrf):
+        seen.append(csrf); return tokened if csrf else tokenless
+    return get_login, get_protected, seen
+
+HOST = "192.168.1.17:33050"   # the host:port actually probed
+
+def chk(host=HOST, **kw):
+    g, p, seen = pg_double(**kw); return L.pgadmin_anonymous_rejected(g, p, host)
+
+class PgAnon(unittest.TestCase):
+    def test_golden_good_redirect_to_login(self):
+        g, p, seen = pg_double()
+        self.assertTrue(L.pgadmin_anonymous_rejected(g, p, HOST)); self.assertEqual(seen, ["tok123"])   # the request carried the CSRF token
+        self.assertTrue(chk(tokened=(303, {"Location": "/login"})))
+        self.assertTrue(chk(tokened=(302, {"Location": f"http://{HOST}/login?next=%2Fx"})))       # absolute URL on the REAL host:port
+        self.assertTrue(chk(tokened=(401, {})))
+    def test_login_disabled_pgadmin_must_fail(self):
+        # tokenless -> 400 (CSRF), tokened anonymous -> 200 + data: login is NOT required
+        self.assertFalse(chk(tokened=(200, {})))
+    def test_redirect_elsewhere_fails(self):
+        for loc in ("/somewhere", "http://evil/x", "/loginx", "", "/x/login", "/login/", "//evil/login", "http://evil.example/login",
+                    "http://192.168.1.17:9999/login", "http://192.168.1.17/login", "https://192.168.1.17:33050/login"):
+            self.assertFalse(chk(tokened=(302, {"Location": loc})), loc)
+        self.assertFalse(chk(tokened=(302, {})))
+    def test_only_302_303_redirects_accepted(self):
+        for st in (301, 307, 308): self.assertFalse(chk(tokened=(st, {"Location": "/login"})), st)   # pinned decision
+    def test_no_token_or_dead_login_fails(self):
+        self.assertFalse(chk(login=(200, b"no token here")))
+        self.assertFalse(chk(login=(0, b"refused")))
+        self.assertFalse(chk(login=(500, LOGIN_HTML)))          # a non-200 /login carrying a token is not trusted
+        self.assertFalse(chk(login=(302, LOGIN_HTML)))
+        self.assertFalse(chk(tokened=(400, {})))   # still CSRF-rejected even with token: proves nothing
+        self.assertFalse(chk(tokened=(0, {})))
+        self.assertFalse(chk(tokened=(500, {})))
+
 class Auth(unittest.TestCase):
     def test_auth_required_verdicts(self):
         self.assertTrue(L.auth_required_ok("prometheus", 401))
@@ -114,7 +188,9 @@ class Auth(unittest.TestCase):
         for n in ("prometheus", "grafana", "pgadmin"):
             self.assertFalse(L.auth_required_ok(n, 404), n)           # wrong path / dead route is a failure, not a rejection
             self.assertFalse(L.auth_required_ok(n, 500), n)
-        self.assertTrue(L.auth_required_ok("pgadmin", 302))
+        # a bare 400 (CSRF checked before auth) proves nothing about login being required: never an auth-required PASS, for any service
+        for n in ("prometheus", "grafana", "pgadmin"): self.assertFalse(L.auth_required_ok(n, 400), n)
+        self.assertFalse(L.auth_required_ok("pgadmin", 302))      # a bare 302 (no Location check) is not enough either
         self.assertTrue(L.auth_required_ok("pgadmin", 401))
         self.assertFalse(L.auth_required_ok("pgadmin", 200))
 

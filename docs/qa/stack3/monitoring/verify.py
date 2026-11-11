@@ -169,8 +169,17 @@ if lan_ok:
         if v is None: print(f"SKIP lan.{name}_exposure (bound to {bind}, neither loopback nor the LAN IP)"); continue
         rec(v[0], v[1], f"{lan}:{port} bind={bind} expectation_source={src}")
         if cls == "lan":   # anonymous access must be refused whenever the service is LAN-reachable, declared or not
-            st, _, _ = http(f"http://{lan}:{port}{anon[name]}", opener=urllib.request.build_opener(_NoRedirect))
-            rec(f"lan.{name}_anonymous_rejected_via_LAN_IP", LB.auth_required_ok(name, st), f"http={st}")
+            base = f"http://{lan}:{port}"
+            if name == "pgadmin":   # CSRF is checked before auth, so a tokenless 400 proves nothing: send a real anonymous CSRF token + session
+                op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookiejar.CookieJar()), _NoRedirect)
+                def _gl(): s_, _, b_ = http(f"{base}/login", opener=op); return s_, b_
+                def _gp(c_): s_, h_, _ = http(f"{base}{anon[name]}", headers={"X-pgA-CSRFToken": c_}, opener=op); _last.update(st=s_, loc=h_.get("Location")); return s_, h_
+                _last = {}
+                ok_ = LB.pgadmin_anonymous_rejected(_gl, _gp, f"{lan}:{port}"); st = f"{_last.get('st')} location={_last.get('loc')} (anon+csrf-token)"
+            else:
+                st, _, _ = http(f"{base}{anon[name]}", opener=urllib.request.build_opener(_NoRedirect))
+                ok_ = LB.auth_required_ok(name, st)
+            rec(f"lan.{name}_anonymous_rejected_via_LAN_IP", ok_, f"http={st}")
     for svc, port in (("postgresql", int(os.environ.get("PG_PORT", 35434))), ("redis", int(os.environ.get("REDIS_PORT", 36381)))):
         name, ok = LB.exposure_verdict(svc, LB.ALWAYS_LOOPBACK, lan_open(port))
         rec(name, ok, f"{lan}:{port}")
