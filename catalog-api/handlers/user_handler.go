@@ -877,7 +877,9 @@ func (h *UserHandler) allowedToActOn(w http.ResponseWriter, caller *models.User,
 // allowedToAssignRole: a non-admin may not assign an admin role (or a role
 // that cannot be resolved), and may not assign a role carrying any permission
 // the caller's own role does not already cover (CAT-050 R3-M2: no escalation
-// among non-admin roles; a caller can only hand out what it holds).
+// among non-admin roles; a caller can only hand out what it holds). The
+// standard user role (id 2) is compared like any other role: there is no
+// always-assignable baseline (operator decision 2026-11-12, CAT-OPDEC-A).
 func (h *UserHandler) allowedToAssignRole(w http.ResponseWriter, caller *models.User, roleID int) bool {
 	admin, ok := h.callerIsAdmin(w, caller)
 	if !ok {
@@ -895,13 +897,6 @@ func (h *UserHandler) allowedToAssignRole(w http.ResponseWriter, caller *models.
 	// (resolved by the same CheckPermission the other guards use). A wildcard
 	// permission in the target ("media.*", "*") is covered only by an equal
 	// permission or a wildcard spanning it, never by individual grants.
-	//
-	// The standard user role (what self-registration already hands out) is the
-	// baseline and stays assignable by any user manager: it grants nothing a new
-	// account does not get anyway.
-	if roleID == defaultUserRoleID {
-		return true
-	}
 	for _, p := range role.Permissions {
 		held, err := h.authService.CheckPermission(caller.ID, p)
 		if err != nil {
@@ -915,9 +910,6 @@ func (h *UserHandler) allowedToAssignRole(w http.ResponseWriter, caller *models.
 	}
 	return true
 }
-
-// defaultUserRoleID is the seeded standard user role (see RegisterGin).
-const defaultUserRoleID = 2
 
 // guardedUserUpdater is implemented by the production user repository.
 type guardedUserUpdater interface {

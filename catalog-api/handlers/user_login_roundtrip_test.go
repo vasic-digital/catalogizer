@@ -345,7 +345,7 @@ func TestRT_D3_UpdateUserPersistsRole(t *testing.T) {
 	require.Equal(t, 201, w.Code, w.Body.String())
 	var staff models.Role
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &staff))
-	w = e.do(e.adminTok, "POST", "/api/v1/roles", `{"name":"UserManagers","permissions":["user.view","user.update","user.manage"]}`)
+	w = e.do(e.adminTok, "POST", "/api/v1/roles", `{"name":"UserManagers","permissions":["user.view","user.update","user.manage","media.view","media.download"]}`)
 	require.Equal(t, 201, w.Code, w.Body.String())
 	var mgrRole models.Role
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &mgrRole))
@@ -366,7 +366,9 @@ func TestRT_D3_UpdateUserPersistsRole(t *testing.T) {
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &got))
 	assert.Equal(t, staff.ID, got.RoleID)
 
-	// non-admin user manager: may assign a non-admin role, may NOT assign admin
+	// non-admin user manager: may assign a non-admin role, may NOT assign admin.
+	// Role 2 is assignable because mgrRole holds every permission of role 2
+	// (CAT-OPDEC-A: role 2 has no always-assignable baseline any more).
 	lw := e.login("mgr", rtUserPass)
 	require.Equal(t, 200, lw.Code, lw.Body.String())
 	var lr struct {
