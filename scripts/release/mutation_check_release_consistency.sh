@@ -175,7 +175,12 @@ MUTANTS=(
 'RV2-6 waiver HEAD check without literal|||if ! git -C "$REPO" diff --quiet HEAD -- ":(literal)$rel" 2>/dev/null; then|||if ! git -C "$REPO" diff --quiet HEAD -- "nonexistent-$rel" 2>/dev/null; then'
 'RV2-7 prefix dir itself not evidence|||[[ "$1/" == "$pre"* ]] && return 0|||[[ "$1" == "$pre"* ]] && return 0'
 'R3-1 changelog head check removed|||head_check "docs/CHANGELOG.md" "docs/CHANGELOG.md"|||:'
-'R3-1 cited path head check removed|||{ [ "$cited_ok" = 0 ] || [ "$evrel" = "." ]; } || head_check "cited path $p" "$evrel"|||:'
+'R3-1 cited path head check removed|||{ [ "$cited_ok" = 0 ] || [ "$evrel" = "." ]; } || head_check "cited path $p" "$qn" "$evrel"|||:'
+'I4-1 head check only the resolved spelling|||head_check "cited path $p" "$qn" "$evrel"|||head_check "cited path $p" "$evrel"'
+'R4 head_check existence uses -f (directories skipped)|||    [ -e "$REPO/$p" ] || continue
+    specs+=|||    [ -f "$REPO/$p" ] || continue
+    specs+='
+'R4 READ only recorded for json|||    READ.append(path)|||    if path.endswith('.json'): READ.append(path)'
 'R3-1 version files head check removed|||head_check "version files" "${vread[@]+"${vread[@]}"}"|||:'
 'R3-1 head check ignores HEAD membership|||git -C "$REPO" cat-file -e "HEAD:$p" 2>/dev/null || bad=|||true || bad='
 'R3-1 head check ignores status|||  [ -z "$out" ] || bad="$bad [differs|||  [ -z "$out" ] || : "$bad [differs'

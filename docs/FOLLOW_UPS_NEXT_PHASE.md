@@ -1830,3 +1830,17 @@ ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go
 - Open (evidence, not tooling): `docs/qa/coverart/results/final/summary.txt` checksum mismatch (E-1), NOMANIFEST for `docs/qa/coverart/README.md` and UNLISTED `race.console.txt` on main remain; evidence regeneration is out of scope here and the mismatch is not waivable.
 - UNCONFIRMED: `git status` phantom diffs under autocrlf/attributes would make the checker BLIND on a clean tree (fails safe); behaviour on a shallow clone or with submodule paths in cited evidence is untested.
 
+
+## CAT-REL-CHECK-1 Opus round 4 (fix/release-checker-rc3, PROVISIONAL)
+
+Round 4 verdict NO-GO (1 important), round 5 is the last round (R_max=5).
+
+- I4-1 (important, fixed in round 5): `head_check` checked only the resolved path of a cited symlink, never the cited tracked spelling. A symlink retargeted in the working tree only (P1x), or a new symlink only staged (P2x), passed locally while a clone MISSes. Both spellings are checked now; RED-first tests P1x/P2x plus a committed-symlink negative control.
+- Reviewer mutants A (directory cite, `-e` to `-f` in `head_check`) and C (`READ.append` only for `.json`): tests added for a cited directory with an uncommitted tracked edit and for uncommitted edits of openapi.yaml, Cargo.toml and a gradle file.
+
+Minor follow-ups, registered and NOT fixed now:
+
+- m-1: `skip-worktree` / `assume-unchanged` flags hide worktree != HEAD from `git status`. Fix: hash the HEAD blobs, or refuse flagged paths.
+- m-2: a VERIFIED path containing a space is skipped by the extractor while the verdict stays PASS; it should be BLIND.
+- m-3: a clean committed submodule gitlink cited directly gives a false BLIND.
+- UNCONFIRMED: the waiver expiry 2026-12-12 was chosen by the author, not by an operator decision.

@@ -450,6 +450,25 @@ d=$(fresh); PATH="$gs:$PATH" RAW=1 expect "R3-3 git status failure in head_check
 # R3-3 (survivor 102): a C1 control character (U+0080) passes the helper regex but not the shell [[:cntrl:]] check
 d=$(fresh); mkrun3 "$d"; addrow "$d" "docs/qa/run3/x"$'\xc2\x80'"y.txt"
 LC_ALL=C.utf8 expect "R3-3 C1 control char in VERIFIED path -> BLIND" 2 "control character" "$d" --check changelog
+echo "== review round 4: cited spelling vs resolved path (I4-1), directory cite (mutant A), every version file kind (mutant C)"
+# I4-1 / P1x: symlink committed to a missing target, then retargeted in the working tree only to manifested evidence
+d=$(fresh); mkdir -p "$d/docs/other"; ( cd "$d/docs/other" && ln -s ../nowhere ln ); addrow "$d" docs/other/ln; ( cd "$d" && git commit -q -a -m cl ); ( cd "$d/docs/other" && rm ln && ln -s ../qa/run2/c.txt ln )
+RAW=1 expect "I4-1 P1x symlink retargeted only in the working tree -> BLIND" 2 "docs/other/ln" "$d" --check changelog
+# I4-1 / P2x: a brand-new symlink that is only staged (a clone has no such path)
+d=$(fresh); mkdir -p "$d/docs/other"; ( cd "$d/docs/other" && ln -s ../qa/run2/c.txt ln ); addrow "$d" docs/other/ln; ( cd "$d" && git commit -q docs/CHANGELOG.md -m cl )
+RAW=1 expect "I4-1 P2x symlink only staged -> BLIND" 2 "docs/other/ln" "$d" --check changelog
+# I4-1 negative control: the same symlink committed passes
+d=$(fresh); mkdir -p "$d/docs/other"; ( cd "$d/docs/other" && ln -s ../qa/run2/c.txt ln ); addrow "$d" docs/other/ln; ( cd "$d" && git commit -q -a -m cl )
+RAW=1 expect "I4-1 committed symlink to manifested evidence -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+# mutant A: a cited non-manifest DIRECTORY holding a tracked, uncommitted edit
+d=$(fresh); mkother "$d"; addrow "$d" docs/other; ( cd "$d" && git commit -q -a -m cl ); echo y >> "$d/docs/other/z.txt"
+RAW=1 expect "R4 cited directory with an uncommitted tracked edit -> BLIND" 2 "docs/other" "$d" --check changelog
+# mutant C: an uncommitted working-tree edit of each non-JSON version file kind is BLIND
+for vf in docs/api/openapi.yaml catalogizer-desktop/src-tauri/Cargo.toml catalogizer-android/app/build.gradle.kts; do
+  d=$(fresh); echo >> "$d/$vf"
+  RAW=1 expect "R4 uncommitted edit of $vf -> BLIND" 2 "$vf" "$d" --check version
+done
+
 # R3-2 (R-m): a waiver file that is only staged must go BLIND
 d=$(fresh); mkdir -p "$d/docs/qa"; printf '%s\n' 'unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|r' > "$d/docs/qa/EVIDENCE_WAIVERS.txt"; ( cd "$d" && git add docs/qa/EVIDENCE_WAIVERS.txt )
 RAW=1 expect "R3-2 staged-only waiver file -> BLIND" 2 "differs from HEAD" "$d" --check changelog

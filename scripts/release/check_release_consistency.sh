@@ -516,7 +516,11 @@ PY
     else
       evrel="$q"
     fi
-    { [ "$cited_ok" = 0 ] || [ "$evrel" = "." ]; } || head_check "cited path $p" "$evrel"
+    # I4-1: check BOTH the cited tracked spelling (lexically collapsed, symlinks NOT resolved) and the
+    # resolved location; a symlink retargeted or added only in the working tree differs from HEAD.
+    qn="$(realpath -ms -- "$REPO/$q" 2>/dev/null || true)"; rb="$(realpath -ms -- "$REPO" 2>/dev/null || true)"
+    if [ -n "$qn" ] && [ -n "$rb" ] && [[ "$qn" == "$rb"/* ]]; then qn="${qn#"$rb"/}"; else qn="$q"; fi
+    { [ "$cited_ok" = 0 ] || [ "$evrel" = "." ]; } || head_check "cited path $p" "$qn" "$evrel"
     # nearest tracked manifest (SHA256SUMS, SHA256SUMS.txt, MANIFEST*.sha256) at or above the path
     # (never the repo root itself)
     if [ -d "$REPO/$q" ]; then d="$evrel"; else d="$(dirname "$evrel")"; fi
