@@ -12,6 +12,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -93,7 +94,7 @@ func TestSECQ1A_B5_WireServerRefused(t *testing.T) {
 func TestSECQ1A_B6_AllowListHygiene(t *testing.T) {
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
-	t.Cleanup(func() { log.SetOutput(nil) })
+	t.Cleanup(func() { log.SetOutput(os.Stderr) })
 	resetAllowListWarnings()
 	t.Setenv(AllowBroadEnv, "")
 	t.Setenv(AllowCIDRsEnv, "0.0.0.0/0, ::/0, 192.168.1.0/24, not-a-cidr")
