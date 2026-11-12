@@ -262,7 +262,7 @@ func TestErrorHandler(t *testing.T) {
 			},
 		},
 		{
-			name: "public error returns 500 with message",
+			name: "public error returns generic 500 without its text",
 			setupErr: func(c *gin.Context) {
 				c.Error(&gin.Error{
 					Err:  assert.AnError,

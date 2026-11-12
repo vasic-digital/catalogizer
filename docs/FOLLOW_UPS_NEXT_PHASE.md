@@ -1911,7 +1911,7 @@ Reviewer-surviving mutants / findings (Queued, minor): OPA-1 no test for Sliding
 - DONE (PROVISIONAL): `utils.SendErrorResponse` no longer sets `details` for ANY status (err is logged server-side with status and request_id; body = success+error only). Decision: all callers were read for 400/409/422: the err values there are `strconv`/`ShouldBindJSON`/time-parse errors (Go internals, not user-facing validation strings), and `catalog-web` does not read `details`, so dropping everywhere is conservative. `health.go` ping failure message is now fixed "Database ping failed" (error logged). Tests: `TestSendErrorResponse_DoesNotLeakInternalErrorText`, `TestCheckDatabase_PingErrorNotLeaked`; six challenge tests that pinned `details` now assert its absence.
 - PXF23-F1 (Queued): monitoring.go:251 leak path is unwired (not reached) - wire-or-remove investigation first (§11.4.124).
 - PXF23-F2 (Queued): tool/main.go `errSite` detector misses bare `err` arguments to SendErrorResponse; fix detector.
-- PXF23-F3 (Queued, UNCONFIRMED scope): other paths still emit `details` NOT via the helper: handlers/sync_handler.go (`"details": err.Error()` literals, documented in docs/api/SYNC_API.md and pinned by sync_handler_test.go:406,709), internal/middleware ErrorHandler (bind errors, middleware_test.go:334), services/error_handling_integration_test.go bodies. Also callers that concatenate err.Error() into `message` (e.g. handlers/collection_handler.go:335 "Invalid smart_rules: "+err.Error()). Enumerate and decide.
+- PXF23-F3 (Queued, UNCONFIRMED scope): other paths still emit `details` NOT via the helper: handlers/sync_handler.go (`"details": err.Error()` literals, documented in docs/api/SYNC_API.md and pinned by sync_handler_test.go:406,709), internal/middleware ErrorHandler (bind errors; FIXED in CAT-WP02-ERRLEAK), services/error_handling_integration_test.go bodies. Also callers that concatenate err.Error() into `message` (e.g. handlers/collection_handler.go:335 "Invalid smart_rules: "+err.Error()). Enumerate and decide.
 - PXF23-F4 (Queued): no end-to-end httptest of the inline /health/deep route in main.go; unit test covers the checker message only.
 
 ## PXF23 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups
@@ -2222,3 +2222,25 @@ WP03R3-F1..F7 addressed (F6 = heading moved above). Residual, UNCONFIRMED or owe
 - SEC-WS-FU-E (nit): fixture with directive hidden behind inline trailing `#` (kills mutant GM1).
 - FAVR-FU-F (minor): partial-restore tests (consistent total kills FM1; decrement smaller than restored kills FM2).
 - FAVR-FU-G (nit, pre-existing): preserve original order when rolling back interleaved concurrent toggles.
+## CAT-WP02-ERRLEAK (2026-11-12, branch fix/wp02-errleak) - PROVISIONAL, review owed
+Class-wide enumeration with a control-needled go/ast instrument (`catalog-api/internal/errleak`, own small package; positive controls: direct, concat, variable-carried, two-hop variable, map-carried, http.Error, wrapper sink, Fprintf(w); negative controls: fixed text, mapper, sentinel, stderr, logger, scrubber, fabricated needle = 0) over every non-test .go file under catalog-api. Result on main 570e2cc5: one real sink pair left, internal/middleware/middleware.go ErrorHandler (R5B-1: bind `details` and public `error` echoed err.Error()). RED (scratch evidence logs, not committed: red_middleware.log, red_sweep.log; `TestErrorHandler_NeverEchoesErrorText` bind+public FAIL; sweep FAIL on pre-fix middleware.go). Fixed: fixed texts ("Invalid request format"/"request could not be parsed", "Internal server error"), detail logged server-side with the RequestID; ErrorTypePublic no longer carries text (no non-test producer exists). Sweep adds variable- and map-carried taint (closes R5B-F5 in the sweep; R5B-F4: allow-list now keyed by file|function|snippet with exact-line or pinned-tail matching). Existing response bodies/status codes otherwise unchanged; the pre-existing handlers sweep (pxf23_r5b_leak_test.go) is kept.
+- ERRLEAK-1 (minor, test-instrumentation) taint is function-wide, not flow-sensitive (false positive in user_handler CreateUser handled by allow-list); no go/types, so an error returned through a custom non-"Err"-named variable passed to an unknown helper sink is invisible. UNCONFIRMED for new helper names outside wrapperSinkRE.
+- ERRLEAK-2 (minor, test) no HTTP-level RED for the allow-listed AUTHORED site conversion_handler.go CreateJob `reason` (services/conversion_service.go authors the text; a future wrap would pass through).
+- ERRLEAK-3 (nit) the sweep covers catalog-api only; other modules (submodules, tools) not enumerated.
+- ERRLEAK-4 (nit) R5B-F1/F2/R5B-4/R5B-5 remain open (not in this scope).
+
+## CAT-WP02-ERRLEAK review round 1 (Opus NO-GO, 2 important) - fixed in this branch (PROVISIONAL)
+- F1 fixed: ErrorHandler logs under the production request id (`request_id` set by catalogizer/middleware.RequestID, fallback `RequestID`); test `TestErrorHandler_LogsRealRequestID` registers the middlewares in main.go order (RED first: id logged as `<nil>`).
+- F3 fixed: the id and path are logged with %q (a client X-Request-ID with a newline no longer forges a log line; asserted).
+- F2 fixed: every allow-list entry is pinned to the flagged line (`=` exact statement, `~` pinned tail); the unpinned 8-line window match was removed; `TestAllowListEntriesArePinned` and `TestAllowListDoesNotShieldNeighbouringLeak`; reviewer mutant M6 (leak inserted above the conversion `reason` site) now FAILs the sweep.
+- F5 fixed: stale test case name; PXF23-F3 note updated.
+- ERRLEAK-F4 (Queued, test-instrumentation) sweep coverage gaps, NOT implemented: non-`*err` variable names (`e`, `problem`, `s := e`), struct-field taint (`r.Msg = err.Error(); c.JSON(500, r)`), inter-procedural helper bodies (`body(err)`), sinks not listed (c.HTML, template Execute, c.PureJSON, c.Render, c.SSEvent, websocket WriteJSON/WriteMessage), catalog-api/challenges skipped. The statement "earlier sites fixed" therefore holds only for the shapes the sweep detects; a go/types data-flow pass would close the gaps.
+
+### Reviewer follow-ups for fix/wp02-errleak (Opus round 2, GO-with-follow-ups, 2026-11-13) - PROVISIONAL
+- ERRLEAK-N1 (minor): switch the three `~gin.H{"error": hostAllowedErr})` allow-list pins to `=` exact (mutant M-S1 survives).
+- ERRLEAK-N2 (minor): add path log-forging regression test (`GET /t%0AFORGED-PATH`; mutant M-E4).
+- ERRLEAK-N3 (minor): add to ERRLEAK-F4: `var x = err.Error()` taint and package-level function-variable handlers (M-S3, M-S4).
+- ERRLEAK-N4 (nit): fix `log.SetOutput` restore in errorhandler_reqid_test.go.
+- ERRLEAK-N5 (nit): assert exact shielding counts in the neighbouring-leak test.
+- ERRLEAK-N6 (nit): test the `RequestID` fallback branch (M-E1).
+- ERRLEAK-N7 (nit): log an empty marker instead of `"<nil>"` when no request id.
