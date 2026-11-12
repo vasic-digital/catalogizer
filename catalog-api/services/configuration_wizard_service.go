@@ -1,6 +1,7 @@
 package services
 
 import (
+	"embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -1174,14 +1175,62 @@ func (s *ConfigurationWizardService) createConfigurationFile(params map[string]i
 		return err
 	}
 
-	// NOTE: a "template" parameter is accepted but template loading/merging has
-	// never been implemented (git: 5bbaeae9), so a declared template (e.g. the
-	// built-in PostInstall step naming config_template.json) is silently ignored;
-	// the session configuration is always what gets written. See CAT-QA-SONAR-5.
-	_ = template
 	data := session.Configuration
+	if template != "" {
+		base, err := s.loadConfigTemplate(template)
+		if err != nil {
+			return err
+		}
+		data = mergeConfigMaps(base, session.Configuration)
+	}
 
 	return s.writeConfigFile(filePath, map[string]interface{}{"config": data})
+}
+
+//go:embed wizard_templates/*.json
+var builtinWizardTemplates embed.FS
+
+// loadConfigTemplate loads a declared post-install template by plain file name:
+// first from the operator's templates directory (templatesPath), then from the
+// built-in set shipped with the binary. A missing or invalid template is an
+// error, never silently ignored (CAT-QA-SONAR-5).
+func (s *ConfigurationWizardService) loadConfigTemplate(name string) (map[string]interface{}, error) {
+	if name != filepath.Base(name) || name == "." || name == ".." || strings.ContainsAny(name, `/\`) {
+		return nil, fmt.Errorf("config template %q: must be a plain file name inside the templates directory", name)
+	}
+	raw, err := os.ReadFile(filepath.Join(s.templatesPath, name))
+	if err != nil {
+		if !os.IsNotExist(err) {
+			return nil, fmt.Errorf("config template %q: cannot read from %s: %w", name, s.templatesPath, err)
+		}
+		raw, err = builtinWizardTemplates.ReadFile("wizard_templates/" + name)
+		if err != nil {
+			return nil, fmt.Errorf("config template %q: not found in %s and not a built-in template", name, s.templatesPath)
+		}
+	}
+	var doc map[string]interface{}
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		return nil, fmt.Errorf("config template %q: invalid JSON object: %w", name, err)
+	}
+	return doc, nil
+}
+
+// mergeConfigMaps returns base overlaid with over (recursively for nested objects); over wins.
+func mergeConfigMaps(base, over map[string]interface{}) map[string]interface{} {
+	out := make(map[string]interface{}, len(base)+len(over))
+	for k, v := range base {
+		out[k] = v
+	}
+	for k, v := range over {
+		if ov, ok := v.(map[string]interface{}); ok {
+			if bv, ok := out[k].(map[string]interface{}); ok {
+				out[k] = mergeConfigMaps(bv, ov)
+				continue
+			}
+		}
+		out[k] = v
+	}
+	return out
 }
 
 func (s *ConfigurationWizardService) restartService(params map[string]interface{}) error {

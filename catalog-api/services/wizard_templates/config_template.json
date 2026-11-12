@@ -1,0 +1,7 @@
+{
+  "log_level": "info",
+  "server_port": 8080,
+  "db_type": "sqlite",
+  "storage_type": "local",
+  "session_timeout": 24
+}
