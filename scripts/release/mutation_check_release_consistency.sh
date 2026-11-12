@@ -109,13 +109,8 @@ MUTANTS=(
 'RC-3 evidence without manifest not counted|||C_NOMAN=$((C_NOMAN+1)); echo "NOMANIFEST|||echo "NOMANIFEST'
 'RC-3 every path treated as evidence|||[[ "$1/" == "$pre"* ]] && return 0|||return 0'
 'RC-3 no path treated as evidence|||[[ "$1/" == "$pre"* ]] && return 0|||false && return 0'
-'RC-3 SHA256SUMS.txt not recognised at path level||||| [ -f "$REPO/$d/SHA256SUMS.txt" ]; then seen_dir|||; then seen_dir'
-'RC-3 SHA256SUMS.txt not verified|||for mf in SHA256SUMS SHA256SUMS.txt; do|||for mf in SHA256SUMS; do'
-'RC-3 NOMANIFEST ignores waivers file|||if ! waived "no-manifest|$q" "$p (no manifest)"; then|||if true; then'
 'RC-3b unlisted file not counted|||U_FILES=$((U_FILES+1)); echo "UNLISTED|||echo "UNLISTED'
 'RC-3b completeness comparison disabled|||if os.path.normpath(rel) not in listed_for(d):|||if False:'
-'RC-3b manifest files demanded in the manifest|||if os.path.basename(f) in NAMES or os.path.islink(full) or not os.path.isfile(full):|||if os.path.islink(full) or not os.path.isfile(full):'
-'RC-3b symlinks demanded in the manifest|||if os.path.basename(f) in NAMES or os.path.islink(full) or not os.path.isfile(full):|||if os.path.basename(f) in NAMES or not os.path.isfile(full):'
 'RC-3b untracked files invisible|||"--cached", "--others", "--exclude-standard"|||"--cached"'
 'RC-3b gitignored files demanded|||"--cached", "--others", "--exclude-standard"|||"--cached", "--others"'
 'RC-3b nested manifests not queued|||for f in "${nst[@]+"${nst[@]}"}"; do queue+=("$f"); done|||:'
@@ -125,7 +120,6 @@ MUTANTS=(
 'waiver: bad waiver verdict ignored|||C_MISS + S_FAIL + C_NOMAN + U_FILES + W_BAD|||C_MISS + S_FAIL + C_NOMAN + U_FILES'
 'waiver: any key accepted|||[ -n "${WV[$1]+x}" ] || return 1|||:'
 'waiver: untracked waiver file honoured|||if ! tracked "$rel"; then note_blind|||if false; then note_blind'
-'waiver: reason optional|||if [ -z "$a" ] || [ -z "$reason" ] || {|||if [ -z "$a" ] || {'
 'waiver: duplicates accepted|||if [ -n "${WV[$key]+x}" ]; then W_BAD|||if false; then W_BAD'
 'waiver: unknown kind accepted|||*) W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n unknown kind '"'"'$k'"'"'"; continue ;;|||*) continue ;;'
 'waiver: missing explicit file not blind|||[ "$explicit" = 0 ] || { note_blind|||{ note_blind'
@@ -134,6 +128,32 @@ MUTANTS=(
       S_FAIL|||[ "$sawunv" = 0 ]; }; then
       S_FAIL'
 'RC2-1 only one block comment allowed|||\*/\s*)*(?://.*)?$")|||\*/\s*)?(?://.*)?$")'
+'RC-3 MANIFEST*.sha256 not recognised|||"$REPO/$d"/MANIFEST*.sha256; do|||"$REPO/$d"/MANIFEST-NONE.sha256; do'
+'RC-3 SHA256SUMS.txt not recognised|||"$REPO/$d"/SHA256SUMS "$REPO/$d"/SHA256SUMS.txt "$REPO/$d"/MANIFEST|||"$REPO/$d"/SHA256SUMS "$REPO/$d"/MANIFEST'
+'RC-3 python MANIFEST*.sha256 not a manifest|||fnmatch.fnmatchcase(n, "MANIFEST*.sha256")|||False'
+'RC-3 manifest must be tracked|||tracked "$d/$n" && printf|||printf'
+'RC-3 NOMANIFEST ignores waivers file|||if ! waived "no-manifest|$evrel" "$p (no manifest)"; then|||if true; then'
+'RC-3 path spelling not normalised|||ev="$(readlink -m -- "$REPO/$q" 2>/dev/null || true)"|||ev=""'
+'RC-3 control char in VERIFIED path not blind|||if [[ "$p" == *[[:cntrl:]]* ]]; then|||if false; then'
+'RC-3 nested dir name control char not blind (python)|||    if re.search(r"[\x00-\x1f\x7f]", n):|||    if False:'
+'RC-3 nested dir name control char not blind (bash)|||BADNAME) note_blind "nested manifest directory name contains a control character: $a"; return ;;|||BADNAME) ;;'
+'RC-3 UNLISTED name not escaped|||    return re.sub(r"[\x00-\x1f\x7f]", lambda m: "\\x%02x" % ord(m.group()), t)|||    return t'
+'RC-3 manifest dir missing/no-manifest not blind|||if [ ! -d "$REPO/$d" ] || [ -z "$mfs" ]; then|||if false; then'
+'RC-3 manifest dir without manifest not blind||||| [ -z "$mfs" ]; then|||; then'
+'RC-3b manifest files demanded in the manifest|||if f in tmf or os.path.islink(full) or not os.path.isfile(full):|||if os.path.islink(full) or not os.path.isfile(full):'
+'RC-3b symlinks demanded in the manifest|||if f in tmf or os.path.islink(full) or not os.path.isfile(full):|||if f in tmf or not os.path.isfile(full):'
+'RC-3b tracked() glob-expands dir names|||git -C "$REPO" ls-files -- ":(literal)$1"|||git -C "$REPO" ls-files -- "$1"'
+'RC-3b python ls-files glob-expands dir names|||"--", ":(literal)" + d]|||"--", d]'
+'waiver: reason optional|||if [ -z "$reason" ]; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n missing reason"; continue; fi|||if false; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n missing reason"; continue; fi'
+'waiver: reason not trimmed|||reason="$(trim "$reason")"|||:'
+'waiver: tracked item optional|||if ! [[ "$item" =~ ^[A-Za-z][A-Za-z0-9]*(-[A-Za-z0-9]+)+$ ]]; then|||if false; then'
+'waiver: impossible date accepted||||| [ "$(date -d "$exp" +%F 2>/dev/null)" != "$exp" ]; then|||; then'
+'waiver: expiry not enforced|||if [[ "$exp" < "$today" ]]; then|||if false; then'
+'waiver: valid on expiry day lost|||if [[ "$exp" < "$today" ]]; then|||if [[ "$exp" < "$today" || "$exp" == "$today" ]]; then'
+'waiver: file may differ from HEAD|||if ! git -C "$REPO" diff --quiet HEAD -- ":(literal)$rel" 2>/dev/null; then|||if false; then'
+'waiver: PASS-WITH-WAIVERS not distinct|||if [ "$W_APPLIED" -gt 0 ]; then|||if false; then'
+'waiver: unused waiver not listed|||echo "UNUSED-WAIVER  $key: ${WV[$key]}"|||:'
+'waiver: whitespace fields not trimmed|||for i in "${!F[@]}"; do F[i]="$(trim "${F[i]}")"; done|||:'
 'help has no VERDICT|||usage; echo "VERDICT: HELP"; exit 0|||usage; exit 0'
 )
 
@@ -156,6 +176,7 @@ PY
   then echo "ERROR  [$n] $name: mutation did not apply" > "$d/result"; return; fi
   if ! bash -n "$d/check_release_consistency.sh" 2>/dev/null; then
     echo "ERROR  [$n] $name: mutant is a syntax error (would be killed trivially)" > "$d/result"; return; fi
+  if [ -n "${MUT_APPLY_ONLY:-}" ]; then echo "applies  [$n] $name" > "$d/result"; return; fi   # quick applicability pass, not a verdict
   if CHECKER="$d/check_release_consistency.sh" "$d/test_check_release_consistency.sh" >"$d/out.txt" 2>&1; then
     echo "SURVIVED [$n] $name" > "$d/result"
   else

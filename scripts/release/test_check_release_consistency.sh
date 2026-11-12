@@ -273,35 +273,35 @@ d=$(fresh); echo ignored > "$d/docs/qa/run1/pic.png"; expect "RC-3b gitignored f
 d=$(fresh); ln -s c.txt "$d/docs/qa/run2/lnk.txt"; expect "RC-3b unlisted symlink is not a regular file" 0 "VERDICT: PASS" "$d" --check changelog
 d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; expect "RC-3b file in subdir without nested manifest -> FAIL" 1 "UNLISTED  docs/qa/run2/sub/n.txt" "$d" --check changelog
 d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2" && sha256sum sub/n.txt >> SHA256SUMS ); expect "RC-3b subdir file listed with relative path accepted" 0 "VERDICT: PASS" "$d" --check changelog
-d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); expect "RC-3b nested manifest covers its subtree" 0 "VERDICT: PASS" "$d" --check changelog
-d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); echo m > "$d/docs/qa/run2/sub/m.txt"; expect "RC-3b nested manifest completeness checked -> FAIL" 1 "UNLISTED  docs/qa/run2/sub/m.txt" "$d" --check changelog
-d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); echo t > "$d/docs/qa/run2/sub/n.txt"; expect "RC-3b nested manifest checksum checked -> FAIL" 1 "docs/qa/run2/sub/n.txt (checksum mismatch)" "$d" --check changelog
-d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); expect "RC-3b manifest files themselves are not required" 0 "unlisted=0" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); (cd "$d" && git add -A) ; expect "RC-3b nested manifest covers its subtree" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); (cd "$d" && git add -A) ; echo m > "$d/docs/qa/run2/sub/m.txt"; expect "RC-3b nested manifest completeness checked -> FAIL" 1 "UNLISTED  docs/qa/run2/sub/m.txt" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); (cd "$d" && git add -A) ; echo t > "$d/docs/qa/run2/sub/n.txt"; expect "RC-3b nested manifest checksum checked -> FAIL" 1 "docs/qa/run2/sub/n.txt (checksum mismatch)" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); (cd "$d" && git add -A) ; expect "RC-3b manifest files themselves are not required" 0 "unlisted=0" "$d" --check changelog
 # waivers: declared, printed, counted, never silent
-wv() { mkdir -p "$1/docs/qa"; printf '%s\n' "$2" > "$1/docs/qa/EVIDENCE_WAIVERS.txt"; (cd "$1" && git add -A); }
-d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; wv "$d" 'unlisted|docs/qa/run2|extra.txt|scratch note, not evidence'
+wv() { mkdir -p "$1/docs/qa"; printf '%s\n' "$2" > "$1/docs/qa/EVIDENCE_WAIVERS.txt"; (cd "$1" && git add -A && git commit -q -m waivers); }
+d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; wv "$d" 'unlisted|docs/qa/run2|extra.txt|CAT-T-1|2099-12-31|scratch note, not evidence'
 expect "waiver: unlisted file waived" 0 "WAIVED  docs/qa/run2/extra.txt (not listed in manifest): scratch note, not evidence" "$d" --check changelog
-d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; wv "$d" 'unlisted|docs/qa/run2|extra.txt|scratch note'; expect "waiver: summary counts waived=1" 0 "waived=1" "$d" --check changelog
-d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; addrow "$d" docs/qa/run3/d.txt; wv "$d" 'no-manifest|docs/qa/run3/d.txt|pre-manifest evidence'
+d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; wv "$d" 'unlisted|docs/qa/run2|extra.txt|CAT-T-1|2099-12-31|scratch note'; expect "waiver: summary counts waived=1" 0 "waived=1" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; addrow "$d" docs/qa/run3/d.txt; wv "$d" 'no-manifest|docs/qa/run3/d.txt|CAT-T-1|2099-12-31|pre-manifest evidence'
 expect "waiver: no-manifest waived" 0 "WAIVED  docs/qa/run3/d.txt (no manifest): pre-manifest evidence" "$d" --check changelog
-d=$(fresh); echo "$z  c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|docs/qa/run2|c.txt|E-1 known-bad manifest entry (documented)'
+d=$(fresh); echo "$z  c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|docs/qa/run2|c.txt|CAT-T-1|2099-12-31|E-1 known-bad manifest entry (documented)'
 expect "waiver: known-bad checksum entry waived and printed" 0 "WAIVED  docs/qa/run2/c.txt (checksum mismatch): E-1" "$d" --check changelog
 d=$(fresh); echo "$z  c.txt" > "$d/docs/qa/run2/SHA256SUMS"; expect "waiver: known-bad entry without waiver -> FAIL" 1 "checksum mismatch" "$d" --check changelog
-d=$(fresh); echo "$z  c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|docs/qa/run2|other.txt|wrong name'; expect "waiver: waiver for a different entry does not apply" 1 "checksum mismatch" "$d" --check changelog
-d=$(fresh); echo "$z  c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|docs/qa/run2|c.txt|E-1'; echo "$z  d2.txt" >> "$d/docs/qa/run2/SHA256SUMS"; (cd "$d" && git add -A); expect "waiver: other failures in the same manifest still FAIL" 1 "d2.txt (missing/unreadable" "$d" --check changelog
-d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|nothing.txt|not needed'; expect "waiver: unused waiver is counted, not fatal" 0 "unused_waivers=1" "$d" --check changelog
-d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|nothing.txt|'; expect "waiver: missing reason -> FAIL" 1 "BADWAIVER" "$d" --check changelog
+d=$(fresh); echo "$z  c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|docs/qa/run2|other.txt|CAT-T-1|2099-12-31|wrong name'; expect "waiver: waiver for a different entry does not apply" 1 "checksum mismatch" "$d" --check changelog
+d=$(fresh); echo "$z  c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|docs/qa/run2|c.txt|CAT-T-1|2099-12-31|E-1'; echo "$z  d2.txt" >> "$d/docs/qa/run2/SHA256SUMS"; (cd "$d" && git add -A); expect "waiver: other failures in the same manifest still FAIL" 1 "d2.txt (missing/unreadable" "$d" --check changelog
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|nothing.txt|CAT-T-1|2099-12-31|not needed'; expect "waiver: unused waiver is counted, not fatal" 0 "unused_waivers=1" "$d" --check changelog
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|nothing.txt|CAT-T-1|2099-12-31|'; expect "waiver: missing reason -> FAIL" 1 "BADWAIVER" "$d" --check changelog
 d=$(fresh); wv "$d" 'forgive|docs/qa/run2|nothing.txt|why'; expect "waiver: unknown kind -> FAIL" 1 "BADWAIVER" "$d" --check changelog
-d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt|a
-unlisted|docs/qa/run2|x.txt|b'; expect "waiver: duplicate -> FAIL" 1 "duplicate waiver" "$d" --check changelog
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|a
+unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|b'; expect "waiver: duplicate -> FAIL" 1 "duplicate waiver" "$d" --check changelog
 d=$(fresh); wv "$d" '# comment
 
-unlisted|docs/qa/run2|x.txt|fine'; expect "waiver: comments and blanks ignored" 0 "VERDICT: PASS" "$d" --check changelog
-d=$(fresh); printf 'unlisted|docs/qa/run2|x.txt|r\n' > "$d/docs/qa/EVIDENCE_WAIVERS.txt"; expect "waiver: untracked waiver file -> BLIND" 2 "not git-tracked" "$d" --check changelog
+unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|fine'; expect "waiver: comments and blanks ignored" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); printf 'unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|r\n' > "$d/docs/qa/EVIDENCE_WAIVERS.txt"; expect "waiver: untracked waiver file -> BLIND" 2 "not git-tracked" "$d" --check changelog
 expect "waiver: --waivers file missing -> BLIND" 2 "not found" "$GOLD" --check changelog --waivers nope.txt
-d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; addrow "$d" docs/qa/run3/d.txt; printf 'no-manifest|docs/qa/run3/d.txt|r\n' > "$d/w.txt"; (cd "$d" && git add -A)
+d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; addrow "$d" docs/qa/run3/d.txt; printf 'no-manifest|docs/qa/run3/d.txt|CAT-T-1|2099-12-31|r\n' > "$d/w.txt"; (cd "$d" && git add -A && git commit -q -m waivers)
 expect "waiver: --waivers custom path" 0 "waived=1" "$d" --check changelog --waivers w.txt
-d=$(fresh); echo "$z  ./c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|docs/qa/run2|c.txt|E-1 entry written with ./ prefix'; expect "waiver: ./-prefixed manifest entry matches bare waiver name" 0 "waived=1" "$d" --check changelog
+d=$(fresh); echo "$z  ./c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|docs/qa/run2|c.txt|CAT-T-1|2099-12-31|E-1 entry written with ./ prefix'; expect "waiver: ./-prefixed manifest entry matches bare waiver name" 0 "waived=1" "$d" --check changelog
 # completeness-helper integrity: a stub that forges only the RC-3b helper's output
 cmpstub() { local sd; sd="$(mktemp -d "$ROOT/cstub.XXXXXX")"
   printf '#!/bin/sh\nin=$(cat)\nout=$(printf "%%s" "$in" | %s -I "$@")\ncase "$in" in\n*UNLISTED*) printf "%%s\\n" "$out" | { %s; } ;;\n*) printf "%%s\\n" "$out" ;;\nesac\nexit 0\n' "$REALPY" "$1" > "$sd/python3"; chmod +x "$sd/python3"; echo "$sd"; }
@@ -309,7 +309,7 @@ sd=$(cmpstub 'cat'); d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; PATH=
 sd=$(cmpstub 'grep -v "^END"'); d=$(fresh); PATH="$sd:$PATH" expect "RC-3b helper without END -> BLIND" 2 "completeness helper output incomplete" "$d" --check changelog
 sd=$(cmpstub 'grep -v "^UNLISTED"'); d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; PATH="$sd:$PATH" expect "RC-3b helper with UNLISTED row dropped -> BLIND" 2 "completeness helper output incomplete" "$d" --check changelog
 sd=$(cmpstub 'cat; printf "UNLISTED\tforged\n"'); d=$(fresh); PATH="$sd:$PATH" expect "RC-3b helper with forged row after END -> BLIND" 2 "completeness helper output incomplete" "$d" --check changelog
-sd=$(cmpstub 'sed "/^NESTED/d"'); d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); echo m > "$d/docs/qa/run2/sub/m.txt"
+sd=$(cmpstub 'sed "/^NESTED/d"'); d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); (cd "$d" && git add -A) ; echo m > "$d/docs/qa/run2/sub/m.txt"
 PATH="$sd:$PATH" expect "RC-3b helper with NESTED row dropped -> BLIND (nested manifest never skipped silently)" 2 "completeness helper output incomplete" "$d" --check changelog
 sd=$(cmpstub 'sed "s/^END.*/END\tx\t0\t0/"'); d=$(fresh); PATH="$sd:$PATH" expect "RC-3b helper with non-numeric END -> BLIND" 2 "completeness helper output incomplete" "$d" --check changelog
 # RC2-1: consecutive block comments after versionCode
@@ -319,6 +319,64 @@ d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionCode = 7
 # RC2-3: the only CR is mid-line
 d=$(fresh); printf 'SHA256 (a\r) = %s\n' "$z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "RC2-3 BSD line with mid-line CR -> FAIL" 1 "CR inside a line" "$d" --check changelog
 d=$(fresh); printf '%s  a\r.txt\n' "$z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "RC2-3 GNU line with mid-line CR (no trailing CR) -> FAIL" 1 "CR inside a line" "$d" --check changelog
+
+echo "== review round 1: MANIFEST*.sha256, control chars, path spelling, tracked manifest, waiver schema"
+T=$'\t'
+mkrun3() { mkdir -p "$1/docs/qa/run3"; echo e3 > "$1/docs/qa/run3/d.txt"; }
+# MANIFEST*.sha256 is a manifest
+d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > MANIFEST.sha256 ); addrow "$d" docs/qa/run3/d.txt && expect "MANIFEST.sha256 accepted as manifest" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > MANIFEST.screenshots.sha256 ); addrow "$d" docs/qa/run3/d.txt && expect "MANIFEST.<x>.sha256 accepted as manifest" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > MANIFEST.sha256 ); echo t > "$d/docs/qa/run3/d.txt"; addrow "$d" docs/qa/run3/d.txt && expect "MANIFEST.sha256 checksum enforced -> FAIL" 1 "checksum mismatch" "$d" --check changelog
+d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > MANIFEST.sha256 ); echo x > "$d/docs/qa/run3/x.txt"; addrow "$d" docs/qa/run3/d.txt && expect "MANIFEST.sha256 completeness enforced -> FAIL" 1 "UNLISTED  docs/qa/run3/x.txt" "$d" --check changelog
+d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > MANIFEST.sha256 ); echo x > "$d/docs/qa/run3/x.txt"; addrow "$d" docs/qa/run3/d.txt && expect "manifest file itself not required in MANIFEST.sha256" 1 "unlisted=1" "$d" --check changelog
+# manifest must be git-tracked
+d=$(fresh); mkrun3 "$d"; addrow "$d" docs/qa/run3/d.txt; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS ); expect "untracked manifest does not count -> NOMANIFEST" 1 "NOMANIFEST" "$d" --check changelog
+d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > MANIFEST.sha256 ); addrow "$d" docs/qa/run3/d.txt; ( cd "$d" && git rm -q --cached docs/qa/run3/MANIFEST.sha256 ); expect "untracked MANIFEST.sha256 does not count -> NOMANIFEST" 1 "NOMANIFEST" "$d" --check changelog
+# path spelling cannot dodge the evidence prefix
+d=$(fresh); mkrun3 "$d"; addrow "$d" docs/./qa/run3/d.txt; expect "path docs/./qa/run3 -> NOMANIFEST" 1 "NOMANIFEST" "$d" --check changelog
+d=$(fresh); mkrun3 "$d"; addrow "$d" docs//qa/run3/d.txt; expect "path docs//qa/run3 -> NOMANIFEST" 1 "NOMANIFEST" "$d" --check changelog
+d=$(fresh); mkrun3 "$d"; ln -s qa/run3 "$d/docs/ev"; addrow "$d" docs/ev/d.txt; expect "symlink alias docs/ev -> qa/run3 -> NOMANIFEST" 1 "NOMANIFEST" "$d" --check changelog
+d=$(fresh); mkrun3 "$d"; addrow "$d" docs/qa/run3/../run3/d.txt; expect "path with .. inside evidence -> NOMANIFEST" 1 "NOMANIFEST" "$d" --check changelog
+d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS ); ln -s qa/run3 "$d/docs/ev"; addrow "$d" docs/ev/d.txt; expect "symlink alias is not a tracked path as written -> MISS (never a silent pass)" 1 "docs/ev/d.txt (exists but not git-tracked)" "$d" --check changelog
+# R6: the evidence prefix directory itself
+d=$(fresh); addrow "$d" docs/qa/; expect "R6 VERIFIED docs/qa/ (prefix itself) is evidence -> NOMANIFEST" 1 "NOMANIFEST" "$d" --check changelog
+# control characters fail closed
+d=$(fresh); mkrun3 "$d"; addrow "$d" "docs/qa/run3/x${T}y.txt"; expect "VERIFIED token with TAB is reported as skipped, never silently dropped" 0 "skipped non-repo-looking: docs/qa/run3/x" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/su${T}b"; echo n > "$d/docs/qa/run2/su${T}b/n.txt"; ( cd "$d/docs/qa/run2/su${T}b" && sha256sum n.txt > SHA256SUMS ); ( cd "$d" && git add -A ); expect "nested dir name with TAB -> BLIND (never skipped)" 2 "control character" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/su
+b"; echo n > "$d/docs/qa/run2/su
+b/n.txt"; ( cd "$d" && git add -A ); expect "nested dir name with LF: its file is reported UNLISTED with LF escaped" 1 'UNLISTED  docs/qa/run2/su\x0ab/n.txt' "$d" --check changelog
+# R5: control chars in UNLISTED names are escaped, never raw
+d=$(fresh); echo e > "$d/docs/qa/run2/a${T}b.txt"; expect "R5 TAB in unlisted name is escaped" 1 'UNLISTED  docs/qa/run2/a\x09b.txt' "$d" --check changelog
+# glob characters in directory names are literal
+d=$(fresh); mkdir -p "$d/docs/qa/run[x]" "$d/docs/qa/runx"; echo a > "$d/docs/qa/run[x]/a.txt"; echo b > "$d/docs/qa/runx/b.txt"; ( cd "$d/docs/qa/run[x]" && sha256sum a.txt > SHA256SUMS ); ( cd "$d/docs/qa/runx" && sha256sum b.txt > SHA256SUMS ); addrow "$d" 'docs/qa/run[x]/a.txt'; ( cd "$d" && git add -A ); expect "glob dir name run[x] is literal (sibling runx not mixed in)" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run[x]" "$d/docs/qa/runx"; echo a > "$d/docs/qa/run[x]/a.txt"; echo b > "$d/docs/qa/runx/b.txt"; ( cd "$d/docs/qa/run[x]" && sha256sum a.txt > SHA256SUMS ); ( cd "$d/docs/qa/runx" && sha256sum b.txt > SHA256SUMS ); echo extra > "$d/docs/qa/run[x]/extra.txt"; addrow "$d" 'docs/qa/run[x]/a.txt'; ( cd "$d" && git add -A ); expect "glob dir name: unlisted file inside is found" 1 'UNLISTED  docs/qa/run[x]/extra.txt' "$d" --check changelog
+d=$(fresh); mkrun3 "$d"; addrow "$d" "docs/qa/run3/x"$'\001'"y.txt"; expect "VERIFIED path with a control character -> BLIND" 2 "control character" "$d" --check changelog
+# check_manifest_dir never skips a directory it cannot verify (forged NESTED rows via the helper stub)
+sd=$(cmpstub 'sed "s/^END\t\([0-9]*\)\t\([0-9]*\)\t0/NESTED\tdocs\/qa\/ghost\nEND\t\1\t\2\t1/"'); d=$(fresh); PATH="$sd:$PATH" expect "nested dir that does not exist -> BLIND" 2 "is missing or has no tracked manifest" "$d" --check changelog
+sd=$(cmpstub 'sed "s/^END\t\([0-9]*\)\t\([0-9]*\)\t0/NESTED\tdocs\/qa\/run3\nEND\t\1\t\2\t1/"'); d=$(fresh); mkrun3 "$d"; ( cd "$d" && git add -A ); PATH="$sd:$PATH" expect "nested dir without a tracked manifest -> BLIND" 2 "is missing or has no tracked manifest" "$d" --check changelog
+# waiver file must equal HEAD
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|r'; echo '# edited' >> "$d/docs/qa/EVIDENCE_WAIVERS.txt"; expect "waiver file edited but uncommitted -> BLIND" 2 "differs from HEAD" "$d" --check changelog
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|r'; ( cd "$d" && git rm -q --cached docs/qa/EVIDENCE_WAIVERS.txt ); expect "waiver file removed from index -> BLIND" 2 "not git-tracked" "$d" --check changelog
+# R1: whitespace-only reason
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|   '; expect "R1 whitespace-only reason (unlisted) -> BADWAIVER" 1 "missing reason" "$d" --check changelog
+d=$(fresh); wv "$d" "bad-entry|docs/qa/run2|c.txt|CAT-T-1|2099-12-31|${T} ${T}"; expect "R1 whitespace-only reason (bad-entry) -> BADWAIVER" 1 "missing reason" "$d" --check changelog
+d=$(fresh); wv "$d" 'no-manifest|docs/qa/run3|CAT-T-1|2099-12-31|  '; expect "R1 whitespace-only reason (no-manifest) -> BADWAIVER" 1 "missing reason" "$d" --check changelog
+# section 11.4.271: item and expiry are mandatory
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt||2099-12-31|r'; expect "waiver without tracked item -> BADWAIVER" 1 "tracked item id" "$d" --check changelog
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt|not an id|2099-12-31|r'; expect "waiver with malformed item -> BADWAIVER" 1 "tracked item id" "$d" --check changelog
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt|CAT-T-1||r'; expect "waiver without expiry -> BADWAIVER" 1 "expires" "$d" --check changelog
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-13-45|r'; expect "waiver with impossible date -> BADWAIVER" 1 "expires" "$d" --check changelog
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt|CAT-T-1|tomorrow|r'; expect "waiver with non-date expiry -> BADWAIVER" 1 "expires" "$d" --check changelog
+d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; wv "$d" 'unlisted|docs/qa/run2|extra.txt|CAT-T-1|2020-01-01|r'; expect "expired waiver -> BADWAIVER and gap FAILs" 1 "expired on 2020-01-01" "$d" --check changelog
+d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; wv "$d" 'unlisted|docs/qa/run2|extra.txt|CAT-T-1|2026-11-12|r'; out=$(RELCHK_TODAY=2026-11-12 "$CHECKER" --repo "$d" --check changelog 2>&1); rc=$?; if [ "$rc" = 0 ]; then ok; else bad "waiver valid on its expiry day rc=$rc"; fi
+d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; wv "$d" 'unlisted|docs/qa/run2|extra.txt|CAT-T-1|2026-11-12|r'; out=$(RELCHK_TODAY=2026-11-13 "$CHECKER" --repo "$d" --check changelog 2>&1); rc=$?; if [ "$rc" = 1 ]; then ok; else bad "waiver expired the day after rc=$rc"; fi
+# PASS-WITH-WAIVERS is distinct
+d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; wv "$d" 'unlisted|docs/qa/run2|extra.txt|CAT-T-1|2099-12-31|r'; expect "relying on a waiver -> VERDICT: PASS-WITH-WAIVERS (exit 0)" 0 "VERDICT: PASS-WITH-WAIVERS" "$d" --check changelog
+d=$(fresh); out=$("$CHECKER" --repo "$d" --check changelog 2>&1); case "$out" in *PASS-WITH-WAIVERS*) bad "plain PASS must not say PASS-WITH-WAIVERS" ;; *"VERDICT: PASS "*) ok ;; *) bad "plain PASS missing" ;; esac
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|nothing.txt|CAT-T-1|2099-12-31|r'; out=$("$CHECKER" --repo "$d" --check changelog 2>&1); case "$out" in *PASS-WITH-WAIVERS*) bad "unused waiver must not turn PASS into PASS-WITH-WAIVERS" ;; *UNUSED-WAIVER*) ok ;; *) bad "unused waiver not listed" ;; esac
+# waivers are path-scoped to the resolved path
+d=$(fresh); mkrun3 "$d"; addrow "$d" docs/./qa/run3/d.txt; wv "$d" 'no-manifest|docs/qa/run3/d.txt|CAT-T-1|2099-12-31|r'; expect "waiver key is the resolved path (spelling does not matter)" 0 "VERDICT: PASS-WITH-WAIVERS" "$d" --check changelog
 
 echo "== selftest (11.4.273 control needles built into the tool)"
 out="$("$CHECKER" --selftest 2>&1)"; got=$?

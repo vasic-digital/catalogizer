@@ -13,9 +13,12 @@ scripts/release/check_release_consistency.sh --selftest
 
 Exit codes: `0` all OK, `1` any FAIL, `2` usage error or BLIND (the instrument could
 not evaluate: section not found, no VERIFIED subsection, zero paths extracted,
-changelog missing, control needle failed). BLIND is never a pass. If a FAIL exists the
+changelog missing, control needle failed, a control character in a VERIFIED path or a nested
+evidence directory name, a waiver file that differs from HEAD). BLIND is never a pass. `PASS-WITH-WAIVERS`
+exits `0` like `PASS` but means the result relies on at least one declared, unexpired evidence gap
+(`waived>0`); scripts that must not accept waivers test the VERDICT word, not only the exit code. If a FAIL exists the
 exit code is 1 even when something else was also BLIND. The last output line is always
-machine-readable: `VERDICT: PASS|FAIL|BLIND <counters>` (`-h` prints the usage and `VERDICT: HELP`).
+machine-readable: `VERDICT: PASS|PASS-WITH-WAIVERS|FAIL|BLIND <counters>` (`-h` prints the usage and `VERDICT: HELP`).
 A version helper that crashes (non-zero exit), is silent, or yields fewer field rows than it
 planned is BLIND, never PASS. `--version ""` is a usage error.
 
@@ -53,7 +56,7 @@ git-tracked; each failure is a `MISS`. Every backticked token that contains a `/
 URLs, `~`, absolute, or a first segment that is not a repo directory) is listed and counted
 as `skipped` (never failed). Tokens without a `/` are not counted.
 
-For every extracted path, the nearest manifest (`SHA256SUMS` or `SHA256SUMS.txt`) at or above it
+For every extracted path, the nearest git-tracked manifest (`SHA256SUMS`, `SHA256SUMS.txt` or `MANIFEST*.sha256`) at or above it
 (never the repo root) is verified with `sha256sum --strict -c`: malformed manifest lines are a `SHAFAIL`; a manifest
 entry with an absolute path or a `..` segment is a `SHAFAIL` and that manifest is not run; a mismatch or a missing non-ignored file is `SHAFAIL`;
 a listed file that is gitignored (for example PNG screenshots) and absent is
@@ -65,10 +68,14 @@ a listed file that is gitignored (for example PNG screenshots) and absent is
   `docs/qa/`) with no manifest at or above it is `NOMANIFEST` and the verdict is FAIL
   (`no_manifest=`): an integrity claim with nothing to check it against. Paths outside the
   evidence prefixes (for example `scripts/tool.sh`) are the allowed non-evidence tokens and need
-  no manifest. Giving `--evidence-prefix` replaces the default.
+  no manifest. Giving `--evidence-prefix` replaces the default. The decision is made on the real
+  in-repo location: `//` and `/./` segments are collapsed and symlinks resolved first, so
+  `docs/./qa/x`, `docs//qa/x` and a symlink alias into `docs/qa/` are still evidence, and the
+  prefix directory itself (`docs/qa/`) is evidence too. A manifest that is untracked or
+  gitignored does not exist for a clone and does not count.
 * **RC-3b.** Every manifest in use must list every regular file of the tree it covers
   (tracked files plus untracked, non-gitignored files; symlinks and gitignored files are not
-  required; the manifest files `SHA256SUMS` / `SHA256SUMS.txt` themselves are excluded). A
+  required; the manifest files `SHA256SUMS`, `SHA256SUMS.txt` and `MANIFEST*.sha256` themselves are excluded). A
   file the manifest does not list is `UNLISTED` and FAILs (`unlisted=`), so deleting an entry
   and tampering with the file no longer passes. Files in a subdirectory that has its own
   manifest are the responsibility of that nested manifest, which is queued and fully checked
@@ -81,19 +88,28 @@ A known-bad or missing manifest is never silently ignored. A tracked file
 line each, `#` comments allowed:
 
 ```
-no-manifest|<evidence path as written in the changelog, without a trailing slash>|<reason>
-unlisted|<manifest dir>|<file relative to it>|<reason>
-bad-entry|<manifest dir>|<manifest entry>|<reason>     # checksum mismatch or missing entry
+no-manifest|<evidence path (resolved, repo-relative, no trailing slash)>|<item>|<expires>|<reason>
+unlisted|<manifest dir>|<file relative to it>|<item>|<expires>|<reason>
+bad-entry|<manifest dir>|<manifest entry>|<item>|<expires>|<reason>     # checksum mismatch or missing entry
 ```
 
-Each applied waiver is printed as `WAIVED <what>: <reason>` and counted in `waived=`; the reason
-is mandatory. An unknown kind, empty field, missing reason or duplicate is `BADWAIVER` and FAILs
-(`bad_waivers=`). A waiver file that exists but is not git-tracked, or an explicit `--waivers`
-file that is absent, is BLIND. A waiver that matches nothing in the checked section is reported
-as `unused_waivers=` and does not fail (a waiver may belong to another changelog section). Example:
+Fields are trimmed. Following the waiver schema of constitution 11.4.271 every waiver carries a
+tracked item id (`<ALPHA>-<ID>`, for example `CAT-REL-CHECK-1`: who owns the debt), an expiry date
+`YYYY-MM-DD` (valid through that day, `RELCHK_TODAY` overrides today for tests) and a non-blank
+reason. A missing or malformed item or date, an expired waiver, a blank reason, an unknown kind, an
+empty path field or a duplicate is `BADWAIVER` and FAILs (`bad_waivers=`); the gap it covered then
+FAILs as well. The waiver file must be git-tracked and identical to HEAD, otherwise the run is BLIND
+(an uncommitted waiver is not a reviewed waiver). An explicit `--waivers` file that is absent is BLIND.
+
+Scope: a waiver is path-scoped, not section-scoped. It applies wherever the named path is cited in
+the checked changelog section, and only to that exact path/file/entry, never to a directory subtree.
+Each applied waiver is printed as `WAIVED <what>: <reason> [item X, expires D]` and counted in
+`waived=`; any applied waiver turns `PASS` into `PASS-WITH-WAIVERS`. A waiver that matches nothing in
+the checked section is printed as `UNUSED-WAIVER <key>` and counted in `unused_waivers=`; it does not
+fail and does not change the verdict word (it may belong to another changelog section). Example:
 the cover-art run `docs/qa/coverart/results/final/SHA256SUMS.txt` lists `summary.txt` with a
 checksum that no longer matches (finding E-1); to use it as VERIFIED evidence declare
-`bad-entry|docs/qa/coverart/results/final|summary.txt|E-1: known-bad manifest entry, see <note>`.
+`bad-entry|docs/qa/coverart/results/final|summary.txt|CAT-REL-CHECK-1|2026-12-12|E-1: known-bad manifest entry`.
 
 ### Instrument verification (constitution 11.4.273, 11.4.224)
 
