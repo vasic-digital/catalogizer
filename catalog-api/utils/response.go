@@ -2,6 +2,7 @@ package utils
 
 import (
 	"catalogizer/internal/logging"
+	"go.uber.org/zap"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,14 +28,22 @@ func SendErrorResponse(c *gin.Context, statusCode int, message string, err error
 		Error:   message,
 	}
 
+	// PX-F23 (CAT-PXF23): err.Error() is internal text (driver errors, JWT
+	// parse text, file paths) and is NEVER sent to the client; it is logged
+	// server-side only. Details stays unset so the body carries message only.
 	if err != nil {
-		response.Details = err.Error()
-		// Log error if logger is initialized
 		if logging.Logger != nil {
-			logging.With(
+			fields := []zap.Field{
 				logging.String("message", message),
+				logging.Int("status", statusCode),
 				logging.ErrorField(err),
-			).Error("Error response sent")
+			}
+			if rid, ok := c.Get("request_id"); ok {
+				if s, ok := rid.(string); ok {
+					fields = append(fields, logging.String("request_id", s))
+				}
+			}
+			logging.With(fields...).Error("Error response sent")
 		}
 	}
 

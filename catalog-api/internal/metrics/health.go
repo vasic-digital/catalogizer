@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"catalogizer/database"
+	"catalogizer/internal/logging"
 )
 
 // HealthStatus represents the health status of a component
@@ -152,9 +153,14 @@ func (hc *HealthChecker) checkDatabase(ctx context.Context) ComponentHealth {
 	defer cancel()
 
 	if err := hc.db.PingContext(pingCtx); err != nil {
+		// PX-F23: the ping error (driver/host text) must not reach the
+		// unauthenticated /health/deep body; log server-side only.
+		if logging.Logger != nil {
+			logging.With(logging.ErrorField(err)).Error("Database ping failed")
+		}
 		return ComponentHealth{
 			Status:  HealthStatusUnhealthy,
-			Message: "Database ping failed: " + err.Error(),
+			Message: "Database ping failed",
 		}
 	}
 

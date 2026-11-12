@@ -24,12 +24,12 @@ func TestSendErrorResponse(t *testing.T) {
 		wantBody   string
 	}{
 		{
-			name:       "error with details",
+			name:       "error text not leaked as details",
 			statusCode: http.StatusBadRequest,
 			message:    "bad request",
 			err:        errors.New("invalid input"),
 			wantStatus: http.StatusBadRequest,
-			wantBody:   `{"success":false,"error":"bad request","details":"invalid input"}`,
+			wantBody:   `{"success":false,"error":"bad request"}`,
 		},
 		{
 			name:       "error without details",
@@ -179,4 +179,20 @@ func TestSuccessResponseStruct(t *testing.T) {
 	assert.True(t, response.Success)
 	assert.Equal(t, "success", response.Message)
 	assert.NotNil(t, response.Data)
+}
+
+// PX-F23 (CAT-PXF23): internal error text must never reach the client body.
+func TestSendErrorResponse_DoesNotLeakInternalErrorText(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	const marker = "pq: connection refused host=db"
+	for _, status := range []int{400, 401, 403, 404, 409, 422, 500, 502, 503} {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		SendErrorResponse(c, status, "generic message", errors.New(marker))
+		assert.Equal(t, status, w.Code)
+		assert.NotContains(t, w.Body.String(), "connection refused", "status %d", status)
+		assert.NotContains(t, w.Body.String(), "host=db", "status %d", status)
+		assert.NotContains(t, w.Body.String(), `"details"`, "status %d", status)
+		assert.Contains(t, w.Body.String(), "generic message")
+	}
 }
