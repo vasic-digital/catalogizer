@@ -1,0 +1,11 @@
+{
+  "run_id": "run5",
+  "started_utc": "2026-11-12T12:15:33Z",
+  "git_head": "563617b1fe04ec9310adb8b1795264caf955f53b",
+  "sonarqube_url": "http://192.168.1.17:19000",
+  "es_disk_threshold_disabled": true,
+  "disk_used_pct": 98,
+  "disk_free_gb": 42,
+  "load_max": "12",
+  "load_at_start": "11.52"
+}

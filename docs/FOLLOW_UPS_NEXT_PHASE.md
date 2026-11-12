@@ -1789,3 +1789,24 @@ ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go
 - F3: tests for 4 surviving reviewer mutants (prefix check without `/`, repo-root symlink branch, BSD lowercase-only hex, `//`->`/` comment regex).
 - F4: under --prev-tag, forged INFO on a versionCode row passes; bash should reject INFO there absent a --prev-tag FAIL row.
 - F5 (nit): fenced `## [x]` heading triggers duplicate BLIND; `versionCode = 7 /* c */` and `7;` FAIL (all fail safe).
+
+## CAT-QA-SONAR-7 follow-ups FU-1..FU-7 resolution (branch fix/web-sonar-fu; PROVISIONAL, no new Sonar scan)
+- FU-1 DONE: tests that checkbox click/Space do not fire onPreviewItem. FU-2 DONE: Enter-to-toggle restored via keydown on the native checkbox (was a user-visible regression), test added. FU-3 PARTIAL: structural jsdom test (dialog `relative`, after backdrop in DOM); real stacking/paint needs a browser check (OWED). FU-4 DONE: "Loading..." label test. FU-5 OPEN (nit): grid template card buttons still wrap block elements. FU-6 DONE: grid card is now motion.button (no role). FU-7 DONE honestly: text changed to "Click to select a file to upload" (no drag handlers implemented).
+
+## CAT-QA-SONAR-7 FU round-2 (Opus review of fix/web-sonar-fu, GO-with-follow-ups, PROVISIONAL)
+
+- FU2-1 (minor, process-doc): HistoryDrawer stacking test is structural only; a live Playwright paint-order check is owed before FU-3 closes.
+- FU2-2 (nit, source-defect): CollectionPreview Enter handler lacks `!e.repeat`; holding Enter toggles repeatedly.
+- FU2-3 (nit, source-defect): FU-5 still open — template buttons contain block elements/h4 headings.
+- FU2-4 (nit, process-doc): `catalog-web/src/lib/keyboard.ts` `onActivateKey` has no production callers; investigate per §11.4.124 before any removal.
+
+## CAT-REL-CHECK-1 round-3/4 (F1-F5 + review fixes on branch fix/release-checker-f1-f5, 2026-11-12)
+- F1 fixed (fail closed on any non-blank manifest line outside the two unescaped forms; README corrected). F2 fixed after review round 4: entries are resolved with `readlink -m` (missing parents are not an escape; a missing tail below an outside symlink still FAILs) and CRLF manifests are normalised (one trailing CR stripped; a CR inside a line is refused). F3 covered by tests plus mutants. F4 fixed (INFO on versionCode under --prev-tag is BLIND unless the --prev-tag row FAILed). F5 fixed (fence-aware headings, comment pattern cannot span a closing `*/`; `7;` and `7 /* c */` parse).
+- Open nit: a `~~~` line inside a ``` fence (or the reverse) toggles the fence state, since fences are not tracked by kind/length. Fails safe in most cases (section not found / BLIND).
+- Residual: only uutils sha256sum was exercised; GNU coreutils behaviour for CR/escaped lines is untested.
+
+## CAT-REL-CHECK-1 Opus round-2 re-review (GO-with-follow-ups, 137 tests, 76/76 mutants, 7/7 reviewer mutants killed)
+- RC2-1 (nit, source): `versionCode = 7 /* x */ /* y */` (two consecutive block comments) FAILs; fails safe; README could say so.
+- RC2-2 (nit, source): a ``` fence closed by ~~~ toggles state wrongly; fails safe; already registered above.
+- RC2-3 (nit, tests): no test where the only CR is mid-line (e.g. `SHA256 (a\r) = H`); the double-CR test covers the branch.
+- RC2-4 (minor, process-doc): GNU coreutils sha256sum not exercised; CR handling UNCONFIRMED there (strip-one/refuse-other is safe either way).

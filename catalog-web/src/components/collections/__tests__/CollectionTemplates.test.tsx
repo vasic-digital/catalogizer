@@ -14,8 +14,11 @@ vi.mock('framer-motion', () => {
   const MotionDiv = ({ children, onClick, ...props }: any) => (
     <div onClick={onClick} {...props}>{children}</div>
   )
+  const MotionButton = ({ children, onClick, whileHover: _w, ...props }: any) => (
+    <button onClick={onClick} {...props}>{children}</button>
+  )
   return {
-    motion: { div: MotionDiv },
+    motion: { div: MotionDiv, button: MotionButton },
     AnimatePresence: ({ children }: any) => <>{children}</>,
   }
 })
@@ -287,8 +290,9 @@ describe('CollectionTemplates', () => {
     it.each([['{Enter}'], [' ']])('opens a grid-view template via key %j', async (key) => {
       const user = userEvent.setup()
       render(<CollectionTemplates {...defaultProps} />)
-      const card = screen.getByText('Recent Movies').closest('[role="button"]') as HTMLElement
-      expect(card).toHaveAttribute('tabindex', '0')
+      const card = screen.getByText('Recent Movies').closest('button') as HTMLElement
+      expect(card.tagName).toBe('BUTTON')
+      expect(card).not.toHaveAttribute('role')
       card.focus()
       await user.keyboard(key)
       expect(screen.getByText('Description')).toBeInTheDocument()

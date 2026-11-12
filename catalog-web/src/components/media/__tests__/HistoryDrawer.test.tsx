@@ -113,6 +113,16 @@ describe('HistoryDrawer', () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
+  it('stacks the dialog above the absolutely positioned backdrop (jsdom: structural check only)', async () => {
+    render(<HistoryDrawer {...defaultProps} />)
+    const backdrop = screen.getByTestId('history-drawer-backdrop')
+    const dialog = screen.getByRole('dialog')
+    // The backdrop is absolute; the dialog must be positioned (relative) and later in DOM order to paint above it.
+    expect(dialog.className).toMatch(/\brelative\b/)
+    expect(backdrop.compareDocumentPosition(dialog) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(backdrop.contains(dialog)).toBe(false)
+  })
+
   it('does not call onClose when clicking inside the dialog content', async () => {
     const onClose = vi.fn()
     render(<HistoryDrawer {...defaultProps} onClose={onClose} />)
