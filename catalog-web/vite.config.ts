@@ -22,9 +22,12 @@ function getApiHost(): string {
 // submodules (only ui_components_react ships one), so a fresh checkout cannot
 // resolve them under vitest. Fall back to the package source ONLY where dist
 // is absent; a built dist keeps being used unchanged.
-// CAVEAT (PW-F3): the check is on file presence only. A stale, untracked
-// dist/ left from an earlier build silently wins over the current src/, so
-// tests then run against old code; delete dist/ (or rebuild) to test src/.
+// CAVEAT (PW-F3/PW-F6): the check is on file presence only. A dist/ that is out
+// of date with src/ wins over src/ silently, so tests then run against old
+// code. That covers a tracked dist/ (as in ui_components_react) as well as one
+// left over from an earlier build; dist/ is not gitignored in the other 8
+// submodules, so a local build leaves one behind. Rebuild or delete dist/ to
+// test src/.
 function submoduleSourceFallbacks(): Record<string, string> {
   const pkgs: Record<string, string> = {
     '@vasic-digital/auth-context': 'auth_context_react',
