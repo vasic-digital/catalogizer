@@ -2041,3 +2041,9 @@ RC3R4-1 (minor, source-defect) HEAD-consistency checks use git status/diff, whic
 RC3R4-2 (minor, test-instrumentation) author mutants [4] (equivalent: record as such) and [6] (head-check git-status failure not blind: add fault-injection git wrapper test) survive, so the shipped mutation runner is not green on its own list; run the FULL runner once load < 20 (only a filtered run of 14 mutants was done).
 RC3R4-3 (nit) mutant NEW3 (head_check returns at first missing path) near-equivalent.
 RC3R4-4 (nit) retargeted symlink cited path gives FAIL (MISS) instead of BLIND; fails safe, message only.
+
+## CAT-WP03-MECH follow-ups (branch fix/wp03-release-mechanisms; PROVISIONAL, gate-logic unit class only)
+WP03-1 (consumer work) nothing yet PRODUCES the inputs: the harness must write the TSV verdict files, meta files, the hardware record (read from the target), the live-run record and the previous-image baseline run; until then image_no_worse.sh / release_gate.sh have only fixture-input evidence (11.4.289).
+WP03-2 `issue-count-higher` is evaluated over the baseline test set; it cannot fire without `baseline-pass-lost` except when baseline-FAIL tests stay FAIL and a lost PASS is offset by an improvement. Decide whether a stricter per-class count is wanted.
+WP03-3 not wired into any release/tag script (11.4.293(F), 11.4.298(E)); wiring plus the first-baseline acceptance rule (BLOCKED-NO-BASELINE until the operator records it) are owed. Gates OWED-GATE-176/185 stay deferrals.
+WP03-4 UNCONFIRMED: exit codes 10/11/20/21/22 are this change's choice, not an operator decision.

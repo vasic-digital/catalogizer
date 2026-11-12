@@ -169,3 +169,54 @@ Temporary files go under `$RELCHK_TMP` (default `~/.cache/relchk-tmp`).
   comment) may follow the literal (RC2-1).
 * A duplicated `## [x.y.z]` heading for the selected section is BLIND.
 * The selected version-code monotonicity is still checked only against `--prev-tag`.
+
+## image_no_worse.sh and release_gate.sh (CAT-WP03-MECH, PROVISIONAL)
+
+Mechanisms for constitution 11.4.293 (image no-worse proof) and 11.4.298 (per-product release gate).
+Evidence class of their tests: **gate-logic unit tests** (11.4.289(C)(2)); the verdict/record files in
+the suites are fixture INPUT data. They prove the tools decide correctly on a declared input; they are
+NOT evidence that any real image is no worse or any product releasable. That needs a real LIVE run on
+connected hardware producing the input files (consumer work, not claimed here).
+
+### image_no_worse.sh
+
+```
+image_no_worse.sh --baseline-verdicts F --new-verdicts F --baseline-meta F --new-meta F
+                  [--targets F] [--out RECORD]
+```
+
+- Verdict file (TSV, harness-written): `test_id<TAB>verdict`, verdict in
+  `PASS FAIL INCONCLUSIVE SKIPPED BLIND ERROR`; no CR, no blank lines, no duplicate ids, at least one row.
+- Meta file (key=value): `board=`, `harness=`, `suite=`, `command=` (each exactly once) and one or more
+  `image=<file> <version> <sha256>` lines.
+- Targets file: one test id per line that must be FAIL in the baseline and PASS in the new run.
+- Verdict (last line `VERDICT: ...`) and exit code: `NO-WORSE-PROVEN` 0; `REGRESSED` 10 with reason codes
+  `baseline-pass-lost`, `issue-count-higher`, `targeted-flip-missing`; `INCOMPARABLE-BASELINE-MISSING` 11
+  (baseline absent/empty, or board/harness/suite/command differ, or identical image identity); malformed
+  input or usage error 2 (`VERDICT: BLIND`). Never 0 for anything but NO-WORSE-PROVEN.
+- A baseline-PASS test that is FAIL, INCONCLUSIVE, SKIPPED, BLIND, ERROR or absent in the new run is a
+  regression. New tests are listed separately (`new_tests=`). `issue-count-higher` compares the not-PASS
+  count over the baseline test set, so an improvement can offset one loss in that count only; the loss
+  itself is still `baseline-pass-lost`.
+- The record (`--out`) is key=value with sha256 of both verdict files and both meta files, the image
+  identities, counts and lists. Control needle: the parser's row count is cross-checked against an
+  independent `grep -c` count.
+
+### release_gate.sh
+
+```
+release_gate.sh --product ID --hardware-record F --live-run-record F --comparison-record F --out GATE
+```
+
+States (last line `GATE-STATE: ...`) and exit codes: `RELEASABLE` 0; `BLOCKED-NO-HARDWARE` 20 (no live-run
+or hardware record, not connected, identity not read from the target, record of another product,
+incomplete or partially reported live run); `BLOCKED-NO-BASELINE` 21 (no comparison, INCOMPARABLE, or a
+comparison whose `new_verdicts_sha256` is not the live run's `verdicts_sha256`); `REFUSED-REGRESSED` 22;
+unknown comparison verdict or usage error 2. The gate record is rewritten on every run. Hardware record
+keys: `product= target_id= connected=yes read_from=target`; live run: `product= suite= complete=yes
+tests_total= tests_reported= verdicts_sha256=`; comparison: the image_no_worse.sh record.
+
+### Tests and mutation runner
+
+`test_image_no_worse.sh`, `test_release_gate.sh` (golden-good, golden-bad, negative controls) and
+`mutation_check_no_worse_gate.sh` (one textual mutant per check; exit 0 only if every mutant is killed).
