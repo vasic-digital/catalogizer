@@ -2167,3 +2167,9 @@ WP03R3-F1..F7 addressed (F6 = heading moved above). Residual, UNCONFIRMED or owe
 - SEC-WS-1R3-3: not changed (8089 qa_website Host stays).
 - SEC-WS-1-F5 NOT done (out of scope): check_api_route_vs_spec.py reports BLIND for `registerWebSocketRoute` AND `applyTrustedProxies` (main-package helpers in catalog-api/main_*.go; the extractor only resolves helpers in the scanned pkgdirs). Fix needs the extractor (scripts/lib/gin_routes_ast.go, 309 lines) to also parse same-directory main-package files and follow the helper call with the receiver binding; own item.
 - SEC-WS-1R3-F7 (nit): nginxwscheck skips docs/qa/sec-ws-1 (deliberate bad-host fixtures) and FOLLOW_UPS; nginx configs outside `*.conf`/nginx-named `*.template` files and non-fenced doc forms are not scanned.
+
+### SEC-WS-1R3 reviewer follow-ups (Opus, GO-with-follow-ups; PROVISIONAL)
+- SEC-WS-1R3FU-1 (minor, test-instrumentation): strip `#` comments from each nginx location body before matching and fail on more than one `proxy_set_header Host` line (mutants Ma commented-out, Md duplicate survive).
+- SEC-WS-1R3FU-2 (minor, test-instrumentation): per WS location assert `Upgrade $http_upgrade` and a `Connection` upgrade line (mutant Me survives).
+- SEC-WS-1R3FU-3 (nit): the non-WS `$host`->`$http_host` edits are beyond strict /ws scope; `$http_host` empty for HTTP/1.0 without Host -> keep deliberately and say so, or revert.
+- SEC-WS-1R3FU-4 (nit): K8s ingress annotation form not scanned; add to F7 scope note. Live edge run (SEC-WS-1-F1) still owed.
