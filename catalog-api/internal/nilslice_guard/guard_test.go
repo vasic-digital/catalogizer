@@ -104,7 +104,7 @@ func offenders(t *testing.T, dir string, exported bool) []string {
 				return true
 			})
 			// named results of slice/map type, and assignments to any identifier
-			named := map[string]token.Pos{}
+			named := map[*ast.Object]token.Pos{}
 			var resultTypes []ast.Expr
 			if fd.Type.Results != nil {
 				for _, fl := range fd.Type.Results.List {
@@ -117,47 +117,44 @@ func offenders(t *testing.T, dir string, exported bool) []string {
 					}
 					for _, nm := range fl.Names {
 						if isSliceOrMap(fl.Type) && nm.Name != "_" {
-							named[nm.Name] = nm.Pos()
+							named[nm.Obj] = nm.Pos()
 						}
 					}
 				}
 			}
-			assigned := map[string]bool{}
-			checked := map[string]bool{}
+			// keyed by *ast.Object (not name) so an inner closure that declares its own `out` does not mask the outer one
+			assigned := map[*ast.Object]bool{}
+			checked := map[*ast.Object]bool{}
 			ast.Inspect(fd.Body, func(n ast.Node) bool {
 				switch x := n.(type) {
 				case *ast.AssignStmt:
 					for _, l := range x.Lhs {
 						if id, ok := l.(*ast.Ident); ok {
-							assigned[id.Name] = true
+							assigned[id.Obj] = true
 						}
 					}
 				case *ast.UnaryExpr: // &name hands the variable to a callee that may fill it
 					if id, ok := x.X.(*ast.Ident); ok && x.Op == token.AND {
-						assigned[id.Name] = true
+						assigned[id.Obj] = true
 					}
 				case *ast.BinaryExpr: // `if x == nil { x = []T{} }` normalises x
 					if x.Op == token.EQL {
 						for _, side := range []ast.Expr{x.X, x.Y} {
 							if id, ok := side.(*ast.Ident); ok && id.Name != "nil" {
-								checked[id.Name] = true
+								checked[id.Obj] = true
 							}
 						}
 					}
 				case *ast.RangeStmt:
 					if id, ok := x.Key.(*ast.Ident); ok {
-						assigned[id.Name] = true
+						assigned[id.Obj] = true
 					}
 				}
 				return true
 			})
-			for nm := range checked {
-				for o := range decl {
-					if o.Name == nm {
-						delete(decl, o)
-					}
-				}
-				assigned[nm] = true
+			for o := range checked {
+				delete(decl, o)
+				assigned[o] = true
 			}
 			flagged := map[string]bool{}
 			add := func(pos token.Pos, msg string) {
@@ -167,10 +164,10 @@ func offenders(t *testing.T, dir string, exported bool) []string {
 				switch x := n.(type) {
 				case *ast.ReturnStmt:
 					if len(x.Results) == 0 {
-						for nm, pos := range named { // (a)
-							if !assigned[nm] && !flagged["a"+nm] {
-								flagged["a"+nm] = true
-								add(pos, "named result "+nm+" never assigned, bare return")
+						for o, pos := range named { // (a)
+							if !assigned[o] && !flagged["a"+o.Name] {
+								flagged["a"+o.Name] = true
+								add(pos, "named result "+o.Name+" never assigned, bare return")
 							}
 						}
 					}
@@ -304,6 +301,8 @@ func TestDetectorsSeeNS3Shapes(t *testing.T) {
 		{"return-nil-nil", "package x\nfunc A() ([]int, error) {\n\treturn nil, nil\n}\n", 1, "return nil, nil"},
 		{"return-nil-err-clean", "package x\nimport \"errors\"\nfunc A() ([]int, error) {\n\treturn nil, errors.New(\"x\")\n}\nfunc B() (*int, error) {\n\treturn nil, nil\n}\n", 0, ""},
 		{"struct-literal-field", "package x\ntype T struct{ L []int }\nfunc A() *T {\n\tvar l []int\n\treturn &T{L: l}\n}\n", 1, "struct-literal field"},
+		{"inner-closure-shadow-does-not-mask-outer", "package x\nfunc A() (out []int, err error) {\n\tf := func() {\n\t\tout := []int{}\n\t\t_ = out\n\t}\n\tf()\n\treturn\n}\n", 1, "named result out"},
+		{"inner-closure-nil-check-shadow-does-not-mask-var", "package x\nfunc A() []int {\n\tvar l []int\n\tf := func() {\n\t\tl := []int{}\n\t\tif l == nil {\n\t\t\tl = []int{}\n\t\t}\n\t}\n\tf()\n\treturn l\n}\n", 1, "var l returned"},
 		{"struct-literal-clean", "package x\ntype T struct{ L []int }\nfunc A() *T {\n\tl := []int{}\n\treturn &T{L: l}\n}\nfunc B() *T {\n\tvar l []int\n\tif l == nil {\n\t\tl = []int{}\n\t}\n\treturn &T{L: l}\n}\n", 0, ""},
 	}
 	for _, c := range cases {
