@@ -974,8 +974,15 @@ func main() {
 	// Redis is available AND REDIS_RATE_LIMIT=true is set.
 	if redisClient != nil && os.Getenv("REDIS_RATE_LIMIT") == "true" {
 	logger.Info("Activating Redis-based distributed rate limiting")
-	authRateLimiter = root_middleware.RedisRateLimit(root_middleware.AuthRedisRateLimiterConfig(redisClient))
-	defaultRateLimiter = root_middleware.RedisRateLimit(root_middleware.DefaultRedisRateLimiterConfig(redisClient))
+	// Operator decision 2026-11-12: a Redis outage after startup falls back to
+	// the in-memory tiers (600/2000 per minute), not 503. /login and /register
+	// keep using the in-memory loginRateLimiter.
+	authRedisCfg := root_middleware.AuthRedisRateLimiterConfig(redisClient)
+	authRedisCfg.Fallback = authRateLimiter
+	defaultRedisCfg := root_middleware.DefaultRedisRateLimiterConfig(redisClient)
+	defaultRedisCfg.Fallback = defaultRateLimiter
+	authRateLimiter = root_middleware.RedisRateLimit(authRedisCfg)
+	defaultRateLimiter = root_middleware.RedisRateLimit(defaultRedisCfg)
 	} else if redisClient != nil {
 	logger.Info("Redis available but REDIS_RATE_LIMIT not set — using in-memory rate limiting")
 	}
