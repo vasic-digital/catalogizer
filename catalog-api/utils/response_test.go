@@ -6,8 +6,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"catalogizer/internal/logging"
+
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest/observer"
 )
 
 func init() {
@@ -195,4 +200,39 @@ func TestSendErrorResponse_DoesNotLeakInternalErrorText(t *testing.T) {
 		assert.NotContains(t, w.Body.String(), `"details"`, "status %d", status)
 		assert.Contains(t, w.Body.String(), "generic message")
 	}
+}
+
+// CAT-PXF23-R R3: no response header may carry the error text either.
+func TestSendErrorResponse_HeadersDoNotLeakErrorText(t *testing.T) {
+	const marker = "pq: connection refused host=db"
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	SendErrorResponse(c, 500, "generic message", errors.New(marker))
+	for k, vs := range w.Header() {
+		for _, v := range vs {
+			assert.NotContains(t, v, "connection refused", "header %s", k)
+			assert.NotContains(t, v, "host=db", "header %s", k)
+		}
+	}
+}
+
+// CAT-PXF23-R R4: the error is logged server-side with message, status and request_id.
+func TestSendErrorResponse_LogsErrorServerSide(t *testing.T) {
+	core, logs := observer.New(zap.ErrorLevel)
+	prev := logging.Logger
+	logging.Logger = zap.New(core)
+	t.Cleanup(func() { logging.Logger = prev })
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Set("request_id", "req-123")
+	SendErrorResponse(c, http.StatusBadGateway, "generic message", errors.New("pq: connection refused host=db"))
+
+	require.Equal(t, 1, logs.Len())
+	e := logs.All()[0]
+	fm := e.ContextMap()
+	assert.Equal(t, "generic message", fm["message"])
+	assert.EqualValues(t, http.StatusBadGateway, fm["status"])
+	assert.Equal(t, "req-123", fm["request_id"])
+	assert.Contains(t, fm["error"], "connection refused")
 }

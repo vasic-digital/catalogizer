@@ -222,10 +222,11 @@ All endpoints return standardized error responses:
 ```json
 {
   "success": false,
-  "error": "Error message",
-  "details": "Detailed error information (optional)"
+  "error": "Error message"
 }
 ```
+
+Internal error text (driver, path or parser messages) is never sent to the client; it is logged server-side with the status and `request_id`. Some endpoints that document their own `details` field (for example the sync API) are described on their own pages.
 
 ## Success Responses
 
