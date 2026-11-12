@@ -109,6 +109,17 @@ describe('FavoriteToggle', () => {
     expect(screen.getByRole('button')).toBeDisabled()
   })
 
+  it('shows the "Loading..." label in the button variant while loading', () => {
+    vi.mocked(useFavoriteStatus).mockReturnValue({
+      data: null,
+      isLoading: true,
+    } as any)
+
+    renderWithProvider(<FavoriteToggle mediaId={1} showLabel />)
+    expect(screen.getByText('Loading...')).toBeInTheDocument()
+    expect(screen.queryByText('Add to Favorites')).not.toBeInTheDocument()
+  })
+
   it('disables button when disabled prop is true', () => {
     renderWithProvider(<FavoriteToggle mediaId={1} variant="icon" disabled />)
     expect(screen.getByRole('button')).toBeDisabled()

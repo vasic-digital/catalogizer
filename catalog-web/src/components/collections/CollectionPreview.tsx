@@ -218,6 +218,13 @@ export const CollectionPreview: React.FC<CollectionPreviewProps> = ({
                         checked={isSelected}
                         onChange={() => { /* handled in onClick to keep stopPropagation semantics */ }}
                         onClick={(e) => handleItemSelect(item.id, e)}
+                        onKeyDown={(e) => {
+                          // Native checkboxes toggle on Space only; keep the previous Enter-to-toggle behaviour.
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            handleItemSelect(item.id, e)
+                          }
+                        }}
                         aria-label="Select item"
                       />
 

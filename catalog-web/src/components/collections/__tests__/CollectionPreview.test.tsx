@@ -165,5 +165,36 @@ describe('CollectionPreview', () => {
       await user.keyboard(' ')
       expect(screen.getAllByRole('checkbox')[0]).not.toBeChecked()
     })
+
+    it('checkbox click toggles selection without firing onPreviewItem (stopPropagation)', async () => {
+      const onPreviewItem = vi.fn()
+      const user = userEvent.setup()
+      render(<CollectionPreview collection={mockCollection as any} onClose={vi.fn()} onPreviewItem={onPreviewItem} />)
+      await user.click(screen.getAllByRole('checkbox')[0])
+      expect(screen.getAllByRole('checkbox')[0]).toBeChecked()
+      expect(onPreviewItem).not.toHaveBeenCalled()
+    })
+
+    it('Space on the checkbox does not fire onPreviewItem', async () => {
+      const onPreviewItem = vi.fn()
+      const user = userEvent.setup()
+      render(<CollectionPreview collection={mockCollection as any} onClose={vi.fn()} onPreviewItem={onPreviewItem} />)
+      screen.getAllByRole('checkbox')[0].focus()
+      await user.keyboard(' ')
+      expect(onPreviewItem).not.toHaveBeenCalled()
+    })
+
+    it('Enter on the checkbox toggles selection (pre-S6819 behaviour) without previewing', async () => {
+      const onPreviewItem = vi.fn()
+      const user = userEvent.setup()
+      render(<CollectionPreview collection={mockCollection as any} onClose={vi.fn()} onPreviewItem={onPreviewItem} />)
+      screen.getAllByRole('checkbox')[0].focus()
+      await user.keyboard('{Enter}')
+      expect(screen.getAllByRole('checkbox')[0]).toBeChecked()
+      expect(screen.getByText('1 selected')).toBeInTheDocument()
+      await user.keyboard('{Enter}')
+      expect(screen.getAllByRole('checkbox')[0]).not.toBeChecked()
+      expect(onPreviewItem).not.toHaveBeenCalled()
+    })
   })
 })
