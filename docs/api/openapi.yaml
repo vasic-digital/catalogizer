@@ -5632,7 +5632,7 @@ paths:
         '403':
           description: "Caller lacks `system.admin`."
         '404':
-          description: "No such collection, or any other service error (the body carries the service error text)."
+          description: "No such collection, or any other service error (fixed body `Not found`; the service error text is not returned)."
   /api/v1/logs/collections/{id}/entries:
     get:
       tags: [logs]
@@ -5773,7 +5773,7 @@ paths:
         '403':
           description: "The share does not carry the `read` permission (`Access denied`)."
         '404':
-          description: "Unknown, expired or revoked token, or the shared collection cannot be loaded (the body carries the service error text)."
+          description: "Unknown, expired or revoked token, or the shared collection cannot be loaded (fixed body `Not found`; the service error text is not returned)."
         '401':
           description: "Unauthenticated (JWT middleware)."
     delete:

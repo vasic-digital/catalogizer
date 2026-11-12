@@ -76,3 +76,66 @@ func TestLogHandlers_ErrorBodiesNeverCarryServiceErrorText(t *testing.T) {
 		}
 	}
 }
+
+// PX-F9: the class is closed — the remaining handlers that used to echo err.Error() also return fixed bodies, and the
+// status codes they documented stay exactly as before.
+func TestLogHandlers_RemainingErrorSitesReturnFixedBodies(t *testing.T) {
+	const marker = "LEAKMARKER-zq82"
+	leaky := fmt.Errorf("db failure %s at /var/lib/x.db: %w", marker, sql.ErrNoRows)
+	okShare := &models.LogShare{CollectionID: 3, UserID: 2}
+	cases := []struct {
+		name   string
+		setup  func(s *MockLogManagementService)
+		call   func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request)
+		body   string
+		vars   map[string]string
+		anon   bool // public endpoint: no user_id / permission gate
+		status int
+	}{
+		{"CreateLogCollection", func(s *MockLogManagementService) { s.On("CollectLogs", 1, mock.Anything).Return(nil, leaky) },
+			func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.CreateLogCollection(rr, r) }, `{}`, nil, false, 500},
+		{"GetLogCollection", func(s *MockLogManagementService) { s.On("GetLogCollection", 1, 1).Return(nil, leaky) },
+			func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.GetLogCollection(rr, r) }, "", map[string]string{"id": "1"}, false, 404},
+		{"ListLogCollections", func(s *MockLogManagementService) { s.On("GetLogCollectionsByUser", 1, mock.Anything, mock.Anything).Return(nil, leaky) },
+			func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.ListLogCollections(rr, r) }, "", nil, false, 500},
+		{"GetLogShare/share", func(s *MockLogManagementService) { s.On("GetLogShare", "tok").Return(nil, leaky) },
+			func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.GetLogShare(rr, r) }, "", map[string]string{"token": "tok"}, true, 404},
+		{"GetLogShare/collection", func(s *MockLogManagementService) {
+			s.On("GetLogShare", "tok").Return(okShare, nil)
+			s.On("GetLogCollection", 3, 2).Return(nil, leaky)
+		},
+			func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.GetLogShare(rr, r) }, "", map[string]string{"token": "tok"}, true, 404},
+		{"StreamLogs", func(s *MockLogManagementService) { s.On("StreamLogs", 1, mock.Anything).Return(nil, leaky) },
+			func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.StreamLogs(rr, r) }, "", nil, false, 500},
+		{"GetLogStatistics", func(s *MockLogManagementService) { s.On("GetLogStatistics", 1).Return(nil, leaky) },
+			func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.GetLogStatistics(rr, r) }, "", nil, false, 500},
+		{"UpdateConfiguration", func(s *MockLogManagementService) { s.On("UpdateConfiguration", mock.Anything).Return(leaky) },
+			func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.UpdateConfiguration(rr, r) }, `{}`, nil, false, 500},
+		{"CleanupOldLogs", func(s *MockLogManagementService) { s.On("CleanupOldLogs").Return(leaky) },
+			func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.CleanupOldLogs(rr, r) }, "", nil, false, 500},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			svc := new(MockLogManagementService)
+			auth := new(MockLogManagementAuthService)
+			h := &LogManagementHandler{logManagementService: svc, authService: auth}
+			auth.On("CheckPermission", 1, models.PermissionSystemAdmin).Return(true, nil)
+			c.setup(svc)
+			req := httptest.NewRequest("POST", "/x", bytes.NewBufferString(c.body))
+			if !c.anon {
+				req = req.WithContext(context.WithValue(context.Background(), "user_id", 1))
+			}
+			if c.vars != nil {
+				req = mux.SetURLVars(req, c.vars)
+			}
+			rr := httptest.NewRecorder()
+			c.call(h, rr, req)
+			assert.Equal(t, c.status, rr.Code)
+			body := rr.Body.String()
+			assert.NotEmpty(t, body)
+			assert.NotContains(t, body, marker, "body leaks marker: %q", body)
+			assert.NotContains(t, body, "/var/lib")
+			assert.NotContains(t, body, "no rows")
+		})
+	}
+}
