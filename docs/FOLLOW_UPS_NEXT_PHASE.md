@@ -1863,3 +1863,9 @@ Reviewer ran full `./handlers` (436 s, rc=0), the real-binary OpenAPI contract t
 New jsdom Storage tests kill 6 reviewer mutants. The PW-F6 comment claimed dist/ is not gitignored in the other 8 submodules; the reviewer measured the opposite (all 8 gitignore it, only ui_components_react tracks dist) and the comment was corrected on main. Note: borrowing another clone's node_modules makes the `@vasic-digital/*` links follow that clone's submodules (Avatar/EmptyState/LoadingSpinner then fail to resolve; confirmed by an overlay toggle).
 - PW-F7 (Task, minor): isolation probes use only `iso-`-prefixed keys; mutant M7 (shared store for other keys) survives; probe an unprefixed key.
 - PW-F8 (Task, nit): `clear`, `key`, `length` of sessionStorage are not asserted (mutant M8 survives).
+
+## PW-F7/F8 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups
+New jsdom Storage tests kill reviewer mutants M1-M4, M7, M8 (M1 survived the old test). Open (Queued):
+- PW-F9 (Task, minor): mutant M5 survives (localStorage.removeItem also removing from sessionStorage); set the same key in both, remove from one, assert the other keeps its value, both directions.
+- PW-F10 (Task, minor): mutant M6 survives (key() order/index); assert {key(0), key(1)} as a set equals the two stored keys.
+- PW-F11 (nit): cleanup removes 'k'/'iso-*'/'keep' unconditionally; loops remove keys redundantly (harmless).
