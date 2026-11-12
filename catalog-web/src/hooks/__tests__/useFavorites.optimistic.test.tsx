@@ -217,4 +217,59 @@ describe('useFavorites optimistic update on the live key', () => {
       await act(async () => { release({ is_favorite: false }) })
     })
   })
+  describe('FAVR3R3FU-1/2: rollback on inconsistent cached data (PROVISIONAL)', () => {
+    const mountWith = async (list: any) => {
+      const s = setup()
+      api.getFavorites.mockImplementation(async () => list as any)
+      const h = renderHook(() => useFavorites(), { wrapper: s.wrapper })
+      await waitFor(() => expect(h.result.current.favorites).toHaveLength(list.items.length))
+      api.getFavorites.mockImplementation(() => new Promise(() => {}) as any)
+      return { ...s, h }
+    }
+    const totalAt = (qc: QueryClient) => (qc.getQueryData(['favorites', undefined]) as any).total
+    const rowsAt = (qc: QueryClient) => ((qc.getQueryData(['favorites', undefined]) as any).items).map((f: any) => f.id)
+
+    it('P1: list with items but total 0 ends at 0 after rollback (not 1)', async () => {
+      const { qc, h } = await mountWith({ items: [fav('movie', 7), fav('movie', 8)], total: 0, limit: 20, offset: 0 })
+      act(() => h.result.current.toggleFavorite(7, true, 'movie'))
+      await waitFor(() => expect(api.toggleFavorite).toHaveBeenCalled())
+      expect(totalAt(qc)).toBe(0)
+      await act(async () => { fail(new Error('boom')) })
+      await waitFor(() => expect(rowsAt(qc)).toEqual(['movie-7', 'movie-8']))
+      expect(totalAt(qc)).toBe(0)
+    })
+
+    it('P1b: clamp case, 2 matching rows but total 1: optimistic 0 (never negative), rollback restores exactly 1', async () => {
+      const dup = fav('movie', 7)
+      const { qc, h } = await mountWith({ items: [dup, { ...dup, id: 'movie-7b' }, fav('movie', 8)], total: 1, limit: 20, offset: 0 })
+      act(() => h.result.current.toggleFavorite(7, true, 'movie'))
+      await waitFor(() => expect(api.toggleFavorite).toHaveBeenCalled())
+      expect(totalAt(qc)).toBe(0)
+      await act(async () => { fail(new Error('boom')) })
+      await waitFor(() => expect(rowsAt(qc)).toHaveLength(3))
+      expect(totalAt(qc)).toBe(1)
+    })
+
+    it('P2: duplicate rows with the same id are BOTH restored on rollback', async () => {
+      const a = fav('movie', 7)
+      const { qc, h } = await mountWith({ items: [a, { ...a }, fav('movie', 8)], total: 3, limit: 20, offset: 0 })
+      act(() => h.result.current.toggleFavorite(7, true, 'movie'))
+      await waitFor(() => expect(api.toggleFavorite).toHaveBeenCalled())
+      expect(rowsAt(qc)).toEqual(['movie-8'])
+      await act(async () => { fail(new Error('boom')) })
+      await waitFor(() => expect(rowsAt(qc)).toEqual(['movie-7', 'movie-7', 'movie-8']))
+      expect(totalAt(qc)).toBe(3)
+    })
+
+    it('a row already back in the cache is still not duplicated (dedup against ids present before the loop)', async () => {
+      const { qc, h } = await mountWith({ items: [fav('movie', 7), fav('movie', 8)], total: 2, limit: 20, offset: 0 })
+      act(() => h.result.current.toggleFavorite(7, true, 'movie'))
+      await waitFor(() => expect(api.toggleFavorite).toHaveBeenCalled())
+      act(() => { qc.setQueryData(['favorites', undefined], { items: [fav('movie', 7), fav('movie', 8)], total: 2 }) })
+      await act(async () => { fail(new Error('boom')) })
+      await waitFor(() => expect(api.toggleFavorite).toHaveBeenCalled())
+      expect(rowsAt(qc)).toEqual(['movie-7', 'movie-8'])
+      expect(totalAt(qc)).toBe(2)
+    })
+  })
 })
