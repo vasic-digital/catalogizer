@@ -2244,3 +2244,18 @@ Class-wide enumeration with a control-needled go/ast instrument (`catalog-api/in
 - ERRLEAK-N5 (nit): assert exact shielding counts in the neighbouring-leak test.
 - ERRLEAK-N6 (nit): test the `RequestID` fallback branch (M-E1).
 - ERRLEAK-N7 (nit): log an empty marker instead of `"<nil>"` when no request id.
+## SEC-WS-1 F3 (branch fix/sec-ws-1-f3, PROVISIONAL)
+
+- SEC-WS-1F3FU-1: `notification`, `scan_started` and `file_*` WebSocket events are now admin-only (they carry storage roots, paths and scanner errors); non-admin users lose the scan completed/failed toasts (scan start is admin-only too); GET /api/v1/scans stays open to authenticated users, so the socket is now stricter than REST; Android has no type consumer. Decide whether a path-free scan summary should go to all users.
+- SEC-WS-1F3FU-2: admin flag and session validity are cached per connection and refreshed every `RecheckInterval` (default 15 s) and on each inbound message; staleness window for an admin-only event after demotion is up to that interval. Consider a live admin check at broadcast time if the window is unacceptable.
+- SEC-WS-1F3FU-3: no per-user events exist today (class inventory: 2 broadcast call sites, event bridge + asset bus); add `BroadcastToUser` the first time a per-user event is introduced.
+- SEC-WS-1F3FU-4: live edge run (nginx /ws, real stack, real suspended user) still owed; evidence here is hermetic-real (real DB, middleware, HTTP server, gorilla clients). `-race`: author run did not complete (compile timeout); the round-1 reviewer ran it clean.
+- SEC-WS-1F3FU-5: JWT-in-`?token=` (F2) deliberately out of scope.
+- SEC-WS-1F3FU-6 (client, not implemented): catalog-web websocket.ts builds the `?token=` URL once, so after the server closes at token expiry a reconnect reuses the expired token; rebuild the URL (refresh token) per reconnect.
+- Round 2: per-message recheck throttled to once per `MessageRecheckMinInterval` (default 1 s) since the last successful check; periodic recheck unchanged. A JWT without `exp` is bounded only by the session check (auth service always sets exp).
+
+### Reviewer follow-ups for fix/sec-ws-1-f3 (Opus round 2, GO-with-follow-ups, 2026-11-13) - PROVISIONAL
+- SEC-WS-1F3FU-7 (minor): assert seed-refusal path closes the connection and restores connCount (kills mutants R3/R6).
+- SEC-WS-1F3FU-8 (minor): check tokenExp before the per-message throttle shortcut (frames accepted up to 1 s past JWT expiry).
+- FU-4 update: reviewer ran `-race -run TestF3_ .` clean (8.5 s); live edge/nginx run still owed.
+- nit: flood-test bound (<=8 checker calls) is wall-clock sensitive on a very slow host.

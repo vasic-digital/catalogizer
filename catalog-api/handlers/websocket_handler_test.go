@@ -80,7 +80,7 @@ func TestWebSocketHandler_BroadcastToClients(t *testing.T) {
 
 	// Broadcast a message
 	handler.BroadcastToClients(map[string]interface{}{
-		"type":    "test",
+		"type":    "media_update", // library event: every authenticated client; unknown types are admin-only
 		"message": "hello",
 	})
 

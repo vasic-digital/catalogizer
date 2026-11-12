@@ -79,6 +79,13 @@ type SessionChecker func(ctx context.Context, sessionID, userID string) error
 // without one is rejected (fail closed).
 func (m *JWTMiddleware) SetSessionChecker(c SessionChecker) { m.sessionCheck = c }
 
+// SessionCheck returns the installed session checker (nil when none), so long-lived
+// connections (WebSocket) can re-run the exact check RequireAuth ran.
+func (m *JWTMiddleware) SessionCheck() SessionChecker { return m.sessionCheck }
+
+// AdminCheck returns the installed live admin checker (nil when none).
+func (m *JWTMiddleware) AdminCheck() AdminChecker { return m.adminCheck }
+
 // Claims represents JWT claims.
 // RoleID is populated by the auth service (services/auth_service.go) at
 // login time. The convention seeded by main.go::seedDefaultAdmin is
@@ -192,6 +199,9 @@ func (m *JWTMiddleware) RequireAuth() gin.HandlerFunc {
 		c.Set("username", claims.Username)
 		c.Set("role_id", claims.RoleID)
 		c.Set("session_id", claims.SessionID)
+		if claims.ExpiresAt != nil {
+			c.Set("token_expires_at", claims.ExpiresAt.Time)
+		}
 		if uid, err := strconv.Atoi(claims.Subject); err == nil {
 			c.Set("user_id", uid)
 		} else {
