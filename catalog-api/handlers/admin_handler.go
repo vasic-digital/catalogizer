@@ -202,7 +202,7 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 		if u.IsRegistrationPending() {
 			status = "pending"
 		}
-		if u.IsLocked {
+		if u.IsAccountLocked() {
 			status = "suspended"
 		}
 		if wantStatus != "" && status != wantStatus {
@@ -345,11 +345,11 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 		switch *updates.Status {
 		case "active":
 			user.IsActive = true
-			user.IsLocked = false
 		case "inactive":
 			user.IsActive = false
 		case "suspended":
-			user.IsLocked = true
+			// Permanent suspension, written by SetSuspended below (the lock
+			// columns are never part of the general user update).
 		}
 	}
 
@@ -362,7 +362,16 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 	// revoke (same rule as UserHandler.UpdateUser). Re-asserting one's own
 	// unchanged role revokes nothing (that would only log the admin out).
 	needRevoke := (updates.Role != nil && (roleChanged || id != admin.ID)) ||
-		wasActive && !user.IsActive || (updates.Status != nil && !user.IsActive)
+		wasActive && !user.IsActive || (updates.Status != nil && (!user.IsActive || *updates.Status == "suspended"))
+
+	var suspender suspensionSetter
+	if updates.Status != nil && (*updates.Status == "suspended" || *updates.Status == "active") {
+		var ok bool
+		if suspender, ok = h.userRepo.(suspensionSetter); !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+			return
+		}
+	}
 
 	// Revoke first (fail closed): a failed revocation leaves the user unchanged,
 	// so a retry still revokes.
@@ -391,6 +400,17 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 	} else if err := h.userRepo.Update(user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return
+	}
+	if suspender != nil {
+		if err := suspender.SetSuspended(user.ID, *updates.Status == "suspended"); err != nil {
+			if errors.Is(err, repository.ErrLastAdmin) {
+				c.JSON(http.StatusConflict, gin.H{"error": "The last administrator cannot be demoted, deactivated or suspended"})
+				return
+			}
+			log.Printf("handlers: user %d suspension write failed: %v", user.ID, err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
+			return
+		}
 	}
 	if updates.Status != nil {
 		event := "admin_user_status_changed"

@@ -531,7 +531,10 @@ func TestUserRepository_LockUnlockAccount(t *testing.T) {
 		repo, mock := newMockUserRepo(t)
 		lockUntil := time.Now().Add(1 * time.Hour)
 		mock.ExpectExec("UPDATE users SET is_locked = 1").
-			WithArgs(lockUntil, 1).
+			WithArgs(lockUntil, 1, true).
+			WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectExec("UPDATE user_sessions SET is_active = 0").
+			WithArgs(1).
 			WillReturnResult(sqlmock.NewResult(0, 1))
 
 		err := repo.LockAccount(1, lockUntil)
@@ -542,7 +545,7 @@ func TestUserRepository_LockUnlockAccount(t *testing.T) {
 	t.Run("unlock account", func(t *testing.T) {
 		repo, mock := newMockUserRepo(t)
 		mock.ExpectExec("UPDATE users SET is_locked = 0").
-			WithArgs(1).
+			WithArgs(1, true).
 			WillReturnResult(sqlmock.NewResult(0, 1))
 
 		err := repo.UnlockAccount(1)

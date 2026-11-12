@@ -211,6 +211,9 @@ func (r *UserRepository) UpdateGuarded(user *models.User, expectedRoleID int, ex
 	isAdmin := func(id int) bool { return containsInt(adminIDs, id) }
 	// The write removes an administrator when the stored row is an active
 	// admin and the new state is not (role without admin rights, or inactive).
+	// The lock columns are NOT written here: a suspension is written only by
+	// SetSuspended (and LockAccount/UnlockAccount), never from a caller's
+	// possibly stale read of the row.
 	removesAdmin := expectedActive && isAdmin(expectedRoleID) && !(user.IsActive && isAdmin(user.RoleID))
 
 	query := `
@@ -309,12 +312,12 @@ func otherActiveAdminsClause(excludeID int, adminIDs []int) (string, []interface
 		return "1 = 0", nil
 	}
 	ph := make([]string, len(adminIDs))
-	args := []interface{}{excludeID, true, false}
+	args := []interface{}{excludeID, true, false, time.Now()}
 	for i, id := range adminIDs {
 		ph[i] = "?"
 		args = append(args, id)
 	}
-	return "(SELECT COUNT(*) FROM users o WHERE o.id <> ? AND o.is_active = ? AND o.is_locked = ? AND o.role_id IN (" +
+	return "(SELECT COUNT(*) FROM users o WHERE o.id <> ? AND o.is_active = ? AND (o.is_locked IS NULL OR o.is_locked = ? OR (o.locked_until IS NOT NULL AND o.locked_until <= ?)) AND o.role_id IN (" +
 		strings.Join(ph, ",") + ")) >= 1", args
 }
 
@@ -415,16 +418,109 @@ func (r *UserRepository) ResetFailedLoginAttempts(userID int) error {
 	return err
 }
 
+// ErrAccountSuspended is returned when an operation would lift (or the stored
+// state is) a permanent administrative suspension. Only SetSuspended(id, false)
+// (admin status "active") lifts a suspension.
+var ErrAccountSuspended = errors.New("account is suspended")
+
+// LockAccount applies a timed lock and revokes the user's sessions. A permanent suspension (is_locked with no
+// locked_until) is never replaced by a timed lock: it is already stricter.
 func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
-	query := `UPDATE users SET is_locked = 1, locked_until = ? WHERE id = ?`
-	_, err := r.db.Exec(query, lockUntil, userID)
-	return err
+	query := `UPDATE users SET is_locked = 1, locked_until = ? WHERE id = ? AND NOT (is_locked = ? AND locked_until IS NULL)`
+	if _, err := r.db.Exec(query, lockUntil, userID, true); err != nil {
+		return err
+	}
+	// A locked account keeps no session: JWT-only routes check the session row
+	// alone. The lock is written first so no new session can be issued, then
+	// every existing one is revoked.
+	if err := r.DeactivateAllUserSessions(userID); err != nil {
+		return fmt.Errorf("account locked but session revocation failed: %w", err)
+	}
+	return nil
 }
 
+// UnlockAccount lifts a timed lock. It refuses to lift a permanent suspension
+// (ErrAccountSuspended); that is done only by SetSuspended(id, false).
 func (r *UserRepository) UnlockAccount(userID int) error {
-	query := `UPDATE users SET is_locked = 0, locked_until = NULL WHERE id = ?`
-	_, err := r.db.Exec(query, userID)
-	return err
+	query := `UPDATE users SET is_locked = 0, locked_until = NULL WHERE id = ? AND NOT (is_locked = ? AND locked_until IS NULL)`
+	res, err := r.db.Exec(query, userID, true)
+	if err != nil {
+		return err
+	}
+	if n, nerr := res.RowsAffected(); nerr == nil && n == 0 {
+		var locked bool
+		var until *time.Time
+		if qerr := r.db.QueryRow(`SELECT is_locked, locked_until FROM users WHERE id = ?`, userID).Scan(&locked, &until); qerr == nil && locked && until == nil {
+			return ErrAccountSuspended
+		}
+	}
+	return nil
+}
+
+// SetSuspended writes ONLY the lock columns: suspended=true sets a permanent
+// suspension (is_locked, no locked_until), suspended=false clears the lock and
+// any expiry. Suspending an active administrator is refused with ErrLastAdmin
+// unless another active, effectively unlocked administrator exists; the check
+// is part of the same statement, so two concurrent suspensions cannot remove
+// the last two administrators.
+func (r *UserRepository) SetSuspended(userID int, suspended bool) error {
+	if !suspended {
+		_, err := r.db.Exec(`UPDATE users SET is_locked = ?, locked_until = NULL, updated_at = ? WHERE id = ?`, false, time.Now(), userID)
+		return err
+	}
+	adminIDs, err := r.adminRoleIDs()
+	if err != nil {
+		return err
+	}
+	query := `UPDATE users SET is_locked = ?, locked_until = NULL, updated_at = ? WHERE id = ?`
+	args := []interface{}{true, time.Now(), userID}
+	guarded := len(adminIDs) > 0
+	if guarded {
+		ph := make([]string, len(adminIDs))
+		for i, id := range adminIDs {
+			ph[i] = "?"
+			args = append(args, id)
+		}
+		clause, cargs := otherActiveAdminsClause(userID, adminIDs)
+		query += " AND (role_id NOT IN (" + strings.Join(ph, ",") + ") OR " + clause + ")"
+		args = append(args, cargs...)
+	}
+	var n int64
+	if guarded && r.db.Dialect().Type == database.DialectPostgres {
+		tx, berr := r.db.Begin()
+		if berr != nil {
+			return berr
+		}
+		defer tx.Rollback()
+		if _, lerr := tx.Exec(`SELECT pg_advisory_xact_lock(7340001)`); lerr != nil {
+			return lerr
+		}
+		res, xerr := tx.Exec(r.db.Rewrite(query), args...)
+		if xerr != nil {
+			return xerr
+		}
+		n, _ = res.RowsAffected()
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+	} else {
+		res, xerr := r.db.Exec(query, args...)
+		if xerr != nil {
+			return xerr
+		}
+		n, _ = res.RowsAffected()
+	}
+	if n > 0 {
+		return nil
+	}
+	var exists int
+	if qerr := r.db.QueryRow(`SELECT COUNT(*) FROM users WHERE id = ?`, userID).Scan(&exists); qerr != nil {
+		return qerr
+	}
+	if exists == 0 {
+		return sql.ErrNoRows
+	}
+	return ErrLastAdmin
 }
 
 // Delete removes a user. Audit history is evidence and is retained: auth_audit_log rows and the user_permissions.granted_by
