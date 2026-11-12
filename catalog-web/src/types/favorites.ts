@@ -19,6 +19,8 @@ export interface Favorite {
 export interface FavoriteToggleRequest {
   media_id: number
   is_favorite: boolean
+  /** Closed-set entity type of media_id; defaults to the legacy 'movie' only when omitted. */
+  entity_type?: string
 }
 
 export interface FavoritesResponse {

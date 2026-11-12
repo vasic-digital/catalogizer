@@ -1,5 +1,6 @@
 import { api } from './api'
 import { asList } from './apiShapes'
+import { parseEntityId } from './entityRoutes'
 import type { 
   Favorite, 
   FavoriteToggleRequest, 
@@ -21,12 +22,14 @@ function toFavoritesResponse(
   const rows = asList<Record<string, unknown>>(body, 'favorites')
   const items: Favorite[] = rows.map((r) => {
     const type = typeof r.entity_type === 'string' ? r.entity_type : 'other'
-    const entityId = Number(r.entity_id ?? 0)
+    // Strict parse: a missing/odd entity_id is an explicit INVALID (NaN), never 0 or a coerced guess.
+    const parsed = parseEntityId(r.entity_id)
+    const entityId = parsed ?? Number.NaN
     return {
       id: String(r.id ?? ''),
       user_id: Number(r.user_id ?? 0),
       media_id: entityId,
-      media_item: { id: entityId, title: `${type.replace(/_/g, ' ')} #${entityId}`, media_type: type },
+      media_item: { id: entityId, title: parsed === null ? `${type.replace(/_/g, ' ')} (no valid item id)` : `${type.replace(/_/g, ' ')} #${entityId}`, media_type: type },
       created_at: typeof r.created_at === 'string' ? r.created_at : '',
       updated_at: typeof r.updated_at === 'string' ? r.updated_at : typeof r.created_at === 'string' ? r.created_at : '',
     }
@@ -84,16 +87,16 @@ export const favoritesApi = {
   async toggleFavorite(request: FavoriteToggleRequest): Promise<{ is_favorite: boolean }> {
     // POST /favorites/toggle does not exist on the backend: compose it.
     if (request.is_favorite) {
-      await api.post('/favorites', { entity_type: DEFAULT_ENTITY, entity_id: request.media_id })
+      await api.post('/favorites', { entity_type: request.entity_type ?? DEFAULT_ENTITY, entity_id: request.media_id })
     } else {
-      await api.delete(`/favorites/${DEFAULT_ENTITY}/${request.media_id}`)
+      await api.delete(`/favorites/${request.entity_type ?? DEFAULT_ENTITY}/${request.media_id}`)
     }
     return { is_favorite: request.is_favorite }
   },
 
   // Check if media is in favorites
-  async checkFavorite(mediaId: number): Promise<{ is_favorite: boolean }> {
-    const response = await api.get(`/favorites/check/${DEFAULT_ENTITY}/${mediaId}`)
+  async checkFavorite(mediaId: number, entityType: string = DEFAULT_ENTITY): Promise<{ is_favorite: boolean }> {
+    const response = await api.get(`/favorites/check/${entityType}/${mediaId}`)
     return { is_favorite: response.data?.is_favorite === true }
   },
 

@@ -74,4 +74,33 @@ describe('favoritesApi (backend contract: /favorites, entity_type + entity_id)',
     mockApi.delete.mockResolvedValue({ data: {} })
     expect(await favoritesApi.bulkRemoveFromFavorites([1, 2])).toEqual({ removed: 2, failed: 0 })
   })
+
+  it.each([[undefined], [null], [0], ['0x10'], [true], ['1e3'], [[5]], [1.5], [1e21], ['']])(
+    'a wire entity_id of %j maps to an explicit invalid id (NaN), never 0 or a coerced id', async (bad) => {
+      mockApi.get.mockResolvedValue({ data: { favorites: [{ id: 1, entity_type: 'movie', entity_id: bad }], count: 1 } })
+      const res = await favoritesApi.getFavorites()
+      expect(Number.isNaN(res.items[0].media_id)).toBe(true)
+      expect(Number.isNaN(res.items[0].media_item.id)).toBe(true)
+      expect(res.items[0].media_item.title).toMatch(/no valid item id/)
+    })
+
+  it('a numeric-string entity_id "42" is accepted as 42', async () => {
+    mockApi.get.mockResolvedValue({ data: { favorites: [{ id: 1, entity_type: 'song', entity_id: '42' }], count: 1 } })
+    const res = await favoritesApi.getFavorites()
+    expect(res.items[0].media_id).toBe(42)
+  })
+
+  it('toggle add/remove and check use the supplied entity type (default movie only when omitted)', async () => {
+    mockApi.post.mockResolvedValue({ data: {} })
+    mockApi.delete.mockResolvedValue({ data: {} })
+    mockApi.get.mockResolvedValue({ data: { is_favorite: true } })
+    await favoritesApi.toggleFavorite({ media_id: 9, is_favorite: true, entity_type: 'song' })
+    expect(mockApi.post).toHaveBeenCalledWith('/favorites', { entity_type: 'song', entity_id: 9 })
+    await favoritesApi.toggleFavorite({ media_id: 9, is_favorite: false, entity_type: 'song' })
+    expect(mockApi.delete).toHaveBeenCalledWith('/favorites/song/9')
+    await favoritesApi.checkFavorite(9, 'song')
+    expect(String(mockApi.get.mock.calls.at(-1)![0])).toBe('/favorites/check/song/9')
+    await favoritesApi.toggleFavorite({ media_id: 9, is_favorite: true })
+    expect(mockApi.post).toHaveBeenLastCalledWith('/favorites', { entity_type: 'movie', entity_id: 9 })
+  })
 })

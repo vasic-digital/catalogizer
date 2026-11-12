@@ -145,3 +145,34 @@ describe('FavoriteToggle', () => {
     expect(button).toBeInTheDocument()
   })
 })
+
+describe('FavoriteToggle entity targeting (CAT-UI-FAV-1b)', () => {
+  const toggle = vi.fn()
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.mocked(useFavoriteStatus).mockReturnValue({ data: { is_favorite: false }, isLoading: false } as any)
+    vi.mocked(useFavorites).mockReturnValue({ toggleFavorite: toggle, isToggling: false } as any)
+  })
+  const file = (extra: object) => ({ id: 5, title: 'f', media_type: 'video', ...extra }) as any
+
+  it('favourites the LINKED entity id + type, not the file id', async () => {
+    renderWithProvider(<FavoriteToggle mediaId={5} mediaItem={file({ entity_id: 900, entity_type: 'song' })} variant="icon" />)
+    await userEvent.click(screen.getByRole('button'))
+    expect(toggle).toHaveBeenCalledWith(900, false, 'song')
+    expect(vi.mocked(useFavoriteStatus)).toHaveBeenCalledWith(900, 'song')
+  })
+
+  it('a file row without an entity link is disabled and writes nothing', async () => {
+    renderWithProvider(<FavoriteToggle mediaId={5} mediaItem={file({})} variant="icon" />)
+    const b = screen.getByRole('button')
+    expect(b).toBeDisabled()
+    await userEvent.click(b)
+    expect(toggle).not.toHaveBeenCalled()
+  })
+
+  it('legacy callers without a mediaItem keep (mediaId, default type)', async () => {
+    renderWithProvider(<FavoriteToggle mediaId={7} variant="icon" />)
+    await userEvent.click(screen.getByRole('button'))
+    expect(toggle).toHaveBeenCalledWith(7, false)
+  })
+})

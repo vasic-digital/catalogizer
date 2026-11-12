@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"catalogizer/database"
@@ -40,6 +42,11 @@ type mediaItemJSON struct {
 	StorageRootName string `json:"storage_root_name,omitempty"`
 	CreatedAt       string `json:"created_at"`
 	UpdatedAt       string `json:"updated_at"`
+	// EntityID/EntityType identify the media entity (media_items row) this file
+	// belongs to, via media_files. ID above is a files.id and must never be used
+	// as an entity id; both are omitted when the file has no linked entity.
+	EntityID   *int64 `json:"entity_id,omitempty"`
+	EntityType string `json:"entity_type,omitempty"`
 }
 
 // SearchMedia handles GET /api/v1/media/search — replaces the hardcoded stub.
@@ -88,6 +95,7 @@ func (h *MediaBrowseHandler) SearchMedia(c *gin.Context) {
 	for _, f := range result.Files {
 		items = append(items, fileToMediaItem(f))
 	}
+	h.attachEntityLinks(ctx, items)
 
 	c.JSON(http.StatusOK, gin.H{
 		"items":  items,
@@ -95,6 +103,49 @@ func (h *MediaBrowseHandler) SearchMedia(c *gin.Context) {
 		"limit":  limit,
 		"offset": offset,
 	})
+}
+
+// attachEntityLinks fills EntityID/EntityType from media_files for the given file
+// rows in one query. The primary link wins, then the lowest entity id. A lookup
+// failure leaves the fields unset (the list itself is still valid); it never
+// guesses an id.
+func (h *MediaBrowseHandler) attachEntityLinks(ctx context.Context, items []mediaItemJSON) {
+	if h.db == nil || len(items) == 0 {
+		return
+	}
+	args := make([]interface{}, 0, len(items))
+	ph := make([]string, 0, len(items))
+	pos := make(map[int64]int, len(items))
+	for i, it := range items {
+		args = append(args, it.ID)
+		ph = append(ph, "?")
+		pos[it.ID] = i
+	}
+	rows, err := h.db.QueryContext(ctx,
+		`SELECT mf.file_id, mi.id, mt.name
+		 FROM media_files mf
+		 JOIN media_items mi ON mi.id = mf.media_item_id
+		 JOIN media_types mt ON mt.id = mi.media_type_id
+		 WHERE mf.file_id IN (`+strings.Join(ph, ",")+`)
+		 ORDER BY mf.file_id, mf.is_primary DESC, mi.id ASC`, args...)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var fileID, entityID int64
+		var typeName string
+		if rows.Scan(&fileID, &entityID, &typeName) != nil {
+			continue
+		}
+		i, ok := pos[fileID]
+		if !ok || items[i].EntityID != nil {
+			continue // first row per file is the best link
+		}
+		id := entityID
+		items[i].EntityID = &id
+		items[i].EntityType = typeName
+	}
 }
 
 // GetMediaStats handles GET /api/v1/media/stats — replaces the hardcoded stub.

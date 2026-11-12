@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { useFavoriteStatus, useFavorites } from '@/hooks/useFavorites'
 import { cn } from '@/lib/utils'
 import type { MediaItem } from '@/types/media'
+import { resolveFavoriteTarget } from '@/lib/favoriteTarget'
 
 type FavoriteToggleSize = 'sm' | 'md' | 'lg'
 
@@ -146,7 +147,7 @@ const ButtonVariant: React.FC<VariantProps> = ({ size, className, showLabel, dis
  */
 export const FavoriteToggle: React.FC<FavoriteToggleProps> = ({
   mediaId,
-  mediaItem: _mediaItem,
+  mediaItem,
   size = 'md',
   variant = 'button',
   className,
@@ -154,7 +155,12 @@ export const FavoriteToggle: React.FC<FavoriteToggleProps> = ({
   disabled = false
 }) => {
   const [isHovered, setIsHovered] = useState(false)
-  const { data: favoriteStatus, isLoading: statusLoading } = useFavoriteStatus(mediaId)
+  // A supplied media row must carry its linked entity (entity_id + entity_type); its own `id` may be a
+  // files.id. Without the link the toggle is disabled rather than favouriting the wrong entity. With no
+  // mediaItem at all (playlist callers) the legacy (mediaId, default type) behaviour is kept - UNCLOSED, see follow-ups.
+  const target = mediaItem ? resolveFavoriteTarget(mediaItem) : { id: mediaId, type: undefined }
+  const unlinked = target === null
+  const { data: favoriteStatus, isLoading: statusLoading } = useFavoriteStatus(target?.id ?? 0, target?.type)
   const { toggleFavorite, isToggling } = useFavorites()
   
   const isFavorite = favoriteStatus?.is_favorite || false
@@ -163,8 +169,9 @@ export const FavoriteToggle: React.FC<FavoriteToggleProps> = ({
   const handleToggle = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    if (!isLoading && !disabled) {
-      toggleFavorite(mediaId, isFavorite)
+    if (!isLoading && !disabled && !unlinked && target) {
+      if (target.type) toggleFavorite(target.id, isFavorite, target.type)
+      else toggleFavorite(target.id, isFavorite)
     }
   }
 
@@ -172,7 +179,7 @@ export const FavoriteToggle: React.FC<FavoriteToggleProps> = ({
   const handleMouseLeave = () => setIsHovered(false)
 
   const variantProps: VariantProps = {
-    size, className, showLabel, disabled, isFavorite, isLoading, isHovered,
+    size, className, showLabel, disabled: disabled || unlinked, isFavorite, isLoading, isHovered,
     handleToggle, handleMouseEnter, handleMouseLeave
   }
 
