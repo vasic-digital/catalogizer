@@ -116,3 +116,15 @@ Operator decision 2026-11-05: prune APPROVED for Go build/module caches, Android
 ## 7. Open operator decisions
 
 Decided 2026-11-05: SonarQube = on-demand QA service with minimal tokens; prune scope (section 6); Prometheus LAN-only; live S3 on Garage; throwaway pre-release tag test; Tauri confirm on URL change (done). Still open: tag form (default `v2.4.0`); horizontal-authz / second-LAN-host measurement; when the Synology drives are powered back on; Docker Hub access method for the SonarQube images (login, mirror, or wait).
+
+## 7a. Operator decisions 2026-11-12 (answered interactively; BG-OPDEC-2026-11-12)
+1. Release: v2.4.2 pre-release is ALREADY published (tag + GitHub pre-release 2026-11-12); the Rev 20 "prepared, not tagged" text is stale. Next release also a labelled pre-release until retest + manual QA.
+2. Redis limiter: outage falls back to in-memory tiers; /login and /register stay in-memory (branch fix/opdec-a, in progress).
+3. SECQ-1: apply netguard to the WebDAV storage-root client + CATALOGIZER_OUTBOUND_ALLOW_CIDRS (fix/opdec-b, in progress).
+4. R2-N7: another user's job id returns 403 (KEEP current; operator chose 403 over the recommended 404).
+5. Roles: subset rule also compares role 2 (fix/opdec-a). 6. API image size 761 MB: accepted for now.
+7. CAT-QA-SONAR-5: implement wizard template loading (fix/opdec-b). 8. Vision QA: stop the decide model via `llmctl stop`, then `llmctl start vision`; no overrides (pending, host load ~14).
+9. FU2-4: remove `onActivateKey` (fix/opdec-b). 10. Tauri: confirm on every server URL change (already done). 11. SonarQube images: the operator will docker-login via a 0600 file (waiting). 12. Synology: honest SKIP.
+13. Jev: stays SHADOW (typesafe jev-latest + openrouter jev-1.13 reachable); `jev-calibrate --dry-run` found 61046 of 61046 rows uncalibratable (no question/criteria/state_text recorded), so NO threshold can be earned yet; hosted endpoints never enforce. Recording state_text in the gate rows is the unblocker (open).
+14. Mirrors: push_all.sh now lists m3w + codeberg; Codeberg/m3w release pages need an API token in a 0600 file (not found; operator to supply).
+15. Hygiene: rotate LLMCTL_API_KEY (operator); GitHub Support text for the `x@x` attribution drafted in docs/qa/github_support_x_at_x.md; MarkoLazovicCode accepted as known collaborator; scratch clones: ffwire deleted (all 4 commits patch-equivalent on main); others kept (helixqa3 backup branch and s1 `.soak/` untracked, rev/rr2 merge commits not verified).
