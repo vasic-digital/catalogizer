@@ -132,20 +132,21 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
 
-	// Check if user can login
+	// Check if user can login. The account state (suspended, locked, pending,
+	// disabled) is revealed only to someone who knows the password; anyone else
+	// gets the same answer as for a wrong password or an unknown user, so the
+	// state cannot be used to probe which usernames exist (D9S-R3-4).
 	if !user.CanLogin() {
 		s.auditEvent(user.ID, "failed_login_inactive", ipAddress, userAgent, "account locked or disabled")
+		if ok, _ := CheckPassword(req.Password, user.Salt, user.PasswordHash); !ok {
+			s.userRepo.IncrementFailedLoginAttempts(user.ID)
+			return nil, ErrInvalidCredentials
+		}
 		if user.IsAccountLocked() {
 			return nil, lockedError(user)
 		}
 		if user.IsRegistrationPending() {
-			// Reveal the pending state only to someone who knows the password,
-			// so it cannot be used to probe which usernames are registered.
-			if ok, _ := CheckPassword(req.Password, user.Salt, user.PasswordHash); ok {
-				return nil, ErrAccountPending
-			}
-			s.userRepo.IncrementFailedLoginAttempts(user.ID)
-			return nil, ErrInvalidCredentials
+			return nil, ErrAccountPending
 		}
 		return nil, ErrAccountDisabled
 	}
@@ -248,6 +249,9 @@ func (s *AuthService) RefreshToken(refreshToken string) (*AuthResult, error) {
 	if !user.CanLogin() {
 		// Deactivate session
 		s.userRepo.DeactivateSession(session.ID)
+		if user.IsAccountLocked() {
+			return nil, lockedError(user)
+		}
 		return nil, ErrAccountDisabled
 	}
 

@@ -54,7 +54,7 @@ func (r *UserRepository) Create(user *models.User) (int, error) {
 func (r *UserRepository) GetByID(id int) (*models.User, error) {
 	query := `
 		SELECT id, username, email, password_hash, salt, role_id, first_name, last_name,
-			   display_name, avatar_url, time_zone, language, is_active, is_locked,
+			   display_name, avatar_url, time_zone, language, is_active, COALESCE(is_locked, '0'),
 			   locked_until, failed_login_attempts, last_login_at, last_login_ip,
 			   created_at, updated_at, settings
 		FROM users WHERE id = ?
@@ -88,7 +88,7 @@ func (r *UserRepository) GetByID(id int) (*models.User, error) {
 func (r *UserRepository) GetByUsername(username string) (*models.User, error) {
 	query := `
 		SELECT id, username, email, password_hash, salt, role_id, first_name, last_name,
-			   display_name, avatar_url, time_zone, language, is_active, is_locked,
+			   display_name, avatar_url, time_zone, language, is_active, COALESCE(is_locked, '0'),
 			   locked_until, failed_login_attempts, last_login_at, last_login_ip,
 			   created_at, updated_at, settings
 		FROM users WHERE username = ?
@@ -119,7 +119,7 @@ func (r *UserRepository) GetByUsername(username string) (*models.User, error) {
 func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
 	query := `
 		SELECT id, username, email, password_hash, salt, role_id, first_name, last_name,
-			   display_name, avatar_url, time_zone, language, is_active, is_locked,
+			   display_name, avatar_url, time_zone, language, is_active, COALESCE(is_locked, '0'),
 			   locked_until, failed_login_attempts, last_login_at, last_login_ip,
 			   created_at, updated_at, settings
 		FROM users WHERE email = ?
@@ -150,7 +150,7 @@ func (r *UserRepository) GetByEmail(email string) (*models.User, error) {
 func (r *UserRepository) GetByUsernameOrEmail(usernameOrEmail string) (*models.User, error) {
 	query := `
 		SELECT id, username, email, password_hash, salt, role_id, first_name, last_name,
-			   display_name, avatar_url, time_zone, language, is_active, is_locked,
+			   display_name, avatar_url, time_zone, language, is_active, COALESCE(is_locked, '0'),
 			   locked_until, failed_login_attempts, last_login_at, last_login_ip,
 			   created_at, updated_at, settings
 		FROM users WHERE username = ? OR email = ?
@@ -359,7 +359,7 @@ func (r *UserRepository) livePermissions(ctx context.Context, userID int) (perms
 		lockedUntil     *time.Time
 	)
 	qerr := r.db.QueryRowContext(ctx, `
-		SELECT u.is_active, ro.permissions, u.is_locked, u.locked_until
+		SELECT u.is_active, ro.permissions, COALESCE(u.is_locked, '0'), u.locked_until
 		FROM users u JOIN roles ro ON ro.id = u.role_id
 		WHERE u.id = ?`, userID).Scan(&isActive, &permissionsJSON, &isLocked, &lockedUntil)
 	if qerr != nil {
@@ -426,7 +426,7 @@ var ErrAccountSuspended = errors.New("account is suspended")
 // LockAccount applies a timed lock and revokes the user's sessions. A permanent suspension (is_locked with no
 // locked_until) is never replaced by a timed lock: it is already stricter.
 func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
-	query := `UPDATE users SET is_locked = 1, locked_until = ? WHERE id = ? AND NOT (is_locked = ? AND locked_until IS NULL)`
+	query := `UPDATE users SET is_locked = 1, locked_until = ? WHERE id = ? AND NOT (COALESCE(is_locked, '0') = ? AND locked_until IS NULL)`
 	if _, err := r.db.Exec(query, lockUntil, userID, true); err != nil {
 		return err
 	}
@@ -442,7 +442,7 @@ func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
 // UnlockAccount lifts a timed lock. It refuses to lift a permanent suspension
 // (ErrAccountSuspended); that is done only by SetSuspended(id, false).
 func (r *UserRepository) UnlockAccount(userID int) error {
-	query := `UPDATE users SET is_locked = 0, locked_until = NULL WHERE id = ? AND NOT (is_locked = ? AND locked_until IS NULL)`
+	query := `UPDATE users SET is_locked = 0, locked_until = NULL WHERE id = ? AND NOT (COALESCE(is_locked, '0') = ? AND locked_until IS NULL)`
 	res, err := r.db.Exec(query, userID, true)
 	if err != nil {
 		return err
@@ -450,7 +450,7 @@ func (r *UserRepository) UnlockAccount(userID int) error {
 	if n, nerr := res.RowsAffected(); nerr == nil && n == 0 {
 		var locked bool
 		var until *time.Time
-		if qerr := r.db.QueryRow(`SELECT is_locked, locked_until FROM users WHERE id = ?`, userID).Scan(&locked, &until); qerr == nil && locked && until == nil {
+		if qerr := r.db.QueryRow(`SELECT COALESCE(is_locked, '0'), locked_until FROM users WHERE id = ?`, userID).Scan(&locked, &until); qerr == nil && locked && until == nil {
 			return ErrAccountSuspended
 		}
 	}
@@ -587,7 +587,7 @@ func (r *UserRepository) Delete(id int) error {
 func (r *UserRepository) List(limit, offset int) ([]models.User, error) {
 	query := `
 		SELECT id, username, email, password_hash, salt, role_id, first_name, last_name,
-			   display_name, avatar_url, time_zone, language, is_active, is_locked,
+			   display_name, avatar_url, time_zone, language, is_active, COALESCE(is_locked, '0'),
 			   locked_until, failed_login_attempts, last_login_at, last_login_ip,
 			   created_at, updated_at, settings
 		FROM users
