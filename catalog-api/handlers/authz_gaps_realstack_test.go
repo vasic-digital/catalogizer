@@ -127,6 +127,39 @@ func TestAZ_R3M2_NonAdminCannotAssignStrongerNonAdminRole(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code, w.Body.String())
 }
 
+// CAT-OPDEC-A (operator decision 2026-11-12, follow-up N1): role 2 is compared
+// against the caller like any other role; there is no "always assignable"
+// baseline. A manager lacking a permission of role 2 can no longer hand it out
+// (neither on update nor on create); a manager holding all of them still can.
+func TestAZ_OPDECA_Role2IsComparedAgainstCaller(t *testing.T) {
+	e := newRTEnv(t)
+	r2, err := e.repo.GetRole(2)
+	require.NoError(t, err)
+	require.NotEmpty(t, r2.Permissions, "role 2 must carry permissions for this test to mean anything")
+
+	// Holds user management but none of role 2's permissions.
+	narrow := e.azRole(t, "NarrowManager", models.PermissionUserManage, models.PermissionUserUpdate, models.PermissionUserCreate)
+	_, ntok := e.azUser(t, "narrow", narrow)
+	weak := e.azRole(t, "OnlyViewer", models.PermissionMediaView)
+	vid, _ := e.azUser(t, "victim2", weak)
+
+	w := e.putUser(ntok, vid, `{"role_id":2}`)
+	assert.Equal(t, http.StatusForbidden, w.Code, "caller lacking a permission of role 2 must not assign role 2: "+w.Body.String())
+	u, _ := e.repo.GetByID(vid)
+	assert.Equal(t, weak, u.RoleID, "role must be unchanged")
+
+	body := `{"username":"mint3","email":"mint3@example.test","password":"` + rtUserPass + `","role_id":2}`
+	w = e.do(ntok, "POST", "/api/v1/users", body)
+	assert.Equal(t, http.StatusForbidden, w.Code, w.Body.String())
+
+	// A caller holding every permission of role 2 still may.
+	perms := append([]string{models.PermissionUserManage, models.PermissionUserUpdate, models.PermissionUserCreate}, r2.Permissions...)
+	wide := e.azRole(t, "WideManager", perms...)
+	_, wtok := e.azUser(t, "wide", wide)
+	w = e.putUser(wtok, vid, `{"role_id":2}`)
+	assert.Equal(t, http.StatusOK, w.Code, w.Body.String())
+}
+
 // hookRepo wraps the REAL repository and runs hook once, the first time the
 // handler resolves the target's role: that is exactly the point between the
 // authorization decision and the write.

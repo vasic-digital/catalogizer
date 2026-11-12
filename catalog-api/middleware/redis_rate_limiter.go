@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"catalogizer/internal/logging"
@@ -25,6 +26,39 @@ type RedisRateLimiterConfig struct {
 	Message string
 	// Redis client
 	Client *redis.Client
+	// Fallback, when set, handles the request instead of answering 503 when
+	// Redis errors after startup (operator decision 2026-11-12, CAT-OPDEC-A).
+	// It is the in-memory limiter of the same tier. It is consulted per
+	// request, so Redis takes over again as soon as it answers.
+	Fallback gin.HandlerFunc
+}
+
+// redisFallbackLogEvery bounds the outage log line to one per interval.
+const redisFallbackLogEvery = 30 * time.Second
+
+var (
+	redisFallbackLogMu   sync.Mutex
+	redisFallbackLogLast time.Time
+)
+
+// useFallback hands the request to config.Fallback when one is configured and
+// returns true. The log line carries the error text only (no address, no
+// credentials) and is rate-limited.
+func useFallback(c *gin.Context, config RedisRateLimiterConfig, err error) bool {
+	if config.Fallback == nil {
+		return false
+	}
+	redisFallbackLogMu.Lock()
+	log := time.Since(redisFallbackLogLast) >= redisFallbackLogEvery
+	if log {
+		redisFallbackLogLast = time.Now()
+	}
+	redisFallbackLogMu.Unlock()
+	if log && logging.Logger != nil {
+		logging.With(logging.ErrorField(err)).Warn("Redis rate limiter unavailable; using in-memory limiter fallback")
+	}
+	config.Fallback(c)
+	return true
 }
 
 // DefaultRedisRateLimiterConfig returns a secure default configuration
@@ -107,7 +141,8 @@ return {count, redis.call('PTTL', KEYS[1])}
 //
 // Fixed window: the window starts at the first request for a key and ends
 // Window later; requests inside the window do not extend it. On any Redis
-// error the middleware fails closed (HTTP 503).
+// error the middleware fails closed (HTTP 503) unless config.Fallback is set,
+// in which case the in-memory fallback answers (CAT-OPDEC-A).
 //
 // Wiring (catalog-api/main.go): this limiter replaces the in-memory one only
 // when REDIS_RATE_LIMIT=true AND the startup Redis PING succeeds; otherwise
@@ -129,6 +164,9 @@ func RedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc {
 		if err != nil || len(res) != 2 {
 			if err == nil {
 				err = errors.New("unexpected fixed-window script reply")
+			}
+			if useFallback(c, config, err) {
+				return
 			}
 			if logging.Logger != nil {
 				logging.With(logging.ErrorField(err)).Warn("Redis rate limiter error")
@@ -211,6 +249,9 @@ func SlidingWindowRedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc 
 
 		// Handle Redis errors gracefully
 		if err != nil {
+			if useFallback(c, config, err) {
+				return
+			}
 			if logging.Logger != nil {
 				logging.With(logging.ErrorField(err)).Warn("Redis sliding window rate limiter error")
 			}
