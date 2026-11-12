@@ -2041,3 +2041,9 @@ RC3R4-1 (minor, source-defect) HEAD-consistency checks use git status/diff, whic
 RC3R4-2 (minor, test-instrumentation) author mutants [4] (equivalent: record as such) and [6] (head-check git-status failure not blind: add fault-injection git wrapper test) survive, so the shipped mutation runner is not green on its own list; run the FULL runner once load < 20 (only a filtered run of 14 mutants was done).
 RC3R4-3 (nit) mutant NEW3 (head_check returns at first missing path) near-equivalent.
 RC3R4-4 (nit) retargeted symlink cited path gives FAIL (MISS) instead of BLIND; fails safe, message only.
+
+## CAT-UI-FAV-1 (PROVISIONAL, branch fix/ui-fav-1)
+- UI-FAV-1a: the route-per-entity-type hypothesis is NOT the defect: App.tsx serves every closed-set entity type via the single `/entity/:id` route (11 types characterised GREEN). Fixed here only the reproducible part: unusable ids (0/negative/NaN, from `Number(r.entity_id ?? 0)` in favoritesApi) navigated to `/entity/0` / `/entity/NaN`; now `entityPath()` returns null and nothing navigates.
+- UI-FAV-1b (OWED, root of the original report, UNCONFIRMED live): /media/search returns FILE rows (files.id) while favourites + `/entity/:id` use media_items ids; MediaCard stores the file id with entity_type DEFAULT_ENTITY='movie' (favoritesApi.ts). Needs an API file-id -> entity-id lookup (see UI-D3-FU-1) and threading the real entity type into toggleFavorite; not fixable frontend-only.
+- UI-FAV-1c: other `/entity/${id}` builders (EntityBrowser.tsx:62, EntityDetail.tsx:164,204,241) take ids from entity APIs; not changed; migrate to entityPath() and verify recommendations/similar ids are entity ids (UNCONFIRMED).
+- Live Playwright verification of favourite click-through OWED (stack down).

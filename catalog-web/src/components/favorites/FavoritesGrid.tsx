@@ -18,6 +18,7 @@ import { MediaGrid } from '@/components/media/MediaGrid'
 import { FavoriteToggle } from './FavoriteToggle'
 import { useFavorites } from '@/hooks/useFavorites'
 import { mediaApi } from '@/lib/mediaApi'
+import { entityPath } from '@/lib/entityRoutes'
 import type { MediaItem } from '@/types/media'
 
 interface FavoritesGridProps {
@@ -190,11 +191,13 @@ export const FavoritesGrid: React.FC<FavoritesGridProps> = ({
   }
 
   const handleMediaView = useCallback((media: MediaItem) => {
-    navigate(`/entity/${media.id}`)
+    const to = entityPath(media.id)
+    if (to) navigate(to)
   }, [navigate])
 
   const handleMediaPlay = useCallback((media: MediaItem) => {
-    navigate(`/entity/${media.id}?autoplay=true`)
+    const to = entityPath(media.id, { autoplay: true })
+    if (to) navigate(to)
   }, [navigate])
 
   const handleMediaDownload = useCallback((media: MediaItem) => {
