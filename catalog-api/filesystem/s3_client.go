@@ -76,6 +76,11 @@ type S3Client struct {
 	skipped   atomic.Int64
 	mu        sync.Mutex
 
+	// opTransport is the operator transport of this client, created on the first Connect and REUSED by later Connects so the
+	// address-class pin of its first connection (netguard.classPin, CAT-SECQ1-A) survives a reconnect. A new S3Client (process
+	// restart, root re-created) starts a new pin. Guarded by mu.
+	opTransport *http.Transport
+
 	// httpOverride replaces the guarded HTTP client. Unit tests only (virtual-host Host-header assertion); never set by production code.
 	httpOverride *http.Client
 }
@@ -141,7 +146,13 @@ func (c *S3Client) Connect(ctx context.Context) error {
 	}
 	httpC := c.httpOverride
 	if httpC == nil {
-		httpC = &http.Client{Transport: netguard.OperatorTransport(), CheckRedirect: netguard.OperatorCheckRedirect}
+		c.mu.Lock()
+		if c.opTransport == nil {
+			c.opTransport = netguard.OperatorTransport()
+		}
+		tr := c.opTransport
+		c.mu.Unlock()
+		httpC = &http.Client{Transport: tr, CheckRedirect: netguard.OperatorCheckRedirect}
 	}
 	opts := awss3.Options{
 		Region:       c.cfg.Region,

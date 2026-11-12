@@ -17,11 +17,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -40,9 +42,11 @@ var lookupIPAddr = func(ctx context.Context, host string) ([]net.IPAddr, error) 
 }
 
 // reservedNets are blocked and never re-admitted by the allow-list: benchmarking (198.18.0.0/15), IETF protocol
-// assignments (192.0.0.0/24), deprecated IPv6 site-local (fec0::/10) and the local-use NAT64 prefix (64:ff9b:1::/48).
+// assignments (192.0.0.0/24), deprecated IPv6 site-local (fec0::/10), the local-use NAT64 prefix (64:ff9b:1::/48) and
+// the Azure WireServer address 168.63.129.16.
 var reservedNets = []*net.IPNet{
 	mustCIDR("198.18.0.0/15"), mustCIDR("192.0.0.0/24"), mustCIDR("fec0::/10"), mustCIDR("64:ff9b:1::/48"),
+	mustCIDR("168.63.129.16/32"), // Azure WireServer / platform endpoint (SECQ-1 B5)
 }
 
 // embeddedV4 returns the IPv4 address an IPv6 address carries in an IPv4-compatible (::/96), NAT64 (64:ff9b::/96) or
@@ -84,18 +88,49 @@ func mustCIDR(s string) *net.IPNet {
 	return n
 }
 
-// allowedNets reads the operator allow-list. Invalid entries are ignored (fail
-// closed: they allow nothing).
+// AllowBroadEnv, when set to 1, keeps allow-list entries shorter than /8 (IPv4) or /16 (IPv6), for example
+// 0.0.0.0/0, which would re-admit every loopback address. Without it such entries are ignored and logged.
+const AllowBroadEnv = "CATALOGIZER_OUTBOUND_ALLOW_BROAD"
+
+var allowListWarned sync.Map
+
+func warnAllowListOnce(entry, why string) {
+	if _, loaded := allowListWarned.LoadOrStore(entry+"|"+why, struct{}{}); !loaded {
+		log.Printf("netguard: %s entry %q ignored: %s", AllowCIDRsEnv, entry, why)
+	}
+}
+
+// resetAllowListWarnings forgets which entries were already logged (tests).
+func resetAllowListWarnings() {
+	allowListWarned.Range(func(k, _ any) bool { allowListWarned.Delete(k); return true })
+}
+
+// allowedNets reads the operator allow-list. Invalid entries are ignored (fail closed: they allow nothing) and
+// logged once; over-broad entries (prefix shorter than /8 for IPv4, /16 for IPv6) are ignored and logged unless
+// AllowBroadEnv=1.
 func allowedNets() []*net.IPNet {
 	var out []*net.IPNet
+	broadOK := strings.TrimSpace(os.Getenv(AllowBroadEnv)) == "1"
 	for _, f := range strings.Split(os.Getenv(AllowCIDRsEnv), ",") {
 		f = strings.TrimSpace(f)
 		if f == "" {
 			continue
 		}
-		if _, n, err := net.ParseCIDR(f); err == nil {
-			out = append(out, n)
+		_, n, err := net.ParseCIDR(f)
+		if err != nil {
+			warnAllowListOnce(f, "not a valid CIDR")
+			continue
 		}
+		ones, bits := n.Mask.Size()
+		if bits == 128 && n.IP.To4() != nil && ones >= 96 {
+			// an IPv4-mapped network (::ffff:a.b.c.d/N) is an IPv4 network /N-96 for Contains: judge it as such
+			ones, bits = ones-96, 32
+		}
+		if !broadOK && ((bits == 32 && ones < 8) || (bits == 128 && ones < 16)) {
+			warnAllowListOnce(f, "prefix is too broad (shorter than /8 for IPv4 or /16 for IPv6); set "+AllowBroadEnv+"=1 to keep it")
+			continue
+		}
+		out = append(out, n)
 	}
 	return out
 }
@@ -157,6 +192,9 @@ func resolve(ctx context.Context, host string, honorAllow bool) ([]net.IP, error
 			return nil, fmt.Errorf("%w: %s is a loopback, private, link-local or reserved address", ErrBlocked, host)
 		}
 		return []net.IP{ip}, nil
+	}
+	if err := checkHostSpelling(host); err != nil {
+		return nil, err
 	}
 	addrs, err := lookupIPAddr(ctx, host)
 	if err != nil {
