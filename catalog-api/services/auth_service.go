@@ -100,6 +100,7 @@ var (
 	ErrInvalidCredentials       = errors.New("invalid credentials")
 	ErrAccountLocked            = errors.New("account is temporarily locked")
 	ErrAccountDisabled          = errors.New("account is disabled")
+	ErrAccountSuspended         = repository.ErrAccountSuspended
 	ErrInvalidRefreshToken      = errors.New("invalid refresh token")
 	ErrSessionExpired           = errors.New("session expired")
 	ErrSessionNotFound          = errors.New("session not found")
@@ -110,6 +111,14 @@ var (
 type PasswordPolicyError struct{ Msg string }
 
 func (e *PasswordPolicyError) Error() string { return e.Msg }
+
+// lockedError distinguishes a permanent administrative suspension from a timed lock.
+func lockedError(u *models.User) error {
+	if u.LockedUntil == nil {
+		return ErrAccountSuspended
+	}
+	return ErrAccountLocked
+}
 
 // Login authenticates a user and creates a session
 func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent string) (*AuthResult, error) {
@@ -126,8 +135,8 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	// Check if user can login
 	if !user.CanLogin() {
 		s.auditEvent(user.ID, "failed_login_inactive", ipAddress, userAgent, "account locked or disabled")
-		if user.IsLocked {
-			return nil, ErrAccountLocked
+		if user.IsAccountLocked() {
+			return nil, lockedError(user)
 		}
 		if user.IsRegistrationPending() {
 			// Reveal the pending state only to someone who knows the password,
@@ -321,6 +330,12 @@ func (s *AuthService) GetCurrentUser(tokenString string) (*models.User, error) {
 	user, err := s.userRepo.GetByID(claims.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	// A locked or suspended account has no valid session, even if a session row
+	// is still active (lock written by a writer that did not revoke sessions).
+	if user.IsAccountLocked() {
+		return nil, lockedError(user)
 	}
 
 	// Load user role
@@ -539,7 +554,11 @@ func (s *AuthService) verifyUserUnchanged(orig *models.User, acceptableHashes []
 			hashOK = true
 		}
 	}
-	if cur.RoleID != orig.RoleID || cur.IsActive != orig.IsActive || cur.IsLocked != orig.IsLocked || !hashOK {
+	// The lock is compared by its EFFECTIVE state and by permanence: a user with an
+	// expired timed lock keeps is_locked=1 when an admin suspends him (only
+	// locked_until becomes NULL), which a bare IsLocked comparison cannot see.
+	if cur.RoleID != orig.RoleID || cur.IsActive != orig.IsActive || cur.IsLocked != orig.IsLocked ||
+		cur.IsAccountLocked() || (cur.LockedUntil == nil) != (orig.LockedUntil == nil) || !hashOK {
 		return ErrUserChangedDuringLogin
 	}
 	return nil

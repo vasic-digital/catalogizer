@@ -1954,6 +1954,17 @@ R5FU-F-B (minor, source-defect) `validateSecretValue` (input_validation.go ~319-
 R5FU-F-C (nit) `ErrSessionNotFound` entry in `authClientMessage` is unreachable from current callers (equivalent mutant M3b): remove or document.
 R5FU-F-D (nit) message assertions use `Contains`; switch to `Equal` together with F-A.
 R5FU-F-E (nit) import grouping in pxf23_r5_leak_test.go; `r5State` builds SQL by concatenation (test-only, fixed literals).
+
+## CAT-D9-SUSPEND (2026-11-12, branch fix/d9-suspend) - PROVISIONAL, review owed
+Root cause (fact, reproduced RED): `UserRepository.Update` and `UpdateGuarded` never wrote `is_locked`/`locked_until`, and `AdminHandler.UpdateUser` did not revoke sessions for `status:"suspended"` (the user stays `is_active`), so a suspension returned 200 and changed nothing; "active" could not lift a lock either. Fixed: both writers persist both columns, suspend sets a permanent lock and revokes all sessions (fail closed, before the write), "active" clears lock and expiry, last-admin guard counts a locked admin as removed, `AuthService.GetCurrentUser` refuses a locked account.
+Round-1 review (Opus, NO-GO) fixes, same branch:
+- D9S-F1 [LANDED]: `LockAccount` (repository level, so every caller) now revokes the user's sessions after writing the lock; JWT-only routes lose access (reviewer probe RV2). The production session checker was left unchanged (smaller, no per-request extra read).
+- D9S-F2 [LANDED, reviewer F1]: `Update`/`UpdateGuarded` no longer write `is_locked`/`locked_until` at all; a stale read can neither clear nor set a suspension (RV3/RV3b, `TestD9S_GeneralWritersLeaveLockAlone`). A dedicated `SetSuspended(id, bool)` writes only the lock columns, with an atomic last-admin guard in the same statement (PG advisory lock mirrored from UpdateGuarded, PG path not run live).
+- D9S-F3 [LANDED, reviewer F3]: `LockAccount` never replaces a permanent suspension; `UnlockAccount` refuses to lift one (`ErrAccountSuspended`, handler 409); only admin status "active" lifts it (RV4).
+- D9S-F4 [LANDED, reviewer F5/F6]: user list and the last-admin clause use the effective lock (an expired timed lock is not suspended and does count as an active admin, RV5, `TestD9S_RepoRefusesLockingLastActiveAdmin`); a permanent suspension answers "account is suspended" (new `ErrAccountSuspended`), timed locks keep "account is temporarily locked".
+- D9S-F5 [QUEUED]: the admin update performs revoke, general update and lock write as separate statements (no single transaction); each step is safe alone and a retry converges, but a crash between update and `SetSuspended` leaves sessions revoked and the lock unwritten (retry fixes).
+- D9S-F6 [UNCONFIRMED]: PostgreSQL not run live; time comparison of `locked_until` in the admin-count clause relies on same-timezone time.Time parameters (SQLite string compare, PG timestamptz).
+- Pre-existing, not in scope: `Login` previously returned ErrAccountLocked for any `is_locked` row on an inactive user; it now uses the effective lock.
 ## PXF23-R5b (2026-11-12) — remaining client-reaching err.Error() sites in catalog-api handlers: LANDED (PROVISIONAL, awaiting independent review); Roadmap-Item CAT-PXF23-R5B
 Closed: playback (8), scan (CreateStorageRoot/GetStorageRoots/QueueScan/loadStorageRoot, local-root and URL-policy messages), playlist and service_handlers (sentinel/validation text only), conversion (job-state sentinel), asset, collection smart-rules text (validation text only, no wrapped chain), configuration (7) and error_reporting (15) std handlers, sync_handler (`details` is now a fixed class text per status, docs/api/SYNC_API.md updated, status codes unchanged), auth_handler.go:58 (pending account), internal/handlers smb_discovery (3), copy.go, localization_handlers.go:301,365. Guard: handlers/pxf23_r5b_leak_test.go (go/ast sweep over handlers and internal/handlers with positive and negative controls, plus real-stack RED/GREEN tests). Helpers: handlers/client_errors.go.
 Open, with file:line:
@@ -2045,3 +2056,16 @@ RC3R4-4 (nit) retargeted symlink cited path gives FAIL (MISS) instead of BLIND; 
 - SECQ2WD-R1-1 (minor, process-doc): fix/wd-repro README must state the re-run used main f709b892, not the 2026-11-05 build where the single CORRUPT appeared (WriteFile gained HEAD size read-back since); operator weighs this before accepting a 11.4.90 not-reproducible closure.
 - SECQ2WD-R1-2 (minor, process-doc): record a target identity for the live run (hash of endpoint host, clean-tree note for the test binary) per 11.4.292(C)/11.4.289(D).
 - SECQ2WD-R1-3 (nit): "11 further identical attempts" is conservative; chaos3 mode-A 2 MB also ok (12).
+
+## CAT-D9-SUSPEND round-2 review follow-ups (2026-11-12) — PROVISIONAL
+- D9S-M1, D9S-M4, D9S-M5: registered per the conductor's round-2 NO-GO message; their text was not carried into this work session, so they are recorded here by id only and must be filled from the review text (UNCONFIRMED content).
+- D9S-F5: admin update does revoke, update and SetSuspended as separate statements (not one transaction).
+- D9S-F6: the SQLite `locked_until <= ?` comparison relies on same-timezone time strings.
+- D9S-F7: `LockAccount`/`UnlockAccount` still compare `is_locked = ?` without COALESCE; only the last-admin clause treats NULL as unlocked (M6).
+- PostgreSQL test `TestD9S_PG_SuspendLockUnlock` is gated on CATALOGIZER_PG_TEST_*; it was not run live by this author.
+- D9S-R3-1 (minor, source-defect): NULL is_locked handled inconsistently (admin-count clause treats NULL as unlocked; GetByID scan, session checker, LockAccount/UnlockAccount fail or compare without COALESCE). With a NULL-lock peer the last USABLE admin can be suspended. Fix structurally: NOT NULL migration with backfill, or COALESCE in every read; add a behavioural NULL test (merges with D9S-F7).
+- D9S-R3-2 (minor, test-instrumentation): no test covers the RefreshToken lock check (reviewer mutant F survived); adopt reviewer probe TestRV3_SuspendedUserAllPaths (scratchpad rv3/).
+- D9S-R3-3 (minor): RefreshToken answers "account is disabled" for a suspended account; return lockedError(user).
+- D9S-R3-4 (minor, pre-existing class): Login reveals locked/suspended/disabled state BEFORE the password check (account-state enumeration); hide behind the password like pending.
+- SEC-WS-1 (IMPORTANT candidate, pre-existing, own item): /ws (handlers/websocket_handler.go HandleConnection) accepts connections with NO authentication (found by D9 round-3 review). Needs reproduce-first (11.4.292), auth + origin check, and tests.
+- D9S-M1/M4/M5: round-2 review text was never supplied to the author; ids only. UNCONFIRMED content.
