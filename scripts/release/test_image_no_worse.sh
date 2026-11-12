@@ -134,6 +134,9 @@ grep -qx 'verdict=BLIND' "$D/rec" && ok || bad "usage error left stale record"
 setup; out="$("$CMP" --baseline-verdicts "$D/b" --new-verdicts "$D/n" --baseline-meta "$D/bm" --new-meta "$D/nm" --out "$D/nodir/rec" 2>&1)"; rc=$?
 if [ "$rc" = 2 ] && ! printf '%s' "$out" | grep -q 'VERDICT: NO-WORSE-PROVEN'; then ok; else bad "unwritable --out: rc=$rc"; fi
 # M-1b: write failure after a successful open (/dev/full) must fail closed
+# (a regular file under `ulimit -f 0` with SIGXFSZ ignored gives EFBIG on write; /dev/full is a device and is refused up front, WP03R3FU-5)
+setup; out="$( ( ulimit -f 0; trap '' XFSZ; "$CMP" --baseline-verdicts "$D/b" --new-verdicts "$D/n" --baseline-meta "$D/bm" --new-meta "$D/nm" --out "$D/rec" ) 2>&1)"; rc=$?
+if [ "$rc" = 2 ] && ! printf '%s' "$out" | grep -q 'VERDICT: NO-WORSE-PROVEN'; then ok; else bad "--out write failure (EFBIG): rc=$rc"; fi
 setup; out="$("$CMP" --baseline-verdicts "$D/b" --new-verdicts "$D/n" --baseline-meta "$D/bm" --new-meta "$D/nm" --out /dev/full 2>&1)"; rc=$?
 if [ "$rc" = 2 ] && ! printf '%s' "$out" | grep -q 'VERDICT: NO-WORSE-PROVEN'; then ok; else bad "--out /dev/full: rc=$rc"; fi
 # M-2: unreadable targets
@@ -242,6 +245,30 @@ setup; mkdir "$D/tmp"; TMPDIR="$D/tmp" run --bogus >/dev/null 2>&1
 [ -z "$(ls -A "$D/tmp")" ] && ok || bad "F4 snapshot dir left behind on usage error"
 if grep -nE 'rm +-[a-zA-Z]*[rR]' "$CMP" >/dev/null; then bad "F4 tool still uses a recursive rm"; else ok; fi
 grep -qE 'rm +-rf' <<<'rm -rf x' && ok || bad "F4 lint control needle blind"
+
+
+# ---- WP03R3FU-4..7 ----
+# FU-4: every value of each input option counts; a hardlinked --out to a SUPERSEDED value must not clobber it
+for pair in "--baseline-verdicts:b" "--new-verdicts:n" "--baseline-meta:bm" "--new-meta:nm" "--targets:tg"; do setup; echo t3 >"$D/tg"
+  opt="${pair%%:*}"; f="${pair##*:}"; cp "$D/$f" "$D/$f.orig"; cp "$D/$f" "$D/zz"; ln "$D/$f" "$D/hl"
+  "$CMP" "$opt" "$D/$f" --out "$D/hl" "$opt" "$D/zz" --bogus >/dev/null 2>&1; rc=$?
+  { [ "$rc" = 2 ] && cmp -s "$D/$f" "$D/$f.orig"; } && ok || bad "FU-4 superseded $opt value clobbered via hardlinked --out (rc=$rc)"
+  setup; echo t3 >"$D/tg"; cp "$D/$f" "$D/$f.orig"; cp "$D/$f" "$D/zz"; ln "$D/$f" "$D/hl"
+  "$CMP" --baseline-verdicts "$D/b" --new-verdicts "$D/n" --baseline-meta "$D/bm" --new-meta "$D/nm" --targets "$D/tg" "$opt" "$D/zz" --out "$D/hl" >/dev/null 2>&1; rc=$?
+  { [ "$rc" = 2 ] && cmp -s "$D/$f" "$D/$f.orig"; } && ok || bad "FU-4 full run, $opt superseded value clobbered via hardlinked --out (rc=$rc)"; done
+# FU-5: --out that is not a regular file is refused before opening (a FIFO hangs otherwise)
+setup; mkfifo "$D/fifo"
+out="$(timeout 10 "$CMP" --baseline-verdicts "$D/b" --new-verdicts "$D/n" --baseline-meta "$D/bm" --new-meta "$D/nm" --out "$D/fifo" 2>&1)"; rc=$?
+{ [ "$rc" = 2 ] && printf '%s' "$out" | grep -q 'VERDICT: BLIND'; } && ok || bad "FU-5 FIFO --out: rc=$rc (124 = hang)"
+setup; mkfifo "$D/fifo"; timeout 10 "$CMP" --bogus --out "$D/fifo" >/dev/null 2>&1; rc=$?
+[ "$rc" = 2 ] && ok || bad "FU-5 FIFO --out on usage error: rc=$rc (124 = hang)"
+setup; mkdir "$D/adir"; "$CMP" --baseline-verdicts "$D/b" --new-verdicts "$D/n" --baseline-meta "$D/bm" --new-meta "$D/nm" --out "$D/adir" >/dev/null 2>&1; rc=$?
+[ "$rc" = 2 ] && ok || bad "FU-5 directory --out: rc=$rc"
+setup; : >"$D/rec"; run >/dev/null 2>&1; rc=$?; [ "$rc" = 0 ] && grep -qx 'verdict=NO-WORSE-PROVEN' "$D/rec" && ok || bad "FU-5 golden-FALSE: existing regular --out must still work (rc=$rc)"
+# FU-7: baseline PASS turned SKIPPED/INCONCLUSIVE/BLIND/ERROR is counted as not-pass and as issue-count-higher
+for v in SKIPPED INCONCLUSIVE BLIND ERROR; do setup; vd "$D/n" t1=PASS t2=$v t3=FAIL
+  expect "FU-7 t2=$v issue-count-higher" 10 "issue-count-higher"
+  grep -qx 'new_notpass_on_baseline_set=2' "$D/rec" && grep -qx 'baseline_notpass=1' "$D/rec" && ok || bad "FU-7 t2=$v: new_notpass_on_baseline_set not 2 / baseline_notpass not 1"; done
 
 echo "image_no_worse tests: pass=$PASS fail=$FAIL"
 [ "$FAIL" = 0 ]

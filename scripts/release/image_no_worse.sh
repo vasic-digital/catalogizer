@@ -28,24 +28,28 @@
 set -u
 OUT=""
 BV0=""; NV0=""; BM0=""; NM0=""; TG0=""
-# pre-scan --out AND every input option so that even a usage error rewrites the record and
-# out_clash already knows every input named anywhere on the command line (F1)
+# pre-scan --out AND EVERY value of every input option (not only the last), so that even a usage
+# error rewrites the record and out_clash knows every input named anywhere on the command line:
+# an earlier, later-superseded value must not be clobbered through a hardlinked --out (WP03R3FU-4)
+INS=()
 for ((i=1;i<=$#;i++)); do j=$((i+1)); case "${!i}" in
-  --out) OUT="${!j:-}" ;; --baseline-verdicts) BV0="${!j:-}" ;; --new-verdicts) NV0="${!j:-}" ;;
-  --baseline-meta) BM0="${!j:-}" ;; --new-meta) NM0="${!j:-}" ;; --targets) TG0="${!j:-}" ;; esac; done
+  --out) OUT="${!j:-}" ;; --baseline-verdicts) BV0="${!j:-}"; INS+=("${!j:-}") ;; --new-verdicts) NV0="${!j:-}"; INS+=("${!j:-}") ;;
+  --baseline-meta) BM0="${!j:-}"; INS+=("${!j:-}") ;; --new-meta) NM0="${!j:-}"; INS+=("${!j:-}") ;; --targets) TG0="${!j:-}"; INS+=("${!j:-}") ;; esac; done
 # san: replace every control character (newline included) so option/path/reason text can never
 # add or duplicate a key=value record line or a stdout verdict line (F2)
 san() { printf '%s' "$1" | LC_ALL=C tr '\000-\037\177' '?'; }
 # out_clash: succeeds (0) when --out resolves (realpath) OR is the same inode (-ef: hardlink) as any input (M-c, F1)
 out_clash() { local o f; [ -n "$OUT" ] || return 1; o="$(realpath -m -- "$OUT" 2>/dev/null)" || return 0
-  for f in "$BV0" "$NV0" "$BM0" "$NM0" "$TG0"; do
+  for f in "${INS[@]+"${INS[@]}"}"; do
     [ -n "$f" ] || continue
     [ "$(realpath -m -- "$f" 2>/dev/null)" = "$o" ] && return 0
     [ "$OUT" -ef "$f" ] && return 0
   done; return 1; }
+# out_unsafe: --out exists and is not a regular file (FIFO/device/directory): never open it (WP03R3FU-5)
+out_unsafe() { [ -n "$OUT" ] && [ -e "$OUT" ] && [ ! -f "$OUT" ]; }
 blind() {
   echo "BLIND: $(san "$*")" >&2
-  { [ -z "$OUT" ] || out_clash; } || printf 'schema=image_no_worse/1\nverdict=BLIND\nreasons=%s\n' "$(san "$*")" >"$OUT" 2>/dev/null
+  { [ -z "$OUT" ] || out_clash || out_unsafe; } || printf 'schema=image_no_worse/1\nverdict=BLIND\nreasons=%s\n' "$(san "$*")" >"$OUT" 2>/dev/null
   echo "VERDICT: BLIND"; exit 2; }
 BV=""; NV=""; BM=""; NM=""; TG=""; TGSET=0
 while [ $# -gt 0 ]; do
@@ -61,7 +65,9 @@ while [ $# -gt 0 ]; do
 done
 [ -n "$NV" ] && [ -n "$NM" ] && [ -n "$BV" ] && [ -n "$BM" ] || blind "all four input files are required"
 BV0="$BV"; NV0="$NV"; BM0="$BM"; NM0="$NM"; TG0="$TG"
+INS+=("$BV" "$NV" "$BM" "$NM" "$TG")
 if out_clash; then OUT_BAD="$OUT"; OUT=""; blind "--out $OUT_BAD resolves to an input file"; fi
+if out_unsafe; then OUT_BAD="$OUT"; OUT=""; blind "--out $OUT_BAD is not a regular file"; fi
 # TOCTOU: snapshot every input into a private dir; all later reads use the snapshot
 SNAP="$(mktemp -d)" || blind "cannot create snapshot dir"
 # F4: no recursive delete - remove the known snapshot files, then the (now empty) directory
