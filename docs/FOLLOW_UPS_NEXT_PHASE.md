@@ -1792,3 +1792,10 @@ ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go
 
 ## CAT-QA-SONAR-7 follow-ups FU-1..FU-7 resolution (branch fix/web-sonar-fu; PROVISIONAL, no new Sonar scan)
 - FU-1 DONE: tests that checkbox click/Space do not fire onPreviewItem. FU-2 DONE: Enter-to-toggle restored via keydown on the native checkbox (was a user-visible regression), test added. FU-3 PARTIAL: structural jsdom test (dialog `relative`, after backdrop in DOM); real stacking/paint needs a browser check (OWED). FU-4 DONE: "Loading..." label test. FU-5 OPEN (nit): grid template card buttons still wrap block elements. FU-6 DONE: grid card is now motion.button (no role). FU-7 DONE honestly: text changed to "Click to select a file to upload" (no drag handlers implemented).
+
+## CAT-QA-SONAR-7 FU round-2 (Opus review of fix/web-sonar-fu, GO-with-follow-ups, PROVISIONAL)
+
+- FU2-1 (minor, process-doc): HistoryDrawer stacking test is structural only; a live Playwright paint-order check is owed before FU-3 closes.
+- FU2-2 (nit, source-defect): CollectionPreview Enter handler lacks `!e.repeat`; holding Enter toggles repeatedly.
+- FU2-3 (nit, source-defect): FU-5 still open — template buttons contain block elements/h4 headings.
+- FU2-4 (nit, process-doc): `catalog-web/src/lib/keyboard.ts` `onActivateKey` has no production callers; investigate per §11.4.124 before any removal.
