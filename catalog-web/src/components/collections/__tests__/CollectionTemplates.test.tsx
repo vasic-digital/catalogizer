@@ -310,8 +310,18 @@ describe('CollectionTemplates', () => {
   })
 
   describe('FU2-3: no block content inside template buttons (HTML content model)', () => {
-    const BLOCK = 'div,p,h1,h2,h3,h4,h5,h6,ul,ol,li,table,section,article,header,footer,form,pre'
-    const offenders = (btn: HTMLElement) => Array.from(btn.querySelectorAll(BLOCK)).map((n) => n.tagName)
+    // Allowlist of phrasing content (HTML content model for <button>) plus SVG; no interactive descendants.
+    const PHRASING = new Set(['span', 'b', 'strong', 'i', 'em', 'small', 'abbr', 'code', 'img', 'br', 'wbr', 'time', 'mark', 'sub', 'sup', 's', 'u', 'bdi', 'bdo', 'q', 'cite', 'kbd', 'samp', 'var', 'dfn', 'data'])
+    const SVG_CHILDREN = new Set(['svg', 'path', 'g', 'circle', 'rect', 'line', 'polyline', 'polygon', 'ellipse', 'title', 'desc', 'defs', 'use', 'text', 'tspan'])
+    const INTERACTIVE = 'a,button,input,select,textarea,label,details,[role="button"],[role="link"],[tabindex]'
+    const offenders = (btn: HTMLElement) =>
+      Array.from(btn.querySelectorAll('*'))
+        .filter((n) => {
+          const tag = n.tagName.toLowerCase()
+          const inSvg = n.closest('svg') !== null
+          return !(inSvg ? SVG_CHILDREN.has(tag) : PHRASING.has(tag)) || n.matches(INTERACTIVE)
+        })
+        .map((n) => n.tagName)
 
     it('grid-view template buttons contain only phrasing content', () => {
       render(<CollectionTemplates {...defaultProps} />)

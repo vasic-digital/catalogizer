@@ -468,7 +468,7 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
                     </span>
                   </span>
                   
-                  <span className="block text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+                  <span className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
                     {template.description}
                   </span>
                   
