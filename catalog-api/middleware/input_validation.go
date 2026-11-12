@@ -165,6 +165,13 @@ type validationError struct {
 
 func (e *validationError) Error() string { return e.msg }
 
+// serverValidationError is a server-side misconfiguration found while validating
+// (for example an uncompilable custom rule pattern). It answers 500 with fixed
+// text; its message is logged only (R5-F5).
+type serverValidationError struct{ msg string }
+
+func (e *serverValidationError) Error() string { return e.msg }
+
 func clientErrorf(format string, args ...interface{}) error {
 	m := fmt.Sprintf(format, args...)
 	return &validationError{msg: m, public: m}
@@ -357,7 +364,7 @@ func validateStringValue(config InputValidationConfig, key, value string) error 
 	if pattern, exists := config.CustomRules[key]; exists {
 		re, err := regexp.Compile(pattern)
 		if err != nil {
-			return fmt.Errorf("invalid validation pattern for field %s", key)
+			return &serverValidationError{msg: fmt.Sprintf("invalid validation pattern for field %s", key)}
 		}
 		if !re.MatchString(value) {
 			return clientErrorf("field %s does not match required pattern", key)
@@ -384,6 +391,15 @@ func InputValidation(config InputValidationConfig) gin.HandlerFunc {
 				WithError(err).
 				Warn("Security validation failed")
 
+			var sve *serverValidationError
+			if errors.As(err, &sve) {
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":   "internal_error",
+					"message": "Request validation is temporarily unavailable",
+				})
+				c.Abort()
+				return
+			}
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error":   "validation_failed",
 				"message": "Invalid input detected",

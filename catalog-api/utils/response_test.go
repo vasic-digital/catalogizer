@@ -202,16 +202,21 @@ func TestSendErrorResponse_DoesNotLeakInternalErrorText(t *testing.T) {
 	}
 }
 
-// CAT-PXF23-R R3: no response header may carry the error text either.
+// CAT-PXF23-R R3 / PXR-1: no response header may carry the error text, with and without a request_id.
 func TestSendErrorResponse_HeadersDoNotLeakErrorText(t *testing.T) {
 	const marker = "pq: connection refused host=db"
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	SendErrorResponse(c, 500, "generic message", errors.New(marker))
-	for k, vs := range w.Header() {
-		for _, v := range vs {
-			assert.NotContains(t, v, "connection refused", "header %s", k)
-			assert.NotContains(t, v, "host=db", "header %s", k)
+	for _, withRID := range []bool{false, true} {
+		w := httptest.NewRecorder()
+		c, _ := gin.CreateTestContext(w)
+		if withRID {
+			c.Set("request_id", "req-hdr-1")
+		}
+		SendErrorResponse(c, 500, "generic message", errors.New(marker))
+		for k, vs := range w.Header() {
+			for _, v := range vs {
+				assert.NotContains(t, v, "connection refused", "header %s (request_id set=%v)", k, withRID)
+				assert.NotContains(t, v, "host=db", "header %s (request_id set=%v)", k, withRID)
+			}
 		}
 	}
 }

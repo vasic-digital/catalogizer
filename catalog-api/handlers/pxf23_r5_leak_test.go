@@ -6,10 +6,13 @@ package handlers
 // driver-style marker, so the failure travels the production error-wrapping path.
 
 import (
+	"catalogizer/services"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"catalogizer/models"
 
@@ -186,4 +189,80 @@ func TestPXF23R5_IntentionalMessagesPreserved(t *testing.T) {
 	w = e.do(tok, "POST", "/api/v1/users", createUserBody("rtadmin"))
 	assert.Equal(t, 409, w.Code)
 	assert.Contains(t, w.Body.String(), "Username or email already exists")
+}
+
+// R5-F1: intentionally client-visible account-state messages survive the leak mapper, on both the gin and
+// the std (net/http) variants, for login and for refresh. Dropping a sentinel from authClientMessage turns
+// these messages into the generic fallback and these tests fail.
+func (e *rtEnv) r5State(t *testing.T, name, set string, args ...interface{}) {
+	t.Helper()
+	hash, salt, err := e.authSvc.HashPasswordForUser(azPass)
+	require.NoError(t, err)
+	_, err = e.repo.Create(&models.User{Username: name, Email: name + "@example.test", PasswordHash: hash, Salt: salt, RoleID: 2, IsActive: true})
+	require.NoError(t, err)
+	_, err = e.db.Exec("UPDATE users SET "+set+" WHERE username = '"+name+"'", args...)
+	require.NoError(t, err)
+}
+
+func TestPXF23R5_AccountStateMessagesPreservedOnLogin(t *testing.T) {
+	e := newRTEnv(t)
+	r5Routes(e)
+	e.r5State(t, "r5locked", "is_locked = 1")
+	e.r5State(t, "r5disabled", "is_active = 0")
+	e.r5State(t, "r5pending", "is_active = 0, settings = ?", `{"registration_status":"pending"}`)
+	loginPaths := map[string]string{"gin": "/api/v1/auth/login", "std": "/r5/std/login"}
+	for variant, path := range loginPaths {
+		w := e.do("", "POST", path, `{"username":"r5locked","password":"`+azPass+`"}`)
+		assert.Equal(t, 401, w.Code, variant)
+		assert.Contains(t, w.Body.String(), "account is temporarily locked", variant)
+		w = e.do("", "POST", path, `{"username":"r5disabled","password":"`+azPass+`"}`)
+		assert.Equal(t, 401, w.Code, variant)
+		assert.Contains(t, w.Body.String(), "account is disabled", variant)
+		w = e.do("", "POST", path, `{"username":"r5pending","password":"`+azPass+`"}`)
+		assert.Contains(t, w.Body.String(), "account pending approval", variant)
+		if variant == "gin" {
+			assert.Equal(t, 403, w.Code)
+			assert.Contains(t, w.Body.String(), "account_pending_approval")
+		} else {
+			assert.Equal(t, 401, w.Code)
+		}
+		// Pending with a WRONG password must not reveal the pending state.
+		w = e.do("", "POST", path, `{"username":"r5pending","password":"Wrong-Pass1!"}`)
+		assert.Equal(t, 401, w.Code, variant)
+		assert.NotContains(t, w.Body.String(), "pending", variant)
+		r5NoLeak(t, w)
+	}
+}
+
+func TestPXF23R5_AccountStateMessagesPreservedOnRefresh(t *testing.T) {
+	for _, variant := range []string{"/r5/refresh", "/r5/std/refresh"} {
+		// session expired
+		e := newRTEnv(t)
+		r5Routes(e)
+		_, refresh := e.r5LoginJSON(t)
+		_, err := e.db.Exec("UPDATE user_sessions SET expires_at = ?", time.Now().Add(-time.Hour))
+		require.NoError(t, err)
+		w := e.do("", "POST", variant, `{"refresh_token":"`+refresh+`"}`)
+		assert.Equal(t, 401, w.Code, variant)
+		assert.Contains(t, w.Body.String(), "session expired", variant)
+
+		// account disabled after login
+		e = newRTEnv(t)
+		r5Routes(e)
+		_, refresh = e.r5LoginJSON(t)
+		_, err = e.db.Exec("UPDATE users SET is_active = 0 WHERE username = 'rtadmin'")
+		require.NoError(t, err)
+		w = e.do("", "POST", variant, `{"refresh_token":"`+refresh+`"}`)
+		assert.Equal(t, 401, w.Code, variant)
+		assert.Contains(t, w.Body.String(), "account is disabled", variant)
+	}
+}
+
+// R5-F3: the retry hint for an account that changed mid-login is an intentional client message.
+func TestPXF23R5_UserChangedDuringLoginHintPreserved(t *testing.T) {
+	msg, known := authClientMessage(services.ErrUserChangedDuringLogin, "Authentication failed")
+	assert.True(t, known)
+	assert.Equal(t, "account changed during login, please retry", msg)
+	_, known = authClientMessage(fmt.Errorf("wrapped: %w", services.ErrUserChangedDuringLogin), "Authentication failed")
+	assert.True(t, known)
 }
