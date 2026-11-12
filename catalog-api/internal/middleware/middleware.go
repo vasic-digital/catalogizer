@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"catalogizer/internal/logredact"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -76,15 +77,16 @@ func ErrorHandler() gin.HandlerFunc {
 
 		if len(c.Errors) > 0 {
 			err := c.Errors.Last()
+			// The text of an error (binder internals, driver text, paths) never goes to the client; the detail
+			// is logged server-side under the request id (CAT-WP02-ERRLEAK).
+			reqID, _ := c.Get("RequestID")
+			log.Printf("middleware: request %v %s %s failed (type %d, detail not returned to client): %v",
+				reqID, c.Request.Method, c.Request.URL.Path, err.Type, err.Err)
 			switch err.Type {
 			case gin.ErrorTypeBind:
 				c.JSON(http.StatusBadRequest, gin.H{
 					"error":   "Invalid request format",
-					"details": err.Error(),
-				})
-			case gin.ErrorTypePublic:
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": err.Error(),
+					"details": "request could not be parsed",
 				})
 			default:
 				c.JSON(http.StatusInternalServerError, gin.H{
