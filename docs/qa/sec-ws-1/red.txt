@@ -1,0 +1,35 @@
+--- FAIL: TestWSRoute_UnauthenticatedRefused (0.04s)
+    main_wsroute_test.go:75: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/secws1.2LSPFC/c/catalog-api/main_wsroute_test.go:75
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestWSRoute_UnauthenticatedRefused
+        	Messages:   	an unauthenticated client must not complete the upgrade
+--- FAIL: TestWSRoute_BadTokenRefused (0.04s)
+    main_wsroute_test.go:84: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/secws1.2LSPFC/c/catalog-api/main_wsroute_test.go:84
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestWSRoute_BadTokenRefused
+--- FAIL: TestWSRoute_RevokedSessionRefused (0.03s)
+    main_wsroute_test.go:117: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/secws1.2LSPFC/c/catalog-api/main_wsroute_test.go:117
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestWSRoute_RevokedSessionRefused
+--- FAIL: TestWSRoute_SuspendedUserRefused (0.04s)
+    main_wsroute_test.go:126: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/secws1.2LSPFC/c/catalog-api/main_wsroute_test.go:126
+        	Error:      	An error is expected but got nil.
+        	Test:       	TestWSRoute_SuspendedUserRefused
+--- FAIL: TestWSRoute_OriginPolicy (0.03s)
+    --- FAIL: TestWSRoute_OriginPolicy/foreign_browser_origin (0.00s)
+        main_wsroute_test.go:155: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/secws1.2LSPFC/c/catalog-api/main_wsroute_test.go:155
+            	Error:      	An error is expected but got nil.
+            	Test:       	TestWSRoute_OriginPolicy/foreign_browser_origin
+    --- FAIL: TestWSRoute_OriginPolicy/foreign_origin_with_allow-listed_substring (0.00s)
+        main_wsroute_test.go:155: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/secws1.2LSPFC/c/catalog-api/main_wsroute_test.go:155
+            	Error:      	An error is expected but got nil.
+            	Test:       	TestWSRoute_OriginPolicy/foreign_origin_with_allow-listed_substring
+FAIL
+FAIL	catalogizer	0.253s
+FAIL

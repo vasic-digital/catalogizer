@@ -1,0 +1,3 @@
+R23-trust-x-forwarded-host KILLED (restored-cmp-ok)
+R24-no-host-lowercase KILLED (restored-cmp-ok)
+END

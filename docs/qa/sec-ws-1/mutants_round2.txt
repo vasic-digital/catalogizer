@@ -1,0 +1,6 @@
+R10-allowlist-ignores-scheme KILLED (restored-cmp-ok)
+R17-hostname-only KILLED (restored-cmp-ok)
+R18-portless-host-accepts-any-port KILLED (restored-cmp-ok)
+R20-allowlist-ignores-port KILLED (restored-cmp-ok)
+R21-ipv6-hostname-trim KILLED (restored-cmp-ok)
+R19-nginx-template-back-to-host KILLED (restored-cmp-ok)

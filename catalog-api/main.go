@@ -1147,8 +1147,8 @@ func main() {
 	}
 	})
 
-	// WebSocket endpoint (auth via query parameter, not header)
-	router.GET("/ws", wsHandler.HandleConnection)
+	// WebSocket endpoint: authenticated (Bearer header or ?token=, session-checked) and Origin-checked; see registerWebSocketRoute
+	registerWebSocketRoute(router, jwtMiddleware, wsHandler)
 
 	// Image proxy — serves external images (TMDB, etc.) through the API.
 	// When the upstream CDN is unreachable, falls back to a type-specific

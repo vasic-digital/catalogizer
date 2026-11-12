@@ -1,0 +1,7 @@
+PASS proxy to API_UPSTREAM (got: D6-BACKEND-MARKER-1445541-1794519854)
+PASS no placeholder left in directives (got: 0)
+PASS nginx vars intact ($http_host kept in /api and /ws) (got: 2)
+PASS SPA location kept (try_files) (got: 1)
+PASS access log: no credential value (7 probes) (got: 0)
+PASS access log: the path of every probe is logged (7 + 1 readiness) (got: 1)
+RESULT fails=0

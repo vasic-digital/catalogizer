@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/url"
+	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,6 +25,9 @@ type WebSocketConfig struct {
 	WriteWait         time.Duration
 	MaxMessageSize    int64
 	EnableCompression bool
+	// AllowedOrigins lists the browser Origins (scheme://host[:port]) accepted besides
+	// the request's own host. Empty falls back to CORS_ALLOWED_ORIGINS / the dev defaults.
+	AllowedOrigins []string
 }
 
 // DefaultWebSocketConfig returns default configuration
@@ -119,11 +125,9 @@ func NewWebSocketHandlerWithConfig(logger *zap.Logger, config WebSocketConfig) *
 		logger:   logger,
 		stopChan: make(chan struct{}),
 		upgrader: &websocket.Upgrader{
-			ReadBufferSize:  config.ReadBufferSize,
-			WriteBufferSize: config.WriteBufferSize,
-			CheckOrigin: func(r *http.Request) bool {
-				return true // Allow all origins in development
-			},
+			ReadBufferSize:    config.ReadBufferSize,
+			WriteBufferSize:   config.WriteBufferSize,
+			CheckOrigin:       originChecker(config.AllowedOrigins),
 			EnableCompression: config.EnableCompression,
 		},
 	}
@@ -252,7 +256,8 @@ func (h *WebSocketHandler) HandleConnection(c *gin.Context) {
 
 	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		h.logger.Error("WebSocket upgrade failed", zap.Error(err))
+		// Warn, not Error: a refused Origin or a bad handshake is a client condition.
+		h.logger.Warn("WebSocket upgrade refused", zap.Error(err))
 		h.mu.Lock()
 		h.connCount--
 		h.mu.Unlock()
@@ -505,5 +510,87 @@ func (h *WebSocketHandler) handleMessage(wc *wsConn, message []byte) {
 		h.logger.Warn("Unknown WebSocket message type",
 			zap.String("type", msgType),
 			zap.String("id", wc.id))
+	}
+}
+
+// defaultAllowedOrigins returns the browser origins accepted for the upgrade: the
+// operator's CORS_ALLOWED_ORIGINS (the same list the REST CORS middleware uses),
+// or the local dev servers when unset.
+func defaultAllowedOrigins() []string {
+	raw := os.Getenv("CORS_ALLOWED_ORIGINS")
+	if raw == "" {
+		raw = "http://localhost:5173,http://localhost:3000"
+	}
+	var out []string
+	for _, o := range strings.Split(raw, ",") {
+		if o = strings.TrimSpace(o); o != "" {
+			out = append(out, o)
+		}
+	}
+	return out
+}
+
+// originParts splits an absolute origin URL into lower-cased scheme, host and the
+// effective port (the scheme default 80/443 when none is written). ok is false for
+// anything that is not a plain http(s)/ws(s) origin with a host.
+func originParts(raw string) (scheme, host, port string, explicit, ok bool) {
+	u, err := url.Parse(raw)
+	if err != nil || u.Hostname() == "" {
+		return "", "", "", false, false
+	}
+	scheme = strings.ToLower(u.Scheme)
+	switch scheme {
+	case "http", "ws":
+		scheme, port = "http", "80"
+	case "https", "wss":
+		scheme, port = "https", "443"
+	default:
+		return "", "", "", false, false
+	}
+	if p := u.Port(); p != "" {
+		port, explicit = p, true
+	}
+	return scheme, strings.ToLower(u.Hostname()), port, explicit, true
+}
+
+// originChecker builds the Upgrader.CheckOrigin policy (SEC-WS-1): no Origin header
+// (native clients such as Android do not send one; they are still authenticated by
+// the route) is accepted; a browser Origin must match the request's own Host
+// (hostname AND port) or an exact scheme+host+port entry of the allow-list.
+// Everything else is refused, which stops cross-site WebSocket hijacking from a
+// foreign page. A Host header without a port can only match an Origin on its
+// scheme's default port; the reverse proxy must therefore forward the client's Host
+// (nginx: proxy_set_header Host $http_host). X-Forwarded-Host is never read.
+func originChecker(allowed []string) func(*http.Request) bool {
+	if len(allowed) == 0 {
+		allowed = defaultAllowedOrigins()
+	}
+	return func(r *http.Request) bool {
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			return true
+		}
+		scheme, host, port, explicit, ok := originParts(origin)
+		if !ok {
+			return false
+		}
+		if hu, err := url.Parse("//" + r.Host); err == nil && hu.Hostname() != "" {
+			if strings.EqualFold(hu.Hostname(), host) {
+				if hp := hu.Port(); hp != "" {
+					if hp == port {
+						return true
+					}
+				} else if !explicit || port == map[string]string{"http": "80", "https": "443"}[scheme] {
+					return true
+				}
+			}
+		}
+		for _, a := range allowed {
+			as, ah, ap, _, aok := originParts(a)
+			if aok && as == scheme && ah == host && ap == port {
+				return true
+			}
+		}
+		return false
 	}
 }

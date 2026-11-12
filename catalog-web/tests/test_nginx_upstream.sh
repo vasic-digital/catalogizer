@@ -61,7 +61,7 @@ check "proxy to API_UPSTREAM" "$MARK" "$(fetch "d6web-a-$SUF" /api/ping)"
 # rendered config has no unsubstituted placeholder and nginx variables survive
 RENDERED="$(podman exec "d6web-a-$SUF" cat /etc/nginx/conf.d/default.conf)"
 check "no placeholder left in directives" "0" "$(printf '%s\n' "$RENDERED" | grep -v '^[[:space:]]*#' | grep -c 'API_UPSTREAM')"
-check "nginx vars intact (\$host kept in /api and /ws)" "2" "$(printf '%s\n' "$RENDERED" | grep -c 'proxy_set_header Host \$host;')"
+check "nginx vars intact (\$http_host kept in /api and /ws)" "2" "$(printf '%s\n' "$RENDERED" | grep -c 'proxy_set_header Host \$http_host;')"
 check "SPA location kept (try_files)" "1" "$(printf '%s' "$RENDERED" | grep -c 'try_files')"
 
 # 2. Safe default when API_UPSTREAM is unset (full image carries the ENV default;
