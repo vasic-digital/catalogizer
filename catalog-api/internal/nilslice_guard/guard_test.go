@@ -11,6 +11,7 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"testing"
@@ -206,26 +207,34 @@ func offenders(t *testing.T, dir string, exported bool) []string {
 // accepted lists reviewed findings that are not a null-on-the-wire defect (NS-3 dispositions, docs/qa/nil-slice-null-census-20261104.md).
 // Each entry is a substring of the finding and carries its reason; a stale entry (no longer matching) fails the test.
 var accepted = map[string]string{
-	"media_collection_repository.go:193:6 var externalIDs": "MediaCollection.ExternalIDs is `json:\"external_ids,omitempty\"`: a nil map is omitted, not null",
-	"admin_handler.go:117:6 var unavailable":               "GetSystemInfo always appends `totalRequests`, so the slice is never nil when serialised",
-	"collection_handler.go:290:3 var items":                "items is assigned from smartrules.Evaluate / ListManualItems, which return a non-nil slice whenever err == nil; the err path returns before serialising",
-	"service_adapters.go:83:6 var errs":                    "models.ValidationResult.Errors is `json:\"errors,omitempty\"`: nil is omitted, not null",
-	"service_adapters.go:87:6 var warns":                   "models.ValidationResult.Warnings is `json:\"warnings,omitempty\"`: nil is omitted, not null",
-	"music_player_service.go:412:6 var tracks":             "PlayArtist returns an error when tracks is empty, so a nil slice is never serialised",
-	"translation_service.go:168:6 var results":             "TranslateBatch has no HTTP caller in the tree (service-internal); tracked, not on a served path",
-	"localization_handlers.go:452:6 var providers":         "unrouted: LocalizationHandlers is never constructed outside tests; not a served path today",
-	"internal/handlers/media.go:280:6 var mediaItems":      "unrouted: internal/handlers.MediaHandler is never constructed outside tests; not a served path today",
-	"internal/handlers/media.go:56:6 var mediaTypes":       "unrouted: internal/handlers.MediaHandler is never constructed outside tests; not a served path today",
+	"/media_collection_repository.go var externalIDs used as struct-literal field value unnormalised in scanCollection": "MediaCollection.ExternalIDs is `json:\"external_ids,omitempty\"`: a nil map is omitted, not null",
+	"/admin_handler.go var unavailable used as struct-literal field value unnormalised in GetSystemInfo":                "GetSystemInfo always appends `totalRequests`, so the slice is never nil when serialised",
+	"/collection_handler.go var items used as struct-literal field value unnormalised in ListCollectionItems":           "items is assigned from smartrules.Evaluate / ListManualItems, which return a non-nil slice whenever err == nil; the err path returns before serialising",
+	"/service_adapters.go var errs used as struct-literal field value unnormalised in ValidateWizardStep":               "models.ValidationResult.Errors is `json:\"errors,omitempty\"`: nil is omitted, not null",
+	"/service_adapters.go var warns used as struct-literal field value unnormalised in ValidateWizardStep":              "models.ValidationResult.Warnings is `json:\"warnings,omitempty\"`: nil is omitted, not null",
+	"/music_player_service.go var tracks used as struct-literal field value unnormalised in PlayArtist":                 "PlayArtist returns an error when tracks is empty, so a nil slice is never serialised",
+	"/translation_service.go var results used as struct-literal field value unnormalised in TranslateBatch":             "TranslateBatch has no HTTP caller in the tree (service-internal); tracked, not on a served path",
+	"/localization_handlers.go var providers used as struct-literal field value unnormalised in CheckLanguageSupport":   "unrouted: LocalizationHandlers is never constructed outside tests; not a served path today",
+	"/internal/handlers/media.go var mediaItems used as struct-literal field value unnormalised in SearchMedia":         "unrouted: internal/handlers.MediaHandler is never constructed outside tests; not a served path today",
+	"/internal/handlers/media.go var mediaTypes used as struct-literal field value unnormalised in GetMediaTypes":       "unrouted: internal/handlers.MediaHandler is never constructed outside tests; not a served path today",
 }
 
-func filterAccepted(got []string, used map[string]bool) []string {
+var lineCol = regexp.MustCompile(`:\d+:\d+ `)
+
+// filterAccepted removes findings covered by an accepted entry. An entry is the WHOLE finding (shape and function included) with
+// only line:col removed, matched as a suffix, and it may cover exactly ONE finding: a second finding with the same key (for
+// example a new unnormalised var of the same name in the same function) is itself reported.
+func filterAccepted(got []string, used map[string]int) []string {
 	var rest []string
 	for _, g := range got {
+		norm := lineCol.ReplaceAllString(g, " ")
 		hit := false
 		for k := range accepted {
-			if strings.Contains(g, k) {
-				used[k] = true
-				hit = true
+			if strings.HasSuffix(norm, k) {
+				used[k]++
+				if used[k] == 1 {
+					hit = true
+				}
 			}
 		}
 		if !hit {
@@ -235,16 +244,26 @@ func filterAccepted(got []string, used map[string]bool) []string {
 	return rest
 }
 
+// staleAccepted lists accepted entries that matched no finding.
+func staleAccepted(used map[string]int) []string {
+	var out []string
+	for k := range accepted {
+		if used[k] == 0 {
+			out = append(out, k)
+		}
+	}
+	sort.Strings(out)
+	return out
+}
+
 func TestNoUnnormalisedNilListReturns(t *testing.T) {
-	used := map[string]bool{}
+	used := map[string]int{}
 	t.Cleanup(func() {
 		if t.Failed() {
 			return
 		}
-		for k, why := range accepted {
-			if !used[k] {
-				t.Errorf("stale accepted entry %q (%s): no longer matches a finding", k, why)
-			}
+		for _, k := range staleAccepted(used) {
+			t.Errorf("stale accepted entry %q (%s): no longer matches a finding", k, accepted[k])
 		}
 	})
 	for _, d := range scanDirs {
@@ -306,5 +325,43 @@ func TestScanIsRecursive(t *testing.T) {
 	}
 	if got := offenders(t, dir, false); len(got) != 1 {
 		t.Fatalf("recursive scan must find the nested offender, got %v", got)
+	}
+}
+
+// Mutation checks for the accepted list: a new unnormalised var must not be waved through by an existing entry.
+func TestAcceptedList_RejectsNewFindings(t *testing.T) {
+	const tail = " used as struct-literal field value unnormalised in "
+	known := "../../handlers/admin_handler.go:121:6 var unavailable" + tail + "GetSystemInfo"
+	// baseline: the known finding (any line) is accepted exactly once
+	used := map[string]int{}
+	if rest := filterAccepted([]string{known}, used); len(rest) != 0 {
+		t.Fatalf("baseline finding must be accepted, got %v", rest)
+	}
+	// M2: a second finding with the same file/var/function (a new `var unavailable []string` in GetSystemInfo) is reported
+	used = map[string]int{}
+	rest := filterAccepted([]string{known, "../../handlers/admin_handler.go:200:6 var unavailable" + tail + "GetSystemInfo"}, used)
+	if len(rest) != 1 {
+		t.Fatalf("M2: duplicate of an accepted key must be reported, got %v", rest)
+	}
+	// M3: same file and var name in a different function, and a different var in the same function, are reported
+	used = map[string]int{}
+	rest = filterAccepted([]string{
+		"../../handlers/collection_handler.go:50:6 var items" + tail + "ListSomethingElse",
+		"../../handlers/admin_handler.go:50:6 var other" + tail + "GetSystemInfo",
+		"../../handlers/admin_handler.go:50:6 var unavailable returned unnormalised in GetSystemInfo",
+	}, used)
+	if len(rest) != 3 {
+		t.Fatalf("M3: findings differing in function, var or shape must be reported, got %v", rest)
+	}
+	// stale: with nothing matched every entry is stale; with the known finding matched, that entry is not
+	used = map[string]int{}
+	if got := staleAccepted(used); len(got) != len(accepted) {
+		t.Fatalf("stale check must flag all %d unused entries, got %d", len(accepted), len(got))
+	}
+	filterAccepted([]string{known}, used)
+	for _, k := range staleAccepted(used) {
+		if strings.Contains(k, "admin_handler.go var unavailable") {
+			t.Fatalf("matched entry must not be stale: %s", k)
+		}
 	}
 }

@@ -320,7 +320,7 @@ func TestCAT002_Iso_LimitsAreHostAdaptiveAndBounded(t *testing.T) {
 	assert.EqualValues(t, pdfChildMaxData, pdfChildLimits().dataSpace, "ceiling")
 	assert.EqualValues(t, pdfPopplerMaxAS, pdfToolLimits(pdfPopplerMaxAS).addressSpace, "poppler ceiling")
 	memAvailable = func() (uint64, bool) { return 4 << 30, true }
-	assert.EqualValues(t, (4<<30)/(2*pdfConcurrentSlots), pdfChildLimits().dataSpace, "MemAvailable/(2*slots)")
+	assert.EqualValues(t, (4<<30)/(2*(pdfConcurrentSlots+docIndexerSlots)), pdfChildLimits().dataSpace, "MemAvailable/(2*(slots+indexer child))")
 	memAvailable = func() (uint64, bool) { return 1 << 30, true }
 	assert.EqualValues(t, pdfChildMinData, pdfChildLimits().dataSpace, "floor")
 	assert.EqualValues(t, pdfMinAS, pdfToolLimits(pdfPopplerMaxAS).addressSpace, "poppler floor")

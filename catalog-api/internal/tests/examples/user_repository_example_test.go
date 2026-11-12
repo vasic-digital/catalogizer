@@ -35,7 +35,7 @@ func TestUserRepositoryExample(t *testing.T) {
 		// Setup expectations - note the SQLite dialect will rewrite placeholders
 		// For SQLite, we expect '?' placeholders
 		mock.ExpectExec(`INSERT INTO users`).
-			WithArgs("testuser", "test@example.com", "hashed_password", "salt", 1, "Test", "User", "Test User", nil, nil, nil, true, sqlmock.AnyArg(), sqlmock.AnyArg()).
+			WithArgs("testuser", "test@example.com", "hashed_password", "salt", 1, "Test", "User", "Test User", nil, nil, nil, true, sqlmock.AnyArg(), sqlmock.AnyArg(), "{}").
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		// Execute
@@ -158,9 +158,30 @@ func TestUserRepositoryExample(t *testing.T) {
 	// Test 5: Delete user
 	t.Run("DeleteUser", func(t *testing.T) {
 		// Setup expectations
+		// Delete reads the admin roles first (outside the transaction), then in one
+		// transaction stamps and detaches the audit rows before removing the user.
+		mock.ExpectQuery(`SELECT id, name, description, permissions, is_system, created_at, updated_at\s+FROM roles`).
+			WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "permissions", "is_system", "created_at", "updated_at"}))
+		mock.ExpectBegin()
+		mock.ExpectQuery(`SELECT username FROM users WHERE id = \?`).
+			WithArgs(1).
+			WillReturnRows(sqlmock.NewRows([]string{"username"}).AddRow("testuser"))
+		mock.ExpectExec(`UPDATE auth_audit_log SET details`).
+			WithArgs(sqlmock.AnyArg(), 1).
+			WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectExec(`UPDATE auth_audit_log SET user_id = NULL WHERE user_id = \?`).
+			WithArgs(1).
+			WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectExec(`UPDATE user_permissions SET granted_by = NULL WHERE granted_by = \?`).
+			WithArgs(1).
+			WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectQuery(`SELECT role_id, is_active FROM users WHERE id = \?`).
+			WithArgs(1).
+			WillReturnRows(sqlmock.NewRows([]string{"role_id", "is_active"}).AddRow(2, true))
 		mock.ExpectExec(`DELETE FROM users WHERE id = \?`).
 			WithArgs(1).
 			WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectCommit()
 
 		// Execute
 		err := userRepo.Delete(1)
@@ -226,7 +247,7 @@ func TestWithTestUtilsExample(t *testing.T) {
 	t.Run("CreateUserWithTemplate", func(t *testing.T) {
 		// Setup expectations using template
 		template.ExpectExec(`INSERT INTO users`).
-			WithArgs("templateuser", "template@example.com", "hashed_password", "salt", 1, "Template", "User", "Template User", nil, nil, nil, true, sqlmock.AnyArg(), sqlmock.AnyArg()).
+			WithArgs("templateuser", "template@example.com", "hashed_password", "salt", 1, "Template", "User", "Template User", nil, nil, nil, true, sqlmock.AnyArg(), sqlmock.AnyArg(), "{}").
 			WillReturnResult(sqlmock.NewResult(1, 1))
 
 		// Execute

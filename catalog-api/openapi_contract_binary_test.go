@@ -135,8 +135,8 @@ func TestOpenAPIContract_RealBinary_PathParamsAndUserRolePermissions(t *testing.
 		{"GET", "/api/v1/logs/share/" + stok, nil, 200},
 		{"GET", "/api/v1/logs/share/no-such-token", nil, 404},
 		{"DELETE", fmt.Sprintf("/api/v1/logs/share/%d", sid), nil, 204},
-		// Documented as-is: the revoke handler maps "not found" to 500.
-		{"DELETE", "/api/v1/logs/share/999999", nil, 500},
+		// logServiceStatus maps sql.ErrNoRows (unknown share id) to 404.
+		{"DELETE", "/api/v1/logs/share/999999", nil, 404},
 	}
 	for _, rt := range routes {
 		code, raw := c.do(rt.method, rt.path, adm, rt.body)

@@ -108,7 +108,7 @@ func VetSMBHostIPs(host string) ([]net.IP, error) {
 	if err := ValidateSMBHostSyntax(host); err != nil {
 		return nil, err
 	}
-	var ips []net.IP
+	ips := []net.IP{}
 	if ip := net.ParseIP(host); ip != nil {
 		ips = []net.IP{ip}
 	} else {
