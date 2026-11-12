@@ -2187,3 +2187,8 @@ WP03R3-F1..F7 addressed (F6 = heading moved above). Residual, UNCONFIRMED or owe
 - FAVR3R3FU-2 (minor, source-defect): rollback dedup must check ids present BEFORE the loop (duplicate rows with same id restore only one); add tests for both.
 - FAVR3R3FU-3 (minor, process-doc): extend FAVR3-7 inventory to data shapes: collections `is_favorite` (CollectionPreview, smart-collection rules); decide/invalidate `['collections']`/`['collection', id]` on toggle (UNCONFIRMED whether query-backed).
 - FAVR3R3FU-4 (nit): re-capture docs/qa/favr3-fu2/red.txt against the current 13-test file.
+
+### Sonar registry-auth (constitution bd0036bd) reviewer follow-ups (Opus, GO-with-follow-ups; PROVISIONAL, unit-class fake engine)
+- SONARRA-FU-1 (minor): `verify` mode masks only DOCKER_PASSWORD/DOCKER_TOKEN, not passwords decoded from DOCKER_AUTH_CONFIG (pre-existing, low risk).
+- SONARRA-FU-2 (nit): mutant R6 (trailing-newline sentinel) survives alone; add a test on the rejection message or accept redundancy.
+- SONARRA-FU-3 (nit): independent full 57-mutant run to completion owed when host load is lower; real-registry run owed (WP-09 Sonar scan). Extension cycle accepted by operator 2026-11-12. CLAUDE.md/AGENTS.md/QWEN.md/GEMINI.md carriers lack a (J) copy; html/pdf/docx twins not regenerated.
