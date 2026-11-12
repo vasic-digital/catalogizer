@@ -110,6 +110,10 @@ func TestCensusTreatsEllipsisAsElision(t *testing.T) {
 	// no false exemption: a real-looking example and a plain weak one are still judged
 	assert.False(t, exampleValueIsExempt("password123"))
 	assert.False(t, exampleValueIsExempt("changeme."))
+	// PX-F11: widening the elision rule (prefix ".", suffix "...", contains "...") must not exempt real values
+	for _, v := range []string{".hunter2", "secret...", "pa...ss"} {
+		assert.False(t, exampleValueIsExempt(v), v)
+	}
 	// the extractor sees the idiom, so the exemption is what spares it
 	tmp := filepath.Join(t.TempDir(), "x.md")
 	require.NoError(t, os.WriteFile(tmp, []byte("ADMIN_PASSWORD=... ./run.sh\n"), 0o600))
