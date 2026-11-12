@@ -407,6 +407,11 @@ func TestCacheStress_HighThroughput(t *testing.T) {
 		// IO pressure (measured 23-110 ops/sec on a loaded host). Calibrate a
 		// serial single-writer baseline on the same DB, then require the
 		// concurrent run to retain a fraction of it, capped at 100 ops/sec.
+		//
+		// Scope: this covers driver/host SQLite write throughput only, NOT the
+		// product cache code. Limit: with a 20% floor the oracle only catches
+		// roughly 5x or worse degradations; a 2x slowdown passes. Any write
+		// error fails the test (assert.Zero on failed writes).
 		var baseOps int
 		baseStart := time.Now()
 		for time.Since(baseStart) < 500*time.Millisecond {
@@ -418,8 +423,11 @@ func TestCacheStress_HighThroughput(t *testing.T) {
 			baseOps++
 		}
 		baseRate := float64(baseOps) / time.Since(baseStart).Seconds()
-		floor := math.Min(100.0, baseRate*0.2)
 		require.Greater(t, baseRate, 0.0)
+		floor := math.Min(100.0, baseRate*0.2)
+		if floor < 5.0 {
+			t.Logf("WARNING: computed floor %.2f ops/sec is under 5; this run is near-tautological", floor)
+		}
 
 		done := make(chan struct{})
 		var wg sync.WaitGroup
@@ -478,6 +486,7 @@ func TestCacheStress_HighThroughput(t *testing.T) {
 		t.Logf("baseline serial %.0f ops/sec, floor %.1f ops/sec, failed writes %d",
 			baseRate, floor, atomic.LoadInt64(&failed))
 
+		assert.Zero(t, atomic.LoadInt64(&failed), "no write may fail")
 		assert.Greater(t, opsPerSec, floor,
 			"concurrent writes must retain >=20%% of the serial baseline (cap 100 ops/sec)")
 	})
