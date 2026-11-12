@@ -29,7 +29,7 @@ func TestConversionIntegration(t *testing.T) {
 	db := database.WrapDB(sqlDB, database.DialectSQLite)
 
 	// Build the schema with the real migrations (PX-F6): a hand-written copy drifts from them
-	// (it already missed the conversion_jobs.warning column of migration v25).
+	// (any later migration, for example v25 adding conversion_jobs.warning, would otherwise have to be mirrored by hand).
 	require.NoError(t, db.RunMigrations(context.Background()))
 
 	// Create repositories
