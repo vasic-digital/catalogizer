@@ -657,7 +657,7 @@ func TestChallengeHandler_RunChallenge_WrappedError(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, false, response["success"])
 	assert.Equal(t, "Failed to run challenge", response["error"])
-	assert.Equal(t, "SMB client: connection refused", response["details"])
+	assert.NotContains(t, response, "details", "PX-F23: internal error text must not reach the client")
 }
 
 func TestChallengeHandler_RunAll_WrappedError(t *testing.T) {
@@ -675,7 +675,7 @@ func TestChallengeHandler_RunAll_WrappedError(t *testing.T) {
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
-	assert.Equal(t, "runner: already running", response["details"])
+	assert.NotContains(t, response, "details", "PX-F23: internal error text must not reach the client")
 }
 
 func TestChallengeHandler_RunByCategory_WrappedError(t *testing.T) {
@@ -693,7 +693,7 @@ func TestChallengeHandler_RunByCategory_WrappedError(t *testing.T) {
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	require.NoError(t, err)
-	assert.Equal(t, "category missing: no challenges registered", response["details"])
+	assert.NotContains(t, response, "details", "PX-F23: internal error text must not reach the client")
 }
 
 // --- GetChallenge with multiple matching IDs (first match wins) ---

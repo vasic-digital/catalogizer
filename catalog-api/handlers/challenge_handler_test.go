@@ -917,7 +917,7 @@ func TestChallengeHandler_RunChallenge_ErrorResponseStructure(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, false, response["success"])
 	assert.Equal(t, "Failed to run challenge", response["error"])
-	assert.Equal(t, "specific error detail", response["details"])
+	assert.NotContains(t, response, "details", "PX-F23: internal error text must not reach the client")
 }
 
 func TestChallengeHandler_RunAll_ErrorResponseStructure(t *testing.T) {
@@ -937,7 +937,7 @@ func TestChallengeHandler_RunAll_ErrorResponseStructure(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, false, response["success"])
 	assert.Equal(t, "Failed to run challenges", response["error"])
-	assert.Equal(t, "all runner busy", response["details"])
+	assert.NotContains(t, response, "details", "PX-F23: internal error text must not reach the client")
 }
 
 func TestChallengeHandler_RunByCategory_ErrorResponseStructure(t *testing.T) {
@@ -957,7 +957,7 @@ func TestChallengeHandler_RunByCategory_ErrorResponseStructure(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, false, response["success"])
 	assert.Equal(t, "Failed to run challenges", response["error"])
-	assert.Equal(t, "category runner error", response["details"])
+	assert.NotContains(t, response, "details", "PX-F23: internal error text must not reach the client")
 }
 
 // --- GetChallenge response includes correct data shape ---

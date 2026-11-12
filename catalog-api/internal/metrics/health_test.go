@@ -369,3 +369,15 @@ func TestHealthCheckResponseFields(t *testing.T) {
 	assert.NotEmpty(t, resp.Uptime)
 	assert.NotNil(t, resp.Components)
 }
+
+// PX-F23 (CAT-PXF23): the unauthenticated /health/deep body must not carry the ping error text.
+func TestCheckDatabase_PingErrorNotLeaked(t *testing.T) {
+	sqlDB, err := sql.Open("sqlite3", ":memory:")
+	require.NoError(t, err)
+	sqlDB.Close()
+	hc := NewHealthChecker(database.WrapDB(sqlDB, database.DialectSQLite), "1.0.0")
+	result := hc.checkDatabase(context.Background())
+	assert.Equal(t, HealthStatusUnhealthy, result.Status)
+	assert.Equal(t, "Database ping failed", result.Message)
+	assert.NotContains(t, result.Message, "sql: database is closed")
+}
