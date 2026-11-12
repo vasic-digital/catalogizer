@@ -308,4 +308,33 @@ describe('CollectionTemplates', () => {
       expect(screen.getByText('Description')).toBeInTheDocument()
     })
   })
+
+  describe('FU2-3: no block content inside template buttons (HTML content model)', () => {
+    // Allowlist of phrasing content (HTML content model for <button>) plus SVG; no interactive descendants.
+    const PHRASING = new Set(['span', 'b', 'strong', 'i', 'em', 'small', 'abbr', 'code', 'img', 'br', 'wbr', 'time', 'mark', 'sub', 'sup', 's', 'u', 'bdi', 'bdo', 'q', 'cite', 'kbd', 'samp', 'var', 'dfn', 'data'])
+    const SVG_CHILDREN = new Set(['svg', 'path', 'g', 'circle', 'rect', 'line', 'polyline', 'polygon', 'ellipse', 'title', 'desc', 'defs', 'use', 'text', 'tspan'])
+    const INTERACTIVE = 'a,button,input,select,textarea,label,details,[role="button"],[role="link"],[tabindex]'
+    const offenders = (btn: HTMLElement) =>
+      Array.from(btn.querySelectorAll('*'))
+        .filter((n) => {
+          const tag = n.tagName.toLowerCase()
+          const inSvg = n.closest('svg') !== null
+          return !(inSvg ? SVG_CHILDREN.has(tag) : PHRASING.has(tag)) || n.matches(INTERACTIVE)
+        })
+        .map((n) => n.tagName)
+
+    it('grid-view template buttons contain only phrasing content', () => {
+      render(<CollectionTemplates {...defaultProps} />)
+      const card = screen.getByText('Recent Movies').closest('button') as HTMLElement
+      expect(offenders(card)).toEqual([])
+    })
+
+    it('list-view template buttons contain only phrasing content', async () => {
+      const user = userEvent.setup()
+      render(<CollectionTemplates {...defaultProps} />)
+      await user.click(screen.getByTestId('icon-list').closest('button') as HTMLElement)
+      const card = screen.getByText('Recent Movies').closest('button') as HTMLElement
+      expect(offenders(card)).toEqual([])
+    })
+  })
 })

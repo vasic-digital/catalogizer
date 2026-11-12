@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { toast } from 'react-hot-toast'
 import { CollectionPreview } from '../CollectionPreview'
@@ -182,6 +182,17 @@ describe('CollectionPreview', () => {
       screen.getAllByRole('checkbox')[0].focus()
       await user.keyboard(' ')
       expect(onPreviewItem).not.toHaveBeenCalled()
+    })
+
+    it('FU2-2: holding Enter (auto-repeat) toggles selection once, not repeatedly', () => {
+      render(<CollectionPreview collection={mockCollection as any} onClose={vi.fn()} onPreviewItem={vi.fn()} />)
+      const box = screen.getAllByRole('checkbox')[0]
+      box.focus()
+      fireEvent.keyDown(box, { key: 'Enter' })
+      expect(box).toBeChecked()
+      fireEvent.keyDown(box, { key: 'Enter', repeat: true })
+      expect(box).toBeChecked()
+      expect(screen.getByText('1 selected')).toBeInTheDocument()
     })
 
     it('Enter on the checkbox toggles selection (pre-S6819 behaviour) without previewing', async () => {

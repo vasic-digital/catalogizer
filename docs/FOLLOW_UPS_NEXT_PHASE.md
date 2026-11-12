@@ -1795,10 +1795,10 @@ ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go
 
 ## CAT-QA-SONAR-7 FU round-2 (Opus review of fix/web-sonar-fu, GO-with-follow-ups, PROVISIONAL)
 
-- FU2-1 (minor, process-doc): HistoryDrawer stacking test is structural only; a live Playwright paint-order check is owed before FU-3 closes.
-- FU2-2 (nit, source-defect): CollectionPreview Enter handler lacks `!e.repeat`; holding Enter toggles repeatedly.
-- FU2-3 (nit, source-defect): FU-5 still open — template buttons contain block elements/h4 headings.
-- FU2-4 (nit, process-doc): `catalog-web/src/lib/keyboard.ts` `onActivateKey` has no production callers; investigate per §11.4.124 before any removal.
+- FU2-1 (minor, process-doc): STILL OPEN. HistoryDrawer stacking test is structural only (jsdom has no layout/paint); a live browser paint-order check (e.g. `document.elementFromPoint` at the dialog centre must return a dialog descendant, not the backdrop) is owed before FU-3 closes. UNCONFIRMED: not run in this unit (no browser run on the loaded host).
+- FU2-2 (DONE (provisional, unit tests), CAT-QA-SONAR-7-FU2): CollectionPreview checkbox Enter handler now ignores `e.repeat`; test added (RED before, GREEN after).
+- FU2-3 (DONE (provisional, unit tests) for CollectionTemplates grid and list template buttons, CAT-QA-SONAR-7-FU2): div/h4/p inside the buttons replaced by spans (block via class); test asserts no block-level descendant. An h4 inside a button was never exposed as a heading to assistive technology (button children are presentational), so no aria compensation is needed. Other buttons repo-wide were not audited.
+- FU2-4 (INVESTIGATED, KEPT, CAT-QA-SONAR-7-FU2): `onActivateKey` was added in e823f697 (S1082) with 7 callers (AdvancedSearch x2, upload area, CollectionPreview, CollectionTemplates, an expander, a media select); a0cbf0e9 added the `e.repeat` guard; 60bc821d (S6819) migrated callers to native buttons/inputs, 6c063630 removed the last one. Death cause: Sonar S6819 preferred native elements. It is a tested (keyboard.test.ts), documented utility with no production caller. Not deleted: removal needs an operator keep-or-remove decision (§11.4.122); open question for the operator.
 
 ## CAT-REL-CHECK-1 round-3/4 (F1-F5 + review fixes on branch fix/release-checker-f1-f5, 2026-11-12)
 - F1 fixed (fail closed on any non-blank manifest line outside the two unescaped forms; README corrected). F2 fixed after review round 4: entries are resolved with `readlink -m` (missing parents are not an escape; a missing tail below an outside symlink still FAILs) and CRLF manifests are normalised (one trailing CR stripped; a CR inside a line is refused). F3 covered by tests plus mutants. F4 fixed (INFO on versionCode under --prev-tag is BLIND unless the --prev-tag row FAILed). F5 fixed (fence-aware headings, comment pattern cannot span a closing `*/`; `7;` and `7 /* c */` parse).
