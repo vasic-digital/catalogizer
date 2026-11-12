@@ -362,7 +362,7 @@ func TestSECQ1A_Live_ControlHookRefusesAtConnect(t *testing.T) {
 		t.Setenv(AllowCIDRsEnv, "")
 		return d.DialContext(ctx, network, net.JoinHostPort(ip, port))
 	}
-	time.Sleep(100 * time.Millisecond) // let the accept of the positive-control connection be counted
+	waitCount(t, n, 1) // the positive-control accept is counted
 	before := n.Load()
 	if c, err := OperatorDialContext(context.Background(), "tcp", addr); err == nil {
 		c.Close()
@@ -370,10 +370,7 @@ func TestSECQ1A_Live_ControlHookRefusesAtConnect(t *testing.T) {
 	} else if !errors.Is(err, ErrBlocked) {
 		t.Fatalf("refused, but not by the policy: %v", err)
 	}
-	time.Sleep(50 * time.Millisecond)
-	if n.Load() != before {
-		t.Fatalf("listener accepted %d new connections, want 0", n.Load()-before)
-	}
+	sentinelThenExpect(t, ln, n, before)
 }
 
 // B2 live, class level: a listener on all interfaces is refused through the host's real LAN address unless allow-listed.

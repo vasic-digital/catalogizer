@@ -135,10 +135,30 @@ func permitted(ip net.IP, approved Class, deny bool) bool {
 	if c == ClassNever {
 		return false
 	}
-	if c == ClassPrivate && deny && !allowListed(ip) {
+	if c == ClassPrivate && deny && !allowListedUnwrapped(ip) {
 		return false
 	}
 	return approved.Permits(c)
+}
+
+// allowListedUnwrapped matches the address an IPv6 embedding (NAT64, 6to4, IPv4-compatible and so on) really carries
+// against the allow-list, never the embedding prefix itself: an entry such as 64:ff9b::/96 or 2002::/16 must not
+// re-admit every private IPv4 address inside it under CATALOGIZER_OPERATOR_DENY_PRIVATE.
+func allowListedUnwrapped(ip net.IP) bool {
+	if v4 := ip.To4(); v4 != nil {
+		return allowListed(v4)
+	}
+	for i := 0; i < 4; i++ {
+		e := embeddedV4(ip)
+		if e == nil {
+			break
+		}
+		ip = e
+	}
+	if v4 := ip.To4(); v4 != nil {
+		return allowListed(v4)
+	}
+	return allowListed(ip)
 }
 
 // classPin carries the class ceiling of ONE transport (one storage root / one client). It starts at the approved

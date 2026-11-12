@@ -123,7 +123,9 @@ func TestSECQ1A_Live_ConcurrentFirstConnectionsKeepPin(t *testing.T) {
 	}
 	wg.Add(1)
 	go func() { defer wg.Done(); _, errB = get(c, u) }()
-	time.Sleep(300 * time.Millisecond) // second request is in flight while the public dial is held open
+	// the second request is in flight while the public dial is held open: wait until it would have resolved (the bad
+	// condition) or a bounded window passed
+	pollFor(500*time.Millisecond, func() bool { return n.Load() >= 2 })
 	close(release)
 	wg.Wait()
 	if errA != nil {
@@ -175,16 +177,13 @@ func TestSECQ1A_ControlHookUsesPinCeiling(t *testing.T) {
 	}
 	c.Close()
 	pin.note(ClassPublic) // first connection reached a public address
-	time.Sleep(100 * time.Millisecond) // let the accept of the positive-control connection be counted
+	waitCount(t, n, 1)    // the positive-control accept is counted
 	before := n.Load()
 	if c, err := d.Dial("tcp", addr); err == nil {
 		c.Close()
 		t.Fatal("Control hook let a private-class address through a public-pinned ceiling")
 	}
-	time.Sleep(50 * time.Millisecond)
-	if n.Load() != before {
-		t.Fatalf("listener accepted %d connections after the refusal", n.Load()-before)
-	}
+	sentinelThenExpect(t, ln, n, before)
 	var rc syscall.RawConn
 	if err := operatorControl(pin, false)("tcp", "192.168.1.5:80", rc); err == nil {
 		t.Fatal("direct call: private address allowed under a public ceiling")
@@ -200,8 +199,8 @@ func TestSECQ1A_F4_InterfaceLookupFailureFailsClosed(t *testing.T) {
 	old := interfaceAddrs
 	t.Cleanup(func() { interfaceAddrs = old })
 	interfaceAddrs = func() ([]net.Addr, error) { return nil, errors.New("netlink unavailable") }
-	if ClassOf(net.ParseIP("192.168.1.250")) != ClassNever || ClassOf(net.ParseIP("10.0.0.1")) != ClassNever {
-		t.Error("private address not refused while the interface list is unreadable")
+	if ClassOf(net.ParseIP("192.168.1.250")) != ClassNever || ClassOf(net.ParseIP("10.0.0.1")) != ClassNever || ClassOf(net.ParseIP("100.64.0.1")) != ClassNever {
+		t.Error("private or CGNAT address not refused while the interface list is unreadable")
 	}
 	if ClassOf(net.ParseIP("93.184.215.14")) != ClassPublic {
 		t.Error("public address affected by the interface lookup failure")
@@ -209,5 +208,109 @@ func TestSECQ1A_F4_InterfaceLookupFailureFailsClosed(t *testing.T) {
 	t.Setenv(AllowCIDRsEnv, "192.168.1.0/24")
 	if ClassOf(net.ParseIP("192.168.1.250")) != ClassPrivate {
 		t.Error("allow-listed private address refused (operator opt-in must still work)")
+	}
+}
+
+// pollFor waits until cond is true or the window passed; it reports whether cond became true.
+func pollFor(window time.Duration, cond func() bool) bool {
+	deadline := time.Now().Add(window)
+	for time.Now().Before(deadline) {
+		if cond() {
+			return true
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	return cond()
+}
+
+func waitCount(t *testing.T, n *atomic.Int32, want int32) {
+	t.Helper()
+	if !pollFor(3*time.Second, func() bool { return n.Load() >= want }) {
+		t.Fatalf("listener accept count %d never reached %d", n.Load(), want)
+	}
+}
+
+// sentinelThenExpect proves that no refused connection reached the listener: accepts are processed in order, so after a
+// plain sentinel connection has been counted every earlier connection has been counted as well.
+func sentinelThenExpect(t *testing.T, ln net.Listener, n *atomic.Int32, before int32) {
+	t.Helper()
+	c, err := net.DialTimeout("tcp", ln.Addr().String(), 2*time.Second)
+	if err != nil {
+		t.Fatalf("sentinel dial: %v", err)
+	}
+	c.Close()
+	waitCount(t, n, before+1)
+	if got := n.Load(); got != before+1 {
+		t.Fatalf("listener accepted %d connections after the refusal (sentinel included), want 1", got-before)
+	}
+}
+
+// R2-1: concurrent FIRST destinations on the environment-proxy path. The first destination is public and slow; a LAN
+// destination requested meanwhile must not be forwarded to the proxy.
+func TestSECQ1A_ProxyConcurrentFirstDestinationSerialised(t *testing.T) {
+	envClean(t)
+	entered := make(chan struct{}, 1)
+	release := make(chan struct{})
+	var lanResolved atomic.Int32
+	old := lookupIPAddr
+	t.Cleanup(func() { lookupIPAddr = old })
+	lookupIPAddr = func(ctx context.Context, host string) ([]net.IPAddr, error) {
+		if host == "public.test" {
+			entered <- struct{}{}
+			<-release
+			return []net.IPAddr{{IP: net.ParseIP("93.184.215.14")}}, nil
+		}
+		lanResolved.Add(1)
+		return []net.IPAddr{{IP: net.ParseIP("192.168.1.5")}}, nil
+	}
+	oldP := proxyFunc
+	t.Cleanup(func() { proxyFunc = oldP })
+	proxyFunc = func(*http.Request) (*url.URL, error) { return url.Parse("http://127.0.0.1:3128") }
+	tr := OperatorTransport()
+	req := func(u string) *http.Request { r, _ := http.NewRequest("GET", u, nil); return r }
+	doneA := make(chan error, 1)
+	go func() { _, err := tr.Proxy(req("http://public.test/")); doneA <- err }()
+	<-entered
+	doneB := make(chan error, 1)
+	go func() { _, err := tr.Proxy(req("http://lan.test/")); doneB <- err }()
+	// the LAN destination must not even be resolved before the first destination is decided
+	if pollFor(500*time.Millisecond, func() bool { return lanResolved.Load() > 0 }) {
+		close(release)
+		t.Fatal("second destination was resolved while the first destination was being decided")
+	}
+	close(release)
+	if err := <-doneA; err != nil {
+		t.Fatalf("A: %v", err)
+	}
+	if err := <-doneB; err == nil || !errors.Is(err, ErrBlocked) {
+		t.Fatalf("LAN destination forwarded while the public first destination was being decided: %v", err)
+	}
+}
+
+// R2-2: an allow-list entry on an IPv6 embedding prefix (NAT64, 6to4) must not re-admit the private IPv4 it carries
+// under CATALOGIZER_OPERATOR_DENY_PRIVATE, and must not make the embedded loopback reachable.
+func TestSECQ1A_R22_EmbeddedPrefixAllowListDoesNotAdmitPrivate(t *testing.T) {
+	for _, c := range []struct{ entry, lan, loop string }{
+		{"64:ff9b::/96", "64:ff9b::c0a8:105", "64:ff9b::7f00:1"},
+		{"2002::/16", "2002:c0a8:105::1", "2002:7f00:1::"},
+	} {
+		envClean(t)
+		t.Setenv(DenyPrivateEnv, "1")
+		t.Setenv(AllowCIDRsEnv, c.entry)
+		lan, loop := net.ParseIP(c.lan), net.ParseIP(c.loop)
+		if permitted(lan, ClassPrivate, true) {
+			t.Errorf("%s: %s (192.168.1.5) permitted under DENY_PRIVATE", c.entry, c.lan)
+		}
+		if IsBlockedOperatorIP(loop) != true || ClassOf(loop) != ClassNever {
+			t.Errorf("%s: embedded loopback %s admitted", c.entry, c.loop)
+		}
+		// controls: the plain IPv4 forms behave the same, and an explicit IPv4 allow-list entry still admits the embedded form
+		if permitted(net.ParseIP("192.168.1.5"), ClassPrivate, true) {
+			t.Errorf("%s: control: plain 192.168.1.5 permitted under DENY_PRIVATE", c.entry)
+		}
+		t.Setenv(AllowCIDRsEnv, "192.168.1.0/24")
+		if !permitted(lan, ClassPrivate, true) || !permitted(net.ParseIP("192.168.1.5"), ClassPrivate, true) {
+			t.Errorf("%s: control: allow-listed 192.168.1.0/24 not admitted (plain or embedded)", c.entry)
+		}
 	}
 }
