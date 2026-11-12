@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"database/sql"
+	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -134,7 +137,7 @@ func TestWSRoute_OriginPolicy(t *testing.T) {
 		name, origin string
 		ok           bool
 	}{
-		{"no Origin (native clients: Android OkHttp, Tauri)", "", true},
+		{"no Origin (native clients: Android OkHttp)", "", true},
 		{"same origin as the Host header", "http://" + host, true},
 		{"configured allow-list origin", "https://catalog.example.test", true},
 		{"foreign browser origin", "https://evil.example.test", false},
@@ -164,4 +167,56 @@ func TestMainGoMountsWebSocketThroughHelper(t *testing.T) {
 	s := string(src)
 	assert.Contains(t, s, "registerWebSocketRoute(router, jwtMiddleware, wsHandler)")
 	assert.NotContains(t, s, `router.GET("/ws"`, "the raw unauthenticated /ws mount must not return")
+}
+
+// Behind a reverse proxy: the shipped nginx configs forward the client's Host with
+// `proxy_set_header Host $http_host` (port kept). This drives a real
+// httputil.ReverseProxy in front of the real route to show a browser Origin with a
+// non-default port passes then, and (documenting the original defect) is refused
+// when the proxy sends the port-less `$host`.
+func TestWSRoute_BehindReverseProxyHostForwarding(t *testing.T) {
+	r := newWSRig(t)
+	target, err := url.Parse(r.srv.URL)
+	require.NoError(t, err)
+	for _, tc := range []struct {
+		name      string
+		stripPort bool
+		ok        bool
+	}{{"Host $http_host (port kept)", false, true}, {"Host $host (port dropped)", true, false}} {
+		t.Run(tc.name, func(t *testing.T) {
+			rp := httputil.NewSingleHostReverseProxy(target)
+			inner := rp.Director
+			rp.Director = func(q *http.Request) {
+				h := q.Host
+				inner(q)
+				if tc.stripPort {
+					if hn, _, err := net.SplitHostPort(h); err == nil {
+						h = hn
+					}
+				}
+				q.Host = h
+			}
+			px := httptest.NewServer(rp)
+			defer px.Close()
+			hdr := http.Header{"Origin": {px.URL}} // browser on http://127.0.0.1:<port>
+			conn, resp, err := dial(t, "ws"+strings.TrimPrefix(px.URL, "http")+"/ws?token="+r.tok, hdr)
+			if tc.ok {
+				require.NoError(t, err)
+				conn.Close()
+				return
+			}
+			require.Error(t, err)
+			assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+		})
+	}
+}
+
+func TestShippedNginxConfigsForwardClientHost(t *testing.T) {
+	for _, p := range []string{"../catalog-web/nginx.conf.template", "../config/nginx.conf"} {
+		b, err := os.ReadFile(p)
+		require.NoError(t, err, p)
+		s := string(b)
+		assert.Contains(t, s, "proxy_set_header Host $http_host;", p)
+		assert.NotContains(t, s, "proxy_set_header Host $host;", p+": port-less Host breaks the /ws Origin check")
+	}
 }

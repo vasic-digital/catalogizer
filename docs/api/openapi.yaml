@@ -2354,17 +2354,31 @@ paths:
       summary: WebSocket connection
       description: |
         Establishes a WebSocket connection for real-time updates.
-        Authentication is via query parameter token, not the Authorization header.
-        Events include scan progress, asset updates, and entity changes.
+        Requires authentication: a valid access token, sent either as
+        `Authorization: Bearer <jwt>` or (for browsers, which cannot set headers on a
+        WebSocket) as the `token` query parameter. The session behind the token must be
+        active and the user not suspended. A request carrying a browser `Origin` header
+        must come from the request's own host and port or from the configured
+        `CORS_ALLOWED_ORIGINS`; requests without an `Origin` (native clients) are accepted.
+        Behind a reverse proxy the client's Host header (including the port) must be
+        forwarded. Events include scan progress, asset updates, and entity changes.
+      security:
+        - BearerAuth: []
       parameters:
         - name: token
           in: query
           schema:
             type: string
-          description: JWT token for authentication
+          description: JWT access token (alternative to the Authorization header)
       responses:
         '101':
           description: WebSocket connection established
+        '401':
+          description: Missing, invalid or expired token, or revoked/suspended session
+        '403':
+          description: Origin not allowed
+        '503':
+          description: Server at connection capacity
 
   /api/v1/auth/login:
     post:

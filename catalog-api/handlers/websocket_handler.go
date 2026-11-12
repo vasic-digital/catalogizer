@@ -256,7 +256,8 @@ func (h *WebSocketHandler) HandleConnection(c *gin.Context) {
 
 	conn, err := h.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		h.logger.Error("WebSocket upgrade failed", zap.Error(err))
+		// Warn, not Error: a refused Origin or a bad handshake is a client condition.
+		h.logger.Warn("WebSocket upgrade refused", zap.Error(err))
 		h.mu.Lock()
 		h.connCount--
 		h.mu.Unlock()
@@ -529,11 +530,37 @@ func defaultAllowedOrigins() []string {
 	return out
 }
 
+// originParts splits an absolute origin URL into lower-cased scheme, host and the
+// effective port (the scheme default 80/443 when none is written). ok is false for
+// anything that is not a plain http(s)/ws(s) origin with a host.
+func originParts(raw string) (scheme, host, port string, explicit, ok bool) {
+	u, err := url.Parse(raw)
+	if err != nil || u.Hostname() == "" {
+		return "", "", "", false, false
+	}
+	scheme = strings.ToLower(u.Scheme)
+	switch scheme {
+	case "http", "ws":
+		scheme, port = "http", "80"
+	case "https", "wss":
+		scheme, port = "https", "443"
+	default:
+		return "", "", "", false, false
+	}
+	if p := u.Port(); p != "" {
+		port, explicit = p, true
+	}
+	return scheme, strings.ToLower(u.Hostname()), port, explicit, true
+}
+
 // originChecker builds the Upgrader.CheckOrigin policy (SEC-WS-1): no Origin header
-// (native clients such as Android and Tauri do not send one; they are still
-// authenticated by the route) is accepted; a browser Origin must be the request's
-// own host or an exact entry of the allow-list. Everything else is refused, which
-// stops cross-site WebSocket hijacking from a foreign page.
+// (native clients such as Android do not send one; they are still authenticated by
+// the route) is accepted; a browser Origin must match the request's own Host
+// (hostname AND port) or an exact scheme+host+port entry of the allow-list.
+// Everything else is refused, which stops cross-site WebSocket hijacking from a
+// foreign page. A Host header without a port can only match an Origin on its
+// scheme's default port; the reverse proxy must therefore forward the client's Host
+// (nginx: proxy_set_header Host $http_host). X-Forwarded-Host is never read.
 func originChecker(allowed []string) func(*http.Request) bool {
 	if len(allowed) == 0 {
 		allowed = defaultAllowedOrigins()
@@ -543,15 +570,24 @@ func originChecker(allowed []string) func(*http.Request) bool {
 		if origin == "" {
 			return true
 		}
-		u, err := url.Parse(origin)
-		if err != nil || u.Host == "" {
+		scheme, host, port, explicit, ok := originParts(origin)
+		if !ok {
 			return false
 		}
-		if strings.EqualFold(u.Host, r.Host) {
-			return true
+		if hu, err := url.Parse("//" + r.Host); err == nil && hu.Hostname() != "" {
+			if strings.EqualFold(hu.Hostname(), host) {
+				if hp := hu.Port(); hp != "" {
+					if hp == port {
+						return true
+					}
+				} else if !explicit || port == map[string]string{"http": "80", "https": "443"}[scheme] {
+					return true
+				}
+			}
 		}
 		for _, a := range allowed {
-			if strings.EqualFold(a, origin) {
+			as, ah, ap, _, aok := originParts(a)
+			if aok && as == scheme && ah == host && ap == port {
 				return true
 			}
 		}

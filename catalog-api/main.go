@@ -1147,7 +1147,7 @@ func main() {
 	}
 	})
 
-	// WebSocket endpoint (auth via query parameter, not header)
+	// WebSocket endpoint: authenticated (Bearer header or ?token=, session-checked) and Origin-checked; see registerWebSocketRoute
 	registerWebSocketRoute(router, jwtMiddleware, wsHandler)
 
 	// Image proxy — serves external images (TMDB, etc.) through the API.
