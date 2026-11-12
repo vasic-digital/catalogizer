@@ -16,6 +16,8 @@ PREV_TAG=""
 SECTION=""
 CHECK="all"
 SELFTEST=0
+WAIVERS=""
+EV_PREFIXES=()
 
 usage() {
   cat <<'U'
@@ -27,6 +29,11 @@ usage: check_release_consistency.sh [--repo DIR] [--version X.Y.Z] [--prev-tag T
   --prev-tag  git tag; versionCode of each Android app must be an integer strictly
               greater than its value at that tag
   --section   CHANGELOG section version (default: topmost numbered section)
+  --waivers   file (repo-relative, git-tracked) declaring known evidence gaps; default
+              docs/qa/EVIDENCE_WAIVERS.txt when present (see README)
+  --evidence-prefix P
+              repo-relative prefix whose VERIFIED paths MUST sit under a SHA256SUMS /
+              SHA256SUMS.txt manifest (repeatable; default docs/qa/)
 exit: 0 OK, 1 FAIL, 2 usage/blind.  Last line printed is "VERDICT: ..." (help: "VERDICT: HELP").
 U
 }
@@ -40,12 +47,16 @@ while [ $# -gt 0 ]; do
     --prev-tag) [ $# -ge 2 ] || blind "--prev-tag needs a value"; PREV_TAG="$2"; shift 2 ;;
     --section) [ $# -ge 2 ] || blind "--section needs a value"; SECTION="$2"; shift 2 ;;
     --check) [ $# -ge 2 ] || blind "--check needs a value"; CHECK="$2"; shift 2 ;;
+    --waivers) { [ $# -ge 2 ] && [ -n "$2" ]; } || blind "--waivers needs a non-empty value"; WAIVERS="$2"; shift 2 ;;
+    --evidence-prefix) { [ $# -ge 2 ] && [ -n "$2" ]; } || blind "--evidence-prefix needs a non-empty value"
+      p="${2#./}"; p="${p%/}/"; EV_PREFIXES+=("$p"); shift 2 ;;
     --selftest) SELFTEST=1; shift ;;
     -h|--help) usage; echo "VERDICT: HELP"; exit 0 ;;
     *) usage >&2; blind "unknown option $1" ;;
   esac
 done
 
+[ "${#EV_PREFIXES[@]}" -gt 0 ] || EV_PREFIXES=("docs/qa/")
 case "$CHECK" in version|changelog|all) ;; *) blind "bad --check value '$CHECK'" ;; esac
 
 # ---------------------------------------------------------------- selftest
@@ -83,6 +94,8 @@ git -C "$REPO" rev-parse --git-dir >/dev/null 2>&1 || blind "'$REPO' is not a gi
 REPO="$(cd "$REPO" && pwd)"
 
 V_OK=0; V_FAIL=0; C_PATHS=0; C_MISS=0; C_SKIP=0; S_OK=0; S_FAIL=0; S_UNV=0; BLINDS=""
+C_NOMAN=0; U_FILES=0; W_APPLIED=0; W_BAD=0; W_UNUSED=0
+declare -A WV=() WVUSED=()
 SECTION_USED="-"
 note_blind() { BLINDS="$BLINDS ${1}"; echo "BLIND: $1"; }
 
@@ -185,7 +198,7 @@ for comp in CARGO:
 
 # Gradle versionName / versionCode
 def gradle_field(text, name):
-    pat = re.compile(r"^\s*" + name + r"(?![A-Za-z0-9_])\s*(?:=\s*)?(\"[^\"]*\"|[^\s/;]+)\s*;?\s*(?:/\*(?:[^*]|\*(?!/))*\*/\s*)?(?://.*)?$")
+    pat = re.compile(r"^\s*" + name + r"(?![A-Za-z0-9_])\s*(?:=\s*)?(\"[^\"]*\"|[^\s/;]+)\s*;?\s*(?:/\*(?:[^*]|\*(?!/))*\*/\s*)*(?://.*)?$")
     hits = []
     for ln in text.splitlines():
         if ln.lstrip().startswith("//"):
@@ -438,9 +451,11 @@ PY
   fi
   echo "section $SECTION_USED: ${#paths[@]} path(s) in VERIFIED; skipped non-repo-looking: ${skips[*]:-none}"
 
-  local p q d rp
+  local p q d rp mf
   local REPO_REAL; REPO_REAL="$(cd "$REPO" && pwd -P)"
   declare -A seen_dir=()
+  local -a queue=()
+  load_waivers || return
   for p in "${paths[@]}"; do
     C_PATHS=$((C_PATHS+1))
     q="${p%/}"
@@ -456,24 +471,107 @@ PY
     else
       echo "OK    $p"
     fi
-    # nearest SHA256SUMS at or above the path (never the repo root itself)
+    # nearest manifest (SHA256SUMS or SHA256SUMS.txt) at or above the path (never the repo root itself)
     if [ -d "$REPO/$q" ]; then d="$q"; else d="$(dirname "$q")"; fi
+    local found=0
     while [ -n "$d" ] && [ "$d" != "." ] && [ "$d" != "/" ]; do
-      if [ -f "$REPO/$d/SHA256SUMS" ]; then seen_dir["$d"]=1; break; fi
+      if [ -f "$REPO/$d/SHA256SUMS" ] || [ -f "$REPO/$d/SHA256SUMS.txt" ]; then seen_dir["$d"]=1; found=1; break; fi
       d="$(dirname "$d")"
     done
+    # RC-3: evidence without any integrity manifest is an unsupported VERIFIED claim, never a silent pass.
+    if [ "$found" = 0 ] && is_evidence "$q"; then
+      if ! waived "no-manifest|$q" "$p (no manifest)"; then
+        C_NOMAN=$((C_NOMAN+1)); echo "NOMANIFEST  $p (evidence path with no SHA256SUMS/SHA256SUMS.txt at or above it)"
+      fi
+    fi
   done
 
-  local line name status rc o
-  local esc ent
-  for d in "${!seen_dir[@]}"; do
+  local -A done_dir=()
+  queue=("${!seen_dir[@]}")
+  while [ "${#queue[@]}" -gt 0 ]; do
+    d="${queue[0]}"; queue=("${queue[@]:1}")
+    [ -z "${done_dir[$d]:-}" ] || continue
+    done_dir["$d"]=1
+    check_manifest_dir "$d"
+  done
+  report_unused_waivers
+}
+
+# is_evidence <repo-relative path>: true when the path lies under one of the evidence prefixes.
+is_evidence() {
+  local pre
+  for pre in "${EV_PREFIXES[@]}"; do
+    [[ "$1/" == "$pre"* ]] && return 0
+  done
+  return 1
+}
+
+trim() { local v="$1"; v="${v#"${v%%[![:space:]]*}"}"; v="${v%"${v##*[![:space:]]}"}"; printf '%s' "$v"; }
+
+# load_waivers: parse the tracked waiver file (RC-3 known-gap declarations). Format, one per line:
+#   no-manifest|<evidence path>|<reason>
+#   unlisted|<manifest dir>|<file relative to it>|<reason>
+#   bad-entry|<manifest dir>|<manifest entry>|<reason>      (checksum mismatch / missing entry)
+# '#' lines and blank lines are ignored. Every applied waiver is printed (WAIVED) and counted.
+load_waivers() {
+  local f="$WAIVERS" rel explicit=0 n=0 line k a b c reason key
+  if [ -n "$f" ]; then explicit=1; else f="docs/qa/EVIDENCE_WAIVERS.txt"; fi
+  rel="$f"
+  if [ ! -f "$REPO/$rel" ]; then
+    [ "$explicit" = 0 ] || { note_blind "waiver file $rel not found"; return 1; }
+    return 0
+  fi
+  if ! tracked "$rel"; then note_blind "waiver file $rel exists but is not git-tracked"; return 1; fi
+  while IFS= read -r line || [ -n "$line" ]; do
+    n=$((n+1))
+    line="${line%$'\r'}"
+    [ -n "$(trim "$line")" ] || continue
+    [[ "$(trim "$line")" != \#* ]] || continue
+    IFS='|' read -r k a b c <<< "$line"
+    k="$(trim "$k")"; a="$(trim "$a")"; b="$(trim "$b")"; c="$(trim "${c:-}")"
+    case "$k" in
+      no-manifest) reason="$b${c:+|$c}"; key="no-manifest|$a" ;;
+      unlisted|bad-entry) reason="$c"; key="$k|$a|$b" ;;
+      *) W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n unknown kind '$k'"; continue ;;
+    esac
+    if [ -z "$a" ] || [ -z "$reason" ] || { [ "$k" != no-manifest ] && [ -z "$b" ]; }; then
+      W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n empty field or missing reason"; continue
+    fi
+    if [ -n "${WV[$key]+x}" ]; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n duplicate waiver"; continue; fi
+    WV["$key"]="$reason"
+  done < "$REPO/$rel"
+  return 0
+}
+
+# waived <key> <label>: true (and prints WAIVED with the reason) when a declared waiver matches.
+waived() {
+  [ -n "${WV[$1]+x}" ] || return 1
+  WVUSED["$1"]=1; W_APPLIED=$((W_APPLIED+1))
+  echo "WAIVED  $2: ${WV[$1]}"
+  return 0
+}
+
+report_unused_waivers() {
+  local key
+  for key in "${!WV[@]}"; do
+    [ -n "${WVUSED[$key]:-}" ] || W_UNUSED=$((W_UNUSED+1))
+  done
+}
+
+# check_manifest_dir <dir>: verify every manifest in the directory (syntax, escapes, checksums) and
+# that the manifests list every regular file of the tree they cover (RC-3b). Nested manifests found
+# below are queued for the same checks.
+check_manifest_dir() {
+  local d="$1" mf line name status rc o esc ent rp sawfail sawunv sawwaived
+  for mf in SHA256SUMS SHA256SUMS.txt; do
+    [ -f "$REPO/$d/$mf" ] || continue
     # F4: manifest entries must stay inside the manifest's directory.
     esc=0
     while IFS= read -r line || [ -n "$line" ]; do
       ent=""
       line="${line%$'\r'}"   # CRLF manifests: sha256sum implementations strip one trailing CR
       if [[ "$line" == *$'\r'* ]]; then
-        S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/SHA256SUMS unsupported manifest line: CR inside a line"; continue
+        S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/$mf unsupported manifest line: CR inside a line"; continue
       fi
       if [[ "$line" =~ ^[0-9a-fA-F]{64}\ [\ \*](.*)$ ]]; then
         ent="${BASH_REMATCH[1]}"
@@ -482,43 +580,122 @@ PY
       fi
       if [ -n "$ent" ]; then
         if [[ "$ent" == /* || "$ent" == ../* || "$ent" == */../* || "$ent" == */.. || "$ent" == .. ]]; then
-          S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/SHA256SUMS entry escapes its directory: $ent"
+          S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/$mf entry escapes its directory: $ent"
         else
           # F2: an in-directory symlink must not lead outside the repository.
           rp="$(readlink -m -- "$REPO/$d/$ent" 2>/dev/null || true)"   # -m: missing components are fine
           if [ -z "$rp" ] || { [ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"/* ]]; }; then
-            S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/SHA256SUMS entry resolves outside the repository: $ent"
+            S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/$mf entry resolves outside the repository: $ent"
           fi
         fi
       elif [ -n "${line//[[:space:]]/}" ]; then
         # F1: fail closed on any non-blank line that is not one of the two unescaped forms
         # (backslash-escaped GNU/BSD lines, comments, anything else the parser cannot judge).
-        S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/SHA256SUMS unsupported manifest line: $line"
+        S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/$mf unsupported manifest line: $line"
       fi
-    done < "$REPO/$d/SHA256SUMS"
+    done < "$REPO/$d/$mf"
     [ "$esc" = 0 ] || continue
-    o="$(cd "$REPO/$d" && sha256sum --strict -c SHA256SUMS 2>&1)"; rc=$?
-    local sawfail=0 sawunv=0
+    o="$(cd "$REPO/$d" && sha256sum --strict -c "$mf" 2>&1)"; rc=$?
+    sawfail=0; sawunv=0; sawwaived=0
     while IFS= read -r line; do
       if [[ "$line" =~ ^(.*):\ (OK|FAILED\ open\ or\ read|FAILED)$ ]]; then
         name="${BASH_REMATCH[1]}"; status="${BASH_REMATCH[2]}"
+        name="${name#./}"   # sha256sum echoes entries as written; waivers use the bare name
         case "$status" in
           OK) S_OK=$((S_OK+1)) ;;
           FAILED)
-            S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)" ;;
+            if waived "bad-entry|$d|$name" "$d/$name (checksum mismatch)"; then sawwaived=1
+            else S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)"; fi ;;
           *)
             if git -C "$REPO" check-ignore -q -- "$d/$name"; then
               S_UNV=$((S_UNV+1)); sawunv=1; echo "UNVERIFIABLE-FROM-CLONE  $d/$name (gitignored, absent/unreadable)"
+            elif waived "bad-entry|$d|$name" "$d/$name (missing/unreadable)"; then sawwaived=1
             else
               S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (missing/unreadable, not gitignored)"
             fi ;;
         esac
       fi
     done <<< "$o"
-    if grep -q 'improperly formatted' <<< "$o" || { [ "$rc" -ne 0 ] && [ "$sawfail" = 0 ] && [ "$sawunv" = 0 ]; }; then
-      S_FAIL=$((S_FAIL+1)); echo "SHAFAIL  $d/SHA256SUMS (malformed or sha256sum error: $(grep -m1 -E 'improperly|sha256sum:' <<< "$o" || head -1 <<< "$o"))"
+    if grep -q 'improperly formatted' <<< "$o" || { [ "$rc" -ne 0 ] && [ "$sawfail" = 0 ] && [ "$sawunv" = 0 ] && [ "$sawwaived" = 0 ]; }; then
+      S_FAIL=$((S_FAIL+1)); echo "SHAFAIL  $d/$mf (malformed or sha256sum error: $(grep -m1 -E 'improperly|sha256sum:' <<< "$o" || head -1 <<< "$o"))"
     fi
   done
+
+  # RC-3b: every regular file of the covered tree must be listed by the nearest manifest above it.
+  local cout kind a b nend=0 lastkind="" ne=-1 nu=-1 nn=-1
+  cout="$(python3 -I - "$REPO" "$d" <<'PY'
+import os, re, subprocess, sys
+repo, d = sys.argv[1:3]
+NAMES = ("SHA256SUMS", "SHA256SUMS.txt")
+def entries(path):
+    out = set()
+    with open(path, encoding="utf-8", errors="surrogateescape") as fh:
+        for ln in fh.read().split("\n"):
+            ln = ln[:-1] if ln.endswith("\r") else ln
+            m = re.match(r"^[0-9a-fA-F]{64} [ *](.*)$", ln) or re.match(r"^[A-Za-z0-9-]+ \((.*)\) = [0-9a-fA-F]+$", ln)
+            if m:
+                out.add(os.path.normpath(m.group(1)))
+    return out
+r = subprocess.run(["git", "-C", repo, "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", d],
+                   capture_output=True)
+if r.returncode != 0:
+    print("ERR\tgit ls-files failed"); sys.exit(0)
+files = sorted({p.decode("utf-8", "surrogateescape") for p in r.stdout.split(b"\0") if p})
+mdirs = {os.path.dirname(f) for f in files if os.path.basename(f) in NAMES}
+listed = {}
+def listed_for(md):
+    if md not in listed:
+        s = set()
+        for n in NAMES:
+            p = os.path.join(repo, md, n)
+            if os.path.isfile(p):
+                s |= entries(p)
+        listed[md] = s
+    return listed[md]
+nested = set()
+nfiles = 0
+nunl = 0
+for f in files:
+    full = os.path.join(repo, f)
+    if os.path.basename(f) in NAMES or os.path.islink(full) or not os.path.isfile(full):
+        continue
+    nfiles += 1
+    md = os.path.dirname(f)
+    while md != d and md not in mdirs:
+        md = os.path.dirname(md)
+    if md != d:
+        nested.add(md)
+        continue
+    rel = os.path.relpath(f, d)
+    if os.path.normpath(rel) not in listed_for(d):
+        nunl += 1
+        print("UNLISTED\t" + rel.replace("\t", "\\t").replace("\n", "\\n"))
+for n in sorted(nested):
+    print("NESTED\t" + n)
+print(f"END\t{nfiles}\t{nunl}\t{len(nested)}")
+PY
+)" || { note_blind "completeness helper crashed for $d"; return; }
+  local -a unl=() nst=()
+  while IFS=$'\t' read -r kind a b; do
+    case "$kind" in
+      ERR) note_blind "completeness helper: $a"; return ;;
+      UNLISTED) unl+=("$a") ;;
+      NESTED) nst+=("$a") ;;
+      END) nend=$((nend+1)); ne="$a"; nu="$b"; nn="${b#*$'\t'}"; nu="${nu%%$'\t'*}" ;;
+    esac
+    [ -z "$kind" ] || lastkind="$kind"
+  done <<< "$cout"
+  if [ "$nend" -ne 1 ] || [ "$lastkind" != END ] || ! [[ "$ne" =~ ^[0-9]+$ ]] \
+     || [ "$nu" != "${#unl[@]}" ] || [ "$nn" != "${#nst[@]}" ]; then
+    note_blind "completeness helper output incomplete for $d"; return
+  fi
+  local f
+  for f in "${unl[@]+"${unl[@]}"}"; do
+    if ! waived "unlisted|$d|$f" "$d/$f (not listed in manifest)"; then
+      U_FILES=$((U_FILES+1)); echo "UNLISTED  $d/$f (regular file not listed in $d's manifest)"
+    fi
+  done
+  for f in "${nst[@]+"${nst[@]}"}"; do queue+=("$f"); done
 }
 
 # ---------------------------------------------------------------- run
@@ -528,8 +705,8 @@ case "$CHECK" in
   all) run_versions; run_changelog ;;
 esac
 
-SUMMARY="section=$SECTION_USED version_ok=$V_OK version_fail=$V_FAIL changelog_paths=$C_PATHS miss=$C_MISS skipped=$C_SKIP sha_ok=$S_OK sha_fail=$S_FAIL unverifiable=$S_UNV"
-if [ $((V_FAIL + C_MISS + S_FAIL)) -gt 0 ]; then
+SUMMARY="section=$SECTION_USED version_ok=$V_OK version_fail=$V_FAIL changelog_paths=$C_PATHS miss=$C_MISS skipped=$C_SKIP sha_ok=$S_OK sha_fail=$S_FAIL unverifiable=$S_UNV no_manifest=$C_NOMAN unlisted=$U_FILES waived=$W_APPLIED bad_waivers=$W_BAD unused_waivers=$W_UNUSED"
+if [ $((V_FAIL + C_MISS + S_FAIL + C_NOMAN + U_FILES + W_BAD)) -gt 0 ]; then
   echo "VERDICT: FAIL $SUMMARY"; exit 1
 fi
 if [ -n "$BLINDS" ]; then

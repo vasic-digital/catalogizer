@@ -1810,3 +1810,9 @@ ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go
 - RC2-2 (nit, source): a ``` fence closed by ~~~ toggles state wrongly; fails safe; already registered above.
 - RC2-3 (nit, tests): no test where the only CR is mid-line (e.g. `SHA256 (a\r) = H`); the double-CR test covers the branch.
 - RC2-4 (minor, process-doc): GNU coreutils sha256sum not exercised; CR handling UNCONFIRMED there (strip-one/refuse-other is safe either way).
+
+## CAT-REL-CHECK-1 RC-3 / RC-3b / RC2-1 / RC2-3 resolution (branch fix/release-checker-rc3; PROVISIONAL)
+- RC-3 DONE: a VERIFIED path under an evidence prefix (default `docs/qa/`, `--evidence-prefix`) with no `SHA256SUMS` / `SHA256SUMS.txt` at or above it is now `NOMANIFEST` and FAILs. Known gaps are declared in the tracked `docs/qa/EVIDENCE_WAIVERS.txt` (kinds `no-manifest`, `unlisted`, `bad-entry`; reason mandatory; applied waivers printed as WAIVED and counted). The 6 manifest-less paths of CHANGELOG section [2.4.0] are declared there; `--version 2.4.1` (section 2.4.1) is unaffected.
+- RC-3b DONE: each manifest in use must list every regular file of its tree (tracked + untracked non-ignored; symlinks, gitignored files and the manifest files themselves excluded); nested manifests are queued and fully checked. Real-tree findings not in any current changelog section (reported, not waived): `docs/qa/coverart/results/final` summary.txt checksum mismatch (E-1) and `race.console.txt` not listed; `docs/qa/ui-d7-class-20261105/README.md` checksum mismatch.
+- RC2-1 DONE: any number of consecutive block comments after `versionCode`. RC2-3 DONE: tests for a mid-line-only CR in BSD and GNU lines.
+- Open nit: waiver paths are matched as written (no trailing slash); unused waivers are counted (`unused_waivers=`) but not failed because they may belong to another changelog section.

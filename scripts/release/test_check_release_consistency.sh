@@ -162,16 +162,16 @@ sd=$(filtstub 'grep -v "versionCode"; '); d=$(fresh); PATH="$sd:$PATH" expect "N
 sd=$(filtstub 'sed "s/^INFO\t/OK\t/"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 INFO relabelled OK without prev-tag stays consistent" 0 "VERDICT: PASS" "$d" --check version
 sd=$(filtstub 'sed "s/^OK\t\(catalog-web\/package.json version\)/INFO\t\1/"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 INFO on a non-versionCode field -> BLIND" 2 "VERDICT: BLIND" "$d" --check version
 # N1 changelog helper completeness
-sd=$(filtstub 'grep -v "^END"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog helper without END -> BLIND" 2 "incomplete" "$d" --check changelog
-sd=$(filtstub 'sed "s/^END.*/END\t99\t0/"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog END counts mismatch -> BLIND" 2 "incomplete" "$d" --check changelog
-sd=$(filtstub 'awk "/^PATH/ && !done {done=1; next} {print}"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog PATH row dropped -> BLIND" 2 "incomplete" "$d" --check changelog
-sd=$(filtstub 'cat; printf "SECTION\t1.0.0\n"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog second SECTION -> BLIND" 2 "incomplete" "$d" --check changelog
-sd=$(filtstub 'sed "s/^END.*/&\n&/"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog duplicate END -> BLIND" 2 "incomplete" "$d" --check changelog
-sd=$(filtstub 'cat; printf "BOGUS\tx\n"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog trailing non-END row -> BLIND" 2 "incomplete" "$d" --check changelog
-sd=$(filtstub 'awk "/^SKIP/ && !done {done=1; next} {print}"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog SKIP row dropped -> BLIND" 2 "incomplete" "$d" --check changelog
-sd=$(filtstub 'sed "s/^END/SECTION\t1.0.0\nEND/"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog second SECTION before END -> BLIND" 2 "incomplete" "$d" --check changelog
+sd=$(filtstub 'grep -v "^END"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog helper without END -> BLIND" 2 "changelog helper output incomplete" "$d" --check changelog
+sd=$(filtstub 'sed "s/^END.*/END\t99\t0/"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog END counts mismatch -> BLIND" 2 "changelog helper output incomplete" "$d" --check changelog
+sd=$(filtstub 'awk "/^PATH/ && !done {done=1; next} {print}"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog PATH row dropped -> BLIND" 2 "changelog helper output incomplete" "$d" --check changelog
+sd=$(filtstub 'cat; printf "SECTION\t1.0.0\n"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog second SECTION -> BLIND" 2 "changelog helper output incomplete" "$d" --check changelog
+sd=$(filtstub 'sed "s/^END.*/&\n&/"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog duplicate END -> BLIND" 2 "changelog helper output incomplete" "$d" --check changelog
+sd=$(filtstub 'cat; printf "BOGUS\tx\n"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog trailing non-END row -> BLIND" 2 "changelog helper output incomplete" "$d" --check changelog
+sd=$(filtstub 'awk "/^SKIP/ && !done {done=1; next} {print}"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog SKIP row dropped -> BLIND" 2 "changelog helper output incomplete" "$d" --check changelog
+sd=$(filtstub 'sed "s/^END/SECTION\t1.0.0\nEND/"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog second SECTION before END -> BLIND" 2 "changelog helper output incomplete" "$d" --check changelog
 sd=$(filtstub 'cat; printf "OK\t--prev-tag\tforged\n"'); d=$(fresh); PATH="$sd:$PATH" expect "N1 forged OK on the --prev-tag row -> BLIND" 2 "unexpected rows" "$d" --check version
-sd=$(mkstub 'printf "SECTION\t2.4.0\nPATH\tdocs/qa/run2/c.txt\n"; exit 0'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog hand-forged output -> BLIND" 2 "incomplete" "$d" --check changelog
+sd=$(mkstub 'printf "SECTION\t2.4.0\nPATH\tdocs/qa/run2/c.txt\n"; exit 0'); d=$(fresh); PATH="$sd:$PATH" expect "N1 changelog hand-forged output -> BLIND" 2 "changelog helper output incomplete" "$d" --check changelog
 # N2: BSD-tag manifest lines
 d=$(fresh); echo "SHA256 (../../etc/passwd) = $z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "N2 BSD-tag ../ escape FAIL" 1 "escapes its directory" "$d" --check changelog
 d=$(fresh); echo "SHA256 (/etc/hostname) = $z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "N2 BSD-tag absolute escape FAIL" 1 "escapes its directory" "$d" --check changelog
@@ -208,7 +208,7 @@ d=$(fresh); rr="$(cd "$d" && pwd -P)"; mkdir -p "$rr-evil"; echo e > "$rr-evil/f
 mut "$d" docs/CHANGELOG.md 's#^- Tool `scripts/tool.sh`#- Link `docs/qa/sibling/`; Tool `scripts/tool.sh`#' && expect "F3 symlink to sibling dir sharing repo-path prefix -> MISS" 1 "resolves outside the repository" "$d" --check changelog
 rm -rf "${rr:?}-evil"
 d=$(fresh); ln -s ../.. "$d/docs/qa/toroot"; (cd "$d" && git add -A)
-mut "$d" docs/CHANGELOG.md 's#^- Tool `scripts/tool.sh`#- Link `docs/qa/toroot`; Tool `scripts/tool.sh`#' && expect "F3 symlink resolving to the repo root itself accepted" 0 "VERDICT: PASS" "$d" --check changelog
+mut "$d" docs/CHANGELOG.md 's#^- Tool `scripts/tool.sh`#- Link `docs/qa/toroot`; Tool `scripts/tool.sh`#' && expect "F3 symlink resolving to the repo root itself accepted" 0 "VERDICT: PASS" "$d" --check changelog --evidence-prefix docs/none/
 d=$(fresh); H="$(sha256sum < "$d/docs/qa/run1/a.txt" | cut -d' ' -f1 | tr a-f A-F)"; echo "SHA256 (../../etc/passwd) = $H" >> "$d/docs/qa/run1/SHA256SUMS"; expect "F3 BSD uppercase-hex escape FAIL" 1 "escapes its directory" "$d" --check changelog
 d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionCode = 7$/versionCode = 7 \/ 2/' && expect "F3 versionCode '7 / 2' (single slash) FAIL" 1 "FAIL" "$d" --check version
 # F4: forged INFO on a versionCode row under --prev-tag
@@ -250,6 +250,75 @@ d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionName = "
 # R4-4: final manifest line without trailing newline is still checked; indented fences
 d=$(fresh); printf '%s  ../../CHANGELOG.md' "$z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "R4-4 no-trailing-newline ../ entry FAIL" 1 "escapes its directory" "$d" --check changelog
 d=$(fresh); printf '\n  ```\n## [2.4.0] - example in an indented fence\n  ```\n' >> "$d/docs/CHANGELOG.md"; expect "R4-4 indented fence ignored" 0 "VERDICT: PASS" "$d" --check changelog
+
+
+echo "== RC-3 / RC-3b / RC2 follow-ups (manifest required, manifest complete, waivers, comments, CR)"
+hsh() { sha256sum < "$1" | cut -d' ' -f1; }
+# addrow <dir> <path>: append a path to the VERIFIED bullet of the 2.4.0 section
+addrow() { mut "$1" docs/CHANGELOG.md "s#^- Tool \`scripts/tool.sh\`#- Extra \`$2\`; Tool \`scripts/tool.sh\`#" && (cd "$1" && git add -A); }
+# RC-3: evidence path with no manifest at/above it
+d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; addrow "$d" docs/qa/run3/d.txt && expect "RC-3 evidence dir without manifest -> FAIL" 1 "NOMANIFEST" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; addrow "$d" docs/qa/run3/d.txt && expect "RC-3 summary counts no_manifest" 1 "no_manifest=1" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/other"; echo e3 > "$d/docs/other/d.txt"; addrow "$d" docs/other/d.txt && expect "RC-3 non-evidence path needs no manifest" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/other"; echo e3 > "$d/docs/other/d.txt"; addrow "$d" docs/other/d.txt && expect "RC-3 --evidence-prefix makes it evidence" 1 "NOMANIFEST" "$d" --check changelog --evidence-prefix docs/other/
+d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; addrow "$d" docs/qa/run3/d.txt && expect "RC-3 custom prefix replaces the default" 0 "VERDICT: PASS" "$d" --check changelog --evidence-prefix docs/other/
+d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS.txt ); addrow "$d" docs/qa/run3/d.txt && expect "RC-3 SHA256SUMS.txt accepted as manifest" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS.txt ); echo tamper > "$d/docs/qa/run3/d.txt"; addrow "$d" docs/qa/run3/d.txt && expect "RC-3 tampered file under SHA256SUMS.txt -> FAIL" 1 "checksum mismatch" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS.txt ); printf '%s  ../../etc/passwd\n' "$z" >> "$d/docs/qa/run3/SHA256SUMS.txt"; addrow "$d" docs/qa/run3/d.txt && expect "RC-3 escape in SHA256SUMS.txt -> FAIL" 1 "escapes its directory" "$d" --check changelog
+# RC-3b: manifest must list every regular file of its tree
+d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; expect "RC-3b unlisted file -> FAIL" 1 "UNLISTED  docs/qa/run2/extra.txt" "$d" --check changelog
+d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; expect "RC-3b summary counts unlisted" 1 "unlisted=1" "$d" --check changelog
+d=$(fresh); sed -i '/ b.txt$/d' "$d/docs/qa/run1/SHA256SUMS"; echo tampered > "$d/docs/qa/run1/b.txt"; expect "RC-3b entry deleted + file tampered -> FAIL" 1 "UNLISTED  docs/qa/run1/b.txt" "$d" --check changelog
+d=$(fresh); echo ignored > "$d/docs/qa/run1/pic.png"; expect "RC-3b gitignored file need not be listed" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); ln -s c.txt "$d/docs/qa/run2/lnk.txt"; expect "RC-3b unlisted symlink is not a regular file" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; expect "RC-3b file in subdir without nested manifest -> FAIL" 1 "UNLISTED  docs/qa/run2/sub/n.txt" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2" && sha256sum sub/n.txt >> SHA256SUMS ); expect "RC-3b subdir file listed with relative path accepted" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); expect "RC-3b nested manifest covers its subtree" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); echo m > "$d/docs/qa/run2/sub/m.txt"; expect "RC-3b nested manifest completeness checked -> FAIL" 1 "UNLISTED  docs/qa/run2/sub/m.txt" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); echo t > "$d/docs/qa/run2/sub/n.txt"; expect "RC-3b nested manifest checksum checked -> FAIL" 1 "docs/qa/run2/sub/n.txt (checksum mismatch)" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); expect "RC-3b manifest files themselves are not required" 0 "unlisted=0" "$d" --check changelog
+# waivers: declared, printed, counted, never silent
+wv() { mkdir -p "$1/docs/qa"; printf '%s\n' "$2" > "$1/docs/qa/EVIDENCE_WAIVERS.txt"; (cd "$1" && git add -A); }
+d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; wv "$d" 'unlisted|docs/qa/run2|extra.txt|scratch note, not evidence'
+expect "waiver: unlisted file waived" 0 "WAIVED  docs/qa/run2/extra.txt (not listed in manifest): scratch note, not evidence" "$d" --check changelog
+d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; wv "$d" 'unlisted|docs/qa/run2|extra.txt|scratch note'; expect "waiver: summary counts waived=1" 0 "waived=1" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; addrow "$d" docs/qa/run3/d.txt; wv "$d" 'no-manifest|docs/qa/run3/d.txt|pre-manifest evidence'
+expect "waiver: no-manifest waived" 0 "WAIVED  docs/qa/run3/d.txt (no manifest): pre-manifest evidence" "$d" --check changelog
+d=$(fresh); echo "$z  c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|docs/qa/run2|c.txt|E-1 known-bad manifest entry (documented)'
+expect "waiver: known-bad checksum entry waived and printed" 0 "WAIVED  docs/qa/run2/c.txt (checksum mismatch): E-1" "$d" --check changelog
+d=$(fresh); echo "$z  c.txt" > "$d/docs/qa/run2/SHA256SUMS"; expect "waiver: known-bad entry without waiver -> FAIL" 1 "checksum mismatch" "$d" --check changelog
+d=$(fresh); echo "$z  c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|docs/qa/run2|other.txt|wrong name'; expect "waiver: waiver for a different entry does not apply" 1 "checksum mismatch" "$d" --check changelog
+d=$(fresh); echo "$z  c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|docs/qa/run2|c.txt|E-1'; echo "$z  d2.txt" >> "$d/docs/qa/run2/SHA256SUMS"; (cd "$d" && git add -A); expect "waiver: other failures in the same manifest still FAIL" 1 "d2.txt (missing/unreadable" "$d" --check changelog
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|nothing.txt|not needed'; expect "waiver: unused waiver is counted, not fatal" 0 "unused_waivers=1" "$d" --check changelog
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|nothing.txt|'; expect "waiver: missing reason -> FAIL" 1 "BADWAIVER" "$d" --check changelog
+d=$(fresh); wv "$d" 'forgive|docs/qa/run2|nothing.txt|why'; expect "waiver: unknown kind -> FAIL" 1 "BADWAIVER" "$d" --check changelog
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt|a
+unlisted|docs/qa/run2|x.txt|b'; expect "waiver: duplicate -> FAIL" 1 "duplicate waiver" "$d" --check changelog
+d=$(fresh); wv "$d" '# comment
+
+unlisted|docs/qa/run2|x.txt|fine'; expect "waiver: comments and blanks ignored" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); printf 'unlisted|docs/qa/run2|x.txt|r\n' > "$d/docs/qa/EVIDENCE_WAIVERS.txt"; expect "waiver: untracked waiver file -> BLIND" 2 "not git-tracked" "$d" --check changelog
+expect "waiver: --waivers file missing -> BLIND" 2 "not found" "$GOLD" --check changelog --waivers nope.txt
+d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; addrow "$d" docs/qa/run3/d.txt; printf 'no-manifest|docs/qa/run3/d.txt|r\n' > "$d/w.txt"; (cd "$d" && git add -A)
+expect "waiver: --waivers custom path" 0 "waived=1" "$d" --check changelog --waivers w.txt
+d=$(fresh); echo "$z  ./c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|docs/qa/run2|c.txt|E-1 entry written with ./ prefix'; expect "waiver: ./-prefixed manifest entry matches bare waiver name" 0 "waived=1" "$d" --check changelog
+# completeness-helper integrity: a stub that forges only the RC-3b helper's output
+cmpstub() { local sd; sd="$(mktemp -d "$ROOT/cstub.XXXXXX")"
+  printf '#!/bin/sh\nin=$(cat)\nout=$(printf "%%s" "$in" | %s -I "$@")\ncase "$in" in\n*UNLISTED*) printf "%%s\\n" "$out" | { %s; } ;;\n*) printf "%%s\\n" "$out" ;;\nesac\nexit 0\n' "$REALPY" "$1" > "$sd/python3"; chmod +x "$sd/python3"; echo "$sd"; }
+sd=$(cmpstub 'cat'); d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; PATH="$sd:$PATH" expect "RC-3b pass-through stub still FAILs on unlisted" 1 "UNLISTED  docs/qa/run2/extra.txt" "$d" --check changelog
+sd=$(cmpstub 'grep -v "^END"'); d=$(fresh); PATH="$sd:$PATH" expect "RC-3b helper without END -> BLIND" 2 "completeness helper output incomplete" "$d" --check changelog
+sd=$(cmpstub 'grep -v "^UNLISTED"'); d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; PATH="$sd:$PATH" expect "RC-3b helper with UNLISTED row dropped -> BLIND" 2 "completeness helper output incomplete" "$d" --check changelog
+sd=$(cmpstub 'cat; printf "UNLISTED\tforged\n"'); d=$(fresh); PATH="$sd:$PATH" expect "RC-3b helper with forged row after END -> BLIND" 2 "completeness helper output incomplete" "$d" --check changelog
+sd=$(cmpstub 'sed "/^NESTED/d"'); d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); echo m > "$d/docs/qa/run2/sub/m.txt"
+PATH="$sd:$PATH" expect "RC-3b helper with NESTED row dropped -> BLIND (nested manifest never skipped silently)" 2 "completeness helper output incomplete" "$d" --check changelog
+sd=$(cmpstub 'sed "s/^END.*/END\tx\t0\t0/"'); d=$(fresh); PATH="$sd:$PATH" expect "RC-3b helper with non-numeric END -> BLIND" 2 "completeness helper output incomplete" "$d" --check changelog
+# RC2-1: consecutive block comments after versionCode
+d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionCode = 7$/versionCode = 7 \/* a *\/ \/* b *\//' && expect "RC2-1 two consecutive block comments parse" 0 "VERDICT: PASS" "$d" --check version
+d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionCode = 7$/versionCode = 7 \/* a *\/ \/* b *\/ - 2/' && expect "RC2-1 expression after two comments still FAIL" 1 "FAIL" "$d" --check version
+d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionCode = 7$/versionCode = 7 \/* a *\/ \/* b *\/ \/\/ c/' && expect "RC2-1 two comments then line comment parse" 0 "VERDICT: PASS" "$d" --check version
+# RC2-3: the only CR is mid-line
+d=$(fresh); printf 'SHA256 (a\r) = %s\n' "$z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "RC2-3 BSD line with mid-line CR -> FAIL" 1 "CR inside a line" "$d" --check changelog
+d=$(fresh); printf '%s  a\r.txt\n' "$z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "RC2-3 GNU line with mid-line CR (no trailing CR) -> FAIL" 1 "CR inside a line" "$d" --check changelog
 
 echo "== selftest (11.4.273 control needles built into the tool)"
 out="$("$CHECKER" --selftest 2>&1)"; got=$?

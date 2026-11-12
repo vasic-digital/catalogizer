@@ -1,0 +1,11 @@
+# Declared known evidence gaps for scripts/release/check_release_consistency.sh (RC-3).
+# Format: see scripts/release/README.md. Every applied waiver is printed as WAIVED and counted.
+# These VERIFIED paths of CHANGELOG section [2.4.0] pre-date the manifest requirement: no SHA256SUMS
+# manifest was ever written for them, so their integrity cannot be re-checked from a clone.
+# Remove an entry when a manifest is added for the path.
+no-manifest|docs/qa/stack3-rebuild-live-20261105|pre-RC-3 evidence directory, no integrity manifest exists
+no-manifest|docs/qa/new1-cover-thumbnails/green_main5c48.txt|pre-RC-3 single evidence file, no integrity manifest exists
+no-manifest|docs/qa/stack3-live-20261105|pre-RC-3 evidence directory, no integrity manifest exists
+no-manifest|docs/qa/live-pprof-20261111|pre-RC-3 evidence directory, no integrity manifest exists
+no-manifest|docs/qa/stack3-ui-20261105|pre-RC-3 evidence directory, no integrity manifest exists
+no-manifest|docs/qa/ui-live-rerun-20261105|pre-RC-3 evidence directory, no integrity manifest exists
