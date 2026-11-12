@@ -30,6 +30,24 @@ func logServiceStatus(err error) int {
 	return http.StatusInternalServerError
 }
 
+// writeLogServiceError writes the mapped status with a fixed, generic body: the service error text (repository wrapping,
+// `sql: no rows in result set`, driver or path details) stays server-side and never reaches the client.
+func writeLogServiceError(w http.ResponseWriter, err error) {
+	status := logServiceStatus(err)
+	var msg string
+	switch status {
+	case http.StatusNotFound:
+		msg = "Not found"
+	case http.StatusForbidden:
+		msg = "Access denied"
+	case http.StatusBadRequest:
+		msg = "Unsupported format"
+	default:
+		msg = "Internal server error"
+	}
+	http.Error(w, msg, status)
+}
+
 // LogManagementServiceInterface defines interface for log management service operations
 type LogManagementServiceInterface interface {
 	CollectLogs(userID int, request *models.LogCollectionRequest) (*models.LogCollection, error)
@@ -191,7 +209,7 @@ func (h *LogManagementHandler) GetLogEntries(w http.ResponseWriter, r *http.Requ
 	filters := h.parseLogEntryFilters(r)
 	entries, err := h.logManagementService.GetLogEntries(collectionID, userID, filters)
 	if err != nil {
-		http.Error(w, err.Error(), logServiceStatus(err))
+		writeLogServiceError(w, err)
 		return
 	}
 
@@ -223,7 +241,7 @@ func (h *LogManagementHandler) CreateLogShare(w http.ResponseWriter, r *http.Req
 
 	share, err := h.logManagementService.CreateLogShare(userID, &request)
 	if err != nil {
-		http.Error(w, err.Error(), logServiceStatus(err))
+		writeLogServiceError(w, err)
 		return
 	}
 
@@ -291,7 +309,7 @@ func (h *LogManagementHandler) RevokeLogShare(w http.ResponseWriter, r *http.Req
 
 	err = h.logManagementService.RevokeLogShare(shareID, userID)
 	if err != nil {
-		http.Error(w, err.Error(), logServiceStatus(err))
+		writeLogServiceError(w, err)
 		return
 	}
 
@@ -324,7 +342,7 @@ func (h *LogManagementHandler) ExportLogs(w http.ResponseWriter, r *http.Request
 
 	data, err := h.logManagementService.ExportLogs(collectionID, userID, format)
 	if err != nil {
-		http.Error(w, err.Error(), logServiceStatus(err))
+		writeLogServiceError(w, err)
 		return
 	}
 
@@ -444,7 +462,7 @@ func (h *LogManagementHandler) AnalyzeLogs(w http.ResponseWriter, r *http.Reques
 
 	analysis, err := h.logManagementService.AnalyzeLogs(collectionID, userID)
 	if err != nil {
-		http.Error(w, err.Error(), logServiceStatus(err))
+		writeLogServiceError(w, err)
 		return
 	}
 

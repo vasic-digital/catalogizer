@@ -84,12 +84,37 @@ func TestDocsAdminPasswordExamplesAreAllRejected(t *testing.T) {
 	require.True(t, strings.Contains(strings.Join(needleWhere, ","), "ADMIN_USER_GUIDE.md:"), "needle must come from the docs scan, got %v", needleWhere)
 
 	for v, where := range vals {
-		v = strings.TrimRight(v, ",.;)`")
-		if strings.HasPrefix(v, "$") || strings.HasPrefix(v, "<") || strings.HasPrefix(v, "`") || strings.HasPrefix(v, "\\$") {
-			continue // variable reference
+		if exampleValueIsExempt(v) {
+			continue
 		}
+		v = strings.TrimRight(v, ",.;)`")
 		assert.True(t, IsPlaceholderPassword(v), "documented example %q would be ACCEPTED as a real password (first at %v)", v, where[0])
 	}
+}
+
+// exampleValueIsExempt reports census values that are not literal password examples: a variable reference,
+// a <template>, a code-span fragment, or an elision (`...` / `…`, e.g. "ADMIN_PASSWORD=... \" in prose means "value omitted").
+func exampleValueIsExempt(v string) bool {
+	if v == "..." || v == "\u2026" {
+		return true // elision, not an empty password
+	}
+	v = strings.TrimRight(v, ",.;)`")
+	return strings.HasPrefix(v, "$") || strings.HasPrefix(v, "<") || strings.HasPrefix(v, "`") || strings.HasPrefix(v, "\\$")
+}
+
+// PX-F7: `...` is an elision marker; treating it as a value (after the trailing-dot trim it becomes an empty
+// password) would force documents to avoid the common prose idiom.
+func TestCensusTreatsEllipsisAsElision(t *testing.T) {
+	assert.True(t, exampleValueIsExempt("..."))
+	assert.True(t, exampleValueIsExempt("\u2026"))
+	// no false exemption: a real-looking example and a plain weak one are still judged
+	assert.False(t, exampleValueIsExempt("password123"))
+	assert.False(t, exampleValueIsExempt("changeme."))
+	// the extractor sees the idiom, so the exemption is what spares it
+	tmp := filepath.Join(t.TempDir(), "x.md")
+	require.NoError(t, os.WriteFile(tmp, []byte("ADMIN_PASSWORD=... ./run.sh\n"), 0o600))
+	seen := censusAdminPasswordValues(t, []string{tmp})
+	require.Contains(t, seen, "...")
 }
 
 func TestIsPlaceholderPassword_ExampleShapes(t *testing.T) {

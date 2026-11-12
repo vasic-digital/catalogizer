@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"testing"
@@ -25,11 +26,11 @@ func TestConversionIntegration(t *testing.T) {
 	require.NoError(t, err)
 	defer sqlDB.Close()
 
-	// Create database schema
-	err = createConversionSchema(sqlDB)
-	require.NoError(t, err)
-
 	db := database.WrapDB(sqlDB, database.DialectSQLite)
+
+	// Build the schema with the real migrations (PX-F6): a hand-written copy drifts from them
+	// (it already missed the conversion_jobs.warning column of migration v25).
+	require.NoError(t, db.RunMigrations(context.Background()))
 
 	// Create repositories
 	userRepo := repository.NewUserRepository(db)
@@ -54,7 +55,7 @@ func TestConversionIntegration(t *testing.T) {
 	// Create test role with permissions
 	roleDesc := "Administrator"
 	role := &models.Role{
-		Name:        "Admin",
+		Name:        "ConversionAdmin", // "Admin" is seeded by the migrations
 		Description: &roleDesc,
 		Permissions: models.Permissions{
 			models.PermissionConversionCreate,
@@ -141,76 +142,4 @@ func TestConversionIntegration(t *testing.T) {
 	cancelledJob, err := conversionService.GetJob(job.ID, userID)
 	require.NoError(t, err)
 	assert.Equal(t, models.ConversionStatusCancelled, cancelledJob.Status)
-}
-
-// createConversionSchema creates the necessary database tables for conversion testing
-func createConversionSchema(db *sql.DB) error {
-	// Create user table with all required columns
-	queries := []string{
-		`CREATE TABLE IF NOT EXISTS users (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			username TEXT UNIQUE NOT NULL,
-			email TEXT UNIQUE NOT NULL,
-			email_verified BOOLEAN DEFAULT 0,
-			password_hash TEXT NOT NULL,
-			salt TEXT NOT NULL,
-			first_name TEXT,
-			last_name TEXT,
-			display_name TEXT,
-			avatar_url TEXT,
-			time_zone TEXT DEFAULT 'UTC',
-			language TEXT DEFAULT 'en',
-			settings TEXT DEFAULT '{}',
-			role_id INTEGER,
-			is_active BOOLEAN DEFAULT 1,
-			is_locked BOOLEAN DEFAULT 0,
-			locked_until DATETIME,
-			failed_login_attempts INTEGER DEFAULT 0,
-			last_login_at DATETIME,
-			last_login_ip TEXT,
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-		)`,
-		`CREATE TABLE IF NOT EXISTS roles (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			name TEXT UNIQUE NOT NULL,
-			description TEXT,
-			permissions TEXT DEFAULT '[]',
-			is_system INTEGER DEFAULT 0,
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-		)`,
-		`CREATE TABLE IF NOT EXISTS conversion_jobs (
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			user_id INTEGER NOT NULL,
-			source_path TEXT NOT NULL,
-			target_path TEXT NOT NULL,
-			source_format TEXT NOT NULL,
-			target_format TEXT NOT NULL,
-			conversion_type TEXT NOT NULL,
-			quality TEXT,
-			settings TEXT,
-			status TEXT NOT NULL,
-			progress INTEGER DEFAULT 0,
-			error_message TEXT,
-			warning TEXT,
-			priority INTEGER DEFAULT 1,
-			scheduled_for DATETIME,
-			duration DATETIME,
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-			started_at DATETIME,
-			completed_at DATETIME,
-			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-			FOREIGN KEY (user_id) REFERENCES users(id)
-		)`,
-	}
-
-	for _, query := range queries {
-		_, err := db.Exec(query)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
