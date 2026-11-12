@@ -317,7 +317,7 @@ func otherActiveAdminsClause(excludeID int, adminIDs []int) (string, []interface
 		ph[i] = "?"
 		args = append(args, id)
 	}
-	return "(SELECT COUNT(*) FROM users o WHERE o.id <> ? AND o.is_active = ? AND (o.is_locked = ? OR (o.locked_until IS NOT NULL AND o.locked_until <= ?)) AND o.role_id IN (" +
+	return "(SELECT COUNT(*) FROM users o WHERE o.id <> ? AND o.is_active = ? AND (o.is_locked IS NULL OR o.is_locked = ? OR (o.locked_until IS NOT NULL AND o.locked_until <= ?)) AND o.role_id IN (" +
 		strings.Join(ph, ",") + ")) >= 1", args
 }
 

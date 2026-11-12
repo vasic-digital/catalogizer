@@ -2052,3 +2052,10 @@ RC3R4-1 (minor, source-defect) HEAD-consistency checks use git status/diff, whic
 RC3R4-2 (minor, test-instrumentation) author mutants [4] (equivalent: record as such) and [6] (head-check git-status failure not blind: add fault-injection git wrapper test) survive, so the shipped mutation runner is not green on its own list; run the FULL runner once load < 20 (only a filtered run of 14 mutants was done).
 RC3R4-3 (nit) mutant NEW3 (head_check returns at first missing path) near-equivalent.
 RC3R4-4 (nit) retargeted symlink cited path gives FAIL (MISS) instead of BLIND; fails safe, message only.
+
+## CAT-D9-SUSPEND round-2 review follow-ups (2026-11-12) — PROVISIONAL
+- D9S-M1, D9S-M4, D9S-M5: registered per the conductor's round-2 NO-GO message; their text was not carried into this work session, so they are recorded here by id only and must be filled from the review text (UNCONFIRMED content).
+- D9S-F5: admin update does revoke, update and SetSuspended as separate statements (not one transaction).
+- D9S-F6: the SQLite `locked_until <= ?` comparison relies on same-timezone time strings.
+- D9S-F7: `LockAccount`/`UnlockAccount` still compare `is_locked = ?` without COALESCE; only the last-admin clause treats NULL as unlocked (M6).
+- PostgreSQL test `TestD9S_PG_SuspendLockUnlock` is gated on CATALOGIZER_PG_TEST_*; it was not run live by this author.

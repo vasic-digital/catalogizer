@@ -554,7 +554,11 @@ func (s *AuthService) verifyUserUnchanged(orig *models.User, acceptableHashes []
 			hashOK = true
 		}
 	}
-	if cur.RoleID != orig.RoleID || cur.IsActive != orig.IsActive || cur.IsLocked != orig.IsLocked || !hashOK {
+	// The lock is compared by its EFFECTIVE state and by permanence: a user with an
+	// expired timed lock keeps is_locked=1 when an admin suspends him (only
+	// locked_until becomes NULL), which a bare IsLocked comparison cannot see.
+	if cur.RoleID != orig.RoleID || cur.IsActive != orig.IsActive || cur.IsLocked != orig.IsLocked ||
+		cur.IsAccountLocked() || (cur.LockedUntil == nil) != (orig.LockedUntil == nil) || !hashOK {
 		return ErrUserChangedDuringLogin
 	}
 	return nil

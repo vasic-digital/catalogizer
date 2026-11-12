@@ -26,7 +26,7 @@ func (q dbSessionQuerier) QueryRowContext(ctx context.Context, query string, arg
 	return q.db.QueryRowContext(ctx, query, args...)
 }
 
-// sessionCheckTimeout bounds the per-request lookup (one primary-key read).
+// sessionCheckTimeout bounds the per-request lookup (one JOIN on primary keys).
 const sessionCheckTimeout = 3 * time.Second
 
 // newSessionChecker makes server-side session revocation (admin-reset-password,
@@ -47,13 +47,21 @@ func sessionCheckerFor(q sessionQuerier) root_middleware.SessionChecker {
 		ctx, cancel := context.WithTimeout(ctx, sessionCheckTimeout)
 		defer cancel()
 		var (
-			active  bool
-			expires time.Time
-			owner   int
+			active      bool
+			expires     time.Time
+			owner       int
+			userActive  bool
+			userLocked  bool
+			lockedUntil *time.Time
 		)
+		// One JOIN, one round-trip: the owner's account state is read together
+		// with the session row, so a deactivation or suspension closes every
+		// session race (e.g. a login that created its session after the
+		// admin's revokes) by construction.
 		if err := q.QueryRowContext(ctx,
-			"SELECT is_active, expires_at, user_id FROM user_sessions WHERE id = ?", sid,
-		).Scan(&active, &expires, &owner); err != nil {
+			"SELECT s.is_active, s.expires_at, s.user_id, u.is_active, u.is_locked, u.locked_until "+
+				"FROM user_sessions s JOIN users u ON u.id = s.user_id WHERE s.id = ?", sid,
+		).Scan(&active, &expires, &owner, &userActive, &userLocked, &lockedUntil); err != nil {
 			return fmt.Errorf("session lookup: %w", err)
 		}
 		if !active || expires.Before(time.Now()) {
@@ -61,6 +69,14 @@ func sessionCheckerFor(q sessionQuerier) root_middleware.SessionChecker {
 		}
 		if strconv.Itoa(owner) != userID {
 			return errors.New("session owner mismatch")
+		}
+		if !userActive {
+			return errors.New("account disabled")
+		}
+		// Effective lock, same rule as models.User.IsAccountLocked: permanent when
+		// locked_until is NULL, otherwise only until it passes.
+		if userLocked && (lockedUntil == nil || lockedUntil.After(time.Now())) {
+			return errors.New("account locked")
 		}
 		return nil
 	}
