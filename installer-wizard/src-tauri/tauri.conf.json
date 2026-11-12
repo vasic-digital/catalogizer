@@ -1,6 +1,6 @@
 {
   "productName": "Catalogizer Installation Wizard",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "identifier": "com.catalogizer.installer-wizard",
   "build": {
     "beforeBuildCommand": "npm run build",

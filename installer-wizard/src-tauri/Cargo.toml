@@ -1,6 +1,6 @@
 [package]
 name = "catalogizer-installer-wizard"
-version = "2.4.1"
+version = "2.4.2"
 description = "Installation wizard for Catalogizer SMB source configuration"
 authors = ["Catalogizer Team"]
 license = "MIT"

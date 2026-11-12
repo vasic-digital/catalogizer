@@ -39,6 +39,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **PlaybackTracker**: added `ensureActive()` and re-throw `CancellationException` to prevent coroutine leaks
 - **PlaybackTrackerTest**: stabilized by removing shared `TestScope`, eliminating `UncompletedCoroutinesError`
 
+## [2.4.2] - pre-release (NOT production-ready)
+
+Release class: **pre-release** (provisional-eligible, constitution 11.4.290(G)). Prepared on branch `release/v2.4.2-prep` from `main` `cf22c0b9` (commits since the `v2.4.1` tag: `git log v2.4.1..HEAD`). Not tagged, not published. Versioning is SemVer.
+Version files bumped to 2.4.2: `versions.json` (global 2.4.2), `docs/api/openapi.yaml`, `catalog-web`, `catalogizer-desktop` and `installer-wizard` (package.json, package-lock.json, tauri.conf.json, Cargo.toml), Android `versionName` 2.4.2 / `versionCode` 8 (was 7), Android TV `versionName` 2.4.2 / `versionCode` 10 (was 9), the two Android `CLAUDE.md` version lines and the installer-wizard AppImage file name in `challenges/scripts/desktop_appimage_launch_challenge.sh`. Checked with the new `scripts/release/check_release_consistency.sh --version 2.4.2 --prev-tag v2.4.1` (see the VERIFIED row).
+**What this candidate is NOT:** the full-suite retest (11.4.40), the 11.4.185 manual QA and the live UI QA have NOT been run on it; nothing here may be called production-ready.
+
+### Changed (user-visible)
+- **Web: pressing Enter no longer toggles the checkbox in the collection preview (`CollectionPreview`).** The selection control is now a native checkbox, so Space toggles it and Enter does not (CAT-QA-SONAR-7 follow-up FU-2). Other web controls changed from `role="button"` / `role="checkbox"` elements to native elements for Sonar S6819 (`AdvancedSearch`, `CollectionExport`, `CollectionTemplates`, `DiscoveredShares`, `HistoryDrawer`, `SubtitleManager`, `FavoriteToggle`); no live browser check of these has been run (FU-3: `HistoryDrawer` backdrop stacking needs a real browser).
+
+### VERIFIED (committed machine evidence, checked while preparing this entry)
+- SonarQube run4 measurement exists and verifies from the committed tree: `sha256sum -c SHA256SUMS` in `docs/qa/sonarqube-20261111/run4/` passes (0 failures). Scanned tag `v2.4.1` (`04c6d422`), so it measures the code BEFORE the SONAR-7 fixes below. Recorded result: all 60 targeted findings gone (22 CRITICAL, 2 api `go:S3923`, 5 web `typescript:S2245`, 15 web bugs, 16 web `typescript:S2699`); api 699 -> 687 open (648 CRITICAL `S1192`/`S3776` unchanged), web 404 -> 351 open; 13 NEW web code smells; quality gate api OK, **web ERROR** (13 new violations; the coverage condition is not meaningful, no coverage report was fed in). This verifies the recorded measurement only; it does not mean the gate is green.
+- Cover-art SSRF live test (CAT-COVERART-LIVE-1 / CAT-QA-COVERART-1): `docs/qa/coverart/results/final/` holds baseline PASS (10 required tests), 9 mutants all KILLED, `MUTATION-SUITE: PASS`, and a `-race` run, produced from committed tree `25e122e4` under a network namespace. Scope is stated in `docs/qa/coverart/README.md`: fixture servers are fixture INPUTS (11.4.289 C(3)); the 32 MiB cap and redirect legs run on `netguard.Client`, only two legs use the production `StrictClient`; one host, N=1. This is why the SSRF items stay PROVISIONAL below.
+- Release-consistency checker `scripts/release/check_release_consistency.sh` (CAT-REL-CHECK-1) with fixture suite and mutation runner; two Opus review rounds, GO-with-follow-ups (follow-ups open, below).
+- Carried from 2.4.1, not re-run: the VERIFIED rows of `[2.4.1]` / `[2.4.0]`.
+
+### PROVISIONAL (landed on `main`; counts as done for planning, NOT verified)
+Pending job per row; machine evidence goes under `docs/qa/`; due before any non-pre-release tag.
+- **Sonar run4 findings fixed on `main` after the scan** (CAT-QA-SONAR-7, merge `0a926439`, `60bc821d`; Opus GO-with-follow-ups): the 13 new web smells (S6819 x8, S3358, S4323, S7773 x3) have a fix landed. **Static Sonar clearance is PROVISIONAL**: no Sonar re-run exists after these fixes, and run4's web quality gate was ERROR. Pending job: SonarQube re-run on the v2.4.2 tag, expecting web gate OK and the 13 findings gone.
+- **Cover-art SSRF through the product path** (F2 32 MiB cap, F4 redirect / private-address blocking): live test and evidence exist (VERIFIED row) but the evidence class is fixture-input, `netguard.Client` for most legs, one host, N=1. Pending job: N>=3 runs and a production-client cap/redirect leg.
+- **Web Sonar fixes from run3 (S2245, bugs, S2699, S3735, S3776, api S1186, S3923)**: run4 measured them gone; the measurement is verified, the items are kept PROVISIONAL until a Sonar scan of the v2.4.2 code (the web code changed again after run4).
+- **Release-consistency checker hardening N1-N5** (merge `9f4fecfa`, `c47d55e5`): unit and mutation class tests only; the checker checks version fields and changelog evidence paths, not product behaviour.
+- All `[2.4.1]` PROVISIONAL rows not listed above stay PROVISIONAL under their existing ids (SMB hardening SMB-FU-10/12/14, Anton `Public/Testing` SMB run at N=1, QA stack scripts via ctrctl, lifecycle follow-ups, Tauri desktop and wizard native boot, Android real login, UI D7 contrast, FTP `CopyFile`, and the others there).
+
+### REOPENED
+- None recorded between `v2.4.1` and `cf22c0b9`: no live rerun FAILed on a previously closed item. This is the absence of recorded failures, not proof that nothing regressed (the full-suite retest has not been run). Note: run4's web quality gate ERROR is a finding set (13 new smells), not a reopened closed item; those smells are tracked under CAT-QA-SONAR-7.
+
+### OVERDUE
+- The `[2.4.1]` verification jobs were due "next release" (register row CAT-REL-V241): full-suite retest (11.4.40), SonarQube re-run, 11.4.185 manual QA on the v2.4.1 tag, live UI QA, and Anton `Public/Testing` SMB runs 2 and 3 (N=1 < N>=3). None has been run, so these are **verification OVERDUE** and are re-run first. The `[2.4.0]` rows not promoted are likewise still OVERDUE.
+
+### Open follow-ups
+Authoritative list: `docs/FOLLOW_UPS_NEXT_PHASE.md`. Newly registered in this window: CAT-QA-COVERART-1 (E-1 manifest after summary line and `race/`, E-2 stray `UNKNOWN` line, 4 surviving mutants), CAT-REL-CHECK-1 round-1 N1-N5 (landed) and round-2 F1-F5 (F1: backslash-prefixed BSD manifest lines bypass the escape check; fix soon), CAT-QA-SONAR-7 FU-1..7 (FU-1 missing checkbox click/Space test, FU-3 browser check of HistoryDrawer, FU-4 FavoriteToggle "Loading..." untested, FU-5..7 nits).
+
+### Skipped live tests
+- **Synology SMB / FTP / NFS live tests remain SKIPPED (`hardware_not_present`); the drives have been powered off since 2026-11-05.** Synology is NOT live-verified for this candidate; no test double was substituted.
+
 ## [2.4.1] - 2026-11-11 - pre-release (NOT production-ready)
 
 Note: the `[Unreleased]` section above predates 2.4.0 and was never folded into a dated section; it is not part of the 2.4.1 content below. Release class: **pre-release** (provisional-eligible, constitution 11.4.290(G)). Prepared on branch `release/v2.4.1-prep` from `main` `1397d5b9` (37 commits since the `v2.4.0` tag, measured with `git rev-list --count v2.4.0..1397d5b9`). The tag `v2.4.1` is cut from the `main` commit that carries this text (later merges to `main` before the tag, listed under the Sonar rows below, are included); the release is published as a labelled pre-release (`docs/PROVISIONAL_VERIFICATION_PLAN.md` section 4).

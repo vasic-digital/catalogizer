@@ -17,8 +17,8 @@ android {
         applicationId = "com.catalogizer.android"
         minSdk = 26
         targetSdk = 34
-        versionCode = 7
-        versionName = "2.4.1"
+        versionCode = 8
+        versionName = "2.4.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

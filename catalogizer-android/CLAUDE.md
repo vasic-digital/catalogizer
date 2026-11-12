@@ -6,7 +6,7 @@ Native Android application for Catalogizer media management. Built with Kotlin a
 
 - **Package**: `com.catalogizer.android`
 - **SDK**: compileSdk 35, minSdk 26, targetSdk 34
-- **Version**: 2.4.1 (versionCode 7)
+- **Version**: 2.4.2 (versionCode 8)
 
 ## Commands
 
