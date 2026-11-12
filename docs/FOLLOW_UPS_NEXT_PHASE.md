@@ -1869,3 +1869,14 @@ New jsdom Storage tests kill reviewer mutants M1-M4, M7, M8 (M1 survived the old
 - PW-F9 (Task, minor): mutant M5 survives (localStorage.removeItem also removing from sessionStorage); set the same key in both, remove from one, assert the other keeps its value, both directions.
 - PW-F10 (Task, minor): mutant M6 survives (key() order/index); assert {key(0), key(1)} as a set equals the two stored keys.
 - PW-F11 (nit): cleanup removes 'k'/'iso-*'/'keep' unconditionally; loops remove keys redundantly (harmless).
+
+## PX-F8..F12 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups
+All 9 remaining `err.Error()` sites in log_management_handler.go now write fixed bodies (status codes unchanged; full ./handlers rc=0, real-binary contract test PASS). Reviewer mutants of its own survive in several areas; open follow-ups (Queued, all minor unless noted):
+- PX-F13: log error matrix tests assert status + no leak but not the exact body (M8-a/b survive); assert exact `Not found`/`Access denied`/`Unsupported format`/`Internal server error`.
+- PX-F14: PX-F9 test wraps only sql.ErrNoRows for 404 sites; add a plain non-sentinel error case (M8-d survives).
+- PX-F15: nilslice guard clean-twin probes for `:=` redeclare of a named result, `fill(&out)`, range key, `!=` nil check, checked-only named result (M10-a..e survive).
+- PX-F16: census negatives only ASCII; add `…hunter2`, `pa…ss`, `.`, `....` (F11-a..d survive).
+- PX-F17 (observability): writeFixedLogError/writeLogServiceError discard the service error; log it (redacted) server-side before writing the fixed body.
+- PX-F18 (class, §11.4.276(C)): 122 `err.Error()` uses remain in non-test catalog-api/handlers (error_reporting 15, auth 8, configuration 7, user 5; openapi ~5322/5464/5522 document three of them); enumerate the class and decide per site.
+- PX-F19 (nit): 404 doc lines say any other service error returns 404 (a server failure shows as `Not found`).
+Agent note: do not use generic file names in the shared scratchpad (an agent's `W` file was overwritten by another).
