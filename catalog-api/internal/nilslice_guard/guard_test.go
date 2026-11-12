@@ -85,7 +85,7 @@ func offenders(t *testing.T, dir string, exported bool) []string {
 			if !ok || fd.Body == nil || (exported && !fd.Name.IsExported()) {
 				continue
 			}
-			decl := map[string]token.Pos{}
+			decl := map[*ast.Object]token.Pos{} // keyed by object so same-named declarations in different scopes are all reported
 			ast.Inspect(fd.Body, func(n ast.Node) bool {
 				if ds, ok := n.(*ast.DeclStmt); ok {
 					if gd, ok := ds.Decl.(*ast.GenDecl); ok && gd.Tok == token.VAR {
@@ -93,7 +93,9 @@ func offenders(t *testing.T, dir string, exported bool) []string {
 							vs := sp.(*ast.ValueSpec)
 							if len(vs.Values) == 0 && isSliceOrMap(vs.Type) {
 								for _, nm := range vs.Names {
-									decl[nm.Name] = nm.Pos()
+									if nm.Obj != nil {
+										decl[nm.Obj] = nm.Pos()
+									}
 								}
 							}
 						}
@@ -150,7 +152,11 @@ func offenders(t *testing.T, dir string, exported bool) []string {
 				return true
 			})
 			for nm := range checked {
-				delete(decl, nm)
+				for o := range decl {
+					if o.Name == nm {
+						delete(decl, o)
+					}
+				}
 				assigned[nm] = true
 			}
 			flagged := map[string]bool{}
@@ -170,9 +176,9 @@ func offenders(t *testing.T, dir string, exported bool) []string {
 					}
 					for i, r := range x.Results {
 						if id, ok := r.(*ast.Ident); ok { // (0)
-							if pos, ok := decl[id.Name]; ok {
+							if pos, ok := decl[id.Obj]; ok {
 								add(pos, "var "+id.Name+" returned unnormalised")
-								delete(decl, id.Name)
+								delete(decl, id.Obj)
 							}
 						}
 						// (b) return nil, nil
@@ -189,9 +195,9 @@ func offenders(t *testing.T, dir string, exported bool) []string {
 							continue
 						}
 						if id, ok := kv.Value.(*ast.Ident); ok {
-							if pos, ok := decl[id.Name]; ok {
+							if pos, ok := decl[id.Obj]; ok {
 								add(pos, "var "+id.Name+" used as struct-literal field value unnormalised")
-								delete(decl, id.Name)
+								delete(decl, id.Obj)
 							}
 						}
 					}
@@ -207,16 +213,16 @@ func offenders(t *testing.T, dir string, exported bool) []string {
 // accepted lists reviewed findings that are not a null-on-the-wire defect (NS-3 dispositions, docs/qa/nil-slice-null-census-20261104.md).
 // Each entry is the whole finding (scan-relative path, line:col removed) and carries its reason; a stale entry (no longer matching) fails the test.
 var accepted = map[string]string{
-	"repository/media_collection_repository.go var externalIDs used as struct-literal field value unnormalised in scanCollection": "MediaCollection.ExternalIDs is `json:\"external_ids,omitempty\"`: a nil map is omitted, not null",
-	"handlers/admin_handler.go var unavailable used as struct-literal field value unnormalised in GetSystemInfo":                "GetSystemInfo always appends `totalRequests`, so the slice is never nil when serialised",
-	"handlers/collection_handler.go var items used as struct-literal field value unnormalised in ListCollectionItems":           "items is assigned from smartrules.Evaluate / ListManualItems, which return a non-nil slice whenever err == nil; the err path returns before serialising",
-	"handlers/service_adapters.go var errs used as struct-literal field value unnormalised in ValidateWizardStep":               "models.ValidationResult.Errors is `json:\"errors,omitempty\"`: nil is omitted, not null",
-	"handlers/service_adapters.go var warns used as struct-literal field value unnormalised in ValidateWizardStep":              "models.ValidationResult.Warnings is `json:\"warnings,omitempty\"`: nil is omitted, not null",
-	"internal/services/music_player_service.go var tracks used as struct-literal field value unnormalised in PlayArtist":                 "PlayArtist returns an error when tracks is empty, so a nil slice is never serialised",
-	"internal/services/translation_service.go var results used as struct-literal field value unnormalised in TranslateBatch":             "TranslateBatch has no HTTP caller in the tree (service-internal); tracked, not on a served path",
-	"internal/handlers/localization_handlers.go var providers used as struct-literal field value unnormalised in CheckLanguageSupport":   "unrouted: LocalizationHandlers is never constructed outside tests; not a served path today",
-	"internal/handlers/media.go var mediaItems used as struct-literal field value unnormalised in SearchMedia":         "unrouted: internal/handlers.MediaHandler is never constructed outside tests; not a served path today",
-	"internal/handlers/media.go var mediaTypes used as struct-literal field value unnormalised in GetMediaTypes":       "unrouted: internal/handlers.MediaHandler is never constructed outside tests; not a served path today",
+	"repository/media_collection_repository.go var externalIDs used as struct-literal field value unnormalised in scanCollection":      "MediaCollection.ExternalIDs is `json:\"external_ids,omitempty\"`: a nil map is omitted, not null",
+	"handlers/admin_handler.go var unavailable used as struct-literal field value unnormalised in GetSystemInfo":                       "GetSystemInfo always appends `totalRequests`, so the slice is never nil when serialised",
+	"handlers/collection_handler.go var items used as struct-literal field value unnormalised in ListCollectionItems":                  "items is assigned from smartrules.Evaluate / ListManualItems, which return a non-nil slice whenever err == nil; the err path returns before serialising",
+	"handlers/service_adapters.go var errs used as struct-literal field value unnormalised in ValidateWizardStep":                      "models.ValidationResult.Errors is `json:\"errors,omitempty\"`: nil is omitted, not null",
+	"handlers/service_adapters.go var warns used as struct-literal field value unnormalised in ValidateWizardStep":                     "models.ValidationResult.Warnings is `json:\"warnings,omitempty\"`: nil is omitted, not null",
+	"internal/services/music_player_service.go var tracks used as struct-literal field value unnormalised in PlayArtist":               "PlayArtist returns an error when tracks is empty, so a nil slice is never serialised",
+	"internal/services/translation_service.go var results used as struct-literal field value unnormalised in TranslateBatch":           "TranslateBatch has no HTTP caller in the tree (service-internal); tracked, not on a served path",
+	"internal/handlers/localization_handlers.go var providers used as struct-literal field value unnormalised in CheckLanguageSupport": "unrouted: LocalizationHandlers is never constructed outside tests; not a served path today",
+	"internal/handlers/media.go var mediaItems used as struct-literal field value unnormalised in SearchMedia":                         "unrouted: internal/handlers.MediaHandler is never constructed outside tests; not a served path today",
+	"internal/handlers/media.go var mediaTypes used as struct-literal field value unnormalised in GetMediaTypes":                       "unrouted: internal/handlers.MediaHandler is never constructed outside tests; not a served path today",
 }
 
 var lineCol = regexp.MustCompile(`:\d+:\d+ `)
@@ -377,5 +383,17 @@ func TestAcceptedList_DoesNotCrossDirectories(t *testing.T) {
 	used = map[string]int{}
 	if rest := filterAccepted([]string{"../../handlers/admin_handler.go:9:6 var unavailable" + tail}, used); len(rest) != 0 {
 		t.Fatalf("PX-F1: the real path must stay accepted, got %v", rest)
+	}
+}
+
+// PX-F2: every same-named declaration is reported (declarations are keyed by object, not by name).
+func TestDetectorReportsEverySameNamedDeclaration(t *testing.T) {
+	dir := t.TempDir()
+	src := "package x\nfunc A() ([]int, func() []int) {\n\tvar out []int\n\tf := func() []int {\n\t\tvar out []int\n\t\treturn out\n\t}\n\treturn out, f\n}\n"
+	if err := os.WriteFile(filepath.Join(dir, "x.go"), []byte(src), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := offenders(t, dir, false); len(got) != 2 {
+		t.Fatalf("PX-F2: want both declarations reported, got %v", got)
 	}
 }
