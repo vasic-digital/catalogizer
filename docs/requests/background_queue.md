@@ -75,3 +75,10 @@ Received 2026-11-13 00:07 CET. Same request again. Status: IN PROGRESS - batch a
 ## BG-NASEMU-2026-11-13 - NAS/Synology-class network emulators via Containers submodule (BACKGROUND :: IMPORTANT)
 Received 2026-11-13 00:17 CET. Status: IN PROGRESS (phase 1: research + plan, subagent-driven). Blockers: none (research is read-only; implementation waits for plan review; disk/load guards apply; Synology DSM image licensing to be settled in plan).
 Scope: deep web research (open-source Synology/DSM emulation e.g. Virtual DSM/vdsm-in-Docker, XPEnology, QEMU-based, Samba/NFS/FTP/WebDAV/S3(MinIO,Garage)/SFTP peers, TrueNAS/OpenMediaVault/Unraid-like), reusable generic design inside the Containers submodule (config-injected, no Catalogizer literals), gap/risk register, full docs (guides, manuals, FAQ), commit+push to all upstreams of every touched repo, LIVE deterministic evidence. Emulated runs verify only the emulated target (§11.4.298(B)); never claim real-Synology verification.
+
+### BG-NASEMU-2026-11-13 operator answers (2026-11-13 ~00:25 CET)
+- VM tier: "All of it" - lite tier AND VM tier (vdsm/DSM, Windows, macOS where technically possible) are in scope; EULA/licence risks accepted by the operator for private local testing (record per-image provenance; macOS/DSM on non-vendor hardware = operator-accepted risk). Disk volume for VM images still to be named (candidate /dev/sda1) - implementation of VM tier will verify free space via hostbudget disk axis before any boot.
+- S3: BOTH Garage and SeaweedFS.
+- LAN exposure: ALL options must be fully supported (LAN-IP bind on reserved range, loopback-only, host networking) as selectable config; default remains safest (loopback/LAN-IP published ports).
+- KVM: keep per-user ACL, re-probe every run; land Containers branch fix/containers-g1-g2-g11 upstream after Opus GO.
+Research artifacts: scratchpad nasemu/{report,plan,winmac_research}.md (to be copied into docs/research/ when finalised). Work items NE-0b..NE-12 pending.
