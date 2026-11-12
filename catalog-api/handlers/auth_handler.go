@@ -22,6 +22,7 @@ import (
 var authClientSentinels = []error{
 	services.ErrInvalidCredentials,
 	services.ErrAccountLocked,
+	services.ErrAccountSuspended,
 	services.ErrAccountDisabled,
 	services.ErrAccountPending,
 	services.ErrUserChangedDuringLogin,

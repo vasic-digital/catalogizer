@@ -43,6 +43,15 @@ type mockAdminUserRepo struct {
 	countFn   func() (int, error)
 	revoked   []int
 	revokeErr error
+	suspended map[int]bool // SetSuspended calls (last value per user)
+}
+
+func (m *mockAdminUserRepo) SetSuspended(userID int, suspended bool) error {
+	if m.suspended == nil {
+		m.suspended = map[int]bool{}
+	}
+	m.suspended[userID] = suspended
+	return nil
 }
 
 func (m *mockAdminUserRepo) List(limit, offset int) ([]models.User, error) {
@@ -460,11 +469,12 @@ func TestAdminHandler_UpdateUser_StatusVariants(t *testing.T) {
 			switch status {
 			case "active":
 				assert.True(t, updatedUser.IsActive)
-				assert.False(t, updatedUser.IsLocked)
+				assert.Equal(t, map[int]bool{2: false}, repo.suspended, "active lifts the suspension")
 			case "inactive":
 				assert.False(t, updatedUser.IsActive)
+				assert.Empty(t, repo.suspended)
 			case "suspended":
-				assert.True(t, updatedUser.IsLocked)
+				assert.Equal(t, map[int]bool{2: true}, repo.suspended, "suspended writes the lock via SetSuspended")
 			}
 		})
 	}
