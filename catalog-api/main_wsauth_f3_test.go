@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -160,6 +162,7 @@ func TestF3_RevokedSessionRefusedOnNextInboundMessage(t *testing.T) {
 	t.Cleanup(func() { h.Stop(); srv.Close() })
 	r2 := &f3Rig{srv: srv, h: h, db: r.db}
 	c := r2.dial(t, f3Token(t, "7", 2, "1", time.Hour))
+	time.Sleep(root_handlers.DefaultMessageRecheckMinInterval + 200*time.Millisecond) // past the per-message throttle
 	_, err := r.db.Exec(`UPDATE user_sessions SET is_active = 0 WHERE id = 1`)
 	require.NoError(t, err)
 	require.NoError(t, c.WriteJSON(map[string]interface{}{"type": "ping"}))
@@ -173,7 +176,10 @@ func TestF3_AdminOnlyEventsReachOnlyAdmins(t *testing.T) {
 	for _, typ := range []string{"scan_started", "notification", "file_created", "file_modified", "file_deleted", "some_future_type"} {
 		r.h.BroadcastToClients(map[string]interface{}{"type": typ, "payload": map[string]interface{}{"path": "/srv/secret"}})
 		expectMessage(t, admin, typ)
-		expectNoMessage(t, user, 150*time.Millisecond)
+		// sentinel: the user's NEXT message must be the sentinel, i.e. typ was not delivered
+		r.h.BroadcastToClients(map[string]interface{}{"type": "media_update", "sentinel": typ})
+		expectMessage(t, user, `"sentinel":"`+typ+`"`)
+		expectMessage(t, admin, `"sentinel":"`+typ+`"`)
 	}
 }
 
@@ -206,4 +212,93 @@ func TestF3_AdminDemotedAfterConnectStopsReceivingAdminEvents(t *testing.T) {
 	time.Sleep(4 * f3Recheck)
 	r.h.BroadcastToClients(map[string]interface{}{"type": "scan_started"})
 	expectNoMessage(t, c, 250*time.Millisecond)
+}
+
+// rigWithAdminCheck builds a handler whose live admin check is replaced.
+func newF3RigAdminCheck(t *testing.T, ac root_handlers.WSAdminCheck) *f3Rig {
+	r := newF3Rig(t)
+	mw := newAuthMiddleware("wire-test-secret", r.db, repository.NewUserRepository(r.db))
+	cfg := root_handlers.DefaultWebSocketConfig()
+	cfg.RecheckInterval = f3Recheck
+	h := root_handlers.NewWebSocketHandlerWithConfig(zap.NewNop(), cfg)
+	gr := gin.New()
+	registerWebSocketRoute(gr, mw, h)
+	h.SetAuthChecks(root_handlers.WSSessionCheck(mw.SessionCheck()), ac) // after the helper: override
+	srv := httptest.NewServer(gr)
+	t.Cleanup(func() { h.Stop(); srv.Close() })
+	return &f3Rig{srv: srv, h: h, db: r.db}
+}
+
+func TestF3_AdminLookupErrorDowngradesButKeepsSocketOpen(t *testing.T) {
+	var failing atomic.Bool
+	r := newF3RigAdminCheck(t, func(ctx context.Context, uid int) (bool, error) {
+		if failing.Load() {
+			return true, errors.New("db down") // even a "true" answer must be ignored on error
+		}
+		return true, nil
+	})
+	c := r.dial(t, f3Token(t, "8", 1, "2", time.Hour))
+	r.h.BroadcastToClients(map[string]interface{}{"type": "scan_started"})
+	expectMessage(t, c, "scan_started")
+	failing.Store(true)
+	time.Sleep(4 * f3Recheck)
+	r.h.BroadcastToClients(map[string]interface{}{"type": "scan_started"})
+	r.h.BroadcastToClients(map[string]interface{}{"type": "media_update", "sentinel": "after-error"})
+	expectMessage(t, c, `"sentinel":"after-error"`) // socket open, admin event skipped
+}
+
+func TestF3_BroadcastContextIsAudienceFiltered(t *testing.T) {
+	r := newF3Rig(t)
+	user := r.dial(t, f3Token(t, "7", 2, "1", time.Hour))
+	admin := r.dial(t, f3Token(t, "8", 1, "2", time.Hour))
+	require.NoError(t, r.h.BroadcastToClientsContext(context.Background(), map[string]interface{}{"type": "scan_started"}))
+	expectMessage(t, admin, "scan_started")
+	require.NoError(t, r.h.BroadcastToClientsContext(context.Background(), map[string]interface{}{"type": "media_update", "sentinel": "ctx"}))
+	expectMessage(t, user, `"sentinel":"ctx"`)
+}
+
+func TestF3_InboundFloodIsBoundedToFewDBChecks(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	var calls atomic.Int64
+	cfg := root_handlers.DefaultWebSocketConfig()
+	cfg.RecheckInterval = time.Hour
+	h := root_handlers.NewWebSocketHandlerWithConfig(zap.NewNop(), cfg)
+	h.SetAuthChecks(func(ctx context.Context, sid, uid string) error { calls.Add(1); return nil },
+		func(ctx context.Context, uid int) (bool, error) { calls.Add(1); return false, nil })
+	gr := gin.New()
+	gr.GET("/ws", func(c *gin.Context) { c.Set("user_id", 7); c.Set("session_id", "1") }, h.HandleConnection)
+	srv := httptest.NewServer(gr)
+	t.Cleanup(func() { h.Stop(); srv.Close() })
+	conn, _, err := websocket.DefaultDialer.Dial("ws"+strings.TrimPrefix(srv.URL, "http")+"/ws", nil)
+	require.NoError(t, err)
+	defer conn.Close()
+	for i := 0; i < 300; i++ {
+		require.NoError(t, conn.WriteJSON(map[string]interface{}{"type": "ping"}))
+	}
+	conn.SetReadDeadline(time.Now().Add(1 * time.Second))
+	got := 0
+	for { // pongs beyond the 256-slot send buffer are dropped by design: drain best-effort
+		if _, _, err := conn.ReadMessage(); err != nil {
+			break
+		}
+		got++
+	}
+	require.Greater(t, got, 100, "frames were processed (socket stayed open)")
+	// seed check (2 calls) + at most a couple of throttled rechecks, never ~600
+	require.LessOrEqual(t, calls.Load(), int64(8), "inbound flood must not cost one check pair per frame")
+}
+
+func TestF3_UnauthorisedAtSeedIsClosedImmediately(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	h := root_handlers.NewWebSocketHandlerWithConfig(zap.NewNop(), root_handlers.DefaultWebSocketConfig())
+	h.SetAuthChecks(func(ctx context.Context, sid, uid string) error { return errors.New("revoked") }, nil)
+	gr := gin.New()
+	gr.GET("/ws", func(c *gin.Context) { c.Set("user_id", 7); c.Set("session_id", "1") }, h.HandleConnection)
+	srv := httptest.NewServer(gr)
+	t.Cleanup(func() { h.Stop(); srv.Close() })
+	conn, _, err := websocket.DefaultDialer.Dial("ws"+strings.TrimPrefix(srv.URL, "http")+"/ws", nil)
+	require.NoError(t, err)
+	defer conn.Close()
+	expectClosed(t, conn, 2*time.Second)
+	require.Equal(t, int64(0), h.GetStats().ActiveConnections)
 }

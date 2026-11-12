@@ -35,7 +35,14 @@ type WebSocketConfig struct {
 	// lost): every connection is re-validated this often, and on every inbound
 	// message. Zero means DefaultRecheckInterval.
 	RecheckInterval time.Duration
+	// MessageRecheckMinInterval throttles the per-inbound-message recheck: it is
+	// skipped when the last successful check is younger than this (the periodic
+	// recheck is unaffected). Zero means DefaultMessageRecheckMinInterval.
+	MessageRecheckMinInterval time.Duration
 }
+
+// DefaultMessageRecheckMinInterval is the default WebSocketConfig.MessageRecheckMinInterval.
+const DefaultMessageRecheckMinInterval = time.Second
 
 // DefaultRecheckInterval is the default WebSocketConfig.RecheckInterval.
 const DefaultRecheckInterval = 15 * time.Second
@@ -104,8 +111,11 @@ type wsConn struct {
 	userID    string
 	sessionID string
 	hasIdent  bool
-	tokenExp  time.Time // zero = none known
-	isAdmin   atomic.Bool
+	// tokenExp is zero when the JWT carries no exp claim; then only the session
+	// check bounds the connection's lifetime (the auth service always sets exp).
+	tokenExp time.Time
+	isAdmin  atomic.Bool
+	lastOK   atomic.Int64 // unix nano of the last successful authorize
 }
 
 // writeMessage safely writes a message to the WebSocket connection with timeout.
@@ -246,7 +256,21 @@ func (h *WebSocketHandler) authorize(wc *wsConn) bool {
 		cancel()
 		wc.isAdmin.Store(aerr == nil && admin)
 	}
+	wc.lastOK.Store(time.Now().UnixNano())
 	return true
+}
+
+// authorizeMessage is the throttled per-inbound-message recheck: a flood of frames
+// costs at most one pair of DB lookups per MessageRecheckMinInterval.
+func (h *WebSocketHandler) authorizeMessage(wc *wsConn) bool {
+	min := h.config.MessageRecheckMinInterval
+	if min <= 0 {
+		min = DefaultMessageRecheckMinInterval
+	}
+	if time.Since(time.Unix(0, wc.lastOK.Load())) < min {
+		return true
+	}
+	return h.authorize(wc)
 }
 
 // recheckLoop closes the connection within RecheckInterval of its authorisation ending.
@@ -442,7 +466,17 @@ func (h *WebSocketHandler) HandleConnection(c *gin.Context) {
 			}
 		}
 	}
-	h.authorize(wc) // seed live admin flag (upgrade already passed RequireAuth)
+	// Seed the live admin flag; a connection already unauthorised is dropped at once.
+	if !h.authorize(wc) {
+		conn.WriteControl(websocket.CloseMessage,
+			websocket.FormatCloseMessage(websocket.ClosePolicyViolation, "authorization ended"),
+			time.Now().Add(time.Second))
+		conn.Close()
+		h.mu.Lock()
+		h.connCount--
+		h.mu.Unlock()
+		return
+	}
 
 	h.mu.Lock()
 	h.clients[wc] = true
@@ -486,7 +520,7 @@ func (h *WebSocketHandler) readPump(wc *wsConn) {
 			break
 		}
 
-		if !h.authorize(wc) {
+		if !h.authorizeMessage(wc) {
 			h.revoke(wc)
 			break
 		}
