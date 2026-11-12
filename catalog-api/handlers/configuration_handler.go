@@ -54,7 +54,7 @@ func (h *ConfigurationHandler) GetWizardStep(w http.ResponseWriter, r *http.Requ
 
 	step, err := h.configurationService.GetWizardStep(stepID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		stdError(w, http.StatusNotFound, err)
 		return
 	}
 
@@ -74,7 +74,7 @@ func (h *ConfigurationHandler) ValidateWizardStep(w http.ResponseWriter, r *http
 
 	validation, err := h.configurationService.ValidateWizardStep(stepID, data)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -99,7 +99,7 @@ func (h *ConfigurationHandler) SaveWizardProgress(w http.ResponseWriter, r *http
 
 	err := h.configurationService.SaveWizardProgress(userID, stepID, finalData)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -118,7 +118,7 @@ func (h *ConfigurationHandler) GetWizardProgress(w http.ResponseWriter, r *http.
 
 	progress, err := h.configurationService.GetWizardProgress(userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		stdError(w, http.StatusNotFound, err)
 		return
 	}
 
@@ -142,7 +142,7 @@ func (h *ConfigurationHandler) CompleteWizard(w http.ResponseWriter, r *http.Req
 	// In a real implementation, this would come from wizard form
 	config, err := h.configurationService.CompleteWizard(userID, finalData)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -170,7 +170,7 @@ func (h *ConfigurationHandler) GetConfiguration(w http.ResponseWriter, r *http.R
 
 	schema, err := h.configurationService.GetConfigurationSchema()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -200,7 +200,7 @@ func (h *ConfigurationHandler) TestConfiguration(w http.ResponseWriter, r *http.
 	// Test the configuration through the service
 	result, err := h.configurationService.TestConfiguration(&config)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 

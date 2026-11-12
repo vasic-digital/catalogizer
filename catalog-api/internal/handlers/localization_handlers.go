@@ -298,7 +298,7 @@ func (h *LocalizationHandlers) ImportConfiguration(w http.ResponseWriter, r *htt
 		h.logger.Error("Failed to import configuration",
 			zap.Int64("user_id", userID),
 			zap.Error(err))
-		h.sendError(w, fmt.Sprintf("Failed to import configuration: %v", err), http.StatusBadRequest)
+		h.sendError(w, "Failed to import configuration", http.StatusBadRequest)
 		return
 	}
 
@@ -362,7 +362,7 @@ func (h *LocalizationHandlers) EditConfiguration(w http.ResponseWriter, r *http.
 		h.logger.Error("Failed to edit configuration",
 			zap.Int64("user_id", userID),
 			zap.Error(err))
-		h.sendError(w, fmt.Sprintf("Failed to edit configuration: %v", err), http.StatusBadRequest)
+		h.sendError(w, "Failed to edit configuration", http.StatusBadRequest)
 		return
 	}
 

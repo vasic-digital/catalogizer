@@ -37,7 +37,7 @@ func (h *SyncHandler) CreateEndpoint(c *gin.Context) {
 
 	var endpoint models.SyncEndpoint
 	if err := c.ShouldBindJSON(&endpoint); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Invalid request body", "details": err.Error()})
+		syncFail(c, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
@@ -49,7 +49,7 @@ func (h *SyncHandler) CreateEndpoint(c *gin.Context) {
 		} else if strings.Contains(err.Error(), "connection test failed") {
 			status = http.StatusBadGateway
 		}
-		c.JSON(status, gin.H{"success": false, "error": "Failed to create sync endpoint", "details": err.Error()})
+		syncFail(c, status, "Failed to create sync endpoint", err)
 		return
 	}
 
@@ -66,7 +66,7 @@ func (h *SyncHandler) GetUserEndpoints(c *gin.Context) {
 
 	endpoints, err := h.syncService.GetUserEndpoints(currentUser.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Failed to get sync endpoints", "details": err.Error()})
+		syncFail(c, http.StatusInternalServerError, "Failed to get sync endpoints", err)
 		return
 	}
 
@@ -100,7 +100,7 @@ func (h *SyncHandler) GetEndpoint(c *gin.Context) {
 		} else if strings.Contains(err.Error(), "not found") {
 			status = http.StatusNotFound
 		}
-		c.JSON(status, gin.H{"success": false, "error": "Failed to get sync endpoint", "details": err.Error()})
+		syncFail(c, status, "Failed to get sync endpoint", err)
 		return
 	}
 
@@ -123,7 +123,7 @@ func (h *SyncHandler) UpdateEndpoint(c *gin.Context) {
 
 	var updates models.UpdateSyncEndpointRequest
 	if err := c.ShouldBindJSON(&updates); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Invalid request body", "details": err.Error()})
+		syncFail(c, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
@@ -139,7 +139,7 @@ func (h *SyncHandler) UpdateEndpoint(c *gin.Context) {
 		} else if strings.Contains(err.Error(), "connection test failed") {
 			status = http.StatusBadGateway
 		}
-		c.JSON(status, gin.H{"success": false, "error": "Failed to update sync endpoint", "details": err.Error()})
+		syncFail(c, status, "Failed to update sync endpoint", err)
 		return
 	}
 
@@ -168,7 +168,7 @@ func (h *SyncHandler) DeleteEndpoint(c *gin.Context) {
 		} else if strings.Contains(err.Error(), "not found") {
 			status = http.StatusNotFound
 		}
-		c.JSON(status, gin.H{"success": false, "error": "Failed to delete sync endpoint", "details": err.Error()})
+		syncFail(c, status, "Failed to delete sync endpoint", err)
 		return
 	}
 
@@ -199,7 +199,7 @@ func (h *SyncHandler) StartSync(c *gin.Context) {
 		} else if strings.Contains(err.Error(), "not active") {
 			status = http.StatusConflict
 		}
-		c.JSON(status, gin.H{"success": false, "error": "Failed to start sync", "details": err.Error()})
+		syncFail(c, status, "Failed to start sync", err)
 		return
 	}
 
@@ -231,7 +231,7 @@ func (h *SyncHandler) GetUserSessions(c *gin.Context) {
 
 	sessions, err := h.syncService.GetUserSessions(currentUser.ID, limit, offset)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Failed to get sync sessions", "details": err.Error()})
+		syncFail(c, http.StatusInternalServerError, "Failed to get sync sessions", err)
 		return
 	}
 
@@ -265,7 +265,7 @@ func (h *SyncHandler) GetSession(c *gin.Context) {
 		} else if strings.Contains(err.Error(), "not found") {
 			status = http.StatusNotFound
 		}
-		c.JSON(status, gin.H{"success": false, "error": "Failed to get sync session", "details": err.Error()})
+		syncFail(c, status, "Failed to get sync session", err)
 		return
 	}
 
@@ -285,7 +285,7 @@ func (h *SyncHandler) ScheduleSync(c *gin.Context) {
 		Frequency  string `json:"frequency" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "Invalid request body", "details": err.Error()})
+		syncFail(c, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
 
@@ -301,7 +301,7 @@ func (h *SyncHandler) ScheduleSync(c *gin.Context) {
 		} else if strings.Contains(err.Error(), "not found") {
 			status = http.StatusNotFound
 		}
-		c.JSON(status, gin.H{"success": false, "error": "Failed to schedule sync", "details": err.Error()})
+		syncFail(c, status, "Failed to schedule sync", err)
 		return
 	}
 
@@ -338,7 +338,7 @@ func (h *SyncHandler) GetSyncStatistics(c *gin.Context) {
 	userID := currentUser.ID
 	stats, err := h.syncService.GetSyncStatistics(&userID, startDate, endDate)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Failed to get sync statistics", "details": err.Error()})
+		syncFail(c, http.StatusInternalServerError, "Failed to get sync statistics", err)
 		return
 	}
 
@@ -368,7 +368,7 @@ func (h *SyncHandler) CleanupOldSessions(c *gin.Context) {
 	olderThan := time.Now().AddDate(0, 0, -req.OlderThanDays)
 	err = h.syncService.CleanupOldSessions(olderThan)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "error": "Failed to cleanup old sessions", "details": err.Error()})
+		syncFail(c, http.StatusInternalServerError, "Failed to cleanup old sessions", err)
 		return
 	}
 

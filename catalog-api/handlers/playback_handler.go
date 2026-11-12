@@ -76,7 +76,7 @@ func userIDFromContext(c *gin.Context) (int64, bool) {
 func (h *PlaybackHandler) StartSession(c *gin.Context) {
 	var req startPlaybackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadBody(c, err)
 		return
 	}
 	uid, ok := userIDFromContext(c)
@@ -93,7 +93,7 @@ func (h *PlaybackHandler) StartSession(c *gin.Context) {
 		StartedAt:     time.Now().UTC(),
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondInternal(c, http.StatusInternalServerError, "internal error", err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"session_id": id})
@@ -103,7 +103,7 @@ func (h *PlaybackHandler) StartSession(c *gin.Context) {
 func (h *PlaybackHandler) ProgressSession(c *gin.Context) {
 	var req progressPlaybackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadBody(c, err)
 		return
 	}
 	if err := h.repo.Progress(c.Request.Context(), repository.PlaybackProgress{
@@ -115,7 +115,7 @@ func (h *PlaybackHandler) ProgressSession(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "playback session not found"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondInternal(c, http.StatusInternalServerError, "internal error", err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"ok": true})
@@ -125,7 +125,7 @@ func (h *PlaybackHandler) ProgressSession(c *gin.Context) {
 func (h *PlaybackHandler) EndSession(c *gin.Context) {
 	var req endPlaybackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadBody(c, err)
 		return
 	}
 	if err := h.repo.End(c.Request.Context(), repository.PlaybackEnd{
@@ -140,7 +140,7 @@ func (h *PlaybackHandler) EndSession(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "playback session not found"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondInternal(c, http.StatusInternalServerError, "internal error", err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"ok": true})
@@ -167,7 +167,7 @@ func (h *PlaybackHandler) GetProgressForEntity(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"progress": nil})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondInternal(c, http.StatusInternalServerError, "internal error", err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"progress": prog})
@@ -190,7 +190,7 @@ func (h *PlaybackHandler) ListHistoryForEntity(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
 	sessions, err := h.repo.ListHistory(c.Request.Context(), uid, mediaItemID, limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		respondInternal(c, http.StatusInternalServerError, "internal error", err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"sessions": sessions, "count": len(sessions)})

@@ -55,3 +55,6 @@ Status: applied to the working process now (memory `feedback_review_budget_polic
 ## BG-OPDEC-2026-11-12 - collect all operator-blocked items / blockers and ask interactive questions (BACKGROUND :: CRITICAL)
 Received 2026-11-12 16:42 CET. Operator request (verbatim): "Go through all operator blocked items, all blockers and any show stoppers we have and create interactive questions for us with options and ask us all of it so we can answer, make decisions and unblock everything!"
 Status: IN PROGRESS. Sources: docs/CONTINUATION.md section 7, docs/FOLLOW_UPS_NEXT_PHASE.md "operator decision" items. Questions asked in batches of 4; answers recorded in docs/CONTINUATION.md section 7 and applied.
+
+## BG-OPDEC-2026-11-12b - second operator-decision sweep (BACKGROUND :: CRITICAL)
+Received 2026-11-12 18:56 CET. Same request as BG-OPDEC-2026-11-12 (collect every operator-blocked item / decision / blocker / show-stopper and ask interactive questions with options). Status: IN PROGRESS - batch asked this turn (Codeberg releases feature, final release label, Sonar/Docker login, disk 98%); SECQ-1 default awaits research agent aabb0db2377bfca0f; remaining batches follow answers.
