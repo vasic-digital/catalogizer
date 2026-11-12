@@ -448,7 +448,7 @@ func (s *ConfigurationWizardService) initializeDefaultTemplates() {
 				ActionType:  "file_create",
 				Description: "Create configuration file",
 				Parameters: map[string]interface{}{
-					"file_path": "./config/config.json",
+					"file_path": "config.json", // relative: resolved against the wizard configPath (CAT-OPB-FU I1)
 					"template":  "config_template.json",
 				},
 				Required: true,
@@ -1117,8 +1117,11 @@ func (s *ConfigurationWizardService) finalizeConfiguration(session *models.Wizar
 		"configuration": session.Configuration,
 	}
 
-	// Write configuration file
+	// Write configuration file, remembering what was there so a failing
+	// Required post-install action can roll it back (CAT-OPB-FU M1).
 	configFile := filepath.Join(s.configPath, "config.json")
+	previous, readErr := os.ReadFile(configFile)
+	hadPrevious := readErr == nil
 	if err := s.writeConfigFile(configFile, configData); err != nil {
 		return fmt.Errorf("failed to write configuration file: %w", err)
 	}
@@ -1128,6 +1131,11 @@ func (s *ConfigurationWizardService) finalizeConfiguration(session *models.Wizar
 	for _, action := range template.PostInstall {
 		if err := s.executePostInstallAction(action, session); err != nil {
 			if action.Required {
+				if hadPrevious {
+					_ = os.WriteFile(configFile, previous, 0644)
+				} else {
+					_ = os.Remove(configFile)
+				}
 				return fmt.Errorf("failed to execute required post-install action: %w", err)
 			}
 			if logging.Logger != nil {
@@ -1169,6 +1177,12 @@ func (s *ConfigurationWizardService) createConfigurationFile(params map[string]i
 		return fmt.Errorf("file_path parameter required")
 	}
 
+	// A relative path is resolved against the wizard configPath, never the
+	// process CWD (CAT-OPB-FU I1); absolute paths are used as given.
+	if !filepath.IsAbs(filePath) {
+		filePath = filepath.Join(s.configPath, filePath)
+	}
+
 	// Create directory if needed
 	dir := filepath.Dir(filePath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
@@ -1198,7 +1212,11 @@ func (s *ConfigurationWizardService) loadConfigTemplate(name string) (map[string
 	if name != filepath.Base(name) || name == "." || name == ".." || strings.ContainsAny(name, `/\`) {
 		return nil, fmt.Errorf("config template %q: must be a plain file name inside the templates directory", name)
 	}
-	raw, err := os.ReadFile(filepath.Join(s.templatesPath, name))
+	opPath := filepath.Join(s.templatesPath, name)
+	if err := s.ensureInsideTemplatesDir(opPath, name); err != nil {
+		return nil, err
+	}
+	raw, err := os.ReadFile(opPath)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return nil, fmt.Errorf("config template %q: cannot read from %s: %w", name, s.templatesPath, err)
@@ -1212,7 +1230,32 @@ func (s *ConfigurationWizardService) loadConfigTemplate(name string) (map[string
 	if err := json.Unmarshal(raw, &doc); err != nil {
 		return nil, fmt.Errorf("config template %q: invalid JSON object: %w", name, err)
 	}
+	if doc == nil { // JSON null decodes to a nil map without error (CAT-OPB-FU N1)
+		return nil, fmt.Errorf("config template %q: invalid JSON object: got null", name)
+	}
 	return doc, nil
+}
+
+// ensureInsideTemplatesDir rejects an operator template whose symlink-resolved
+// location is outside the (resolved) templates directory (CAT-OPB-FU M2). A
+// path that does not exist is left to the caller (built-in fallback).
+func (s *ConfigurationWizardService) ensureInsideTemplatesDir(path, name string) error {
+	resolved, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("config template %q: cannot resolve %s: %w", name, path, err)
+	}
+	base, err := filepath.EvalSymlinks(s.templatesPath)
+	if err != nil {
+		return fmt.Errorf("config template %q: cannot resolve templates directory %s: %w", name, s.templatesPath, err)
+	}
+	rel, err := filepath.Rel(base, resolved)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return fmt.Errorf("config template %q: resolves outside the templates directory", name)
+	}
+	return nil
 }
 
 // mergeConfigMaps returns base overlaid with over (recursively for nested objects); over wins.

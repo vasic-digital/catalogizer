@@ -1337,8 +1337,13 @@ func TestConfigurationWizardService_FinalizeConfiguration(t *testing.T) {
 
 		content, err := os.ReadFile(configFile)
 		assert.NoError(t, err)
-		assert.Contains(t, string(content), "version")
-		assert.Contains(t, string(content), "configuration")
+		// The basic template's file_create step targets the same config.json
+		// (relative to configPath, as it did in production with the default
+		// ./config) and overwrites the metadata file with the merged config.
+		// Before CAT-OPB-FU I1 this test only saw the metadata because the step
+		// wrote to the CWD-relative tracked file instead.
+		assert.Contains(t, string(content), `"config"`)
+		assert.Contains(t, string(content), "server_port")
 	})
 
 	t.Run("finalize with unwritable config path returns error", func(t *testing.T) {
