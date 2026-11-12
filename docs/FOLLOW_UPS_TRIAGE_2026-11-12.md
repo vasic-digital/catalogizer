@@ -1,0 +1,813 @@
+# Follow-ups triage (machine-derived)
+
+| Field | Value |
+|---|---|
+| Revision | 1 |
+| Created | 2026-11-12 |
+| Status | active (PROVISIONAL: derived by script, not human-verified row by row) |
+| Roadmap-Item | CAT-WP10-TRIAGE |
+| Source | `docs/FOLLOW_UPS_NEXT_PHASE.md` at `f709b892` of `main` |
+| Generator | `scripts/docs/gen_follow_ups_triage.py` (test: `scripts/docs/test_gen_follow_ups_triage.py`) |
+| Companion docs | `docs/FOLLOW_UPS_NEXT_PHASE.md`, `docs/WORKABLE_ITEMS_REGISTER.md` |
+
+Do not edit the table by hand; regenerate: `python3 scripts/docs/gen_follow_ups_triage.py --out docs/FOLLOW_UPS_TRIAGE_2026-11-12.md`.
+
+## Table of contents
+
+- [Method and limits](#method-and-limits)
+- [Counts](#counts)
+- [Top blockers](#top-blockers)
+- [Proposed follow-up policy](#proposed-follow-up-policy-not-applied)
+- [Full table](#full-table)
+
+## Method and limits
+
+* Rows are bullet entries of the register that begin with an id (one row per id and line). Ids mentioned only inside prose are not rows. Ids that appear as the lead of several bullets (`F1`, `R1`, ...) are listed once per bullet and get no git evidence.
+* Reused generic ids (`F1`, `F3`, `R1`, ...) have several rows; a closing in a later section ("closed on branch ...") cannot be tied to the right row by id, so such rows may still read `open` although a later section closed them. Review those rows by line before acting.
+* Severity is only what the entry (first 200 characters) or its section heading states (`(sec)` = taken from the section heading). Not stated: `UNKNOWN`. Nothing is inferred.
+* Layer: stated (`source-defect` / `test-instrumentation` / `process-doc`) or, with a trailing `*`, derived from the Type word or keywords (a heuristic).
+* Status: `landed` when the entry says closed/done, or a non-register commit on `main` names the id (PROVISIONAL: the commit shows the work reached main, not that the register was updated or the fix verified). `duplicate-of` only when the entry says so.
+* Blocker: `yes` only on a stated critical, a stated release-blocking word, or important + source-defect/security-adjacent, or an UNKNOWN-severity security-adjacent source defect. Everything else `no` with the reason. This is a rule, not a verdict; the operator decides.
+* Cluster: id family plus section title. It groups for batching; it is NOT a proven common root cause.
+* Control needles (11.4.273) passed before this file was written: CAT-PREEXIST-1 present, PX-F* family present, fabricated ZZ-NOSUCH-999 absent.
+
+## Counts
+
+Rows: 721. By status: landed 159, open 562.
+
+Open rows by layer (derived `*` merged): UNKNOWN 325, process-doc 62, source-defect 34, test-instrumentation 141.
+
+Open rows by severity: UNKNOWN 334, important 16, minor 147, nit 65.
+
+Open layer x severity:
+
+| layer | critical | important | minor | nit | UNKNOWN |
+|---|---|---|---|---|---|
+| source-defect | 0 | 2 | 16 | 5 | 11 |
+| test-instrumentation | 0 | 8 | 54 | 14 | 65 |
+| process-doc | 0 | 1 | 20 | 14 | 27 |
+| UNKNOWN | 0 | 5 | 57 | 32 | 231 |
+
+Open blockers by rule: 3.  Open security-adjacent words: 38.
+
+Open rows per cluster family (top 15):
+
+| family | open |
+|---|---|
+| SMB-FU | 21 |
+| F3 | 15 |
+| D4 | 14 |
+| F2 | 13 |
+| F4 | 13 |
+| F5 | 12 |
+| F6 | 12 |
+| STACK-CTR-FU | 12 |
+| PXF23 | 12 |
+| F7 | 11 |
+| S | 10 |
+| F1 | 9 |
+| AZ2 | 9 |
+| SUB | 9 |
+| SECQ1 | 9 |
+
+## Top blockers
+
+| id | line | layer | severity | reason | cluster |
+|---|---|---|---|---|---|
+| F3 | 402 | source-defect | important | important + source-defect or security-adjacent | F3 / Responsive audit series |
+| F10 | 626 | source-defect | UNKNOWN | source-defect, security-adjacent, severity UNKNOWN: conservative | F10 / CAT-001 review R1 deferrals |
+| F1 | 910 | source-defect | important | important + source-defect or security-adjacent | F1 / Registration approval + ffmpeg image review |
+
+Known product blockers recorded elsewhere (docs/WORKABLE_ITEMS_REGISTER.md Part A; not derivable from this register by the rule, listed so the table is not read as clean): `CAT-D9-SUSPEND` (admin suspend is a no-op, important, security, pre-existing) and `UI-FAV-1` (favourites navigate to the wrong entity, important, pre-existing). The table does not replace that list.
+
+## Proposed follow-up policy (not applied)
+
+PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `docs/FOLLOW_UPS_NEXT_PHASE.md` header or the review-budget policy:
+
+> **Follow-up triage policy (proposed 2026-11-12).** (1) A reviewer finding of severity minor joins an existing open class item of the same root-cause family (same id family and section) as an added line, unless it is security-adjacent (authz, credential, injection, path confinement, data loss, information leak); a security-adjacent minor keeps its own id and is triaged for the next release. (2) A nit is not registered as its own id: it is applied in the same change when trivial, or listed once under the class item; a nit still open after the triage pass for the next release is closed with the reason `nit-after-triage`. (3) Each landed batch registers at most one new item per distinct class; the count of open ids must not grow between consecutive releases except for new increments (11.4.230(E.4) direction rule). (4) Every id carries a stated severity; UNKNOWN is a triage defect to fix at registration.
+
+## Full table
+
+| id | line | layer | severity | blocker | reason | cluster | status | evidence |
+|---|---|---|---|---|---|---|---|---|
+| F3 | 402 | source-defect | important | yes | important + source-defect or security-adjacent | F3 / Responsive audit series | open | no closing word in entry, no landing commit on ref |
+| F10 | 626 | source-defect | UNKNOWN | yes | source-defect, security-adjacent, severity UNKNOWN: conservative | F10 / CAT-001 review R1 deferrals | open | no closing word in entry, no landing commit on ref |
+| F1 | 910 | source-defect | important | yes | important + source-defect or security-adjacent | F1 / Registration approval + ffmpeg image review | open | no closing word in entry, no landing commit on ref |
+| O1 | 14 | test-instrumentation | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | O1 / Container hygiene guard | open | no closing word in entry, no landing commit on ref |
+| O2 | 17 | test-instrumentation | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | O2 / Container hygiene guard | open | no closing word in entry, no landing commit on ref |
+| O3 | 19 | test-instrumentation | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | O3 / Container hygiene guard | open | no closing word in entry, no landing commit on ref |
+| O4 | 23 | test-instrumentation | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | O4 / Container hygiene guard | open | no closing word in entry, no landing commit on ref |
+| RM6 | 36 | test-instrumentation | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R / Container hygiene guard | open | no closing word in entry, no landing commit on ref |
+| F9 | 74 | test-instrumentation | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F9 / Secrets scanner | open | no closing word in entry, no landing commit on ref |
+| S1 | 257 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S1 / FTP live-test follow-ups S1-S4 and T1 | open | no closing word in entry, no landing commit on ref |
+| T1 | 281 | test-instrumentation | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | T1 / FTP live-test follow-ups S1-S4 and T1 | open | no closing word in entry, no landing commit on ref |
+| S2 | 285 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S2 / FTP live-test follow-ups S1-S4 and T1 | open | no closing word in entry, no landing commit on ref |
+| S3 | 288 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S3 / FTP live-test follow-ups S1-S4 and T1 | open | no closing word in entry, no landing commit on ref |
+| S4 | 289 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S4 / FTP live-test follow-ups S1-S4 and T1 | open | no closing word in entry, no landing commit on ref |
+| E1 | 297 | test-instrumentation | important | no | important but test-instrumentation layer, not security-adjacent | E1 / e2e credential-default follow-ups | open | no closing word in entry, no landing commit on ref |
+| E2 | 300 | test-instrumentation | important | no | important but test-instrumentation layer, not security-adjacent | E2 / e2e credential-default follow-ups | open | no closing word in entry, no landing commit on ref |
+| E3 | 303 | test-instrumentation | minor | no | severity minor | E3 / e2e credential-default follow-ups | open | no closing word in entry, no landing commit on ref |
+| E4 | 305 | test-instrumentation | important | no | important but test-instrumentation layer, not security-adjacent | E4 / e2e credential-default follow-ups | open | no closing word in entry, no landing commit on ref |
+| E5 | 310 | test-instrumentation | important | no | important but test-instrumentation layer, not security-adjacent | E5 / e2e credential-default follow-ups | open | no closing word in entry, no landing commit on ref |
+| E6 | 314 | process-doc | minor | no | severity minor | E6 / e2e credential-default follow-ups | open | no closing word in entry, no landing commit on ref |
+| E7 | 319 | source-defect | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | E7 / e2e credential-default follow-ups | open | no closing word in entry, no landing commit on ref |
+| M6 | 330 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | M6 / Appendix digests | open | no closing word in entry, no landing commit on ref |
+| N9-1 | 347 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | N9 / check_submodule_ff gate follow-ups | open | no closing word in entry, no landing commit on ref |
+| N9-2 | 348 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | N9 / check_submodule_ff gate follow-ups | open | no closing word in entry, no landing commit on ref |
+| C1 | 354 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | C1 / check_submodule_ff gate follow-ups | open | no closing word in entry, no landing commit on ref |
+| CAT-021 | 368 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CAT / CAT-001 follow-ups | open | no closing word in entry, no landing commit on ref |
+| S3 | 374 | UNKNOWN | minor | no | severity minor | S3 / WrapHTTPHandler path-param fix | open | no closing word in entry, no landing commit on ref |
+| S4 | 375 | UNKNOWN | minor | no | severity minor | S4 / WrapHTTPHandler path-param fix | open | no closing word in entry, no landing commit on ref |
+| T1 | 376 | test-instrumentation | minor | no | severity minor | T1 / WrapHTTPHandler path-param fix | open | no closing word in entry, no landing commit on ref |
+| T6 | 377 | test-instrumentation | minor | no | severity minor | T6 / WrapHTTPHandler path-param fix | open | no closing word in entry, no landing commit on ref |
+| R3-M1 | 382 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R3 / WrapHTTPHandler path-param fix | open | no closing word in entry, no landing commit on ref |
+| F5 | 408 | process-doc | important | no | important but process-doc layer, not security-adjacent | F5 / Responsive audit series | open | no closing word in entry, no landing commit on ref |
+| F6 | 413 | source-defect | minor | no | severity minor | F6 / Responsive audit series | open | no closing word in entry, no landing commit on ref |
+| F7 | 416 | source-defect | minor | no | severity minor | F7 / Responsive audit series | open | no closing word in entry, no landing commit on ref |
+| F5 | 426 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F5 / Responsive follow-ups, closed on branch `fix-res | open | no closing word in entry, no landing commit on ref |
+| F7 | 431 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F7 / Responsive follow-ups, closed on branch `fix-res | open | no closing word in entry, no landing commit on ref |
+| D1 | 452 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D1 / Responsive follow-ups, closed on branch `fix-res | open | no closing word in entry, no landing commit on ref |
+| D2 | 457 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D2 / Responsive follow-ups, closed on branch `fix-res | open | no closing word in entry, no landing commit on ref |
+| F2 | 470 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F2 / Responsive follow-ups, closed on branch `fix-res | open | no closing word in entry, no landing commit on ref |
+| F3 | 471 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F3 / Responsive follow-ups, closed on branch `fix-res | open | no closing word in entry, no landing commit on ref |
+| F4 | 472 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F4 / Responsive follow-ups, closed on branch `fix-res | open | no closing word in entry, no landing commit on ref |
+| F5 | 473 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F5 / Responsive follow-ups, closed on branch `fix-res | open | no closing word in entry, no landing commit on ref |
+| F7 | 474 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F7 / Responsive follow-ups, closed on branch `fix-res | open | no closing word in entry, no landing commit on ref |
+| F8 | 475 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F8 / Responsive follow-ups, closed on branch `fix-res | open | no closing word in entry, no landing commit on ref |
+| N1 | 487 | UNKNOWN | minor(sec) | no | severity minor | N1 / Runner scripts | open | no closing word in entry, no landing commit on ref |
+| N2 | 488 | UNKNOWN | minor(sec) | no | severity minor | N2 / Runner scripts | open | no closing word in entry, no landing commit on ref |
+| N3 | 489 | UNKNOWN | minor(sec) | no | severity minor | N3 / Runner scripts | open | no closing word in entry, no landing commit on ref |
+| N4 | 490 | UNKNOWN | minor(sec) | no | severity minor | N4 / Runner scripts | open | no closing word in entry, no landing commit on ref |
+| T1 | 491 | test-instrumentation* | minor(sec) | no | severity minor | T1 / Runner scripts | open | no closing word in entry, no landing commit on ref |
+| T2 | 492 | test-instrumentation* | minor(sec) | no | severity minor | T2 / Runner scripts | open | no closing word in entry, no landing commit on ref |
+| T3 | 493 | test-instrumentation* | minor(sec) | no | severity minor | T3 / Runner scripts | open | no closing word in entry, no landing commit on ref |
+| F-E3 | 497 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F / CAT-002 PDF text isolation - follow-ups | open | no closing word in entry, no landing commit on ref |
+| F1 | 504 | UNKNOWN | minor(sec) | no | severity minor | F1 / CAT-002 review round 5 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F2 | 505 | test-instrumentation* | nit | no | severity nit | F2 / CAT-002 review round 5 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F3 | 506 | test-instrumentation* | minor(sec) | no | severity minor | F3 / CAT-002 review round 5 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F5 | 507 | UNKNOWN | minor(sec) | no | severity minor | F5 / CAT-002 review round 5 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F3 | 559 | source-defect | minor | no | severity minor | F3 / Docs C2/C5 landing | open | no closing word in entry, no landing commit on ref |
+| F4 | 561 | source-defect | minor | no | severity minor | F4 / Docs C2/C5 landing | open | no closing word in entry, no landing commit on ref |
+| F6 | 562 | source-defect | minor | no | severity minor | F6 / Docs C2/C5 landing | open | no closing word in entry, no landing commit on ref |
+| R6 | 566 | process-doc | minor(sec) | no | severity minor | R6 / Docs C2/C5 review round 2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| R7 | 578 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R7 / Login/validator fix | open | no closing word in entry, no landing commit on ref |
+| R3-2 | 593 | test-instrumentation | minor(sec) | no | severity minor | R3 / Crash-pages review round 3 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F2 | 627 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F2 / CAT-001 review R1 deferrals | open | no closing word in entry, no landing commit on ref |
+| F2 | 628 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F2 / CAT-001 review R1 deferrals | open | no closing word in entry, no landing commit on ref |
+| F3 | 629 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F3 / CAT-001 review R1 deferrals | open | no closing word in entry, no landing commit on ref |
+| F4 | 661 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F4 / Authorization gaps | open | no closing word in entry, no landing commit on ref |
+| CAT-051 | 661 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CAT / Authorization gaps | open | no closing word in entry, no landing commit on ref |
+| R3-M1 | 662 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R3 / Authorization gaps | open | no closing word in entry, no landing commit on ref |
+| R3-M2 | 663 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R3 / Authorization gaps | open | no closing word in entry, no landing commit on ref |
+| CAT-050 | 663 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CAT / Authorization gaps | open | no closing word in entry, no landing commit on ref |
+| CAT-052 | 664 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CAT / Authorization gaps | open | no closing word in entry, no landing commit on ref |
+| N2 | 666 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | N2 / Authorization gaps | open | no closing word in entry, no landing commit on ref |
+| N7 | 667 | UNKNOWN | minor | no | severity minor | N7 / Authorization gaps | open | no closing word in entry, no landing commit on ref |
+| B1 | 668 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | B1 / Authorization gaps | open | no closing word in entry, no landing commit on ref |
+| F4 | 691 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F4 / Review R1 deferrals | open | no closing word in entry, no landing commit on ref |
+| F6 | 692 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F6 / Review R1 deferrals | open | no closing word in entry, no landing commit on ref |
+| F10 | 693 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F10 / Review R1 deferrals | open | no closing word in entry, no landing commit on ref |
+| R2-N2 | 696 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R2 / Review R1 deferrals | open | no closing word in entry, no landing commit on ref |
+| R3-C3 | 696 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R3 / Review R1 deferrals | open | no closing word in entry, no landing commit on ref |
+| R2-N7 | 700 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R2 / Review R1 deferrals | open | no closing word in entry, no landing commit on ref |
+| R4-6 | 733 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R4 / CAT-001 review R4 class inventory | open | no closing word in entry, no landing commit on ref |
+| R4-9b | 734 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R4 / CAT-001 review R4 class inventory | open | no closing word in entry, no landing commit on ref |
+| R2 | 750 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | R2 / CAT-001 review R4 class inventory | open | no closing word in entry, no landing commit on ref |
+| R2 | 751 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R2 / CAT-001 review R4 class inventory | open | no closing word in entry, no landing commit on ref |
+| T1 | 755 | test-instrumentation | minor | no | severity minor | T1 / Authz review r3 follow-ups | open | no closing word in entry, no landing commit on ref |
+| T2 | 756 | process-doc* | nit | no | severity nit | T2 / Authz review r3 follow-ups | open | no closing word in entry, no landing commit on ref |
+| T3 | 757 | test-instrumentation* | nit | no | severity nit | T3 / Authz review r3 follow-ups | open | no closing word in entry, no landing commit on ref |
+| T4 | 758 | UNKNOWN | minor | no | severity minor | T4 / Authz review r3 follow-ups | open | no closing word in entry, no landing commit on ref |
+| P3 | 760 | UNKNOWN | minor | no | severity minor | P3 / Authz review r3 follow-ups | open | no closing word in entry, no landing commit on ref |
+| S1 | 797 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | S1 / Live scaling / stress / chaos suite | open | no closing word in entry, no landing commit on ref |
+| S2 | 798 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S2 / Live scaling / stress / chaos suite | open | no closing word in entry, no landing commit on ref |
+| S3 | 799 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S3 / Live scaling / stress / chaos suite | open | no closing word in entry, no landing commit on ref |
+| S5 | 801 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S5 / Live scaling / stress / chaos suite | open | no closing word in entry, no landing commit on ref |
+| F1 | 807 | test-instrumentation | important | no | important but test-instrumentation layer, not security-adjacent | F1 / Scaling/chaos review r1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F2 | 808 | test-instrumentation | important | no | important but test-instrumentation layer, not security-adjacent | F2 / Scaling/chaos review r1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F3 | 809 | test-instrumentation* | minor | no | severity minor | F3 / Scaling/chaos review r1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F4 | 810 | UNKNOWN | minor | no | severity minor | F4 / Scaling/chaos review r1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F5 | 811 | source-defect | minor | no | severity minor | F5 / Scaling/chaos review r1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F6 | 812 | UNKNOWN | minor | no | severity minor | F6 / Scaling/chaos review r1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F7 | 813 | source-defect | minor | no | severity minor | F7 / Scaling/chaos review r1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F8 | 814 | UNKNOWN | nit | no | severity nit | F8 / Scaling/chaos review r1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| R5-7 | 821 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R5 / CAT-001 review R5 | open | no closing word in entry, no landing commit on ref |
+| F1 | 826 | UNKNOWN | minor | no | severity minor | F1 / CAT-001 verification round | open | no closing word in entry, no landing commit on ref |
+| F2 | 827 | UNKNOWN | nit | no | severity nit | F2 / CAT-001 verification round | open | no closing word in entry, no landing commit on ref |
+| F3 | 828 | process-doc | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F3 / CAT-001 verification round | open | no closing word in entry, no landing commit on ref |
+| F4 | 829 | process-doc* | nit | no | severity nit | F4 / CAT-001 verification round | open | no closing word in entry, no landing commit on ref |
+| F5 | 830 | UNKNOWN | minor | no | severity minor | F5 / CAT-001 verification round | open | no closing word in entry, no landing commit on ref |
+| F6 | 831 | UNKNOWN | nit | no | severity nit | F6 / CAT-001 verification round | open | no closing word in entry, no landing commit on ref |
+| S1 | 834 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | S1 / S1 resolution | open | no closing word in entry, no landing commit on ref |
+| F1 | 841 | test-instrumentation* | minor | no | severity minor | F1 / S1 memory fix review | open | no closing word in entry, no landing commit on ref |
+| F2 | 842 | process-doc* | minor | no | severity minor | F2 / S1 memory fix review | open | no closing word in entry, no landing commit on ref |
+| F3 | 843 | process-doc* | nit | no | severity nit | F3 / S1 memory fix review | open | no closing word in entry, no landing commit on ref |
+| F4 | 844 | UNKNOWN | minor | no | severity minor | F4 / S1 memory fix review | open | no closing word in entry, no landing commit on ref |
+| F5 | 845 | UNKNOWN | nit | no | severity nit | F5 / S1 memory fix review | open | no closing word in entry, no landing commit on ref |
+| F6 | 846 | UNKNOWN | minor | no | severity minor | F6 / S1 memory fix review | open | no closing word in entry, no landing commit on ref |
+| F7 | 847 | UNKNOWN | minor | no | severity minor | F7 / S1 memory fix review | open | no closing word in entry, no landing commit on ref |
+| F7 | 855 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F7 / Pool-deadlock class fix + scaling-suite findings | open | no closing word in entry, no landing commit on ref |
+| F1 | 859 | UNKNOWN | minor | no | severity minor | F1 / Pool-class fix review | open | no closing word in entry, no landing commit on ref |
+| F2 | 860 | UNKNOWN | minor | no | severity minor | F2 / Pool-class fix review | open | no closing word in entry, no landing commit on ref |
+| F3 | 861 | UNKNOWN | minor | no | severity minor | F3 / Pool-class fix review | open | no closing word in entry, no landing commit on ref |
+| F4 | 862 | test-instrumentation* | nit | no | severity nit | F4 / Pool-class fix review | open | no closing word in entry, no landing commit on ref |
+| F5 | 863 | UNKNOWN | minor | no | severity minor | F5 / Pool-class fix review | open | no closing word in entry, no landing commit on ref |
+| F6 | 864 | UNKNOWN | nit | no | severity nit | F6 / Pool-class fix review | open | no closing word in entry, no landing commit on ref |
+| F7 | 865 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F7 / Pool-class fix review | open | no closing word in entry, no landing commit on ref |
+| F8 | 866 | UNKNOWN | nit | no | severity nit | F8 / Pool-class fix review | open | no closing word in entry, no landing commit on ref |
+| W9 | 889 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | W9 / Live Yandex WebDAV suite | open | no closing word in entry, no landing commit on ref |
+| W10 | 890 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | W10 / Live Yandex WebDAV suite | open | no closing word in entry, no landing commit on ref |
+| F2 | 911 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F2 / Registration approval + ffmpeg image review | open | no closing word in entry, no landing commit on ref |
+| F3 | 912 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F3 / Registration approval + ffmpeg image review | open | no closing word in entry, no landing commit on ref |
+| F4 | 913 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F4 / Registration approval + ffmpeg image review | open | no closing word in entry, no landing commit on ref |
+| F5 | 914 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F5 / Registration approval + ffmpeg image review | open | no closing word in entry, no landing commit on ref |
+| F6 | 915 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F6 / Registration approval + ffmpeg image review | open | no closing word in entry, no landing commit on ref |
+| F7 | 916 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F7 / Registration approval + ffmpeg image review | open | no closing word in entry, no landing commit on ref |
+| F1 | 922 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F1 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| F2 | 923 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F2 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| F3 | 924 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F3 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| F4 | 925 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F4 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| F7 | 926 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F7 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| N1 | 927 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | N1 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| F6 | 928 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F6 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| F6 | 931 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F6 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| N4 | 932 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | N4 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| F1 | 939 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F1 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| F2 | 940 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F2 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| F3 | 941 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F3 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| F4 | 942 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F4 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| F5 | 943 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F5 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| F6 | 944 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F6 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| N6 | 949 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | N6 / Converter hardening + registration follow-ups | open | no closing word in entry, no landing commit on ref |
+| D1 | 954 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D1 / Docs sync C4 | open | no closing word in entry, no landing commit on ref |
+| D2 | 955 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D2 / Docs sync C4 | open | no closing word in entry, no landing commit on ref |
+| D3 | 956 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D3 / Docs sync C4 | open | no closing word in entry, no landing commit on ref |
+| D5 | 958 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D5 / Docs sync C4 | open | no closing word in entry, no landing commit on ref |
+| F1 | 961 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F1 / Docs sync C4 review | open | no closing word in entry, no landing commit on ref |
+| F2 | 962 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F2 / Docs sync C4 review | open | no closing word in entry, no landing commit on ref |
+| F3 | 963 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F3 / Docs sync C4 review | open | no closing word in entry, no landing commit on ref |
+| F4 | 964 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F4 / Docs sync C4 review | open | no closing word in entry, no landing commit on ref |
+| F5 | 965 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F5 / Docs sync C4 review | open | no closing word in entry, no landing commit on ref |
+| F6 | 966 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F6 / Docs sync C4 review | open | no closing word in entry, no landing commit on ref |
+| F7 | 967 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F7 / Docs sync C4 review | open | no closing word in entry, no landing commit on ref |
+| SC2 | 978 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S / Smart collections round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| SC3 | 979 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S / Smart collections round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| SC4 | 980 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S / Smart collections round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| SC5 | 981 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S / Smart collections round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| QC1 | 1011 | UNKNOWN | minor | no | severity minor | Q / QA consumers review follow-ups | open | no closing word in entry, no landing commit on ref |
+| QC2 | 1012 | UNKNOWN | minor | no | severity minor | Q / QA consumers review follow-ups | open | no closing word in entry, no landing commit on ref |
+| QC3 | 1013 | test-instrumentation* | minor | no | severity minor | Q / QA consumers review follow-ups | open | no closing word in entry, no landing commit on ref |
+| QC4 | 1014 | test-instrumentation* | minor | no | severity minor | Q / QA consumers review follow-ups | open | no closing word in entry, no landing commit on ref |
+| QC5 | 1015 | test-instrumentation* | minor | no | severity minor | Q / QA consumers review follow-ups | open | no closing word in entry, no landing commit on ref |
+| QC6 | 1016 | UNKNOWN | nit | no | severity nit | Q / QA consumers review follow-ups | open | no closing word in entry, no landing commit on ref |
+| QC7 | 1017 | test-instrumentation* | nit | no | severity nit | Q / QA consumers review follow-ups | open | no closing word in entry, no landing commit on ref |
+| QC8 | 1018 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | Q / QA consumers review follow-ups | open | no closing word in entry, no landing commit on ref |
+| SC6 | 1019 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S / QA consumers review follow-ups | open | no closing word in entry, no landing commit on ref |
+| SC7 | 1020 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S / QA consumers review follow-ups | open | no closing word in entry, no landing commit on ref |
+| SC8 | 1021 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S / QA consumers review follow-ups | open | no closing word in entry, no landing commit on ref |
+| SC9 | 1022 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S / QA consumers review follow-ups | open | no closing word in entry, no landing commit on ref |
+| N1 | 1026 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | N1 / Route permissions review | open | no closing word in entry, no landing commit on ref |
+| N2 | 1027 | UNKNOWN | important | no | important but UNKNOWN layer, not security-adjacent | N2 / Route permissions review | open | no closing word in entry, no landing commit on ref |
+| N4 | 1029 | UNKNOWN | minor | no | severity minor | N4 / Route permissions review | open | no closing word in entry, no landing commit on ref |
+| N5 | 1030 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | N5 / Route permissions review | open | no closing word in entry, no landing commit on ref |
+| N6 | 1031 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | N6 / Route permissions review | open | no closing word in entry, no landing commit on ref |
+| UI-F5 | 1034 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI / UI D1/D2 landing follow-ups | open | no closing word in entry, no landing commit on ref |
+| UI-F7 | 1035 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI / UI D1/D2 landing follow-ups | open | no closing word in entry, no landing commit on ref |
+| UI-F8 | 1036 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI / UI D1/D2 landing follow-ups | open | no closing word in entry, no landing commit on ref |
+| UI-F2 | 1037 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI / UI D1/D2 landing follow-ups | open | no closing word in entry, no landing commit on ref |
+| CV-F1 | 1041 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CV / Converter hardening landing follow-ups | open | no closing word in entry, no landing commit on ref |
+| CV-F2 | 1042 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CV / Converter hardening landing follow-ups | open | no closing word in entry, no landing commit on ref |
+| CV-F3 | 1043 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CV / Converter hardening landing follow-ups | open | no closing word in entry, no landing commit on ref |
+| CV-F4 | 1044 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | CV / Converter hardening landing follow-ups | open | no closing word in entry, no landing commit on ref |
+| CV-F5 | 1045 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CV / Converter hardening landing follow-ups | open | no closing word in entry, no landing commit on ref |
+| AZ2-1 | 1054 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | AZ2 / Authz round 2 | open | no closing word in entry, no landing commit on ref |
+| AZ2-2 | 1055 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | AZ2 / Authz round 2 | open | no closing word in entry, no landing commit on ref |
+| AZ2-4 | 1057 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | AZ2 / Authz round 2 | open | no closing word in entry, no landing commit on ref |
+| AZ2-5 | 1058 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | AZ2 / Authz round 2 | open | no closing word in entry, no landing commit on ref |
+| AZ2-6 | 1059 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | AZ2 / Authz round 2 | open | no closing word in entry, no landing commit on ref |
+| AZ2-7 | 1060 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | AZ2 / Authz round 2 | open | no closing word in entry, no landing commit on ref |
+| SC10 | 1063 | test-instrumentation | minor | no | severity minor | S / Smart collections round-4 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| SC11 | 1064 | process-doc | nit | no | severity nit | S / Smart collections round-4 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| N2 | 1065 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | N2 / Smart collections round-4 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| AC1 | 1069 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | A / Live API contract sweep | open | no closing word in entry, no landing commit on ref |
+| AC2 | 1070 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | A / Live API contract sweep | open | no closing word in entry, no landing commit on ref |
+| AC3 | 1071 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | A / Live API contract sweep | open | no closing word in entry, no landing commit on ref |
+| AC4 | 1072 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | A / Live API contract sweep | open | no closing word in entry, no landing commit on ref |
+| AC5 | 1073 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | A / Live API contract sweep | open | no closing word in entry, no landing commit on ref |
+| W10 | 1075 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | W10 / Live API contract sweep | open | no closing word in entry, no landing commit on ref |
+| R2-4 | 1081 | process-doc | minor | no | severity minor | R2 / WebDAV live suite round-2 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| R2-5 | 1082 | UNKNOWN | nit | no | severity nit | R2 / WebDAV live suite round-2 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| WL2 | 1088 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | W / Live browser specs for catalog-web | open | no closing word in entry, no landing commit on ref |
+| WL3 | 1089 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | W / Live browser specs for catalog-web | open | no closing word in entry, no landing commit on ref |
+| WL4 | 1090 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | W / Live browser specs for catalog-web | open | no closing word in entry, no landing commit on ref |
+| WL10 | 1095 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | W / Live browser specs for catalog-web | open | no closing word in entry, no landing commit on ref |
+| WL12-D1 | 1100 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | WL12 / Live browser specs for catalog-web | open | no closing word in entry, no landing commit on ref |
+| WL12-F3 | 1101 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | WL12 / Live browser specs for catalog-web | open | no closing word in entry, no landing commit on ref |
+| AZ2-8 | 1105 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | AZ2 / Live browser specs for catalog-web | open | no closing word in entry, no landing commit on ref |
+| AZ2-9 | 1106 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | AZ2 / Live browser specs for catalog-web | open | no closing word in entry, no landing commit on ref |
+| AZ2-10 | 1107 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | AZ2 / Live browser specs for catalog-web | open | no closing word in entry, no landing commit on ref |
+| MG-C1 | 1128 | UNKNOWN | minor | no | severity minor | MG / Media fixture generator review follow-ups | open | no closing word in entry, no landing commit on ref |
+| MG-C2 | 1129 | process-doc | minor | no | severity minor | MG / Media fixture generator review follow-ups | open | no closing word in entry, no landing commit on ref |
+| MG-C3 | 1130 | test-instrumentation | minor | no | severity minor | MG / Media fixture generator review follow-ups | open | no closing word in entry, no landing commit on ref |
+| WL13-F2 | 1134 | UNKNOWN | minor | no | severity minor | WL13 / Web player review follow-ups | open | no closing word in entry, no landing commit on ref |
+| WL13-F3 | 1135 | UNKNOWN | minor | no | severity minor | WL13 / Web player review follow-ups | open | no closing word in entry, no landing commit on ref |
+| WL13-F4 | 1136 | UNKNOWN | nit | no | severity nit | WL13 / Web player review follow-ups | open | no closing word in entry, no landing commit on ref |
+| S3-1 | 1140 | test-instrumentation | minor | no | severity minor | S3 / Stack 3 scripts review follow-ups | open | no closing word in entry, no landing commit on ref |
+| S3-2 | 1141 | process-doc | minor | no | severity minor | S3 / Stack 3 scripts review follow-ups | open | no closing word in entry, no landing commit on ref |
+| S3-3 | 1142 | process-doc | minor | no | severity minor | S3 / Stack 3 scripts review follow-ups | open | no closing word in entry, no landing commit on ref |
+| LM-F1 | 1147 | test-instrumentation | minor | no | severity minor | LM / Live-map review round 3 follow-ups | open | no closing word in entry, no landing commit on ref |
+| LM-F2 | 1148 | process-doc | nit | no | severity nit | LM / Live-map review round 3 follow-ups | open | no closing word in entry, no landing commit on ref |
+| LM-F3 | 1149 | process-doc | nit | no | severity nit | LM / Live-map review round 3 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F3 | 1153 | test-instrumentation | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F3 / Live-evidence verifier / recorders | open | no closing word in entry, no landing commit on ref |
+| CS-N1 | 1178 | test-instrumentation | important | no | important but test-instrumentation layer, not security-adjacent | CS / Contract sweep review round 2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| CS-N2 | 1179 | source-defect | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CS / Contract sweep review round 2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| CS-N3 | 1180 | test-instrumentation | minor | no | severity minor | CS / Contract sweep review round 2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| CS-N4 | 1181 | UNKNOWN | minor | no | severity minor | CS / Contract sweep review round 2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| CS-N5 | 1182 | process-doc | minor | no | severity minor | CS / Contract sweep review round 2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| CS-N6 | 1183 | UNKNOWN | minor | no | severity minor | CS / Contract sweep review round 2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| NS-2 | 1188 | test-instrumentation | minor(sec) | no | severity minor | NS / Nil-slice class review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| NS-4 | 1190 | UNKNOWN | minor(sec) | no | severity minor | NS / Nil-slice class review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| NS-5 | 1191 | process-doc | minor(sec) | no | severity minor | NS / Nil-slice class review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| NS-6 | 1192 | UNKNOWN | minor(sec) | no | severity minor | NS / Nil-slice class review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| NS3-F1 | 1197 | UNKNOWN | minor(sec) | no | severity minor | NS3 / NS-1/NS-3 review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| NS3-F2 | 1198 | UNKNOWN | minor(sec) | no | severity minor | NS3 / NS-1/NS-3 review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| NS3-F3 | 1199 | UNKNOWN | minor(sec) | no | severity minor | NS3 / NS-1/NS-3 review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| NS3-F4 | 1200 | UNKNOWN | minor(sec) | no | severity minor | NS3 / NS-1/NS-3 review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| NS3-F5 | 1201 | test-instrumentation* | minor(sec) | no | severity minor | NS3 / NS-1/NS-3 review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| NS3-F6 | 1202 | UNKNOWN | minor(sec) | no | severity minor | NS3 / NS-1/NS-3 review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| WL13-R1 | 1206 | test-instrumentation | minor | no | severity minor | WL13 / WL13 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| WL13-R2 | 1207 | test-instrumentation | minor | no | severity minor | WL13 / WL13 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| WL13-R3 | 1208 | process-doc | minor | no | severity minor | WL13 / WL13 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| WL13-R4 | 1209 | process-doc | minor | no | severity minor | WL13 / WL13 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| WL13-R6 | 1210 | test-instrumentation* | nit | no | severity nit | WL13 / WL13 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| CSRF-2 | 1216 | process-doc | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | CSRF / CAT-CSRF-LAN follow-ups | open | no closing word in entry, no landing commit on ref |
+| CSRF-3 | 1217 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | CSRF / CAT-CSRF-LAN follow-ups | open | no closing word in entry, no landing commit on ref |
+| MON-G4 | 1227 | test-instrumentation | minor | no | severity minor | MON / Monitoring deploy review follow-ups | open | no closing word in entry, no landing commit on ref |
+| MON-G5 | 1228 | process-doc | nit | no | severity nit | MON / Monitoring deploy review follow-ups | open | no closing word in entry, no landing commit on ref |
+| ST-F5 | 1243 | UNKNOWN | minor | no | severity minor | ST / Live QA round 3 + storage r1 findings | open | no closing word in entry, no landing commit on ref |
+| D1 | 1251 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D1 / Conversion defects D1, D2, D7 | open | no closing word in entry, no landing commit on ref |
+| D2 | 1252 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D2 / Conversion defects D1, D2, D7 | open | no closing word in entry, no landing commit on ref |
+| D10 | 1254 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D10 / Conversion defects D1, D2, D7 | open | no closing word in entry, no landing commit on ref |
+| D11 | 1255 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D11 / Conversion defects D1, D2, D7 | open | no closing word in entry, no landing commit on ref |
+| CONV-F1 | 1256 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CONV / Conversion defects D1, D2, D7 | open | no closing word in entry, no landing commit on ref |
+| CONV-F2 | 1257 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CONV / Conversion defects D1, D2, D7 | open | no closing word in entry, no landing commit on ref |
+| CONV-F3 | 1260 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CONV / Conversion defects D1, D2, D7 | open | no closing word in entry, no landing commit on ref |
+| CONV-F4 | 1261 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CONV / Conversion defects D1, D2, D7 | open | no closing word in entry, no landing commit on ref |
+| N2 | 1264 | UNKNOWN | nit | no | severity nit | N2 / Conversion defects D1, D2, D7 | open | no closing word in entry, no landing commit on ref |
+| FU-1 | 1265 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | FU / Conversion defects D1, D2, D7 | open | no closing word in entry, no landing commit on ref |
+| CONV-F3 | 1266 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CONV / Conversion defects D1, D2, D7 | open | no closing word in entry, no landing commit on ref |
+| ST-R4-1 | 1282 | test-instrumentation | minor | no | severity minor | ST-R4 / Storage clients fix: Opus round-4 follow-ups | open | no closing word in entry, no landing commit on ref |
+| ST-R4-2 | 1283 | test-instrumentation | minor | no | severity minor | ST-R4 / Storage clients fix: Opus round-4 follow-ups | open | no closing word in entry, no landing commit on ref |
+| ST-R4-3 | 1284 | source-defect | nit | no | severity nit | ST-R4 / Storage clients fix: Opus round-4 follow-ups | open | no closing word in entry, no landing commit on ref |
+| ST-R4-4 | 1285 | source-defect | nit | no | severity nit | ST-R4 / Storage clients fix: Opus round-4 follow-ups | open | no closing word in entry, no landing commit on ref |
+| D5 | 1292 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D5 / Subtitle defects D5-D8 + delete route | open | no closing word in entry, no landing commit on ref |
+| D6 | 1293 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D6 / Subtitle defects D5-D8 + delete route | open | no closing word in entry, no landing commit on ref |
+| SUB-F1 | 1298 | UNKNOWN | minor | no | severity minor | SUB / Subtitle defects D5-D8 + delete route | open | no closing word in entry, no landing commit on ref |
+| SUB-F2 | 1299 | UNKNOWN | minor | no | severity minor | SUB / Subtitle defects D5-D8 + delete route | open | no closing word in entry, no landing commit on ref |
+| SUB-H1 | 1302 | test-instrumentation | minor | no | severity minor | SUB / Subtitle defects: Opus round-2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| SUB-H2 | 1303 | source-defect | minor | no | severity minor | SUB / Subtitle defects: Opus round-2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| SUB-H3 | 1304 | source-defect | minor | no | severity minor | SUB / Subtitle defects: Opus round-2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| SUB-H4 | 1305 | source-defect | nit | no | severity nit | SUB / Subtitle defects: Opus round-2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| SUB-H5 | 1306 | test-instrumentation | nit | no | severity nit | SUB / Subtitle defects: Opus round-2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| SUB-H6 | 1307 | process-doc | minor | no | severity minor | SUB / Subtitle defects: Opus round-2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| SUB-H7 | 1308 | process-doc | nit | no | severity nit | SUB / Subtitle defects: Opus round-2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| D9-F1 | 1328 | source-defect | minor | no | severity minor | D9 / D3 pdf-pages: poppler-only rendering, go-fitz re | open | no closing word in entry, no landing commit on ref |
+| D9-F2 | 1329 | process-doc | minor | no | severity minor | D9 / D3 pdf-pages: poppler-only rendering, go-fitz re | open | no closing word in entry, no landing commit on ref |
+| D4-1 | 1336 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D4 / D4 document full-text search | open | no closing word in entry, no landing commit on ref |
+| D4-2 | 1337 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D4 / D4 document full-text search | open | no closing word in entry, no landing commit on ref |
+| D4-3 | 1338 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D4 / D4 document full-text search | open | no closing word in entry, no landing commit on ref |
+| D4-4 | 1339 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D4 / D4 document full-text search | open | no closing word in entry, no landing commit on ref |
+| D4-5 | 1340 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D4 / D4 document full-text search | open | no closing word in entry, no landing commit on ref |
+| D4-6 | 1341 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D4 / D4 document full-text search | open | no closing word in entry, no landing commit on ref |
+| D4-7 | 1342 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D4 / D4 document full-text search | open | no closing word in entry, no landing commit on ref |
+| D4-8 | 1343 | UNKNOWN | nit | no | severity nit | D4 / D4 document full-text search | open | no closing word in entry, no landing commit on ref |
+| D4-9 | 1344 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D4 / D4 document full-text search | open | no closing word in entry, no landing commit on ref |
+| D4-10 | 1345 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D4 / D4 document full-text search | open | no closing word in entry, no landing commit on ref |
+| D4-11 | 1346 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D4 / D4 document full-text search | open | no closing word in entry, no landing commit on ref |
+| D4-12 | 1348 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D4 / D4 document full-text search | open | no closing word in entry, no landing commit on ref |
+| D4-13 | 1349 | UNKNOWN | minor | no | severity minor | D4 / D4 document full-text search | open | no closing word in entry, no landing commit on ref |
+| D4-14 | 1350 | UNKNOWN | nit | no | severity nit | D4 / D4 document full-text search | open | no closing word in entry, no landing commit on ref |
+| D11a | 1356 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D11a / D11a, D11b, D7/D8 remainder | open | no closing word in entry, no landing commit on ref |
+| D11b | 1357 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D11b / D11a, D11b, D7/D8 remainder | open | no closing word in entry, no landing commit on ref |
+| D11-F1 | 1359 | UNKNOWN | minor | no | severity minor | D11 / D11a, D11b, D7/D8 remainder | open | no closing word in entry, no landing commit on ref |
+| D11-F2 | 1360 | UNKNOWN | minor | no | severity minor | D11 / D11a, D11b, D7/D8 remainder | open | no closing word in entry, no landing commit on ref |
+| D11-F3 | 1361 | UNKNOWN | minor | no | severity minor | D11 / D11a, D11b, D7/D8 remainder | open | no closing word in entry, no landing commit on ref |
+| D11-F4 | 1362 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D11 / D11a, D11b, D7/D8 remainder | open | no closing word in entry, no landing commit on ref |
+| F7 | 1369 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F7 / D11/D7 review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F8 | 1371 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F8 / D11/D7 review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| D11-R2-2 | 1374 | process-doc | minor | no | severity minor | D11-R2 / D11/D7 review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| D11-R2-4 | 1376 | process-doc | nit | no | severity nit | D11-R2 / D11/D7 review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| D11-R2-5 | 1377 | source-defect | nit | no | severity nit | D11-R2 / D11/D7 review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| LV3-1 | 1383 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | LV3 / Live verification of stack 3 | open | no closing word in entry, no landing commit on ref |
+| LV3-2 | 1384 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | LV3 / Live verification of stack 3 | open | no closing word in entry, no landing commit on ref |
+| LV3-3 | 1385 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | LV3 / Live verification of stack 3 | open | no closing word in entry, no landing commit on ref |
+| LV3-4 | 1386 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | LV3 / Live verification of stack 3 | open | no closing word in entry, no landing commit on ref |
+| LV3-5 | 1387 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | LV3 / Live verification of stack 3 | open | no closing word in entry, no landing commit on ref |
+| SECQ-1 | 1392 | UNKNOWN | important | no | important but UNKNOWN layer, not security-adjacent | SECQ / Security queue fix | open | no closing word in entry, no landing commit on ref |
+| SECQ-2 | 1393 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | SECQ / Security queue fix | open | no closing word in entry, no landing commit on ref |
+| SECQ-3 | 1394 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SECQ / Security queue fix | open | no closing word in entry, no landing commit on ref |
+| SECQ-7 | 1399 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SECQ / Security queue fix | open | no closing word in entry, no landing commit on ref |
+| SECQ-8 | 1400 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | SECQ / Security queue fix | open | no closing word in entry, no landing commit on ref |
+| NEW1-F2 | 1406 | test-instrumentation | minor | no | severity minor | NEW1 / NEW-1 cover thumbnails | open | no closing word in entry, no landing commit on ref |
+| SECQ1-F1 | 1413 | UNKNOWN | nit | no | severity nit | SECQ1 / SECQ-1 WebDAV storage-root SSRF guard | open | no closing word in entry, no landing commit on ref |
+| SECQ1-F2 | 1414 | UNKNOWN | minor | no | severity minor | SECQ1 / SECQ-1 WebDAV storage-root SSRF guard | open | no closing word in entry, no landing commit on ref |
+| SECQ1-F3 | 1415 | process-doc* | nit | no | severity nit | SECQ1 / SECQ-1 WebDAV storage-root SSRF guard | open | no closing word in entry, no landing commit on ref |
+| SECQ1-F4 | 1416 | UNKNOWN | minor | no | severity minor | SECQ1 / SECQ-1 WebDAV storage-root SSRF guard | open | no closing word in entry, no landing commit on ref |
+| SECQ1-F5 | 1417 | test-instrumentation | minor | no | severity minor | SECQ1 / SECQ-1 WebDAV storage-root SSRF guard | open | no closing word in entry, no landing commit on ref |
+| STK3-FU-1 | 1425 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | STK3-FU / Stack-3 verification pack follow-ups | open | no closing word in entry, no landing commit on ref |
+| STK3-FU-2 | 1426 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | STK3-FU / Stack-3 verification pack follow-ups | open | no closing word in entry, no landing commit on ref |
+| STK3-FU-3 | 1427 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | STK3-FU / Stack-3 verification pack follow-ups | open | no closing word in entry, no landing commit on ref |
+| STK3-FU-4 | 1428 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | STK3-FU / Stack-3 verification pack follow-ups | open | no closing word in entry, no landing commit on ref |
+| NEW1F3-FU-1 | 1431 | UNKNOWN | nit | no | severity nit | NEW1F3-FU / NEW1-F3/F4 landed 2026-11-05 | open | no closing word in entry, no landing commit on ref |
+| NEW1F3-FU-2 | 1432 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | NEW1F3-FU / NEW1-F3/F4 landed 2026-11-05 | open | no closing word in entry, no landing commit on ref |
+| NEW1F3-FU-3 | 1433 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | NEW1F3-FU / NEW1-F3/F4 landed 2026-11-05 | open | no closing word in entry, no landing commit on ref |
+| SECQ1-F3 | 1437 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SECQ1 / SECQ-1 follow-ups and SUB-CONTRACT-1 | open | no closing word in entry, no landing commit on ref |
+| SECQ1-F4 | 1438 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SECQ1 / SECQ-1 follow-ups and SUB-CONTRACT-1 | open | no closing word in entry, no landing commit on ref |
+| SECQ1-F5 | 1439 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SECQ1 / SECQ-1 follow-ups and SUB-CONTRACT-1 | open | no closing word in entry, no landing commit on ref |
+| SECQ1-F1 | 1440 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | SECQ1 / SECQ-1 follow-ups and SUB-CONTRACT-1 | open | no closing word in entry, no landing commit on ref |
+| SECQ1FU-1 | 1448 | test-instrumentation* | minor | no | severity minor | SECQ1FU / SECQ-1 follow-ups landed 2026-11-05 | open | no closing word in entry, no landing commit on ref |
+| SECQ4B-FU-1 | 1451 | test-instrumentation* | minor | no | severity minor | SECQ4B-FU / SECQ-4b landed 2026-11-05 | open | no closing word in entry, no landing commit on ref |
+| SECQ4B-FU-2 | 1452 | process-doc* | minor | no | severity minor | SECQ4B-FU / SECQ-4b landed 2026-11-05 | open | no closing word in entry, no landing commit on ref |
+| SECQ4B-FU-3 | 1453 | UNKNOWN | nit | no | severity nit | SECQ4B-FU / SECQ-4b landed 2026-11-05 | open | no closing word in entry, no landing commit on ref |
+| SECQ4B-FU-4 | 1454 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SECQ4B-FU / SECQ-4b landed 2026-11-05 | open | no closing word in entry, no landing commit on ref |
+| SECQ-3 | 1461 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SECQ / Stack-3 live re-verification 2 | open | no closing word in entry, no landing commit on ref |
+| UI-D1-FU-1 | 1470 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI-D1-FU / Stack-3 browser pass follow-ups registered | open | no closing word in entry, no landing commit on ref |
+| UI-D1-FU-2 | 1471 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI-D1-FU / Stack-3 browser pass follow-ups registered | open | no closing word in entry, no landing commit on ref |
+| UI-D2-FU-1 | 1472 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI-D2-FU / Stack-3 browser pass follow-ups registered | open | no closing word in entry, no landing commit on ref |
+| UI-D2-FU-2 | 1473 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI-D2-FU / Stack-3 browser pass follow-ups registered | open | no closing word in entry, no landing commit on ref |
+| UI-D3-FU-1 | 1474 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI-D3-FU / Stack-3 browser pass follow-ups registered | open | no closing word in entry, no landing commit on ref |
+| UI-FAV-1 | 1475 | UNKNOWN | important | no | important but UNKNOWN layer, not security-adjacent | UI-FAV / Stack-3 browser pass follow-ups registered | open | no closing word in entry, no landing commit on ref |
+| UI-D4-FU-1 | 1476 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI-D4-FU / Stack-3 browser pass follow-ups registered | open | no closing word in entry, no landing commit on ref |
+| SECQ-3 | 1478 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SECQ / Stack-3 browser pass follow-ups registered | open | no closing word in entry, no landing commit on ref |
+| UI-D3-FU-2 | 1481 | UNKNOWN | nit | no | severity nit | UI-D3-FU / UI-D2/D3 landed | open | no closing word in entry, no landing commit on ref |
+| UI-D3-FU-3 | 1482 | UNKNOWN | nit | no | severity nit | UI-D3-FU / UI-D2/D3 landed | open | no closing word in entry, no landing commit on ref |
+| UI-D1-FU-3 | 1485 | UNKNOWN | minor | no | severity minor | UI-D1-FU / UI-D1 landed | open | no closing word in entry, no landing commit on ref |
+| UI-D1-FU-4 | 1486 | UNKNOWN | nit | no | severity nit | UI-D1-FU / UI-D1 landed | open | no closing word in entry, no landing commit on ref |
+| UI-D1-FU-5 | 1487 | test-instrumentation* | nit | no | severity nit | UI-D1-FU / UI-D1 landed | open | no closing word in entry, no landing commit on ref |
+| D8 | 1490 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D8 / UI-D7/D8 landed | open | no closing word in entry, no landing commit on ref |
+| UI-D7-FU-1 | 1491 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI-D7-FU / UI-D7/D8 landed | open | no closing word in entry, no landing commit on ref |
+| UI-D8-FU-1 | 1492 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI-D8-FU / UI-D7/D8 landed | open | no closing word in entry, no landing commit on ref |
+| UI-D8-FU-2 | 1493 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI-D8-FU / UI-D7/D8 landed | open | no closing word in entry, no landing commit on ref |
+| UI-D8-FU-3 | 1494 | test-instrumentation* | minor | no | severity minor | UI-D8-FU / UI-D7/D8 landed | open | no closing word in entry, no landing commit on ref |
+| UI-D5D6-FU-1 | 1497 | test-instrumentation* | minor | no | severity minor | UI-D5D6-FU / UI-D5/D6 landed | open | no closing word in entry, no landing commit on ref |
+| UI-D5D6-FU-2 | 1498 | test-instrumentation* | nit | no | severity nit | UI-D5D6-FU / UI-D5/D6 landed | open | no closing word in entry, no landing commit on ref |
+| MP-FLAKE-1 | 1499 | test-instrumentation* | minor | no | severity minor | MP-FLAKE / UI-D5/D6 landed | open | no closing word in entry, no landing commit on ref |
+| WEB-DEPS-1 | 1500 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | WEB-DEPS / UI-D5/D6 landed | open | no closing word in entry, no landing commit on ref |
+| UI-D7-FU-1 | 1501 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI-D7-FU / UI-D5/D6 landed | open | no closing word in entry, no landing commit on ref |
+| AND-FU-1 | 1505 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | AND-FU / Android QA boot landed | open | no closing word in entry, no landing commit on ref |
+| AND-FU-6 | 1506 | source-defect | minor | no | severity minor | AND-FU / Android QA boot landed | open | no closing word in entry, no landing commit on ref |
+| AND-FU-7 | 1507 | process-doc* | nit | no | severity nit | AND-FU / Android QA boot landed | open | no closing word in entry, no landing commit on ref |
+| TAURI-FU-1 | 1510 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-FU / Tauri QA boot / S3 follow-ups registered | open | no closing word in entry, no landing commit on ref |
+| S3-FU-1 | 1511 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S3-FU / Tauri QA boot / S3 follow-ups registered | open | no closing word in entry, no landing commit on ref |
+| TAURI-FU-2 | 1515 | process-doc | minor | no | severity minor | TAURI-FU / Tauri QA boot review follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-FU-3 | 1516 | test-instrumentation | minor | no | severity minor | TAURI-FU / Tauri QA boot review follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-FU-4 | 1517 | test-instrumentation | nit | no | severity nit | TAURI-FU / Tauri QA boot review follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-FU-6 | 1519 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-FU / Tauri QA boot review follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-FU-7 | 1520 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-FU / Tauri QA boot review follow-ups | open | no closing word in entry, no landing commit on ref |
+| UI-D3-FU-4 | 1525 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI-D3-FU / Live UI rerun 2026-11-05 on stack 3 | open | no closing word in entry, no landing commit on ref |
+| UI-D5-FU-3 | 1526 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | UI-D5-FU / Live UI rerun 2026-11-05 on stack 3 | open | no closing word in entry, no landing commit on ref |
+| HELIXQA-FU-1 | 1527 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | HELIXQA-FU / Live UI rerun 2026-11-05 on stack 3 | open | no closing word in entry, no landing commit on ref |
+| HELIXQA-FU-2 | 1528 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | HELIXQA-FU / Live UI rerun 2026-11-05 on stack 3 | open | no closing word in entry, no landing commit on ref |
+| D7-R2-F2 | 1532 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D7-R2 / D7 remaining-contrast follow-ups | open | no closing word in entry, no landing commit on ref |
+| D7-R2-F4 | 1534 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D7-R2 / D7 remaining-contrast follow-ups | open | no closing word in entry, no landing commit on ref |
+| D7-F3 | 1535 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D7 / D7 remaining-contrast follow-ups | open | no closing word in entry, no landing commit on ref |
+| HQA-R3-1 | 1539 | UNKNOWN | nit | no | severity nit | HQA-R3 / HelixQA stack3 wrapper follow-ups | open | no closing word in entry, no landing commit on ref |
+| HQA-R3-2 | 1540 | process-doc | minor | no | severity minor | HQA-R3 / HelixQA stack3 wrapper follow-ups | open | no closing word in entry, no landing commit on ref |
+| HQA-R3-3 | 1541 | UNKNOWN | nit | no | severity nit | HQA-R3 / HelixQA stack3 wrapper follow-ups | open | no closing word in entry, no landing commit on ref |
+| HQA-R3-4 | 1542 | UNKNOWN | nit | no | severity nit | HQA-R3 / HelixQA stack3 wrapper follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-F14 | 1546 | UNKNOWN | nit | no | severity nit | TAURI / Tauri SSRF | open | no closing word in entry, no landing commit on ref |
+| TAURI-F6 | 1549 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI / Tauri SSRF | open | no closing word in entry, no landing commit on ref |
+| S3-R2-1 | 1552 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S3-R2 / S3 protocol follow-ups | open | no closing word in entry, no landing commit on ref |
+| S3-R2-2 | 1553 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S3-R2 / S3 protocol follow-ups | open | no closing word in entry, no landing commit on ref |
+| S3-R2-3 | 1554 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S3-R2 / S3 protocol follow-ups | open | no closing word in entry, no landing commit on ref |
+| S3-R2-4 | 1555 | test-instrumentation* | nit | no | severity nit | S3-R2 / S3 protocol follow-ups | open | no closing word in entry, no landing commit on ref |
+| S3-R2-5 | 1556 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S3-R2 / S3 protocol follow-ups | open | no closing word in entry, no landing commit on ref |
+| S3-LIVE-FU-1 | 1559 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S3-LIVE-FU / S3 live | open | no closing word in entry, no landing commit on ref |
+| S3-LIVE-FU-2 | 1560 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S3-LIVE-FU / S3 live | open | no closing word in entry, no landing commit on ref |
+| TAURI-F6 | 1564 | UNKNOWN | important | no | important but UNKNOWN layer, not security-adjacent | TAURI / Tauri confirm-on-URL-change follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-F7 | 1565 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI / Tauri confirm-on-URL-change follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-F9 | 1566 | UNKNOWN | minor | no | severity minor | TAURI / Tauri confirm-on-URL-change follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-F10 | 1567 | test-instrumentation* | minor | no | severity minor | TAURI / Tauri confirm-on-URL-change follow-ups | open | no closing word in entry, no landing commit on ref |
+| D7-R3-FU1 | 1571 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D7-R3-F / D7 class-wide contrast | open | no closing word in entry, no landing commit on ref |
+| D7-R3-M1 | 1572 | test-instrumentation | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D7-R3 / D7 class-wide contrast | open | no closing word in entry, no landing commit on ref |
+| D7-R3-M3 | 1573 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D7-R3 / D7 class-wide contrast | open | no closing word in entry, no landing commit on ref |
+| D7-R4-1 | 1582 | source-defect | minor | no | severity minor | D7-R4 / D7 follow-ups landed | open | no closing word in entry, no landing commit on ref |
+| D7-R4-2 | 1583 | test-instrumentation* | nit | no | severity nit | D7-R4 / D7 follow-ups landed | open | no closing word in entry, no landing commit on ref |
+| D7-R4-3 | 1584 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D7-R4 / D7 follow-ups landed | open | no closing word in entry, no landing commit on ref |
+| D7-R4-4 | 1585 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D7-R4 / D7 follow-ups landed | open | no closing word in entry, no landing commit on ref |
+| PROM-R2-1 | 1589 | test-instrumentation* | minor | no | severity minor | PROM-R2 / Prometheus auth landed | open | no closing word in entry, no landing commit on ref |
+| PROM-R2-2 | 1590 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PROM-R2 / Prometheus auth landed | open | no closing word in entry, no landing commit on ref |
+| D7-R4-1 | 1600 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D7-R4 / D7 R4 follow-ups landed | open | no closing word in entry, no landing commit on ref |
+| D7-R4-2 | 1601 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | D7-R4 / D7 R4 follow-ups landed | open | no closing word in entry, no landing commit on ref |
+| D7-R4-3 | 1602 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D7-R4 / D7 R4 follow-ups landed | open | no closing word in entry, no landing commit on ref |
+| D7-R4-4 | 1603 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D7-R4 / D7 R4 follow-ups landed | open | no closing word in entry, no landing commit on ref |
+| D7-R4-FU-2 | 1607 | UNKNOWN | minor | no | severity minor | D7-R4-FU / D7-R4 review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| D7-R4-FU-3 | 1608 | test-instrumentation* | nit | no | severity nit | D7-R4-FU / D7-R4 review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| D7-R4-FU-4 | 1609 | UNKNOWN | nit | no | severity nit | D7-R4-FU / D7-R4 review round 1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| TP-FU-2 | 1613 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TP-FU / TRUSTED_PROXIES hardening follow-ups | open | no closing word in entry, no landing commit on ref |
+| TP-FU-3 | 1614 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TP-FU / TRUSTED_PROXIES hardening follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-R1-FU-1 | 1617 | source-defect | minor | no | severity minor | TAURI-R1-FU / Tauri native QA review | open | no closing word in entry, no landing commit on ref |
+| TAURI-R1-FU-2 | 1618 | source-defect | minor | no | severity minor | TAURI-R1-FU / Tauri native QA review | open | no closing word in entry, no landing commit on ref |
+| TAURI-R1-FU-3 | 1619 | source-defect | minor | no | severity minor | TAURI-R1-FU / Tauri native QA review | open | no closing word in entry, no landing commit on ref |
+| TAURI-R1-FU-5 | 1621 | source-defect | minor | no | severity minor | TAURI-R1-FU / Tauri native QA review | open | no closing word in entry, no landing commit on ref |
+| TAURI-R1-FU-7 | 1623 | source-defect | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-R1-FU / Tauri native QA review | open | no closing word in entry, no landing commit on ref |
+| TAURI-R1-FU-8 | 1624 | source-defect | nit | no | severity nit | TAURI-R1-FU / Tauri native QA review | open | no closing word in entry, no landing commit on ref |
+| D7-R4-FU-4 | 1628 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | D7-R4-FU / Follow-ups worked on feat/followups-20261110 | open | no closing word in entry, no landing commit on ref |
+| TAURI-R2-FU-1 | 1632 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-R2-FU / Tauri follow-ups review | open | no closing word in entry, no landing commit on ref |
+| TAURI-R2-FU-2 | 1633 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-R2-FU / Tauri follow-ups review | open | no closing word in entry, no landing commit on ref |
+| TAURI-R2-FU-3 | 1634 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-R2-FU / Tauri follow-ups review | open | no closing word in entry, no landing commit on ref |
+| TAURI-R2-FU-5 | 1636 | UNKNOWN | nit | no | severity nit | TAURI-R2-FU / Tauri follow-ups review | open | no closing word in entry, no landing commit on ref |
+| FU20-1 | 1640 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | FU20 / followups-20261110 review | open | no closing word in entry, no landing commit on ref |
+| FU20-2 | 1641 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | FU20 / followups-20261110 review | open | no closing word in entry, no landing commit on ref |
+| FU20-4 | 1643 | process-doc | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | FU20 / followups-20261110 review | open | no closing word in entry, no landing commit on ref |
+| LIP-FU-1 | 1647 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | LIP-FU / lanip-dyn review | open | no closing word in entry, no landing commit on ref |
+| LIP-FU-2 | 1648 | UNKNOWN | nit | no | severity nit | LIP-FU / lanip-dyn review | open | no closing word in entry, no landing commit on ref |
+| LIP-FU-3 | 1649 | UNKNOWN | nit | no | severity nit | LIP-FU / lanip-dyn review | open | no closing word in entry, no landing commit on ref |
+| LIP-FU-5 | 1651 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | LIP-FU / lanip-dyn review | open | no closing word in entry, no landing commit on ref |
+| LIP-FU-6 | 1652 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | LIP-FU / lanip-dyn review | open | no closing word in entry, no landing commit on ref |
+| TAURI-R2-FU-3 | 1655 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-R2-FU / smb-subdir / tauri round-2 notes | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-3 | 1658 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SMB-FU / smb-subdir / tauri round-2 notes | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-4 | 1659 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SMB-FU / smb-subdir / tauri round-2 notes | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-5 | 1660 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SMB-FU / smb-subdir / tauri round-2 notes | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-6 | 1661 | test-instrumentation | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SMB-FU / smb-subdir / tauri round-2 notes | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-7 | 1662 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SMB-FU / smb-subdir / tauri round-2 notes | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-8 | 1663 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SMB-FU / smb-subdir / tauri round-2 notes | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-5 | 1666 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SMB-FU / smb-subdir / tauri round-2 notes | open | no closing word in entry, no landing commit on ref |
+| FU20-3b | 1669 | test-instrumentation | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | FU20 / CAT-FOLLOWUPS-UNIT-1 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| PROM-R3-1 | 1670 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PROM-R3 / CAT-FOLLOWUPS-UNIT-1 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| LIP-FU-7 | 1671 | UNKNOWN | nit | no | severity nit | LIP-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| LIP-FU-8 | 1672 | process-doc* | nit | no | severity nit | LIP-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| LIP-FU-9 | 1673 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | LIP-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-9 | 1675 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-11 | 1677 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-9 | 1679 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-9b | 1680 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-13 | 1681 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-14 | 1682 | test-instrumentation | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-15 | 1683 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-R2-FU-2 | 1688 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-R2-FU / Tauri guard follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-R2-FU-4 | 1689 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-R2-FU / Tauri guard follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-R2-FU-3 | 1690 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-R2-FU / Tauri guard follow-ups | open | no closing word in entry, no landing commit on ref |
+| R1-FU-6 | 1690 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R1-FU / Tauri guard follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-R3-FU-1 | 1692 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-R3-FU / Tauri guard follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-R4-FU-1 | 1695 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-R4-FU / Tauri guard follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-R4-FU-2 | 1696 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-R4-FU / Tauri guard follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-R4-FU-3 | 1697 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-R4-FU / Tauri guard follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-R4-FU-4 | 1698 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-R4-FU / Tauri guard follow-ups | open | no closing word in entry, no landing commit on ref |
+| TAURI-R4-FU-5 | 1699 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | TAURI-R4-FU / Tauri guard follow-ups | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-16 | 1702 | process-doc* | minor | no | severity minor | SMB-FU / Dead-SMB cleanup review follow-ups | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-16b | 1703 | UNKNOWN | nit | no | severity nit | SMB-FU / Dead-SMB cleanup review follow-ups | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-16c | 1704 | UNKNOWN | nit | no | severity nit | SMB-FU / Dead-SMB cleanup review follow-ups | open | no closing word in entry, no landing commit on ref |
+| LIFE-FU-2 | 1708 | test-instrumentation* | minor(sec) | no | severity minor | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| LIFE-FU-3 | 1709 | test-instrumentation* | minor(sec) | no | severity minor | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| LIFE-FU-4 | 1710 | UNKNOWN | minor(sec) | no | severity minor | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-18 | 1713 | test-instrumentation* | minor | no | severity minor | SMB-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| LIFE-FU-6 | 1717 | test-instrumentation* | minor(sec) | no | severity minor | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 | open | no closing word in entry, no landing commit on ref |
+| LIFE-FU-7 | 1718 | test-instrumentation* | minor(sec) | no | severity minor | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 | open | no closing word in entry, no landing commit on ref |
+| LIFE-FU-8 | 1719 | test-instrumentation* | minor(sec) | no | severity minor | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 | open | no closing word in entry, no landing commit on ref |
+| LIFE-FU-9 | 1720 | test-instrumentation* | minor(sec) | no | severity minor | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-19a | 1723 | test-instrumentation* | minor(sec) | no | severity minor | SMB-FU / CAT-SMB-SUBDIR-1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-19b | 1724 | process-doc* | minor(sec) | no | severity minor | SMB-FU / CAT-SMB-SUBDIR-1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| SMB-FU-19c | 1725 | test-instrumentation* | nit | no | severity nit | SMB-FU / CAT-SMB-SUBDIR-1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| STACK-CTR-FU-1 | 1737 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | STACK-CTR-FU / CAT-QA-STACK-LIFECYCLE-1: stack scripts via ctrc | open | no closing word in entry, no landing commit on ref |
+| STACK-CTR-FU-2 | 1738 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | STACK-CTR-FU / CAT-QA-STACK-LIFECYCLE-1: stack scripts via ctrc | open | no closing word in entry, no landing commit on ref |
+| STACK-CTR-FU-3 | 1739 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | STACK-CTR-FU / CAT-QA-STACK-LIFECYCLE-1: stack scripts via ctrc | open | no closing word in entry, no landing commit on ref |
+| STACK-CTR-FU-4 | 1740 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | STACK-CTR-FU / CAT-QA-STACK-LIFECYCLE-1: stack scripts via ctrc | open | no closing word in entry, no landing commit on ref |
+| STACK-CTR-FU-5 | 1741 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | STACK-CTR-FU / CAT-QA-STACK-LIFECYCLE-1: stack scripts via ctrc | open | no closing word in entry, no landing commit on ref |
+| STACK-CTR-FU-7 | 1745 | test-instrumentation* | minor(sec) | no | severity minor | STACK-CTR-FU / STACK-CTR-FU-6..12 | open | no closing word in entry, no landing commit on ref |
+| STACK-CTR-FU-8 | 1746 | test-instrumentation* | minor(sec) | no | severity minor | STACK-CTR-FU / STACK-CTR-FU-6..12 | open | no closing word in entry, no landing commit on ref |
+| STACK-CTR-FU-9 | 1747 | UNKNOWN | nit | no | severity nit | STACK-CTR-FU / STACK-CTR-FU-6..12 | open | no closing word in entry, no landing commit on ref |
+| STACK-CTR-FU-10 | 1748 | test-instrumentation* | minor(sec) | no | severity minor | STACK-CTR-FU / STACK-CTR-FU-6..12 | open | no closing word in entry, no landing commit on ref |
+| STACK-CTR-FU-11 | 1749 | UNKNOWN | minor(sec) | no | severity minor | STACK-CTR-FU / STACK-CTR-FU-6..12 | open | no closing word in entry, no landing commit on ref |
+| STACK-CTR-FU-12 | 1750 | UNKNOWN | nit | no | severity nit | STACK-CTR-FU / STACK-CTR-FU-6..12 | open | no closing word in entry, no landing commit on ref |
+| STACK-CTR-FU-14 | 1754 | test-instrumentation | minor(sec) | no | severity minor | STACK-CTR-FU / STACK-CTR-FU-6..12 | open | no closing word in entry, no landing commit on ref |
+| LIFE-FU-19 | 1755 | test-instrumentation* | minor(sec) | no | severity minor | LIFE-FU / STACK-CTR-FU-6..12 | open | no closing word in entry, no landing commit on ref |
+| N1 | 1770 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | N1 / CAT-REL-CHECK-1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| N2 | 1771 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | N2 / CAT-REL-CHECK-1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| N3 | 1772 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | N3 / CAT-REL-CHECK-1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| N4 | 1773 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | N4 / CAT-REL-CHECK-1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| N5 | 1774 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | N5 / CAT-REL-CHECK-1 follow-ups | open | no closing word in entry, no landing commit on ref |
+| S3358 | 1778 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | S3358 / CAT-QA-SONAR-7 | open | no closing word in entry, no landing commit on ref |
+| FU-1 | 1781 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | FU / CAT-QA-SONAR-7 follow-ups | open | no closing word in entry, no landing commit on ref |
+| FU-3 | 1783 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | FU / CAT-QA-SONAR-7 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F2 | 1788 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F2 / CAT-REL-CHECK-1 round-2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F3 | 1789 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F3 / CAT-REL-CHECK-1 round-2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F4 | 1790 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | F4 / CAT-REL-CHECK-1 round-2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| F5 | 1791 | UNKNOWN | nit | no | severity nit | F5 / CAT-REL-CHECK-1 round-2 follow-ups | open | no closing word in entry, no landing commit on ref |
+| FU-1 | 1794 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | FU / CAT-QA-SONAR-7 follow-ups FU-1..FU-7 resolution | open | no closing word in entry, no landing commit on ref |
+| FU2-4 | 1801 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | FU2 / CAT-QA-SONAR-7 FU round-2 | open | no closing word in entry, no landing commit on ref |
+| RC2-1 | 1809 | process-doc* | nit | no | severity nit | RC2 / CAT-REL-CHECK-1 Opus round-2 re-review | open | no closing word in entry, no landing commit on ref |
+| RC2-4 | 1812 | process-doc | minor | no | severity minor | RC2 / CAT-REL-CHECK-1 Opus round-2 re-review | open | no closing word in entry, no landing commit on ref |
+| CAT-PREEXIST-2 | 1817 | source-defect* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | open | no closing word in entry, no landing commit on ref |
+| CAT-PREEXIST-3 | 1818 | source-defect* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | open | no closing word in entry, no landing commit on ref |
+| CAT-PREEXIST-4 | 1819 | source-defect* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | open | no closing word in entry, no landing commit on ref |
+| CAT-PREEXIST-5 | 1820 | source-defect* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | open | no closing word in entry, no landing commit on ref |
+| CAT-PREEXIST-6 | 1821 | source-defect* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | open | no closing word in entry, no landing commit on ref |
+| CAT-PREEXIST-8 | 1823 | source-defect* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | open | no closing word in entry, no landing commit on ref |
+| CAT-PREEXIST-9 | 1824 | source-defect* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | open | no closing word in entry, no landing commit on ref |
+| RC-3 | 1828 | UNKNOWN | important | no | important but UNKNOWN layer, not security-adjacent | RC / CAT-REL-CHECK-1 reviewer findings on the v2.4.2  | open | no closing word in entry, no landing commit on ref |
+| RC-3b | 1829 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | RC / CAT-REL-CHECK-1 reviewer findings on the v2.4.2  | open | no closing word in entry, no landing commit on ref |
+| PW-F4 | 1847 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PW / CAT-PREEXIST-7/8/9 landed | open | no closing word in entry, no landing commit on ref |
+| PW-F10 | 1870 | test-instrumentation* | minor | no | severity minor | PW / PW-F7/F8 landed | open | no closing word in entry, no landing commit on ref |
+| PX-F13 | 1875 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | PX / PX-F8..F12 landed | open | no closing word in entry, no landing commit on ref |
+| PX-F14 | 1876 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PX / PX-F8..F12 landed | open | no closing word in entry, no landing commit on ref |
+| PX-F17 | 1879 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PX / PX-F8..F12 landed | open | no closing word in entry, no landing commit on ref |
+| PX-F18 | 1880 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PX / PX-F8..F12 landed | open | no closing word in entry, no landing commit on ref |
+| PX-F19 | 1881 | process-doc* | nit | no | severity nit | PX / PX-F8..F12 landed | open | no closing word in entry, no landing commit on ref |
+| PX-F20 | 1886 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PX / PX-F15/F16 landed | open | no closing word in entry, no landing commit on ref |
+| PX-F21 | 1887 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PX / PX-F15/F16 landed | open | no closing word in entry, no landing commit on ref |
+| PX-F22 | 1888 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | PX / PX-F15/F16 landed | open | no closing word in entry, no landing commit on ref |
+| CAT-QA-SONAR-5 | 1890 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | CAT-QA-SONAR / CAT-OPDEC-B | open | no closing word in entry, no landing commit on ref |
+| FU2-4 | 1891 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | FU2 / CAT-OPDEC-B | open | no closing word in entry, no landing commit on ref |
+| SECQ-1 | 1892 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | SECQ / CAT-OPDEC-B | open | no closing word in entry, no landing commit on ref |
+| OPB-I1 | 1897 | test-instrumentation* | important | no | important but test-instrumentation layer, not security-adjacent | OPB / OPDEC-B landed | open | no closing word in entry, no landing commit on ref |
+| OPB-M1 | 1898 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | OPB / OPDEC-B landed | open | no closing word in entry, no landing commit on ref |
+| OPB-N1 | 1899 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | OPB / OPDEC-B landed | open | no closing word in entry, no landing commit on ref |
+| PXF23-F1 | 1912 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | PXF23 / CAT-PXF23 | open | no closing word in entry, no landing commit on ref |
+| PXF23-F2 | 1913 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PXF23 / CAT-PXF23 | open | no closing word in entry, no landing commit on ref |
+| PXF23-F3 | 1914 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PXF23 / CAT-PXF23 | open | no closing word in entry, no landing commit on ref |
+| PXF23-F4 | 1915 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PXF23 / CAT-PXF23 | open | no closing word in entry, no landing commit on ref |
+| PXF23-R2 | 1924 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PXF23 / PXF23-R landed | open | no closing word in entry, no landing commit on ref |
+| PXF23-R3 | 1925 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | PXF23 / PXF23-R landed | open | no closing word in entry, no landing commit on ref |
+| PXF23-R4 | 1926 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PXF23 / PXF23-R landed | open | no closing word in entry, no landing commit on ref |
+| PXF23-R6 | 1928 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PXF23 / PXF23-R landed | open | no closing word in entry, no landing commit on ref |
+| PXF23-R5a | 1935 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PXF23 / CAT-PXF23-R5 landed | open | no closing word in entry, no landing commit on ref |
+| PXF23-R5b | 1936 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PXF23 / CAT-PXF23-R5 landed | open | no closing word in entry, no landing commit on ref |
+| PXF23-R5c | 1937 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | PXF23 / CAT-PXF23-R5 landed | open | no closing word in entry, no landing commit on ref |
+| PXF23-R5d | 1938 | UNKNOWN | UNKNOWN | no | severity UNKNOWN; security-adjacent word, review | PXF23 / CAT-PXF23-R5 landed | open | no closing word in entry, no landing commit on ref |
+| R5-F1 | 1944 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R5 / CAT-R5-FU landed | open | no closing word in entry, no landing commit on ref |
+| R5-F2 | 1945 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R5 / CAT-R5-FU landed | open | no closing word in entry, no landing commit on ref |
+| R5-F3 | 1946 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R5 / CAT-R5-FU landed | open | no closing word in entry, no landing commit on ref |
+| R5-F5 | 1947 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | R5 / CAT-R5-FU landed | open | no closing word in entry, no landing commit on ref |
+| R5B-1 | 1960 | test-instrumentation* | minor | no | severity minor | R5B / PXF23-R5b | open | no closing word in entry, no landing commit on ref |
+| R5B-2 | 1961 | test-instrumentation* | minor | no | severity minor | R5B / PXF23-R5b | open | no closing word in entry, no landing commit on ref |
+| R5B-3 | 1962 | UNKNOWN | minor | no | severity minor | R5B / PXF23-R5b | open | no closing word in entry, no landing commit on ref |
+| R5B-4 | 1963 | UNKNOWN | minor | no | severity minor | R5B / PXF23-R5b | open | no closing word in entry, no landing commit on ref |
+| R5B-5 | 1964 | test-instrumentation* | minor | no | severity minor | R5B / PXF23-R5b | open | no closing word in entry, no landing commit on ref |
+| R5B-6 | 1965 | UNKNOWN | minor | no | severity minor | R5B / PXF23-R5b | open | no closing word in entry, no landing commit on ref |
+| A1 | 2003 | UNKNOWN | minor | no | severity minor | A1 / CAT-SECQ1-A follow-ups | open | no closing word in entry, no landing commit on ref |
+| A2 | 2004 | UNKNOWN | minor | no | severity minor | A2 / CAT-SECQ1-A follow-ups | open | no closing word in entry, no landing commit on ref |
+| A3 | 2005 | UNKNOWN | minor | no | severity minor | A3 / CAT-SECQ1-A follow-ups | open | no closing word in entry, no landing commit on ref |
+| A4 | 2006 | test-instrumentation* | nit | no | severity nit | A4 / CAT-SECQ1-A follow-ups | open | no closing word in entry, no landing commit on ref |
+| RC-3 | 2020 | process-doc* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | RC / CAT-REL-CHECK-1 RC-3 / RC-3b / RC2-1 / RC2-3 res | open | no closing word in entry, no landing commit on ref |
+| RC-3b | 2021 | UNKNOWN | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | RC / CAT-REL-CHECK-1 RC-3 / RC-3b / RC2-1 / RC2-3 res | open | no closing word in entry, no landing commit on ref |
+| RC2-1 | 2022 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN (not stated); not security-adjacent | RC2 / CAT-REL-CHECK-1 RC-3 / RC-3b / RC2-1 / RC2-3 res | open | no closing word in entry, no landing commit on ref |
+| TI-1 | 56 | test-instrumentation | UNKNOWN | no | not open | TI / Secrets scanner | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| TI-2 | 60 | test-instrumentation | UNKNOWN | no | not open | TI / Secrets scanner | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| TI-3 | 61 | test-instrumentation | UNKNOWN | no | not open | TI / Secrets scanner | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| PD-1 | 62 | test-instrumentation | UNKNOWN | no | not open | PD / Secrets scanner | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| F4 | 95 | process-doc* | UNKNOWN | no | not open | F4 / Path confinement | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| CAT-021 | 370 | UNKNOWN | UNKNOWN | no | not open | CAT / CAT-001 follow-ups | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| R3-M2 | 383 | UNKNOWN | UNKNOWN | no | not open | R3 / WrapHTTPHandler path-param fix | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| R2 | 548 | source-defect | important | no | not open | R2 / Docs C2/C5 landing | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| R5 | 553 | source-defect | important | no | not open | R5 / Docs C2/C5 landing | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| F1 | 555 | source-defect | important | no | not open | F1 / Docs C2/C5 landing | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| F2 | 557 | source-defect | important | no | not open | F2 / Docs C2/C5 landing | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| R7 | 567 | process-doc | minor(sec) | no | not open | R7 / Docs C2/C5 review round 2 follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| R3-1 | 592 | test-instrumentation | minor(sec) | no | not open | R3 / Crash-pages review round 3 follow-ups | landed | doc line 1267 states closed: "cc5b709): R3-1 FIXED (a path after an unclosed quote, e.g. a too" (PROVISIONAL) |
+| CAT-049 | 662 | UNKNOWN | UNKNOWN | no | not open | CAT / Authorization gaps | landed | git 6c593338 fix(catalog-api): authorization gaps (CAT-049/050/051/052) (PROVISIONAL) |
+| N1 | 665 | UNKNOWN | minor | no | not open | N1 / Authorization gaps | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| F11 | 694 | test-instrumentation* | UNKNOWN | no | not open | F11 / Review R1 deferrals | landed | doc line 791 states closed: "- P2-p (F11, CLOSED here): `UserRepository.livePermissions` (" (PROVISIONAL) |
+| P2 | 759 | source-defect | important | no | not open | P2 / Authz review r3 follow-ups | landed | doc line 764 states closed: "Closed here: P2 (storage/scan/SMB/copy routes with no permission check), T1 (`binEnv` race" (PROVISIONAL) |
+| S4 | 800 | UNKNOWN | UNKNOWN | no | not open | S4 / Live scaling / stress / chaos suite | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| F5 | 853 | UNKNOWN | UNKNOWN | no | not open | F5 / Pool-deadlock class fix + scaling-suite findings | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| WD-F1 | 892 | process-doc* | UNKNOWN | no | not open | WD / Live Yandex WebDAV suite | landed | git 6bce62b7 merge: WD-F1 WebDAV WriteFile read-back hardening + live probe/chaos evidence (r (PROVISIONAL) |
+| D4 | 957 | UNKNOWN | UNKNOWN | no | not open | D4 / Docs sync C4 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| N1-N5 | 968 | UNKNOWN | UNKNOWN | no | not open | N1 / Docs sync C4 review | landed | doc line 1786 states closed: "llow-ups (N1-N5 landed; Opus GO-with-follow-ups, 2026-11-12)" (PROVISIONAL) |
+| F-R1 | 971 | UNKNOWN | UNKNOWN | no | not open | F / Route permissions review | landed | git 1901e983 fix: analytics report creation and per-media analytics are admin-only (F-R1) (PROVISIONAL) |
+| F-R6 | 974 | UNKNOWN | nit | no | not open | F / Route permissions review | landed | git 3dadeb63 fix: sync client cache mutex, evict rejected-URL client, netguard dial-time/buck (PROVISIONAL) |
+| SC1 | 977 | UNKNOWN | UNKNOWN | no | not open | S / Smart collections round 1 follow-ups | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| R4-1 | 1048 | test-instrumentation | minor | no | not open | R4 / P2 round-4 review follow-up | landed | git 3293e280 merge: security queue fixes (SSRF-F1..F5, AZ2-3, P2-g, CSRF-R2, R4-1; review rou (PROVISIONAL) |
+| AZ2-3 | 1056 | test-instrumentation* | UNKNOWN | no | not open | AZ2 / Authz round 2 | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| N2 | 1061 | UNKNOWN | UNKNOWN | no | not open | N2 / Authz round 2 | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| N4 | 1061 | UNKNOWN | UNKNOWN | no | not open | N4 / Authz round 2 | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| R2-1 | 1078 | test-instrumentation | minor | no | not open | R2 / WebDAV live suite round-2 review follow-ups | landed | git dd5aea4a fix(CAT-001): restore 69 submodule gitlinks to the 967c896e pins (R2-1) (PROVISIONAL) |
+| R2-2 | 1079 | test-instrumentation | minor | no | not open | R2 / WebDAV live suite round-2 review follow-ups | landed | git 4e5abdb2 test(security): real-binary proof that CSRF_INSECURE_DEV/APP_ENV reach the admin (PROVISIONAL) |
+| R2-3 | 1080 | test-instrumentation* | nit | no | not open | R2 / WebDAV live suite round-2 review follow-ups | landed | git 491314b8 test(pdf-pages): reader-slot hold and address-space sizing tests (review r2), fo (PROVISIONAL) |
+| R2-6 | 1083 | UNKNOWN | nit | no | not open | R2 / WebDAV live suite round-2 review follow-ups | landed | git 491314b8 test(pdf-pages): reader-slot hold and address-space sizing tests (review r2), fo (PROVISIONAL) |
+| WL1 | 1087 | process-doc* | UNKNOWN | no | not open | W / Live browser specs for catalog-web | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| WL6 | 1091 | UNKNOWN | UNKNOWN | no | not open | W / Live browser specs for catalog-web | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| WL7 | 1092 | UNKNOWN | UNKNOWN | no | not open | W / Live browser specs for catalog-web | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| WL8 | 1093 | UNKNOWN | UNKNOWN | no | not open | W / Live browser specs for catalog-web | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| WL9 | 1094 | UNKNOWN | UNKNOWN | no | not open | W / Live browser specs for catalog-web | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| WL11 | 1096 | UNKNOWN | UNKNOWN | no | not open | W / Live browser specs for catalog-web | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| WL12 | 1097 | UNKNOWN | UNKNOWN | no | not open | W / Live browser specs for catalog-web | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| WL12-F5 | 1098 | test-instrumentation* | UNKNOWN | no | not open | WL12 / Live browser specs for catalog-web | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| WL12-F2 | 1099 | UNKNOWN | UNKNOWN | no | not open | WL12 / Live browser specs for catalog-web | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| WL5 | 1103 | test-instrumentation* | UNKNOWN | no | not open | W / Live browser specs for catalog-web | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| AZ2-R1 | 1111 | source-defect | important | no | not open | AZ2 / Authz round 2 review follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| AZ2-R2 | 1112 | test-instrumentation* | minor | no | not open | AZ2 / Authz round 2 review follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| AZ2-R3 | 1113 | test-instrumentation* | minor | no | not open | AZ2 / Authz round 2 review follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| AZ2-R4 | 1114 | test-instrumentation* | minor | no | not open | AZ2 / Authz round 2 review follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| AZ2-R5 | 1115 | UNKNOWN | minor | no | not open | AZ2 / Authz round 2 review follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| AZ2-R6 | 1116 | UNKNOWN | nit | no | not open | AZ2 / Authz round 2 review follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| SSRF-F1 | 1120 | test-instrumentation* | minor | no | not open | SSRF / SSRF resolvers review follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| SSRF-F2 | 1121 | test-instrumentation* | minor | no | not open | SSRF / SSRF resolvers review follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| SSRF-F3 | 1122 | test-instrumentation* | minor | no | not open | SSRF / SSRF resolvers review follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| SSRF-F4 | 1123 | test-instrumentation* | nit | no | not open | SSRF / SSRF resolvers review follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| SSRF-F5 | 1124 | source-defect | minor | no | not open | SSRF / SSRF resolvers review follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| SSRF-F6 | 1125 | test-instrumentation* | nit | no | not open | SSRF / SSRF resolvers review follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| WL13-F1 | 1133 | UNKNOWN | minor | no | not open | WL13 / Web player review follow-ups | landed | git edd44d7b fix(web-player): honour Pause during reload, last seek wins during seek-mint, no (PROVISIONAL) |
+| F4 | 1154 | test-instrumentation | UNKNOWN | no | not open | F4 / Live-evidence verifier / recorders | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| F8 | 1155 | test-instrumentation* | UNKNOWN | no | not open | F8 / Live-evidence verifier / recorders | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| NS-1 | 1187 | process-doc* | minor(sec) | no | not open | NS / Nil-slice class review round 1 follow-ups | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| NS-3 | 1189 | test-instrumentation | minor(sec) | no | not open | NS / Nil-slice class review round 1 follow-ups | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| CSRF-1 | 1215 | process-doc* | UNKNOWN | no | not open | CSRF / CAT-CSRF-LAN follow-ups | landed | git 4d04560f docs(qa): live web round 3 on stack 3 (NS-1, CSRF-1 verified over LAN) and live  (PROVISIONAL) |
+| CSRF-R2-1 | 1221 | test-instrumentation | minor | no | not open | CSRF-R2 / CSRF-LAN review follow-ups | landed | git 4e5abdb2 test(security): real-binary proof that CSRF_INSECURE_DEV/APP_ENV reach the admin (PROVISIONAL) |
+| CSRF-R2-2 | 1222 | UNKNOWN | nit | no | not open | CSRF-R2 / CSRF-LAN review follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| LW3-1 | 1239 | UNKNOWN | UNKNOWN | no | not open | LW3 / Live QA round 3 + storage r1 findings | landed | git 4d04560f docs(qa): live web round 3 on stack 3 (NS-1, CSRF-1 verified over LAN) and live  (PROVISIONAL) |
+| ST-D1 | 1240 | UNKNOWN | UNKNOWN | no | not open | ST / Live QA round 3 + storage r1 findings | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| ST-D2 | 1241 | UNKNOWN | UNKNOWN | no | not open | ST / Live QA round 3 + storage r1 findings | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| ST-D3 | 1242 | process-doc* | UNKNOWN | no | not open | ST / Live QA round 3 + storage r1 findings | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| ST-F7 | 1244 | process-doc* | UNKNOWN | no | not open | ST / Live QA round 3 + storage r1 findings | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| D7 | 1253 | UNKNOWN | UNKNOWN | no | not open | D7 / Conversion defects D1, D2, D7 | landed | doc line 1599 states closed: "## D7 R4 follow-ups landed (feat/d7-r4, PROVISIONAL-DON" (PROVISIONAL) |
+| D9 | 1272 | UNKNOWN | UNKNOWN | no | not open | D9 / D9 admin role change | landed | doc line 1270 states closed: "## D9 admin role change (2026-11-04) - PROVISIONAL-DONE" (PROVISIONAL) |
+| D3-R3-1 | 1322 | test-instrumentation | minor | no | not open | D3-R3 / D3 pdf-pages: poppler-only rendering, go-fitz re | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| D9-F3 | 1330 | UNKNOWN | nit | no | not open | D9 / D3 pdf-pages: poppler-only rendering, go-fitz re | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| D11-R2-3 | 1375 | test-instrumentation | nit | no | not open | D11-R2 / D11/D7 review round 1 follow-ups | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| SECQ-4 | 1395 | UNKNOWN | UNKNOWN | no | not open | SECQ / Security queue fix | landed | git 104d749f fix(security): SECQ-3 pprof sampling cap, SECQ-4 smart playlist cap race, SECQ-5 (PROVISIONAL) |
+| SECQ-4b | 1396 | UNKNOWN | UNKNOWN | no | not open | SECQ / Security queue fix | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| SECQ-5 | 1397 | test-instrumentation* | UNKNOWN | no | not open | SECQ / Security queue fix | landed | git 104d749f fix(security): SECQ-3 pprof sampling cap, SECQ-4 smart playlist cap race, SECQ-5 (PROVISIONAL) |
+| SECQ-6 | 1398 | test-instrumentation | UNKNOWN | no | not open | SECQ / Security queue fix | landed | git 104d749f fix(security): SECQ-3 pprof sampling cap, SECQ-4 smart playlist cap race, SECQ-5 (PROVISIONAL) |
+| NEW1-F3 | 1407 | source-defect | minor | no | not open | NEW1 / NEW-1 cover thumbnails | landed | doc line 1430 states closed: "## NEW1-F3/F4 landed 2026-11-05 (review round 2 GO-with-foll" (PROVISIONAL) |
+| NEW1-F4 | 1408 | source-defect | minor | no | not open | NEW1 / NEW-1 cover thumbnails | landed | git f3ae4880 merge: NEW1-F3 local video path confinement (pathguard, symlink-safe) + NEW1-F4  (PROVISIONAL) |
+| SUB-CONTRACT-1 | 1441 | process-doc* | UNKNOWN | no | not open | SUB-CONTRACT / SECQ-1 follow-ups and SUB-CONTRACT-1 | landed | git e806a773 merge: SECQ-1 follow-ups F3/F4/F5 (proxy path strict) + SUB-CONTRACT-1 spec fix  (PROVISIONAL) |
+| NEW-1 | 1457 | process-doc* | UNKNOWN | no | not open | NEW / NEW-1 live re-verification | landed | doc line 1403 states closed: "## NEW-1 cover thumbnails (landed 2026-11-05, review round" (PROVISIONAL) |
+| UI-D7 | 1477 | UNKNOWN | UNKNOWN | no | not open | UI / Stack-3 browser pass follow-ups registered | landed | doc line 1489 states closed: "## UI-D7/D8 landed (reviewed GO round 2/5; PROVISIONAL unt" (PROVISIONAL) |
+| TAURI-FU-5 | 1518 | source-defect | UNKNOWN | no | not open | TAURI-FU / Tauri QA boot review follow-ups | landed | git 4ccead68 merge: Tauri SSRF hardening (TAURI-FU-5; PROVISIONAL until native boot; GO-with- (PROVISIONAL) |
+| D7-R2-F1 | 1531 | UNKNOWN | important | no | not open | D7-R2 / D7 remaining-contrast follow-ups | landed | git 54fa797d fix(catalog-web): class-wide dark-mode contrast for static gray text on dark sur (PROVISIONAL) |
+| D7-R2-F3 | 1533 | UNKNOWN | UNKNOWN | no | not open | D7-R2 / D7 remaining-contrast follow-ups | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| TAURI-F15 | 1547 | test-instrumentation* | nit | no | not open | TAURI / Tauri SSRF | landed | git 9c05bc57 feat(desktop): backend-enforced native confirmation for server URL changes; IPC  (PROVISIONAL) |
+| TAURI-F16 | 1548 | test-instrumentation* | nit | no | not open | TAURI / Tauri SSRF | landed | git 9c05bc57 feat(desktop): backend-enforced native confirmation for server URL changes; IPC  (PROVISIONAL) |
+| D7-R4-FU-1 | 1606 | test-instrumentation | minor | no | not open | D7-R4-FU / D7-R4 review round 1 follow-ups | landed | doc line 1627 states closed: "- D7-R4-FU-1/2/3 DONE: `islandsOf` knob exemption now needs `r" (PROVISIONAL) |
+| TP-FU-1 | 1612 | test-instrumentation* | UNKNOWN | no | not open | TP-FU / TRUSTED_PROXIES hardening follow-ups | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| TAURI-R1-FU-4 | 1620 | source-defect | minor | no | not open | TAURI-R1-FU / Tauri native QA review | landed | git 69c4a6eb docs(qa): tauri-native-20261106 evidence README + text evidence (TAURI-R1-FU-4) (PROVISIONAL) |
+| TAURI-R1-FU-6 | 1622 | source-defect | minor | no | not open | TAURI-R1-FU / Tauri native QA review | landed | git c504d197 chore(tauri): untrack generated gen/schemas/capabilities.json (TAURI-R1-FU-6) (PROVISIONAL) |
+| CAT-VERIFY-LANBIND-1 | 1629 | test-instrumentation* | UNKNOWN | no | not open | CAT-VERIFY-LANBIND / Follow-ups worked on feat/followups-20261110 | landed | git df171150 fix(qa-stack3): verify.py asserts LAN-bound services reachable+authenticated, DB (PROVISIONAL) |
+| CAT-FRONTDOOR-LOCALMODE-1 | 1630 | test-instrumentation* | UNKNOWN | no | not open | CAT-FRONTDOOR-LOCALMODE / Follow-ups worked on feat/followups-20261110 | landed | git 7a5e478b feat(qa-stack3): --interface local second-IP mode for front-door leg B (CAT-FRON (PROVISIONAL) |
+| TAURI-R2-FU-4 | 1635 | UNKNOWN | UNKNOWN | no | not open | TAURI-R2-FU / Tauri follow-ups review | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| FU20-3 | 1642 | test-instrumentation* | UNKNOWN | no | not open | FU20 / followups-20261110 review | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| LIP-FU-4 | 1650 | process-doc* | UNKNOWN | no | not open | LIP-FU / lanip-dyn review | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| SMB-FU-1 | 1656 | UNKNOWN | UNKNOWN | no | not open | SMB-FU / smb-subdir / tauri round-2 notes | landed | git 3428435e refactor(smb): remove dead SMB handlers and the code only they kept alive (SMB-F (PROVISIONAL) |
+| SMB-FU-2 | 1657 | test-instrumentation* | UNKNOWN | no | not open | SMB-FU / smb-subdir / tauri round-2 notes | landed | git 8c1596bf fix(smb): blocklist 6to4/SIIT/local NAT64/broadcast/CGNAT, warn on invalid CATAL (PROVISIONAL) |
+| SMB-FU-10 | 1676 | UNKNOWN | UNKNOWN | no | not open | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | landed | git 2e002907 merge: fix/smb-followups-10-12-14 (SMB-FU-10/12/14: reserved share names, per-ho (PROVISIONAL) |
+| SMB-FU-12 | 1678 | UNKNOWN | UNKNOWN | no | not open | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | landed | git 3abccd13 test(smb): review round 3 for SMB-FU-12 (port filter pin, inner trim, wiring nil (PROVISIONAL) |
+| TAURI-R2-FU-1 | 1687 | process-doc* | UNKNOWN | no | not open | TAURI-R2-FU / Tauri guard follow-ups | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| TAURI-R2-FU-5 | 1691 | UNKNOWN | UNKNOWN | no | not open | TAURI-R2-FU / Tauri guard follow-ups | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| TAURI-R4 | 1694 | UNKNOWN | UNKNOWN | no | not open | TAURI / Tauri guard follow-ups | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| LIFE-FU-1 | 1707 | test-instrumentation* | minor(sec) | no | not open | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups | landed | git d505121a merge: fix/lifecycle-followups (LIFE-FU-1..4 resolved); Opus GO-with-follow-ups (PROVISIONAL) |
+| SMB-FU-17 | 1712 | UNKNOWN | minor(sec) | no | not open | SMB-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups | landed | git 147a3b1c docs: SMB-FU-17 line refs after dead-code removal (PROVISIONAL) |
+| LIFE-FU-5 | 1716 | test-instrumentation* | minor(sec) | no | not open | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 | landed | doc line 1727 states closed: "review of LIFE-FU-5..9, 2026-11-11; all minor; PROVISIONAL-DONE on fi" (PROVISIONAL) |
+| LIFE-FU-10 | 1728 | process-doc* | minor(sec) | no | not open | LIFE-FU / LIFE-FU-10..15 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| LIFE-FU-11 | 1729 | test-instrumentation* | minor(sec) | no | not open | LIFE-FU / LIFE-FU-10..15 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| LIFE-FU-12 | 1730 | test-instrumentation* | minor(sec) | no | not open | LIFE-FU / LIFE-FU-10..15 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| LIFE-FU-13 | 1731 | UNKNOWN | minor(sec) | no | not open | LIFE-FU / LIFE-FU-10..15 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| LIFE-FU-14 | 1732 | UNKNOWN | minor(sec) | no | not open | LIFE-FU / LIFE-FU-10..15 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| LIFE-FU-15 | 1733 | test-instrumentation* | minor(sec) | no | not open | LIFE-FU / LIFE-FU-10..15 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| STACK-CTR-FU-6 | 1744 | test-instrumentation* | minor(sec) | no | not open | STACK-CTR-FU / STACK-CTR-FU-6..12 | landed | git c9f23b8a merge: fix/stack-ctr-followups (STACK-CTR-FU-6..12 review fixes); Opus round-2 G (PROVISIONAL) |
+| STACK-CTR-FU-13 | 1752 | UNKNOWN | minor(sec) | no | not open | STACK-CTR-FU / STACK-CTR-FU-6..12 | landed | git 9bb7746b fix(qa): stack3 ctr_up backend cache integrity, golden update guard, wider raw-s (PROVISIONAL) |
+| CAT-QA-SONAR-2 | 1757 | UNKNOWN | minor(sec) | no | not open | CAT-QA-SONAR / STACK-CTR-FU-6..12 | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| CAT-QA-SONAR-1b | 1758 | UNKNOWN | minor(sec) | no | not open | CAT-QA-SONAR / STACK-CTR-FU-6..12 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| CAT-QA-SONAR-3 | 1759 | test-instrumentation* | minor(sec) | no | not open | CAT-QA-SONAR / STACK-CTR-FU-6..12 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| CAT-QA-SONAR-5 | 1761 | UNKNOWN | minor(sec) | no | not open | CAT-QA-SONAR / STACK-CTR-FU-6..12 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| CAT-QA-SONAR-6 | 1763 | test-instrumentation* | minor | no | not open | CAT-QA-SONAR / STACK-CTR-FU-6..12 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| CAT-QA-SONAR-4 | 1765 | test-instrumentation* | minor | no | not open | CAT-QA-SONAR / STACK-CTR-FU-6..12 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| CAT-QA-COVERART-1 | 1767 | test-instrumentation* | minor(sec) | no | not open | CAT-QA-COVERART / STACK-CTR-FU-6..12 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| FU-2 | 1782 | UNKNOWN | UNKNOWN | no | not open | FU / CAT-QA-SONAR-7 follow-ups | landed | git 23b842d0 test(web): replace empty arrow functions in new S2699 tests (lint no-empty-funct (PROVISIONAL) |
+| FU-4 | 1784 | UNKNOWN | nit | no | not open | FU / CAT-QA-SONAR-7 follow-ups | landed | git b601d72c fix(smb): round-2 follow-ups FU-1..FU-4 (PROVISIONAL) |
+| F1 | 1787 | process-doc* | UNKNOWN | no | not open | F1 / CAT-REL-CHECK-1 round-2 follow-ups | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| FU2-1 | 1798 | process-doc | minor | no | not open | FU2 / CAT-QA-SONAR-7 FU round-2 | landed | git e46e88d0 fix(web): CAT-QA-SONAR-7 FU2-2/FU2-3 (Enter auto-repeat guard, no block content  (PROVISIONAL) |
+| FU2-2 | 1799 | test-instrumentation* | UNKNOWN | no | not open | FU2 / CAT-QA-SONAR-7 FU round-2 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| FU2-3 | 1800 | test-instrumentation* | UNKNOWN | no | not open | FU2 / CAT-QA-SONAR-7 FU round-2 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| F1 | 1804 | process-doc* | UNKNOWN | no | not open | F1 / CAT-REL-CHECK-1 round-3/4 | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| RC2-2 | 1810 | UNKNOWN | nit | no | not open | RC2 / CAT-REL-CHECK-1 Opus round-2 re-review | landed | entry text (later in the entry) states closed/fixed (PROVISIONAL) |
+| RC2-3 | 1811 | test-instrumentation* | nit | no | not open | RC2 / CAT-REL-CHECK-1 Opus round-2 re-review | landed | git 84807109 fix(release-check): RC-3/RC-3b manifest required+complete, waivers, RC2-1, RC2-3 (PROVISIONAL) |
+| CAT-PREEXIST-1 | 1816 | source-defect* | UNKNOWN | no | not open | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | landed | doc line 1831 states closed: "## CAT-PREEXIST-1..6 landed (2026-11-12) — PROVISIONAL, Opus round-" (PROVISIONAL) |
+| CAT-PREEXIST-7 | 1822 | source-defect* | UNKNOWN | no | not open | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | landed | doc line 1842 states closed: "## CAT-PREEXIST-7/8/9 landed (2026-11-12) — PROVISIONAL, Opus GO-wi" (PROVISIONAL) |
+| CAT-PREEXIST-10 | 1825 | source-defect* | UNKNOWN | no | not open | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | landed | git 2ebc1017 merge: fix/preexist-10 (CAT-PREEXIST-10: host-adaptive stress-test floor, failed (PROVISIONAL) |
+| PX-F1 | 1833 | source-defect* | minor | no | not open | PX / CAT-PREEXIST-1..6 landed | landed | entry text states closed/done (PROVISIONAL unless the entry says verified) |
+| PX-F2 | 1834 | UNKNOWN | minor | no | not open | PX / CAT-PREEXIST-1..6 landed | landed | git b6fad75a test(nilslice): PX-F2 detector keys declarations by object, reports every same-n (PROVISIONAL) |
+| PX-F3 | 1835 | source-defect* | minor | no | not open | PX / CAT-PREEXIST-1..6 landed | landed | git a34a8cdd fix(logs): PX-F3 log-management error bodies are fixed generic text, not interna (PROVISIONAL) |
+| PX-F4 | 1836 | test-instrumentation* | UNKNOWN | no | not open | PX / CAT-PREEXIST-1..6 landed | landed | git 2f3d487e test(examples): PX-F4 require before dereference, cover the protected-last-admin (PROVISIONAL) |
+| PX-F5 | 1837 | test-instrumentation* | UNKNOWN | no | not open | PX / CAT-PREEXIST-1..6 landed | landed | git 98cdbf37 test(pdf): PX-F5 limit test asserts the literal 512<<20, not a restated formula (PROVISIONAL) |
+| PX-F6 | 1838 | UNKNOWN | UNKNOWN | no | not open | PX / CAT-PREEXIST-1..6 landed | landed | git e5dba30f test(conversion): PX-F6 TestConversionIntegration builds its schema via RunMigra (PROVISIONAL) |
+| PX-F7 | 1839 | test-instrumentation* | UNKNOWN | no | not open | PX / CAT-PREEXIST-1..6 landed | landed | git f35a704c test(config): PX-F7 census treats ... as an elision, not an empty password (PROVISIONAL) |
+| PW-F1 | 1844 | test-instrumentation* | minor | no | not open | PW / CAT-PREEXIST-7/8/9 landed | landed | doc line 1849 states closed: "## PW-F1..F3 landed (2026-11-12) — PROVISIONAL, Opus GO-wi" (PROVISIONAL) |
+| PW-F2 | 1845 | test-instrumentation* | minor | no | not open | PW / CAT-PREEXIST-7/8/9 landed | landed | git f78ebd19 test(web): guard jsdom Storage in test env (PW-F2) (PROVISIONAL) |
+| PW-F3 | 1846 | test-instrumentation* | nit | no | not open | PW / CAT-PREEXIST-7/8/9 landed | landed | git e6a056da docs(web): document stale dist/ winning over src/ in vitest (PW-F3) (PROVISIONAL) |
+| PW-F5 | 1851 | test-instrumentation* | minor | no | not open | PW / PW-F1..F3 landed | landed | doc line 1862 states closed: "## PW-F5/F6 landed (2026-11-12) — PROVISIONAL, Opus GO-wit" (PROVISIONAL) |
+| PW-F6 | 1852 | process-doc* | nit | no | not open | PW / PW-F1..F3 landed | landed | git 7ce617d5 docs(web): PW-F6 reword vite.config dist-over-src caveat (PROVISIONAL) |
+| PX-F8 | 1856 | test-instrumentation* | minor | no | not open | PX / PX-F1..F7 landed | landed | doc line 1873 states closed: "## PX-F8..F12 landed (2026-11-12) — PROVISIONAL, Opus GO-w" (PROVISIONAL) |
+| PX-F9 | 1857 | source-defect* | minor | no | not open | PX / PX-F1..F7 landed | landed | git 86c31205 fix(handlers): PX-F9 close err.Error() echo class in log handlers; fixed bodies, (PROVISIONAL) |
+| PX-F10 | 1858 | test-instrumentation* | minor | no | not open | PX / PX-F1..F7 landed | landed | git 5f8ef782 test(nilslice_guard): PX-F10 key assigned/checked/named by *ast.Object, add inne (PROVISIONAL) |
+| PX-F11 | 1859 | test-instrumentation* | minor | no | not open | PX / PX-F1..F7 landed | landed | git 17be7b4f test(config): PX-F11 negatives for ellipsis exemption (.hunter2, secret..., pa.. (PROVISIONAL) |
+| PX-F12 | 1860 | process-doc* | nit | no | not open | PX / PX-F1..F7 landed | landed | git e6deddf5 docs(tests): PX-F12 correct comment wording about conversion_jobs.warning (comme (PROVISIONAL) |
+| PW-F7 | 1864 | test-instrumentation* | minor | no | not open | PW / PW-F5/F6 landed | landed | doc line 1867 states closed: "## PW-F7/F8 landed (2026-11-12) — PROVISIONAL, Opus GO-wit" (PROVISIONAL) |
+| PW-F8 | 1865 | test-instrumentation* | nit | no | not open | PW / PW-F5/F6 landed | landed | git 75351fdc test(web): PW-F7/PW-F8 jsdomStorage isolation of unprefixed keys, sessionStorage (PROVISIONAL) |
+| PW-F9 | 1869 | test-instrumentation* | minor | no | not open | PW / PW-F7/F8 landed | landed | git bea26f72 merge: fix/pwf9 (PW-F9/F10 storage tests; PROVISIONAL; Opus GO-with-follow-ups) (PROVISIONAL) |
+| PW-F11 | 1871 | UNKNOWN | nit | no | not open | PW / PW-F7/F8 landed | landed | git ba20cb8a docs: PW-F11 is accepted/no-change, not delivered work (review minor) (PROVISIONAL) |
+| PX-F15 | 1877 | UNKNOWN | UNKNOWN | no | not open | PX / PX-F8..F12 landed | landed | doc line 1884 states closed: "## PX-F15/F16 landed (2026-11-12) — PROVISIONAL, Opus GO-wi" (PROVISIONAL) |
+| PX-F16 | 1878 | test-instrumentation* | UNKNOWN | no | not open | PX / PX-F8..F12 landed | landed | git 37fdde8a test(config): PX-F16 census negatives for non-ASCII ellipsis and dot-only values (PROVISIONAL) |
+| PXF23-R1 | 1923 | test-instrumentation* | UNKNOWN | no | not open | PXF23 / PXF23-R landed | landed | git 281fd4a4 fix(catalog-api): PXF23-R1..R4,R6 follow-ups (PROVISIONAL) (PROVISIONAL) |
+| PXF23-R5 | 1927 | UNKNOWN | UNKNOWN | no | not open | PXF23 / PXF23-R landed | landed | doc line 1940 states closed: "llow-ups; PXF23-R5 itself is now LANDED (PROVISIONAL) for auth_handl" (PROVISIONAL) |
+| PXR-1 | 1948 | test-instrumentation* | UNKNOWN | no | not open | PXR / CAT-R5-FU landed | landed | git 3bed88e4 fix(catalog-api): R5 follow-ups F1,F2,F3,F5,PXR-1 (PROVISIONAL) (PROVISIONAL) |
