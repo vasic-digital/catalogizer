@@ -1310,7 +1310,8 @@ func main() {
 			cutoff := time.Now().Add(-time.Duration(staleAge) * time.Second)
 			rows, err := imageQualityRepo.SampleForRevalidation(ctx, cutoff, limit)
 			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				logger.Warn("image quality revalidation sample failed (not returned to client)", zap.Error(err))
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to sample images for revalidation"})
 				return
 			}
 			touched := 0
@@ -1341,7 +1342,8 @@ func main() {
 			}
 			generated, err := coverArtService.GenerateMissingVideoThumbnails(c.Request.Context(), req.Limit)
 			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				logger.Warn("video thumbnail generation failed (not returned to client)", zap.Error(err))
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate video thumbnails"})
 				return
 			}
 			c.JSON(http.StatusOK, gin.H{

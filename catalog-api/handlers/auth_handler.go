@@ -16,6 +16,28 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// authClientMessage returns the text of err only when it is one of the
+// intentionally client-visible auth errors (sentinels / password policy);
+// every other error is internal (DB, crypto, wrapped %w chains) and maps to
+// fallback so its text never reaches the response (CAT-PXF23-R5).
+func authClientMessage(err error, fallback string) (string, bool) {
+	var pp *services.PasswordPolicyError
+	switch {
+	case errors.Is(err, services.ErrInvalidCredentials),
+		errors.Is(err, services.ErrAccountLocked),
+		errors.Is(err, services.ErrAccountDisabled),
+		errors.Is(err, services.ErrAccountPending),
+		errors.Is(err, services.ErrInvalidRefreshToken),
+		errors.Is(err, services.ErrSessionExpired),
+		errors.Is(err, services.ErrSessionNotFound),
+		errors.Is(err, services.ErrCurrentPasswordIncorrect),
+		errors.As(err, &pp):
+		return err.Error(), true
+	}
+	log.Printf("handlers: auth internal error (not returned to client): %v", err)
+	return fallback, false
+}
+
 // Gin handler functions for auth
 
 // LoginGin handles login request with gin
@@ -36,7 +58,8 @@ func (h *AuthHandler) LoginGin(c *gin.Context) {
 			c.JSON(http.StatusForbidden, gin.H{"error": err.Error(), "code": "account_pending_approval"})
 			return
 		}
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		msg, _ := authClientMessage(err, "Authentication failed")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": msg})
 		return
 	}
 
@@ -56,7 +79,8 @@ func (h *AuthHandler) RefreshTokenGin(c *gin.Context) {
 
 	result, err := h.authService.RefreshToken(req.RefreshToken)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		msg, _ := authClientMessage(err, "Token refresh failed")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": msg})
 		return
 	}
 
@@ -73,7 +97,8 @@ func (h *AuthHandler) LogoutGin(c *gin.Context) {
 
 	err := h.authService.Logout(token)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		log.Printf("handlers: logout failed (not returned to client): %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to log out"})
 		return
 	}
 
@@ -200,7 +225,8 @@ func (h *AuthHandler) RegisterGin(c *gin.Context, userRepo *repository.UserRepos
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		log.Printf("handlers: registration bind failed (not returned to client): %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid registration request: username, email, password (min 8 characters), first_name and last_name are required"})
 		return
 	}
 
@@ -318,7 +344,8 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.authService.Login(req, ipAddress, userAgent)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		msg, _ := authClientMessage(err, "Authentication failed")
+		http.Error(w, msg, http.StatusUnauthorized)
 		return
 	}
 
@@ -343,7 +370,8 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.authService.RefreshToken(req.RefreshToken)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		msg, _ := authClientMessage(err, "Token refresh failed")
+		http.Error(w, msg, http.StatusUnauthorized)
 		return
 	}
 
@@ -365,7 +393,8 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 	err := h.authService.Logout(token)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("handlers: logout failed (not returned to client): %v", err)
+		http.Error(w, "Failed to log out", http.StatusInternalServerError)
 		return
 	}
 
@@ -387,7 +416,8 @@ func (h *AuthHandler) LogoutAll(w http.ResponseWriter, r *http.Request) {
 
 	err = h.authService.LogoutAll(user.ID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("handlers: logout-all failed (not returned to client): %v", err)
+		http.Error(w, "Failed to log out all sessions", http.StatusInternalServerError)
 		return
 	}
 
@@ -437,13 +467,19 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.authService.ValidatePassword(req.NewPassword); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		msg, _ := authClientMessage(err, "Invalid password")
+		http.Error(w, msg, http.StatusBadRequest)
 		return
 	}
 
 	err = h.authService.ChangePassword(user.ID, req.CurrentPassword, req.NewPassword)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		msg, known := authClientMessage(err, "Failed to change password")
+		status := http.StatusBadRequest
+		if !known {
+			status = http.StatusInternalServerError
+		}
+		http.Error(w, msg, status)
 		return
 	}
 
@@ -465,7 +501,8 @@ func (h *AuthHandler) GetActiveSessions(w http.ResponseWriter, r *http.Request) 
 
 	sessions, err := h.authService.GetActiveSessions(user.ID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("handlers: get sessions failed (not returned to client): %v", err)
+		http.Error(w, "Failed to get sessions", http.StatusInternalServerError)
 		return
 	}
 
@@ -504,7 +541,8 @@ func (h *AuthHandler) DeactivateSession(w http.ResponseWriter, r *http.Request) 
 
 	err = h.authService.DeactivateSession(sessionID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("handlers: deactivate session failed (not returned to client): %v", err)
+		http.Error(w, "Failed to deactivate session", http.StatusInternalServerError)
 		return
 	}
 

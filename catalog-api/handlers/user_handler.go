@@ -118,7 +118,8 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.authService.ValidatePassword(req.Password); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		msg, _ := authClientMessage(err, "Invalid password")
+		http.Error(w, msg, http.StatusBadRequest)
 		return
 	}
 
@@ -168,14 +169,11 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(msg, "UNIQUE constraint failed") ||
 			strings.Contains(msg, "duplicate key value") ||
 			strings.Contains(msg, "violates unique constraint") {
-			http.Error(w,
-				`{"error":"Username or email already exists","details":"`+strings.ReplaceAll(msg, `"`, `'`)+`"}`,
-				http.StatusConflict)
+			http.Error(w, `{"error":"Username or email already exists"}`, http.StatusConflict)
 			return
 		}
-		http.Error(w,
-			`{"error":"Failed to create user","details":"`+strings.ReplaceAll(msg, `"`, `'`)+`"}`,
-			http.StatusInternalServerError)
+		log.Printf("handlers: create user failed (not returned to client): %v", err)
+		http.Error(w, `{"error":"Failed to create user"}`, http.StatusInternalServerError)
 		return
 	}
 
@@ -621,13 +619,15 @@ func (h *UserHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.authService.ValidatePassword(req.NewPassword); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		msg, _ := authClientMessage(err, "Invalid password")
+		http.Error(w, msg, http.StatusBadRequest)
 		return
 	}
 
 	err = h.authService.ResetPassword(userID, req.NewPassword)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("handlers: reset password failed (not returned to client): %v", err)
+		http.Error(w, "Failed to reset password", http.StatusInternalServerError)
 		return
 	}
 
@@ -691,7 +691,8 @@ func (h *UserHandler) LockAccount(w http.ResponseWriter, r *http.Request) {
 
 	err = h.authService.LockAccount(userID, lockUntil)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("handlers: lock account failed (not returned to client): %v", err)
+		http.Error(w, "Failed to lock account", http.StatusInternalServerError)
 		return
 	}
 
@@ -735,7 +736,8 @@ func (h *UserHandler) UnlockAccount(w http.ResponseWriter, r *http.Request) {
 
 	err = h.authService.UnlockAccount(userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("handlers: unlock account failed (not returned to client): %v", err)
+		http.Error(w, "Failed to unlock account", http.StatusInternalServerError)
 		return
 	}
 
