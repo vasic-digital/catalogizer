@@ -1838,3 +1838,10 @@ Items 1-6 are fixed on main (merge 9e299503; each target test GREEN on the branc
 - PX-F6 (Task): TestConversionIntegration hand-written schema - build via RunMigrations.
 - PX-F7 (Task, optional): config census should treat `...` as an elision, not an empty password.
 CAT-PREEXIST-3 and -4 register notes (513 s runtime, nil-pointer panic) did not reproduce as stated: the test was ~16-20 s; the panic was a test-only cascade from stale sqlmock expectations.
+
+## CAT-PREEXIST-7/8/9 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups (merge of fix/preexist-web)
+Fixed at unit level: module-registry (7) + websocket load failures via a test-only `test.alias` fallback to submodule `src/index.ts` when `dist/index.js` is missing (8 of 9 `@vasic-digital/*` packages track no dist); AuthContext.integration (7) via jsdom Storage in `test-setup.ts` (Node 26 global localStorage is unusable). Reviewer: base 5 files/14 tests RED, branch 170 files/2680 tests GREEN. Avatar/EmptyState/LoadingSpinner failures did NOT reproduce (environmental in the retest; cause UNCONFIRMED).
+- PW-F1 (Task, minor): `'react'`/`'react-dom'` entries of `resolve.dedupe` untested (reviewer mutant survives); add a test rendering a submodule hook component or reword the comment (role is resolution, not deduplication).
+- PW-F2 (Task, minor): add a guard test `localStorage instanceof Storage`, also under `--localstorage-file`.
+- PW-F3 (Task, nit): document that a stale untracked `dist/` silently wins over current `src/` in tests.
+- PW-F4 (Task): run the production-build effect of `resolve.dedupe` once through `scripts/lib/build-catalog-web.sh` (UNCONFIRMED).
