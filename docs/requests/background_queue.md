@@ -65,3 +65,9 @@ BG-OPDEC-2026-11-12c answers (2026-11-12 ~23:40 CET): Sonar extension cycle ACCE
 
 ## BG-OPDEC-2026-11-12d - fourth operator-decision sweep (BACKGROUND :: CRITICAL)
 Received 2026-11-13 00:07 CET. Same request again. Status: IN PROGRESS - batch asked this turn from the remaining open list (device-emulation decisions: disk, G6 password-in-emulator-shell, Windows; Synology; products in scope; follow-up policy). Answers to be recorded here and in docs/CONTINUATION.md section 7.
+
+### BG-OPDEC-2026-11-12d answers (operator, 2026-11-13 ~00:15 CET)
+- Disk: prune only dangling/unused PROJECT artifacts (stale scratch clones under ~/.cache/claude-tmp and ~/.cache/nowc-tmp after inspection, safe_rm_rf; fully merged only; no blanket podman prune). Earlier approval also covers dangling podman images.
+- G6: password briefly in the emulator's own shell is ACCEPTABLE for throwaway emulator accounts (generated test credentials only, redacted in evidence).
+- Windows and macOS: NOT a permanent skip. Run containerized versions via the Containers submodule using QEMU or any other proper technology; introduce whatever is needed; extend Containers fully (operator controls it). Licensing/image provenance still to be settled by the implementing work item; until a real VM runs, honest SKIP with reason.
+- Synology: honest SKIP until the operator powers it back.
