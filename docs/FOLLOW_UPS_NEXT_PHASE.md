@@ -2160,3 +2160,12 @@ WP03R3-F1..F7 addressed (F6 = heading moved above). Residual, UNCONFIRMED or owe
 - WP03R3FU-5 (minor): refuse `--out` that is not a regular file or absent (FIFO/device/directory) before opening; a FIFO currently hangs with no verdict.
 - WP03R3FU-6 (minor): tests killing X2 (control char in `target_id` unsanitised) and X3 (control char reaching stdout `reason:`, e.g. `tests_total=3\x01`); correct the wrong "equivalent mutant" comment in mutation_check_no_worse_gate.sh.
 - WP03R3FU-7 (minor): assert `new_notpass_on_baseline_set` and `issue-count-higher` for baseline PASS turned SKIPPED/INCONCLUSIVE (mutant X8: NNOTPASS counts only FAIL).
+
+## FAVR3 follow-ups round 2 (2026-11-12, branch fix/favr3-fu2, PROVISIONAL, Roadmap-Item CAT-UI-FAV-1b)
+
+- FAVR3R2-1 (closed, PROVISIONAL): rollback test now seeds the two cached keys with DIFFERENT lists (reversed); evidence `docs/qa/favr3-fu2/{red,green}.txt`.
+- FAVR3-7 (decided, no code change): class inventory of query keys embedding favourite state = `['favorites', params]` (optimistic prefix update + invalidate), `['favorites-stats']` and `['favorite-status', type, id]` (invalidated on settle, not updated optimistically). The 8 unmatched keys are NOT favourite state: `['identities-bindings']` is share-identity bindings (DiscoveredShares.tsx; the component's own comment says the join query is a future backend feature, so the key is a forward reference, not a stale favourites key), `['media', id]`, `['asset', id]`, `[entity_type, id]`, `['playlist', id]` have no matching useQuery (grep of `queryKey: ['media'|'asset'|'playlist'`) and belong to websocket/playlist paths. Favourite toggles must not touch them. Left unchanged; their deadness remains UNCONFIRMED and is owned by their features.
+- FAVR3-8 (fixed, PROVISIONAL): onMutate records per cached key exactly the rows this request removed; onError re-inserts only those rows (no duplicate, original index), so another in-flight toggle's removal is not resurrected.
+- FAVR3-9 (fixed, PROVISIONAL): optimistic removal decrements cached `total`; rollback re-adds it.
+- FAVR3F2-1 (minor, owed): `['favorite-status', type, id]` and `['favorites-stats']` are not updated optimistically, so the toggle icon/stats lag until the settle refetch. Not part of FAVR3; decide whether to add.
+- FAVR3-6 (still owed): live Playwright favourite flow (§11.4.289); this change is hook/jsdom level only.

@@ -1,0 +1,20 @@
+     ✓ removal with a type is visible in the cache BEFORE the server answers 140ms
+     ✓ legacy removal without a type removes every row with that media_id 109ms
+     ✓ onError rolls the live-key list back to the snapshot 115ms
+     ✓ adding leaves the cached list untouched 107ms
+     ✓ settle invalidates the live key (list refetched) 108ms
+     ✓ does not touch the unrelated favorites-stats entry optimistically 109ms
+       ✓ FAVR3R2-1: after a failed toggle each key is restored to its OWN snapshot (distinct lists) 113ms
+       × FAVR3-9: optimistic removal decrements total, rollback restores it 110ms
+       × FAVR3-8: a failed toggle does not resurrect a row removed by another in-flight toggle 161ms
+       ✓ toggling from the no-params instance updates the OTHER key before the server answers 107ms
+       ✓ after a failed mutation BOTH keys are restored 106ms
+       ✓ a refetch pending when the toggle starts is cancelled and cannot overwrite the optimistic list 108ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/hooks/__tests__/useFavorites.optimistic.test.tsx > useFavorites optimistic update on the live key > FAVR3R2-1 / FAVR3-8 / FAVR3-9 (PROVISIONAL) > FAVR3-9: optimistic removal decrements total, rollback restores it
+- Expected
++ Received
+ FAIL  src/hooks/__tests__/useFavorites.optimistic.test.tsx > useFavorites optimistic update on the live key > FAVR3R2-1 / FAVR3-8 / FAVR3-9 (PROVISIONAL) > FAVR3-8: a failed toggle does not resurrect a row removed by another in-flight toggle
+- Expected
++ Received
+      Tests  2 failed | 10 passed (12)
