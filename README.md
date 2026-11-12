@@ -1,5 +1,7 @@
 # Catalogizer - Advanced Multi-Protocol Media Collection Management System
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/vasic-digital/catalogizer)
+
 Catalogizer is a comprehensive media collection management system that automatically detects, categorizes, and organizes your media files across multiple storage protocols including SMB, FTP, NFS, WebDAV, S3 and local filesystem. It provides real-time monitoring, advanced analytics, and a modern web interface for managing your entire media library.
 
 > **Release status: Catalogizer 2.4.2 is a pre-release and is NOT production-ready.** The full-suite retest of the tag, manual QA and live UI QA have not been run on it; see [`docs/CHANGELOG.md`](docs/CHANGELOG.md) (`[2.4.2]`: VERIFIED / PROVISIONAL / REOPENED / OVERDUE listed separately) and [`docs/CONTINUATION.md`](docs/CONTINUATION.md) (Rev 20).
