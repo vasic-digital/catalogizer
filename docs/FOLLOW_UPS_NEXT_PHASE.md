@@ -2082,3 +2082,9 @@ RC3R4-4 (nit) retargeted symlink cited path gives FAIL (MISS) instead of BLIND; 
 - D9S-R3-4 (minor, pre-existing class): Login reveals locked/suspended/disabled state BEFORE the password check (account-state enumeration); hide behind the password like pending.
 - SEC-WS-1 (IMPORTANT candidate, pre-existing, own item): /ws (handlers/websocket_handler.go HandleConnection) accepts connections with NO authentication (found by D9 round-3 review). Needs reproduce-first (11.4.292), auth + origin check, and tests.
 - D9S-M1/M4/M5: round-2 review text was never supplied to the author; ids only. UNCONFIRMED content.
+- FAVR3-1 (minor, source-defect, pre-existing): useFavorites optimistic update/rollback use exact key ['favorites'] while the live query key is ['favorites', params]; probe-proven dead code in production (display corrected by onSettled invalidation). Fix: setQueriesData({queryKey:['favorites']}) + per-query snapshot rollback + test on the real key.
+- FAVR3-2 (minor, test-instrumentation): surviving mutants N2 (onError rollback removed) and N7 (legacy no-type optimistic path); add with FAVR3-1.
+- FAVR3-3 (minor, process-doc): CAT-UI-FAV-1b UNCLOSED bullet about media_id-only collision is stale (fixed in f8e9e65c).
+- FAVR3-4 (minor, process-doc): FOLLOW_UPS ordering after union merge: CAT-UI-FAV headings sit between RC3R4-4 and the SECQ-2/SECQ2WD-R1 bullets; regroup.
+- FAVR3-5 (nit): attachEntityLinks does not check rows.Err() after the loop.
+- FAVR3-6 (owed): live Playwright file -> favourite -> open entity (11.4.289) and a PostgreSQL run of the attachEntityLinks query.
