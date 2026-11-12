@@ -22,6 +22,9 @@ function getApiHost(): string {
 // submodules (only ui_components_react ships one), so a fresh checkout cannot
 // resolve them under vitest. Fall back to the package source ONLY where dist
 // is absent; a built dist keeps being used unchanged.
+// CAVEAT (PW-F3): the check is on file presence only. A stale, untracked
+// dist/ left from an earlier build silently wins over the current src/, so
+// tests then run against old code; delete dist/ (or rebuild) to test src/.
 function submoduleSourceFallbacks(): Record<string, string> {
   const pkgs: Record<string, string> = {
     '@vasic-digital/auth-context': 'auth_context_react',
@@ -68,7 +71,13 @@ export default defineConfig({
     },
   },
   resolve: {
-    // submodule sources resolve their own bare imports from the app's node_modules
+    // Role: RESOLUTION, not proven deduplication. Submodule sources (aliased
+    // above to ../submodules/*/src) import react/axios/etc. from directories
+    // that have no node_modules, so these entries make Vite resolve those bare
+    // imports from the app's node_modules. PW-F1 (CAT-PREEXIST-7): removing
+    // 'react'/'react-dom' from this list was tried and a hook-using submodule
+    // component (ui-components Tabs) still rendered, so the entries are not
+    // test-guarded and their single-instance effect is UNCONFIRMED here.
     dedupe: ['react', 'react-dom', '@tanstack/react-query', 'axios'],
     alias: {
       '@': path.resolve(__dirname, './src'),
