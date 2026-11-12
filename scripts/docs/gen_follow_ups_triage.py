@@ -4,7 +4,9 @@
 Purpose  Reads the follow-up register (bullet items led by an id), plus `git log` of a ref,
          and prints one table row per id: id, layer, severity, release blocker (yes/no + reason),
          root-cause cluster (id-family + section, NOT a proven root cause), status
-         (open / landed / duplicate-of) with the evidence used.
+         (open / landed / unconfirmed / duplicate-of) with the evidence used. `unconfirmed` is
+         NOT closed: it is weak evidence only (a later prose mention, a closing word that is not at
+         the start of the entry, a partial entry with an open remainder).
 Usage    gen_follow_ups_triage.py [--doc PATH] [--ref REF] [--repo DIR] [--out PATH]
          gen_follow_ups_triage.py --selftest       control needles against the real doc
 Rules    Severity is only what the entry (or its section heading) states; otherwise UNKNOWN,
@@ -34,7 +36,11 @@ LAYER_STATED = collections.OrderedDict([
     ('test-instrumentation', re.compile(r'test[- ]instrumentation')),
     ('process-doc', re.compile(r'process[- ]doc')),
 ])
-DONE_HEAD = re.compile(r'\b(DONE|FIXED|LANDED|CLOSED|RESOLVED|SUPERSEDED|PROVISIONAL-DONE)\b|\[LANDED\]|(?:^|[):,]\s*)(fixed|closed|landed|done|resolved)\b')
+CLOSE_TOK = r'(?:PROVISIONAL-DONE|FIXED|LANDED|CLOSED|DONE|RESOLVED|\[LANDED\])'
+# strong: the entry itself OPENS with a closing token (never a noun such as "fixed members")
+START_CLOSE = re.compile(r'^(?:' + CLOSE_TOK + r'|(?:fixed|closed|landed|done|resolved)(?=\s+(?:in|by|on|at|here|via|as|with)\b|\s*\())(?=[\s:;,.)\]]|$)')
+OPEN_ANY = re.compile(r'\b(?:OPEN|OWED|Queued|PARTIAL|PARTLY)\b|\bOpen:|\b[Pp]artial(?:ly)?\b|\bresidual\b|\b[Nn]ot yet fixed\b|\b[Nn]ot fixed\b')
+DONE_HEAD = re.compile(r'\b(DONE|FIXED|LANDED|CLOSED|RESOLVED|SUPERSEDED|PROVISIONAL-DONE)\b|\[LANDED\]')
 OPEN_HEAD = re.compile(r'STILL OPEN|\bOPEN\b|\bOWED\b|\bQueued\b')
 FULL_DONE = re.compile(r'\*\*(?:FIXED|CLOSED|DONE|LANDED)\b|\b(?:CLOSED|FIXED|LANDED|landed|closed) (?:in|by|on|at)\b|\(CLOSED|\(FIXED|\(DONE')
 LATER_DONE = re.compile(r'\b(CLOSED|DONE|FIXED|landed|LANDED)\b')
@@ -46,6 +52,30 @@ LABEL_LANDED = re.compile(r'^(Fixed|Closed|Landed|Done|Resolved)\b[^:]{0,80}:\s*
 LABEL_OPEN = re.compile(r'^(Still open|Open|Remaining|Not fixed|Open follow-ups)\b[^:]{0,80}:\s*$')
 RANGE_RE = re.compile(r'(?P<pre>[A-Z][A-Z0-9-]*?)(?P<a>\d+)\.\.(?:[A-Z][A-Z0-9-]*?)?(?P<b>\d+)')
 HEAD_DONE = re.compile(r'\b(landed|closed|resolved|DONE)\b', re.I)
+
+
+def expand_ranges(text):
+    """All ids named by ranges such as PX-F1..F7 or D7-R2-F1..F4 in text (cap 60 per range)."""
+    res = []
+    for m in RANGE_RE.finditer(text):
+        a, b = int(m.group('a')), int(m.group('b'))
+        if 0 <= b - a < 60:
+            res += [m.group('pre') + str(k) for k in range(a, b + 1)]
+    return res
+
+
+def starts_closed(t):
+    """True when the entry text (after the id) opens with a closing token: directly, after a leading (...) group,
+    or as an element of that group, e.g. `(DONE): ...`, `(Task, FIXED)`, `: FIXED in ...`. Nouns ("fixed members") do not count."""
+    t = t.lstrip(' *`:-')
+    pm = re.match(r'\(([^)]*)\)', t)
+    if pm:
+        for el in re.split(r'[,;]', pm.group(1)):
+            if re.match(r'^(?:' + CLOSE_TOK + r')(?=[\s:;,.)\]]|$)', el.strip()):
+                return True
+        t = t[pm.end():]
+    t = t.lstrip(' *`:,.-')
+    return bool(START_CLOSE.match(t))
 
 
 def letters(ident):
@@ -72,16 +102,23 @@ def heading_landed(doc_text):
 
 
 def parse(doc_text):
-    """Return list of item dicts for bullet lines led by an id. text starts AFTER the id."""
-    items, heading, cur, mode = [], '', None, None
+    """Return list of item dicts for bullet lines led by an id. text starts AFTER the id.
+    `parent` is the text of the enclosing bullet (smaller indent) for a nested id bullet, else ''."""
+    items, heading, cur, mode, bul = [], '', None, None, {}
     for n, line in enumerate(doc_text.split('\n'), 1):
         if line.startswith('#'):
-            heading, cur, mode = line.lstrip('#').strip(), None, None
+            heading, cur, mode, bul = line.lstrip('#').strip(), None, None, {}
             continue
         m = LEAD.match(line)
+        bm = re.match(r'^(\s*)- (.*)$', line)
+        if bm:
+            k = len(bm.group(1))
+            bul = {i: v for i, v in bul.items() if i < k}
         if m:
             ids = re.split(r' / |, | and ', m.group(2))
-            cur = {'line': n, 'ids': ids, 'text': line[m.end():].lstrip('*`').strip(), 'heading': heading, 'mode': mode}
+            lower = [i for i in bul if i < len(m.group(1))]
+            parent = bul[max(lower)] if lower else ''
+            cur = {'line': n, 'ids': ids, 'text': line[m.end():].lstrip('*`').strip(), 'heading': heading, 'mode': mode, 'parent': parent}
             items.append(cur)
         elif cur and line.startswith('  ') and line.strip() and not line.lstrip().startswith('- '):
             cur['text'] += ' ' + line.strip()
@@ -89,6 +126,7 @@ def parse(doc_text):
             cur = None
         elif line.lstrip().startswith('- '):
             cur = None
+            bul[len(bm.group(1))] = bm.group(2)
         else:
             cur = None
             st = line.strip()
@@ -100,15 +138,19 @@ def parse(doc_text):
 
 
 def git_evidence(repo, ref):
-    """id-token -> list of (sha, subject) for non-register commits on ref."""
-    out = subprocess.run(['git', '-C', repo, 'log', '--format=%h%x09%s', ref],
+    """id-token -> list of (sha, subject) for CODE commits on ref: not a register commit, subject not `docs:`/`docs(`,
+    and the diff touches at least one file that is neither *.md nor under docs/. Ranges in the subject (D7-R2-F1..F4) are expanded."""
+    out = subprocess.run(['git', '-C', repo, 'log', '--name-only', '--format=%x01%h%x09%s', ref],
                          capture_output=True, text=True, check=True).stdout
     toks = collections.defaultdict(list)
-    for row in out.splitlines():
-        sha, _, subj = row.partition('\t')
-        if REGISTER_COMMIT.search(subj):
+    for blk in out.split('\x01')[1:]:
+        head, _, files = blk.partition('\n')
+        sha, _, subj = head.partition('\t')
+        if REGISTER_COMMIT.search(subj) or re.match(r'docs[(:]', subj):
             continue
-        for t in re.findall(ID_ONE, subj):
+        if not any(f.strip() and not f.endswith('.md') and not f.startswith('docs/') for f in files.split('\n')):
+            continue
+        for t in set(re.findall(ID_ONE, subj)) | set(expand_ranges(subj)):
             toks[t].append((sha, subj))
     return toks
 
@@ -156,51 +198,59 @@ def classify(item, ident, dup_count, gitev, later, hland):
             derived = False
     h80 = t[:80]
     open_hit = bool(OPEN_HEAD.search(h80))
-    done_hit = bool(DONE_HEAD.search(h80))
-    status, ev = 'open', 'no closing word in entry, no landing commit on ref'
+    openw = bool(OPEN_ANY.search(t))
+    closed_start = starts_closed(t)
+    parent_closed = bool(item.get('parent')) and starts_closed(item['parent'])
+    status, ev = 'open', 'no closing evidence in the entry, no code commit on ref'
     d = DUP_RE.search(t)
     if d and d.group(1) != ident:
         status, ev = 'duplicate-of ' + d.group(1), 'entry text'
+    elif (closed_start or parent_closed) and not openw:
+        status = 'landed'
+        ev = 'entry opens with a closing token and states nothing open (PROVISIONAL)' if closed_start else 'nested under a closed parent bullet (PROVISIONAL)'
+    elif closed_start and openw:
+        status, ev = 'unconfirmed', 'partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed)'
     elif open_hit:
         status, ev = 'open', 'entry states OPEN/OWED/Queued near its start'
-    elif done_hit:
-        status, ev = 'landed', 'entry text states closed/done/fixed (PROVISIONAL unless the entry says verified)'
-    elif FULL_DONE.search(t):
-        status, ev = 'landed', 'entry text (later in the entry) states closed/fixed (PROVISIONAL)'
     elif item.get('mode') == 'landed':
-        status, ev = 'landed', 'under a "Fixed/Closed:" label line in its section (PROVISIONAL)'
+        status, ev = ('unconfirmed', 'under a "Fixed/Closed:" label line but the entry also states an open remainder') if openw else ('landed', 'under a "Fixed/Closed:" label line in its section (PROVISIONAL)')
     elif item.get('mode') == 'open':
         status, ev = 'open', 'under an "Open/Still open:" label line'
     elif hland.get(ident) and (dup_count == 1 or (letters(ident) >= 3 and hland[ident][0] > item['line'])):
         ln, hd = hland[ident]
-        status, ev = 'landed', 'heading line %d: "%s" (PROVISIONAL)' % (ln, hd)
-    elif dup_count == 1 and later.get(ident):
-        ln, sn = later[ident]
-        status, ev = 'landed', 'doc line %d states closed: "%s" (PROVISIONAL)' % (ln, sn)
-    elif dup_count == 1 and letters(ident) >= 3 and gitev.get(ident):
+        status, ev = ('unconfirmed', 'heading line %d names it landed but the entry states an open remainder' % ln) if openw else ('landed', 'heading line %d: "%s" (PROVISIONAL)' % (ln, hd))
+    elif dup_count == 1 and letters(ident) >= 3 and gitev.get(ident) and not openw:
         c = gitev[ident]
         sha, subj = c[0]
-        status, ev = 'landed', 'git %s %s%s (PROVISIONAL)' % (sha, subj[:80], ' (+%d more)' % (len(c) - 1) if len(c) > 1 else '')
+        status, ev = 'landed', 'code commit %s %s%s (PROVISIONAL)' % (sha, subj[:80], ' (+%d more)' % (len(c) - 1) if len(c) > 1 else '')
+    elif dup_count == 1 and letters(ident) >= 3 and gitev.get(ident) and openw:
+        status, ev = 'unconfirmed', 'a code commit names it (%s) but the entry states an open/owed/partial remainder' % gitev[ident][0][0]
+    elif DONE_HEAD.search(h80) or FULL_DONE.search(t):
+        status, ev = 'unconfirmed', 'a closing word appears in the entry but not at its start (weak)'
+    elif dup_count == 1 and later.get(ident):
+        ln, sn = later[ident]
+        status, ev = 'unconfirmed', 'only a later prose line %d mentions it closed: "%s" (weak)' % (ln, sn)
     sec = bool(SEC_RE.search(t[:300]))
     unclass = layer == 'UNKNOWN'
-    if status != 'open':
+    nonlayer = layer in ('test-instrumentation', 'process-doc')
+    if status not in ('open', 'unconfirmed'):
         blk = ('no', 'not open')
     elif sev == 'critical':
         blk = ('yes', 'severity critical stated')
     elif BLOCK_RE.search(head):
         blk = ('yes', 'entry states release-blocking')
-    elif sev == 'important' and (layer == 'source-defect' or sec or unclass):
-        blk = ('yes', 'important + %s' % ('source-defect' if layer == 'source-defect' else 'security-adjacent' if sec else 'layer unclassifiable = source-defect per 11.4.235(D)'))
+    elif sev == 'important' and (layer == 'source-defect' or unclass):
+        blk = ('yes', 'important + %s' % ('source-defect' if layer == 'source-defect' else 'layer unclassifiable = source-defect per 11.4.235(D)'))
     elif sev == 'important':
-        blk = ('no', 'important but %s layer, not security-adjacent' % layer)
-    elif sev == 'UNKNOWN' and layer == 'source-defect' and sec:
-        blk = ('yes', 'source-defect, security-adjacent, severity UNKNOWN: conservative')
-    elif sev == 'UNKNOWN' and sec and layer not in ('test-instrumentation', 'process-doc'):
-        blk = ('review', 'severity UNKNOWN, security-adjacent word, layer %s: needs a human severity' % layer)
+        blk = ('no', 'important but %s layer%s' % (layer, ' (security-adjacent word present, not a source defect)' if sec else ''))
+    elif sev == 'UNKNOWN' and not nonlayer:
+        blk = ('unclassified', 'severity UNKNOWN + %s layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration%s' % (layer, '; security-adjacent word present, triage first' if sec else ''))
     elif sev == 'UNKNOWN':
-        blk = ('no', 'severity UNKNOWN (not stated)')
+        blk = ('no', 'severity UNKNOWN but %s layer' % layer)
     else:
         blk = ('no', 'severity %s' % sev)
+    if status == 'unconfirmed' and blk[0] != 'no':
+        blk = (blk[0], 'status unconfirmed (not closed); ' + blk[1])
     fam = re.sub(r'-?[A-Z]?\d+[a-z]?$', '', ident) or ident
     cluster = '%s / %s' % (fam, re.sub(r'\s*\(.*$', '', h)[:48])
     return dict(id=ident, line=item['line'], layer=layer + ('*' if derived else ''),
@@ -213,17 +263,18 @@ def series_words(heading):
 
 
 def later_mentions(doc_text, items):
-    """id -> (line, snippet) for a non-lead line where the id is followed within 50 chars by a closing word."""
-    lead_lines = {it['line'] for it in items}
+    """id -> (line, snippet) for a line (lead lines included, except the lead's own ids) where the id is followed
+    within 50 chars by a closing word."""
+    lead_ids = {it['line']: set(it['ids']) for it in items}
     res = {}
     for n, line in enumerate(doc_text.split('\n'), 1):
-        if n in lead_lines:
-            continue
         mc = re.search(r'Closed here: ((?:' + ID_ONE + r'(?: \(|, |\)|$)\s*)+)', line)
-        if mc:
+        if mc and n not in lead_ids:
             for cid in re.findall(ID_ONE, mc.group(1)):
                 res[cid] = (n, line[mc.start():mc.start() + 90].replace('|', '/'))
         for m in re.finditer(r'(?<![\w/.-])(' + ID_ONE + r')(?![\w-])', line):
+            if m.group(1) in lead_ids.get(n, ()):
+                continue
             w = line[m.end():m.end() + 50]
             if LATER_DONE.search(w) and not re.search(r'\b(open|OPEN|Queued|not)\b', w):
                 res[m.group(1)] = (n, line[max(0, m.start() - 10):m.end() + 50].strip()[:90].replace('|', '/'))
@@ -269,6 +320,10 @@ def build(doc_text, repo, ref):
                 if r['status'] == 'open':
                     r.update(status='landed', blocker='no', reason='not open',
                              evidence='later entry of the same id at line %d states it landed (PROVISIONAL)' % rs[-1]['line'])
+        elif len(rs) > 1 and specific and rs[-1]['status'] == 'unconfirmed':
+            for r in rs[:-1]:
+                if r['status'] == 'open':
+                    r.update(status='unconfirmed', evidence='later entry of the same id at line %d only weakly states it closed (NOT closed)' % rs[-1]['line'])
     return rows
 
 
@@ -301,6 +356,10 @@ def needles(rows, doc_text):
         errs.append('status needle PXF23-R2 (own text says FIXED) not landed')
     if 'FU2-1' in st and st['FU2-1'] != 'open':
         errs.append('status needle FU2-1 (STILL OPEN) not open')
+    if st.get('SMB-FU-17') == 'landed':
+        errs.append('status needle SMB-FU-17 (docs-only commit, copy.go still uses plain SafeRemotePath) must not be landed')
+    if 'R3-1' in st and st['R3-1'] != 'unconfirmed':
+        errs.append('status needle R3-1 (only a later prose mention) must be unconfirmed')
     if 'PXF23-R2' not in st or 'FU2-1' not in st:
         errs.append('status needle id missing from rows')
     return errs
@@ -313,7 +372,7 @@ def render(rows, ref, sha, doc, prose=()):
     w = lines.append
     w('# Follow-ups triage (machine-derived)\n')
     w('| Field | Value |\n|---|---|')
-    w('| Revision | 2 |\n| Created | 2026-11-12 |\n| Last modified | 2026-11-12 (Rev 2: status engine, blocker rule and severity scoping fixed after review round 1) |\n| Status | active (PROVISIONAL: derived by script, not human-verified row by row) |')
+    w('| Revision | 3 |\n| Created | 2026-11-12 |\n| Last modified | 2026-11-12 (Rev 3: three-valued status, strong-evidence landed rule, unclassified blocker value after review round 2) |\n| Status | active (PROVISIONAL: derived by script, not human-verified row by row) |')
     w('| Roadmap-Item | CAT-WP10-TRIAGE |')
     w('| Source | `%s` at `%s` of `%s` |' % (doc, sha, ref))
     w('| Generator | `scripts/docs/gen_follow_ups_triage.py` (test: `scripts/docs/test_gen_follow_ups_triage.py`) |')
@@ -322,15 +381,17 @@ def render(rows, ref, sha, doc, prose=()):
     w('## Table of contents\n\n- [Method and limits](#method-and-limits)\n- [Counts](#counts)\n- [Top blockers](#top-blockers)\n- [Proposed follow-up policy](#proposed-follow-up-policy-not-applied)\n- [Full table](#full-table)\n')
     w('## Method and limits\n')
     w('* Rows are bullet entries of the register that begin with an id (one row per id and line). Ids mentioned only inside prose are not rows. Ids that appear as the lead of several bullets (`F1`, `R1`, ...) are listed once per bullet and get no git evidence.')
-    w('* Reused generic ids (`F1`, `F3`, `R1`, ...) have several rows; a closing in a later section cannot be tied to the right row by id, so such rows may still read `open`. Review them by line. Status sources, in order: duplicate-of; OPEN/OWED/Queued in the first 80 characters (open wins); a closing word there; a closing word later in the entry; a `Fixed:`/`Closed:` label line above it; a heading that states the id or an id range landed (`PX-F1..F7 landed`); a later prose line; a non-register commit naming the id (only when the id has at least 3 family letters and is unique among the lead ids).')
+    w('* Reused generic ids (`F1`, `F3`, `R1`, ...) have several rows; a closing in a later section cannot be tied to the right row by id, so such rows may still read `open`. Review them by line. Status sources, in order: duplicate-of; `landed` (STRONG only): the entry itself opens with a closing token (FIXED / LANDED / [LANDED] / PROVISIONAL-DONE / DONE / CLOSED / RESOLVED, also inside its first parenthesis) and states nothing open anywhere in it, or it is nested under a bullet that opens that way, or a `Fixed:`/`Closed:` label line above it, or a heading that names the id or an id range landed (`PX-F1..F7 landed`), or a CODE commit naming the id or a range of ids (id with at least 3 family letters, unique among the lead ids; the commit subject is not `docs:`/`docs(`, not a register commit, and its diff touches a file that is neither `*.md` nor under `docs/`); `open`: the entry says OPEN/OWED/Queued near its start; `unconfirmed`: everything weaker (a closing word that is not at the start of the entry, a later prose line, a partial entry that opens with a closing token but also states an open remainder, a code commit against an entry that states an open remainder). **`unconfirmed` is NOT closed**: it needs a human check and is counted next to open, never as done.')
     w('* Severity is only what the entry (first 200 characters) or its section heading states (`(sec)` = taken from the section heading). Not stated: `UNKNOWN`. Nothing is inferred.')
     w('* Layer: stated (`source-defect` / `test-instrumentation` / `process-doc`) or, with a trailing `*`, derived from the Type word or keywords (a heuristic).')
-    w('* Status: `landed` when the entry says closed/done, or a non-register commit on `%s` names the id (PROVISIONAL: the commit shows the work reached main, not that the register was updated or the fix verified). `duplicate-of` only when the entry says so.' % ref)
-    w('* Blocker: `yes` on a stated critical, a stated release-blocking word, important + (source-defect, security-adjacent, or unclassifiable layer, per 11.4.235(D) unclassifiable = source-defect), or an UNKNOWN-severity security-adjacent source defect. `review` = severity UNKNOWN but security-adjacent with a non-test layer (a human must set the severity). Everything else `no` with the reason. This is a rule, not a verdict; the operator decides.')
+    w('* Status: `landed` only on the strong evidence above (PROVISIONAL: a code commit on `%s` shows work reached main, not that the register was updated or the fix verified); `duplicate-of` only when the entry says so. Known misses: reused generic ids (`FU-4`, `F1`, ...) whose closing sits in another section stay `open` or `unconfirmed`; nothing is guessed.' % ref)
+    w('* Blocker (rows that are open or unconfirmed): `yes` on a stated critical, a stated release-blocking word, or important + (source-defect or unclassifiable layer, per 11.4.235(D) unclassifiable = source-defect). A security-adjacent word does not make an important test-instrumentation or process-doc row a blocker. `unclassified` = severity UNKNOWN with a source-defect or UNKNOWN layer: it can be called neither a blocker nor a non-blocker (11.4.276(G.2) / 11.4.235(D): an unrecorded severity is not minor-class, and it is not stated critical either); it is a triage defect, see proposed policy (4). Everything else `no` with the reason. This is a rule, not a verdict; the operator decides.')
     w('* Cluster: id family plus section title. It groups for batching; it is NOT a proven common root cause.')
-    w('* Control needles (11.4.273) passed before this file was written: CAT-PREEXIST-1 present, PX-F* family present, fabricated ZZ-NOSUCH-999 absent.\n')
+    w('* Control needles (11.4.273) passed before this file was written: CAT-PREEXIST-1 present, PX-F* family present, fabricated ZZ-NOSUCH-999 absent; status needles PXF23-R2 landed, FU2-1 open, SMB-FU-17 not landed, R3-1 unconfirmed.\n')
     w('## Counts\n')
-    w('Rows: %d. By status: %s.\n' % (len(rows), ', '.join('%s %d' % (k.split(' ')[0], v) for k, v in sorted(C(r['status'].split(' ')[0] for r in rows).items()))))
+    w('Rows: %d. By status: %s. **`unconfirmed` rows are NOT closed**: they have only weak evidence and need a human check; they are not part of the landed count.\n' % (len(rows), ', '.join('%s %d' % (k.split(' ')[0], v) for k, v in sorted(C(r['status'].split(' ')[0] for r in rows).items()))))
+    unc = [r for r in rows if r['status'] == 'unconfirmed']
+    w('Unconfirmed rows by severity: %s; by layer: %s.\n' % (', '.join('%s %d' % (k, v) for k, v in sorted(C(r['sevraw'] for r in unc).items())), ', '.join('%s %d' % (k, v) for k, v in sorted(C(r['layer'].rstrip('*') for r in unc).items()))))
     w('Open rows by layer (derived `*` merged): %s.\n' % ', '.join('%s %d' % (k, v) for k, v in sorted(C(r['layer'].rstrip('*') for r in op).items())))
     w('Open rows by severity: %s.\n' % ', '.join('%s %d' % (k, v) for k, v in sorted(C(r['sevraw'] for r in op).items())))
     w('Open layer x severity:\n')
@@ -338,9 +399,10 @@ def render(rows, ref, sha, doc, prose=()):
     for lay in ('source-defect', 'test-instrumentation', 'process-doc', 'UNKNOWN'):
         sub = [r for r in op if r['layer'].rstrip('*') == lay]
         w('| %s | %s |' % (lay, ' | '.join(str(sum(1 for r in sub if r['sevraw'] == s)) for s in ('critical', 'important', 'minor', 'nit', 'UNKNOWN'))))
-    blk = [r for r in op if r['blocker'] == 'yes']
-    rev = [r for r in op if r['blocker'] == 'review']
-    w('\nOpen blockers by rule: %d; open rows needing a human severity (`review`): %d.  Open security-adjacent words: %d.\n' % (len(blk), len(rev), sum(1 for r in op if r['security'])))
+    nc = [r for r in rows if r['status'] in ('open', 'unconfirmed')]
+    blk = [r for r in nc if r['blocker'] == 'yes']
+    rev = [r for r in nc if r['blocker'] == 'unclassified']
+    w('\nBlockers by rule (open or unconfirmed): %d (open %d, unconfirmed %d). `unclassified` (severity UNKNOWN + source-defect/UNKNOWN layer; neither blocker nor non-blocker): %d, of which %d carry a security-adjacent word and need triage first. See proposed policy (4): every id carries a stated severity.\n' % (len(blk), sum(1 for r in blk if r['status'] == 'open'), sum(1 for r in blk if r['status'] == 'unconfirmed'), len(rev), sum(1 for r in rev if r['security'])))
     w('Open rows per cluster family (top 15):\n')
     fam = C(r['cluster'].split(' / ')[0] for r in op)
     w('| family | open |\n|---|---|')
@@ -348,9 +410,10 @@ def render(rows, ref, sha, doc, prose=()):
         w('| %s | %d |' % (k, v))
     w('\n## Top blockers\n')
     if blk or rev:
-        w('| blocker | id | line | layer | severity | reason | cluster |\n|---|---|---|---|---|---|---|')
-        for r in (blk + rev)[:40]:
-            w('| %s | %s | %d | %s | %s | %s | %s |' % (r['blocker'], r['id'], r['line'], r['layer'], r['sev'], r['reason'], r['cluster'].replace('|', '/')))
+        w('Rule `yes` rows first, then the security-adjacent `unclassified` rows (first 25).\n')
+        w('| blocker | id | line | status | layer | severity | reason | cluster |\n|---|---|---|---|---|---|---|---|')
+        for r in (blk + [x for x in rev if x['security']][:25]):
+            w('| %s | %s | %d | %s | %s | %s | %s | %s |' % (r['blocker'], r['id'], r['line'], r['status'], r['layer'], r['sev'], r['reason'].replace('|', '/'), r['cluster'].replace('|', '/')))
     else:
         w('None by the rule.')
     w('\nScope of the open set: only bullet entries that BEGIN with an id are rows. %d further ids are mentioned only inside prose or only in the register and are NOT rows, so a blocker that exists only there is invisible to the table. Prose/register-only ids on a line that says important/critical/blocker (first 20): %s. Known prose-only candidate: `OBF-1` ("Follow-ups (Queued, minor): OBF-1 ..." list near line 1921; minor, a rollback that can delete an unreadable config). `CAT-D9-SUSPEND` is a row (line 1279) and also in the register Part A. The table it does not replace the register.' % (len(prose), ', '.join('%s (line %d)' % x for x in prose[:20]) or 'none'))
@@ -359,8 +422,9 @@ def render(rows, ref, sha, doc, prose=()):
     w('> **Follow-up triage policy (proposed 2026-11-12).** (1) A reviewer finding of severity minor joins an existing open class item of the same root-cause family (same id family and section) as an added line, unless it is security-adjacent (authz, credential, injection, path confinement, data loss, information leak); a security-adjacent minor keeps its own id and is triaged for the next release. (2) A nit is not registered as its own id: it is applied in the same change when trivial, or listed once under the class item; a nit still open after the triage pass for the next release is closed with the reason `nit-after-triage`. (3) Each landed batch registers at most one new item per distinct class; the count of open ids must not grow between consecutive releases except for new increments (11.4.230(E.4) direction rule). (4) Every id carries a stated severity; UNKNOWN is a triage defect to fix at registration.\n')
     w('## Full table\n')
     w('| id | line | layer | severity | blocker | reason | cluster | status | evidence |\n|---|---|---|---|---|---|---|---|---|')
-    order = {'yes': 0, 'review': 1, 'no': 2}
-    for r in sorted(rows, key=lambda r: (r['status'] != 'open', order[r['blocker']], r['line'])):
+    order = {'yes': 0, 'unclassified': 1, 'no': 2}
+    sord = {'open': 0, 'unconfirmed': 1}
+    for r in sorted(rows, key=lambda r: (sord.get(r['status'], 2), order[r['blocker']], r['line'])):
         w('| %s | %s | %s | %s | %s | %s | %s | %s | %s |' % tuple(
             str(r[k]).replace('|', '/') for k in ('id', 'line', 'layer', 'sev', 'blocker', 'reason', 'cluster', 'status', 'evidence')))
     return '\n'.join(lines) + '\n'

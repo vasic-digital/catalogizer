@@ -5,6 +5,7 @@ import contextlib, io, os, shutil, subprocess, sys, tempfile, unittest
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gen_follow_ups_triage as g  # noqa: E402
 
+FILLER = "\n".join("Filler %d." % i for i in range(45))
 DOC = """# Follow-ups
 ## Alpha series (GO-with-follow-ups, all minor)
 - CAT-PREEXIST-1 (Bug): stale docs example.
@@ -43,6 +44,44 @@ Closing prose: CAT-LATE-1 CLOSED in a later paragraph.
 ## PX-F9 landed (2026-11-12)
 ## Delta
 - CAT-DUP-1: DONE in a later entry.
+## Epsilon git and shape rules
+- CAT-GIT-1 (Task, minor): a docs-only commit names it.
+- CAT-GIT-2 (Task, minor): a code commit names it.
+- CAT-GIT-3 (Task, minor): a README-only commit names it.
+- CAT-GIT-4 (Task, minor): a commit touching only a non-markdown file under docs names it.
+- CAT-GIT-5 (Task, minor): a code commit names it but this long description runs past eighty characters before it says the rest is OWED.
+- CAT-RGC-1 (Task, minor): range commit one.
+- CAT-RGC-2 (Task, minor): range commit two.
+- CAT-BND-1 (Task, minor): DONEWORK is still pending.
+- CAT-NOUN-1 (spec): fixed members have no schema.
+- CAT-PART-1 (Task, minor): FIXED for a and b; OWED c.
+- CAT-PART-2 (DONE, Task): done but Open: the tail.
+- CAT-WEAK-1 (Task, minor): described below, see PROVISIONAL-DONE in prose.
+- CAT-START-1 (Task, minor): LANDED in commit abc.
+- CAT-START-2 (Task, minor): [LANDED] and tested.
+- CAT-IMPTI-1 (important, test-instrumentation): SSRF mutant guard test gap.
+- CLOSED on branch fix-x (2026-11-03):
+  - CAT-NEST-1 (Task, minor): detail one.
+- STILL OPEN note:
+  - CAT-NEST-2 (Task, minor): detail two.
+## Zeta reuse
+- F8 (Task, minor): reused one.
+- F8 (Task, minor): reused two.
+Prose line: F8 FIXED in some commit.
+- Q9 (Task, minor): single generic with a later mention.
+Prose line: Q9 FIXED here.
+## Series wavefront review items
+- F5 (Task, minor): first, open.
+- F6 (Task, minor): first, unrelated series.
+## Series wavefront landing wave
+- F5 (DONE): later entry of the same series.
+## Alpha tangent items
+- F6 (Task, minor): other open.
+## Series wavefront far items
+- F7 (Task, minor): first, far away.
+""" + FILLER + """
+## Series wavefront far landing
+- F7 (DONE): later entry, too far.
 """
 
 
@@ -62,9 +101,18 @@ class T(unittest.TestCase):
         open(self.d + '/docs/FOLLOW_UPS_NEXT_PHASE.md', 'w').write(DOC)
         run_git(self.d, 'add', 'docs')
         run_git(self.d, 'commit', '-q', '-m', 'docs: register PX-F2 follow-up')
-        for subj in ('test(x): PX-F2 landed here', 'test(x): FU2-1 something', 'test(x): R2-1 other thing',
-                     'test(x): F1 reused', 'test(x): PX-F1 landed?', 'test(x): CAT-OPENGIT-1 attempt', 'docs: register PX-F1 and PX-F2 review follow-ups'):
-            run_git(self.d, 'commit', '-q', '--allow-empty', '-m', subj)
+        for i, (subj, path) in enumerate((
+                ('test(x): PX-F2 landed here', 'src/a.go'), ('test(x): FU2-1 something', 'src/b.go'), ('test(x): R2-1 other thing', 'src/c.go'),
+                ('test(x): F1 reused', 'src/d.go'), ('test(x): PX-F1 landed?', 'src/e.go'), ('test(x): CAT-OPENGIT-1 attempt', 'src/f.go'),
+                ('docs: register PX-F1 and PX-F2 review follow-ups', 'docs/x.md'),
+                ('docs: CAT-GIT-1 line refs', 'src/g1.go'), ('fix(x): CAT-GIT-2 real fix', 'src/g2.go'),
+                ('chore: CAT-GIT-3 readme only', 'README.md'), ('fix(x): CAT-GIT-4 docs dir txt', 'docs/qa/e.txt'),
+                ('fix(x): CAT-GIT-5 code but entry OWED', 'src/g5.go'), ('fix(x): CAT-RGC-1..2 range', 'src/h.go'))):
+            os.makedirs(os.path.dirname(os.path.join(self.d, path)), exist_ok=True)
+            with open(os.path.join(self.d, path), 'w') as fh:
+                fh.write('x%d\n' % i)
+            run_git(self.d, 'add', path)
+            run_git(self.d, 'commit', '-q', '-m', subj)
         self.rows = {}
         for r in g.build(DOC, self.d, 'main'):
             self.rows.setdefault(r['id'], []).append(r)
@@ -86,6 +134,13 @@ class T(unittest.TestCase):
         rows[2]['status'] = 'landed'; rows[3]['status'] = 'landed'
         self.assertTrue(any('FU2-1' in e for e in g.needles(rows, '')))
         rows[3]['status'] = 'open'
+        self.assertEqual(g.needles(rows, ''), [])
+        rows.append(dict(id='SMB-FU-17', status='landed'))
+        self.assertTrue(any('SMB-FU-17' in e for e in g.needles(rows, '')))
+        rows[-1]['status'] = 'open'
+        rows.append(dict(id='R3-1', status='landed'))
+        self.assertTrue(any('R3-1' in e for e in g.needles(rows, '')))
+        rows[-1]['status'] = 'unconfirmed'
         self.assertEqual(g.needles(rows, ''), [])
 
     def test_severity_stated_only_and_nearest_own(self):
@@ -116,8 +171,49 @@ class T(unittest.TestCase):
         self.assertEqual(self.rows['PXF23-R2'][0]['status'], 'landed') # text starts after the id, FIXED
         self.assertEqual(self.rows['PX-F5'][0]['status'], 'duplicate-of PX-F1')
 
-    def test_later_prose_mention_closes(self):
-        self.assertEqual(self.rows['CAT-LATE-1'][0]['status'], 'landed')
+    def test_later_prose_mention_is_only_unconfirmed(self):
+        self.assertEqual(self.rows['CAT-LATE-1'][0]['status'], 'unconfirmed')   # weak evidence is NOT landed
+        self.assertEqual(self.rows['Q9'][0]['status'], 'unconfirmed')         # single generic lead + later mention
+        for r in self.rows['F8']:                                              # reused generic id: no later-mention evidence (kills dropped dup guard)
+            self.assertEqual(r['status'], 'open')
+
+    def test_series_pairing_and_window(self):
+        self.assertEqual(self.rows['F5'][0]['status'], 'landed')                # same series, within window (kills dropped pairing)
+        self.assertIn('series pairing', self.rows['F5'][0]['evidence'])
+        for r in self.rows['F6']:                                               # no shared heading word
+            self.assertEqual(r['status'], 'open')
+        self.assertEqual(self.rows['F7'][0]['status'], 'open')                  # 45 lines apart (kills window 40 -> 4000)
+
+    def test_git_evidence_needs_code_files(self):
+        self.assertEqual(self.rows['CAT-GIT-1'][0]['status'], 'open')           # docs: subject
+        self.assertEqual(self.rows['CAT-GIT-2'][0]['status'], 'landed')
+        self.assertIn('code commit', self.rows['CAT-GIT-2'][0]['evidence'])
+        self.assertEqual(self.rows['CAT-GIT-3'][0]['status'], 'open')           # *.md only
+        self.assertEqual(self.rows['CAT-GIT-4'][0]['status'], 'open')           # only under docs/
+        self.assertEqual(self.rows['CAT-GIT-5'][0]['status'], 'unconfirmed')    # commit but entry states an open remainder
+        for i in ('CAT-RGC-1', 'CAT-RGC-2'):                                    # range in a commit subject
+            self.assertEqual(self.rows[i][0]['status'], 'landed', i)
+
+    def test_strong_start_rule_noun_partial_and_nested(self):
+        self.assertEqual(self.rows['CAT-BND-1'][0]['status'], 'open')           # token boundary: DONEWORK is not DONE
+        self.assertEqual(self.rows['CAT-NOUN-1'][0]['status'], 'open')          # "fixed members" is a noun
+        self.assertEqual(self.rows['CAT-PART-1'][0]['status'], 'unconfirmed')   # partial
+        self.assertEqual(self.rows['CAT-PART-2'][0]['status'], 'unconfirmed')
+        self.assertEqual(self.rows['CAT-WEAK-1'][0]['status'], 'unconfirmed')   # closing word not at the start
+        self.assertEqual(self.rows['CAT-START-1'][0]['status'], 'landed')
+        self.assertEqual(self.rows['CAT-START-2'][0]['status'], 'landed')
+        self.assertEqual(self.rows['CAT-NEST-1'][0]['status'], 'landed')        # under "- CLOSED on branch"
+        self.assertEqual(self.rows['CAT-NEST-2'][0]['status'], 'open')          # under "- STILL OPEN note"
+
+    def test_starts_closed_unit(self):
+        for t in ('(DONE): x', ': FIXED in y', '(Task, FIXED) z', '[LANDED] q', '(F4/F5): fixed (F4 logs)'):
+            self.assertTrue(g.starts_closed(t), t)
+        for t in ('(spec): fixed members', '(Task): the fix is below', 'prefixed FIXED later', 'DONEWORK', ''):
+            self.assertFalse(g.starts_closed(t), t)
+
+    def test_expand_ranges(self):
+        self.assertEqual(g.expand_ranges('fix D7-R2-F1..F4 now'), ['D7-R2-F1', 'D7-R2-F2', 'D7-R2-F3', 'D7-R2-F4'])
+        self.assertEqual(g.expand_ranges('PX-F1..F3'), ['PX-F1', 'PX-F2', 'PX-F3'])
 
     def test_label_lines_and_range_heading_and_later_entry(self):
         self.assertEqual(self.rows['CAT-LABEL-1'][0]['status'], 'landed')
@@ -134,9 +230,10 @@ class T(unittest.TestCase):
     def test_blocker_rule(self):
         self.assertEqual(self.rows['PX-F3'][0]['blocker'], 'yes')
         self.assertEqual(self.rows['PX-F1'][0]['blocker'], 'no')
-        self.assertEqual(self.rows['CAT-BUGSEC-1'][0]['blocker'], 'yes')    # UNKNOWN severity + source-defect + security
+        self.assertEqual(self.rows['CAT-BUGSEC-1'][0]['blocker'], 'unclassified')   # UNKNOWN severity + source-defect: neither yes nor no
         self.assertEqual(self.rows['CAT-IMPUNK-1'][0]['blocker'], 'yes')    # important + unclassifiable layer
-        self.assertEqual(self.rows['CAT-REVIEW-1'][0]['blocker'], 'review')
+        self.assertEqual(self.rows['CAT-REVIEW-1'][0]['blocker'], 'unclassified')
+        self.assertEqual(self.rows['CAT-IMPTI-1'][0]['blocker'], 'no')      # important + sec word but test-instrumentation layer
 
     def test_reused_id_gets_two_rows(self):
         self.assertEqual(len(self.rows['F1']), 2)
@@ -149,6 +246,8 @@ class T(unittest.TestCase):
         self.assertEqual(rc, 0, err.getvalue())
         text = open(out).read()
         self.assertIn('Last modified', text)
+        self.assertIn('`unconfirmed` rows are NOT closed', text)
+        self.assertIn('| unclassified |' if False else 'unclassified', text)
         self.assertRegex(text, r'at `[0-9a-f]{7,}` of `main`')   # resolved SHA recorded
         open(self.d + '/docs/n.md', 'w').write('- ABC-1 (Task): x\\n')
         out2 = os.path.join(self.d, 'out2.md')

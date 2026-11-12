@@ -1528,7 +1528,7 @@ Evidence: docs/qa/ui-live-rerun-20261105/ (N=3 identical sha256 per check). PASS
 - HELIXQA-FU-2: upstream helix_qa `--admin-pass-file`/env credential option; stale docker-compose.qa.yml / scripts/run-helixqa-web.sh defaults (8080/3000).
 
 ## D7 remaining-contrast follow-ups (review round 2, GO-with-follow-ups)
-- D7-R2-F1 (important, pre-existing): class-wide dark-mode text-gray-500/600 without dark variant (77 static strings; e.g. MediaDistributionChart empty text 3.04 dark, CollectionsManager 4 items 3.04, description 1.94). Resolve real ancestor backgrounds, drive with whole-element walker. Not yet fixed.
+- D7-R2-F1 (important, pre-existing): class-wide dark-mode text-gray-500/600 without dark variant (77 static strings; e.g. MediaDistributionChart empty text 3.04 dark, CollectionsManager 4 items 3.04, description 1.94). Resolve real ancestor backgrounds, drive with whole-element walker. Landed in commit 54fa797d together with R2-F2..F4 (PROVISIONAL: no live contrast re-measurement recorded here).
 - D7-R2-F2: contrastD7Shared should use the whole-element walker (land with R2-F1).
 - D7-R2-F3: contrast helper should throw on conflicting same-prefix colour classes (fail closed).
 - D7-R2-F4: CollectionsManager test uses button index; use accessible label.
