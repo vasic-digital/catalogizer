@@ -22,7 +22,8 @@ func TestWF22R3_K15_ScanCancelledReachesAWebSocketClient(t *testing.T) {
 	ws := root_handlers.NewWebSocketHandler(nil)
 	defer ws.Stop()
 	r := gin.New()
-	r.GET("/ws", ws.HandleConnection)
+	// scan results are admin-only events (SEC-WS-1 F3): this client is an admin
+	r.GET("/ws", func(c *gin.Context) { c.Set("role_id", 1) }, ws.HandleConnection)
 	srv := httptest.NewServer(r)
 	defer srv.Close()
 	conn, _, err := websocket.DefaultDialer.Dial("ws"+strings.TrimPrefix(srv.URL, "http")+"/ws", nil)

@@ -103,11 +103,11 @@ func TestWSRoute_ValidTokenConnectsAndReceives(t *testing.T) {
 			defer conn.Close()
 			assert.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode)
 			require.Eventually(t, func() bool { return r.h.GetStats().ActiveConnections >= 1 }, 2*time.Second, 10*time.Millisecond)
-			r.h.BroadcastToClients(map[string]interface{}{"type": "notification", "marker": name})
+			r.h.BroadcastToClients(map[string]interface{}{"type": "media_update", "marker": name})
 			conn.SetReadDeadline(time.Now().Add(2 * time.Second))
 			_, msg, err := conn.ReadMessage()
 			require.NoError(t, err)
-			assert.Contains(t, string(msg), "notification")
+			assert.Contains(t, string(msg), "media_update")
 		})
 	}
 }

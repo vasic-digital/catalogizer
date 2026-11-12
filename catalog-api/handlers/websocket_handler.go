@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -28,6 +30,47 @@ type WebSocketConfig struct {
 	// AllowedOrigins lists the browser Origins (scheme://host[:port]) accepted besides
 	// the request's own host. Empty falls back to CORS_ALLOWED_ORIGINS / the dev defaults.
 	AllowedOrigins []string
+	// RecheckInterval bounds how long a connection outlives its authorisation
+	// (session revoked, account suspended or locked, token expired, admin role
+	// lost): every connection is re-validated this often, and on every inbound
+	// message. Zero means DefaultRecheckInterval.
+	RecheckInterval time.Duration
+}
+
+// DefaultRecheckInterval is the default WebSocketConfig.RecheckInterval.
+const DefaultRecheckInterval = 15 * time.Second
+
+// WSSessionCheck has the signature of middleware.SessionChecker (the check
+// RequireAuth runs per request): nil means the session is active and owned by
+// userID, an error means revoked, expired, suspended, locked or undeterminable.
+type WSSessionCheck func(ctx context.Context, sessionID, userID string) error
+
+// WSAdminCheck has the signature of middleware.AdminChecker (live DB decision).
+type WSAdminCheck func(ctx context.Context, userID int) (bool, error)
+
+// Audience says who may receive a broadcast message.
+type Audience int
+
+const (
+	// AudienceAdmin: connections whose user currently holds system administration.
+	// It is the zero value and the fail-closed default for unclassified messages.
+	AudienceAdmin Audience = iota
+	// AudienceAuthenticated: every authenticated connection (library content that
+	// every signed-in user can already read through the REST API).
+	AudienceAuthenticated
+)
+
+// audienceForType classifies an outbound message type. Scan lifecycle messages
+// and storage-path bearing file events expose server filesystem layout and
+// scanner errors, so they are admin-only; media_update / asset_update carry
+// library entity ids only. Anything unknown is admin-only (fail closed).
+func audienceForType(t string) Audience {
+	switch t {
+	case "media_update", "asset_update":
+		return AudienceAuthenticated
+	default:
+		return AudienceAdmin
+	}
 }
 
 // DefaultWebSocketConfig returns default configuration
@@ -56,6 +99,13 @@ type wsConn struct {
 	send      chan []byte
 	done      chan struct{}
 	logger    *zap.Logger
+
+	// Identity captured at upgrade from the RequireAuth context.
+	userID    string
+	sessionID string
+	hasIdent  bool
+	tokenExp  time.Time // zero = none known
+	isAdmin   atomic.Bool
 }
 
 // writeMessage safely writes a message to the WebSocket connection with timeout.
@@ -101,6 +151,10 @@ type WebSocketHandler struct {
 	connCount  int64
 	maxReached int64
 
+	// Post-upgrade authorisation (SEC-WS-1 F3); nil checks = not enforced (unit rigs).
+	sessionCheck WSSessionCheck
+	adminCheck   WSAdminCheck
+
 	// Cleanup
 	ticker   *time.Ticker
 	stopChan chan struct{}
@@ -142,6 +196,88 @@ func NewWebSocketHandlerWithConfig(logger *zap.Logger, config WebSocketConfig) *
 		zap.Duration("ping_interval", config.PingInterval))
 
 	return h
+}
+
+// SetAuthChecks installs the live session and admin decisions used to re-validate
+// every connection after the upgrade. main wires the same checkers RequireAuth uses.
+func (h *WebSocketHandler) SetAuthChecks(session WSSessionCheck, admin WSAdminCheck) {
+	h.mu.Lock()
+	h.sessionCheck, h.adminCheck = session, admin
+	h.mu.Unlock()
+}
+
+func (h *WebSocketHandler) recheckInterval() time.Duration {
+	if h.config.RecheckInterval > 0 {
+		return h.config.RecheckInterval
+	}
+	return DefaultRecheckInterval
+}
+
+// authorize re-validates wc against the live checks. It returns false when the
+// connection must be closed. It also refreshes the connection's admin flag; an
+// undeterminable admin decision downgrades to non-admin (fail closed for
+// admin-only events) without closing a still-valid session.
+func (h *WebSocketHandler) authorize(wc *wsConn) bool {
+	h.mu.RLock()
+	sc, ac := h.sessionCheck, h.adminCheck
+	h.mu.RUnlock()
+	if !wc.tokenExp.IsZero() && !time.Now().Before(wc.tokenExp) {
+		return false
+	}
+	if sc != nil {
+		if !wc.hasIdent || wc.sessionID == "" {
+			return false
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		err := sc(ctx, wc.sessionID, wc.userID)
+		cancel()
+		if err != nil {
+			return false
+		}
+	}
+	if ac != nil {
+		uid, err := strconv.Atoi(wc.userID)
+		if !wc.hasIdent || err != nil {
+			wc.isAdmin.Store(false)
+			return true
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		admin, aerr := ac(ctx, uid)
+		cancel()
+		wc.isAdmin.Store(aerr == nil && admin)
+	}
+	return true
+}
+
+// recheckLoop closes the connection within RecheckInterval of its authorisation ending.
+func (h *WebSocketHandler) recheckLoop(wc *wsConn) {
+	t := time.NewTicker(h.recheckInterval())
+	defer t.Stop()
+	for {
+		select {
+		case <-t.C:
+			if !h.authorize(wc) {
+				h.revoke(wc)
+				return
+			}
+		case <-wc.done:
+			return
+		case <-h.stopChan:
+			return
+		}
+	}
+}
+
+// revoke sends a policy-violation close frame and drops the connection.
+func (h *WebSocketHandler) revoke(wc *wsConn) {
+	h.logger.Info("WebSocket authorisation ended, closing", zap.String("id", wc.id))
+	wc.wmu.Lock()
+	wc.conn.WriteControl(websocket.CloseMessage,
+		websocket.FormatCloseMessage(websocket.ClosePolicyViolation, "authorization ended"),
+		time.Now().Add(time.Second))
+	wc.wmu.Unlock()
+	h.removeClient(wc)
+	wc.close()
 }
 
 // Stop gracefully shuts down the WebSocket handler.
@@ -281,6 +417,32 @@ func (h *WebSocketHandler) HandleConnection(c *gin.Context) {
 		done:      make(chan struct{}),
 		logger:    h.logger,
 	}
+	if uid, ok := c.Get("user_id"); ok {
+		switch v := uid.(type) {
+		case int:
+			wc.userID, wc.hasIdent = strconv.Itoa(v), true
+		case string:
+			wc.userID, wc.hasIdent = v, v != ""
+		}
+	}
+	if sid, ok := c.Get("session_id"); ok {
+		wc.sessionID, _ = sid.(string)
+	}
+	if exp, ok := c.Get("token_expires_at"); ok {
+		wc.tokenExp, _ = exp.(time.Time)
+	}
+	if rid, ok := c.Get("role_id"); ok {
+		// Claim fallback only when no live admin check is installed (mirrors RequireAdmin).
+		if n, isInt := rid.(int); isInt && n == 1 {
+			h.mu.RLock()
+			noLive := h.adminCheck == nil
+			h.mu.RUnlock()
+			if noLive {
+				wc.isAdmin.Store(true)
+			}
+		}
+	}
+	h.authorize(wc) // seed live admin flag (upgrade already passed RequireAuth)
 
 	h.mu.Lock()
 	h.clients[wc] = true
@@ -296,6 +458,7 @@ func (h *WebSocketHandler) HandleConnection(c *gin.Context) {
 
 	// Start goroutines for reading and writing
 	go h.writePump(wc)
+	go h.recheckLoop(wc)
 	h.readPump(wc)
 }
 
@@ -323,6 +486,10 @@ func (h *WebSocketHandler) readPump(wc *wsConn) {
 			break
 		}
 
+		if !h.authorize(wc) {
+			h.revoke(wc)
+			break
+		}
 		if messageType == websocket.TextMessage {
 			h.handleMessage(wc, message)
 		}
@@ -401,6 +568,13 @@ func randomString(n int) string {
 // If a client's buffer is full the message is dropped for that client rather
 // than blocking the publisher, so no additional semaphore is needed here.
 func (h *WebSocketHandler) BroadcastToClients(msg map[string]interface{}) {
+	t, _ := msg["type"].(string)
+	h.BroadcastToAudience(audienceForType(t), msg)
+}
+
+// BroadcastToAudience delivers msg only to connections entitled to it: admins for
+// AudienceAdmin, every authenticated connection for AudienceAuthenticated.
+func (h *WebSocketHandler) BroadcastToAudience(aud Audience, msg map[string]interface{}) {
 	data, err := json.Marshal(msg)
 	if err != nil {
 		h.logger.Error("Failed to marshal broadcast message", zap.Error(err))
@@ -411,6 +585,9 @@ func (h *WebSocketHandler) BroadcastToClients(msg map[string]interface{}) {
 	h.mu.RLock()
 	clients := make([]*wsConn, 0, len(h.clients))
 	for wc := range h.clients {
+		if aud == AudienceAdmin && !wc.isAdmin.Load() {
+			continue
+		}
 		clients = append(clients, wc)
 	}
 	h.mu.RUnlock()
@@ -433,10 +610,15 @@ func (h *WebSocketHandler) BroadcastToClientsContext(ctx context.Context, msg ma
 		return err
 	}
 
+	t, _ := msg["type"].(string)
+	aud := audienceForType(t)
 	// Snapshot client list
 	h.mu.RLock()
 	clients := make([]*wsConn, 0, len(h.clients))
 	for wc := range h.clients {
+		if aud == AudienceAdmin && !wc.isAdmin.Load() {
+			continue
+		}
 		clients = append(clients, wc)
 	}
 	h.mu.RUnlock()
