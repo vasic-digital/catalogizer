@@ -81,3 +81,20 @@ func TestSessionChecker_AccountState(t *testing.T) {
 	assert.Error(t, chk(ctx, "40", "4"), "timed lock still running")
 	assert.NoError(t, chk(ctx, "50", "5"), "expired timed lock does not reject")
 }
+
+// D9S-R3-1 (PROVISIONAL): a NULL is_locked is "unlocked", not a scan error that
+// logs the user out. Real sqlite.
+func TestSessionChecker_NullIsLockedIsUnlocked(t *testing.T) {
+	db, err := sql.Open("sqlite3", ":memory:")
+	require.NoError(t, err)
+	defer db.Close()
+	_, err = db.Exec(`CREATE TABLE user_sessions (id INTEGER PRIMARY KEY, user_id INTEGER, is_active BOOLEAN, expires_at DATETIME)`)
+	require.NoError(t, err)
+	_, err = db.Exec(`CREATE TABLE users (id INTEGER PRIMARY KEY, is_active BOOLEAN, is_locked BOOLEAN, locked_until DATETIME)`)
+	require.NoError(t, err)
+	_, err = db.Exec(`INSERT INTO users (id, is_active, is_locked, locked_until) VALUES (1, 1, NULL, NULL)`)
+	require.NoError(t, err)
+	_, err = db.Exec(`INSERT INTO user_sessions VALUES (10, 1, 1, ?)`, time.Now().Add(time.Hour))
+	require.NoError(t, err)
+	assert.NoError(t, sessionCheckerFor(sqlQuerier{db})(context.Background(), "10", "1"))
+}

@@ -59,7 +59,7 @@ func sessionCheckerFor(q sessionQuerier) root_middleware.SessionChecker {
 		// session race (e.g. a login that created its session after the
 		// admin's revokes) by construction.
 		if err := q.QueryRowContext(ctx,
-			"SELECT s.is_active, s.expires_at, s.user_id, u.is_active, u.is_locked, u.locked_until "+
+			"SELECT s.is_active, s.expires_at, s.user_id, u.is_active, COALESCE(u.is_locked, '0'), u.locked_until "+
 				"FROM user_sessions s JOIN users u ON u.id = s.user_id WHERE s.id = ?", sid,
 		).Scan(&active, &expires, &owner, &userActive, &userLocked, &lockedUntil); err != nil {
 			return fmt.Errorf("session lookup: %w", err)
