@@ -1868,7 +1868,7 @@ New jsdom Storage tests kill 6 reviewer mutants. The PW-F6 comment claimed dist/
 New jsdom Storage tests kill reviewer mutants M1-M4, M7, M8 (M1 survived the old test). Open (Queued):
 - PW-F9 LANDED (CAT-PWF9, PROVISIONAL) (Task, minor): mutant M5 survives (localStorage.removeItem also removing from sessionStorage); set the same key in both, remove from one, assert the other keeps its value, both directions.
 - PW-F10 LANDED (CAT-PWF9, PROVISIONAL) (Task, minor): mutant M6 survives (key() order/index); assert {key(0), key(1)} as a set equals the two stored keys.
-- PW-F11 LANDED-AS-ACCEPTED (CAT-PWF9, PROVISIONAL; cleanup redundancy left, harmless and finally-guarded) (nit): cleanup removes 'k'/'iso-*'/'keep' unconditionally; loops remove keys redundantly (harmless).
+- PW-F11 accepted, no change (nit) (CAT-PWF9, PROVISIONAL; cleanup redundancy left, harmless and finally-guarded) (nit): cleanup removes 'k'/'iso-*'/'keep' unconditionally; loops remove keys redundantly (harmless).
 
 ## PX-F8..F12 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups
 All 9 remaining `err.Error()` sites in log_management_handler.go now write fixed bodies (status codes unchanged; full ./handlers rc=0, real-binary contract test PASS). Reviewer mutants of its own survive in several areas; open follow-ups (Queued, all minor unless noted):
