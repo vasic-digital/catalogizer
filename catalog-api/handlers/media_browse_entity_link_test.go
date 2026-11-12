@@ -35,6 +35,7 @@ func TestSearchMedia_CarriesLinkedEntityIDAndType(t *testing.T) {
 	linked := mkFile("a.mkv")
 	multi := mkFile("b.mkv")
 	orphan := mkFile("c.mkv")
+	tie := mkFile("d.mkv")
 	var songType, movieType int64
 	require.NoError(t, db.QueryRowContext(ctx, `SELECT id FROM media_types WHERE name='song'`).Scan(&songType))
 	require.NoError(t, db.QueryRowContext(ctx, `SELECT id FROM media_types WHERE name='movie'`).Scan(&movieType))
@@ -42,6 +43,11 @@ func TestSearchMedia_CarriesLinkedEntityIDAndType(t *testing.T) {
 	exec(`INSERT INTO media_items (id, media_type_id, title, status) VALUES (900, ?, 'S', 'detected')`, songType)
 	exec(`INSERT INTO media_items (id, media_type_id, title, status) VALUES (901, ?, 'M1', 'detected')`, movieType)
 	exec(`INSERT INTO media_items (id, media_type_id, title, status) VALUES (902, ?, 'M2', 'detected')`, movieType)
+	exec(`INSERT INTO media_items (id, media_type_id, title, status) VALUES (910, ?, 'T1', 'detected')`, movieType)
+	exec(`INSERT INTO media_items (id, media_type_id, title, status) VALUES (911, ?, 'T2', 'detected')`, songType)
+	// two NON-primary links, higher id inserted first: lowest entity id must win
+	exec(`INSERT INTO media_files (media_item_id, file_id, is_primary) VALUES (911, ?, 0)`, tie)
+	exec(`INSERT INTO media_files (media_item_id, file_id, is_primary) VALUES (910, ?, 0)`, tie)
 	exec(`INSERT INTO media_files (media_item_id, file_id, is_primary) VALUES (900, ?, 1)`, linked)
 	exec(`INSERT INTO media_files (media_item_id, file_id, is_primary) VALUES (901, ?, 0)`, multi)
 	exec(`INSERT INTO media_files (media_item_id, file_id, is_primary) VALUES (902, ?, 1)`, multi)
@@ -62,13 +68,15 @@ func TestSearchMedia_CarriesLinkedEntityIDAndType(t *testing.T) {
 	for _, it := range resp.Items {
 		byID[int64(it["id"].(float64))] = it
 	}
-	require.Len(t, byID, 3)
+	require.Len(t, byID, 4)
 
 	assert.EqualValues(t, 900, byID[linked]["entity_id"])
 	assert.Equal(t, "song", byID[linked]["entity_type"])
 	// primary link (902) wins over a lower-id non-primary one (901)
 	assert.EqualValues(t, 902, byID[multi]["entity_id"])
 	assert.Equal(t, "movie", byID[multi]["entity_type"])
+	assert.EqualValues(t, 910, byID[tie]["entity_id"])
+	assert.Equal(t, "movie", byID[tie]["entity_type"])
 	// unlinked file: no entity fields at all (never a guessed id)
 	_, hasID := byID[orphan]["entity_id"]
 	_, hasType := byID[orphan]["entity_type"]

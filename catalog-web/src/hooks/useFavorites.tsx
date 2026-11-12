@@ -64,7 +64,8 @@ export const useFavorites = (params?: {
           // Remove from favorites
           return {
             ...old,
-            items: old.items.filter((fav: Favorite) => fav.media_id !== request.media_id)
+            items: old.items.filter((fav: Favorite) =>
+              !(fav.media_id === request.media_id && (!request.entity_type || fav.media_item.media_type === request.entity_type)))
           }
         }
       })
@@ -83,6 +84,7 @@ export const useFavorites = (params?: {
       // Refetch to ensure server state
       queryClient.invalidateQueries(['favorites'])
       queryClient.invalidateQueries(['favorites-stats'])
+      queryClient.invalidateQueries(['favorite-status'])
     }
   })
 
@@ -110,13 +112,13 @@ export const useFavorites = (params?: {
     }
   })
 
-  const checkFavoriteStatus = (mediaId: number): boolean => {
+  const checkFavoriteStatus = (mediaId: number, entityType?: string): boolean => {
     if (!favoritesData?.items) return false
-    return favoritesData.items.some(fav => fav.media_id === mediaId)
+    return favoritesData.items.some(fav => fav.media_id === mediaId && (!entityType || fav.media_item.media_type === entityType))
   }
 
   const toggleFavorite = (mediaId: number, currentStatus?: boolean, entityType?: string) => {
-    const isFavorite = currentStatus ?? checkFavoriteStatus(mediaId)
+    const isFavorite = currentStatus ?? checkFavoriteStatus(mediaId, entityType)
     toggleFavoriteMutation.mutate({
       media_id: mediaId,
       is_favorite: !isFavorite,
