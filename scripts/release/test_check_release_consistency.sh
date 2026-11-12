@@ -437,6 +437,19 @@ RAW=1 expect "R3-1 committed cited path outside manifest trees -> PASS" 0 "VERDI
 # R3-2 (R-x): a tracked file deleted from the working tree, uncommitted -> MISS (not in working tree)
 d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; ( cd "$d" && git commit -q -a -m cl ); rm "$d/docs/other/z.txt"
 RAW=1 expect "R3-2 tracked file deleted from the tree uncommitted -> MISS" 1 "MISS  docs/other/z.txt (not in working tree)" "$d" --check changelog
+# R3-3 (survivor 124): a covered file whose edit is staged only (worktree == index) differs from HEAD
+d=$(fresh); echo tampered > "$d/docs/qa/run2/c.txt"; ( cd "$d" && git add -A )
+RAW=1 expect "R3-3 covered file edit staged only -> BLIND (not committed)" 2 "not committed" "$d" --check changelog
+# R3-3 (survivor 137): the changelog is untracked (absent from HEAD) -> BLIND, not silently read
+d=$(fresh); ( cd "$d" && git rm -q --cached docs/CHANGELOG.md && git commit -q -m untrack )
+RAW=1 expect "R3-3 changelog not in HEAD -> BLIND" 2 "is not in HEAD" "$d" --check changelog
+# R3-3 (survivor 139): git status failing inside head_check must be BLIND, never silently clean
+gs=$(mktemp -d "$ROOT/gstub.XXXXXX"); realgit="$(command -v git)"
+printf '#!/bin/sh\ncase " $* " in *" status "*" docs/CHANGELOG.md"*|*" status "*"literal)docs/CHANGELOG.md"*) exit 1;; esac\nexec %s "$@"\n' "$realgit" > "$gs/git"; chmod +x "$gs/git"
+d=$(fresh); PATH="$gs:$PATH" RAW=1 expect "R3-3 git status failure in head_check -> BLIND" 2 "git status failed" "$d" --check changelog
+# R3-3 (survivor 102): a C1 control character (U+0080) passes the helper regex but not the shell [[:cntrl:]] check
+d=$(fresh); mkrun3 "$d"; addrow "$d" "docs/qa/run3/x"$'\xc2\x80'"y.txt"
+LC_ALL=C.utf8 expect "R3-3 C1 control char in VERIFIED path -> BLIND" 2 "control character" "$d" --check changelog
 # R3-2 (R-m): a waiver file that is only staged must go BLIND
 d=$(fresh); mkdir -p "$d/docs/qa"; printf '%s\n' 'unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|r' > "$d/docs/qa/EVIDENCE_WAIVERS.txt"; ( cd "$d" && git add docs/qa/EVIDENCE_WAIVERS.txt )
 RAW=1 expect "R3-2 staged-only waiver file -> BLIND" 2 "differs from HEAD" "$d" --check changelog
