@@ -193,6 +193,7 @@ func createConversionSchema(db *sql.DB) error {
 			status TEXT NOT NULL,
 			progress INTEGER DEFAULT 0,
 			error_message TEXT,
+			warning TEXT,
 			priority INTEGER DEFAULT 1,
 			scheduled_for DATETIME,
 			duration DATETIME,
