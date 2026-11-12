@@ -50,10 +50,12 @@ export const useFavorites = (params?: {
       await queryClient.cancelQueries(['favorites'])
       
       // Snapshot previous value
-      const previousFavorites = queryClient.getQueryData(['favorites'])
+      // FAVR3-1: the live list key is ['favorites', params]; snapshot and update every cached
+      // list by prefix (an exact ['favorites'] key matches no query).
+      const previousFavorites = queryClient.getQueriesData<{ items?: Favorite[] }>(['favorites'])
       
       // Optimistically update
-      queryClient.setQueryData(['favorites'], (old: { items?: Favorite[] } | undefined) => {
+      queryClient.setQueriesData(['favorites'], (old: { items?: Favorite[] } | undefined) => {
         if (!old?.items) return old
         
         if (request.is_favorite) {
@@ -77,7 +79,7 @@ export const useFavorites = (params?: {
     },
     onError: (error, variables, context) => {
       // Revert optimistic update
-      queryClient.setQueryData(['favorites'], context?.previousFavorites)
+      context?.previousFavorites?.forEach(([key, data]) => queryClient.setQueryData(key, data))
       toast.error('Failed to update favorite status')
     },
     onSettled: () => {

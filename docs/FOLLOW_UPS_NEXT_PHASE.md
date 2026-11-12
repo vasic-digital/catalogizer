@@ -2124,3 +2124,11 @@ WP03-6 the TOCTOU snapshot is not unit-testable (a race); it is argued by constr
 - WP03R3-F6 (nit): "CAT-WP03-MECH follow-ups" heading sits above the SECQ-2 bullets.
 - WP03R3-F7 (nit): duplicate target id yields duplicate `flip=` lines.
 - Author's filtered 33-mutant run result remains UNCONFIRMED (partial output).
+
+- FAVR3-7 (minor, source-defect, class inventory of FAVR3-1, PROVISIONAL): control-needled inventory of catalog-web invalidate/remove/set/get query-key uses against useQuery key roots (51 roots, 55 uses matched) found 8 uses whose root matches no useQuery key: lib/websocket.ts:162,169,174 ['media', id], :205 ['asset', id], :206 [entity_type, id]; hooks/usePlaylists.tsx:55,68 ['playlist', id]; components/identity/DiscoveredShares.tsx:85 ['identities-bindings']. UNCONFIRMED: whether each is dead (a consumer may build keys another way, or the query is not yet written); out of FAVR3 scope (§11.4.293), fix per item with a test on the real key.
+- FAVR3-8 (minor, source-defect): concurrent optimistic toggles - rollback of one failed toggle restores its whole-list snapshot and can resurrect a row removed by another in-flight toggle. Fix: guard rollback with an isMutating check or per-row rollback, with a test.
+- FAVR3-9 (nit): optimistic removal does not decrement `total` in the cached list.
+
+## FAVR3 — Opus round-2 follow-up (2026-11-12, GO-with-follow-ups)
+
+- FAVR3R2-1 (minor, test-instrumentation): both cached keys in the rollback test are seeded with the identical LIST, so reviewer mutant N3 (blanket restore of one snapshot via `setQueriesData(['favorites'], data)`) survives; seed the SORTED key with a distinct (e.g. reversed) list and assert each key is restored to its own snapshot.
