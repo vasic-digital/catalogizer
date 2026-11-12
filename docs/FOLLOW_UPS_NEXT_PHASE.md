@@ -2088,3 +2088,14 @@ RC3R4-4 (nit) retargeted symlink cited path gives FAIL (MISS) instead of BLIND; 
 - FAVR3-4 (minor, process-doc): FOLLOW_UPS ordering after union merge: CAT-UI-FAV headings sit between RC3R4-4 and the SECQ-2/SECQ2WD-R1 bullets; regroup.
 - FAVR3-5 (nit): attachEntityLinks does not check rows.Err() after the loop.
 - FAVR3-6 (owed): live Playwright file -> favourite -> open entity (11.4.289) and a PostgreSQL run of the attachEntityLinks query.
+
+## WP-10 triage generator — Opus round-4 follow-ups (2026-11-12, GO-with-follow-ups)
+
+- WP10R4-1 (minor): `START_CLOSE` takes a closing token that is the sentence subject ("PROVISIONAL-DONE entries …", WL13-R4) as status → false landed; require token followed by `:` `)` `,` `;` end or in/by/on.
+- WP10R4-2 (minor): remainder keyword list misses "still not run live" / "no lint there yet" / "reported, not waived" (CAT-QA-SONAR-1b, SMB-FU-14, RC-3b).
+- WP10R4-3 (minor, test-instrumentation): removing `\bnot\b` from `NEG_RE` survives the suite; add a heading test.
+- WP10R4-4 (minor): slash-listed heading ids credit only the first id (CAT-PREEXIST-7/8/9, PW-F5/F6).
+- WP10R4-5 (minor, process-doc): Part A row CAT-D9-SUSPEND names only D9S-F5/F6 open; also D9S-F7, D9S-R3-1.., D9S-M1/M4/M5.
+- WP10R4-6 (nit): CAT-PREEXIST-9b re-run proposal should name the reported build (main 563617b1 / v2.4.1), §11.4.292(F).
+- WP10R4-7 (nit): Source row says "at 811da03f of main" but reads the branch tip.
+- WP10R4-8 (nit): `any(`→`all(` mutant in `negated()` survives; negation window 20 chars; `later_mentions` guard case-sensitive; TAURI-R1-FU-6 layer cell; stale "review owed" heading on main.
