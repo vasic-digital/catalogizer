@@ -1,0 +1,14 @@
+Running as unit: run-p1162961-i72415229.scope; invocation ID: 9c6c7218ccc04391b60719da3dd3fd75
+=== RUN   TestLiveYandexWDF1ForcedReset
+    live_webdav_wdf1_chaos_test.go:273: A_reset_mid_body size=2097152 fired=true put_err=true present_no_retry=false retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:273: A_reset_mid_body size=2097152 fired=true put_err=true present_no_retry=false retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:273: A_reset_mid_body size=2097152 fired=true put_err=true present_no_retry=false retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:273: A_reset_mid_body size=2097152 fired=true put_err=true present_no_retry=false retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:273: A_reset_mid_body size=2097152 fired=true put_err=true present_no_retry=false retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:273: A_reset_mid_body size=2097152 fired=true put_err=true present_no_retry=false retry_acked=true verdict=ok
+    live_webdav_wdf1_chaos_test.go:288: control needle: delete_err=false verdict=LOST_ACKED_WRITE
+    live_webdav_wdf1_chaos_test.go:303: control needle 2 (same-size overwrite): verdict=CORRUPT
+--- PASS: TestLiveYandexWDF1ForcedReset (1250.94s)
+PASS
+ok  	catalogizer/filesystem	1250.953s
+rc=0
