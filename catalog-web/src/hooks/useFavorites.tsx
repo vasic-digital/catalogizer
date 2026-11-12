@@ -115,11 +115,12 @@ export const useFavorites = (params?: {
     return favoritesData.items.some(fav => fav.media_id === mediaId)
   }
 
-  const toggleFavorite = (mediaId: number, currentStatus?: boolean) => {
+  const toggleFavorite = (mediaId: number, currentStatus?: boolean, entityType?: string) => {
     const isFavorite = currentStatus ?? checkFavoriteStatus(mediaId)
     toggleFavoriteMutation.mutate({
       media_id: mediaId,
-      is_favorite: !isFavorite
+      is_favorite: !isFavorite,
+      ...(entityType && { entity_type: entityType })
     })
   }
 
@@ -153,10 +154,10 @@ export const useFavorites = (params?: {
  * @param mediaId - The ID of the media item to check
  * @returns React Query result with the favorite status
  */
-export const useFavoriteStatus = (mediaId: number) => {
+export const useFavoriteStatus = (mediaId: number, entityType?: string) => {
   return useQuery({
-    queryKey: ['favorite-status', mediaId],
-    queryFn: () => favoritesApi.checkFavorite(mediaId),
+    queryKey: ['favorite-status', entityType ?? null, mediaId],
+    queryFn: () => (entityType ? favoritesApi.checkFavorite(mediaId, entityType) : favoritesApi.checkFavorite(mediaId)),
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled: !!mediaId
   })

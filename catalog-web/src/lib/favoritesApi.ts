@@ -87,16 +87,16 @@ export const favoritesApi = {
   async toggleFavorite(request: FavoriteToggleRequest): Promise<{ is_favorite: boolean }> {
     // POST /favorites/toggle does not exist on the backend: compose it.
     if (request.is_favorite) {
-      await api.post('/favorites', { entity_type: DEFAULT_ENTITY, entity_id: request.media_id })
+      await api.post('/favorites', { entity_type: request.entity_type ?? DEFAULT_ENTITY, entity_id: request.media_id })
     } else {
-      await api.delete(`/favorites/${DEFAULT_ENTITY}/${request.media_id}`)
+      await api.delete(`/favorites/${request.entity_type ?? DEFAULT_ENTITY}/${request.media_id}`)
     }
     return { is_favorite: request.is_favorite }
   },
 
   // Check if media is in favorites
-  async checkFavorite(mediaId: number): Promise<{ is_favorite: boolean }> {
-    const response = await api.get(`/favorites/check/${DEFAULT_ENTITY}/${mediaId}`)
+  async checkFavorite(mediaId: number, entityType: string = DEFAULT_ENTITY): Promise<{ is_favorite: boolean }> {
+    const response = await api.get(`/favorites/check/${entityType}/${mediaId}`)
     return { is_favorite: response.data?.is_favorite === true }
   },
 

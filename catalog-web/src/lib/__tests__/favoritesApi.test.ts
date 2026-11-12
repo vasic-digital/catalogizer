@@ -89,4 +89,18 @@ describe('favoritesApi (backend contract: /favorites, entity_type + entity_id)',
     const res = await favoritesApi.getFavorites()
     expect(res.items[0].media_id).toBe(42)
   })
+
+  it('toggle add/remove and check use the supplied entity type (default movie only when omitted)', async () => {
+    mockApi.post.mockResolvedValue({ data: {} })
+    mockApi.delete.mockResolvedValue({ data: {} })
+    mockApi.get.mockResolvedValue({ data: { is_favorite: true } })
+    await favoritesApi.toggleFavorite({ media_id: 9, is_favorite: true, entity_type: 'song' })
+    expect(mockApi.post).toHaveBeenCalledWith('/favorites', { entity_type: 'song', entity_id: 9 })
+    await favoritesApi.toggleFavorite({ media_id: 9, is_favorite: false, entity_type: 'song' })
+    expect(mockApi.delete).toHaveBeenCalledWith('/favorites/song/9')
+    await favoritesApi.checkFavorite(9, 'song')
+    expect(String(mockApi.get.mock.calls.at(-1)![0])).toBe('/favorites/check/song/9')
+    await favoritesApi.toggleFavorite({ media_id: 9, is_favorite: true })
+    expect(mockApi.post).toHaveBeenLastCalledWith('/favorites', { entity_type: 'movie', entity_id: 9 })
+  })
 })

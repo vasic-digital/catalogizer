@@ -132,6 +132,9 @@ export const FavoritesGrid: React.FC<FavoritesGridProps> = ({
     return filteredFavorites.map(favorite => ({
       id: favorite.media_item.id,
       favorite_id: favorite.id,
+      // a favourite IS an entity reference (entity_type, entity_id)
+      entity_id: favorite.media_item.id,
+      entity_type: favorite.media_item.media_type,
       title: favorite.media_item.title,
       media_type: favorite.media_item.media_type,
       year: favorite.media_item.year,

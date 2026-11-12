@@ -43,8 +43,8 @@ func TestSearchMedia_CarriesLinkedEntityIDAndType(t *testing.T) {
 	exec(`INSERT INTO media_items (id, media_type_id, title, status) VALUES (901, ?, 'M1', 'detected')`, movieType)
 	exec(`INSERT INTO media_items (id, media_type_id, title, status) VALUES (902, ?, 'M2', 'detected')`, movieType)
 	exec(`INSERT INTO media_files (media_item_id, file_id, is_primary) VALUES (900, ?, 1)`, linked)
-	exec(`INSERT INTO media_files (media_item_id, file_id, is_primary) VALUES (902, ?, 0)`, multi)
-	exec(`INSERT INTO media_files (media_item_id, file_id, is_primary) VALUES (901, ?, 1)`, multi)
+	exec(`INSERT INTO media_files (media_item_id, file_id, is_primary) VALUES (901, ?, 0)`, multi)
+	exec(`INSERT INTO media_files (media_item_id, file_id, is_primary) VALUES (902, ?, 1)`, multi)
 
 	h := NewMediaBrowseHandler(repository.NewFileRepository(db), repository.NewStatsRepository(db), db)
 	gin.SetMode(gin.TestMode)
@@ -66,8 +66,8 @@ func TestSearchMedia_CarriesLinkedEntityIDAndType(t *testing.T) {
 
 	assert.EqualValues(t, 900, byID[linked]["entity_id"])
 	assert.Equal(t, "song", byID[linked]["entity_type"])
-	// primary link wins over a lower-id non-primary one
-	assert.EqualValues(t, 901, byID[multi]["entity_id"])
+	// primary link (902) wins over a lower-id non-primary one (901)
+	assert.EqualValues(t, 902, byID[multi]["entity_id"])
 	assert.Equal(t, "movie", byID[multi]["entity_type"])
 	// unlinked file: no entity fields at all (never a guessed id)
 	_, hasID := byID[orphan]["entity_id"]

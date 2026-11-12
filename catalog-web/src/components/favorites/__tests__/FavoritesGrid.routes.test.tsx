@@ -10,9 +10,13 @@ import toast from 'react-hot-toast'
 
 vi.mock('react-hot-toast', () => ({ default: { error: vi.fn(), success: vi.fn() } }))
 
+const toggleProps: any[] = []
 vi.mock('@/hooks/useFavorites', () => ({ useFavorites: vi.fn() }))
 vi.mock('@/components/media/MediaGrid', () => ({
-  MediaGrid: ({ media, onMediaView, onMediaPlay }: any) => (
+  MediaGrid: ({ media, onMediaView, onMediaPlay }: any) => {
+    toggleProps.length = 0
+    media.forEach((m: any) => toggleProps.push(m.actions?.props?.children?.props ?? m.actions?.props))
+    return (
     <div>
       {media.map((item: any) => (
         <div key={`${item.media_type}-${item.id}`}>
@@ -21,7 +25,8 @@ vi.mock('@/components/media/MediaGrid', () => ({
         </div>
       ))}
     </div>
-  ),
+    )
+  },
 }))
 vi.mock('../FavoriteToggle', () => ({ FavoriteToggle: () => null }))
 vi.mock('@/lib/mediaApi', () => ({ mediaApi: { downloadMedia: vi.fn() } }))
@@ -94,6 +99,12 @@ describe('FavoritesGrid entity navigation (CAT-UI-FAV-1)', () => {
       expect(warn.mock.calls[0][1]).toMatchObject({ favoriteId: 'other-' + bad })
       warn.mockRestore()
     })
+
+  it('each favourite toggle receives its entity link (entity_id + entity_type), not just the row id', () => {
+    setFavs([fav('song', 22)])
+    renderGrid()
+    expect(toggleProps[0].mediaItem).toMatchObject({ entity_id: 22, entity_type: 'song' })
+  })
 
   it('valid id gives no error feedback', () => {
     setFavs([fav('movie', 5)])
