@@ -3,6 +3,9 @@ import { favoritesApi } from '@/lib/favoritesApi'
 import type { Favorite, FavoriteToggleRequest } from '@/types/favorites'
 import toast from 'react-hot-toast'
 
+type FavoritesList = { items?: Favorite[]; total?: number }
+type RemovedRows = { key: readonly unknown[]; rows: { fav: Favorite; index: number }[] }
+
 /**
  * useFavorites manages favorite media items with list fetching, stats,
  * and an optimistic toggle mutation.
@@ -49,37 +52,60 @@ export const useFavorites = (params?: {
       // Cancel any ongoing refetches
       await queryClient.cancelQueries(['favorites'])
       
-      // Snapshot previous value
-      // FAVR3-1: the live list key is ['favorites', params]; snapshot and update every cached
-      // list by prefix (an exact ['favorites'] key matches no query).
-      const previousFavorites = queryClient.getQueriesData<{ items?: Favorite[] }>(['favorites'])
-      
-      // Optimistically update
-      queryClient.setQueriesData(['favorites'], (old: { items?: Favorite[] } | undefined) => {
-        if (!old?.items) return old
-        
-        if (request.is_favorite) {
-          // Add to favorites: the full media item is not available here, so leave the cache as it is.
-          // CAT-001 (R5): the success toast is shown in onSuccess, after the server accepted the add.
-          return old
-        } else {
-          // Remove from favorites
-          return {
+      // FAVR3-1: the live list key is ['favorites', params]; act on every cached list by prefix.
+      // FAVR3-8: record, per cached key, exactly the rows THIS request removed (with their index) so a
+      // failure re-inserts only those rows; a whole-list snapshot restore would resurrect rows removed
+      // by another in-flight toggle.
+      const removed: RemovedRows[] = []
+      if (!request.is_favorite) {
+        // Remove from favorites. (Adding leaves the cache as it is: the full media item is not available
+        // here; CAT-001 (R5): the success toast is shown in onSuccess, after the server accepted the add.)
+        for (const [key, old] of queryClient.getQueriesData<FavoritesList>(['favorites'])) {
+          if (!old?.items) continue
+          const rows: RemovedRows['rows'] = []
+          const items = old.items.filter((fav: Favorite, index: number) => {
+            const match = fav.media_id === request.media_id &&
+              (!request.entity_type || fav.media_item.media_type === request.entity_type)
+            if (match) rows.push({ fav, index })
+            return !match
+          })
+          if (rows.length === 0) continue
+          removed.push({ key, rows })
+          queryClient.setQueryData<FavoritesList>(key, {
             ...old,
-            items: old.items.filter((fav: Favorite) =>
-              !(fav.media_id === request.media_id && (!request.entity_type || fav.media_item.media_type === request.entity_type)))
-          }
+            items,
+            // FAVR3-9: keep the cached total in step with the removed rows
+            ...(typeof old.total === 'number' && { total: Math.max(0, old.total - rows.length) })
+          })
         }
-      })
-      
-      return { previousFavorites }
+      }
+
+      return { removed }
     },
     onSuccess: (_data, request) => {
       if (request.is_favorite) toast.success('Added to favorites')
     },
     onError: (error, variables, context) => {
-      // Revert optimistic update
-      context?.previousFavorites?.forEach(([key, data]) => queryClient.setQueryData(key, data))
+      // Revert optimistic update: re-insert only the rows this request removed, per key, at their
+      // original index; rows another in-flight toggle removed stay removed (FAVR3-8).
+      context?.removed?.forEach(({ key, rows }) => {
+        queryClient.setQueryData<FavoritesList>(key, (current) => {
+          if (!current?.items) return current
+          const items = [...current.items]
+          let restored = 0
+          for (const { fav, index } of rows) {
+            if (items.some((f) => f.id === fav.id)) continue
+            items.splice(Math.min(index, items.length), 0, fav)
+            restored++
+          }
+          if (restored === 0) return current
+          return {
+            ...current,
+            items,
+            ...(typeof current.total === 'number' && { total: current.total + restored })
+          }
+        })
+      })
       toast.error('Failed to update favorite status')
     },
     onSettled: () => {

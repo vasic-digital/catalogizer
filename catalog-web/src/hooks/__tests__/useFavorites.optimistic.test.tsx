@@ -100,6 +100,74 @@ describe('useFavorites optimistic update on the live key', () => {
     expect(qc.getQueryData(['favorites-stats'])).toBe(statsBefore)
     await act(async () => { release({ is_favorite: false }) })
   })
+  describe('FAVR3R2-1 / FAVR3-8 / FAVR3-9 (PROVISIONAL)', () => {
+    const SORTED = { sort_by: 'title' as const }
+    const REVERSED = { ...LIST, items: [...LIST.items].reverse() }
+    const idsAt = (qc: QueryClient, key: unknown[]) =>
+      ((qc.getQueryData(key) as typeof LIST).items).map((f) => `${f.media_item.media_type}-${f.media_id}`)
+    const mountDistinct = async () => {
+      const s = setup()
+      // the two cached keys hold DIFFERENT lists (reversed), so a blanket restore of one snapshot is detectable
+      api.getFavorites.mockImplementation(async (p: any) => (p?.sort_by ? REVERSED : LIST) as any)
+      const h = renderHook(() => ({ a: useFavorites(), b: useFavorites(SORTED) }), { wrapper: s.wrapper })
+      await waitFor(() => { expect(h.result.current.a.favorites).toHaveLength(3); expect(h.result.current.b.favorites).toHaveLength(3) })
+      return { ...s, h }
+    }
+
+    it('FAVR3R2-1: after a failed toggle each key is restored to its OWN snapshot (distinct lists)', async () => {
+      const { qc, h } = await mountDistinct()
+      api.getFavorites.mockImplementation(() => new Promise(() => {}) as any)
+      act(() => h.result.current.a.toggleFavorite(7, true, 'movie'))
+      await waitFor(() => expect(api.toggleFavorite).toHaveBeenCalled())
+      await act(async () => { fail(new Error('boom')) })
+      await waitFor(() => {
+        expect(idsAt(qc, ['favorites', undefined])).toEqual(['movie-7', 'song-7', 'movie-8'])
+        expect(idsAt(qc, ['favorites', SORTED])).toEqual(['movie-8', 'song-7', 'movie-7'])
+      })
+    })
+
+    it('FAVR3-9: optimistic removal decrements total, rollback restores it', async () => {
+      const { qc, h } = await mountDistinct()
+      api.getFavorites.mockImplementation(() => new Promise(() => {}) as any)
+      act(() => h.result.current.a.toggleFavorite(7, true, 'movie'))
+      await waitFor(() => expect(api.toggleFavorite).toHaveBeenCalled())
+      expect((qc.getQueryData(['favorites', undefined]) as typeof LIST).total).toBe(2)
+      expect((qc.getQueryData(['favorites', SORTED]) as typeof LIST).total).toBe(2)
+      await act(async () => { fail(new Error('boom')) })
+      await waitFor(() => expect((qc.getQueryData(['favorites', undefined]) as typeof LIST).total).toBe(3))
+    })
+
+    it('FAVR3-8: rollback never duplicates a row the cache already holds again', async () => {
+      const { qc, h } = await mountDistinct()
+      api.getFavorites.mockImplementation(() => new Promise(() => {}) as any)
+      act(() => h.result.current.a.toggleFavorite(7, true, 'movie'))
+      await waitFor(() => expect(api.toggleFavorite).toHaveBeenCalled())
+      act(() => { qc.setQueryData(['favorites', undefined], LIST) }) // row came back (e.g. server data landed)
+      await act(async () => { fail(new Error('boom')) })
+      await waitFor(() => expect(api.toggleFavorite).toHaveBeenCalled())
+      expect(idsAt(qc, ['favorites', undefined])).toEqual(['movie-7', 'song-7', 'movie-8'])
+      expect((qc.getQueryData(['favorites', undefined]) as typeof LIST).total).toBe(3)
+    })
+
+    it('FAVR3-8: a failed toggle does not resurrect a row removed by another in-flight toggle', async () => {
+      const { qc, h } = await mountDistinct()
+      api.getFavorites.mockImplementation(() => new Promise(() => {}) as any)
+      const calls: { res: (v?: unknown) => void; rej: (e?: unknown) => void }[] = []
+      api.toggleFavorite.mockImplementation(() => new Promise((res, rej) => { calls.push({ res, rej }) }) as any)
+      act(() => h.result.current.a.toggleFavorite(7, true, 'movie'))
+      await waitFor(() => expect(calls).toHaveLength(1))
+      act(() => h.result.current.a.toggleFavorite(8, true, 'movie'))
+      await waitFor(() => expect(calls).toHaveLength(2))
+      expect(idsAt(qc, ['favorites', undefined])).toEqual(['song-7'])
+      await act(async () => { calls[0].rej(new Error('boom')) })
+      await waitFor(() => expect(idsAt(qc, ['favorites', undefined])).toContain('movie-7'))
+      expect(idsAt(qc, ['favorites', undefined])).toEqual(['movie-7', 'song-7'])
+      expect(idsAt(qc, ['favorites', SORTED])).toEqual(['song-7', 'movie-7'])
+      expect((qc.getQueryData(['favorites', undefined]) as typeof LIST).total).toBe(2)
+      await act(async () => { calls[1].res({ is_favorite: false }) })
+    })
+  })
+
   describe('several useFavorites instances (FavoriteToggle + FavoritesGrid shape) in one QueryClient', () => {
     const SORTED = { sort_by: 'title' as const }
     const mountTwo = async () => {

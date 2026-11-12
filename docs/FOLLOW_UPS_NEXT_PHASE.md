@@ -2173,3 +2173,17 @@ WP03R3-F1..F7 addressed (F6 = heading moved above). Residual, UNCONFIRMED or owe
 - SEC-WS-1R3FU-2 (minor, test-instrumentation): per WS location assert `Upgrade $http_upgrade` and a `Connection` upgrade line (mutant Me survives).
 - SEC-WS-1R3FU-3 (nit): the non-WS `$host`->`$http_host` edits are beyond strict /ws scope; `$http_host` empty for HTTP/1.0 without Host -> keep deliberately and say so, or revert.
 - SEC-WS-1R3FU-4 (nit): K8s ingress annotation form not scanned; add to F7 scope note. Live edge run (SEC-WS-1-F1) still owed.
+## FAVR3 follow-ups round 2 (2026-11-12, branch fix/favr3-fu2, PROVISIONAL, Roadmap-Item CAT-UI-FAV-1b)
+
+- FAVR3R2-1 (closed, PROVISIONAL): rollback test now seeds the two cached keys with DIFFERENT lists (reversed); evidence `docs/qa/favr3-fu2/{red,green}.txt`.
+- FAVR3-7 (decided, no code change): class inventory of query keys embedding favourite state = `['favorites', params]` (optimistic prefix update + invalidate), `['favorites-stats']` and `['favorite-status', type, id]` (invalidated on settle, not updated optimistically). The 8 unmatched keys are NOT favourite state: `['identities-bindings']` is share-identity bindings (DiscoveredShares.tsx; the component's own comment says the join query is a future backend feature, so the key is a forward reference, not a stale favourites key), `['media', id]`, `['asset', id]`, `[entity_type, id]`, `['playlist', id]` have no matching useQuery (grep of `queryKey: ['media'|'asset'|'playlist'`) and belong to websocket/playlist paths. Favourite toggles must not touch them. Left unchanged; their deadness remains UNCONFIRMED and is owned by their features.
+- FAVR3-8 (fixed, PROVISIONAL): onMutate records per cached key exactly the rows this request removed; onError re-inserts only those rows (no duplicate, original index), so another in-flight toggle's removal is not resurrected.
+- FAVR3-9 (fixed, PROVISIONAL): optimistic removal decrements cached `total`; rollback re-adds it.
+- FAVR3F2-1 (minor, owed): `['favorite-status', type, id]` and `['favorites-stats']` are not updated optimistically, so the toggle icon/stats lag until the settle refetch. Not part of FAVR3; decide whether to add.
+- FAVR3-6 (still owed): live Playwright favourite flow (§11.4.289); this change is hook/jsdom level only.
+
+### FAVR3 round-3 reviewer follow-ups (Opus, GO-with-follow-ups; PROVISIONAL)
+- FAVR3R3FU-1 (minor, source-defect): track the actual decrement applied per key and restore exactly that delta (list with items but total 0: rollback ends total 1; clamp mutant M4 survives).
+- FAVR3R3FU-2 (minor, source-defect): rollback dedup must check ids present BEFORE the loop (duplicate rows with same id restore only one); add tests for both.
+- FAVR3R3FU-3 (minor, process-doc): extend FAVR3-7 inventory to data shapes: collections `is_favorite` (CollectionPreview, smart-collection rules); decide/invalidate `['collections']`/`['collection', id]` on toggle (UNCONFIRMED whether query-backed).
+- FAVR3R3FU-4 (nit): re-capture docs/qa/favr3-fu2/red.txt against the current 13-test file.
