@@ -109,19 +109,34 @@ class StorageMock implements Storage {
   }
 }
 
-// Only define localStorage/sessionStorage if not already present (jsdom provides these)
-if (typeof global.localStorage === 'undefined') {
-  Object.defineProperty(global, 'localStorage', {
-    value: new StorageMock(),
-    writable: true,
-  });
-}
-
-if (typeof global.sessionStorage === 'undefined') {
-  Object.defineProperty(global, 'sessionStorage', {
-    value: new StorageMock(),
-    writable: true,
-  });
+// CAT-PREEXIST-8: prefer jsdom's real Web Storage. Node >= 25 ships an experimental
+// global `localStorage` that is unusable without --localstorage-file (reading it
+// warns and yields undefined), so vitest does not install jsdom's; the plain
+// StorageMock fallback is then NOT an instance of Storage.prototype and tests that
+// spy on Storage.prototype.setItem/removeItem never see the calls. Take the Storage
+// objects from the jsdom window vitest exposes as globalThis.jsdom; only fall back
+// to the mock when that is unavailable.
+const jsdomWindow = (globalThis as { jsdom?: { window: Window } }).jsdom?.window;
+for (const name of ['localStorage', 'sessionStorage'] as const) {
+  let current: unknown;
+  try {
+    current = (global as Record<string, unknown>)[name];
+  } catch {
+    current = undefined;
+  }
+  if (jsdomWindow && !(current instanceof jsdomWindow.Storage)) {
+    Object.defineProperty(global, name, {
+      value: jsdomWindow[name],
+      writable: true,
+      configurable: true,
+    });
+  } else if (typeof current === 'undefined') {
+    Object.defineProperty(global, name, {
+      value: new StorageMock(),
+      writable: true,
+      configurable: true,
+    });
+  }
 }
 
 // Mock fetch
