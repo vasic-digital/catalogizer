@@ -2075,6 +2075,7 @@ WP03-5 equivalent mutants (not run, argued in the harness): the row-count contro
 WP03-R3 Opus round-2 NO-GO (I-6, I-7, M-a..M-d, r1..r3) addressed in the round-3 fix commit: exact verdict `case` (no substring membership), unsafe ids (space, comma, glob) fail closed, `--out` realpath clash refused in both tools, duplicate/repeated image lines rejected, gate cross-checks schema, `new_total` == `tests_total` == `tests_reported`, strict `image_new` shape and NO-WORSE record consistency, input snapshot against TOCTOU. Gate-logic unit class; PROVISIONAL.
 WP03-6 the TOCTOU snapshot is not unit-testable (a race); it is argued by construction and its mutant is recorded as equivalent. UNCONFIRMED: no test swaps an input between the two reads.
 
+## SECQ-2 / WD-F1 re-reproduction follow-ups (moved out from under CAT-WP03-MECH, WP03R3-F6)
 - SECQ-2 / WD-F1 / WD-F1a re-reproduction 2026-11-12 (evidence `docs/qa/secq2-repro-20261112/`, PROVISIONAL): result not-reproducible-with-evidence. 6 further repeats of the WD-F1a case (mode A reset, 2 MiB) all byte-identical (6/6 ok, detail recorded), both control needles fire. Proposal for the operator: close under section 11.4.90 `not-reproducible` (UNCONFIRMED whether the single 2026-11-05 CORRUPT was a read-back glitch). No fix written.
 - SECQ2WD-R1-1 (minor, process-doc): fix/wd-repro README must state the re-run used main f709b892, not the 2026-11-05 build where the single CORRUPT appeared (WriteFile gained HEAD size read-back since); operator weighs this before accepting a 11.4.90 not-reproducible closure.
 - SECQ2WD-R1-2 (minor, process-doc): record a target identity for the live run (hash of endpoint host, clean-tree note for the test binary) per 11.4.292(C)/11.4.289(D).
@@ -2148,3 +2149,14 @@ WP03-6 the TOCTOU snapshot is not unit-testable (a race); it is argued by constr
 - D9SR3-F3 (minor, source-defect, pre-existing): unknown-user Login does no bcrypt, so timing enumerates usernames; add dummy CheckPassword against a fixed hash and correct the overstating comment/test message.
 - D9SR3-F4 (nit): `failed_login_inactive` audit is written before the password check; write after with outcome.
 - D9SR3-F5 (nit): PostgreSQL is no longer UNCONFIRMED for this change: reviewer ran it live on PG16 (base 4 fail, tip 6 pass); cite review evidence pg_tip.txt (sha256 5ad83f44…6c3).
+## CAT-WP03-MECH — WP03R3 fix round (branch fix/wp03-fu, 2026-11-12; PROVISIONAL, gate-logic unit class)
+WP03R3-F1..F7 addressed (F6 = heading moved above). Residual, UNCONFIRMED or owed:
+- WP03R3FU-1 (minor): `rm -rf` remains in `check_release_consistency.sh`, `test_check_release_consistency.sh`, `mutation_check_release_consistency.sh` (all `${VAR:?}`-guarded, outside this change's two tools); convert to `safe_rm_rf` in a later change.
+- WP03R3FU-2 (nit): the tests use `safe_rm_rf` only when `constitution/scripts/lib/safe_rm.sh` is present next to the repo; otherwise they leave their temp dir and print a note.
+- WP03R3FU-3 (minor): `sanitize` replaces control characters with `?` in record/stdout text; ids from verdict files are not sanitised beyond the existing whitespace/glob checks (a non-newline control byte in a test id still reaches `diff=`/`lost=` lines, cannot add a line).
+
+### WP03 fu reviewer follow-ups (Opus round 1, GO-with-follow-ups; PROVISIONAL, gate-logic unit class)
+- WP03R3FU-4 (minor): pre-scan must collect EVERY value of each input option, not only the last, so a hardlinked `--out` cannot clobber a superseded input (repro: `release_gate --out HWLINK --hardware-record hw --hardware-record zz --bogus`; `image_no_worse --baseline-verdicts b --out blink --baseline-verdicts z --bogus`). Test per tool; fix the overclaiming F1 comment.
+- WP03R3FU-5 (minor): refuse `--out` that is not a regular file or absent (FIFO/device/directory) before opening; a FIFO currently hangs with no verdict.
+- WP03R3FU-6 (minor): tests killing X2 (control char in `target_id` unsanitised) and X3 (control char reaching stdout `reason:`, e.g. `tests_total=3\x01`); correct the wrong "equivalent mutant" comment in mutation_check_no_worse_gate.sh.
+- WP03R3FU-7 (minor): assert `new_notpass_on_baseline_set` and `issue-count-higher` for baseline PASS turned SKIPPED/INCONCLUSIVE (mutant X8: NNOTPASS counts only FAIL).

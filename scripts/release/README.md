@@ -178,6 +178,17 @@ the suites are fixture INPUT data. They prove the tools decide correctly on a de
 NOT evidence that any real image is no worse or any product releasable. That needs a real LIVE run on
 connected hardware producing the input files (consumer work, not claimed here).
 
+### Trust boundary: input records are unauthenticated (WP03R3-F5)
+
+Neither tool authenticates its input files. A verdict file, meta file, hardware record, live-run record or
+comparison record is read as written: a forged `kind=physical`, `connected=yes` or `verdict=NO-WORSE-PROVEN`
+passes if it is well-formed. The tools check shape, consistency and cross-binding only. Authenticity
+(who wrote the record, that it was read from the target) is the producer-verifier and tamper-evidence
+problem of constitution 11.4.240 (producer is not verifier) and 11.4.268 (tamper-evident evidence chain),
+which are not implemented here. Record text from option values and paths is stripped of control
+characters before it is written, so it cannot add record lines; `--out` that resolves to, symlinks to,
+or hardlinks (same inode) to an input is refused.
+
 ### image_no_worse.sh
 
 ```

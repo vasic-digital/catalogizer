@@ -24,17 +24,23 @@
 # RELEASABLE survives. It carries the build identity (image_new= lines) per 11.4.298(F).
 set -u
 OUT=""
-for ((i=1;i<=$#;i++)); do if [ "${!i}" = "--out" ]; then j=$((i+1)); OUT="${!j:-}"; fi; done
+HW0=""; LR0=""; CR0=""
+# pre-scan --out AND every record option so a usage error cannot clobber an input named earlier (F1)
+for ((i=1;i<=$#;i++)); do j=$((i+1)); case "${!i}" in
+  --out) OUT="${!j:-}" ;; --hardware-record) HW0="${!j:-}" ;; --live-run-record) LR0="${!j:-}" ;; --comparison-record) CR0="${!j:-}" ;; esac; done
 P=""; HW=""; LR=""; CR=""
+# san: replace every control character (newline included) so option/product/reason text can never
+# add or duplicate a record or stdout line (F2)
+san() { printf '%s' "$1" | LC_ALL=C tr '\000-\037\177' '?'; }
 sha() { sha256sum -- "$1" | cut -d' ' -f1; }
 get() { local c v; c="$(grep -c "^$2=" "$1" 2>/dev/null)"; [ "$c" = 1 ] || return 1
   v="$(grep "^$2=" "$1" | cut -d= -f2-)"; [ -n "$v" ] && [[ "$v" != *$'\r'* ]] || return 1; printf '%s\n' "$v"; }
 HEX='^[0-9a-f]{64}$'
-HW0=""; LR0=""; CR0=""
-# out_clash: --out realpath-resolves to an input record (M-c)
+# out_clash: --out realpath-resolves to, or is the same inode (-ef: hardlink) as, an input record (M-c, F1)
 out_clash() { local o f; [ -n "$OUT" ] || return 1; o="$(realpath -m -- "$OUT" 2>/dev/null)" || return 0
   for f in "$HW0" "$LR0" "$CR0"; do [ -n "$f" ] || continue
-    [ "$(realpath -m -- "$f" 2>/dev/null)" = "$o" ] && return 0; done; return 1; }
+    [ "$(realpath -m -- "$f" 2>/dev/null)" = "$o" ] && return 0
+    [ "$OUT" -ef "$f" ] && return 0; done; return 1; }
 # getz: like get but the value may be empty (exactly one line required)
 getz() { local c v; c="$(grep -c "^$2=" "$1" 2>/dev/null)"; [ "$c" = 1 ] || return 1
   v="$(grep "^$2=" "$1" | cut -d= -f2-)"; [[ "$v" != *$'\r'* ]] || return 1; printf '%s\n' "$v"; }
@@ -42,8 +48,8 @@ record() { # record <state> <reason>
   [ -n "$OUT" ] || return 1
   if out_clash; then return 0; fi
   {
-    echo "schema=release_gate/1"; echo "product=$P"; echo "state=$1"; echo "reason=$2"
-    echo "hardware_target_id=$(get "$HW" target_id 2>/dev/null || echo none)"
+    echo "schema=release_gate/1"; echo "product=$(san "$P")"; echo "state=$1"; echo "reason=$(san "$2")"
+    echo "hardware_target_id=$(san "$(get "$HW" target_id 2>/dev/null || echo none)")"
     echo "hardware_record_sha256=$( [ -r "$HW" ] && sha "$HW" || echo absent)"
     echo "live_run_record_sha256=$( [ -r "$LR" ] && sha "$LR" || echo absent)"
     echo "comparison_record_sha256=$( [ -r "$CR" ] && sha "$CR" || echo absent)"
@@ -52,7 +58,7 @@ record() { # record <state> <reason>
     true
   } >"$OUT" 2>/dev/null
 }
-die() { echo "BLIND: $*" >&2; record BLIND "$*"; echo "GATE-STATE: BLIND"; exit 2; }
+die() { echo "BLIND: $(san "$*")" >&2; record BLIND "$*"; echo "GATE-STATE: BLIND"; exit 2; }
 while [ $# -gt 0 ]; do
   case "$1" in
     --product) [ $# -ge 2 ] || die "$1 needs a value"; P="$2"; shift 2 ;;
@@ -64,16 +70,18 @@ while [ $# -gt 0 ]; do
   esac
 done
 [ -n "$P" ] && [ -n "$OUT" ] && [ -n "$HW" ] && [ -n "$LR" ] && [ -n "$CR" ] || die "all options required and non-empty"
+[ "$(san "$P")" = "$P" ] || die "product id contains a control character"
 HW0="$HW"; LR0="$LR"; CR0="$CR"
 if out_clash; then OUT_BAD="$OUT"; die "--out $OUT_BAD resolves to an input record"; fi
 # TOCTOU: snapshot the records into a private dir; all later reads use the snapshot
 SNAP="$(mktemp -d)" || die "cannot create snapshot dir"
-trap 'rm -rf -- "${SNAP:?}"' EXIT
+# F4: no recursive delete - remove the known snapshot files, then the (now empty) directory
+trap 'rm -f -- "${SNAP:?}/hw" "${SNAP:?}/lr" "${SNAP:?}/cr"; rmdir -- "${SNAP:?}" 2>/dev/null' EXIT
 snap() { local src="$1" dst="$SNAP/$2"; if [ -r "$src" ] && [ -f "$src" ]; then cp -- "$src" "$dst" && printf '%s' "$dst" || printf '%s' "$src"; else printf '%s' "$src"; fi; }
 HW="$(snap "$HW0" hw)"; LR="$(snap "$LR0" lr)"; CR="$(snap "$CR0" cr)"
 finish() { # finish <state> <rc> <reason>
   record "$1" "$3" || die "cannot write $OUT"
-  echo "reason: $3"; echo "GATE-STATE: $1"; exit "$2"; }
+  echo "reason: $(san "$3")"; echo "GATE-STATE: $1"; exit "$2"; }
 
 [ -r "$LR" ] || finish BLOCKED-NO-HARDWARE 20 "no live-run record"
 [ -r "$HW" ] || finish BLOCKED-NO-HARDWARE 20 "no hardware record"

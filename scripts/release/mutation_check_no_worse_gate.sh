@@ -9,7 +9,10 @@ BASE="${NOWORSE_TMP:-${XDG_CACHE_HOME:-${HOME:?}/.cache}/nowc-tmp}"
 mkdir -p "$BASE" || exit 2
 ROOT="$(mktemp -d "$BASE/mut.XXXXXX")" || exit 2
 case "$ROOT" in "$BASE"/mut.*) ;; *) echo "odd ROOT" >&2; exit 2 ;; esac
-trap 'rm -rf "${ROOT:?}"' EXIT
+SAFE_RM="$HERE/../../constitution/scripts/lib/safe_rm.sh"
+[ -r "$SAFE_RM" ] && . "$SAFE_RM"
+cleanup() { if declare -F safe_rm_rf >/dev/null; then safe_rm_rf "${ROOT:?}"; else echo "note: safe_rm.sh unavailable; ${ROOT:?} left in place" >&2; fi; }
+trap cleanup EXIT
 MUTANTS=(
 $'cmp@@@baseline-pass-lost never recorded@@@[ "$nv" = PASS ] || { LOST=@@@true || { LOST='
 $'cmp@@@INCONCLUSIVE treated as PASS@@@[ "$nv" = PASS ] || { LOST="$LOST@@@[ "$nv" = PASS ] || [ "$nv" = INCONCLUSIVE ] || { LOST="$LOST'
@@ -84,7 +87,23 @@ $'gate@@@M-a not-pass count unchecked@@@"$NNP" -le "$BNP" ]]@@@"$NNP" -ge 0 ]]'
 $'gate@@@M-a PASS-lost diff unchecked@@@$2=="PASS" && $3!="PASS"@@@$2=="XX" && $3!="PASS"'
 $'gate@@@M-c clash not refused@@@if out_clash; then OUT_BAD="$OUT"; die@@@if false; then OUT_BAD="$OUT"; die'
 $'gate@@@M-c record clobbers input@@@if out_clash; then return 0; fi@@@if false; then return 0; fi'
+$'cmp@@@F1 hardlink --out not refused@@@    [ "$OUT" -ef "$f" ] && return 0@@@    :'
+$'cmp@@@F1 early usage error not guarded (prescan inputs dropped)@@@--baseline-verdicts) BV0="${!j:-}" ;;@@@--baseline-verdicts) : ;;'
+$'cmp@@@F2 reasons not sanitised in BLIND record@@@reasons=%s\\n\' "$(san "$*")"@@@reasons=%s\\n\' "$*"'
+$'cmp@@@F2 input path not sanitised in record@@@echo "baseline_verdicts_path=$(san "$BV0")"@@@echo "baseline_verdicts_path=$BV0"'
+$'cmp@@@F7 repeated target recorded twice@@@[ -z "${TSEEN[$t]+x}" ] || continue@@@:'
+$'cmp@@@F4 snapshot dir not removed@@@rmdir -- "${SNAP:?}" 2>/dev/null@@@:'
+$'gate@@@F1 hardlink --out not refused@@@    [ "$OUT" -ef "$f" ] && return 0; done@@@    :; done'
+$'gate@@@F1 early usage error not guarded@@@--hardware-record) HW0=@@@--hardware-record) :'
+$'gate@@@F2 reason not sanitised in record@@@echo "reason=$(san "$2")"@@@echo "reason=$2"'
+$'gate@@@F2 product control char accepted@@@[ "$(san "$P")" = "$P" ] || die@@@: die'
+$'gate@@@RM1 diff PASS-lost only matches FAIL@@@$2=="PASS" && $3!="PASS"@@@$2=="PASS" && $3=="FAIL"'
+$'gate@@@RM4 build-set equality reduced to first sha@@@[ "$CIMG" = "$THASH" ] ||@@@[ "$(printf \'%s\\n\' "$CIMG" | head -1)" = "$(printf \'%s\\n\' "$THASH" | head -1)" ] ||'
+$'cmp@@@RM6 target flip accepts SKIPPED baseline@@@[ "${BVD[$t]:-}" = FAIL ] && [ "${NVD[$t]:-}" = PASS ]; then FLIPS@@@[ "${BVD[$t]:-FAIL}" != PASS ] && [ "${NVD[$t]:-}" = PASS ]; then FLIPS'
+$'cmp@@@RM4 image set compared on first sha only@@@[ "$NSET" != "$BSET" ] ||@@@[ "$(printf \'%s\\n\' "$NSET" | head -1)" != "$(printf \'%s\\n\' "$BSET" | head -1)" ] ||'
 )
+# Equivalent (run, SURVIVE by design): [59] cmp and [67] gate duplicate-line mutants: a duplicated line is also a repeated file, so the same-file check kills it.
+# Equivalent (removed, WP03R3 fix round): gate `echo "reason: $(san "$3")"` in finish(): no reachable finish() reason carries control characters (record values are single grep lines, CR rejected, product with control chars is refused earlier), so un-sanitising it changes no observable output; the sanitising stays as defence in depth.
 # Equivalent (not run): row-count control needle (parser and grep -c cannot differ on accepted input); comparison
 # sha hex check (it must equal the already hex-validated live sha); gate new_total integer regex (the equality with the
 # validated tests_total catches it); the input snapshot (TOCTOU, not unit-testable: registered as follow-up WP03-6). Also: removing the explicit unreadable-targets / unreadable-new-meta guards - the follow-on
