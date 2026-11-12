@@ -27,7 +27,40 @@ var (
 	anyLocRe   = regexp.MustCompile(`location\s+[^{;]*\{`)
 	hostGoodRe = regexp.MustCompile(`proxy_set_header\s+Host\s+\\?\$http_host\s*;`)
 	hostAnyRe  = regexp.MustCompile(`proxy_set_header\s+Host\s`)
+	upgradeRe  = regexp.MustCompile(`proxy_set_header\s+Upgrade\s+\\?\$http_upgrade\s*;`)
+	connRe     = regexp.MustCompile(`proxy_set_header\s+Connection\s+["']?(?i:upgrade)["']?\s*;|proxy_set_header\s+Connection\s+\\?\$connection_upgrade\s*;`)
 )
+
+// stripNginxComments removes `#` comments (to end of line) so a commented-out
+// directive cannot satisfy, or hide, a match (SEC-WS-1R3FU-1).
+func stripNginxComments(body string) string {
+	lines := strings.Split(body, "\n")
+	for i, l := range lines {
+		if k := strings.Index(l, "#"); k >= 0 {
+			lines[i] = l[:k]
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+// wsLocationViolations returns every rule a WebSocket location body breaks.
+func wsLocationViolations(body string) []string {
+	b := stripNginxComments(body)
+	var v []string
+	if !hostGoodRe.MatchString(b) {
+		v = append(v, "missing `proxy_set_header Host $http_host;`")
+	}
+	if n := len(hostAnyRe.FindAllString(b, -1)); n > 1 {
+		v = append(v, "more than one `proxy_set_header Host`")
+	}
+	if !upgradeRe.MatchString(b) {
+		v = append(v, "missing `proxy_set_header Upgrade $http_upgrade;`")
+	}
+	if !connRe.MatchString(b) {
+		v = append(v, "missing `proxy_set_header Connection` upgrade line")
+	}
+	return v
+}
 
 type locBlock struct {
 	file string
@@ -61,7 +94,7 @@ func extractLocations(file, src string) []locBlock {
 
 func isWSLocation(b locBlock) bool {
 	head := b.body[:strings.Index(b.body, "{")+1]
-	return wsLocRe.MatchString(head) || strings.Contains(b.body, "$http_upgrade")
+	return wsLocRe.MatchString(head) || strings.Contains(stripNginxComments(b.body), "$http_upgrade")
 }
 
 func repoNginxSources(t *testing.T) map[string]string {
@@ -109,9 +142,8 @@ func TestEveryNginxWSLocationForwardsClientHostWithPort(t *testing.T) {
 				continue
 			}
 			seen++
-			assert.Truef(t, hostGoodRe.MatchString(b.body),
-				"%s:%d: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=%v)",
-				b.file, b.line, hostAnyRe.MatchString(b.body))
+			assert.Emptyf(t, wsLocationViolations(b.body),
+				"%s:%d: WebSocket location violations", b.file, b.line)
 		}
 	}
 	// control needle: the scan must actually have seen the known shipped /ws locations
@@ -135,4 +167,30 @@ func TestNginxWSLocationScannerSelfCheck(t *testing.T) {
 		require.True(t, isWSLocation(bs[0]))
 		assert.Equal(t, want, hostGoodRe.MatchString(bs[0].body), src)
 	}
+}
+
+const wsGoodLoc = `location /ws {
+    proxy_pass http://a;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $http_host;
+}`
+
+// SEC-WS-1R3FU-1/2: reviewer mutants Ma/Md/Me must now be rejected; the
+// good location must pass (golden-FALSE guard).
+func TestWSLocationMutantsAreRejected(t *testing.T) {
+	assert.Empty(t, wsLocationViolations(wsGoodLoc), "golden-good must pass")
+	mut := map[string]string{
+		"Ma commented Host": strings.Replace(wsGoodLoc, "proxy_set_header Host $http_host;", "# proxy_set_header Host $http_host;", 1),
+		"Md duplicate Host": strings.Replace(wsGoodLoc, "proxy_set_header Host $http_host;", "proxy_set_header Host $http_host;\n    proxy_set_header Host $host;", 1),
+		"Me no Upgrade":     strings.Replace(wsGoodLoc, "    proxy_set_header Upgrade $http_upgrade;\n", "", 1),
+		"Me no Connection":  strings.Replace(wsGoodLoc, "    proxy_set_header Connection \"upgrade\";\n", "", 1),
+		"Me commented Conn": strings.Replace(wsGoodLoc, "proxy_set_header Connection", "# proxy_set_header Connection", 1),
+	}
+	for name, body := range mut {
+		assert.NotEmptyf(t, wsLocationViolations(body), "mutant %s survived", name)
+	}
+	// a trailing comment after a valid directive must not break a good location
+	assert.Empty(t, wsLocationViolations(strings.Replace(wsGoodLoc, "$http_host;", "$http_host; # keep port", 1)))
 }

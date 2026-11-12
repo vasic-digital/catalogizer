@@ -2211,3 +2211,14 @@ WP03R3-F1..F7 addressed (F6 = heading moved above). Residual, UNCONFIRMED or owe
 - WP03R3FU-12 (nit): document that `--out /dev/stdout` and `/dev/null` are now refused (behaviour change).
 - D9SR3-FU-N2 (nit): update docs/architecture/AUTH_FLOW.md:340 and docs/video-course/MODULE3_AUTH_SCRIPT.md:68 for post-check audit order and `account not loginable: <outcome>`; D9SR3-FU-A closed (no consumer of old audit text found repo-wide).
 - Housekeeping: release test suites leave dirs under ~/.cache/nowc-tmp when safe_rm.sh is absent (24 entries); operator/agent cleanup with safe_rm_rf after inspection.
+- SEC-WS-1R3FU-1/2 (PROVISIONAL, config-level test only): ws_location_test.go now strips `#` comments, fails on >1 `proxy_set_header Host`, and requires Upgrade `$http_upgrade` + a Connection upgrade line per WS location; mutants Ma/Md/Me are tests; evidence docs/qa/secws1-fu/mutants.txt. Live edge run (SEC-WS-1-F1) still owed.
+- FAVR3R3FU-1/2 (PROVISIONAL, unit-level): useFavorites rollback now restores the actual per-key decrement and dedups against ids present before the loop; tests P1/P1b/P2 + clamp mutant in useFavorites.optimistic.test.tsx; evidence docs/qa/favr3-fu3/{red,green,mutants}.txt (FAVR3R3FU-4 re-captured there). FAVR3R3FU-3 still open.
+
+### Reviewer follow-ups for fix/fu-batch-ws-fav (Opus, GO-with-follow-ups, 2026-11-13) - PROVISIONAL
+- SEC-WS-FU-A (minor): make duplicate-Host check case-insensitive and accept a quoted header name.
+- SEC-WS-FU-B (minor): strip comments before extractLocations (brace in comment leaks; commented-out location flagged).
+- SEC-WS-FU-C (minor): exclude nested location bodies when checking the outer location.
+- SEC-WS-FU-D (minor): reject duplicate/conflicting Connection headers; require matching quotes.
+- SEC-WS-FU-E (nit): fixture with directive hidden behind inline trailing `#` (kills mutant GM1).
+- FAVR-FU-F (minor): partial-restore tests (consistent total kills FM1; decrement smaller than restored kills FM2).
+- FAVR-FU-G (nit, pre-existing): preserve original order when rolling back interleaved concurrent toggles.

@@ -1,0 +1,60 @@
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[41m[1m FAIL [22m[49m src/hooks/__tests__/useFavorites.optimistic.test.tsx[2m > [22museFavorites optimistic update on the live key[2m > [22mFAVR3R3FU-1/2: rollback on inconsistent cached data (PROVISIONAL)[2m > [22mP1: list with items but total 0 ends at 0 after rollback (not 1)
+[31m[1mAssertionError[22m: expected 1 to be +0 // Object.is equality[39m
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- 0[39m
+[31m+ 1[39m
+[36m [2m❯[22m src/hooks/__tests__/useFavorites.optimistic.test.tsx:[2m239:27[22m[39m
+    [90m237| [39m      [35mawait[39m [34mact[39m([35masync[39m () [33m=>[39m { [34mfail[39m([35mnew[39m [33mError[39m([32m'boom'[39m)) })
+    [90m238| [39m      await waitFor(() => expect(rowsAt(qc)).toEqual(['movie-7', 'movi…
+    [90m239| [39m      [34mexpect[39m([34mtotalAt[39m(qc))[33m.[39m[34mtoBe[39m([34m0[39m)
+    [90m   | [39m                          [31m^[39m
+    [90m240| [39m    })
+    [90m241| [39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+[41m[1m FAIL [22m[49m src/hooks/__tests__/useFavorites.optimistic.test.tsx[2m > [22museFavorites optimistic update on the live key[2m > [22mFAVR3R3FU-1/2: rollback on inconsistent cached data (PROVISIONAL)[2m > [22mP1b: clamp case, 2 matching rows but total 1: optimistic 0 (never negative), rollback restores exactly 1
+[31m[1mAssertionError[22m: expected 2 to be 1 // Object.is equality[39m
+[32m- Expected[39m
+[31m+ Received[39m
+[32m- 1[39m
+[31m+ 2[39m
+[36m [2m❯[22m src/hooks/__tests__/useFavorites.optimistic.test.tsx:[2m250:27[22m[39m
+    [90m248| [39m      [35mawait[39m [34mact[39m([35masync[39m () [33m=>[39m { [34mfail[39m([35mnew[39m [33mError[39m([32m'boom'[39m)) })
+    [90m249| [39m      [35mawait[39m [34mwaitFor[39m(() [33m=>[39m [34mexpect[39m([34mrowsAt[39m(qc))[33m.[39m[34mtoHaveLength[39m([34m3[39m))
+    [90m250| [39m      [34mexpect[39m([34mtotalAt[39m(qc))[33m.[39m[34mtoBe[39m([34m1[39m)
+    [90m   | [39m                          [31m^[39m
+    [90m251| [39m    })
+    [90m252| [39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+[41m[1m FAIL [22m[49m src/hooks/__tests__/useFavorites.optimistic.test.tsx[2m > [22museFavorites optimistic update on the live key[2m > [22mFAVR3R3FU-1/2: rollback on inconsistent cached data (PROVISIONAL)[2m > [22mP2: duplicate rows with the same id are BOTH restored on rollback
+[31m[1mAssertionError[22m: expected [ 'movie-7', 'movie-8' ] to deeply equal [ 'movie-7', 'movie-7', 'movie-8' ]
+Ignored nodes: comments, script, style
+[36m<html>[31m
+  [36m<head />[31m
+  [36m<body>[31m
+    [36m<div />[31m
+  [36m</body>[31m
+[36m</html>[31m[39m
+[32m- Expected[39m
+[31m+ Received[39m
+[2m  [[22m
+[2m    "movie-7",[22m
+[32m-   "movie-7",[39m
+[2m    "movie-8",[22m
+[2m  ][22m
+[36m [2m❯[22m src/hooks/__tests__/useFavorites.optimistic.test.tsx:[2m260:46[22m[39m
+    [90m258| [39m      [34mexpect[39m([34mrowsAt[39m(qc))[33m.[39m[34mtoEqual[39m([[32m'movie-8'[39m])
+    [90m259| [39m      [35mawait[39m [34mact[39m([35masync[39m () [33m=>[39m { [34mfail[39m([35mnew[39m [33mError[39m([32m'boom'[39m)) })
+    [90m260| [39m      await waitFor(() => expect(rowsAt(qc)).toEqual(['movie-7', 'movi…
+    [90m   | [39m                                             [31m^[39m
+    [90m261| [39m      [34mexpect[39m([34mtotalAt[39m(qc))[33m.[39m[34mtoBe[39m([34m3[39m)
+    [90m262| [39m    })
+[90m [2m❯[22m runWithExpensiveErrorDiagnosticsDisabled ../../../rv1.8PzN/cz/catalog-web/node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/config.js:[2m47:12[22m[39m
+[90m [2m❯[22m checkCallback ../../../rv1.8PzN/cz/catalog-web/node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/wait-for.js:[2m127:77[22m[39m
+[90m [2m❯[22m Timeout.checkRealTimersCallback ../../../rv1.8PzN/cz/catalog-web/node_modules/@testing-library/react/node_modules/@testing-library/dom/dist/wait-for.js:[2m121:16[22m[39m
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m2 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m41 passed[39m[22m[90m (44)[39m
+[2m   Start at [22m 23:58:13
+[2m   Duration [22m 9.95s[2m (transform 359ms, setup 425ms, import 1.10s, tests 4.99s, environment 2.73s)[22m

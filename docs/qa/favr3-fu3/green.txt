@@ -1,0 +1,60 @@
+    at trace (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21)
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1653:12)
+[90mstderr[2m | src/hooks/__tests__/useFavorites.test.tsx[2m > [22m[2museFavorites[2m > [22m[2mtoggleFavorite[2m > [22m[2mCAT-001 R5: a rejected add shows only the error toast, never "Added to favorites"
+[22m[39mError: nope
+    at [90m/home/milosvasic/.cache/claude-tmp/fufw.tRP4Hc/c/catalog-web/[39msrc/hooks/__tests__/useFavorites.test.tsx:239:57
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1209:10)
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27)
+    at trace (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21)
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1653:12)
+[90mstderr[2m | src/hooks/__tests__/useFavorites.test.tsx[2m > [22m[2museFavorites[2m > [22m[2mtoggleFavorite[2m > [22m[2mshows error toast on toggle failure
+[22m[39mError: Server error
+    at [90m/home/milosvasic/.cache/claude-tmp/fufw.tRP4Hc/c/catalog-web/[39msrc/hooks/__tests__/useFavorites.test.tsx:285:57
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1209:10)
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27)
+    at trace (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21)
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1653:12)
+[90mstderr[2m | src/hooks/__tests__/useFavorites.test.tsx[2m > [22m[2museFavorites[2m > [22m[2mbulkAddToFavorites[2m > [22m[2mshows error toast on bulk add failure
+[22m[39mError: Server error
+    at [90m/home/milosvasic/.cache/claude-tmp/fufw.tRP4Hc/c/catalog-web/[39msrc/hooks/__tests__/useFavorites.test.tsx:326:61
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1209:10)
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27)
+    at trace (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21)
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1653:12)
+[90mstderr[2m | src/hooks/__tests__/useFavorites.test.tsx[2m > [22m[2museFavorites[2m > [22m[2mbulkRemoveFromFavorites[2m > [22m[2mshows error toast on bulk remove failure
+[22m[39mError: Server error
+    at [90m/home/milosvasic/.cache/claude-tmp/fufw.tRP4Hc/c/catalog-web/[39msrc/hooks/__tests__/useFavorites.test.tsx:367:66
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1209:10)
+    at file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27)
+    at trace (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21)
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/rv1.8PzN/cz/catalog-web/node_modules/[4m@vitest/runner[24m/dist/index.js:1653:12)
+ [32m✓[39m src/hooks/__tests__/useFavorites.test.tsx [2m([22m[2m21 tests[22m[2m)[22m[33m 1656[2mms[22m[39m
+(node:3973989) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[90mstderr[2m | src/hooks/__tests__/useFavorites.entity.test.tsx[2m > [22m[2museFavorites entity targeting[2m > [22m[2mtoggleFavorite(900,false,"song") reaches the API with entity_type
+[22m[39mWarning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+ [32m✓[39m src/hooks/__tests__/useFavorites.entity.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 329[2mms[22m[39m
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m44 passed[39m[22m[90m (44)[39m
+[2m   Start at [22m 23:58:37
+[2m   Duration [22m 8.76s[2m (transform 446ms, setup 482ms, import 1.16s, tests 3.91s, environment 2.52s)[22m

@@ -4,7 +4,12 @@ import type { Favorite, FavoriteToggleRequest } from '@/types/favorites'
 import toast from 'react-hot-toast'
 
 type FavoritesList = { items?: Favorite[]; total?: number }
-type RemovedRows = { key: readonly unknown[]; rows: { fav: Favorite; index: number }[] }
+type RemovedRows = {
+  key: readonly unknown[]
+  rows: { fav: Favorite; index: number }[]
+  // FAVR3R3FU-1: the total decrement actually applied (0 when the cached total was already low/inconsistent)
+  decrement: number
+}
 
 /**
  * useFavorites manages favorite media items with list fetching, stats,
@@ -70,12 +75,14 @@ export const useFavorites = (params?: {
             return !match
           })
           if (rows.length === 0) continue
-          removed.push({ key, rows })
+          const newTotal = typeof old.total === 'number' ? Math.max(0, old.total - rows.length) : undefined
+          const decrement = typeof old.total === 'number' && newTotal !== undefined ? old.total - newTotal : 0
+          removed.push({ key, rows, decrement })
           queryClient.setQueryData<FavoritesList>(key, {
             ...old,
             items,
             // FAVR3-9: keep the cached total in step with the removed rows
-            ...(typeof old.total === 'number' && { total: Math.max(0, old.total - rows.length) })
+            ...(newTotal !== undefined && { total: newTotal })
           })
         }
       }
@@ -88,21 +95,27 @@ export const useFavorites = (params?: {
     onError: (error, variables, context) => {
       // Revert optimistic update: re-insert only the rows this request removed, per key, at their
       // original index; rows another in-flight toggle removed stay removed (FAVR3-8).
-      context?.removed?.forEach(({ key, rows }) => {
+      context?.removed?.forEach(({ key, rows, decrement }) => {
         queryClient.setQueryData<FavoritesList>(key, (current) => {
           if (!current?.items) return current
           const items = [...current.items]
+          // FAVR3R3FU-2: decide "already present" from the ids held BEFORE the loop, so rows that share
+          // an id (duplicate rows) are all restored instead of the second being treated as present.
+          const presentBefore = new Set(current.items.map((f) => f.id))
           let restored = 0
           for (const { fav, index } of rows) {
-            if (items.some((f) => f.id === fav.id)) continue
+            if (presentBefore.has(fav.id)) continue
             items.splice(Math.min(index, items.length), 0, fav)
             restored++
           }
           if (restored === 0) return current
+          // FAVR3R3FU-1: give back exactly what the optimistic step took off the total (never more),
+          // scaled down when only part of the rows needed restoring.
+          const delta = restored === rows.length ? decrement : Math.min(decrement, restored)
           return {
             ...current,
             items,
-            ...(typeof current.total === 'number' && { total: current.total + restored })
+            ...(typeof current.total === 'number' && { total: current.total + delta })
           }
         })
       })
