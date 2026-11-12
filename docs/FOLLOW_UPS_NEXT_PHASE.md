@@ -1845,3 +1845,8 @@ Fixed at unit level: module-registry (7) + websocket load failures via a test-on
 - PW-F2 (Task, minor): add a guard test `localStorage instanceof Storage`, also under `--localstorage-file`.
 - PW-F3 (Task, nit): document that a stale untracked `dist/` silently wins over current `src/` in tests.
 - PW-F4 (Task): run the production-build effect of `resolve.dedupe` once through `scripts/lib/build-catalog-web.sh` (UNCONFIRMED).
+
+## PW-F1..F3 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups (merge of fix/pw-followups)
+PW-F1 (comment), PW-F2 (`jsdomStorage.test.ts`, RED on pre-fix setup in plain and `--localstorage-file` legs) and PW-F3 (comment) are on main; full web 171 files / 2682 tests GREEN in the reviewer's run. Reviewer follow-ups (open, Queued):
+- PW-F5 (Task, minor): `jsdomStorage.test.ts` mutation M3 survives (localStorage and sessionStorage sharing one store); add `expect(localStorage).not.toBe(sessionStorage)`, a cross-isolation check and a sessionStorage round-trip; replace the tautological `globalThis.localStorage toBe window.localStorage` (window === globalThis under vitest jsdom).
+- PW-F6 (Task, nit): PW-F3 comment says "stale, untracked dist/"; a tracked dist (ui_components_react) also wins over src; reword, and note dist/ is not gitignored in the other 8 submodules.
