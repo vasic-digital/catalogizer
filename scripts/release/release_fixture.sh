@@ -52,6 +52,7 @@ Y
     echo evidence-b > docs/qa/run1/b.txt
     ( cd docs/qa/run1 && sha256sum a.txt b.txt > SHA256SUMS && printf '%s  shot.png\n' "$(printf shot | sha256sum | cut -d' ' -f1)" >> SHA256SUMS )
     echo evidence-c > docs/qa/run2/c.txt
+    ( cd docs/qa/run2 && sha256sum c.txt > SHA256SUMS )
     echo '#!/bin/sh' > scripts/tool.sh
     cat > docs/CHANGELOG.md <<'M'
 # Changelog

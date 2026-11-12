@@ -1,0 +1,7 @@
+# Declared known evidence gaps for scripts/release/check_release_consistency.sh (RC-3).
+# Format and rules: scripts/release/README.md. Fields: kind|path fields|tracked item|expires (YYYY-MM-DD)|reason.
+# Waivers are path-scoped (they apply wherever the path is cited, in any changelog section) and expire.
+# Every applied waiver is printed as WAIVED and makes the verdict PASS-WITH-WAIVERS.
+no-manifest|docs/qa/live-pprof-20261111|CAT-REL-CHECK-1|2026-12-12|evidence directory has no SHA256SUMS, SHA256SUMS.txt or MANIFEST*.sha256 at all
+no-manifest|docs/qa/new1-cover-thumbnails/green_main5c48.txt|CAT-REL-CHECK-1|2026-12-12|docs/qa/new1-cover-thumbnails has no manifest; this single evidence file is not covered by any
+bad-entry|docs/qa/stack3-rebuild-live-20261105|live_storage_done.txt|CAT-REL-CHECK-1|2026-12-12|listed in MANIFEST.sha256 but the evidence file was never committed; the file is missing and was not recreated
