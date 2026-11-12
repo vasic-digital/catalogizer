@@ -725,7 +725,7 @@ export const CollectionExport: React.FC<CollectionExportProps> = ({
                     >
                       <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <div className="text-gray-900 dark:text-white font-medium mb-2">
-                        Click to upload or drag and drop
+                        Click to select a file to upload
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400">
                         JSON, CSV, M3U, or ZIP files

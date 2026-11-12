@@ -24,7 +24,6 @@ import { Select } from '../ui/Select';
 import { Badge } from '../ui/Badge';
 
 import { toast } from 'react-hot-toast';
-import { onActivateKey } from '../../lib/keyboard';
 
 interface CollectionTemplate {
   id: string;
@@ -448,14 +447,12 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
           {viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {filteredTemplates.map((template) => (
-                <motion.div
+                <motion.button
+                  type="button"
                   key={template.id}
                   whileHover={{ y: -2 }}
-                  className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:shadow-lg transition-shadow"
+                  className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:shadow-lg transition-shadow text-left"
                   onClick={() => setSelectedTemplate(template)}
-                  onKeyDown={onActivateKey(() => setSelectedTemplate(template))}
-                  role="button"
-                  tabIndex={0}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -488,7 +485,7 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
                       </div>
                     </div>
                   )}
-                </motion.div>
+                </motion.button>
               ))}
             </div>
           ) : (

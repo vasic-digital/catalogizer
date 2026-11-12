@@ -98,7 +98,7 @@ describe('CollectionExport', () => {
     await user.click(screen.getByText('Import'))
 
     expect(screen.getByText('Import File')).toBeInTheDocument()
-    expect(screen.getByText('Click to upload or drag and drop')).toBeInTheDocument()
+    expect(screen.getByText('Click to select a file to upload')).toBeInTheDocument()
   })
 
   it('shows collection summary', () => {
@@ -178,7 +178,7 @@ describe('CollectionExport', () => {
     await user.click(screen.getByText('Import'))
 
     expect(screen.getByText('Import File')).toBeInTheDocument()
-    expect(screen.getByText('Click to upload or drag and drop')).toBeInTheDocument()
+    expect(screen.getByText('Click to select a file to upload')).toBeInTheDocument()
   })
 
   it('renders with non-smart collection', () => {
@@ -230,7 +230,7 @@ describe('CollectionExport', () => {
       const user = userEvent.setup()
       render(<CollectionExport {...defaultProps} />)
       await user.click(screen.getByText('Import'))
-      const zone = screen.getByText('Click to upload or drag and drop').closest('button') as HTMLElement
+      const zone = screen.getByText('Click to select a file to upload').closest('button') as HTMLElement
       const input = document.querySelector('input[type="file"]') as HTMLInputElement
       const clickSpy = vi.spyOn(input, 'click').mockImplementation(() => undefined)
       zone.focus()

@@ -1789,3 +1789,6 @@ ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go
 - F3: tests for 4 surviving reviewer mutants (prefix check without `/`, repo-root symlink branch, BSD lowercase-only hex, `//`->`/` comment regex).
 - F4: under --prev-tag, forged INFO on a versionCode row passes; bash should reject INFO there absent a --prev-tag FAIL row.
 - F5 (nit): fenced `## [x]` heading triggers duplicate BLIND; `versionCode = 7 /* c */` and `7;` FAIL (all fail safe).
+
+## CAT-QA-SONAR-7 follow-ups FU-1..FU-7 resolution (branch fix/web-sonar-fu; PROVISIONAL, no new Sonar scan)
+- FU-1 DONE: tests that checkbox click/Space do not fire onPreviewItem. FU-2 DONE: Enter-to-toggle restored via keydown on the native checkbox (was a user-visible regression), test added. FU-3 PARTIAL: structural jsdom test (dialog `relative`, after backdrop in DOM); real stacking/paint needs a browser check (OWED). FU-4 DONE: "Loading..." label test. FU-5 OPEN (nit): grid template card buttons still wrap block elements. FU-6 DONE: grid card is now motion.button (no role). FU-7 DONE honestly: text changed to "Click to select a file to upload" (no drag handlers implemented).
