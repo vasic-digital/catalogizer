@@ -25,6 +25,7 @@ func authClientMessage(err error, fallback string) (string, bool) {
 	switch {
 	case errors.Is(err, services.ErrInvalidCredentials),
 		errors.Is(err, services.ErrAccountLocked),
+		errors.Is(err, services.ErrAccountSuspended),
 		errors.Is(err, services.ErrAccountDisabled),
 		errors.Is(err, services.ErrAccountPending),
 		errors.Is(err, services.ErrUserChangedDuringLogin),

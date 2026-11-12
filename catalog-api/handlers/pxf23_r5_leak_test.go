@@ -207,7 +207,8 @@ func (e *rtEnv) r5State(t *testing.T, name, set string, args ...interface{}) {
 func TestPXF23R5_AccountStateMessagesPreservedOnLogin(t *testing.T) {
 	e := newRTEnv(t)
 	r5Routes(e)
-	e.r5State(t, "r5locked", "is_locked = 1")
+	e.r5State(t, "r5locked", "is_locked = 1, locked_until = ?", time.Now().Add(time.Hour))
+	e.r5State(t, "r5suspended", "is_locked = 1") // permanent suspension (no expiry)
 	e.r5State(t, "r5disabled", "is_active = 0")
 	e.r5State(t, "r5pending", "is_active = 0, settings = ?", `{"registration_status":"pending"}`)
 	loginPaths := map[string]string{"gin": "/api/v1/auth/login", "std": "/r5/std/login"}
@@ -215,6 +216,9 @@ func TestPXF23R5_AccountStateMessagesPreservedOnLogin(t *testing.T) {
 		w := e.do("", "POST", path, `{"username":"r5locked","password":"`+azPass+`"}`)
 		assert.Equal(t, 401, w.Code, variant)
 		assert.Contains(t, w.Body.String(), "account is temporarily locked", variant)
+		w = e.do("", "POST", path, `{"username":"r5suspended","password":"`+azPass+`"}`)
+		assert.Equal(t, 401, w.Code, variant)
+		assert.Contains(t, w.Body.String(), "account is suspended", variant)
 		w = e.do("", "POST", path, `{"username":"r5disabled","password":"`+azPass+`"}`)
 		assert.Equal(t, 401, w.Code, variant)
 		assert.Contains(t, w.Body.String(), "account is disabled", variant)

@@ -735,6 +735,10 @@ func (h *UserHandler) UnlockAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.authService.UnlockAccount(userID)
+	if errors.Is(err, repository.ErrAccountSuspended) {
+		http.Error(w, "Account is suspended; only an administrator status change to active lifts a suspension", http.StatusConflict)
+		return
+	}
 	if err != nil {
 		log.Printf("handlers: unlock account failed (not returned to client): %v", err)
 		http.Error(w, "Failed to unlock account", http.StatusInternalServerError)
@@ -916,6 +920,12 @@ func (h *UserHandler) allowedToAssignRole(w http.ResponseWriter, caller *models.
 // guardedUserUpdater is implemented by the production user repository.
 type guardedUserUpdater interface {
 	UpdateGuarded(user *models.User, expectedRoleID int, expectedActive bool) (bool, error)
+}
+
+// suspensionSetter writes ONLY the lock columns (permanent suspension on/off).
+// Implemented by the production user repository.
+type suspensionSetter interface {
+	SetSuspended(userID int, suspended bool) error
 }
 
 // sessionRevoker is the revocation capability. UserServiceInterface and

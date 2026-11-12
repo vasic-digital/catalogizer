@@ -70,7 +70,7 @@ func TestD9S_SuspendPersistsLockAndRevokesSessions(t *testing.T) {
 	assert.Equal(t, 401, e.refresh(s.refresh), "refresh rejected")
 	lw := e.login("dave", rtUserPass)
 	assert.Equal(t, 401, lw.Code, "login rejected")
-	assert.Contains(t, lw.Body.String(), "account is temporarily locked", "existing intentional message")
+	assert.Contains(t, lw.Body.String(), "account is suspended", "permanent suspension message (not 'temporarily')")
 }
 
 func TestD9S_UnsuspendRestores(t *testing.T) {
@@ -112,7 +112,8 @@ func TestD9S_UnrelatedUpdateKeepsLock(t *testing.T) {
 func TestD9S_GetCurrentUserRefusesLockedAccount(t *testing.T) {
 	e := newD9Env(t)
 	s := e.loginFull(t, "dave", rtUserPass)
-	require.NoError(t, e.repo.LockAccount(e.userID, farFuture()))
+	_, err := e.db.Exec(`UPDATE users SET is_locked = 1, locked_until = NULL WHERE id = ?`, e.userID)
+	require.NoError(t, err) // lock written by a writer that does not revoke sessions
 	assert.Equal(t, 401, e.do(s.tok, "GET", "/api/v1/users/"+rtItoa(e.userID), "").Code)
 }
 
@@ -132,17 +133,22 @@ func TestD9S_RepoRefusesLockingLastActiveAdmin(t *testing.T) {
 	a, err := e.repo.GetByUsername("rtadmin")
 	require.NoError(t, err)
 	require.Equal(t, 1, e.activeAdmins(t))
-	a.IsLocked = true
-	applied, gerr := e.repo.UpdateGuarded(a, a.RoleID, a.IsActive)
-	assert.False(t, applied)
-	assert.ErrorIs(t, gerr, repository.ErrLastAdmin)
+	assert.ErrorIs(t, e.repo.SetSuspended(a.ID, true), repository.ErrLastAdmin)
 	locked, _ := e.storedLock(t, a.ID)
 	assert.False(t, locked)
 	// with a second active admin the same write is allowed
 	require.Equal(t, 200, put(e, e.adminTok, e.userID, `{"role":"admin"}`).Code)
-	applied, gerr = e.repo.UpdateGuarded(a, a.RoleID, a.IsActive)
-	assert.True(t, applied)
-	assert.NoError(t, gerr)
+	assert.NoError(t, e.repo.SetSuspended(a.ID, true))
+	// an EXPIRED timed lock on the other admin does not hide him: he counts
+	_, err = e.db.Exec(`UPDATE users SET is_locked = 1, locked_until = ? WHERE id = ?`, time.Now().Add(-time.Hour), e.userID)
+	require.NoError(t, err)
+	require.NoError(t, e.repo.SetSuspended(a.ID, false))
+	assert.NoError(t, e.repo.SetSuspended(a.ID, true), "expired lock on dave: dave is an active admin")
+	// a live timed lock on the other admin means he does not count
+	require.NoError(t, e.repo.SetSuspended(a.ID, false))
+	_, err = e.db.Exec(`UPDATE users SET is_locked = 1, locked_until = ? WHERE id = ?`, time.Now().Add(time.Hour), e.userID)
+	require.NoError(t, err)
+	assert.ErrorIs(t, e.repo.SetSuspended(a.ID, true), repository.ErrLastAdmin)
 }
 
 func TestD9S_ConcurrentMutualSuspendNeverZeroAdmins(t *testing.T) {
@@ -160,22 +166,90 @@ func TestD9S_ConcurrentMutualSuspendNeverZeroAdmins(t *testing.T) {
 
 func farFuture() time.Time { return time.Now().Add(24 * time.Hour) }
 
-// Both repository write variants persist the lock columns (the plain Update is
-// used when the repository does not implement the guarded form).
-func TestD9S_RepoUpdatePersistsLock(t *testing.T) {
+// The general writers never touch the lock columns, so a stale read cannot
+// clear (or set) a suspension (reviewer finding F1).
+func TestD9S_GeneralWritersLeaveLockAlone(t *testing.T) {
 	e := newD9Env(t)
 	u, err := e.repo.GetByID(e.userID)
 	require.NoError(t, err)
+	require.NoError(t, e.repo.SetSuspended(e.userID, true))
+	u.Settings = `{"theme":"dark"}`
+	require.NoError(t, e.repo.Update(u))
+	locked, _ := e.storedLock(t, e.userID)
+	assert.True(t, locked)
+	u.IsLocked = false
+	_, err = e.repo.UpdateGuarded(u, u.RoleID, u.IsActive)
+	require.NoError(t, err)
+	locked, _ = e.storedLock(t, e.userID)
+	assert.True(t, locked)
+	// and the reverse: an in-memory lock is not persisted
+	require.NoError(t, e.repo.SetSuspended(e.userID, false))
 	u.IsLocked = true
 	require.NoError(t, e.repo.Update(u))
+	locked, _ = e.storedLock(t, e.userID)
+	assert.False(t, locked)
+}
+
+// Reviewer mutant RM1: an EXPIRED timed lock must not reject a session.
+func TestD9S_ExpiredLockDoesNotRejectSession(t *testing.T) {
+	e := newD9Env(t)
+	s := e.loginFull(t, "dave", rtUserPass)
+	_, err := e.db.Exec(`UPDATE users SET is_locked = 1, locked_until = ? WHERE id = ?`, time.Now().Add(-time.Hour), e.userID)
+	require.NoError(t, err)
+	assert.Equal(t, 200, e.do(s.tok, "GET", "/api/v1/users/"+rtItoa(e.userID), "").Code)
+}
+
+// Reviewer mutant RM2: suspending a user that already has a timed lock makes it permanent.
+func TestD9S_SuspendOverTimedLockIsPermanent(t *testing.T) {
+	e := newD9Env(t)
+	_, err := e.db.Exec(`UPDATE users SET is_locked = 1, locked_until = ? WHERE id = ?`, time.Now().Add(-time.Hour), e.userID)
+	require.NoError(t, err)
+	require.Equal(t, 200, put(e, e.adminTok, e.userID, `{"status":"suspended"}`).Code)
+	locked, until := e.storedLock(t, e.userID)
+	assert.True(t, locked)
+	assert.Nil(t, until, "suspension must clear any previous expiry (else it lapses)")
+	assert.Equal(t, 401, e.login("dave", rtUserPass).Code)
+}
+
+// Reviewer mutant RM3: the first (fail-closed) revoke failing aborts the suspend.
+func TestD9S_RevokeFailureFailsClosed(t *testing.T) {
+	e := newD9Env(t)
+	p := &probeRepo{UserRepository: e.repo, failRevokeCall: 1}
+	base := e.probeRoute(p)
+	w := e.do(e.adminTok, "PUT", base+rtItoa(e.userID), `{"status":"suspended"}`)
+	assert.Equal(t, 500, w.Code, w.Body.String())
+	locked, _ := e.storedLock(t, e.userID)
+	assert.False(t, locked, "no lock may be written when revocation failed")
+}
+
+// F3: the explicit unlock endpoint path cannot lift a suspension, and a timed
+// lock cannot replace one; only status "active" lifts it.
+func TestD9S_UnlockAndTimedLockCannotTouchSuspension(t *testing.T) {
+	e := newD9Env(t)
+	require.Equal(t, 200, put(e, e.adminTok, e.userID, `{"status":"suspended"}`).Code)
+	assert.ErrorIs(t, e.repo.UnlockAccount(e.userID), repository.ErrAccountSuspended)
 	locked, until := e.storedLock(t, e.userID)
 	assert.True(t, locked)
 	assert.Nil(t, until)
-	u.IsLocked = false
-	ts := farFuture()
-	u.LockedUntil = &ts
-	require.NoError(t, e.repo.Update(u))
+	require.NoError(t, e.repo.LockAccount(e.userID, time.Now().Add(-time.Minute)))
 	locked, until = e.storedLock(t, e.userID)
-	assert.False(t, locked)
-	assert.NotNil(t, until)
+	assert.True(t, locked)
+	assert.Nil(t, until, "timed lock must not replace a permanent suspension")
+	lw := e.login("dave", rtUserPass)
+	assert.Equal(t, 401, lw.Code)
+	assert.Contains(t, lw.Body.String(), "account is suspended")
+	assert.NotContains(t, lw.Body.String(), "temporarily")
+	require.Equal(t, 200, put(e, e.adminTok, e.userID, `{"status":"active"}`).Code)
+	assert.Equal(t, 200, e.login("dave", rtUserPass).Code)
+}
+
+// A timed lock still says "temporarily locked" and Unlock lifts it.
+func TestD9S_TimedLockMessageAndUnlock(t *testing.T) {
+	e := newD9Env(t)
+	require.NoError(t, e.repo.LockAccount(e.userID, farFuture()))
+	lw := e.login("dave", rtUserPass)
+	assert.Equal(t, 401, lw.Code)
+	assert.Contains(t, lw.Body.String(), "account is temporarily locked")
+	require.NoError(t, e.repo.UnlockAccount(e.userID))
+	assert.Equal(t, 200, e.login("dave", rtUserPass).Code)
 }
