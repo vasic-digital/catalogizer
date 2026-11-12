@@ -42,7 +42,7 @@ cd "$PROJECT_ROOT"
 # Two binaries to verify
 declare -A BINARIES=(
   [catalogizer-desktop]="catalogizer-desktop/src-tauri/target/release/catalogizer-desktop"
-  [installer-wizard]="installer-wizard/src-tauri/target/release/bundle/appimage/Catalogizer Installation Wizard_2.4.1_amd64.AppImage"
+  [installer-wizard]="installer-wizard/src-tauri/target/release/bundle/appimage/Catalogizer Installation Wizard_2.4.2_amd64.AppImage"
 )
 
 verify_binary() {

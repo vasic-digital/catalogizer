@@ -12,7 +12,7 @@ info:
     goroutine, heap, mutex, threadcreate). They are served only when the server
     runs with `HELIX_PPROF_ENABLED=true` and are meant for operators, not API
     clients.
-  version: 2.4.1
+  version: 2.4.2
   contact:
     name: Catalogizer Support
   license:

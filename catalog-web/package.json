@@ -1,6 +1,6 @@
 {
   "name": "catalog-web",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "description": "Modern React web application for Catalogizer media management",
   "private": true,
   "dependencies": {
