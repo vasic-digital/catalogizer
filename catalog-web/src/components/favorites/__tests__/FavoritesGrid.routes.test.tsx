@@ -6,6 +6,9 @@ import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { FavoritesGrid } from '../FavoritesGrid'
 import { useFavorites } from '@/hooks/useFavorites'
 import { MEDIA_TYPES } from '@/types/media'
+import toast from 'react-hot-toast'
+
+vi.mock('react-hot-toast', () => ({ default: { error: vi.fn(), success: vi.fn() } }))
 
 vi.mock('@/hooks/useFavorites', () => ({ useFavorites: vi.fn() }))
 vi.mock('@/components/media/MediaGrid', () => ({
@@ -54,6 +57,7 @@ const renderGrid = () =>
   )
 
 describe('FavoritesGrid entity navigation (CAT-UI-FAV-1)', () => {
+  beforeEach(() => vi.clearAllMocks())
   it.each(MEDIA_TYPES.map((t, i) => [t, 200 + i] as const))(
     'view of a %s favourite opens /entity/<entity_id>', (type, id) => {
       setFavs([fav(type, id)])
@@ -77,12 +81,24 @@ describe('FavoritesGrid entity navigation (CAT-UI-FAV-1)', () => {
     expect(screen.getByTestId('loc').textContent).toBe('/entity/22')
   })
 
-  it.each([[0], [-5], [Number.NaN]])(
-    'a favourite with unusable entity id %s does not navigate to a bogus entity', (bad) => {
+  it.each([[0], [-5], [Number.NaN], [1.5], [1e21], [2 ** 53]])(
+    'a favourite with unusable entity id %s: no navigation, visible feedback, warning with favourite id', (bad) => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
       setFavs([fav('other', bad)])
       renderGrid()
       fireEvent.click(screen.getByTestId('view-other'))
       fireEvent.click(screen.getByTestId('play-other'))
       expect(screen.queryByTestId('loc')).toBeNull()
+      expect(toast.error).toHaveBeenCalledTimes(2)
+      expect(vi.mocked(toast.error).mock.calls[0][0]).toMatch(/no valid item id/i)
+      expect(warn.mock.calls[0][1]).toMatchObject({ favoriteId: 'other-' + bad })
+      warn.mockRestore()
     })
+
+  it('valid id gives no error feedback', () => {
+    setFavs([fav('movie', 5)])
+    renderGrid()
+    fireEvent.click(screen.getByTestId('view-movie'))
+    expect(toast.error).not.toHaveBeenCalled()
+  })
 })

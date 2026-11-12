@@ -19,6 +19,7 @@ import { FavoriteToggle } from './FavoriteToggle'
 import { useFavorites } from '@/hooks/useFavorites'
 import { mediaApi } from '@/lib/mediaApi'
 import { entityPath } from '@/lib/entityRoutes'
+import toast from 'react-hot-toast'
 import type { MediaItem } from '@/types/media'
 
 interface FavoritesGridProps {
@@ -130,6 +131,7 @@ export const FavoritesGrid: React.FC<FavoritesGridProps> = ({
   const mediaItems: MediaItem[] = useMemo(() => {
     return filteredFavorites.map(favorite => ({
       id: favorite.media_item.id,
+      favorite_id: favorite.id,
       title: favorite.media_item.title,
       media_type: favorite.media_item.media_type,
       year: favorite.media_item.year,
@@ -190,15 +192,24 @@ export const FavoritesGrid: React.FC<FavoritesGridProps> = ({
     setSelectedItems([])
   }
 
-  const handleMediaView = useCallback((media: MediaItem) => {
-    const to = entityPath(media.id)
-    if (to) navigate(to)
+  const openEntity = useCallback((media: MediaItem, autoplay: boolean) => {
+    const to = entityPath(media.id, { autoplay })
+    if (to) {
+      navigate(to)
+      return
+    }
+    const favoriteId = (media as MediaItem & { favorite_id?: string }).favorite_id
+    console.warn('Favourite has no valid item id; not navigating', { favoriteId, id: media.id })
+    toast.error('This favourite has no valid item id and cannot be opened')
   }, [navigate])
 
+  const handleMediaView = useCallback((media: MediaItem) => {
+    openEntity(media, false)
+  }, [openEntity])
+
   const handleMediaPlay = useCallback((media: MediaItem) => {
-    const to = entityPath(media.id, { autoplay: true })
-    if (to) navigate(to)
-  }, [navigate])
+    openEntity(media, true)
+  }, [openEntity])
 
   const handleMediaDownload = useCallback((media: MediaItem) => {
     mediaApi.downloadMedia(media)

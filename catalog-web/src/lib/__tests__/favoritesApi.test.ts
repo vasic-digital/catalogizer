@@ -74,4 +74,19 @@ describe('favoritesApi (backend contract: /favorites, entity_type + entity_id)',
     mockApi.delete.mockResolvedValue({ data: {} })
     expect(await favoritesApi.bulkRemoveFromFavorites([1, 2])).toEqual({ removed: 2, failed: 0 })
   })
+
+  it.each([[undefined], [null], [0], ['0x10'], [true], ['1e3'], [[5]], [1.5], [1e21], ['']])(
+    'a wire entity_id of %j maps to an explicit invalid id (NaN), never 0 or a coerced id', async (bad) => {
+      mockApi.get.mockResolvedValue({ data: { favorites: [{ id: 1, entity_type: 'movie', entity_id: bad }], count: 1 } })
+      const res = await favoritesApi.getFavorites()
+      expect(Number.isNaN(res.items[0].media_id)).toBe(true)
+      expect(Number.isNaN(res.items[0].media_item.id)).toBe(true)
+      expect(res.items[0].media_item.title).toMatch(/no valid item id/)
+    })
+
+  it('a numeric-string entity_id "42" is accepted as 42', async () => {
+    mockApi.get.mockResolvedValue({ data: { favorites: [{ id: 1, entity_type: 'song', entity_id: '42' }], count: 1 } })
+    const res = await favoritesApi.getFavorites()
+    expect(res.items[0].media_id).toBe(42)
+  })
 })

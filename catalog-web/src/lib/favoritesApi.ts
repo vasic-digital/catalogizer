@@ -1,5 +1,6 @@
 import { api } from './api'
 import { asList } from './apiShapes'
+import { parseEntityId } from './entityRoutes'
 import type { 
   Favorite, 
   FavoriteToggleRequest, 
@@ -21,12 +22,14 @@ function toFavoritesResponse(
   const rows = asList<Record<string, unknown>>(body, 'favorites')
   const items: Favorite[] = rows.map((r) => {
     const type = typeof r.entity_type === 'string' ? r.entity_type : 'other'
-    const entityId = Number(r.entity_id ?? 0)
+    // Strict parse: a missing/odd entity_id is an explicit INVALID (NaN), never 0 or a coerced guess.
+    const parsed = parseEntityId(r.entity_id)
+    const entityId = parsed ?? Number.NaN
     return {
       id: String(r.id ?? ''),
       user_id: Number(r.user_id ?? 0),
       media_id: entityId,
-      media_item: { id: entityId, title: `${type.replace(/_/g, ' ')} #${entityId}`, media_type: type },
+      media_item: { id: entityId, title: parsed === null ? `${type.replace(/_/g, ' ')} (no valid item id)` : `${type.replace(/_/g, ' ')} #${entityId}`, media_type: type },
       created_at: typeof r.created_at === 'string' ? r.created_at : '',
       updated_at: typeof r.updated_at === 'string' ? r.updated_at : typeof r.created_at === 'string' ? r.created_at : '',
     }
