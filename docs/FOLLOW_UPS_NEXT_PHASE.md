@@ -2065,6 +2065,16 @@ RC3R4-4 (nit) retargeted symlink cited path gives FAIL (MISS) instead of BLIND; 
 - Go: attachEntityLinks degrades silently on a query error (leaves fields unset); add a log line / test for the error path.
 - Live Playwright of file->favourite->open-entity OWED (stack down).
 - UI-FAV-1b round-2 minors: attachEntityLinks has no chunking of its own (relies on the 200 row limit); `ORDER BY mf.is_primary DESC` NULL ordering differs on PostgreSQL (column is NOT NULL-defaulted, nit); no PostgreSQL run of the new query; bulk favourites API still default type.
+## CAT-WP03-MECH follow-ups (branch fix/wp03-release-mechanisms; PROVISIONAL, gate-logic unit class only)
+WP03-R1 Opus round-1 NO-GO (I-1..I-5, M-1..M-4, M-6) addressed in the round-1 fix commit: identity/binding fields are non-empty and shape-validated, missing identity is INCOMPARABLE, same file-sha256 set is the same image, the gate binds verdict sha, board/target_id, suite and the target-read build to the compared image, BLIND/INCOMPARABLE paths rewrite --out. Needs a round-2 review.
+WP03-1 (consumer work) nothing yet PRODUCES the inputs: the harness must write the TSV verdict files, meta files (board= must equal the hardware target_id), the hardware record (read from the target, kind=physical, build_sha256 lines), the live-run record and the previous-image baseline run; until then both tools have only fixture-input evidence (11.4.289).
+WP03-2 `issue-count-higher` is evaluated over the baseline test set; it cannot fire without `baseline-pass-lost` except when baseline-FAIL tests stay FAIL and a lost PASS is offset by an improvement. Decide whether a stricter per-class count is wanted.
+WP03-3 not wired into any release/tag script (11.4.293(F), 11.4.298(E)); wiring plus the first-baseline acceptance rule (BLOCKED-NO-BASELINE until the operator records it) are owed. Gates OWED-GATE-176/185 stay deferrals.
+WP03-4 UNCONFIRMED: exit codes 10/11/20/21/22 and the `kind=physical` / `build_sha256` / `board==target_id` conventions are this change's choice, not an operator decision.
+WP03-5 equivalent mutants (not run, argued in the harness): the row-count control needle, the comparison-sha hex check and the image_new shape check in the gate (each is implied by an earlier validated equality); dropping the explicit unreadable-targets guard (empty-targets guard gives the same BLIND) and unreadable-new-meta guard (missing key gives INCOMPARABLE).
+WP03-R3 Opus round-2 NO-GO (I-6, I-7, M-a..M-d, r1..r3) addressed in the round-3 fix commit: exact verdict `case` (no substring membership), unsafe ids (space, comma, glob) fail closed, `--out` realpath clash refused in both tools, duplicate/repeated image lines rejected, gate cross-checks schema, `new_total` == `tests_total` == `tests_reported`, strict `image_new` shape and NO-WORSE record consistency, input snapshot against TOCTOU. Gate-logic unit class; PROVISIONAL.
+WP03-6 the TOCTOU snapshot is not unit-testable (a race); it is argued by construction and its mutant is recorded as equivalent. UNCONFIRMED: no test swaps an input between the two reads.
+
 - SECQ-2 / WD-F1 / WD-F1a re-reproduction 2026-11-12 (evidence `docs/qa/secq2-repro-20261112/`, PROVISIONAL): result not-reproducible-with-evidence. 6 further repeats of the WD-F1a case (mode A reset, 2 MiB) all byte-identical (6/6 ok, detail recorded), both control needles fire. Proposal for the operator: close under section 11.4.90 `not-reproducible` (UNCONFIRMED whether the single 2026-11-05 CORRUPT was a read-back glitch). No fix written.
 - SECQ2WD-R1-1 (minor, process-doc): fix/wd-repro README must state the re-run used main f709b892, not the 2026-11-05 build where the single CORRUPT appeared (WriteFile gained HEAD size read-back since); operator weighs this before accepting a 11.4.90 not-reproducible closure.
 - SECQ2WD-R1-2 (minor, process-doc): record a target identity for the live run (hash of endpoint host, clean-tree note for the test binary) per 11.4.292(C)/11.4.289(D).
@@ -2099,3 +2109,14 @@ RC3R4-4 (nit) retargeted symlink cited path gives FAIL (MISS) instead of BLIND; 
 - WP10R4-6 (nit): CAT-PREEXIST-9b re-run proposal should name the reported build (main 563617b1 / v2.4.1), §11.4.292(F).
 - WP10R4-7 (nit): Source row says "at 811da03f of main" but reads the branch tip.
 - WP10R4-8 (nit): `any(`→`all(` mutant in `negated()` survives; negation window 20 chars; `later_mentions` guard case-sensitive; TAURI-R1-FU-6 layer cell; stale "review owed" heading on main.
+
+## CAT-WP03-MECH — Opus round-3 follow-ups (2026-11-12, GO-with-follow-ups)
+
+- WP03R3-F1 (minor, source-defect; arguably data-safety, owner may re-class): `--out` that is a HARDLINK to an input overwrites that input in both tools; test inputs with `[ "$OUT" -ef "$f" ]` as well as realpath.
+- WP03R3-F2 (minor): newline/control chars in option or reason text can duplicate `verdict=`/`state=` lines in records; reject or escape.
+- WP03R3-F3 (minor, test-instrumentation): surviving mutants RM1 (gate `PASS ABSENT/SKIPPED` diff line), RM4 (multi-image / superset target build set), RM6 (baseline SKIPPED/absent then PASS must be targeted-flip-missing).
+- WP03R3-F4 (minor, §11.4.287(B)): use `safe_rm_rf` instead of `rm -rf -- "${SNAP:?}"` in EXIT traps and tests.
+- WP03R3-F5 (minor, process-doc): README must state input records are unauthenticated (forged `kind=physical` passes); link §11.4.240/§11.4.268.
+- WP03R3-F6 (nit): "CAT-WP03-MECH follow-ups" heading sits above the SECQ-2 bullets.
+- WP03R3-F7 (nit): duplicate target id yields duplicate `flip=` lines.
+- Author's filtered 33-mutant run result remains UNCONFIRMED (partial output).
