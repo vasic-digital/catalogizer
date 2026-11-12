@@ -25,9 +25,9 @@ function getApiHost(): string {
 // CAVEAT (PW-F3/PW-F6): the check is on file presence only. A dist/ that is out
 // of date with src/ wins over src/ silently, so tests then run against old
 // code. That covers a tracked dist/ (as in ui_components_react) as well as one
-// left over from an earlier build; dist/ is not gitignored in the other 8
-// submodules, so a local build leaves one behind. Rebuild or delete dist/ to
-// test src/.
+// left over from an earlier build; dist/ is gitignored in the other 8
+// submodules, so a local build leaves an ignored dist/ that `git status` does
+// not show. Rebuild or delete dist/ to test src/.
 function submoduleSourceFallbacks(): Record<string, string> {
   const pkgs: Record<string, string> = {
     '@vasic-digital/auth-context': 'auth_context_react',
