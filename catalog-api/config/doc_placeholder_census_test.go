@@ -114,6 +114,10 @@ func TestCensusTreatsEllipsisAsElision(t *testing.T) {
 	for _, v := range []string{".hunter2", "secret...", "pa...ss"} {
 		assert.False(t, exampleValueIsExempt(v), v)
 	}
+	// PX-F16: non-ASCII ellipsis inside a value, and dot-only values that are not the exact elision marker, are not exempt
+	for _, v := range []string{"\u2026hunter2", "pa\u2026ss", ".", "...."} {
+		assert.False(t, exampleValueIsExempt(v), v)
+	}
 	// the extractor sees the idiom, so the exemption is what spares it
 	tmp := filepath.Join(t.TempDir(), "x.md")
 	require.NoError(t, os.WriteFile(tmp, []byte("ADMIN_PASSWORD=... ./run.sh\n"), 0o600))
