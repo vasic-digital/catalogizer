@@ -90,7 +90,15 @@ Temporary files go under `$RELCHK_TMP` (default `~/.cache/relchk-tmp`).
   correct-looking but wrong row set (a forged OK with the right label) is still not
   detected: bash cannot re-derive the field values.
 * SHA256SUMS: GNU and BSD-tag (`SHA256 (name) = hash`) lines both get the directory-escape
-  check; GNU filenames written with a leading backslash escape are not parsed.
+  check. Any non-blank line that is not one of those two unescaped forms (including
+  backslash-escaped GNU or BSD lines and comment lines) is a `SHAFAIL ... unsupported
+  manifest line`: the checker cannot judge it, and some `sha256sum` implementations
+  honour the escape. Each entry is also resolved with `readlink -f`; an entry (for example
+  an in-directory symlink) that resolves outside the repository is a `SHAFAIL`.
+* A fenced code block (``` or ~~~) in the CHANGELOG never supplies a section or
+  subsection heading. `versionCode = 7;` and `versionCode = 7 /* c */` parse as literals.
+* Under `--prev-tag`, an `INFO` row for a versionCode is BLIND unless the `--prev-tag`
+  row itself FAILed (unknown tag).
 * A tracked path that resolves (symlink) outside the repository is a `MISS`.
 * `versionCode`/`versionName` must be a bare literal (optional trailing `//` comment);
   `versionNameSuffix` is not mistaken for a second `versionName`. Expressions such as

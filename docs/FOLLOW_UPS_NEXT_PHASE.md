@@ -1789,3 +1789,7 @@ ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go
 - F3: tests for 4 surviving reviewer mutants (prefix check without `/`, repo-root symlink branch, BSD lowercase-only hex, `//`->`/` comment regex).
 - F4: under --prev-tag, forged INFO on a versionCode row passes; bash should reject INFO there absent a --prev-tag FAIL row.
 - F5 (nit): fenced `## [x]` heading triggers duplicate BLIND; `versionCode = 7 /* c */` and `7;` FAIL (all fail safe).
+
+## CAT-REL-CHECK-1 round-3 (F1-F5 landed on branch fix/release-checker-f1-f5, 2026-11-12)
+- F1 fixed (fail closed on any non-blank manifest line outside the two unescaped forms; README corrected), F2 fixed (readlink -f under-repo check on manifest entries), F3 covered by tests plus mutants, F4 fixed (INFO on versionCode under --prev-tag is BLIND unless the --prev-tag row FAILed), F5 fixed (fence-aware headings; `7;` and `/* c */` parse).
+- Residual: gradle values with a quoted string followed by comments use the same regex; nested `/* */` in one line is not modelled (fails safe as FAIL).

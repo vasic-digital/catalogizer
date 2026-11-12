@@ -191,6 +191,48 @@ d=$(fresh); printf '\n## [2.3.0] - duplicate\n\n### VERIFIED\n- `docs/qa/run2/c.
 d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/^\( *\)versionName = "2.4.0"/&\n\1versionNameSuffix = "-dev"/' && expect "N5 versionNameSuffix is not ambiguity" 0 "VERDICT: PASS" "$d" --check version
 d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/^\( *\)versionName = "2.4.0"/&\n\1versionNameSuffix/' && expect "N5 bare versionNameSuffix token is not versionName" 0 "VERDICT: PASS" "$d" --check version
 
+echo "== round-3 review follow-ups (F1-F5)"
+# F1: backslash-prefixed manifest lines must fail closed (uutils sha256sum honours them)
+d=$(fresh); echo "\\SHA256 (../../etc/passwd) = $z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "F1 backslash BSD ../ escape FAIL" 1 "unsupported manifest line" "$d" --check changelog
+d=$(fresh); echo "\\$z  ../../etc/passwd" >> "$d/docs/qa/run1/SHA256SUMS"; expect "F1 backslash GNU line FAIL" 1 "unsupported manifest line" "$d" --check changelog
+d=$(fresh); echo "# a comment" >> "$d/docs/qa/run1/SHA256SUMS"; expect "F1 any non-matching line FAIL (comment)" 1 "unsupported manifest line" "$d" --check changelog
+d=$(fresh); printf '\n' >> "$d/docs/qa/run1/SHA256SUMS"; expect "F1 blank manifest line tolerated" 0 "VERDICT: PASS" "$d" --check changelog
+# F2: in-dir symlink entry pointing outside the repository
+d=$(fresh); echo outside-content > "$ROOT/outside2.txt"; ln -s "$ROOT/outside2.txt" "$d/docs/qa/run1/lnk.txt"
+echo "$(sha256sum < "$ROOT/outside2.txt" | cut -d' ' -f1)  lnk.txt" >> "$d/docs/qa/run1/SHA256SUMS"; (cd "$d" && git add -A)
+expect "F2 manifest entry symlink outside repo FAIL" 1 "resolves outside" "$d" --check changelog
+d=$(fresh); ln -s a.txt "$d/docs/qa/run1/lnk2.txt"; echo "$(sha256sum < "$d/docs/qa/run1/a.txt" | cut -d' ' -f1)  lnk2.txt" >> "$d/docs/qa/run1/SHA256SUMS"; (cd "$d" && git add -A)
+expect "F2 manifest entry symlink inside repo accepted" 0 "VERDICT: PASS" "$d" --check changelog
+# F3: reviewer mutants (sibling-prefix, repo-root symlink, uppercase BSD hex, '/' vs '//' comment)
+d=$(fresh); rr="$(cd "$d" && pwd -P)"; mkdir -p "$rr-evil"; echo e > "$rr-evil/f.txt"; ln -s "$rr-evil" "$d/docs/qa/sibling"; (cd "$d" && git add -A)
+mut "$d" docs/CHANGELOG.md 's#^- Tool `scripts/tool.sh`#- Link `docs/qa/sibling/`; Tool `scripts/tool.sh`#' && expect "F3 symlink to sibling dir sharing repo-path prefix -> MISS" 1 "resolves outside the repository" "$d" --check changelog
+rm -rf "${rr:?}-evil"
+d=$(fresh); ln -s ../.. "$d/docs/qa/toroot"; (cd "$d" && git add -A)
+mut "$d" docs/CHANGELOG.md 's#^- Tool `scripts/tool.sh`#- Link `docs/qa/toroot`; Tool `scripts/tool.sh`#' && expect "F3 symlink resolving to the repo root itself accepted" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); H="$(sha256sum < "$d/docs/qa/run1/a.txt" | cut -d' ' -f1 | tr a-f A-F)"; echo "SHA256 (../../etc/passwd) = $H" >> "$d/docs/qa/run1/SHA256SUMS"; expect "F3 BSD uppercase-hex escape FAIL" 1 "escapes its directory" "$d" --check changelog
+d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionCode = 7$/versionCode = 7 \/ 2/' && expect "F3 versionCode '7 / 2' (single slash) FAIL" 1 "FAIL" "$d" --check version
+# F4: forged INFO on a versionCode row under --prev-tag
+sd=$(filtstub 'sed "s/^OK\t\([^\t]*versionCode\)\t.*/INFO\t\1\tforged/"'); d=$(fresh); PATH="$sd:$PATH" expect "F4 forged INFO on versionCode under --prev-tag -> BLIND" 2 "VERDICT: BLIND" "$d" --check version --prev-tag fx-prev
+d=$(fresh); expect "F4 unknown tag still gives FAIL (INFO rows legitimate then)" 1 "FAIL" "$d" --check version --prev-tag no-such-tag
+d=$(fresh); expect "F4 INFO rows fine without --prev-tag" 0 "VERDICT: PASS" "$d" --check version
+# F5: fenced heading, gradle literal forms
+d=$(fresh); printf '\n```\n## [2.4.0] - example in a code fence\n```\n' >> "$d/docs/CHANGELOG.md"; expect "F5 fenced duplicate heading ignored" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); printf '\n```md\n## [2.5.0]\n### VERIFIED\n- `docs/nope_fenced.txt`\n```\n' >> "$d/docs/CHANGELOG.md"; expect "F5 fenced heading is not a section" 2 "section not found" "$d" --check changelog --section 2.5.0
+d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionCode = 7$/versionCode = 7 \/* c *\//' && expect "F5 versionCode with block comment parses" 0 "VERDICT: PASS" "$d" --check version
+d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionCode = 7$/versionCode = 7;/' && expect "F5 versionCode with semicolon parses" 0 "VERDICT: PASS" "$d" --check version
+d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionCode = 7$/versionCode = 7 \/* c *\/ - 2/' && expect "F5 expression after block comment still FAIL" 1 "FAIL" "$d" --check version
+
+# F2/F5 residual mutants: manifest sibling-prefix symlink; fenced "## " / "### " inside a VERIFIED subsection
+d=$(fresh); rr="$(cd "$d" && pwd -P)"; mkdir -p "$rr-evil2"; echo e > "$rr-evil2/f.txt"; ln -s "$rr-evil2" "$d/docs/qa/run1/evil"
+echo "$(sha256sum < "$rr-evil2/f.txt" | cut -d' ' -f1)  evil/f.txt" >> "$d/docs/qa/run1/SHA256SUMS"; (cd "$d" && git add -A)
+expect "F2 manifest entry via symlink to sibling dir sharing repo-path prefix FAIL" 1 "resolves outside" "$d" --check changelog
+rm -rf "${rr:?}-evil2"
+d=$(fresh); mut "$d" docs/CHANGELOG.md 's@^### PROVISIONAL (not verified)@```\n## fenced not a section end\n```\n- `docs/nope_after_fence2.txt`\n\n### PROVISIONAL (not verified)@' && expect "F5 fenced '## ' does not end the section" 1 "docs/nope_after_fence2.txt" "$d" --check changelog
+d=$(fresh); mut "$d" docs/CHANGELOG.md 's@^### PROVISIONAL (not verified)@```\n### Notes fenced not a subsection end\n```\n- `docs/nope_after_fence3.txt`\n\n### PROVISIONAL (not verified)@' && expect "F5 fenced '### ' does not end the VERIFIED subsection" 1 "docs/nope_after_fence3.txt" "$d" --check changelog
+
+# F1 residual: an empty manifest passes the line parser but sha256sum rejects it (no checksum lines)
+d=$(fresh); : > "$d/docs/qa/run1/SHA256SUMS"; expect "F1 empty manifest judged malformed by sha256sum -> FAIL" 1 "SHAFAIL" "$d" --check changelog
+
 echo "== selftest (11.4.273 control needles built into the tool)"
 out="$("$CHECKER" --selftest 2>&1)"; got=$?
 if [ "$got" = 0 ] && printf '%s\n' "$out" | grep -q '^VERDICT: PASS selftest'; then ok; else bad "selftest rc=$got"; fi
