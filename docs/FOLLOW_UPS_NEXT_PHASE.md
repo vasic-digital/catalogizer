@@ -1984,3 +1984,13 @@ R5B-F5 (minor, test-instrumentation) sweep misses variable-carried errors (mutan
 R5FUFU-1 (minor, source-defect) LoginGin ErrAccountPending branch (auth_handler.go ~68) still returns err.Error(); route through authClientMessage / services.ErrAccountPending.Error().
 R5FUFU-2 (minor, process-doc+test) comment "Order is irrelevant" in authClientSentinels is wrong: precedence = PasswordPolicyError, then slice order (mutant M5 reverse-iteration survived); correct the comment and add a two-sentinel-chain test.
 R5FUFU-3 (nit) "R5-F1" doc comment sits above helpers r5UpdateUserSQL/r5Msg instead of the tests it describes.
+
+## REL-CHECK F1-F5 post-hoc review follow-ups (2026-11-12) — Opus GO-with-follow-ups (branch already landed via 9b484c65; PROVISIONAL)
+RCF5-1 (minor, source-defect) scripts/release/check_release_consistency.sh: manifest entry `-` makes sha256sum -c read stdin and counts a verified OK (sha_ok inflated; would wait on a TTY); fail closed on ent == `-` or run sha256sum with </dev/null.
+RCF5-2 (minor, test-instrumentation) fence-state logic under-tested: mutants RV1 (`~~~` ignored) and RV3 (fence never closes) survive; add a `~~~` test and a heading-after-closed-fence test.
+RCF5-3 (minor, source-defect) `\s{0,3}` fence match treats a tab-indented ``` line as a fence (CommonMark: indented code) and hid a real duplicate `## [2.4.0]` heading; use `^ {0,3}`.
+RCF5-4 (minor, source-defect, pre-existing) without --section a section inside an HTML comment is picked as first numbered section.
+RCF5-5 (nit, process-doc) scripts/release/README.md says readlink -f; code uses readlink -m.
+RCF5-6 (nit) SHA256SUMS itself being a symlink to an outside file is accepted (evidence provenance only).
+RCF5-7 (nit, test-instrumentation) whitespace-only manifest lines untested (mutant RV4).
+RCF5-8 (nit) only uutils sha256sum 0.10.0 exercised; GNU coreutils untested; the R4 mutants were not independently re-run (load 34-38).
