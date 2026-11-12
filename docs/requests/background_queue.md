@@ -58,3 +58,6 @@ Status: IN PROGRESS. Sources: docs/CONTINUATION.md section 7, docs/FOLLOW_UPS_NE
 
 ## BG-OPDEC-2026-11-12b - second operator-decision sweep (BACKGROUND :: CRITICAL)
 Received 2026-11-12 18:56 CET. Same request as BG-OPDEC-2026-11-12 (collect every operator-blocked item / decision / blocker / show-stopper and ask interactive questions with options). Status: IN PROGRESS - batch asked this turn (Codeberg releases feature, final release label, Sonar/Docker login, disk 98%); SECQ-1 default awaits research agent aabb0db2377bfca0f; remaining batches follow answers.
+
+## BG-OPDEC-2026-11-12c - third operator-decision sweep (BACKGROUND :: CRITICAL)
+Received 2026-11-12 23:28 CET. Same request again (ask every open operator decision as interactive questions with options). Status: IN PROGRESS - batch asked this turn from the still-open list (Sonar extension cycle, CAT-PREEXIST backstop date, SECQ-2/WD-F1 closure, Vision QA requirement, Q8 devices, Q6 stale branch, Q12/Q13); answers to be recorded in docs/CONTINUATION.md section 7 and applied.
