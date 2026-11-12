@@ -27,20 +27,27 @@
 # says targets=absent (no flip was demanded).
 set -u
 OUT=""
-# pre-scan --out so that even a usage error rewrites the record
-for ((i=1;i<=$#;i++)); do if [ "${!i}" = "--out" ]; then j=$((i+1)); OUT="${!j:-}"; fi; done
-# out_clash: succeeds (0) when --out realpath-resolves to any input file (M-c)
+BV0=""; NV0=""; BM0=""; NM0=""; TG0=""
+# pre-scan --out AND every input option so that even a usage error rewrites the record and
+# out_clash already knows every input named anywhere on the command line (F1)
+for ((i=1;i<=$#;i++)); do j=$((i+1)); case "${!i}" in
+  --out) OUT="${!j:-}" ;; --baseline-verdicts) BV0="${!j:-}" ;; --new-verdicts) NV0="${!j:-}" ;;
+  --baseline-meta) BM0="${!j:-}" ;; --new-meta) NM0="${!j:-}" ;; --targets) TG0="${!j:-}" ;; esac; done
+# san: replace every control character (newline included) so option/path/reason text can never
+# add or duplicate a key=value record line or a stdout verdict line (F2)
+san() { printf '%s' "$1" | LC_ALL=C tr '\000-\037\177' '?'; }
+# out_clash: succeeds (0) when --out resolves (realpath) OR is the same inode (-ef: hardlink) as any input (M-c, F1)
 out_clash() { local o f; [ -n "$OUT" ] || return 1; o="$(realpath -m -- "$OUT" 2>/dev/null)" || return 0
   for f in "$BV0" "$NV0" "$BM0" "$NM0" "$TG0"; do
     [ -n "$f" ] || continue
     [ "$(realpath -m -- "$f" 2>/dev/null)" = "$o" ] && return 0
+    [ "$OUT" -ef "$f" ] && return 0
   done; return 1; }
 blind() {
-  echo "BLIND: $*" >&2
-  { [ -z "$OUT" ] || out_clash; } || printf 'schema=image_no_worse/1\nverdict=BLIND\nreasons=%s\n' "$*" >"$OUT" 2>/dev/null
+  echo "BLIND: $(san "$*")" >&2
+  { [ -z "$OUT" ] || out_clash; } || printf 'schema=image_no_worse/1\nverdict=BLIND\nreasons=%s\n' "$(san "$*")" >"$OUT" 2>/dev/null
   echo "VERDICT: BLIND"; exit 2; }
 BV=""; NV=""; BM=""; NM=""; TG=""; TGSET=0
-BV0=""; NV0=""; BM0=""; NM0=""; TG0=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --baseline-verdicts) { [ $# -ge 2 ] && [ -n "$2" ]; } || blind "$1 needs a value"; BV="$2"; shift 2 ;;
@@ -57,7 +64,8 @@ BV0="$BV"; NV0="$NV"; BM0="$BM"; NM0="$NM"; TG0="$TG"
 if out_clash; then OUT_BAD="$OUT"; OUT=""; blind "--out $OUT_BAD resolves to an input file"; fi
 # TOCTOU: snapshot every input into a private dir; all later reads use the snapshot
 SNAP="$(mktemp -d)" || blind "cannot create snapshot dir"
-trap 'rm -rf -- "${SNAP:?}"' EXIT
+# F4: no recursive delete - remove the known snapshot files, then the (now empty) directory
+trap 'rm -f -- "${SNAP:?}/bv" "${SNAP:?}/nv" "${SNAP:?}/bm" "${SNAP:?}/nm" "${SNAP:?}/tg"; rmdir -- "${SNAP:?}" 2>/dev/null' EXIT
 snap() { local src="$1" dst="$SNAP/$2"; if [ -r "$src" ] && [ -f "$src" ]; then cp -- "$src" "$dst" && printf '%s' "$dst" || printf '%s' "$src"; else printf '%s' "$src"; fi; }
 BV="$(snap "$BV0" bv)"; NV="$(snap "$NV0" nv)"; BM="$(snap "$BM0" bm)"; NM="$(snap "$NM0" nm)"
 [ "$TGSET" = 0 ] || TG="$(snap "$TG0" tg)"
@@ -103,9 +111,9 @@ write_record() { # verdict reasons lost newt missing-targets ; returns non-zero 
   {
     echo "schema=image_no_worse/1"
     echo "verdict=$1"
-    echo "reasons=$2"
-    echo "baseline_verdicts_path=$BV0"
-    echo "new_verdicts_path=$NV0"
+    echo "reasons=$(san "$2")"
+    echo "baseline_verdicts_path=$(san "$BV0")"
+    echo "new_verdicts_path=$(san "$NV0")"
     echo "baseline_verdicts_sha256=$( [ -r "$BV" ] && sha "$BV" || echo absent)"
     echo "new_verdicts_sha256=$(sha "$NV")"
     echo "baseline_meta_sha256=$( [ -r "$BM" ] && sha "$BM" || echo absent)"
@@ -133,7 +141,7 @@ write_record() { # verdict reasons lost newt missing-targets ; returns non-zero 
 emit() { # emit <verdict> <rc> <reasons> <lost> <newt> <missing>
   write_record "$1" "$3" "$4" "$5" "$6" || blind "cannot write --out $OUT"
   echo "VERDICT: $1"; exit "$2"; }
-incomparable() { echo "INCOMPARABLE: $1" >&2; emit INCOMPARABLE-BASELINE-MISSING 11 "$1" "" "" ""; }
+incomparable() { echo "INCOMPARABLE: $(san "$1")" >&2; emit INCOMPARABLE-BASELINE-MISSING 11 "$1" "" "" ""; }
 
 [ -r "$NV" ] || blind "new verdicts unreadable: $NV"
 load_verdicts "$NV" NVD || blind "$LV_ERR"
@@ -174,11 +182,12 @@ for id in "${NORDER[@]}"; do [ -n "${BVD[$id]+x}" ] || NEWT="$NEWT${NEWT:+,}$id"
 MISSING=""; FLIPS=""
 if [ "$TGSET" = 1 ]; then
   [ -r "$TG" ] || blind "targets file unreadable: $TG"
-  ntg=0
+  ntg=0; declare -A TSEEN=()
   while IFS= read -r t || [ -n "$t" ]; do
     [ -n "$t" ] || continue
     case "$t" in *[[:space:],\*\?\[\]]*) blind "unsafe target id '$t' (space, comma or glob character)" ;; esac
-    ntg=$((ntg+1))
+    [ -z "${TSEEN[$t]+x}" ] || continue   # F7: a repeated target id counts and is recorded once
+    TSEEN[$t]=1; ntg=$((ntg+1))
     if [ "${BVD[$t]:-}" = FAIL ] && [ "${NVD[$t]:-}" = PASS ]; then FLIPS="$FLIPS $t"; else MISSING="$MISSING${MISSING:+,}$t"; fi
   done <"$TG"
   [ "$ntg" -gt 0 ] || blind "targets file has no test ids: $TG"

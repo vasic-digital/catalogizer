@@ -2075,6 +2075,7 @@ WP03-5 equivalent mutants (not run, argued in the harness): the row-count contro
 WP03-R3 Opus round-2 NO-GO (I-6, I-7, M-a..M-d, r1..r3) addressed in the round-3 fix commit: exact verdict `case` (no substring membership), unsafe ids (space, comma, glob) fail closed, `--out` realpath clash refused in both tools, duplicate/repeated image lines rejected, gate cross-checks schema, `new_total` == `tests_total` == `tests_reported`, strict `image_new` shape and NO-WORSE record consistency, input snapshot against TOCTOU. Gate-logic unit class; PROVISIONAL.
 WP03-6 the TOCTOU snapshot is not unit-testable (a race); it is argued by construction and its mutant is recorded as equivalent. UNCONFIRMED: no test swaps an input between the two reads.
 
+## SECQ-2 / WD-F1 re-reproduction follow-ups (moved out from under CAT-WP03-MECH, WP03R3-F6)
 - SECQ-2 / WD-F1 / WD-F1a re-reproduction 2026-11-12 (evidence `docs/qa/secq2-repro-20261112/`, PROVISIONAL): result not-reproducible-with-evidence. 6 further repeats of the WD-F1a case (mode A reset, 2 MiB) all byte-identical (6/6 ok, detail recorded), both control needles fire. Proposal for the operator: close under section 11.4.90 `not-reproducible` (UNCONFIRMED whether the single 2026-11-05 CORRUPT was a read-back glitch). No fix written.
 - SECQ2WD-R1-1 (minor, process-doc): fix/wd-repro README must state the re-run used main f709b892, not the 2026-11-05 build where the single CORRUPT appeared (WriteFile gained HEAD size read-back since); operator weighs this before accepting a 11.4.90 not-reproducible closure.
 - SECQ2WD-R1-2 (minor, process-doc): record a target identity for the live run (hash of endpoint host, clean-tree note for the test binary) per 11.4.292(C)/11.4.289(D).
@@ -2120,3 +2121,9 @@ WP03-6 the TOCTOU snapshot is not unit-testable (a race); it is argued by constr
 - WP03R3-F6 (nit): "CAT-WP03-MECH follow-ups" heading sits above the SECQ-2 bullets.
 - WP03R3-F7 (nit): duplicate target id yields duplicate `flip=` lines.
 - Author's filtered 33-mutant run result remains UNCONFIRMED (partial output).
+
+## CAT-WP03-MECH — WP03R3 fix round (branch fix/wp03-fu, 2026-11-12; PROVISIONAL, gate-logic unit class)
+WP03R3-F1..F7 addressed (F6 = heading moved above). Residual, UNCONFIRMED or owed:
+- WP03R3FU-1 (minor): `rm -rf` remains in `check_release_consistency.sh`, `test_check_release_consistency.sh`, `mutation_check_release_consistency.sh` (all `${VAR:?}`-guarded, outside this change's two tools); convert to `safe_rm_rf` in a later change.
+- WP03R3FU-2 (nit): the tests use `safe_rm_rf` only when `constitution/scripts/lib/safe_rm.sh` is present next to the repo; otherwise they leave their temp dir and print a note.
+- WP03R3FU-3 (minor): `sanitize` replaces control characters with `?` in record/stdout text; ids from verdict files are not sanitised beyond the existing whitespace/glob checks (a non-newline control byte in a test id still reaches `diff=`/`lost=` lines, cannot add a line).

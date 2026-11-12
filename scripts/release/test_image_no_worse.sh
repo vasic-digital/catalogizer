@@ -11,7 +11,10 @@ BASE="${NOWORSE_TMP:-${XDG_CACHE_HOME:-${HOME:?}/.cache}/nowc-tmp}"
 mkdir -p "$BASE" || exit 2
 ROOT="$(mktemp -d "$BASE/test.XXXXXX")" || exit 2
 case "$ROOT" in "$BASE"/test.*) ;; *) echo "odd ROOT" >&2; exit 2 ;; esac
-trap 'rm -rf "${ROOT:?}"' EXIT
+SAFE_RM="$HERE/../../constitution/scripts/lib/safe_rm.sh"
+[ -r "$SAFE_RM" ] && . "$SAFE_RM"
+cleanup() { if declare -F safe_rm_rf >/dev/null; then safe_rm_rf "${ROOT:?}"; else echo "note: safe_rm.sh unavailable; ${ROOT:?} left in place" >&2; fi; }
+trap cleanup EXIT
 PASS=0; FAIL=0
 HA="$(printf 'a%.0s' {1..64})"; HB="$(printf 'b%.0s' {1..64})"; HC="$(printf 'c%.0s' {1..64})"
 ok() { PASS=$((PASS+1)); }
@@ -190,6 +193,55 @@ expect "r1 reordered multi-file self-compare" 11 "INCOMPARABLE"
 setup; printf 'image=boot.img 1.1 %s\n' "$HC" >>"$D/nm"; expect "multi-file differing set" 0 "NO-WORSE-PROVEN"
 # TOCTOU: record shas are those of the snapshot taken at start; the record verdict reflects the compared content
 setup; run >/dev/null; grep -q "^new_verdicts_sha256=$(sha256sum "$D/n" | cut -d' ' -f1)$" "$D/rec" && ok || bad "snapshot sha differs from input sha"
+
+# ---- WP03R3 follow-ups (F1..F4, F7) ----
+# F1: --out that is a HARDLINK to any input must be refused and the input left intact
+for f in b n bm nm tg; do setup; echo t3 >"$D/tg"; ln "$D/$f" "$D/hl"; cp "$D/$f" "$D/$f.orig"
+  "$CMP" --baseline-verdicts "$D/b" --new-verdicts "$D/n" --baseline-meta "$D/bm" --new-meta "$D/nm" --targets "$D/tg" --out "$D/hl" >/dev/null 2>&1; rc=$?
+  { [ "$rc" = 2 ] && cmp -s "$D/$f" "$D/$f.orig"; } && ok || bad "F1 hardlink --out to $f: rc=$rc or input clobbered"; done
+# F1 class member: a usage error raised BEFORE all inputs are parsed must not clobber an input named earlier
+for opt in --new-verdicts --baseline-verdicts --new-meta --baseline-meta --targets; do setup; echo t3 >"$D/tg"
+  case "$opt" in --new-verdicts) f=n ;; --baseline-verdicts) f=b ;; --new-meta) f=nm ;; --baseline-meta) f=bm ;; --targets) f=tg ;; esac
+  cp "$D/$f" "$D/$f.orig"; "$CMP" "$opt" "$D/$f" --out "$D/$f" --bogus >/dev/null 2>&1; rc=$?
+  { [ "$rc" = 2 ] && cmp -s "$D/$f" "$D/$f.orig"; } && ok || bad "F1 early usage error clobbered $f (rc=$rc)"; done
+# F2: newline/control characters in option or path text never duplicate record lines
+NL=$'\n'
+setup; "$CMP" "--bogus${NL}verdict=NO-WORSE-PROVEN" --out "$D/rec" >/dev/null 2>&1
+{ [ "$(grep -c '^verdict=' "$D/rec")" = 1 ] && grep -qx 'verdict=BLIND' "$D/rec"; } && ok || bad "F2 newline in option text forged a verdict= line"
+setup; vd "$D/n" t1=FAIL t2=PASS t3=PASS; cp "$D/b" "$D/b${NL}verdict=NO-WORSE-PROVEN"
+"$CMP" --baseline-verdicts "$D/b${NL}verdict=NO-WORSE-PROVEN" --new-verdicts "$D/n" --baseline-meta "$D/bm" --new-meta "$D/nm" --out "$D/rec" >/dev/null 2>&1
+{ [ "$(grep -c '^verdict=' "$D/rec")" = 1 ] && grep -qx 'verdict=REGRESSED' "$D/rec"; } && ok || bad "F2 newline in input path forged a verdict= line"
+setup; "$CMP" --baseline-verdicts "$D/b${NL}verdict=NO-WORSE-PROVEN" --new-verdicts "$D/n" --baseline-meta "$D/bm" --new-meta "$D/nm" --out "$D/rec" >/dev/null 2>&1
+[ "$(grep -c '^verdict=' "$D/rec")" = 1 ] && ok || bad "F2 newline in missing input path forged a verdict= line"
+setup; "$CMP" "--bog$(printf '\033')us" --out "$D/rec" >/dev/null 2>&1
+grep -q "$(printf '\033')" "$D/rec" && bad "F2 control char survived into record" || ok
+# F3 / RM6: a target whose baseline verdict is not FAIL (SKIPPED, INCONCLUSIVE, BLIND, ERROR, absent) is no flip
+for bv in SKIPPED INCONCLUSIVE BLIND ERROR; do setup; vd "$D/b" t1=PASS t2=PASS t3=$bv; echo t3 >"$D/tg"
+  expect "RM6 baseline t3=$bv then PASS is not a flip" 10 "targeted-flip-missing" --targets "$D/tg"; done
+setup; vd "$D/b" t1=PASS t2=PASS; echo t4 >"$D/tg"
+expect "RM6 baseline-absent target then PASS is not a flip" 10 "targeted-flip-missing" --targets "$D/tg"
+# F3 / RM4: multi-image sets where only the 2nd (sorted) sha differs
+setup; meta "$D/bm" 1.0 "$HA"; printf 'image=boot.img 1.0 %s\n' "$HB" >>"$D/bm"
+meta "$D/nm" 1.1 "$HA"; printf 'image=boot.img 1.1 %s\n' "$HB" >>"$D/nm"
+expect "RM4 identical multi-image sets (different versions) are INCOMPARABLE" 11 "INCOMPARABLE"
+setup; meta "$D/bm" 1.0 "$HA"; printf 'image=boot.img 1.0 %s\n' "$HB" >>"$D/bm"
+meta "$D/nm" 1.1 "$HA"; printf 'image=boot.img 1.1 %s\n' "$HC" >>"$D/nm"
+expect "RM4 only the 2nd sha differs is comparable" 0 "NO-WORSE-PROVEN"
+setup; meta "$D/bm" 1.0 "$HA"; printf 'image=boot.img 1.0 %s\n' "$HB" >>"$D/bm"
+meta "$D/nm" 1.1 "$HA"; printf 'image=boot.img 1.1 %s\nimage=extra.img 1.1 %s\n' "$HB" "$HC" >>"$D/nm"
+expect "RM4 superset new set is comparable" 0 "NO-WORSE-PROVEN"
+# F7: duplicate target id yields one flip= line
+setup; printf 't3\nt3\n' >"$D/tg"; run --targets "$D/tg" >/dev/null
+[ "$(grep -c '^flip=t3 ' "$D/rec")" = 1 ] && ok || bad "F7 duplicate target id duplicated flip= lines"
+setup; printf 't9\nt9\n' >"$D/tg"; run --targets "$D/tg" >/dev/null 2>&1
+grep -qx 'targets_missing=t9' "$D/rec" && ok || bad "F7 duplicate missing target listed twice"
+# F4: the snapshot dir is removed on exit without recursive delete (TMPDIR probe) and the source has no rm -rf
+setup; mkdir "$D/tmp"; TMPDIR="$D/tmp" run >/dev/null 2>&1
+[ -z "$(ls -A "$D/tmp")" ] && ok || bad "F4 snapshot dir left behind"
+setup; mkdir "$D/tmp"; TMPDIR="$D/tmp" run --bogus >/dev/null 2>&1
+[ -z "$(ls -A "$D/tmp")" ] && ok || bad "F4 snapshot dir left behind on usage error"
+if grep -nE 'rm +-[a-zA-Z]*[rR]' "$CMP" >/dev/null; then bad "F4 tool still uses a recursive rm"; else ok; fi
+grep -qE 'rm +-rf' <<<'rm -rf x' && ok || bad "F4 lint control needle blind"
 
 echo "image_no_worse tests: pass=$PASS fail=$FAIL"
 [ "$FAIL" = 0 ]
