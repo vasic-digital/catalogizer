@@ -84,8 +84,8 @@ func TestUserRepositoryExample(t *testing.T) {
 
 		// Execute
 		user, err := userRepo.GetByID(1)
-		assert.NoError(t, err)
-		assert.NotNil(t, user)
+		require.NoError(t, err)
+		require.NotNil(t, user)
 		assert.Equal(t, 1, user.ID)
 		assert.Equal(t, "testuser", user.Username)
 		assert.Equal(t, "test@example.com", user.Email)
@@ -118,8 +118,8 @@ func TestUserRepositoryExample(t *testing.T) {
 
 		// Execute
 		user, err := userRepo.GetByUsername("testuser")
-		assert.NoError(t, err)
-		assert.NotNil(t, user)
+		require.NoError(t, err)
+		require.NotNil(t, user)
 		assert.Equal(t, "testuser", user.Username)
 
 		// Verify expectations
@@ -191,6 +191,38 @@ func TestUserRepositoryExample(t *testing.T) {
 		require.NoError(t, mock.ExpectationsWereMet())
 	})
 
+	// Test 5b: Delete of the last active administrator is refused and rolled back (PX-F4)
+	t.Run("DeleteUser_ProtectedLastAdmin", func(t *testing.T) {
+		mock.ExpectQuery(`SELECT id, name, description, permissions, is_system, created_at, updated_at\s+FROM roles`).
+			WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "permissions", "is_system", "created_at", "updated_at"}).
+				AddRow(1, "admin", "Administrator", `["*"]`, true, time.Now(), time.Now()))
+		mock.ExpectBegin()
+		mock.ExpectQuery(`SELECT username FROM users WHERE id = \?`).
+			WithArgs(7).
+			WillReturnRows(sqlmock.NewRows([]string{"username"}).AddRow("root"))
+		mock.ExpectExec(`UPDATE auth_audit_log SET details`).
+			WithArgs(sqlmock.AnyArg(), 7).
+			WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectExec(`UPDATE auth_audit_log SET user_id = NULL WHERE user_id = \?`).
+			WithArgs(7).
+			WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectExec(`UPDATE user_permissions SET granted_by = NULL WHERE granted_by = \?`).
+			WithArgs(7).
+			WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectQuery(`SELECT role_id, is_active FROM users WHERE id = \?`).
+			WithArgs(7).
+			WillReturnRows(sqlmock.NewRows([]string{"role_id", "is_active"}).AddRow(1, true))
+		// the guarded DELETE matches no row when no other active administrator exists
+		mock.ExpectExec(`DELETE FROM users WHERE id = \? AND \(SELECT COUNT\(\*\) FROM users o`).
+			WithArgs(7, 7, true, false, 1).
+			WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectRollback()
+
+		err := userRepo.Delete(7)
+		require.ErrorIs(t, err, repository.ErrLastAdmin)
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
+
 	// Test 6: List users
 	t.Run("ListUsers", func(t *testing.T) {
 		// Setup expectations
@@ -221,8 +253,8 @@ func TestUserRepositoryExample(t *testing.T) {
 
 		// Execute
 		users, err := userRepo.List(10, 0)
-		assert.NoError(t, err)
-		assert.Len(t, users, 2)
+		require.NoError(t, err)
+		require.Len(t, users, 2)
 		assert.Equal(t, "user1", users[0].Username)
 		assert.Equal(t, "user2", users[1].Username)
 
