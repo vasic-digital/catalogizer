@@ -493,3 +493,11 @@ This document supersedes the per-submodule templates for operator setup.
 | `CSRF_INSECURE_DEV` | unset / false | `true`/`1`/`yes`/`on` makes the admin CSRF cookie `csrf-dev` without `Secure` and without the `__Host-` prefix, so a browser on `http://<LAN-IP>` keeps it. Double-submit check (header must equal cookie, HMAC-verified) is unchanged. |
 
 Honoured only when the raw `APP_ENV` (trimmed, case-insensitive) is one of `development`, `dev`, `test`, `local`, `qa`; any other value (production, prod, staging, empty, typos) is refused (logged at WARN, secure default kept). `-test-mode` forces the logger env to development but does NOT bypass this check. Use only for plain-HTTP QA/LAN stacks.
+
+## Catalogizer API: outbound destination policy (netguard, OPB-M5)
+Authoritative sources: `catalog-api/internal/netguard/netguard.go`, `catalog-api/internal/netguard/operator.go`; per-client classes in `docs/OUTBOUND_HTTP_CLIENTS.md`.
+
+| Var | Default | Effect |
+|---|---|---|
+| `CATALOGIZER_OUTBOUND_ALLOW_CIDRS` | unset: private, loopback and CGNAT ranges refused | Comma-separated CIDRs (e.g. `192.168.1.0/24,127.0.0.1/32`) the server may connect to although they are private, loopback or CGNAT (for example a sync endpoint on a LAN NAS). Read at use time. It applies to the `netguard.Client`/`DialContext` users and to the operator-class clients (WebDAV storage roots, sync client). It can never re-admit link-local, metadata, unspecified, multicast, broadcast or the reserved ranges, and it is ignored by the STRICT clients (`netguard.Transport()`, e.g. subtitle and cover-art URL fetches). An entry that is not a valid CIDR is skipped silently, so a list of only invalid entries allows nothing. |
+| `CATALOGIZER_OPERATOR_DENY_PRIVATE` | unset: RFC 1918, ULA and CGNAT stay reachable | Affects only the operator-class clients (WebDAV storage-root and sync clients). `1`, `true`, `yes` or `on` (case-insensitive) also refuses RFC 1918, IPv6 ULA and CGNAT addresses unless `CATALOGIZER_OUTBOUND_ALLOW_CIDRS` lists them. Loopback, link-local/metadata, unspecified and multicast are refused in every mode. With it unset, a LAN NAS root works without further configuration. |
