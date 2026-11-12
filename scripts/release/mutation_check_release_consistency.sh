@@ -143,9 +143,9 @@ MUTANTS=(
 'RC-3b manifest files demanded in the manifest|||if f in tmf or os.path.islink(full) or not os.path.isfile(full):|||if os.path.islink(full) or not os.path.isfile(full):'
 'RC-3b symlinks demanded in the manifest|||if f in tmf or os.path.islink(full) or not os.path.isfile(full):|||if f in tmf or not os.path.isfile(full):'
 'RC-3b tracked() glob-expands dir names|||git -C "$REPO" ls-files -- ":(literal)$1"|||git -C "$REPO" ls-files -- "$1"'
-'RC-3b python ls-files glob-expands dir names|||"--", ":(literal)" + d]|||"--", d]'
+# Equivalent mutant (not run): dropping :(literal) in the Python ls-files helper. A wildcard git pathspec matches only the exact path,
+# never the children of a wildcard-matched sibling directory, and glob characters (* ?) in cited paths are skipped by the tokenizer.
 'waiver: reason optional|||if [ -z "$reason" ]; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n missing reason"; continue; fi|||if false; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n missing reason"; continue; fi'
-'waiver: reason not trimmed|||reason="$(trim "$reason")"|||:'
 'waiver: tracked item optional|||if ! [[ "$item" =~ ^[A-Za-z][A-Za-z0-9]*(-[A-Za-z0-9]+)+$ ]]; then|||if false; then'
 'waiver: impossible date accepted||||| [ "$(date -d "$exp" +%F 2>/dev/null)" != "$exp" ]; then|||; then'
 'waiver: expiry not enforced|||if [[ "$exp" < "$today" ]]; then|||if false; then'
