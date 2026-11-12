@@ -1827,3 +1827,14 @@ Evidence: `docs/qa/retest-20261112/RETEST_main_563617b1.md` (PROVISIONAL summary
 ## CAT-REL-CHECK-1 reviewer findings on the v2.4.2 prep (2026-11-12)
 - RC-3 (important): `check_release_consistency.sh` silently passes a VERIFIED path that has no SHA256SUMS manifest. Accept `SHA256SUMS.txt` as well as `SHA256SUMS`; treat a missing manifest as BLIND or at least count it; check that the manifest lists every file of the directory.
 - RC-3b (A5/A7): a deleted manifest entry plus a tampered file passes. Check manifest completeness against the directory contents.
+
+## CAT-PREEXIST-1..6 landed (2026-11-12) — PROVISIONAL, Opus round-2 GO-with-follow-ups
+Items 1-6 are fixed on main (merge 9e299503; each target test GREEN on the branch, RED on the parent, reviewer mutations M1-M6 caught). Root causes: stale test/docs vs code (FACT). Review follow-ups (all open, Queued):
+- PX-F1 (Bug, minor): nilslice guard `strings.HasSuffix` match crosses directories (a same-named file in another directory can take over an accepted slot while the original is fixed); match the full scan path or include the parent dir in each key.
+- PX-F2 (Task, minor): nilslice detector `offenders` keys declarations by name per function, so a second same-named `var` in a closure is not reported; key by token.Pos/object and add a two-declaration fixture.
+- PX-F3 (Bug, minor): DELETE /api/v1/logs/share/{id} 404 body leaks internal error text (`sql: no rows in result set`).
+- PX-F4 (Task): examples test uses assert before dereference (cascade panic) - use require; no test covers the protected-last-admin Delete path.
+- PX-F5 (Task): pdf limit test restates the formula with the same constants (reviewer mutant docIndexerSlots 1->2 survives) - assert literal 512<<20.
+- PX-F6 (Task): TestConversionIntegration hand-written schema - build via RunMigrations.
+- PX-F7 (Task, optional): config census should treat `...` as an elision, not an empty password.
+CAT-PREEXIST-3 and -4 register notes (513 s runtime, nil-pointer panic) did not reproduce as stated: the test was ~16-20 s; the panic was a test-only cascade from stale sqlmock expectations.
