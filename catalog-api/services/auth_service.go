@@ -93,6 +93,24 @@ type AuthResult struct {
 // the account is a self-registration still waiting for administrator approval.
 var ErrAccountPending = errors.New("account pending approval")
 
+// Sentinel errors whose text is intentionally client-visible (CAT-PXF23-R5).
+// Handlers map these with errors.Is; any other error is internal and is never
+// echoed to the client.
+var (
+	ErrInvalidCredentials       = errors.New("invalid credentials")
+	ErrAccountLocked            = errors.New("account is temporarily locked")
+	ErrAccountDisabled          = errors.New("account is disabled")
+	ErrInvalidRefreshToken      = errors.New("invalid refresh token")
+	ErrSessionExpired           = errors.New("session expired")
+	ErrSessionNotFound          = errors.New("session not found")
+	ErrCurrentPasswordIncorrect = errors.New("current password is incorrect")
+)
+
+// PasswordPolicyError is a client-correctable password rule violation.
+type PasswordPolicyError struct{ Msg string }
+
+func (e *PasswordPolicyError) Error() string { return e.Msg }
+
 // Login authenticates a user and creates a session
 func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent string) (*AuthResult, error) {
 	// Find user by username or email
@@ -100,7 +118,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	if err != nil {
 		if err == sql.ErrNoRows {
 			s.auditEvent(0, "failed_login", ipAddress, userAgent, "unknown user")
-			return nil, errors.New("invalid credentials")
+			return nil, ErrInvalidCredentials
 		}
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
@@ -109,7 +127,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	if !user.CanLogin() {
 		s.auditEvent(user.ID, "failed_login_inactive", ipAddress, userAgent, "account locked or disabled")
 		if user.IsLocked {
-			return nil, errors.New("account is temporarily locked")
+			return nil, ErrAccountLocked
 		}
 		if user.IsRegistrationPending() {
 			// Reveal the pending state only to someone who knows the password,
@@ -118,9 +136,9 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 				return nil, ErrAccountPending
 			}
 			s.userRepo.IncrementFailedLoginAttempts(user.ID)
-			return nil, errors.New("invalid credentials")
+			return nil, ErrInvalidCredentials
 		}
-		return nil, errors.New("account is disabled")
+		return nil, ErrAccountDisabled
 	}
 
 	// Verify password
@@ -129,7 +147,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 		// Increment failed login attempts
 		s.userRepo.IncrementFailedLoginAttempts(user.ID)
 		s.auditEvent(user.ID, "failed_login", ipAddress, userAgent, "invalid password")
-		return nil, errors.New("invalid credentials")
+		return nil, ErrInvalidCredentials
 	}
 	acceptableHashes := []string{user.PasswordHash}
 	if needsUpgrade {
@@ -203,12 +221,12 @@ func (s *AuthService) RefreshToken(refreshToken string) (*AuthResult, error) {
 	// Find session by refresh token
 	session, err := s.userRepo.GetSessionByRefreshToken(refreshToken)
 	if err != nil {
-		return nil, errors.New("invalid refresh token")
+		return nil, ErrInvalidRefreshToken
 	}
 
 	// Check if session is still valid
 	if !session.IsActive || session.ExpiresAt.Before(time.Now()) {
-		return nil, errors.New("session expired")
+		return nil, ErrSessionExpired
 	}
 
 	// Get user
@@ -221,7 +239,7 @@ func (s *AuthService) RefreshToken(refreshToken string) (*AuthResult, error) {
 	if !user.CanLogin() {
 		// Deactivate session
 		s.userRepo.DeactivateSession(session.ID)
-		return nil, errors.New("account is disabled")
+		return nil, ErrAccountDisabled
 	}
 
 	// Load user role
@@ -292,11 +310,11 @@ func (s *AuthService) GetCurrentUser(tokenString string) (*models.User, error) {
 	// Check if session is still active
 	session, err := s.userRepo.GetSession(claims.SessionID)
 	if err != nil {
-		return nil, errors.New("session not found")
+		return nil, ErrSessionNotFound
 	}
 
 	if !session.IsActive || session.ExpiresAt.Before(time.Now()) {
-		return nil, errors.New("session expired")
+		return nil, ErrSessionExpired
 	}
 
 	// Get user
@@ -328,7 +346,7 @@ func (s *AuthService) ChangePassword(userID int, currentPassword, newPassword st
 
 	// Verify current password
 	if !s.verifyPassword(currentPassword, user.Salt, user.PasswordHash) {
-		return errors.New("current password is incorrect")
+		return ErrCurrentPasswordIncorrect
 	}
 
 	// Generate new salt and hash
@@ -610,30 +628,30 @@ func (s *AuthService) HashPasswordForUser(password string) (passwordHash string,
 // ValidatePassword checks if a password meets security requirements
 func (s *AuthService) ValidatePassword(password string) error {
 	if len(password) < 8 {
-		return errors.New("password must be at least 8 characters long")
+		return &PasswordPolicyError{Msg: "password must be at least 8 characters long"}
 	}
 	if len(password) > 128 {
-		return errors.New("password must be at most 128 characters long")
+		return &PasswordPolicyError{Msg: "password must be at most 128 characters long"}
 	}
 	// At least one uppercase letter
 	uppercase := regexp.MustCompile(`[A-Z]`)
 	if !uppercase.MatchString(password) {
-		return errors.New("password must contain at least one uppercase letter")
+		return &PasswordPolicyError{Msg: "password must contain at least one uppercase letter"}
 	}
 	// At least one lowercase letter
 	lowercase := regexp.MustCompile(`[a-z]`)
 	if !lowercase.MatchString(password) {
-		return errors.New("password must contain at least one lowercase letter")
+		return &PasswordPolicyError{Msg: "password must contain at least one lowercase letter"}
 	}
 	// At least one digit
 	digit := regexp.MustCompile(`[0-9]`)
 	if !digit.MatchString(password) {
-		return errors.New("password must contain at least one digit")
+		return &PasswordPolicyError{Msg: "password must contain at least one digit"}
 	}
 	// At least one special character (non-alphanumeric, printable)
 	special := regexp.MustCompile(`[^a-zA-Z0-9]`)
 	if !special.MatchString(password) {
-		return errors.New("password must contain at least one special character")
+		return &PasswordPolicyError{Msg: "password must contain at least one special character"}
 	}
 	return nil
 }

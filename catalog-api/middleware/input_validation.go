@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -155,11 +156,37 @@ func DetectPathTraversal(input string) bool {
 	return false
 }
 
+// validationError is a client-correctable validation failure. msg is the full
+// text (for logs and tests); public is what may be returned to the client.
+type validationError struct {
+	msg    string
+	public string
+}
+
+func (e *validationError) Error() string { return e.msg }
+
+func clientErrorf(format string, args ...interface{}) error {
+	m := fmt.Sprintf(format, args...)
+	return &validationError{msg: m, public: m}
+}
+
+// clientValidationDetails returns the text of err only when it is a
+// client-correctable validation failure; every other error (internal read
+// failures, invalid server-side patterns) maps to a fixed message so internal
+// text never reaches the response body (CAT-PXF23-R5).
+func clientValidationDetails(err error) string {
+	var ve *validationError
+	if errors.As(err, &ve) {
+		return ve.public
+	}
+	return "request validation failed"
+}
+
 // ValidateRequestBody validates request body against security rules
 func ValidateRequestBody(config InputValidationConfig, c *gin.Context) error {
 	// Check content length
 	if c.Request.ContentLength > config.MaxRequestBodySize {
-		return fmt.Errorf("request body too large")
+		return clientErrorf("request body too large")
 	}
 
 	// Only validate specific content types and methods that typically have bodies
@@ -186,7 +213,7 @@ func ValidateRequestBody(config InputValidationConfig, c *gin.Context) error {
 	}
 
 	if len(bodyBytes) > int(config.MaxRequestBodySize) {
-		return fmt.Errorf("request body too large")
+		return clientErrorf("request body too large")
 	}
 
 	// Restore the request body for subsequent handlers
@@ -204,7 +231,7 @@ func ValidateRequestBody(config InputValidationConfig, c *gin.Context) error {
 		}
 		var jsonData map[string]interface{}
 		if err := json.Unmarshal(bodyBytes, &jsonData); err != nil {
-			return fmt.Errorf("invalid JSON format")
+			return clientErrorf("invalid JSON format")
 		}
 
 		// Recursively validate all string values
@@ -292,7 +319,7 @@ func validateSecretValue(config InputValidationConfig, key, value string) error 
 		return fmt.Errorf("invalid validation pattern for field %s", key)
 	}
 	if !re.MatchString(value) {
-		return fmt.Errorf("field %s does not match required pattern", key)
+		return clientErrorf("field %s does not match required pattern", key)
 	}
 	return nil
 }
@@ -307,23 +334,23 @@ func validateStringValue(config InputValidationConfig, key, value string) error 
 	// before the built-in regex checks below.
 	if config.GuardrailEngine != nil {
 		if result := config.GuardrailEngine.Check(value); !result.Passed {
-			return fmt.Errorf("guardrail violation in field %s: %s", key, result.Results[0].Error)
+			return &validationError{msg: fmt.Sprintf("guardrail violation in field %s: %s", key, result.Results[0].Error), public: fmt.Sprintf("guardrail violation in field %s", key)}
 		}
 	}
 
 	// Check for SQL injection
 	if config.EnableSQLInjectionDetection && DetectSQLInjection(value) {
-		return fmt.Errorf("potential SQL injection detected in field: %s", key)
+		return clientErrorf("potential SQL injection detected in field: %s", key)
 	}
 
 	// Check for XSS
 	if config.EnableXSSDetection && DetectXSS(value) {
-		return fmt.Errorf("potential XSS detected in field: %s", key)
+		return clientErrorf("potential XSS detected in field: %s", key)
 	}
 
 	// Check for path traversal
 	if config.EnablePathTraversalDetection && DetectPathTraversal(value) {
-		return fmt.Errorf("potential path traversal detected in field: %s", key)
+		return clientErrorf("potential path traversal detected in field: %s", key)
 	}
 
 	// Check custom rules
@@ -333,7 +360,7 @@ func validateStringValue(config InputValidationConfig, key, value string) error 
 			return fmt.Errorf("invalid validation pattern for field %s", key)
 		}
 		if !re.MatchString(value) {
-			return fmt.Errorf("field %s does not match required pattern", key)
+			return clientErrorf("field %s does not match required pattern", key)
 		}
 	}
 
@@ -360,7 +387,7 @@ func InputValidation(config InputValidationConfig) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error":   "validation_failed",
 				"message": "Invalid input detected",
-				"details": err.Error(),
+				"details": clientValidationDetails(err),
 			})
 			c.Abort()
 			return
