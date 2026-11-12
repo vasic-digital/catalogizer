@@ -25,9 +25,11 @@
 set -u
 OUT=""
 HW0=""; LR0=""; CR0=""
-# pre-scan --out AND every record option so a usage error cannot clobber an input named earlier (F1)
+# pre-scan --out AND EVERY value of every record option (not only the last) so a usage error cannot
+# clobber an input named anywhere, including a later-superseded one, through a hardlinked --out (WP03R3FU-4)
+INS=()
 for ((i=1;i<=$#;i++)); do j=$((i+1)); case "${!i}" in
-  --out) OUT="${!j:-}" ;; --hardware-record) HW0="${!j:-}" ;; --live-run-record) LR0="${!j:-}" ;; --comparison-record) CR0="${!j:-}" ;; esac; done
+  --out) OUT="${!j:-}" ;; --hardware-record) HW0="${!j:-}"; INS+=("${!j:-}") ;; --live-run-record) LR0="${!j:-}"; INS+=("${!j:-}") ;; --comparison-record) CR0="${!j:-}"; INS+=("${!j:-}") ;; esac; done
 P=""; HW=""; LR=""; CR=""
 # san: replace every control character (newline included) so option/product/reason text can never
 # add or duplicate a record or stdout line (F2)
@@ -38,15 +40,17 @@ get() { local c v; c="$(grep -c "^$2=" "$1" 2>/dev/null)"; [ "$c" = 1 ] || retur
 HEX='^[0-9a-f]{64}$'
 # out_clash: --out realpath-resolves to, or is the same inode (-ef: hardlink) as, an input record (M-c, F1)
 out_clash() { local o f; [ -n "$OUT" ] || return 1; o="$(realpath -m -- "$OUT" 2>/dev/null)" || return 0
-  for f in "$HW0" "$LR0" "$CR0"; do [ -n "$f" ] || continue
+  for f in "${INS[@]+"${INS[@]}"}"; do [ -n "$f" ] || continue
     [ "$(realpath -m -- "$f" 2>/dev/null)" = "$o" ] && return 0
     [ "$OUT" -ef "$f" ] && return 0; done; return 1; }
 # getz: like get but the value may be empty (exactly one line required)
 getz() { local c v; c="$(grep -c "^$2=" "$1" 2>/dev/null)"; [ "$c" = 1 ] || return 1
   v="$(grep "^$2=" "$1" | cut -d= -f2-)"; [[ "$v" != *$'\r'* ]] || return 1; printf '%s\n' "$v"; }
+# out_unsafe: --out exists and is not a regular file (FIFO/device/directory): never open it (WP03R3FU-5)
+out_unsafe() { [ -n "$OUT" ] && [ -e "$OUT" ] && [ ! -f "$OUT" ]; }
 record() { # record <state> <reason>
   [ -n "$OUT" ] || return 1
-  if out_clash; then return 0; fi
+  if out_clash || out_unsafe; then return 0; fi
   {
     echo "schema=release_gate/1"; echo "product=$(san "$P")"; echo "state=$1"; echo "reason=$(san "$2")"
     echo "hardware_target_id=$(san "$(get "$HW" target_id 2>/dev/null || echo none)")"
@@ -72,7 +76,9 @@ done
 [ -n "$P" ] && [ -n "$OUT" ] && [ -n "$HW" ] && [ -n "$LR" ] && [ -n "$CR" ] || die "all options required and non-empty"
 [ "$(san "$P")" = "$P" ] || die "product id contains a control character"
 HW0="$HW"; LR0="$LR"; CR0="$CR"
+INS+=("$HW" "$LR" "$CR")
 if out_clash; then OUT_BAD="$OUT"; die "--out $OUT_BAD resolves to an input record"; fi
+if out_unsafe; then OUT_BAD="$OUT"; die "--out $OUT_BAD is not a regular file"; fi
 # TOCTOU: snapshot the records into a private dir; all later reads use the snapshot
 SNAP="$(mktemp -d)" || die "cannot create snapshot dir"
 # F4: no recursive delete - remove the known snapshot files, then the (now empty) directory

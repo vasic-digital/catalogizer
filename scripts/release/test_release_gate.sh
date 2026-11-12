@@ -150,5 +150,32 @@ setup; mkdir "$D/tmp"; TMPDIR="$D/tmp" "$GATE" --bogus >/dev/null 2>&1
 [ -z "$(ls -A "$D/tmp")" ] && ok || bad "F4 snapshot dir left behind on usage error"
 if grep -nE 'rm +-[a-zA-Z]*[rR]' "$GATE" >/dev/null; then bad "F4 tool still uses a recursive rm"; else ok; fi
 
+
+# ---- WP03R3FU-4..6 ----
+# FU-4: every value of each record option counts; hardlinked --out to a SUPERSEDED value must not clobber it
+for pair in "--hardware-record:hw" "--live-run-record:live" "--comparison-record:cmp"; do setup
+  opt="${pair%%:*}"; f="${pair##*:}"; cp "$D/$f" "$D/$f.orig"; cp "$D/$f" "$D/zz"; ln "$D/$f" "$D/hl"
+  "$GATE" "$opt" "$D/$f" --out "$D/hl" "$opt" "$D/zz" --bogus >/dev/null 2>&1; rc=$?
+  { [ "$rc" = 2 ] && cmp -s "$D/$f" "$D/$f.orig"; } && ok || bad "FU-4 superseded $opt value clobbered via hardlinked --out (rc=$rc)"
+  setup; cp "$D/$f" "$D/$f.orig"; cp "$D/$f" "$D/zz"; ln "$D/$f" "$D/hl"
+  "$GATE" --product opi5 --hardware-record "$D/hw" --live-run-record "$D/live" --comparison-record "$D/cmp" "$opt" "$D/zz" --out "$D/hl" >/dev/null 2>&1; rc=$?
+  { [ "$rc" = 2 ] || [ "$rc" = 0 ]; } && cmp -s "$D/$f" "$D/$f.orig" && ok || bad "FU-4 full run, $opt superseded value clobbered via hardlinked --out (rc=$rc)"; done
+# FU-5: --out that is not a regular file is refused before opening
+setup; mkfifo "$D/fifo"; out="$(timeout 10 "$GATE" --product opi5 --hardware-record "$D/hw" --live-run-record "$D/live" --comparison-record "$D/cmp" --out "$D/fifo" 2>&1)"; rc=$?
+{ [ "$rc" = 2 ] && printf '%s' "$out" | grep -q 'GATE-STATE: BLIND'; } && ok || bad "FU-5 FIFO --out: rc=$rc (124 = hang)"
+setup; mkfifo "$D/fifo"; timeout 10 "$GATE" --bogus --out "$D/fifo" >/dev/null 2>&1; rc=$?
+[ "$rc" = 2 ] && ok || bad "FU-5 FIFO --out on usage error: rc=$rc (124 = hang)"
+setup; mkdir "$D/adir"; run --out "$D/adir" >/dev/null 2>&1; rc=$?; [ "$rc" = 2 ] && ok || bad "FU-5 directory --out: rc=$rc"
+setup; : >"$D/gate"; expect "FU-5 golden-FALSE: existing regular --out still works" 0 RELEASABLE
+# FU-6 (X2): control char in the hardware target_id never reaches the gate record
+CC=$(printf '\001')
+setup; sed -i "s/^target_id=SER123/target_id=SER${CC}123/" "$D/hw"; run >/dev/null 2>&1
+grep -q "$CC" "$D/gate" && bad "FU-6 X2 control char in target_id reached the gate record" || ok
+grep -q '^hardware_target_id=SER?123$' "$D/gate" && ok || bad "FU-6 X2 sanitised target_id not recorded as SER?123"
+# FU-6 (X3): control char reaching the stdout reason: line (tests_total=3<0x01> fails the integer check, reason echoes it)
+setup; sed -i "s/^tests_total=3/tests_total=3${CC}/" "$D/live"; out="$(run 2>&1)"; rc=$?
+{ [ "$rc" = 20 ] && ! printf '%s' "$out" | grep -q "$CC" && printf '%s' "$out" | grep -q '^reason: live run reported'; } && ok || bad "FU-6 X3 control char on stdout reason: (rc=$rc)"
+! grep -q "$CC" "$D/gate" && ok || bad "FU-6 X3 control char in gate record reason"
+
 echo "release_gate tests: pass=$PASS fail=$FAIL"
 [ "$FAIL" = 0 ]

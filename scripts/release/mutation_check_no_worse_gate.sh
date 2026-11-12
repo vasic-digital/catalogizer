@@ -101,9 +101,21 @@ $'gate@@@RM1 diff PASS-lost only matches FAIL@@@$2=="PASS" && $3!="PASS"@@@$2=="
 $'gate@@@RM4 build-set equality reduced to first sha@@@[ "$CIMG" = "$THASH" ] ||@@@[ "$(printf \'%s\\n\' "$CIMG" | head -1)" = "$(printf \'%s\\n\' "$THASH" | head -1)" ] ||'
 $'cmp@@@RM6 target flip accepts SKIPPED baseline@@@[ "${BVD[$t]:-}" = FAIL ] && [ "${NVD[$t]:-}" = PASS ]; then FLIPS@@@[ "${BVD[$t]:-FAIL}" != PASS ] && [ "${NVD[$t]:-}" = PASS ]; then FLIPS'
 $'cmp@@@RM4 image set compared on first sha only@@@[ "$NSET" != "$BSET" ] ||@@@[ "$(printf \'%s\\n\' "$NSET" | head -1)" != "$(printf \'%s\\n\' "$BSET" | head -1)" ] ||'
+$'cmp@@@FU-4 prescan keeps only the last input value@@@--baseline-verdicts) BV0="${!j:-}"; INS+=("${!j:-}") ;;@@@--baseline-verdicts) BV0="${!j:-}" ;;'
+$'cmp@@@FU-4 clash scans only the final BV0 list@@@  for f in "${INS[@]+"${INS[@]}"}"; do@@@  for f in "$BV0" "$NV0" "$BM0" "$NM0" "$TG0"; do'
+$'cmp@@@FU-5 FIFO --out not refused (cmp)@@@if out_unsafe; then OUT_BAD="$OUT"; OUT=""; blind@@@if false; then OUT_BAD="$OUT"; OUT=""; blind'
+$'cmp@@@FU-5 blind() writes to a non-regular --out@@@{ [ -z "$OUT" ] || out_clash || out_unsafe; } ||@@@{ [ -z "$OUT" ] || out_clash; } ||'
+$'cmp@@@FU-7 NNOTPASS counts only FAIL@@@  [ "$nv" = PASS ] || NNOTPASS=$((NNOTPASS+1))@@@  [ "$nv" != FAIL ] || NNOTPASS=$((NNOTPASS+1))'
+$'gate@@@FU-4 prescan keeps only the last record value@@@--hardware-record) HW0="${!j:-}"; INS+=("${!j:-}") ;;@@@--hardware-record) HW0="${!j:-}" ;;'
+$'gate@@@FU-4 live-run superseded value not scanned@@@--live-run-record) LR0="${!j:-}"; INS+=("${!j:-}") ;;@@@--live-run-record) LR0="${!j:-}" ;;'
+$'gate@@@FU-4 comparison superseded value not scanned@@@--comparison-record) CR0="${!j:-}"; INS+=("${!j:-}") ;;@@@--comparison-record) CR0="${!j:-}" ;;'
+$'gate@@@FU-5 FIFO --out not refused (gate)@@@if out_unsafe; then OUT_BAD="$OUT"; die@@@if false; then OUT_BAD="$OUT"; die'
+$'gate@@@FU-5 record() writes to a non-regular --out@@@  if out_clash || out_unsafe; then return 0; fi@@@  if out_clash; then return 0; fi'
+$'gate@@@FU-6 X2 target_id not sanitised in record@@@echo "hardware_target_id=$(san "$(get "$HW" target_id 2>/dev/null || echo none)")"@@@echo "hardware_target_id=$(get "$HW" target_id 2>/dev/null || echo none)"'
+$'gate@@@FU-6 X3 stdout reason: not sanitised@@@  echo "reason: $(san "$3")"; echo "GATE-STATE: $1"; exit "$2"; }@@@  echo "reason: $3"; echo "GATE-STATE: $1"; exit "$2"; }'
 )
 # Equivalent (run, SURVIVE by design): [59] cmp and [67] gate duplicate-line mutants: a duplicated line is also a repeated file, so the same-file check kills it.
-# Equivalent (removed, WP03R3 fix round): gate `echo "reason: $(san "$3")"` in finish(): no reachable finish() reason carries control characters (record values are single grep lines, CR rejected, product with control chars is refused earlier), so un-sanitising it changes no observable output; the sanitising stays as defence in depth.
+# CORRECTED (WP03R3FU-6): the earlier note here called un-sanitising gate `echo "reason: $(san "$3")"` in finish() an equivalent mutant. That was wrong: tests_total=3<0x01> fails the integer check and the reason echoes the control byte onto stdout, so the mutant is observable; it is now a real mutant (FU-6 X3) killed by test_release_gate.sh. X2 (target_id) is likewise a real mutant.
 # Equivalent (not run): row-count control needle (parser and grep -c cannot differ on accepted input); comparison
 # sha hex check (it must equal the already hex-validated live sha); gate new_total integer regex (the equality with the
 # validated tests_total catches it); the input snapshot (TOCTOU, not unit-testable: registered as follow-up WP03-6). Also: removing the explicit unreadable-targets / unreadable-new-meta guards - the follow-on
