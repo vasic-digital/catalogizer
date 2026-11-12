@@ -2088,3 +2088,7 @@ RC3R4-4 (nit) retargeted symlink cited path gives FAIL (MISS) instead of BLIND; 
 - FAVR3-4 (minor, process-doc): FOLLOW_UPS ordering after union merge: CAT-UI-FAV headings sit between RC3R4-4 and the SECQ-2/SECQ2WD-R1 bullets; regroup.
 - FAVR3-5 (nit): attachEntityLinks does not check rows.Err() after the loop.
 - FAVR3-6 (owed): live Playwright file -> favourite -> open entity (11.4.289) and a PostgreSQL run of the attachEntityLinks query.
+- SEC-WS-1-F1 (owed, 11.4.289): live check of /ws with the real catalog-web build and the Android app against a running catalog-api (token query + Origin through the production nginx/vite proxy); only httptest-level proof exists (PROVISIONAL).
+- SEC-WS-1-F2 (minor, security): /ws accepts the session JWT in ?token= (browsers cannot set headers); a short-lived ws-bound ticket like /stream/:id/ticket would keep the JWT out of URLs/proxy logs. Needs a client change in catalog-web and Android.
+- SEC-WS-1-F3 (minor, security): a connected socket is not re-checked after upgrade (session revoked or user suspended while connected keeps receiving broadcasts until reconnect); and BroadcastToClients sends the same events (scan roots, asset updates) to every authenticated user, no per-user or permission filter.
+- SEC-WS-1-F4 (nit): wsHandler plain-text 503 capacity response runs after auth now; fine, but the contract sweep in api_contract_live_test.go still skips the /ws unauth probe (api_contract_live_test.go:760) - make it assert 401.

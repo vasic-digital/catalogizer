@@ -101,3 +101,22 @@ func TestWebSocketHandler_BroadcastToClients(t *testing.T) {
 	conn2.Close()
 	server.Close()
 }
+
+func TestOriginChecker_EnvDefaultAndSameHost(t *testing.T) {
+	t.Setenv("CORS_ALLOWED_ORIGINS", "https://a.example.test, https://b.example.test")
+	chk := originChecker(nil)
+	mk := func(origin, host string) *http.Request {
+		r := httptest.NewRequest(http.MethodGet, "/ws", nil)
+		r.Host = host
+		if origin != "" {
+			r.Header.Set("Origin", origin)
+		}
+		return r
+	}
+	assert.True(t, chk(mk("", "api.local")), "no Origin header")
+	assert.True(t, chk(mk("https://b.example.test", "api.local")), "env allow-list, trimmed")
+	assert.True(t, chk(mk("https://API.local", "api.local")), "same host, case-insensitive")
+	assert.False(t, chk(mk("https://evil.test", "api.local")))
+	assert.False(t, chk(mk("not a url", "api.local")))
+	assert.False(t, chk(mk("https://a.example.test.evil.test", "api.local")))
+}

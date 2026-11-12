@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/url"
+	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,6 +25,9 @@ type WebSocketConfig struct {
 	WriteWait         time.Duration
 	MaxMessageSize    int64
 	EnableCompression bool
+	// AllowedOrigins lists the browser Origins (scheme://host[:port]) accepted besides
+	// the request's own host. Empty falls back to CORS_ALLOWED_ORIGINS / the dev defaults.
+	AllowedOrigins []string
 }
 
 // DefaultWebSocketConfig returns default configuration
@@ -119,11 +125,9 @@ func NewWebSocketHandlerWithConfig(logger *zap.Logger, config WebSocketConfig) *
 		logger:   logger,
 		stopChan: make(chan struct{}),
 		upgrader: &websocket.Upgrader{
-			ReadBufferSize:  config.ReadBufferSize,
-			WriteBufferSize: config.WriteBufferSize,
-			CheckOrigin: func(r *http.Request) bool {
-				return true // Allow all origins in development
-			},
+			ReadBufferSize:    config.ReadBufferSize,
+			WriteBufferSize:   config.WriteBufferSize,
+			CheckOrigin:       originChecker(config.AllowedOrigins),
 			EnableCompression: config.EnableCompression,
 		},
 	}
@@ -505,5 +509,52 @@ func (h *WebSocketHandler) handleMessage(wc *wsConn, message []byte) {
 		h.logger.Warn("Unknown WebSocket message type",
 			zap.String("type", msgType),
 			zap.String("id", wc.id))
+	}
+}
+
+// defaultAllowedOrigins returns the browser origins accepted for the upgrade: the
+// operator's CORS_ALLOWED_ORIGINS (the same list the REST CORS middleware uses),
+// or the local dev servers when unset.
+func defaultAllowedOrigins() []string {
+	raw := os.Getenv("CORS_ALLOWED_ORIGINS")
+	if raw == "" {
+		raw = "http://localhost:5173,http://localhost:3000"
+	}
+	var out []string
+	for _, o := range strings.Split(raw, ",") {
+		if o = strings.TrimSpace(o); o != "" {
+			out = append(out, o)
+		}
+	}
+	return out
+}
+
+// originChecker builds the Upgrader.CheckOrigin policy (SEC-WS-1): no Origin header
+// (native clients such as Android and Tauri do not send one; they are still
+// authenticated by the route) is accepted; a browser Origin must be the request's
+// own host or an exact entry of the allow-list. Everything else is refused, which
+// stops cross-site WebSocket hijacking from a foreign page.
+func originChecker(allowed []string) func(*http.Request) bool {
+	if len(allowed) == 0 {
+		allowed = defaultAllowedOrigins()
+	}
+	return func(r *http.Request) bool {
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			return true
+		}
+		u, err := url.Parse(origin)
+		if err != nil || u.Host == "" {
+			return false
+		}
+		if strings.EqualFold(u.Host, r.Host) {
+			return true
+		}
+		for _, a := range allowed {
+			if strings.EqualFold(a, origin) {
+				return true
+			}
+		}
+		return false
 	}
 }

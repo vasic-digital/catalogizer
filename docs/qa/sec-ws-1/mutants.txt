@@ -1,0 +1,8 @@
+M1-drop-auth-middleware KILLED (restored-cmp-ok)
+M2-checkorigin-true KILLED (restored-cmp-ok)
+M3-ignore-allowlist KILLED (restored-cmp-ok)
+M4-empty-origin-denied KILLED (restored-cmp-ok)
+M5-drop-same-host KILLED (restored-cmp-ok)
+M6-drop-session-check KILLED (restored-cmp-ok)
+M7-allowlist-substring KILLED (restored-cmp-ok)
+M8-raw-route-in-main KILLED (restored-cmp-ok)
