@@ -1850,3 +1850,11 @@ Fixed at unit level: module-registry (7) + websocket load failures via a test-on
 PW-F1 (comment), PW-F2 (`jsdomStorage.test.ts`, RED on pre-fix setup in plain and `--localstorage-file` legs) and PW-F3 (comment) are on main; full web 171 files / 2682 tests GREEN in the reviewer's run. Reviewer follow-ups (open, Queued):
 - PW-F5 (Task, minor): `jsdomStorage.test.ts` mutation M3 survives (localStorage and sessionStorage sharing one store); add `expect(localStorage).not.toBe(sessionStorage)`, a cross-isolation check and a sessionStorage round-trip; replace the tautological `globalThis.localStorage toBe window.localStorage` (window === globalThis under vitest jsdom).
 - PW-F6 (Task, nit): PW-F3 comment says "stale, untracked dist/"; a tracked dist (ui_components_react) also wins over src; reword, and note dist/ is not gitignored in the other 8 submodules.
+
+## PX-F1..F7 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups (merge of fix/px-followups)
+Reviewer ran full `./handlers` (436 s, rc=0), the real-binary OpenAPI contract test (PASS 17.5 s, status codes unchanged), and mutants for F1/F4/F5 (killed). Open follow-ups (Queued):
+- PX-F8 (Task, minor): F3 test covers only RevokeLogShare; mutants (revert GetLogEntries site, leak err.Error() in 403 and 400 branches) survive. Add a table test over all 5 handlers incl. wrapped-403 and a 400 with marker string.
+- PX-F9 (Bug, minor): close the class: 9 remaining `http.Error(w, err.Error(), …)` in handlers/log_management (~lines 107,136,178,258,265,408,488,536,561); align docs/api/openapi.yaml (~5635, ~5776) with the fixed bodies.
+- PX-F10 (Task, minor): F2 residual: `checked`/`assigned` sets still keyed by name (outer `out` missed when an inner closure declares `out`); key by id.Obj, add probe test.
+- PX-F11 (Task, minor): F7 widening mutants (HasPrefix ".", HasSuffix "...", Contains "...") survive; add negatives ".hunter2", "secret...", "pa...ss".
+- PX-F12 (Task, nit): F6 commit/comment wording claims the old schema missed `conversion_jobs.warning`; it already had it.
