@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"catalogizer/internal/logredact"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -79,9 +80,14 @@ func ErrorHandler() gin.HandlerFunc {
 			err := c.Errors.Last()
 			// The text of an error (binder internals, driver text, paths) never goes to the client; the detail
 			// is logged server-side under the request id (CAT-WP02-ERRLEAK).
-			reqID, _ := c.Get("RequestID")
-			log.Printf("middleware: request %v %s %s failed (type %d, detail not returned to client): %v",
-				reqID, c.Request.Method, c.Request.URL.Path, err.Type, err.Err)
+			// production registers catalogizer/middleware.RequestID (key "request_id"); this package's own
+			// RequestID sets "RequestID". The id may be client-supplied (X-Request-ID), so it is quoted (%q).
+			reqID, ok := c.Get("request_id")
+			if !ok {
+				reqID, _ = c.Get("RequestID")
+			}
+			log.Printf("middleware: request %q %s %q failed (type %d, detail not returned to client): %v",
+				fmt.Sprint(reqID), c.Request.Method, c.Request.URL.Path, err.Type, err.Err)
 			switch err.Type {
 			case gin.ErrorTypeBind:
 				c.JSON(http.StatusBadRequest, gin.H{

@@ -57,42 +57,71 @@ func TestSweepControls(t *testing.T) {
 // allowed: sites that were read and classified as intentionally client-visible. Key = file|func|snippet; the
 // function is part of the key so a copy of the snippet elsewhere in the file is NOT covered (R5B-F4).
 var allowed = map[string]string{
-	"handlers/conversion_handler.go|CreateJob|\"reason\": reason":                                      "AUTHORED: reason is the text of models.ErrInvalidConversionRequest authored by services/conversion_service.go (R5B-2)",
-	"handlers/log_management_handler.go|writeLogServiceError|=http.Error(w, msg, status)":              "FIXED: msg comes from a switch over fixed literals; only the status is derived from err",
-	"handlers/media_browse_handler.go|GetMediaStats|=c.Error(rowsErr)":                                 "PRIVATE-GIN-ERROR: gin.ErrorTypePrivate; internal/middleware.ErrorHandler answers a fixed 'Internal server error' (CAT-WP02-ERRLEAK)",
-	"handlers/user_handler.go|CreateUser|=http.Error(w, msg, http.StatusBadRequest)":                   "MAPPED: msg comes from authClientMessage (line 121); the other msg in the function (err.Error() at ~168) is only compared, never written",
-	"internal/handlers/binding_ingestion_handler.go|ProbeAndIngest|~gin.H{\"error\": hostAllowedErr})": "CONST: identifier ends in Err but is a constant string",
-	"internal/handlers/smb_discovery.go|DiscoverShares|~gin.H{\"error\": hostAllowedErr})":             "CONST: identifier ends in Err but is a constant string",
-	"internal/handlers/smb_discovery.go|ProbeHost|~gin.H{\"error\": hostAllowedErr})":                  "CONST: identifier ends in Err but is a constant string",
+	"handlers/conversion_handler.go|CreateJob|=c.JSON(http.StatusBadRequest, gin.H{\"error\": \"Invalid conversion request\", \"reason\": reason})": "AUTHORED: reason is the text of models.ErrInvalidConversionRequest authored by services/conversion_service.go (R5B-2)",
+	"handlers/log_management_handler.go|writeLogServiceError|=http.Error(w, msg, status)":                                                           "FIXED: msg comes from a switch over fixed literals; only the status is derived from err",
+	"handlers/media_browse_handler.go|GetMediaStats|=c.Error(rowsErr)":                                                                              "PRIVATE-GIN-ERROR: gin.ErrorTypePrivate; internal/middleware.ErrorHandler answers a fixed 'Internal server error' (CAT-WP02-ERRLEAK)",
+	"handlers/user_handler.go|CreateUser|=http.Error(w, msg, http.StatusBadRequest)":                                                                "MAPPED: msg comes from authClientMessage (line 121); the other msg in the function (err.Error() at ~168) is only compared, never written",
+	"internal/handlers/binding_ingestion_handler.go|ProbeAndIngest|~gin.H{\"error\": hostAllowedErr})":                                              "CONST: identifier ends in Err but is a constant string",
+	"internal/handlers/smb_discovery.go|DiscoverShares|~gin.H{\"error\": hostAllowedErr})":                                                          "CONST: identifier ends in Err but is a constant string",
+	"internal/handlers/smb_discovery.go|ProbeHost|~gin.H{\"error\": hostAllowedErr})":                                                               "CONST: identifier ends in Err but is a constant string",
 }
 
 func isAllowed(rel, fn string, lines []string, line int) (key string, ok bool) {
+	return isAllowedIn(allowed, rel, fn, lines, line)
+}
+
+// isAllowedIn: every entry must be pinned to the flagged line itself ("=" exact statement line, "~" pinned tail);
+// there is no unpinned window match, so a new leak next to an allow-listed site is still reported (F2).
+func isAllowedIn(al map[string]string, rel, fn string, lines []string, line int) (key string, ok bool) {
 	first := strings.TrimSpace(lines[line-1])
-	for k := range allowed {
+	for k := range al {
 		p := strings.SplitN(k, "|", 3)
 		if p[0] != rel || p[1] != fn {
 			continue
 		}
 		switch {
-		case strings.HasPrefix(p[2], "="): // the flagged line must be exactly this statement (no appended text)
+		case strings.HasPrefix(p[2], "="):
 			if first == p[2][1:] {
 				return k, true
 			}
-		case strings.HasPrefix(p[2], "~"): // the flagged line must END with this text (the call tail is pinned)
+		case strings.HasPrefix(p[2], "~"):
 			if strings.HasSuffix(first, p[2][1:]) {
-				return k, true
-			}
-		default: // multi-line statement: substring of the statement's first lines
-			end := line + 8
-			if end > len(lines) {
-				end = len(lines)
-			}
-			if strings.Contains(strings.Join(lines[line-1:end], "\n"), p[2]) {
 				return k, true
 			}
 		}
 	}
 	return "", false
+}
+
+// TestAllowListEntriesArePinned: every allow-list key carries a pin.
+func TestAllowListEntriesArePinned(t *testing.T) {
+	for k := range allowed {
+		p := strings.SplitN(k, "|", 3)
+		if len(p) != 3 || !(strings.HasPrefix(p[2], "=") || strings.HasPrefix(p[2], "~")) {
+			t.Errorf("unpinned allow-list entry: %s", k)
+		}
+	}
+}
+
+// TestAllowListDoesNotShieldNeighbouringLeak (reviewer mutant M6): a leak inserted two lines above an
+// allow-listed statement in the same function must still be reported.
+func TestAllowListDoesNotShieldNeighbouringLeak(t *testing.T) {
+	src := "package p\nfunc CreateJob(c *gin.Context, err error) {\n\tc.JSON(500, gin.H{\"error\": err.Error()})\n\tc.Abort()\n\tc.JSON(400, gin.H{\"reason\": reason})\n}\n"
+	al := map[string]string{"h.go|CreateJob|=c.JSON(400, gin.H{\"reason\": reason})": "AUTHORED"}
+	sites, err := Sweep("h.go", src)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lines := strings.Split(src, "\n")
+	var unshielded int
+	for _, s := range sites {
+		if _, ok := isAllowedIn(al, "h.go", s.Func, lines, s.Line); !ok {
+			unshielded++
+		}
+	}
+	if unshielded < 1 {
+		t.Fatalf("neighbouring leak at line 3 was shielded by the allow-list: %v", sites)
+	}
 }
 
 func TestNoErrorTextReachesAResponse(t *testing.T) {
