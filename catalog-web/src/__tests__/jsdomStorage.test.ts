@@ -72,4 +72,42 @@ describe('test env Web Storage', () => {
       localStorage.removeItem('keep')
     }
   })
+
+  it('removeItem on one store never touches the same key in the other (both directions)', () => {
+    // PW-F9
+    try {
+      localStorage.setItem('xs', 'L')
+      sessionStorage.setItem('xs', 'S')
+      localStorage.removeItem('xs')
+      expect(localStorage.getItem('xs')).toBeNull()
+      expect(sessionStorage.getItem('xs')).toBe('S')
+      localStorage.setItem('xs', 'L')
+      sessionStorage.removeItem('xs')
+      expect(sessionStorage.getItem('xs')).toBeNull()
+      expect(localStorage.getItem('xs')).toBe('L')
+    } finally {
+      localStorage.removeItem('xs')
+      sessionStorage.removeItem('xs')
+    }
+  })
+
+  it('key(i) enumerates exactly the stored keys as a set', () => {
+    // PW-F10: order is unspecified for Web Storage, so compare as a set
+    try {
+      sessionStorage.clear()
+      sessionStorage.setItem('ka', '1')
+      sessionStorage.setItem('kb', '2')
+      expect(sessionStorage.length).toBe(2)
+      const keys = [sessionStorage.key(0), sessionStorage.key(1)]
+      expect(new Set(keys)).toEqual(new Set(['ka', 'kb']))
+      expect(sessionStorage.key(2)).toBeNull()
+      // localStorage must not leak into sessionStorage enumeration
+      localStorage.setItem('kc', '3')
+      expect(sessionStorage.length).toBe(2)
+      expect(sessionStorage.key(2)).toBeNull()
+    } finally {
+      sessionStorage.clear()
+      localStorage.removeItem('kc')
+    }
+  })
 })
