@@ -185,7 +185,7 @@ for comp in CARGO:
 
 # Gradle versionName / versionCode
 def gradle_field(text, name):
-    pat = re.compile(r"^\s*" + name + r"(?![A-Za-z0-9_])\s*(?:=\s*)?(\"[^\"]*\"|[^\s/;]+)\s*;?\s*(?:/\*.*?\*/\s*)?(?://.*)?$")
+    pat = re.compile(r"^\s*" + name + r"(?![A-Za-z0-9_])\s*(?:=\s*)?(\"[^\"]*\"|[^\s/;]+)\s*;?\s*(?:/\*(?:[^*]|\*(?!/))*\*/\s*)?(?://.*)?$")
     hits = []
     for ln in text.splitlines():
         if ln.lstrip().startswith("//"):
@@ -471,6 +471,10 @@ PY
     esc=0
     while IFS= read -r line || [ -n "$line" ]; do
       ent=""
+      line="${line%$'\r'}"   # CRLF manifests: sha256sum implementations strip one trailing CR
+      if [[ "$line" == *$'\r'* ]]; then
+        S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/SHA256SUMS unsupported manifest line: CR inside a line"; continue
+      fi
       if [[ "$line" =~ ^[0-9a-fA-F]{64}\ [\ \*](.*)$ ]]; then
         ent="${BASH_REMATCH[1]}"
       elif [[ "$line" =~ ^[A-Za-z0-9-]+\ \((.*)\)\ =\ [0-9a-fA-F]+$ ]]; then
@@ -481,7 +485,7 @@ PY
           S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/SHA256SUMS entry escapes its directory: $ent"
         else
           # F2: an in-directory symlink must not lead outside the repository.
-          rp="$(readlink -f -- "$REPO/$d/$ent" 2>/dev/null || true)"
+          rp="$(readlink -m -- "$REPO/$d/$ent" 2>/dev/null || true)"   # -m: missing components are fine
           if [ -z "$rp" ] || { [ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"/* ]]; }; then
             S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/SHA256SUMS entry resolves outside the repository: $ent"
           fi

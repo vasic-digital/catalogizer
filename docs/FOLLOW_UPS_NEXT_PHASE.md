@@ -1790,6 +1790,7 @@ ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go
 - F4: under --prev-tag, forged INFO on a versionCode row passes; bash should reject INFO there absent a --prev-tag FAIL row.
 - F5 (nit): fenced `## [x]` heading triggers duplicate BLIND; `versionCode = 7 /* c */` and `7;` FAIL (all fail safe).
 
-## CAT-REL-CHECK-1 round-3 (F1-F5 landed on branch fix/release-checker-f1-f5, 2026-11-12)
-- F1 fixed (fail closed on any non-blank manifest line outside the two unescaped forms; README corrected), F2 fixed (readlink -f under-repo check on manifest entries), F3 covered by tests plus mutants, F4 fixed (INFO on versionCode under --prev-tag is BLIND unless the --prev-tag row FAILed), F5 fixed (fence-aware headings; `7;` and `/* c */` parse).
-- Residual: gradle values with a quoted string followed by comments use the same regex; nested `/* */` in one line is not modelled (fails safe as FAIL).
+## CAT-REL-CHECK-1 round-3/4 (F1-F5 + review fixes on branch fix/release-checker-f1-f5, 2026-11-12)
+- F1 fixed (fail closed on any non-blank manifest line outside the two unescaped forms; README corrected). F2 fixed after review round 4: entries are resolved with `readlink -m` (missing parents are not an escape; a missing tail below an outside symlink still FAILs) and CRLF manifests are normalised (one trailing CR stripped; a CR inside a line is refused). F3 covered by tests plus mutants. F4 fixed (INFO on versionCode under --prev-tag is BLIND unless the --prev-tag row FAILed). F5 fixed (fence-aware headings, comment pattern cannot span a closing `*/`; `7;` and `7 /* c */` parse).
+- Open nit: a `~~~` line inside a ``` fence (or the reverse) toggles the fence state, since fences are not tracked by kind/length. Fails safe in most cases (section not found / BLIND).
+- Residual: only uutils sha256sum was exercised; GNU coreutils behaviour for CR/escaped lines is untested.

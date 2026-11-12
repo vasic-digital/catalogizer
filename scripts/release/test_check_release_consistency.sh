@@ -233,6 +233,24 @@ d=$(fresh); mut "$d" docs/CHANGELOG.md 's@^### PROVISIONAL (not verified)@```\n#
 # F1 residual: an empty manifest passes the line parser but sha256sum rejects it (no checksum lines)
 d=$(fresh); : > "$d/docs/qa/run1/SHA256SUMS"; expect "F1 empty manifest judged malformed by sha256sum -> FAIL" 1 "SHAFAIL" "$d" --check changelog
 
+echo "== round-4 review fixes (CRLF, missing parent, comment span, no-newline, indented fence)"
+# R4-1: CRLF manifest lines must not bypass the escape / symlink checks
+d=$(fresh); echo outside-content > "$ROOT/outside3.txt"; ln -s "$ROOT/outside3.txt" "$d/docs/qa/run1/lnk.txt"
+printf '%s  lnk.txt\r\n' "$(sha256sum < "$ROOT/outside3.txt" | cut -d' ' -f1)" >> "$d/docs/qa/run1/SHA256SUMS"; (cd "$d" && git add -A)
+expect "R4-1 CRLF line with outside symlink entry FAIL" 1 "resolves outside" "$d" --check changelog
+d=$(fresh); printf '%s  ../../etc/passwd\r\n' "$z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "R4-1 CRLF line with ../ escape FAIL" 1 "escapes its directory" "$d" --check changelog
+d=$(fresh); printf '%s  a\rb.txt\n' "$z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "R4-1 CR inside a line FAIL" 1 "unsupported manifest line" "$d" --check changelog
+d=$(fresh); h="$(sha256sum < "$d/docs/qa/run1/a.txt" | cut -d' ' -f1)"; printf '%s  a.txt\r\n' "$h" >> "$d/docs/qa/run1/SHA256SUMS"; expect "R4-1 valid CRLF line still accepted" 0 "VERDICT: PASS" "$d" --check changelog
+# R4-2: gitignored entry under a missing subdirectory stays UNVERIFIABLE, not an escape
+d=$(fresh); printf '%s  sub/big.png\n' "$z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "R4-2 gitignored entry in missing subdir is UNVERIFIABLE" 0 "unverifiable=2" "$d" --check changelog
+d=$(fresh); ln -s "$ROOT" "$d/docs/qa/run1/escdir"; (cd "$d" && git add -A); printf '%s  escdir/missing/x.png\n' "$z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "R4-2 missing tail below an outside symlink still FAIL" 1 "resolves outside" "$d" --check changelog
+# R4-3: a comment must not span past its own closing */
+d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionCode = 7$/versionCode = 7 \/* a *\/ + 1 \/* b *\//' && expect "R4-3 versionCode '7 /* a */ + 1 /* b */' FAIL" 1 "FAIL" "$d" --check version
+d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionName = "2.4.0"/versionName = "2.4.0" \/* a *\/ + "x" \/* b *\//' && expect "R4-3 versionName with two comments around + FAIL" 1 "FAIL" "$d" --check version
+# R4-4: final manifest line without trailing newline is still checked; indented fences
+d=$(fresh); printf '%s  ../../CHANGELOG.md' "$z" >> "$d/docs/qa/run1/SHA256SUMS"; expect "R4-4 no-trailing-newline ../ entry FAIL" 1 "escapes its directory" "$d" --check changelog
+d=$(fresh); printf '\n  ```\n## [2.4.0] - example in an indented fence\n  ```\n' >> "$d/docs/CHANGELOG.md"; expect "R4-4 indented fence ignored" 0 "VERDICT: PASS" "$d" --check changelog
+
 echo "== selftest (11.4.273 control needles built into the tool)"
 out="$("$CHECKER" --selftest 2>&1)"; got=$?
 if [ "$got" = 0 ] && printf '%s\n' "$out" | grep -q '^VERDICT: PASS selftest'; then ok; else bad "selftest rc=$got"; fi

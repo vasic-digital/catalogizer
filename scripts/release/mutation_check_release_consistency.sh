@@ -77,25 +77,33 @@ MUTANTS=(
 'N1 changelog skip count unchecked|||[ "$ends" != "${#skips[@]}" ]; then|||false; then'
 'N2 BSD-tag lines not parsed|||elif [[ "$line" =~ ^[A-Za-z0-9-]+\ \((.*)\)\ =\ [0-9a-fA-F]+$ ]]; then|||elif false; then'
 'N3 outside-repo symlink accepted|||if [ -e "$REPO/$q" ] && { [ -z "$rp" ]|||if false && { [ -z "$rp" ]'
-'N4 versionCode expression accepted|||\s*;?\s*(?:/\*.*?\*/\s*)?(?://.*)?$")|||")'
+'N4 versionCode expression accepted|||\s*;?\s*(?:/\*(?:[^*]|\*(?!/))*\*/\s*)?(?://.*)?$")|||")'
 'N5 duplicate heading accepted|||hm.group(1) == name) > 1:|||hm.group(1) == name) > 99:'
 'N5 versionNameSuffix ambiguity|||(?![A-Za-z0-9_])|||'
 'R3 F1 non-matching manifest lines tolerated|||elif [ -n "${line//[[:space:]]/}" ]; then|||elif false; then'
-'R3 F2 manifest symlink resolution skipped|||rp="$(readlink -f -- "$REPO/$d/$ent" 2>/dev/null || true)"|||rp="$REPO_REAL"'
+'R3 F2 manifest symlink resolution skipped|||rp="$(readlink -m -- "$REPO/$d/$ent" 2>/dev/null || true)"|||rp="$REPO_REAL"'
 'R3 F2 manifest prefix check without slash|||[ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"/* ]]; }; then
             S_FAIL|||[ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"* ]]; }; then
             S_FAIL'
 'R3 F3 changelog prefix check without slash|||[[ "$rp" != "$REPO_REAL"/* ]]; }; }; then|||[[ "$rp" != "$REPO_REAL"* ]]; }; }; then'
 'R3 F3 repo-root symlink branch dropped|||{ [ -z "$rp" ] || { [ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"/* ]]; }; }; then|||{ [ -z "$rp" ] || [[ "$rp" != "$REPO_REAL"/* ]]; }; then'
 'R3 F3 BSD hex lowercase only|||=\ [0-9a-fA-F]+$ ]]; then|||=\ [0-9a-f]+$ ]]; then'
-'R3 F3 single-slash comment regex|||\s*;?\s*(?:/\*.*?\*/\s*)?(?://.*)?$")|||\s*;?\s*(?:/\*.*?\*/\s*)?(?:/.*)?$")'
+'R3 F3 single-slash comment regex|||\s*;?\s*(?:/\*(?:[^*]|\*(?!/))*\*/\s*)?(?://.*)?$")|||\s*;?\s*(?:/\*(?:[^*]|\*(?!/))*\*/\s*)?(?:/.*)?$")'
 'R3 F4 forged INFO under prev-tag accepted|||[ "${kinds["--prev-tag"]:-}" != FAIL ]|||false'
 'R3 F5 fenced headings counted as headings|||m = None if fenced[i] else head.match(ln)|||m = head.match(ln)'
 'R3 F5 fenced duplicate counted|||if not fenced[k] and (hm := head.match(ln))|||if (hm := head.match(ln))'
 'R3 F5 fenced section end honoured|||if not fenced[j] and lines[j].startswith("## "):|||if lines[j].startswith("## "):'
 'R3 F5 fenced VERIFIED subsection honoured|||isf = fenced[start + 1 + k]|||isf = False'
 'R3 F5 semicolon after versionCode rejected|||\s*;?\s*(?:/\*|||\s*(?:/\*'
-'R3 F5 block comment after versionCode rejected|||(?:/\*.*?\*/\s*)?(?://.*)?$")|||(?://.*)?$")'
+'R3 F5 block comment after versionCode rejected|||(?:/\*(?:[^*]|\*(?!/))*\*/\s*)?(?://.*)?$")|||(?://.*)?$")'
+'R4 final manifest line without newline skipped|||while IFS= read -r line || [ -n "$line" ]; do
+      ent=""|||while IFS= read -r line; do
+      ent=""'
+'R4 fence regex needs column 0|||^\s{0,3}(```|~~~)|||^(```|~~~)'
+'R4 CRLF trailing CR not stripped|||line="${line%$'"'"'\r'"'"'}"|||:'
+'R4 CR inside a line accepted|||if [[ "$line" == *$'"'"'\r'"'"'* ]]; then|||if false; then'
+'R4 manifest readlink -f (missing parent false escape)|||readlink -m -- "$REPO/$d/$ent"|||readlink -f -- "$REPO/$d/$ent"'
+'R4 comment regex spans closing */ (N4-tail)|||(?:/\*(?:[^*]|\*(?!/))*\*/\s*)?(?://.*)?$")|||(?:/\*.*\*/\s*)?(?://.*)?$")'
 'help has no VERDICT|||usage; echo "VERDICT: HELP"; exit 0|||usage; exit 0'
 )
 
