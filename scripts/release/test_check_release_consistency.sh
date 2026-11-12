@@ -417,6 +417,35 @@ expect "M-1 deep path: no NOMANIFEST" 0 "no_manifest=0" "$d" --check changelog
 d=$(fresh); mut "$d" docs/CHANGELOG.md "s#^- Tool \`scripts/tool.sh\`#- Tab \`docs/qa/run1/a.txt\ttail\`; Tool \`scripts/tool.sh\`#" && ( cd "$d" && git add -A )
 expect "M-2 TAB in a VERIFIED token -> BLIND" 2 "control character" "$d" --check changelog
 
+echo "== review round 3: HEAD-consistency for changelog, version files and cited paths (R3-1), test gaps (R3-2), refused waiver (R3-4)"
+mkother() { mkdir -p "$1/docs/other"; echo x > "$1/docs/other/z.txt"; ( cd "$1" && git add -A && git commit -q -m other ); }
+# R3-1a: a cited path outside any manifest tree that is only staged (a clone has no such file)
+d=$(fresh); mkdir -p "$d/docs/other"; echo x > "$d/docs/other/z.txt"; addrow "$d" docs/other/z.txt; ( cd "$d" && git commit -q -m cl docs/CHANGELOG.md )
+RAW=1 expect "R3-1a cited path only staged -> BLIND" 2 "docs/other/z.txt" "$d" --check changelog
+# R3-1b: cited path modified in the working tree only
+d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; ( cd "$d" && git commit -q -a -m cl ); echo y >> "$d/docs/other/z.txt"
+RAW=1 expect "R3-1b cited path edited only in the working tree -> BLIND" 2 "docs/other/z.txt" "$d" --check changelog
+# R3-1c: the changelog itself has an uncommitted edit
+d=$(fresh); addrow "$d" docs/qa/run1/a.txt
+RAW=1 expect "R3-1c uncommitted changelog edit -> BLIND" 2 "docs/CHANGELOG.md" "$d" --check changelog
+# R3-1d: a version file edited only in the working tree (valid JSON, same version)
+d=$(fresh); echo >> "$d/catalog-web/package.json"
+RAW=1 expect "R3-1d version file edited only in the working tree -> BLIND" 2 "catalog-web/package.json" "$d" --check version
+# R3-1 negative control: the same state committed passes
+d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; ( cd "$d" && git commit -q -a -m cl )
+RAW=1 expect "R3-1 committed cited path outside manifest trees -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+# R3-2 (R-x): a tracked file deleted from the working tree, uncommitted -> MISS (not in working tree)
+d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; ( cd "$d" && git commit -q -a -m cl ); rm "$d/docs/other/z.txt"
+RAW=1 expect "R3-2 tracked file deleted from the tree uncommitted -> MISS" 1 "MISS  docs/other/z.txt (not in working tree)" "$d" --check changelog
+# R3-2 (R-m): a waiver file that is only staged must go BLIND
+d=$(fresh); mkdir -p "$d/docs/qa"; printf '%s\n' 'unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|r' > "$d/docs/qa/EVIDENCE_WAIVERS.txt"; ( cd "$d" && git add docs/qa/EVIDENCE_WAIVERS.txt )
+RAW=1 expect "R3-2 staged-only waiver file -> BLIND" 2 "differs from HEAD" "$d" --check changelog
+# R3-4: a waiver naming a mismatched entry is refused (BADWAIVER), not left as an unused waiver
+d=$(fresh); echo "$z  c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|docs/qa/run2|c.txt|CAT-T-1|2099-12-31|E-1 laundering attempt'
+expect "R3-4 mismatch waiver is reported as BADWAIVER" 1 "BADWAIVER" "$d" --check changelog
+expect "R3-4 mismatch waiver counted in bad_waivers" 1 "bad_waivers=1" "$d" --check changelog
+expect "R3-4 mismatch waiver is not an unused waiver" 1 "unused_waivers=0" "$d" --check changelog
+
 echo "== selftest (11.4.273 control needles built into the tool)"
 out="$("$CHECKER" --selftest 2>&1)"; got=$?
 if [ "$got" = 0 ] && printf '%s\n' "$out" | grep -q '^VERDICT: PASS selftest'; then ok; else bad "selftest rc=$got"; fi

@@ -101,6 +101,26 @@ SECTION_USED="-"
 note_blind() { BLINDS="$BLINDS ${1}"; echo "BLIND: $1"; }
 
 # ---------------------------------------------------------------- (1) versions
+# head_check <label> <repo-relative path>...: a clone sees HEAD only. Every existing path must be in HEAD
+# and match it in the index and the working tree (tracked changes only); otherwise the verdict about
+# it is unprovable and the run is BLIND. (R3-1: one check for the changelog, version files, cited paths.)
+head_check() {
+  local label="$1" p out bad=""; shift
+  local -a specs=()
+  for p in "$@"; do
+    [ -e "$REPO/$p" ] || continue
+    specs+=(":(literal)$p")
+    git -C "$REPO" cat-file -e "HEAD:$p" 2>/dev/null || bad="$bad [$p is not in HEAD]"
+  done
+  [ "${#specs[@]}" -gt 0 ] || return 0
+  if ! out="$(git -C "$REPO" status --porcelain=v1 -z --untracked-files=no -- "${specs[@]}" 2>/dev/null)"; then
+    note_blind "$label: git status failed; cannot prove the files match HEAD"; return 0
+  fi
+  [ -z "$out" ] || bad="$bad [differs from HEAD: $(printf '%s' "$out" | tr '\0' '\n' | head -3 | tr '\n' ';')]"
+  [ -z "$bad" ] || note_blind "$label are not committed as read (a clone would differ):$bad"
+  return 0
+}
+
 run_versions() {
   echo "== version consistency"
   local kind label detail vout vrc
@@ -112,7 +132,9 @@ repo, expected, prevtag = sys.argv[1:4]
 def emit(kind, label, detail=""):
     print(f"{kind}\t{label}\t{detail}")
 
+READ = []
 def read(path):
+    READ.append(path)
     with open(os.path.join(repo, path), encoding="utf-8") as fh:
         return fh.read()
 
@@ -256,11 +278,14 @@ for app in APPS:
         emit("OK", label, f"{cur} > {prev_s} at {prevtag}")
     else:
         emit("FAIL", label, f"{cur} is not > {prev_s} at {prevtag}")
+for _p in sorted(set(READ)):
+    print(f"READ\t{_p}")
 PY
 )"
   vrc=$?
   local plan="" rows=0 nplan=0 key base dup="" miss="" foreign="" expected_n=19
   local -A seen=() kinds=()
+  local -a vread=()
   # N1: the expected field rows are fixed here, independent of the helper's own PLAN.
   local -a want=("versions.json global" "docs/api/openapi.yaml info.version")
   local c a
@@ -285,8 +310,10 @@ PY
         elif [ "$kind" = FAIL ]; then V_FAIL=$((V_FAIL+1)); echo "FAIL  $label: $detail"
         else echo "INFO  $label: $detail"; fi ;;
       BLIND) note_blind "$label $detail" ;;
+      READ) vread+=("$label") ;;
     esac
   done <<< "$vout"
+  head_check "version files" "${vread[@]+"${vread[@]}"}"
   # B1: a crashed or silent helper must never read as PASS.
   if [ "$vrc" -ne 0 ]; then note_blind "version helper exited $vrc (rows seen: $rows)"; return; fi
   if [ "$nplan" -gt 1 ]; then note_blind "version helper emitted more than one PLAN line"; return; fi
@@ -456,7 +483,8 @@ PY
   fi
   echo "section $SECTION_USED: ${#paths[@]} path(s) in VERIFIED; skipped non-repo-looking: ${skips[*]:-none}"
 
-  local p q d rp mf ev evrel
+  head_check "docs/CHANGELOG.md" "docs/CHANGELOG.md"
+  local p q d rp mf ev evrel cited_ok
   local REPO_REAL; REPO_REAL="$(cd "$REPO" && pwd -P)"
   declare -A seen_dir=()
   local -a queue=()
@@ -472,12 +500,13 @@ PY
     if [ -e "$REPO/$q" ] && { [ -z "$rp" ] || { [ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"/* ]]; }; }; then
       C_MISS=$((C_MISS+1)); echo "MISS  $p (resolves outside the repository)"; continue
     fi
+    cited_ok=0
     if [ ! -e "$REPO/$q" ]; then
       C_MISS=$((C_MISS+1)); echo "MISS  $p (not in working tree)"
     elif ! tracked "$q"; then
       C_MISS=$((C_MISS+1)); echo "MISS  $p (exists but not git-tracked)"
     else
-      echo "OK    $p"
+      echo "OK    $p"; cited_ok=1
     fi
     # RC-3: decide on the REAL in-repo location (// and /./ collapsed, symlinks resolved), so a
     # spelling trick or an alias cannot dodge the evidence prefix or the manifest search.
@@ -487,6 +516,7 @@ PY
     else
       evrel="$q"
     fi
+    { [ "$cited_ok" = 0 ] || [ "$evrel" = "." ]; } || head_check "cited path $p" "$evrel"
     # nearest tracked manifest (SHA256SUMS, SHA256SUMS.txt, MANIFEST*.sha256) at or above the path
     # (never the repo root itself)
     if [ -d "$REPO/$q" ]; then d="$evrel"; else d="$(dirname "$evrel")"; fi
@@ -539,9 +569,9 @@ is_evidence() {
 trim() { local v="$1"; v="${v#"${v%%[![:space:]]*}"}"; v="${v%"${v##*[![:space:]]}"}"; printf '%s' "$v"; }
 
 # load_waivers: parse the tracked waiver file (RC-3 known-gap declarations). Format, one per line:
-#   no-manifest|<evidence path>|<reason>
-#   unlisted|<manifest dir>|<file relative to it>|<reason>
-#   bad-entry|<manifest dir>|<manifest entry>|<reason>      (checksum mismatch / missing entry)
+#   no-manifest|<evidence path>|<item>|<expires>|<reason>
+#   unlisted|<manifest dir>|<file relative to it>|<item>|<expires>|<reason>
+#   bad-entry|<manifest dir>|<manifest entry>|<item>|<expires>|<reason>   (missing entry only; a mismatch is never waivable)
 # '#' lines and blank lines are ignored. Every applied waiver is printed (WAIVED) and counted.
 load_waivers() {
   local f="$WAIVERS" rel explicit=0 n=0 line k reason key item exp today nf i
@@ -671,7 +701,11 @@ check_manifest_dir() {
           FAILED)
             # I-2: a checksum MISMATCH is tampering or corruption and is never waivable; bad-entry
             # waivers cover only a manifest entry whose file is missing.
-            S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)" ;;
+            S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)"
+            if [ -n "${WV["bad-entry|$d|$name"]+x}" ]; then
+              WVUSED["bad-entry|$d|$name"]=1; W_BAD=$((W_BAD+1))
+              echo "BADWAIVER  bad-entry waiver for $d/$name refused: a checksum mismatch is tampering or corruption and is never waivable"
+            fi ;;
           *)
             if git -C "$REPO" check-ignore -q -- "$d/$name"; then
               S_UNV=$((S_UNV+1)); sawunv=1; echo "UNVERIFIABLE-FROM-CLONE  $d/$name (gitignored, absent/unreadable)"
@@ -700,7 +734,7 @@ def entries(path):
     out = set()
     with open(path, encoding="utf-8", errors="surrogateescape") as fh:
         for ln in fh.read().split("\n"):
-            ln = ln[:-1] if ln.endswith("\r") else ln
+            # (no CR strip: open() in text mode already folds \r\n and lone \r into \n)
             m = re.match(r"^[0-9a-fA-F]{64} [ *](.*)$", ln) or re.match(r"^[A-Za-z0-9-]+ \((.*)\) = [0-9a-fA-F]+$", ln)
             if m:
                 out.add(os.path.normpath(m.group(1)))

@@ -90,7 +90,7 @@ line each, `#` comments allowed:
 ```
 no-manifest|<evidence path (resolved, repo-relative, no trailing slash)>|<item>|<expires>|<reason>
 unlisted|<manifest dir>|<file relative to it>|<item>|<expires>|<reason>
-bad-entry|<manifest dir>|<manifest entry>|<item>|<expires>|<reason>     # checksum mismatch or missing entry
+bad-entry|<manifest dir>|<manifest entry>|<item>|<expires>|<reason>     # a manifest entry whose file is missing
 ```
 
 Fields are trimmed. Following the waiver schema of constitution 11.4.271 every waiver carries a
@@ -106,10 +106,19 @@ the checked changelog section, and only to that exact path/file/entry, never to 
 Each applied waiver is printed as `WAIVED <what>: <reason> [item X, expires D]` and counted in
 `waived=`; any applied waiver turns `PASS` into `PASS-WITH-WAIVERS`. A waiver that matches nothing in
 the checked section is printed as `UNUSED-WAIVER <key>` and counted in `unused_waivers=`; it does not
-fail and does not change the verdict word (it may belong to another changelog section). Example:
-the cover-art run `docs/qa/coverart/results/final/SHA256SUMS.txt` lists `summary.txt` with a
-checksum that no longer matches (finding E-1); to use it as VERIFIED evidence declare
-`bad-entry|docs/qa/coverart/results/final|summary.txt|CAT-REL-CHECK-1|2026-12-12|E-1: known-bad manifest entry`.
+fail and does not change the verdict word (it may belong to another changelog section).
+
+A `bad-entry` waiver covers only a manifest entry whose file is missing (for example listed but never
+committed). A checksum mismatch is tampering or corruption and is never waivable: it is always
+`SHAFAIL`, and a `bad-entry` waiver naming it is refused as `BADWAIVER` (counted in `bad_waivers=`).
+The only cure for a mismatch is to regenerate the evidence and its manifest. Example (real tree):
+the cover-art run `docs/qa/coverart/results/final/` has a `summary.txt` whose checksum no longer
+matches (finding E-1); it stays a `SHAFAIL` until that evidence is regenerated.
+
+Committed state only: a clone sees HEAD, so the run goes BLIND (exit 2) when `docs/CHANGELOG.md`, any
+version file that was read, any existing cited path, or any tracked file under a manifest tree is not in
+HEAD or differs from it in the index or working tree (staged-but-uncommitted counts). Untracked files are
+not part of this check (they are judged by the tracked/UNLISTED rules). Commit first, then run the check.
 
 ### Instrument verification (constitution 11.4.273, 11.4.224)
 

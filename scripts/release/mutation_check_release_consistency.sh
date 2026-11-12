@@ -40,7 +40,9 @@ MUTANTS=(
         inv = False
         continue|||    if not isf and re.match(r"^#{1,3} ", ln):
         continue'
-'sha mismatch not counted|||S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)" ;;|||sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)" ;;'
+'sha mismatch not counted|||S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)"
+            if [ -n|||sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)"
+            if [ -n'
 'sha missing counted unverifiable|||S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (missing/unreadable, not gitignored)"|||S_UNV=$((S_UNV+1)); sawfail=1'
 'sha ignored file counted as fail|||if git -C "$REPO" check-ignore -q -- "$d/$name"; then|||if false; then'
 'FAIL verdict exits 0|||echo "VERDICT: FAIL $SUMMARY"; exit 1|||echo "VERDICT: FAIL $SUMMARY"; exit 0'
@@ -154,11 +156,15 @@ MUTANTS=(
 'waiver: PASS-WITH-WAIVERS not distinct|||if [ "$W_APPLIED" -gt 0 ]; then|||if false; then'
 'waiver: unused waiver not listed|||echo "UNUSED-WAIVER  $key: ${WV[$key]}"|||:'
 'waiver: whitespace fields not trimmed|||for i in "${!F[@]}"; do F[i]="$(trim "${F[i]}")"; done|||:'
-'I-2 mismatch waivable again|||S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)" ;;|||if waived "bad-entry|$d|$name" "$d/$name (checksum mismatch)"; then sawwaived=1; else S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)"; fi ;;'
+'I-2 mismatch waivable again|||S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)"
+            if [ -n "${WV["bad-entry|$d|$name"]+x}" ]; then|||if waived "bad-entry|$d|$name" "$d/$name (checksum mismatch)"; then sawwaived=1; sawfail=0; else S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)"; fi
+            if false; then'
 'I-1 dirty tree check removed|||  if [ -n "$dirty" ]; then|||  if false; then'
 'I-1 git status failure not blind|||  if ! dirty="$(git -C "$REPO" status|||  if false && ! dirty="$(git -C "$REPO" status'
 'I-1 status without literal pathspec|||status --porcelain=v1 -z --untracked-files=no -- ":(literal)$d"|||status --porcelain=v1 -z --untracked-files=no -- "nonexistent-$d"'
-'I-1 index changes ignored (diff vs worktree only)|||status --porcelain=v1 -z --untracked-files=no|||diff --name-only -z --'
+'I-1 index changes ignored (diff vs worktree only)|||  local dirty
+  if ! dirty="$(git -C "$REPO" status --porcelain=v1 -z --untracked-files=no|||  local dirty
+  if ! dirty="$(git -C "$REPO" diff --name-only -z --'
 'M-2 control char token not blind|||CTRL) note_blind|||CTRL) : note_blind'
 'M-2 helper does not flag control chars|||if re.search(r"[\x00-\x1f\x7f]", tok):|||if False:'
 'RV2-1 python counts untracked manifests|||tmf = {f for f in tracked if is_mf|||tmf = {f for f in files if is_mf'
@@ -168,6 +174,14 @@ MUTANTS=(
 'RV2-5 waiver key uses raw dir|||key="$k|${F[1]:-}|${F[2]:-}"|||key="$k|${F[1]:-}/|${F[2]:-}"'
 'RV2-6 waiver HEAD check without literal|||if ! git -C "$REPO" diff --quiet HEAD -- ":(literal)$rel" 2>/dev/null; then|||if ! git -C "$REPO" diff --quiet HEAD -- "nonexistent-$rel" 2>/dev/null; then'
 'RV2-7 prefix dir itself not evidence|||[[ "$1/" == "$pre"* ]] && return 0|||[[ "$1" == "$pre"* ]] && return 0'
+'R3-1 changelog head check removed|||head_check "docs/CHANGELOG.md" "docs/CHANGELOG.md"|||:'
+'R3-1 cited path head check removed|||{ [ "$cited_ok" = 0 ] || [ "$evrel" = "." ]; } || head_check "cited path $p" "$evrel"|||:'
+'R3-1 version files head check removed|||head_check "version files" "${vread[@]+"${vread[@]}"}"|||:'
+'R3-1 head check ignores HEAD membership|||git -C "$REPO" cat-file -e "HEAD:$p" 2>/dev/null || bad=|||true || bad='
+'R3-1 head check ignores status|||  [ -z "$out" ] || bad="$bad [differs|||  [ -z "$out" ] || : "$bad [differs'
+'R3-1 head check status failure not blind|||    note_blind "$label: git status failed; cannot prove the files match HEAD"; return 0|||    :'
+'R3-4 refused mismatch waiver not counted|||WVUSED["bad-entry|$d|$name"]=1; W_BAD=$((W_BAD+1))|||WVUSED["bad-entry|$d|$name"]=1'
+'R3-4 refused mismatch waiver not marked used|||WVUSED["bad-entry|$d|$name"]=1; W_BAD=$((W_BAD+1))|||W_BAD=$((W_BAD+1))'
 'help has no VERDICT|||usage; echo "VERDICT: HELP"; exit 0|||usage; exit 0'
 )
 
