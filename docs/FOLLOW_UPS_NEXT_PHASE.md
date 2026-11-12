@@ -1880,3 +1880,9 @@ All 9 remaining `err.Error()` sites in log_management_handler.go now write fixed
 - PX-F18 (class, §11.4.276(C)): 122 `err.Error()` uses remain in non-test catalog-api/handlers (error_reporting 15, auth 8, configuration 7, user 5; openapi ~5322/5464/5522 document three of them); enumerate the class and decide per site.
 - PX-F19 (nit): 404 doc lines say any other service error returns 404 (a server failure shows as `Not found`).
 Agent note: do not use generic file names in the shared scratchpad (an agent's `W` file was overwritten by another).
+
+## PX-F15/F16 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups
+Test-only; 12 detector cases + 4 census negatives; all author mutants die. Reviewer mutants that survive (Queued, minor):
+- PX-F20: case `checked-only-named-result-clean` pins a known false negative as clean (`if out == nil {}` with an empty body); rename to show current behaviour and track the false negative.
+- PX-F21: add clean twins for the reversed `nil == out` (G5) and for a named result assigned in non-first LHS position `x, out = a, b` / `e, out := …` (G7).
+- PX-F22: add negative `secret…` (suffix ellipsis, E6). Nits: `pa<ss` (Contains `<` widening, E5); `for _, out = range c` is a detector false positive (G6).
