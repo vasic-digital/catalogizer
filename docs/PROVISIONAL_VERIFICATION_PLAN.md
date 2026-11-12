@@ -140,7 +140,7 @@ Preconditions (CONTINUATION Rev 18 plan; constitution 11.4.290/.40/.185): a "pro
 | Row | Pending job | Evidence goes to |
 |---|---|---|
 | SonarQube run6 on the v2.4.2 tag | Re-run per `docs/qa/sonarqube-20261111/run5/README.md`; expect api gate OK and web gate OK | `docs/qa/sonarqube-<date>/run6/` |
-| 11.4.40 full-suite retest of the tag | Go, web, desktop, wizard, cargo, Android; the partial retest of `563617b1` (Go about 60 packages, web 2585 pass / 14 fail, all failures pre-existing) does not count; the 6 Go + 14 web pre-existing failures are registered as CAT-PREEXIST-1..10 | `docs/qa/` |
+| 11.4.40 full-suite retest of the tag | Go, web, desktop, wizard, cargo, Android; the partial retest of `563617b1` (Go about 60 packages, web 2585 pass / 14 fail, the 6 Go + 14 web failures pre-existing; one stress test load-flaky on main only, regression UNCONFIRMED) does not count; the 6 Go + 14 web pre-existing failures are registered as CAT-PREEXIST-1..10 | `docs/qa/` |
 | Cover-art SSRF N>=3 and production-client leg | `docs/qa/coverart/run.sh` three times | `docs/qa/coverart/results/` |
 | Web FU-3 paint order | Real browser (Playwright) check of HistoryDrawer backdrop stacking | `docs/qa/` |
 | Release checker on GNU coreutils | Run the checker test suite on a host with GNU `sha256sum` | `docs/qa/` |

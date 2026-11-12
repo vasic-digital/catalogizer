@@ -1812,7 +1812,7 @@ ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go
 - RC2-4 (minor, process-doc): GNU coreutils sha256sum not exercised; CR handling UNCONFIRMED there (strip-one/refuse-other is safe either way).
 
 ## CAT-PREEXIST pre-existing test failures (retest of main 563617b1 vs v2.4.1, 2026-11-12)
-Evidence: `docs/qa/retest-20261112/RETEST_main_563617b1.md` (PROVISIONAL summary). All fail identically on `v2.4.1`; none is a regression of 2.4.2. Status: Queued; root cause NOT investigated (UNCONFIRMED).
+Evidence: `docs/qa/retest-20261112/RETEST_main_563617b1.md` (PROVISIONAL summary). CAT-PREEXIST-1..9 (the 6 Go + 14 web failures) fail identically on `v2.4.1`; none of those is a regression of 2.4.2. CAT-PREEXIST-10 is different: it PASSED on `v2.4.1` and failed 1 of 3 runs on main under load; regression UNCONFIRMED. Status: Queued; root cause NOT investigated (UNCONFIRMED).
 - CAT-PREEXIST-1 (Bug): Go `config` TestDocsAdminPasswordExamplesAreAllRejected fails (docs example passwords vs rejection list).
 - CAT-PREEXIST-2 (Bug): Go `internal/nilslice_guard` TestNoUnnormalisedNilListReturns flags admin_handler.go:121, collection_handler.go:301, user_repository.go:295, smb_hostvet.go:111.
 - CAT-PREEXIST-3 (Bug): Go root `catalogizer` TestOpenAPIContract_RealBinary_PathParamsAndUserRolePermissions: DELETE /api/v1/logs/share/999999 expected 500 got 404 (test alone takes ~513 s).
@@ -1823,3 +1823,7 @@ Evidence: `docs/qa/retest-20261112/RETEST_main_563617b1.md` (PROVISIONAL summary
 - CAT-PREEXIST-8 (Bug): Web `AuthContext.integration` (7 tests) fail.
 - CAT-PREEXIST-9 (Bug): Web load failures: Avatar, EmptyState, LoadingSpinner, WebSocketContext, WebSocketContext.connectionStatus, websocket test files.
 - CAT-PREEXIST-10 (Bug): Go `tests/stress` TestCacheStress_HighThroughput/CacheWriteThroughput load-flaky (main 2 pass / 1 fail at 74 ops/s; v2.4.1 pass); decide threshold or load gating.
+
+## CAT-REL-CHECK-1 reviewer findings on the v2.4.2 prep (2026-11-12)
+- RC-3 (important): `check_release_consistency.sh` silently passes a VERIFIED path that has no SHA256SUMS manifest. Accept `SHA256SUMS.txt` as well as `SHA256SUMS`; treat a missing manifest as BLIND or at least count it; check that the manifest lists every file of the directory.
+- RC-3b (A5/A7): a deleted manifest entry plus a tampered file passes. Check manifest completeness against the directory contents.
