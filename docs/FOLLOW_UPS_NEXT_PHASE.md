@@ -1799,3 +1799,14 @@ ctrctl supports ONLY `start|stop|status <container>` (docs/qa/lib/ctrctl/main.go
 - FU2-2 (nit, source-defect): CollectionPreview Enter handler lacks `!e.repeat`; holding Enter toggles repeatedly.
 - FU2-3 (nit, source-defect): FU-5 still open — template buttons contain block elements/h4 headings.
 - FU2-4 (nit, process-doc): `catalog-web/src/lib/keyboard.ts` `onActivateKey` has no production callers; investigate per §11.4.124 before any removal.
+
+## CAT-REL-CHECK-1 round-3/4 (F1-F5 + review fixes on branch fix/release-checker-f1-f5, 2026-11-12)
+- F1 fixed (fail closed on any non-blank manifest line outside the two unescaped forms; README corrected). F2 fixed after review round 4: entries are resolved with `readlink -m` (missing parents are not an escape; a missing tail below an outside symlink still FAILs) and CRLF manifests are normalised (one trailing CR stripped; a CR inside a line is refused). F3 covered by tests plus mutants. F4 fixed (INFO on versionCode under --prev-tag is BLIND unless the --prev-tag row FAILed). F5 fixed (fence-aware headings, comment pattern cannot span a closing `*/`; `7;` and `7 /* c */` parse).
+- Open nit: a `~~~` line inside a ``` fence (or the reverse) toggles the fence state, since fences are not tracked by kind/length. Fails safe in most cases (section not found / BLIND).
+- Residual: only uutils sha256sum was exercised; GNU coreutils behaviour for CR/escaped lines is untested.
+
+## CAT-REL-CHECK-1 Opus round-2 re-review (GO-with-follow-ups, 137 tests, 76/76 mutants, 7/7 reviewer mutants killed)
+- RC2-1 (nit, source): `versionCode = 7 /* x */ /* y */` (two consecutive block comments) FAILs; fails safe; README could say so.
+- RC2-2 (nit, source): a ``` fence closed by ~~~ toggles state wrongly; fails safe; already registered above.
+- RC2-3 (nit, tests): no test where the only CR is mid-line (e.g. `SHA256 (a\r) = H`); the double-CR test covers the branch.
+- RC2-4 (minor, process-doc): GNU coreutils sha256sum not exercised; CR handling UNCONFIRMED there (strip-one/refuse-other is safe either way).

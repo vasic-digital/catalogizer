@@ -185,7 +185,7 @@ for comp in CARGO:
 
 # Gradle versionName / versionCode
 def gradle_field(text, name):
-    pat = re.compile(r"^\s*" + name + r"(?![A-Za-z0-9_])\s*(?:=\s*)?(\"[^\"]*\"|[^\s/]+)\s*(?://.*)?$")
+    pat = re.compile(r"^\s*" + name + r"(?![A-Za-z0-9_])\s*(?:=\s*)?(\"[^\"]*\"|[^\s/;]+)\s*;?\s*(?:/\*(?:[^*]|\*(?!/))*\*/\s*)?(?://.*)?$")
     hits = []
     for ln in text.splitlines():
         if ln.lstrip().startswith("//"):
@@ -298,6 +298,13 @@ PY
          [ "$c" -eq 1 ] || foreign="$foreign [$key]" ;;
     esac
   done
+  # F4: INFO on a versionCode row is only legitimate without --prev-tag, or when the
+  # --prev-tag row itself FAILed (unknown tag); otherwise it is a forged downgrade.
+  if [ -n "$PREV_TAG" ] && [ "${kinds["--prev-tag"]:-}" != FAIL ]; then
+    for key in "${want[@]}"; do
+      [ "${kinds["$key"]:-}" = INFO ] && foreign="$foreign [$key INFO with --prev-tag]"
+    done
+  fi
   if [ -n "$miss" ]; then note_blind "version helper rows missing:$miss"; fi
   if [ -n "$dup" ]; then note_blind "version helper duplicate rows:$dup"; fi
   if [ -n "$foreign" ]; then note_blind "version helper unexpected rows:$foreign"; fi
@@ -331,33 +338,43 @@ repo, want = sys.argv[1:3]
 with open(os.path.join(repo, "docs/CHANGELOG.md"), encoding="utf-8") as fh:
     lines = fh.read().splitlines()
 head = re.compile(r"^## \[(\d[^\]]*)\]")
+# lines inside fenced code blocks are never headings (fence lines included)
+fenced = []
+infence = False
+for ln in lines:
+    if re.match(r"^\s{0,3}(```|~~~)", ln):
+        infence = not infence
+        fenced.append(True)
+    else:
+        fenced.append(infence)
 start = None
 for i, ln in enumerate(lines):
-    m = head.match(ln)
+    m = None if fenced[i] else head.match(ln)
     if m and (not want or m.group(1) == want):
         start, name = i, m.group(1)
         break
 if start is None:
     print("ERR\tsection not found" + (f": {want}" if want else " (no numbered section)"))
     sys.exit(0)
-if sum(1 for ln in lines if (hm := head.match(ln)) and hm.group(1) == name) > 1:
+if sum(1 for k, ln in enumerate(lines) if not fenced[k] and (hm := head.match(ln)) and hm.group(1) == name) > 1:
     print(f"ERR\tduplicate section heading [{name}] in CHANGELOG")
     sys.exit(0)
 end = len(lines)
 for j in range(start + 1, len(lines)):
-    if lines[j].startswith("## "):
+    if not fenced[j] and lines[j].startswith("## "):
         end = j
         break
 body = lines[start + 1:end]
 vlines = []
 nsub = 0
 inv = False
-for ln in body:
-    if re.match(r"^###\s+VERIFIED\b", ln):
+for k, ln in enumerate(body):
+    isf = fenced[start + 1 + k]
+    if not isf and re.match(r"^###\s+VERIFIED\b", ln):
         inv = True
         nsub += 1
         continue
-    if re.match(r"^#{1,3} ", ln):
+    if not isf and re.match(r"^#{1,3} ", ln):
         inv = False
         continue
     if inv:
@@ -454,6 +471,10 @@ PY
     esc=0
     while IFS= read -r line || [ -n "$line" ]; do
       ent=""
+      line="${line%$'\r'}"   # CRLF manifests: sha256sum implementations strip one trailing CR
+      if [[ "$line" == *$'\r'* ]]; then
+        S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/SHA256SUMS unsupported manifest line: CR inside a line"; continue
+      fi
       if [[ "$line" =~ ^[0-9a-fA-F]{64}\ [\ \*](.*)$ ]]; then
         ent="${BASH_REMATCH[1]}"
       elif [[ "$line" =~ ^[A-Za-z0-9-]+\ \((.*)\)\ =\ [0-9a-fA-F]+$ ]]; then
@@ -462,7 +483,17 @@ PY
       if [ -n "$ent" ]; then
         if [[ "$ent" == /* || "$ent" == ../* || "$ent" == */../* || "$ent" == */.. || "$ent" == .. ]]; then
           S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/SHA256SUMS entry escapes its directory: $ent"
+        else
+          # F2: an in-directory symlink must not lead outside the repository.
+          rp="$(readlink -m -- "$REPO/$d/$ent" 2>/dev/null || true)"   # -m: missing components are fine
+          if [ -z "$rp" ] || { [ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"/* ]]; }; then
+            S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/SHA256SUMS entry resolves outside the repository: $ent"
+          fi
         fi
+      elif [ -n "${line//[[:space:]]/}" ]; then
+        # F1: fail closed on any non-blank line that is not one of the two unescaped forms
+        # (backslash-escaped GNU/BSD lines, comments, anything else the parser cannot judge).
+        S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/SHA256SUMS unsupported manifest line: $line"
       fi
     done < "$REPO/$d/SHA256SUMS"
     [ "$esc" = 0 ] || continue
