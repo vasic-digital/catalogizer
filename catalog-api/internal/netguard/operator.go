@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -49,38 +50,7 @@ func denyPrivate() bool {
 func IsBlockedOperatorIP(ip net.IP) bool { return isBlockedOperator(ip, denyPrivate()) }
 
 func isBlockedOperator(ip net.IP, deny bool) bool {
-	if ip == nil {
-		return true
-	}
-	if v4 := ip.To4(); v4 != nil {
-		ip = v4 // unwraps ::ffff:a.b.c.d
-	}
-	if alwaysBlocked(ip) {
-		return true
-	}
-	for _, n := range reservedNets {
-		if n.Contains(ip) {
-			return true
-		}
-	}
-	for _, n := range operatorMetadataNets {
-		if n.Contains(ip) {
-			return true
-		}
-	}
-	if v4 := embeddedV4(ip); v4 != nil {
-		return isBlockedOperator(v4, deny)
-	}
-	if v4 := ip.To4(); v4 != nil && (v4[0] == 0 || v4[0] >= 240) {
-		return true
-	}
-	if ip.IsLoopback() {
-		return !allowListed(ip)
-	}
-	if ip.IsPrivate() || cgnat.Contains(ip) {
-		return deny && !allowListed(ip)
-	}
-	return false
+	return !permitted(ip, ClassPrivate, deny)
 }
 
 func allowListed(ip net.IP) bool {
@@ -116,30 +86,47 @@ func looksNumeric(host string) bool {
 	return true
 }
 
+// checkHostSpelling refuses host names that are not plain ASCII (fullwidth digits, encircled letters, homoglyphs: a later
+// component that normalises IDNA could read them as 127.0.0.1 or localhost; IDNs must be given as punycode, xn--) and
+// numeric spellings (inet_aton forms, zones). It runs before any name lookup, on the strict and the operator path.
+func checkHostSpelling(host string) error {
+	for i := 0; i < len(host); i++ {
+		if host[i] >= 0x80 {
+			return fmt.Errorf("%w: %q is not an ASCII host name (use punycode)", ErrBlocked, host)
+		}
+	}
+	if looksNumeric(host) {
+		return fmt.Errorf("%w: %q is not a canonical IP address or DNS name", ErrBlocked, host)
+	}
+	return nil
+}
+
 var errUnverified = errors.New("destination could not be verified")
 
 func resolveOperator(ctx context.Context, host string) ([]net.IP, error) {
-	return resolveOperatorMode(ctx, host, false)
+	return resolveOperatorMode(ctx, host, false, ClassPrivate)
 }
 
 // resolveOperatorStrict refuses the name when ANY resolved address is refused. It is used where the name (not a pinned
 // address) is handed to another party that resolves it again, i.e. an environment proxy.
-func resolveOperatorStrict(ctx context.Context, host string) ([]net.IP, error) {
-	return resolveOperatorMode(ctx, host, true)
+func resolveOperatorStrict(ctx context.Context, host string, approved Class) ([]net.IP, error) {
+	return resolveOperatorMode(ctx, host, true, approved)
 }
 
-func resolveOperatorMode(ctx context.Context, host string, strict bool) ([]net.IP, error) {
+// resolveOperatorMode resolves host and keeps the addresses that an endpoint approved for approved may reach.
+func resolveOperatorMode(ctx context.Context, host string, strict bool, approved Class) ([]net.IP, error) {
+	deny := denyPrivate()
 	if host == "" {
 		return nil, fmt.Errorf("%w: empty host", ErrBlocked)
 	}
 	if ip := net.ParseIP(strings.Trim(host, "[]")); ip != nil {
-		if IsBlockedOperatorIP(ip) {
-			return nil, fmt.Errorf("%w: %s is a loopback, link-local, metadata or reserved address", ErrBlocked, host)
+		if !permitted(ip, approved, deny) {
+			return nil, fmt.Errorf("%w: %s is a loopback, link-local, metadata, reserved or own address, or outside the approved class (%s)", ErrBlocked, host, approved)
 		}
 		return []net.IP{ip}, nil
 	}
-	if looksNumeric(host) {
-		return nil, fmt.Errorf("%w: %q is not a canonical IP address or DNS name", ErrBlocked, host)
+	if err := checkHostSpelling(host); err != nil {
+		return nil, err
 	}
 	addrs, err := lookupIPAddr(ctx, host)
 	if err != nil {
@@ -151,9 +138,9 @@ func resolveOperatorMode(ctx context.Context, host string, strict bool) ([]net.I
 	var ok []net.IP
 	dropped := 0
 	for _, a := range addrs {
-		if IsBlockedOperatorIP(a.IP) {
+		if !permitted(a.IP, approved, deny) {
 			if strict {
-				return nil, fmt.Errorf("%w: %s resolves to a loopback, link-local, metadata or reserved address", ErrBlocked, host)
+				return nil, fmt.Errorf("%w: %s resolves to a loopback, link-local, metadata, reserved or own address, or outside the approved class (%s)", ErrBlocked, host, approved)
 			}
 			dropped++
 			continue
@@ -162,7 +149,7 @@ func resolveOperatorMode(ctx context.Context, host string, strict bool) ([]net.I
 	}
 	if len(ok) == 0 {
 		if dropped > 0 {
-			return nil, fmt.Errorf("%w: %s resolves only to loopback, link-local, metadata or reserved addresses", ErrBlocked, host)
+			return nil, fmt.Errorf("%w: %s resolves only to loopback, link-local, metadata, reserved or own addresses, or to addresses outside the approved class (%s)", ErrBlocked, host, approved)
 		}
 		return nil, fmt.Errorf("resolve %q: no addresses", host)
 	}
@@ -170,8 +157,12 @@ func resolveOperatorMode(ctx context.Context, host string, strict bool) ([]net.I
 }
 
 // proxySet remembers the addresses of the proxies this transport was told to use, so the connection to a proxy
-// (operator configuration, often 127.0.0.1) is not judged by the destination policy.
-type proxySet struct{ m sync.Map }
+// (operator configuration, often 127.0.0.1) is not judged by the destination policy. pin is the class ceiling of the
+// transport (see classPin).
+type proxySet struct {
+	m   sync.Map
+	pin *classPin
+}
 
 func proxyAddr(u *url.URL) string {
 	port := u.Port()
@@ -199,12 +190,14 @@ func (ps *proxySet) proxy(req *http.Request) (*url.URL, error) {
 	if err != nil || p == nil {
 		return p, err
 	}
-	if _, err := resolveOperatorStrict(req.Context(), req.URL.Hostname()); err != nil {
+	ips, err := resolveOperatorStrict(req.Context(), req.URL.Hostname(), ps.pin.get())
+	if err != nil {
 		if errors.Is(err, ErrBlocked) {
 			return nil, err
 		}
 		return nil, fmt.Errorf("%w: %v", errUnverified, err)
 	}
+	ps.pin.note(ClassOf(ips[0]))
 	ps.m.Store(proxyAddr(p), struct{}{})
 	return p, nil
 }
@@ -217,24 +210,60 @@ func (ps *proxySet) dial(ctx context.Context, network, addr string) (net.Conn, e
 	if _, ok := ps.m.Load(addr); ok {
 		return (&net.Dialer{Timeout: 15 * time.Second, KeepAlive: 30 * time.Second}).DialContext(ctx, network, addr)
 	}
-	return OperatorDialContext(ctx, network, addr)
+	return operatorDial(ctx, network, addr, ps.pin)
+}
+
+// dialTCP connects to one checked address; tests replace it to route a pinned public / private address to a local
+// listener without weakening the checks that run before it.
+var dialTCP = func(ctx context.Context, d *net.Dialer, network, ip, port string) (net.Conn, error) {
+	return d.DialContext(ctx, network, net.JoinHostPort(ip, port))
 }
 
 // OperatorDialContext resolves addr, drops the addresses refused by the operator policy (refusing the name when none remain), and dials the checked IP itself (pinned), never the name.
+// Approved class: ClassPrivate (private and public addresses).
 func OperatorDialContext(ctx context.Context, network, addr string) (net.Conn, error) {
+	return OperatorDialContextClass(ctx, network, addr, ClassPrivate)
+}
+
+// OperatorDialContextClass is OperatorDialContext for an endpoint approved for the given class: addresses of a more
+// internal class are dropped from the answer, and a dial-time Control hook re-checks the address the kernel connects to.
+func OperatorDialContextClass(ctx context.Context, network, addr string, approved Class) (net.Conn, error) {
+	return operatorDial(ctx, network, addr, newClassPin(approved))
+}
+
+// operatorControl is the dial-time hook: it re-checks the address the kernel is about to connect to against the current ceiling.
+func operatorControl(pin *classPin, deny bool) func(network, address string, c syscall.RawConn) error {
+	return func(_, address string, _ syscall.RawConn) error {
+		h, _, serr := net.SplitHostPort(address)
+		if serr != nil {
+			return serr
+		}
+		ip := net.ParseIP(h)
+		if ip == nil || !permitted(ip, pin.get(), deny) {
+			return fmt.Errorf("%w: %s is outside the approved class (%s)", ErrBlocked, address, pin.get())
+		}
+		return nil
+	}
+}
+
+func operatorDial(ctx context.Context, network, addr string, pin *classPin) (net.Conn, error) {
 	host, port, err := net.SplitHostPort(addr)
 	if err != nil {
 		return nil, err
 	}
-	ips, err := resolveOperator(ctx, host)
+	approved := pin.get()
+	ips, err := resolveOperatorMode(ctx, host, false, approved)
 	if err != nil {
 		return nil, err
 	}
+	deny := denyPrivate()
 	d := &net.Dialer{Timeout: 15 * time.Second, KeepAlive: 30 * time.Second}
+	d.Control = operatorControl(pin, deny)
 	var last error
 	for _, ip := range ips {
-		c, derr := d.DialContext(ctx, network, net.JoinHostPort(ip.String(), port))
+		c, derr := dialTCP(ctx, d, network, ip.String(), port)
 		if derr == nil {
+			pin.note(ClassOf(ip))
 			return c, nil
 		}
 		last = derr
@@ -246,8 +275,13 @@ func OperatorDialContext(ctx context.Context, network, addr string) (net.Conn, e
 // address of every connection; an environment proxy is honoured, fail-closed (see proxySet.proxy), and the proxy's own
 // address is operator configuration and bypasses the destination policy. A direct connection to an address that equals
 // a proxy used earlier by the same transport is therefore not checked (narrow residual).
-func OperatorTransport() *http.Transport {
-	ps := &proxySet{}
+// The transport is approved for ClassPrivate and tightens itself to ClassPublic when its first connection reaches a
+// public address (see classPin), so a root on the internet cannot be turned into a path to the LAN.
+func OperatorTransport() *http.Transport { return OperatorTransportFor(ClassPrivate) }
+
+// OperatorTransportFor is OperatorTransport for an endpoint approved for the given class.
+func OperatorTransportFor(approved Class) *http.Transport {
+	ps := &proxySet{pin: newClassPin(approved)}
 	return &http.Transport{
 		Proxy:                 ps.proxy,
 		DialContext:           ps.dial,
@@ -261,21 +295,56 @@ func OperatorTransport() *http.Transport {
 }
 
 // OperatorCheckRedirect is an http.Client CheckRedirect: at most 10 hops, http(s) only, and the next hop's host
-// is checked before the request is made (the dial check still runs on the connection itself).
+// is checked before the request is made (the dial check still runs on the connection itself). A redirect never
+// reaches a more internal class than the first request of the chain: a public origin cannot send the client into the LAN.
 func OperatorCheckRedirect(req *http.Request, via []*http.Request) error {
-	if len(via) >= 10 {
-		return errors.New("stopped after 10 redirects")
+	return OperatorCheckRedirectFor(ClassPrivate)(req, via)
+}
+
+// OperatorCheckRedirectFor is OperatorCheckRedirect for an endpoint approved for the given class. The ceiling for the hop
+// is the less internal of approved and the class of the first request's host.
+func OperatorCheckRedirectFor(approved Class) func(req *http.Request, via []*http.Request) error {
+	return func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 10 {
+			return errors.New("stopped after 10 redirects")
+		}
+		if !HTTPOrHTTPS(req.URL) {
+			return fmt.Errorf("%w: redirect to scheme %q not permitted", ErrBlocked, req.URL.Scheme)
+		}
+		ceiling := approved
+		if len(via) > 0 && via[0].URL != nil {
+			if oc, ok := hostClass(req.Context(), via[0].URL.Hostname()); ok && oc == ClassPublic {
+				ceiling = ClassPublic
+			}
+		}
+		if _, err := resolveOperatorMode(req.Context(), req.URL.Hostname(), false, ceiling); err != nil {
+			var dnsErr *net.DNSError
+			if !errors.As(err, &dnsErr) {
+				return err
+			}
+		}
+		return nil
 	}
-	if !HTTPOrHTTPS(req.URL) {
-		return fmt.Errorf("%w: redirect to scheme %q not permitted", ErrBlocked, req.URL.Scheme)
+}
+
+// hostClass returns the class of the first permitted address of host (a literal or a name); ok is false when it cannot be determined.
+func hostClass(ctx context.Context, host string) (Class, bool) {
+	if ip := net.ParseIP(strings.Trim(host, "[]")); ip != nil {
+		return ClassOf(ip), true
 	}
-	if _, err := resolveOperator(req.Context(), req.URL.Hostname()); err != nil {
-		var dnsErr *net.DNSError
-		if !errors.As(err, &dnsErr) {
-			return err
+	if checkHostSpelling(host) != nil {
+		return ClassNever, false
+	}
+	addrs, err := lookupIPAddr(ctx, host)
+	if err != nil || len(addrs) == 0 {
+		return ClassNever, false
+	}
+	for _, a := range addrs {
+		if c := ClassOf(a.IP); c != ClassNever {
+			return c, true
 		}
 	}
-	return nil
+	return ClassNever, false
 }
 
 // CheckOperatorURL validates raw for an operator-chosen destination: absolute URL, allowed scheme, no userinfo,

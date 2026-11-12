@@ -37,7 +37,8 @@ func NewWebDAVClient(url, username, password string) *WebDAVClient {
 	client := gowebdav.NewClient(url, username, password)
 	// SECQ-1/W5: dial-time operator policy (loopback / link-local / metadata refused on the resolved address of every connection,
 	// so every redirect hop is covered). gowebdav owns its CheckRedirect (it cannot be replaced), so there is no earlier per-hop
-	// host check here. One transport per client, shared with GetQuota.
+	// host check here; the transport pins itself to the address class of its first connection (CAT-SECQ1-A), so a root on a public
+	// address cannot be redirected into the LAN on this path either. One transport per client, shared with GetQuota.
 	tr := netguard.OperatorTransport()
 	client.SetTransport(tr)
 
