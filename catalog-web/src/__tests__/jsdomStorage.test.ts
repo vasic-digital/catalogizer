@@ -29,14 +29,47 @@ describe('test env Web Storage', () => {
   })
 
   it('localStorage and sessionStorage are isolated from each other', () => {
+    // PW-F7: probe prefixed AND unprefixed keys, in both directions, so a
+    // store that only separates some key shapes cannot pass.
     try {
-      localStorage.setItem('iso-l', 'a')
-      expect(sessionStorage.getItem('iso-l')).toBeNull()
-      sessionStorage.setItem('iso-s', 'b')
-      expect(localStorage.getItem('iso-s')).toBeNull()
+      for (const key of ['iso-l', 'k']) {
+        localStorage.setItem(key, 'a')
+        expect(sessionStorage.getItem(key)).toBeNull()
+        localStorage.removeItem(key)
+      }
+      for (const key of ['iso-s', 'k']) {
+        sessionStorage.setItem(key, 'b')
+        expect(localStorage.getItem(key)).toBeNull()
+        sessionStorage.removeItem(key)
+      }
     } finally {
-      localStorage.removeItem('iso-l')
-      sessionStorage.removeItem('iso-s')
+      for (const key of ['iso-l', 'iso-s', 'k']) {
+        localStorage.removeItem(key)
+        sessionStorage.removeItem(key)
+      }
+    }
+  })
+
+  it('sessionStorage clear(), key() and length behave', () => {
+    // PW-F8
+    try {
+      sessionStorage.clear()
+      localStorage.setItem('keep', 'l')
+      expect(sessionStorage.length).toBe(0)
+      sessionStorage.setItem('only', 'v')
+      expect(sessionStorage.length).toBe(1)
+      expect(sessionStorage.key(0)).toBe('only')
+      sessionStorage.setItem('second', 'w')
+      expect(sessionStorage.length).toBe(2)
+      sessionStorage.clear()
+      expect(sessionStorage.length).toBe(0)
+      expect(sessionStorage.key(0)).toBeNull()
+      expect(sessionStorage.getItem('only')).toBeNull()
+      // clearing sessionStorage must not touch localStorage
+      expect(localStorage.getItem('keep')).toBe('l')
+    } finally {
+      sessionStorage.clear()
+      localStorage.removeItem('keep')
     }
   })
 })
