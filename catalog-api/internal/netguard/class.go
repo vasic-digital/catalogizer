@@ -1,6 +1,7 @@
 package netguard
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"sync"
@@ -64,25 +65,27 @@ func ParseClass(s string) (Class, bool) {
 // interfaceAddrs lists the server's own addresses; tests replace it.
 var interfaceAddrs = net.InterfaceAddrs
 
-// isOwnAddr reports whether ip is assigned to a local interface (the server itself, seen through its LAN address).
-func isOwnAddr(ip net.IP) bool {
+// ownAddr reports whether ip is assigned to a local interface (the server itself, seen through its LAN address).
+// known is false when the interface list could not be read; ClassOf then fails closed for private-range addresses
+// (they cannot be told apart from the server's own LAN address), while public addresses stay public.
+func ownAddr(ip net.IP) (own, known bool) {
 	addrs, err := interfaceAddrs()
 	if err != nil {
-		return false
+		return false, false
 	}
 	for _, a := range addrs {
-		var own net.IP
+		var o net.IP
 		switch v := a.(type) {
 		case *net.IPNet:
-			own = v.IP
+			o = v.IP
 		case *net.IPAddr:
-			own = v.IP
+			o = v.IP
 		}
-		if own != nil && own.Equal(ip) {
-			return true
+		if o != nil && o.Equal(ip) {
+			return true, true
 		}
 	}
-	return false
+	return false, true
 }
 
 // ClassOf returns the class of ip as seen by the operator policy, including the operator allow-list
@@ -113,7 +116,8 @@ func ClassOf(ip net.IP) Class {
 	if v4 := ip.To4(); v4 != nil && (v4[0] == 0 || v4[0] >= 240) {
 		return ClassNever
 	}
-	if ip.IsLoopback() || isOwnAddr(ip) {
+	own, known := ownAddr(ip)
+	if ip.IsLoopback() || own || (!known && (ip.IsPrivate() || cgnat.Contains(ip))) {
 		if allowListed(ip) {
 			return ClassPrivate
 		}
@@ -145,15 +149,37 @@ func permitted(ip net.IP, approved Class, deny bool) bool {
 type classPin struct {
 	mu      sync.Mutex
 	ceiling Class
-	seen    bool // the first connection has been recorded
+	seen    bool          // the first connection has been recorded
+	gate    chan struct{} // capacity 1: held by the one first connection while it is being decided
 }
 
-func newClassPin(approved Class) *classPin { return &classPin{ceiling: approved} }
+func newClassPin(approved Class) *classPin {
+	return &classPin{ceiling: approved, gate: make(chan struct{}, 1)}
+}
 
 func (p *classPin) get() Class {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	return p.ceiling
+}
+
+// begin must be called before the resolve + connect of every connection. Until the first connection has been recorded,
+// first connections are SERIALISED: the gate is held from before the name is resolved until the connection attempt ended
+// (end), so a second concurrent first connection cannot pass the checks against a ceiling that the first one is about to
+// tighten. Once the first connection is recorded begin is free. The returned function must be called exactly once.
+func (p *classPin) begin(ctx context.Context) (func(), error) {
+	p.mu.Lock()
+	seen := p.seen
+	p.mu.Unlock()
+	if seen {
+		return func() {}, nil
+	}
+	select {
+	case p.gate <- struct{}{}:
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	}
+	return func() { <-p.gate }, nil
 }
 
 // note records that a connection reached class c. Only the FIRST connection of the transport counts: it is the root

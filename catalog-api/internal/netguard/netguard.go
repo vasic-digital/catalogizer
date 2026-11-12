@@ -122,6 +122,10 @@ func allowedNets() []*net.IPNet {
 			continue
 		}
 		ones, bits := n.Mask.Size()
+		if bits == 128 && n.IP.To4() != nil && ones >= 96 {
+			// an IPv4-mapped network (::ffff:a.b.c.d/N) is an IPv4 network /N-96 for Contains: judge it as such
+			ones, bits = ones-96, 32
+		}
 		if !broadOK && ((bits == 32 && ones < 8) || (bits == 128 && ones < 16)) {
 			warnAllowListOnce(f, "prefix is too broad (shorter than /8 for IPv4 or /16 for IPv6); set "+AllowBroadEnv+"=1 to keep it")
 			continue

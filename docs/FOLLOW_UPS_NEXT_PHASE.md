@@ -1981,3 +1981,9 @@ Delivered in netguard: class.go (ClassNever/Private/Public, `ClassOf`, own-inter
 - A2 (minor) own-address detection calls `net.InterfaceAddrs()` on every dial; cache with a short TTL if profiling shows cost. Container bridge gateway is still private-class (analysis §9, operator decision).
 - A3 (minor) `OperatorCheckRedirectFor` resolves the first request's host again to learn its class; the transport pin is authoritative, the redirect check is an early refusal and can be bypassed only where the dial check still holds.
 - A4 (nit, test) port policy for operator HTTP clients (B9) and the wizard TCP probe are not changed here.
+
+## CAT-SECQ1-A review round 1 follow-ups (2026-11-12) — fixes F1-F5 in this branch; PROVISIONAL
+Fixed: F1 IPv4-mapped broad allow-list entries; F2 concurrent first connections (first connections are serialised by a gate in classPin); F3 tests for the proxy-path pin, the /1../7 boundary and the real Control hook; F4 own-address migration note (ENV_VARIABLES.md, CHANGELOG) and fail-closed interface lookup (private-range addresses refused when the list cannot be read); F5 truthful webdav_client.go comment; S3 client reuses its operator transport across Connect.
+- F5-FU (minor, source) wire the operator policy into `services/sync_service.go` / `services/webdav_client.go` (today the sync client replaces the transport with the strict `netguard.Transport()`, and `GetQuota` has no caller), together with CAT-SECQ1-D.
+- F2-FU (minor) the pin is per transport object; persistence across restarts needs the stored `approved_class` (CAT-SECQ1-B/C). A first connection blocked behind the gate waits up to its context deadline while the first dial is in progress (first dial timeout 15 s).
+- F4-FU (nit) a failing `net.InterfaceAddrs()` makes every private-range root unreachable until it recovers or the address is allow-listed; no metric/alert is emitted.

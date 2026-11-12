@@ -190,6 +190,11 @@ func (ps *proxySet) proxy(req *http.Request) (*url.URL, error) {
 	if err != nil || p == nil {
 		return p, err
 	}
+	end, gerr := ps.pin.begin(req.Context())
+	if gerr != nil {
+		return nil, gerr
+	}
+	defer end()
 	ips, err := resolveOperatorStrict(req.Context(), req.URL.Hostname(), ps.pin.get())
 	if err != nil {
 		if errors.Is(err, ErrBlocked) {
@@ -251,6 +256,11 @@ func operatorDial(ctx context.Context, network, addr string, pin *classPin) (net
 	if err != nil {
 		return nil, err
 	}
+	end, gerr := pin.begin(ctx)
+	if gerr != nil {
+		return nil, gerr
+	}
+	defer end()
 	approved := pin.get()
 	ips, err := resolveOperatorMode(ctx, host, false, approved)
 	if err != nil {
