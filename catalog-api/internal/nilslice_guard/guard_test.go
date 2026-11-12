@@ -11,6 +11,7 @@ import (
 	"go/token"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"testing"
@@ -206,24 +207,28 @@ func offenders(t *testing.T, dir string, exported bool) []string {
 // accepted lists reviewed findings that are not a null-on-the-wire defect (NS-3 dispositions, docs/qa/nil-slice-null-census-20261104.md).
 // Each entry is a substring of the finding and carries its reason; a stale entry (no longer matching) fails the test.
 var accepted = map[string]string{
-	"media_collection_repository.go:193:6 var externalIDs": "MediaCollection.ExternalIDs is `json:\"external_ids,omitempty\"`: a nil map is omitted, not null",
-	"admin_handler.go:117:6 var unavailable":               "GetSystemInfo always appends `totalRequests`, so the slice is never nil when serialised",
-	"collection_handler.go:290:3 var items":                "items is assigned from smartrules.Evaluate / ListManualItems, which return a non-nil slice whenever err == nil; the err path returns before serialising",
-	"service_adapters.go:83:6 var errs":                    "models.ValidationResult.Errors is `json:\"errors,omitempty\"`: nil is omitted, not null",
-	"service_adapters.go:87:6 var warns":                   "models.ValidationResult.Warnings is `json:\"warnings,omitempty\"`: nil is omitted, not null",
-	"music_player_service.go:412:6 var tracks":             "PlayArtist returns an error when tracks is empty, so a nil slice is never serialised",
-	"translation_service.go:168:6 var results":             "TranslateBatch has no HTTP caller in the tree (service-internal); tracked, not on a served path",
-	"localization_handlers.go:452:6 var providers":         "unrouted: LocalizationHandlers is never constructed outside tests; not a served path today",
-	"internal/handlers/media.go:280:6 var mediaItems":      "unrouted: internal/handlers.MediaHandler is never constructed outside tests; not a served path today",
-	"internal/handlers/media.go:56:6 var mediaTypes":       "unrouted: internal/handlers.MediaHandler is never constructed outside tests; not a served path today",
+	"media_collection_repository.go var externalIDs": "MediaCollection.ExternalIDs is `json:\"external_ids,omitempty\"`: a nil map is omitted, not null",
+	"admin_handler.go var unavailable":               "GetSystemInfo always appends `totalRequests`, so the slice is never nil when serialised",
+	"collection_handler.go var items":                "items is assigned from smartrules.Evaluate / ListManualItems, which return a non-nil slice whenever err == nil; the err path returns before serialising",
+	"service_adapters.go var errs":                   "models.ValidationResult.Errors is `json:\"errors,omitempty\"`: nil is omitted, not null",
+	"service_adapters.go var warns":                  "models.ValidationResult.Warnings is `json:\"warnings,omitempty\"`: nil is omitted, not null",
+	"music_player_service.go var tracks":             "PlayArtist returns an error when tracks is empty, so a nil slice is never serialised",
+	"translation_service.go var results":             "TranslateBatch has no HTTP caller in the tree (service-internal); tracked, not on a served path",
+	"localization_handlers.go var providers":         "unrouted: LocalizationHandlers is never constructed outside tests; not a served path today",
+	"internal/handlers/media.go var mediaItems":      "unrouted: internal/handlers.MediaHandler is never constructed outside tests; not a served path today",
+	"internal/handlers/media.go var mediaTypes":      "unrouted: internal/handlers.MediaHandler is never constructed outside tests; not a served path today",
 }
+
+var lineCol = regexp.MustCompile(`:\d+:\d+ `)
 
 func filterAccepted(got []string, used map[string]bool) []string {
 	var rest []string
 	for _, g := range got {
 		hit := false
+		// Match on the finding with its line:col removed so an accepted entry survives unrelated edits above it.
+		norm := lineCol.ReplaceAllString(g, " ")
 		for k := range accepted {
-			if strings.Contains(g, k) {
+			if strings.Contains(norm, k) {
 				used[k] = true
 				hit = true
 			}

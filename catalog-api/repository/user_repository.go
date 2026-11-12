@@ -292,7 +292,7 @@ func (r *UserRepository) adminRoleIDs() ([]int, error) {
 	if err != nil {
 		return nil, err
 	}
-	var ids []int
+	ids := []int{}
 	for i := range roles {
 		if roles[i].Permissions.HasPermission(models.PermissionSystemAdmin) {
 			ids = append(ids, roles[i].ID)
