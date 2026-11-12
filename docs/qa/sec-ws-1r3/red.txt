@@ -1,0 +1,18 @@
+--- FAIL: TestEveryNginxWSLocationForwardsClientHostWithPort (0.56s)
+        	Messages:   	../../../docs/deployment/PRODUCTION_DEPLOYMENT_GUIDE.md:970: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=true)
+        	Messages:   	../../../docs/deployment/PRODUCTION_DEPLOYMENT_GUIDE.md:1004: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=true)
+        	Messages:   	../../../docs/TROUBLESHOOTING_GUIDE.md:1482: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=true)
+        	Messages:   	../../../docs/ADMIN_GUIDE.md:1104: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=true)
+        	Messages:   	../../../docs/VIDEO_COURSE_SCRIPTS.md:3987: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=false)
+        	Messages:   	../../../docs/deployment/SCALING_GUIDE.md:475: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=true)
+        	Messages:   	../../../docs/guides/TROUBLESHOOTING.md:744: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=true)
+        	Messages:   	../../../docs/INSTALLATION_GUIDE.md:536: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=true)
+        	Messages:   	../../../docs/guides/USER_MANUAL.md:1275: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=false)
+        	Messages:   	../../../docs/qa/stack3/monitoring/nginx/nginx.conf:35: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=false)
+        	Messages:   	../../../config/nginx/catalogizer.prod.conf:112: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=true)
+        	Messages:   	../../../config/nginx/catalogizer.prod.conf:188: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=true)
+        	Messages:   	../../../docs/deployment/DEPLOYMENT.md:270: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=true)
+        	Messages:   	../../../docs/deployment/DEPLOYMENT.md:284: WebSocket location must contain `proxy_set_header Host $http_host;` (hostAny=true)
+FAIL
+FAIL	catalogizer/internal/nginxwscheck	0.575s
+FAIL

@@ -411,7 +411,7 @@ server {
         limit_req zone=api burst=10 nodelay;
         proxy_pass http://catalogizer_backend;
         proxy_http_version 1.1;
-        proxy_set_header Host \$host;
+        proxy_set_header Host \$http_host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
@@ -1274,14 +1274,14 @@ server {
     # Health check endpoint
     location /health {
         proxy_pass http://catalogizer_backend;
-        proxy_set_header Host $host;
+        proxy_set_header Host $http_host;
         access_log off;
     }
 
     # Main application
     location / {
         proxy_pass http://catalogizer_backend;
-        proxy_set_header Host $host;
+        proxy_set_header Host $http_host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;

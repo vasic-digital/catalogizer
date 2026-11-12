@@ -1,0 +1,4 @@
+ok  catalogizer/internal/nginxwscheck (go test -count=1, after fix); mutants M1-M5 all FAIL (killed), restored cmp-identical; nginx -t stack3 (placeholders substituted, nginx:1.27-alpine, --network none):
+/docker-entrypoint.sh: Configuration complete; ready for start up
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
