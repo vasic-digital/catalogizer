@@ -4,9 +4,18 @@
 > A fresh session that receives only the prompt `continue` MUST read this file first, then
 > `docs/FOLLOW_UPS_NEXT_PHASE.md`, then resume the §11.4.126 loop with the steps in "RESUME ORDER".
 
-**Revision:** 19
-**Last modified:** 2026-11-11
-**Exports:** `CONTINUATION.html` / `CONTINUATION.pdf` regenerated at Rev 19 with `pandoc -s` (HTML) and `weasyprint` (PDF) from this file; this `.md` is authoritative.
+**Revision:** 20
+**Last modified:** 2026-11-12
+**Exports:** `CONTINUATION.html` / `CONTINUATION.pdf` regenerated at Rev 20 with `pandoc -s` (HTML) and `weasyprint` (PDF) from this file; this `.md` is authoritative.
+
+## 0.000 Rev 20 delta (since Rev 19; main = `1538ef19`; release prep branch `release/v2.4.2-prep`)
+
+* **v2.4.2 content is prepared, not tagged, not pushed.** Branch `release/v2.4.2-prep` (merged up to `main` `1538ef19`) bumps every product version to 2.4.2 (Android `versionCode` 8, Android TV 10) and adds `[2.4.2]` to `docs/CHANGELOG.md` with VERIFIED / PROVISIONAL / REOPENED / OVERDUE separate. `v2.4.1` is already tagged. Release class: pre-release, NOT production-ready.
+* Landed on `main` since Rev 19 (all PROVISIONAL-DONE): cover-art SSRF live test (CAT-QA-COVERART-1), release-consistency checker `scripts/release/check_release_consistency.sh` plus N1-N5 and F1-F5 hardening (137 tests, 76/76 mutants reported; GNU `sha256sum` unexercised), web Sonar fixes (CAT-QA-SONAR-7 and FU-1..7; Enter-to-toggle restored; FU-3 browser paint-order check owed), SonarQube run4 (on `v2.4.1`) and run5 (on `563617b1`: api gate OK 687 open unchanged, web gate OK, 13 smells cleared, web open 351 -> 338; static only).
+* Partial retest of `563617b1` as reported to me: Go about 60 packages; web 2585 pass / 14 fail; all 6 Go + 14 web failures also fail on `v2.4.1` (pre-existing); 1 load-flaky stress test; desktop / wizard / cargo not run. The log is not committed and the failing test names are not in the repo: register them from the log. This is NOT the 11.4.40 retest of the tag.
+* Owed / OVERDUE: 11.4.40 full-suite retest of the tag; 11.4.185 manual QA; live UI QA with Vision (llmctl `vision` start gate hung about 80 s on this host, root cause UNCONFIRMED, no Vision validation PASS exists); Anton SMB runs 2 and 3 (N=1 < N>=3); stack rebuild from the tag; Sonar scan of the tag; GNU `sha256sum` exercise; FU2-1..4 nits. Synology stays SKIP `hardware_not_present`.
+* Next steps: independent review of the prep branch (11.4.209 substrate), merge to `main` fast-forward (11.4.288), run the plan in `docs/PROVISIONAL_VERIFICATION_PLAN.md` section 4, then decide the tag `v2.4.2` (pre-release).
+* Not verified while writing Rev 20: upstream parity of `main`, whether any stack 3 container is running, and whether the prep branch has been pushed anywhere (it has not been by this change).
 
 ## 0.00 Rev 19 delta (since Rev 18; main = `1397d5b9`; release prep branch `release/v2.4.1-prep`)
 

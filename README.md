@@ -1,12 +1,14 @@
 # Catalogizer - Advanced Multi-Protocol Media Collection Management System
 
-Catalogizer is a comprehensive media collection management system that automatically detects, categorizes, and organizes your media files across multiple storage protocols including SMB, FTP, NFS, WebDAV, and local filesystem. It provides real-time monitoring, advanced analytics, and a modern web interface for managing your entire media library.
+Catalogizer is a comprehensive media collection management system that automatically detects, categorizes, and organizes your media files across multiple storage protocols including SMB, FTP, NFS, WebDAV, S3 and local filesystem. It provides real-time monitoring, advanced analytics, and a modern web interface for managing your entire media library.
+
+> **Release status: Catalogizer 2.4.2 is a pre-release and is NOT production-ready.** The full-suite retest of the tag, manual QA and live UI QA have not been run on it; see [`docs/CHANGELOG.md`](docs/CHANGELOG.md) (`[2.4.2]`: VERIFIED / PROVISIONAL / REOPENED / OVERDUE listed separately) and [`docs/CONTINUATION.md`](docs/CONTINUATION.md) (Rev 20).
 
 ## 🚀 Features
 
 ### Core Capabilities
 - **Automated Media Detection**: Identifies 50+ media types including movies, TV shows, music, games, software, documentaries, and more
-- **Multi-Protocol Support**: Works with SMB, FTP, NFS, WebDAV, and local filesystem protocols
+- **Multi-Protocol Support**: Works with SMB, FTP, NFS, WebDAV, S3 and local filesystem protocols (Synology SMB/FTP/NFS live tests are currently SKIPPED, drives powered off)
 - **Real-time Monitoring**: Continuously monitors storage sources for changes and updates metadata automatically
 - **Protocol Resilience**: Handles temporary disconnections gracefully with automatic reconnection and offline caching
 - **Advanced Analytics**: Comprehensive statistics, growth trends, and quality analysis
@@ -195,7 +197,7 @@ Each protocol is abstracted through a common interface, allowing seamless switch
 Catalogizer is governed by three nested layers; a lower layer may tighten a higher one and never weakens it:
 
 1. **Helix canon** — `constitution/Constitution.md` (a git submodule): the universal rules and the source of truth.
-2. **Spec Kit constitution** — [`.specify/memory/constitution.md`](.specify/memory/constitution.md) (version 2.4.0) with its binding
+2. **Spec Kit constitution** — [`.specify/memory/constitution.md`](.specify/memory/constitution.md) (version 2.5.1) with its binding
    appendix [`constitution-appendix.md`](.specify/memory/constitution-appendix.md), pinned to a canon commit and checked against it by
    `scripts/governance/`. It states the principles, the project overrides, the known conflicts and the hub-engine binding.
 3. **Project and module rules** — [`CONSTITUTION.md`](CONSTITUTION.md), `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`.
@@ -455,7 +457,7 @@ For detailed technical documentation, see [SMB Resilience Architecture](docs/arc
 Catalogizer provides comprehensive client applications for all major platforms:
 
 ### 🛠️ Installation Wizard
-![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen) ![Tests](https://img.shields.io/badge/Tests-30%2F30-brightgreen) ![Coverage](https://img.shields.io/badge/Coverage-93%25-brightgreen)
+_The Build / Tests / Coverage badges and the coverage table below were hand-typed, are not machine-derived, and are not verified for 2.4.2; treat them as historical. Measured results are in `docs/CHANGELOG.md` and `docs/qa/`._
 
 - **Desktop Installation Tool**: Cross-platform SMB configuration wizard
 - **Network Discovery**: Automatic SMB device scanning and discovery
@@ -614,7 +616,7 @@ SPOTIFY_CLIENT_SECRET=your_spotify_secret
 podman compose --env-file ./production.env up -d
 
 # Override specific variables
-CATALOGIZER_VERSION=v2.1.0 podman compose up -d
+CATALOGIZER_VERSION=v2.4.2 podman compose up -d
 ```
 
 ## 🏗️ Build & Deploy Clients
@@ -645,7 +647,7 @@ CATALOGIZER_VERSION=v2.1.0 podman compose up -d
 ./deployment/scripts/deploy-desktop.sh --target=linux --format=appimage
 
 # Deploy to GitHub Releases
-./deployment/scripts/deploy-desktop.sh --deploy=github --tag=v2.1.0
+./deployment/scripts/deploy-desktop.sh --deploy=github --tag=v2.4.2
 ```
 
 ### Cross-Platform API Client

@@ -114,7 +114,7 @@ Order rationale: item 1 produces the images every other stack-3 check needs and 
 ## 3. Other PROVISIONAL rows in the changelog (not in the request list)
 Same rebuild-dependent family as 2.1-2.3: D7/UI-D1..D8 (2.2); TRUSTED_PROXIES hardening (compose rendered only, never brought up as a real stack: verify with 2.1 + 2.12); S3 on other implementations than Garage (CAT-S3-LIVE-2, S3-FU-1..3); Android/TV full banks; Tauri SSRF/confirm-on-URL-change (2.10); the "remaining landed series" with no live rerun (login/validator, CAT-001..021, smart collections, converter, FTP CopyFile with no live-NAS run). Their verifying commands: UNKNOWN per series; each needs a named live check before it can be promoted.
 
-## 4. v2.4.1 release checklist
+## 4. v2.4.1 release checklist (v2.4.2 reuses it: substitute `2.4.2` and `v2.4.2` for the version and tag, and add the rows below)
 
 Preconditions (CONTINUATION Rev 18 plan; constitution 11.4.290/.40/.185): a "production" claim needs the PROVISIONAL items VERIFIED, the full-suite retest, and 11.4.185 manual QA. v2.4.1 may still ship as another labelled pre-release (release class pre-release is provisional-eligible) if some rows stay PROVISIONAL, with the changelog listing VERIFIED, PROVISIONAL, REOPENED, OVERDUE separately. Note: rows that were due "before the v2.4.0 tag" and still unverified are OVERDUE at the next tag and must be labelled `verification OVERDUE` (CHANGELOG OVERDUE section).
 
@@ -133,3 +133,15 @@ Preconditions (CONTINUATION Rev 18 plan; constitution 11.4.290/.40/.185): a "pro
 - Not run, not measured: nothing in this document was executed. Statuses are as recorded in the cited files at `85e548df`; mismatches (the 2026-11-11 SMB-FU-5 live run vs. "held" text; the existence of `docs/qa/live-rerun-20261111/`) are flagged, not resolved.
 - Commands are quoted from repository files; scratch paths named in CONTINUATION (for example `ui-d1.nNlTmm`, `sonar-scan-nefe8O`, `tauriqa.hw0Kco`) may no longer exist.
 - Weight and ordering are the author's estimate from script contents, not measurements.
+
+
+## 5. v2.4.2 additions (prep branch `release/v2.4.2-prep`)
+
+| Row | Pending job | Evidence goes to |
+|---|---|---|
+| SonarQube run6 on the v2.4.2 tag | Re-run per `docs/qa/sonarqube-20261111/run5/README.md`; expect api gate OK and web gate OK | `docs/qa/sonarqube-<date>/run6/` |
+| 11.4.40 full-suite retest of the tag | Go, web, desktop, wizard, cargo, Android; the partial retest of `563617b1` (Go about 60 packages, web 2585 pass / 14 fail, all failures pre-existing) does not count; register the 6 Go + 14 web pre-existing failures by name | `docs/qa/` |
+| Cover-art SSRF N>=3 and production-client leg | `docs/qa/coverart/run.sh` three times | `docs/qa/coverart/results/` |
+| Web FU-3 paint order | Real browser (Playwright) check of HistoryDrawer backdrop stacking | `docs/qa/` |
+| Release checker on GNU coreutils | Run the checker test suite on a host with GNU `sha256sum` | `docs/qa/` |
+| Live UI QA with Vision | Needs a validated llmctl `vision` profile (start gate hung ~80 s, cause UNCONFIRMED) | `docs/qa/` |

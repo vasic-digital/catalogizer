@@ -182,11 +182,54 @@ that receives only the prompt <code>continue</code> MUST read this file
 first, then <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>, then resume the
 §11.4.126 loop with the steps in "RESUME ORDER".</p>
 </blockquote>
-<p><strong>Revision:</strong> 19 <strong>Last modified:</strong>
-2026-11-11 <strong>Exports:</strong> <code>CONTINUATION.html</code> /
-<code>CONTINUATION.pdf</code> regenerated at Rev 19 with
+<p><strong>Revision:</strong> 20 <strong>Last modified:</strong>
+2026-11-12 <strong>Exports:</strong> <code>CONTINUATION.html</code> /
+<code>CONTINUATION.pdf</code> regenerated at Rev 20 with
 <code>pandoc -s</code> (HTML) and <code>weasyprint</code> (PDF) from
 this file; this <code>.md</code> is authoritative.</p>
+<h2
+id="0000-rev-20-delta-since-rev-19-main--1538ef19-release-prep-branch-releasev242-prep">0.000
+Rev 20 delta (since Rev 19; main = <code>1538ef19</code>; release prep
+branch <code>release/v2.4.2-prep</code>)</h2>
+<ul>
+<li><strong>v2.4.2 content is prepared, not tagged, not pushed.</strong>
+Branch <code>release/v2.4.2-prep</code> (merged up to <code>main</code>
+<code>1538ef19</code>) bumps every product version to 2.4.2 (Android
+<code>versionCode</code> 8, Android TV 10) and adds <code>[2.4.2]</code>
+to <code>docs/CHANGELOG.md</code> with VERIFIED / PROVISIONAL / REOPENED
+/ OVERDUE separate. <code>v2.4.1</code> is already tagged. Release
+class: pre-release, NOT production-ready.</li>
+<li>Landed on <code>main</code> since Rev 19 (all PROVISIONAL-DONE):
+cover-art SSRF live test (CAT-QA-COVERART-1), release-consistency
+checker <code>scripts/release/check_release_consistency.sh</code> plus
+N1-N5 and F1-F5 hardening (137 tests, 76/76 mutants reported; GNU
+<code>sha256sum</code> unexercised), web Sonar fixes (CAT-QA-SONAR-7 and
+FU-1..7; Enter-to-toggle restored; FU-3 browser paint-order check owed),
+SonarQube run4 (on <code>v2.4.1</code>) and run5 (on
+<code>563617b1</code>: api gate OK 687 open unchanged, web gate OK, 13
+smells cleared, web open 351 -&gt; 338; static only).</li>
+<li>Partial retest of <code>563617b1</code> as reported to me: Go about
+60 packages; web 2585 pass / 14 fail; all 6 Go + 14 web failures also
+fail on <code>v2.4.1</code> (pre-existing); 1 load-flaky stress test;
+desktop / wizard / cargo not run. The log is not committed and the
+failing test names are not in the repo: register them from the log. This
+is NOT the 11.4.40 retest of the tag.</li>
+<li>Owed / OVERDUE: 11.4.40 full-suite retest of the tag; 11.4.185
+manual QA; live UI QA with Vision (llmctl <code>vision</code> start gate
+hung about 80 s on this host, root cause UNCONFIRMED, no Vision
+validation PASS exists); Anton SMB runs 2 and 3 (N=1 &lt; N&gt;=3);
+stack rebuild from the tag; Sonar scan of the tag; GNU
+<code>sha256sum</code> exercise; FU2-1..4 nits. Synology stays SKIP
+<code>hardware_not_present</code>.</li>
+<li>Next steps: independent review of the prep branch (11.4.209
+substrate), merge to <code>main</code> fast-forward (11.4.288), run the
+plan in <code>docs/PROVISIONAL_VERIFICATION_PLAN.md</code> section 4,
+then decide the tag <code>v2.4.2</code> (pre-release).</li>
+<li>Not verified while writing Rev 20: upstream parity of
+<code>main</code>, whether any stack 3 container is running, and whether
+the prep branch has been pushed anywhere (it has not been by this
+change).</li>
+</ul>
 <h2
 id="000-rev-19-delta-since-rev-18-main--1397d5b9-release-prep-branch-releasev241-prep">0.00
 Rev 19 delta (since Rev 18; main = <code>1397d5b9</code>; release prep
