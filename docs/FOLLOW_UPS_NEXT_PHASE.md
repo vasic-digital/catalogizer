@@ -2160,3 +2160,7 @@ WP03R3-F1..F7 addressed (F6 = heading moved above). Residual, UNCONFIRMED or owe
 - WP03R3FU-5 (minor): refuse `--out` that is not a regular file or absent (FIFO/device/directory) before opening; a FIFO currently hangs with no verdict.
 - WP03R3FU-6 (minor): tests killing X2 (control char in `target_id` unsanitised) and X3 (control char reaching stdout `reason:`, e.g. `tests_total=3\x01`); correct the wrong "equivalent mutant" comment in mutation_check_no_worse_gate.sh.
 - WP03R3FU-7 (minor): assert `new_notpass_on_baseline_set` and `issue-count-higher` for baseline PASS turned SKIPPED/INCONCLUSIVE (mutant X8: NNOTPASS counts only FAIL).
+
+### D9SR3 follow-up round (fix/wp03-d9s-fu; PROVISIONAL, SQLite integration level, not independently reviewed)
+- D9SR3-F1, F2, F4: addressed on branch `fix/wp03-d9s-fu` (F1 `ok==true` assertion; F2 `TestD9SR3_WrongPasswordCountsOnInactiveAccounts`; F4 audit event written after the password check, one event per attempt, details `account not loginable: invalid password` / `account not loginable: password correct`). Six own mutants killed (M1..M6). D9SR3-F3 (timing) and F5 (citation) remain open as separate items.
+- D9SR3-FU-A (nit, UNCONFIRMED): the F4 audit details strings are now matched literally by the test; any report that groups `failed_login_inactive` by its old details text `account locked or disabled` needs the new wording. No such consumer was searched for beyond `catalog-api/services`.

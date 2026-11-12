@@ -170,8 +170,8 @@ func TestD9SR3_NullLockPermissionsResolve(t *testing.T) {
 	_, err := e.sqlDB.Exec(`UPDATE users SET is_locked = NULL WHERE id = ?`, id)
 	require.NoError(t, err)
 	ok, err := e.repo.HasPermission(context.Background(), id, "admin_all")
-	_ = ok
 	require.NoError(t, err, "permission resolution must tolerate NULL is_locked")
+	assert.True(t, ok, "a NULL is_locked row is not locked: its admin permission must resolve to true (D9SR3-F1)")
 }
 
 // R3-1: suspension counts usable admins consistently with NULL-lock peers.
@@ -185,4 +185,57 @@ func TestD9SR3_LastAdminGuardWithNullLockPeer(t *testing.T) {
 	require.NoError(t, e.repo.SetSuspended(a, true))
 	// now b is the last usable admin: must be refused
 	assert.ErrorIs(t, e.repo.SetSuspended(b, true), repository.ErrLastAdmin)
+}
+
+// D9SR3-F2: a wrong password on a suspended / timed-locked / deactivated account still
+// counts as a failed attempt (exactly +1); the correct password does not.
+func TestD9SR3_WrongPasswordCountsOnInactiveAccounts(t *testing.T) {
+	cases := []struct{ name, setup string }{
+		{"suspended", `UPDATE users SET is_locked = 1, locked_until = NULL WHERE id = ?`},
+		{"timed lock", `UPDATE users SET is_locked = 1, locked_until = '2999-01-01 00:00:00' WHERE id = ?`},
+		{"deactivated", `UPDATE users SET is_active = 0 WHERE id = ?`},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			e := newD9sEnv(t)
+			id := e.mkUser(t, "counted", 2)
+			_, err := e.sqlDB.Exec(tc.setup, id)
+			require.NoError(t, err)
+			count := func() int {
+				var n int
+				require.NoError(t, e.sqlDB.QueryRow(`SELECT failed_login_attempts FROM users WHERE id = ?`, id).Scan(&n))
+				return n
+			}
+			before := count()
+			_, werr := e.login("counted", "wrong-password-xx")
+			assert.ErrorIs(t, werr, ErrInvalidCredentials)
+			assert.Equal(t, before+1, count(), "wrong password must raise failed_login_attempts by exactly 1")
+			_, _ = e.login("counted", d9sPw)
+			assert.Equal(t, before+1, count(), "the correct password must not raise failed_login_attempts")
+		})
+	}
+}
+
+// D9SR3-F4: the failed_login_inactive audit event is written AFTER the password check and
+// carries its outcome; exactly one event per attempt.
+func TestD9SR3_InactiveAuditWrittenWithOutcome(t *testing.T) {
+	e := newD9sEnv(t)
+	id := e.mkUser(t, "audited", 2)
+	_, err := e.sqlDB.Exec(`UPDATE users SET is_locked = 1, locked_until = NULL WHERE id = ?`, id)
+	require.NoError(t, err)
+	type ev struct {
+		uid          int
+		typ, details string
+	}
+	var got []ev
+	e.svc.audit = func(uid int, typ, ip, ua, details string) { got = append(got, ev{uid, typ, details}) }
+
+	_, _ = e.login("audited", "wrong-password-xx")
+	require.Len(t, got, 1, "exactly one audit event per attempt")
+	assert.Equal(t, ev{id, "failed_login_inactive", "account not loginable: invalid password"}, got[0])
+
+	got = nil
+	_, _ = e.login("audited", d9sPw)
+	require.Len(t, got, 1, "exactly one audit event per attempt")
+	assert.Equal(t, ev{id, "failed_login_inactive", "account not loginable: password correct"}, got[0])
 }

@@ -137,11 +137,14 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	// gets the same answer as for a wrong password or an unknown user, so the
 	// state cannot be used to probe which usernames exist (D9S-R3-4).
 	if !user.CanLogin() {
-		s.auditEvent(user.ID, "failed_login_inactive", ipAddress, userAgent, "account locked or disabled")
+		// The audit event is written after the password check so that it records the outcome
+		// (D9SR3-F4); exactly one event per attempt.
 		if ok, _ := CheckPassword(req.Password, user.Salt, user.PasswordHash); !ok {
 			s.userRepo.IncrementFailedLoginAttempts(user.ID)
+			s.auditEvent(user.ID, "failed_login_inactive", ipAddress, userAgent, "account not loginable: invalid password")
 			return nil, ErrInvalidCredentials
 		}
+		s.auditEvent(user.ID, "failed_login_inactive", ipAddress, userAgent, "account not loginable: password correct")
 		if user.IsAccountLocked() {
 			return nil, lockedError(user)
 		}
