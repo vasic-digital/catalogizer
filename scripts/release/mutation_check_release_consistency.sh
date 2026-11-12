@@ -40,7 +40,7 @@ MUTANTS=(
         inv = False
         continue|||    if not isf and re.match(r"^#{1,3} ", ln):
         continue'
-'sha mismatch not counted|||S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)"|||sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)"'
+'sha mismatch not counted|||S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)" ;;|||sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)" ;;'
 'sha missing counted unverifiable|||S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (missing/unreadable, not gitignored)"|||S_UNV=$((S_UNV+1)); sawfail=1'
 'sha ignored file counted as fail|||if git -C "$REPO" check-ignore -q -- "$d/$name"; then|||if false; then'
 'FAIL verdict exits 0|||echo "VERDICT: FAIL $SUMMARY"; exit 1|||echo "VERDICT: FAIL $SUMMARY"; exit 0'
@@ -154,6 +154,20 @@ MUTANTS=(
 'waiver: PASS-WITH-WAIVERS not distinct|||if [ "$W_APPLIED" -gt 0 ]; then|||if false; then'
 'waiver: unused waiver not listed|||echo "UNUSED-WAIVER  $key: ${WV[$key]}"|||:'
 'waiver: whitespace fields not trimmed|||for i in "${!F[@]}"; do F[i]="$(trim "${F[i]}")"; done|||:'
+'I-2 mismatch waivable again|||S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)" ;;|||if waived "bad-entry|$d|$name" "$d/$name (checksum mismatch)"; then sawwaived=1; else S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)"; fi ;;'
+'I-1 dirty tree check removed|||  if [ -n "$dirty" ]; then|||  if false; then'
+'I-1 git status failure not blind|||  if ! dirty="$(git -C "$REPO" status|||  if false && ! dirty="$(git -C "$REPO" status'
+'I-1 status without literal pathspec|||status --porcelain=v1 -z --untracked-files=no -- ":(literal)$d"|||status --porcelain=v1 -z --untracked-files=no -- "nonexistent-$d"'
+'I-1 index changes ignored (diff vs worktree only)|||status --porcelain=v1 -z --untracked-files=no|||diff --name-only -z --'
+'M-2 control char token not blind|||CTRL) note_blind|||CTRL) : note_blind'
+'M-2 helper does not flag control chars|||if re.search(r"[\x00-\x1f\x7f]", tok):|||if False:'
+'RV2-1 python counts untracked manifests|||tmf = {f for f in tracked if is_mf|||tmf = {f for f in files if is_mf'
+'RV2-2 is_evidence on raw spelling|||if [ "$found" = 0 ] && is_evidence "$evrel"; then|||if [ "$found" = 0 ] && is_evidence "$q"; then'
+'RV2-3 today pinned in the past|||today="${RELCHK_TODAY:-$(date +%F)}"|||today="0000-00-00"'
+'RV2-4 manifest walk-up depth 2|||[ "$guard" -lt 500 ]|||[ "$guard" -lt 2 ]'
+'RV2-5 waiver key uses raw dir|||key="$k|${F[1]:-}|${F[2]:-}"|||key="$k|${F[1]:-}/|${F[2]:-}"'
+'RV2-6 waiver HEAD check without literal|||if ! git -C "$REPO" diff --quiet HEAD -- ":(literal)$rel" 2>/dev/null; then|||if ! git -C "$REPO" diff --quiet HEAD -- "nonexistent-$rel" 2>/dev/null; then'
+'RV2-7 prefix dir itself not evidence|||[[ "$1/" == "$pre"* ]] && return 0|||[[ "$1" == "$pre"* ]] && return 0'
 'help has no VERDICT|||usage; echo "VERDICT: HELP"; exit 0|||usage; exit 0'
 )
 

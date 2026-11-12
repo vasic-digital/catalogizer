@@ -410,6 +410,9 @@ for ln in vlines:
         t = tok.strip()
         if "/" not in t:
             continue
+        if re.search(r"[\x00-\x1f\x7f]", tok):
+            print(f"CTRL\t{tok}")
+            continue
         if re.search(r"[\s*?<>${}|\\=(),;\"']", t) or re.match(r"^[a-z][a-z0-9+.-]*://", t) \
                 or t.startswith(("/", "~", "-")):
             print(f"SKIP\t{tok.strip()}")
@@ -437,6 +440,7 @@ PY
       SECTION) nsec=$((nsec+1)); SECTION_USED="$a" ;;
       PATH) paths+=("$a") ;;
       SKIP) skips+=("$a") ;;
+      CTRL) note_blind "VERIFIED token contains a control character: $(printf '%q' "$a")" ;;
       END) nend=$((nend+1)); endp="$a"; ends="$b" ;;
     esac
     [ -z "$kind" ] || lastkind="$kind"
@@ -615,6 +619,15 @@ check_manifest_dir() {
   if [ ! -d "$REPO/$d" ] || [ -z "$mfs" ]; then
     note_blind "manifest directory $(printf '%q' "$d") is missing or has no tracked manifest"; return
   fi
+  # I-1: a clone sees HEAD, not the index or the working tree. Any tracked file under the covered tree
+  # (manifests included) that is staged-but-uncommitted, modified or deleted makes this verdict unprovable.
+  local dirty
+  if ! dirty="$(git -C "$REPO" status --porcelain=v1 -z --untracked-files=no -- ":(literal)$d" 2>/dev/null)"; then
+    note_blind "git status failed for $(printf '%q' "$d"); cannot prove it matches HEAD"; return
+  fi
+  if [ -n "$dirty" ]; then
+    note_blind "manifest tree $(printf '%q' "$d") has changes that are not committed (index or working tree differ from HEAD): $(printf '%s' "$dirty" | tr '\0' '\n' | head -3 | tr '\n' ';')"; return
+  fi
   while IFS= read -r mf; do
     [ -n "$mf" ] || continue
     # F4: manifest entries must stay inside the manifest's directory.
@@ -656,8 +669,9 @@ check_manifest_dir() {
         case "$status" in
           OK) S_OK=$((S_OK+1)) ;;
           FAILED)
-            if waived "bad-entry|$d|$name" "$d/$name (checksum mismatch)"; then sawwaived=1
-            else S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)"; fi ;;
+            # I-2: a checksum MISMATCH is tampering or corruption and is never waivable; bad-entry
+            # waivers cover only a manifest entry whose file is missing.
+            S_FAIL=$((S_FAIL+1)); sawfail=1; echo "SHAFAIL  $d/$name (checksum mismatch)" ;;
           *)
             if git -C "$REPO" check-ignore -q -- "$d/$name"; then
               S_UNV=$((S_UNV+1)); sawunv=1; echo "UNVERIFIABLE-FROM-CLONE  $d/$name (gitignored, absent/unreadable)"
