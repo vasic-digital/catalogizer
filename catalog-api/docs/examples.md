@@ -696,8 +696,7 @@ Response:
 ```json
 {
   "success": false,
-  "error": "File not found",
-  "details": "file not found"
+  "error": "File not found"
 }
 ```
 
@@ -711,8 +710,7 @@ Response:
 ```json
 {
   "success": false,
-  "error": "Invalid request parameters",
-  "details": "min_size must be a valid number"
+  "error": "Invalid request parameters"
 }
 ```
 

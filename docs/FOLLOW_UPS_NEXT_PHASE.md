@@ -1916,3 +1916,11 @@ Reviewer-surviving mutants / findings (Queued, minor): OPA-1 no test for Sliding
 
 ## PXF23 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups
 Reviewer follow-ups (Queued): PXF23-R1 (minor, source) collection_handler.go:353 verifyRules drops client-correctable smartrules.ValidationError text (put it in message like parseSmartRules); same for gin binding messages. PXF23-R2 health test must marshal whole ComponentHealth/response (mutant Latency: err.Error() survives). PXF23-R3 leak test must check response headers (X-Error-Detail mutant survives). PXF23-R4 test that error is actually logged (zap observer; helper and health log-nothing mutants survive). PXF23-R5 extend PXF23-F3 list by file: user_handler.go:172,177 (raw DB error in details on 500), middleware/input_validation.go:363, auth_handler.go:39,59,76,203, main.go:1306,1337, plus err.Error() in message/error in playback(8), scan(6), playlist(5), service_handlers(3), smb_discovery(3), conversion, asset, copy handlers. PXF23-R6 docs: catalog-api/docs/README.md:226, examples.md:700,715 still show general `details`. UNCONFIRMED: submodules/catalogizer_api_client_ts reads of `details`.
+
+## PXF23-R landed (2026-11-12, branch fix/pxf23-r; CAT-PXF23-R; PROVISIONAL, review owed)
+- PXF23-R1 LANDED: `verifyRules` puts the smartrules `ValidationError` text into the 400 message (like parseSmartRules); non-validation errors stay generic 500. Tests `TestVerifyRules_*` (RED observed first). Gin binding messages NOT changed (UNCONFIRMED safe fixed format; binding text can include Go field/type names and raw values) - stays generic, documented here, still Queued.
+- PXF23-R2 LANDED: `TestCheck_PingErrorNotInAnyResponseField` marshals the whole ComponentHealth and HealthCheckResponse (mutant `Latency: err.Error()` dies).
+- PXF23-R3 LANDED: `TestSendErrorResponse_HeadersDoNotLeakErrorText` (mutant `X-Error-Detail` dies).
+- PXF23-R4 LANDED: zap observer tests for helper (message, status, request_id, error) and health (mutants "logs nothing" die).
+- PXF23-R5 remains Queued (not in this task).
+- PXF23-R6 LANDED: catalog-api/docs/README.md and docs/examples.md no longer show a general `details` field.

@@ -3,6 +3,7 @@ package metrics
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -11,6 +12,10 @@ import (
 	_ "github.com/mutecomm/go-sqlcipher"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest/observer"
+
+	"catalogizer/internal/logging"
 )
 
 // openHealthyDB opens an in-memory SQLite database with MaxOpenConns configured
@@ -380,4 +385,40 @@ func TestCheckDatabase_PingErrorNotLeaked(t *testing.T) {
 	assert.Equal(t, HealthStatusUnhealthy, result.Status)
 	assert.Equal(t, "Database ping failed", result.Message)
 	assert.NotContains(t, result.Message, "sql: database is closed")
+}
+
+// CAT-PXF23-R R2: the WHOLE serialised health response (every field, not only Message) is free of the ping error text.
+func TestCheck_PingErrorNotInAnyResponseField(t *testing.T) {
+	sqlDB, err := sql.Open("sqlite3", ":memory:")
+	require.NoError(t, err)
+	sqlDB.Close()
+	hc := NewHealthChecker(database.WrapDB(sqlDB, database.DialectSQLite), "1.0.0")
+
+	comp, err := json.Marshal(hc.checkDatabase(context.Background()))
+	require.NoError(t, err)
+	full, err := json.Marshal(hc.Check(context.Background()))
+	require.NoError(t, err)
+	for _, body := range []string{string(comp), string(full)} {
+		assert.NotContains(t, body, "database is closed")
+		assert.NotContains(t, body, "sql:")
+		assert.Contains(t, body, "Database ping failed")
+	}
+}
+
+// CAT-PXF23-R R4: the ping failure is logged server-side (the client body no longer carries it).
+func TestCheckDatabase_PingErrorLoggedServerSide(t *testing.T) {
+	core, logs := observer.New(zap.ErrorLevel)
+	prev := logging.Logger
+	logging.Logger = zap.New(core)
+	t.Cleanup(func() { logging.Logger = prev })
+
+	sqlDB, err := sql.Open("sqlite3", ":memory:")
+	require.NoError(t, err)
+	sqlDB.Close()
+	hc := NewHealthChecker(database.WrapDB(sqlDB, database.DialectSQLite), "1.0.0")
+	hc.checkDatabase(context.Background())
+
+	require.Equal(t, 1, logs.Len())
+	assert.Equal(t, "Database ping failed", logs.All()[0].Message)
+	assert.Contains(t, logs.All()[0].ContextMap()["error"], "database is closed")
 }
