@@ -935,7 +935,7 @@ func TestConfigurationWizardService_CreateConfigurationFile(t *testing.T) {
 			name: "with template param",
 			params: map[string]interface{}{
 				"file_path": tmpDir + "/template_config.json",
-				"template":  "basic",
+				"template":  "config_template.json",
 			},
 			session: &models.WizardSession{
 				Configuration: map[string]interface{}{
@@ -1547,20 +1547,15 @@ func listeningPort(t *testing.T) int {
 	return ln.Addr().(*net.TCPAddr).Port
 }
 
-// Characterization (SonarQube go:S3923): the "template" param must not change
-// the written file, since template loading is not implemented.
-func TestConfigurationWizardService_CreateConfigurationFile_TemplateParamDoesNotChangeOutput(t *testing.T) {
+// CAT-QA-SONAR-5 (supersedes the go:S3923 characterization that pinned the bug):
+// a declared template that does not exist is an error and writes nothing.
+func TestConfigurationWizardService_CreateConfigurationFile_UnknownTemplateIsError(t *testing.T) {
 	service := NewConfigurationWizardService(nil)
 	tmpDir := t.TempDir()
 	session := &models.WizardSession{Configuration: map[string]interface{}{"db_type": "sqlite"}}
 
-	assert.NoError(t, service.createConfigurationFile(map[string]interface{}{"file_path": tmpDir + "/a.json"}, session))
-	assert.NoError(t, service.createConfigurationFile(map[string]interface{}{"file_path": tmpDir + "/b.json", "template": "basic"}, session))
-
-	a, err := os.ReadFile(tmpDir + "/a.json")
-	assert.NoError(t, err)
-	b, err := os.ReadFile(tmpDir + "/b.json")
-	assert.NoError(t, err)
-	assert.Contains(t, string(a), "sqlite")
-	assert.Equal(t, string(a), string(b))
+	err := service.createConfigurationFile(map[string]interface{}{"file_path": tmpDir + "/b.json", "template": "basic"}, session)
+	assert.Error(t, err)
+	_, statErr := os.Stat(tmpDir + "/b.json")
+	assert.True(t, os.IsNotExist(statErr))
 }
