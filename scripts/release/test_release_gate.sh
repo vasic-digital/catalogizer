@@ -19,7 +19,7 @@ HA="$(printf 'a%.0s' {1..64})"; HB="$(printf 'b%.0s' {1..64})"
 setup() { D="$(mktemp -d "$ROOT/c.XXXXXX")"
   printf 'product=opi5\ntarget_id=SER123\nconnected=yes\nread_from=target\nkind=physical\nbuild_sha256=%s\n' "$HB" >"$D/hw"
   printf 'product=opi5\nsuite=full\ncomplete=yes\ntests_total=3\ntests_reported=3\nverdicts_sha256=%s\n' "$HA" >"$D/live"
-  printf 'verdict=NO-WORSE-PROVEN\nnew_verdicts_sha256=%s\nboard=SER123\nsuite=full\nimage_new=system.img 1.1 %s\n' "$HA" "$HB" >"$D/cmp"; }
+  printf 'schema=image_no_worse/1\nverdict=NO-WORSE-PROVEN\nreasons=\nnew_verdicts_sha256=%s\nboard=SER123\nsuite=full\nimage_new=system.img 1.1 %s\nbaseline_notpass=1\nnew_total=3\nnew_notpass_on_baseline_set=0\nlost=\ntargets_missing=\ndiff=t1 FAIL PASS\n' "$HA" "$HB" >"$D/cmp"; }
 run() { "$GATE" --product opi5 --hardware-record "$D/hw" --live-run-record "$D/live" --comparison-record "$D/cmp" --out "$D/gate" "$@"; }
 expect() { local label="$1" rc="$2" state="$3"; shift 3; local out got
   out="$(run "$@" 2>&1)"; got=$?
@@ -74,6 +74,35 @@ grep -qx 'state=BLIND' "$D/gate" && ok || bad "unknown verdict left stale RELEAS
 setup; echo "state=RELEASABLE" >"$D/gate"; "$GATE" --bogus --out "$D/gate" >/dev/null 2>&1
 grep -qx 'state=BLIND' "$D/gate" && ok || bad "usage error left stale RELEASABLE"
 setup; if "$GATE" --product opi5 --hardware-record "$D/hw" --live-run-record "$D/live" --comparison-record "$D/cmp" --out "$D/nodir/g" >/dev/null 2>&1; then bad "unwritable --out exited 0"; else ok; fi
+
+# ---- review round 3 ----
+HC="$(printf 'c%.0s' {1..64})"
+setup; sed -i '/^schema=/d' "$D/cmp"; expect "comparison schema absent (I-6)" 21 BLOCKED-NO-BASELINE
+setup; sed -i 's/^schema=.*/schema=image_no_worse\/2/' "$D/cmp"; expect "comparison schema wrong (I-6)" 21 BLOCKED-NO-BASELINE
+setup; sed -i '/^new_total=/d' "$D/cmp"; expect "comparison new_total absent (I-6)" 21 BLOCKED-NO-BASELINE
+setup; sed -i 's/^new_total=.*/new_total=2/' "$D/cmp"; expect "comparison new_total != tests_total: truncated (I-6)" 21 BLOCKED-NO-BASELINE
+setup; sed -i 's/^new_total=.*/new_total=x/' "$D/cmp"; expect "comparison new_total non-integer (I-6)" 21 BLOCKED-NO-BASELINE
+setup; sed -i 's/^image_new=.*/& extra/' "$D/cmp"; expect "image_new extra field (I-6)" 21 BLOCKED-NO-BASELINE
+setup; echo "image_new=system.img 1.1 $HB" >>"$D/cmp"; expect "duplicate image_new line (M-d)" 21 BLOCKED-NO-BASELINE
+setup; echo "image_new=system.img 1.1 $HC" >>"$D/cmp"; echo "build_sha256=$HC" >>"$D/hw"; expect "same file with two shas (M-d)" 21 BLOCKED-NO-BASELINE
+setup; sed -i '/^lost=/d' "$D/cmp"; expect "NO-WORSE record lacks lost= (M-a)" 21 BLOCKED-NO-BASELINE
+setup; sed -i 's/^lost=.*/lost=t9(FAIL)/' "$D/cmp"; expect "NO-WORSE record with lost (M-a)" 21 BLOCKED-NO-BASELINE
+setup; sed -i 's/^reasons=.*/reasons=baseline-pass-lost/' "$D/cmp"; expect "NO-WORSE record with reasons (M-a)" 21 BLOCKED-NO-BASELINE
+setup; sed -i 's/^new_notpass_on_baseline_set=.*/new_notpass_on_baseline_set=5/' "$D/cmp"; expect "NO-WORSE with more not-pass (M-a)" 21 BLOCKED-NO-BASELINE
+setup; echo "diff=t2 PASS FAIL" >>"$D/cmp"; expect "NO-WORSE with PASS-lost diff (M-a)" 21 BLOCKED-NO-BASELINE
+# r2: legitimate multi-artifact build (target order differs from compared order) must pass
+setup; printf 'build_sha256=%s\n' "$HC" >>"$D/hw"; echo "image_new=boot.img 1.1 $HC" >>"$D/cmp"; expect "multi-artifact build (r2)" 0 RELEASABLE
+setup; sed -i "/^build_sha256=/d" "$D/hw"; printf 'build_sha256=%s\nbuild_sha256=%s\n' "$HC" "$HB" >>"$D/hw"; echo "image_new=boot.img 1.1 $HC" >>"$D/cmp"; expect "multi-artifact, target reordered (r2)" 0 RELEASABLE
+# r3: CR in a record value
+setup; sed -i 's/^kind=physical/kind=physical\r/' "$D/hw"; expect "CR in hardware value (r3)" 20 BLOCKED-NO-HARDWARE
+setup; sed -i 's/^board=SER123/board=SER123\r/' "$D/cmp"; expect "CR in comparison board (r3)" 21 BLOCKED-NO-BASELINE
+# M-c: --out may not be an input
+for f in hw live cmp; do setup; cp "$D/$f" "$D/$f.orig"
+  "$GATE" --product opi5 --hardware-record "$D/hw" --live-run-record "$D/live" --comparison-record "$D/cmp" --out "$D/$f" >/dev/null 2>&1; rc=$?
+  { [ "$rc" = 2 ] && cmp -s "$D/$f" "$D/$f.orig"; } && ok || bad "--out == $f must exit 2 and leave the input intact (rc=$rc)"; done
+setup; ln -s "$D/cmp" "$D/lnk"; cp "$D/cmp" "$D/cmp.orig"
+"$GATE" --product opi5 --hardware-record "$D/hw" --live-run-record "$D/live" --comparison-record "$D/cmp" --out "$D/lnk" >/dev/null 2>&1; rc=$?
+{ [ "$rc" = 2 ] && cmp -s "$D/cmp" "$D/cmp.orig"; } && ok || bad "--out symlink to an input must exit 2 (rc=$rc)"
 
 echo "release_gate tests: pass=$PASS fail=$FAIL"
 [ "$FAIL" = 0 ]

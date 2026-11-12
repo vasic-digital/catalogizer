@@ -148,5 +148,48 @@ grep -qx "baseline_verdicts_path=$D/b" "$D/rec" && grep -qx "new_verdicts_path=$
 setup; vd "$D/b" t1=PASS t2=FAIL; vd "$D/n" t1=FAIL t2=PASS
 expect "equal count: only baseline-pass-lost" 10 "reasons: baseline-pass-lost lost="
 
+# ---- review round 3 ----
+# I-7: verdict closed set is an exact match, not a substring
+setup; printf 't1\tPASS\nt2\tSKIPPED BLIND\nt3\tFAIL\n' >"$D/n"
+expect "I-7 new multi-word verdict is BLIND (new side)" 2 "BLIND"
+setup; printf 't1\tPASS\nt2\tSKIPPED BLIND\nt3\tFAIL\n' >"$D/b"; printf 't1\tPASS\nt2\tERROR\nt3\tFAIL\n' >"$D/n"
+expect "I-7 reviewer scenario baseline 'SKIPPED BLIND' vs new ERROR" 11 "INCOMPARABLE"
+setup; printf 't1\tPASS\nt2\tSKIPPED BLIND\nt3\tFAIL\n' >"$D/b"
+expect "I-7 baseline multi-word verdict is INCOMPARABLE" 11 "INCOMPARABLE"
+setup; printf 't1\tPASS\nt2\tPASS FAIL\nt3\tFAIL\n' >"$D/n"; expect "I-7 'PASS FAIL' on new side" 2 "BLIND"
+setup; printf 't1\tpass\nt2\tPASS\nt3\tFAIL\n' >"$D/n"; expect "I-7 lowercase verdict" 2 "BLIND"
+setup; printf 't1\tPASS \nt2\tPASS\nt3\tFAIL\n' >"$D/b"; expect "I-7 trailing space verdict (baseline)" 11 "INCOMPARABLE"
+setup; printf 't1\tPASS\t\nt2\tPASS\nt3\tFAIL\n' >"$D/n"; expect "I-7 extra empty third field" 2 "BLIND"
+# M-b: ids with comma, space or glob characters fail closed, never NO-WORSE-PROVEN
+for badid in 'a,b' 'a b' 'a*' 'a?' 'a[1]'; do
+  setup; printf '%s\tPASS\nt2\tPASS\nt3\tFAIL\n' "$badid" >"$D/n"; printf 't1\tPASS\nt2\tPASS\nt3\tFAIL\n' >"$D/b"
+  out="$(run 2>&1)"; rc=$?
+  { [ "$rc" = 2 ] && ! grep -q 'NO-WORSE-PROVEN' "$D/rec"; } && ok || bad "M-b new id '$badid': rc=$rc"
+  setup; printf '%s\tPASS\nt2\tPASS\nt3\tFAIL\n' "$badid" >"$D/b"
+  out="$(run 2>&1)"; rc=$?
+  { [ "$rc" = 11 ] && ! grep -q 'NO-WORSE-PROVEN' "$D/rec"; } && ok || bad "M-b baseline id '$badid': rc=$rc"
+  setup; printf '%s\n' "$badid" >"$D/tg"; out="$(run --targets "$D/tg" 2>&1)"; rc=$?
+  { [ "$rc" = 2 ] && ! grep -q 'NO-WORSE-PROVEN' "$D/rec"; } && ok || bad "M-b target id '$badid': rc=$rc"
+done
+# M-c: --out may not be an input (realpath), input stays intact
+for f in b n bm nm tg; do setup; echo t3 >"$D/tg"; cp "$D/$f" "$D/$f.orig"
+  "$CMP" --baseline-verdicts "$D/b" --new-verdicts "$D/n" --baseline-meta "$D/bm" --new-meta "$D/nm" --targets "$D/tg" --out "$D/$f" >/dev/null 2>&1; rc=$?
+  { [ "$rc" = 2 ] && cmp -s "$D/$f" "$D/$f.orig"; } && ok || bad "--out == $f: rc=$rc or input clobbered"; done
+setup; ln -s "$D/n" "$D/lnk"; cp "$D/n" "$D/n.orig"
+"$CMP" --baseline-verdicts "$D/b" --new-verdicts "$D/n" --baseline-meta "$D/bm" --new-meta "$D/nm" --out "$D/lnk" >/dev/null 2>&1; rc=$?
+{ [ "$rc" = 2 ] && cmp -s "$D/n" "$D/n.orig"; } && ok || bad "--out symlink to input: rc=$rc"
+# M-d: duplicate image lines / same file with two shas
+setup; printf 'image=system.img 1.1 %s\n' "$HB" >>"$D/nm"; expect "M-d duplicate image line" 11 "INCOMPARABLE"
+setup; printf 'image=system.img 1.1 %s\n' "$HC" >>"$D/nm"; expect "M-d same file two shas" 11 "INCOMPARABLE"
+setup; printf 'image=system.img 1.0 %s\n' "$HC" >>"$D/bm"; expect "M-d same file two shas (baseline)" 11 "INCOMPARABLE"
+# r1: multi-file image set, reordered self-compare is INCOMPARABLE (sort must stay)
+setup; printf 'image=boot.img 1.1 %s\n' "$HC" >>"$D/nm"
+{ printf 'board=orangepi-5\nharness=h1\nsuite=full\ncommand=run_suite.sh --all\n'; printf 'image=boot.img 1.1 %s\nimage=system.img 1.1 %s\n' "$HC" "$HB"; } >"$D/bm"
+expect "r1 reordered multi-file self-compare" 11 "INCOMPARABLE"
+# multi-file but genuinely different new image passes
+setup; printf 'image=boot.img 1.1 %s\n' "$HC" >>"$D/nm"; expect "multi-file differing set" 0 "NO-WORSE-PROVEN"
+# TOCTOU: record shas are those of the snapshot taken at start; the record verdict reflects the compared content
+setup; run >/dev/null; grep -q "^new_verdicts_sha256=$(sha256sum "$D/n" | cut -d' ' -f1)$" "$D/rec" && ok || bad "snapshot sha differs from input sha"
+
 echo "image_no_worse tests: pass=$PASS fail=$FAIL"
 [ "$FAIL" = 0 ]

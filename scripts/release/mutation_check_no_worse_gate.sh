@@ -28,7 +28,8 @@ $'cmp@@@R9 new meta image check dropped@@@NSET="$(meta_images "$NM")" || incompa
 $'cmp@@@R10 baseline meta image check dropped@@@BSET="$(meta_images "$BM")" || incomparable@@@BSET="$(meta_images "$BM")" || : incomparable'
 $'cmp@@@same-image check removed@@@[ "$NSET" != "$BSET" ] ||@@@true ||'
 $'cmp@@@I-2 identity compared with version@@@awk \'{print $3}\' | sort; }@@@awk \'{print $2 $3}\' | sort; }'
-$'cmp@@@unknown verdict word accepted@@@[[ "$VALID" == *" $v "* ]] ||@@@true ||'
+$'cmp@@@unknown verdict word accepted@@@*) LV_ERR="unknown verdict \'$v\' in $f"; return 1 ;; esac@@@*) ;; esac'
+$'cmp@@@I-7 verdict substring match@@@case "$v" in PASS|FAIL|INCONCLUSIVE|SKIPPED|BLIND|ERROR) ;;@@@case "$v" in *PASS*|*FAIL*|*INCONCLUSIVE*|*SKIPPED*|*BLIND*|*ERROR*) ;;'
 $'cmp@@@duplicate id accepted@@@[ -z "${arr[$id]+x}" ] ||@@@true ||'
 $'cmp@@@CR in verdict accepted@@@[[ "$line" == *$\'\\r\'* ]] && {@@@false && {'
 $'cmp@@@REGRESSED exits 0@@@emit REGRESSED 10@@@emit REGRESSED 0'
@@ -64,10 +65,29 @@ $'gate@@@gate record never written@@@} >"$OUT" 2>/dev/null@@@} >/dev/null 2>&1'
 $'gate@@@I-5 die leaves stale record@@@die() { echo "BLIND: $*" >&2; record BLIND "$*";@@@die() { echo "BLIND: $*" >&2; :;'
 $'gate@@@M-1 record write failure ignored@@@record "$1" "$3" || die "cannot write $OUT"@@@record "$1" "$3" || :'
 $'gate@@@build identity not recorded@@@sed \'s/^image_new=/build_identity=/\'@@@sed \'s/^image_new=/zz=/\''
+$'cmp@@@M-b unsafe id accepted (verdicts)@@@glob character)"; return 1 ;;@@@glob character)"; : ;;'
+$'cmp@@@M-b unsafe id accepted (targets)@@@blind "unsafe target id@@@: "unsafe target id'
+$'cmp@@@M-c out_clash disabled@@@o="$(realpath -m -- "$OUT" 2>/dev/null)" || return 0@@@o="__none__" || return 0'
+$'cmp@@@M-c clash not refused@@@if out_clash; then OUT_BAD="$OUT"; OUT=""; blind@@@if false; then OUT_BAD="$OUT"; OUT=""; blind'
+$'cmp@@@M-d duplicate image line accepted@@@[ "$(grep \'^image=\' "$1" | sort | uniq -d | grep -c \'\')" = 0 ] || return 1@@@true || return 1'
+$'cmp@@@M-d same file twice accepted@@@[ "$(grep \'^image=\' "$1" | awk \'{print $1}\' | sort | uniq -d | grep -c \'\')" = 0 ] || return 1@@@true || return 1'
+$'cmp@@@r1 image set not sorted@@@awk \'{print $3}\' | sort; }@@@awk \'{print $3}\'; }'
+$'gate@@@r2 target hash not sorted@@@cut -d= -f2- | sort)"\nif@@@cut -d= -f2-)"\nif'
+$'gate@@@r2 compared hash not sorted@@@awk \'{print $3}\' | sort)"\nif@@@awk \'{print $3}\')"\nif'
+$'gate@@@I-6 schema unchecked@@@[ "$(get "$CR" schema)" = "image_no_worse/1" ] ||@@@true ||'
+$'gate@@@I-6 truncated suite accepted@@@[ "$NT" = "$tt" ] && [ "$NT" = "$tr" ] ||@@@true ||'
+$'gate@@@I-6 image_new shape unchecked@@@[ "$(grep \'^image_new=\' "$CR" | grep -cvE \'^image_new=[^ ]+ [^ ]+ [0-9a-f]{64}$\')" = 0 ] ||@@@true ||'
+$'gate@@@M-d duplicate image_new accepted@@@[ "$(grep \'^image_new=\' "$CR" | sort | uniq -d | grep -c \'\')" = 0 ] ||@@@true ||'
+$'gate@@@M-d same file twice accepted@@@[ "$(grep \'^image_new=\' "$CR" | awk \'{print $1}\' | sort | uniq -d | grep -c \'\')" = 0 ] ||@@@true ||'
+$'gate@@@M-a lost/reasons/targets_missing unchecked@@@for k in reasons lost targets_missing; do@@@for k in reasons; do'
+$'gate@@@M-a not-pass count unchecked@@@"$NNP" -le "$BNP" ]]@@@"$NNP" -ge 0 ]]'
+$'gate@@@M-a PASS-lost diff unchecked@@@$2=="PASS" && $3!="PASS"@@@$2=="XX" && $3!="PASS"'
+$'gate@@@M-c clash not refused@@@if out_clash; then OUT_BAD="$OUT"; die@@@if false; then OUT_BAD="$OUT"; die'
+$'gate@@@M-c record clobbers input@@@if out_clash; then return 0; fi@@@if false; then return 0; fi'
 )
 # Equivalent (not run): row-count control needle (parser and grep -c cannot differ on accepted input); comparison
-# sha hex check (it must equal the already hex-validated live sha); image_new shape check (it must equal the hex-validated
-# target build set). Also: removing the explicit unreadable-targets / unreadable-new-meta guards - the follow-on
+# sha hex check (it must equal the already hex-validated live sha); gate new_total integer regex (the equality with the
+# validated tests_total catches it); the input snapshot (TOCTOU, not unit-testable: registered as follow-up WP03-6). Also: removing the explicit unreadable-targets / unreadable-new-meta guards - the follow-on
 # guards (empty targets => BLIND; unreadable meta => missing key => INCOMPARABLE) give the same outcome.
 mkdir -p "$ROOT/orig"; cp "$HERE/image_no_worse.sh" "$HERE/release_gate.sh" "$HERE/test_image_no_worse.sh" "$HERE/test_release_gate.sh" "$ROOT/orig/"
 fail=0; n=0

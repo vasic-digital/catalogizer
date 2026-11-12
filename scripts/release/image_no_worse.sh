@@ -29,11 +29,18 @@ set -u
 OUT=""
 # pre-scan --out so that even a usage error rewrites the record
 for ((i=1;i<=$#;i++)); do if [ "${!i}" = "--out" ]; then j=$((i+1)); OUT="${!j:-}"; fi; done
+# out_clash: succeeds (0) when --out realpath-resolves to any input file (M-c)
+out_clash() { local o f; [ -n "$OUT" ] || return 1; o="$(realpath -m -- "$OUT" 2>/dev/null)" || return 0
+  for f in "$BV0" "$NV0" "$BM0" "$NM0" "$TG0"; do
+    [ -n "$f" ] || continue
+    [ "$(realpath -m -- "$f" 2>/dev/null)" = "$o" ] && return 0
+  done; return 1; }
 blind() {
   echo "BLIND: $*" >&2
-  [ -z "$OUT" ] || printf 'schema=image_no_worse/1\nverdict=BLIND\nreasons=%s\n' "$*" >"$OUT" 2>/dev/null
+  { [ -z "$OUT" ] || out_clash; } || printf 'schema=image_no_worse/1\nverdict=BLIND\nreasons=%s\n' "$*" >"$OUT" 2>/dev/null
   echo "VERDICT: BLIND"; exit 2; }
 BV=""; NV=""; BM=""; NM=""; TG=""; TGSET=0
+BV0=""; NV0=""; BM0=""; NM0=""; TG0=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --baseline-verdicts) { [ $# -ge 2 ] && [ -n "$2" ]; } || blind "$1 needs a value"; BV="$2"; shift 2 ;;
@@ -46,9 +53,16 @@ while [ $# -gt 0 ]; do
   esac
 done
 [ -n "$NV" ] && [ -n "$NM" ] && [ -n "$BV" ] && [ -n "$BM" ] || blind "all four input files are required"
+BV0="$BV"; NV0="$NV"; BM0="$BM"; NM0="$NM"; TG0="$TG"
+if out_clash; then OUT_BAD="$OUT"; OUT=""; blind "--out $OUT_BAD resolves to an input file"; fi
+# TOCTOU: snapshot every input into a private dir; all later reads use the snapshot
+SNAP="$(mktemp -d)" || blind "cannot create snapshot dir"
+trap 'rm -rf -- "${SNAP:?}"' EXIT
+snap() { local src="$1" dst="$SNAP/$2"; if [ -r "$src" ] && [ -f "$src" ]; then cp -- "$src" "$dst" && printf '%s' "$dst" || printf '%s' "$src"; else printf '%s' "$src"; fi; }
+BV="$(snap "$BV0" bv)"; NV="$(snap "$NV0" nv)"; BM="$(snap "$BM0" bm)"; NM="$(snap "$NM0" nm)"
+[ "$TGSET" = 0 ] || TG="$(snap "$TG0" tg)"
 if [ -n "$OUT" ]; then : >"$OUT" 2>/dev/null || { echo "BLIND: cannot write --out $OUT" >&2; echo "VERDICT: BLIND"; exit 2; }; fi
 
-VALID=" PASS FAIL INCONCLUSIVE SKIPPED BLIND ERROR "
 declare -A BVD NVD
 # load_verdicts <file> <assoc-name>; sets LV_TOTAL, LV_ORDER; 0 ok, 1 malformed (LV_ERR)
 load_verdicts() {
@@ -60,7 +74,8 @@ load_verdicts() {
     [[ "$line" == *$'\t'* ]] || { LV_ERR="not TSV in $f: $line"; return 1; }
     id="${line%%$'\t'*}"; v="${line#*$'\t'}"
     [[ "$v" != *$'\t'* ]] && [ -n "$id" ] || { LV_ERR="bad row in $f: $line"; return 1; }
-    [[ "$VALID" == *" $v "* ]] || { LV_ERR="unknown verdict '$v' in $f"; return 1; }
+    case "$id" in *[[:space:],\*\?\[\]]*) LV_ERR="unsafe test id '$id' in $f (space, comma or glob character)"; return 1 ;; esac
+    case "$v" in PASS|FAIL|INCONCLUSIVE|SKIPPED|BLIND|ERROR) ;; *) LV_ERR="unknown verdict '$v' in $f"; return 1 ;; esac
     [ -z "${arr[$id]+x}" ] || { LV_ERR="duplicate test id '$id' in $f"; return 1; }
     # shellcheck disable=SC2004  # associative array: $id is required
     arr[$id]="$v"; LV_ORDER+=("$id"); n=$((n+1))
@@ -78,6 +93,8 @@ meta_get() { local c v; c="$(grep -c "^$2=" "$1")"; [ "$c" = 1 ] || return 1
 IMG_RE='^image=[^ ]+ [^ ]+ [0-9a-f]{64}$'
 meta_images() { local n bad; n="$(grep -c '^image=' "$1")"; [ "$n" -ge 1 ] || return 1
   bad="$(grep '^image=' "$1" | grep -cvE "$IMG_RE")"; [ "$bad" = 0 ] || return 1
+  [ "$(grep '^image=' "$1" | sort | uniq -d | grep -c '')" = 0 ] || return 1
+  [ "$(grep '^image=' "$1" | awk '{print $1}' | sort | uniq -d | grep -c '')" = 0 ] || return 1
   grep '^image=' "$1" | awk '{print $3}' | sort; }
 sha() { sha256sum -- "$1" | cut -d' ' -f1; }
 
@@ -87,8 +104,8 @@ write_record() { # verdict reasons lost newt missing-targets ; returns non-zero 
     echo "schema=image_no_worse/1"
     echo "verdict=$1"
     echo "reasons=$2"
-    echo "baseline_verdicts_path=$BV"
-    echo "new_verdicts_path=$NV"
+    echo "baseline_verdicts_path=$BV0"
+    echo "new_verdicts_path=$NV0"
     echo "baseline_verdicts_sha256=$( [ -r "$BV" ] && sha "$BV" || echo absent)"
     echo "new_verdicts_sha256=$(sha "$NV")"
     echo "baseline_meta_sha256=$( [ -r "$BM" ] && sha "$BM" || echo absent)"
@@ -160,6 +177,7 @@ if [ "$TGSET" = 1 ]; then
   ntg=0
   while IFS= read -r t || [ -n "$t" ]; do
     [ -n "$t" ] || continue
+    case "$t" in *[[:space:],\*\?\[\]]*) blind "unsafe target id '$t' (space, comma or glob character)" ;; esac
     ntg=$((ntg+1))
     if [ "${BVD[$t]:-}" = FAIL ] && [ "${NVD[$t]:-}" = PASS ]; then FLIPS="$FLIPS $t"; else MISSING="$MISSING${MISSING:+,}$t"; fi
   done <"$TG"
