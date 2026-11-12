@@ -2054,3 +2054,7 @@ RC3R4-4 (nit) retargeted symlink cited path gives FAIL (MISS) instead of BLIND; 
 - Go: attachEntityLinks degrades silently on a query error (leaves fields unset); add a log line / test for the error path.
 - Live Playwright of file->favourite->open-entity OWED (stack down).
 - UI-FAV-1b round-2 minors: attachEntityLinks has no chunking of its own (relies on the 200 row limit); `ORDER BY mf.is_primary DESC` NULL ordering differs on PostgreSQL (column is NOT NULL-defaulted, nit); no PostgreSQL run of the new query; bulk favourites API still default type.
+- SECQ-2 / WD-F1 / WD-F1a re-reproduction 2026-11-12 (evidence `docs/qa/secq2-repro-20261112/`, PROVISIONAL): result not-reproducible-with-evidence. 6 further repeats of the WD-F1a case (mode A reset, 2 MiB) all byte-identical (6/6 ok, detail recorded), both control needles fire. Proposal for the operator: close under section 11.4.90 `not-reproducible` (UNCONFIRMED whether the single 2026-11-05 CORRUPT was a read-back glitch). No fix written.
+- SECQ2WD-R1-1 (minor, process-doc): fix/wd-repro README must state the re-run used main f709b892, not the 2026-11-05 build where the single CORRUPT appeared (WriteFile gained HEAD size read-back since); operator weighs this before accepting a 11.4.90 not-reproducible closure.
+- SECQ2WD-R1-2 (minor, process-doc): record a target identity for the live run (hash of endpoint host, clean-tree note for the test binary) per 11.4.292(C)/11.4.289(D).
+- SECQ2WD-R1-3 (nit): "11 further identical attempts" is conservative; chaos3 mode-A 2 MB also ok (12).
