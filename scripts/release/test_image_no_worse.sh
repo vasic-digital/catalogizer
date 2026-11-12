@@ -13,6 +13,7 @@ ROOT="$(mktemp -d "$BASE/test.XXXXXX")" || exit 2
 case "$ROOT" in "$BASE"/test.*) ;; *) echo "odd ROOT" >&2; exit 2 ;; esac
 trap 'rm -rf "${ROOT:?}"' EXIT
 PASS=0; FAIL=0
+HA="$(printf 'a%.0s' {1..64})"; HB="$(printf 'b%.0s' {1..64})"; HC="$(printf 'c%.0s' {1..64})"
 ok() { PASS=$((PASS+1)); }
 bad() { FAIL=$((FAIL+1)); echo "  FAIL: $1"; }
 
@@ -22,7 +23,7 @@ meta() { # meta <file> <ver> <sha> [board] [harness] [suite] [command]
 vd() { local f="$1" kv; shift; : >"$f"; for kv in "$@"; do printf '%s\t%s\n' "${kv%%=*}" "${kv#*=}" >>"$f"; done; }
 
 setup() { D="$(mktemp -d "$ROOT/c.XXXXXX")"
-  meta "$D/bm" 1.0 aaaa; meta "$D/nm" 1.1 bbbb
+  meta "$D/bm" 1.0 "$HA"; meta "$D/nm" 1.1 "$HB"
   vd "$D/b" t1=PASS t2=PASS t3=FAIL
   vd "$D/n" t1=PASS t2=PASS t3=PASS t4=PASS; }
 run() { "$CMP" --baseline-verdicts "$D/b" --new-verdicts "$D/n" --baseline-meta "$D/bm" --new-meta "$D/nm" --out "$D/rec" "$@"; }
@@ -39,7 +40,7 @@ expect "golden-good" 0 "VERDICT: NO-WORSE-PROVEN" --targets "$D/tg"
 grep -q '^new_tests=t4$' "$D/rec" && ok || bad "new tests not reported separately"
 grep -q "^baseline_verdicts_sha256=$(sha256sum "$D/b" | cut -d' ' -f1)$" "$D/rec" && ok || bad "record lacks baseline sha"
 grep -q "^new_verdicts_sha256=$(sha256sum "$D/n" | cut -d' ' -f1)$" "$D/rec" && ok || bad "record lacks new sha"
-grep -q '^image_new=system.img 1.1 bbbb$' "$D/rec" && ok || bad "record lacks image identity"
+grep -qx "image_new=system.img 1.1 $HB" "$D/rec" && ok || bad "record lacks image identity"
 # control needle: counts equal independently known counts (3 baseline tests, 2 PASS)
 grep -q '^baseline_total=3$' "$D/rec" && grep -q '^baseline_pass=2$' "$D/rec" && ok || bad "control needle: counts wrong"
 
@@ -66,15 +67,15 @@ setup; : >"$D/b"
 expect "baseline empty" 11 "INCOMPARABLE-BASELINE-MISSING"
 setup; rm "$D/bm"
 expect "baseline meta missing" 11 "INCOMPARABLE-BASELINE-MISSING"
-setup; meta "$D/nm" 1.1 bbbb other-board
+setup; meta "$D/nm" 1.1 "$HB" other-board
 expect "different board" 11 "INCOMPARABLE"
-setup; meta "$D/nm" 1.1 bbbb orangepi-5 h2
+setup; meta "$D/nm" 1.1 "$HB" orangepi-5 h2
 expect "different harness" 11 "INCOMPARABLE"
-setup; meta "$D/nm" 1.1 bbbb orangepi-5 h1 other
+setup; meta "$D/nm" 1.1 "$HB" orangepi-5 h1 other
 expect "different suite" 11 "INCOMPARABLE"
-setup; meta "$D/nm" 1.1 bbbb orangepi-5 h1 full "run_suite.sh --some"
+setup; meta "$D/nm" 1.1 "$HB" orangepi-5 h1 full "run_suite.sh --some"
 expect "different command" 11 "INCOMPARABLE"
-setup; meta "$D/nm" 1.0 aaaa
+setup; meta "$D/nm" 1.0 "$HA"
 expect "same image identity as baseline" 11 "INCOMPARABLE"
 
 # malformed input => exit 2, never a pass
@@ -89,13 +90,63 @@ expect "new verdicts empty" 2 "BLIND"
 setup; rm "$D/n"
 expect "new verdicts missing" 2 "BLIND"
 setup; printf 'board=x\n' >"$D/nm"
-expect "new meta incomplete" 2 "BLIND"
+expect "new meta incomplete" 11 "INCOMPARABLE"
 setup; "$CMP" --bogus >/dev/null 2>&1; [ $? = 2 ] && ok || bad "unknown option must exit 2"
 setup; printf 't1\tPASS\r\nt2\tPASS\r\nt3\tPASS\r\n' >"$D/n"
 expect "CR in verdict file" 2 "BLIND"
 setup; printf 't1\r\tPASS\nt2\tPASS\nt3\tPASS\n' >"$D/n"
 expect "CR inside test id" 2 "BLIND"
 setup; vd "$D/n" t1=FAIL t2=PASS t3=PASS; if run >/dev/null 2>&1; then bad "REGRESSED exited 0"; else ok; fi
+
+# ---- review round 1 (I-1..I-5, M-1..M-4, M-6) ----
+metaraw() { printf '%s\n' "$@" >"$2"; }
+for k in board harness suite command; do
+  setup; sed -i "s/^$k=.*/$k=/" "$D/bm"; sed -i "s/^$k=.*/$k=/" "$D/nm"
+  expect "empty $k= on both sides" 11 "INCOMPARABLE"
+  setup; sed -i "/^$k=/d" "$D/nm"; expect "missing $k= in new meta" 11 "INCOMPARABLE"
+  setup; sed -i "/^$k=/d" "$D/bm"; expect "missing $k= in baseline meta" 11 "INCOMPARABLE"
+  setup; echo "$k=dup" >>"$D/nm"; expect "duplicate $k= (R1)" 11 "INCOMPARABLE"
+  setup; v="$(grep "^$k=" "$D/nm" | cut -d= -f2-)"; echo "$k=$v" >>"$D/nm"; echo "$k=$v" >>"$D/bm"; expect "duplicate identical $k= on both sides (R1)" 11 "INCOMPARABLE"
+done
+setup; sed -i 's/^board=.*/board=orangepi-5\r/' "$D/nm"; expect "CR in meta value" 11 "INCOMPARABLE"
+setup; sed -i 's/^board=.*/board=orangepi-5\r/' "$D/nm" "$D/bm"; expect "CR in meta value on both sides (M-7)" 11 "INCOMPARABLE"
+setup; sed -i 's/^image=.*/image=foo/' "$D/nm"; sed -i 's/^image=.*/image=bar/' "$D/bm"
+expect "image=foo vs image=bar" 11 "INCOMPARABLE"
+setup; sed -i '/^image=/d' "$D/nm"; expect "new meta without image= (R9)" 11 "INCOMPARABLE"
+setup; sed -i '/^image=/d' "$D/bm"; expect "baseline meta without image= (R10)" 11 "INCOMPARABLE"
+setup; sed -i 's/^image=.*/image=system.img 1.1 xyz/' "$D/nm"; expect "short sha in new image" 11 "INCOMPARABLE"
+setup; sed -i "s/^image=.*/image=system.img 1.1 ${HB^^}/" "$D/nm"; expect "uppercase sha not accepted" 11 "INCOMPARABLE"
+setup; echo "image=extra.img 1.1 foo" >>"$D/nm"; expect "one bad image= line among good ones" 11 "INCOMPARABLE"
+setup; meta "$D/nm" 9.9 "$HA"; expect "same sha256 relabelled version (I-2)" 11 "INCOMPARABLE"
+setup; meta "$D/nm" 1.1 "$HB"; printf 'image=boot.img 1.1 %s\n' "$HC" >>"$D/nm"; meta "$D/bm" 1.0 "$HA"; printf 'image=boot.img 1.0 %s\n' "$HC" >>"$D/bm"; sed -i 's/^image=boot.img 1.1 .*/image=boot.img 1.1 '"$HC"'/' "$D/nm"
+expect "different sets sharing one file sha is comparable" 0 "NO-WORSE-PROVEN"
+# M-7/I-5: BLIND and INCOMPARABLE paths rewrite --out (no stale record)
+setup; echo "verdict=NO-WORSE-PROVEN" >"$D/rec"; printf 't1\tMAYBE\n' >"$D/n"; run >/dev/null 2>&1
+grep -qx 'verdict=BLIND' "$D/rec" && ok || bad "BLIND exit left a stale record"
+setup; echo "verdict=NO-WORSE-PROVEN" >"$D/rec"; sed -i '/^image=/d' "$D/nm"; run >/dev/null 2>&1
+grep -qx 'verdict=INCOMPARABLE-BASELINE-MISSING' "$D/rec" && ok || bad "INCOMPARABLE left stale record"
+setup; echo "verdict=NO-WORSE-PROVEN" >"$D/rec"; "$CMP" --bogus --out "$D/rec" >/dev/null 2>&1
+grep -qx 'verdict=BLIND' "$D/rec" && ok || bad "usage error left stale record"
+# M-1: unwritable --out fails closed, never prints NO-WORSE-PROVEN
+setup; out="$("$CMP" --baseline-verdicts "$D/b" --new-verdicts "$D/n" --baseline-meta "$D/bm" --new-meta "$D/nm" --out "$D/nodir/rec" 2>&1)"; rc=$?
+if [ "$rc" = 2 ] && ! printf '%s' "$out" | grep -q 'VERDICT: NO-WORSE-PROVEN'; then ok; else bad "unwritable --out: rc=$rc"; fi
+# M-1b: write failure after a successful open (/dev/full) must fail closed
+setup; out="$("$CMP" --baseline-verdicts "$D/b" --new-verdicts "$D/n" --baseline-meta "$D/bm" --new-meta "$D/nm" --out /dev/full 2>&1)"; rc=$?
+if [ "$rc" = 2 ] && ! printf '%s' "$out" | grep -q 'VERDICT: NO-WORSE-PROVEN'; then ok; else bad "--out /dev/full: rc=$rc"; fi
+# M-2: unreadable targets
+setup; expect "unreadable --targets file (R8)" 2 "BLIND" --targets "$D/nonexistent"
+setup; : >"$D/tg"; expect "empty --targets file" 2 "BLIND" --targets "$D/tg"
+# M-3: targets=absent
+setup; run >/dev/null; grep -qx 'targets=absent' "$D/rec" && ok || bad "targets=absent not recorded"
+# M-4: per-test diff, flips, new-test verdicts, paths
+setup; echo t3 >"$D/tg"; run --targets "$D/tg" >/dev/null
+grep -qx 't3_placeholder' /dev/null; grep -qx 'diff=t3 FAIL PASS' "$D/rec" && ok || bad "diff line missing"
+grep -qx 'flip=t3 FAIL PASS' "$D/rec" && ok || bad "flip line missing"
+grep -qx 'new_test_verdict=t4 PASS' "$D/rec" && ok || bad "new test verdict missing"
+grep -qx "baseline_verdicts_path=$D/b" "$D/rec" && grep -qx "new_verdicts_path=$D/n" "$D/rec" && ok || bad "verdict paths missing"
+# R5: equal not-PASS count is not issue-count-higher (loss offset by gain, count equal)
+setup; vd "$D/b" t1=PASS t2=FAIL; vd "$D/n" t1=FAIL t2=PASS
+expect "equal count: only baseline-pass-lost" 10 "reasons: baseline-pass-lost lost="
 
 echo "image_no_worse tests: pass=$PASS fail=$FAIL"
 [ "$FAIL" = 0 ]

@@ -187,20 +187,26 @@ image_no_worse.sh --baseline-verdicts F --new-verdicts F --baseline-meta F --new
 
 - Verdict file (TSV, harness-written): `test_id<TAB>verdict`, verdict in
   `PASS FAIL INCONCLUSIVE SKIPPED BLIND ERROR`; no CR, no blank lines, no duplicate ids, at least one row.
-- Meta file (key=value): `board=`, `harness=`, `suite=`, `command=` (each exactly once) and one or more
-  `image=<file> <version> <sha256>` lines.
-- Targets file: one test id per line that must be FAIL in the baseline and PASS in the new run.
+- Meta file (key=value): `board=`, `harness=`, `suite=`, `command=` (each exactly once, NON-EMPTY, no CR;
+  `board=` must carry the target identity that `release_gate.sh` binds to the hardware `target_id`) and one
+  or more `image=<file> <version> <sha256-64-lowercase-hex>` lines; every `image=` line must match.
+- Targets file: one test id per line that must be FAIL in the baseline and PASS in the new run (an
+  unreadable or empty targets file is BLIND). Omitted: the record says `targets=absent`.
 - Verdict (last line `VERDICT: ...`) and exit code: `NO-WORSE-PROVEN` 0; `REGRESSED` 10 with reason codes
   `baseline-pass-lost`, `issue-count-higher`, `targeted-flip-missing`; `INCOMPARABLE-BASELINE-MISSING` 11
-  (baseline absent/empty, or board/harness/suite/command differ, or identical image identity); malformed
-  input or usage error 2 (`VERDICT: BLIND`). Never 0 for anything but NO-WORSE-PROVEN.
+  (baseline absent/empty/malformed; any identity field missing, empty, duplicated or malformed on either
+  side, including a missing new meta; board/harness/suite/command differ; the new image file-sha256 set
+  equals the baseline's, so a relabelled version is the same image); malformed new verdicts, unreadable
+  targets, unwritable `--out` or usage error 2 (`VERDICT: BLIND`). Never 0 for anything but NO-WORSE-PROVEN.
+- `--out` is rewritten on every exit path (`verdict=BLIND` / `INCOMPARABLE-...`), so no stale record survives;
+  failure to write it is BLIND.
 - A baseline-PASS test that is FAIL, INCONCLUSIVE, SKIPPED, BLIND, ERROR or absent in the new run is a
-  regression. New tests are listed separately (`new_tests=`). `issue-count-higher` compares the not-PASS
-  count over the baseline test set, so an improvement can offset one loss in that count only; the loss
-  itself is still `baseline-pass-lost`.
-- The record (`--out`) is key=value with sha256 of both verdict files and both meta files, the image
-  identities, counts and lists. Control needle: the parser's row count is cross-checked against an
-  independent `grep -c` count.
+  regression. `issue-count-higher` compares the not-PASS count over the baseline test set (equal is fine; an
+  improvement can offset a loss in that count only; the loss is still `baseline-pass-lost`).
+- The record: key=value with the verdict-file paths and sha256 of both verdict files and both meta files,
+  image identities (`image_baseline=`, `image_new=`), counts, `diff=<id> <baseline> <new>` for every changed
+  test, `flip=<id> ...` evidence for targets, `new_tests=` and `new_test_verdict=<id> <verdict>`. Control
+  needle: the parser's row count is cross-checked against an independent `grep -c` count.
 
 ### release_gate.sh
 
@@ -208,12 +214,17 @@ image_no_worse.sh --baseline-verdicts F --new-verdicts F --baseline-meta F --new
 release_gate.sh --product ID --hardware-record F --live-run-record F --comparison-record F --out GATE
 ```
 
-States (last line `GATE-STATE: ...`) and exit codes: `RELEASABLE` 0; `BLOCKED-NO-HARDWARE` 20 (no live-run
-or hardware record, not connected, identity not read from the target, record of another product,
-incomplete or partially reported live run); `BLOCKED-NO-BASELINE` 21 (no comparison, INCOMPARABLE, or a
-comparison whose `new_verdicts_sha256` is not the live run's `verdicts_sha256`); `REFUSED-REGRESSED` 22;
-unknown comparison verdict or usage error 2. The gate record is rewritten on every run. Hardware record
-keys: `product= target_id= connected=yes read_from=target`; live run: `product= suite= complete=yes
+States (last line `GATE-STATE: ...`) and exit codes: `RELEASABLE` 0; `BLOCKED-NO-HARDWARE` 20 (no live-run or
+hardware record, not connected, identity not read from the target, `kind` not `physical` (emulator/host/absent),
+record of another product, empty `target_id`, incomplete or partially reported or zero-test live run,
+`verdicts_sha256`/`build_sha256` missing or not 64-hex); `BLOCKED-NO-BASELINE` 21 (no comparison, INCOMPARABLE,
+or a comparison not bound to this run: `new_verdicts_sha256` must be 64-hex and equal the live run's
+`verdicts_sha256`; comparison `board` must equal the hardware `target_id`; comparison `suite` must equal the
+live-run `suite`; the set of `build_sha256` lines read from the target must equal the comparison's `image_new`
+sha256 set); `REFUSED-REGRESSED` 22; unknown comparison verdict, unwritable `--out` or usage error 2
+(`GATE-STATE: BLIND`). The gate record is rewritten on every exit path and carries the build identity
+(`build_identity=` and `target_build_sha256=` lines, 11.4.298(F)). Record keys: hardware `product= target_id=
+connected=yes read_from=target kind=physical build_sha256=...`; live run `product= suite= complete=yes
 tests_total= tests_reported= verdicts_sha256=`; comparison: the image_no_worse.sh record.
 
 ### Tests and mutation runner

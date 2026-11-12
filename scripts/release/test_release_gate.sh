@@ -15,10 +15,11 @@ PASS=0; FAIL=0
 ok() { PASS=$((PASS+1)); }
 bad() { FAIL=$((FAIL+1)); echo "  FAIL: $1"; }
 
+HA="$(printf 'a%.0s' {1..64})"; HB="$(printf 'b%.0s' {1..64})"
 setup() { D="$(mktemp -d "$ROOT/c.XXXXXX")"
-  printf 'product=opi5\ntarget_id=SER123\nconnected=yes\nread_from=target\n' >"$D/hw"
-  printf 'product=opi5\nsuite=full\ncomplete=yes\ntests_total=3\ntests_reported=3\nverdicts_sha256=abc\n' >"$D/live"
-  printf 'verdict=NO-WORSE-PROVEN\nnew_verdicts_sha256=abc\n' >"$D/cmp"; }
+  printf 'product=opi5\ntarget_id=SER123\nconnected=yes\nread_from=target\nkind=physical\nbuild_sha256=%s\n' "$HB" >"$D/hw"
+  printf 'product=opi5\nsuite=full\ncomplete=yes\ntests_total=3\ntests_reported=3\nverdicts_sha256=%s\n' "$HA" >"$D/live"
+  printf 'verdict=NO-WORSE-PROVEN\nnew_verdicts_sha256=%s\nboard=SER123\nsuite=full\nimage_new=system.img 1.1 %s\n' "$HA" "$HB" >"$D/cmp"; }
 run() { "$GATE" --product opi5 --hardware-record "$D/hw" --live-run-record "$D/live" --comparison-record "$D/cmp" --out "$D/gate" "$@"; }
 expect() { local label="$1" rc="$2" state="$3"; shift 3; local out got
   out="$(run "$@" 2>&1)"; got=$?
@@ -40,13 +41,39 @@ setup; sed -i 's/complete=yes/complete=no/' "$D/live"; expect "incomplete live r
 setup; sed -i 's/tests_reported=3/tests_reported=2/' "$D/live"; expect "reported < total" 20 BLOCKED-NO-HARDWARE
 setup; rm "$D/cmp";    expect "comparison missing" 21 BLOCKED-NO-BASELINE
 setup; sed -i 's/NO-WORSE-PROVEN/INCOMPARABLE-BASELINE-MISSING/' "$D/cmp"; expect "incomparable" 21 BLOCKED-NO-BASELINE
-setup; sed -i 's/abc/zzz/' "$D/cmp"; expect "comparison for another run" 21 BLOCKED-NO-BASELINE
+setup; sed -i "s/$HA/$HB/" "$D/cmp"; expect "comparison for another run" 21 BLOCKED-NO-BASELINE
 setup; sed -i 's/NO-WORSE-PROVEN/REGRESSED/' "$D/cmp"; expect "regressed" 22 REFUSED-REGRESSED
 setup; sed -i 's/NO-WORSE-PROVEN/MAYBE/' "$D/cmp"; run >/dev/null 2>&1; [ $? = 2 ] && ok || bad "unknown verdict must exit 2"
 setup; "$GATE" --bogus >/dev/null 2>&1; [ $? = 2 ] && ok || bad "unknown option must exit 2"
 setup; "$GATE" --product "" --hardware-record "$D/hw" --live-run-record "$D/live" --comparison-record "$D/cmp" --out "$D/g" >/dev/null 2>&1; [ $? = 2 ] && ok || bad "empty product must exit 2"
 setup; rm "$D/cmp"; if run >/dev/null 2>&1; then bad "blocked exited 0"; else ok; fi
 setup; echo "state=RELEASABLE" >"$D/gate"; rm "$D/live"; run >/dev/null 2>&1; grep -qx 'state=BLOCKED-NO-HARDWARE' "$D/gate" && ok || bad "stale gate record kept"
+
+# ---- review round 1 ----
+setup; sed -i '/^kind=/d' "$D/hw"; expect "kind missing (I-4)" 20 BLOCKED-NO-HARDWARE
+for kd in emulator host; do setup; sed -i "s/kind=physical/kind=$kd/" "$D/hw"; expect "kind=$kd" 20 BLOCKED-NO-HARDWARE; done
+setup; sed -i 's/^target_id=.*/target_id=/' "$D/hw"; expect "empty target_id (R7)" 20 BLOCKED-NO-HARDWARE
+setup; sed -i 's/tests_total=3/tests_total=0/; s/tests_reported=3/tests_reported=0/' "$D/live"; expect "tests_total=0 (R6)" 20 BLOCKED-NO-HARDWARE
+setup; sed -i '/^verdicts_sha256=/d' "$D/live"; expect "live verdicts_sha256 absent (I-3)" 20 BLOCKED-NO-HARDWARE
+setup; sed -i 's/^verdicts_sha256=.*/verdicts_sha256=/' "$D/live"; sed -i 's/^new_verdicts_sha256=.*/new_verdicts_sha256=/' "$D/cmp"; expect "both verdict shas empty (I-3)" 20 BLOCKED-NO-HARDWARE
+setup; sed -i 's/^verdicts_sha256=.*/verdicts_sha256=abc/' "$D/live"; sed -i 's/^new_verdicts_sha256=.*/new_verdicts_sha256=abc/' "$D/cmp"; expect "non-hex equal shas (I-3)" 20 BLOCKED-NO-HARDWARE
+setup; sed -i '/^new_verdicts_sha256=/d' "$D/cmp"; expect "comparison sha absent" 21 BLOCKED-NO-BASELINE
+setup; sed -i 's/^new_verdicts_sha256=.*/new_verdicts_sha256=/' "$D/cmp"; expect "comparison sha empty" 21 BLOCKED-NO-BASELINE
+setup; sed -i 's/^board=.*/board=OTHER/' "$D/cmp"; expect "comparison board != target_id (I-4)" 21 BLOCKED-NO-BASELINE
+setup; sed -i '/^board=/d' "$D/cmp"; expect "comparison board absent" 21 BLOCKED-NO-BASELINE
+setup; sed -i 's/^suite=.*/suite=smoke/' "$D/cmp"; expect "suite mismatch (I-4)" 21 BLOCKED-NO-BASELINE
+setup; sed -i '/^image_new=/d' "$D/cmp"; expect "comparison without image_new" 21 BLOCKED-NO-BASELINE
+setup; sed -i "s/^build_sha256=.*/build_sha256=$HA/" "$D/hw"; expect "target build != compared new image (I-4)" 21 BLOCKED-NO-BASELINE
+setup; sed -i '/^build_sha256=/d' "$D/hw"; expect "no build fingerprint from target" 20 BLOCKED-NO-HARDWARE
+setup; echo "build_sha256=$HA" >>"$D/hw"; expect "extra target artifact not in compared image" 21 BLOCKED-NO-BASELINE
+setup; expect "golden-good" 0 RELEASABLE
+grep -qx "build_identity=system.img 1.1 $HB" "$D/gate" && ok || bad "gate record lacks build identity"
+# I-5: BLIND paths rewrite the record
+setup; echo "state=RELEASABLE" >"$D/gate"; sed -i 's/NO-WORSE-PROVEN/MAYBE/' "$D/cmp"; run >/dev/null 2>&1
+grep -qx 'state=BLIND' "$D/gate" && ok || bad "unknown verdict left stale RELEASABLE"
+setup; echo "state=RELEASABLE" >"$D/gate"; "$GATE" --bogus --out "$D/gate" >/dev/null 2>&1
+grep -qx 'state=BLIND' "$D/gate" && ok || bad "usage error left stale RELEASABLE"
+setup; if "$GATE" --product opi5 --hardware-record "$D/hw" --live-run-record "$D/live" --comparison-record "$D/cmp" --out "$D/nodir/g" >/dev/null 2>&1; then bad "unwritable --out exited 0"; else ok; fi
 
 echo "release_gate tests: pass=$PASS fail=$FAIL"
 [ "$FAIL" = 0 ]
