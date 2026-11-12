@@ -2160,3 +2160,10 @@ WP03R3-F1..F7 addressed (F6 = heading moved above). Residual, UNCONFIRMED or owe
 - WP03R3FU-5 (minor): refuse `--out` that is not a regular file or absent (FIFO/device/directory) before opening; a FIFO currently hangs with no verdict.
 - WP03R3FU-6 (minor): tests killing X2 (control char in `target_id` unsanitised) and X3 (control char reaching stdout `reason:`, e.g. `tests_total=3\x01`); correct the wrong "equivalent mutant" comment in mutation_check_no_worse_gate.sh.
 - WP03R3FU-7 (minor): assert `new_notpass_on_baseline_set` and `issue-count-higher` for baseline PASS turned SKIPPED/INCONCLUSIVE (mutant X8: NNOTPASS counts only FAIL).
+
+## SEC-WS-1R3 — author round (2026-11-12, PROVISIONAL, config/doc level)
+
+- SEC-WS-1R3-1/R3-2/F6 addressed: stack3 `location /ws` now forwards Host $http_host (+X-Real-IP/XFF/XFP); `catalog-api/internal/nginxwscheck` scans every nginx conf/template and every docs/*.md snippet and asserts per location (any `/ws` location or any location forwarding `$http_upgrade`) `Host $http_host`; class-wide fix also covered config/nginx/catalogizer.prod.conf (both /ws locations, not in the original list) and 10 doc snippets (VIDEO_COURSE_SCRIPTS and USER_MANUAL had no Host line at all). Evidence: docs/qa/sec-ws-1r3/. Live edge/browser run still owed (SEC-WS-1-F1); `nginx -t` only run on stack3 (placeholders substituted), not on the other confs.
+- SEC-WS-1R3-3: not changed (8089 qa_website Host stays).
+- SEC-WS-1-F5 NOT done (out of scope): check_api_route_vs_spec.py reports BLIND for `registerWebSocketRoute` AND `applyTrustedProxies` (main-package helpers in catalog-api/main_*.go; the extractor only resolves helpers in the scanned pkgdirs). Fix needs the extractor (scripts/lib/gin_routes_ast.go, 309 lines) to also parse same-directory main-package files and follow the helper call with the receiver binding; own item.
+- SEC-WS-1R3-F7 (nit): nginxwscheck skips docs/qa/sec-ws-1 (deliberate bad-host fixtures) and FOLLOW_UPS; nginx configs outside `*.conf`/nginx-named `*.template` files and non-fenced doc forms are not scanned.
