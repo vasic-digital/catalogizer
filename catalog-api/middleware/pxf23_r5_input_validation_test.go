@@ -78,3 +78,16 @@ func TestPXF23R5_GuardrailInternalErrorTextNotReturned(t *testing.T) {
 	w = r5Do(t, cfg, `{"note":"fine"}`)
 	assert.Equal(t, http.StatusOK, w.Code)
 }
+
+// CAT-R5FU-FU R5FU-F-B: an uncompilable operator pattern on a SECRET field (password) is a server-side
+// misconfiguration too: 500 internal_error with fixed text, no pattern/field text.
+func TestR5FUFB_SecretFieldBadPatternIs500Fixed(t *testing.T) {
+	cfg := DefaultInputValidationConfig()
+	cfg.CustomRules = map[string]string{"password": "([unclosed"}
+	w := r5Do(t, cfg, `{"password":"abc"}`)
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	assert.Contains(t, w.Body.String(), "internal_error")
+	for _, bad := range []string{"validation_failed", "invalid validation pattern", "unclosed", "password", "pattern"} {
+		assert.NotContains(t, w.Body.String(), bad)
+	}
+}

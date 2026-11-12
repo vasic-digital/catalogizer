@@ -1954,3 +1954,12 @@ R5FU-F-B (minor, source-defect) `validateSecretValue` (input_validation.go ~319-
 R5FU-F-C (nit) `ErrSessionNotFound` entry in `authClientMessage` is unreachable from current callers (equivalent mutant M3b): remove or document.
 R5FU-F-D (nit) message assertions use `Contains`; switch to `Equal` together with F-A.
 R5FU-F-E (nit) import grouping in pxf23_r5_leak_test.go; `r5State` builds SQL by concatenation (test-only, fixed literals).
+
+## CAT-R5FU-FU (2026-11-12, branch fix/r5fu-fu) - PROVISIONAL, review owed
+- R5FU-F-A [LANDED]: `authClientMessage` returns the matched sentinel's own text / `PasswordPolicyError.Msg`, never the wrapper chain text. RED first: `TestR5FUFA_*` failed on the old code (wrapped and errors.Join chains returned wrapper text incl. a password-hash-like marker). Test is at the `authClientMessage` choke point shared by the gin and std handlers (a real-stack wrapped sentinel is not injectable: services return sentinels unwrapped; UNCONFIRMED end-to-end for a future wrap). Wrapped-case test now `Equal`.
+- R5FU-F-B [LANDED]: `validateSecretValue` uncompilable pattern -> `serverValidationError` -> 500 `internal_error`, no field/pattern text. RED first: `TestR5FUFB_SecretFieldBadPatternIs500Fixed` got 400 `validation_failed`.
+- R5FU-F-C [LANDED, decision: removed]: `ErrSessionNotFound` is returned only by `AuthService.GetCurrentUser`, which no `authClientMessage` caller (Login, Refresh, ChangePassword, ValidatePassword) reaches; removed from the client-visible list (fails closed to the fallback); `TestR5FUFC_SessionNotFoundFallsBack`.
+- R5FU-F-D [LANDED]: message assertions in the account-state / intentional-message tests are now `Equal` on the extracted client message (`r5Msg`); NotContains leak checks unchanged.
+- R5FU-F-E [LANDED]: import grouping fixed; `r5State` binds the user name as a parameter (set clause is a fixed test literal).
+- Correction: the R5-F5 line above ("now answers 500") overstated for the secret-field path (`password` etc.); true only after R5FU-F-B.
+- Still Queued: R5-F6 / PXF23-R5a, PXR-2..4, R5b/R5d.

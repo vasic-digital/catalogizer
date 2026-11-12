@@ -6,7 +6,7 @@ package handlers
 // driver-style marker, so the failure travels the production error-wrapping path.
 
 import (
-	"catalogizer/services"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"catalogizer/models"
+	"catalogizer/services"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -175,32 +176,46 @@ func TestPXF23R5_IntentionalMessagesPreserved(t *testing.T) {
 	r5Routes(e)
 	w := e.login("rtadmin", "Wrong-Pass1!")
 	assert.Equal(t, 401, w.Code)
-	assert.Contains(t, w.Body.String(), "invalid credentials")
+	assert.Equal(t, "invalid credentials", r5Msg(w.Body.String()))
 	w = e.do("", "POST", "/r5/refresh", `{"refresh_token":"does-not-exist"}`)
 	assert.Equal(t, 401, w.Code)
-	assert.Contains(t, w.Body.String(), "invalid refresh token")
+	assert.Equal(t, "invalid refresh token", r5Msg(w.Body.String()))
 	tok, _ := e.r5LoginJSON(t)
 	w = e.do(tok, "POST", "/r5/std/change-password", `{"current_password":"`+rtAdminPass+`","new_password":"short"}`)
 	assert.Equal(t, 400, w.Code)
-	assert.Contains(t, w.Body.String(), "password must be at least 8 characters long")
+	assert.Equal(t, "password must be at least 8 characters long", r5Msg(w.Body.String()))
 	w = e.do(tok, "POST", "/r5/std/change-password", `{"current_password":"Not-The-Pass1!","new_password":"N3w!Passw0rd#x"}`)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	assert.Contains(t, w.Body.String(), "current password is incorrect")
+	assert.Equal(t, "current password is incorrect", r5Msg(w.Body.String()))
 	w = e.do(tok, "POST", "/api/v1/users", createUserBody("rtadmin"))
 	assert.Equal(t, 409, w.Code)
-	assert.Contains(t, w.Body.String(), "Username or email already exists")
+	assert.Equal(t, "Username or email already exists", r5Msg(w.Body.String()))
 }
 
 // R5-F1: intentionally client-visible account-state messages survive the leak mapper, on both the gin and
 // the std (net/http) variants, for login and for refresh. Dropping a sentinel from authClientMessage turns
 // these messages into the generic fallback and these tests fail.
+// r5UpdateUserSQL builds the test-only UPDATE from a fixed set-clause literal; the user name is a bound parameter.
+func r5UpdateUserSQL(set string) string { return "UPDATE users SET " + set + " WHERE username = ?" }
+
+// r5Msg returns the client message of a response: the JSON "error" string, else the trimmed plain body.
+func r5Msg(body string) string {
+	var m struct {
+		Error string `json:"error"`
+	}
+	if json.Unmarshal([]byte(body), &m) == nil && m.Error != "" {
+		return m.Error
+	}
+	return strings.TrimSpace(body)
+}
+
 func (e *rtEnv) r5State(t *testing.T, name, set string, args ...interface{}) {
 	t.Helper()
 	hash, salt, err := e.authSvc.HashPasswordForUser(azPass)
 	require.NoError(t, err)
 	_, err = e.repo.Create(&models.User{Username: name, Email: name + "@example.test", PasswordHash: hash, Salt: salt, RoleID: 2, IsActive: true})
 	require.NoError(t, err)
-	_, err = e.db.Exec("UPDATE users SET "+set+" WHERE username = '"+name+"'", args...)
+	_, err = e.db.Exec(r5UpdateUserSQL(set), append(args, name)...)
 	require.NoError(t, err)
 }
 
@@ -214,12 +229,12 @@ func TestPXF23R5_AccountStateMessagesPreservedOnLogin(t *testing.T) {
 	for variant, path := range loginPaths {
 		w := e.do("", "POST", path, `{"username":"r5locked","password":"`+azPass+`"}`)
 		assert.Equal(t, 401, w.Code, variant)
-		assert.Contains(t, w.Body.String(), "account is temporarily locked", variant)
+		assert.Equal(t, "account is temporarily locked", r5Msg(w.Body.String()), variant)
 		w = e.do("", "POST", path, `{"username":"r5disabled","password":"`+azPass+`"}`)
 		assert.Equal(t, 401, w.Code, variant)
-		assert.Contains(t, w.Body.String(), "account is disabled", variant)
+		assert.Equal(t, "account is disabled", r5Msg(w.Body.String()), variant)
 		w = e.do("", "POST", path, `{"username":"r5pending","password":"`+azPass+`"}`)
-		assert.Contains(t, w.Body.String(), "account pending approval", variant)
+		assert.Equal(t, "account pending approval", r5Msg(w.Body.String()), variant)
 		if variant == "gin" {
 			assert.Equal(t, 403, w.Code)
 			assert.Contains(t, w.Body.String(), "account_pending_approval")
@@ -244,7 +259,7 @@ func TestPXF23R5_AccountStateMessagesPreservedOnRefresh(t *testing.T) {
 		require.NoError(t, err)
 		w := e.do("", "POST", variant, `{"refresh_token":"`+refresh+`"}`)
 		assert.Equal(t, 401, w.Code, variant)
-		assert.Contains(t, w.Body.String(), "session expired", variant)
+		assert.Equal(t, "session expired", r5Msg(w.Body.String()), variant)
 
 		// account disabled after login
 		e = newRTEnv(t)
@@ -254,7 +269,7 @@ func TestPXF23R5_AccountStateMessagesPreservedOnRefresh(t *testing.T) {
 		require.NoError(t, err)
 		w = e.do("", "POST", variant, `{"refresh_token":"`+refresh+`"}`)
 		assert.Equal(t, 401, w.Code, variant)
-		assert.Contains(t, w.Body.String(), "account is disabled", variant)
+		assert.Equal(t, "account is disabled", r5Msg(w.Body.String()), variant)
 	}
 }
 
@@ -263,6 +278,7 @@ func TestPXF23R5_UserChangedDuringLoginHintPreserved(t *testing.T) {
 	msg, known := authClientMessage(services.ErrUserChangedDuringLogin, "Authentication failed")
 	assert.True(t, known)
 	assert.Equal(t, "account changed during login, please retry", msg)
-	_, known = authClientMessage(fmt.Errorf("wrapped: %w", services.ErrUserChangedDuringLogin), "Authentication failed")
+	msg, known = authClientMessage(fmt.Errorf("wrapped: %w", services.ErrUserChangedDuringLogin), "Authentication failed")
 	assert.True(t, known)
+	assert.Equal(t, "account changed during login, please retry", msg, "wrapper text must not be returned")
 }

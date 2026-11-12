@@ -16,24 +16,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// authClientMessage returns the text of err only when it is one of the
-// intentionally client-visible auth errors (sentinels / password policy);
-// every other error is internal (DB, crypto, wrapped %w chains) and maps to
-// fallback so its text never reaches the response (CAT-PXF23-R5).
+// authClientSentinels are the intentionally client-visible auth errors. Order is irrelevant.
+// ErrSessionNotFound is deliberately absent: it is only returned by AuthService.GetCurrentUser,
+// which no authClientMessage caller reaches (R5FU-F-C); a future caller gets the fallback.
+var authClientSentinels = []error{
+	services.ErrInvalidCredentials,
+	services.ErrAccountLocked,
+	services.ErrAccountDisabled,
+	services.ErrAccountPending,
+	services.ErrUserChangedDuringLogin,
+	services.ErrInvalidRefreshToken,
+	services.ErrSessionExpired,
+	services.ErrCurrentPasswordIncorrect,
+}
+
+// authClientMessage returns the client-visible text for err only when it is one of the
+// intentionally client-visible auth errors (sentinels / password policy). The text returned is
+// the matched sentinel's OWN text (or PasswordPolicyError.Msg), never err.Error(), so text
+// wrapped around a sentinel (DB driver text, hashes) cannot reach the response. Every other
+// error is internal and maps to fallback (CAT-PXF23-R5, CAT-R5FU-FU).
 func authClientMessage(err error, fallback string) (string, bool) {
 	var pp *services.PasswordPolicyError
-	switch {
-	case errors.Is(err, services.ErrInvalidCredentials),
-		errors.Is(err, services.ErrAccountLocked),
-		errors.Is(err, services.ErrAccountDisabled),
-		errors.Is(err, services.ErrAccountPending),
-		errors.Is(err, services.ErrUserChangedDuringLogin),
-		errors.Is(err, services.ErrInvalidRefreshToken),
-		errors.Is(err, services.ErrSessionExpired),
-		errors.Is(err, services.ErrSessionNotFound),
-		errors.Is(err, services.ErrCurrentPasswordIncorrect),
-		errors.As(err, &pp):
-		return err.Error(), true
+	if errors.As(err, &pp) {
+		return pp.Msg, true
+	}
+	for _, s := range authClientSentinels {
+		if errors.Is(err, s) {
+			return s.Error(), true
+		}
 	}
 	log.Printf("handlers: auth internal error (not returned to client): %v", err)
 	return fallback, false
