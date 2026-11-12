@@ -7,7 +7,7 @@ Catalogizer is a comprehensive media collection management system that automatic
 ## 🚀 Features
 
 ### Core Capabilities
-- **Automated Media Detection**: Identifies 50+ media types including movies, TV shows, music, games, software, documentaries, and more
+- **Automated Media Detection**: Detects and categorizes media types including (count not verified) movies, TV shows, music, games, software, documentaries, and more
 - **Multi-Protocol Support**: Works with SMB, FTP, NFS, WebDAV, S3 and local filesystem protocols (Synology SMB/FTP/NFS live tests are currently SKIPPED, drives powered off)
 - **Real-time Monitoring**: Continuously monitors storage sources for changes and updates metadata automatically
 - **Protocol Resilience**: Handles temporary disconnections gracefully with automatic reconnection and offline caching
@@ -34,6 +34,12 @@ Catalogizer is a comprehensive media collection management system that automatic
 
 | Document | Purpose |
 |---|---|
+| 🚧 **[CHANGELOG](docs/CHANGELOG.md)** | Release notes; `[2.4.2]` is a **pre-release, NOT production-ready**, with VERIFIED / PROVISIONAL / REOPENED / OVERDUE listed separately |
+| 🔁 **[CONTINUATION](docs/CONTINUATION.md)** | Live work state and resume order (Rev 20) |
+| 🧾 **[Workable Items Register](docs/WORKABLE_ITEMS_REGISTER.md)**, **[Follow-ups](docs/FOLLOW_UPS_NEXT_PHASE.md)**, **[Provisional Verification Plan](docs/PROVISIONAL_VERIFICATION_PLAN.md)** | Open items, per-finding detail and the plan that turns PROVISIONAL rows into VERIFIED |
+| 🧪 **[QA evidence](docs/qa/README.md)** | Machine evidence per run, e.g. [SonarQube run5](docs/qa/sonarqube-20261111/run5/README.md), [cover-art SSRF live test](docs/qa/coverart/README.md), [partial retest of main](docs/qa/retest-20261112/RETEST_main_563617b1.md) |
+| 📘 **[Docs index](docs/README.md)** | Index of `docs/`; sub-indexes: [`docs/api`](docs/api/), [`docs/architecture`](docs/architecture/), [`docs/guides`](docs/guides/), [`docs/manuals`](docs/manuals/), [`docs/security`](docs/security/), [`docs/runbooks`](docs/runbooks/), [`docs/deployment`](docs/deployment/), [`docs/testing`](docs/testing/) |
+| 🚢 **[Release consistency checker](scripts/release/README.md)** | `scripts/release/check_release_consistency.sh`: version fields and changelog evidence paths |
 | 📄 **[Environment Variables Reference](docs/ENV_VARIABLES.md)** | Complete `.env` guide — every API key, token, provider registration URL, and configuration flag with 🔴/🟠/🟡/🟢/⚫ tier markers. **Start here to set up credentials.** |
 | 🏛️ **[Governance and the Constitution](docs/GOVERNANCE.md)** | How the Spec Kit constitution (`.specify/memory/constitution.md`, v2.5.1) follows the Helix canon, the pinned canon commit, the binding of the vendored engines `llmctl`, `claude_toolkit` and `open_design`, and safe submodule initialisation |
 | 📐 **[CONSTITUTION.md](CONSTITUTION.md)** | Non-negotiable rules — Article V (100% test coverage), Article VI (Open-Points Closure Brief), **Article VII (Full-QA Master Cycle)** |
@@ -125,14 +131,16 @@ Catalogizer is a comprehensive media collection management system that automatic
     - Analytics dashboard
     - User management interface
 
-3. **Database Layer**: SQLCipher encrypted SQLite
+3. **Other first-party components** (all at version 2.4.2): `catalogizer-desktop` (Tauri 2 + React desktop app), `installer-wizard` (Tauri installation wizard), `catalogizer-android` (Jetpack Compose, Room, Media3 ExoPlayer), `catalogizer-androidtv` (Android TV, Leanback), `catalogizer-api-client` (TypeScript API client), `Website`, plus `monitoring/` (Prometheus, Alertmanager, Grafana, OpenTelemetry configs), `deployment/` and `docker/` (compose and scripts), `challenges/` and `tests/` (QA suites), `sonarqube/` (on-demand SonarQube QA service) and `specs/` (Spec Kit specifications).
+
+4. **Database Layer**: SQLCipher encrypted SQLite
     - Media metadata storage
     - User and session management
     - Configuration and settings
 
 ### Modular Architecture (Submodules)
 
-All generic, reusable functionality has been extracted into independent modules registered as git submodules. Each module follows the `digital.vasic.*` convention with its own tests, documentation, and upstream repositories.
+All generic, reusable functionality has been extracted into independent modules registered as git submodules. `.gitmodules` currently registers 70 submodules (measured); the tables below list the 21 Go and 2 TypeScript `digital.vasic.*` modules, and the rest are QA / test tooling (for example `helix_qa`, `containers`, `challenges`, `appium`, `allure2`, `scrcpy`, `docling`, `llama_index`) and the `constitution` governance submodule; check `.gitmodules` for the authoritative list. Each module follows the `digital.vasic.*` convention with its own tests, documentation, and upstream repositories.
 
 **Go Modules (21):**
 
@@ -187,6 +195,7 @@ Catalogizer supports multiple file system protocols for maximum flexibility:
 - **FTP/FTPS**: File Transfer Protocol with secure variants
 - **NFS**: Network File System with automatic mounting
 - **WebDAV**: HTTP-based file access over web protocols
+- **S3-compatible object storage**: `catalog-api/filesystem/s3_client.go` (aws-sdk-go-v2); live-tested N=3 only against a Garage server (PROVISIONAL)
 - **Local Filesystem**: Direct access to local storage
 
 Each protocol is abstracted through a common interface, allowing seamless switching and future protocol additions.
@@ -484,12 +493,12 @@ _The Build / Tests / Coverage badges and the coverage table below were hand-type
 - **Cross-Platform**: Windows, macOS, Linux support
 - **Tauri Framework**: Rust backend with React frontend
 - **Native Performance**: System integration and file access
-- **Auto-Updates**: Built-in update mechanism
+- **Auto-updates**: not claimed (no updater plugin found in the desktop dependencies)
 
 ### 🌐 Web Interface
 - **Responsive Design**: Works on all screen sizes
 - **Real-time Updates**: WebSocket synchronization
-- **Progressive Web App**: Offline capabilities
+- **Offline / PWA**: not claimed (no service worker found in `catalog-web`)
 
 ## 🚀 Quick Installation
 

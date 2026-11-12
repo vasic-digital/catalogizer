@@ -208,12 +208,12 @@ FU-1..7; Enter-to-toggle restored; FU-3 browser paint-order check owed),
 SonarQube run4 (on <code>v2.4.1</code>) and run5 (on
 <code>563617b1</code>: api gate OK 687 open unchanged, web gate OK, 13
 smells cleared, web open 351 -&gt; 338; static only).</li>
-<li>Partial retest of <code>563617b1</code> as reported to me: Go about
-60 packages; web 2585 pass / 14 fail; all 6 Go + 14 web failures also
-fail on <code>v2.4.1</code> (pre-existing); 1 load-flaky stress test;
-desktop / wizard / cargo not run. The log is not committed and the
-failing test names are not in the repo: register them from the log. This
-is NOT the 11.4.40 retest of the tag.</li>
+<li>Partial retest of <code>563617b1</code> (evidence
+<code>docs/qa/retest-20261112/</code>, sha-verified; failures registered
+as <code>CAT-PREEXIST-1..10</code>): Go about 60 packages; web 2585 pass
+/ 14 fail; all 6 Go + 14 web failures also fail on <code>v2.4.1</code>
+(pre-existing); 1 load-flaky stress test; desktop / wizard / cargo not
+run. This is NOT the 11.4.40 retest of the tag.</li>
 <li>Owed / OVERDUE: 11.4.40 full-suite retest of the tag; 11.4.185
 manual QA; live UI QA with Vision (llmctl <code>vision</code> start gate
 hung about 80 s on this host, root cause UNCONFIRMED, no Vision

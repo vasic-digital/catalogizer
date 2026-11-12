@@ -17,7 +17,7 @@
 
 ## Welcome Contributors
 
-Thank you for your interest in contributing to Catalogizer v2.4.1! This document provides guidelines and instructions for contributing to the project. Whether you're fixing bugs, adding features, improving documentation, or helping with testing, your contributions are welcome and appreciated.
+Thank you for your interest in contributing to Catalogizer v2.4.2! This document provides guidelines and instructions for contributing to the project. Whether you're fixing bugs, adding features, improving documentation, or helping with testing, your contributions are welcome and appreciated.
 
 ### Ways to Contribute
 
@@ -114,7 +114,7 @@ export CATALOGIZER_DB_CONNECTION="host=localhost port=5432 user=dev_user passwor
 mkdir -p config
 cat > config/dev.json << EOF
 {
-  "version": "2.4.1",
+  "version": "2.4.2",
   "configuration": {
     "server": {
       "port": 8080,
@@ -831,7 +831,7 @@ Use Swagger/OpenAPI 3.0 annotations:
 
 ```go
 // @title Catalogizer API
-// @version 2.4.1
+// @version 2.4.2
 // @description Comprehensive media management and cataloging system
 // @contact.name API Support
 // @contact.email api-support@catalogizer.com
@@ -1081,7 +1081,7 @@ A clear and concise description of what actually happened.
 ## Environment
 - OS: [e.g. Ubuntu 20.04]
 - Go Version: [e.g. 1.21.5]
-- Catalogizer Version: [e.g. 2.4.1]
+- Catalogizer Version: [e.g. 2.4.2]
 - Database: [e.g. PostgreSQL 14]
 
 ## Logs
@@ -1414,7 +1414,7 @@ Examples:
 
 ---
 
-Thank you for contributing to Catalogizer v2.4.1! Your contributions help make this project better for everyone. If you have questions about contributing, please don't hesitate to ask in our GitHub Discussions or reach out to the maintainers.
+Thank you for contributing to Catalogizer v2.4.2! Your contributions help make this project better for everyone. If you have questions about contributing, please don't hesitate to ask in our GitHub Discussions or reach out to the maintainers.
 
 For more information, see:
 - [Architecture Overview](architecture/ARCHITECTURE.md)
