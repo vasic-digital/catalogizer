@@ -154,3 +154,25 @@ func TestOriginChecker_HostPortAndSchemeMatrix(t *testing.T) {
 		})
 	}
 }
+
+// R23: X-Forwarded-Host must never be consulted (a client can forge it).
+func TestOriginChecker_IgnoresForwardedHost(t *testing.T) {
+	chk := originChecker([]string{"https://allowed.example.test"})
+	r := httptest.NewRequest(http.MethodGet, "/ws", nil)
+	r.Host = "real.internal:8080"
+	r.Header.Set("Origin", "https://evil.test")
+	r.Header.Set("X-Forwarded-Host", "evil.test")
+	r.Header.Set("Forwarded", "host=evil.test")
+	assert.False(t, chk(r))
+}
+
+// R24: allow-list entries and Origins are matched case-insensitively on the host.
+func TestOriginChecker_AllowListHostCaseInsensitive(t *testing.T) {
+	chk := originChecker([]string{"https://Catalog.Example.TEST"})
+	r := httptest.NewRequest(http.MethodGet, "/ws", nil)
+	r.Host = "api.internal:8080"
+	r.Header.Set("Origin", "https://catalog.example.test")
+	assert.True(t, chk(r))
+	r.Header.Set("Origin", "HTTPS://CATALOG.example.test")
+	assert.True(t, chk(r))
+}
