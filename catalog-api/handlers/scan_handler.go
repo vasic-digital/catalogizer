@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -133,7 +134,7 @@ func validateRootURL(protocol string, raw *string) error {
 		target = u.String()
 	}
 	if _, err := netguard.CheckOperatorURL(ctx, target, "http", "https"); err != nil {
-		return fmt.Errorf("%s url refused: %w", protocol, err)
+		return &rootURLRefused{protocol: protocol, cause: err}
 	}
 	return nil
 }
@@ -150,7 +151,7 @@ func validateRootURL(protocol string, raw *string) error {
 func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 	var req createStorageRootRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadBody(c, err)
 		return
 	}
 
@@ -174,7 +175,7 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 		return
 	}
 	if err := filesystem.ValidateRoot(candidate); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": rootSpecMessage(err)})
 		return
 	}
 
@@ -182,7 +183,7 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 	// resolved address again on every connection and redirect hop, so this is for a clear error, not the only line of defence.
 	if req.Protocol == "webdav" || req.Protocol == "s3" {
 		if err := validateRootURL(req.Protocol, req.URL); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": rootURLMessage(err)})
 			return
 		}
 	}
@@ -190,7 +191,7 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 	if req.Protocol == "local" {
 		resolved, err := filesystem.ResolveLocalRoot(derefString(req.Path), filesystem.AllowedLocalBases())
 		if err != nil {
-			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			c.JSON(http.StatusForbidden, gin.H{"error": localRootMessage(err)})
 			return
 		}
 		req.Path = &resolved // the resolved path is stored, not the symlink the caller named
@@ -224,7 +225,7 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 		req.Username, req.Password, req.Domain, req.URL, req.MountPoint, req.Options, req.AllowEmpty, true, req.MaxDepth,
 	)
 	if insertErr != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to create storage root: %v", insertErr)})
+		respondInternal(c, http.StatusInternalServerError, "failed to create storage root", insertErr)
 		return
 	}
 
@@ -244,7 +245,7 @@ func (h *ScanHandler) GetStorageRoots(c *gin.Context) {
 		        created_at, updated_at, last_scan_at
 		 FROM storage_roots ORDER BY id`)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to query storage roots: %v", err)})
+		respondInternal(c, http.StatusInternalServerError, "failed to query storage roots", err)
 		return
 	}
 	defer rows.Close()
@@ -424,7 +425,7 @@ type queueScanRequest struct {
 func (h *ScanHandler) QueueScan(c *gin.Context) {
 	var req queueScanRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		respondBadBody(c, err)
 		return
 	}
 
@@ -438,13 +439,13 @@ func (h *ScanHandler) QueueScan(c *gin.Context) {
 	// Load storage root from DB
 	root, err := h.loadStorageRoot(c.Request.Context(), req.StorageRootID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("storage root not found: %v", err)})
+		respondInternal(c, http.StatusNotFound, "Storage root not found", err)
 		return
 	}
 
 	if root.Protocol == "local" {
 		if err := filesystem.CheckLocalRoot(derefString(root.Path), filesystem.AllowedLocalBases()); err != nil {
-			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			c.JSON(http.StatusForbidden, gin.H{"error": localRootMessage(err)})
 			return
 		}
 	}
@@ -460,7 +461,7 @@ func (h *ScanHandler) QueueScan(c *gin.Context) {
 	}
 
 	if err := h.scanner.QueueScan(job); err != nil {
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": fmt.Sprintf("failed to queue scan: %v", err)})
+		respondInternal(c, http.StatusServiceUnavailable, "failed to queue scan", err)
 		return
 	}
 
@@ -538,3 +539,40 @@ func scanStatusToJSON(jobID string, s *services.ScanStatus) gin.H {
 		"reason":          s.Reason,
 	}
 }
+
+// rootURLRefused is the outbound-policy refusal of a storage-root URL. Error() is the full text for the server log; the client
+// gets rootURLMessage (the netguard text names resolved addresses and DNS failures, which would let a caller probe the network).
+type rootURLRefused struct {
+	protocol string
+	cause    error
+}
+
+func (e *rootURLRefused) Error() string { return e.protocol + " url refused: " + e.cause.Error() }
+func (e *rootURLRefused) Unwrap() error { return e.cause }
+
+// rootURLMessage is the client text of a validateRootURL error: authored messages pass, the policy refusal is generic.
+func rootURLMessage(err error) string {
+	var r *rootURLRefused
+	if errors.As(err, &r) {
+		log.Printf("handlers: storage root url refused (detail not returned to client): %v", err)
+		return r.protocol + " url refused by the outbound network policy"
+	}
+	return err.Error()
+}
+
+// localRootMessage is the client text of a filesystem.ResolveLocalRoot / CheckLocalRoot error: the policy sentence and the path
+// the caller named stay, the operating-system error that may follow "cannot resolve path" is dropped (it is logged).
+func localRootMessage(err error) string {
+	msg := err.Error()
+	if i := strings.Index(msg, ": cannot resolve path"); i >= 0 {
+		log.Printf("handlers: local storage root rejected (detail not returned to client): %v", err)
+		return msg[:i] + ": cannot resolve path"
+	}
+	return msg
+}
+
+// rootSpecMessage is the client text of a filesystem.ValidateRoot error. Those messages are authored in filesystem/settings.go
+// (protocol name, column names, key names, port range, SMB share confinement) and are what tells the operator which field to fix;
+// they are the intentional validation text of this endpoint (CAT-PXF23-R5B classification VALIDATION). No driver or OS error is
+// wrapped by that function.
+func rootSpecMessage(err error) string { return err.Error() }

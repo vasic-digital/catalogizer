@@ -92,11 +92,11 @@ func (h *PlaylistHandler) CreatePlaylist(c *gin.Context) {
 	playlist, err := h.service.CreatePlaylistCtx(c.Request.Context(), uid, &req)
 	if err != nil {
 		if smartrules.IsValidation(err) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid smart_rules: " + err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid smart_rules: " + validationText(err)})
 			return
 		}
 		if errors.Is(err, services.ErrSmartLimit) {
-			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			c.JSON(http.StatusConflict, gin.H{"error": services.ErrSmartLimit.Error()})
 			return
 		}
 		h.logger.Error("Failed to create playlist", zap.Error(err))
@@ -185,7 +185,7 @@ func (h *PlaylistHandler) UpdatePlaylist(c *gin.Context) {
 			return
 		}
 		if smartrules.IsValidation(err) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: " + err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: " + validationText(err)})
 			return
 		}
 		if errors.Is(err, services.ErrPlaylistForbidden) {
@@ -270,7 +270,7 @@ func (h *PlaylistHandler) AddItem(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, services.ErrSmartPlaylistItems) {
-			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			c.JSON(http.StatusConflict, gin.H{"error": services.ErrSmartPlaylistItems.Error()})
 			return
 		}
 		if errors.Is(err, services.ErrPlaylistForbidden) {
@@ -317,7 +317,7 @@ func (h *PlaylistHandler) RemoveItem(c *gin.Context) {
 			return
 		}
 		if errors.Is(err, services.ErrSmartPlaylistItems) {
-			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+			c.JSON(http.StatusConflict, gin.H{"error": services.ErrSmartPlaylistItems.Error()})
 			return
 		}
 		if errors.Is(err, services.ErrPlaylistForbidden) {

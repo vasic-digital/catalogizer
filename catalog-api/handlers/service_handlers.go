@@ -196,7 +196,7 @@ func (h *AnalyticsHandler) CreateReport(c *gin.Context) {
 	report, err := h.service.CreateReport(req.ReportType, req.Params)
 	if err != nil {
 		if errors.Is(err, services.ErrUnsupportedReportType) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": services.ErrUnsupportedReportType.Error()})
 			return
 		}
 		h.logger.Error("Failed to create report", zap.Error(err))
@@ -255,7 +255,7 @@ func (h *ReportingHandler) GetUsageReport(c *gin.Context) {
 		// 400, not 500.
 		if strings.Contains(err.Error(), "parameter required") ||
 			strings.Contains(err.Error(), "required parameter") {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": paramRequiredText(err)})
 			return
 		}
 		h.logger.Error("Failed to generate usage report", zap.Error(err))
@@ -295,7 +295,7 @@ func (h *ReportingHandler) GetPerformanceReport(c *gin.Context) {
 		// `_`), and downgrade service-level missing-param errors.
 		if strings.Contains(err.Error(), "parameter required") ||
 			strings.Contains(err.Error(), "required parameter") {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": paramRequiredText(err)})
 			return
 		}
 		h.logger.Error("Failed to generate performance report", zap.Error(err))
