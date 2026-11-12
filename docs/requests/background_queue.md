@@ -71,3 +71,7 @@ Received 2026-11-13 00:07 CET. Same request again. Status: IN PROGRESS - batch a
 - G6: password briefly in the emulator's own shell is ACCEPTABLE for throwaway emulator accounts (generated test credentials only, redacted in evidence).
 - Windows and macOS: NOT a permanent skip. Run containerized versions via the Containers submodule using QEMU or any other proper technology; introduce whatever is needed; extend Containers fully (operator controls it). Licensing/image provenance still to be settled by the implementing work item; until a real VM runs, honest SKIP with reason.
 - Synology: honest SKIP until the operator powers it back.
+
+## BG-NASEMU-2026-11-13 - NAS/Synology-class network emulators via Containers submodule (BACKGROUND :: IMPORTANT)
+Received 2026-11-13 00:17 CET. Status: IN PROGRESS (phase 1: research + plan, subagent-driven). Blockers: none (research is read-only; implementation waits for plan review; disk/load guards apply; Synology DSM image licensing to be settled in plan).
+Scope: deep web research (open-source Synology/DSM emulation e.g. Virtual DSM/vdsm-in-Docker, XPEnology, QEMU-based, Samba/NFS/FTP/WebDAV/S3(MinIO,Garage)/SFTP peers, TrueNAS/OpenMediaVault/Unraid-like), reusable generic design inside the Containers submodule (config-injected, no Catalogizer literals), gap/risk register, full docs (guides, manuals, FAQ), commit+push to all upstreams of every touched repo, LIVE deterministic evidence. Emulated runs verify only the emulated target (§11.4.298(B)); never claim real-Synology verification.
