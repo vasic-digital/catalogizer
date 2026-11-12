@@ -362,6 +362,7 @@ func TestSECQ1A_Live_ControlHookRefusesAtConnect(t *testing.T) {
 		t.Setenv(AllowCIDRsEnv, "")
 		return d.DialContext(ctx, network, net.JoinHostPort(ip, port))
 	}
+	time.Sleep(100 * time.Millisecond) // let the accept of the positive-control connection be counted
 	before := n.Load()
 	if c, err := OperatorDialContext(context.Background(), "tcp", addr); err == nil {
 		c.Close()

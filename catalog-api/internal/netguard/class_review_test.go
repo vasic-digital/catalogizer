@@ -175,6 +175,7 @@ func TestSECQ1A_ControlHookUsesPinCeiling(t *testing.T) {
 	}
 	c.Close()
 	pin.note(ClassPublic) // first connection reached a public address
+	time.Sleep(100 * time.Millisecond) // let the accept of the positive-control connection be counted
 	before := n.Load()
 	if c, err := d.Dial("tcp", addr); err == nil {
 		c.Close()
