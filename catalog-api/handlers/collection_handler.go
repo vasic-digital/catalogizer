@@ -332,7 +332,7 @@ func parseSmartRules(c *gin.Context, raws []json.RawMessage) (*smartrules.RuleSe
 	rs, err := smartrules.Parse(raws)
 	if err != nil {
 		if smartrules.IsValidation(err) {
-			utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid smart_rules: "+err.Error(), nil)
+			utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid smart_rules: "+validationText(err), err)
 		} else {
 			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to process smart_rules", err)
 		}
@@ -348,7 +348,7 @@ func (h *CollectionHandler) verifyRules(c *gin.Context, rs *smartrules.RuleSet, 
 	if err != nil {
 		if smartrules.IsValidation(err) {
 			// ValidationError text is fixed-format and client-correctable (like parseSmartRules).
-			utils.SendErrorResponse(c, http.StatusBadRequest, "Smart collection rules could not be evaluated: "+err.Error(), err)
+			utils.SendErrorResponse(c, http.StatusBadRequest, "Smart collection rules could not be evaluated: "+validationText(err), err)
 		} else {
 			utils.SendErrorResponse(c, http.StatusInternalServerError, "Smart collection rules could not be evaluated", err)
 		}

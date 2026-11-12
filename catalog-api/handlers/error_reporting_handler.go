@@ -82,7 +82,7 @@ func (h *ErrorReportingHandler) ReportError(w http.ResponseWriter, r *http.Reque
 
 	report, err := h.errorReportingService.ReportError(userID, &request)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -120,7 +120,7 @@ func (h *ErrorReportingHandler) ReportCrash(w http.ResponseWriter, r *http.Reque
 
 	report, err := h.errorReportingService.ReportCrash(userID, &request)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -149,7 +149,7 @@ func (h *ErrorReportingHandler) GetErrorReport(w http.ResponseWriter, r *http.Re
 
 	report, err := h.errorReportingService.GetErrorReport(reportID, userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		stdError(w, http.StatusNotFound, err)
 		return
 	}
 
@@ -178,7 +178,7 @@ func (h *ErrorReportingHandler) GetCrashReport(w http.ResponseWriter, r *http.Re
 
 	report, err := h.errorReportingService.GetCrashReport(reportID, userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		stdError(w, http.StatusNotFound, err)
 		return
 	}
 
@@ -202,7 +202,7 @@ func (h *ErrorReportingHandler) ListErrorReports(w http.ResponseWriter, r *http.
 	filters := h.parseErrorReportFilters(r)
 	reports, err := h.errorReportingService.GetErrorReportsByUser(userID, filters)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -229,7 +229,7 @@ func (h *ErrorReportingHandler) ListCrashReports(w http.ResponseWriter, r *http.
 	filters := h.parseCrashReportFilters(r)
 	reports, err := h.errorReportingService.GetCrashReportsByUser(userID, filters)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -270,7 +270,7 @@ func (h *ErrorReportingHandler) UpdateErrorStatus(w http.ResponseWriter, r *http
 
 	err = h.errorReportingService.UpdateErrorStatus(reportID, userID, request.Status)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -307,7 +307,7 @@ func (h *ErrorReportingHandler) UpdateCrashStatus(w http.ResponseWriter, r *http
 
 	err = h.errorReportingService.UpdateCrashStatus(reportID, userID, request.Status)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -329,7 +329,7 @@ func (h *ErrorReportingHandler) GetErrorStatistics(w http.ResponseWriter, r *htt
 
 	stats, err := h.errorReportingService.GetErrorStatistics(userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -352,7 +352,7 @@ func (h *ErrorReportingHandler) GetCrashStatistics(w http.ResponseWriter, r *htt
 
 	stats, err := h.errorReportingService.GetCrashStatistics(userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -375,7 +375,7 @@ func (h *ErrorReportingHandler) GetSystemHealth(w http.ResponseWriter, r *http.R
 
 	health, err := h.errorReportingService.GetSystemHealth()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -404,7 +404,7 @@ func (h *ErrorReportingHandler) UpdateConfiguration(w http.ResponseWriter, r *ht
 
 	err = h.errorReportingService.UpdateConfiguration(&config)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -429,7 +429,7 @@ func (h *ErrorReportingHandler) GetConfiguration(w http.ResponseWriter, r *http.
 
 	config, err := h.errorReportingService.GetConfiguration()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -466,7 +466,7 @@ func (h *ErrorReportingHandler) CleanupOldReports(w http.ResponseWriter, r *http
 	olderThan := time.Now().AddDate(0, 0, -request.DaysOld)
 	err = h.errorReportingService.CleanupOldReports(olderThan)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -492,7 +492,7 @@ func (h *ErrorReportingHandler) ExportReports(w http.ResponseWriter, r *http.Req
 	filters := h.parseExportFilters(r)
 	data, err := h.errorReportingService.ExportReports(userID, filters)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
 

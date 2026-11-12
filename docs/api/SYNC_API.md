@@ -2,7 +2,7 @@
 
 Base path: `/api/v1/sync`
 
-All endpoints require JWT authentication via `Authorization: Bearer <token>` header. Endpoints return JSON with `{ "success": true, "data": ... }` or `{ "success": false, "error": "...", "details": "..." }`.
+All endpoints require JWT authentication via `Authorization: Bearer <token>` header. Endpoints return JSON with `{ "success": true, "data": ... }` or `{ "success": false, "error": "...", "details": "..." }`. `details` is a fixed class text chosen by the HTTP status (`invalid input` for 400, `not permitted` for 401/403, `not found` for 404, `endpoint is not active` for 409, `connection test failed` for 502, `internal error` otherwise); it never carries the text of the underlying error, which is written to the server log only (CAT-PXF23-R5B).
 
 ## Endpoint Management
 

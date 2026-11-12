@@ -55,7 +55,8 @@ func (h *AuthHandler) LoginGin(c *gin.Context) {
 	result, err := h.authService.Login(req, ipAddress, userAgent)
 	if err != nil {
 		if errors.Is(err, services.ErrAccountPending) {
-			c.JSON(http.StatusForbidden, gin.H{"error": err.Error(), "code": "account_pending_approval"})
+			pendMsg, _ := authClientMessage(err, "Account pending approval")
+			c.JSON(http.StatusForbidden, gin.H{"error": pendMsg, "code": "account_pending_approval"})
 			return
 		}
 		msg, _ := authClientMessage(err, "Authentication failed")

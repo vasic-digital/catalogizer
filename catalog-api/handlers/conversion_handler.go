@@ -341,7 +341,7 @@ func writeJobError(c *gin.Context, err error, fallback string) {
 	case errors.Is(err, models.ErrConversionForbidden):
 		c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient permissions"})
 	case errors.Is(err, models.ErrConversionJobState):
-		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		c.JSON(http.StatusConflict, gin.H{"error": models.ErrConversionJobState.Error()})
 	default:
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fallback})
 	}
