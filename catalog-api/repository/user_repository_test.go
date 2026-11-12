@@ -272,7 +272,7 @@ func TestUserRepository_Update(t *testing.T) {
 						"updated", "updated@example.com",
 						sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(),
 						sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(),
-						true, "",
+						true, false, nil, "",
 						0, sqlmock.AnyArg(), 1,
 					).
 					WillReturnResult(sqlmock.NewResult(0, 1))

@@ -323,6 +323,12 @@ func (s *AuthService) GetCurrentUser(tokenString string) (*models.User, error) {
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
 
+	// A locked or suspended account has no valid session, even if a session row
+	// is still active (lock written by a writer that did not revoke sessions).
+	if user.IsAccountLocked() {
+		return nil, ErrAccountLocked
+	}
+
 	// Load user role
 	role, err := s.userRepo.GetRole(user.RoleID)
 	if err != nil {

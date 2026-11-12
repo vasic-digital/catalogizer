@@ -346,10 +346,13 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 		case "active":
 			user.IsActive = true
 			user.IsLocked = false
+			user.LockedUntil = nil
 		case "inactive":
 			user.IsActive = false
 		case "suspended":
+			// Permanent suspension (no expiry); lifted only by status "active".
 			user.IsLocked = true
+			user.LockedUntil = nil
 		}
 	}
 
@@ -362,7 +365,7 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 	// revoke (same rule as UserHandler.UpdateUser). Re-asserting one's own
 	// unchanged role revokes nothing (that would only log the admin out).
 	needRevoke := (updates.Role != nil && (roleChanged || id != admin.ID)) ||
-		wasActive && !user.IsActive || (updates.Status != nil && !user.IsActive)
+		wasActive && !user.IsActive || (updates.Status != nil && (!user.IsActive || *updates.Status == "suspended"))
 
 	// Revoke first (fail closed): a failed revocation leaves the user unchanged,
 	// so a retry still revokes.

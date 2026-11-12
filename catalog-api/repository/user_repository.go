@@ -182,15 +182,15 @@ func (r *UserRepository) Update(user *models.User) error {
 	query := `
 		UPDATE users SET
 			username = ?, email = ?, first_name = ?, last_name = ?, display_name = ?,
-			avatar_url = ?, time_zone = ?, language = ?, is_active = ?, settings = ?,
-			role_id = ?, updated_at = ?
+			avatar_url = ?, time_zone = ?, language = ?, is_active = ?, is_locked = ?, locked_until = ?,
+			settings = ?, role_id = ?, updated_at = ?
 		WHERE id = ?
 	`
 
 	_, err := r.db.Exec(query,
 		user.Username, user.Email, user.FirstName, user.LastName, user.DisplayName,
-		user.AvatarURL, user.TimeZone, user.Language, user.IsActive, user.Settings,
-		user.RoleID, time.Now(), user.ID)
+		user.AvatarURL, user.TimeZone, user.Language, user.IsActive, user.IsLocked, user.LockedUntil,
+		user.Settings, user.RoleID, time.Now(), user.ID)
 
 	return err
 }
@@ -210,19 +210,20 @@ func (r *UserRepository) UpdateGuarded(user *models.User, expectedRoleID int, ex
 	}
 	isAdmin := func(id int) bool { return containsInt(adminIDs, id) }
 	// The write removes an administrator when the stored row is an active
-	// admin and the new state is not (role without admin rights, or inactive).
-	removesAdmin := expectedActive && isAdmin(expectedRoleID) && !(user.IsActive && isAdmin(user.RoleID))
+	// admin and the new state is not (role without admin rights, inactive, or
+	// locked/suspended: a locked admin cannot log in or pass the admin gate).
+	removesAdmin := expectedActive && isAdmin(expectedRoleID) && !(user.IsActive && !user.IsLocked && isAdmin(user.RoleID))
 
 	query := `
 		UPDATE users SET
 			username = ?, email = ?, first_name = ?, last_name = ?, display_name = ?,
-			avatar_url = ?, time_zone = ?, language = ?, is_active = ?, settings = ?,
-			role_id = ?, updated_at = ?
+			avatar_url = ?, time_zone = ?, language = ?, is_active = ?, is_locked = ?, locked_until = ?,
+			settings = ?, role_id = ?, updated_at = ?
 		WHERE id = ? AND role_id = ? AND is_active = ?`
 	args := []interface{}{
 		user.Username, user.Email, user.FirstName, user.LastName, user.DisplayName,
-		user.AvatarURL, user.TimeZone, user.Language, user.IsActive, user.Settings,
-		user.RoleID, time.Now(), user.ID, expectedRoleID, expectedActive}
+		user.AvatarURL, user.TimeZone, user.Language, user.IsActive, user.IsLocked, user.LockedUntil,
+		user.Settings, user.RoleID, time.Now(), user.ID, expectedRoleID, expectedActive}
 	if removesAdmin {
 		clause, cargs := otherActiveAdminsClause(user.ID, adminIDs)
 		query += " AND " + clause
