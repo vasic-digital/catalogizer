@@ -1947,3 +1947,10 @@ R5-F1 (minor, test) no handler test that locked/disabled/session-expired/pending
 - R5-F5 [LANDED]: an uncompilable server-side custom pattern now answers 500 `internal_error` with fixed text (was 400 `validation_failed`); new `serverValidationError`. Other validation failures still 400. RED observed (400 vs 500).
 - PXR-1 [LANDED]: header leak test runs with and without `request_id`; mutant "Warning header leak only when request_id set" dies (and survives the old test).
 - Still Queued: R5-F6 / PXF23-R5a, PXR-2..4, R5b/R5d.
+
+## R5-FU review follow-ups (2026-11-12) — Opus GO-with-follow-ups; fix/r5-fu LANDED (PROVISIONAL)
+R5FU-F-A (minor, source-defect, latent) `authClientMessage` returns `err.Error()` for any chain containing a client sentinel; a future `%w` wrap with internal text would reach the client (mutant M5 survives). Fix: return the matched sentinel's own text / `PasswordPolicyError.Msg`; assert `Equal` in the wrapped-case test.
+R5FU-F-B (minor, source-defect) `validateSecretValue` (input_validation.go ~319-327) still returns a plain error for an uncompilable pattern (field `password` -> 400 `validation_failed`; other field -> 500). Use `serverValidationError` there too and test with `password`. The R5-F5 wording "now answers 500" overstates until then.
+R5FU-F-C (nit) `ErrSessionNotFound` entry in `authClientMessage` is unreachable from current callers (equivalent mutant M3b): remove or document.
+R5FU-F-D (nit) message assertions use `Contains`; switch to `Equal` together with F-A.
+R5FU-F-E (nit) import grouping in pxf23_r5_leak_test.go; `r5State` builds SQL by concatenation (test-only, fixed literals).
