@@ -1,0 +1,20 @@
+== M1-no-comment-strip
+--- FAIL: TestWSLocationMutantsAreRejected (0.00s)
+FAIL
+FAIL	catalogizer/internal/nginxwscheck	0.212s
+restored
+== M2-no-dup-check
+--- FAIL: TestWSLocationMutantsAreRejected (0.00s)
+FAIL
+FAIL	catalogizer/internal/nginxwscheck	0.214s
+restored
+== M3-no-upgrade-check
+--- FAIL: TestWSLocationMutantsAreRejected (0.00s)
+FAIL
+FAIL	catalogizer/internal/nginxwscheck	0.233s
+restored
+== M4-no-conn-check
+--- FAIL: TestWSLocationMutantsAreRejected (0.00s)
+FAIL
+FAIL	catalogizer/internal/nginxwscheck	0.236s
+restored

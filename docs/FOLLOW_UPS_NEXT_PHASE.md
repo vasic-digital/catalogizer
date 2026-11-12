@@ -2192,3 +2192,5 @@ WP03R3-F1..F7 addressed (F6 = heading moved above). Residual, UNCONFIRMED or owe
 - SONARRA-FU-1 (minor): `verify` mode masks only DOCKER_PASSWORD/DOCKER_TOKEN, not passwords decoded from DOCKER_AUTH_CONFIG (pre-existing, low risk).
 - SONARRA-FU-2 (nit): mutant R6 (trailing-newline sentinel) survives alone; add a test on the rejection message or accept redundancy.
 - SONARRA-FU-3 (nit): independent full 57-mutant run to completion owed when host load is lower; real-registry run owed (WP-09 Sonar scan). Extension cycle accepted by operator 2026-11-12. CLAUDE.md/AGENTS.md/QWEN.md/GEMINI.md carriers lack a (J) copy; html/pdf/docx twins not regenerated.
+
+- SEC-WS-1R3FU-1/2 (PROVISIONAL, config-level test only): ws_location_test.go now strips `#` comments, fails on >1 `proxy_set_header Host`, and requires Upgrade `$http_upgrade` + a Connection upgrade line per WS location; mutants Ma/Md/Me are tests; evidence docs/qa/secws1-fu/mutants.txt. Live edge run (SEC-WS-1-F1) still owed.
