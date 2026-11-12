@@ -323,7 +323,7 @@ func validateSecretValue(config InputValidationConfig, key, value string) error 
 	}
 	re, err := regexp.Compile(pattern)
 	if err != nil {
-		return fmt.Errorf("invalid validation pattern for field %s", key)
+		return &serverValidationError{msg: fmt.Sprintf("invalid validation pattern for field %s", key)}
 	}
 	if !re.MatchString(value) {
 		return clientErrorf("field %s does not match required pattern", key)

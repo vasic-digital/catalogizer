@@ -1970,3 +1970,17 @@ R5B-F2 (nit) conversion 409 dropped authored hint suffixes ("cancel it first"…
 R5B-F3 (nit, process-doc) SCRUBBED comment wrongly says addresses are scrubbed; ScrubErrorFor scrubs secrets only, so ListStorageRoot 502/404 can carry dial/netguard text with addresses (admin-only, pre-existing).
 R5B-F4 (minor, test-instrumentation) sweep allow-list keyed by file+substring (mutant R4 at scan_handler.go:448 survived); key by function.
 R5B-F5 (minor, test-instrumentation) sweep misses variable-carried errors (mutants R1 conversion_handler.go:344, R2 collection_handler.go:335, R3 localization_handlers.go:301 survived); make it go/types-aware; add HTTP RED tests for conversion 409, collection smart_rules, localization import/edit, QueueScan local root. Unclassified sink: internal/handlers/eventbus_bridge.go:82-84 and scan status `reason` scrubSecrets(err.Error()) (secrets scrubbed only).
+
+## CAT-R5FU-FU (2026-11-12, branch fix/r5fu-fu) - PROVISIONAL, review owed
+- R5FU-F-A [LANDED]: `authClientMessage` returns the matched sentinel's own text / `PasswordPolicyError.Msg`, never the wrapper chain text. RED first: `TestR5FUFA_*` failed on the old code (wrapped and errors.Join chains returned wrapper text incl. a password-hash-like marker). Test is at the `authClientMessage` choke point shared by the gin and std handlers (a real-stack wrapped sentinel is not injectable: services return sentinels unwrapped; UNCONFIRMED end-to-end for a future wrap). Wrapped-case test now `Equal`.
+- R5FU-F-B [LANDED]: `validateSecretValue` uncompilable pattern -> `serverValidationError` -> 500 `internal_error`, no field/pattern text. RED first: `TestR5FUFB_SecretFieldBadPatternIs500Fixed` got 400 `validation_failed`.
+- R5FU-F-C [LANDED, decision: removed]: `ErrSessionNotFound` is returned only by `AuthService.GetCurrentUser`, which no `authClientMessage` caller (Login, Refresh, ChangePassword, ValidatePassword) reaches; removed from the client-visible list (fails closed to the fallback); `TestR5FUFC_SessionNotFoundFallsBack`.
+- R5FU-F-D [LANDED]: message assertions in the account-state / intentional-message tests are now `Equal` on the extracted client message (`r5Msg`); NotContains leak checks unchanged.
+- R5FU-F-E [LANDED]: import grouping fixed; `r5State` binds the user name as a parameter (set clause is a fixed test literal).
+- Correction: the R5-F5 line above ("now answers 500") overstated for the secret-field path (`password` etc.); true only after R5FU-F-B.
+- Still Queued: R5-F6 / PXF23-R5a, PXR-2..4, R5b/R5d.
+
+## R5FU-FU review follow-ups (2026-11-12) — Opus GO-with-follow-ups; fix/r5fu-fu LANDED (PROVISIONAL)
+R5FUFU-1 (minor, source-defect) LoginGin ErrAccountPending branch (auth_handler.go ~68) still returns err.Error(); route through authClientMessage / services.ErrAccountPending.Error().
+R5FUFU-2 (minor, process-doc+test) comment "Order is irrelevant" in authClientSentinels is wrong: precedence = PasswordPolicyError, then slice order (mutant M5 reverse-iteration survived); correct the comment and add a two-sentinel-chain test.
+R5FUFU-3 (nit) "R5-F1" doc comment sits above helpers r5UpdateUserSQL/r5Msg instead of the tests it describes.
