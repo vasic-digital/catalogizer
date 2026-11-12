@@ -220,7 +220,7 @@ export const CollectionPreview: React.FC<CollectionPreviewProps> = ({
                         onClick={(e) => handleItemSelect(item.id, e)}
                         onKeyDown={(e) => {
                           // Native checkboxes toggle on Space only; keep the previous Enter-to-toggle behaviour.
-                          if (e.key === 'Enter') {
+                          if (e.key === 'Enter' && !e.repeat) {
                             e.preventDefault()
                             handleItemSelect(item.id, e)
                           }

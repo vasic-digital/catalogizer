@@ -454,36 +454,36 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
                   className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:shadow-lg transition-shadow text-left"
                   onClick={() => setSelectedTemplate(template)}
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className={`p-2 rounded-lg bg-${CATEGORIES.find(c => c.id === template.category)?.color}-100 dark:bg-${CATEGORIES.find(c => c.id === template.category)?.color}-900`}>
+                  <span className="flex items-start justify-between mb-3">
+                    <span className="flex items-center gap-2">
+                      <span className={`p-2 rounded-lg bg-${CATEGORIES.find(c => c.id === template.category)?.color}-100 dark:bg-${CATEGORIES.find(c => c.id === template.category)?.color}-900`}>
                         {template.icon}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900 dark:text-white text-sm">{template.name}</h4>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                      </span>
+                      <span className="flex-1">
+                        <span className="block font-semibold text-gray-900 dark:text-white text-sm">{template.name}</span>
+                        <span className="block text-xs text-gray-500 dark:text-gray-400">
                           {CATEGORIES.find(c => c.id === template.category)?.name}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                        </span>
+                      </span>
+                    </span>
+                  </span>
                   
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+                  <span className="block text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
                     {template.description}
-                  </p>
+                  </span>
                   
-                  <div className="flex items-center justify-between mb-3">
+                  <span className="flex items-center justify-between mb-3">
                     <Badge className={COMPLEXITY_COLORS[template.metrics?.complexity || 'simple']}>
                       {getComplexityLabel(template.metrics?.complexity || 'simple')}
                     </Badge>
-                  </div>
+                  </span>
                   
                   {template.preview && (
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      <div className="flex items-center justify-between">
+                    <span className="block text-xs text-gray-600 dark:text-gray-400">
+                      <span className="flex items-center justify-between">
                         <span>{template.preview.type}</span>
-                      </div>
-                    </div>
+                      </span>
+                    </span>
                   )}
                 </motion.button>
               ))}
@@ -496,26 +496,26 @@ export const CollectionTemplates: React.FC<CollectionTemplatesProps> = ({
                   className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:shadow-lg transition-shadow w-full text-left"
                   onClick={() => setSelectedTemplate(template)}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-lg bg-${CATEGORIES.find(c => c.id === template.category)?.color}-100 dark:bg-${CATEGORIES.find(c => c.id === template.category)?.color}-900`}>
+                  <span className="flex items-center gap-4">
+                    <span className={`p-3 rounded-lg bg-${CATEGORIES.find(c => c.id === template.category)?.color}-100 dark:bg-${CATEGORIES.find(c => c.id === template.category)?.color}-900`}>
                       {template.icon}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="font-semibold text-gray-900 dark:text-white">{template.name}</h4>
-                        <div className="flex items-center gap-2">
+                    </span>
+                    <span className="flex-1">
+                      <span className="flex items-center justify-between mb-1">
+                        <span className="block font-semibold text-gray-900 dark:text-white">{template.name}</span>
+                        <span className="flex items-center gap-2">
                           <Badge className={COMPLEXITY_COLORS[template.metrics?.complexity || 'simple']}>
                             {getComplexityLabel(template.metrics?.complexity || 'simple')}
                           </Badge>
-                        </div>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">{template.description}</p>
-                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        </span>
+                      </span>
+                      <span className="block text-sm text-gray-600 dark:text-gray-300">{template.description}</span>
+                      <span className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                         {template.metrics?.lastUpdated && <span>Updated {template.metrics.lastUpdated}</span>}
-                      </div>
-                    </div>
+                      </span>
+                    </span>
                     <ChevronRight className="w-5 h-5 text-gray-400" />
-                  </div>
+                  </span>
                 </button>
               ))}
             </div>

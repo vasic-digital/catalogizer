@@ -308,4 +308,23 @@ describe('CollectionTemplates', () => {
       expect(screen.getByText('Description')).toBeInTheDocument()
     })
   })
+
+  describe('FU2-3: no block content inside template buttons (HTML content model)', () => {
+    const BLOCK = 'div,p,h1,h2,h3,h4,h5,h6,ul,ol,li,table,section,article,header,footer,form,pre'
+    const offenders = (btn: HTMLElement) => Array.from(btn.querySelectorAll(BLOCK)).map((n) => n.tagName)
+
+    it('grid-view template buttons contain only phrasing content', () => {
+      render(<CollectionTemplates {...defaultProps} />)
+      const card = screen.getByText('Recent Movies').closest('button') as HTMLElement
+      expect(offenders(card)).toEqual([])
+    })
+
+    it('list-view template buttons contain only phrasing content', async () => {
+      const user = userEvent.setup()
+      render(<CollectionTemplates {...defaultProps} />)
+      await user.click(screen.getByTestId('icon-list').closest('button') as HTMLElement)
+      const card = screen.getByText('Recent Movies').closest('button') as HTMLElement
+      expect(offenders(card)).toEqual([])
+    })
+  })
 })
