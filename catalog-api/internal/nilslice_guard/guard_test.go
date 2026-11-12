@@ -317,6 +317,45 @@ func TestDetectorsSeeNS3Shapes(t *testing.T) {
 	}
 }
 
+// PX-F15: clean twins (0 findings) and positive twins (1 finding) for the "assigned"/"checked" evidence shapes. Each pair pins one
+// branch of the detector so a reviewer mutant that drops that branch turns a case red.
+func TestDetectorAssignmentEvidenceShapes(t *testing.T) {
+	cases := []struct {
+		name, src string
+		want      int
+		contains  string
+	}{
+		// `out, e := g()` reuses the named result `out` (e is the new name): it is an assignment of out
+		{"redeclare-reuses-named-result-clean", "package x\nfunc g() ([]int, error) { return []int{}, nil }\nfunc A() (out []int, err error) {\n\tout, e := g()\n\t_ = e\n\treturn\n}\n", 0, ""},
+		{"redeclare-other-name-does-not-assign-out", "package x\nfunc g() ([]int, error) { return []int{}, nil }\nfunc A() (out []int, err error) {\n\to2, e := g()\n\t_, _ = o2, e\n\treturn\n}\n", 1, "named result out"},
+		// `fill(&out)` hands the variable to a callee
+		{"address-of-named-result-clean", "package x\nfunc fill(p *[]int) { *p = []int{} }\nfunc A() (out []int) {\n\tfill(&out)\n\treturn\n}\n", 0, ""},
+		{"address-of-other-variable-does-not-assign-out", "package x\nfunc fill(p *int) {}\nfunc A() (out []int) {\n\tx := 1\n\tfill(&x)\n\treturn\n}\n", 1, "named result out"},
+		// a range key that is the outer variable assigns it on every iteration
+		{"range-key-assigns-outer-clean", "package x\nfunc A(c chan []int) (out []int) {\n\tfor out = range c {\n\t}\n\treturn\n}\n", 0, ""},
+		{"range-key-other-variable-does-not-assign-out", "package x\nfunc A(c chan int) (out []int) {\n\tfor i := range c {\n\t\t_ = i\n\t}\n\treturn\n}\n", 1, "named result out"},
+		// `!= nil` is not a normalisation of a nil slice; only `== nil` (the guarded assignment idiom) counts
+		{"not-equal-nil-check-is-not-normalisation", "package x\nfunc A() []int {\n\tvar l []int\n\tif l != nil {\n\t\t_ = l\n\t}\n\treturn l\n}\n", 1, "var l returned"},
+		{"equal-nil-check-is-normalisation-clean", "package x\nfunc A() []int {\n\tvar l []int\n\tif l == nil {\n\t\tl = []int{}\n\t}\n\treturn l\n}\n", 0, ""},
+		// a named result that is only nil-checked (== nil) counts as normalised
+		{"checked-only-named-result-clean", "package x\nfunc A() (out []int) {\n\tif out == nil {\n\t}\n\treturn\n}\n", 0, ""},
+		{"not-equal-checked-only-named-result-flagged", "package x\nfunc A() (out []int) {\n\tif out != nil {\n\t}\n\treturn\n}\n", 1, "named result out"},
+		// `:=` (define) and `=` (assign) are both assignments
+		{"plain-assign-named-result-clean", "package x\nfunc A() (out []int) {\n\tout = []int{}\n\treturn\n}\n", 0, ""},
+		{"define-assign-in-inner-scope-does-not-assign-out", "package x\nfunc A() (out []int) {\n\tif true {\n\t\tout := []int{}\n\t\t_ = out\n\t}\n\treturn\n}\n", 1, "named result out"},
+	}
+	for _, c := range cases {
+		dir := t.TempDir()
+		if err := os.WriteFile(filepath.Join(dir, "x.go"), []byte(c.src), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		got := offenders(t, dir, false)
+		if len(got) != c.want || (c.want > 0 && !strings.Contains(got[0], c.contains)) {
+			t.Errorf("%s: want %d finding(s) containing %q, got %v", c.name, c.want, c.contains, got)
+		}
+	}
+}
+
 // The scan is recursive: an offender in a nested package directory must be found.
 func TestScanIsRecursive(t *testing.T) {
 	dir := t.TempDir()
