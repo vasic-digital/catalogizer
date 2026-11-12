@@ -82,3 +82,7 @@ Scope: deep web research (open-source Synology/DSM emulation e.g. Virtual DSM/vd
 - LAN exposure: ALL options must be fully supported (LAN-IP bind on reserved range, loopback-only, host networking) as selectable config; default remains safest (loopback/LAN-IP published ports).
 - KVM: keep per-user ACL, re-probe every run; land Containers branch fix/containers-g1-g2-g11 upstream after Opus GO.
 Research artifacts: scratchpad nasemu/{report,plan,winmac_research}.md (to be copied into docs/research/ when finalised). Work items NE-0b..NE-12 pending.
+
+### BG-NASEMU NE-0b result (2026-11-13 00:35 CET) - PROVISIONAL notes: docs/research/nasemu/ne0b_notes.md
+KVM ACL ok, /dev/net/tun ok rootless, /dev/vhost-net NOT usable (no ACL) => vdsm NAT/user-mode only; /dev/sda1 is 7.3T NTFS UNMOUNTED root:disk (unusable rootless); home volume only ~55G free (VM images won't fit: vdsm >=16G, Windows >=32G, macOS 64G). Synology File Station PDF is proprietary (forbids design use without written permission) - shim legality UNCONFIRMED. rclone serve nfs: NFSv3, no auth, needs --vfs-cache-mode for writes. Unraid/TrueNAS/OMV VM-only; CasaOS excluded.
+Open operator questions: Synology API shim from proprietary PDF (allow / clean-room from observed behaviour of real vdsm only / skip); VM disk location (free space on home volume vs mount external disk); vhost-net ACL grant.
