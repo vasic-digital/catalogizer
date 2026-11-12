@@ -521,9 +521,9 @@ func (s *AuthService) verifyPassword(password, salt, hash string) bool {
 // or password change inside that window deterministically.
 var loginPostSessionHook func()
 
-// errUserChangedDuringLogin is returned when the account changed while the login
+// ErrUserChangedDuringLogin is returned when the account changed while the login
 // was in flight; the freshly created session is deactivated.
-var errUserChangedDuringLogin = errors.New("account changed during login, please retry")
+var ErrUserChangedDuringLogin = errors.New("account changed during login, please retry")
 
 // verifyUserUnchanged re-reads the user and compares the fields a session or
 // token embeds or depends on (role, active, locked, password hash and salt).
@@ -540,7 +540,7 @@ func (s *AuthService) verifyUserUnchanged(orig *models.User, acceptableHashes []
 		}
 	}
 	if cur.RoleID != orig.RoleID || cur.IsActive != orig.IsActive || cur.IsLocked != orig.IsLocked || !hashOK {
-		return errUserChangedDuringLogin
+		return ErrUserChangedDuringLogin
 	}
 	return nil
 }

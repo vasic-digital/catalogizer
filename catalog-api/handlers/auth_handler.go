@@ -27,6 +27,7 @@ func authClientMessage(err error, fallback string) (string, bool) {
 		errors.Is(err, services.ErrAccountLocked),
 		errors.Is(err, services.ErrAccountDisabled),
 		errors.Is(err, services.ErrAccountPending),
+		errors.Is(err, services.ErrUserChangedDuringLogin),
 		errors.Is(err, services.ErrInvalidRefreshToken),
 		errors.Is(err, services.ErrSessionExpired),
 		errors.Is(err, services.ErrSessionNotFound),
