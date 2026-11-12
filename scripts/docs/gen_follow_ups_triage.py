@@ -39,9 +39,24 @@ LAYER_STATED = collections.OrderedDict([
 CLOSE_TOK = r'(?:PROVISIONAL-DONE|FIXED|LANDED|CLOSED|DONE|RESOLVED|\[LANDED\])'
 # strong: the entry itself OPENS with a closing token (never a noun such as "fixed members")
 START_CLOSE = re.compile(r'^(?:' + CLOSE_TOK + r'|(?:fixed|closed|landed|done|resolved)(?=\s+(?:in|by|on|at|here|via|as|with)\b|\s*\())(?=[\s:;,.)\]]|$)')
-OPEN_ANY = re.compile(r'\b(?:OPEN|OWED|Queued|PARTIAL|PARTLY)\b|\bOpen:|\b[Pp]artial(?:ly)?\b|\bresidual\b|\b[Nn]ot yet fixed\b|\b[Nn]ot fixed\b')
+OPEN_ANY_CS = re.compile(r'\b(?:OPEN|OWED|Queued|PARTIAL|PARTLY)\b|\bOpen:')
+# remainder detector, case-insensitive: a landed claim whose own text qualifies it (round-3 class: "landed claim negated or qualified by its own text")
+REMAIN_RE = re.compile(
+    r'\bstill\s+(?:open|unguarded|unfixed|missing|last-write-wins|queued|owed|pending|unprotected|unchecked|unconfirmed|vulnerable|broken|failing)\b'
+    r'|\bnot\s+(?:re-?checked|covered|yet|fixed|handled|guarded|addressed|done)\b'
+    r'|\b(?:follow-ups?|remaining|residual|caveats?|limitations?|known gaps?)\s*:'
+    r'|\([a-d1-3]\)\s+\S|(?:^|\s)[1-3]\.\s+\S'
+    r'|\boperator decision\b[^.]{0,60}\b(?:open|pending|owed|needed|required)\b'
+    r'|\bfor the \w+ side\b|\bpartial(?:ly)?\b|\bresidual\b|\bunfixed\b|\bunguarded\b'
+    r'|\b(?:fixes|covers|handles) only\b|\bonly the \w+ (?:side|half|part|leg)\b', re.I)
+class _Open:
+    @staticmethod
+    def search(t):
+        return OPEN_ANY_CS.search(t) or REMAIN_RE.search(t)
+OPEN_ANY = _Open()
+NEG_RE = re.compile(r'\bNO-GO\b|\bnot\b|\bnever\b|\bpending\b|\bblocked\b|\bwithheld\b|\bun(?:landed|fixed|resolved)\b', re.I)
 DONE_HEAD = re.compile(r'\b(DONE|FIXED|LANDED|CLOSED|RESOLVED|SUPERSEDED|PROVISIONAL-DONE)\b|\[LANDED\]')
-OPEN_HEAD = re.compile(r'STILL OPEN|\bOPEN\b|\bOWED\b|\bQueued\b')
+OPEN_HEAD = re.compile(r'STILL OPEN|\bOPEN\b|\bOWED\b|\bQueued\b|\[[^\]]*\b(?:open|queued|owed)\b[^\]]*\]')
 FULL_DONE = re.compile(r'\*\*(?:FIXED|CLOSED|DONE|LANDED)\b|\b(?:CLOSED|FIXED|LANDED|landed|closed) (?:in|by|on|at)\b|\(CLOSED|\(FIXED|\(DONE')
 LATER_DONE = re.compile(r'\b(CLOSED|DONE|FIXED|landed|LANDED)\b')
 DUP_RE = re.compile(r'(?:duplicate of|same as|merged into|dup of)\s+`?(' + ID_ONE + ')')
@@ -83,11 +98,22 @@ def letters(ident):
     return len(re.sub(r'[^A-Z]', '', re.sub(r'-?\d+[a-z]?$', '', ident)))
 
 
+def negated(text):
+    """True when a closing word in text is negated or qualified by words around it (NO-GO, NOT landed, pending, blocked, unlanded...).
+    Windowed check per closing word; NO-GO anywhere negates the whole line."""
+    if re.search(r'\bNO-GO\b', text):
+        return True
+    ms = list(HEAD_DONE.finditer(text))
+    if not ms:
+        return bool(NEG_RE.search(text))
+    return all(NEG_RE.search(text[max(0, m.start() - 25):m.start()]) or NEG_RE.search(text[m.end():m.end() + 20]) for m in ms)
+
+
 def heading_landed(doc_text):
     """id -> (line, heading) for ids a heading states landed/closed: single id or range PX-F1..F7."""
     res = {}
     for n, line in enumerate(doc_text.split('\n'), 1):
-        if not line.startswith('#') or not HEAD_DONE.search(line):
+        if not line.startswith('#') or not HEAD_DONE.search(line) or negated(line):
             continue
         h = line.lstrip('#').strip()
         done_at = HEAD_DONE.search(h).start()
@@ -130,7 +156,7 @@ def parse(doc_text):
         else:
             cur = None
             st = line.strip()
-            if LABEL_LANDED.match(st):
+            if LABEL_LANDED.match(st) and not negated(st):
                 mode = 'landed'
             elif LABEL_OPEN.match(st):
                 mode = 'open'
@@ -208,7 +234,7 @@ def classify(item, ident, dup_count, gitev, later, hland):
     elif (closed_start or parent_closed) and not openw:
         status = 'landed'
         ev = 'entry opens with a closing token and states nothing open (PROVISIONAL)' if closed_start else 'nested under a closed parent bullet (PROVISIONAL)'
-    elif closed_start and openw:
+    elif (closed_start or parent_closed) and openw:
         status, ev = 'unconfirmed', 'partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed)'
     elif open_hit:
         status, ev = 'open', 'entry states OPEN/OWED/Queued near its start'
@@ -276,7 +302,7 @@ def later_mentions(doc_text, items):
             if m.group(1) in lead_ids.get(n, ()):
                 continue
             w = line[m.end():m.end() + 50]
-            if LATER_DONE.search(w) and not re.search(r'\b(open|OPEN|Queued|not)\b', w):
+            if LATER_DONE.search(w) and not re.search(r'\b(open|OPEN|Queued|not|NO-GO)\b', w):
                 res[m.group(1)] = (n, line[max(0, m.start() - 10):m.end() + 50].strip()[:90].replace('|', '/'))
     return res
 
@@ -372,7 +398,7 @@ def render(rows, ref, sha, doc, prose=()):
     w = lines.append
     w('# Follow-ups triage (machine-derived)\n')
     w('| Field | Value |\n|---|---|')
-    w('| Revision | 3 |\n| Created | 2026-11-12 |\n| Last modified | 2026-11-12 (Rev 3: three-valued status, strong-evidence landed rule, unclassified blocker value after review round 2) |\n| Status | active (PROVISIONAL: derived by script, not human-verified row by row) |')
+    w('| Revision | 4 |\n| Created | 2026-11-12 |\n| Last modified | 2026-11-12 (Rev 4: negated/qualified landed claims (NO-GO headings, case-insensitive inline remainders, bracketed open) are not landed; Rev 3: three-valued status, strong-evidence landed rule, unclassified blocker value) |\n| Status | active (PROVISIONAL: derived by script, not human-verified row by row) |')
     w('| Roadmap-Item | CAT-WP10-TRIAGE |')
     w('| Source | `%s` at `%s` of `%s` |' % (doc, sha, ref))
     w('| Generator | `scripts/docs/gen_follow_ups_triage.py` (test: `scripts/docs/test_gen_follow_ups_triage.py`) |')
@@ -381,7 +407,7 @@ def render(rows, ref, sha, doc, prose=()):
     w('## Table of contents\n\n- [Method and limits](#method-and-limits)\n- [Counts](#counts)\n- [Top blockers](#top-blockers)\n- [Proposed follow-up policy](#proposed-follow-up-policy-not-applied)\n- [Full table](#full-table)\n')
     w('## Method and limits\n')
     w('* Rows are bullet entries of the register that begin with an id (one row per id and line). Ids mentioned only inside prose are not rows. Ids that appear as the lead of several bullets (`F1`, `R1`, ...) are listed once per bullet and get no git evidence.')
-    w('* Reused generic ids (`F1`, `F3`, `R1`, ...) have several rows; a closing in a later section cannot be tied to the right row by id, so such rows may still read `open`. Review them by line. Status sources, in order: duplicate-of; `landed` (STRONG only): the entry itself opens with a closing token (FIXED / LANDED / [LANDED] / PROVISIONAL-DONE / DONE / CLOSED / RESOLVED, also inside its first parenthesis) and states nothing open anywhere in it, or it is nested under a bullet that opens that way, or a `Fixed:`/`Closed:` label line above it, or a heading that names the id or an id range landed (`PX-F1..F7 landed`), or a CODE commit naming the id or a range of ids (id with at least 3 family letters, unique among the lead ids; the commit subject is not `docs:`/`docs(`, not a register commit, and its diff touches a file that is neither `*.md` nor under `docs/`); `open`: the entry says OPEN/OWED/Queued near its start; `unconfirmed`: everything weaker (a closing word that is not at the start of the entry, a later prose line, a partial entry that opens with a closing token but also states an open remainder, a code commit against an entry that states an open remainder). **`unconfirmed` is NOT closed**: it needs a human check and is counted next to open, never as done.')
+    w('* Reused generic ids (`F1`, `F3`, `R1`, ...) have several rows; a closing in a later section cannot be tied to the right row by id, so such rows may still read `open`. Review them by line. Status sources, in order: duplicate-of; `landed` (STRONG only): the entry itself opens with a closing token (FIXED / LANDED / [LANDED] / PROVISIONAL-DONE / DONE / CLOSED / RESOLVED, also inside its first parenthesis) and states nothing open anywhere in it, or it is nested under a bullet that opens that way, or a `Fixed:`/`Closed:` label line above it, or a heading that names the id or an id range landed (`PX-F1..F7 landed`; not when the heading is negated: NO-GO, NOT, pending, blocked, unlanded), or a CODE commit naming the id or a range of ids (id with at least 3 family letters, unique among the lead ids; the commit subject is not `docs:`/`docs(`, not a register commit, and its diff touches a file that is neither `*.md` nor under `docs/`); `open`: the entry says OPEN/OWED/Queued near its start; `unconfirmed`: everything weaker (a landed claim whose own text states a remainder, case-insensitive: still open/unguarded/missing, not re-checked/covered/yet, `Follow-ups:`/`Remaining:`/`Caveat:` lists, `for the X side`, partially, an open operator decision; a closing word that is not at the start of the entry, a later prose line, a partial entry that opens with a closing token but also states an open remainder, a code commit against an entry that states an open remainder). **`unconfirmed` is NOT closed**: it needs a human check and is counted next to open, never as done.')
     w('* Severity is only what the entry (first 200 characters) or its section heading states (`(sec)` = taken from the section heading). Not stated: `UNKNOWN`. Nothing is inferred.')
     w('* Layer: stated (`source-defect` / `test-instrumentation` / `process-doc`) or, with a trailing `*`, derived from the Type word or keywords (a heuristic).')
     w('* Status: `landed` only on the strong evidence above (PROVISIONAL: a code commit on `%s` shows work reached main, not that the register was updated or the fix verified); `duplicate-of` only when the entry says so. Known misses: reused generic ids (`FU-4`, `F1`, ...) whose closing sits in another section stay `open` or `unconfirmed`; nothing is guessed.' % ref)

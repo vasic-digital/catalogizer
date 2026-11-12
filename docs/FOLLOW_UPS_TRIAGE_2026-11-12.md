@@ -2,12 +2,12 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-11-12 |
-| Last modified | 2026-11-12 (Rev 3: three-valued status, strong-evidence landed rule, unclassified blocker value after review round 2) |
+| Last modified | 2026-11-12 (Rev 4: negated/qualified landed claims (NO-GO headings, case-insensitive inline remainders, bracketed open) are not landed; Rev 3: three-valued status, strong-evidence landed rule, unclassified blocker value) |
 | Status | active (PROVISIONAL: derived by script, not human-verified row by row) |
 | Roadmap-Item | CAT-WP10-TRIAGE |
-| Source | `docs/FOLLOW_UPS_NEXT_PHASE.md` at `0777a4f8` of `main` |
+| Source | `docs/FOLLOW_UPS_NEXT_PHASE.md` at `811da03f` of `main` |
 | Generator | `scripts/docs/gen_follow_ups_triage.py` (test: `scripts/docs/test_gen_follow_ups_triage.py`) |
 | Companion docs | `docs/FOLLOW_UPS_NEXT_PHASE.md`, `docs/WORKABLE_ITEMS_REGISTER.md` |
 
@@ -24,7 +24,7 @@ Do not edit the table by hand; regenerate: `python3 scripts/docs/gen_follow_ups_
 ## Method and limits
 
 * Rows are bullet entries of the register that begin with an id (one row per id and line). Ids mentioned only inside prose are not rows. Ids that appear as the lead of several bullets (`F1`, `R1`, ...) are listed once per bullet and get no git evidence.
-* Reused generic ids (`F1`, `F3`, `R1`, ...) have several rows; a closing in a later section cannot be tied to the right row by id, so such rows may still read `open`. Review them by line. Status sources, in order: duplicate-of; `landed` (STRONG only): the entry itself opens with a closing token (FIXED / LANDED / [LANDED] / PROVISIONAL-DONE / DONE / CLOSED / RESOLVED, also inside its first parenthesis) and states nothing open anywhere in it, or it is nested under a bullet that opens that way, or a `Fixed:`/`Closed:` label line above it, or a heading that names the id or an id range landed (`PX-F1..F7 landed`), or a CODE commit naming the id or a range of ids (id with at least 3 family letters, unique among the lead ids; the commit subject is not `docs:`/`docs(`, not a register commit, and its diff touches a file that is neither `*.md` nor under `docs/`); `open`: the entry says OPEN/OWED/Queued near its start; `unconfirmed`: everything weaker (a closing word that is not at the start of the entry, a later prose line, a partial entry that opens with a closing token but also states an open remainder, a code commit against an entry that states an open remainder). **`unconfirmed` is NOT closed**: it needs a human check and is counted next to open, never as done.
+* Reused generic ids (`F1`, `F3`, `R1`, ...) have several rows; a closing in a later section cannot be tied to the right row by id, so such rows may still read `open`. Review them by line. Status sources, in order: duplicate-of; `landed` (STRONG only): the entry itself opens with a closing token (FIXED / LANDED / [LANDED] / PROVISIONAL-DONE / DONE / CLOSED / RESOLVED, also inside its first parenthesis) and states nothing open anywhere in it, or it is nested under a bullet that opens that way, or a `Fixed:`/`Closed:` label line above it, or a heading that names the id or an id range landed (`PX-F1..F7 landed`; not when the heading is negated: NO-GO, NOT, pending, blocked, unlanded), or a CODE commit naming the id or a range of ids (id with at least 3 family letters, unique among the lead ids; the commit subject is not `docs:`/`docs(`, not a register commit, and its diff touches a file that is neither `*.md` nor under `docs/`); `open`: the entry says OPEN/OWED/Queued near its start; `unconfirmed`: everything weaker (a landed claim whose own text states a remainder, case-insensitive: still open/unguarded/missing, not re-checked/covered/yet, `Follow-ups:`/`Remaining:`/`Caveat:` lists, `for the X side`, partially, an open operator decision; a closing word that is not at the start of the entry, a later prose line, a partial entry that opens with a closing token but also states an open remainder, a code commit against an entry that states an open remainder). **`unconfirmed` is NOT closed**: it needs a human check and is counted next to open, never as done.
 * Severity is only what the entry (first 200 characters) or its section heading states (`(sec)` = taken from the section heading). Not stated: `UNKNOWN`. Nothing is inferred.
 * Layer: stated (`source-defect` / `test-instrumentation` / `process-doc`) or, with a trailing `*`, derived from the Type word or keywords (a heuristic).
 * Status: `landed` only on the strong evidence above (PROVISIONAL: a code commit on `main` shows work reached main, not that the register was updated or the fix verified); `duplicate-of` only when the entry says so. Known misses: reused generic ids (`FU-4`, `F1`, ...) whose closing sits in another section stay `open` or `unconfirmed`; nothing is guessed.
@@ -34,24 +34,24 @@ Do not edit the table by hand; regenerate: `python3 scripts/docs/gen_follow_ups_
 
 ## Counts
 
-Rows: 732. By status: landed 187, open 498, unconfirmed 47. **`unconfirmed` rows are NOT closed**: they have only weak evidence and need a human check; they are not part of the landed count.
+Rows: 749. By status: landed 170, open 512, unconfirmed 67. **`unconfirmed` rows are NOT closed**: they have only weak evidence and need a human check; they are not part of the landed count.
 
-Unconfirmed rows by severity: UNKNOWN 27, important 3, minor 13, nit 4; by layer: UNKNOWN 22, process-doc 3, source-defect 2, test-instrumentation 20.
+Unconfirmed rows by severity: UNKNOWN 43, important 3, minor 16, nit 5; by layer: UNKNOWN 37, process-doc 4, source-defect 2, test-instrumentation 24.
 
-Open rows by layer (derived `*` merged): UNKNOWN 288, process-doc 64, source-defect 29, test-instrumentation 117.
+Open rows by layer (derived `*` merged): UNKNOWN 297, process-doc 64, source-defect 30, test-instrumentation 121.
 
-Open rows by severity: UNKNOWN 279, important 13, minor 139, nit 67.
+Open rows by severity: UNKNOWN 288, important 13, minor 144, nit 67.
 
 Open layer x severity:
 
 | layer | critical | important | minor | nit | UNKNOWN |
 |---|---|---|---|---|---|
-| source-defect | 0 | 1 | 17 | 5 | 6 |
-| test-instrumentation | 0 | 7 | 46 | 15 | 49 |
+| source-defect | 0 | 1 | 18 | 5 | 6 |
+| test-instrumentation | 0 | 8 | 48 | 15 | 50 |
 | process-doc | 0 | 1 | 23 | 13 | 27 |
-| UNKNOWN | 0 | 4 | 53 | 34 | 197 |
+| UNKNOWN | 0 | 3 | 55 | 34 | 205 |
 
-Blockers by rule (open or unconfirmed): 7 (open 5, unconfirmed 2). `unclassified` (severity UNKNOWN + source-defect/UNKNOWN layer; neither blocker nor non-blocker): 220, of which 23 carry a security-adjacent word and need triage first. See proposed policy (4): every id carries a stated severity.
+Blockers by rule (open or unconfirmed): 6 (open 4, unconfirmed 2). `unclassified` (severity UNKNOWN + source-defect/UNKNOWN layer; neither blocker nor non-blocker): 241, of which 26 carry a security-adjacent word and need triage first. See proposed policy (4): every id carries a stated severity.
 
 Open rows per cluster family (top 15):
 
@@ -83,15 +83,17 @@ Rule `yes` rows first, then the security-adjacent `unclassified` rows (first 25)
 | yes | P2 | 759 | unconfirmed | source-defect | important | status unconfirmed (not closed); important + source-defect | P2 / Authz review r3 follow-ups |
 | yes | N2 | 1027 | open | UNKNOWN | important | important + layer unclassifiable = source-defect per 11.4.235(D) | N2 / Route permissions review |
 | yes | AZ2-R1 | 1111 | unconfirmed | source-defect | important | status unconfirmed (not closed); important + source-defect | AZ2 / Authz round 2 review follow-ups |
-| yes | CAT-D9-SUSPEND | 1279 | open | UNKNOWN | important | important + layer unclassifiable = source-defect per 11.4.235(D) | CAT-D9-SUSPEND / D9 review round 1 follow-ups |
 | yes | UI-FAV-1 | 1475 | open | UNKNOWN | important | important + layer unclassifiable = source-defect per 11.4.235(D) | UI-FAV / Stack-3 browser pass follow-ups registered |
 | yes | TAURI-F6 | 1564 | open | UNKNOWN | important | important + layer unclassifiable = source-defect per 11.4.235(D) | TAURI / Tauri confirm-on-URL-change follow-ups |
 | unclassified | R3-M2 | 383 | unconfirmed | UNKNOWN | UNKNOWN | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | R3 / WrapHTTPHandler path-param fix |
 | unclassified | F10 | 626 | open | source-defect | UNKNOWN | severity UNKNOWN + source-defect layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | F10 / CAT-001 review R1 deferrals |
+| unclassified | R3-M2 | 663 | unconfirmed | UNKNOWN | UNKNOWN | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | R3 / Authorization gaps |
+| unclassified | CAT-050 | 663 | unconfirmed | UNKNOWN | UNKNOWN | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | CAT / Authorization gaps |
 | unclassified | R2 | 750 | open | UNKNOWN | UNKNOWN | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | R2 / CAT-001 review R4 class inventory |
 | unclassified | S1 | 797 | open | UNKNOWN | UNKNOWN | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | S1 / Live scaling / stress / chaos suite |
 | unclassified | S1 | 834 | open | UNKNOWN | UNKNOWN | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | S1 / S1 resolution |
 | unclassified | CV-F4 | 1044 | open | UNKNOWN | UNKNOWN | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | CV / Converter hardening landing follow-ups |
+| unclassified | WL8 | 1093 | unconfirmed | UNKNOWN | UNKNOWN | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | W / Live browser specs for catalog-web |
 | unclassified | WL11 | 1096 | unconfirmed | UNKNOWN | UNKNOWN | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | W / Live browser specs for catalog-web |
 | unclassified | WL12-F2 | 1099 | unconfirmed | UNKNOWN | UNKNOWN | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | WL12 / Live browser specs for catalog-web |
 | unclassified | AZ2-8 | 1105 | open | UNKNOWN | UNKNOWN | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | AZ2 / Live browser specs for catalog-web |
@@ -108,7 +110,6 @@ Rule `yes` rows first, then the security-adjacent `unclassified` rows (first 25)
 | unclassified | N2 | 1771 | open | UNKNOWN | UNKNOWN | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | N2 / CAT-REL-CHECK-1 follow-ups |
 | unclassified | PX-F22 | 1888 | open | UNKNOWN | UNKNOWN | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | PX / PX-F15/F16 landed |
 | unclassified | PXF23-F1 | 1912 | open | UNKNOWN | UNKNOWN | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | PXF23 / CAT-PXF23 |
-| unclassified | PXF23-R5d | 1938 | open | UNKNOWN | UNKNOWN | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | PXF23 / CAT-PXF23-R5 landed |
 
 Scope of the open set: only bullet entries that BEGIN with an id are rows. 1 further ids are mentioned only inside prose or only in the register and are NOT rows, so a blocker that exists only there is invisible to the table. Prose/register-only ids on a line that says important/critical/blocker (first 20): CAT-QA-SONAR-1 (line 1757). Known prose-only candidate: `OBF-1` ("Follow-ups (Queued, minor): OBF-1 ..." list near line 1921; minor, a rollback that can delete an unreadable config). `CAT-D9-SUSPEND` is a row (line 1279) and also in the register Part A. The table it does not replace the register.
 
@@ -124,7 +125,6 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 |---|---|---|---|---|---|---|---|---|
 | F3 | 402 | source-defect | important | yes | important + source-defect | F3 / Responsive audit series | open | no closing evidence in the entry, no code commit on ref |
 | N2 | 1027 | UNKNOWN | important | yes | important + layer unclassifiable = source-defect per 11.4.235(D) | N2 / Route permissions review | open | entry states OPEN/OWED/Queued near its start |
-| CAT-D9-SUSPEND | 1279 | UNKNOWN | important | yes | important + layer unclassifiable = source-defect per 11.4.235(D) | CAT-D9-SUSPEND / D9 review round 1 follow-ups | open | entry states OPEN/OWED/Queued near its start |
 | UI-FAV-1 | 1475 | UNKNOWN | important | yes | important + layer unclassifiable = source-defect per 11.4.235(D) | UI-FAV / Stack-3 browser pass follow-ups registered | open | no closing evidence in the entry, no code commit on ref |
 | TAURI-F6 | 1564 | UNKNOWN | important | yes | important + layer unclassifiable = source-defect per 11.4.235(D) | TAURI / Tauri confirm-on-URL-change follow-ups | open | no closing evidence in the entry, no code commit on ref |
 | S1 | 257 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | S1 / FTP live-test follow-ups S1-S4 and T1 | open | no closing evidence in the entry, no code commit on ref |
@@ -327,9 +327,17 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | PXF23-R5b | 1936 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | PXF23 / CAT-PXF23-R5 landed | open | under an "Open/Still open:" label line |
 | PXF23-R5c | 1937 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | PXF23 / CAT-PXF23-R5 landed | open | under an "Open/Still open:" label line |
 | PXF23-R5d | 1938 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | PXF23 / CAT-PXF23-R5 landed | open | under an "Open/Still open:" label line |
-| CAT-SECQ1-B | 1999 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | CAT-SECQ1-B / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| CAT-SECQ1-C | 2000 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | CAT-SECQ1-C / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| CAT-SECQ1-D | 2001 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | CAT-SECQ1-D / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| D9S-F5 | 1965 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D9S / CAT-D9-SUSPEND | open | no closing evidence in the entry, no code commit on ref |
+| D9S-F6 | 1966 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D9S / CAT-D9-SUSPEND | open | no closing evidence in the entry, no code commit on ref |
+| CAT-SECQ1-B | 2010 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | CAT-SECQ1-B / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| CAT-SECQ1-C | 2011 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | CAT-SECQ1-C / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| CAT-SECQ1-D | 2012 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | CAT-SECQ1-D / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| D9S-M1 | 2061 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D9S / CAT-D9-SUSPEND round-2 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| D9S-M4 | 2061 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D9S / CAT-D9-SUSPEND round-2 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| D9S-M5 | 2061 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D9S / CAT-D9-SUSPEND round-2 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| D9S-F5 | 2062 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D9S / CAT-D9-SUSPEND round-2 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| D9S-F6 | 2063 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D9S / CAT-D9-SUSPEND round-2 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| D9S-F7 | 2064 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D9S / CAT-D9-SUSPEND round-2 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
 | O1 | 14 | test-instrumentation | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | O1 / Container hygiene guard | open | no closing evidence in the entry, no code commit on ref |
 | O2 | 17 | test-instrumentation | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | O2 / Container hygiene guard | open | no closing evidence in the entry, no code commit on ref |
 | O3 | 19 | test-instrumentation | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | O3 / Container hygiene guard | open | no closing evidence in the entry, no code commit on ref |
@@ -500,9 +508,10 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | SUB-H5 | 1306 | test-instrumentation | nit | no | severity nit | SUB / Subtitle defects: Opus round-2 follow-ups | open | no closing evidence in the entry, no code commit on ref |
 | SUB-H6 | 1307 | process-doc | minor | no | severity minor | SUB / Subtitle defects: Opus round-2 follow-ups | open | no closing evidence in the entry, no code commit on ref |
 | SUB-H7 | 1308 | process-doc | nit | no | severity nit | SUB / Subtitle defects: Opus round-2 follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| D9-F1 | 1328 | source-defect | minor | no | severity minor | D9 / D3 pdf-pages: poppler-only rendering, go-fitz re | open | no closing evidence in the entry, no code commit on ref |
-| D9-F2 | 1329 | process-doc | minor | no | severity minor | D9 / D3 pdf-pages: poppler-only rendering, go-fitz re | open | no closing evidence in the entry, no code commit on ref |
-| D9-F3 | 1330 | UNKNOWN | nit | no | severity nit | D9 / D3 pdf-pages: poppler-only rendering, go-fitz re | open | no closing evidence in the entry, no code commit on ref |
+| D3-R3-1 | 1322 | test-instrumentation | minor | no | severity minor | D3-R3 / D3 pdf-pages: poppler-only rendering, go-fitz re | open | entry states OPEN/OWED/Queued near its start |
+| D9-F1 | 1328 | source-defect | minor | no | severity minor | D9 / D3 pdf-pages: poppler-only rendering, go-fitz re | open | entry states OPEN/OWED/Queued near its start |
+| D9-F2 | 1329 | process-doc | minor | no | severity minor | D9 / D3 pdf-pages: poppler-only rendering, go-fitz re | open | entry states OPEN/OWED/Queued near its start |
+| D9-F3 | 1330 | UNKNOWN | nit | no | severity nit | D9 / D3 pdf-pages: poppler-only rendering, go-fitz re | open | entry states OPEN/OWED/Queued near its start |
 | D4-6 | 1341 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | D4 / D4 document full-text search | open | under an "Open/Still open:" label line |
 | D4-8 | 1343 | UNKNOWN | nit | no | severity nit | D4 / D4 document full-text search | open | under an "Open/Still open:" label line |
 | D4-13 | 1349 | UNKNOWN | minor | no | severity minor | D4 / D4 document full-text search | open | under an "Open/Still open:" label line |
@@ -511,10 +520,10 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | D11-F2 | 1360 | UNKNOWN | minor | no | severity minor | D11 / D11a, D11b, D7/D8 remainder | open | no closing evidence in the entry, no code commit on ref |
 | D11-F3 | 1361 | UNKNOWN | minor | no | severity minor | D11 / D11a, D11b, D7/D8 remainder | open | no closing evidence in the entry, no code commit on ref |
 | D11-F4 | 1362 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | D11 / D11a, D11b, D7/D8 remainder | open | no closing evidence in the entry, no code commit on ref |
-| D11-R2-2 | 1374 | process-doc | minor | no | severity minor | D11-R2 / D11/D7 review round 1 follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| D11-R2-3 | 1375 | test-instrumentation | nit | no | severity nit | D11-R2 / D11/D7 review round 1 follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| D11-R2-4 | 1376 | process-doc | nit | no | severity nit | D11-R2 / D11/D7 review round 1 follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| D11-R2-5 | 1377 | source-defect | nit | no | severity nit | D11-R2 / D11/D7 review round 1 follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| D11-R2-2 | 1374 | process-doc | minor | no | severity minor | D11-R2 / D11/D7 review round 1 follow-ups | open | entry states OPEN/OWED/Queued near its start |
+| D11-R2-3 | 1375 | test-instrumentation | nit | no | severity nit | D11-R2 / D11/D7 review round 1 follow-ups | open | entry states OPEN/OWED/Queued near its start |
+| D11-R2-4 | 1376 | process-doc | nit | no | severity nit | D11-R2 / D11/D7 review round 1 follow-ups | open | entry states OPEN/OWED/Queued near its start |
+| D11-R2-5 | 1377 | source-defect | nit | no | severity nit | D11-R2 / D11/D7 review round 1 follow-ups | open | entry states OPEN/OWED/Queued near its start |
 | LV3-3 | 1385 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | LV3 / Live verification of stack 3 | open | under an "Open/Still open:" label line |
 | LV3-4 | 1386 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | LV3 / Live verification of stack 3 | open | under an "Open/Still open:" label line |
 | NEW1-F2 | 1406 | test-instrumentation | minor | no | severity minor | NEW1 / NEW-1 cover thumbnails | open | no closing evidence in the entry, no code commit on ref |
@@ -599,36 +608,49 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | PW-F6 | 1852 | UNKNOWN | nit | no | severity nit | PW / PW-F1..F3 landed | open | no closing evidence in the entry, no code commit on ref |
 | PW-F11 | 1871 | UNKNOWN | nit | no | severity nit | PW / PW-F7/F8 landed | open | no closing evidence in the entry, no code commit on ref |
 | PX-F13 | 1875 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | PX / PX-F8..F12 landed | open | no closing evidence in the entry, no code commit on ref |
+| PX-F18 | 1880 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | PX / PX-F8..F12 landed | open | no closing evidence in the entry, no code commit on ref |
 | PX-F19 | 1881 | process-doc* | nit | no | severity nit | PX / PX-F8..F12 landed | open | no closing evidence in the entry, no code commit on ref |
 | PXF23-F3 | 1914 | process-doc* | UNKNOWN | no | severity UNKNOWN but process-doc layer | PXF23 / CAT-PXF23 | open | entry states OPEN/OWED/Queued near its start |
 | PXF23-F4 | 1915 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | PXF23 / CAT-PXF23 | open | entry states OPEN/OWED/Queued near its start |
 | PXF23-R5a | 1935 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | PXF23 / CAT-PXF23-R5 landed | open | under an "Open/Still open:" label line |
-| R5B-1 | 1960 | test-instrumentation* | minor | no | severity minor | R5B / PXF23-R5b | open | no closing evidence in the entry, no code commit on ref |
-| R5B-2 | 1961 | test-instrumentation* | minor | no | severity minor | R5B / PXF23-R5b | open | no closing evidence in the entry, no code commit on ref |
-| R5B-3 | 1962 | UNKNOWN | minor | no | severity minor | R5B / PXF23-R5b | open | no closing evidence in the entry, no code commit on ref |
-| R5B-4 | 1963 | process-doc* | minor | no | severity minor | R5B / PXF23-R5b | open | no closing evidence in the entry, no code commit on ref |
-| R5B-5 | 1964 | test-instrumentation* | minor | no | severity minor | R5B / PXF23-R5b | open | no closing evidence in the entry, no code commit on ref |
-| R5B-6 | 1965 | UNKNOWN | minor | no | severity minor | R5B / PXF23-R5b | open | no closing evidence in the entry, no code commit on ref |
-| CAT-SECQ1-E | 2002 | process-doc* | UNKNOWN | no | severity UNKNOWN but process-doc layer | CAT-SECQ1-E / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| A1 | 2003 | UNKNOWN | minor | no | severity minor | A1 / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| A2 | 2004 | UNKNOWN | minor | no | severity minor | A2 / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| A3 | 2005 | UNKNOWN | minor | no | severity minor | A3 / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| A4 | 2006 | test-instrumentation* | nit | no | severity nit | A4 / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| SECQ-2 | 2044 | process-doc* | UNKNOWN | no | severity UNKNOWN but process-doc layer | SECQ / REL-CHECK RC-3 round-4 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| WD-F1 | 2044 | process-doc* | UNKNOWN | no | severity UNKNOWN but process-doc layer | WD / REL-CHECK RC-3 round-4 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| WD-F1a | 2044 | process-doc* | UNKNOWN | no | severity UNKNOWN but process-doc layer | WD / REL-CHECK RC-3 round-4 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| SECQ2WD-R1-1 | 2045 | process-doc | minor | no | severity minor | SECQ2WD-R1 / REL-CHECK RC-3 round-4 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| SECQ2WD-R1-2 | 2046 | process-doc | minor | no | severity minor | SECQ2WD-R1 / REL-CHECK RC-3 round-4 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
-| SECQ2WD-R1-3 | 2047 | UNKNOWN | nit | no | severity nit | SECQ2WD-R1 / REL-CHECK RC-3 round-4 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| R5B-1 | 1971 | test-instrumentation* | minor | no | severity minor | R5B / PXF23-R5b | open | no closing evidence in the entry, no code commit on ref |
+| R5B-2 | 1972 | test-instrumentation* | minor | no | severity minor | R5B / PXF23-R5b | open | no closing evidence in the entry, no code commit on ref |
+| R5B-3 | 1973 | UNKNOWN | minor | no | severity minor | R5B / PXF23-R5b | open | no closing evidence in the entry, no code commit on ref |
+| R5B-4 | 1974 | process-doc* | minor | no | severity minor | R5B / PXF23-R5b | open | no closing evidence in the entry, no code commit on ref |
+| R5B-5 | 1975 | test-instrumentation* | minor | no | severity minor | R5B / PXF23-R5b | open | no closing evidence in the entry, no code commit on ref |
+| R5B-6 | 1976 | UNKNOWN | minor | no | severity minor | R5B / PXF23-R5b | open | no closing evidence in the entry, no code commit on ref |
+| CAT-SECQ1-E | 2013 | process-doc* | UNKNOWN | no | severity UNKNOWN but process-doc layer | CAT-SECQ1-E / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| A1 | 2014 | UNKNOWN | minor | no | severity minor | A1 / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| A2 | 2015 | UNKNOWN | minor | no | severity minor | A2 / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| A3 | 2016 | UNKNOWN | minor | no | severity minor | A3 / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| A4 | 2017 | test-instrumentation* | nit | no | severity nit | A4 / CAT-SECQ1-A follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| SECQ-2 | 2055 | process-doc* | UNKNOWN | no | severity UNKNOWN but process-doc layer | SECQ / REL-CHECK RC-3 round-4 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| WD-F1 | 2055 | process-doc* | UNKNOWN | no | severity UNKNOWN but process-doc layer | WD / REL-CHECK RC-3 round-4 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| WD-F1a | 2055 | process-doc* | UNKNOWN | no | severity UNKNOWN but process-doc layer | WD / REL-CHECK RC-3 round-4 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| SECQ2WD-R1-1 | 2056 | process-doc | minor | no | severity minor | SECQ2WD-R1 / REL-CHECK RC-3 round-4 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| SECQ2WD-R1-2 | 2057 | process-doc | minor | no | severity minor | SECQ2WD-R1 / REL-CHECK RC-3 round-4 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| SECQ2WD-R1-3 | 2058 | UNKNOWN | nit | no | severity nit | SECQ2WD-R1 / REL-CHECK RC-3 round-4 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| D9S-R3-1 | 2066 | source-defect | minor | no | severity minor | D9S-R3 / CAT-D9-SUSPEND round-2 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| D9S-R3-2 | 2067 | test-instrumentation | minor | no | severity minor | D9S-R3 / CAT-D9-SUSPEND round-2 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| D9S-R3-3 | 2068 | UNKNOWN | minor | no | severity minor | D9S-R3 / CAT-D9-SUSPEND round-2 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| D9S-R3-4 | 2069 | UNKNOWN | minor | no | severity minor | D9S-R3 / CAT-D9-SUSPEND round-2 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
+| SEC-WS-1 | 2070 | test-instrumentation* | important | no | important but test-instrumentation layer | SEC-WS / CAT-D9-SUSPEND round-2 review follow-ups | open | no closing evidence in the entry, no code commit on ref |
 | P2 | 759 | source-defect | important | yes | status unconfirmed (not closed); important + source-defect | P2 / Authz review r3 follow-ups | unconfirmed | only a later prose line 764 mentions it closed: "Closed here: P2 (storage/scan/SMB/copy routes with no permission check), T1 (`binEnv` race" (weak) |
 | AZ2-R1 | 1111 | source-defect | important | yes | status unconfirmed (not closed); important + source-defect | AZ2 / Authz round 2 review follow-ups | unconfirmed | a closing word appears in the entry but not at its start (weak) |
 | CAT-021 | 368 | UNKNOWN | UNKNOWN | unclassified | severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | CAT / CAT-001 follow-ups | unconfirmed | later entry of the same id at line 370 only weakly states it closed (NOT closed) |
 | CAT-021 | 370 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | CAT / CAT-001 follow-ups | unconfirmed | a closing word appears in the entry but not at its start (weak) |
 | R3-M2 | 383 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | R3 / WrapHTTPHandler path-param fix | unconfirmed | a closing word appears in the entry but not at its start (weak) |
+| R3-M1 | 662 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | R3 / Authorization gaps | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
+| CAT-049 | 662 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | CAT / Authorization gaps | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
+| R3-M2 | 663 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | R3 / Authorization gaps | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
+| CAT-050 | 663 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | CAT / Authorization gaps | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | D4 | 957 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D4 / Docs sync C4 | unconfirmed | a closing word appears in the entry but not at its start (weak) |
 | N1-N5 | 968 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | N1 / Docs sync C4 review | unconfirmed | only a later prose line 1786 mentions it closed: "llow-ups (N1-N5 landed; Opus GO-with-follow-ups, 2026-11-12)" (weak) |
 | SC7 | 1020 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | S / QA consumers review follow-ups | unconfirmed | only a later prose line 1396 mentions it closed: "ECQ-4b (= SC7, collections, DONE in-process 2026-11-05; Postgre" (weak) |
+| WL7 | 1092 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | W / Live browser specs for catalog-web | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
+| WL8 | 1093 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | W / Live browser specs for catalog-web | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | WL11 | 1096 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | W / Live browser specs for catalog-web | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
+| WL12 | 1097 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | W / Live browser specs for catalog-web | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | WL12-F2 | 1099 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration; security-adjacent word present, triage first | WL12 / Live browser specs for catalog-web | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | D7 | 1253 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D7 / Conversion defects D1, D2, D7 | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | D10 | 1254 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D10 / Conversion defects D1, D2, D7 | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
@@ -636,9 +658,15 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | D9 | 1272 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D9 / D9 admin role change | unconfirmed | only a later prose line 1270 mentions it closed: "## D9 admin role change (2026-11-04) - PROVISIONAL-DONE" (weak) |
 | D4-11 | 1346 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D4 / D4 document full-text search | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | D11a | 1356 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D11a / D11a, D11b, D7/D8 remainder | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
+| SECQ-3 | 1394 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | SECQ / Security queue fix | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | SECQ-4b | 1396 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | SECQ / Security queue fix | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
+| SMB-FU-10 | 1676 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | FU-2 | 1782 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | FU / CAT-QA-SONAR-7 follow-ups | unconfirmed | only a later prose line 1794 mentions it closed: "viewItem. FU-2 DONE: Enter-to-toggle restored via keydown on the" (weak) |
+| CAT-QA-SONAR-5 | 1890 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | CAT-QA-SONAR / CAT-OPDEC-B | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | OPB-M1 | 1898 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | OPB / OPDEC-B landed | unconfirmed | a closing word appears in the entry but not at its start (weak) |
+| D9S-F2 | 1962 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D9S / CAT-D9-SUSPEND | unconfirmed | a closing word appears in the entry but not at its start (weak) |
+| D9S-F3 | 1963 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D9S / CAT-D9-SUSPEND | unconfirmed | a closing word appears in the entry but not at its start (weak) |
+| D9S-F4 | 1964 | UNKNOWN | UNKNOWN | unclassified | status unconfirmed (not closed); severity UNKNOWN + UNKNOWN layer: cannot be called blocker or not (11.4.276(G.2)/11.4.235(D)); set severity at registration | D9S / CAT-D9-SUSPEND | unconfirmed | a closing word appears in the entry but not at its start (weak) |
 | R7 | 567 | process-doc | minor(sec) | no | severity minor | R7 / Docs C2/C5 review round 2 follow-ups | unconfirmed | a closing word appears in the entry but not at its start (weak) |
 | R3-1 | 592 | test-instrumentation | minor(sec) | no | severity minor | R3 / Crash-pages review round 3 follow-ups | unconfirmed | only a later prose line 1267 mentions it closed: "cc5b709): R3-1 FIXED (a path after an unclosed quote, e.g. a too" (weak) |
 | N1 | 665 | UNKNOWN | minor | no | severity minor | N1 / Authorization gaps | unconfirmed | a closing word appears in the entry but not at its start (weak) |
@@ -650,12 +678,18 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | NS-3 | 1189 | test-instrumentation | minor(sec) | no | severity minor | NS / Nil-slice class review round 1 follow-ups | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | CSRF-1 | 1215 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | CSRF / CAT-CSRF-LAN follow-ups | unconfirmed | only a later prose line 1221 mentions it closed: "ONE until CSRF-1 runs live. **Startup test DONE (security queue):" (weak) |
 | CSRF-R2-2 | 1222 | UNKNOWN | nit | no | severity nit | CSRF-R2 / CSRF-LAN review follow-ups | unconfirmed | a closing word appears in the entry but not at its start (weak) |
-| D3-R3-1 | 1322 | test-instrumentation | minor | no | severity minor | D3-R3 / D3 pdf-pages: poppler-only rendering, go-fitz re | unconfirmed | a closing word appears in the entry but not at its start (weak) |
+| SECQ-5 | 1397 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | SECQ / Security queue fix | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
+| SECQ-6 | 1398 | test-instrumentation | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | SECQ / Security queue fix | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | SECQ4B-FU-2 | 1452 | process-doc* | minor | no | severity minor | SECQ4B-FU / SECQ-4b landed 2026-11-05 | unconfirmed | a closing word appears in the entry but not at its start (weak) |
+| NEW-1 | 1457 | process-doc* | UNKNOWN | no | severity UNKNOWN but process-doc layer | NEW / NEW-1 live re-verification | unconfirmed | heading line 1403 names it landed but the entry states an open remainder |
 | FU20-3 | 1642 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | FU20 / followups-20261110 review | unconfirmed | a closing word appears in the entry but not at its start (weak) |
+| LIFE-FU-4 | 1710 | UNKNOWN | nit | no | severity nit | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
+| LIFE-FU-6 | 1717 | test-instrumentation* | minor(sec) | no | severity minor | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | LIFE-FU-9 | 1720 | test-instrumentation* | minor(sec) | no | severity minor | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
+| LIFE-FU-12 | 1730 | test-instrumentation* | minor(sec) | no | severity minor | LIFE-FU / LIFE-FU-10..15 | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | STACK-CTR-FU-8 | 1746 | test-instrumentation* | minor(sec) | no | severity minor | STACK-CTR-FU / STACK-CTR-FU-6..12 | unconfirmed | heading line 1743 names it landed but the entry states an open remainder |
 | STACK-CTR-FU-13 | 1752 | UNKNOWN | minor(sec) | no | severity minor | STACK-CTR-FU / STACK-CTR-FU-6..12 | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
+| CAT-QA-SONAR-5 | 1761 | UNKNOWN | minor(sec) | no | severity minor | CAT-QA-SONAR / STACK-CTR-FU-6..12 | unconfirmed | later entry of the same id at line 1890 only weakly states it closed (NOT closed) |
 | CAT-QA-SONAR-6 | 1763 | UNKNOWN | minor | no | severity minor | CAT-QA-SONAR / STACK-CTR-FU-6..12 | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | CAT-QA-SONAR-4 | 1765 | test-instrumentation* | minor | no | severity minor | CAT-QA-SONAR / STACK-CTR-FU-6..12 | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | CAT-QA-COVERART-1 | 1767 | test-instrumentation* | minor(sec) | no | severity minor | CAT-QA-COVERART / STACK-CTR-FU-6..12 | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
@@ -663,7 +697,8 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | F1 | 1787 | process-doc* | UNKNOWN | no | severity UNKNOWN but process-doc layer | F1 / CAT-REL-CHECK-1 round-2 follow-ups | unconfirmed | a closing word appears in the entry but not at its start (weak) |
 | FU-1 | 1794 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | FU / CAT-QA-SONAR-7 follow-ups FU-1..FU-7 resolution | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
 | RC2-2 | 1810 | UNKNOWN | nit | no | severity nit | RC2 / CAT-REL-CHECK-1 Opus round-2 re-review | unconfirmed | a closing word appears in the entry but not at its start (weak) |
-| RC2-3 | 1811 | test-instrumentation* | nit | no | severity nit | RC2 / CAT-REL-CHECK-1 Opus round-2 re-review | unconfirmed | only a later prose line 2022 mentions it closed: "ionCode`. RC2-3 DONE: tests for a mid-line-only CR in BSD and GNU" (weak) |
+| RC2-3 | 1811 | test-instrumentation* | nit | no | severity nit | RC2 / CAT-REL-CHECK-1 Opus round-2 re-review | unconfirmed | only a later prose line 2033 mentions it closed: "ionCode`. RC2-3 DONE: tests for a mid-line-only CR in BSD and GNU" (weak) |
+| PX-F8 | 1856 | test-instrumentation* | minor | no | severity minor | PX / PX-F1..F7 landed | unconfirmed | heading line 1873 names it landed but the entry states an open remainder |
 | PX-F10 | 1858 | test-instrumentation* | minor | no | severity minor | PX / PX-F1..F7 landed | unconfirmed | heading line 1873 names it landed but the entry states an open remainder |
 | OPB-I1 | 1897 | test-instrumentation* | important | no | important but test-instrumentation layer | OPB / OPDEC-B landed | unconfirmed | a closing word appears in the entry but not at its start (weak) |
 | PXF23-R1 | 1923 | test-instrumentation* | UNKNOWN | no | severity UNKNOWN but test-instrumentation layer | PXF23 / PXF23-R landed | unconfirmed | partial: opens with a closing token but also states an open/owed/partial remainder (landed in part; NOT closed) |
@@ -679,10 +714,6 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | F2 | 557 | source-defect | important | no | not open | F2 / Docs C2/C5 landing | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | F4 | 661 | UNKNOWN | UNKNOWN | no | not open | F4 / Authorization gaps | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | CAT-051 | 661 | UNKNOWN | UNKNOWN | no | not open | CAT / Authorization gaps | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| R3-M1 | 662 | UNKNOWN | UNKNOWN | no | not open | R3 / Authorization gaps | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| CAT-049 | 662 | UNKNOWN | UNKNOWN | no | not open | CAT / Authorization gaps | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| R3-M2 | 663 | UNKNOWN | UNKNOWN | no | not open | R3 / Authorization gaps | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| CAT-050 | 663 | UNKNOWN | UNKNOWN | no | not open | CAT / Authorization gaps | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | N2 | 666 | UNKNOWN | UNKNOWN | no | not open | N2 / Authorization gaps | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | F1 | 910 | source-defect | important | no | not open | F1 / Registration approval + ffmpeg image review | landed | series pairing: landed entry of the same id at line 922 (section headings share a word) (PROVISIONAL) |
 | F2 | 911 | process-doc* | UNKNOWN | no | not open | F2 / Registration approval + ffmpeg image review | landed | series pairing: landed entry of the same id at line 923 (section headings share a word) (PROVISIONAL) |
@@ -699,9 +730,6 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | F1 | 961 | test-instrumentation* | UNKNOWN | no | not open | F1 / Docs sync C4 review | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | WL1 | 1087 | process-doc* | UNKNOWN | no | not open | W / Live browser specs for catalog-web | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | WL6 | 1091 | UNKNOWN | UNKNOWN | no | not open | W / Live browser specs for catalog-web | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| WL7 | 1092 | UNKNOWN | UNKNOWN | no | not open | W / Live browser specs for catalog-web | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| WL8 | 1093 | UNKNOWN | UNKNOWN | no | not open | W / Live browser specs for catalog-web | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| WL12 | 1097 | UNKNOWN | UNKNOWN | no | not open | W / Live browser specs for catalog-web | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | WL12-F5 | 1098 | test-instrumentation* | UNKNOWN | no | not open | WL12 / Live browser specs for catalog-web | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | WL5 | 1103 | test-instrumentation* | UNKNOWN | no | not open | W / Live browser specs for catalog-web | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | AZ2-R2 | 1112 | test-instrumentation* | minor | no | not open | AZ2 / Authz round 2 review follow-ups | landed | code commit fa65687d fix(ssrf): strict dial-time client for fanart/igdb/llm-image/cover-art fetches;  (PROVISIONAL) |
@@ -723,11 +751,9 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | ST-F7 | 1244 | process-doc* | UNKNOWN | no | not open | ST / Live QA round 3 + storage r1 findings | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | D1 | 1251 | UNKNOWN | UNKNOWN | no | not open | D1 / Conversion defects D1, D2, D7 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | D2 | 1252 | UNKNOWN | UNKNOWN | no | not open | D2 / Conversion defects D1, D2, D7 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
+| CAT-D9-SUSPEND | 1279 | UNKNOWN | important | no | not open | CAT-D9-SUSPEND / D9 review round 1 follow-ups | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | D11b | 1357 | UNKNOWN | UNKNOWN | no | not open | D11b / D11a, D11b, D7/D8 remainder | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | SECQ-1 | 1392 | UNKNOWN | important | no | not open | SECQ / Security queue fix | landed | heading line 1410: "SECQ-1 WebDAV storage-root SSRF guard (landed 2026-11-05, review round" (PROVISIONAL) |
-| SECQ-3 | 1394 | UNKNOWN | UNKNOWN | no | not open | SECQ / Security queue fix | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| SECQ-5 | 1397 | test-instrumentation* | UNKNOWN | no | not open | SECQ / Security queue fix | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| SECQ-6 | 1398 | test-instrumentation | UNKNOWN | no | not open | SECQ / Security queue fix | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | NEW1-F3 | 1407 | source-defect | minor | no | not open | NEW1 / NEW-1 cover thumbnails | landed | heading line 1430: "NEW1-F3/F4 landed 2026-11-05 (review round 2 GO-with-follow-ups)" (PROVISIONAL) |
 | NEW1-F4 | 1408 | source-defect | minor | no | not open | NEW1 / NEW-1 cover thumbnails | landed | code commit 6e6b5590 fix(cover-art): confine video thumbnail paths, one file per item, count setDefau (PROVISIONAL) |
 | SECQ1-F3 | 1415 | process-doc* | nit | no | not open | SECQ1 / SECQ-1 WebDAV storage-root SSRF guard | landed | later entry of the same id at line 1437 states it landed (PROVISIONAL) |
@@ -737,7 +763,6 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | SECQ1-F4 | 1438 | UNKNOWN | UNKNOWN | no | not open | SECQ1 / SECQ-1 follow-ups and SUB-CONTRACT-1 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | SECQ1-F5 | 1439 | test-instrumentation* | UNKNOWN | no | not open | SECQ1 / SECQ-1 follow-ups and SUB-CONTRACT-1 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | SUB-CONTRACT-1 | 1441 | process-doc* | UNKNOWN | no | not open | SUB-CONTRACT / SECQ-1 follow-ups and SUB-CONTRACT-1 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| NEW-1 | 1457 | process-doc* | UNKNOWN | no | not open | NEW / NEW-1 live re-verification | landed | heading line 1403: "NEW-1 cover thumbnails (landed 2026-11-05, review round 1 GO-with-foll" (PROVISIONAL) |
 | UI-D7 | 1477 | UNKNOWN | UNKNOWN | no | not open | UI / Stack-3 browser pass follow-ups registered | landed | heading line 1489: "UI-D7/D8 landed (reviewed GO round 2/5; PROVISIONAL until live rerun o" (PROVISIONAL) |
 | D8 | 1490 | UNKNOWN | UNKNOWN | no | not open | D8 / UI-D7/D8 landed | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | TAURI-FU-5 | 1518 | source-defect | UNKNOWN | no | not open | TAURI-FU / Tauri QA boot review follow-ups | landed | code commit 8487243b fix(desktop): extract request_via_config so tests drive the command guard; heade (+3 more) (PROVISIONAL) |
@@ -773,7 +798,6 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | SMB-FU-1 | 1656 | UNKNOWN | UNKNOWN | no | not open | SMB-FU / smb-subdir / tauri round-2 notes | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | SMB-FU-2 | 1657 | test-instrumentation* | UNKNOWN | no | not open | SMB-FU / smb-subdir / tauri round-2 notes | landed | code commit 8c1596bf fix(smb): blocklist 6to4/SIIT/local NAT64/broadcast/CGNAT, warn on invalid CATAL (+3 more) (PROVISIONAL) |
 | SMB-FU-9 | 1675 | UNKNOWN | UNKNOWN | no | not open | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | landed | later entry of the same id at line 1679 states it landed (PROVISIONAL) |
-| SMB-FU-10 | 1676 | UNKNOWN | UNKNOWN | no | not open | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | SMB-FU-12 | 1678 | UNKNOWN | UNKNOWN | no | not open | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | SMB-FU-9 | 1679 | UNKNOWN | UNKNOWN | no | not open | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | SMB-FU-14 | 1682 | test-instrumentation | UNKNOWN | no | not open | SMB-FU / CAT-FOLLOWUPS-UNIT-1 review follow-ups | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
@@ -784,14 +808,11 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | LIFE-FU-1 | 1707 | test-instrumentation* | minor(sec) | no | not open | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | LIFE-FU-2 | 1708 | test-instrumentation* | minor(sec) | no | not open | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | LIFE-FU-3 | 1709 | test-instrumentation* | minor(sec) | no | not open | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| LIFE-FU-4 | 1710 | UNKNOWN | nit | no | not open | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | LIFE-FU-5 | 1716 | test-instrumentation* | minor(sec) | no | not open | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| LIFE-FU-6 | 1717 | test-instrumentation* | minor(sec) | no | not open | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | LIFE-FU-7 | 1718 | test-instrumentation* | minor(sec) | no | not open | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | LIFE-FU-8 | 1719 | test-instrumentation* | minor(sec) | no | not open | LIFE-FU / CAT-QA-STACK-LIFECYCLE-1 follow-ups round 3 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | LIFE-FU-10 | 1728 | process-doc* | minor(sec) | no | not open | LIFE-FU / LIFE-FU-10..15 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | LIFE-FU-11 | 1729 | test-instrumentation* | minor(sec) | no | not open | LIFE-FU / LIFE-FU-10..15 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| LIFE-FU-12 | 1730 | test-instrumentation* | minor(sec) | no | not open | LIFE-FU / LIFE-FU-10..15 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | LIFE-FU-13 | 1731 | UNKNOWN | minor(sec) | no | not open | LIFE-FU / LIFE-FU-10..15 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | LIFE-FU-14 | 1732 | UNKNOWN | minor(sec) | no | not open | LIFE-FU / LIFE-FU-10..15 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | LIFE-FU-15 | 1733 | UNKNOWN | minor(sec) | no | not open | LIFE-FU / LIFE-FU-10..15 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
@@ -802,11 +823,10 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | STACK-CTR-FU-11 | 1749 | UNKNOWN | minor(sec) | no | not open | STACK-CTR-FU / STACK-CTR-FU-6..12 | landed | heading line 1743: "STACK-CTR-FU-6..12 (Opus round-1 review of feat/stack-scripts-via-ctrc" (PROVISIONAL) |
 | STACK-CTR-FU-12 | 1750 | UNKNOWN | nit | no | not open | STACK-CTR-FU / STACK-CTR-FU-6..12 | landed | heading line 1743: "STACK-CTR-FU-6..12 (Opus round-1 review of feat/stack-scripts-via-ctrc" (PROVISIONAL) |
 | CAT-QA-SONAR-1b | 1758 | UNKNOWN | minor(sec) | no | not open | CAT-QA-SONAR / STACK-CTR-FU-6..12 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| CAT-QA-SONAR-5 | 1761 | UNKNOWN | minor(sec) | no | not open | CAT-QA-SONAR / STACK-CTR-FU-6..12 | landed | later entry of the same id at line 1890 states it landed (PROVISIONAL) |
 | FU2-2 | 1799 | test-instrumentation* | UNKNOWN | no | not open | FU2 / CAT-QA-SONAR-7 FU round-2 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | FU2-3 | 1800 | test-instrumentation* | UNKNOWN | no | not open | FU2 / CAT-QA-SONAR-7 FU round-2 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | F1 | 1804 | process-doc* | UNKNOWN | no | not open | F1 / CAT-REL-CHECK-1 round-3/4 | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| RC2-1 | 1809 | process-doc* | nit | no | not open | RC2 / CAT-REL-CHECK-1 Opus round-2 re-review | landed | later entry of the same id at line 2022 states it landed (PROVISIONAL) |
+| RC2-1 | 1809 | process-doc* | nit | no | not open | RC2 / CAT-REL-CHECK-1 Opus round-2 re-review | landed | later entry of the same id at line 2033 states it landed (PROVISIONAL) |
 | CAT-PREEXIST-1 | 1816 | source-defect* | UNKNOWN | no | not open | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | landed | heading line 1831: "CAT-PREEXIST-1..6 landed (2026-11-12) — PROVISIONAL, Opus round-2 GO-w" (PROVISIONAL) |
 | CAT-PREEXIST-2 | 1817 | source-defect* | UNKNOWN | no | not open | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | landed | heading line 1831: "CAT-PREEXIST-1..6 landed (2026-11-12) — PROVISIONAL, Opus round-2 GO-w" (PROVISIONAL) |
 | CAT-PREEXIST-3 | 1818 | source-defect* | UNKNOWN | no | not open | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | landed | heading line 1831: "CAT-PREEXIST-1..6 landed (2026-11-12) — PROVISIONAL, Opus round-2 GO-w" (PROVISIONAL) |
@@ -815,8 +835,8 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | CAT-PREEXIST-6 | 1821 | source-defect* | UNKNOWN | no | not open | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | landed | heading line 1831: "CAT-PREEXIST-1..6 landed (2026-11-12) — PROVISIONAL, Opus round-2 GO-w" (PROVISIONAL) |
 | CAT-PREEXIST-7 | 1822 | source-defect* | UNKNOWN | no | not open | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | landed | heading line 1842: "CAT-PREEXIST-7/8/9 landed (2026-11-12) — PROVISIONAL, Opus GO-with-fol" (PROVISIONAL) |
 | CAT-PREEXIST-10 | 1825 | source-defect* | UNKNOWN | no | not open | CAT-PREEXIST / CAT-PREEXIST pre-existing test failures | landed | code commit 87033b38 test(stress): CAT-PREEXIST-10 review follow-ups F1-F5 (assert no failed writes,  (+1 more) (PROVISIONAL) |
-| RC-3 | 1828 | UNKNOWN | important | no | not open | RC / CAT-REL-CHECK-1 reviewer findings on the v2.4.2  | landed | later entry of the same id at line 2020 states it landed (PROVISIONAL) |
-| RC-3b | 1829 | UNKNOWN | UNKNOWN | no | not open | RC / CAT-REL-CHECK-1 reviewer findings on the v2.4.2  | landed | later entry of the same id at line 2021 states it landed (PROVISIONAL) |
+| RC-3 | 1828 | UNKNOWN | important | no | not open | RC / CAT-REL-CHECK-1 reviewer findings on the v2.4.2  | landed | later entry of the same id at line 2031 states it landed (PROVISIONAL) |
+| RC-3b | 1829 | UNKNOWN | UNKNOWN | no | not open | RC / CAT-REL-CHECK-1 reviewer findings on the v2.4.2  | landed | later entry of the same id at line 2032 states it landed (PROVISIONAL) |
 | PX-F1 | 1833 | source-defect* | minor | no | not open | PX / CAT-PREEXIST-1..6 landed | landed | heading line 1854: "PX-F1..F7 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups (" (PROVISIONAL) |
 | PX-F2 | 1834 | test-instrumentation* | minor | no | not open | PX / CAT-PREEXIST-1..6 landed | landed | heading line 1854: "PX-F1..F7 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups (" (PROVISIONAL) |
 | PX-F3 | 1835 | source-defect* | minor | no | not open | PX / CAT-PREEXIST-1..6 landed | landed | heading line 1854: "PX-F1..F7 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups (" (PROVISIONAL) |
@@ -828,7 +848,6 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | PW-F2 | 1845 | test-instrumentation* | minor | no | not open | PW / CAT-PREEXIST-7/8/9 landed | landed | heading line 1849: "PW-F1..F3 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups (" (PROVISIONAL) |
 | PW-F3 | 1846 | test-instrumentation* | nit | no | not open | PW / CAT-PREEXIST-7/8/9 landed | landed | heading line 1849: "PW-F1..F3 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups (" (PROVISIONAL) |
 | PW-F5 | 1851 | test-instrumentation* | minor | no | not open | PW / PW-F1..F3 landed | landed | heading line 1862: "PW-F5/F6 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups (m" (PROVISIONAL) |
-| PX-F8 | 1856 | test-instrumentation* | minor | no | not open | PX / PX-F1..F7 landed | landed | heading line 1873: "PX-F8..F12 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups" (PROVISIONAL) |
 | PX-F9 | 1857 | source-defect* | minor | no | not open | PX / PX-F1..F7 landed | landed | heading line 1873: "PX-F8..F12 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups" (PROVISIONAL) |
 | PX-F11 | 1859 | test-instrumentation* | minor | no | not open | PX / PX-F1..F7 landed | landed | heading line 1873: "PX-F8..F12 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups" (PROVISIONAL) |
 | PX-F12 | 1860 | process-doc* | nit | no | not open | PX / PX-F1..F7 landed | landed | heading line 1873: "PX-F8..F12 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups" (PROVISIONAL) |
@@ -838,8 +857,6 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | PW-F10 | 1870 | UNKNOWN | UNKNOWN | no | not open | PW / PW-F7/F8 landed | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | PX-F15 | 1877 | UNKNOWN | UNKNOWN | no | not open | PX / PX-F8..F12 landed | landed | heading line 1884: "PX-F15/F16 landed (2026-11-12) — PROVISIONAL, Opus GO-with-follow-ups" (PROVISIONAL) |
 | PX-F16 | 1878 | test-instrumentation* | UNKNOWN | no | not open | PX / PX-F8..F12 landed | landed | code commit 37fdde8a test(config): PX-F16 census negatives for non-ASCII ellipsis and dot-only values (PROVISIONAL) |
-| PX-F18 | 1880 | test-instrumentation* | UNKNOWN | no | not open | PX / PX-F8..F12 landed | landed | heading line 1901: "PX-F18 enumeration doc review: NO-GO (2026-11-12) — doc NOT landed" (PROVISIONAL) |
-| CAT-QA-SONAR-5 | 1890 | UNKNOWN | UNKNOWN | no | not open | CAT-QA-SONAR / CAT-OPDEC-B | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | FU2-4 | 1891 | test-instrumentation* | UNKNOWN | no | not open | FU2 / CAT-OPDEC-B | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | OPB-N1 | 1899 | UNKNOWN | UNKNOWN | no | not open | OPB / OPDEC-B landed | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | PXF23-R2 | 1924 | test-instrumentation* | UNKNOWN | no | not open | PXF23 / PXF23-R landed | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
@@ -851,6 +868,7 @@ PROPOSAL for operator decision (11.4.66); no rule file was changed. Text for `do
 | R5-F3 | 1946 | test-instrumentation* | UNKNOWN | no | not open | R5 / CAT-R5-FU landed | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | R5-F5 | 1947 | UNKNOWN | UNKNOWN | no | not open | R5 / CAT-R5-FU landed | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
 | PXR-1 | 1948 | test-instrumentation* | UNKNOWN | no | not open | PXR / CAT-R5-FU landed | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| RC-3 | 2020 | process-doc* | UNKNOWN | no | not open | RC / CAT-REL-CHECK-1 RC-3 / RC-3b / RC2-1 / RC2-3 res | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| RC-3b | 2021 | UNKNOWN | UNKNOWN | no | not open | RC / CAT-REL-CHECK-1 RC-3 / RC-3b / RC2-1 / RC2-3 res | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
-| RC2-1 | 2022 | process-doc* | UNKNOWN | no | not open | RC2 / CAT-REL-CHECK-1 RC-3 / RC-3b / RC2-1 / RC2-3 res | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
+| D9S-F1 | 1961 | UNKNOWN | UNKNOWN | no | not open | D9S / CAT-D9-SUSPEND | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
+| RC-3 | 2031 | process-doc* | UNKNOWN | no | not open | RC / CAT-REL-CHECK-1 RC-3 / RC-3b / RC2-1 / RC2-3 res | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
+| RC-3b | 2032 | UNKNOWN | UNKNOWN | no | not open | RC / CAT-REL-CHECK-1 RC-3 / RC-3b / RC2-1 / RC2-3 res | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |
+| RC2-1 | 2033 | process-doc* | UNKNOWN | no | not open | RC2 / CAT-REL-CHECK-1 RC-3 / RC-3b / RC2-1 / RC2-3 res | landed | entry opens with a closing token and states nothing open (PROVISIONAL) |

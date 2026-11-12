@@ -77,6 +77,23 @@ Prose line: Q9 FIXED here.
 - F5 (DONE): later entry of the same series.
 ## Alpha tangent items
 - F6 (Task, minor): other open.
+## Eta negation and remainders
+- CAT-NEG-1 (Task, minor): FIXED for the target side: compare-and-set. Other columns are still last-write-wins. A caller demoted is not re-checked.
+- CAT-NEG-2 / CAT-NEG-3 FIXED: a rule. OPERATOR DECISION still open: whether it is wanted; acting on a target is still unguarded.
+- CAT-NEG-4 (FIXED here, security review): a thing. Follow-ups: (a) one thing; (b) another.
+- CAT-BRK-1 [test-instrumentation, minor, open]: bracketed open word.
+- CAT-HNG-1 (Task, minor): the heading below says NO-GO.
+## CAT-HNG-1 enumeration doc review: NO-GO (2026-11-12) \u2014 doc NOT landed
+- Q8 (Task, minor): single generic lead.
+Prose line: Q8 not FIXED yet here.
+- CAT-WKR-1 (Task, minor): first entry, open.
+## Eta later weak entry
+- CAT-WKR-1 (Task, minor): the weak entry mentions PROVISIONAL-DONE later in its prose.
+- CLOSED on branch fix-y (2026-11-04):
+  - CAT-NEST-3 (Task, minor): detail OWED still.
+## Theta label negation
+Fixed (NOT landed, pending review):
+- CAT-LBLN-1 (Task, minor): under a negated label.
 ## Series wavefront far items
 - F7 (Task, minor): first, far away.
 """ + FILLER + """
@@ -107,7 +124,7 @@ class T(unittest.TestCase):
                 ('docs: register PX-F1 and PX-F2 review follow-ups', 'docs/x.md'),
                 ('docs: CAT-GIT-1 line refs', 'src/g1.go'), ('fix(x): CAT-GIT-2 real fix', 'src/g2.go'),
                 ('chore: CAT-GIT-3 readme only', 'README.md'), ('fix(x): CAT-GIT-4 docs dir txt', 'docs/qa/e.txt'),
-                ('fix(x): CAT-GIT-5 code but entry OWED', 'src/g5.go'), ('fix(x): CAT-RGC-1..2 range', 'src/h.go'))):
+                ('fix(x): CAT-GIT-5 code but entry OWED', 'src/g5.go'), ('fix(x): CAT-RGC-1..2 range', 'src/h.go'), ('fix(x): CAT-BRK-1 attempt', 'src/k.go'))):
             os.makedirs(os.path.dirname(os.path.join(self.d, path)), exist_ok=True)
             with open(os.path.join(self.d, path), 'w') as fh:
                 fh.write('x%d\n' % i)
@@ -204,6 +221,33 @@ class T(unittest.TestCase):
         self.assertEqual(self.rows['CAT-START-2'][0]['status'], 'landed')
         self.assertEqual(self.rows['CAT-NEST-1'][0]['status'], 'landed')        # under "- CLOSED on branch"
         self.assertEqual(self.rows['CAT-NEST-2'][0]['status'], 'open')          # under "- STILL OPEN note"
+
+    def test_landed_claim_negated_or_qualified_by_own_text(self):
+        for i in ('CAT-NEG-1', 'CAT-NEG-2', 'CAT-NEG-3', 'CAT-NEG-4'):          # inline remainders after a strong opening token
+            self.assertEqual(self.rows[i][0]['status'], 'unconfirmed', i)
+        self.assertEqual(self.rows['CAT-BRK-1'][0]['status'], 'open')           # bracketed lowercase open
+        self.assertEqual(self.rows['CAT-HNG-1'][0]['status'], 'open')           # heading "NO-GO ... NOT landed"
+        self.assertEqual(self.rows['Q8'][0]['status'], 'open')                  # later mention guarded by `not` (kills dropped guard)
+        self.assertEqual(self.rows['CAT-WKR-1'][0]['status'], 'unconfirmed')    # weak later entry never propagates as landed
+        self.assertEqual(self.rows['CAT-WKR-1'][1]['status'], 'unconfirmed')
+        self.assertEqual(self.rows['CAT-NEST-3'][0]['status'], 'unconfirmed')   # closed parent + open remainder
+        self.assertEqual(self.rows['CAT-LBLN-1'][0]['status'], 'open')          # negated Fixed label does not set landed mode
+
+    def test_remainder_detector_each_alternative(self):
+        for t in ('FIXED. The check is still missing elsewhere.', 'FIXED. Other columns are still last-write-wins.', 'FIXED. A caller is not re-checked.',
+                  'FIXED. Not covered yet.', 'FIXED. Follow-ups: tidy later.', 'FIXED. Remaining: nothing big but x.', 'FIXED for the target side only.',
+                  'FIXED. OPERATOR DECISION still open on the model.', 'FIXED. Operator decision pending.', 'FIXED partially.', 'FIXED. Items: (a) one (b) two.',
+                  'FIXED. It fixes only the happy path.', 'FIXED. Caveat: x.'):
+            self.assertTrue(g.OPEN_ANY.search(t), t)
+        for t in ('FIXED. Tested and merged.', 'DONE: the operator decision 2026-11-03 was to fix to spec.', 'LANDED in abc; the user still works as before.'):
+            self.assertFalse(g.OPEN_ANY.search(t), t)
+
+    def test_negated_unit(self):
+        self.assertTrue(g.negated('## X-F1 review: NO-GO (2026-11-12) - doc NOT landed'))
+        self.assertTrue(g.negated('## X landed? not yet, pending'))
+        self.assertFalse(g.negated('## N1-N5 landed; Opus GO-with-follow-ups'))
+        self.assertEqual(g.heading_landed('## CAT-ZZZ-1 review: NO-GO - doc NOT landed\n'), {})
+        self.assertIn('CAT-ZZZ-2', g.heading_landed('## CAT-ZZZ-2 landed (2026-11-12)\n'))
 
     def test_starts_closed_unit(self):
         for t in ('(DONE): x', ': FIXED in y', '(Task, FIXED) z', '[LANDED] q', '(F4/F5): fixed (F4 logs)'):
