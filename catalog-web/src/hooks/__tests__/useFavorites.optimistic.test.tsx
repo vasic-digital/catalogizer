@@ -100,4 +100,53 @@ describe('useFavorites optimistic update on the live key', () => {
     expect(qc.getQueryData(['favorites-stats'])).toBe(statsBefore)
     await act(async () => { release({ is_favorite: false }) })
   })
+  describe('several useFavorites instances (FavoriteToggle + FavoritesGrid shape) in one QueryClient', () => {
+    const SORTED = { sort_by: 'title' as const }
+    const mountTwo = async () => {
+      const s = setup()
+      api.getFavorites.mockImplementation(async () => LIST as any)
+      const h = renderHook(() => ({ a: useFavorites(), b: useFavorites(SORTED) }), { wrapper: s.wrapper })
+      await waitFor(() => { expect(h.result.current.a.favorites).toHaveLength(3); expect(h.result.current.b.favorites).toHaveLength(3) })
+      return { ...s, h }
+    }
+    const idsAt = (qc: QueryClient, key: unknown[]) =>
+      ((qc.getQueryData(key) as typeof LIST).items).map((f) => `${f.media_item.media_type}-${f.media_id}`)
+
+    it('toggling from the no-params instance updates the OTHER key before the server answers', async () => {
+      const { qc, h } = await mountTwo()
+      act(() => h.result.current.a.toggleFavorite(7, true, 'movie'))
+      await waitFor(() => expect(api.toggleFavorite).toHaveBeenCalled())
+      expect(idsAt(qc, ['favorites', undefined])).toEqual(['song-7', 'movie-8'])
+      expect(idsAt(qc, ['favorites', SORTED])).toEqual(['song-7', 'movie-8'])
+      expect(h.result.current.b.favorites).toHaveLength(2)
+      await act(async () => { release({ is_favorite: false }) })
+    })
+
+    it('after a failed mutation BOTH keys are restored', async () => {
+      const { qc, h } = await mountTwo()
+      api.getFavorites.mockImplementation(() => new Promise(() => {}) as any)
+      act(() => h.result.current.a.toggleFavorite(7, true, 'movie'))
+      await waitFor(() => expect(api.toggleFavorite).toHaveBeenCalled())
+      expect(idsAt(qc, ['favorites', SORTED])).toEqual(['song-7', 'movie-8'])
+      await act(async () => { fail(new Error('boom')) })
+      await waitFor(() => {
+        expect(idsAt(qc, ['favorites', undefined])).toEqual(['movie-7', 'song-7', 'movie-8'])
+        expect(idsAt(qc, ['favorites', SORTED])).toEqual(['movie-7', 'song-7', 'movie-8'])
+      })
+    })
+
+    it('a refetch pending when the toggle starts is cancelled and cannot overwrite the optimistic list', async () => {
+      const { qc, h } = await mountTwo()
+      let resolveRefetch: (v: unknown) => void = () => {}
+      api.getFavorites.mockImplementation(() => new Promise((res) => { resolveRefetch = res }) as any)
+      act(() => { void qc.invalidateQueries(['favorites']) })
+      await waitFor(() => expect(api.getFavorites).toHaveBeenCalledTimes(4))
+      act(() => h.result.current.a.toggleFavorite(7, true, 'movie'))
+      await waitFor(() => expect(api.toggleFavorite).toHaveBeenCalled())
+      await act(async () => { resolveRefetch(LIST) })
+      expect(idsAt(qc, ['favorites', undefined])).toEqual(['song-7', 'movie-8'])
+      expect(idsAt(qc, ['favorites', SORTED])).toEqual(['song-7', 'movie-8'])
+      await act(async () => { release({ is_favorite: false }) })
+    })
+  })
 })
