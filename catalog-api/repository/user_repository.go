@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -19,12 +20,16 @@ import (
 var ErrLastAdmin = errors.New("operation would remove the last active administrator")
 
 type UserRepository struct {
-	db *database.DB
+	db       *database.DB
+	throttle *LoginThrottle
 }
 
 func NewUserRepository(db *database.DB) *UserRepository {
-	return &UserRepository{db: db}
+	return &UserRepository{db: db, throttle: NewLoginThrottle(db)}
 }
+
+// LoginThrottle returns the login back-off over this repository's database (CAT-LOGIN-LOCK-1).
+func (r *UserRepository) LoginThrottle() *LoginThrottle { return r.throttle }
 
 func (r *UserRepository) Create(user *models.User) (int, error) {
 	query := `
@@ -382,8 +387,16 @@ func (r *UserRepository) livePermissions(ctx context.Context, userID int) (perms
 
 func (r *UserRepository) UpdatePassword(userID int, passwordHash, salt string) error {
 	query := `UPDATE users SET password_hash = ?, salt = ?, updated_at = ? WHERE id = ?`
-	_, err := r.db.Exec(query, passwordHash, salt, time.Now(), userID)
-	return err
+	if _, err := r.db.Exec(query, passwordHash, salt, time.Now(), userID); err != nil {
+		return err
+	}
+	// A new password ends any login back-off of the account (the owner or an administrator just proved control of it).
+	if r.throttle != nil {
+		if err := r.throttle.Clear(context.Background(), userID); err != nil {
+			log.Printf("repository: clearing login back-off of user %d failed: %v", userID, err)
+		}
+	}
+	return nil
 }
 
 // UpdatePasswordIfHash is a compare-and-swap: it rewrites the hash only while
@@ -442,6 +455,12 @@ func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
 // UnlockAccount lifts a timed lock. It refuses to lift a permanent suspension
 // (ErrAccountSuspended); that is done only by SetSuspended(id, false).
 func (r *UserRepository) UnlockAccount(userID int) error {
+	// The administrator's unlock also ends the login back-off (CAT-LOGIN-LOCK-1), whether or not a timed lock was set.
+	if r.throttle != nil {
+		if err := r.throttle.Clear(context.Background(), userID); err != nil {
+			return fmt.Errorf("clear login back-off: %w", err)
+		}
+	}
 	query := `UPDATE users SET is_locked = 0, locked_until = NULL WHERE id = ? AND NOT (COALESCE(is_locked, '0') = ? AND locked_until IS NULL)`
 	res, err := r.db.Exec(query, userID, true)
 	if err != nil {

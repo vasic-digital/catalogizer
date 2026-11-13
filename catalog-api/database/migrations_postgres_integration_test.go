@@ -104,6 +104,7 @@ var expectedPostgresSchema = map[string][]string{
 	"system_alerts":                {"severity", "resolved", "created_at"},
 	"thumbnail_cache":              {"id", "video_id", "position", "url", "width", "height", "file_size", "created_at"},
 	"cache_activity":               {"type", "cache_key", "provider", "hit", "timestamp"},
-	"storage_roots":                {"allow_empty", "approved_class", "approved_class_source"}, // v21, v27 (CAT-SECQ1-B)
-	"sync_endpoints":               {"approved_class", "approved_class_source"},                // v27 (CAT-SECQ1-B)
+	"storage_roots":                {"allow_empty", "approved_class", "approved_class_source"},                                            // v21, v27 (CAT-SECQ1-B)
+	"sync_endpoints":               {"approved_class", "approved_class_source"},                                                           // v27 (CAT-SECQ1-B)
+	"login_throttle":               {"subject", "scope", "failures", "blocked_until_ms", "last_failure_ms", "last_success_ms", "version"}, // v28 (CAT-LOGIN-LOCK-1)
 }

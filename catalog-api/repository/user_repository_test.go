@@ -393,6 +393,10 @@ func TestUserRepository_UpdatePassword(t *testing.T) {
 				mock.ExpectExec("UPDATE users SET password_hash").
 					WithArgs("newhash", "newsalt", sqlmock.AnyArg(), 1).
 					WillReturnResult(sqlmock.NewResult(0, 1))
+				// a new password also ends the login back-off (CAT-LOGIN-LOCK-1)
+				mock.ExpectExec("DELETE FROM login_throttle WHERE subject = ?").
+					WithArgs("u:1").
+					WillReturnResult(sqlmock.NewResult(0, 0))
 			},
 		},
 	}
@@ -544,6 +548,10 @@ func TestUserRepository_LockUnlockAccount(t *testing.T) {
 
 	t.Run("unlock account", func(t *testing.T) {
 		repo, mock := newMockUserRepo(t)
+		// the unlock also ends the login back-off (CAT-LOGIN-LOCK-1), first
+		mock.ExpectExec("DELETE FROM login_throttle WHERE subject = ?").
+			WithArgs("u:1").
+			WillReturnResult(sqlmock.NewResult(0, 2))
 		mock.ExpectExec("UPDATE users SET is_locked = 0").
 			WithArgs(1, true).
 			WillReturnResult(sqlmock.NewResult(0, 1))

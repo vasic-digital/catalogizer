@@ -36,6 +36,8 @@ func newD9sEnv(t *testing.T) *d9sEnv {
 	db := database.WrapDB(sqlDB, database.DialectSQLite)
 	require.NoError(t, db.RunMigrations(context.Background()))
 	repo := repository.NewUserRepository(db)
+	// These tests probe login timing and state, not the back-off (CAT-LOGIN-LOCK-1): lift its free budget.
+	repo.LoginThrottle().SetPolicy(repository.LoginThrottlePolicy{BucketFree: 100000, AccountFree: 100000})
 	return &d9sEnv{sqlDB, repo, NewAuthService(repo, "test-jwt-secret-throwaway")}
 }
 

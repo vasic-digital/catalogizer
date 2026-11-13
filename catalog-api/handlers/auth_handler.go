@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"catalogizer/models"
 	"catalogizer/repository"
@@ -52,6 +53,21 @@ func authClientMessage(err error, fallback string) (string, bool) {
 
 // Gin handler functions for auth
 
+// retryAfterSeconds rounds a back-off up to whole seconds (at least 1) for the Retry-After header.
+// loginThrottledMessage is the fixed 429 body; it never carries an error value (PXF23-R5b sink sweep).
+const loginThrottledMessage = "too many failed sign-in attempts, try again later"
+
+func retryAfterSeconds(d time.Duration) int {
+	secs := int(d / time.Second)
+	if d%time.Second != 0 {
+		secs++
+	}
+	if secs < 1 {
+		secs = 1
+	}
+	return secs
+}
+
 // LoginGin handles login request with gin
 func (h *AuthHandler) LoginGin(c *gin.Context) {
 	var req models.LoginRequest
@@ -66,6 +82,17 @@ func (h *AuthHandler) LoginGin(c *gin.Context) {
 
 	result, err := h.authService.Login(req, ipAddress, userAgent)
 	if err != nil {
+		var throttled *services.ErrLoginThrottled
+		if errors.As(err, &throttled) {
+			// Same body and status for an unknown name, a known account and a throttled client (CAT-LOGIN-LOCK-1).
+			c.Header("Retry-After", strconv.Itoa(retryAfterSeconds(throttled.RetryAfter)))
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": loginThrottledMessage})
+			return
+		}
+		if errors.Is(err, services.ErrLoginThrottleUnavailable) {
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": services.ErrLoginThrottleUnavailable.Error()})
+			return
+		}
 		if errors.Is(err, services.ErrAccountPending) {
 			pendMsg, _ := authClientMessage(err, "Account pending approval")
 			c.JSON(http.StatusForbidden, gin.H{"error": pendMsg, "code": "account_pending_approval"})
@@ -357,6 +384,16 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	result, err := h.authService.Login(req, ipAddress, userAgent)
 	if err != nil {
+		var throttled *services.ErrLoginThrottled
+		if errors.As(err, &throttled) {
+			w.Header().Set("Retry-After", strconv.Itoa(retryAfterSeconds(throttled.RetryAfter)))
+			http.Error(w, loginThrottledMessage, http.StatusTooManyRequests)
+			return
+		}
+		if errors.Is(err, services.ErrLoginThrottleUnavailable) {
+			http.Error(w, services.ErrLoginThrottleUnavailable.Error(), http.StatusServiceUnavailable)
+			return
+		}
 		msg, _ := authClientMessage(err, "Authentication failed")
 		http.Error(w, msg, http.StatusUnauthorized)
 		return

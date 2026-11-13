@@ -271,8 +271,8 @@ func TestMigrationSequence_AllVersionsApplied(t *testing.T) {
 	err := db.RunMigrations(ctx)
 	require.NoError(t, err)
 
-	// v25 adds conversion_jobs.warning (D11a); v26 adds file_text_index (D4); v27 adds approved_class (CAT-SECQ1-B).
-	const latestVersion = 27
+	// v25 adds conversion_jobs.warning (D11a); v26 adds file_text_index (D4); v27 adds approved_class (CAT-SECQ1-B); v28 adds login_throttle (CAT-LOGIN-LOCK-1).
+	const latestVersion = 28
 	var count, maxV int
 	err = db.QueryRowContext(ctx, "SELECT COUNT(*) FROM migrations").Scan(&count)
 	assert.NoError(t, err)

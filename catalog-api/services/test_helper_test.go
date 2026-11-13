@@ -47,6 +47,7 @@ func setupTestDB(t *testing.T) *database.DB {
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 		)`,
+		`CREATE TABLE IF NOT EXISTS login_throttle (subject TEXT NOT NULL, scope TEXT NOT NULL, failures INTEGER NOT NULL DEFAULT 0, blocked_until_ms BIGINT NOT NULL DEFAULT 0, last_failure_ms BIGINT NOT NULL DEFAULT 0, last_success_ms BIGINT NOT NULL DEFAULT 0, version BIGINT NOT NULL DEFAULT 0, PRIMARY KEY (subject, scope))`,
 		`CREATE TABLE IF NOT EXISTS favorites (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			user_id INTEGER NOT NULL,

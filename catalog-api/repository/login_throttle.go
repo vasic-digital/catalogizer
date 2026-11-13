@@ -1,0 +1,344 @@
+package repository
+
+import (
+	"context"
+	"crypto/sha256"
+	"database/sql"
+	"encoding/hex"
+	"errors"
+	"fmt"
+	"runtime"
+	"strings"
+	"sync"
+	"time"
+
+	"catalogizer/database"
+)
+
+// LoginThrottle is the persisted, bounded, progressive back-off for POST /auth/login (CAT-LOGIN-LOCK-1).
+//
+// Design (the decisions, so a reviewer can attack them):
+//
+//   - It is a THROTTLE, never a lock. A block always ends: the delay doubles per further charged attempt but is capped at
+//     Policy.Cap (default 15 minutes), so an attacker who keeps an account throttled can delay a legitimate login by at most
+//     Cap, and never disables it. The administrative suspension (users.is_locked) is a different mechanism and is not touched
+//     here: using it would revoke the victim's sessions on the attacker's say-so.
+//   - Two scopes. "account": every client together (stops distributed guessing of one account). "ip:<addr>": one client
+//     address against one account (stops one address from using the whole account budget).
+//   - Charge-first. An attempt is charged ATOMICALLY (compare-and-swap on a version column, no read-modify-write window)
+//     BEFORE the password is checked, so N parallel attempts cannot all slip through before the first one is counted: exactly
+//     Free evaluations happen before the block. A success clears the charge.
+//   - Known-good client. A client address that completed a login for this account within KnownGoodTTL (at most MaxKnownGood
+//     addresses per account are remembered) is not stopped by the ACCOUNT block, so an attacker cannot lock the owner out of
+//     the places the owner really logs in from. It is still subject to its own per-address block, so spoofing a known address
+//     buys the attacker only that one address's budget, never an unbounded one.
+//   - Unknown names are throttled exactly like known ones (subject "n:<hash>"), so the answer does not reveal whether a name
+//     exists. The cost is bounded rows: at most two per distinct name, purged after StaleAfter.
+//   - Times are unix milliseconds from an injectable clock; state lives in the login_throttle table (migration v28) so it
+//     survives a restart and is shared by every instance on one database.
+type LoginThrottle struct {
+	db    *database.DB
+	mu    sync.Mutex
+	pol   LoginThrottlePolicy
+	now   func() time.Time
+	purge time.Time
+}
+
+// LoginThrottlePolicy holds the numbers. Zero fields fall back to the defaults of DefaultLoginThrottlePolicy.
+type LoginThrottlePolicy struct {
+	// BucketFree charged attempts per (account, address) before the first block; AccountFree the same for all addresses together.
+	BucketFree, AccountFree int
+	// Base is the first block length; each further charged attempt doubles it up to Cap.
+	Base, Cap time.Duration
+	// BucketDecay / AccountDecay: a quiet period after which the failure count restarts from zero.
+	BucketDecay, AccountDecay time.Duration
+	KnownGoodTTL              time.Duration
+	MaxKnownGood              int
+	StaleAfter                time.Duration
+}
+
+// DefaultLoginThrottlePolicy: 5 free attempts per address and 20 per account, then 30s, 60s, ... up to 15 minutes.
+func DefaultLoginThrottlePolicy() LoginThrottlePolicy {
+	return LoginThrottlePolicy{
+		BucketFree: 5, AccountFree: 20,
+		Base: 30 * time.Second, Cap: 15 * time.Minute,
+		BucketDecay: time.Hour, AccountDecay: 24 * time.Hour,
+		KnownGoodTTL: 30 * 24 * time.Hour, MaxKnownGood: 5,
+		StaleAfter: 24 * time.Hour,
+	}
+}
+
+func (p LoginThrottlePolicy) withDefaults() LoginThrottlePolicy {
+	d := DefaultLoginThrottlePolicy()
+	if p.BucketFree <= 0 {
+		p.BucketFree = d.BucketFree
+	}
+	if p.AccountFree <= 0 {
+		p.AccountFree = d.AccountFree
+	}
+	if p.Base <= 0 {
+		p.Base = d.Base
+	}
+	if p.Cap <= 0 {
+		p.Cap = d.Cap
+	}
+	if p.Cap < p.Base {
+		p.Cap = p.Base
+	}
+	if p.BucketDecay <= 0 {
+		p.BucketDecay = d.BucketDecay
+	}
+	if p.AccountDecay <= 0 {
+		p.AccountDecay = d.AccountDecay
+	}
+	if p.KnownGoodTTL <= 0 {
+		p.KnownGoodTTL = d.KnownGoodTTL
+	}
+	if p.MaxKnownGood <= 0 {
+		p.MaxKnownGood = d.MaxKnownGood
+	}
+	if p.StaleAfter <= 0 {
+		p.StaleAfter = d.StaleAfter
+	}
+	return p
+}
+
+// ErrLoginThrottleBusy is returned when the compare-and-swap could not settle (extreme contention); callers fail closed.
+var ErrLoginThrottleBusy = errors.New("login throttle busy")
+
+const (
+	scopeAccount = "account"
+	casRetries   = 400
+)
+
+// NewLoginThrottle builds the throttle over db with the default policy and the wall clock.
+func NewLoginThrottle(db *database.DB) *LoginThrottle {
+	return &LoginThrottle{db: db, pol: DefaultLoginThrottlePolicy(), now: time.Now}
+}
+
+// SetClock injects the clock (tests). SetPolicy replaces the policy (zero fields keep the defaults).
+func (t *LoginThrottle) SetClock(now func() time.Time) { t.mu.Lock(); t.now = now; t.mu.Unlock() }
+func (t *LoginThrottle) SetPolicy(p LoginThrottlePolicy) {
+	t.mu.Lock()
+	t.pol = p.withDefaults()
+	t.mu.Unlock()
+}
+
+func (t *LoginThrottle) clock() (time.Time, LoginThrottlePolicy) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	return t.now(), t.pol
+}
+
+// SubjectForUser / SubjectForUnknownName build the subject key. A name that matches no account is hashed (case-folded,
+// trimmed), so the table never stores a raw attacker-chosen string.
+func SubjectForUser(userID int) string { return fmt.Sprintf("u:%d", userID) }
+func SubjectForUnknownName(name string) string {
+	sum := sha256.Sum256([]byte(strings.ToLower(strings.TrimSpace(name))))
+	return "n:" + hex.EncodeToString(sum[:16])
+}
+
+func ipScope(ip string) string {
+	if len(ip) > 64 {
+		ip = ip[:64]
+	}
+	return "ip:" + ip
+}
+
+// Decision is the outcome of Begin.
+type Decision struct {
+	Allowed bool
+	// RetryAfter is how long the caller must wait when Allowed is false.
+	RetryAfter time.Duration
+}
+
+func delayFor(f, free int, base, cap time.Duration) time.Duration {
+	exp := f - free
+	if exp < 0 {
+		return 0
+	}
+	if exp > 20 {
+		exp = 20
+	}
+	d := base << uint(exp)
+	if d > cap || d <= 0 {
+		d = cap
+	}
+	return d
+}
+
+type rowState struct {
+	failures       int
+	blockedUntilMs int64
+	lastFailureMs  int64
+	lastSuccessMs  int64
+	version        int64
+	exists         bool
+}
+
+func (t *LoginThrottle) read(ctx context.Context, subject, scope string) (rowState, error) {
+	var s rowState
+	err := t.db.QueryRowContext(ctx,
+		`SELECT failures, blocked_until_ms, last_failure_ms, last_success_ms, version FROM login_throttle WHERE subject = ? AND scope = ?`,
+		subject, scope).Scan(&s.failures, &s.blockedUntilMs, &s.lastFailureMs, &s.lastSuccessMs, &s.version)
+	if errors.Is(err, sql.ErrNoRows) {
+		return rowState{}, nil
+	}
+	if err != nil {
+		return rowState{}, err
+	}
+	s.exists = true
+	return s, nil
+}
+
+// reserve charges one attempt on (subject, scope) atomically. blocked is the end of the block when refused.
+func (t *LoginThrottle) reserve(ctx context.Context, subject, scope string, free int, decay time.Duration, now time.Time, pol LoginThrottlePolicy) (allowed bool, until time.Time, err error) {
+	nowMs := now.UnixMilli()
+	for i := 0; i < casRetries; i++ {
+		if _, err = t.db.ExecContext(ctx,
+			`INSERT OR IGNORE INTO login_throttle (subject, scope) VALUES (?, ?)`, subject, scope); err != nil {
+			return false, time.Time{}, err
+		}
+		s, rerr := t.read(ctx, subject, scope)
+		if rerr != nil {
+			return false, time.Time{}, rerr
+		}
+		if s.blockedUntilMs > nowMs {
+			return false, time.UnixMilli(s.blockedUntilMs), nil
+		}
+		f := s.failures
+		if f > 0 && nowMs-s.lastFailureMs > decay.Milliseconds() {
+			f = 0
+		}
+		f++
+		var nb int64
+		if f >= free {
+			nb = nowMs + delayFor(f, free, pol.Base, pol.Cap).Milliseconds()
+		}
+		res, uerr := t.db.ExecContext(ctx,
+			`UPDATE login_throttle SET failures = ?, blocked_until_ms = ?, last_failure_ms = ?, version = version + 1 WHERE subject = ? AND scope = ? AND version = ?`,
+			f, nb, nowMs, subject, scope, s.version)
+		if uerr != nil {
+			return false, time.Time{}, uerr
+		}
+		if n, _ := res.RowsAffected(); n == 1 {
+			return true, time.Time{}, nil
+		}
+		runtime.Gosched()
+	}
+	return false, time.Time{}, ErrLoginThrottleBusy
+}
+
+// Begin decides whether this attempt may be evaluated and charges it. It must be called BEFORE the password is checked.
+func (t *LoginThrottle) Begin(ctx context.Context, subject, ip string) (Decision, error) {
+	now, pol := t.clock()
+	nowMs := now.UnixMilli()
+	t.maybePurge(ctx, now, pol)
+	bucket := ipScope(ip)
+
+	// 1. This address's own block (read-only, so a refused attempt is not charged anywhere).
+	b, err := t.read(ctx, subject, bucket)
+	if err != nil {
+		return Decision{}, err
+	}
+	if b.blockedUntilMs > nowMs {
+		return refuse(time.UnixMilli(b.blockedUntilMs), now), nil
+	}
+	known := b.lastSuccessMs > 0 && nowMs-b.lastSuccessMs <= pol.KnownGoodTTL.Milliseconds()
+
+	// 2. The account block, unless this is a known-good address.
+	a, err := t.read(ctx, subject, scopeAccount)
+	if err != nil {
+		return Decision{}, err
+	}
+	if a.blockedUntilMs > nowMs && !known {
+		return refuse(time.UnixMilli(a.blockedUntilMs), now), nil
+	}
+	if !(a.blockedUntilMs > nowMs && known) {
+		ok, until, err := t.reserve(ctx, subject, scopeAccount, pol.AccountFree, pol.AccountDecay, now, pol)
+		if errors.Is(err, ErrLoginThrottleBusy) {
+			return refuse(now.Add(pol.Base), now), nil
+		}
+		if err != nil {
+			return Decision{}, err
+		}
+		if !ok && !known {
+			return refuse(until, now), nil
+		}
+	}
+
+	// 3. This address's charge.
+	ok, until, err := t.reserve(ctx, subject, bucket, pol.BucketFree, pol.BucketDecay, now, pol)
+	if errors.Is(err, ErrLoginThrottleBusy) {
+		return refuse(now.Add(pol.Base), now), nil
+	}
+	if err != nil {
+		return Decision{}, err
+	}
+	if !ok {
+		return refuse(until, now), nil
+	}
+	return Decision{Allowed: true}, nil
+}
+
+func refuse(until, now time.Time) Decision {
+	d := until.Sub(now)
+	if d < time.Second {
+		d = time.Second
+	}
+	return Decision{Allowed: false, RetryAfter: d}
+}
+
+// Success clears the charges of a completed login and (rememberClient) records the address as known-good.
+func (t *LoginThrottle) Success(ctx context.Context, subject, ip string, rememberClient bool) error {
+	now, pol := t.clock()
+	nowMs := now.UnixMilli()
+	if _, err := t.db.ExecContext(ctx,
+		`UPDATE login_throttle SET failures = 0, blocked_until_ms = 0, version = version + 1 WHERE subject = ? AND scope = ?`,
+		subject, scopeAccount); err != nil {
+		return err
+	}
+	bucket := ipScope(ip)
+	if !rememberClient {
+		_, err := t.db.ExecContext(ctx,
+			`UPDATE login_throttle SET failures = 0, blocked_until_ms = 0, version = version + 1 WHERE subject = ? AND scope = ?`,
+			subject, bucket)
+		return err
+	}
+	if _, err := t.db.ExecContext(ctx,
+		`INSERT OR IGNORE INTO login_throttle (subject, scope) VALUES (?, ?)`, subject, bucket); err != nil {
+		return err
+	}
+	if _, err := t.db.ExecContext(ctx,
+		`UPDATE login_throttle SET failures = 0, blocked_until_ms = 0, last_success_ms = ?, version = version + 1 WHERE subject = ? AND scope = ?`,
+		nowMs, subject, bucket); err != nil {
+		return err
+	}
+	// Remember at most MaxKnownGood addresses: drop the older success markers (rows that only carry failures are kept).
+	_, err := t.db.ExecContext(ctx,
+		`DELETE FROM login_throttle WHERE subject = ? AND scope <> ? AND last_success_ms > 0 AND scope NOT IN (
+			SELECT scope FROM (SELECT scope FROM login_throttle WHERE subject = ? AND scope <> ? AND last_success_ms > 0 ORDER BY last_success_ms DESC LIMIT ?) k)`,
+		subject, scopeAccount, subject, scopeAccount, pol.MaxKnownGood)
+	return err
+}
+
+// Clear removes every throttle row of an account (administrator unlock, password change or reset).
+func (t *LoginThrottle) Clear(ctx context.Context, userID int) error {
+	_, err := t.db.ExecContext(ctx, `DELETE FROM login_throttle WHERE subject = ?`, SubjectForUser(userID))
+	return err
+}
+
+// maybePurge deletes rows that can no longer matter, at most once a minute per process.
+func (t *LoginThrottle) maybePurge(ctx context.Context, now time.Time, pol LoginThrottlePolicy) {
+	t.mu.Lock()
+	if now.Sub(t.purge) < time.Minute {
+		t.mu.Unlock()
+		return
+	}
+	t.purge = now
+	t.mu.Unlock()
+	nowMs := now.UnixMilli()
+	_, _ = t.db.ExecContext(ctx,
+		`DELETE FROM login_throttle WHERE blocked_until_ms < ? AND last_failure_ms < ? AND (last_success_ms = 0 OR last_success_ms < ?)`,
+		nowMs, nowMs-pol.StaleAfter.Milliseconds(), nowMs-pol.KnownGoodTTL.Milliseconds())
+}

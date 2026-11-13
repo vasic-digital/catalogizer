@@ -404,7 +404,21 @@ Authenticate a user and receive JWT tokens.
 }
 ```
 
-**Errors:** 400 (malformed JSON), 401 (invalid credentials)
+**Errors:** 400 (malformed JSON), 401 (invalid credentials), 429 (login back-off, see below), 503 (back-off store unavailable)
+
+**Login back-off (CAT-LOGIN-LOCK-1).** On top of the 30/min per-address limiter, every attempt is charged against a persisted,
+progressive back-off BEFORE the password is evaluated, in two scopes: per (account, client address) and per account (all
+addresses together). Defaults: 5 free evaluations per address and 20 per account within the decay window (1 h per address, 24 h
+per account), then a block of 30 s that doubles with every further charged attempt up to 15 minutes. A blocked attempt answers
+`429 {"error":"too many failed sign-in attempts, try again later"}` with a `Retry-After` header and is not evaluated (and not
+counted). It is a throttle, never a permanent lock: it always ends, `users.is_locked` (the administrative suspension) is never
+written and the owner's sessions are not revoked. An unknown name is throttled exactly like a known one (same status, body and
+header), the username and the email of one account share one budget, and a correct password does not bypass the block, except
+that a client address which completed a login for the account in the last 30 days (at most 5 are remembered) is not stopped by the
+ACCOUNT block (it keeps its own per-address block). A successful login clears the charges. The state is in table `login_throttle`
+(migration v28), so it survives a restart and is shared by every instance on one database. An administrator ends a back-off with
+`POST /api/v1/users/{id}/unlock` or by setting a new password. If the store cannot be read, login answers 503 (fail closed).
+Client addresses come from `c.ClientIP()`, so `TRUSTED_PROXIES` must be set correctly behind a reverse proxy.
 
 ---
 
