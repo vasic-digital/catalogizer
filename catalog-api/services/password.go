@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"strings"
+	"sync"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -89,4 +90,31 @@ func isLegacySHA256Hex(s string) bool {
 		}
 	}
 	return true
+}
+
+var (
+	dummyHashOnce sync.Once
+	dummyHashVal  string
+)
+
+// dummyPasswordHash returns a fixed, well-formed v2 hash (DefaultCost, random
+// unrelated secret) computed once per process. It exists only so a login for a
+// username that does not exist can burn the same bcrypt work as a real user.
+func dummyPasswordHash() string {
+	dummyHashOnce.Do(func() {
+		h, err := HashPasswordWithSalt("dummy-password-never-matches", "dummy-salt-for-timing-equalisation")
+		if err != nil {
+			h = ""
+		}
+		dummyHashVal = h
+	})
+	return dummyHashVal
+}
+
+// BurnDummyPasswordCheck performs one constant-cost password comparison against
+// a fixed hash and discards the result (D9SR3-F3). Call it on every credential
+// path that would otherwise return early because the user does not exist, so
+// response time does not reveal which usernames exist.
+func BurnDummyPasswordCheck(password string) {
+	_, _ = CheckPassword(password, "dummy-salt-for-timing-equalisation", dummyPasswordHash())
 }

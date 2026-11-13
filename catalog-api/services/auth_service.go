@@ -126,6 +126,9 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	user, err := s.userRepo.GetByUsernameOrEmail(req.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			// Same bcrypt cost as a wrong password for a real user, so response time does not
+			// reveal which usernames exist (D9SR3-F3).
+			BurnDummyPasswordCheck(req.Password)
 			s.auditEvent(0, "failed_login", ipAddress, userAgent, "unknown user")
 			return nil, ErrInvalidCredentials
 		}

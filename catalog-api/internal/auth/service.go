@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"catalogizer/config"
@@ -277,11 +278,28 @@ func (s *AuthService) createDefaultAdmin() error {
 	return nil
 }
 
+var (
+	dummyHashOnce sync.Once
+	dummyHash     []byte
+)
+
+// burnDummyPasswordCheck does one DefaultCost bcrypt comparison against a fixed
+// hash and discards the result.
+func burnDummyPasswordCheck(password string) {
+	dummyHashOnce.Do(func() {
+		dummyHash, _ = bcrypt.GenerateFromPassword([]byte("dummy-password-never-matches"), bcrypt.DefaultCost)
+	})
+	_ = bcrypt.CompareHashAndPassword(dummyHash, []byte(password))
+}
+
 // Login authenticates a user and returns a token
 func (s *AuthService) Login(username, password, ipAddress, userAgent string) (*LoginResponse, error) {
 	// Get user by username or email
 	user, err := s.getUserByUsernameOrEmail(username)
 	if err != nil {
+		// Same bcrypt cost as a wrong password for a real user, so response time does not
+		// reveal which usernames exist (D9SR3-F3).
+		burnDummyPasswordCheck(password)
 		s.logAuthEvent(0, "failed_login", ipAddress, userAgent, fmt.Sprintf("user not found: %s", username))
 		return nil, fmt.Errorf("invalid credentials")
 	}
