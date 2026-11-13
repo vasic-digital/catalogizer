@@ -49,10 +49,13 @@ func TestSECDIALFU_F5_DialStorageBoundsConnect(t *testing.T) {
 		return nil, ctx.Err()
 	}
 	defer func() { storageDialContext = old }()
+	// the parent deadline only keeps a regression (no bound applied) from hanging the test; the bound under test is the 80 ms one
+	parent, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 	start := time.Now()
-	_, err := dialStorage(context.Background(), "nas.lan", "445", 80*time.Millisecond)
+	_, err := dialStorage(parent, "nas.lan", "445", 80*time.Millisecond)
 	require.ErrorIs(t, err, context.DeadlineExceeded)
-	require.Less(t, time.Since(start), 2*time.Second)
+	require.Less(t, time.Since(start), time.Second, "returned at the 80 ms bound, not at the parent deadline")
 }
 
 func TestSECDIALFU_F5_SMBConnectBoundIsTenSeconds(t *testing.T) {
