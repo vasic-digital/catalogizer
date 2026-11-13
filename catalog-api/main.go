@@ -1187,9 +1187,8 @@ func main() {
 	authGroup.GET("/profile", authRateLimiter, jwtMiddleware.RequireAuth(), authHandler.GetCurrentUserGin)
 	authGroup.GET("/init-status", defaultRateLimiter, mediaQueryHandler.GetInitStatus)
 	// change-password verifies the current password (bcrypt compare) behind a
-	// JWT: failed verifications are limited per user id (CAT-CHPW-RL-1).
-	root_middleware.RegisterChangePassword(authGroup, "/change-password", defaultRateLimiter, jwtMiddleware.RequireAuth(), mediaQueryHandler.ChangePassword,
-		root_middleware.NewFailedAttemptLimiter(root_middleware.CredentialMaxFailures, root_middleware.CredentialFailureWindow))
+	// JWT: failed verifications are limited per session/user (CAT-CHPW-RL-1).
+	registerChangePasswordRoute(authGroup, defaultRateLimiter, jwtMiddleware.RequireAuth(), mediaQueryHandler.ChangePassword, userRepo, logger)
 	}
 
 	// API routes

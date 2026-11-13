@@ -26,6 +26,7 @@ func stubAuth() gin.HandlerFunc {
 			return
 		}
 		c.Set("user_id", id)
+		c.Set("session_id", c.GetHeader("X-Test-Session"))
 		c.Next()
 	}
 }
@@ -60,7 +61,7 @@ func newChpwEnv(t *testing.T, withLimiter bool, max int) *chpwEnv {
 	g := env.r.Group("/api/v1/auth")
 	if withLimiter {
 		middleware.RegisterChangePassword(g, "/change-password", passthrough(), stubAuth(), h.ChangePassword,
-			middleware.NewFailedAttemptLimiter(max, middleware.CredentialFailureWindow))
+			middleware.NewFailedAttemptLimiter(max, 5*max, middleware.CredentialFailureWindow))
 	} else {
 		g.POST("/change-password", passthrough(), stubAuth(), h.ChangePassword)
 	}
@@ -68,10 +69,15 @@ func newChpwEnv(t *testing.T, withLimiter bool, max int) *chpwEnv {
 }
 
 func (e *chpwEnv) call(user int, current string) int {
+	return e.callSession(user, "s1", current)
+}
+
+func (e *chpwEnv) callSession(user int, session, current string) int {
 	body, _ := json.Marshal(map[string]string{"current_password": current, "new_password": "brandnewpass1"})
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/change-password", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Test-User", strconv.Itoa(user))
+	req.Header.Set("X-Test-Session", session)
 	w := httptest.NewRecorder()
 	e.r.ServeHTTP(w, req)
 	return w.Code
@@ -115,13 +121,39 @@ func TestChpwLimiter_SuccessResetsOwnCounter(t *testing.T) {
 	require.Equal(t, http.StatusTooManyRequests, e.call(e.ids[0], "bad"))
 }
 
-func TestChpwLimiter_UnknownUserAndMissingIdentityNotCounted(t *testing.T) {
+func TestChpwLimiter_UnknownUserAnswers404AndIsNotCounted(t *testing.T) {
 	e := newChpwEnv(t, true, 2)
 	for i := 0; i < 10; i++ {
 		require.Equal(t, http.StatusNotFound, e.call(9999, "bad")) // 404, not a verification failure
 	}
 	require.Equal(t, http.StatusNotFound, e.call(9999, "bad"))
 	require.Equal(t, http.StatusUnauthorized, e.call(e.ids[0], "bad")) // alice still has her budget
+}
+
+// A request with no authenticated identity never reaches the bcrypt handler
+// and is not counted against anyone.
+func TestChpwLimiter_MissingIdentityRefusedAndNotCounted(t *testing.T) {
+	e := newChpwEnv(t, true, 2)
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/change-password", bytes.NewReader([]byte(`{"current_password":"x","new_password":"brandnewpass1"}`)))
+	req.Header.Set("Content-Type", "application/json")
+	for i := 0; i < 10; i++ {
+		w := httptest.NewRecorder()
+		e.r.ServeHTTP(w, req.Clone(req.Context()))
+		require.Equal(t, http.StatusUnauthorized, w.Code)
+	}
+	require.Equal(t, http.StatusUnauthorized, e.call(e.ids[0], "bad"))
+	require.Equal(t, http.StatusUnauthorized, e.call(e.ids[0], "bad"))
+}
+
+// The thief's stolen session is locked after its own budget; the owner's own
+// session of the SAME user can still change the password (RED on per-user keying).
+func TestChpwLimiter_AttackerSessionLockedOwnerSessionStillChangesPassword(t *testing.T) {
+	e := newChpwEnv(t, true, 5)
+	for i := 0; i < 5; i++ {
+		require.Equal(t, http.StatusUnauthorized, e.callSession(e.ids[0], "attacker", "guess"))
+	}
+	require.Equal(t, http.StatusTooManyRequests, e.callSession(e.ids[0], "attacker", "oldpassword123"))
+	require.Equal(t, http.StatusOK, e.callSession(e.ids[0], "owner", "oldpassword123"))
 }
 
 func TestChpwLimiter_ConcurrentGuessesStopAtLimit(t *testing.T) {
