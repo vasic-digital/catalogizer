@@ -149,6 +149,9 @@ func offenders(t *testing.T, dir string, exported bool) []string {
 					if id, ok := x.Key.(*ast.Ident); ok {
 						assigned[id.Obj] = true
 					}
+					if id, ok := x.Value.(*ast.Ident); ok { // PX-F22: `for _, out = range c` assigns out too
+						assigned[id.Obj] = true
+					}
 				}
 				return true
 			})
@@ -337,8 +340,19 @@ func TestDetectorAssignmentEvidenceShapes(t *testing.T) {
 		// `!= nil` is not a normalisation of a nil slice; only `== nil` (the guarded assignment idiom) counts
 		{"not-equal-nil-check-is-not-normalisation", "package x\nfunc A() []int {\n\tvar l []int\n\tif l != nil {\n\t\t_ = l\n\t}\n\treturn l\n}\n", 1, "var l returned"},
 		{"equal-nil-check-is-normalisation-clean", "package x\nfunc A() []int {\n\tvar l []int\n\tif l == nil {\n\t\tl = []int{}\n\t}\n\treturn l\n}\n", 0, ""},
-		// a named result that is only nil-checked (== nil) counts as normalised
-		{"checked-only-named-result-clean", "package x\nfunc A() (out []int) {\n\tif out == nil {\n\t}\n\treturn\n}\n", 0, ""},
+		// PX-F20: a named result that is only nil-checked (== nil) counts as normalised, EVEN WITH AN EMPTY BODY. That is a KNOWN
+		// FALSE NEGATIVE of the current detector (the check evidence is not tied to an assignment in the body); this case pins
+		// today's behaviour, it does not endorse it. Tracked as PX-F20: when the detector requires an assignment, flip want to 1.
+		{"KNOWN-FALSE-NEGATIVE-checked-only-empty-body-currently-clean", "package x\nfunc A() (out []int) {\n\tif out == nil {\n\t}\n\treturn\n}\n", 0, ""},
+		// PX-F21: reversed comparison `nil == out` is the same evidence as `out == nil`; `nil != out` is not a normalisation
+		{"reversed-nil-equals-named-result-clean", "package x\nfunc A() (out []int) {\n\tif nil == out {\n\t}\n\treturn\n}\n", 0, ""}, // no assignment: only the comparison evidence makes it clean (same pinned false negative as PX-F20)
+		{"reversed-nil-not-equal-named-result-flagged", "package x\nfunc A() (out []int) {\n\tif nil != out {\n\t}\n\treturn\n}\n", 1, "named result out"},
+		// PX-F21: the named result assigned in a NON-FIRST left-hand position (assign and define forms)
+		{"named-result-second-lhs-assign-clean", "package x\nfunc g() (int, []int) { return 1, []int{} }\nfunc A() (out []int) {\n\tvar x int\n\tx, out = g()\n\t_ = x\n\treturn\n}\n", 0, ""},
+		{"named-result-second-lhs-define-clean", "package x\nfunc g() (error, []int) { return nil, []int{} }\nfunc A() (out []int) {\n\te, out := g()\n\t_ = e\n\treturn\n}\n", 0, ""},
+		{"second-lhs-other-variable-does-not-assign-out", "package x\nfunc g() (int, []int) { return 1, []int{} }\nfunc A() (out []int) {\n\tvar x int\n\tvar y []int\n\tx, y = g()\n\t_, _ = x, y\n\treturn\n}\n", 1, "named result out"},
+		// PX-F22: the range VALUE variable assigns the outer variable on every iteration (like the key)
+		{"range-value-assigns-outer-clean", "package x\nfunc A(c [][]int) (out []int) {\n\tfor _, out = range c {\n\t}\n\treturn\n}\n", 0, ""},
 		{"not-equal-checked-only-named-result-flagged", "package x\nfunc A() (out []int) {\n\tif out != nil {\n\t}\n\treturn\n}\n", 1, "named result out"},
 		// `:=` (define) and `=` (assign) are both assignments
 		{"plain-assign-named-result-clean", "package x\nfunc A() (out []int) {\n\tout = []int{}\n\treturn\n}\n", 0, ""},
