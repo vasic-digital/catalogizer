@@ -757,7 +757,9 @@ func (w *sweep) runOp(op *cOp) {
 	hasPathParams := len(pv) > 0
 
 	// --- unauth ---
-	if !isAuthSelf(op) && op.Path != "/ws" {
+	// /ws is probed too (SEC-WS-1-F4): the unauthenticated plain GET must be refused with 401
+	// by RequireAuth before any upgrade is attempted.
+	if !isAuthSelf(op) {
 		st, _, _ := w.call(w.anon, op.Method, valid, "", body, "")
 		w.record(rec, "unauth", st)
 		if !op.Public && st != 401 {

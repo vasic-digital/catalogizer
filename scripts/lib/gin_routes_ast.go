@@ -2,7 +2,7 @@
 // Stdlib only. Used by scripts/check_api_route_vs_spec.py (docs/scripts/check_api_route_vs_spec.md).
 //
 // Understood: gin.Default/New roots, X.Group("lit"), chained .Use(...), GET/POST/PUT/DELETE/PATCH/HEAD/OPTIONS, Any (the 7 methods
-// above), Handle("LIT", path, ...), Match([]string{...}, path, ...), multi-line calls, and same-file helper functions whose
+// above), Handle("LIT", path, ...), Match([]string{...}, path, ...), multi-line calls, and same-file and same-package (sibling *.go files next to FILE.go) helper functions whose
 // parameter is *gin.RouterGroup / *gin.Engine / gin.IRouter / gin.IRoutes (interpreted at each call site with the caller's prefix).
 // Anything that looks like a route registration but cannot be resolved is printed as "UNRESOLVED <pos> <why>" on stdout.
 package main
@@ -13,6 +13,7 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -289,6 +290,26 @@ func main() {
 			for _, d := range pf.Decls {
 				if fd, ok := d.(*ast.FuncDecl); ok {
 					ext[fd.Name.Name] = append(ext[fd.Name.Name], fd)
+				}
+			}
+		}
+	}
+	// same-package helpers: every other non-test .go file in the directory of FILE.go declaring the same package
+	// (e.g. main_wsroute.go next to main.go). A function already declared in FILE.go wins.
+	dir := filepath.Dir(os.Args[1])
+	if ents, err := os.ReadDir(dir); err == nil {
+		for _, en := range ents {
+			full := filepath.Join(dir, en.Name())
+			if en.IsDir() || !strings.HasSuffix(en.Name(), ".go") || strings.HasSuffix(en.Name(), "_test.go") || filepath.Base(full) == filepath.Base(os.Args[1]) {
+				continue
+			}
+			pf, err := parser.ParseFile(fset, full, nil, 0)
+			if err != nil || pf.Name.Name != f.Name.Name {
+				continue
+			}
+			for _, d := range pf.Decls {
+				if fd, ok := d.(*ast.FuncDecl); ok && fd.Recv == nil && funcs[fd.Name.Name] == nil {
+					funcs[fd.Name.Name] = fd
 				}
 			}
 		}

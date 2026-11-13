@@ -277,11 +277,32 @@ func (s *AuthService) createDefaultAdmin() error {
 	return nil
 }
 
+// dummyHash is a fixed DefaultCost bcrypt hash computed once at package init;
+// failure panics instead of silently degrading the timing defence.
+var dummyHash = mustDummyHash()
+
+func mustDummyHash() []byte {
+	h, err := bcrypt.GenerateFromPassword([]byte("dummy-password-never-matches"), bcrypt.DefaultCost)
+	if err != nil {
+		panic("auth: cannot build dummy password hash: " + err.Error())
+	}
+	return h
+}
+
+// burnDummyPasswordCheck does one DefaultCost bcrypt comparison against a fixed
+// hash and discards the result.
+func burnDummyPasswordCheck(password string) {
+	_ = bcrypt.CompareHashAndPassword(dummyHash, []byte(password))
+}
+
 // Login authenticates a user and returns a token
 func (s *AuthService) Login(username, password, ipAddress, userAgent string) (*LoginResponse, error) {
 	// Get user by username or email
 	user, err := s.getUserByUsernameOrEmail(username)
 	if err != nil {
+		// Same bcrypt cost as a wrong password for a real user, so response time does not
+		// reveal which usernames exist (D9SR3-F3).
+		burnDummyPasswordCheck(password)
 		s.logAuthEvent(0, "failed_login", ipAddress, userAgent, fmt.Sprintf("user not found: %s", username))
 		return nil, fmt.Errorf("invalid credentials")
 	}
@@ -294,6 +315,11 @@ func (s *AuthService) Login(username, password, ipAddress, userAgent string) (*L
 
 	// Verify password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
+		if err != bcrypt.ErrMismatchedHashAndPassword {
+			// Malformed or legacy-shaped stored hash: bcrypt returned early, so burn
+			// a full compare to keep these users out of the timing oracle (D9SR3-F3).
+			burnDummyPasswordCheck(password)
+		}
 		s.logAuthEvent(user.ID, "failed_login", ipAddress, userAgent, "invalid password")
 		return nil, fmt.Errorf("invalid credentials")
 	}

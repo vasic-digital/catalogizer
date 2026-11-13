@@ -135,11 +135,41 @@ func main() {
 }
 GO
 expect "non-literal path / unknown receiver is refused (rc 3)" 3 --main "$T/nonlit.go" --spec "$T/good.yaml"
+# same-package sibling helper (F5): main.go calls a helper declared in main_ws.go next to it; the helper's routes must be followed
+mkdir -p "$T/sib"
+cat >"$T/sib/main.go" <<'GO'
+package main
+
+func main() {
+	router := gin.Default()
+	api := router.Group("/api/v1")
+	api.GET("/media/:id", h)
+	registerWS(router, api)
+}
+GO
+cat >"$T/sib/main_ws.go" <<'GO'
+package main
+
+func registerWS(router gin.IRoutes, api *gin.RouterGroup) {
+	router.GET("/ws", h)
+	api.GET("/ping", h)
+}
+GO
+run --main "$T/sib/main.go" --spec "$T/good.yaml" --list
+case "$OUT" in *"GET /ws"*"GET /api/v1/ping"*|*"GET /api/v1/ping"*"GET /ws"*) ok "sibling helper (F5): routes of a same-package helper in another file are extracted (control needle: GET /ws, GET /api/v1/ping)" ;; *) no "sibling helper routes" "$OUT" ;; esac
+# a sibling in a DIFFERENT package, or a _test.go file, must not supply helpers: the call stays unresolved (blind), never silently in sync
+mkdir -p "$T/sib2"
+cp "$T/sib/main.go" "$T/sib2/main.go"
+printf 'package other\n\nfunc registerWS(router gin.IRoutes, api *gin.RouterGroup) {\n\trouter.GET("/ws", h)\n}\n' >"$T/sib2/other.go"
+printf 'package main\n\nfunc registerWS(router gin.IRoutes, api *gin.RouterGroup) {\n\trouter.GET("/ws", h)\n}\n' >"$T/sib2/main_x_test.go"
+run --main "$T/sib2/main.go" --spec "$T/good.yaml"
+if [ "$RC" = 3 ]; then ok "sibling helper (F5): other-package and _test.go helpers are not followed (blind, rc 3)"; else no "sibling negative" "rc=$RC $OUT"; fi
 # real tree
 run; if [ "$RC" = 0 ]; then ok "REAL TREE: router and docs/api/openapi.yaml agree ($(echo "$OUT" | tail -1))"; else no "REAL TREE drift" "$(echo "$OUT" | head -20)"; fi
 run --list; case "$OUT" in *"GET /api/v1/auth/login"*|*"POST /api/v1/auth/login"*) ok "control needle: real-tree extraction sees POST /api/v1/auth/login" ;; *) no "real tree needle" "$(echo "$OUT"|head)" ;; esac
 case "$OUT" in *"GET /health"*) ok "control needle: real-tree extraction sees GET /health" ;; *) no "real tree needle 2" ;; esac
 # paired mutations on copies of the real files
+for sf in "$REPO"/catalog-api/*.go; do case "$sf" in *_test.go) ;; *) cp "$sf" "$T/" ;; esac; done  # same-package helpers (F5)
 cp "$REPO/catalog-api/main.go" "$T/real_main.go"; cp "$REPO/docs/api/openapi.yaml" "$T/real_spec.yaml"
 # routes live in main.go AND in handlers/*.go (followed through Register*Routes): mutate a copy of each
 PKGS=(); REALPK=(); for d in $(cd "$REPO/catalog-api" && find . -mindepth 1 -type d -not -path '*/.*' | sort); do
