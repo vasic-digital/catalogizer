@@ -1,6 +1,7 @@
 package monitoring
 
 import (
+	"catalogizer/internal/logredact"
 	"context"
 	"fmt"
 	"net"
@@ -189,7 +190,7 @@ func PrometheusMiddleware(metrics *Metrics) gin.HandlerFunc {
 		start := time.Now()
 		path := c.FullPath()
 		if path == "" {
-			path = c.Request.URL.Path
+			path = logredact.SecretPath(c.Request.URL.Path)
 		}
 
 		metrics.ActiveConnections.Inc()

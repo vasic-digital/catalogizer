@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 
+	"catalogizer/internal/netguard"
 	"catalogizer/smb"
 )
 
@@ -33,10 +34,8 @@ func ValidateSMBHostSyntax(host string) error {
 }
 
 var blockedExact = []net.IP{
-	net.ParseIP("169.254.169.254"), // cloud metadata
-	net.ParseIP("100.100.100.200"), // Alibaba metadata
+	net.ParseIP("169.254.169.254"), // cloud metadata (also link-local, refused above)
 	net.ParseIP("168.63.129.16"),   // Azure wire server
-	net.ParseIP("fd00:ec2::254"),   // AWS IPv6 metadata
 }
 
 // embeddedV4 returns the IPv4 address carried by an IPv4-mapped (::ffff:a.b.c.d), IPv4-compatible (::a.b.c.d) or NAT64 (64:ff9b::/96)
@@ -77,6 +76,9 @@ var (
 
 func smbIPBlockedBase(ip net.IP) bool {
 	if ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified() {
+		return true
+	}
+	if netguard.IsMetadataSingleton(ip) { // the ONE shared metadata singleton list (AWS/GCE IPv6, Alibaba): cannot diverge from netguard
 		return true
 	}
 	for _, b := range blockedExact {

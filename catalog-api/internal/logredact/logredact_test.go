@@ -24,3 +24,23 @@ func TestPath(t *testing.T) {
 		}
 	}
 }
+
+func TestSecretPath(t *testing.T) {
+	cases := map[string]string{
+		"":                                  "",
+		"/api/v1/logs/share/SHARETOKEN_abc": "/api/v1/logs/share/:redacted",
+		"/api/v1/logs/share":                "/api/v1/logs/share",
+		"/api/v1/logs/share/":               "/api/v1/logs/share/",
+		"/api/v1/SHARE/Tok/x":               "/api/v1/SHARE/:redacted/x",
+		"/api/v1/media/42":                  "/api/v1/media/42",
+		"/auth/reset/abc123/confirm/zzz":    "/auth/reset/:redacted/confirm/:redacted",
+	}
+	for in, want := range cases {
+		if got := SecretPath(in); got != want {
+			t.Errorf("SecretPath(%q)=%q want %q", in, got, want)
+		}
+	}
+	if got := Path("/api/v1/logs/share/TOK", "a=1&token=x"); got != "/api/v1/logs/share/:redacted?a=1&token=REDACTED" {
+		t.Errorf("Path: %q", got)
+	}
+}
