@@ -560,9 +560,8 @@ type connTracker struct {
 }
 
 func (t *connTracker) dialFunc(ctx context.Context) func(network, address string) (net.Conn, error) {
-	d := net.Dialer{Timeout: 30 * time.Second}
 	return func(network, address string) (net.Conn, error) {
-		conn, err := d.DialContext(ctx, network, address)
+		conn, err := storageDialContext(ctx, network, address) // SEC-DIAL-1: vetted, pinned address
 		if err != nil {
 			return nil, err
 		}
