@@ -82,3 +82,41 @@ operator's own network). None takes an address from third-party data. They do no
   separate DNS lookup, so a name that answers differently to the proxy (rebinding) is not
   caught. Redirect hops are re-checked the same way. Treat the operator proxy as trusted to
   enforce its own egress policy.
+
+## Known residuals of the address classification (S1A3-2, S1A3-3)
+
+`netguard.ClassOf` unwraps the IPv6 forms that carry an IPv4 address and are recognisable from the address alone:
+IPv4-mapped, IPv4-compatible (`::/96`), SIIT (`::ffff:0:a.b.c.d`), the well-known NAT64 prefix `64:ff9b::/96` and 6to4
+(`2002::/16`). Two forms are NOT recognisable and are classified public (hence reachable by every client class):
+
+- NAT64 with an operator network-specific prefix (RFC 6052 section 2.2, for example your own `/96` inside global space
+  followed by the IPv4 address). The server does not know the prefix. There is no configurable prefix list today; if you
+  run such a gateway, stop it from forwarding to private, loopback and metadata destinations. Adding a configurable list
+  of network-specific prefixes is possible later work (S1A3-2).
+- ISATAP interface identifiers (`::5efe:a.b.c.d`, `::200:5efe:a.b.c.d`) under a global prefix (S1A3-3). They name a
+  tunnelled host, not a literal IPv4 destination of this server.
+
+Both are pinned by tests (`TestS1A3_2_*`, `TestS1A3_3_*` in `catalog-api/internal/netguard/s1a3_test.go`).
+
+## Stored approval per endpoint (CAT-SECQ1-B / W3)
+
+Migration v27 adds `approved_class` (`private` default, or `public`) and `approved_class_source` (`default`, `auto`,
+`operator`) to `storage_roots` and `sync_endpoints`. `private` is the behaviour from before SECQ-1 (private and public
+addresses reachable); `public` allows public addresses only. `never` is not storable. Every row that existed before the
+migration is `private/default`; the migration does not resolve names or read the machine's interfaces.
+
+- `netguard.ClassifyHost` / `ClassifyEndpoint` derive the class from a host (IP literal or DNS name, or the host of a URL):
+  all addresses public gives `public`, any private address gives `private`, any never-class address (loopback, link-local,
+  metadata, the server's own address unless allow-listed), an empty host, a non-ASCII or numeric-spelling host, or a name
+  that does not resolve is an error and nothing is stored. A name with several answers is refused as soon as ONE answer is
+  never-class, whatever the order. The three metadata singletons (`fd00:ec2::254`, `fd20:ce::254`, `100.100.100.200`) are
+  never-class for EVERY client class (one shared list in `netguard.go`, checked before the allow-list, so classification
+  and the dial agree; operator decision 2026-11-13); Teredo (`2001::/32`) is refused by the operator class only.
+- `database.DB.GetApprovedClass` / `SetApprovedClass` / `AutoClassifyApprovedClass` read, write and classify the stored
+  value; an `operator` approval is never overwritten by automatic classification (the automatic write is conditional on the stored
+  source not being `operator`, so a decision made while a slow DNS lookup runs survives).
+- Not wired yet: the create/update handlers (W4, CAT-SECQ1-C) that call the classifier, ask for confirmation of `private`
+  and require step-up to widen, and the clients (`OperatorTransportFor`) that consume the stored class (W4/W5).
+  Until then the stored value is not enforced anywhere; the first-connection pin remains the only per-root protection.
+- The PostgreSQL branch of the migration is exercised by `TestRunMigrationsPostgresRealContainerZeroErrors`, which starts
+  its own throwaway container and honestly SKIPs without podman or the image.

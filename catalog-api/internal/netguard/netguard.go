@@ -148,6 +148,22 @@ func IsBlockedIP(ip net.IP) bool { return isBlocked(ip, true) }
 // private, CGNAT, link-local, metadata and reserved addresses are always blocked.
 func IsBlockedIPStrict(ip net.IP) bool { return isBlocked(ip, false) }
 
+// metadataSingletons are the cloud metadata services that sit inside space that is otherwise allowed (ULA, CGNAT):
+// AWS IPv6 fd00:ec2::254, Compute Engine IPv6 fd20:ce::254 (single address, https://docs.cloud.google.com/compute/docs/metadata/querying-metadata)
+// and Alibaba 100.100.100.200. Every client class refuses them, before the allow-list is read (operator decision
+// 2026-11-13); the surrounding ranges stay ordinary ULA / CGNAT space. ClassOf (and so ClassifyHost) and the dial use this
+// one list, so classification and connection cannot disagree.
+var metadataSingletons = []*net.IPNet{mustCIDR("fd00:ec2::254/128"), mustCIDR("fd20:ce::254/128"), mustCIDR("100.100.100.200/32")}
+
+func isMetadataSingleton(ip net.IP) bool {
+	for _, n := range metadataSingletons {
+		if n.Contains(ip) {
+			return true
+		}
+	}
+	return false
+}
+
 func isBlocked(ip net.IP, honorAllow bool) bool {
 	if ip == nil {
 		return true
@@ -162,6 +178,9 @@ func isBlocked(ip net.IP, honorAllow bool) bool {
 		if n.Contains(ip) {
 			return true
 		}
+	}
+	if isMetadataSingleton(ip) {
+		return true // before the allow-list, for every client class
 	}
 	if v4 := embeddedV4(ip); v4 != nil {
 		return isBlocked(v4, honorAllow)
