@@ -105,6 +105,9 @@ func ClassOf(ip net.IP) Class {
 			return ClassNever
 		}
 	}
+	if isMetadataSingleton(ip) {
+		return ClassNever
+	}
 	for _, n := range operatorMetadataNets {
 		if n.Contains(ip) {
 			return ClassNever

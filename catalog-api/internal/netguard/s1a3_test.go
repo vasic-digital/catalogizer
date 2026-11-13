@@ -111,9 +111,12 @@ func TestOBF3_AllowListDocumentedBehaviourMatchesCode(t *testing.T) {
 		if IsBlockedIPStrict(ip) == false {
 			t.Errorf("%s: STRICT class must ignore the allow-list", s)
 		}
-		// documented residual of the sync class (netguard.Transport): a covering entry re-admits it
-		if IsBlockedIP(ip) {
-			t.Errorf("%s: sync class unexpectedly refuses it; docs/ENV_VARIABLES.md documents the re-admission, change both together", s)
+		// operator decision 2026-11-13: the sync class (netguard.Transport / IsBlockedIP) refuses them too, whatever covers them
+		if !IsBlockedIP(ip) {
+			t.Errorf("%s: sync class must refuse the metadata singleton even when an entry covers it; docs/ENV_VARIABLES.md and docs/OUTBOUND_HTTP_CLIENTS.md say so", s)
+		}
+		if ClassOf(ip) != ClassNever {
+			t.Errorf("%s: ClassOf (and so ClassifyHost) must agree with the dial: never", s)
 		}
 	}
 	// the surrounding ULA space is not metadata

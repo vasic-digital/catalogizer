@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"net"
+	"strings"
 	"testing"
 
 	_ "github.com/mutecomm/go-sqlcipher"
@@ -68,45 +69,85 @@ func TestMigrationV27_ColumnsDefaultsAndChecksOnBothTables(t *testing.T) {
 	}
 }
 
-func TestMigrationV27_UpgradesV26TablesKeepingRowsAndIsIdempotent(t *testing.T) {
-	raw, err := sql.Open("sqlite3", ":memory:")
+// stripApprovedClassColumns rebuilds table from its own sqlite_master DDL without the two v27 columns (the SQLCipher build
+// has no DROP COLUMN), replaying its indexes: the result is the table as migrations 1..26 left it.
+func stripApprovedClassColumns(t *testing.T, raw *sql.DB, table string) {
+	t.Helper()
+	var ddl string
+	require.NoError(t, raw.QueryRow(`SELECT sql FROM sqlite_master WHERE type='table' AND name=?`, table).Scan(&ddl))
+	i := strings.Index(ddl, ", approved_class TEXT")
+	require.True(t, i > 0, "v27 columns not found in the DDL of %s: %s", table, ddl)
+	require.True(t, strings.Contains(ddl[i:], "approved_class_source"), ddl)
+	v26 := ddl[:i] + ")"
+	rows, err := raw.Query(`SELECT sql FROM sqlite_master WHERE type='index' AND tbl_name=? AND sql IS NOT NULL`, table)
 	require.NoError(t, err)
-	raw.SetMaxOpenConns(1)
-	t.Cleanup(func() { _ = raw.Close() })
-	db := WrapDB(raw, DialectSQLite)
-	ctx := context.Background()
-	// the tables as they were at v26 (no approved_class*), each holding a row
-	_, err = raw.Exec(`CREATE TABLE storage_roots (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, protocol TEXT NOT NULL, host TEXT)`)
-	require.NoError(t, err)
-	_, err = raw.Exec(`CREATE TABLE sync_endpoints (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, name TEXT NOT NULL, type TEXT NOT NULL, url TEXT NOT NULL)`)
-	require.NoError(t, err)
-	_, err = raw.Exec(`INSERT INTO storage_roots (name, protocol, host) VALUES ('old', 'smb', 'nas')`)
-	require.NoError(t, err)
-	_, err = raw.Exec(`INSERT INTO sync_endpoints (user_id, name, type, url) VALUES (1, 'oldep', 'webdav', 'https://x/')`)
-	require.NoError(t, err)
-	has, err := db.columnExistsSQLite(ctx, "storage_roots", "approved_class")
-	require.NoError(t, err)
-	require.False(t, has, "control: the v26 table has no approved_class")
+	var idx []string
+	for rows.Next() {
+		var q string
+		require.NoError(t, rows.Scan(&q))
+		idx = append(idx, q)
+	}
+	require.NoError(t, rows.Err())
+	require.NoError(t, rows.Close())
+	for _, q := range append([]string{`PRAGMA foreign_keys=OFF`, `DROP TABLE ` + table, v26}, idx...) {
+		_, err := raw.Exec(q)
+		require.NoError(t, err, q)
+	}
+}
 
-	require.NoError(t, db.addApprovedClassColumns(ctx))
-	for _, tc := range []struct{ table, name string }{{TableStorageRoots, "old"}, {TableSyncEndpoints, "oldep"}} {
-		var cls, src string
-		require.NoError(t, raw.QueryRow(`SELECT approved_class, approved_class_source FROM `+tc.table+` WHERE name = ?`, tc.name).Scan(&cls, &src))
-		assert.Equal(t, "private", cls, "a pre-existing row keeps the private approval")
-		assert.Equal(t, "default", src)
+// F3 (review round 1): the upgrade is exercised through the REAL chain. The whole chain runs, the two tables are rebuilt
+// without the v27 columns (the v26 shape, indexes included), migration row 27 is deleted, rows are inserted through the
+// real schema, and RunMigrations runs again.
+func TestMigrationV27_UpgradesV26TablesKeepingRowsAndIsIdempotent(t *testing.T) {
+	db, raw := newMigratedDB(t)
+	ctx := context.Background()
+	for _, tb := range approvedClassTables {
+		stripApprovedClassColumns(t, raw, tb)
+		for _, col := range []string{"approved_class", "approved_class_source"} {
+			has, err := db.columnExistsSQLite(ctx, tb, col)
+			require.NoError(t, err)
+			require.False(t, has, "control: the v26-shape %s has no %s", tb, col)
+		}
+	}
+	_, err := raw.Exec(`DELETE FROM migrations WHERE version = 27`)
+	require.NoError(t, err)
+	var gone int
+	require.NoError(t, raw.QueryRow(`SELECT COUNT(*) FROM migrations WHERE version = 27`).Scan(&gone))
+	require.Equal(t, 0, gone, "control: migration 27 is not recorded")
+
+	rid := insertRoot(t, raw, "old", "nas")
+	eid := insertSyncEndpoint(t, raw, "oldep", "https://x/")
+
+	require.NoError(t, db.RunMigrations(ctx))
+	for _, c := range []struct {
+		tb string
+		id int64
+	}{{TableStorageRoots, rid}, {TableSyncEndpoints, eid}} {
+		cls, src, err := db.GetApprovedClass(ctx, c.tb, c.id)
+		require.NoError(t, err)
+		assert.Equal(t, netguard.ClassPrivate, cls, "%s: a pre-existing row keeps the private approval", c.tb)
+		assert.Equal(t, ApprovedSourceDefault, src)
 	}
 	var host string
-	require.NoError(t, raw.QueryRow(`SELECT host FROM storage_roots WHERE name = 'old'`).Scan(&host))
+	require.NoError(t, raw.QueryRow(`SELECT host FROM storage_roots WHERE id = ?`, rid).Scan(&host))
 	assert.Equal(t, "nas", host, "existing data untouched")
+	var n, maxv int
+	require.NoError(t, raw.QueryRow(`SELECT COUNT(*), MAX(version) FROM migrations`).Scan(&n, &maxv))
+	assert.Equal(t, 27, maxv)
 
-	// idempotent re-run keeps a stored approval
-	_, err = raw.Exec(`UPDATE storage_roots SET approved_class = 'public', approved_class_source = 'operator' WHERE name = 'old'`)
+	// a stored approval survives the next run, which is a no-op (no new migration row, same data)
+	_, err = raw.Exec(`UPDATE storage_roots SET approved_class = 'public', approved_class_source = 'operator' WHERE id = ?`, rid)
 	require.NoError(t, err)
-	require.NoError(t, db.addApprovedClassColumns(ctx), "running the migration again is a no-op")
-	var cls, src string
-	require.NoError(t, raw.QueryRow(`SELECT approved_class, approved_class_source FROM storage_roots WHERE name = 'old'`).Scan(&cls, &src))
-	assert.Equal(t, "public", cls)
-	assert.Equal(t, "operator", src)
+	require.NoError(t, db.RunMigrations(ctx), "the second run is a no-op")
+	require.NoError(t, db.addApprovedClassColumns(ctx), "the migration body itself is idempotent (columns already there)")
+	var n2, maxv2 int
+	require.NoError(t, raw.QueryRow(`SELECT COUNT(*), MAX(version) FROM migrations`).Scan(&n2, &maxv2))
+	assert.Equal(t, n, n2)
+	assert.Equal(t, maxv, maxv2)
+	cls, src, err := db.GetApprovedClass(ctx, TableStorageRoots, rid)
+	require.NoError(t, err)
+	assert.Equal(t, netguard.ClassPublic, cls)
+	assert.Equal(t, ApprovedSourceOperator, src)
 }
 
 func TestMigrationV27_IsRegisteredAndRecorded(t *testing.T) {

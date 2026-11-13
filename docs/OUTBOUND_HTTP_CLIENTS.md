@@ -108,9 +108,13 @@ migration is `private/default`; the migration does not resolve names or read the
 - `netguard.ClassifyHost` / `ClassifyEndpoint` derive the class from a host (IP literal or DNS name, or the host of a URL):
   all addresses public gives `public`, any private address gives `private`, any never-class address (loopback, link-local,
   metadata, the server's own address unless allow-listed), an empty host, a non-ASCII or numeric-spelling host, or a name
-  that does not resolve is an error and nothing is stored.
+  that does not resolve is an error and nothing is stored. A name with several answers is refused as soon as ONE answer is
+  never-class, whatever the order. The three metadata singletons (`fd00:ec2::254`, `fd20:ce::254`, `100.100.100.200`) are
+  never-class for EVERY client class (one shared list in `netguard.go`, checked before the allow-list, so classification
+  and the dial agree; operator decision 2026-11-13); Teredo (`2001::/32`) is refused by the operator class only.
 - `database.DB.GetApprovedClass` / `SetApprovedClass` / `AutoClassifyApprovedClass` read, write and classify the stored
-  value; an `operator` approval is never overwritten by automatic classification.
+  value; an `operator` approval is never overwritten by automatic classification (the automatic write is conditional on the stored
+  source not being `operator`, so a decision made while a slow DNS lookup runs survives).
 - Not wired yet: the create/update handlers (W4, CAT-SECQ1-C) that call the classifier, ask for confirmation of `private`
   and require step-up to widen, and the clients (`OperatorTransportFor`) that consume the stored class (W4/W5).
   Until then the stored value is not enforced anywhere; the first-connection pin remains the only per-root protection.

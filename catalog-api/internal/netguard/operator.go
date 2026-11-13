@@ -36,7 +36,9 @@ const DenyPrivateEnv = "CATALOGIZER_OPERATOR_DENY_PRIVATE"
 
 // fd20:ce::254 is the Compute Engine metadata server on IPv6-only instances, documented by Google at
 // https://docs.cloud.google.com/compute/docs/metadata/querying-metadata (single address; the surrounding /32 is not refused).
-var operatorMetadataNets = []*net.IPNet{mustCIDR("fd00:ec2::254/128"), mustCIDR("fd20:ce::254/128"), mustCIDR("100.100.100.200/32"), mustCIDR("2001::/32") /* Teredo */}
+// The metadata singletons themselves live in metadataSingletons (netguard.go) and are refused by every client class; the
+// operator class additionally refuses Teredo (2001::/32).
+var operatorMetadataNets = []*net.IPNet{mustCIDR("2001::/32") /* Teredo */}
 
 func denyPrivate() bool {
 	switch strings.ToLower(strings.TrimSpace(os.Getenv(DenyPrivateEnv))) {

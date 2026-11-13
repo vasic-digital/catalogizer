@@ -88,6 +88,9 @@ func (db *DB) SetApprovedClass(ctx context.Context, table string, id int64, clas
 	return nil
 }
 
+// classifyEndpoint is the classifier; tests replace it to hold the classification open (race test).
+var classifyEndpoint = netguard.ClassifyEndpoint
+
 // AutoClassifyApprovedClass classifies the endpoint (host, or the host of rawURL when host is empty) with
 // netguard.ClassifyEndpoint and stores the result with source 'auto'. A row whose source is 'operator' is never changed:
 // the stored class is returned. When classification fails (never-class address, unresolvable name, bad spelling) nothing
@@ -100,12 +103,28 @@ func (db *DB) AutoClassifyApprovedClass(ctx context.Context, table string, id in
 	if src == ApprovedSourceOperator {
 		return cur, nil
 	}
-	c, err := netguard.ClassifyEndpoint(ctx, host, rawURL)
+	c, err := classifyEndpoint(ctx, host, rawURL)
 	if err != nil {
 		return cur, err
 	}
-	if err := db.SetApprovedClass(ctx, table, id, c, ApprovedSourceAuto); err != nil {
+	// Conditional write: classification may take a while (DNS), and an operator may have decided meanwhile. The update
+	// only touches a row whose source is not 'operator' (the column is NOT NULL, so the comparison is never unknown).
+	res, err := db.ExecContext(ctx, `UPDATE `+table+` SET approved_class = ?, approved_class_source = ? WHERE id = ? AND approved_class_source <> ?`,
+		c.String(), ApprovedSourceAuto, id, ApprovedSourceOperator)
+	if err != nil {
 		return cur, err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return cur, err
+	}
+	if n == 0 {
+		// An operator decision arrived first, or the row is gone: return what is stored now.
+		stored, _, gerr := db.GetApprovedClass(ctx, table, id)
+		if gerr != nil {
+			return cur, gerr
+		}
+		return stored, nil
 	}
 	return c, nil
 }
