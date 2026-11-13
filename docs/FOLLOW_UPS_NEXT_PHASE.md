@@ -2295,3 +2295,16 @@ Constitution bd0036bd (already on all mirrors and pinned). F1 closed for the 336
 - WP10R4-FU6 (nit): "not waived" in REMAIN_RE turns RC-3b DONE into partial; no test pins it (mutant M8 survives). Open.
 - WP10R4-FU7 (nit): document the test command as `python3 -I scripts/docs/test_gen_follow_ups_triage.py` (`-m unittest` fails under -I). Open.
 - WP10R4-FU8 (nit): lowercase/bracketed closing forms ("(resolved)", "(closed, PROVISIONAL)", "[LANDED ...]") not recognised; D9S-R3-LANDED parsed as open. Open.
+
+## PX-F18 enumeration review follow-ups (Opus round 3, GO-with-follow-ups, PROVISIONAL; all process-doc)
+- PXF18-FU1 (minor): S1/R6 say scan-failure WebSocket notifications reach all clients; at HEAD audienceForType("notification") is AudienceAdmin (websocket_handler.go:74-80, :619-625), so the WS leg is admin-only. Correct the text and the R6 decision. Open.
+- PXF18-FU2 (minor): S5 cites models/file.go:158 (ScanHistory); ConversionJob.ErrorMessage is models/user.go:1108. "any authenticated user" is wrong: GetJob is owner-scoped, ListJobs needs PermissionConversionView. Open.
+- PXF18-FU3 (minor): S3 route is GET /storage/list/*path (storage_routes.go:14), not /storage-roots/:id/list. Open.
+- PXF18-FU4 (minor): reconcile 310 sink-scan base rows against the 226 table rows (84 rows undispositioned; scan_handler.go:377/383/400 are S3, log_management_handler.go:48 SAFE, rest noise). scan_handler.go:384 missed by reviewer's typed scan, uninvestigated. Open.
+- PXF18-FU5 (minor): flow scan emits duplicate rows (3); counts 362/402 are after sort -u; state it. Open.
+- PXF18-FU6 (minor): R3 gating is established: GET /api/v1/challenges/results (main.go:1673) has no RequireAdmin, so authenticated users can read challenge result text; record as LEAK or argue. Open.
+- PXF18-FU7 (minor): B62 (conversion_handler.go:72-73) missing from R4 list. Open.
+- PXF18-FU8 (minor): Limits bullets 2 and 3 stale (F: kind finds `cause`; DB round-trips covered for S4/S5). Open.
+- PXF18-FU9 (minor): list checked-SAFE surfaces (gin.Recovery, assetEventBus, /logs entries, writer-less scan_history.error_message) and name linked own-org submodule code as out of scope. Open.
+- PXF18-FU10 (nit): instrument numbering 0,1,3,2; S6 "three validators" is two; round-2 table maps N4 to S6-S10 while Class 4 has S1..S12. Open.
+- PXF18-FU11 (info): reviewer fixtures R1-R3 (multi-value-call helper, non-err-named error var, error-typed struct field) are missed by all three scanners (documented blind spots); typed go/types scan found no live instance at HEAD. Open.
