@@ -1204,9 +1204,15 @@ func (s *ConfigurationWizardService) createConfigurationFile(params map[string]i
 	}
 
 	// A relative path is resolved against the wizard configPath, never the
-	// process CWD (CAT-OPB-FU I1); absolute paths are used as given.
+	// process CWD (CAT-OPB-FU I1), and must stay inside it (OBF-FU: "..").
+	// Absolute paths are used as given.
 	if !filepath.IsAbs(filePath) {
-		filePath = filepath.Join(s.configPath, filePath)
+		joined := filepath.Join(s.configPath, filePath)
+		rel, relErr := filepath.Rel(filepath.Clean(s.configPath), joined)
+		if relErr != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+			return fmt.Errorf("file_path %q resolves outside the configuration directory", filePath)
+		}
+		filePath = joined
 	}
 
 	// Create directory if needed
@@ -1224,7 +1230,25 @@ func (s *ConfigurationWizardService) createConfigurationFile(params map[string]i
 		data = mergeConfigMaps(base, session.Configuration)
 	}
 
-	return s.writeConfigFile(filePath, map[string]interface{}{"config": data})
+	// MERGE, NEVER OVERWRITE (OBF-5, operator decision 2026-11-13): the target
+	// may be the config.json that finalizeConfiguration just wrote (version,
+	// generated_at, generated_by, user_id, configuration). Its keys win; the
+	// template content merges under them. An existing file that is not a JSON
+	// object is never clobbered.
+	doc := map[string]interface{}{"config": data}
+	existing, readErr := os.ReadFile(filePath)
+	switch {
+	case readErr == nil:
+		var prev map[string]interface{}
+		if err := json.Unmarshal(existing, &prev); err != nil || prev == nil {
+			return fmt.Errorf("existing file %s is not a JSON object; refusing to overwrite it", filePath)
+		}
+		doc = mergeConfigMaps(doc, prev)
+	case !os.IsNotExist(readErr):
+		return fmt.Errorf("cannot read existing file %s: %w", filePath, readErr)
+	}
+
+	return s.writeConfigFile(filePath, doc)
 }
 
 //go:embed wizard_templates/*.json

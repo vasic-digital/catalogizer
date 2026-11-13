@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"catalogizer/models"
 
@@ -358,4 +359,131 @@ func TestOBF4_SymlinkedConfigPathRollbackRestoresThroughLink(t *testing.T) {
 	raw, err := os.ReadFile(filepath.Join(real, "config.json"))
 	require.NoError(t, err)
 	assert.Contains(t, string(raw), `"user_id": 7`)
+}
+
+// OBF-5 (operator decision 2026-11-13): the basic template's file_create step
+// targets the same config.json finalize wrote; it must MERGE, never overwrite,
+// the finalize metadata (version, generated_at, generated_by, user_id,
+// configuration). Finalize keys win over template content.
+func TestOBF5_FileCreateMergesUnderFinalizeMetadata(t *testing.T) {
+	s := newTemplateTestService(t)
+	sess := &models.WizardSession{UserID: 42, ConfigType: "basic", Configuration: map[string]interface{}{"server_port": 8080}}
+	require.NoError(t, s.finalizeConfiguration(sess))
+	raw, err := os.ReadFile(filepath.Join(s.configPath, "config.json"))
+	require.NoError(t, err)
+	var doc map[string]interface{}
+	require.NoError(t, json.Unmarshal(raw, &doc))
+	for _, k := range []string{"version", "generated_at", "generated_by", "user_id", "configuration", "config"} {
+		assert.Contains(t, doc, k, "key %q present after finalize + file_create", k)
+	}
+	assert.Equal(t, float64(42), doc["user_id"])
+	assert.Equal(t, "3.0.0", doc["version"])
+	cfg, _ := doc["config"].(map[string]interface{})
+	assert.Equal(t, float64(8080), cfg["server_port"], "template/session content still written under config")
+}
+
+// OBF-5: when the existing file already holds a "config" key, the existing
+// (finalize-written) value wins over the freshly merged content.
+func TestOBF5_ExistingKeysWinOnDirectMerge(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	p := filepath.Join(s.configPath, "m.json")
+	require.NoError(t, os.WriteFile(p, []byte(`{"version":"3.0.0","user_id":7}`), 0o644))
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "m.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}))
+	raw, err := os.ReadFile(p)
+	require.NoError(t, err)
+	var doc map[string]interface{}
+	require.NoError(t, json.Unmarshal(raw, &doc))
+	assert.Equal(t, "3.0.0", doc["version"])
+	assert.Equal(t, float64(7), doc["user_id"])
+	assert.Equal(t, "v", doc["config"].(map[string]interface{})["k"])
+}
+
+// OBF-5: an existing file that is not a JSON object is never clobbered.
+func TestOBF5_NonJSONExistingFileIsNotClobbered(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	p := filepath.Join(s.configPath, "n.json")
+	require.NoError(t, os.WriteFile(p, []byte("not json"), 0o644))
+	err := s.createConfigurationFile(map[string]interface{}{"file_path": "n.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}})
+	require.Error(t, err)
+	got, _ := os.ReadFile(p)
+	assert.Equal(t, "not json", string(got))
+}
+
+// Nit: a relative file_path with ".." must stay inside configPath.
+func TestOBF_FU_RelativeFilePathCannotEscapeConfigPath(t *testing.T) {
+	s := newTemplateTestService(t)
+	parent := filepath.Dir(s.configPath)
+	for _, fp := range []string{"../escape.json", "a/../../escape.json"} {
+		err := s.createConfigurationFile(map[string]interface{}{"file_path": fp},
+			&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}})
+		require.Error(t, err, fp)
+		_, statErr := os.Stat(filepath.Join(parent, "escape.json"))
+		assert.True(t, os.IsNotExist(statErr), "nothing written outside configPath for %q", fp)
+	}
+	// control: an inner ".." that stays inside is fine
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "a/../ok.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}))
+	_, statErr := os.Stat(filepath.Join(s.configPath, "ok.json"))
+	assert.NoError(t, statErr)
+}
+
+// Nit: constructing the service with the process defaults (tests pass nil)
+// must not create ./config under the package directory.
+func TestOBF_FU_NilServiceDoesNotCreateRelativeConfigDir(t *testing.T) {
+	s := NewConfigurationWizardService(nil)
+	assert.NotEqual(t, "./config", s.configPath, "TestMain points CONFIG_PATH at a temp dir")
+	_, err := os.Stat("config")
+	assert.True(t, os.IsNotExist(err), "no ./config created under the package directory")
+}
+
+// OBF-2: the I1 guard with a sentinel: a pre-existing ./config/config.json in
+// the CWD must be byte- and mtime-identical after finalize (works on a dirty tree).
+func TestOBF_FU_I2_SentinelCWDConfigUntouched(t *testing.T) {
+	s := newTemplateTestService(t)
+	cwd := t.TempDir()
+	t.Chdir(cwd)
+	require.NoError(t, os.MkdirAll("config", 0o755))
+	sentinel := filepath.Join(cwd, "config", "config.json")
+	require.NoError(t, os.WriteFile(sentinel, []byte(`{"sentinel":true}`), 0o644))
+	old := time.Unix(1_000_000_000, 0)
+	require.NoError(t, os.Chtimes(sentinel, old, old))
+	require.NoError(t, s.finalizeConfiguration(&models.WizardSession{UserID: 1, ConfigType: "basic", Configuration: map[string]interface{}{"server_port": 1}}))
+	fi, err := os.Stat(sentinel)
+	require.NoError(t, err)
+	got, _ := os.ReadFile(sentinel)
+	assert.Equal(t, `{"sentinel":true}`, string(got))
+	assert.True(t, fi.ModTime().Equal(old), "mtime untouched")
+}
+
+// OBF-5: on a key clash the EXISTING (finalize) value wins over the template
+// content, also for a clashing "config" key.
+func TestOBF5_ExistingValueWinsOnClash(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	p := filepath.Join(s.configPath, "c.json")
+	require.NoError(t, os.WriteFile(p, []byte(`{"config":{"k":"existing"}}`), 0o644))
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "c.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "template", "extra": 1}}))
+	got := readWrittenConfig(t, p)
+	assert.Equal(t, "existing", got["k"], "existing value wins")
+	assert.Equal(t, float64(1), got["extra"], "new keys merge in")
+}
+
+// OBF-1: a failing restore must be surfaced, never discarded.
+func TestOBF1_RestoreWriteErrorIsSurfaced(t *testing.T) {
+	s := newTemplateTestService(t)
+	dir := t.TempDir()
+	f := filepath.Join(dir, "config.json")
+	require.NoError(t, os.WriteFile(f, []byte("new"), 0o400))
+	t.Cleanup(func() { _ = os.Chmod(f, 0o600) })
+	if err := os.WriteFile(f, []byte("probe"), 0o400); err == nil {
+		t.Skip("file writable despite mode 0400 (running as root?)")
+	}
+	err := s.rollbackConfig(f, []byte("old"), 0o400, true)
+	require.Error(t, err, "restore of a non-writable file must surface its error")
+	assert.Contains(t, err.Error(), "restore")
 }

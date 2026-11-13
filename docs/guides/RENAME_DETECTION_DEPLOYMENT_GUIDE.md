@@ -109,8 +109,10 @@ Create `config.json`:
 # Start the service
 ./bin/catalog-api
 
-# With custom config
-CONFIG_PATH=/etc/catalogizer/config.json ./bin/catalog-api
+# With a custom configuration DIRECTORY for the configuration wizard
+# (CONFIG_PATH is a directory, default ./config, not a file path: the wizard
+# writes config.json, backups/ and templates/ inside it)
+CONFIG_PATH=/etc/catalogizer ./bin/catalog-api
 
 # As systemd service (see systemd section below)
 systemctl start catalogizer
