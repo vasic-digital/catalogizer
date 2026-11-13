@@ -2259,3 +2259,11 @@ Class-wide enumeration with a control-needled go/ast instrument (`catalog-api/in
 - SEC-WS-1F3FU-8 (minor): check tokenExp before the per-message throttle shortcut (frames accepted up to 1 s past JWT expiry).
 - FU-4 update: reviewer ran `-race -run TestF3_ .` clean (8.5 s); live edge/nginx run still owed.
 - nit: flood-test bound (<=8 checker calls) is wall-clock sensitive on a very slow host.
+
+## NE-3 nasemu seed (Containers 24ba32c, Opus round 2 GO-with-follow-ups, PROVISIONAL)
+- NASEMU-SEED-N1 (minor): symlink hop limit off by one vs kernel (41-link chain accepted, kernel ELOOP); start hops at 1, test at 40/41.
+- NASEMU-SEED-N2 (minor, test): add tests for hop boundary, file-mid-path `f/..` (ENOTDIR), pin symlink_escape diff code (reviewer survivors R1,R2,R11).
+- NASEMU-SEED-N3 (minor): cap total expanded path bytes (3769-byte path x 99999 = 16 s, 2 GB alloc).
+- NASEMU-SEED-N4 (minor): symlink resolving to tree root (`s -> .`) falsely refused; allow or document.
+- NASEMU-SEED-N5 (nit): escapes() resolves through manifest target when live intermediate link differs.
+- NASEMU-SEED-F5-NFC: full NFC normalisation needs golang.org/x/text (not a dep); Windows-hostile names not rejected (UNCONFIRMED cross-platform).
