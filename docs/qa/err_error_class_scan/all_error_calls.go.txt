@@ -1,0 +1,113 @@
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/printer"
+	"go/token"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+)
+
+func src(fs *token.FileSet, n ast.Node) string {
+	var b bytes.Buffer
+	printer.Fprint(&b, fs, n)
+	s := strings.Join(strings.Fields(b.String()), " ")
+	if len(s) > 120 {
+		s = s[:120] + "..."
+	}
+	return s
+}
+
+// every zero-arg .Error() call, with the enclosing statement kind
+func main() {
+	root := os.Args[1]
+	fs := token.NewFileSet()
+	type row struct {
+		f    string
+		l    int
+		fn   string
+		ctx  string
+		expr string
+	}
+	var rows []row
+	filepath.Walk(root, func(p string, info os.FileInfo, e error) error {
+		if e != nil {
+			return nil
+		}
+		if info.IsDir() {
+			b := info.Name()
+			if b == "vendor" || b == "node_modules" || b == ".git" {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if !strings.HasSuffix(p, ".go") || strings.HasSuffix(p, "_test.go") {
+			return nil
+		}
+		f, err := parser.ParseFile(fs, p, nil, 0)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "PARSEFAIL", p)
+			return nil
+		}
+		for _, d := range f.Decls {
+			fd, ok := d.(*ast.FuncDecl)
+			if !ok || fd.Body == nil {
+				continue
+			}
+			var stack []ast.Node
+			ast.Inspect(fd.Body, func(n ast.Node) bool {
+				if n == nil {
+					stack = stack[:len(stack)-1]
+					return true
+				}
+				stack = append(stack, n)
+				c, ok := n.(*ast.CallExpr)
+				if !ok {
+					return true
+				}
+				se, ok := c.Fun.(*ast.SelectorExpr)
+				if !ok || se.Sel.Name != "Error" || len(c.Args) != 0 {
+					return true
+				}
+				// find nearest enclosing call / stmt for context
+				ctx := "other"
+				for i := len(stack) - 2; i >= 0; i-- {
+					switch s := stack[i].(type) {
+					case *ast.CallExpr:
+						ctx = "arg-of:" + src(fs, s.Fun)
+					case *ast.IfStmt, *ast.SwitchStmt:
+						ctx = "branch"
+					case *ast.AssignStmt:
+						ctx = "assign"
+					case *ast.ReturnStmt:
+						ctx = "return"
+					case *ast.CompositeLit:
+						ctx = "composite-literal"
+					case *ast.KeyValueExpr:
+						ctx = "kv"
+					}
+					if ctx != "other" {
+						break
+					}
+				}
+				rows = append(rows, row{p, fs.Position(c.Pos()).Line, fd.Name.Name, ctx, src(fs, c)})
+				return true
+			})
+		}
+		return nil
+	})
+	sort.Slice(rows, func(i, j int) bool {
+		if rows[i].f != rows[j].f {
+			return rows[i].f < rows[j].f
+		}
+		return rows[i].l < rows[j].l
+	})
+	for _, r := range rows {
+		fmt.Printf("%s\t%d\t%s\t%s\t%s\n", r.f, r.l, r.fn, r.ctx, r.expr)
+	}
+}
