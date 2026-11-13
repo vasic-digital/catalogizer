@@ -1844,3 +1844,14 @@ Minor follow-ups, registered and NOT fixed now:
 - m-2: a VERIFIED path containing a space is skipped by the extractor while the verdict stays PASS; it should be BLIND.
 - m-3: a clean committed submodule gitlink cited directly gives a false BLIND.
 - UNCONFIRMED: the waiver expiry 2026-12-12 was chosen by the author, not by an operator decision.
+
+## CAT-REL-CHECK-2 (structural replacement of CAT-REL-CHECK-1 after round 5 NO-GO; branch fix/release-checker-rc3; PROVISIONAL)
+
+Cause of rounds 1-5: HEAD-consistency was added as point checks (changelog, version files, cited spelling, resolved target), each round a reviewer found the next member of the same class (a path component that reads differently in a clean clone). Round 5: `head_check` ignored intermediate hops of a symlink chain (R5-1).
+
+- Class inventory (32 members, behaviour, tests): `docs/release_checker_path_inventory.md`.
+- One generic mechanism: `head_check` / `chain_one` walk the path like the kernel (hop by hop, cap 40, `.`/`..` after symlinked directories) and require every component and hop to match HEAD (existence, type, link target text), plus blob hash, `git status` and skip-worktree / assume-unchanged flags for the final entry and for manifest trees. BLIND on anything that differs or cannot be proven.
+- R5-1 fixed (Z2, Z3, Z4, Z5). RV5-4 covered (Z41; HEAD membership is now per entry through `git ls-tree`, not `cat-file`). `--version X` without a `## [X]` section is BLIND (Z42-Z44). Committed `..` and mid-path `./` spellings have negative-control tests (Z36-Z40). README over-claim sentence replaced by the exact list of behaviours.
+- Registered minors: m-1 fixed (flags + hash), m-2 fixed (tokens with spaces that are exactly a tracked file or directory are checked; an untracked name with a space stays a skipped token, honest), m-3 fixed (clean gitlink cited directly is PASS; cause was `cat-file -e HEAD:<gitlink>`).
+- Behaviour change: a committed directory-symlink alias into tracked evidence is now PASS (was a false MISS "exists but not git-tracked"); an uncommitted alias is BLIND.
+- Residual / UNCONFIRMED: Unicode case folding and NFC/NFD, `core.symlinks=false`, sparse/shallow clones, LFS pointers, exec bit compared only through `git status`, a path inside a submodule is MISS not BLIND (git does not track below a gitlink).

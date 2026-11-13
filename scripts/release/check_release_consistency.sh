@@ -57,6 +57,8 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+# --version X selects the changelog section [X] (never a silent fall-back to the topmost section).
+[ -n "$SECTION" ] || SECTION="$EXPECTED"
 [ "${#EV_PREFIXES[@]}" -gt 0 ] || EV_PREFIXES=("docs/qa/")
 case "$CHECK" in version|changelog|all) ;; *) blind "bad --check value '$CHECK'" ;; esac
 
@@ -101,23 +103,119 @@ SECTION_USED="-"
 note_blind() { BLINDS="$BLINDS ${1}"; echo "BLIND: $1"; }
 
 # ---------------------------------------------------------------- (1) versions
-# head_check <label> <repo-relative path>...: a clone sees HEAD only. Every existing path must be in HEAD
-# and match it in the index and the working tree (tracked changes only); otherwise the verdict about
-# it is unprovable and the run is BLIND. (R3-1: one check for the changelog, version files, cited paths.)
-head_check() {
-  local label="$1" p out bad=""; shift
-  local -a specs=()
-  for p in "$@"; do
-    [ -e "$REPO/$p" ] || continue
-    specs+=(":(literal)$p")
-    git -C "$REPO" cat-file -e "HEAD:$p" 2>/dev/null || bad="$bad [$p is not in HEAD]"
+# head_check <label> <repo-relative path>...: a clone sees HEAD only, so every existing path must read the
+# same in a clean clone as it does here. One generic mechanism (CAT-REL-CHECK-2, see
+# docs/release_checker_path_inventory.md): the path is walked component by component exactly as the kernel
+# would walk it, following symlinks hop by hop; EVERY component and EVERY hop must be in HEAD with the same
+# type, a symlink hop must carry the same target as HEAD, the final file must hash to its HEAD blob, and the
+# final file or directory must show no status difference and no skip-worktree / assume-unchanged flag.
+# Anything that differs, or that cannot be proven (absolute hop, hop into a submodule, hop out of the
+# repository, more than 40 hops, case-insensitive name collision, git failing), makes the run BLIND.
+CHAIN_BAD=""
+chain_bad() { CHAIN_BAD="$CHAIN_BAD [$1]"; }
+
+# head_entry <repo-relative path>: sets E_MODE E_SHA from HEAD's tree for exactly that path
+# (E_MODE empty when HEAD has no such entry). Returns 1 when git itself fails.
+head_entry() {
+  local ent="$1" out line meta nm
+  E_MODE=""; E_SHA=""
+  out="$(git -C "$REPO" -c core.quotepath=off ls-tree HEAD -- "$ent" 2>/dev/null)" || return 1
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    meta="${line%%$'\t'*}"; nm="${line#*$'\t'}"
+    [ "$nm" = "$ent" ] || continue
+    read -r E_MODE _ E_SHA <<< "$meta"
+  done <<< "$out"
+  return 0
+}
+
+# name_collides <parent> <name>: true when HEAD's tree holds a second entry in <parent> whose name equals
+# <name> ignoring case (a clone on a case-insensitive filesystem would merge them).
+name_collides() {
+  local parent="$1" name="$2" want out e n=0
+  want="${parent:+$parent/}$name"; want="${want,,}"
+  if [ -n "$parent" ]; then out="$(git -C "$REPO" -c core.quotepath=off ls-tree --name-only HEAD -- "$parent/" 2>/dev/null)" || return 2
+  else out="$(git -C "$REPO" -c core.quotepath=off ls-tree --name-only HEAD 2>/dev/null)" || return 2; fi
+  while IFS= read -r e; do
+    [ -n "$e" ] || continue
+    [ "${e,,}" = "$want" ] && n=$((n+1))
+  done <<< "$out"
+  [ "$n" -gt 1 ]
+}
+
+# chain_one <path>: appends to CHAIN_BAD; returns 1 only when git failed (a BLIND was already noted).
+chain_one() {
+  local spec="$1" cur="" c ent hops=0 ftype="tree" fsha="" tgt want out flagged rest r
+  local -a pend=() parts=()
+  [ -e "$REPO/$spec" ] || return 0
+  case "$spec" in /*) chain_bad "$spec is not a repo-relative path"; return 0 ;; esac
+  IFS='/' read -r -a pend <<< "$spec"
+  while [ "${#pend[@]}" -gt 0 ]; do
+    c="${pend[0]}"; pend=("${pend[@]:1}")
+    case "$c" in
+      ""|.) continue ;;
+      ..) if [ -z "$cur" ]; then chain_bad "$spec leaves the repository"; return 0; fi
+          if [[ "$cur" == */* ]]; then cur="${cur%/*}"; else cur=""; fi
+          ftype="tree"; fsha=""; continue ;;
+    esac
+    ent="${cur:+$cur/}$c"
+    head_entry "$ent" || { note_blind "git ls-tree failed for $(printf '%q' "$ent"); cannot prove it matches HEAD"; return 1; }
+    if [ -z "$E_MODE" ]; then chain_bad "$ent is not in HEAD"; return 0; fi
+    name_collides "$cur" "$c"; r=$?
+    if [ "$r" -eq 2 ]; then note_blind "git ls-tree failed for $(printf '%q' "${cur:-.}"); cannot prove it matches HEAD"; return 1; fi
+    if [ "$r" -eq 0 ]; then chain_bad "$ent collides with another HEAD entry ignoring case"; return 0; fi
+    case "$E_MODE" in
+      120000)
+        if [ ! -L "$REPO/$ent" ]; then chain_bad "$ent is a symlink in HEAD but not in the working tree"; return 0; fi
+        tgt="$(readlink -- "$REPO/$ent")"; want="$(git -C "$REPO" cat-file blob "$E_SHA" 2>/dev/null)" \
+          || { note_blind "git cat-file failed for $(printf '%q' "$ent")"; return 1; }
+        if [ "$tgt" != "$want" ]; then chain_bad "$ent link target differs from HEAD (working tree '$tgt', HEAD '$want')"; return 0; fi
+        hops=$((hops+1))
+        if [ "$hops" -gt 40 ]; then chain_bad "$spec needs more than 40 symlink hops"; return 0; fi
+        case "$tgt" in
+          "") chain_bad "$ent is an empty symlink"; return 0 ;;
+          /*) chain_bad "$ent is an absolute symlink ($tgt); a clone elsewhere cannot prove it"; return 0 ;;
+        esac
+        IFS='/' read -r -a parts <<< "$tgt"
+        pend=("${parts[@]}" "${pend[@]}") ;;
+      040000)
+        if [ -L "$REPO/$ent" ] || [ ! -d "$REPO/$ent" ]; then chain_bad "$ent is a directory in HEAD but not in the working tree"; return 0; fi
+        cur="$ent"; ftype="tree"; fsha="" ;;
+      160000)
+        if [ -L "$REPO/$ent" ] || [ ! -d "$REPO/$ent" ]; then chain_bad "$ent is a submodule in HEAD but not a directory in the working tree"; return 0; fi
+        rest=""; for r in "${pend[@]}"; do case "$r" in ""|.) ;; *) rest=1 ;; esac; done
+        if [ -n "$rest" ]; then chain_bad "$spec continues inside the submodule $ent, which a clone does not provide"; return 0; fi
+        cur="$ent"; ftype="commit"; fsha="" ;;
+      100644|100755)
+        if [ -L "$REPO/$ent" ] || [ ! -f "$REPO/$ent" ]; then chain_bad "$ent is a file in HEAD but not in the working tree"; return 0; fi
+        rest=""; for r in "${pend[@]}"; do case "$r" in ""|.) ;; *) rest=1 ;; esac; done
+        if [ -n "$rest" ]; then chain_bad "$spec continues below the file $ent"; return 0; fi
+        cur="$ent"; ftype="blob"; fsha="$E_SHA" ;;
+      *) chain_bad "$ent has the unsupported HEAD mode $E_MODE"; return 0 ;;
+    esac
   done
-  [ "${#specs[@]}" -gt 0 ] || return 0
-  if ! out="$(git -C "$REPO" status --porcelain=v1 -z --untracked-files=no -- "${specs[@]}" 2>/dev/null)"; then
-    note_blind "$label: git status failed; cannot prove the files match HEAD"; return 0
+  [ -n "$cur" ] || return 0
+  if [ "$ftype" = blob ]; then
+    out="$(git -C "$REPO" hash-object -- "$cur" 2>/dev/null)" || { note_blind "git hash-object failed for $(printf '%q' "$cur")"; return 1; }
+    [ "$out" = "$fsha" ] || chain_bad "$cur differs from HEAD (content)"
   fi
-  [ -z "$out" ] || bad="$bad [differs from HEAD: $(printf '%s' "$out" | tr '\0' '\n' | head -3 | tr '\n' ';')]"
-  [ -z "$bad" ] || note_blind "$label are not committed as read (a clone would differ):$bad"
+  if ! out="$(git -C "$REPO" -c core.quotepath=off status --porcelain=v1 --untracked-files=no -- ":(literal)$cur" 2>/dev/null)"; then
+    note_blind "$(printf '%q' "$cur"): git status failed; cannot prove the files match HEAD"; return 1
+  fi
+  [ -z "$out" ] || chain_bad "differs from HEAD: $(printf '%s\n' "$out" | head -3 | tr '\n' ';')"
+  if ! flagged="$(git -C "$REPO" -c core.quotepath=off ls-files -v -- ":(literal)$cur" 2>/dev/null)"; then
+    note_blind "$(printf '%q' "$cur"): git ls-files failed; cannot prove no file is hidden from git status"; return 1
+  fi
+  flagged="$(printf '%s\n' "$flagged" | grep -m1 '^[a-zS] ' || true)"
+  [ -z "$flagged" ] || chain_bad "$cur holds a skip-worktree or assume-unchanged file ($flagged), which hides changes from git status"
+  return 0
+}
+
+head_check() {
+  local label="$1" p; shift
+  CHAIN_BAD=""
+  for p in "$@"; do chain_one "$p" || return 0; done
+  [ -z "$CHAIN_BAD" ] || note_blind "$label are not committed as read (a clone would differ):$CHAIN_BAD"
   return 0
 }
 
@@ -425,10 +523,17 @@ if nsub == 0:
     sys.exit(0)
 print(f"SECTION\t{name}")
 tops = set()
+tfiles = set()
+tdirs = set()
 r = subprocess.run(["git", "-C", repo, "ls-files", "-z"], capture_output=True, text=True)
 for p in r.stdout.split("\0"):
+    if p:
+        tfiles.add(p)
     if "/" in p:
         tops.add(p.split("/", 1)[0])
+        parts = p.split("/")
+        for i in range(1, len(parts)):
+            tdirs.add("/".join(parts[:i]))
 known = re.compile(r"^(docs|scripts|challenges|tests?|tools|specs|catalog[a-z0-9_-]*|installer-wizard|submodules|constitution|Website|config|deployment|\.github)$")
 seen = set()
 nskip = 0
@@ -440,7 +545,7 @@ for ln in vlines:
         if re.search(r"[\x00-\x1f\x7f]", tok):
             print(f"CTRL\t{tok}")
             continue
-        if re.search(r"[\s*?<>${}|\\=(),;\"']", t) or re.match(r"^[a-z][a-z0-9+.-]*://", t) \
+        if re.search(r"[*?<>${}|\\=(),;\"']", t) or re.match(r"^[a-z][a-z0-9+.-]*://", t) \
                 or t.startswith(("/", "~", "-")):
             print(f"SKIP\t{tok.strip()}")
             nskip += 1
@@ -448,6 +553,12 @@ for ln in vlines:
         t = re.sub(r":\d+(-\d+)?$", "", t.rstrip(".,;:"))
         if t.startswith("./"):
             t = t[2:]
+        if re.search(r"\s", t) and t not in tfiles and t not in tdirs:
+            # m-2: a token with whitespace is a path only when it is exactly a tracked file or directory;
+            # otherwise it is indistinguishable from a command line and stays a skipped token.
+            print(f"SKIP\t{t}")
+            nskip += 1
+            continue
         top = t.split("/", 1)[0]
         if top in tops or known.match(top):
             if t not in seen:
@@ -500,14 +611,6 @@ PY
     if [ -e "$REPO/$q" ] && { [ -z "$rp" ] || { [ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"/* ]]; }; }; then
       C_MISS=$((C_MISS+1)); echo "MISS  $p (resolves outside the repository)"; continue
     fi
-    cited_ok=0
-    if [ ! -e "$REPO/$q" ]; then
-      C_MISS=$((C_MISS+1)); echo "MISS  $p (not in working tree)"
-    elif ! tracked "$q"; then
-      C_MISS=$((C_MISS+1)); echo "MISS  $p (exists but not git-tracked)"
-    else
-      echo "OK    $p"; cited_ok=1
-    fi
     # RC-3: decide on the REAL in-repo location (// and /./ collapsed, symlinks resolved), so a
     # spelling trick or an alias cannot dodge the evidence prefix or the manifest search.
     ev="$(readlink -m -- "$REPO/$q" 2>/dev/null || true)"
@@ -516,11 +619,16 @@ PY
     else
       evrel="$q"
     fi
-    # I4-1: check BOTH the cited tracked spelling (lexically collapsed, symlinks NOT resolved) and the
-    # resolved location; a symlink retargeted or added only in the working tree differs from HEAD.
-    qn="$(realpath -ms -- "$REPO/$q" 2>/dev/null || true)"; rb="$(realpath -ms -- "$REPO" 2>/dev/null || true)"
-    if [ -n "$qn" ] && [ -n "$rb" ] && [[ "$qn" == "$rb"/* ]]; then qn="${qn#"$rb"/}"; else qn="$q"; fi
-    { [ "$cited_ok" = 0 ] || [ "$evrel" = "." ]; } || head_check "cited path $p" "$qn" "$evrel"
+    cited_ok=0
+    if [ ! -e "$REPO/$q" ]; then
+      C_MISS=$((C_MISS+1)); echo "MISS  $p (not in working tree)"
+    elif ! tracked "$q" && ! tracked "$evrel"; then
+      C_MISS=$((C_MISS+1)); echo "MISS  $p (exists but not git-tracked)"
+    else
+      echo "OK    $p"; cited_ok=1
+    fi
+    # CAT-REL-CHECK-2: the cited spelling is walked component by component and hop by hop (head_check).
+    { [ "$cited_ok" = 0 ] || [ "$evrel" = "." ]; } || head_check "cited path $p" "$q"
     # nearest tracked manifest (SHA256SUMS, SHA256SUMS.txt, MANIFEST*.sha256) at or above the path
     # (never the repo root itself)
     if [ -d "$REPO/$q" ]; then d="$evrel"; else d="$(dirname "$evrel")"; fi
@@ -658,6 +766,14 @@ check_manifest_dir() {
   local dirty
   if ! dirty="$(git -C "$REPO" status --porcelain=v1 -z --untracked-files=no -- ":(literal)$d" 2>/dev/null)"; then
     note_blind "git status failed for $(printf '%q' "$d"); cannot prove it matches HEAD"; return
+  fi
+  local flagged
+  if ! flagged="$(git -C "$REPO" -c core.quotepath=off ls-files -v -- ":(literal)$d" 2>/dev/null)"; then
+    note_blind "git ls-files failed for $(printf '%q' "$d"); cannot prove no file is hidden from git status"; return
+  fi
+  flagged="$(printf '%s\n' "$flagged" | grep -m1 '^[a-zS] ' || true)"
+  if [ -n "$flagged" ]; then
+    note_blind "manifest tree $(printf '%q' "$d") holds a skip-worktree or assume-unchanged file ($flagged), which hides changes from git status"; return
   fi
   if [ -n "$dirty" ]; then
     note_blind "manifest tree $(printf '%q' "$d") has changes that are not committed (index or working tree differ from HEAD): $(printf '%s' "$dirty" | tr '\0' '\n' | head -3 | tr '\n' ';')"; return

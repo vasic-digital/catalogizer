@@ -345,7 +345,9 @@ d=$(fresh); mkrun3 "$d"; addrow "$d" docs/./qa/run3/d.txt; expect "path docs/./q
 d=$(fresh); mkrun3 "$d"; addrow "$d" docs//qa/run3/d.txt; expect "path docs//qa/run3 -> NOMANIFEST" 1 "NOMANIFEST" "$d" --check changelog
 d=$(fresh); mkrun3 "$d"; ln -s qa/run3 "$d/docs/ev"; addrow "$d" docs/ev/d.txt; expect "symlink alias docs/ev -> qa/run3 -> NOMANIFEST" 1 "NOMANIFEST" "$d" --check changelog
 d=$(fresh); mkrun3 "$d"; addrow "$d" docs/qa/run3/../run3/d.txt; expect "path with .. inside evidence -> NOMANIFEST" 1 "NOMANIFEST" "$d" --check changelog
-d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS ); ln -s qa/run3 "$d/docs/ev"; addrow "$d" docs/ev/d.txt; expect "symlink alias is not a tracked path as written -> MISS (never a silent pass)" 1 "docs/ev/d.txt (exists but not git-tracked)" "$d" --check changelog
+d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS ); ln -s qa/run3 "$d/docs/ev"; addrow "$d" docs/ev/d.txt; expect "CAT-REL-CHECK-2: committed directory-symlink alias into manifested evidence is resolved hop by hop -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS ); addrow "$d" docs/ev/d.txt; ( cd "$d" && git add -A && git commit -q -m x ); ln -s qa/run3 "$d/docs/ev"
+RAW=1 expect "directory-symlink alias that is not committed -> BLIND, never a silent pass" 2 "docs/ev is not in HEAD" "$d" --check changelog
 # R6: the evidence prefix directory itself
 d=$(fresh); addrow "$d" docs/qa/; expect "R6 VERIFIED docs/qa/ (prefix itself) is evidence -> NOMANIFEST" 1 "NOMANIFEST" "$d" --check changelog
 # control characters fail closed
@@ -477,6 +479,137 @@ d=$(fresh); echo "$z  c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|
 expect "R3-4 mismatch waiver is reported as BADWAIVER" 1 "BADWAIVER" "$d" --check changelog
 expect "R3-4 mismatch waiver counted in bad_waivers" 1 "bad_waivers=1" "$d" --check changelog
 expect "R3-4 mismatch waiver is not an unused waiver" 1 "unused_waivers=0" "$d" --check changelog
+
+echo "== CAT-REL-CHECK-2: class matrix of working-tree vs clone divergence (docs/release_checker_path_inventory.md)"
+# cm <dir>: commit everything staged/unstaged (the committed baseline of a case)
+cm() { ( cd "$1" && git add -A && git commit -q -m case ) ; }
+# lk <dir> <link-path-rel> <target>: create a symlink (parents made)
+lk() { mkdir -p "$(dirname "$1/$2")"; ( cd "$(dirname "$1/$2")" && rm -f "$(basename "$2")" && ln -s "$3" "$(basename "$2")" ); }
+# Z1 / M-chain: a 2-hop chain, committed: PASS (negative control)
+d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../qa/run2/c.txt; addrow "$d" docs/other/ln; cm "$d"
+RAW=1 expect "Z1 committed 2-hop chain -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+# R5-1a: intermediate hop retargeted in the working tree only
+d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../nowhere; addrow "$d" docs/other/ln; cm "$d"; lk "$d" docs/other/ln2 ../qa/run2/c.txt
+RAW=1 expect "Z2 R5-1a middle hop retargeted only in the working tree -> BLIND" 2 "docs/other/ln2" "$d" --check changelog
+# R5-1b: intermediate hop only staged (a clone has no such path)
+d=$(fresh); lk "$d" docs/other/ln ln2; addrow "$d" docs/other/ln; ( cd "$d" && git add docs/other/ln docs/CHANGELOG.md && git commit -q -m cl ); lk "$d" docs/other/ln2 ../qa/run2/c.txt; ( cd "$d" && git add docs/other/ln2 )
+RAW=1 expect "Z3 R5-1b middle hop only staged -> BLIND" 2 "docs/other/ln2" "$d" --check changelog
+# middle hop untracked (not even staged)
+d=$(fresh); lk "$d" docs/other/ln ln2; addrow "$d" docs/other/ln; ( cd "$d" && git add docs/other/ln docs/CHANGELOG.md && git commit -q -m cl ); lk "$d" docs/other/ln2 ../qa/run2/c.txt
+RAW=1 expect "Z4 middle hop untracked -> BLIND" 2 "docs/other/ln2" "$d" --check changelog
+# 3 hops, the LAST symlink hop retargeted in the working tree
+d=$(fresh); lk "$d" docs/other/a1 a2; lk "$d" docs/other/a2 a3; lk "$d" docs/other/a3 ../qa/run2/c.txt; addrow "$d" docs/other/a1; cm "$d"; lk "$d" docs/other/a3 ../qa/run1/a.txt
+RAW=1 expect "Z5 3-hop chain, last hop retargeted -> BLIND" 2 "docs/other/a3" "$d" --check changelog
+# middle hop with skip-worktree and a retarget: git status cannot see it
+d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../nowhere; addrow "$d" docs/other/ln; cm "$d"; lk "$d" docs/other/ln2 ../qa/run2/c.txt; ( cd "$d" && git update-index --skip-worktree docs/other/ln2 )
+RAW=1 expect "Z6 m-1 middle hop skip-worktree + retarget -> BLIND" 2 "docs/other/ln2" "$d" --check changelog
+d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../nowhere; addrow "$d" docs/other/ln; cm "$d"; lk "$d" docs/other/ln2 ../qa/run2/c.txt; ( cd "$d" && git update-index --assume-unchanged docs/other/ln2 )
+RAW=1 expect "Z7 m-1 middle hop assume-unchanged + retarget -> BLIND" 2 "docs/other/ln2" "$d" --check changelog
+# final file: modified + assume-unchanged / skip-worktree (status silent)
+d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; cm "$d"; echo y >> "$d/docs/other/z.txt"; ( cd "$d" && git update-index --assume-unchanged docs/other/z.txt )
+RAW=1 expect "Z8 m-1 cited file assume-unchanged + modified -> BLIND" 2 "docs/other/z.txt" "$d" --check changelog
+d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; cm "$d"; echo y >> "$d/docs/other/z.txt"; ( cd "$d" && git update-index --skip-worktree docs/other/z.txt )
+RAW=1 expect "Z9 m-1 cited file skip-worktree + modified -> BLIND" 2 "docs/other/z.txt" "$d" --check changelog
+# cited directory: a file inside is assume-unchanged + modified
+d=$(fresh); mkother "$d"; addrow "$d" docs/other; cm "$d"; echo y >> "$d/docs/other/z.txt"; ( cd "$d" && git update-index --assume-unchanged docs/other/z.txt )
+RAW=1 expect "Z10 m-1 cited dir holds an assume-unchanged modified file -> BLIND" 2 "docs/other" "$d" --check changelog
+# manifest tree: HEAD holds a covered file that does NOT match its manifest (a clone FAILs); the working tree has the
+# matching content and the file is flagged assume-unchanged, so git status is silent and the local run would PASS
+d=$(fresh); echo tampered > "$d/docs/qa/run2/c.txt"; ( cd "$d" && git commit -q -a -m tamper ); echo evidence-c > "$d/docs/qa/run2/c.txt"; ( cd "$d" && git update-index --assume-unchanged docs/qa/run2/c.txt )
+RAW=1 expect "Z11 m-1 manifest-covered file hides a HEAD mismatch behind assume-unchanged -> BLIND" 2 "assume-unchanged" "$d" --check changelog
+# Z11b: the hidden file is covered by the manifest but NOT cited, so only the manifest-tree flag check can see it
+d=$(fresh); echo e5 > "$d/docs/qa/run2/e5.txt"; ( cd "$d/docs/qa/run2" && sha256sum c.txt e5.txt > SHA256SUMS ); ( cd "$d" && git add -A && git commit -q -m e5 ); echo tampered > "$d/docs/qa/run2/e5.txt"; ( cd "$d" && git commit -q -a -m tamper ); echo e5 > "$d/docs/qa/run2/e5.txt"; ( cd "$d" && git update-index --assume-unchanged docs/qa/run2/e5.txt )
+RAW=1 expect "Z11b m-1 uncited manifest-covered file hides a HEAD mismatch behind assume-unchanged -> BLIND" 2 "manifest tree" "$d" --check changelog
+# Z49: git status trusts the stat cache; a same-size, same-mtime edit is invisible to it (core.checkStat=minimal), only the content hash sees it
+d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; cm "$d"; ( cd "$d" && git config core.checkStat minimal && git config core.trustctime false && git update-index --really-refresh >/dev/null ); touch -r "$d/docs/other/z.txt" "$d/ref.stamp"; printf 'Y\n' > "$d/docs/other/z.txt"; touch -r "$d/ref.stamp" "$d/docs/other/z.txt"
+RAW=1 expect "Z49 same-size same-mtime edit invisible to git status -> BLIND (content hash)" 2 "docs/other/z.txt differs from HEAD (content)" "$d" --check changelog
+# directory symlink in the middle of the cited path
+d=$(fresh); lk "$d" docs/other/dl ../qa/run2; addrow "$d" docs/other/dl/c.txt; cm "$d"
+RAW=1 expect "Z12 committed directory symlink mid-path -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); lk "$d" docs/other/dl ../qa/run2; addrow "$d" docs/other/dl/c.txt; mkdir -p "$d/docs/other2"; echo c > "$d/docs/other2/c.txt"; cm "$d"; lk "$d" docs/other/dl ../other2
+RAW=1 expect "Z13 directory symlink retargeted only in the working tree -> BLIND" 2 "docs/other/dl" "$d" --check changelog
+d=$(fresh); addrow "$d" docs/other/dl/c.txt; ( cd "$d" && git commit -q docs/CHANGELOG.md -m cl ); lk "$d" docs/other/dl ../qa/run2; ( cd "$d" && git add docs/other/dl )
+RAW=1 expect "Z14 directory symlink only staged -> BLIND" 2 "docs/other/dl" "$d" --check changelog
+# a committed real directory replaced by a symlink to a copy in the working tree
+d=$(fresh); mkdir -p "$d/docs/other/dd" "$d/docs/other/cp"; echo q > "$d/docs/other/dd/f.txt"; echo q > "$d/docs/other/cp/f.txt"; addrow "$d" docs/other/dd/f.txt; cm "$d"; rm -r "$d/docs/other/dd"; lk "$d" docs/other/dd cp
+RAW=1 expect "Z15 real directory replaced by a symlink -> BLIND" 2 "docs/other/dd is a directory in HEAD but not in the working tree" "$d" --check changelog
+# absolute hop, leaving-the-repo hop, dangling hop, loop
+d=$(fresh); lk "$d" docs/other/ln "$d/docs/qa/run2/c.txt"; addrow "$d" docs/other/ln; cm "$d"
+RAW=1 expect "Z16 absolute symlink hop (even into the repo) -> BLIND" 2 "absolute" "$d" --check changelog
+d=$(fresh); lk "$d" docs/other/ln ../../../outside_target; : > "$ROOT/outside_target"; addrow "$d" docs/other/ln; cm "$d"
+RAW=1 expect "Z17 hop leaving the repo is never PASS" 1 "MISS" "$d" --check changelog
+d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../nowhere; addrow "$d" docs/other/ln; cm "$d"
+RAW=1 expect "Z18 dangling chain -> MISS" 1 "MISS  docs/other/ln" "$d" --check changelog
+d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ln; addrow "$d" docs/other/ln; cm "$d"
+RAW=1 expect "Z19 symlink loop -> MISS, never PASS" 1 "MISS  docs/other/ln" "$d" --check changelog
+# hop into a submodule, and a clean / dirty gitlink cited directly (m-3)
+smk() { local sub="$ROOT/sub.$RANDOM"; mkdir -p "$sub" && ( cd "$sub" && git init -q . && git config user.email a@b.c && git config user.name x && git config commit.gpgsign false && echo hi > f && git add f && git commit -q -m i ) && ( cd "$1" && git -c protocol.file.allow=always submodule add -q "$sub" docs/subm >/dev/null 2>&1 ); }
+d=$(fresh); smk "$d"; addrow "$d" docs/subm; cm "$d"
+RAW=1 expect "Z20 m-3 clean submodule gitlink cited directly -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); smk "$d"; addrow "$d" docs/subm; cm "$d"; ( cd "$d/docs/subm" && echo more >> f && git commit -q -a -m m )
+RAW=1 expect "Z21 submodule checked out at another commit -> BLIND" 2 "docs/subm" "$d" --check changelog
+d=$(fresh); smk "$d"; lk "$d" docs/other/ln ../subm/f; addrow "$d" docs/other/ln; cm "$d"
+RAW=1 expect "Z22 hop into a submodule -> BLIND" 2 "continues inside the submodule docs/subm" "$d" --check changelog
+d=$(fresh); smk "$d"; addrow "$d" docs/subm/f; cm "$d"
+RAW=1 expect "Z23 path inside a submodule is never PASS (git does not track below a gitlink)" 1 "docs/subm/f" "$d" --check changelog
+# case-insensitive collision in a tree level of the path
+d=$(fresh); mkdir -p "$d/docs/other"; echo 1 > "$d/docs/other/Foo.txt"; echo 2 > "$d/docs/other/foo.txt"; addrow "$d" docs/other/foo.txt; cm "$d"
+RAW=1 expect "Z24 case-insensitive collision of the cited name -> BLIND" 2 "collides" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/OTHER/x" "$d/docs/other/x"; echo 1 > "$d/docs/OTHER/x/f.txt"; echo 2 > "$d/docs/other/x/f.txt"; addrow "$d" docs/other/x/f.txt; cm "$d"
+RAW=1 expect "Z25 case-insensitive collision of a parent directory -> BLIND" 2 "collides" "$d" --check changelog
+# gitignored hop / path
+d=$(fresh); lk "$d" docs/other/ln.png ../qa/run2/c.txt; addrow "$d" docs/other/ln.png; cm "$d"
+RAW=1 expect "Z26 gitignored untracked symlink is never PASS" 2 "is not in HEAD" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/other"; echo 1 > "$d/docs/other/f.png"; ( cd "$d" && git add -f docs/other/f.png ); addrow "$d" docs/other/f.png; cm "$d"
+RAW=1 expect "Z27 force-added file under an ignore rule, committed -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+# paths with spaces and unicode (m-2): extractor + the whole chain
+d=$(fresh); mkdir -p "$d/docs/other dir"; echo s > "$d/docs/other dir/a b.txt"; lk "$d" "docs/other dir/l n" "a b.txt"; addrow "$d" "docs/other dir/a b.txt\`, \`docs/other dir/l n"; cm "$d"
+RAW=1 expect "Z28 m-2 tracked path and symlink with spaces, committed -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/other dir"; echo s > "$d/docs/other dir/a b.txt"; addrow "$d" "docs/other dir/a b.txt"; cm "$d"; echo t >> "$d/docs/other dir/a b.txt"
+RAW=1 expect "Z29 m-2 path with a space edited only in the working tree -> BLIND" 2 "a b.txt" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/other dir"; echo s > "$d/docs/other dir/a b.txt"; lk "$d" "docs/other dir/l n" "a b.txt"; addrow "$d" "docs/other dir/l n"; cm "$d"; lk "$d" "docs/other dir/l n" ../qa/run2/c.txt
+RAW=1 expect "Z30 m-2 symlink with a space retargeted only in the working tree -> BLIND" 2 "l n" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/other dir"; echo s > "$d/docs/other dir/a b.txt"; addrow "$d" "docs/other dir/missing b.txt"; cm "$d"
+expect "Z31 m-2 untracked name with a space stays a skipped non-path token (honest: indistinguishable from a command)" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/ünï"; echo u > "$d/docs/ünï/ü.txt"; addrow "$d" "docs/ünï/ü.txt"; cm "$d"
+RAW=1 expect "Z32 unicode path committed -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/ünï"; echo u > "$d/docs/ünï/ü.txt"; addrow "$d" "docs/ünï/ü.txt"; cm "$d"; echo v >> "$d/docs/ünï/ü.txt"
+RAW=1 expect "Z33 unicode path edited only in the working tree -> BLIND" 2 "ü.txt" "$d" --check changelog
+# CRLF: worktree converted to CRLF without a clean filter differs from HEAD; with autocrlf it does not
+d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; cm "$d"; printf 'x\r\n' > "$d/docs/other/z.txt"
+RAW=1 expect "Z34 CRLF working copy of an LF blob (no autocrlf) -> BLIND" 2 "docs/other/z.txt" "$d" --check changelog
+d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; cm "$d"; ( cd "$d" && git config core.autocrlf true ) && printf 'x\r\n' > "$d/docs/other/z.txt"
+RAW=1 expect "Z35 CRLF working copy even with core.autocrlf=true -> BLIND (git status reports it modified; fail-safe)" 2 "docs/other/z.txt" "$d" --check changelog
+# committed .. and mid-path ./ spellings (negative controls) and an uncommitted edit seen through them
+d=$(fresh); addrow "$d" docs/qa/../qa/run2/c.txt; cm "$d"
+RAW=1 expect "Z36 committed '..' spelling -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkother "$d"; addrow "$d" docs/./other/z.txt; cm "$d"
+RAW=1 expect "Z37 committed mid-path './' spelling -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkother "$d"; addrow "$d" docs/./other/../other/z.txt; cm "$d"; echo y >> "$d/docs/other/z.txt"
+RAW=1 expect "Z38 uncommitted edit seen through a '.'/'..' spelling -> BLIND" 2 "docs/other/z.txt" "$d" --check changelog
+d=$(fresh); lk "$d" docs/other/ln ../qa/../qa/run2/./c.txt; addrow "$d" docs/other/ln; cm "$d"
+RAW=1 expect "Z39 committed link target with '..' and '.' -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+# directory symlink + '..' after it follows kernel semantics (through the target, not lexically)
+d=$(fresh); mkdir -p "$d/docs/other/real/inner"; echo k > "$d/docs/other/real/k.txt"; echo i > "$d/docs/other/real/inner/i.txt"; lk "$d" docs/other/dl real/inner; addrow "$d" docs/other/dl/../k.txt; cm "$d"
+RAW=1 expect "Z40 '..' after a directory symlink resolves through the link target -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+# RV5-4: HEAD membership with several specs (version files), where git status cannot see it
+d=$(fresh); ( cd "$d" && git rm -q --cached catalog-web/package.json && git commit -q -m untrack )
+RAW=1 expect "Z41 RV5-4 one of several version files not in HEAD -> BLIND" 2 "catalog-web/package.json is not in HEAD" "$d" --check version
+# a symlink hop of HEAD replaced by a regular file with the same content (type differs)
+d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../qa/run2/c.txt; addrow "$d" docs/other/ln; cm "$d"; rm "$d/docs/other/ln2"; cp "$d/docs/qa/run2/c.txt" "$d/docs/other/ln2"
+RAW=1 expect "Z45 symlink hop replaced by a regular file -> BLIND" 2 "docs/other/ln2 is a symlink in HEAD but not in the working tree" "$d" --check changelog
+# a file of HEAD replaced by a symlink to identical content (final entry type differs)
+d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; cm "$d"; cp "$d/docs/other/z.txt" "$d/docs/other/zz.txt"; rm "$d/docs/other/z.txt"; ln -s zz.txt "$d/docs/other/z.txt"
+RAW=1 expect "Z46 file replaced by a symlink to the same content -> BLIND" 2 "docs/other/z.txt is a file in HEAD but not in the working tree" "$d" --check changelog
+# glob characters in a tracked name are literal
+d=$(fresh); mkdir -p "$d/docs/other"; echo 1 > "$d/docs/other/f[1].txt"; echo 2 > "$d/docs/other/f1.txt"; addrow "$d" "docs/other/f[1].txt"; cm "$d"
+RAW=1 expect "Z47 glob characters in a tracked name are literal -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/other"; echo 1 > "$d/docs/other/f[1].txt"; echo 2 > "$d/docs/other/f1.txt"; addrow "$d" "docs/other/f[1].txt"; cm "$d"; echo more >> "$d/docs/other/f[1].txt"
+RAW=1 expect "Z48 edit of a glob-named file -> BLIND" 2 "f[1].txt" "$d" --check changelog
+# --version X without a matching changelog section must not fall back to the topmost section
+d=$(fresh); expect "Z42 --version with no matching changelog section -> BLIND" 2 "section not found: 2.9.9" "$d" --check changelog --version 2.9.9
+d=$(fresh); expect "Z43 --version selects its own section (negative control)" 0 "section=2.4.0" "$d" --check changelog --version 2.4.0
+d=$(fresh); expect "Z44 explicit --section wins over --version" 0 "section=2.4.0" "$d" --check changelog --version 2.9.9 --section 2.4.0
 
 echo "== selftest (11.4.273 control needles built into the tool)"
 out="$("$CHECKER" --selftest 2>&1)"; got=$?

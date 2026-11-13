@@ -46,10 +46,11 @@ the value at that tag (a file absent at the tag counts as new).
 
 ### Check 2: changelog evidence paths
 
-Section = `--section` (e.g. `2.4.0`), default the topmost numbered `## [x.y.z...]`
+Section = `--section` (e.g. `2.4.0`); without it the `--version` value when given (a missing `## [X]` section is
+BLIND, never a fall-back), else the topmost numbered `## [x.y.z...]`
 heading of `docs/CHANGELOG.md` (`[Unreleased]` is skipped). In its `### VERIFIED`
 subsections (every `### VERIFIED...` heading of the section is read, each until the next heading) every backticked token that looks like a repo path
-(contains `/`, no spaces/globs/URLs, first directory is a tracked top-level directory or
+(contains `/`, no globs/URLs; a token with spaces only when it is exactly a tracked file or directory, first directory is a tracked top-level directory or
 one of the known names `docs scripts challenges tests tools specs catalog* installer-wizard ...`;
 a trailing `:12` or `:12-20` is stripped) must exist in the working tree and be
 git-tracked; each failure is a `MISS`. Every backticked token that contains a `/` but is not accepted as a repo path (spaces, globs,
@@ -115,10 +116,26 @@ The only cure for a mismatch is to regenerate the evidence and its manifest. Exa
 the cover-art run `docs/qa/coverart/results/final/` has a `summary.txt` whose checksum no longer
 matches (finding E-1); it stays a `SHAFAIL` until that evidence is regenerated.
 
-Committed state only: a clone sees HEAD, so the run goes BLIND (exit 2) when `docs/CHANGELOG.md`, any
-version file that was read, any existing cited path, or any tracked file under a manifest tree is not in
-HEAD or differs from it in the index or working tree (staged-but-uncommitted counts). Untracked files are
-not part of this check (they are judged by the tracked/UNLISTED rules). Commit first, then run the check.
+Committed state only: a clone sees HEAD, not the index or the working tree, so the run goes BLIND (exit 2)
+whenever a path it read could resolve differently in a clean clone. The same walk is applied to `docs/CHANGELOG.md`,
+every version file that was read and every existing cited path (full inventory and tests:
+`docs/release_checker_path_inventory.md`). The path is resolved component by component the way the kernel does,
+following symlinks hop by hop (at most 40 hops, `.` and `..` honoured after a symlinked directory), and:
+
+* every component and every symlink hop must exist in HEAD with the same type (file, directory, symlink, submodule);
+* a symlink hop must have the same target text as in HEAD (a retargeted, staged-only, untracked, flagged hop is BLIND);
+* an absolute symlink hop, a hop into a submodule, a path below a submodule, more than 40 hops, or two HEAD
+  entries whose names differ only in ASCII case are BLIND (a clone elsewhere or on a case-insensitive disk cannot be proven);
+* the final file must hash to its HEAD blob and the final file or directory must show no `git status` difference
+  (a CRLF working copy of an LF blob is BLIND even under `core.autocrlf`, because `git status` reports it modified);
+* no file under the final path or under a manifest tree may carry the skip-worktree or assume-unchanged flag
+  (such a file can hide an edit from `git status`);
+* a clean submodule gitlink may be cited directly; a submodule checked out at another commit is BLIND.
+
+A hop that leaves the repository, a dangling hop and a symlink loop are `MISS`, never PASS. Untracked files outside
+the walk are not part of this check (they are judged by the tracked/UNLISTED rules). Commit first, then run the check.
+Not handled (UNCONFIRMED / residual): Unicode case folding and normalisation, `core.symlinks=false` clones, sparse
+or shallow clones, LFS pointers.
 
 ### Instrument verification (constitution 11.4.273, 11.4.224)
 

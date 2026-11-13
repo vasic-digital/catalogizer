@@ -32,7 +32,7 @@ MUTANTS=(
         tag_ok = False'
 'missing-file read errors ignored|||emit("FAIL", label, f"cannot read: {type(exc).__name__}: {exc}")|||emit("OK", label, "ignored")'
 'existence check disabled|||if [ ! -e "$REPO/$q" ]; then|||if false; then'
-'tracked check disabled|||elif ! tracked "$q"; then|||elif false; then'
+'tracked check disabled|||elif ! tracked "$q" && ! tracked "$evrel"; then|||elif false; then'
 'zero paths not blind|||[ "${#paths[@]}" -eq 0 ]|||[ "${#paths[@]}" -lt 0 ]'
 'section-not-found not blind|||ERR) note_blind "$a"; return ;;|||ERR) : ;;'
 'section heading accepts Unreleased|||^## \[(\d[^\]]*)\]|||^## \[([^\]]*)\]'
@@ -175,18 +175,47 @@ MUTANTS=(
 'RV2-6 waiver HEAD check without literal|||if ! git -C "$REPO" diff --quiet HEAD -- ":(literal)$rel" 2>/dev/null; then|||if ! git -C "$REPO" diff --quiet HEAD -- "nonexistent-$rel" 2>/dev/null; then'
 'RV2-7 prefix dir itself not evidence|||[[ "$1/" == "$pre"* ]] && return 0|||[[ "$1" == "$pre"* ]] && return 0'
 'R3-1 changelog head check removed|||head_check "docs/CHANGELOG.md" "docs/CHANGELOG.md"|||:'
-'R3-1 cited path head check removed|||{ [ "$cited_ok" = 0 ] || [ "$evrel" = "." ]; } || head_check "cited path $p" "$qn" "$evrel"|||:'
-'I4-1 head check only the resolved spelling|||head_check "cited path $p" "$qn" "$evrel"|||head_check "cited path $p" "$evrel"'
-'R4 head_check existence uses -f (directories skipped)|||    [ -e "$REPO/$p" ] || continue
-    specs+=|||    [ -f "$REPO/$p" ] || continue
-    specs+='
 'R4 READ only recorded for json|||    READ.append(path)|||    if path.endswith('.json'): READ.append(path)'
 'R3-1 version files head check removed|||head_check "version files" "${vread[@]+"${vread[@]}"}"|||:'
-'R3-1 head check ignores HEAD membership|||git -C "$REPO" cat-file -e "HEAD:$p" 2>/dev/null || bad=|||true || bad='
-'R3-1 head check ignores status|||  [ -z "$out" ] || bad="$bad [differs|||  [ -z "$out" ] || : "$bad [differs'
-'R3-1 head check status failure not blind|||    note_blind "$label: git status failed; cannot prove the files match HEAD"; return 0|||    :'
 'R3-4 refused mismatch waiver not counted|||WVUSED["bad-entry|$d|$name"]=1; W_BAD=$((W_BAD+1))|||WVUSED["bad-entry|$d|$name"]=1'
 'R3-4 refused mismatch waiver not marked used|||WVUSED["bad-entry|$d|$name"]=1; W_BAD=$((W_BAD+1))|||W_BAD=$((W_BAD+1))'
+'R3-1 cited path head check removed|||{ [ "$cited_ok" = 0 ] || [ "$evrel" = "." ]; } || head_check "cited path $p" "$q"|||:'
+'I4-1 head check only the resolved location|||head_check "cited path $p" "$q"|||head_check "cited path $p" "$evrel"'
+'R4 chain_one existence uses -f (directories skipped)|||  [ -e "$REPO/$spec" ] || return 0|||  [ -f "$REPO/$spec" ] || return 0'
+'R3-1 chain ignores HEAD membership|||    if [ -z "$E_MODE" ]; then chain_bad "$ent is not in HEAD"; return 0; fi|||    if false; then chain_bad "$ent is not in HEAD"; return 0; fi'
+'R3-1 chain ignores status|||  [ -z "$out" ] || chain_bad "differs from HEAD: |||  [ -z "$out" ] || : "differs from HEAD: '
+'R3-1 chain status failure not blind|||    note_blind "$(printf '"'"'%q'"'"' "$cur"): git status failed; cannot prove the files match HEAD"; return 1|||    return 0'
+'CC2 hop target not compared with HEAD|||if [ "$tgt" != "$want" ]; then chain_bad|||if false; then chain_bad'
+'CC2 symlink type not compared|||if [ ! -L "$REPO/$ent" ]; then chain_bad "$ent is a symlink in HEAD|||if false; then chain_bad "$ent is a symlink in HEAD'
+'CC2 directory type not compared|||if [ -L "$REPO/$ent" ] || [ ! -d "$REPO/$ent" ]; then chain_bad "$ent is a directory in HEAD|||if false; then chain_bad "$ent is a directory in HEAD'
+'CC2 file type not compared|||if [ -L "$REPO/$ent" ] || [ ! -f "$REPO/$ent" ]; then chain_bad "$ent is a file in HEAD|||if false; then chain_bad "$ent is a file in HEAD'
+'CC2 absolute hop accepted|||/*) chain_bad "$ent is an absolute symlink ($tgt); a clone elsewhere cannot prove it"; return 0 ;;|||/*) ;;'
+'CC2 hop into submodule accepted|||if [ -n "$rest" ]; then chain_bad "$spec continues inside the submodule|||if false; then chain_bad "$spec continues inside the submodule'
+'CC2 case collision check disabled|||if [ "$r" -eq 0 ]; then chain_bad "$ent collides|||if false; then chain_bad "$ent collides'
+'CC2 case collision counts every entry|||[ "$n" -gt 1 ]|||[ "$n" -gt 0 ]'
+'CC2 content hash not compared|||[ "$out" = "$fsha" ] || chain_bad "$cur differs from HEAD (content)"|||:'
+'CC2 final flag check dropped|||[ -z "$flagged" ] || chain_bad "$cur holds|||[ -z "$flagged" ] || : "$cur holds'
+'CC2 flag pattern misses assume-unchanged|||grep -m1 '"'"'^[a-zS] '"'"' || true)"
+  [ -z "$flagged" ] || chain_bad|||grep -m1 '"'"'^S '"'"' || true)"
+  [ -z "$flagged" ] || chain_bad'
+'CC2 manifest flag check dropped|||  if [ -n "$flagged" ]; then
+    note_blind "manifest tree|||  if false; then
+    note_blind "manifest tree'
+'CC2 hop target appended after the rest of the path|||pend=("${parts[@]}" "${pend[@]}") ;;|||pend=("${pend[@]}" "${parts[@]}") ;;'
+'CC2 dot component not skipped|||      ""|.) continue ;;
+      ..)|||      "") continue ;;
+      ..)'
+'CC2 dotdot drops the whole path|||if [[ "$cur" == */* ]]; then cur="${cur%/*}"; else cur=""; fi|||cur=""'
+'CC2 tracked check ignores the resolved location|||elif ! tracked "$q" && ! tracked "$evrel"; then|||elif ! tracked "$q"; then'
+'CC2 --version does not select the section|||[ -n "$SECTION" ] || SECTION="$EXPECTED"|||:'
+'CC2 whitespace paths all skipped (m-2)|||if re.search(r"\s", t) and t not in tfiles and t not in tdirs:|||if re.search(r"\s", t):'
+'CC2 whitespace paths never skipped|||if re.search(r"\s", t) and t not in tfiles and t not in tdirs:|||if False:'
+'CC2 gitlink HEAD membership via cat-file (m-3)|||    head_entry "$ent" || {|||    git -C "$REPO" cat-file -e "HEAD:$ent" 2>/dev/null || { chain_bad "$ent is not in HEAD"; return 0; }
+    head_entry "$ent" || {'
+# Equivalent mutants (not run): the 40-hop cap in chain_one (a loop is MISS before the walk starts, and a HEAD loop cannot match a
+# working tree that is not a loop because every hop target is compared with HEAD's blob) and the '..'-above-the-root guard in
+# chain_one (the outside-repo rule rejects such paths first), and the exact-name filter in head_entry (git ls-tree does not
+# glob: measured, a pathspec like 'd/f[1].txt' or 'd/f*' returns only the literal entry or nothing).
 'help has no VERDICT|||usage; echo "VERDICT: HELP"; exit 0|||usage; exit 0'
 )
 
