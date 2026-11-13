@@ -355,7 +355,7 @@ Serve an asset by ID. Static cache headers (immutable, 1 year).
 
 ## Authentication
 
-Authentication endpoints are under `/api/v1/auth`. Login and register have strict rate limiting (30/min). The other session endpoints (refresh, logout, me, status, permissions, profile) allow 600/min; init-status and change-password use the standard limit (2000/min).
+Authentication endpoints are under `/api/v1/auth`. Login and register have strict rate limiting (30/min). The other session endpoints (refresh, logout, me, status, permissions, profile) allow 600/min; init-status uses the standard limit (2000/min). change-password uses the standard limit plus a failed-attempt lockout (failed-attempt budget per session and per user, see Rate Limiting).
 
 ### POST /api/v1/auth/login
 
@@ -581,7 +581,7 @@ Change the password for the currently authenticated user.
 
 **Description:** Updates the user's password after verifying the current password. On success every session of the user ends, including the caller's own; the client must log in again.
 **Auth:** Required
-**Rate Limit:** Standard (2000/min)
+**Rate Limit:** Standard (2000/min) plus a failed-attempt budget: after 5 answers of `401 current password is incorrect` from the same session within 15 minutes that session is revoked: in production the very next request with that token is answered `401 Session expired or revoked` by the authentication layer (even with the correct password) and the user must log in again. The failed-attempt limiter itself answers `429` (`Retry-After` = seconds until the oldest counted failure ages out, rounded up) only if revoking the session failed or when the per-user ceiling is hit, or for a token whose session id is missing or not numeric (such failures share one "no session" bucket and cannot be revoked). Failures are also summed per user across all sessions: after 25 within 15 minutes every session of that user gets `429` until the oldest failure ages out. A holder of a stolen token therefore exhausts only that token's own budget; the owner's other sessions can still change the password. A successful change resets the counters of the calling session and of the per-user bucket; other sessions' own buckets keep their failures (those sessions are revoked once they reach their limit, and idle buckets are swept after the window). If the budget is held only by requests still in flight, `Retry-After` is `1`.
 
 **Request Body:**
 
@@ -5509,6 +5509,7 @@ Rate limiting is applied per-user based on the JWT token. The tiers are:
 | Other `/api/v1/auth/*` session endpoints | 600 requests/minute | Authenticated session management |
 | All other authenticated `/api/v1/*` | 2000 requests/minute | Standard rate limit |
 | `POST /api/v1/admin/image-quality/revalidate` | 6 requests/minute | Per client IP, protects the provider chain |
+| `POST /api/v1/auth/change-password` failures | 5 wrong current passwords / 15 min per session; 25 / 15 min per user (all sessions) | Credential-guessing protection for a stolen token; refusal is 429 + `Retry-After`, the session is revoked at its limit; in-memory, per process (not Redis) |
 | Public routes (`/health`, `/discovery`, covers, image-proxy, assets) | None | |
 
 The limits are the values wired in `catalog-api/main.go`.

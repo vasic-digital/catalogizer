@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -143,8 +144,13 @@ func TestTierKeysExpireWithinWindow(t *testing.T) {
 func TestLoginRegisterAreNotRedisTiers(t *testing.T) {
 	src, err := mainGoSource()
 	require.NoError(t, err)
-	assert.Contains(t, src, `authGroup.POST("/login", loginRateLimiter,`)
-	assert.Contains(t, src, `authGroup.POST("/register", loginRateLimiter,`)
+	// The auth group is registered by registerAuthRoutes (main_chpw.go), fed
+	// LoginRate: loginRateLimiter from main.go (CAT-CHPW-RL-1).
+	assert.Contains(t, src, `LoginRate:      loginRateLimiter,`)
+	routes, err := os.ReadFile("../main_chpw.go")
+	require.NoError(t, err)
+	assert.Contains(t, string(routes), `g.POST("/login", d.LoginRate,`)
+	assert.Contains(t, string(routes), `g.POST("/register", d.LoginRate,`)
 	assert.Contains(t, src, `loginRateLimiter := authMiddleware.RateLimitByUser(30, "1m")`)
 	assert.Contains(t, src, `NewRedisTierLimiters(redisClient, authRateLimiter, defaultRateLimiter)`)
 	assert.NotContains(t, src, "NewRedisTierLimiters(redisClient, loginRateLimiter")
