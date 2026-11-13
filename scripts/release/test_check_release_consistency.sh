@@ -459,7 +459,7 @@ LC_ALL=C.utf8 expect "R3-3 C1 control char in VERIFIED path -> BLIND" 2 "control
 echo "== review round 4: cited spelling vs resolved path (I4-1), directory cite (mutant A), every version file kind (mutant C)"
 # I4-1 / P1x: symlink committed to a missing target, then retargeted in the working tree only to manifested evidence
 d=$(fresh); mkdir -p "$d/docs/other"; ( cd "$d/docs/other" && ln -s ../nowhere ln ); addrow "$d" docs/other/ln; ( cd "$d" && git commit -q -a -m cl ); ( cd "$d/docs/other" && rm ln && ln -s ../qa/run2/c.txt ln )
-RAW=1 expect "I4-1 P1x symlink retargeted only in the working tree -> BLIND" 2 "docs/other/ln" "$d" --check changelog
+RAW=1 expect "I4-1 P1x symlink retargeted only in the working tree -> FAIL from HEAD (MISS) and the BLIND guard still reports the difference (CAT-REL-CHECK-3 M1)" 1 "BLIND: cited path docs/other/ln" "$d" --check changelog
 # I4-1 / P2x: a brand-new symlink that is only staged (a clone has no such path)
 d=$(fresh); mkdir -p "$d/docs/other"; ( cd "$d/docs/other" && ln -s ../qa/run2/c.txt ln ); addrow "$d" docs/other/ln; ( cd "$d" && git commit -q docs/CHANGELOG.md -m cl )
 RAW=1 expect "I4-1 P2x symlink only staged -> MISS (a clone lacks it)" 1 "MISS  docs/other/ln" "$d" --check changelog
@@ -494,21 +494,21 @@ d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../qa/run2/c.txt; 
 RAW=1 expect "Z1 committed 2-hop chain -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
 # R5-1a: intermediate hop retargeted in the working tree only
 d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../nowhere; addrow "$d" docs/other/ln; cm "$d"; lk "$d" docs/other/ln2 ../qa/run2/c.txt
-RAW=1 expect "Z2 R5-1a middle hop retargeted only in the working tree -> BLIND" 2 "docs/other/ln2" "$d" --check changelog
+RAW=1 expect "Z2 R5-1a middle hop retargeted only in the working tree -> FAIL from HEAD (MISS) and the BLIND guard still reports the difference (CAT-REL-CHECK-3 M1)" 1 "docs/other/ln2" "$d" --check changelog
 # R5-1b: intermediate hop only staged (a clone has no such path)
 d=$(fresh); lk "$d" docs/other/ln ln2; addrow "$d" docs/other/ln; ( cd "$d" && git add docs/other/ln docs/CHANGELOG.md && git commit -q -m cl ); lk "$d" docs/other/ln2 ../qa/run2/c.txt; ( cd "$d" && git add docs/other/ln2 )
-RAW=1 expect "Z3 R5-1b middle hop only staged -> BLIND" 2 "docs/other/ln2" "$d" --check changelog
+RAW=1 expect "Z3 R5-1b middle hop only staged -> FAIL from HEAD (MISS) and the BLIND guard still reports the difference (CAT-REL-CHECK-3 M1)" 1 "docs/other/ln2" "$d" --check changelog
 # middle hop untracked (not even staged)
 d=$(fresh); lk "$d" docs/other/ln ln2; addrow "$d" docs/other/ln; ( cd "$d" && git add docs/other/ln docs/CHANGELOG.md && git commit -q -m cl ); lk "$d" docs/other/ln2 ../qa/run2/c.txt
-RAW=1 expect "Z4 middle hop untracked -> BLIND" 2 "docs/other/ln2" "$d" --check changelog
+RAW=1 expect "Z4 middle hop untracked -> FAIL from HEAD (MISS) and the BLIND guard still reports the difference (CAT-REL-CHECK-3 M1)" 1 "docs/other/ln2" "$d" --check changelog
 # 3 hops, the LAST symlink hop retargeted in the working tree
 d=$(fresh); lk "$d" docs/other/a1 a2; lk "$d" docs/other/a2 a3; lk "$d" docs/other/a3 ../qa/run2/c.txt; addrow "$d" docs/other/a1; cm "$d"; lk "$d" docs/other/a3 ../qa/run1/a.txt
 RAW=1 expect "Z5 3-hop chain, last hop retargeted -> BLIND" 2 "docs/other/a3" "$d" --check changelog
 # middle hop with skip-worktree and a retarget: git status cannot see it
 d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../nowhere; addrow "$d" docs/other/ln; cm "$d"; lk "$d" docs/other/ln2 ../qa/run2/c.txt; ( cd "$d" && git update-index --skip-worktree docs/other/ln2 )
-RAW=1 expect "Z6 m-1 middle hop skip-worktree + retarget -> BLIND" 2 "docs/other/ln2" "$d" --check changelog
+RAW=1 expect "Z6 m-1 middle hop skip-worktree + retarget -> FAIL from HEAD (MISS) and the BLIND guard still reports the difference (CAT-REL-CHECK-3 M1)" 1 "docs/other/ln2" "$d" --check changelog
 d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../nowhere; addrow "$d" docs/other/ln; cm "$d"; lk "$d" docs/other/ln2 ../qa/run2/c.txt; ( cd "$d" && git update-index --assume-unchanged docs/other/ln2 )
-RAW=1 expect "Z7 m-1 middle hop assume-unchanged + retarget -> BLIND" 2 "docs/other/ln2" "$d" --check changelog
+RAW=1 expect "Z7 m-1 middle hop assume-unchanged + retarget -> FAIL from HEAD (MISS) and the BLIND guard still reports the difference (CAT-REL-CHECK-3 M1)" 1 "docs/other/ln2" "$d" --check changelog
 # final file: modified + assume-unchanged / skip-worktree (status silent)
 d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; cm "$d"; echo y >> "$d/docs/other/z.txt"; ( cd "$d" && git update-index --assume-unchanged docs/other/z.txt )
 RAW=1 expect "Z8 m-1 cited file assume-unchanged + modified -> BLIND" 2 "docs/other/z.txt" "$d" --check changelog
@@ -541,7 +541,7 @@ RAW=1 expect "Z15 real directory replaced by a symlink -> BLIND" 2 "docs/other/d
 d=$(fresh); lk "$d" docs/other/ln "$d/docs/qa/run2/c.txt"; addrow "$d" docs/other/ln; cm "$d"
 RAW=1 expect "Z16 absolute symlink hop (even into the repo) -> MISS, never PASS" 1 "MISS  docs/other/ln" "$d" --check changelog
 d=$(fresh); lk "$d" docs/other/ln ../../../outside_target; : > "$ROOT/outside_target"; addrow "$d" docs/other/ln; cm "$d"
-RAW=1 expect "Z17 hop leaving the repo is never PASS" 2 "leaves the repository" "$d" --check changelog
+RAW=1 expect "Z17 hop leaving the repo -> FAIL from HEAD (MISS) and the BLIND guard still reports the difference (CAT-REL-CHECK-3 M1)" 1 "leaves the repository" "$d" --check changelog
 d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../nowhere; addrow "$d" docs/other/ln; cm "$d"
 RAW=1 expect "Z18 dangling chain -> MISS" 1 "MISS  docs/other/ln" "$d" --check changelog
 d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ln; addrow "$d" docs/other/ln; cm "$d"
@@ -553,7 +553,7 @@ RAW=1 expect "Z20 m-3 clean submodule gitlink cited directly -> PASS" 0 "VERDICT
 d=$(fresh); smk "$d"; addrow "$d" docs/subm; cm "$d"; ( cd "$d/docs/subm" && echo more >> f && git commit -q -a -m m )
 RAW=1 expect "Z21 submodule checked out at another commit -> BLIND" 2 "docs/subm" "$d" --check changelog
 d=$(fresh); smk "$d"; lk "$d" docs/other/ln ../subm/f; addrow "$d" docs/other/ln; cm "$d"
-RAW=1 expect "Z22 hop into a submodule -> BLIND" 2 "continues inside the submodule docs/subm" "$d" --check changelog
+RAW=1 expect "Z22 hop into a submodule -> FAIL from HEAD (MISS) and the BLIND guard still reports the difference (CAT-REL-CHECK-3 M1)" 1 "continues inside the submodule docs/subm" "$d" --check changelog
 d=$(fresh); smk "$d"; addrow "$d" docs/subm/f; cm "$d"
 RAW=1 expect "Z23 path inside a submodule is never PASS (git does not track below a gitlink)" 1 "docs/subm/f" "$d" --check changelog
 # case-insensitive collision in a tree level of the path
@@ -630,7 +630,7 @@ RAW=1 expect "Z53 F2 target x -> 'x<newline>' with an untracked forged file -> B
 d=$(fresh); mkother "$d"; echo x > "$d/docs/other/x"; ( cd "$d/docs/other" && ln -s $'x\nfoo' ln && echo y > $'x\nfoo' ); addrow "$d" docs/other/ln; cm "$d"
 RAW=1 expect "Z54 F2 committed target with a newline -> BLIND (unsupported)" 2 "contains a control character or newline" "$d" --check changelog
 d=$(fresh); mkother "$d"; echo x > "$d/docs/other/x"; ( cd "$d/docs/other" && ln -s $'x\n' ln ); addrow "$d" docs/other/ln; cm "$d"; ( cd "$d/docs/other" && rm ln && ln -s x ln )
-RAW=1 expect "Z55 F2 committed target 'x<newline>' vs working tree x -> BLIND" 2 "docs/other/ln link target differs from HEAD" "$d" --check changelog
+RAW=1 expect "Z55 F2 committed target 'x<newline>' vs working tree x -> FAIL from HEAD (MISS) and the BLIND guard still reports the difference (CAT-REL-CHECK-3 M1)" 1 "docs/other/ln link target differs from HEAD" "$d" --check changelog
 # F2: a hop is a tracked entry: a skip-worktree flag on an otherwise identical hop hides it from git status
 d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../qa/run2/c.txt; addrow "$d" docs/other/ln; cm "$d"; ( cd "$d" && git update-index --skip-worktree docs/other/ln2 )
 RAW=1 expect "Z56 F2 identical hop flagged skip-worktree -> BLIND" 2 "docs/other/ln2 holds a skip-worktree" "$d" --check changelog
@@ -709,7 +709,7 @@ d=$(fresh); smk2 "$d" docs/subm; ( cd "$d" && git config diff.ignoreSubmodules a
 RAW=1 expect "Z79 R3-1 cited gitlink, local diff.ignoreSubmodules=all, modified submodule file -> BLIND" 2 "docs/subm differs from HEAD" "$d" --check changelog
 # R3-1 cited file below a gitlink (direct cite and through the cited-path walk) is never PASS
 d=$(fresh); smk2 "$d" docs/subm; ( cd "$d" && git config -f .gitmodules submodule.docs/subm.ignore all ); lk "$d" docs/other/ln2 ../subm/f; addrow "$d" docs/other/ln2; cm "$d"
-RAW=1 expect "Z80 R3-1 cited symlink into a submodule with ignore=all -> BLIND" 2 "continues inside the submodule docs/subm" "$d" --check changelog
+RAW=1 expect "Z80 R3-1 cited symlink into a submodule with ignore=all -> FAIL from HEAD (MISS) and the BLIND guard still reports the difference (CAT-REL-CHECK-3 M1)" 1 "continues inside the submodule docs/subm" "$d" --check changelog
 # R3-1 a manifest entry reached through a symlink into a submodule
 d=$(fresh); smk2 "$d" docs/subm; ( cd "$d/docs/qa/run2" && ln -s ../../subm/f sl.txt && sha256sum sl.txt >> SHA256SUMS ); cm "$d"
 RAW=1 expect "Z81 R3-1 manifest entry via symlink into a submodule -> SHAFAIL like a clone" 1 "SHAFAIL  docs/qa/run2/sl.txt" "$d" --check changelog
