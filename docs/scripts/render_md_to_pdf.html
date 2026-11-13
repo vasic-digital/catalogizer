@@ -189,7 +189,8 @@ and check_pdf_coverage.py</h1>
 <td><code>scripts/docs/render_md_to_pdf.sh</code>,
 <code>scripts/docs/check_pdf_coverage.py</code>,
 <code>scripts/docs/print.css</code>,
-<code>scripts/docs/print_landscape.css</code></td>
+<code>scripts/docs/print_landscape.css</code>,
+<code>scripts/docs/pdf_table_cols.py</code></td>
 </tr>
 <tr>
 <td>Purpose</td>
@@ -207,8 +208,13 @@ file opened fine, so nothing noticed</td>
 <tr>
 <td>Render</td>
 <td><code>render_md_to_pdf.sh FILE.md ...</code> writes
-<code>FILE.pdf</code> (pandoc gfm to HTML5, then WeasyPrint with
-<code>print.css</code>)</td>
+<code>FILE.pdf</code> (pandoc gfm to HTML5 with
+<code>--metadata document-css=false</code>, because pandoc's own
+<code>&lt;style&gt;</code> (body <code>max-width: 36em</code>) outranks
+the print sheets in WeasyPrint; <code>pdf_table_cols.py</code> adds
+computed table column widths; then WeasyPrint with
+<code>print.css</code>). The PDF's Keywords field carries
+<code>src-sha256:&lt;hex&gt;</code> of the Markdown</td>
 </tr>
 <tr>
 <td>Orientation rule</td>
@@ -218,9 +224,12 @@ others A4 portrait</td>
 </tr>
 <tr>
 <td>Print rules</td>
-<td>Auto table layout at 100% width, 7.5pt table text, cell words break
-only when over-long (<code>overflow-wrap: break-word</code>), rows never
-split across pages, <code>pre</code> and <code>code</code> wrap</td>
+<td>Body 9.5pt at full page width, fixed table layout at 100% width with
+column widths from <code>pdf_table_cols.py</code> (character budget:
+every column gets room for its longest word up to 24 characters, the
+rest by content weight), 7.5pt table text, words break only when
+over-long (<code>overflow-wrap: break-word</code>), rows never split
+across pages, <code>pre</code> and <code>code</code> wrap</td>
 </tr>
 <tr>
 <td><code>--check</code></td>
@@ -234,9 +243,12 @@ runs the coverage check on the existing PDF</td>
 <tr>
 <td>Method</td>
 <td>Distinct tokens of 6 or more characters of the Markdown (link
-targets, HTML comments and fence markers removed, NFKC) against
-<code>pdftotext</code> output (soft hyphens removed, whitespace and
-hyphens deleted on both sides, two reading orders: default and
+targets, HTML comments and fence markers removed, NFKC) must appear in
+<code>pdftotext</code> output on a word boundary and contiguously: a
+line wrap is tolerated only after a separator character
+(<code>-/._:@=&amp;?</code>) or inside Markdown words of 24 or more
+characters, so a lost table cell cannot be matched by gluing
+neighbouring cells together. Two reading orders (default and
 <code>-raw</code>)</td>
 </tr>
 <tr>
@@ -247,8 +259,9 @@ Default: no file, nothing allowed</td>
 </tr>
 <tr>
 <td>Control</td>
-<td>Before the scan a token taken from the PDF must be found and a
-fabricated token must not be; otherwise BLIND</td>
+<td>PDF side: a token taken from the PDF must be found and a fabricated
+one not. Markdown side: the matcher must find a Markdown token in the
+Markdown's own text and a fabricated one not. Otherwise BLIND</td>
 </tr>
 <tr>
 <td>Exit</td>
@@ -257,16 +270,22 @@ unreadable; 2 BLIND, usage or tool missing</td>
 </tr>
 <tr>
 <td>Tests</td>
-<td><code>scripts/docs/tests/test_check_pdf_coverage.py</code>
-(mutations: no table CSS, truncated PDF, broken needle, deleted
+<td><code>scripts/docs/tests/test_check_pdf_coverage.py</code> (clipped
+long code line, body width and font, landscape threshold, long cell URL,
+lost-cell repro, garbage and stale PDF, modified-doc scope, link
+rewrite; mutations: no table CSS, truncated PDF, broken needles, deleted
 twin)</td>
 </tr>
 </tbody>
 </table>
-<p>Limit: this proves the words are present in the extracted text, not
-that the page looks right; a token split by a page break between two
-table cells can read as missing and is a reason to fix the layout, not
-to allow-list it. It measures 6+ character tokens only.</p>
+<p>Limits: a doc with no tokens of 6 or more characters reports OK with
+nothing to compare. A column too narrow for an identifier breaks it
+mid-word as a last resort (the text stays present and the check allows
+it only inside words of 24 or more characters). This proves the words
+are present in the extracted text, not that the page looks right; a
+token split by a page break between two table cells can read as missing
+and is a reason to fix the layout, not to allow-list it. It measures 6+
+character tokens only.</p>
 <h1 id="check_twin_presencepy">check_twin_presence.py</h1>
 <table>
 <thead>
@@ -282,10 +301,9 @@ to allow-list it. It measures 6+ character tokens only.</p>
 </tr>
 <tr>
 <td>Purpose</td>
-<td>Gate: every Markdown doc added under <code>docs/</code> since a ref
-has non-empty <code>.html</code> and <code>.pdf</code> twins, and the
-html matches <code>render_md_to_html.sh --check</code> (constitution
-11.4.65)</td>
+<td>Gate: every Markdown doc added or modified under <code>docs/</code>
+since a ref has current <code>.html</code> and <code>.pdf</code> twins
+(constitution 11.4.65)</td>
 </tr>
 <tr>
 <td>Usage</td>
@@ -294,9 +312,20 @@ html matches <code>render_md_to_html.sh --check</code> (constitution
 </tr>
 <tr>
 <td>Scope</td>
-<td>Files added (<code>git diff --diff-filter=A REF..HEAD</code>, plus
-staged additions) under <code>docs/</code> ending in
-<code>.md</code></td>
+<td><code>.md</code> files added or modified
+(<code>git diff --diff-filter=AM REF..HEAD</code>, plus working-tree
+changes) under <code>docs/</code>; a modified doc is in scope when it
+already has a twin of either kind, an added doc always is</td>
+</tr>
+<tr>
+<td>Checks</td>
+<td><code>.html</code> non-empty and equal to
+<code>render_md_to_html.sh --check</code> output; <code>.pdf</code>
+non-empty, <code>%PDF</code>, readable (<code>pdfinfo</code>), its
+Keywords <code>src-sha256</code> equals the sha256 of the current
+Markdown (stale PDF fails), and <code>check_pdf_coverage.py</code>
+reports 0 missing (<code>--no-pdf-coverage</code>,
+<code>--no-html-drift</code> skip those)</td>
 </tr>
 <tr>
 <td>Control</td>

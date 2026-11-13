@@ -49,13 +49,15 @@ def describe(root, path):
 
 
 def relink(text, subdir):
-    """Rewrite relative markdown link targets in a copied description so they resolve from the index directory."""
+    """Rewrite relative markdown link targets in a copied description so they resolve from the index directory; a link whose visible
+    text equals its old target gets the new target as text too."""
     if not subdir: return text
     def f(m):
-        tgt = m.group(2)
+        lab, tgt = m.group(1), m.group(2)
         if re.match(r'^([a-zA-Z][a-zA-Z0-9+.-]*:|#|/)', tgt): return m.group(0)
-        return m.group(1) + os.path.normpath(os.path.join(subdir, tgt)).replace(' ', '%20') + m.group(3)
-    return re.sub(r'(\]\()([^)\s]+)(\))', f, text)
+        new = os.path.normpath(os.path.join(subdir, tgt))
+        return '[%s](%s)' % (new if lab == tgt else lab, new.replace(' ', '%20'))
+    return re.sub(r'\[([^\]]*)\]\(([^)\s]+)\)', f, text)
 
 
 def load_tsv(p, n):

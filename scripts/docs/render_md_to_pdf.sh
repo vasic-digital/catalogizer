@@ -11,6 +11,7 @@
 # Rule     Orientation: a doc whose Markdown has a table header row with >= 5 columns is rendered A4 LANDSCAPE
 #          (scripts/docs/print_landscape.css), all others A4 portrait. Both use scripts/docs/print.css
 #          (auto table layout at 100% width, 7.5pt table text, word-breaking of cells, pre-wrap code).
+# Currency The PDF carries the sha256 of its Markdown in its Keywords field (src-sha256:<hex>); check_twin_presence.py compares it.
 # Exit     0 ok, 1 coverage failure (--check) or render failure, 2 usage / missing tool or input.
 set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -31,10 +32,11 @@ for md in "$@"; do
   tmpd="$(mktemp -d "${TMPDIR:-/tmp}/render-md-pdf.XXXXXX")"
   trap 'rm -rf "${tmpd:?}"' EXIT
   html="$tmpd/page.html"
-  pandoc -f gfm -t html5 -s --metadata "pagetitle=$title" --metadata "lang=en" "$md" -o "$html"
-  css=(-s "$here/print.css")
+  pandoc -f gfm -t html5 -s --metadata "pagetitle=$title" --metadata "lang=en" --metadata document-css=false --metadata "keywords=src-sha256:$(sha256sum "$md" | cut -d" " -f1)" "$md" -o "$html"  # document-css=false: pandoc's own <style> (body max-width 36em, padding) outranks -s sheets in WeasyPrint
+  css=(-s "$here/print.css"); chars=135
   # wide-table rule: any table separator row (|---|---|...) with >= 5 columns
-  if grep -Eq '^\|?[ :-]*-[ :-]*(\|[ :-]*-[ :-]*){4,}\|?[ ]*$' "$md"; then css+=(-s "$here/print_landscape.css"); fi
+  if grep -Eq '^\|?[ :-]*-[ :-]*(\|[ :-]*-[ :-]*){4,}\|?[ ]*$' "$md"; then css+=(-s "$here/print_landscape.css"); chars=200; fi
+  python3 "$here/pdf_table_cols.py" "$html" "$chars"
   weasyprint -q "${css[@]}" "$html" "$tmpd/out.pdf"
   chmod 644 "$tmpd/out.pdf"
   mv -f "$tmpd/out.pdf" "$pdf"; echo "wrote $pdf"

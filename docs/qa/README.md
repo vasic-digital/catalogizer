@@ -1108,7 +1108,7 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [tauri-boot-20261105/drive_ui.cjs](tauri-boot-20261105/drive_ui.cjs) | (file; not read, listed by name only) |
 | [tauri-boot-20261105/memory_limits.txt](tauri-boot-20261105/memory_limits.txt) | (plain-text artefact; not read, listed by name only) |
 | [tauri-boot-20261105/result.json](tauri-boot-20261105/result.json) | (JSON data artefact; not read, listed by name only) |
-| [tauri-native-20261106/README.md](tauri-native-20261106/README.md) | CAT-TAURI-NATIVE-1: native Tauri QA evidence (2026-11-06) - Companion of [../tauri-boot-20261105/README.md](tauri-boot-20261105/README.md). This folder carries the TEXT evidence |
+| [tauri-native-20261106/README.md](tauri-native-20261106/README.md) | CAT-TAURI-NATIVE-1: native Tauri QA evidence (2026-11-06) - Companion of [tauri-boot-20261105/README.md](tauri-boot-20261105/README.md). This folder carries the TEXT evidence |
 | [tauri-native-20261106/close_x/checks.json](tauri-native-20261106/close_x/checks.json) | (JSON data artefact; not read, listed by name only) |
 | [tauri-native-20261106/close_x/run_log.json](tauri-native-20261106/close_x/run_log.json) | (JSON data artefact; not read, listed by name only) |
 | [tauri-native-20261106/dev_run_checks_C6_C8_C9_expects_wrong/checks.json](tauri-native-20261106/dev_run_checks_C6_C8_C9_expects_wrong/checks.json) | (JSON data artefact; not read, listed by name only) |
