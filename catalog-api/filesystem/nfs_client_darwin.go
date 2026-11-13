@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -57,8 +58,25 @@ func (c *NFSClient) Connect(ctx context.Context) error {
 		options = "resvport,soft,intr,tcp"
 	}
 
-	// Build mount source path
-	source := fmt.Sprintf("%s:%s", c.config.Host, c.config.Path)
+	// SEC-DIAL-1: syntax-check host / export / options and mount the VETTED address, never the name.
+	if err := ValidateStorageHostSyntax(c.config.Host); err != nil {
+		return fmt.Errorf("%w", ErrStorageHostRefused)
+	}
+	if err := ValidateNFSExport(c.config.Path); err != nil {
+		return err
+	}
+	if _, err := ParseNFSOptions(options); err != nil {
+		return err
+	}
+	ips, err := storageOperatorResolve(ctx, c.config.Host)
+	if err != nil || len(ips) == 0 {
+		return fmt.Errorf("%w", ErrStorageHostRefused)
+	}
+	srv := ips[0].String()
+	if strings.Contains(srv, ":") {
+		srv = "[" + srv + "]"
+	}
+	source := srv + ":" + c.config.Path
 
 	// Create mount command
 	args := []string{

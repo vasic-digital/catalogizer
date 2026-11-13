@@ -73,7 +73,6 @@ func (c *groupConn) Write(p []byte) (int, error) {
 // dialFunc dials like the library's default (30 s connect timeout) but with ctx, and registers the connection in the group.
 func (g *ftpConnGroup) dialFunc(ctx context.Context) func(network, address string) (net.Conn, error) {
 	return func(network, address string) (net.Conn, error) {
-		d := net.Dialer{Timeout: 30 * time.Second}
 		g.mu.Lock()
 		dctx := ctx
 		data := g.first
@@ -90,7 +89,8 @@ func (g *ftpConnGroup) dialFunc(ctx context.Context) func(network, address strin
 		if g.inner != nil {
 			conn, err = g.inner(network, address)
 		} else {
-			conn, err = d.DialContext(dctx, network, address)
+			// SEC-DIAL-1: control and data connections alike go through the operator-class dialer (vetted, pinned address).
+			conn, err = storageDialContext(dctx, network, address)
 		}
 		if err != nil {
 			return nil, err

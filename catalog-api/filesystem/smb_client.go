@@ -48,12 +48,11 @@ func (c *SmbClient) Connect(ctx context.Context) error {
 		return err
 	}
 	// Establish TCP connection with timeout
-	addr := net.JoinHostPort(c.config.Host, fmt.Sprintf("%d", c.config.Port))
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	dialer := net.Dialer{Timeout: 10 * time.Second}
-	conn, err := dialer.DialContext(ctx, "tcp", addr)
+	// SEC-DIAL-1: the operator-class dialer vets the resolved address and connects to that exact IP (never the name).
+	conn, err := dialStorage(ctx, c.config.Host, fmt.Sprintf("%d", c.config.Port), 10*time.Second)
 	if err != nil {
 		return fmt.Errorf("failed to connect to SMB server: %w", err)
 	}

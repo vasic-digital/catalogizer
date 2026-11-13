@@ -8,7 +8,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -76,7 +75,13 @@ func (s *SMBService) getConnection(hostName string) (*smb2.Session, error) {
 		return nil, fmt.Errorf("SMB host not found: %s", hostName)
 	}
 
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(smbHost.Host, fmt.Sprintf("%d", smbHost.Port)), smbDialTimeout)
+	// SEC-DIAL-1: the config-file host is vetted (loopback, link-local, metadata and reserved addresses refused, RFC 1918 allowed) and the
+	// connection goes to the vetted IP itself, never the name.
+	ips, verr := VetSMBHostIPs(smbHost.Host)
+	if verr != nil {
+		return nil, fmt.Errorf("SMB host %q is not allowed: %w", hostName, verr)
+	}
+	conn, err := dialVetted(context.Background(), ips, smbHost.Port, smbDialTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to SMB host: %w", err)
 	}

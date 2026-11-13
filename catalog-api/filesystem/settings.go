@@ -207,7 +207,7 @@ func ValidateSettings(protocol string, settings map[string]interface{}) error {
 		}
 	}
 	if len(unknown) == 0 && len(wrong) == 0 {
-		return nil
+		return validateStorageSyntax(protocol, settings)
 	}
 	sort.Strings(unknown)
 	sort.Strings(wrong)
