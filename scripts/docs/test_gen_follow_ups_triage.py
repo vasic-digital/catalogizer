@@ -255,6 +255,69 @@ class T(unittest.TestCase):
         for t in ('(spec): fixed members', '(Task): the fix is below', 'prefixed FIXED later', 'DONEWORK', ''):
             self.assertFalse(g.starts_closed(t), t)
 
+    # ---- WP10R4 nits (register/triage checker) -------------------------------------------------------------------------
+    def _rows(self, doc):
+        out = {}
+        for r in g.build(doc, self.d, 'main'):
+            out.setdefault(r['id'], []).append(r)
+        return out
+
+    def test_wp10r4_1_closing_token_as_sentence_subject_is_not_a_status(self):
+        for t in ('PROVISIONAL-DONE entries need review.', 'FIXED members are listed', 'DONE items remain', 'LANDED work is queued'):
+            self.assertFalse(g.starts_closed(t), t)
+        for t in ('FIXED for the target side', 'PROVISIONAL-DONE, review owed', 'DONE;', 'FIXED', 'DONE (see x)', 'FIXED by f1', 'LANDED on main', '[LANDED] and tested', '(Task, DONE) x'):
+            self.assertTrue(g.starts_closed(t), t)
+        r = self._rows('## S\n- CAT-SUBJ-1 (Task, minor): PROVISIONAL-DONE entries still await a review verdict.\n')
+        self.assertNotEqual(r['CAT-SUBJ-1'][0]['status'], 'landed')   # weak (closing word not a status), never landed
+        self.assertEqual(r['CAT-SUBJ-1'][0]['status'], 'unconfirmed')
+
+    def test_wp10r4_2_remainder_phrases(self):
+        for t in ('FIXED. Still not run live.', 'DONE. There is no lint there yet.', 'DONE. Findings reported, not waived.',
+                  'DONE. Not measured on the board.', 'DONE. None of it is wired yet.'):
+            self.assertTrue(g.OPEN_ANY.search(t), t)
+        for t in ('DONE. Run live on the board; lint added and waived with a record.', 'FIXED. No lint warnings remain.'):
+            self.assertFalse(g.OPEN_ANY.search(t), t)
+        r = self._rows('## S\n- CAT-RM-1 (Task, minor): PROVISIONAL-DONE: checked, still not run live.\n')
+        self.assertEqual(r['CAT-RM-1'][0]['status'], 'unconfirmed')
+
+    def test_wp10r4_3_each_negation_word_negates_a_heading_alone(self):
+        for w in ('not', 'never', 'pending', 'blocked', 'withheld', 'unlanded', 'unfixed', 'unresolved', 'NO-GO'):
+            h = '## CAT-NEGW-1 %s landed (2026-11-12)' % w
+            self.assertTrue(g.negated(h), h)
+            self.assertEqual(g.heading_landed(h + '\n'), {}, h)
+        self.assertFalse(g.negated('## CAT-NEGW-2 landed (2026-11-12)'))
+
+    def test_wp10r4_4_slash_listed_heading_ids_all_credited(self):
+        hl = g.heading_landed('## CAT-SLASH-7/8/9 landed (2026-11-12)\n## PWX-F5/F6 landed\n## CAT-SLASH-1/2b landed\n')
+        for i in ('CAT-SLASH-7', 'CAT-SLASH-8', 'CAT-SLASH-9', 'PWX-F5', 'PWX-F6', 'CAT-SLASH-1', 'CAT-SLASH-2b'):
+            self.assertIn(i, hl)
+        self.assertNotIn('CAT-SLASH-F6', hl)
+        self.assertEqual(g.expand_slash('CAT-SLASH-7/8/9'), ['CAT-SLASH-7', 'CAT-SLASH-8', 'CAT-SLASH-9'])
+        self.assertEqual(g.expand_slash('A/B and 10/12'), [])         # no id before the slash: nothing invented
+        r = self._rows('## CAT-SLASH-8/9 landed (2026-11-12)\n- CAT-SLASH-8 (Bug): thing.\n- CAT-SLASH-9 (Bug): other.\n')
+        for i in ('CAT-SLASH-8', 'CAT-SLASH-9'):
+            self.assertEqual(r[i][0]['status'], 'landed', i)
+
+    def test_wp10r4_8_negation_all_not_any_and_windows(self):
+        # one genuine closing word and one negated one: the heading is NOT negated (all, not any)
+        self.assertFalse(g.negated('## X-F1 landed OK today; everything fine here at all. Not closed'))
+        self.assertTrue(g.negated('## X-F1 not landed; Y-F2 not closed'))
+        # wider windows: a negation 30 chars after / before the closing word still negates
+        self.assertTrue(g.negated('## CAT-WIN-1 landed (2026-11-12) in the branch, but pending'))
+        self.assertTrue(g.negated('## pending CAT-WIN-2 review, then landed'))
+
+    def test_wp10r4_8_later_mention_guard_is_case_insensitive(self):
+        doc = '## S\n- CAT-LM-1 (Task, minor): x.\nProse: CAT-LM-1 Not FIXED yet.\nProse: CAT-LM-1 NOT CLOSED.\nProse: CAT-LM-1 pending, FIXED later.\n'
+        self.assertEqual(self._rows(doc)['CAT-LM-1'][0]['status'], 'open')
+        doc2 = '## S\n- CAT-LM-2 (Task, minor): x.\nProse: CAT-LM-2 FIXED here.\n'
+        self.assertEqual(self._rows(doc2)['CAT-LM-2'][0]['status'], 'unconfirmed')
+
+    def test_wp10r4_8_entry_layer_beats_heading_layer(self):
+        doc = '## Some source-defect review follow-ups\n- CAT-LAY-1 (process-doc/minor): wording.\n- CAT-LAY-2 (minor): no layer here.\n'
+        r = self._rows(doc)
+        self.assertEqual(r['CAT-LAY-1'][0]['layer'], 'process-doc')
+        self.assertEqual(r['CAT-LAY-2'][0]['layer'], 'source-defect')   # heading still applies when the entry states none
+
     def test_expand_ranges(self):
         self.assertEqual(g.expand_ranges('fix D7-R2-F1..F4 now'), ['D7-R2-F1', 'D7-R2-F2', 'D7-R2-F3', 'D7-R2-F4'])
         self.assertEqual(g.expand_ranges('PX-F1..F3'), ['PX-F1', 'PX-F2', 'PX-F3'])
@@ -292,7 +355,23 @@ class T(unittest.TestCase):
         self.assertIn('Last modified', text)
         self.assertIn('`unconfirmed` rows are NOT closed', text)
         self.assertIn('| unclassified |' if False else 'unclassified', text)
-        self.assertRegex(text, r'at `[0-9a-f]{7,}` of `main`')   # resolved SHA recorded
+        self.assertRegex(text, r'git evidence \(code commits\) from `main` at `[0-9a-f]{7,}`')   # resolved SHA recorded, for the evidence only
+        self.assertIn('identical to the copy in `main`', text)
+        self.assertNotRegex(text, r'at `[0-9a-f]{7,}` of `main`')                                  # never claims the doc is the ref's  [WP10R4-7]
+        with open(self.d + '/docs/FOLLOW_UPS_NEXT_PHASE.md', 'a') as fh:
+            fh.write('- CAT-AHEAD-1 (Task, minor): only in the working tree.\n')
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(g.main(['--repo', self.d, '--out', 'out3.md']), 0)
+        t3 = open(os.path.join(self.d, 'out3.md')).read()
+        self.assertIn('DIFFERS from the copy in `main`', t3)
+        self.assertIn('CAT-AHEAD-1', t3)
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(g.main(['--repo', self.d, '--ref', 'HEAD', '--doc', 'docs/FOLLOW_UPS_NEXT_PHASE.md', '--out', 'out4.md']), 0)
+        os.makedirs(self.d + '/docs2', exist_ok=True)
+        open(self.d + '/docs2/new.md', 'w').write(DOC)
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(g.main(['--repo', self.d, '--doc', 'docs2/new.md', '--out', 'out5.md']), 0)
+        self.assertIn('not present in `main`', open(os.path.join(self.d, 'out5.md')).read())
         open(self.d + '/docs/n.md', 'w').write('- ABC-1 (Task): x\\n')
         out2 = os.path.join(self.d, 'out2.md')
         with contextlib.redirect_stderr(io.StringIO()):

@@ -38,12 +38,16 @@ LAYER_STATED = collections.OrderedDict([
 ])
 CLOSE_TOK = r'(?:PROVISIONAL-DONE|FIXED|LANDED|CLOSED|DONE|RESOLVED|\[LANDED\])'
 # strong: the entry itself OPENS with a closing token (never a noun such as "fixed members")
-START_CLOSE = re.compile(r'^(?:' + CLOSE_TOK + r'|(?:fixed|closed|landed|done|resolved)(?=\s+(?:in|by|on|at|here|via|as|with)\b|\s*\())(?=[\s:;,.)\]]|$)')
+# a closing token is a STATUS only when it is followed by punctuation / end / a preposition / "(" - never when it is the
+# subject of a sentence ("PROVISIONAL-DONE entries ...", "FIXED members ...")  [WP10R4-1]
+CLOSE_AFTER = r'(?=\s*[:;,.)\]]|\s*$|\s*\(|\s+(?:in|by|on|at|here|via|as|with|for)\b)'
+START_CLOSE = re.compile(r'^(?:\[LANDED\]|(?:' + CLOSE_TOK + r'|(?:fixed|closed|landed|done|resolved))' + CLOSE_AFTER + r')')
 OPEN_ANY_CS = re.compile(r'\b(?:OPEN|OWED|Queued|PARTIAL|PARTLY)\b|\bOpen:')
 # remainder detector, case-insensitive: a landed claim whose own text qualifies it (round-3 class: "landed claim negated or qualified by its own text")
 REMAIN_RE = re.compile(
     r'\bstill\s+(?:open|unguarded|unfixed|missing|last-write-wins|queued|owed|pending|unprotected|unchecked|unconfirmed|vulnerable|broken|failing)\b'
-    r'|\bnot\s+(?:re-?checked|covered|yet|fixed|handled|guarded|addressed|done)\b'
+    r'|\bnot\s+(?:re-?checked|covered|yet|fixed|handled|guarded|addressed|done|run|waived|measured|verified|tested|wired|implemented|exercised)\b'
+    r'|\bstill\s+(?:not|no)\b|\b(?:no|none)\b[^.;:]{0,30}\byet\b'
     r'|\b(?:follow-ups?|remaining|residual|caveats?|limitations?|known gaps?)\s*:'
     r'|\([a-d1-3]\)\s+\S|(?:^|\s)[1-3]\.\s+\S'
     r'|\boperator decision\b[^.]{0,60}\b(?:open|pending|owed|needed|required)\b'
@@ -54,6 +58,7 @@ class _Open:
     def search(t):
         return OPEN_ANY_CS.search(t) or REMAIN_RE.search(t)
 OPEN_ANY = _Open()
+NEG_BEFORE, NEG_AFTER = 40, 40      # characters scanned around a closing word  [WP10R4-8]
 NEG_RE = re.compile(r'\bNO-GO\b|\bnot\b|\bnever\b|\bpending\b|\bblocked\b|\bwithheld\b|\bun(?:landed|fixed|resolved)\b', re.I)
 DONE_HEAD = re.compile(r'\b(DONE|FIXED|LANDED|CLOSED|RESOLVED|SUPERSEDED|PROVISIONAL-DONE)\b|\[LANDED\]')
 OPEN_HEAD = re.compile(r'STILL OPEN|\bOPEN\b|\bOWED\b|\bQueued\b|\[[^\]]*\b(?:open|queued|owed)\b[^\]]*\]')
@@ -79,6 +84,22 @@ def expand_ranges(text):
     return res
 
 
+SLASH_RE = re.compile(r'(?<![\w/.-])(' + ID_ONE + r')((?:/[A-Z]*\d+[a-z]?)+)(?![\w.-])')
+
+
+def expand_slash(text):
+    """Ids named by slash lists such as CAT-PREEXIST-7/8/9 or PW-F5/F6 (the sibling replaces the base id's trailing number,
+    with its letters when it carries some). The base id is returned first; a slash with no id before it yields nothing."""
+    res = []
+    for m in SLASH_RE.finditer(text):
+        base = m.group(1)
+        res.append(base)
+        for sib in m.group(2).split('/')[1:]:
+            pre = re.sub(r'[A-Z]*\d+[a-z]?$' if re.match(r'[A-Z]', sib) else r'\d+[a-z]?$', '', base)
+            res.append(pre + sib)
+    return res
+
+
 def starts_closed(t):
     """True when the entry text (after the id) opens with a closing token: directly, after a leading (...) group,
     or as an element of that group, e.g. `(DONE): ...`, `(Task, FIXED)`, `: FIXED in ...`. Nouns ("fixed members") do not count."""
@@ -86,7 +107,7 @@ def starts_closed(t):
     pm = re.match(r'\(([^)]*)\)', t)
     if pm:
         for el in re.split(r'[,;]', pm.group(1)):
-            if re.match(r'^(?:' + CLOSE_TOK + r')(?=[\s:;,.)\]]|$)', el.strip()):
+            if re.match(r'^(?:' + CLOSE_TOK + r')' + CLOSE_AFTER, el.strip()):
                 return True
         t = t[pm.end():]
     t = t.lstrip(' *`:,.-')
@@ -106,7 +127,7 @@ def negated(text):
     ms = list(HEAD_DONE.finditer(text))
     if not ms:
         return bool(NEG_RE.search(text))
-    return all(NEG_RE.search(text[max(0, m.start() - 25):m.start()]) or NEG_RE.search(text[m.end():m.end() + 20]) for m in ms)
+    return all(NEG_RE.search(text[max(0, m.start() - NEG_BEFORE):m.start()]) or NEG_RE.search(text[m.end():m.end() + NEG_AFTER]) for m in ms)
 
 
 def heading_landed(doc_text):
@@ -124,6 +145,9 @@ def heading_landed(doc_text):
         for m in re.finditer(r'(?<![\w/.-])(' + ID_ONE + r')(?![\w.-])', pre_h):
             if letters(m.group(1)) >= 3:
                 res.setdefault(m.group(1), (n, h[:70]))
+        for i in expand_slash(pre_h):          # CAT-PREEXIST-7/8/9, PW-F5/F6  [WP10R4-4]
+            if letters(i) >= 3:
+                res.setdefault(i, (n, h[:70]))
     return res
 
 
@@ -208,9 +232,12 @@ def classify(item, ident, dup_count, gitev, later, hland):
     if sev == 'UNKNOWN' and re.search(r'\bHIGH\b', head):
         sev_note = ' (stated HIGH, not in vocabulary)'
     layer, derived = 'UNKNOWN', False
-    for k, rx in LAYER_STATED.items():
-        if rx.search(head) or rx.search(h):
-            layer = k
+    for src in (head, h):          # the entry's own stated layer beats the section heading's  [WP10R4-8]
+        for k, rx in LAYER_STATED.items():
+            if rx.search(src):
+                layer = k
+                break
+        if layer != 'UNKNOWN':
             break
     if layer == 'UNKNOWN':
         derived = True
@@ -302,7 +329,7 @@ def later_mentions(doc_text, items):
             if m.group(1) in lead_ids.get(n, ()):
                 continue
             w = line[m.end():m.end() + 50]
-            if LATER_DONE.search(w) and not re.search(r'\b(open|OPEN|Queued|not|NO-GO)\b', w):
+            if LATER_DONE.search(w) and not (NEG_RE.search(w) or re.search(r'\b(?:open|queued|owed)\b', w, re.I)):
                 res[m.group(1)] = (n, line[max(0, m.start() - 10):m.end() + 50].strip()[:90].replace('|', '/'))
     return res
 
@@ -391,16 +418,17 @@ def needles(rows, doc_text):
     return errs
 
 
-def render(rows, ref, sha, doc, prose=()):
+def render(rows, ref, sha, doc, prose=(), doc_state='state not determined'):
     C = collections.Counter
     op = [r for r in rows if r['status'] == 'open']
     lines = []
     w = lines.append
     w('# Follow-ups triage (machine-derived)\n')
     w('| Field | Value |\n|---|---|')
-    w('| Revision | 4 |\n| Created | 2026-11-12 |\n| Last modified | 2026-11-12 (Rev 4: negated/qualified landed claims (NO-GO headings, case-insensitive inline remainders, bracketed open) are not landed; Rev 3: three-valued status, strong-evidence landed rule, unclassified blocker value) |\n| Status | active (PROVISIONAL: derived by script, not human-verified row by row) |')
+    w('| Revision | 5 |\n| Created | 2026-11-12 |\n| Last modified | 2026-11-13 (Rev 5: WP10R4 nits - closing token as sentence subject is not a status, more remainder phrases, slash-listed heading ids, entry layer beats heading layer, wider negation windows, Source row names what was read; Rev 4: negated/qualified landed claims (NO-GO headings, case-insensitive inline remainders, bracketed open) are not landed; Rev 3: three-valued status, strong-evidence landed rule, unclassified blocker value) |\n| Status | active (PROVISIONAL: derived by script, not human-verified row by row) |')
     w('| Roadmap-Item | CAT-WP10-TRIAGE |')
-    w('| Source | `%s` at `%s` of `%s` |' % (doc, sha, ref))
+    # the register is read from the file system, the git evidence from the ref: say both, never "doc at <sha> of <ref>"  [WP10R4-7]
+    w('| Source | `%s` as read from the file system (%s); git evidence (code commits) from `%s` at `%s` |' % (doc, doc_state, ref, sha))
     w('| Generator | `scripts/docs/gen_follow_ups_triage.py` (test: `scripts/docs/test_gen_follow_ups_triage.py`) |')
     w('| Companion docs | `docs/FOLLOW_UPS_NEXT_PHASE.md`, `docs/WORKABLE_ITEMS_REGISTER.md` |\n')
     w('Do not edit the table by hand; regenerate: `python3 scripts/docs/gen_follow_ups_triage.py --out docs/FOLLOW_UPS_TRIAGE_2026-11-12.md`.\n')
@@ -456,6 +484,16 @@ def render(rows, ref, sha, doc, prose=()):
     return '\n'.join(lines) + '\n'
 
 
+def doc_state(repo, ref, doc, text):
+    """How the register text that was read relates to the same file in ref (identical / differs / not in ref)."""
+    p = subprocess.run(['git', '-C', repo, 'show', '%s:%s' % (ref, doc)], capture_output=True)
+    if p.returncode != 0:
+        return 'not present in `%s`' % ref
+    if p.stdout.decode('utf-8', 'replace') == text:
+        return 'identical to the copy in `%s`' % ref
+    return 'DIFFERS from the copy in `%s` (working tree or branch tip is ahead)' % ref
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('--doc', default='docs/FOLLOW_UPS_NEXT_PHASE.md')
@@ -478,7 +516,7 @@ def main(argv=None):
     if a.selftest:
         print('needles ok; rows=%d' % len(rows))
         return 0
-    md = render(rows, a.ref, sha, a.doc, prose_only(text, rows))
+    md = render(rows, a.ref, sha, a.doc, prose_only(text, rows), doc_state(a.repo, a.ref, a.doc, text))
     if a.out:
         open(a.repo + '/' + a.out, 'w', encoding='utf-8').write(md)
     else:
