@@ -5,6 +5,8 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"net/url"
+	"os"
 	"strconv"
 	"syscall"
 	"testing"
@@ -129,4 +131,54 @@ func TestSECDIALFU_F4_StorageTransportDoesNotLeakResolvedIP(t *testing.T) {
 	require.NotContains(t, err.Error(), "127.0.0.1")
 	require.NotContains(t, err.Error(), "::1")
 	require.ErrorIs(t, err, syscall.ECONNREFUSED)
+}
+
+// Review I1 / M2 / M3: the IPv6 and boundary shapes of the scrubber, one table.
+func TestSECDIALFU_F4_ScrubIPv6AndBoundaryShapes(t *testing.T) {
+	const host = "nas.lan"
+	for in, want := range map[string]string{
+		"dial tcp [2001:db8:1::]:445: connect: refused":  "dial tcp [<address>]:445: connect: refused",
+		"dial tcp [::]:445: refused":                     "dial tcp [<address>]:445: refused",
+		"dial tcp [::1]:445: refused":                    "dial tcp [<address>]:445: refused",
+		"dial tcp [2001:db8::]:445: refused":             "dial tcp [<address>]:445: refused",
+		"dial tcp [2001:DB8::AB]:445: refused":           "dial tcp [<address>]:445: refused",
+		"dial tcp [fe80::1%eth0]:445: refused":           "dial tcp [<address>]:445: refused",
+		"dial tcp [::ffff:10.0.0.1]:445: refused":        "dial tcp [<address>]:445: refused",
+		"dial tcp ::ffff:10.0.0.1: refused":              "dial tcp <address>: refused",
+		"dial tcp 2001:db8::1: refused":                  "dial tcp <address>: refused",
+		"unreachable 2001:db8::.":                        "unreachable <address>.",
+		"addr b:10.0.0.1 x":                              "addr b:<address> x",
+		"addr dead:10.0.0.1 x":                           "addr dead:<address> x",
+		"read tcp 192.168.1.5:5000->10.0.0.1:445: reset": "read tcp <address>:5000-><address>:445: reset",
+		"std::string and 12:30 and 1.2 and v3.4.5":       "std::string and 12:30 and 1.2 and v3.4.5",
+	} {
+		require.Equal(t, want, scrubResolvedAddrs(in, host), in)
+	}
+}
+
+// Review M3(b): the configured host stays in any spelling of the same address.
+func TestSECDIALFU_F4_ScrubKeepsConfiguredHostInAnySpelling(t *testing.T) {
+	require.Equal(t, "dial tcp [FD12::5]:445 and [fd12::5]:445", scrubResolvedAddrs("dial tcp [FD12::5]:445 and [fd12::5]:445", "fd12::0005"))
+	require.Equal(t, "to 192.168.1.20 via ::ffff:192.168.1.20", scrubResolvedAddrs("to 192.168.1.20 via ::ffff:192.168.1.20", "192.168.1.20"))
+	require.Equal(t, "to <address> via <address>", scrubResolvedAddrs("to 10.0.0.9 via ::ffff:10.0.0.9", "192.168.1.20"))
+	require.Equal(t, "dial tcp 192.168.1.20 and <address>", scrubResolvedAddrs("dial tcp 192.168.1.20 and FD12::5", "::ffff:192.168.1.20"))
+}
+
+// Review M1: the scrubbed wrapper keeps Timeout() / Temporary() of the cause so net/http, url.Error and os.IsTimeout still classify it.
+func TestSECDIALFU_F4_ScrubbedErrorKeepsTimeoutSemantics(t *testing.T) {
+	cause := &net.OpError{Op: "dial", Net: "tcp", Addr: &net.TCPAddr{IP: net.ParseIP("10.9.8.7"), Port: 445}, Err: os.ErrDeadlineExceeded}
+	require.True(t, cause.Timeout())
+	got := scrubDialErr(cause, "nas.lan")
+	require.NotContains(t, got.Error(), "10.9.8.7")
+	te, ok := got.(interface{ Timeout() bool })
+	require.True(t, ok, "wrapper exposes Timeout()")
+	require.True(t, te.Timeout())
+	require.True(t, os.IsTimeout(got))
+	require.True(t, (&url.Error{Op: "Get", URL: "http://nas.lan/", Err: got}).Timeout())
+	var ne net.Error
+	require.True(t, errors.As(got, &ne))
+	// a non-timeout cause stays a non-timeout
+	got2 := scrubDialErr(&net.OpError{Op: "dial", Net: "tcp", Addr: &net.TCPAddr{IP: net.ParseIP("10.9.8.7"), Port: 445}, Err: syscall.ECONNREFUSED}, "nas.lan")
+	require.False(t, os.IsTimeout(got2))
+	require.ErrorIs(t, got2, syscall.ECONNREFUSED)
 }

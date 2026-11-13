@@ -16,7 +16,8 @@ import (
 
 // SEC-DIAL-1-FU (unit-class, §11.4.289): the mount(2) / resolver seams are test doubles; the production planning code is real.
 
-// F1: an export with a space (a normal NAS share name) must be mountable; the source is handed to mount(2) as ONE string, never option-parsed.
+// F1: an export with a space (a normal NAS share name) must be accepted and handed, unchanged, as ONE source string to the (stubbed) nfsMount
+// call, never into the option string. Whether a live kernel NFS mount accepts a space in the source is UNCONFIRMED; this test only checks the call.
 func TestSECDIALFU_F1_ExportWithSpaceMounts(t *testing.T) {
 	t.Setenv(netguard.AllowCIDRsEnv, "")
 	mounts := withNFSSeams(t, realResolve())

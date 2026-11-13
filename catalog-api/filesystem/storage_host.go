@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 	"unicode"
@@ -77,32 +76,73 @@ func resolveNFSServer(ctx context.Context, host string) (net.IP, error) {
 	return ips[0], nil
 }
 
-// addrCandidate matches a run of characters an IP literal is made of; scrubResolvedAddrs tests each run.
-var addrCandidate = regexp.MustCompile(`[0-9A-Fa-f:.]{2,}`)
+// maxAddrLiteral bounds the length of a span tested as an IP literal (the longest textual form, an IPv4-mapped IPv6 address, is 45 bytes).
+const maxAddrLiteral = 45
 
-// scrubResolvedAddrs replaces every IP literal in msg other than the configured host with "<address>", so an error shown to a non-admin caller
-// (/storage-roots/:id/status) does not disclose the address a name resolved to. The configured host itself is operator input and stays.
-func scrubResolvedAddrs(msg, host string) string {
-	host = strings.Trim(host, "[]")
-	return addrCandidate.ReplaceAllStringFunc(msg, func(raw string) string {
-		// sentence punctuation around the literal ("...:445: connection refused", "10.0.0.1.") is not part of it
-		c := strings.TrimRight(raw, ":.")
-		tail := raw[len(c):]
-		ip, port := c, ""
-		if net.ParseIP(ip) == nil {
-			if i := strings.LastIndex(c, ":"); i > 0 && strings.Contains(c[:i], ".") {
-				ip, port = c[:i], c[i:]
-			}
-		}
-		parsed := net.ParseIP(ip)
-		if parsed == nil || ip == host || (net.ParseIP(host) != nil && parsed.Equal(net.ParseIP(host))) {
-			return raw
-		}
-		return "<address>" + port + tail
-	})
+func isAddrByte(c byte) bool {
+	return c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F' || c == ':' || c == '.'
 }
 
-// addrScrubbedError carries a message with the resolved addresses removed and keeps the cause inspectable (errors.Is / As).
+func isWordByte(c byte) bool {
+	return c >= '0' && c <= '9' || c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c == '_'
+}
+
+// scrubResolvedAddrs replaces every IP literal in msg other than the configured host with "<address>", so an error shown to a non-admin caller
+// (/storage-roots/:id/status) does not disclose the address a name resolved to. The configured host itself (in any spelling of the same
+// address) is operator input and stays. At each position the longest span of address characters that parses as an IP literal and is not glued
+// to a word character is replaced (an IPv6 zone "%eth0" goes with it); a port, brackets and sentence punctuation around it stay.
+func scrubResolvedAddrs(msg, host string) string {
+	host = strings.Trim(host, "[]")
+	hostIP := net.ParseIP(host)
+	var out strings.Builder
+	for i := 0; i < len(msg); {
+		if !isAddrByte(msg[i]) || (i > 0 && isWordByte(msg[i-1])) {
+			out.WriteByte(msg[i])
+			i++
+			continue
+		}
+		j := i
+		for j < len(msg) && j-i < maxAddrLiteral && isAddrByte(msg[j]) {
+			j++
+		}
+		matched := false
+		for e := j; e >= i+2; e-- {
+			if e < len(msg) && isWordByte(msg[e]) {
+				continue
+			}
+			span := msg[i:e]
+			parsed := net.ParseIP(span)
+			if parsed == nil {
+				continue
+			}
+			end := e
+			if strings.Contains(span, ":") && end < len(msg) && msg[end] == '%' {
+				z := end + 1
+				for z < len(msg) && (isWordByte(msg[z]) || msg[z] == '-' || msg[z] == '.') {
+					z++
+				}
+				if z > end+1 {
+					end = z
+				}
+			}
+			if span == host || (hostIP != nil && parsed.Equal(hostIP)) {
+				out.WriteString(msg[i:end])
+			} else {
+				out.WriteString("<address>")
+			}
+			i, matched = end, true
+			break
+		}
+		if !matched {
+			out.WriteByte(msg[i])
+			i++
+		}
+	}
+	return out.String()
+}
+
+// addrScrubbedError carries a message with the resolved addresses removed and keeps the cause inspectable (errors.Is / As) and its Timeout() /
+// Temporary() classification (net/http, url.Error and os.IsTimeout ask the error itself).
 type addrScrubbedError struct {
 	msg string
 	err error
@@ -110,6 +150,18 @@ type addrScrubbedError struct {
 
 func (e *addrScrubbedError) Error() string { return e.msg }
 func (e *addrScrubbedError) Unwrap() error { return e.err }
+
+// Timeout reports whether the cause is a timeout.
+func (e *addrScrubbedError) Timeout() bool {
+	var t interface{ Timeout() bool }
+	return errors.As(e.err, &t) && t.Timeout()
+}
+
+// Temporary reports whether the cause is temporary.
+func (e *addrScrubbedError) Temporary() bool {
+	var t interface{ Temporary() bool }
+	return errors.As(e.err, &t) && t.Temporary()
+}
 
 // scrubDialErr returns err with the resolved addresses removed from its text; nil stays nil.
 func scrubDialErr(err error, host string) error {
