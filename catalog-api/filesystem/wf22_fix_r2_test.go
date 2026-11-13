@@ -327,8 +327,8 @@ func TestWF22_X1_RemotePathCodeDoesNotUseOSPathFunctions(t *testing.T) {
 	}
 	// control needle: the instrument sees an import that is there
 	require.True(t, importsFilepath("local_client.go"), "control: the local client does import path/filepath")
-	// local_policy.go confines LOCAL roots to allowed bases (CAT-001); it only ever sees local OS paths.
-	allowed := map[string]bool{"local_client.go": true, "local_policy.go": true, "nfs_client.go": true, "nfs_client_darwin.go": true}
+	// confine_real.go resolves symlinks of LOCAL directory trees (CAT-FS-SYMLINK-1); local_policy.go confines LOCAL roots to allowed bases (CAT-001); it only ever sees local OS paths.
+	allowed := map[string]bool{"local_client.go": true, "local_policy.go": true, "nfs_client.go": true, "nfs_client_darwin.go": true, "confine_real.go": true}
 	files, err := filepath.Glob("*.go")
 	require.NoError(t, err)
 	checked := 0

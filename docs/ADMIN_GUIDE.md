@@ -179,6 +179,8 @@ The server loads configuration from `config.json` in the working directory. If t
 }
 ```
 
+> Symlink confinement (local and nfs roots): a symbolic link inside the root that resolves outside it is refused; links that stay inside keep working. To allow escaping links for one root, add `"allow_symlink_escape": true` to its `settings` (default `false`). See `docs/scripts/settings_contract.md`.
+
 ### Environment Variable Overrides
 
 Environment variables take precedence over config file values. These are the primary overrides:

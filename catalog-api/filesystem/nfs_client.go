@@ -25,6 +25,9 @@ type NFSConfig struct {
 	Path       string `json:"path"`        // Export path on NFS server
 	MountPoint string `json:"mount_point"` // Local mount point
 	Options    string `json:"options"`     // Mount options
+	// AllowSymlinkEscape switches the symlink confinement OFF for this root (settings key allow_symlink_escape). Default false: a symbolic
+	// link on the mount that resolves outside the mount point is refused with ErrPathEscapesRoot (CAT-FS-SYMLINK-1).
+	AllowSymlinkEscape bool `json:"allow_symlink_escape"`
 }
 
 // NFSClient implements FileSystemClient for NFS protocol
@@ -230,12 +233,25 @@ func (c *NFSClient) resolvePath(path string) string {
 	return filepath.Join(c.mountPoint, filepath.FromSlash(ConfinePath(path)))
 }
 
+// resolveConfined is resolvePath plus the real-path check (confineReal): a link on the mount that leaves the mount point is refused.
+func (c *NFSClient) resolveConfined(path string) (string, error) {
+	return confineReal(c.mountPoint, c.resolvePath(path), path, c.config.AllowSymlinkEscape, true)
+}
+
+// resolveConfinedNoFollow is resolveConfined for delete/rename sinks: the last component (a link) is acted on itself, not followed.
+func (c *NFSClient) resolveConfinedNoFollow(path string) (string, error) {
+	return confineReal(c.mountPoint, c.resolvePath(path), path, c.config.AllowSymlinkEscape, false)
+}
+
 // ReadFile reads a file from the NFS mount
 func (c *NFSClient) ReadFile(ctx context.Context, path string) (io.ReadCloser, error) {
 	if !c.IsConnected() {
 		return nil, fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return nil, rerr
+	}
 	file, err := os.Open(fullPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open NFS file %s: %w", fullPath, err)
@@ -248,7 +264,10 @@ func (c *NFSClient) WriteFile(ctx context.Context, path string, data io.Reader) 
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return rerr
+	}
 
 	// Ensure the directory exists
 	dir := filepath.Dir(fullPath)
@@ -275,7 +294,10 @@ func (c *NFSClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, er
 	if !c.IsConnected() {
 		return nil, fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return nil, rerr
+	}
 	stat, err := os.Stat(fullPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to stat NFS file %s: %w", fullPath, err)
@@ -296,7 +318,10 @@ func (c *NFSClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo
 	if !c.IsConnected() {
 		return nil, fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return nil, rerr
+	}
 	entries, err := os.ReadDir(fullPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list NFS directory %s: %w", fullPath, err)
@@ -326,7 +351,10 @@ func (c *NFSClient) FileExists(ctx context.Context, path string) (bool, error) {
 	if !c.IsConnected() {
 		return false, fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return false, rerr
+	}
 	_, err := os.Stat(fullPath)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -342,7 +370,10 @@ func (c *NFSClient) CreateDirectory(ctx context.Context, path string) error {
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return rerr
+	}
 	err := os.MkdirAll(fullPath, 0755)
 	if err != nil {
 		return fmt.Errorf("failed to create NFS directory %s: %w", fullPath, err)
@@ -355,7 +386,10 @@ func (c *NFSClient) DeleteDirectory(ctx context.Context, path string) error {
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfinedNoFollow(path)
+	if rerr != nil {
+		return rerr
+	}
 	err := os.RemoveAll(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to delete NFS directory %s: %w", fullPath, err)
@@ -368,7 +402,10 @@ func (c *NFSClient) DeleteFile(ctx context.Context, path string) error {
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfinedNoFollow(path)
+	if rerr != nil {
+		return rerr
+	}
 	err := os.Remove(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to delete NFS file %s: %w", fullPath, err)
@@ -381,8 +418,14 @@ func (c *NFSClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	srcFullPath := c.resolvePath(srcPath)
-	dstFullPath := c.resolvePath(dstPath)
+	srcFullPath, rerr := c.resolveConfined(srcPath)
+	if rerr != nil {
+		return rerr
+	}
+	dstFullPath, rerr := c.resolveConfined(dstPath)
+	if rerr != nil {
+		return rerr
+	}
 
 	// Ensure destination directory exists
 	dstDir := filepath.Dir(dstFullPath)
