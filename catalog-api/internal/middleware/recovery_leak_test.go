@@ -50,6 +50,7 @@ type recoveryRun struct {
 	captured string // stderr + gin writers + std log
 	logged   string // everything the zap logger recorded (messages + all fields)
 	status   int
+	aborted  bool // the handler chain re-panicked http.ErrAbortHandler
 }
 
 func runShareRoute(t *testing.T, mode string, recovery func(*zap.Logger) gin.HandlerFunc, panicVal any) recoveryRun {
@@ -67,7 +68,16 @@ func runShareRoute(t *testing.T, mode string, recovery func(*zap.Logger) gin.Han
 		req.Header.Set("Cookie", "sid="+rcvCookie)
 		req.Header.Set("Authorization", "Bearer "+rcvAuth)
 		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
+		func() {
+			defer func() {
+				if r := recover(); r != nil && r != http.ErrAbortHandler { // F6: ErrAbortHandler is re-panicked for net/http
+					panic(r)
+				} else if r != nil {
+					rec.aborted = true
+				}
+			}()
+			router.ServeHTTP(w, req)
+		}()
 		rec.status = w.Code
 	})
 	var sb strings.Builder
@@ -123,6 +133,9 @@ func TestRecovery_NoRequestDumpInEitherMode(t *testing.T) {
 				}
 				if name != "abort-handler" && r.status != http.StatusInternalServerError {
 					t.Errorf("status = %d, want 500", r.status)
+				}
+				if name == "abort-handler" && (!r.aborted || r.status == http.StatusInternalServerError) {
+					t.Errorf("ErrAbortHandler must be re-panicked, not answered: aborted=%v status=%d", r.aborted, r.status)
 				}
 			})
 		}

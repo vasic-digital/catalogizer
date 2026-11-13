@@ -20,14 +20,27 @@ var strongKeys = map[string]bool{
 	"signature": true, "credential": true, "credentials": true, "cookie": true, "sessionid": true, "session": true,
 }
 
-var weakKeys = map[string]bool{"pass": true, "pw": true, "code": true, "key": true, "sig": true}
+var weakKeys = map[string]bool{"pass": true, "pw": true, "code": true, "key": true, "sig": true, "refresh": true}
 
 var keyWords = []string{
 	"password", "passwd", "pwd", "secret", "token", "apikey", "api_key", "api-key", "credential", "cookie",
-	"private_key", "private-key", "privatekey", "signature", "session", "authorization", "verifier",
+	"private_key", "private-key", "privatekey", "signature", "session", "authorization", "verifier", "passphrase",
 }
 
+var nameSeparators = strings.NewReplacer("-", "", "_", "", ".", "")
+
+// strongKey also compares the name with '-', '_' and '.' removed, so "pass-word", "pass_word" and "pass.word" are "password".
 func strongKey(l string) bool {
+	if strongKeyExact(l) {
+		return true
+	}
+	if norm := nameSeparators.Replace(l); norm != l {
+		return strongKeyExact(norm)
+	}
+	return false
+}
+
+func strongKeyExact(l string) bool {
 	if strongKeys[l] {
 		return true
 	}
@@ -42,7 +55,7 @@ func strongKey(l string) bool {
 // SensitiveKey reports whether a query-parameter / field / header name carries a credential (case-insensitive).
 func SensitiveKey(name string) bool {
 	l := strings.ToLower(name)
-	return strongKey(l) || weakKeys[l]
+	return strongKey(l) || weakKeys[l] || weakKeys[nameSeparators.Replace(l)]
 }
 
 // Query returns rawQuery with the value of every sensitive parameter replaced by "REDACTED"; everything else (order, escaping)
@@ -98,8 +111,17 @@ func SecretPath(path string) string {
 	}
 	segs := strings.Split(path, "/")
 	for i := 0; i+1 < len(segs); i++ {
-		if secretSegmentKeys[strings.ToLower(segs[i])] && segs[i+1] != "" {
-			segs[i+1] = ":redacted"
+		if !secretSegmentKeys[strings.ToLower(segs[i])] {
+			continue
+		}
+		// "/share//S" and "/share///S": empty segments between the key and the secret are skipped; the first non-empty
+		// segment is the secret (a trailing "/share//" with nothing after it stays unchanged).
+		j := i + 1
+		for j < len(segs) && segs[j] == "" {
+			j++
+		}
+		if j < len(segs) {
+			segs[j] = ":redacted"
 		}
 	}
 	return strings.Join(segs, "/")

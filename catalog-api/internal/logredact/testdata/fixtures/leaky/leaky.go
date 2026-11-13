@@ -6,6 +6,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strings"
+
+	contlogging "digital.vasic.containers/pkg/logging"
+	obslogging "digital.vasic.observability/pkg/logging"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/mux"
@@ -89,4 +94,64 @@ func Needle24LogFormatterErrorMessage() gin.HandlerFunc {
 
 func Needle25HeaderNameOnlyInHeaderList(c *gin.Context) {
 	log.Println(c.GetHeader("WWW-Authenticate"))
+}
+
+// ---- round-4 needles (F2): module loggers, wrappers, interface loggers, closures, method values, builders, std streams ----
+
+func Needle26ObsLoggingWithField(c *gin.Context) {
+	obslogging.NewLogrusAdapter(obslogging.DefaultConfig()).WithField("p", c.Request.URL.Path).Warn("x")
+}
+
+func Needle27ContainersLogging(c *gin.Context, l contlogging.Logger) { l.Info(c.Request.URL.Path) }
+
+// a module-defined wrapper around a logger: the CALLER passing request data is the leak
+func logWrapped(msg string) { log.Print(msg) }
+
+func logWrapped2(prefix string, v string) { logWrapped(prefix + v) }
+
+func Needle28ModuleWrapper(c *gin.Context) { logWrapped(c.Request.URL.Path) }
+
+func Needle29TransitiveWrapper(c *gin.Context) { logWrapped2("p=", c.Request.URL.Path) }
+
+type needleLogger interface{ Info(msg string) }
+
+func Needle30ModuleInterfaceLogger(l needleLogger, c *gin.Context) { l.Info(c.Request.URL.Path) }
+
+func Needle31ClosureReturningTainted(c *gin.Context) {
+	f := func() string { return c.Request.URL.Path }
+	log.Print(f())
+}
+
+func Needle32MethodValue(c *gin.Context) {
+	f := c.Request.URL.String
+	log.Print(f())
+}
+
+func Needle33StringsBuilder(c *gin.Context) {
+	var sb strings.Builder
+	sb.WriteString(c.Request.URL.Path)
+	log.Print(sb.String())
+}
+
+func Needle34FprintfIntoBuilder(c *gin.Context) {
+	var sb strings.Builder
+	fmt.Fprintf(&sb, "x %s", c.Request.URL.Path)
+	log.Print(sb.String())
+}
+
+func Needle35OsStderrWriteString(c *gin.Context) { os.Stderr.WriteString(c.Request.URL.Path) }
+
+func Needle36OsStderrWrite(c *gin.Context) { os.Stderr.Write([]byte(c.Request.URL.Path)) }
+
+func Needle37Channel(c *gin.Context) {
+	ch := make(chan string, 1)
+	ch <- c.Request.URL.Path
+	log.Print(<-ch)
+}
+
+func Needle38PrintlnBuiltin(c *gin.Context) { println(c.Request.URL.Path) }
+
+func Needle39ErrorfWrapIntoLog(c *gin.Context) {
+	err := fmt.Errorf("fetch %s: %w", c.Request.URL.Path, http.ErrNotSupported)
+	log.Print(err)
 }

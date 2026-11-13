@@ -125,3 +125,26 @@ func TestPXF17R1_ShareTokenNeverLogged(t *testing.T) {
 		})
 	}
 }
+
+// Round-3 F3: the service error text may carry the request's own bare credential ("lookup share S"): it is removed by
+// known-secret substitution, not by shape.
+func TestPXF17R1_ShareTokenInServiceErrorTextNeverLogged(t *testing.T) {
+	const token = "SHARETOKEN_abcdef0123"
+	core, logs := observer.New(zap.DebugLevel)
+	prev := logging.Logger
+	logging.Logger = zap.New(core)
+	t.Cleanup(func() { logging.Logger = prev })
+	svc := new(MockLogManagementService)
+	h := &LogManagementHandler{logManagementService: svc, authService: new(MockLogManagementAuthService)}
+	svc.On("GetLogShare", token).Return(nil, fmt.Errorf("lookup share %s: %w", token, sql.ErrNoRows))
+	r := mux.NewRouter()
+	r.HandleFunc("/api/v1/logs/share/{token}", h.GetLogShare).Methods("GET")
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, httptest.NewRequest("GET", "/api/v1/logs/share/"+token, nil))
+	require.Equal(t, http.StatusNotFound, rr.Code)
+	es := logs.All()
+	require.Len(t, es, 1)
+	errText, _ := es[0].ContextMap()["error"].(string)
+	assert.NotContains(t, errText, token)
+	assert.Contains(t, errText, "lookup share")
+}

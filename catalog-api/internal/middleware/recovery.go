@@ -33,19 +33,50 @@ func Recovery(logger *zap.Logger) gin.HandlerFunc {
 				logger.Error("panic recovered",
 					zap.String("method", c.Request.Method),
 					zap.String("path", logredact.Path(c.Request.URL.Path, c.Request.URL.RawQuery)),
-					zap.String("panic", logredact.ErrorText(fmt.Sprint(rec))),
+					zap.String("panic", panicText(c, rec)),
 					zap.Bool("broken_connection", broken),
 					zap.ByteString("stack", debug.Stack()),
 				)
 			}
+			if errors.Is(asError(rec), http.ErrAbortHandler) {
+				// net/http's own convention: re-panic ErrAbortHandler so the server aborts the connection WITHOUT answering
+				// (an empty 200 would be a lie) and without logging a stack. The request was already logged redacted above.
+				panic(http.ErrAbortHandler)
+			}
 			if broken {
-				c.Abort()
+				c.Abort() // the peer is gone: nothing can be answered
 				return
 			}
 			c.AbortWithStatus(http.StatusInternalServerError)
 		}()
 		c.Next()
 	}
+}
+
+func asError(rec any) error {
+	err, _ := rec.(error)
+	return err
+}
+
+// panicText is the loggable text of a panic value. Errors and strings go through the request's known credentials and the
+// free-text redactor; any other value (panic(c), a struct, a pointer) is logged by TYPE only - its default formatting can embed
+// request parameters ("[{token S}]").
+func panicText(c *gin.Context, rec any) string {
+	var text string
+	switch v := rec.(type) {
+	case error:
+		text = v.Error()
+	case string:
+		text = v
+	default:
+		return fmt.Sprintf("%T (value not logged)", rec)
+	}
+	params := make(map[string]string, len(c.Params))
+	for _, p := range c.Params {
+		params[p.Key] = p.Value
+	}
+	text = logredact.ReplaceKnown(text, logredact.KnownSecrets(c.Request.URL.Path, c.Request.URL.RawQuery, c.Request.Header, params))
+	return logredact.ErrorText(text)
 }
 
 func isBrokenConnection(rec any) bool {

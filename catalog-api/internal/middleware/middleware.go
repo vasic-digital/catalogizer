@@ -87,7 +87,7 @@ func ErrorHandler() gin.HandlerFunc {
 				reqID, _ = c.Get("RequestID")
 			}
 			log.Printf("middleware: request %q %s %q failed (type %d, detail not returned to client): %v",
-				fmt.Sprint(reqID), c.Request.Method, logredact.SecretPath(c.Request.URL.Path), err.Type, logredact.ErrorText(fmt.Sprint(err.Err)))
+				fmt.Sprint(reqID), c.Request.Method, logredact.SecretPath(c.Request.URL.Path), err.Type, requestErrorText(c, err.Err))
 			switch err.Type {
 			case gin.ErrorTypeBind:
 				c.JSON(http.StatusBadRequest, gin.H{
@@ -162,4 +162,16 @@ func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 		rl.requests[clientIP] = append(rl.requests[clientIP], now)
 		c.Next()
 	}
+}
+
+// requestErrorText is the loggable text of an error raised while serving c: the request's own credentials are removed first
+// (a bare share token cannot be recognised by shape), then the free-text redactor and cap run.
+func requestErrorText(c *gin.Context, err error) string {
+	params := make(map[string]string, len(c.Params))
+	for _, p := range c.Params {
+		params[p.Key] = p.Value
+	}
+	text := fmt.Sprint(err)
+	text = logredact.ReplaceKnown(text, logredact.KnownSecrets(c.Request.URL.Path, c.Request.URL.RawQuery, c.Request.Header, params))
+	return logredact.ErrorText(text)
 }

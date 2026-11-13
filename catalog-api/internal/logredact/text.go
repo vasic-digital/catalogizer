@@ -40,13 +40,19 @@ var headerNames = map[string]bool{
 	"www-authenticate": true, "proxy-authenticate": true,
 }
 
-var schemeWords = map[string]bool{"bearer": true, "basic": true, "digest": true, "negotiate": true}
+var schemeWords = map[string]bool{"bearer": true, "basic": true, "digest": true, "negotiate": true, "jwt": true, "token": true}
 
+// alwaysSchemes redact the token that follows them unconditionally; the other scheme words only when it looks like a credential.
+var alwaysSchemes = map[string]bool{"bearer": true, "jwt": true}
+
+// '%' is a word byte so that percent-encoded names ("%74oken") stay ONE run; the run is decoded before it is classified.
 func isWordByte(c byte) bool {
-	return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_' || c == '.' || c == '-'
+	return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_' || c == '.' || c == '-' || c == '%'
 }
 
 func isSpaceByte(c byte) bool { return c == ' ' || c == '\t' || c == '\r' || c == '\n' }
+
+func isQuote(c byte) bool { return c == '"' || c == '\'' }
 
 func eol(s string, k int) int {
 	for k < len(s) && s[k] != '\n' && s[k] != '\r' {
@@ -55,15 +61,55 @@ func eol(s string, k int) int {
 	return k
 }
 
-// closeQuoteLen returns the length of a quote token at s[k:] (`"`, `'`, `\"`, `\'`), or 0.
+// quoteAt returns (backslashes, quote byte, total length) of a quote token at s[k:]: an optional run of backslashes followed by
+// a quote (`"`, `'`, `\"`, `\\"` ...). Length 0 when there is none. A backslash run not followed by a quote returns (run, 0, 0).
+func quoteAt(s string, k int) (bs int, q byte, ln int) {
+	t := k
+	for t < len(s) && s[t] == '\\' {
+		t++
+	}
+	if t < len(s) && isQuote(s[t]) {
+		return t - k, s[t], t - k + 1
+	}
+	return t - k, 0, 0
+}
+
 func closeQuoteLen(s string, k int) int {
-	if k < len(s) && (s[k] == '"' || s[k] == '\'') {
-		return 1
+	_, _, ln := quoteAt(s, k)
+	return ln
+}
+
+// scanBracket returns the end of a bracketed value starting at s[k]=='[' : the matching ']' (quote-aware), looking ahead at most
+// bracketLookahead bytes. An unmatched '[' takes the rest of the line (so repeated '[' cannot rescan: linear).
+const bracketLookahead = 4096
+
+func scanBracket(s string, k int) int {
+	n := len(s)
+	lim := k + bracketLookahead
+	if lim > n {
+		lim = n
 	}
-	if k+1 < len(s) && s[k] == '\\' && (s[k+1] == '"' || s[k+1] == '\'') {
-		return 2
+	depth := 0
+	for m := k; m < lim; m++ {
+		switch c := s[m]; {
+		case c == '[':
+			depth++
+		case c == ']':
+			depth--
+			if depth == 0 {
+				return m + 1
+			}
+		case c == '\\':
+			m++
+		case isQuote(c):
+			for m++; m < lim && s[m] != c; m++ {
+				if s[m] == '\\' {
+					m++
+				}
+			}
+		}
 	}
-	return 0
+	return eol(s, k)
 }
 
 // scanValue returns the end of the value starting at k (k when there is none).
@@ -72,20 +118,29 @@ func scanValue(s string, k int) int {
 	if k >= n {
 		return k
 	}
-	// escaped-quote string: \"....\"
-	if s[k] == '\\' && k+1 < n && (s[k+1] == '"' || s[k+1] == '\'') {
-		q := s[k+1]
-		for m := k + 2; m+1 < n; m++ {
-			if s[m] == '\n' || s[m] == '\r' {
+	if s[k] == '[' {
+		return scanBracket(s, k)
+	}
+	// escaped-quote string: \"....\" (any number of backslashes; the closer carries the same number)
+	if bs, q, ln := quoteAt(s, k); bs > 0 && ln > 0 {
+		run := 0
+		for m := k + ln; m < n; m++ {
+			switch s[m] {
+			case '\n', '\r':
 				return m
+			case '\\':
+				run++
+				continue
+			case q:
+				if run == bs {
+					return m + 1
+				}
 			}
-			if s[m] == '\\' && s[m+1] == q {
-				return m + 2
-			}
+			run = 0
 		}
 		return eol(s, k)
 	}
-	if s[k] == '"' || s[k] == '\'' {
+	if isQuote(s[k]) {
 		q := s[k]
 		for m := k + 1; m < n; m++ {
 			if s[m] == '\\' {
@@ -101,11 +156,19 @@ func scanValue(s string, k int) int {
 	m := k
 	for m < n {
 		c := s[m]
-		if isSpaceByte(c) || c == '&' || c == ';' || c == ',' || c == '"' || c == '\'' {
+		if isSpaceByte(c) || c == '&' || c == ';' || c == ',' || isQuote(c) {
 			break
 		}
-		if c == '\\' && m+1 < n && (s[m+1] == '"' || s[m+1] == '\'') {
-			break
+		if c == '\\' {
+			t := m
+			for t < n && s[t] == '\\' {
+				t++
+			}
+			if t < n && isQuote(s[t]) {
+				break
+			}
+			m = t // skip the whole backslash run once (linear)
+			continue
 		}
 		m++
 	}
@@ -142,10 +205,89 @@ func takeSchemeToken(s string, scheme string, j int) int {
 	if e == k {
 		return j
 	}
-	if strings.ToLower(scheme) != "bearer" && !credentialLike(s[k:e]) {
+	if !alwaysSchemes[strings.ToLower(scheme)] && !credentialLike(s[k:e]) {
 		return j
 	}
 	return e
+}
+
+// pctDecode decodes %XX escapes of a word run and returns the decoded text plus, for every decoded byte, its raw start offset
+// (len(decoded)+1 entries), so a decoded position can be mapped back to the raw run.
+func pctDecode(run string) (string, []int) {
+	var d strings.Builder
+	offs := make([]int, 0, len(run)+1)
+	for i := 0; i < len(run); {
+		if run[i] == '%' && i+2 < len(run)+0 && isHex(run[i+1]) && isHex(run[i+2]) {
+			offs = append(offs, i)
+			d.WriteByte(unhex(run[i+1])<<4 | unhex(run[i+2]))
+			i += 3
+			continue
+		}
+		offs = append(offs, i)
+		d.WriteByte(run[i])
+		i++
+	}
+	offs = append(offs, len(run))
+	return d.String(), offs
+}
+
+func isHex(c byte) bool { return c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F' }
+
+func unhex(c byte) byte {
+	switch {
+	case c >= '0' && c <= '9':
+		return c - '0'
+	case c >= 'a' && c <= 'f':
+		return c - 'a' + 10
+	}
+	return c - 'A' + 10
+}
+
+// skipFold, given the end of a redacted header value, also consumes RFC 5322 folded continuation lines (a line break followed by a
+// space or tab), so "Authorization: Bearer\n <secret>" does not leak its second line.
+func skipFold(s string, i int) int {
+	n := len(s)
+	for {
+		p := i
+		if p < n && s[p] == '\r' {
+			p++
+		}
+		if p < n && s[p] == '\n' {
+			p++
+		} else if p == i {
+			return i
+		}
+		if p < n && (s[p] == ' ' || s[p] == '\t') {
+			i = eol(s, p)
+			continue
+		}
+		return i
+	}
+}
+
+// valueSeparator parses the separator after a key (k just after the key or its closing quote): '=' or ':' (also "=>", ":=",
+// "->"), spaces/newlines around it. It returns the value start or -1.
+func valueSeparator(s string, k int, strong, quoted bool) int {
+	n := len(s)
+	for k < n && (s[k] == ' ' || s[k] == '\t') {
+		k++
+	}
+	switch {
+	case k < n && s[k] == '=' && k+1 < n && s[k+1] == '>': // =>
+		k += 2
+	case k < n && s[k] == ':' && k+1 < n && s[k+1] == '=' && strong: // :=
+		k += 2
+	case k < n && s[k] == '-' && k+1 < n && s[k+1] == '>' && strong: // ->
+		k += 2
+	case k < n && (s[k] == '=' || s[k] == ':') && (s[k] == '=' || strong || quoted):
+		k++
+	default:
+		return -1
+	}
+	for k < n && isSpaceByte(s[k]) {
+		k++
+	}
+	return k
 }
 
 func redactText(s string, truncated bool) string {
@@ -153,21 +295,29 @@ func redactText(s string, truncated bool) string {
 	var b strings.Builder
 	b.Grow(n)
 	i := 0
+	scanStart, scanEnd, scanAt := 0, -1, -1 // cached userinfo token scan: [scanStart, scanEnd] with last "@" at scanAt
 	for i < n {
 		c := s[i]
-		// 1. URL userinfo
+		// 1. URL userinfo. Each whitespace/quote-delimited token is scanned ONCE: the scan result (token end, last '@') is
+		// remembered, and a later "://" inside the same token reuses it (a token of n "://" costs O(n), not O(n^2)). A single
+		// quote or a backslash is a legal password byte, so only a double quote and whitespace end the authority scan.
 		if c == ':' && strings.HasPrefix(s[i:], "://") {
 			j := i + 3
-			end := j
-			for end < n && !isSpaceByte(s[end]) && s[end] != '"' && s[end] != '\'' && s[end] != '\\' {
-				end++
+			if j > scanEnd || j < scanStart { // not inside an already-scanned token
+				scanStart, scanEnd, scanAt = j, j, -1
+				for scanEnd < n && !isSpaceByte(s[scanEnd]) && s[scanEnd] != '"' {
+					if s[scanEnd] == '@' {
+						scanAt = scanEnd
+					}
+					scanEnd++
+				}
 			}
-			auth := s[j:end]
+			end := scanEnd
 			b.WriteString("://")
-			if at := strings.LastIndexByte(auth, '@'); at >= 0 {
+			if scanAt >= j {
 				b.WriteString(redactedMark + "@")
-				i = j + at + 1 // rest of the token (host, path, query) is scanned normally
-			} else if truncated && end == n && auth != "" && !strings.Contains(auth, "/") {
+				i = scanAt + 1 // rest of the token (host, path, query) is scanned normally
+			} else if truncated && end == n && end > j && !strings.Contains(s[j:end], "/") {
 				b.WriteString(redactedMark) // the cut may have taken the '@': never show a userinfo prefix
 				i = end
 			} else {
@@ -186,6 +336,26 @@ func redactText(s string, truncated bool) string {
 		}
 		run := s[i:j]
 		l := strings.ToLower(run)
+		var offs []int
+		if strings.IndexByte(run, '%') >= 0 {
+			var d string
+			d, offs = pctDecode(run)
+			l = strings.ToLower(d)
+			// a percent-encoded separator inside the run: "token%3Dvalue", "password%3Avalue"
+			if p := strings.IndexAny(l, "=:"); p > 0 {
+				key := l[:p]
+				if strongKey(key) || (l[p] == '=' && weakKeys[nameSeparators.Replace(key)]) {
+					end := j
+					if end < n && !isSpaceByte(s[end]) && !isQuote(s[end]) && s[end] != '\\' {
+						end = scanValue(s, end)
+					}
+					b.WriteString(run[:offs[p+1]])
+					b.WriteString(redactedMark)
+					i = end
+					continue
+				}
+			}
+		}
 
 		// 2. credential header
 		if headerNames[l] {
@@ -203,19 +373,62 @@ func redactText(s string, truncated bool) string {
 				}
 				b.WriteString(s[i:k])
 				b.WriteString(redactedMark)
-				i = eol(s, k)
+				i = skipFold(s, eol(s, k))
 				continue
 			}
 		}
 
-		// 3. secret path segment inside prose: /share/<seg>
+		// 3. secret path segment inside prose: /share/<seg> (extra slashes between the key and the segment are skipped)
 		if i > 0 && s[i-1] == '/' && j < n && s[j] == '/' && secretSegmentKeys[l] {
-			e := j + 1
+			st := j + 1
+			for st < n && s[st] == '/' {
+				st++
+			}
+			e := st
 			for e < n && !isSpaceByte(s[e]) && s[e] != '/' && s[e] != '?' && s[e] != '#' && s[e] != '"' && s[e] != '\'' {
 				e++
 			}
-			if e > j+1 {
+			if e > st {
 				b.WriteString(run + "/:redacted")
+				i = e
+				continue
+			}
+		}
+
+		// 3b. Go struct printing of a key/value pair: {Key:token Value:S} and the positional form {token S}
+		if (l == "key" || l == "name" || l == "param") && j < n && s[j] == ':' {
+			k := j + 1
+			w := k
+			for w < n && isWordByte(s[w]) {
+				w++
+			}
+			if w > k && (strongKey(strings.ToLower(s[k:w])) || weakKeys[strings.ToLower(s[k:w])]) {
+				v := w
+				for v < n && (s[v] == ' ' || s[v] == '\t') {
+					v++
+				}
+				vw := v
+				for vw < n && isWordByte(s[vw]) {
+					vw++
+				}
+				if lv := strings.ToLower(s[v:vw]); (lv == "value" || lv == "values" || lv == "val") && vw < n && s[vw] == ':' {
+					vs := vw + 1
+					if vend := scanValue(s, vs); vend > vs {
+						b.WriteString(s[i:vs])
+						b.WriteString(redactedMark)
+						i = vend
+						continue
+					}
+				}
+			}
+		}
+		if i > 0 && s[i-1] == '{' && j < n && s[j] == ' ' && (strongKey(l) || weakKeys[l]) {
+			e := j + 1
+			for e < n && s[e] != '}' && s[e] != '\n' && s[e] != '\r' {
+				e++
+			}
+			if e > j+1 {
+				b.WriteString(run + " " + redactedMark)
 				i = e
 				continue
 			}
@@ -223,7 +436,7 @@ func redactText(s string, truncated bool) string {
 
 		// 4. key sep value
 		strong := strongKey(l)
-		weak := weakKeys[l]
+		weak := weakKeys[l] || weakKeys[nameSeparators.Replace(l)]
 		if strong || weak {
 			k := j
 			quoted := false
@@ -231,17 +444,8 @@ func redactText(s string, truncated bool) string {
 				k += q
 				quoted = true
 			}
-			for k < n && (s[k] == ' ' || s[k] == '\t') {
-				k++
-			}
-			vstart := -1
-			if k < n && (s[k] == '=' || s[k] == ':') && (s[k] == '=' || strong || quoted) {
-				k++
-				for k < n && isSpaceByte(s[k]) {
-					k++
-				}
-				vstart = k
-			} else if strong && !quoted && j < n && s[j] == '\t' {
+			vstart := valueSeparator(s, k, strong, quoted)
+			if vstart < 0 && strong && !quoted && j < n && s[j] == '\t' {
 				k = j + 1
 				for k < n && (s[k] == ' ' || s[k] == '\t') {
 					k++

@@ -49,7 +49,13 @@ var (
 		"log": true, "log/slog": true, "go.uber.org/zap": true, "go.uber.org/zap/zapcore": true,
 		"catalogizer/internal/logging": true, "github.com/sirupsen/logrus": true,
 		"github.com/prometheus/client_golang/prometheus": true,
+		// in-house module loggers (round 4, F2): every digital.vasic.* logging package the API imports, plus the prefix rule in
+		// sinkPackage for any logging/logger/log package of an own module.
+		"digital.vasic.observability/pkg/logging": true, "digital.vasic.containers/pkg/logging": true,
 	}
+	loggerMethods = map[string]bool{"Info": true, "Infof": true, "Warn": true, "Warnf": true, "Warning": true, "Error": true, "Errorf": true,
+		"Debug": true, "Debugf": true, "Fatal": true, "Fatalf": true, "Panic": true, "Panicf": true, "Trace": true, "Tracef": true,
+		"Log": true, "Logf": true, "WithField": true, "WithFields": true, "WithError": true, "Print": true, "Printf": true, "Println": true}
 	fmtSinks      = map[string]bool{"Print": true, "Printf": true, "Println": true, "Fprint": true, "Fprintf": true, "Fprintln": true, "Errorf": true}
 	promSinkNames = map[string]bool{"WithLabelValues": true, "With": true, "GetMetricWithLabelValues": true, "GetMetricWith": true, "CurryWith": true, "MustCurryWith": true}
 	bannedGin     = map[string]bool{"Default": true, "Recovery": true, "RecoveryWithWriter": true, "CustomRecovery": true, "CustomRecoveryWithWriter": true,
@@ -166,7 +172,7 @@ func loadTyped(t *testing.T, root string, patterns ...string) ([]*tpkg, *token.F
 		conf := types.Config{Importer: imp.(types.Importer), FakeImportC: true, Error: func(err error) { typeErrs = append(typeErrs, err.Error()) }}
 		tp.pkg, _ = conf.Check(p.ImportPath, fset, tp.files, tp.info)
 		if len(typeErrs) > 0 {
-			t.Logf("type errors in %s (%d): %s", p.ImportPath, len(typeErrs), typeErrs[0])
+			t.Errorf("type errors in analysed package %s (%d): %s (a package that does not type-check is analysed blind)", p.ImportPath, len(typeErrs), typeErrs[0])
 		}
 		res = append(res, tp)
 	}
@@ -184,6 +190,11 @@ type analyzer struct {
 	pkgs      []*tpkg
 	summaries map[string]bool // funcKey -> returns request-derived data
 	findings  []finding
+	// round 4 (F2): cross-function sink summaries. sinkParams[funcKey][i] = parameter i reaches a logging/metric/error sink inside
+	// the function (directly or through another summarised function), so a call passing request data there is itself a sink.
+	sinkParams map[string]map[int]bool
+	seed       map[types.Object]bool // when set, runFunc starts with exactly these objects tainted (summary mode)
+	sinkHit    bool                  // set by runFunc when a tainted value reached a sink
 }
 
 func derefNamed(t types.Type) (pkg, name string) {
@@ -289,7 +300,35 @@ func (a *analyzer) taint(c *fnCtx, e ast.Expr) bool {
 		if obj := c.info.Defs[x]; obj != nil {
 			return c.tainted[obj]
 		}
+	case *ast.FuncLit:
+		// a closure that returns request data taints the variable it is assigned to (calling it yields that data)
+		ret := false
+		ast.Inspect(x.Body, func(n ast.Node) bool {
+			if rs, ok := n.(*ast.ReturnStmt); ok {
+				for _, r := range rs.Results {
+					if a.taint(c, r) {
+						ret = true
+					}
+				}
+			}
+			return !ret
+		})
+		return ret
 	case *ast.SelectorExpr:
+		if sel := c.info.Selections[x]; sel != nil && sel.Kind() == types.MethodVal {
+			// method value (f := r.Referer / u.String): calling f later yields what the call would have
+			if fn, ok := sel.Obj().(*types.Func); ok {
+				rp, rn := derefNamed(sel.Recv())
+				if rn == "" && fn.Pkg() != nil {
+					rp = fn.Pkg().Path()
+				}
+				q := qual(rp, rn, fn.Name())
+				if methodSources[q] || keyedReaders[q] {
+					return true
+				}
+			}
+			return a.taint(c, x.X)
+		}
 		if sel := c.info.Selections[x]; sel != nil && sel.Kind() == types.FieldVal {
 			rp, rn := derefNamed(sel.Recv())
 			// An inbound request's URL and target are sources; fields/methods of ANY url.URL carry data only when the URL
@@ -349,7 +388,13 @@ func (a *analyzer) taintCall(c *fnCtx, call *ast.CallExpr) bool {
 	if pkg == "catalogizer/internal/logredact" {
 		return false // the sanctioned redaction
 	}
+	if pkg == "" && a.taint(c, call.Fun) {
+		return true // call of a closure / method value that yields request data
+	}
 	q := qual(pkg, recv, name)
+	if pkg == "net/url" && recv == "URL" && (name == "Hostname" || name == "Port" || name == "Scheme") {
+		return false // host and port carry no path, query or userinfo (same rule as the Host/Scheme fields)
+	}
 	if methodSources[q] {
 		return true
 	}
@@ -401,6 +446,9 @@ func textLike(t types.Type, calleePkg string) bool {
 		return false
 	}
 	if n, ok := t.(*types.Named); ok && n.Obj().Name() == "error" && n.Obj().Pkg() == nil {
+		if calleePkg == "database/sql" || calleePkg == "context" {
+			return false // driver errors name the constraint/column, never the bound argument values
+		}
 		return !strings.Contains(strings.SplitN(calleePkg, "/", 2)[0], ".") && !strings.HasPrefix(calleePkg, "catalogizer")
 	}
 	switch u := t.Underlying().(type) {
@@ -433,13 +481,65 @@ func (a *analyzer) isSink(pkg, recv, name string) bool {
 	if pkg == "errors" && name == "New" {
 		return true
 	}
-	if sinkPkgs[pkg] {
+	if sinkPackage(pkg) {
 		if pkg == "github.com/prometheus/client_golang/prometheus" {
 			return promSinkNames[name]
 		}
 		return true
 	}
 	return name == "ReportNonFatal"
+}
+
+// sinkPackage: a listed logging package, or any logging/logger/log package of an own module (digital.vasic.*).
+func sinkPackage(pkg string) bool {
+	if sinkPkgs[pkg] {
+		return true
+	}
+	if strings.HasPrefix(pkg, "digital.vasic.") {
+		last := pkg[strings.LastIndex(pkg, "/")+1:]
+		return last == "logging" || last == "logger" || last == "log"
+	}
+	return false
+}
+
+// loggerLikeMethod: a call of a logging-shaped method (Info, Warn, WithField ...) on an interface or on a type whose name or
+// package says "log" - module-defined logger interfaces and wrappers (round-4 F2) that no package list can enumerate.
+func loggerLikeMethod(recvPkg, recv, name string) bool {
+	if !loggerMethods[name] || recv == "" {
+		return false
+	}
+	if strings.Contains(strings.ToLower(recv), "log") {
+		return true
+	}
+	last := recvPkg[strings.LastIndex(recvPkg, "/")+1:]
+	return strings.Contains(strings.ToLower(last), "log")
+}
+
+func isStdStream(info *types.Info, e ast.Expr) bool {
+	sel, ok := ast.Unparen(e).(*ast.SelectorExpr)
+	if !ok || (sel.Sel.Name != "Stderr" && sel.Sel.Name != "Stdout") {
+		return false
+	}
+	o := info.Uses[sel.Sel]
+	return o != nil && o.Pkg() != nil && o.Pkg().Path() == "os"
+}
+
+// stdStreamSink: direct writes of text to stderr/stdout that bypass every logger (os.Stderr.WriteString, io.WriteString(os.Stderr,..),
+// the println builtin).
+func stdStreamSink(info *types.Info, call *ast.CallExpr, pkg, recv, name string) bool {
+	if pkg == "os" && recv == "File" && (name == "Write" || name == "WriteString") {
+		if sel, ok := ast.Unparen(call.Fun).(*ast.SelectorExpr); ok {
+			return isStdStream(info, sel.X)
+		}
+	}
+	if pkg == "io" && recv == "" && name == "WriteString" && len(call.Args) > 0 {
+		return isStdStream(info, call.Args[0])
+	}
+	if id, ok := ast.Unparen(call.Fun).(*ast.Ident); ok && (id.Name == "println" || id.Name == "print") {
+		_, isBuiltin := info.Uses[id].(*types.Builtin)
+		return isBuiltin
+	}
+	return false
 }
 
 func lhsObj(c *fnCtx, e ast.Expr) types.Object {
@@ -464,6 +564,9 @@ func (a *analyzer) runFunc(tp *tpkg, file, fname string, body *ast.BlockStmt, ft
 		return false
 	}
 	c := &fnCtx{info: tp.info, tainted: map[types.Object]bool{}}
+	for o := range a.seed {
+		c.tainted[o] = true
+	}
 	mark := func(e ast.Expr) bool {
 		if o := lhsObj(c, e); o != nil && !c.tainted[o] && !isErrorType(o.Type()) { // error variables: in-order pass below
 			c.tainted[o] = true
@@ -505,6 +608,32 @@ func (a *analyzer) runFunc(tp *tpkg, file, fname string, body *ast.BlockStmt, ft
 						changed = true
 					}
 				}
+			case *ast.SendStmt:
+				if a.taint(c, s.Value) && mark(s.Chan) { // ch <- tainted
+					changed = true
+				}
+			case *ast.CallExpr:
+				// a builder / buffer / writer that is fed request data carries it: sb.WriteString(t), buf.Write(t), fmt.Fprintf(&sb, .., t)
+				cp, cr, cn := a.callee(c.info, s)
+				feeds := false
+				for _, arg := range s.Args {
+					if a.taint(c, arg) {
+						feeds = true
+					}
+				}
+				if feeds {
+					if sel, ok := ast.Unparen(s.Fun).(*ast.SelectorExpr); ok && c.info.Selections[sel] != nil &&
+						(cp == "strings" || cp == "bytes" || cp == "bufio" || cp == "net/url" || cp == "encoding/json") && cr != "" {
+						if mark(sel.X) {
+							changed = true
+						}
+					}
+					if cp == "fmt" && (cn == "Fprint" || cn == "Fprintf" || cn == "Fprintln") && len(s.Args) > 0 {
+						if mark(s.Args[0]) {
+							changed = true
+						}
+					}
+				}
 			case *ast.RangeStmt:
 				if a.taint(c, s.X) {
 					if s.Key != nil && mark(s.Key) {
@@ -543,15 +672,12 @@ func (a *analyzer) runFunc(tp *tpkg, file, fname string, body *ast.BlockStmt, ft
 				}
 			}
 		case *ast.CallExpr:
-			if !report {
-				return true
-			}
 			pkg, recv, name := a.callee(tp.info, s)
 			pos := a.fset.Position(s.Pos()).String()
-			if pkg == "github.com/gin-gonic/gin" && recv == "" && bannedGin[name] {
+			if report && pkg == "github.com/gin-gonic/gin" && recv == "" && bannedGin[name] {
 				a.findings = append(a.findings, finding{file, fname, "banned-gin-constructor", "gin." + name, pos})
 			}
-			if pkg == "github.com/gin-gonic/gin" && recv == "" && name == "LoggerWithFormatter" && len(s.Args) == 1 {
+			if report && pkg == "github.com/gin-gonic/gin" && recv == "" && name == "LoggerWithFormatter" && len(s.Args) == 1 {
 				// the formatter's return value IS the access-log line: a tainted return is a leak
 				if fl, ok := ast.Unparen(s.Args[0]).(*ast.FuncLit); ok {
 					ast.Inspect(fl.Body, func(m ast.Node) bool {
@@ -566,17 +692,32 @@ func (a *analyzer) runFunc(tp *tpkg, file, fname string, body *ast.BlockStmt, ft
 					})
 				}
 			}
-			if a.isSink(pkg, recv, name) {
+			sink := a.isSink(pkg, recv, name) || loggerLikeMethod(pkg, recv, name) || stdStreamSink(tp.info, s, pkg, recv, name)
+			wrapper := a.sinkParams[funcKey(pkg, recv, name)]
+			if sink || len(wrapper) > 0 {
 				args := s.Args
+				off := 0
 				if sel, ok := ast.Unparen(s.Fun).(*ast.SelectorExpr); ok && tp.info.Selections[sel] != nil && requestLikeType(tp.info.TypeOf(sel.X)) {
 					args = append([]ast.Expr{sel.X}, args...)
+					off = 1
 				}
-				for _, arg := range args {
+				for i, arg := range args {
+					kind := ""
 					switch {
 					case a.taint(c, arg):
-						a.findings = append(a.findings, finding{file, fname, "tainted-into-sink", qual(pkg, recv, name), pos})
-					case requestLikeType(tp.info.TypeOf(arg)):
-						a.findings = append(a.findings, finding{file, fname, "whole-request-into-sink", qual(pkg, recv, name), pos})
+						if sink {
+							kind = "tainted-into-sink"
+						} else if wrapper[i-off] || (i-off >= 0 && wrapperVariadic(wrapper, i-off)) {
+							kind = "tainted-into-wrapper-sink"
+						}
+					case sink && requestLikeType(tp.info.TypeOf(arg)):
+						kind = "whole-request-into-sink"
+					}
+					if kind != "" {
+						a.sinkHit = true
+						if report {
+							a.findings = append(a.findings, finding{file, fname, kind, qual(pkg, recv, name), pos})
+						}
 					}
 				}
 			}
@@ -584,6 +725,11 @@ func (a *analyzer) runFunc(tp *tpkg, file, fname string, body *ast.BlockStmt, ft
 		return true
 	})
 	return returnsTainted
+}
+
+func isAnyType(t types.Type) bool {
+	i, ok := t.Underlying().(*types.Interface)
+	return ok && i.NumMethods() == 0
 }
 
 func isErrorType(t types.Type) bool {
@@ -613,7 +759,16 @@ func (a *analyzer) errUpdate(c *fnCtx, as *ast.AssignStmt) {
 		if o == nil || !isErrorType(o.Type()) {
 			continue
 		}
-		if t := rhsTaint(i); t {
+		t := rhsTaint(i)
+		if t && len(as.Lhs) != len(as.Rhs) && len(as.Rhs) == 1 {
+			// tuple result: the error only carries the data when the callee's errors quote their input
+			cp := ""
+			if call, ok := ast.Unparen(as.Rhs[0]).(*ast.CallExpr); ok {
+				cp, _, _ = a.callee(c.info, call)
+			}
+			t = textLike(o.Type(), cp)
+		}
+		if t {
 			c.tainted[o] = true
 		} else {
 			delete(c.tainted, o)
@@ -640,7 +795,7 @@ func recvName(fd *ast.FuncDecl) string {
 
 func scanTyped(t *testing.T, root string, patterns ...string) []finding {
 	pkgs, fset := loadTyped(t, root, patterns...)
-	a := &analyzer{fset: fset, pkgs: pkgs, summaries: map[string]bool{}}
+	a := &analyzer{fset: fset, pkgs: pkgs, summaries: map[string]bool{}, sinkParams: map[string]map[int]bool{}}
 	// summaries to a fixpoint (no reporting)
 	for round := 0; round < 6; round++ {
 		changed := false
@@ -655,6 +810,41 @@ func scanTyped(t *testing.T, root string, patterns ...string) []finding {
 					if !a.summaries[k] && a.runFunc(tp, "", fd.Name.Name, fd.Body, fd.Type, false) {
 						a.summaries[k] = true
 						changed = true
+					}
+				}
+			}
+		}
+		if !changed {
+			break
+		}
+	}
+	// sink summaries to a fixpoint: seed ONE text-like parameter at a time and see whether it reaches a sink (round-4 F2:
+	// module wrappers around a logger are sinks for their callers, transitively).
+	for round := 0; round < 4; round++ {
+		changed := false
+		for _, tp := range pkgs {
+			for _, f := range tp.files {
+				for _, d := range f.Decls {
+					fd, ok := d.(*ast.FuncDecl)
+					if !ok || fd.Body == nil {
+						continue
+					}
+					k := funcKey(tp.path, recvName(fd), fd.Name.Name)
+					for i, po := range paramObjs(tp, fd.Type) {
+						if po == nil || a.sinkParams[k][i] || !(textLike(po.Type(), "") || isAnyType(po.Type())) {
+							continue
+						}
+						a.seed = map[types.Object]bool{po: true}
+						a.sinkHit = false
+						a.runFunc(tp, "", fd.Name.Name, fd.Body, fd.Type, false)
+						a.seed = nil
+						if a.sinkHit {
+							if a.sinkParams[k] == nil {
+								a.sinkParams[k] = map[int]bool{}
+							}
+							a.sinkParams[k][i] = true
+							changed = true
+						}
 					}
 				}
 			}
@@ -708,8 +898,10 @@ func scanTyped(t *testing.T, root string, patterns ...string) []finding {
 // reviewedAllow lists the reviewed non-leaking uses, keyed by file + function (no line text). Every entry carries its reason.
 // Entry format "file:Func|kind".
 var reviewedAllow = map[string]string{
-	"internal/middleware/middleware.go:Logger|tainted-into-sink":                         "path is re-assigned to logredact.Path(path, raw) before the zap field is built (flow-insensitive scanner keeps the first assignment's taint)",
-	"tests/mocks/webdav_mock_server.go:MockWebDAVServer.handleRequest|tainted-into-sink": "test-infrastructure mock WebDAV server (never compiled into the API binary); logs its own debug path at Debug level, no credential path",
+	"internal/middleware/middleware.go:Logger|tainted-into-sink":                                 "path is re-assigned to logredact.Path(path, raw) before the zap field is built (flow-insensitive scanner keeps the first assignment's taint)",
+	"tests/mocks/webdav_mock_server.go:MockWebDAVServer.handleRequest|tainted-into-wrapper-sink": "same mock server: its handlers log the mock's own debug path (handleGet/handlePropfind wrappers); test infrastructure",
+	"internal/tests/protocol_helper.go:WebDAVMockServer.handleRequest|tainted-into-wrapper-sink": "test-only WebDAV mock in a _test-support package (never linked into the API binary); logs its own debug path",
+	"tests/mocks/webdav_mock_server.go:MockWebDAVServer.handleRequest|tainted-into-sink":         "test-infrastructure mock WebDAV server (never compiled into the API binary); logs its own debug path at Debug level, no credential path",
 }
 
 // evaluateFindings returns the failures: findings not on the allow-list, and allow-list entries no finding hits any more.
@@ -780,6 +972,10 @@ func TestTypedScan_ControlNeedles(t *testing.T) {
 		"Needle11MuxVars", "Needle12NormalizePathReturn", "Needle13ZapField", "Needle14MetricLabel", "Needle15Concat",
 		"Needle16Errorf", "Needle17HeaderGet", "Needle18GinDefault", "Needle19GinRecovery", "Needle20WholeContext",
 		"Needle21QueryMethodThenGet", "Needle22Range", "Needle23LogFormatterRawPath", "Needle24LogFormatterErrorMessage", "Needle25HeaderNameOnlyInHeaderList",
+		"Needle26ObsLoggingWithField", "Needle27ContainersLogging", "Needle28ModuleWrapper", "Needle29TransitiveWrapper",
+		"Needle30ModuleInterfaceLogger", "Needle31ClosureReturningTainted", "Needle32MethodValue", "Needle33StringsBuilder",
+		"Needle34FprintfIntoBuilder", "Needle35OsStderrWriteString", "Needle36OsStderrWrite", "Needle37Channel",
+		"Needle38PrintlnBuiltin", "Needle39ErrorfWrapIntoLog",
 	}
 	byFunc := map[string]bool{}
 	for _, f := range leaky {
@@ -849,4 +1045,33 @@ func TestInstrumentationImportsAreReviewed(t *testing.T) {
 	if len(seen) == 0 {
 		t.Fatal("inventory blind: no instrumentation import seen at all")
 	}
+}
+
+// wrapperVariadic: an argument beyond the last summarised parameter of a variadic wrapper counts as that last parameter.
+func wrapperVariadic(w map[int]bool, i int) bool {
+	max := -1
+	for k := range w {
+		if k > max {
+			max = k
+		}
+	}
+	return max >= 0 && i > max && w[max]
+}
+
+// paramObjs returns the parameter objects of a function declaration, in order (blank and unnamed ones as nil).
+func paramObjs(tp *tpkg, ft *ast.FuncType) []types.Object {
+	var out []types.Object
+	if ft == nil || ft.Params == nil {
+		return nil
+	}
+	for _, fld := range ft.Params.List {
+		if len(fld.Names) == 0 {
+			out = append(out, nil)
+			continue
+		}
+		for _, n := range fld.Names {
+			out = append(out, tp.info.Defs[n])
+		}
+	}
+	return out
 }

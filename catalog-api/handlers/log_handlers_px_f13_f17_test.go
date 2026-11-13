@@ -53,11 +53,19 @@ func pxFixedSites() []pxLogSite {
 	okShare := &models.LogShare{CollectionID: 3, UserID: 2}
 	return []pxLogSite{
 		{name: "CreateLogCollection", setup: func(s *MockLogManagementService, e error) { s.On("CollectLogs", 1, mock.Anything).Return(nil, e) },
-			call: func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.CreateLogCollection(rr, r) }, body: `{}`, status: 500},
+			call: func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) {
+				h.CreateLogCollection(rr, r)
+			}, body: `{}`, status: 500},
 		{name: "GetLogCollection", setup: func(s *MockLogManagementService, e error) { s.On("GetLogCollection", 1, 1).Return(nil, e) },
-			call: func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.GetLogCollection(rr, r) }, vars: map[string]string{"id": "1"}, status: 404},
-		{name: "ListLogCollections", setup: func(s *MockLogManagementService, e error) { s.On("GetLogCollectionsByUser", 1, mock.Anything, mock.Anything).Return(nil, e) },
-			call: func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.ListLogCollections(rr, r) }, status: 500},
+			call: func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) {
+				h.GetLogCollection(rr, r)
+			}, vars: map[string]string{"id": "1"}, status: 404},
+		{name: "ListLogCollections", setup: func(s *MockLogManagementService, e error) {
+			s.On("GetLogCollectionsByUser", 1, mock.Anything, mock.Anything).Return(nil, e)
+		},
+			call: func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) {
+				h.ListLogCollections(rr, r)
+			}, status: 500},
 		{name: "GetLogShare/share", setup: func(s *MockLogManagementService, e error) { s.On("GetLogShare", "tok").Return(nil, e) },
 			call: func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.GetLogShare(rr, r) }, vars: map[string]string{"token": "tok"}, anon: true, status: 404},
 		{name: "GetLogShare/collection", setup: func(s *MockLogManagementService, e error) {
@@ -68,9 +76,13 @@ func pxFixedSites() []pxLogSite {
 		{name: "StreamLogs", setup: func(s *MockLogManagementService, e error) { s.On("StreamLogs", 1, mock.Anything).Return(nil, e) },
 			call: func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.StreamLogs(rr, r) }, status: 500},
 		{name: "GetLogStatistics", setup: func(s *MockLogManagementService, e error) { s.On("GetLogStatistics", 1).Return(nil, e) },
-			call: func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.GetLogStatistics(rr, r) }, status: 500},
+			call: func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) {
+				h.GetLogStatistics(rr, r)
+			}, status: 500},
 		{name: "UpdateConfiguration", setup: func(s *MockLogManagementService, e error) { s.On("UpdateConfiguration", mock.Anything).Return(e) },
-			call: func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.UpdateConfiguration(rr, r) }, body: `{}`, status: 500},
+			call: func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) {
+				h.UpdateConfiguration(rr, r)
+			}, body: `{}`, status: 500},
 		{name: "CleanupOldLogs", setup: func(s *MockLogManagementService, e error) { s.On("CleanupOldLogs").Return(e) },
 			call: func(h *LogManagementHandler, rr *httptest.ResponseRecorder, r *http.Request) { h.CleanupOldLogs(rr, r) }, status: 500},
 	}
