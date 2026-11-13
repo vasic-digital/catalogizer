@@ -50,8 +50,16 @@ func spellings(ip net.IP) []string {
 	return append(out, "::ffff:"+s) // IPv4-mapped
 }
 
-func TestSMBHostVet_MetadataSingletonsAreNotAllowListable(t *testing.T) {
-	require.Error(t, VetSMBHost("fd20:ce::254"), "literal with colons fails syntax")
-	require.Error(t, VetSMBHost("[fd20:ce::254]"))
-	require.Error(t, VetSMBHost("fd20:ce::254%eth0"))
+// IPv6 spellings with colons, brackets or a zone id never reach the resolver (syntax refusal); the metadata singletons
+// are refused as literal addresses (smbIPBlocked, checked above) and through the resolver, so no spelling is
+// allow-listable. This test pins the syntax half; the address half is TestSMBHostVet_RefusesEveryNetguardMetadataSingleton.
+func TestSMBHostVet_MetadataSingletonSpellingsRefusedBySyntaxOrAddress(t *testing.T) {
+	for _, h := range []string{"fd20:ce::254", "[fd20:ce::254]", "fd20:ce::254%eth0", "fd00:ec2::254", "[fd00:ec2::254]"} {
+		err := VetSMBHost(h)
+		require.Error(t, err, h)
+		require.ErrorIs(t, err, ErrInvalidSMBInput, h)
+	}
+	for _, h := range []string{"100.100.100.200", "100.100.100.200."} {
+		require.Error(t, VetSMBHost(h), h) // address half (trailing dot is a syntax-valid name that does not resolve)
+	}
 }
