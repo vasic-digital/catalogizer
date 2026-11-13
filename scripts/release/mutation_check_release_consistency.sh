@@ -232,7 +232,16 @@ MUTANTS=(
 'CC2r3 N1 raw hash mismatch ignored|||if [ "${gots[$i]}" != "${shas[$i]}" ]; then|||if false; then'
 'CC2r3 N1 entry reached through a symlink not walked|||if [ -n "$rp" ] && [ "$rp" != "$(realpath|||if false && [ "$rp" != "$(realpath'
 'CC2r3 N1 tree hashed with local filters|||git -C "$REPO" hash-object --no-filters --stdin-paths|||git -C "$REPO" hash-object --stdin-paths'
-# Equivalent mutants (not run): the manifest-tree skip-worktree / assume-unchanged check (since N1 the raw per-file compare in raw_tree_check reports any hidden difference regardless of flags; a flagged file whose bytes match HEAD hides nothing);the symlink compare inside raw_tree_check (a retargeted tree symlink is also reported by git status; no stat-cache repro was found for symlinks, so it is defensive and not independently tested);OWN4, the unsupported-HEAD-mode branch (git ls-tree canonicalises regular-file modes to 100644/100755; measured with a literal 100664 tree); the 40-hop cap in chain_one (a loop is MISS before the walk starts, and a HEAD loop cannot match a
+'CC2r4 R3-1 gitlink under a manifest tree not BLIND|||      160000)
+        # R3-1: a clone|||      160000_disabled)
+        # R3-1: a clone'
+'CC2r4 R3-1 manifest-tree status ignores submodules|||status --porcelain=v1 --ignore-submodules=none --untracked-files=no -- ":(literal)$d"|||status --porcelain=v1 --untracked-files=no -- ":(literal)$d"'
+'CC2r4 R3-1 entry status ignores submodules|||status --porcelain=v1 --ignore-submodules=none --untracked-files=no -- ":(literal)$cur"|||status --porcelain=v1 --untracked-files=no -- ":(literal)$cur"'
+'CC2r4 R3-2 symlink compare in raw_tree_check dropped|||if [ ! -L "$REPO/$path" ] || [ "$tgt" != "$want" ]; then|||if false; then'
+'CC2r4 R3-2 newline-name hash compare dropped|||if [ "$got" != "$sha" ]; then note_blind "manifest tree $(printf '"'"'%q'"'"' "$d"): $(printf '"'"'%q'"'"' "$path") raw bytes differ from the HEAD blob"; return 1; fi|||:'
+'CC2r4 R3-2 hash count mismatch ignored|||if [ "${#gots[@]}" -ne "$n" ]; then|||if false; then'
+'CC2r4 R3-2 ls-tree probe dropped|||if ! git -C "$REPO" ls-tree HEAD -- "$d/" >/dev/null 2>&1; then|||if false; then'
+# Equivalent mutants (not run): the `*)` unexpected-mode branch in raw_tree_check (git ls-tree -r only emits 100644/100755/120000/160000; defensive, same as OWN4); the manifest-tree skip-worktree / assume-unchanged check (since N1 the raw per-file compare in raw_tree_check reports any hidden difference regardless of flags; a flagged file whose bytes match HEAD hides nothing);the symlink compare inside raw_tree_check (a retargeted tree symlink is also reported by git status; no stat-cache repro was found for symlinks, so it is defensive and not independently tested);OWN4, the unsupported-HEAD-mode branch (git ls-tree canonicalises regular-file modes to 100644/100755; measured with a literal 100664 tree); the 40-hop cap in chain_one (a loop is MISS before the walk starts, and a HEAD loop cannot match a
 # working tree that is not a loop because every hop target is compared with HEAD's blob) and the '..'-above-the-root guard in
 # chain_one (the outside-repo rule rejects such paths first), and the exact-name filter in head_entry (git ls-tree does not
 # glob: measured, a pathspec like 'd/f[1].txt' or 'd/f*' returns only the literal entry or nothing).

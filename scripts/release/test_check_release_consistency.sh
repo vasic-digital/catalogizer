@@ -685,6 +685,48 @@ RAW=1 expect "Z71 N4 committed eol=crlf attribute -> BLIND with the resolution w
 # N2: --help states the derived default
 out="$("$CHECKER" --help 2>&1)"; if printf '%s\n' "$out" | grep -q 'versions.json global' && ! printf '%s\n' "$out" | grep -q 'default: topmost numbered section'; then ok; else bad "Z74 N2 --help still advertises the topmost-section default"; fi
 
+echo "== CAT-REL-CHECK-2 round 4 (R3-1 gitlinks, R3-2 stat-cache symlink, R3-2 stub branches)"
+# smk2 <repo> <path>: adds a submodule with f='good' at <path> (committed in the parent by the caller)
+smk2() { local sub="$ROOT/sub.$RANDOM"; mkdir -p "$sub" && ( cd "$sub" && git init -q . && git config user.email a@b.c && git config user.name x && git config commit.gpgsign false && printf good > f && git add f && git commit -q -m i ) && ( cd "$1" && git -c protocol.file.allow=always submodule add -q "$sub" "$2" >/dev/null 2>&1 ); }
+# R3-1 clean: manifest lists a file below a submodule; status is clean but a plain clone has no such file
+d=$(fresh); smk2 "$d" docs/qa/run2/sub; ( cd "$d/docs/qa/run2" && sha256sum c.txt sub/f > SHA256SUMS ); cm "$d"
+RAW=1 expect "Z75 R3-1 manifest tree holding a submodule (clean, manifest lists sub/f) -> BLIND" 2 "contains the submodule" "$d" --check changelog
+# R3-1 .gitmodules ignore=all hides a modified submodule file the manifest lists
+d=$(fresh); smk2 "$d" docs/qa/run2/sub; ( cd "$d" && git config -f .gitmodules submodule.docs/qa/run2/sub.ignore all ); printf evil > "$d/docs/qa/run2/sub/f"; ( cd "$d/docs/qa/run2" && sha256sum c.txt sub/f > SHA256SUMS ); cm "$d"
+RAW=1 expect "Z76 R3-1 .gitmodules ignore=all + modified submodule file -> BLIND (dirty, not committed)" 2 "has changes that are not committed" "$d" --check changelog
+# R3-1 local-config variant
+d=$(fresh); smk2 "$d" docs/qa/run2/sub; ( cd "$d" && git config diff.ignoreSubmodules all ); printf evil > "$d/docs/qa/run2/sub/f"; ( cd "$d/docs/qa/run2" && sha256sum c.txt sub/f > SHA256SUMS ); cm "$d"
+RAW=1 expect "Z77 R3-1 local diff.ignoreSubmodules=all + modified submodule file -> BLIND (dirty, not committed)" 2 "has changes that are not committed" "$d" --check changelog
+# R3-1 cited gitlink itself, dirty submodule hidden by ignore=all
+d=$(fresh); smk2 "$d" docs/subm; ( cd "$d" && git config -f .gitmodules submodule.docs/subm.ignore all ); addrow "$d" docs/subm; cm "$d"; printf evil > "$d/docs/subm/f"
+RAW=1 expect "Z78 R3-1 cited gitlink, ignore=all, modified submodule file -> BLIND" 2 "docs/subm differs from HEAD" "$d" --check changelog
+d=$(fresh); smk2 "$d" docs/subm; ( cd "$d" && git config diff.ignoreSubmodules all ); addrow "$d" docs/subm; cm "$d"; printf evil > "$d/docs/subm/f"
+RAW=1 expect "Z79 R3-1 cited gitlink, local diff.ignoreSubmodules=all, modified submodule file -> BLIND" 2 "docs/subm differs from HEAD" "$d" --check changelog
+# R3-1 cited file below a gitlink (direct cite and through the cited-path walk) is never PASS
+d=$(fresh); smk2 "$d" docs/subm; ( cd "$d" && git config -f .gitmodules submodule.docs/subm.ignore all ); lk "$d" docs/other/ln2 ../subm/f; addrow "$d" docs/other/ln2; cm "$d"
+RAW=1 expect "Z80 R3-1 cited symlink into a submodule with ignore=all -> BLIND" 2 "continues inside the submodule docs/subm" "$d" --check changelog
+# R3-1 a manifest entry reached through a symlink into a submodule
+d=$(fresh); smk2 "$d" docs/subm; ( cd "$d/docs/qa/run2" && ln -s ../../subm/f sl.txt && sha256sum sl.txt >> SHA256SUMS ); cm "$d"
+RAW=1 expect "Z81 R3-1 manifest entry via symlink into a submodule -> BLIND" 2 "continues inside the submodule docs/subm" "$d" --check changelog
+
+# R3-2: a tracked symlink in the manifest tree retargeted with the same length, stat cache fooled
+d=$(fresh); ( cd "$d/docs/qa/run2" && ln -s aa lnk ); ( cd "$d" && git add -A && git commit -q -m lnk && git config core.checkStat minimal && git config core.trustctime false )
+( cd "$d/docs/qa/run2" && ln -sfn bb lnk ); sleep 2; ( cd "$d" && git commit -q -a -m retarget && git update-index --really-refresh >/dev/null ); m="$(stat -c %.9Y "$d/docs/qa/run2/lnk")"
+( cd "$d/docs/qa/run2" && ln -sfn aa lnk && touch -h -d "@$m" lnk ); st="$(git -C "$d" status --porcelain --untracked-files=no)"
+if [ -n "$st" ]; then bad "Z82 fixture: git status is not clean ($st)"; else RAW=1 expect "Z82 R3-2 same-length symlink retarget hidden from git status -> BLIND" 2 "symlink docs/qa/run2/lnk differs from HEAD" "$d" --check changelog; fi
+# R3-2: newline in a tracked file name under the manifest tree (hashed on its own), edit hidden from git status
+d=$(fresh); printf 'e5\n' > "$d/docs/qa/run2/$(printf 'nl\nx.txt')"; ( cd "$d" && git add -A && git commit -q -m nl && git config core.checkStat minimal && git config core.trustctime false )
+printf 'XX\n' > "$d/docs/qa/run2/$(printf 'nl\nx.txt')"; sleep 2; ( cd "$d" && git commit -q -a -m tamper && git update-index --really-refresh >/dev/null ); touch -r "$d/docs/qa/run2/$(printf 'nl\nx.txt')" "$d/ref.stamp"
+printf 'e5\n' | dd of="$d/docs/qa/run2/$(printf 'nl\nx.txt')" conv=notrunc status=none; touch -r "$d/ref.stamp" "$d/docs/qa/run2/$(printf 'nl\nx.txt')"
+st="$(git -C "$d" status --porcelain --untracked-files=no)"
+if [ -n "$st" ]; then bad "Z83 fixture: git status is not clean ($st)"; else RAW=1 expect "Z83 R3-2 newline-named file with a hidden edit -> BLIND" 2 "nl\\nx.txt' raw bytes differ from the HEAD blob" "$d" --check changelog; fi
+# R3-2: stdin-paths hash count mismatch and the ls-tree probe (git wrappers)
+gitstub2() { local sd; sd="$(mktemp -d "$ROOT/gstub.XXXXXX")"; printf '#!/bin/sh\n%s\nexec %s "$@"\n' "$1" "$REALGIT" > "$sd/git"; chmod +x "$sd/git"; echo "$sd"; }
+d=$(fresh); sd=$(gitstub2 'for a in "$@"; do if [ "$a" = "--stdin-paths" ]; then cat >/dev/null; echo 0000000000000000000000000000000000000000; exit 0; fi; done')
+PATH="$sd:$PATH" RAW=1 expect "Z84 R3-2 hash-object returns fewer hashes than files -> BLIND" 2 "hashes for" "$d" --check changelog
+d=$(fresh); sd=$(gitstub2 'case "$*" in *" ls-tree HEAD -- docs/qa/run2/") exit 1 ;; esac')
+PATH="$sd:$PATH" RAW=1 expect "Z85 R3-2 failing ls-tree probe of the manifest tree -> BLIND" 2 "cannot prove the manifest tree matches HEAD" "$d" --check changelog
+
 echo "== selftest (11.4.273 control needles built into the tool)"
 out="$("$CHECKER" --selftest 2>&1)"; got=$?
 if [ "$got" = 0 ] && printf '%s\n' "$out" | grep -q '^VERDICT: PASS selftest'; then ok; else bad "selftest rc=$got"; fi

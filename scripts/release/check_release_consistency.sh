@@ -152,7 +152,7 @@ name_collides() {
 # the final file or the final directory). Appends to CHAIN_BAD; returns 1 only when git failed (BLIND noted).
 entry_clean() {
   local cur="$1" out flagged
-  if ! out="$(git -C "$REPO" -c core.quotepath=off status --porcelain=v1 --untracked-files=no -- ":(literal)$cur" 2>/dev/null)"; then
+  if ! out="$(git -C "$REPO" -c core.quotepath=off status --porcelain=v1 --ignore-submodules=none --untracked-files=no -- ":(literal)$cur" 2>/dev/null)"; then
     note_blind "$(printf '%q' "$cur"): git status failed; cannot prove the files match HEAD"; return 1
   fi
   [ -z "$out" ] || chain_bad "$cur differs from HEAD: $(printf '%s\n' "$out" | head -3 | tr '\n' ';')"
@@ -730,7 +730,7 @@ load_waivers() {
   fi
   if ! tracked "$rel"; then note_blind "waiver file $rel exists but is not git-tracked"; return 1; fi
   # a waiver that exists only in the working tree would PASS here and FAIL in a clone
-  if ! git -C "$REPO" diff --quiet HEAD -- ":(literal)$rel" 2>/dev/null; then
+  if ! git -C "$REPO" diff --quiet --ignore-submodules=none HEAD -- ":(literal)$rel" 2>/dev/null; then
     note_blind "waiver file $rel differs from HEAD (commit it first)"; return 1
   fi
   today="${RELCHK_TODAY:-$(date +%F)}"
@@ -817,7 +817,12 @@ raw_tree_check() {
         want="${want%.}"
         if [ ! -L "$REPO/$path" ] || [ "$tgt" != "$want" ]; then
           note_blind "manifest tree $(printf '%q' "$d"): symlink $(printf '%q' "$path") differs from HEAD"; return 1
-        fi ;;
+        fi;;
+      160000)
+        # R3-1: a clone (non-recursive) has nothing below a gitlink and git status may be told to ignore it
+        note_blind "manifest tree $(printf '%q' "$d") contains the submodule $(printf '%q' "$path"); a clone does not provide its files, so the manifest cannot be proven"; return 1 ;;
+      *)
+        note_blind "manifest tree $(printf '%q' "$d"): $(printf '%q' "$path") has the unsupported HEAD mode $mode"; return 1 ;;
     esac
   done < <(git -C "$REPO" ls-tree -r -z HEAD -- "$d/" 2>/dev/null)
   n="${#paths[@]}"
@@ -849,7 +854,7 @@ check_manifest_dir() {
   # I-1: a clone sees HEAD, not the index or the working tree. Any tracked file under the covered tree
   # (manifests included) that is staged-but-uncommitted, modified or deleted makes this verdict unprovable.
   local dirty
-  if ! dirty="$(git -C "$REPO" -c core.quotepath=off status --porcelain=v1 --untracked-files=no -- ":(literal)$d" 2>/dev/null)"; then
+  if ! dirty="$(git -C "$REPO" -c core.quotepath=off status --porcelain=v1 --ignore-submodules=none --untracked-files=no -- ":(literal)$d" 2>/dev/null)"; then
     note_blind "git status failed for $(printf '%q' "$d"); cannot prove it matches HEAD"; return
   fi
   local flagged

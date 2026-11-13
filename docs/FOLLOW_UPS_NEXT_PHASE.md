@@ -1861,3 +1861,10 @@ F1 root-resolving cited path walked; F2 raw-byte hop compare plus per-hop status
 
 ### CAT-REL-CHECK-2 round 3 (Opus round 2 NO-GO: N1-N4)
 N1: `raw_tree_check` compares every tracked file and symlink under a manifest tree as raw bytes with its HEAD blob (no stat cache, no filters) and walks manifest entries reached through symlinks; Z69/Z70/Z72/Z73. N2 `--help` fixed (Z74). N3 inventory fixed. N4 committed `eol=` attribute stays BLIND by design (accepted limit; message says how to resolve; Z71). Suite 332 passed. Mutants CC2r3 (4) killed; manifest-flag mutant is now equivalent (raw compare subsumes it).
+
+### CAT-REL-CHECK-2 round 4 (Opus round 3 NO-GO: R3-1 important, R3-2..R3-4 minor)
+R3-1 fixed class-wide: a gitlink (or any unexpected mode) under a manifest tree is BLIND, every `git status` and the waiver `git diff` use `--ignore-submodules=none`, entries inside a gitlink are BLIND; Z75-Z81. R3-2: symlink stat-cache, newline-name, hash-count and ls-tree-probe tests Z82-Z85. Inventory rows 41-45 and a silent-skip enumeration table; the earlier "N1 closed" wording is replaced by what is actually covered.
+Registered, NOT fixed:
+- R3-3: a non-UTF-8 file name in the changelog helper's input crashes it (reported as a helper crash, i.e. BLIND, not a false pass). Fix: read names as bytes with surrogateescape throughout.
+- R3-4: the per-record `read` loop in `raw_tree_check` is about 2x slower at 20k files than a single pass (mapfile/awk). Not trivial enough to change in the last-but-one review round; behaviour is correct.
+

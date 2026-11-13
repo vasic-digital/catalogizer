@@ -67,6 +67,11 @@ tree, plus a raw per-file compare of every tracked file and symlink under it (N1
 | 38 | no `--version`, topmost section differs from versions.json (F6) | section derived from versions.json, else BLIND | Z61, Z62 |
 | 39 | manifest tree: a tracked file tampered in HEAD, worktree restored behind a local clean filter (N1a) or a restored mtime with core.trustctime=false (N1b) | raw per-file compare of every tracked file and symlink under the tree: BLIND | Z69, Z70 |
 | 40 | committed `eol=crlf` attribute (N4) | accepted limit: BLIND, message says how to resolve; stricter than necessary, never a false pass | Z71 |
+| 41 | manifest tree holding a submodule (gitlink, mode 160000), manifest lists a file below it (R3-1); `raw_tree_check` skipped every mode but 100644/100755/120000 silently | any 160000 entry under a manifest tree is BLIND; any other unexpected mode is BLIND (no silent skip) | Z75 |
+| 42 | `.gitmodules` `ignore=all` or local `diff.ignoreSubmodules=all` hiding a modified submodule file from `git status` (R3-1) | every `git status` (and the waiver `git diff`) runs with `--ignore-submodules=none` | Z76, Z77, Z78, Z79 |
+| 43 | cited path or manifest entry lying inside a gitlink, directly or through a symlink hop (R3-1) | BLIND ("continues inside the submodule"); the gitlink itself, cited directly, is PASS only when `git status --ignore-submodules=none` is clean | Z20, Z80, Z81 |
+| 44 | tracked symlink under a manifest tree retargeted with the same length, stat cache fooled (R3-2) | symlink target compared with the HEAD blob: BLIND | Z82 |
+| 45 | newline in a tracked file name, `--stdin-paths` hash count mismatch, failing ls-tree probe (R3-2) | newline names hashed on their own; count mismatch and probe failure are BLIND | Z83, Z84, Z85 |
 
 Equivalent mutants (not run): the unsupported-HEAD-mode branch in `chain_one` (`git ls-tree` canonicalises a regular-file mode such as 100664 to 100644; measured with a literal tree), removing the 40-hop cap (a real loop is MISS before the walk starts, and a HEAD loop
 cannot match a working tree that is not a loop because the link target is compared with HEAD's blob), and the
@@ -78,6 +83,18 @@ cannot match a working tree that is not a loop because the link target is compar
 * A clone made with `core.symlinks=false` (Windows) turns symlinks into text files; sparse or shallow clones; LFS
   pointers (hash of the pointer vs content) - all UNCONFIRMED, untested.
 * The executable bit is not compared directly; `git status` reports a mode change on the final entry.
-* (N1 closed: every tracked file under a manifest tree is compared raw.) Remaining: a committed `eol=` attribute makes the affected file BLIND (accepted limit, N4).
+* Every tracked regular file and symlink under a manifest tree is compared raw (N1), and a gitlink or any other mode there is BLIND (R3-1); this does not extend to hidden state this checker cannot see. Remaining: a committed `eol=` attribute makes the affected file BLIND (accepted limit, N4).
 * Untracked files inside a cited directory outside the evidence prefix; the executable bit when `core.fileMode=false`.
 * A name containing a double quote or a backslash is never extracted as a path, so it is never checked.
+
+## Silent-skip enumeration (R3-1, class-exhaustive; unexpected mode or type)
+
+Every place that branches on a tree mode or a file type, and what happens to a value it does not expect:
+
+| Place | Handles | Unexpected value |
+|---|---|---|
+| `chain_one` mode `case` | 120000, 040000, 160000, 100644/100755 | `*)` chain_bad (BLIND); 160000 below the cited path is BLIND |
+| `raw_tree_check` mode `case` | 100644/100755, 120000 | was silently skipped (the R3-1 defect); now 160000 and `*)` are BLIND |
+| completeness helper (`os.path.islink(...) or not os.path.isfile(...)`: continue) | regular files | symlinks are covered by `raw_tree_check`; a gitlink in the tree is BLIND before the helper runs; an untracked non-regular file is not a manifest-coverage subject by design |
+| `git status` calls (entry_clean, check_manifest_dir) and the waiver `git diff` | all | submodule state is never ignored (`--ignore-submodules=none`) |
+| changelog path extractor | backticked tokens with `/` | tokens it cannot treat as paths are counted as SKIP in the summary, never PASS evidence |
