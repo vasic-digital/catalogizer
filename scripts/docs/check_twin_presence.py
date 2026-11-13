@@ -3,12 +3,14 @@
 
 Purpose  11.4.65 requires every doc to ship its exported siblings. A new doc committed without them (or with a stale html) is caught here.
 Usage    check_twin_presence.py [--root DIR] [--since REF] [--no-html-drift] [--quiet]
-         --since  git ref; default the newest tag (git describe --tags --abbrev=0). Scope: .md files ADDED or MODIFIED (git diff --diff-filter=AM REF..HEAD, plus the staged
-                  and unstaged working-tree changes) under docs/ that have a twin of either kind (a modified doc that never had twins is not demanded; a
+         --since  git ref; default the newest tag (git describe --tags --abbrev=0). Scope: .md files ADDED or MODIFIED (git diff --diff-filter=AM REF..HEAD, plus staged,
+                  unstaged and untracked-not-ignored working-tree files) under docs/ that have a twin of either kind (a modified doc that never had twins is not demanded; a
                   newly added one always is).
 Checks   per scoped FILE.md: FILE.html exists and is non-empty; FILE.pdf exists, is non-empty, starts with %PDF and is a readable PDF whose
          Keywords field carries src-sha256:<sha256 of FILE.md> (so a stale PDF fails) and whose text covers the Markdown
-         (check_pdf_coverage.py, 0 tokens missing; skipped with --no-pdf-coverage); unless --no-html-drift,
+         (check_pdf_coverage.py, 0 tokens missing; skipped with --no-pdf-coverage).
+         Residual: the src-sha256 is metadata, so a forger can pair an old-content PDF with a new hash; the coverage run catches that
+         whenever the new Markdown contains any token the old PDF lacks, not an edit that adds no new token; unless --no-html-drift,
          scripts/docs/render_md_to_html.sh --check FILE.md is clean (the html matches what would be generated).
 Control  Before the scan, in a temp tree: a doc with both twins must be reported complete and a doc missing its pdf must be reported incomplete;
          an empty scope is BLIND, never a pass.
@@ -76,7 +78,9 @@ def main(argv):
     added = g('diff', '--name-only', '--diff-filter=A', since + '..HEAD', '--', 'docs').stdout.split('\n')
     r2 = g('diff', 'HEAD', '--name-only', '--diff-filter=AM', '--', 'docs')
     names = set(f for f in (r.stdout + r2.stdout).split('\n') if f.endswith('.md'))
-    new = set(added) | set(g('diff', 'HEAD', '--name-only', '--diff-filter=A', '--', 'docs').stdout.split('\n'))
+    untracked = g('ls-files', '--others', '--exclude-standard', '--', 'docs').stdout.split('\n')   # new docs not yet git-added count as added
+    names |= set(f for f in untracked if f.endswith('.md'))
+    new = set(added) | set(g('diff', 'HEAD', '--name-only', '--diff-filter=A', '--', 'docs').stdout.split('\n')) | set(untracked)
     # modified docs are in scope only when they already have a twin (an older doc that never had twins is not demanded here)
     scope = sorted(f for f in names if f in new or os.path.isfile(os.path.join(root, f[:-3] + '.html')) or os.path.isfile(os.path.join(root, f[:-3] + '.pdf')))
     if not control(): print('BLIND: needle control failed'); return 2

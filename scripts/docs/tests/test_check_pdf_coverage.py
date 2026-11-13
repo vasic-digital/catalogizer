@@ -273,3 +273,155 @@ def test_cell_and_code_wrap_independent_of_body_inheritance(tmp_path):
     assert max(w[2] for w in ws) <= pw - 20
     joined = "".join(w[4] for w in ws)
     assert "CELLEND" in joined and "CODEEND" in joined
+
+
+# ---- round 4 -------------------------------------------------------------------------------------------------------------------------
+
+def _wordtexts(pdf):
+    return [w[4] for w in words(pdf)]
+
+
+def test_short_ids_stay_on_one_line_landscape(tmp_path):
+    # F1: ids in a narrow column of a wide table must not wrap ("B10"/"6")
+    ids = ["B%d" % (100 + i) for i in range(20)]
+    prose = "some quite long explanatory prose for this cell " * 4
+    rows = "".join("| %s | %s:%d | %s | %s | %s | %s | %s |\n" % (i, "media_entity_handler.go", 1100 + n, prose, prose, prose, prose, prose) for n, i in enumerate(ids))
+    md = make(tmp_path, "# T\n\n| id | loc | a | b | c | d | e |\n|---|---|---|---|---|---|---|\n" + rows, "ids")
+    pdf = md[:-3] + ".pdf"
+    assert page_size(pdf)[0] > page_size(pdf)[1]
+    ws = _wordtexts(pdf)
+    for i in ids: assert i in ws, "%s broken across lines" % i
+    assert "media_entity_handler.go:1100" in ws and "media_entity_handler.go:1119" in ws
+    assert sh(sys.executable, COV, md).returncode == 0
+
+
+def test_short_ids_stay_on_one_line_portrait(tmp_path):
+    prose = "some quite long explanatory prose for this cell " * 3
+    rows = "".join("| PCELL%dKK | %s | %s | %s |\n" % (n, prose, prose, prose) for n in range(6))
+    md = make(tmp_path, "# T\n\n| id | a | b | c |\n|---|---|---|---|\n" + rows, "pids")
+    pdf = md[:-3] + ".pdf"
+    assert page_size(pdf)[0] < page_size(pdf)[1]
+    ws = _wordtexts(pdf)
+    for n in range(6): assert "PCELL%dKK" % n in ws
+    assert sh(sys.executable, COV, md).returncode == 0
+
+
+def test_gate_catches_split_id(tmp_path):
+    # the F1 class: a PDF whose ids are split must FAIL the default gate (tokens of 4 characters, ids with digits)
+    md = make(tmp_path, "# T\n\n| id | text |\n|---|---|\n| B1006 | " + "word " * 5 + " |\n", "sp")
+    # build a PDF from a doc where the id is broken across two lines
+    broken = str(tmp_path / "brk.md")
+    open(broken, "w").write("# T\n\n| id | text |\n|---|---|\n| B100 6 | " + "word " * 5 + " |\n")
+    assert sh(PDF, broken).returncode == 0
+    claim = str(tmp_path / "claim.md"); shutil.copy(md, claim)
+    shutil.copy(broken[:-3] + ".pdf", claim[:-3] + ".pdf")
+    r = sh(sys.executable, COV, claim)
+    assert r.returncode == 1 and "B1006" in r.stdout, r.stdout
+
+
+def test_cross_cell_glue_rejected_for_long_words(tmp_path):
+    # M-a: two neighbouring cells must not be accepted as one 26-character word
+    real = make(tmp_path, "# T\n\n| x | y |\n|---|---|\n| Abcdefghijkl | mnopqrstuvwxyz |\n", "xc")
+    claim = str(tmp_path / "xclaim.md")
+    open(claim, "w").write("# T\n\n| x |\n|---|\n| Abcdefghijklmnopqrstuvwxyz |\n")
+    shutil.copy(real[:-3] + ".pdf", claim[:-3] + ".pdf")
+    r = sh(sys.executable, COV, claim)
+    assert r.returncode == 1 and "Abcdefghijklmnopqrstuvwxyz" in r.stdout, r.stdout
+
+
+def test_non_latin_tokens_checked(tmp_path):
+    txt = "# Тест\n\nДокументация проекта содержит подробное описание архитектуры системы.\n"
+    md = make(tmp_path, txt, "ru")
+    r = sh(sys.executable, COV, md)
+    assert r.returncode == 0 and "0/" in r.stdout and "nothing to compare" not in r.stdout, r.stdout
+    claim = str(tmp_path / "ruc.md")
+    open(claim, "w").write(txt + "\nПропавшееслово отсутствует.\n")
+    shutil.copy(md[:-3] + ".pdf", claim[:-3] + ".pdf")
+    r = sh(sys.executable, COV, claim)
+    assert r.returncode == 1 and "Пропавшееслово" in r.stdout, r.stdout
+
+
+def test_multi_file_blank_pdf_second_file_fails(tmp_path):
+    a = make(tmp_path, WIDE, "a")
+    b = str(tmp_path / "b.md"); open(b, "w").write("# T\n\nPlenty of ordinary readable words here, enough tokens.\n")
+    blank = str(tmp_path / "blank.html"); open(blank, "w").write("<html><body></body></html>")
+    assert sh("weasyprint", "-q", blank, b[:-3] + ".pdf").returncode == 0
+    r = sh(sys.executable, COV, a, b)
+    assert r.returncode == 1 and "blank" in r.stdout and "OK   " in r.stdout.split("\n")[0], r.stdout
+
+
+def test_code_span_tokens_no_blind(tmp_path):
+    md = make(tmp_path, "# T\n\nThe `RunOption`s and `alpha_beta_gamma` and `a b c` appear here with `zzz`.\n", "cs")
+    r = sh(sys.executable, COV, md)
+    assert r.returncode == 0, r.stdout
+
+
+def _load_cov():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("cov", COV)
+    m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+    return m
+
+
+def test_md_side_control_blind_independent_of_fake_value(tmp_path):
+    m = _load_cov()
+    md = make(tmp_path)
+    real = m.present
+    m.present = lambda tok, W, encl=0: False if isinstance(W, str) and tok != m.CTRL_FAKE else real(tok, W, encl)   # Markdown side cannot find its own token
+    assert m.main([md]) == 2
+
+
+def test_pdf_side_control_blind_independent_of_fake_value(tmp_path):
+    m = _load_cov()
+    md = make(tmp_path)
+    real = m.present
+    m.present = lambda tok, W, encl=0: True if tok == m.CTRL_FAKE and not isinstance(W, str) else real(tok, W, encl)   # PDF side "finds" the fabricated token
+    assert m.main([md]) == 2
+
+
+def _forge_hash(pdf, old_md_text, new_hash, tmp):
+    # render the OLD content but stamp it with the NEW markdown's hash (what a forger would do)
+    src = os.path.join(tmp, "forge.md"); open(src, "w").write(old_md_text)
+    html = os.path.join(tmp, "forge.html")
+    assert sh("pandoc", "-f", "gfm", "-t", "html5", "-s", "--metadata", "pagetitle=F", "--metadata", "lang=en",
+              "--metadata", "keywords=src-sha256:" + new_hash, src, "-o", html).returncode == 0
+    assert sh("weasyprint", "-q", html, pdf).returncode == 0
+
+
+def test_twin_forged_hash_old_content_fails_coverage(tmp_path):
+    import hashlib
+    _repo(tmp_path)
+    md = _twins(tmp_path, "f", "# F\n\nfirst version with original_content tokens\n")
+    git(tmp_path, "add", "-A"); git(tmp_path, "commit", "-qm", "f"); git(tmp_path, "tag", "v1")
+    old = hashlib.sha256(open(md, "rb").read()).hexdigest()
+    open(md, "w").write("# F\n\nsecond version with completely_different tokens added\n")
+    new = hashlib.sha256(open(md, "rb").read()).hexdigest()
+    assert sh(os.path.join(D, "render_md_to_html.sh"), md).returncode == 0     # html honest; pdf forged
+    _forge_hash(md[:-3] + ".pdf", "# F\n\nfirst version with original_content tokens\n", new, str(tmp_path))
+    git(tmp_path, "add", "-A"); git(tmp_path, "commit", "-qm", "edit")
+    r = sh(sys.executable, TWIN, "--root", str(tmp_path), "--since", "v1")
+    assert r.returncode == 1 and "coverage" in r.stdout, r.stdout
+
+
+def test_twin_untracked_new_doc_without_twins_fails(tmp_path):
+    _repo(tmp_path)
+    open(tmp_path / "docs/u.md", "w").write("# U\n\nuntracked doc without twins\n")
+    r = sh(sys.executable, TWIN, "--root", str(tmp_path), "--since", "v0")
+    assert r.returncode == 1 and "u.md" in r.stdout, r.stdout
+
+
+def test_render_is_reproducible(tmp_path):
+    md = make(tmp_path, WIDE, "r")
+    a = open(md[:-3] + ".pdf", "rb").read()
+    assert sh(PDF, md).returncode == 0
+    assert a == open(md[:-3] + ".pdf", "rb").read(), "two renders differ"
+
+
+def test_short_tokens_are_checked(tmp_path):
+    # default min-len 4 and the numeric pass: a missing 4-character word and a missing 2-character id both FAIL
+    real = make(tmp_path, "# T\n\nOrdinary readable sentence with several plain words in it.\n", "sh")
+    claim = str(tmp_path / "shc.md")
+    open(claim, "w").write("# T\n\nOrdinary readable sentence with several plain words in it. Zqxw B7\n")
+    shutil.copy(real[:-3] + ".pdf", claim[:-3] + ".pdf")
+    r = sh(sys.executable, COV, claim)
+    assert r.returncode == 1 and "Zqxw" in r.stdout and "B7" in r.stdout, r.stdout

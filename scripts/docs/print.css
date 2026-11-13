@@ -6,7 +6,6 @@ table { table-layout: fixed; width: 100%; max-width: 100%; font-size: 7.5pt; bor
 th, td { overflow-wrap: break-word; word-break: normal; padding: 2px 3px; vertical-align: top; }
 pre { white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; font-size: 8pt; overflow: visible; }
 code, pre code { white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; }
-/* table cells: break only over-long words, and prefer a break that is not inside a hash/identifier run only as last resort (overflow-wrap: break-word) */
 a { overflow-wrap: anywhere; word-break: break-word; }
 img, svg { max-width: 100%; height: auto; }
 tr { break-inside: avoid; page-break-inside: avoid; } /* a row split across pages interleaves its cells in extracted text and scatters tokens */

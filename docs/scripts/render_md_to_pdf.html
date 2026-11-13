@@ -225,11 +225,13 @@ others A4 portrait</td>
 <tr>
 <td>Print rules</td>
 <td>Body 9.5pt at full page width, fixed table layout at 100% width with
-column widths from <code>pdf_table_cols.py</code> (character budget:
-every column gets room for its longest word up to 24 characters, the
-rest by content weight), 7.5pt table text, words break only when
-over-long (<code>overflow-wrap: break-word</code>), rows never split
-across pages, <code>pre</code> and <code>code</code> wrap</td>
+column widths from <code>pdf_table_cols.py</code> (widths in points:
+every column gets the estimated glyph width of its longest word, capped
+at 24 characters and shrinking to 16 when the columns do not fit, plus
+padding, so a short id such as B100 or a <code>file:line</code> number
+never wraps; the rest by content weight), 7.5pt table text, words break
+only when over-long (<code>overflow-wrap: break-word</code>), rows never
+split across pages, <code>pre</code> and <code>code</code> wrap</td>
 </tr>
 <tr>
 <td><code>--check</code></td>
@@ -242,14 +244,16 @@ runs the coverage check on the existing PDF</td>
 </tr>
 <tr>
 <td>Method</td>
-<td>Distinct tokens of 6 or more characters of the Markdown (link
-targets, HTML comments and fence markers removed, NFKC) must appear in
-<code>pdftotext</code> output on a word boundary and contiguously: a
-line wrap is tolerated only after a separator character
-(<code>-/._:@=&amp;?</code>) or inside Markdown words of 24 or more
-characters, so a lost table cell cannot be matched by gluing
-neighbouring cells together. Two reading orders (default and
-<code>-raw</code>)</td>
+<td>Distinct tokens of 4 or more characters (a token containing a digit
+from 2 characters) of the Markdown, Unicode letters included (Cyrillic,
+CJK) (link targets, HTML comments and fence markers removed, NFKC) must
+appear in <code>pdftotext</code> output on a word boundary and
+contiguously: a line wrap is tolerated only after a separator character
+(<code>-/._:@=&amp;?</code>) or inside Markdown words of 16 or more
+characters, and in both cases only when the next piece starts on a later
+line and not right of the previous piece's end, so a lost table cell
+cannot be matched by gluing neighbouring cells together. Two reading
+orders (default and <code>-raw</code>)</td>
 </tr>
 <tr>
 <td>Allow-list</td>
@@ -261,7 +265,9 @@ Default: no file, nothing allowed</td>
 <td>Control</td>
 <td>PDF side: a token taken from the PDF must be found and a fabricated
 one not. Markdown side: the matcher must find a Markdown token in the
-Markdown's own text and a fabricated one not. Otherwise BLIND</td>
+Markdown's own text and a fabricated one not. Run for every file of a
+multi-file call; a blank PDF whose Markdown has tokens is FAIL, not OK.
+Otherwise BLIND</td>
 </tr>
 <tr>
 <td>Exit</td>
@@ -278,14 +284,22 @@ twin)</td>
 </tr>
 </tbody>
 </table>
-<p>Limits: a doc with no tokens of 6 or more characters reports OK with
-nothing to compare. A column too narrow for an identifier breaks it
-mid-word as a last resort (the text stays present and the check allows
-it only inside words of 24 or more characters). This proves the words
+<p>Reproducible: the render sets <code>SOURCE_DATE_EPOCH</code> and a
+PDF identifier derived from the Markdown, so two renders are
+byte-identical (checked on the shipped PDFs). The twin gate also covers
+untracked new docs under <code>docs/</code>.</p>
+<p>Limits: a doc with no tokens of 4 or more characters (or digits)
+reports OK with nothing to compare. Glyph widths are class-based
+estimates, not measured font metrics. A column too narrow for a long
+word breaks it mid-word as a last resort (the text stays present and the
+check allows it only inside words of 16 or more characters). The
+<code>src-sha256</code> Keywords value is metadata and can be forged;
+the twin gate's coverage run catches a forged old-content PDF only when
+the new Markdown adds tokens the old PDF lacks. This proves the words
 are present in the extracted text, not that the page looks right; a
 token split by a page break between two table cells can read as missing
-and is a reason to fix the layout, not to allow-list it. It measures 6+
-character tokens only.</p>
+and is a reason to fix the layout, not to allow-list it. Tokens shorter
+than 4 characters without a digit are not measured.</p>
 <h1 id="check_twin_presencepy">check_twin_presence.py</h1>
 <table>
 <thead>
