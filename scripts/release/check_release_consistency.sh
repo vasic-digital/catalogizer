@@ -112,6 +112,10 @@ REPO="$(cd "$REPO" && pwd)"
 # read from SNAP or from `git ls-tree HEAD`, never from the working tree, the index, .git/info/* or any
 # local/global configuration. The working tree is consulted only to say BLIND when it differs from HEAD.
 export GIT_NO_REPLACE_OBJECTS=1
+# CAT-REL-CHECK-3 (N2): every git call is bounded; a hung git is an ordinary git failure (BLIND), never a hang
+RELCHK_GIT_TIMEOUT="${RELCHK_GIT_TIMEOUT:-120}"; export RELCHK_GIT_TIMEOUT
+case "$RELCHK_GIT_TIMEOUT" in ''|*[!0-9]*|0) RELCHK_GIT_TIMEOUT=120 ;; esac
+git() { command timeout --kill-after=5 "$RELCHK_GIT_TIMEOUT" git "$@"; }
 HEADC="$(git -C "$REPO" rev-parse --verify -q 'HEAD^{commit}' 2>/dev/null)" || blind "'$REPO' has no HEAD commit"
 SNAPBASE="${RELCHK_TMP:-${XDG_CACHE_HOME:-${HOME:?}/.cache}/relchk-tmp}"
 mkdir -p "$SNAPBASE" || blind "cannot create $SNAPBASE"
@@ -131,46 +135,149 @@ trap 'rm -rf -- "${SNAP:?}"' EXIT
 # (the helper-output tests do that on purpose) cannot fake the snapshot
 SNAP_PY=""; for _p in /usr/bin/python3 /usr/local/bin/python3 /bin/python3; do [ -x "$_p" ] && { SNAP_PY="$_p"; break; }; done
 [ -n "$SNAP_PY" ] || SNAP_PY="$(command -v python3 2>/dev/null)" || blind "python3 not found"
-"$SNAP_PY" -I - "$REPO" "$HEADC" "$SNAP" <<'PY' || blind "cannot write the HEAD snapshot of $REPO"
-import os, subprocess, sys
+SNAP_ERR="$("$SNAP_PY" -I - "$REPO" "$HEADC" "$SNAP" 2>&1 >/dev/null <<'PY'
+import os, signal, subprocess, sys
 repo, commit, snap = sys.argv[1:4]
-r = subprocess.run(["git", "-C", repo, "ls-tree", "-r", "-z", "--full-tree", commit], capture_output=True)
+CHILD = []
+def die(code, msg):
+    sys.stderr.write("snapshot refused: %s\n" % msg); sys.stderr.flush()
+    for ch in CHILD:   # a hung git must not outlive the writer (it would keep the caller's pipe open); pid > 1 only
+        try:
+            if ch.pid > 1:
+                ch.kill()
+        except Exception:
+            pass
+    os._exit(code)
+def envint(name, dflt):
+    try:
+        v = int(os.environ.get(name, dflt))
+        return v if v > 0 else dflt
+    except ValueError:
+        return dflt
+MAXFILES = envint("RELCHK_MAX_FILES", 1000000)
+MAXBYTES = envint("RELCHK_MAX_BYTES", 4 << 30)
+GIT_TO = envint("RELCHK_GIT_TIMEOUT", 120)
+signal.signal(signal.SIGALRM, lambda *_: die(7, "snapshot writer exceeded its time limit"))
+signal.alarm(envint("RELCHK_SNAP_TIMEOUT", 900))
+try:
+    r = subprocess.run(["git", "-C", repo, "ls-tree", "-r", "-z", "--full-tree", commit], capture_output=True, timeout=GIT_TO)
+except subprocess.TimeoutExpired:
+    die(7, "git ls-tree timed out")
 if r.returncode != 0:
-    sys.exit(3)
-cat = subprocess.Popen(["git", "-C", repo, "cat-file", "--batch"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-base = os.fsencode(snap)
+    die(3, "git ls-tree failed")
+# ---- 1. parse and validate the whole listing BEFORE anything is written (class: no content-derived write may
+# resolve outside SNAP; duplicate / conflicting paths, special names and size excesses are refused up front)
+ents = []
+seen = set(); prefixes = set()
 for rec in r.stdout.split(b"\0"):
     if not rec:
         continue
-    meta, path = rec.split(b"\t", 1)
-    mode, typ, sha = meta.split(b" ")
+    try:
+        meta, path = rec.split(b"\t", 1)
+        mode, typ, sha = meta.split(b" ")
+    except ValueError:
+        die(4, "malformed ls-tree record")
+    if (mode, typ) not in ((b"100644", b"blob"), (b"100755", b"blob"), (b"120000", b"blob"), (b"160000", b"commit")):
+        die(4, "unsupported tree entry %r" % (mode,))
     parts = path.split(b"/")
-    if any(p in (b"", b".", b"..") or p.lower() == b".git" for p in parts):
-        sys.exit(4)
-    full = base + b"/" + path
-    os.makedirs(os.path.dirname(full), exist_ok=True)
+    if any(p in (b"", b".", b"..") or p.lower() == b".git" or b"\n" in p for p in parts):
+        die(4, "unsafe path component in %r" % (path,))
+    if path in seen:
+        die(4, "duplicate tree entry %r" % (path,))
+    seen.add(path)
+    for i in range(1, len(parts)):
+        prefixes.add(b"/".join(parts[:i]))
+    ents.append((mode, typ, sha, path, parts))
+if len(ents) > MAXFILES:
+    die(8, "more than %d tree entries" % MAXFILES)
+clash = seen & prefixes
+if clash:
+    die(4, "a path is both an entry and a directory: %r" % (sorted(clash)[0],))
+# ---- 2. extraction through directory file descriptors, no symlink is ever followed
+base = os.fsencode(snap)
+RFD = os.open(base, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+FLAGS = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+_cache = {"key": None, "fd": None}
+def dirfd(parts, create=True):
+    key = tuple(parts)
+    if _cache["key"] == key:
+        return _cache["fd"]
+    if _cache["fd"] is not None:
+        os.close(_cache["fd"]); _cache["key"] = None; _cache["fd"] = None
+    fd = os.dup(RFD)
+    for p in parts:
+        if create:
+            try:
+                os.mkdir(p, 0o755, dir_fd=fd)
+            except FileExistsError:
+                pass
+        nfd = os.open(p, FLAGS, dir_fd=fd)   # O_NOFOLLOW: a symlink here is an error, never followed
+        os.close(fd); fd = nfd
+    _cache["key"] = key; _cache["fd"] = fd
+    return fd
+cat = subprocess.Popen(["git", "-C", repo, "cat-file", "--batch"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+CHILD.append(cat)
+total = 0
+links = []
+expect = {}
+for mode, typ, sha, path, parts in ents:
     if typ == b"commit":
-        os.makedirs(full, exist_ok=True)
+        pfd = dirfd(parts[:-1])
+        os.mkdir(parts[-1], 0o755, dir_fd=pfd)
+        expect[path] = "d"
         continue
     cat.stdin.write(sha + b"\n"); cat.stdin.flush()
     hdr = cat.stdout.readline().split()
     if len(hdr) != 3 or hdr[1] != b"blob":
-        sys.exit(5)
-    data = cat.stdout.read(int(hdr[2])); cat.stdout.read(1)
-    if len(data) != int(hdr[2]):
-        sys.exit(6)
+        die(5, "unreadable blob")
+    n = int(hdr[2])
+    total += n
+    if total > MAXBYTES:
+        die(8, "more than %d bytes of content" % MAXBYTES)
+    data = cat.stdout.read(n); cat.stdout.read(1)
+    if len(data) != n:
+        die(6, "short blob")
     if mode == b"120000":
-        os.symlink(data, full)
-    else:
-        with open(full, "wb") as fh:
-            fh.write(data)
+        links.append((path, parts, data)); continue
+    pfd = dirfd(parts[:-1])
+    fd = os.open(parts[-1], os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644, dir_fd=pfd)
+    with os.fdopen(fd, "wb") as fh:
+        fh.write(data)
         if mode == b"100755":
-            os.chmod(full, 0o755)
+            os.fchmod(fh.fileno(), 0o755)
+    expect[path] = "f"
 cat.stdin.close(); cat.wait()
+# symlinks last: every parent is a real directory made above (a path that is both a link and a directory was refused)
+for path, parts, data in links:
+    pfd = dirfd(parts[:-1])
+    os.symlink(data, parts[-1], dir_fd=pfd)
+    expect[path] = "l"
+# ---- 3. verify: exactly the expected entries exist, none through a link, every parent resolves inside SNAP
+real = os.path.realpath(base)
+found = {}
+for dp, dns, fns in os.walk(base, followlinks=False):
+    rdp = os.path.realpath(dp)
+    if rdp != real and not rdp.startswith(real + b"/"):
+        die(9, "extracted directory resolves outside the snapshot")
+    for nm in dns + fns:
+        full = os.path.join(dp, nm)
+        rel = full[len(base) + 1:]
+        found[rel] = "l" if os.path.islink(full) else ("d" if os.path.isdir(full) else "f")
+for rel, k in expect.items():
+    if found.get(rel) != k:
+        die(9, "extracted entry %r is not what the tree says" % (rel,))
+dirs_expected = set(prefixes) | {p for p, k in expect.items() if k == "d"}
+for rel, k in found.items():
+    if k == "d":
+        if rel not in dirs_expected:
+            die(9, "unexpected directory %r" % (rel,))
+    elif rel not in expect:
+        die(9, "unexpected entry %r" % (rel,))
 PY
+)" || blind "cannot write the HEAD snapshot of $REPO: ${SNAP_ERR:-no detail}"
 # the snapshot is a git repository only so that `check-ignore` can apply the COMMITTED .gitignore files;
 # no .git/info/exclude, no global/system config, no core.excludesFile
-GIT_SNAP=(env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 git -c core.excludesFile=/dev/null -C "$SNAP")
+GIT_SNAP=(env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 timeout --kill-after=5 "$RELCHK_GIT_TIMEOUT" git -c core.excludesFile=/dev/null -C "$SNAP")
 "${GIT_SNAP[@]}" init -q --template= . >/dev/null 2>&1 || blind "cannot initialise the HEAD snapshot repository"
 V_OK=0; V_FAIL=0; C_PATHS=0; C_MISS=0; C_SKIP=0; S_OK=0; S_FAIL=0; S_UNV=0; BLINDS=""
 C_NOMAN=0; U_FILES=0; W_APPLIED=0; W_BAD=0; W_UNUSED=0
@@ -320,7 +427,8 @@ run_versions() {
   vout="$(python3 -I - "$REPO" "$EXPECTED" "$PREV_TAG" "$SNAP" <<'PY'
 import json, os, re, subprocess, sys, tomllib
 
-repo, expected, prevtag, snap = sys.argv[1:5]   # repo: git queries only; snap: the HEAD snapshot every file read uses
+repo, expected, prevtag, snap = sys.argv[1:5]
+GIT_TO = int(os.environ.get("RELCHK_GIT_TIMEOUT", "120") or "120")   # repo: git queries only; snap: the HEAD snapshot every file read uses
 
 def emit(kind, label, detail=""):
     print(f"{kind}\t{label}\t{detail}")
@@ -429,7 +537,7 @@ def gradle_field(text, name):
 tag_ok = True
 if prevtag:
     r = subprocess.run(["git", "-C", repo, "rev-parse", "-q", "--verify", prevtag + "^{commit}"],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, timeout=GIT_TO)
     if r.returncode != 0:
         tag_ok = False
         emit("FAIL", "--prev-tag", f"tag {prevtag!r} not found")
@@ -456,7 +564,7 @@ for app in APPS:
     if not (prevtag and tag_ok):
         emit("INFO", label, f"{cur} (no --prev-tag, monotonicity not checked)" if not prevtag else str(cur))
         continue
-    r = subprocess.run(["git", "-C", repo, "show", f"{prevtag}:{path}"], capture_output=True, text=True)
+    r = subprocess.run(["git", "-C", repo, "show", f"{prevtag}:{path}"], capture_output=True, text=True, timeout=GIT_TO)
     if r.returncode != 0:
         emit("OK", label, f"{cur} (file absent at {prevtag}: new)")
         continue
@@ -561,7 +669,7 @@ run_changelog() {
   # by git only; existence-instrument needle: the changelog itself, which was just found.
   pos="$(git -C "$REPO" ls-tree -r --name-only HEAD | grep -m1 -E '^[A-Za-z0-9._/-]+$')"
   neg="__no_such_path_$$__/none"
-  if [ -z "$pos" ] || ! tracked "$pos" || [ ! -e "$cl" ] || [ -e "$REPO/$neg" ] || tracked "$neg"; then
+  if [ -z "$pos" ] || ! tracked "$pos" || [ ! -e "$cl" ] || [ -e "$SNAP/$neg" ] || tracked "$neg"; then
     note_blind "control needle failed: existence/tracked instrument cannot be trusted"; return
   fi
 
@@ -569,6 +677,7 @@ run_changelog() {
   out="$(python3 -I - "$REPO" "$SECTION" "$SNAP" <<'PY'
 import json, os, re, subprocess, sys
 repo, want, snap = sys.argv[1:4]
+GIT_TO = int(os.environ.get("RELCHK_GIT_TIMEOUT", "120") or "120")
 if not want:
     # F6: no --version/--section: the section is derived from versions.json (global), never the topmost heading
     try:
@@ -629,7 +738,7 @@ print(f"SECTION\t{name}")
 tops = set()
 tfiles = set()
 tdirs = set()
-r = subprocess.run(["git", "-C", repo, "ls-tree", "-r", "-z", "--name-only", "--full-tree", "HEAD"], capture_output=True, text=True)
+r = subprocess.run(["git", "-C", repo, "ls-tree", "-r", "-z", "--name-only", "--full-tree", "HEAD"], capture_output=True, text=True, timeout=GIT_TO)
 for p in r.stdout.split("\0"):
     if p:
         tfiles.add(p)
@@ -726,8 +835,10 @@ PY
       evrel="$q"
     fi
     cited_ok=0
-    if [ ! -e "$REPO/$q" ]; then
-      C_MISS=$((C_MISS+1)); echo "MISS  $p (not in working tree)"
+    if [ ! -e "$SNAP/$q" ]; then
+      # CAT-REL-CHECK-3 (M1): existence is decided by HEAD's snapshot, as in a clean clone (a dangling HEAD symlink
+      # is missing there too); the working tree is consulted only afterwards, by head_check, to say BLIND
+      C_MISS=$((C_MISS+1)); echo "MISS  $p (not in HEAD)"
     elif ! tracked "$q" && ! tracked "$evrel"; then
       C_MISS=$((C_MISS+1)); echo "MISS  $p (exists but not git-tracked)"
     else
@@ -1014,6 +1125,7 @@ check_manifest_dir() {
   cout="$(python3 -I - "$REPO" "$d" "$SNAP" <<'PY'
 import fnmatch, os, re, subprocess, sys
 repo, d, snap = sys.argv[1:4]
+GIT_TO = int(os.environ.get("RELCHK_GIT_TIMEOUT", "120") or "120")
 def is_mf(n):
     return n in ("SHA256SUMS", "SHA256SUMS.txt") or fnmatch.fnmatchcase(n, "MANIFEST*.sha256")
 def esc(t):
@@ -1029,7 +1141,7 @@ def entries(path):
     return out
 def ls():
     # HEAD's tree only: never the index, never untracked or ignored working-tree files
-    r = subprocess.run(["git", "-C", repo, "ls-tree", "-r", "-z", "--name-only", "--full-tree", "HEAD", "--", d + "/"], capture_output=True)
+    r = subprocess.run(["git", "-C", repo, "ls-tree", "-r", "-z", "--name-only", "--full-tree", "HEAD", "--", d + "/"], capture_output=True, timeout=GIT_TO)
     if r.returncode != 0:
         print("ERR\tgit ls-tree failed"); sys.exit(0)
     return {p.decode("utf-8", "surrogateescape") for p in r.stdout.split(b"\0") if p}

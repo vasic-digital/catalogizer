@@ -31,7 +31,7 @@ MUTANTS=(
         tag_ok = False|||if False:
         tag_ok = False'
 'missing-file read errors ignored|||emit("FAIL", label, f"cannot read: {type(exc).__name__}: {exc}")|||emit("OK", label, "ignored")'
-'existence check disabled|||if [ ! -e "$REPO/$q" ]; then|||if false; then'
+'existence check disabled|||if [ ! -e "$SNAP/$q" ]; then|||if false; then'
 'tracked check disabled|||elif ! tracked "$q" && ! tracked "$evrel"; then|||elif false; then'
 'zero paths not blind|||[ "${#paths[@]}" -eq 0 ]|||[ "${#paths[@]}" -lt 0 ]'
 'section-not-found not blind|||ERR) note_blind "$a"; return ;;|||ERR) : ;;'
@@ -253,6 +253,24 @@ MUTANTS=(
 #  for any file under the manifest tree that differs from HEAD, so the mutation is equivalent; run once, survived, argued from the code order)
 'CC2r5 C3 waiver HEAD-compare dropped|||  head_check "waiver file $rel" "$rel"|||  :'
 'CC2r5 C4 check-ignore reads the live repository|||if "${GIT_SNAP[@]}" check-ignore -q -- "$d/$name"; then|||if git -C "$REPO" check-ignore -q -- "$d/$name"; then'
+'CAT-REL-CHECK-3 snapshot: duplicate entries accepted|||    if path in seen:|||    if False:'
+'CAT-REL-CHECK-3 snapshot: file/dir prefix clash accepted|||if clash:|||if False:'
+'CAT-REL-CHECK-3 snapshot: .git component allowed (RM1)|||p in (b"", b".", b"..") or p.lower() == b".git" or b"\n" in p|||p in (b"", b".", b"..") or b"\n" in p'
+'CAT-REL-CHECK-3 snapshot: .git guard is case-sensitive|||p.lower() == b".git"|||p == b".git"'
+'CAT-REL-CHECK-3 snapshot: newline component allowed|||p.lower() == b".git" or b"\n" in p|||p.lower() == b".git"'
+'CAT-REL-CHECK-3 snapshot: dot-dot component allowed|||p in (b"", b".", b"..")|||p in (b"", b".")'
+'CAT-REL-CHECK-3 snapshot: byte cap off|||if total > MAXBYTES:|||if False:'
+'CAT-REL-CHECK-3 snapshot: entry cap off|||if len(ents) > MAXFILES:|||if False:'
+'CAT-REL-CHECK-3 snapshot: ls-tree timeout dropped|||capture_output=True, timeout=GIT_TO)
+except subprocess.TimeoutExpired:|||capture_output=True)
+except subprocess.TimeoutExpired:'
+'CAT-REL-CHECK-3 snapshot: writer time limit off|||signal.alarm(envint("RELCHK_SNAP_TIMEOUT", 900))|||pass'
+'CAT-REL-CHECK-3 snapshot: unsupported mode accepted|||    if (mode, typ) not in ((|||    if False and (mode, typ) not in (('
+'CAT-REL-CHECK-3 ignore decisions read the XDG default ignore file (RM17)|||git -c core.excludesFile=/dev/null -C "$SNAP")|||git -C "$SNAP")'
+'CAT-REL-CHECK-3 git calls unbounded|||git() { command timeout --kill-after=5 "$RELCHK_GIT_TIMEOUT" git "$@"; }|||git() { command git "$@"; }'
+'CAT-REL-CHECK-3 changelog helper ls-tree unbounded|||"--name-only", "--full-tree", "HEAD"], capture_output=True, text=True, timeout=GIT_TO)|||"--name-only", "--full-tree", "HEAD"], capture_output=True, text=True)'
+'CAT-REL-CHECK-3 cited-path existence from the working tree (M1)|||if [ ! -e "$SNAP/$q" ]; then|||if [ ! -e "$REPO/$q" ]; then'
+'CAT-REL-CHECK-3 snapshot refusal reason dropped|||blind "cannot write the HEAD snapshot of $REPO: ${SNAP_ERR:-no detail}"|||blind "cannot write the HEAD snapshot of $REPO"'
 )
 
 # MUT_JOBS=<n> runs n mutants at once (default 4; each mutant runs the whole suite, ~40 s).
@@ -262,7 +280,7 @@ case "$JOBS" in ''|*[!0-9]*|0) echo "bad MUT_JOBS '$JOBS'" >&2; exit 2 ;; esac
 run_one() { # run_one <n> <name> <old> <new>; writes $ROOT/m<n>/result (one line)
   local n="$1" name="$2" old="$3" new="$4" d="$ROOT/m$1"
   mkdir -p "$d"
-  cp "$HERE/check_release_consistency.sh" "$HERE/release_fixture.sh" "$HERE/test_check_release_consistency.sh" "$d/"
+  cp "$HERE/check_release_consistency.sh" "$HERE/release_fixture.sh" "$HERE/test_check_release_consistency.sh" "$HERE/test_check_release_consistency_rc4.sh" "$d/"
   if ! python3 -I - "$d/check_release_consistency.sh" "$old" "$new" <<'PY'
 import sys
 p, old, new = sys.argv[1:4]
@@ -275,7 +293,7 @@ PY
   if ! bash -n "$d/check_release_consistency.sh" 2>/dev/null; then
     echo "ERROR  [$n] $name: mutant is a syntax error (would be killed trivially)" > "$d/result"; return; fi
   if [ -n "${MUT_APPLY_ONLY:-}" ]; then echo "applies  [$n] $name" > "$d/result"; return; fi   # quick applicability pass, not a verdict
-  if CHECKER="$d/check_release_consistency.sh" "$d/test_check_release_consistency.sh" >"$d/out.txt" 2>&1; then
+  if CHECKER="$d/check_release_consistency.sh" "$d/${MUT_TEST:-test_check_release_consistency.sh}" >"$d/out.txt" 2>&1; then
     echo "SURVIVED [$n] $name" > "$d/result"
   elif tail -1 "$d/out.txt" | grep -Eq '^== result: [0-9]+ passed, [1-9][0-9]* failed$'; then
     echo "killed   [$n] $name ($(tail -1 "$d/out.txt"))" > "$d/result"

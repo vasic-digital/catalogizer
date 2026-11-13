@@ -119,10 +119,18 @@ matches (finding E-1); it stays a `SHAFAIL` until that evidence is regenerated.
 Round 5 (CAT-REL-CHECK-2): HEAD is the single source of every read. The checker writes a snapshot of the HEAD tree
 to a private temp directory and reads versions, changelog, `versions.json`, gradle files, evidence files, manifests,
 waivers and `.gitignore` decisions (committed `.gitignore` files only) from it, with replace refs disabled
-(`GIT_NO_REPLACE_OBJECTS=1`). Path sets come from `git ls-tree HEAD`. The working tree is consulted only to prove it
-equals HEAD (BLIND otherwise). Consequences: an untracked or index-only file is invisible, so a manifest entry or cited
+(`GIT_NO_REPLACE_OBJECTS=1`). Path sets come from `git ls-tree HEAD`. The working tree is consulted only by BLIND
+guards (it never decides FAIL or MISS) and those guards are not a proof of equality: a HEAD file that is missing in the working
+tree (deleted, sparse checkout, skip-worktree) gives the verdict of a clean clone, not BLIND. Consequences: an untracked or index-only file is invisible, so a manifest entry or cited
 path that names one is `SHAFAIL`/`MISS` (as in a clone), not BLIND; the snapshot costs one write of every HEAD file per
 run (run time on the real repository UNCONFIRMED); an empty symlink target in HEAD gives BLIND.
+
+CAT-REL-CHECK-3: the snapshot writer treats the HEAD tree as untrusted input. It refuses (BLIND) duplicate paths, a path that is
+both an entry and a directory, `.`/`..`/`.git`/empty/newline components and unsupported modes before writing anything, writes
+through directory descriptors with `O_NOFOLLOW`, creates symlinks last and verifies the result, so no write can resolve outside
+the snapshot. Bounds (BLIND on exceed): `RELCHK_MAX_FILES` (default 1000000 entries), `RELCHK_MAX_BYTES` (default 4 GiB),
+`RELCHK_SNAP_TIMEOUT` (900 s), `RELCHK_GIT_TIMEOUT` (120 s per git call). Residual: a file stored as a Git LFS pointer is read as
+the pointer text (a clone with git-lfs would fetch the content). Details: `docs/release_checker_path_inventory.md`.
 
 Committed state only: a clone sees HEAD, not the index or the working tree, so the run goes BLIND (exit 2)
 for each of the divergences listed below (the list is the class inventory, not a proof that no other divergence exists). The same walk is applied to `docs/CHANGELOG.md`,

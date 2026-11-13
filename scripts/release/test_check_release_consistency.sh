@@ -439,9 +439,10 @@ RAW=1 expect "R3-1d version file edited only in the working tree -> BLIND" 2 "ca
 # R3-1 negative control: the same state committed passes
 d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; ( cd "$d" && git commit -q -a -m cl )
 RAW=1 expect "R3-1 committed cited path outside manifest trees -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
-# R3-2 (R-x): a tracked file deleted from the working tree, uncommitted -> MISS (not in working tree)
+# R3-2 (R-x) / CAT-REL-CHECK-3 M1: a tracked file deleted from the working tree, uncommitted: existence comes from HEAD's
+# snapshot, so the verdict is the clone's (PASS), never a FAIL decided by the working tree
 d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; ( cd "$d" && git commit -q -a -m cl ); rm "$d/docs/other/z.txt"
-RAW=1 expect "R3-2 tracked file deleted from the tree uncommitted -> MISS" 1 "MISS  docs/other/z.txt (not in working tree)" "$d" --check changelog
+RAW=1 expect "R3-2 tracked file deleted from the tree uncommitted -> same verdict as a clone (PASS)" 0 "OK    docs/other/z.txt" "$d" --check changelog
 # R3-3 (survivor 124): a covered file whose edit is staged only (worktree == index) differs from HEAD
 d=$(fresh); echo tampered > "$d/docs/qa/run2/c.txt"; ( cd "$d" && git add -A )
 RAW=1 expect "R3-3 covered file edit staged only -> BLIND (not committed)" 2 "not committed" "$d" --check changelog
@@ -780,6 +781,14 @@ cc "Z96 C8 replace ref hides a tampered HEAD from the checker -> never PASS (rep
 # OWN6: a failing `git hash-object` in the per-path chain walk is BLIND, never a pass
 d=$(fresh); sd=$(gitstub2 'case "$*" in *"hash-object --no-filters -- "*) exit 1 ;; esac')
 PATH="$sd:$PATH" RAW=1 expect "Z97 OWN6 failing hash-object in the chain walk -> BLIND" 2 "git hash-object failed for" "$d" --check changelog
+echo "== CAT-REL-CHECK-3 (test_check_release_consistency_rc4.sh: snapshot extraction safety, M1, RM1, RM17, N2)"
+rc4out="$(CHECKER="$CHECKER" bash "$HERE/test_check_release_consistency_rc4.sh" 2>&1)"; rc4rc=$?
+printf '%s\n' "$rc4out" | grep -E '^  FAIL:' || true
+rc4res="$(printf '%s\n' "$rc4out" | tail -1)"
+if [[ "$rc4res" =~ ^==\ result:\ ([0-9]+)\ passed,\ ([0-9]+)\ failed$ ]]; then
+  PASS=$((PASS+BASH_REMATCH[1])); FAIL=$((FAIL+BASH_REMATCH[2]))
+  [ "$rc4rc" = 0 ] || [ "${BASH_REMATCH[2]}" != 0 ] || bad "rc4 suite exited $rc4rc without a failed test"
+else bad "rc4 suite gave no result line (rc=$rc4rc)"; fi
 echo "== selftest (11.4.273 control needles built into the tool)"
 out="$("$CHECKER" --selftest 2>&1)"; got=$?
 if [ "$got" = 0 ] && printf '%s\n' "$out" | grep -q '^VERDICT: PASS selftest'; then ok; else bad "selftest rc=$got"; fi

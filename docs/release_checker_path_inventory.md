@@ -1,6 +1,6 @@
 # Release checker: read sources and the ways the working tree can differ from a clean clone
 
-Item CAT-REL-CHECK-2 (structural replacement of the point checks of CAT-REL-CHECK-1), review round 5 version.
+Item CAT-REL-CHECK-3 (successor of CAT-REL-CHECK-2, whose round 5 review was NO-GO; the round-5 snapshot design is kept).
 Status: PROVISIONAL (see docs/FOLLOW_UPS_NEXT_PHASE.md). Tool: `scripts/release/check_release_consistency.sh`.
 
 ## Class
@@ -25,9 +25,14 @@ consulted only to prove that it equals HEAD (BLIND guards).**
 5. `.gitignore` decisions use `git check-ignore` inside `SNAP` with `GIT_CONFIG_GLOBAL=/dev/null`,
    `GIT_CONFIG_NOSYSTEM=1` and `core.excludesFile=/dev/null`: only the committed `.gitignore` files count (C4).
 6. The working tree is read only by the BLIND guards: `head_check` / `chain_one` (component-by-component, hop-by-hop
-   walk, raw hash against the HEAD blob, `git status`, skip-worktree / assume-unchanged flags), `raw_tree_check` and the
-   status/flag checks for every manifest tree, and the `[ -e "$REPO/$q" ]` presence check of a cited path.
-   A difference makes the run BLIND (exit 2); it never changes a verdict that came from `SNAP`.
+   walk, raw hash against the HEAD blob, `git status`, skip-worktree / assume-unchanged flags) and the
+   status/flag checks for every manifest tree. Those guards say BLIND when the working tree differs from HEAD; they
+   do not decide FAIL/MISS. CAT-REL-CHECK-3 (M1): whether a cited path exists is decided by `SNAP` (`[ -e "$SNAP/$q" ]`),
+   not by the working tree. Honest limits of the guards (they are not a proof of equality): `chain_one` returns without
+   a guard when the cited path does not exist in the working tree (`[ -e "$REPO/$spec" ] || return 0`), so a HEAD file
+   that is missing locally (deleted, sparse-checkout, skip-worktree) gives the verdict of a clean clone (PASS) and not
+   BLIND; and a path that exists in HEAD only as a dangling symlink is MISS here as it is in a clone. A difference
+   that the guards do see makes the run BLIND (exit 2); it never changes a verdict that came from `SNAP`.
 7. Semantic consequence: a file or entry that exists only in the working tree or only in the index is invisible. A
    manifest entry or cited path that names such a file is FAIL/MISS (as in a clone), not BLIND.
 
@@ -46,7 +51,7 @@ was found 19 times, a fabricated token 0 times.
 | `docs/CHANGELOG.md` and the section parse | `SNAP` | `head_check` |
 | tracked-token needle, token path set, top-level names, tdirs (C6) | `ls-tree -r HEAD` | none needed |
 | `tracked()` | `head_entry` (`ls-tree HEAD -- path`) | none needed |
-| cited path existence, symlink resolution, outside-repo test | `SNAP` | `[ -e "$REPO/$q" ]` + `head_check "cited path"` |
+| cited path existence, symlink resolution, outside-repo test | `SNAP` | `head_check "cited path"` only (BLIND guard; no verdict from the working tree) |
 | manifest discovery (`SHA256SUMS`, `.txt`, `MANIFEST*.sha256`) | `SNAP` glob (C1) | tree status + flags + `raw_tree_check` |
 | manifest entries and `sha256sum --strict -c` | `SNAP` (C2) | `head_check` of entries reached through a symlink |
 | completeness (UNLISTED) listing | `ls-tree -r HEAD -- dir/`, content in `SNAP` | tree status + flags |
@@ -55,12 +60,15 @@ was found 19 times, a fabricated token 0 times.
 | nested manifests | `ls-tree` + `SNAP` | tree status |
 | replace refs (C8) | ignored globally | n/a |
 
-Remaining reads of `$REPO/...` are exactly the guards of column 3 plus `[ -e "$REPO/$neg" ]` for a fabricated name in
-the needle self-check. Remaining limits (UNCONFIRMED where not measured): the snapshot writes every file of HEAD per
+Remaining reads of `$REPO/...` are exactly the guards of column 3 (the needle self-check now tests the fabricated name
+in `SNAP`). Remaining limits (UNCONFIRMED where not measured): the snapshot writes every file of HEAD per
 run (23k files / 186 MB were counted on the real repository; the run time was not measured); a gitlink is represented by
 an empty directory, so evidence below a submodule is MISS/FAIL, which matches a clone without submodules; an empty
 symlink target in HEAD cannot be written to the snapshot and gives BLIND; the snapshot writer uses a fixed interpreter
-path, but git itself is taken from PATH.
+path, but git itself is taken from PATH. Residual (N1, not detected): a file that HEAD stores as a Git LFS pointer is
+read as the pointer text, while a clone with git-lfs installed would fetch the real content; a manifest naming such a
+file therefore compares the pointer, and the verdict can differ from that clone's. Repositories that use LFS for
+evidence must not rely on this checker for those files.
 
 ## Class C1-C8 (round 4 NO-GO) and their tests
 
@@ -99,3 +107,57 @@ switch cannot change a verdict (measured: both variants gave `VERDICT: BLIND` fo
 This list is the set of read sources found by the census above, each closed by the single mechanism; it is not a proof
 that no other divergence exists. The mutation runner covers the mechanism (reads switched back to the working tree,
 the index, `info/exclude`, replace refs; dropped guards).
+
+## CAT-REL-CHECK-3: snapshot extraction safety (round 5 finding I1) and the class inventory
+
+Finding I1: the round-5 writer created entries in `ls-tree` order and followed earlier symlinks, so a HEAD tree holding
+`l` as a symlink to an absolute directory AND `l/` as a subtree with `pwn` wrote `<outside>/pwn` (reproduced on the
+base tip: file created with content `PWNED`, verdict BLIND only afterwards). Such a tree is accepted by `git mktree`
+(and by `git clone`, fsck is off), so repository content is untrusted input to a file writer. Root cause: the writer
+trusted the listing and used path-string operations (`os.makedirs`, `open`, `os.symlink`) that follow links.
+
+Fix at the class level (`scripts/release/check_release_consistency.sh`, snapshot writer):
+
+1. The whole listing is validated BEFORE anything is written. Refused (BLIND, reason printed): a duplicate path;
+   a path that is both an entry and a directory prefix of another entry (file/symlink/gitlink versus subtree, in any
+   stored order); an empty, `.`, `..`, `.git` (any case) or newline-holding component (an absolute path has an empty
+   first component); an unsupported mode; more than `RELCHK_MAX_FILES` entries (default 1,000,000) or more than
+   `RELCHK_MAX_BYTES` (default 4 GiB) of content.
+2. Extraction walks directories through file descriptors (`openat` with `O_DIRECTORY|O_NOFOLLOW`, `mkdirat`); regular
+   files are created with `O_EXCL|O_NOFOLLOW`; so no write can pass a symlink even if one existed.
+3. Symlinks are created last, in a second pass, after every file and directory. By rule 1 no symlink path is a prefix
+   of another entry, so no later write could go through one.
+4. After extraction the snapshot is walked without following links: exactly the expected entries with the expected
+   kinds must exist, no unexpected entry, and every directory must resolve inside the snapshot (`realpath`).
+5. A time limit (`RELCHK_SNAP_TIMEOUT`, default 900 s) bounds the writer; every git call is bounded by
+   `RELCHK_GIT_TIMEOUT` (default 120 s): a hung git is a git failure, which ends BLIND.
+
+Class inventory: every place the checker writes, or follows a path derived from repository content.
+
+| Place | Content-derived? | Covered by |
+|-------|------------------|------------|
+| snapshot writer: directories, files, symlinks | yes (tree entries) | rules 1-4 above; tests A1-A9, B1-B6 |
+| `mktemp -d "$SNAPBASE/snap.XXXXXX"`, `RELCHK_SNAP_DIR` | no (operator/test input) | fixed prefix check; the hook is refused when it exists |
+| `git init` inside the snapshot (writes `SNAP/.git`) | no | a HEAD `.git` component is refused (B1-B3), so `.git/info/exclude` cannot be planted (RM1) |
+| `trap rm -rf "$SNAP"` | no (rm does not follow links) | n/a |
+| `check-ignore` in the snapshot | reads committed `.gitignore` only | `-c core.excludesFile=/dev/null` (RM17) |
+| `sha256sum -c` in `SNAP/<dir>` | reads files named by manifest entries | entries are resolved with `readlink -m` and refused when outside the snapshot (F4/F2 tests); the snapshot has no link leaving it |
+| `readlink -f` / `-m` / `cd` on cited paths | reads | resolved result must stay inside `SNAP` (N3, F3 tests) |
+| working-tree reads in `head_check` / `chain_one` | reads (BLIND guard only) | never decide FAIL/MISS (M1) |
+| python helpers (versions, changelog, completeness) | read `SNAP` and git | no writes; git calls bounded by `RELCHK_GIT_TIMEOUT` |
+
+The checker writes nothing else: no file in the repository, no index, no refs. Remaining limits (UNCONFIRMED where not
+measured): the TOCTOU between the git object store and a concurrent `gc` is not addressed; `RELCHK_*` environment
+variables are trusted operator input; a case-insensitive clone could merge case-variant siblings (not an escape;
+cited-path collisions are still reported by `name_collides`).
+
+Tests: `scripts/release/test_check_release_consistency_rc4.sh` (also run by the main suite). Unit-class evidence only.
+
+Mutation evidence (CAT-REL-CHECK-3, unit-class): 16 mutants of the new code are in `mutation_check_release_consistency.sh`
+(duplicate entries, prefix clash, `.git` guard RM1, `.git` case, newline, `..`, byte cap, entry cap, ls-tree timeout, writer
+time limit, unsupported mode, XDG ignore file RM17, unbounded git, unbounded helper git, cited-path existence from the
+working tree M1, dropped refusal reason); each is killed by `test_check_release_consistency_rc4.sh`
+(`MUT_TEST=test_check_release_consistency_rc4.sh MUT_FILTER=CAT-REL-CHECK-3`). Defence in depth, stated honestly: three
+further layers (post-extraction verification, `O_NOFOLLOW` on directory descent, `O_EXCL|O_NOFOLLOW` on file creation)
+cannot be reached by any tree once the up-front validation holds, so mutants of them are equivalent to the baseline
+and are not in the runner; they were run once by hand and the result is recorded in the item's report, not claimed as killed.
