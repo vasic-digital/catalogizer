@@ -138,7 +138,7 @@ func TestLogShare_EveryFailureIsTheSameError(t *testing.T) {
 	} {
 		got, err := svc.GetLogShare(tok)
 		assert.Nil(t, got, name)
-		assert.Same(t, ErrLogShareNotFound, err, "%s must be indistinguishable from an unknown token", name)
+		assert.ErrorIs(t, err, ErrLogShareNotFound, "%s must be indistinguishable from an unknown token", name)
 	}
 }
 
@@ -159,4 +159,16 @@ func TestLogShare_SourceHasNoClockDerivedOrMathRandToken(t *testing.T) {
 		assert.NotContains(t, string(src), "math/rand", f)
 		assert.NotContains(t, string(src), `"log_share_%d`, f)
 	}
+}
+
+// a repository failure (DB outage, corrupt row) is still ErrLogShareNotFound for the client but keeps its cause for the server log.
+func TestLogShare_RepositoryFailureKeepsCause(t *testing.T) {
+	svc, db, col := newShareFixture(t)
+	share := createShare(t, svc, col)
+	_, err := db.Exec(`UPDATE log_shares SET permissions = 'not json' WHERE id = ?`, share.ID)
+	require.NoError(t, err)
+	_, err = svc.GetLogShare(share.ShareToken)
+	require.ErrorIs(t, err, ErrLogShareNotFound)
+	assert.Contains(t, err.Error(), "permissions", "the cause is retained for the server-side log")
+	assert.NotContains(t, err.Error(), share.ShareToken)
 }

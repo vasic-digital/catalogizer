@@ -12,6 +12,8 @@ import (
 // unreachable marker, so a database dump no longer carries a usable (or even guessable-pattern) token, and the token can
 // never validate again (the service also rejects the legacy shape before the lookup). The creator re-shares the collection.
 //
+// The PostgreSQL ESCAPE '\' relies on standard_conforming_strings=on (the default since 9.1).
+//
 // Idempotent: a re-run matches no row (the marker does not start with `log_share_`). The same statement runs on SQLite and
 // PostgreSQL: `||` concatenation, `LIKE ... ESCAPE`, an integer 0 for is_active (PostgreSQL keeps is_active BOOLEAN, so the
 // literal differs per dialect).

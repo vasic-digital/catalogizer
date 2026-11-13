@@ -699,7 +699,7 @@ func (s *ReaderService) SyncAcrossDevices(ctx context.Context, userID int64, boo
 
 // Helper methods
 func (s *ReaderService) generateSessionID(userID int64, bookID, deviceID string) string {
-	// CAT-LOGSHARE-TOK-1 class fix: the session id is the only capability for a reading session, so its tail is 128 random bits
+	// CAT-LOGSHARE-TOK-1 class fix: hardening of a currently unwired service (not a live exposure): the id is the only capability for a reading session, so its tail is 128 random bits
 	// (crypto/rand.Text), not the clock; the readable prefix is informational only.
 	return fmt.Sprintf("session_%d_%s_%s_%s", userID, bookID, deviceID, rand.Text())
 }

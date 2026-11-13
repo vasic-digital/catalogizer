@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"catalogizer/models"
+	"strings"
 	"testing"
 	"time"
 
@@ -360,7 +361,7 @@ func (suite *ServiceAdaptersTestSuite) TestLogManagementServiceAdapter_CreateLog
 func (suite *ServiceAdaptersTestSuite) TestLogManagementServiceAdapter_GetLogShare_NilInner() {
 	adapter := &LogManagementServiceAdapter{Inner: nil}
 	assert.Panics(suite.T(), func() {
-		adapter.GetLogShare("token")
+		adapter.GetLogShare("log_share_" + strings.Repeat("A", 43)) // passes the format check, so it reaches the (nil) service
 	})
 }
 

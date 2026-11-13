@@ -28,3 +28,18 @@ func TestSessionIDs_AreRandomNotClockDerived(t *testing.T) {
 	a, b := rs.generateSessionID(1, "b", "d"), rs.generateSessionID(1, "b", "d")
 	assert.NotEqual(t, a[len(a)-26:], b[len(b)-26:])
 }
+
+// Same-instant entropy: ids minted back to back must differ in their leading characters. A clock-derived id (base32 of the
+// nanosecond clock, for example) is unique per call but shares its whole high-order prefix, so 4 leading characters take
+// only a handful of values over 2000 calls; 128 random bits take ~2000.
+func TestSessionIDs_LeadingCharsAreNotClockLike(t *testing.T) {
+	rs := NewReaderService(nil, zap.NewNop(), nil, nil, nil)
+	music, reader := map[string]bool{}, map[string]bool{}
+	for i := 0; i < 2000; i++ {
+		music[generateSessionID()[len("session_"):][:4]] = true
+		r := rs.generateSessionID(1, "b", "d")
+		reader[r[len("session_1_b_d_"):][:4]] = true
+	}
+	assert.Greater(t, len(music), 1000, "music session id leading chars look clock-derived")
+	assert.Greater(t, len(reader), 1000, "reader session id leading chars look clock-derived")
+}

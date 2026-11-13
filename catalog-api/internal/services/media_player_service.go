@@ -409,7 +409,7 @@ func (s *MediaPlayerService) GetMediaItem(ctx context.Context, id int64) (*Media
 
 // Helper functions
 func generateSessionID() string {
-	// CAT-LOGSHARE-TOK-1 class fix: a playback session id is looked up without an owner check, so it is a capability: 128 random bits.
+	// CAT-LOGSHARE-TOK-1 class fix: hardening of a currently unwired service (not a live exposure): the id is looked up without an owner check, so it should be a capability: 128 random bits.
 	return "session_" + rand.Text()
 }
 

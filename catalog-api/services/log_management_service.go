@@ -285,7 +285,8 @@ func (s *LogManagementService) GetLogShare(token string) (*models.LogShare, erro
 	hash := hashLogShareToken(token)
 	share, err := s.logRepo.GetLogShareByToken(hash)
 	if err != nil {
-		return nil, ErrLogShareNotFound
+		// the client sees the fixed 404; the cause (no row, DB outage, corrupt permissions JSON) stays server-side
+		return nil, fmt.Errorf("%w: %v", ErrLogShareNotFound, err)
 	}
 	if !logShareHashEqual(share.ShareToken, hash) || !share.IsActive || !time.Now().Before(share.ExpiresAt) {
 		return nil, ErrLogShareNotFound
