@@ -410,15 +410,23 @@ Authenticate a user and receive JWT tokens.
 progressive back-off BEFORE the password is evaluated, in two scopes: per (account, client address) and per account (all
 addresses together). Defaults: 5 free evaluations per address and 20 per account within the decay window (1 h per address, 24 h
 per account), then a block of 30 s that doubles with every further charged attempt up to 15 minutes. A blocked attempt answers
-`429 {"error":"too many failed sign-in attempts, try again later"}` with a `Retry-After` header and is not evaluated (and not
-counted). It is a throttle, never a permanent lock: it always ends, `users.is_locked` (the administrative suspension) is never
-written and the owner's sessions are not revoked. An unknown name is throttled exactly like a known one (same status, body and
-header), the username and the email of one account share one budget, and a correct password does not bypass the block, except
-that a client address which completed a login for the account in the last 30 days (at most 5 are remembered) is not stopped by the
-ACCOUNT block (it keeps its own per-address block). A successful login clears the charges. The state is in table `login_throttle`
-(migration v29), so it survives a restart and is shared by every instance on one database. An administrator ends a back-off with
-`POST /api/v1/users/{id}/unlock` or by setting a new password. If the store cannot be read, login answers 503 (fail closed).
-Client addresses come from `c.ClientIP()`, so `TRUSTED_PROXIES` must be set correctly behind a reverse proxy.
+`429 {"error":"too many failed sign-in attempts, try again later"}` with a `Retry-After` header and is not evaluated. A
+refused attempt is not charged to the address or account that refused it; in a rare race an attempt refused at the per-address
+step may already have been charged to the account scope. It is a throttle, never a permanent lock: every block ends, at most
+15 minutes after it was set, `users.is_locked` (the administrative suspension) is never written and the owner's sessions are
+not revoked. It does not bound how long an attacker can keep an account throttled: while guessing continues the block is renewed
+every time it expires, and the owner is held out from every address that is not known-good. A client address that completed a
+login for the account in the last 30 days (at most 5 per account are remembered) is not stopped by the ACCOUNT block (it keeps its
+own per-address block); an owner whose address changes (IPv6 privacy addresses, carrier-grade NAT, a new device) is not known-good.
+A correct password from any other address is also refused while the account is blocked. A name that matches no account is
+throttled with the same status, body and header as an existing one: the throttle key for such a name is derived from the exact
+submitted string, matching how the account lookup compares names (no case folding, no trimming). A username and the e-mail
+address of one account share one budget, so a client that submits both can tell they belong to the same account once the
+budget is spent. A successful login clears the charges. The state is in table `login_throttle` (migration v29), so it survives
+a restart and is shared by every instance on one database; rows are removed after 24 hours without activity, in batches of up to
+2000 per minute, and the table has no row cap (growth is limited by the per-address request limiter). An administrator ends a
+back-off with `POST /api/v1/users/{id}/unlock`, by setting a new password, or with the offline `admin-reset-password` command
+(for the admin accounts it rotates). If the store cannot be read, login answers 503 (fail closed). Client addresses come from `c.ClientIP()`, so `TRUSTED_PROXIES` must be set correctly behind a reverse proxy.
 
 ---
 

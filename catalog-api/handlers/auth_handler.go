@@ -53,10 +53,10 @@ func authClientMessage(err error, fallback string) (string, bool) {
 
 // Gin handler functions for auth
 
-// retryAfterSeconds rounds a back-off up to whole seconds (at least 1) for the Retry-After header.
 // loginThrottledMessage is the fixed 429 body; it never carries an error value (PXF23-R5b sink sweep).
 const loginThrottledMessage = "too many failed sign-in attempts, try again later"
 
+// retryAfterSeconds rounds a back-off up to whole seconds (at least 1) for the Retry-After header.
 func retryAfterSeconds(d time.Duration) int {
 	secs := int(d / time.Second)
 	if d%time.Second != 0 {

@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"runtime"
-	"strings"
 	"sync"
 	"time"
 
@@ -19,10 +18,14 @@ import (
 //
 // Design (the decisions, so a reviewer can attack them):
 //
-//   - It is a THROTTLE, never a lock. A block always ends: the delay doubles per further charged attempt but is capped at
-//     Policy.Cap (default 15 minutes), so an attacker who keeps an account throttled can delay a legitimate login by at most
-//     Cap, and never disables it. The administrative suspension (users.is_locked) is a different mechanism and is not touched
-//     here: using it would revoke the victim's sessions on the attacker's say-so.
+//   - It is a THROTTLE, never a lock: no block is permanent and every block is at most Policy.Cap (default 15 minutes) long
+//     from the moment it is set. It is NOT a bound on how long an attacker can keep an account throttled: an attacker who
+//     keeps guessing renews the block each time it expires (one further charged attempt per Cap), so the owner can be held
+//     out for as long as the attack lasts, from every address that is not known-good for that account. Known-good addresses
+//     (below) are the mitigation; an owner whose address changes (IPv6 privacy addresses, carrier-grade NAT, a new device) is
+//     "new" and is held like anyone else. Matching known-good addresses per IPv6 /64 is a recorded follow-up, not done here.
+//     The administrative suspension (users.is_locked) is a different mechanism and is not touched here: using it would revoke
+//     the victim's sessions on the attacker's say-so.
 //   - Two scopes. "account": every client together (stops distributed guessing of one account). "ip:<addr>": one client
 //     address against one account (stops one address from using the whole account budget).
 //   - Charge-first. An attempt is charged ATOMICALLY (compare-and-swap on a version column, no read-modify-write window)
@@ -32,8 +35,16 @@ import (
 //     addresses per account are remembered) is not stopped by the ACCOUNT block, so an attacker cannot lock the owner out of
 //     the places the owner really logs in from. It is still subject to its own per-address block, so spoofing a known address
 //     buys the attacker only that one address's budget, never an unbounded one.
-//   - Unknown names are throttled exactly like known ones (subject "n:<hash>"), so the answer does not reveal whether a name
-//     exists. The cost is bounded rows: at most two per distinct name, purged after StaleAfter.
+//   - Unknown names are throttled exactly like known ones (subject "n:<hash of the EXACT submitted string>"), so the answer
+//     does not reveal whether a name exists. The subject MUST be derived with the same equality the user lookup uses
+//     (UserRepository.GetByUsernameOrEmail matches username or email byte for byte), otherwise a normalisation difference
+//     (case folding, trimming) is an existence oracle: a nonexistent "Victim" would share a budget with "victim" while an
+//     existing "victim" would not. Rows are bounded only by time: at most two per distinct submitted string, purged after
+//     StaleAfter, and the number of distinct strings an address can submit is limited by the per-address login rate limiter,
+//     not by this table; there is no row cap.
+//   - The back-off is charged per account, so a username and the e-mail address of the same account share one budget. A
+//     client that submits both names therefore learns that they belong to the same account once the budget is spent. That
+//     linkage is accepted and documented (it needs the attacker to already know both names).
 //   - Times are unix milliseconds from an injectable clock; state lives in the login_throttle table (migration v29) so it
 //     survives a restart and is shared by every instance on one database.
 type LoginThrottle struct {
@@ -109,6 +120,7 @@ var ErrLoginThrottleBusy = errors.New("login throttle busy")
 const (
 	scopeAccount = "account"
 	casRetries   = 400
+	purgeBatch   = 2000
 )
 
 // NewLoginThrottle builds the throttle over db with the default policy and the wall clock.
@@ -130,11 +142,12 @@ func (t *LoginThrottle) clock() (time.Time, LoginThrottlePolicy) {
 	return t.now(), t.pol
 }
 
-// SubjectForUser / SubjectForUnknownName build the subject key. A name that matches no account is hashed (case-folded,
-// trimmed), so the table never stores a raw attacker-chosen string.
+// SubjectForUser / SubjectForUnknownName build the subject key. A name that matches no account is hashed, so the table
+// never stores a raw attacker-chosen string. The hash covers the EXACT submitted bytes: no case folding, no trimming, no
+// Unicode normalisation, because the user lookup compares exactly and any difference here would be an existence oracle.
 func SubjectForUser(userID int) string { return fmt.Sprintf("u:%d", userID) }
 func SubjectForUnknownName(name string) string {
-	sum := sha256.Sum256([]byte(strings.ToLower(strings.TrimSpace(name))))
+	sum := sha256.Sum256([]byte(name))
 	return "n:" + hex.EncodeToString(sum[:16])
 }
 
@@ -338,7 +351,9 @@ func (t *LoginThrottle) maybePurge(ctx context.Context, now time.Time, pol Login
 	t.purge = now
 	t.mu.Unlock()
 	nowMs := now.UnixMilli()
+	// Bounded work inside a login request: at most purgeBatch rows per run (the rest go on the next run, a minute later).
 	_, _ = t.db.ExecContext(ctx,
-		`DELETE FROM login_throttle WHERE blocked_until_ms < ? AND last_failure_ms < ? AND (last_success_ms = 0 OR last_success_ms < ?)`,
-		nowMs, nowMs-pol.StaleAfter.Milliseconds(), nowMs-pol.KnownGoodTTL.Milliseconds())
+		`DELETE FROM login_throttle WHERE (subject, scope) IN (
+			SELECT subject, scope FROM login_throttle WHERE blocked_until_ms < ? AND last_failure_ms < ? AND (last_success_ms = 0 OR last_success_ms < ?) LIMIT ?)`,
+		nowMs, nowMs-pol.StaleAfter.Milliseconds(), nowMs-pol.KnownGoodTTL.Milliseconds(), purgeBatch)
 }

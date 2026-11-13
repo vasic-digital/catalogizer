@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -86,7 +87,11 @@ func (e *llEnv) loginFrom(ip, user, pass string) *httptest.ResponseRecorder {
 }
 
 func (e *llEnv) loginHdr(ip, user, pass string, hdr map[string]string) *httptest.ResponseRecorder {
-	req := httptest.NewRequest("POST", "/api/v1/auth/login", bytes.NewReader([]byte(fmt.Sprintf(`{"username":%q,"password":%q}`, user, pass))))
+	body, err := json.Marshal(map[string]string{"username": user, "password": pass}) // %q is not JSON (NUL, \x escapes)
+	if err != nil {
+		panic(err)
+	}
+	req := httptest.NewRequest("POST", "/api/v1/auth/login", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	for k, v := range hdr {
 		req.Header.Set(k, v)
