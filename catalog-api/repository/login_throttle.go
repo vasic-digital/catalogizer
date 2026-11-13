@@ -30,7 +30,10 @@ import (
 //     address against one account (stops one address from using the whole account budget).
 //   - Charge-first. An attempt is charged ATOMICALLY (compare-and-swap on a version column, no read-modify-write window)
 //     BEFORE the password is checked, so N parallel attempts cannot all slip through before the first one is counted: exactly
-//     Free evaluations happen before the block. A success clears the charge.
+//     Free evaluations happen before the block. A success gives back its own account charge (restoring the row as it was,
+//     by compare-and-swap, never an earlier charge) and clears that client address's own bucket; it never resets the account
+//     scope, because an account block that ended on the owner's success would tell a real account from a nonexistent name.
+//     Giving the charge back is what keeps an owner who logs in from many new addresses from being locked out with no attacker.
 //   - Known-good client. A client address that completed a login for this account within KnownGoodTTL (at most MaxKnownGood
 //     addresses per account are remembered) is not stopped by the ACCOUNT block, so an attacker cannot lock the owner out of
 //     the places the owner really logs in from. It is still subject to its own per-address block, so spoofing a known address
@@ -49,11 +52,14 @@ import (
 //   - Times are unix milliseconds from an injectable clock; state lives in the login_throttle table (migration v29) so it
 //     survives a restart and is shared by every instance on one database.
 type LoginThrottle struct {
-	db    *database.DB
-	mu    sync.Mutex
-	pol   LoginThrottlePolicy
-	now   func() time.Time
-	purge time.Time
+	// testAfterAccountRead, when set (tests only), runs between Begin's read of the account row and its reserve, so a test can
+	// interleave another request deterministically.
+	testAfterAccountRead func()
+	db                   *database.DB
+	mu                   sync.Mutex
+	pol                  LoginThrottlePolicy
+	now                  func() time.Time
+	purge                time.Time
 }
 
 // LoginThrottlePolicy holds the numbers. Zero fields fall back to the defaults of DefaultLoginThrottlePolicy.
@@ -169,6 +175,18 @@ type Decision struct {
 	Allowed bool
 	// RetryAfter is how long the caller must wait when Allowed is false.
 	RetryAfter time.Duration
+	// AccountRefund is the undo token for the account-scope charge THIS attempt made (zero when it made none). Pass it to
+	// Success so a correct password gives its own charge back; see Success.
+	AccountRefund AccountRefund
+}
+
+// AccountRefund records the account row exactly as it was before this attempt's charge, and the version the charge left.
+type AccountRefund struct {
+	charged        bool
+	version        int64
+	failures       int
+	blockedUntilMs int64
+	lastFailureMs  int64
 }
 
 func delayFor(f, free int, base, cap time.Duration) time.Duration {
@@ -210,20 +228,21 @@ func (t *LoginThrottle) read(ctx context.Context, subject, scope string) (rowSta
 	return s, nil
 }
 
-// reserve charges one attempt on (subject, scope) atomically. blocked is the end of the block when refused.
-func (t *LoginThrottle) reserve(ctx context.Context, subject, scope string, free int, decay time.Duration, now time.Time, pol LoginThrottlePolicy) (allowed bool, until time.Time, err error) {
+// reserve charges one attempt on (subject, scope) atomically. until is the end of the block when refused. undo describes the
+// row as it was before the charge (used to give a correct password's own account charge back, see Success).
+func (t *LoginThrottle) reserve(ctx context.Context, subject, scope string, free int, decay time.Duration, now time.Time, pol LoginThrottlePolicy) (allowed bool, until time.Time, undo AccountRefund, err error) {
 	nowMs := now.UnixMilli()
 	for i := 0; i < casRetries; i++ {
 		if _, err = t.db.ExecContext(ctx,
 			`INSERT OR IGNORE INTO login_throttle (subject, scope) VALUES (?, ?)`, subject, scope); err != nil {
-			return false, time.Time{}, err
+			return false, time.Time{}, AccountRefund{}, err
 		}
 		s, rerr := t.read(ctx, subject, scope)
 		if rerr != nil {
-			return false, time.Time{}, rerr
+			return false, time.Time{}, AccountRefund{}, rerr
 		}
 		if s.blockedUntilMs > nowMs {
-			return false, time.UnixMilli(s.blockedUntilMs), nil
+			return false, time.UnixMilli(s.blockedUntilMs), AccountRefund{}, nil
 		}
 		f := s.failures
 		if f > 0 && nowMs-s.lastFailureMs > decay.Milliseconds() {
@@ -238,14 +257,15 @@ func (t *LoginThrottle) reserve(ctx context.Context, subject, scope string, free
 			`UPDATE login_throttle SET failures = ?, blocked_until_ms = ?, last_failure_ms = ?, version = version + 1 WHERE subject = ? AND scope = ? AND version = ?`,
 			f, nb, nowMs, subject, scope, s.version)
 		if uerr != nil {
-			return false, time.Time{}, uerr
+			return false, time.Time{}, AccountRefund{}, uerr
 		}
 		if n, _ := res.RowsAffected(); n == 1 {
-			return true, time.Time{}, nil
+			return true, time.Time{}, AccountRefund{charged: true, version: s.version + 1,
+				failures: s.failures, blockedUntilMs: s.blockedUntilMs, lastFailureMs: s.lastFailureMs}, nil
 		}
 		runtime.Gosched()
 	}
-	return false, time.Time{}, ErrLoginThrottleBusy
+	return false, time.Time{}, AccountRefund{}, ErrLoginThrottleBusy
 }
 
 // Begin decides whether this attempt may be evaluated and charges it. It must be called BEFORE the password is checked.
@@ -270,13 +290,17 @@ func (t *LoginThrottle) Begin(ctx context.Context, subject, ip string) (Decision
 	if err != nil {
 		return Decision{}, err
 	}
+	if t.testAfterAccountRead != nil {
+		t.testAfterAccountRead()
+	}
 	if a.blockedUntilMs > nowMs && !known {
 		return refuse(time.UnixMilli(a.blockedUntilMs), now), nil
 	}
 	// A known-good address is never charged to the account scope (and so a legitimate owner's login has no effect on it, which
 	// would otherwise tell a real account from a nonexistent name); it is still limited by its own address bucket below.
+	var refund AccountRefund
 	if !known {
-		ok, until, err := t.reserve(ctx, subject, scopeAccount, pol.AccountFree, pol.AccountDecay, now, pol)
+		ok, until, undo, err := t.reserve(ctx, subject, scopeAccount, pol.AccountFree, pol.AccountDecay, now, pol)
 		if errors.Is(err, ErrLoginThrottleBusy) {
 			return refuse(now.Add(pol.Base), now), nil
 		}
@@ -286,10 +310,11 @@ func (t *LoginThrottle) Begin(ctx context.Context, subject, ip string) (Decision
 		if !ok {
 			return refuse(until, now), nil
 		}
+		refund = undo
 	}
 
 	// 3. This address's charge.
-	ok, until, err := t.reserve(ctx, subject, bucket, pol.BucketFree, pol.BucketDecay, now, pol)
+	ok, until, _, err := t.reserve(ctx, subject, bucket, pol.BucketFree, pol.BucketDecay, now, pol)
 	if errors.Is(err, ErrLoginThrottleBusy) {
 		return refuse(now.Add(pol.Base), now), nil
 	}
@@ -299,7 +324,7 @@ func (t *LoginThrottle) Begin(ctx context.Context, subject, ip string) (Decision
 	if !ok {
 		return refuse(until, now), nil
 	}
-	return Decision{Allowed: true}, nil
+	return Decision{Allowed: true, AccountRefund: refund}, nil
 }
 
 func refuse(until, now time.Time) Decision {
@@ -311,9 +336,23 @@ func refuse(until, now time.Time) Decision {
 }
 
 // Success clears this address's charges (never the account scope) of a completed login and (rememberClient) records the address as known-good.
-func (t *LoginThrottle) Success(ctx context.Context, subject, ip string, rememberClient bool) error {
+func (t *LoginThrottle) Success(ctx context.Context, subject, ip string, rememberClient bool, refund AccountRefund) error {
 	now, pol := t.clock()
 	nowMs := now.UnixMilli()
+	// Give back THIS attempt's own account charge (R4-1). Without it every owner login from a new address would leave +1 on the
+	// account count and refresh its decay clock, so a quiet account with no attacker would reach the block after ~20 new-address
+	// logins. The row is restored to exactly what it was before the charge, by compare-and-swap on the version the charge left:
+	// if any other attempt touched the row since, nothing is restored (a prior or concurrent attacker charge is never erased; the
+	// worst case is that one charge stays, which is the previous, safe behaviour). A nonexistent name never reaches Success, and
+	// the restored row is byte-for-byte what a request that never happened would leave, so S1 stays closed: the owner's login
+	// does not move the account state an attacker can observe.
+	if refund.charged {
+		if _, err := t.db.ExecContext(ctx,
+			`UPDATE login_throttle SET failures = ?, blocked_until_ms = ?, last_failure_ms = ?, version = version + 1 WHERE subject = ? AND scope = ? AND version = ?`,
+			refund.failures, refund.blockedUntilMs, refund.lastFailureMs, subject, scopeAccount, refund.version); err != nil {
+			return err
+		}
+	}
 	// The account scope is deliberately NOT touched: a nonexistent name can never log in, so an account block that ended early on
 	// the owner's success would reveal that the account exists. Only the owner's own address bucket is cleared.
 	bucket := ipScope(ip)

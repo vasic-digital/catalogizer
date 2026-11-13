@@ -424,10 +424,15 @@ submitted string, matching how the account lookup compares names (no case foldin
 address of one account share one budget, so a client that submits both can tell they belong to the same account once the
 budget is spent. A successful login clears only that client address's own charges and never the account's: an account block, like
 the block of a nonexistent name, only ends by expiry, so the owner's login cannot be used to tell a real account from an unused
-name. A login from a known-good address is not charged to the account at all (it keeps its own per-address limit), so it leaves
-the account's count unchanged; a first login from a NEW address is an attempt like any other and adds one charge to the account
-count. That one charge, and the fact that a known-good address keeps working while others are refused, is what is still
-observable to someone who controls a known-good address of the account. Both account and address windows are bounded by the
+name. A login from a known-good address is not charged to the account at all (it keeps its own per-address limit). A login from a
+new address is charged to the account like any attempt, and when the password is right that one charge is given back, restoring
+the account count and its decay clock exactly as they were (by compare-and-swap; if another attempt touched the account in
+between, the owner's charge simply stays, never an earlier attacker charge is erased). So an owner who logs in from many new
+addresses is not locked out when nobody is attacking, and the evaluated-guess count an attacker sees is the same as against a
+nonexistent name. What remains observable: while an attack is in progress a blocked account refuses a new address even for the
+owner (the owner's own login from a new address is held like anyone else's), and a known-good address keeps working while
+others are refused, which only someone who holds a known-good address of the account can see. During the instant of a login
+the owner's charge is counted, so a guesser racing it can be refused one guess early; that window is accepted. Both account and address windows are bounded by the
 24-hour stale-row purge, so the effective account window is min(AccountDecay, StaleAfter); a row can in a narrow window be
 read just before its purge, which is accepted. The state is in table `login_throttle` (migration v29), so it survives
 a restart and is shared by every instance on one database. Rows without a success marker are removed after 24 hours without

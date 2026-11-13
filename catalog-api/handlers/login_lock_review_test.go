@@ -149,7 +149,7 @@ func TestLoginLock_InactiveCorrectPasswordDoesNotRememberClient(t *testing.T) {
 	require.NoError(t, err)
 	e.loginFrom(llIP, "victim", llPass)
 	processed, _ := e.attackAccount(25, 100)
-	require.Equal(t, 19, processed, "the inactive-account attempt from the (not known-good) address was charged to the account scope: 1 + 19")
+	require.Equal(t, 20, processed, "the inactive-account correct password gave its own account charge back")
 	assert.Equal(t, http.StatusTooManyRequests, e.loginFrom(llIP, "victim", wrong(1)).Code,
 		"an address that only proved the password of an inactive account is not known-good")
 }
@@ -271,7 +271,7 @@ func TestLoginLock_RemembersAtMostFiveKnownGoodAddresses(t *testing.T) {
 		e.advance(time.Minute)
 	}
 	processed, _ := e.attackAccount(25, 400)
-	require.Equal(t, 13, processed, "each of the 7 first logins came from an address not yet known-good and was charged to the account scope (7 + 13)")
+	require.Equal(t, 20, processed, "each first login from a new address was charged and then refunded")
 	for i := 0; i < 2; i++ {
 		assert.Equal(t, http.StatusTooManyRequests, e.loginFrom(distinctIP(300+i), "victim", wrong(i)).Code, "oldest two are forgotten")
 	}
@@ -415,4 +415,53 @@ func TestLoginLock_TrimKeepsFailureOnlyRows(t *testing.T) {
 	var n int
 	require.NoError(t, e.raw.QueryRow(`SELECT COUNT(*) FROM login_throttle WHERE scope = 'ip:203.0.113.50'`).Scan(&n))
 	assert.Equal(t, 1, n, "the failure-only row survives the known-good trim")
+}
+
+// ---- Round 5 (R4-1): an owner's successful logins from NEW addresses must not accumulate on the account scope. ----
+
+// No attacker at all: 25 successful logins an hour apart, each from a new address (more than MaxKnownGood), IPv4 and IPv6,
+// then another new device a minute later. All must succeed (the parent revision allowed this too).
+func TestLoginLock_OwnerNewAddressLoginsNeverAccumulateWithoutAttacker(t *testing.T) {
+	e := newLLEnv(t)
+	for i := 0; i < 25; i++ {
+		addr := distinctIP(700 + i)
+		if i%2 == 1 {
+			addr = fmt.Sprintf("[2001:db8:%x:%x::%x]", i, i*3, i+1)
+		}
+		require.Equal(t, http.StatusOK, e.loginFrom(addr, "victim", llPass).Code, "login %d from %s", i, addr)
+		e.advance(time.Hour)
+	}
+	e.advance(-59 * time.Minute)
+	w := e.loginFrom("198.51.100.77", "victim", llPass)
+	assert.Equal(t, http.StatusOK, w.Code, "device B a minute after the last login: "+w.Header().Get("Retry-After"))
+	var f int
+	require.NoError(t, e.raw.QueryRow(`SELECT failures FROM login_throttle WHERE subject = ? AND scope = 'account'`, fmt.Sprintf("u:%d", e.uid)).Scan(&f))
+	assert.Equal(t, 0, f, "every success gave its own charge back")
+}
+
+// With an attacker: an owner login from a NEW address in the middle of the attack neither erases the attacker's earlier charges
+// nor leaves an extra one, and the attacker sees the same thing as against a nonexistent name.
+func TestLoginLock_OwnerNewAddressLoginIsInvisibleToAttacker(t *testing.T) {
+	run := func(name string, owner bool) (processed, final int, retry string) {
+		e := newLLEnv(t)
+		for i := 0; i < 30; i++ {
+			if i == 10 && owner && name == "victim" {
+				require.Equal(t, http.StatusOK, e.loginFrom("198.51.100.200", "victim", llPass).Code)
+			}
+			if e.loginFrom(distinctIP(i), name, wrong(i)).Code == http.StatusUnauthorized {
+				processed++
+			}
+		}
+		e.advance(2 * time.Second)
+		w := e.loginFrom(distinctIP(900), name, wrong(900))
+		return processed, w.Code, w.Header().Get("Retry-After")
+	}
+	gp, gf, gr := run("ghost", false)
+	qp, qf, qr := run("victim", false)
+	op, of, or := run("victim", true)
+	t.Logf("ghost %d %d %s | victim %d %d %s | victim+owner new-address login %d %d %s", gp, gf, gr, qp, qf, qr, op, of, or)
+	assert.Equal(t, gp, qp)
+	assert.Equal(t, gp, op, "the owner's login neither refills nor drains the attacker's budget")
+	assert.Equal(t, gf, of)
+	assert.Equal(t, gr, or)
 }

@@ -133,10 +133,10 @@ func (e *ErrLoginThrottled) Error() string {
 var ErrLoginThrottleUnavailable = errors.New("sign-in temporarily unavailable")
 
 // throttleBegin charges the attempt before the password is checked. nil subject means no throttle is configured.
-func (s *AuthService) throttleBegin(subject, ip string) error {
+func (s *AuthService) throttleBegin(subject, ip string) (repository.Decision, error) {
 	th := s.userRepo.LoginThrottle()
 	if th == nil {
-		return nil
+		return repository.Decision{}, nil
 	}
 	if ip == "" {
 		ip = "unknown"
@@ -144,20 +144,20 @@ func (s *AuthService) throttleBegin(subject, ip string) error {
 	d, err := th.Begin(context.Background(), subject, ip)
 	if err != nil {
 		log.Printf("auth: login throttle unavailable: %v", err)
-		return ErrLoginThrottleUnavailable
+		return repository.Decision{}, ErrLoginThrottleUnavailable
 	}
 	if !d.Allowed {
-		return &ErrLoginThrottled{RetryAfter: d.RetryAfter}
+		return repository.Decision{}, &ErrLoginThrottled{RetryAfter: d.RetryAfter}
 	}
-	return nil
+	return d, nil
 }
 
-func (s *AuthService) throttleSuccess(subject, ip string, remember bool) {
+func (s *AuthService) throttleSuccess(subject, ip string, remember bool, d repository.Decision) {
 	if th := s.userRepo.LoginThrottle(); th != nil {
 		if ip == "" {
 			ip = "unknown"
 		}
-		if err := th.Success(context.Background(), subject, ip, remember); err != nil {
+		if err := th.Success(context.Background(), subject, ip, remember, d.AccountRefund); err != nil {
 			log.Printf("auth: login throttle reset failed: %v", err)
 		}
 	}
@@ -170,7 +170,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// An unknown name is throttled exactly like a known one, so the answer reveals nothing about existence.
-			if terr := s.throttleBegin(repository.SubjectForUnknownName(req.Username), ipAddress); terr != nil {
+			if _, terr := s.throttleBegin(repository.SubjectForUnknownName(req.Username), ipAddress); terr != nil {
 				return nil, terr
 			}
 			// Same bcrypt cost as a wrong password for a real user, so response time does not
@@ -184,7 +184,8 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 
 	// Back-off: every attempt is charged atomically before the password is evaluated (CAT-LOGIN-LOCK-1).
 	subject := repository.SubjectForUser(user.ID)
-	if terr := s.throttleBegin(subject, ipAddress); terr != nil {
+	decision, terr := s.throttleBegin(subject, ipAddress)
+	if terr != nil {
 		return nil, terr
 	}
 
@@ -201,7 +202,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 			return nil, ErrInvalidCredentials
 		}
 		// The password is right: the guesser's charge does not apply, but no known-good client is recorded.
-		s.throttleSuccess(subject, ipAddress, false)
+		s.throttleSuccess(subject, ipAddress, false, decision)
 		s.auditEvent(user.ID, "failed_login_inactive", ipAddress, userAgent, "account not loginable: password correct")
 		if user.IsAccountLocked() {
 			return nil, lockedError(user)
@@ -231,7 +232,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	// known-good: that happens only once the login is accepted (after verifyUserUnchanged below), so a login refused because
 	// the account changed meanwhile never earns the address the account-block bypass.
 	s.userRepo.ResetFailedLoginAttempts(user.ID)
-	s.throttleSuccess(subject, ipAddress, false)
+	s.throttleSuccess(subject, ipAddress, false, decision)
 
 	// Create session
 	session, err := s.createSession(user, req.DeviceInfo, ipAddress, userAgent, req.RememberMe)
@@ -252,7 +253,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 		}
 		return nil, err
 	}
-	s.throttleSuccess(subject, ipAddress, true)
+	s.throttleSuccess(subject, ipAddress, true, repository.Decision{}) // the refund was already given at the first call
 
 	// Update last login information
 	s.userRepo.UpdateLastLogin(user.ID, ipAddress)
