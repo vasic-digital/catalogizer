@@ -150,6 +150,7 @@ func TestSECDIALFU_F4_ScrubIPv6AndBoundaryShapes(t *testing.T) {
 		"addr b:10.0.0.1 x":                              "addr b:<address> x",
 		"addr dead:10.0.0.1 x":                           "addr dead:<address> x",
 		"read tcp 192.168.1.5:5000->10.0.0.1:445: reset": "read tcp <address>:5000-><address>:445: reset",
+		"label xdead::1 here":                            "label xdead::1 here",
 		"std::string and 12:30 and 1.2 and v3.4.5":       "std::string and 12:30 and 1.2 and v3.4.5",
 	} {
 		require.Equal(t, want, scrubResolvedAddrs(in, host), in)
