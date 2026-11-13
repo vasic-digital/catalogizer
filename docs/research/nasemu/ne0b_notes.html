@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.11" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>NE-0b residual verification notes (BG-NASEMU) — 2026-11-13
+~00:32-00:45 CET</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<h1
+id="ne-0b-residual-verification-notes-bg-nasemu--2026-11-13-0032-0045-cet">NE-0b
+residual verification notes (BG-NASEMU) — 2026-11-13 ~00:32-00:45
+CET</h1>
+<p>Read-only; no sudo, no mounts, no pulls, no VM run. Raw artifacts
+alongside: fs.pdf (File Station API Guide, 5 PDF "pages" but 6141 text
+lines via pdftotext), fs.txt, web_auth.html/.txt, nfs.html.</p>
+<h2
+id="1-synology-api-contract-source-synology_file_station_api_guidepdf-from-cndlsynologycn-fetched-2026-11-13-502145-b">1.
+Synology API contract (source: Synology_File_Station_API_Guide.pdf from
+cndl.synology.cn, fetched 2026-11-13, 502145 B)</h2>
+<p>Doc is "Synology File Station Official API", marked proprietary (no
+reproduction/design-basis without permission): contract notes below are
+paraphrased minimal facts for interop; legal use as shim basis =
+UNCONFIRMED/operator question. NOTE: URL <a
+href="https://help.synology.com/developer-guide/integrate_dsm/web_authentication.html">https://help.synology.com/developer-guide/integrate_dsm/web_authentication.html</a>
+is actually "Application Authentication" (package CGI authenticate.cgi),
+NOT the Login Web API. It only confirms login URL form
+<code>/webapi/auth.cgi?api=SYNO.API.Auth&amp;version=3&amp;method=login&amp;account=..&amp;passwd=..&amp;format=cookie</code>,
+ports 5001 https / 5000 http, logout
+<code>version=1&amp;method=logout</code>. The separate "DSM Login Web
+API" PDF was NOT found/opened (UNCONFIRMED). Request form: GET
+/webapi/<path>?api=<NAME>&amp;version=<N>&amp;method=<M>[&amp;params][&amp;_sid=<sid>]
+(or cookie <code>id</code>); params escaped (comma-&gt;<code>\</code>...
+per doc); passwd not escaped; POST also accepted for upload. Response:
+JSON {"success":true,"data":{...}} or
+{"success":false,"error":{"code":N[,"errors":[...]]}}.</p>
+<ul>
+<li>SYNO.API.Info v1, since DSM 4.0, fixed at /webapi/query.cgi,
+method=query&amp;query=all|comma-list -&gt;
+data{<API>:{path,minVersion,maxVersion}}. Doc examples: SYNO.API.Auth
+path auth.cgi min1 max3; SYNO.FileStation.List path
+FileStation/file_share.cgi (old v1 example); File Station v2 APIs (DSM
+6.0+) use /webapi/entry.cgi. No API-specific error codes.</li>
+<li>SYNO.API.Auth: v3 since DSM 4.2, v2 since 4.1. login params:
+account, passwd, session (e.g. FileStation), format=cookie|sid (v2+),
+otp_code (v3, reserved; "WebAPI doesn't support it yet"). Response
+data.sid. sid expires 7 days default. logout params: session; empty
+success. Errors: 400 no such account/incorrect password; 401 account
+disabled; 402 permission denied; 403 2-step code required; 404 2-step
+code failed.</li>
+<li>Common error codes: 100 unknown; 101 no API/method/version param;
+102 API does not exist; 103 method does not exist; 104 version
+unsupported for functionality; 105 session lacks permission; 106 session
+timeout; 107 session interrupted by duplicate login; 119 SID not found.
+File-op common: 400 invalid param; 401 unknown; 402 system busy; 403
+invalid user; 404 invalid group; 405 invalid user and group.</li>
+<li>SYNO.FileStation.Info v2 (DSM 6.0+) method get (no params),
+entry.cgi -&gt; data{is_manager,support_virtual_protocol e.g.
+"cifs,nfs,iso",support_sharing,hostname}.</li>
+<li>SYNO.FileStation.List v2: list_share
+(offset,limit,sort_by,sort_direction,onlywritable,additional[real_path,owner,time,perm,mount_point_type,sync_share,volume_status])
+-&gt; {total,offset,shares[{path,name,additional}]}; list (folder_path
+req; offset,limit,sort_by,sort_direction,pattern,filetype
+file|dir|all,goto_path,additional[real_path,size,owner,time,perm,type])
+-&gt;
+{total,offset,files[{path,name,isdir,additional{size,time{atime,mtime,ctime,crtime
+seconds},owner{user,group,uid,gid},perm{posix,...},type=extension}}]};
+getinfo (path JSON-array string) -&gt; files[]. additional passed as
+JSON array string e.g. ["real_path","size"]. (isdir field inferred from
+doc object; exact field table partially read: UNCONFIRMED
+line-level.)</li>
+<li>SYNO.FileStation.Download v2 method download: path=["/share/f.txt"]
+(JSON array, URL-encoded), mode=open|download; one file -&gt; raw
+content, many -&gt; ZIP; no API error codes; with mode=open errors give
+HTTP 404.</li>
+<li>SYNO.FileStation.Upload v2 method upload: POST /webapi/entry.cgi
+multipart/form-data (RFC 1867), parts api,version,method,path (dest
+folder starting with share),create_parents,overwrite(true/false; v3
+overwrite|skip),mtime/crtime/atime (ms), file part LAST. Success: empty
+success. Errors: 1800 no/mismatched Content-Length; 1801 client wait
+timeout (3600s); 1802 no filename in last part; 1803 connection
+cancelled; 1804 oversized file to FAT; 1805 cannot overwrite/skip
+existing file when no overwrite param. Shim implication: minimal set =
+Info.query, Auth.login/logout (+ error 400/402/105/106/119), FileStation
+Info.get, List.list_share/list/getinfo, Download.download,
+Upload.upload. 2FA(403/404) not testable via official WebAPI per
+doc.</li>
+</ul>
+<h2 id="2-host-facts-2026-11-13">2. Host facts (2026-11-13)</h2>
+<ul>
+<li>/dev/sda1: 7.3T, FSTYPE ntfs, LABEL LOCAL7, UUID 6EACEE6FACEE316F,
+device root:disk 0660 (user not in disk group).
+<code>findmnt -S /dev/sda1</code> empty =&gt; NOT mounted. Not writable
+by us without sudo/udisks mount; NTFS is a poor VM image store (no
+sparse/perm semantics, ntfs3/ntfs-3g needed). Safe? Not usable rootless
+today; needs operator mount decision. Contents/ownership UNKNOWN (not
+mounted, not inspected).</li>
+<li><code>/</code> and $HOME: /dev/nvme1n1p2 ext4 1.8T used 1.7T avail
+55G (97%). Only 55G free; vdsm (&gt;=16G) + dockur/windows (&gt;=32G) +
+macos (64G default) cannot all fit.</li>
+<li>RAM: MemTotal 31717516 kB (~30.2 GiB), MemAvailable 20163880 kB
+(~19.2 GiB) at 00:32.</li>
+</ul>
+<h2 id="3-rootless-prerequisites">3. Rootless prerequisites</h2>
+<ul>
+<li>podman rootless=true, cgroup v2 (systemd manager), netavark 1.16.1,
+aardvark-dns 1.16.0, crun 1.21, rootlessNetworkCmd=pasta (pasta
+0~git20260120), slirp4netns also present, buildah 1.42.1; Ubuntu
+26.04.1.</li>
+<li>/dev/kvm crw-rw----+ root:kvm, ACL user:milosvasic:rw- ;
+in-container <code>--device /dev/kvm</code> with alpine:3.20: listed as
+nobody:nobody, <code>test -r -a -w</code> =&gt; kvm-rw-ok. KVM usable
+rootless.</li>
+<li>/dev/net/tun crw-rw-rw- :
+<code>podman run --rm --cap-add NET_ADMIN --device /dev/net/tun docker.io/library/alpine:3.20</code>
+rc=0; in-container open of tun fd OK ("tun-open-ok"). (First attempt
+with name localhost/alpine:3.20 failed only because wrong image name: it
+tried to pull, failed; local image is
+docker.io/library/alpine:3.20.)</li>
+<li>/dev/vhost-net crw-rw---- root:kvm, NO ACL for user, user not in kvm
+group =&gt; NOT accessible: <code>--device /dev/vhost-net</code> starts
+(rc=0) but open inside fails "Permission denied". =&gt; dockur/vdsm
+DHCP/macvlan modes needing vhost-net unavailable; default NAT/user-mode
+networking is the route (needs no vhost). Fix would be
+<code>setfacl -m u:milosvasic:rw /dev/vhost-net</code> or kvm group =
+sudo, operator action.</li>
+<li>net.ipv4.ip_unprivileged_port_start=1024 (ports &lt;1024 need
+remap); user.max_user_namespaces=123694; ulimit -u 123694; subuid
+milosvasic:100000:65536.</li>
+<li>Not tested: actually running vdsm/dockur (no image, no pull, per
+scope). vdsm rootless boot result still UNCONFIRMED; verdict so far:
+prerequisites kvm+tun OK, vhost-net blocked, disk-space tight.</li>
+</ul>
+<h2 id="4-licences--releases-github-api-2026-11-13-unless-noted">4.
+Licences / releases (GitHub API 2026-11-13 unless noted)</h2>
+<ul>
+<li>rclone MIT, v1.76.0 2026-11-06, pushed 2026-11-12.
+<code>rclone serve nfs</code> (rclone.org/commands/rclone_serve_nfs):
+NFSv3 only; NO authentication (any client); default random port on
+loopback, use --addr 0.0.0.0:PORT to expose; writes need
+--vfs-cache-mode (full recommended) else read-only; mount with
+<code>-o port=$PORT,mountport=$PORT,tcp</code>; --nfs-cache-type memory
+(default; restart =&gt; stale handles) | disk | symlink (Linux only,
+needs root or CAP_DAC_READ_SEARCH =&gt; unusable rootless);
+--nfs-cache-handle-limit default 1000000; subdir mount supported.</li>
+<li>dufs Apache-2.0, v0.47.0 2026-10-17, pushed 2026-11-10.</li>
+<li>unfs3 licence NOASSERTION per GitHub (BSD-like per plan,
+UNCONFIRMED; LICENSE file not read), v0.11.0 2025-03-28, pushed
+2025-07-03, NFSv3 userspace.</li>
+<li>ProFTPD GPL-2.0, v1.3.9e 2026-10-26, pushed 2026-11-12.</li>
+<li>nginx BSD-2-Clause, release-1.31.8 2026-10-21 (note: nginx core has
+built-in ngx_http_dav_module with PUT/DELETE/MKCOL/COPY/MOVE only, no
+PROPFIND — full WebDAV needs 3rd-party ext module; from memory,
+UNCONFIRMED here). Apache mod_dav: not checked (UNCONFIRMED).</li>
+<li>vsftpd: primary page security.appspot.com/vsftpd.html: latest news
+3.0.5 (Aug 2021; 3.0.4/3.0.5 after 6 years gap). Licence text not shown
+on that page (GPLv2 per common knowledge, UNCONFIRMED from primary).
+Low-activity.</li>
+</ul>
+<h2 id="5-remaining-unresearched-platforms">5. Remaining unresearched
+platforms</h2>
+<ul>
+<li>Unraid: proprietary paid OS (unraid.net/pricing: perpetual licence,
+30-day free trial, "Docker containers" and "Virtual Machines" are
+features OF Unraid, i.e. it is a host OS, not a container). Cannot be
+run as a container; VM-only, licence/trial needed. Exclude.</li>
+<li>TrueNAS SCALE/CE: full OS installed from ISO on hardware or VM
+(truenas.com install docs); apps catalog truenas/apps is LGPL-3.0
+(compose catalog, not the NAS itself). VM-only. Optional VM-tier.</li>
+<li>OpenMediaVault: official docs state verbatim "openmediavault does
+not support installation in LXC or any other container based solution."
+=&gt; VM-only (or Debian host install).</li>
+<li>CasaOS: Apache-2.0, last release v0.4.15 2024-12-19; home-server app
+UI, not a NAS protocol emulator. Exclude.</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.11" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>BG-NASEMU-2026-11-13 — Design, risks, work items (rev
+2)</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<h1
+id="bg-nasemu-2026-11-13--design-risks-work-items-rev-2">BG-NASEMU-2026-11-13
+— Design, risks, work items (rev 2)</h1>
+<p>Based on report.md rev 2 (primary-source pass 2026-11-13). Read it
+first for evidence.</p>
+<h2 id="1-recommendation-on-d5-package-layout--decided-here">1.
+Recommendation on D5 (package layout) — decided here</h2>
+<p><strong>Add a NEW package <code>pkg/nasemu</code> in Containers,
+layered ON TOP of existing packages; do not stuff NAS profiles into
+<code>pkg/emulator</code>.</strong> Reasons (evidence):
+<code>pkg/emulator</code> is Android/ADB-shaped
+(<code>Containerized</code> Boot/Install/RunInstrumentation/gradle
+setters); NAS services are protocol servers with a different lifecycle
+(seed, protocol health, golden manifest). The reusable pieces are
+<code>pkg/runtime</code> typed run options
+(memory/cpus/pids/device/userns/publish/digest/labels, host-escalation
+refusals), <code>pkg/hostbudget</code> (Admit + Evidence JSON +
+KVMUsable), <code>pkg/health</code> (http/tcp/custom),
+<code>pkg/network</code>, <code>pkg/vm</code> (qemu/network/teardown).
+<code>nasemu</code> composes them; VM-tier profiles delegate to
+<code>pkg/vm</code> / a thin container-with-/dev/kvm run (vdsm, dockur
+images are containers that need <code>/dev/kvm</code>,
+<code>/dev/net/tun</code>, <code>NET_ADMIN</code>). Prerequisite:
+<code>pkg/hostbudget</code> and the typed run options exist only on
+branch <code>fix/containers-g1-g2-g11</code> (not upstream).
+<strong>NE-1 must land those on Containers <code>main</code> (reviewed,
+ff-only per §11.4.288) before <code>nasemu</code> builds on
+them</strong>; also extend hostbudget with a <strong>disk-free
+axis</strong> (host <code>/</code> is 97%). Conflict to resolve:
+existing Catalogizer test-servers use <code>--network host</code>; the
+typed runtime options refuse host-escalating forms. <code>nasemu</code>
+uses <code>Publish</code> (hostIP:port) and a port registry; connectors
+already take configurable ports (verify in NE-7).</p>
+<h2 id="2-design">2. Design</h2>
+<ul>
+<li><code>Profile</code> (DATA, config-injected, no Catalogizer literals
+§11.4.28):
+<code>Name, Tier(lite|vm), ImageRef@sha256, Protocols[], Ports, BindAddr, Env/secret refs (0600 file paths, never values), SeedSpec ref, Volumes, Limits(mem/cpu/pids), Need (for hostbudget), HealthProbe(protocol-level), LegalAttestationRef (required for vm tier), Labels</code>.</li>
+<li><strong>Lite tier (evidence-based starting set):</strong>
+<code>smb</code> (real smbd or samba-in-kubernetes
+<code>quay.io/samba.org/samba-server</code>, published high port),
+<code>ftp</code>/<code>sftp</code>/<code>webdav</code>/<code>http</code>/<code>nfs</code>
+(rclone serve; NFSv3), <code>ftps</code> (existing python server),
+<code>s3</code> (Garage; SeaweedFS Apache-2.0 as fallback;
+versioning-dependent tests SKIP because Garage lacks versioning),
+optional "real-server fidelity" profiles (ProFTPD/vsftpd, SFTPGo). Seed
+= deterministic generator -&gt; golden manifest JSON (path, size,
+sha256, mtime; unicode names, long path, empty dir, symlink, large
+file); the existing <code>corpus</code> and <code>verify.sh</code> are
+the migration source.</li>
+<li><strong>VM tier:</strong> <code>vdsm</code> (vdsm/virtual-dsm,
+pinned digest + pinned local <code>.pat</code> with recorded sha256),
+<code>windows</code> (dockur/windows, operator licence),
+<code>macos</code> (dockur/macos, opt-in only). Each: LegalAttestation
+DATA required, <code>hostbudget.Admit</code> with <code>NeedsKVM</code>,
+KVM open-for-write probe, disk-free check, named volume on an
+operator-chosen disk, single-instance lock, bounded first-boot
+wait.</li>
+<li>Lifecycle: Plan -&gt; Admit -&gt; Start(rootless, labelled
+<code>nasemu.run=&lt;id&gt;</code>) -&gt; WaitHealthy (real protocol
+probe) -&gt; Seed verify -&gt; Evidence JSON -&gt; Stop -&gt;
+label-scoped reap (own resources only, §11.4.174).</li>
+<li>Evidence JSON fields (§11.4.289(D)): profile, image digest,
+container id, endpoint actually reached, answering identity
+(executable/image digest), hostbudget Evidence, seed manifest sha256,
+probe transcript hashes, timings, SKIP reason from closed set
+(<code>hardware_not_present</code>, <code>credentials_absent</code>,
+<code>topology_unsupported</code>,
+<code>legal_attestation_absent</code>,
+<code>host_budget_refused</code>).</li>
+<li>Consumer binding: Catalogizer supplies a DATA file mapping connector
+test -&gt; profile + env var names for host/port/creds; tests
+SKIP-with-reason when the emulator is absent; no stubs.</li>
+<li>Docs: user guide, manual, FAQ, diagrams (architecture, lifecycle
+state machine, sequence of a test run), README link
+(§11.4.212/.257/.258).</li>
+</ul>
+<h2 id="3-gap--risk-register-risk---mitigation---verifying-test">3. Gap
+/ risk register (risk -&gt; mitigation -&gt; verifying test)</h2>
+<ol type="1">
+<li>Host OOM, load ~20, ~16 GiB available -&gt; hostbudget.Admit (60%
+ceiling, PSI, load/CPU) + container memory caps -&gt; test: tight Policy
+yields <code>does_not_fit</code>, no container created.</li>
+<li>Disk 97% / 57 GiB free (Windows 32 GB, macOS 64 GB default, vdsm 16
+GB) -&gt; add disk axis to hostbudget; VM disks only on an
+operator-chosen volume -&gt; test: threshold probe live + fixture.</li>
+<li>KVM: works now via ACL (<code>user:milosvasic:rw-</code>, verified)
+but ACL can vanish -&gt; <code>KVMUsable</code> open-for-write each run,
+SKIP <code>hardware_not_present</code> otherwise -&gt; live probe
+test.</li>
+<li>LAN exposure -&gt; default bind 127.0.0.1; LAN bind explicit DATA;
+generated 0600 creds; samba-container default
+<code>sambauser/samba</code> forbidden -&gt; test: evidence shows bind
+address; default-cred login must FAIL.</li>
+<li>Credentials leakage -&gt; secrets by file ref only; redaction -&gt;
+test: control-needle scan of evidence/logs.</li>
+<li>Legal: DSM (Synology HW only, per vdsm FAQ), macOS (Apple HW only,
+per dockur readme), Windows (licence) -&gt; VM tier off by default,
+attestation DATA required -&gt; test: no attestation =&gt; SKIP
+<code>legal_attestation_absent</code>.</li>
+<li>Provenance/reproducibility: vdsm downloads DSM (default 7.0.1) at
+runtime -&gt; supply pinned <code>.pat</code>, record sha256; images by
+digest; Windows updates non-deterministic -&gt; test: evidence includes
+digest + .pat hash; 3x runs (§11.4.50).</li>
+<li>Rootless limits: ports &lt;1024
+(<code>ip_unprivileged_port_start=1024</code>), tun/NET_ADMIN/vhost-net
+for VM images, kernel nfsd/Ganesha impossible -&gt; high ports + NFS via
+rclone; vdsm rootless = spike NE-0b with captured result; may end
+<code>topology_unsupported</code>.</li>
+<li>Flakiness/slow first boot -&gt; bounded waits, protocol-level
+health, deterministic seed -&gt; N&gt;=3 identical.</li>
+<li>State/cleanup -&gt; label-scoped reap, ephemeral lite volumes, VM
+volumes explicit -&gt; test: no labelled leftovers after Stop.</li>
+<li>Port clashes with catqa1/2/3 and existing <code>cattsrv-*</code>
+-&gt; port registry DATA + pre-bind probe + <code>--network host</code>
+retired -&gt; test.</li>
+<li>Licences: SFTPGo/Garage/pgsty-MinIO AGPL, theme proprietary -&gt;
+unmodified test infra only; dependency register entry (§11.4.270); MinIO
+upstream archived -&gt; excluded.</li>
+<li>Fidelity gap: rclone/Samba are not DSM -&gt; docs state it;
+Synology-specific behaviour verified only against vdsm; no open-source
+Synology API mock exists, so any API shim is our own code (decision
+D6).</li>
+<li>Unreviewed Containers branch (not upstream) -&gt; NE-1 lands it
+first.</li>
+<li>Existing test-servers regress during migration -&gt; keep
+<code>docs/qa/test-servers</code> working until nasemu parity proven
+(verify.sh as acceptance).</li>
+<li>Cost/time of ISO and .pat downloads -&gt; VM tier opt-in.</li>
+<li>Remaining UNCONFIRMED research items (rootless vdsm, API PDF
+details, /dev/sda1 mount state) -&gt; NE-0b.</li>
+</ol>
+<h2 id="4-test-plan">4. Test plan</h2>
+<p>Per tier LIVE, deterministic (N&gt;=3 identical): start the real
+container, run the real Catalogizer connector AND an independent client
+(smbclient, sftp, curl, showmount/mount, aws-cli-class), compare
+listings and hashes to the golden manifest, negative controls (wrong
+creds rejected, absent path error), schema-check the evidence JSON,
+disconnection mutation (stop container =&gt; test must FAIL). Mocks only
+in unit tests of config/admission logic (§11.4.289). VM tier: boot to
+protocol-ready, same manifest checks, plus Synology API login/list
+(<code>SYNO.API.Auth</code>, FileStation) against vdsm.</p>
+<h2 id="5-work-items-s05d-m1-2d-l2d">5. Work items (S&lt;=0.5d, M~1-2d,
+L&gt;2d)</h2>
+<ul>
+<li><strong>NE-0b (S, now):</strong> residual verification spike: open
+Synology API PDFs; try rootless run of vdsm only after operator OK (D1);
+confirm <code>sda1</code> mount/free; record. Evidence: dated
+notes.</li>
+<li><strong>NE-1 (M, now):</strong> review and land
+<code>fix/containers-g1-g2-g11</code> (G1/G2/G11) on Containers main;
+add disk-free axis to hostbudget with tests. Acceptance: tests green,
+ff-only on all upstreams, Catalogizer pin bumped.</li>
+<li><strong>NE-2 (M, NE-1):</strong> <code>pkg/nasemu</code> core
+(Profile, load, lifecycle, evidence, label reap). Acceptance: unit +
+live start/stop of a trivial profile.</li>
+<li><strong>NE-3 (M, NE-2):</strong> seed generator + golden-manifest
+verifier; migrate existing corpus approach. Acceptance: byte-identical
+on 3 runs.</li>
+<li><strong>NE-4 (M, NE-3):</strong> lite profiles
+smb/ftp/ftps/sftp/webdav/http/nfs generalised from
+<code>docs/qa/test-servers</code>; Publish instead of host net.
+Acceptance: verify.sh parity + manifest match + neg controls.</li>
+<li><strong>NE-5 (M, NE-3):</strong> S3 profile (Garage; decide Garage
+vs SeaweedFS — D7) with SigV4 client check; SKIP versioning tests.</li>
+<li><strong>NE-6 (S, NE-4):</strong> NFS decision record: rclone serve
+nfs (evidenced) vs unfs3; document kernel/Ganesha exclusion.</li>
+<li><strong>NE-7 (M, NE-4):</strong> Catalogizer binding DATA, port
+registry (no clash with catqa1-3/cattsrv), connector tests on custom
+ports.</li>
+<li><strong>NE-8 (L, NE-2, D1,D2,D4'):</strong> VM tier base: hostbudget
+gate, KVM probe, attestation gate, volume on chosen disk, vdsm
+profile.</li>
+<li><strong>NE-9 (M, NE-8):</strong> Synology API checks +
+Synology-specific connector behaviour against real vdsm.</li>
+<li><strong>NE-10 (L, NE-8, D2):</strong> Windows profile, then macOS
+(only if D2 allows).</li>
+<li><strong>NE-11 (M, ongoing):</strong> docs (guide, manual, FAQ,
+diagrams, README links, translations as mandated).</li>
+<li><strong>NE-12 (S each):</strong> gates + paired mutations (no stub
+in live evidence, evidence fields, attestation required, dependency
+register). Order: NE-0b, NE-1 -&gt; NE-2, NE-3 -&gt; NE-4, NE-5, NE-6
+-&gt; NE-7 -&gt; NE-11/12 -&gt; NE-8 -&gt; NE-9 -&gt; NE-10. <strong>Can
+start now (no operator decision):</strong> NE-1, NE-2, NE-3, NE-4, NE-6
+(lite tier all). <strong>Needs operator:</strong> NE-8/9/10 (D1,D2,D4'),
+NE-5 choice (D7).</li>
+</ul>
+<h2 id="6-remaining-operator-decisions">6. Remaining operator
+decisions</h2>
+<ul>
+<li>D1 Approve VM tier at all given host (about 16 GiB available RAM, 57
+GiB free on <code>/</code>, load ~20) and choose the VM disk volume
+(candidate <code>sda1</code> 7.3T, mount state UNCONFIRMED).</li>
+<li>D2 Legal stance: DSM via vdsm (Synology EULA: Synology hardware
+only), Windows (licence source), macOS (Apple hardware only) — permit
+private testing or exclude each. XPEnology/Arc/redpill recommended
+excluded.</li>
+<li>D3 LAN exposure policy (bind addresses, ports, credentials),
+including retiring <code>--network host</code>.</li>
+<li>D4' KVM: no action needed now (ACL access verified); confirm that
+relying on a per-user ACL is acceptable or add user to
+<code>kvm</code>.</li>
+<li>D5 ANSWERED above (new <code>pkg/nasemu</code> over existing
+packages; land hostbudget branch first) — operator may veto.</li>
+<li>D6 Synology fidelity: real vdsm only, or also own lightweight
+FileStation/Auth shim (no open-source mock exists).</li>
+<li>D7 S3 emulator: Garage (AGPL, no versioning, already chosen per
+memory) vs SeaweedFS (Apache-2.0); AGPL test-infra acceptable?</li>
+<li>D8 Approve landing the Containers branch
+<code>fix/containers-g1-g2-g11</code> upstream (prerequisite NE-1).</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.11" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>SECQ-2 / WD-F1 / WD-F1a live re-reproduction (2026-11-12) -
+PROVISIONAL</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<h1
+id="secq-2--wd-f1--wd-f1a-live-re-reproduction-2026-11-12---provisional">SECQ-2
+/ WD-F1 / WD-F1a live re-reproduction (2026-11-12) - PROVISIONAL</h1>
+<p>Reproduction: result=not-reproducible-with-evidence;
+surface=live-target (real Yandex WebDAV, chaos class: TCP fault proxy,
+the real service answers);
+command=<code>LIVE_WEBDAV_SANDBOX=/Testing WDF1_REPEAT_A2M=6 go test -tags live -count=1 -run TestLiveYandexWDF1ForcedReset ./filesystem/</code>
+(catalog-api, credentials from a 0600 env file read by name); RED
+evidence: none (nothing failed); GREEN-class evidence: rep6.json /
+rep6.log.txt; build: main f709b892; symptom signature:
+<code>verdict=CORRUPT</code> or <code>LOST_ACKED_WRITE</code> on a real
+case, or <code>present_no_retry=true</code> with absent-after-retry.</p>
+<p>Attempts (this run, started 2026-11-12T20:10:03Z, 1250 s): 6 repeats
+of the exact WD-F1a case (mode A, connection reset mid-body, 2 MiB, one
+caller retry). 6 of 6 verdict=ok; every case recorded
+<code>ReadDetail: len=2097152 want_len=2097152 first_diff=-1 body_err=false</code>,
+i.e. the retried file was byte-identical (sha256 matched). Fault fired
+and put error seen in all 6 (armed fault confirmed). Positive control
+needles (verdict logic can fire): ack-then-remote-DELETE needle and
+same-size-overwrite needle (control needle 2 = CORRUPT) both flagged;
+test PASS. Combined with 2026-11-05 evidence
+(<code>../wdf1-repro-20261105/</code>): 61 plain uploads + 12
+forced-reset cases + these 6 = no acknowledged write lost, 1 unexplained
+CORRUPT (2026-11-05 chaos1, detail not recorded then) never seen again
+in 11 further identical attempts (5 + 6).</p>
+<p>Conclusion: WD-F1 (lost acknowledged write) and WD-F1a (same-size
+hash mismatch) remain not reproduced; no fix written for an unobserved
+symptom (section 11.4.292). Proposal: close SECQ-2 / WD-F1 / WD-F1a
+under section 11.4.90 <code>not-reproducible</code> once the operator
+accepts the attempt count; the defensive read-back in
+<code>WriteFile</code> (size-only HEAD) stays labelled defensive
+hardening. UNCONFIRMED: whether the 2026-11-05 CORRUPT was a read-back
+glitch; root cause UNCONFIRMED. Cleanup: the test creates one
+<code>/Testing/wdf1c-&lt;unix&gt;</code> directory and deletes it on
+exit (deferred DeleteDirectory); remote residue not separately listed
+(UNCONFIRMED, minimal-calls rule). Not run: a second full A/B x 3-size
+sweep (would repeat 2026-11-05 chaos2/3, 15+ min each).</p>
+<h2 id="sha256">sha256</h2>
+<p>a9d2a2296d355bd9319eaf813eee0c66b0fa3902c16a66a2cf642026ad8ddcea
+rep6.json
+6be49c0254285c6edec965934e5cd156f8cfa49d48d8152162167a6bd9a93ae6
+rep6.log.txt
+6c1ff7770e5355a12e517d96e733a536384e5561e88fca2ceeff53f3810a02c6
+rep6.start</p>
+</body>
+</html>
