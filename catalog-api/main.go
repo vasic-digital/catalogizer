@@ -992,8 +992,8 @@ func main() {
 	router := gin.New()
 	router.Use(gin.LoggerWithFormatter(func(p gin.LogFormatterParams) string {
 		return fmt.Sprintf("[GIN] %s | %3d | %13v | %15s | %-7s %#v\n%s",
-			p.TimeStamp.Format("2006/01/02 - 15:04:05"), p.StatusCode, p.Latency, p.ClientIP, p.Method, logredact.Path(p.Request.URL.Path, p.Request.URL.RawQuery), p.ErrorMessage)
-	}), gin.Recovery())
+			p.TimeStamp.Format("2006/01/02 - 15:04:05"), p.StatusCode, p.Latency, p.ClientIP, p.Method, logredact.Path(p.Request.URL.Path, p.Request.URL.RawQuery), logredact.ErrorText(p.ErrorMessage))
+	}), middleware.Recovery(logger))
 
 	// RULE-GO-005 / Master Plan §4.2 — lock down X-Forwarded-For
 	// handling. Gin's default TrustedProxies is 0.0.0.0/0, which

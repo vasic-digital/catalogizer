@@ -6,11 +6,9 @@ import (
 	"errors"
 	"net/http"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	"catalogizer/internal/logging"
 	"catalogizer/internal/logredact"
@@ -35,56 +33,14 @@ func logServiceStatus(err error) int {
 	return http.StatusInternalServerError
 }
 
-// Error-text redaction (PX-F17, review round 1 F2). A keyword list per spelling leaks, so the rules are class-wide:
-//
-//	(a) ANY URL userinfo (user:pass@, :pass@, token@) is replaced;
-//	(b) a credential HEADER (authorization, cookie, x-api-key ...) loses its WHOLE value to end of line;
-//	(c) key=value, "key": "value" and key: value redact the value (quoted with escapes and spaces, or an unquoted run) when the
-//	    key CONTAINS a credential word, with no word boundary (access_token, client_secret, db_password, sessionid ...);
-//	(d) bearer/basic/digest/negotiate followed by a credential-looking run is replaced anywhere.
-//
-// False-positive policy (documented, deliberate): log text is diagnostic, so OVER-redaction is preferred. A key that merely
-// contains a credential word (author=, pwd: /dir) is redacted. Plain prose without a key=value / header / userinfo / scheme
-// shape ("connection refused", "token count exceeded", "basic configuration failed") stays readable.
-const (
-	logErrWords      = `(?:password|passwd|pwd|secret|token|api[_-]?key|apikey|auth|credential|session|cookie|private[_-]?key)`
-	logErrHeaderList = `(?:authorization|proxy-authorization|cookie|set-cookie|x-api-key|x-auth-token|x-csrf-token|x-xsrf-token|x-amz-security-token|www-authenticate|proxy-authenticate)`
-	logErrMaxBytes   = 2048
-)
+// Error-text redaction (PX-F17, structural round 3): the service error text is redacted by logredact.ErrorText - ONE tokenizing
+// pass (userinfo, credential headers, secret path segments, key/value pairs, auth schemes) driven by the same sensitive-name
+// list as the access-log query filter, 64 KiB pre-cap before redaction, 2048-byte cap after it. See internal/logredact/text.go
+// for the shapes and the documented over-redaction policy.
+const logErrMaxBytes = logredact.ErrorTextMaxBytes
 
-var (
-	logErrURLUserinfo = regexp.MustCompile(`(?i)(://)[^/\s@]+@`)
-	logErrHeader      = regexp.MustCompile(`(?im)(^|[^A-Za-z0-9_-])(` + logErrHeaderList + `)(["']?[ \t]*:[ \t]*)[^\r\n]*`)
-	logErrSecretPair  = regexp.MustCompile(`(?i)([A-Za-z0-9_.\-]*` + logErrWords + `[A-Za-z0-9_.\-]*)(["']?\s*[:=]\s*)("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|"[^\r\n]*|'[^\r\n]*|[^\s&;,"']+)`)
-	logErrScheme      = regexp.MustCompile(`(?i)\b(bearer|basic|digest|negotiate)(\s+)([A-Za-z0-9._~+/=\-]{8,})`)
-)
-
-func logErrCredentialLike(tok string) bool {
-	return len(tok) >= 24 || strings.ContainsAny(tok, "0123456789._~+/=")
-}
-
-// redactLogErrorText removes credential-shaped substrings from a service error text before it is written to the server log,
-// then caps the result at logErrMaxBytes (redact first, so a secret straddling the cut is never exposed as a prefix).
-func redactLogErrorText(s string) string {
-	s = logErrURLUserinfo.ReplaceAllString(s, "${1}REDACTED@")
-	s = logErrHeader.ReplaceAllString(s, "${1}${2}${3}REDACTED")
-	s = logErrSecretPair.ReplaceAllString(s, "${1}${2}REDACTED")
-	s = logErrScheme.ReplaceAllStringFunc(s, func(m string) string {
-		sub := logErrScheme.FindStringSubmatch(m)
-		if logErrCredentialLike(sub[3]) {
-			return sub[1] + sub[2] + "REDACTED"
-		}
-		return m
-	})
-	if len(s) > logErrMaxBytes {
-		cut := logErrMaxBytes
-		for cut > 0 && !utf8.RuneStart(s[cut]) {
-			cut--
-		}
-		s = s[:cut] + "...[truncated " + strconv.Itoa(len(s)-cut) + " bytes]"
-	}
-	return s
-}
+// redactLogErrorText removes credential-shaped substrings from a service error text before it is written to the server log.
+func redactLogErrorText(s string) string { return logredact.ErrorText(s) }
 
 // logLogServiceError records the service error server-side (PX-F17) before the fixed body is written: the redacted error text,
 // the response status, the handler site and the request path (no query string; secret path segments such as /logs/share/<token> are redacted).

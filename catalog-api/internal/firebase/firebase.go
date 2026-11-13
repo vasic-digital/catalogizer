@@ -437,7 +437,7 @@ func GinMiddleware(fbApp *App) gin.HandlerFunc {
 			fbApp.ReportNonFatal(c.Request.Context(),
 				fmt.Sprintf("HTTP %d: %s %s", status, c.Request.Method, logredact.SecretPath(c.Request.URL.Path)),
 				fmt.Sprintf("Referer: %s\nUser-Agent: %s\nRemoteAddr: %s",
-					c.Request.Referer(), c.Request.UserAgent(), c.Request.RemoteAddr),
+					logredact.ErrorText(c.Request.Referer()), c.Request.UserAgent(), c.Request.RemoteAddr),
 			)
 		}
 	}

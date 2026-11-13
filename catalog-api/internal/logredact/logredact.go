@@ -6,13 +6,43 @@ import (
 	"strings"
 )
 
-// sensitive lists the query parameter names whose values never reach an access log. credential-shaped names are covered
-// too: the retired GET /smb/discover and /smb/test forms (now 410) used to take username and password in the query
-// string, and a stale client may still send them.
-var sensitive = map[string]bool{
+// Sensitive-name policy: ONE list for the access-log query filter (Query) and the free-text scanner (Text), so a name added
+// here is covered everywhere. Names are compared lower-cased.
+//
+//   - strongKeys are credential names matched exactly;
+//   - keyWords are substrings: any name CONTAINING one is credential-bearing (access_token, db_password, x-amz-signature ...);
+//   - weakKeys are short, ambiguous names matched exactly ("code", "key", "pass" ...). In free text they count only with an
+//     explicit '=' or as a quoted JSON key, so prose such as "exit code: 1" stays readable; Query treats them as sensitive.
+var strongKeys = map[string]bool{
 	"ticket": true, "access_token": true, "token": true, "api_key": true, "apikey": true,
-	"password": true, "passwd": true, "pass": true, "pwd": true,
-	"secret": true, "client_secret": true, "refresh_token": true, "authorization": true,
+	"password": true, "passwd": true, "pwd": true, "secret": true, "client_secret": true, "refresh_token": true,
+	"authorization": true, "auth": true, "bearer": true, "jwt": true, "otp": true, "verifier": true, "code_verifier": true,
+	"signature": true, "credential": true, "credentials": true, "cookie": true, "sessionid": true, "session": true,
+}
+
+var weakKeys = map[string]bool{"pass": true, "pw": true, "code": true, "key": true, "sig": true}
+
+var keyWords = []string{
+	"password", "passwd", "pwd", "secret", "token", "apikey", "api_key", "api-key", "credential", "cookie",
+	"private_key", "private-key", "privatekey", "signature", "session", "authorization", "verifier",
+}
+
+func strongKey(l string) bool {
+	if strongKeys[l] {
+		return true
+	}
+	for _, w := range keyWords {
+		if strings.Contains(l, w) {
+			return true
+		}
+	}
+	return false
+}
+
+// SensitiveKey reports whether a query-parameter / field / header name carries a credential (case-insensitive).
+func SensitiveKey(name string) bool {
+	l := strings.ToLower(name)
+	return strongKey(l) || weakKeys[l]
 }
 
 // Query returns rawQuery with the value of every sensitive parameter replaced by "REDACTED"; everything else (order, escaping)
@@ -45,7 +75,7 @@ func redactPair(p string) string {
 	if err != nil {
 		return "REDACTED"
 	}
-	if sensitive[strings.ToLower(un)] && hasVal {
+	if SensitiveKey(un) && hasVal {
 		return name + "=REDACTED"
 	}
 	return p
