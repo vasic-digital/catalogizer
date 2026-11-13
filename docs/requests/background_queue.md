@@ -92,3 +92,6 @@ Round-5 Opus review of fix/release-checker-rc3 @ 2a6139e4 = NO-GO (important R5-
 
 ### BG-OPQ-2026-11-13 - operator decision sweep (received 2026-11-13 14:48 CET, status: IN PROGRESS)
 Operator order: gather every operator-blocked item, decision point, blocker and show-stopper and present them as interactive questions with options. Blocker: none (asked in-session via AskUserQuestion); answers are recorded in the project memory decisions file once given. Unanswered questions stay QUEUED and are re-surfaced every session.
+
+### BG-OPQ-2026-11-13b - operator decision sweep 2 (received 2026-11-13 20:51 CET, status: DONE for asked items)
+Asked in-session (AskUserQuestion), answered 20:55 CET: symlink confinement (keep hard links), image slim via static ffmpeg, 404 for non-owner job ids, CAT-REL-CHECK advisory for v2.4.3 / blocking for v2.5.0, NFS emulator, R_max NO-GO = structural successor item, v2.5.0 gates = retest+live run, Vision QA, SEC-WS-1 F3 + live /ws, Sonar zero blocker/critical. Recorded in memory project_decisions_2026_11_13b. Resulting work items still to be created and dispatched (symlink confinement, ffmpeg slimming, 404 mapping, NFS emulator, v2.5.0 gate checklist). Other open blockers (Synology powered off, Tauri/Docker Hub access) unchanged and unasked.
