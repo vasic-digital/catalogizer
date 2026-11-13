@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.11" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>render_md_to_pdf.sh and check_pdf_coverage.py</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<h1 id="render_md_to_pdfsh-and-check_pdf_coveragepy">render_md_to_pdf.sh
+and check_pdf_coverage.py</h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scripts</td>
+<td><code>scripts/docs/render_md_to_pdf.sh</code>,
+<code>scripts/docs/check_pdf_coverage.py</code>,
+<code>scripts/docs/print.css</code>,
+<code>scripts/docs/print_landscape.css</code></td>
+</tr>
+<tr>
+<td>Purpose</td>
+<td>Render the <code>.pdf</code> twin of a Markdown doc without clipping
+wide tables or long tokens, and prove it by comparing the words of the
+Markdown with the text extracted from the PDF (constitution 11.4.65,
+11.4.201)</td>
+</tr>
+<tr>
+<td>Why</td>
+<td>PDFs rendered from the pandoc HTML with default print rules were cut
+off at the right page edge (up to 29% of a doc's words missing); the
+file opened fine, so nothing noticed</td>
+</tr>
+<tr>
+<td>Render</td>
+<td><code>render_md_to_pdf.sh FILE.md ...</code> writes
+<code>FILE.pdf</code> (pandoc gfm to HTML5, then WeasyPrint with
+<code>print.css</code>)</td>
+</tr>
+<tr>
+<td>Orientation rule</td>
+<td>A doc whose Markdown has a table separator row with 5 or more
+columns is rendered A4 landscape (<code>print_landscape.css</code>), all
+others A4 portrait</td>
+</tr>
+<tr>
+<td>Print rules</td>
+<td>Auto table layout at 100% width, 7.5pt table text, cell words break
+only when over-long (<code>overflow-wrap: break-word</code>), rows never
+split across pages, <code>pre</code> and <code>code</code> wrap</td>
+</tr>
+<tr>
+<td><code>--check</code></td>
+<td><code>render_md_to_pdf.sh --check FILE.md</code> writes nothing and
+runs the coverage check on the existing PDF</td>
+</tr>
+<tr>
+<td>Coverage check</td>
+<td><code>check_pdf_coverage.py [--root DIR] [--allow FILE] [--min-len N] [--quiet] FILE.md ...</code></td>
+</tr>
+<tr>
+<td>Method</td>
+<td>Distinct tokens of 6 or more characters of the Markdown (link
+targets, HTML comments and fence markers removed, NFKC) against
+<code>pdftotext</code> output (soft hyphens removed, whitespace and
+hyphens deleted on both sides, two reading orders: default and
+<code>-raw</code>)</td>
+</tr>
+<tr>
+<td>Allow-list</td>
+<td><code>scripts/docs/pdf_coverage_allow.tsv</code> (<code>path</code>,
+<code>token</code>, <code>reason</code>; the reason is required).
+Default: no file, nothing allowed</td>
+</tr>
+<tr>
+<td>Control</td>
+<td>Before the scan a token taken from the PDF must be found and a
+fabricated token must not be; otherwise BLIND</td>
+</tr>
+<tr>
+<td>Exit</td>
+<td>0 no token missing; 1 tokens missing, PDF absent, empty or
+unreadable; 2 BLIND, usage or tool missing</td>
+</tr>
+<tr>
+<td>Tests</td>
+<td><code>scripts/docs/tests/test_check_pdf_coverage.py</code>
+(mutations: no table CSS, truncated PDF, broken needle, deleted
+twin)</td>
+</tr>
+</tbody>
+</table>
+<p>Limit: this proves the words are present in the extracted text, not
+that the page looks right; a token split by a page break between two
+table cells can read as missing and is a reason to fix the layout, not
+to allow-list it. It measures 6+ character tokens only.</p>
+<h1 id="check_twin_presencepy">check_twin_presence.py</h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Script</td>
+<td><code>scripts/docs/check_twin_presence.py</code></td>
+</tr>
+<tr>
+<td>Purpose</td>
+<td>Gate: every Markdown doc added under <code>docs/</code> since a ref
+has non-empty <code>.html</code> and <code>.pdf</code> twins, and the
+html matches <code>render_md_to_html.sh --check</code> (constitution
+11.4.65)</td>
+</tr>
+<tr>
+<td>Usage</td>
+<td><code>check_twin_presence.py [--root DIR] [--since REF] [--no-html-drift] [--quiet]</code>;
+<code>--since</code> defaults to the newest tag</td>
+</tr>
+<tr>
+<td>Scope</td>
+<td>Files added (<code>git diff --diff-filter=A REF..HEAD</code>, plus
+staged additions) under <code>docs/</code> ending in
+<code>.md</code></td>
+</tr>
+<tr>
+<td>Control</td>
+<td>A doc with both twins must read complete and one missing its pdf
+incomplete; an empty scope is BLIND</td>
+</tr>
+<tr>
+<td>Exit</td>
+<td>0 all present, 1 one or more <code>MISSING</code> rows, 2 BLIND or
+usage</td>
+</tr>
+<tr>
+<td>Fix</td>
+<td><code>render_md_to_html.sh FILE.md</code> and
+<code>render_md_to_pdf.sh FILE.md</code>, never hand-edit generated
+twins</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

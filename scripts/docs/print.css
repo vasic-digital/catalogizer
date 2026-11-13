@@ -1,0 +1,11 @@
+/* print.css - print stylesheet applied by render_md_to_html-derived PDFs (scripts/docs/render_md_to_pdf.sh). Nothing may be clipped. */
+@page { size: A4; margin: 14mm 12mm; }
+body { max-width: none; margin: 0; padding: 0; font-size: 9.5pt; hyphens: manual; overflow-wrap: anywhere; }
+/* auto layout: a fixed layout splits columns by pandoc's dash-count widths and leaves 1-2 character columns; with auto layout columns take their content width and only an over-long word is broken (overflow-wrap: break-word) */
+table { table-layout: auto; width: 100%; max-width: 100%; font-size: 7.5pt; border-collapse: collapse; }
+th, td { overflow-wrap: break-word; word-break: normal; padding: 2px 3px; vertical-align: top; }
+pre { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; font-size: 8pt; }
+code, pre code { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+a { overflow-wrap: anywhere; word-break: break-word; }
+img, svg { max-width: 100%; height: auto; }
+tr { break-inside: avoid; page-break-inside: avoid; } /* a row split across pages interleaves its cells in extracted text and scatters tokens */

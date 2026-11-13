@@ -87,6 +87,7 @@ One guide per script (constitution 11.4.18). Every page of this directory is lis
 | [check_doc_coverage.md](check_doc_coverage.md) | `scripts/docs/check_doc_coverage.py` |
 | [check_md_links.md](check_md_links.md) | `scripts/docs/check_md_links.py` |
 | [render_md_to_html.md](render_md_to_html.md) | `scripts/docs/render_md_to_html.sh` |
+| [render_md_to_pdf.md](render_md_to_pdf.md) | `scripts/docs/render_md_to_pdf.sh`, `scripts/docs/check_pdf_coverage.py`, `scripts/docs/check_twin_presence.py` |
 
 ## Related audit-remediation documents (linked here so they are reachable from the root README)
 

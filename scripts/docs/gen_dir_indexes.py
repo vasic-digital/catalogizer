@@ -8,6 +8,8 @@ Purpose   Each directory listed in scripts/docs/dir_indexes.tsv gets a README.md
 Usage     gen_dir_indexes.py [--root DIR] [--check]
           --check  writes nothing; exit 1 if any README.md differs from what would be generated (drift gate), 0 otherwise.
 Input     scripts/docs/dir_indexes.tsv: dir<TAB>title<TAB>intro<TAB>relative-link-to-docs-README
+Preamble  scripts/docs/index_preambles/<dir with '/' replaced by '_'>.md, when present, is inserted verbatim after the intro block (hand-written
+          text that regeneration must keep). Links inside copied descriptions are rewritten relative to the index directory.
 Output    <dir>/README.md for each row (only files tracked in git are listed, so commit new docs before regenerating).
 Exit      0 ok, 1 drift (--check), 2 usage/input error.
 """
@@ -46,6 +48,16 @@ def describe(root, path):
     return (clean(title) if title else None), d
 
 
+def relink(text, subdir):
+    """Rewrite relative markdown link targets in a copied description so they resolve from the index directory."""
+    if not subdir: return text
+    def f(m):
+        tgt = m.group(2)
+        if re.match(r'^([a-zA-Z][a-zA-Z0-9+.-]*:|#|/)', tgt): return m.group(0)
+        return m.group(1) + os.path.normpath(os.path.join(subdir, tgt)).replace(' ', '%20') + m.group(3)
+    return re.sub(r'(\]\()([^)\s]+)(\))', f, text)
+
+
 def load_tsv(p, n):
     rows = []
     if os.path.exists(p):
@@ -59,17 +71,19 @@ def load_tsv(p, n):
 
 def render(root, tracked, over, d, title, intro, up):
     base = d + '/'; rs = []
+    pp = os.path.join(root, 'scripts/docs/index_preambles', d.replace('/', '_') + '.md')
+    pre = open(pp, encoding='utf-8').read().strip('\n') + '\n\n' if os.path.exists(pp) else ''
     for f in sorted(t for t in tracked if t.startswith(base)):
         rel = f[len(base):]
         if rel == 'README.md': continue
         if f in over: txt = over[f]
         elif f.endswith('.md'):
             t, ds = describe(root, f)
-            txt = (t or os.path.basename(f)) + ((' - ' + ds) if ds else '')
+            txt = relink((t or os.path.basename(f)) + ((' - ' + ds) if ds else ''), os.path.dirname(rel))
         else:
             txt = '(' + KINDS.get(os.path.splitext(f)[1].lower(), 'file') + '; not read, listed by name only)'
         rs.append((rel, txt))
-    out = '# %s\n\n%s\n\nBack to the documentation index: [docs/README.md](%s). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. %d entries.\n\n| File | Description |\n|---|---|\n' % (title, intro, up, len(rs))
+    out = '# %s\n\n%s\n\nBack to the documentation index: [docs/README.md](%s). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. %d entries.\n\n%s| File | Description |\n|---|---|\n' % (title, intro, up, len(rs), pre)
     for rel, t in rs: out += '| [%s](%s) | %s |\n' % (rel, rel.replace(' ', '%20'), t)
     return out
 
