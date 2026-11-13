@@ -39,6 +39,7 @@ func (db *DB) RunMigrations(ctx context.Context) error {
 		{Version: 25, Name: "add_conversion_job_warning", Up: db.addConversionJobWarning},
 		{Version: 26, Name: "create_file_text_index", Up: db.createFileTextIndex},
 		{Version: 27, Name: "add_endpoint_approved_class", Up: db.addApprovedClassColumns},
+		{Version: 28, Name: "invalidate_legacy_log_share_tokens", Up: db.invalidateLegacyLogShareTokens},
 	}
 
 	for _, migration := range migrations {

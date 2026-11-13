@@ -99,11 +99,14 @@ func TestLogManagementService_ExtractErrorPattern(t *testing.T) {
 func TestLogManagementService_GenerateShareToken(t *testing.T) {
 	service := NewLogManagementService(nil)
 
-	token1 := service.generateShareToken()
-	token2 := service.generateShareToken()
+	token1, err := service.generateShareToken()
+	assert.NoError(t, err)
+	token2, err := service.generateShareToken()
+	assert.NoError(t, err)
 
 	assert.NotEmpty(t, token1)
 	assert.NotEmpty(t, token2)
+	assert.NotEqual(t, token1, token2)
 }
 
 func TestLogManagementService_MatchesFilters(t *testing.T) {

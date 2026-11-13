@@ -247,11 +247,16 @@ func (s *LogManagementService) CreateLogShare(userID int, request *models.LogSha
 		return nil, ErrLogAccessDenied
 	}
 
-	// Create share
+	token, err := s.generateShareToken()
+	if err != nil {
+		return nil, err // entropy failure: no share is created (fail closed)
+	}
+
+	// Create share: only the SHA-256 of the token is stored (CAT-LOGSHARE-TOK-1)
 	share := &models.LogShare{
 		CollectionID: request.CollectionID,
 		UserID:       userID,
-		ShareToken:   s.generateShareToken(),
+		ShareToken:   hashLogShareToken(token),
 		ShareType:    request.ShareType,
 		ExpiresAt:    time.Now().Add(time.Duration(s.config.MaxShareDuration) * time.Hour),
 		CreatedAt:    time.Now(),
@@ -268,19 +273,24 @@ func (s *LogManagementService) CreateLogShare(userID int, request *models.LogSha
 		return nil, fmt.Errorf("failed to create log share: %w", err)
 	}
 
+	// the plaintext token is returned to the creator exactly once; it is never stored
+	share.ShareToken = token
 	return share, nil
 }
 
 func (s *LogManagementService) GetLogShare(token string) (*models.LogShare, error) {
-	share, err := s.logRepo.GetLogShareByToken(token)
+	if !validLogShareTokenFormat(token) {
+		return nil, ErrLogShareNotFound
+	}
+	hash := hashLogShareToken(token)
+	share, err := s.logRepo.GetLogShareByToken(hash)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get log share: %w", err)
+		return nil, ErrLogShareNotFound
 	}
-
-	if !share.IsActive || time.Now().After(share.ExpiresAt) {
-		return nil, fmt.Errorf("share expired or inactive")
+	if !logShareHashEqual(share.ShareToken, hash) || !share.IsActive || !time.Now().Before(share.ExpiresAt) {
+		return nil, ErrLogShareNotFound
 	}
-
+	share.ShareToken = "" // the stored hash is never echoed to the client
 	return share, nil
 }
 
@@ -514,9 +524,8 @@ func (s *LogManagementService) matchesFilters(entry *models.LogEntry, filters ma
 	return true
 }
 
-func (s *LogManagementService) generateShareToken() string {
-	// Generate a secure random token
-	return fmt.Sprintf("log_share_%d_%d", time.Now().Unix(), time.Now().Nanosecond())
+func (s *LogManagementService) generateShareToken() (string, error) {
+	return newLogShareToken(logShareRand)
 }
 
 func (s *LogManagementService) exportToCSV(entries []*models.LogEntry) ([]byte, error) {
