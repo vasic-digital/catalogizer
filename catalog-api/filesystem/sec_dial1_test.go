@@ -173,7 +173,8 @@ func TestSECDIAL1_NFSOptionInjectionAndAddrOverrideRefused(t *testing.T) {
 	for _, opts := range []string{"vers=3,addr=127.0.0.1", "vers=3,mountaddr=169.254.169.254", "addr=nas.lan", "vers=3\n,addr=1.2.3.4", "vers=3 ro", "-o x", "vers=3,,ro", "a=", "=b", "vers=3;x"} {
 		require.Error(t, nfsClient(t, "192.168.1.20", "/export", opts).Connect(context.Background()), opts)
 	}
-	for _, exp := range []string{"/e,addr=127.0.0.1", "/e x", "/e\nx", "-o", ""} {
+	// SEC-DIAL-1-FU F1: space and comma are legal in a share name; only control characters and a leading dash are refused
+	for _, exp := range []string{"/e\nx", "/e\x00x", "-o", ""} {
 		require.Error(t, nfsClient(t, "192.168.1.20", exp, "").Connect(context.Background()), exp)
 	}
 	for _, host := range []string{"nas,addr=1", "-x", "a b", "nas:/x", "nas\n"} {

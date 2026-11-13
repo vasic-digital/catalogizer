@@ -68,11 +68,11 @@ func (c *NFSClient) Connect(ctx context.Context) error {
 	if _, err := ParseNFSOptions(options); err != nil {
 		return err
 	}
-	ips, err := storageOperatorResolve(ctx, c.config.Host)
-	if err != nil || len(ips) == 0 {
-		return fmt.Errorf("%w", ErrStorageHostRefused)
+	srvIP, err := resolveNFSServer(ctx, c.config.Host)
+	if err != nil {
+		return err
 	}
-	srv := ips[0].String()
+	srv := srvIP.String()
 	if strings.Contains(srv, ":") {
 		srv = "[" + srv + "]"
 	}
@@ -89,7 +89,8 @@ func (c *NFSClient) Connect(ctx context.Context) error {
 	cmd := exec.CommandContext(ctx, "mount", args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("NFS mount failed: %w, output: %s", err, string(output))
+		// the mount output names the vetted address; it is not shown to callers that are not administrators
+		return fmt.Errorf("NFS mount failed: %w, output: %s", err, scrubResolvedAddrs(string(output), c.config.Host))
 	}
 
 	// Verify mount is active

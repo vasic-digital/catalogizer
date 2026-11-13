@@ -226,6 +226,9 @@ var dialTCP = func(ctx context.Context, d *net.Dialer, network, ip, port string)
 	return d.DialContext(ctx, network, net.JoinHostPort(ip, port))
 }
 
+// maxVettedDials caps how many vetted addresses one dial tries, so a name with many answers cannot multiply the connect cost.
+const maxVettedDials = 4
+
 // OperatorDialContext resolves addr, drops the addresses refused by the operator policy (refusing the name when none remain), and dials the checked IP itself (pinned), never the name.
 // Approved class: ClassPrivate (private and public addresses).
 func OperatorDialContext(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -272,7 +275,10 @@ func operatorDial(ctx context.Context, network, addr string, pin *classPin) (net
 	d := &net.Dialer{Timeout: 15 * time.Second, KeepAlive: 30 * time.Second}
 	d.Control = operatorControl(pin, deny)
 	var last error
-	for _, ip := range ips {
+	for i, ip := range ips {
+		if i >= maxVettedDials {
+			break
+		}
 		c, derr := dialTCP(ctx, d, network, ip.String(), port)
 		if derr == nil {
 			pin.note(ClassOf(ip))

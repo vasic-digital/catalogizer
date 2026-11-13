@@ -152,3 +152,7 @@ migration is `private/default`; the migration does not resolve names or read the
   Until then the stored value is not enforced anywhere; the first-connection pin remains the only per-root protection.
 - The PostgreSQL branch of the migration is exercised by `TestRunMigrationsPostgresRealContainerZeroErrors`, which starts
   its own throwaway container and honestly SKIPs without podman or the image.
+
+## Dial cap trade-off (SEC-DIAL-1-FU F6)
+
+`netguard.OperatorDialContext` tries at most `maxVettedDials` (4) vetted addresses of one name, in resolver order, so a name with many answers cannot multiply the connect cost (the same bound discovery uses). Trade-off: a name whose first four vetted answers are all unreachable is reported as failed even if a fifth or later answer is live; that address is never tried. Operators with such a name should list fewer answers (or an IP literal) for the storage host. Unit-class tests: `internal/netguard/sec_dial_fu_test.go`.
