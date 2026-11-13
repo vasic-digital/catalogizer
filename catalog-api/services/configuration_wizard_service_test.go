@@ -1338,10 +1338,9 @@ func TestConfigurationWizardService_FinalizeConfiguration(t *testing.T) {
 		content, err := os.ReadFile(configFile)
 		assert.NoError(t, err)
 		// The basic template's file_create step targets the same config.json
-		// (relative to configPath, as it did in production with the default
-		// ./config) and overwrites the metadata file with the merged config.
-		// Before CAT-OPB-FU I1 this test only saw the metadata because the step
-		// wrote to the CWD-relative tracked file instead.
+		// (relative to configPath) and MERGES under the finalize metadata
+		// (OBF-5): both the metadata and the merged "config" are present.
+		assert.Contains(t, string(content), `"generated_by"`)
 		assert.Contains(t, string(content), `"config"`)
 		assert.Contains(t, string(content), "server_port")
 	})

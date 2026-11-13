@@ -192,7 +192,7 @@ Create a `config.json` file with the following structure:
 
 ## Environment Variables
 
-- `CONFIG_PATH` - Path to configuration file (default: `./config.json`)
+- `CATALOG_CONFIG_PATH` - Path to the application configuration file (default: `config.json`). `CONFIG_PATH` is a different variable: the configuration-wizard directory (default `./config`)
 
 ## Running the Server
 
@@ -204,7 +204,7 @@ go build -o catalog-api
 ./catalog-api
 
 # Run with custom configuration
-CONFIG_PATH=/path/to/config.json ./catalog-api
+CATALOG_CONFIG_PATH=/path/to/config.json ./catalog-api
 ```
 
 ## Authentication

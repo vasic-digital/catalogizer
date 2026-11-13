@@ -510,7 +510,7 @@ services:
       - ./backups:/app/backups
     environment:
       - CATALOGIZER_ENV=production
-      - CATALOGIZER_CONFIG_PATH=/app/config/config.json
+      - CATALOG_CONFIG_PATH=/app/config/config.json
     depends_on:
       - db
       - redis
@@ -764,7 +764,7 @@ spec:
         ports:
         - containerPort: 8080
         env:
-        - name: CATALOGIZER_CONFIG_PATH
+        - name: CATALOG_CONFIG_PATH
           value: "/app/config/config.json"
         - name: CATALOGIZER_DB_PASSWORD
           valueFrom:
