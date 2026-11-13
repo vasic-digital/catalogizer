@@ -29,6 +29,10 @@ type RedisRateLimiterConfig struct {
 	Message string
 	// Redis client
 	Client *redis.Client
+	// Tier names the key namespace of this limiter ("auth", "default", ...).
+	// Two limiters with different tiers never share a counter, even for the
+	// same client IP (PKGC-FU4). Empty means "untiered".
+	Tier string
 	// Fallback, when set, handles the request instead of answering 503 when
 	// Redis errors after startup (operator decision 2026-11-12, CAT-OPDEC-A).
 	// It is the in-memory limiter of the same tier. It is consulted per
@@ -41,6 +45,15 @@ type RedisRateLimiterConfig struct {
 	// Clock is the breaker/log-throttle clock; nil means time.Now (tests inject
 	// a fake clock instead of sleeping).
 	Clock func() time.Time
+}
+
+// tierKey builds "<prefix>:<tier>:<client key>". An empty tier is "untiered",
+// never a bare prefix, so it cannot collide with a named tier.
+func tierKey(prefix, tier, clientKey string) string {
+	if tier == "" {
+		tier = "untiered"
+	}
+	return prefix + ":" + tier + ":" + clientKey
 }
 
 // redisFallbackLogEvery bounds the outage log line to one per interval.
@@ -226,7 +239,8 @@ func useFallback(c *gin.Context, config RedisRateLimiterConfig, st *outageState,
 // DefaultRedisRateLimiterConfig returns a secure default configuration
 func DefaultRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig {
 	return RedisRateLimiterConfig{
-		Requests: 100, // 100 requests per window
+		Tier:     "default",
+		Requests: 2000, // matches the in-memory defaultRateLimiter (main.go: RateLimitByUser(2000, "1m"))
 		Window:   time.Minute,
 		Message:  "Rate limit exceeded. Please try again later.",
 		Client:   client,
@@ -239,6 +253,7 @@ func DefaultRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig 
 // StrictRedisRateLimiterConfig returns a stricter configuration for sensitive endpoints
 func StrictRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig {
 	return RedisRateLimiterConfig{
+		Tier:     "strict",
 		Requests: 10, // 10 requests per window
 		Window:   time.Minute,
 		Message:  "Too many requests. Please wait before trying again.",
@@ -252,9 +267,14 @@ func StrictRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig {
 // AuthRedisRateLimiterConfig returns a rate limiter specifically for auth endpoints
 func AuthRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig {
 	return RedisRateLimiterConfig{
-		Requests: 5, // 5 login attempts per minute
+		Tier: "auth",
+		// Matches the in-memory authRateLimiter (main.go: RateLimitByUser(600, "1m")).
+		// This tier guards token ops (/refresh, /logout, /me, /status,
+		// /permissions, /profile), NOT /login or /register: those use the
+		// in-memory loginRateLimiter (30/min) and never reach Redis.
+		Requests: 600,
 		Window:   time.Minute,
-		Message:  "Too many authentication attempts. Account temporarily locked.",
+		Message:  "Too many authentication requests. Please try again later.",
 		Client:   client,
 		KeyGenerator: func(c *gin.Context) string {
 			// Use both IP and username for auth endpoints if available
@@ -272,6 +292,7 @@ func AuthRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig {
 // UserRedisRateLimiterConfig returns user-based rate limiting
 func UserRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig {
 	return RedisRateLimiterConfig{
+		Tier:     "user",
 		Requests: 200, // 200 requests per minute for authenticated users
 		Window:   time.Minute,
 		Message:  "Rate limit exceeded. Please try again later.",
@@ -337,7 +358,7 @@ func redisRateLimitWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *o
 			st.settle(probe, o)
 		}
 		defer release(outcomeNeutral)
-		key := "rate_limit:" + config.KeyGenerator(c)
+		key := tierKey("rate_limit", config.Tier, config.KeyGenerator(c))
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 500*time.Millisecond)
 		defer cancel()
 
@@ -435,7 +456,7 @@ func slidingWindowWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *ou
 			st.settle(probe, o)
 		}
 		defer release(outcomeNeutral)
-		key := "sliding_rate_limit:" + config.KeyGenerator(c)
+		key := tierKey("sliding_rate_limit", config.Tier, config.KeyGenerator(c))
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 500*time.Millisecond)
 		defer cancel()
 		now := time.Now().UnixNano()

@@ -38,7 +38,7 @@ func TestDefaultRedisRateLimiterConfig(t *testing.T) {
 	_, client := setupMiniredis(t)
 	config := DefaultRedisRateLimiterConfig(client)
 
-	assert.Equal(t, 100, config.Requests)
+	assert.Equal(t, 2000, config.Requests)
 	assert.Equal(t, time.Minute, config.Window)
 	assert.NotEmpty(t, config.Message)
 	assert.NotNil(t, config.Client)
@@ -60,7 +60,7 @@ func TestAuthRedisRateLimiterConfig(t *testing.T) {
 	_, client := setupMiniredis(t)
 	config := AuthRedisRateLimiterConfig(client)
 
-	assert.Equal(t, 5, config.Requests)
+	assert.Equal(t, 600, config.Requests)
 	assert.Equal(t, time.Minute, config.Window)
 	assert.NotEmpty(t, config.Message)
 	assert.NotNil(t, config.Client)

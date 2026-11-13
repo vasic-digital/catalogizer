@@ -128,8 +128,8 @@ type algo struct {
 }
 
 var algos = []algo{
-	{"fixed", redisRateLimitWithState, "rate_limit:10.1.2.3"},
-	{"sliding", slidingWindowWithState, "sliding_rate_limit:10.1.2.3"},
+	{"fixed", redisRateLimitWithState, "rate_limit:default:10.1.2.3"},
+	{"sliding", slidingWindowWithState, "sliding_rate_limit:default:10.1.2.3"},
 }
 
 func newBreakerRouter(a algo, cfg RedisRateLimiterConfig, fb gin.HandlerFunc) (*gin.Engine, *outageState) {
@@ -327,8 +327,8 @@ func TestBreaker_ProbeOutcomes(t *testing.T) {
 	}
 }
 
-// F3: each tier enforces ITS OWN Redis budget (auth 5/min, default 100/min).
-// Separate miniredis per tier because both tiers use the same key prefix.
+// F3: each tier enforces ITS OWN Redis budget (auth 600/min, default 2000/min, PKGC-FU4).
+// Separate miniredis per tier (kept from before PKGC-FU4; tiers now have distinct keys anyway).
 func TestRedisTierLimiters_EachTierEnforcesItsOwnBudget(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	run := func(t *testing.T, pick func(auth, def gin.HandlerFunc) gin.HandlerFunc, budget int) {
@@ -344,8 +344,8 @@ func TestRedisTierLimiters_EachTierEnforcesItsOwnBudget(t *testing.T) {
 		}
 		assert.Equal(t, http.StatusTooManyRequests, fbGet(r), "request %d exceeds the budget", budget+1)
 	}
-	t.Run("auth tier = 5", func(t *testing.T) { run(t, func(a, _ gin.HandlerFunc) gin.HandlerFunc { return a }, 5) })
-	t.Run("default tier = 100", func(t *testing.T) { run(t, func(_, d gin.HandlerFunc) gin.HandlerFunc { return d }, 100) })
+	t.Run("auth tier = 600", func(t *testing.T) { run(t, func(a, _ gin.HandlerFunc) gin.HandlerFunc { return a }, 600) })
+	t.Run("default tier = 2000", func(t *testing.T) { run(t, func(_, d gin.HandlerFunc) gin.HandlerFunc { return d }, 2000) })
 }
 
 var _ = httptest.NewRecorder
