@@ -117,25 +117,34 @@ the cover-art run `docs/qa/coverart/results/final/` has a `summary.txt` whose ch
 matches (finding E-1); it stays a `SHAFAIL` until that evidence is regenerated.
 
 Committed state only: a clone sees HEAD, not the index or the working tree, so the run goes BLIND (exit 2)
-whenever a path it read could resolve differently in a clean clone. The same walk is applied to `docs/CHANGELOG.md`,
+for each of the divergences listed below (the list is the class inventory, not a proof that no other divergence exists). The same walk is applied to `docs/CHANGELOG.md`,
 every version file that was read and every existing cited path (full inventory and tests:
 `docs/release_checker_path_inventory.md`). The path is resolved component by component the way the kernel does,
 following symlinks hop by hop (at most 40 hops, `.` and `..` honoured after a symlinked directory), and:
 
 * every component and every symlink hop must exist in HEAD with the same type (file, directory, symlink, submodule);
-* a symlink hop must have the same target text as in HEAD (a retargeted, staged-only, untracked, flagged hop is BLIND);
+* a symlink hop must have the same target bytes as in HEAD, compared raw (a retargeted, staged-only, untracked or flagged hop is BLIND; a target
+  containing a newline or other control character is BLIND); every hop also gets its own `git status` and skip-worktree / assume-unchanged check;
+* the cited spelling is always walked, also when it resolves to the repository root (no exemption);
 * an absolute symlink hop, a hop into a submodule, a path below a submodule, more than 40 hops, or two HEAD
   entries whose names differ only in ASCII case are BLIND (a clone elsewhere or on a case-insensitive disk cannot be proven);
-* the final file must hash to its HEAD blob and the final file or directory must show no `git status` difference
-  (a CRLF working copy of an LF blob is BLIND even under `core.autocrlf`, because `git status` reports it modified);
+* the final file's RAW bytes (`git hash-object --no-filters`) must equal its HEAD blob and the final file or directory must show no
+  `git status` difference. Any conversion between blob and working copy is therefore BLIND: a CRLF copy of an LF blob, `core.autocrlf` / `core.eol`,
+  a local clean filter, `.git/info/attributes`, `core.attributesFile`, an untracked `.gitattributes` (this also makes a legitimately
+  committed `eol=` attribute BLIND for that file: stricter than necessary, never a false pass);
 * no file under the final path or under a manifest tree may carry the skip-worktree or assume-unchanged flag
   (such a file can hide an edit from `git status`);
-* a clean submodule gitlink may be cited directly; a submodule checked out at another commit is BLIND.
+* a clean submodule gitlink may be cited directly; a submodule checked out at another commit is BLIND; a path inside a submodule is a `MISS`
+  (not BLIND), because a clone does not provide it.
+
+Environment: inherited `GIT_*` variables (`GIT_DIR`, `GIT_INDEX_FILE`, ...) are unset at start. Without `--version`/`--section`, the changelog
+section is derived from `versions.json` (global); if that is unreadable the run is BLIND (the topmost section is never used silently).
 
 A hop that leaves the repository, a dangling hop and a symlink loop are `MISS`, never PASS. Untracked files outside
 the walk are not part of this check (they are judged by the tracked/UNLISTED rules). Commit first, then run the check.
 Not handled (UNCONFIRMED / residual): Unicode case folding and normalisation, `core.symlinks=false` clones, sparse
-or shallow clones, LFS pointers.
+or shallow clones, LFS pointers, the executable bit under `core.fileMode=false`, untracked files inside a cited directory outside the
+evidence prefix, and conversions applied to files under a manifest tree (only cited files are compared raw).
 
 ### Instrument verification (constitution 11.4.273, 11.4.224)
 

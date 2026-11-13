@@ -8,6 +8,11 @@
 # (PASS-WITH-WAIVERS exits 0 like PASS but means declared evidence gaps were relied on.)
 set -u
 
+# F6: an inherited GIT_DIR / GIT_INDEX_FILE / GIT_WORK_TREE / GIT_CONFIG_* ... would redirect every git call
+# below to another repository or index; the checker reads only the repository named by --repo.
+for _gv in $(compgen -e | grep '^GIT_' || true); do unset "$_gv"; done
+unset _gv
+
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SELF="$HERE/$(basename "${BASH_SOURCE[0]}")"
 
@@ -95,7 +100,6 @@ fi
 [ -d "$REPO" ] || blind "repo directory '$REPO' not found"
 git -C "$REPO" rev-parse --git-dir >/dev/null 2>&1 || blind "'$REPO' is not a git repository"
 REPO="$(cd "$REPO" && pwd)"
-
 V_OK=0; V_FAIL=0; C_PATHS=0; C_MISS=0; C_SKIP=0; S_OK=0; S_FAIL=0; S_UNV=0; BLINDS=""
 C_NOMAN=0; U_FILES=0; W_APPLIED=0; W_BAD=0; W_UNUSED=0
 declare -A WV=() WVUSED=()
@@ -143,6 +147,22 @@ name_collides() {
   [ "$n" -gt 1 ]
 }
 
+# entry_clean <path>: status and skip-worktree / assume-unchanged check for one tracked entry (a symlink hop,
+# the final file or the final directory). Appends to CHAIN_BAD; returns 1 only when git failed (BLIND noted).
+entry_clean() {
+  local cur="$1" out flagged
+  if ! out="$(git -C "$REPO" -c core.quotepath=off status --porcelain=v1 --untracked-files=no -- ":(literal)$cur" 2>/dev/null)"; then
+    note_blind "$(printf '%q' "$cur"): git status failed; cannot prove the files match HEAD"; return 1
+  fi
+  [ -z "$out" ] || chain_bad "$cur differs from HEAD: $(printf '%s\n' "$out" | head -3 | tr '\n' ';')"
+  if ! flagged="$(git -C "$REPO" -c core.quotepath=off ls-files -v -- ":(literal)$cur" 2>/dev/null)"; then
+    note_blind "$(printf '%q' "$cur"): git ls-files failed; cannot prove no file is hidden from git status"; return 1
+  fi
+  flagged="$(printf '%s\n' "$flagged" | grep -m1 '^[a-zS] ' || true)"
+  [ -z "$flagged" ] || chain_bad "$cur holds a skip-worktree or assume-unchanged file ($flagged), which hides changes from git status"
+  return 0
+}
+
 # chain_one <path>: appends to CHAIN_BAD; returns 1 only when git failed (a BLIND was already noted).
 chain_one() {
   local spec="$1" cur="" c ent hops=0 ftype="tree" fsha="" tgt want out flagged rest r
@@ -167,15 +187,23 @@ chain_one() {
     case "$E_MODE" in
       120000)
         if [ ! -L "$REPO/$ent" ]; then chain_bad "$ent is a symlink in HEAD but not in the working tree"; return 0; fi
-        tgt="$(readlink -- "$REPO/$ent")"; want="$(git -C "$REPO" cat-file blob "$E_SHA" 2>/dev/null)" \
+        # F2: compare the RAW bytes. $(...) strips trailing newlines and `read` keeps one line, so a
+        # sentinel byte is appended and removed again (readlink adds exactly one newline of its own).
+        tgt="$(readlink -- "$REPO/$ent"; printf .)"; tgt="${tgt%.}"; tgt="${tgt%$'\n'}"
+        want="$(git -C "$REPO" cat-file blob "$E_SHA" 2>/dev/null; printf .)" \
           || { note_blind "git cat-file failed for $(printf '%q' "$ent")"; return 1; }
-        if [ "$tgt" != "$want" ]; then chain_bad "$ent link target differs from HEAD (working tree '$tgt', HEAD '$want')"; return 0; fi
+        want="${want%.}"
+        # HEAD's own target decides what is supportable, so these checks come before the comparison
+        case "$want" in
+          "") chain_bad "$ent is an empty symlink in HEAD"; return 0 ;;
+          /*) chain_bad "$ent is an absolute symlink ($want); a clone elsewhere cannot prove it"; return 0 ;;
+        esac
+        if [ "$tgt" != "$want" ]; then chain_bad "$ent link target differs from HEAD (working tree $(printf '%q' "$tgt"), HEAD $(printf '%q' "$want"))"; return 0; fi
+        if [[ "$tgt" == *[[:cntrl:]]* ]]; then chain_bad "$ent link target contains a control character or newline ($(printf '%q' "$tgt"))"; return 0; fi
+        # F2: a hop is a tracked entry too: its own status and skip-worktree / assume-unchanged flags
+        entry_clean "$ent" || return 1
         hops=$((hops+1))
         if [ "$hops" -gt 40 ]; then chain_bad "$spec needs more than 40 symlink hops"; return 0; fi
-        case "$tgt" in
-          "") chain_bad "$ent is an empty symlink"; return 0 ;;
-          /*) chain_bad "$ent is an absolute symlink ($tgt); a clone elsewhere cannot prove it"; return 0 ;;
-        esac
         IFS='/' read -r -a parts <<< "$tgt"
         pend=("${parts[@]}" "${pend[@]}") ;;
       040000)
@@ -187,27 +215,22 @@ chain_one() {
         if [ -n "$rest" ]; then chain_bad "$spec continues inside the submodule $ent, which a clone does not provide"; return 0; fi
         cur="$ent"; ftype="commit"; fsha="" ;;
       100644|100755)
-        if [ -L "$REPO/$ent" ] || [ ! -f "$REPO/$ent" ]; then chain_bad "$ent is a file in HEAD but not in the working tree"; return 0; fi
         rest=""; for r in "${pend[@]}"; do case "$r" in ""|.) ;; *) rest=1 ;; esac; done
         if [ -n "$rest" ]; then chain_bad "$spec continues below the file $ent"; return 0; fi
+        if [ -L "$REPO/$ent" ] || [ ! -f "$REPO/$ent" ]; then chain_bad "$ent is a file in HEAD but not in the working tree"; return 0; fi
         cur="$ent"; ftype="blob"; fsha="$E_SHA" ;;
       *) chain_bad "$ent has the unsupported HEAD mode $E_MODE"; return 0 ;;
     esac
   done
   [ -n "$cur" ] || return 0
   if [ "$ftype" = blob ]; then
-    out="$(git -C "$REPO" hash-object -- "$cur" 2>/dev/null)" || { note_blind "git hash-object failed for $(printf '%q' "$cur")"; return 1; }
-    [ "$out" = "$fsha" ] || chain_bad "$cur differs from HEAD (content)"
+    out="$(git -C "$REPO" hash-object --no-filters -- "$cur" 2>/dev/null)" || { note_blind "git hash-object failed for $(printf '%q' "$cur")"; return 1; }
+    # F3: RAW bytes against the blob. A local clean filter, .git/info/attributes, core.attributesFile,
+    # core.autocrlf / core.eol or an untracked .gitattributes can make `git status` clean while the bytes a
+    # clone checks out differ; any raw difference is therefore unprovable here (BLIND), never a pass.
+    [ "$out" = "$fsha" ] || chain_bad "$cur raw bytes differ from the HEAD blob (content, or a local filter / eol / attribute conversion that a clone would not apply)"
   fi
-  if ! out="$(git -C "$REPO" -c core.quotepath=off status --porcelain=v1 --untracked-files=no -- ":(literal)$cur" 2>/dev/null)"; then
-    note_blind "$(printf '%q' "$cur"): git status failed; cannot prove the files match HEAD"; return 1
-  fi
-  [ -z "$out" ] || chain_bad "differs from HEAD: $(printf '%s\n' "$out" | head -3 | tr '\n' ';')"
-  if ! flagged="$(git -C "$REPO" -c core.quotepath=off ls-files -v -- ":(literal)$cur" 2>/dev/null)"; then
-    note_blind "$(printf '%q' "$cur"): git ls-files failed; cannot prove no file is hidden from git status"; return 1
-  fi
-  flagged="$(printf '%s\n' "$flagged" | grep -m1 '^[a-zS] ' || true)"
-  [ -z "$flagged" ] || chain_bad "$cur holds a skip-worktree or assume-unchanged file ($flagged), which hides changes from git status"
+  entry_clean "$cur" || return 1
   return 0
 }
 
@@ -472,8 +495,17 @@ run_changelog() {
 
   local out kind a b
   out="$(python3 -I - "$REPO" "$SECTION" <<'PY'
-import os, re, subprocess, sys
+import json, os, re, subprocess, sys
 repo, want = sys.argv[1:3]
+if not want:
+    # F6: no --version/--section: the section is derived from versions.json (global), never the topmost heading
+    try:
+        with open(os.path.join(repo, "versions.json"), encoding="utf-8") as vf:
+            g = json.load(vf)["global"]
+        want = f"{g['major']}.{g['minor']}.{g['patch']}"
+    except Exception as exc:  # noqa: BLE001
+        print(f"ERR\tno --version/--section given and versions.json global is unreadable ({type(exc).__name__}); refusing to use the topmost changelog section")
+        sys.exit(0)
 with open(os.path.join(repo, "docs/CHANGELOG.md"), encoding="utf-8") as fh:
     lines = fh.read().splitlines()
 head = re.compile(r"^## \[(\d[^\]]*)\]")
@@ -628,7 +660,8 @@ PY
       echo "OK    $p"; cited_ok=1
     fi
     # CAT-REL-CHECK-2: the cited spelling is walked component by component and hop by hop (head_check).
-    { [ "$cited_ok" = 0 ] || [ "$evrel" = "." ]; } || head_check "cited path $p" "$q"
+    # F1: no exemption for a path that resolves to the repository root; the cited spelling is always walked.
+    [ "$cited_ok" = 0 ] || head_check "cited path $p" "$q"
     # nearest tracked manifest (SHA256SUMS, SHA256SUMS.txt, MANIFEST*.sha256) at or above the path
     # (never the repo root itself)
     if [ -d "$REPO/$q" ]; then d="$evrel"; else d="$(dirname "$evrel")"; fi
@@ -764,7 +797,7 @@ check_manifest_dir() {
   # I-1: a clone sees HEAD, not the index or the working tree. Any tracked file under the covered tree
   # (manifests included) that is staged-but-uncommitted, modified or deleted makes this verdict unprovable.
   local dirty
-  if ! dirty="$(git -C "$REPO" status --porcelain=v1 -z --untracked-files=no -- ":(literal)$d" 2>/dev/null)"; then
+  if ! dirty="$(git -C "$REPO" -c core.quotepath=off status --porcelain=v1 --untracked-files=no -- ":(literal)$d" 2>/dev/null)"; then
     note_blind "git status failed for $(printf '%q' "$d"); cannot prove it matches HEAD"; return
   fi
   local flagged
@@ -776,7 +809,7 @@ check_manifest_dir() {
     note_blind "manifest tree $(printf '%q' "$d") holds a skip-worktree or assume-unchanged file ($flagged), which hides changes from git status"; return
   fi
   if [ -n "$dirty" ]; then
-    note_blind "manifest tree $(printf '%q' "$d") has changes that are not committed (index or working tree differ from HEAD): $(printf '%s' "$dirty" | tr '\0' '\n' | head -3 | tr '\n' ';')"; return
+    note_blind "manifest tree $(printf '%q' "$d") has changes that are not committed (index or working tree differ from HEAD): $(printf '%s\n' "$dirty" | head -3 | tr '\n' ';')"; return
   fi
   while IFS= read -r mf; do
     [ -n "$mf" ] || continue

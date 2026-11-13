@@ -54,13 +54,19 @@ tree. All of it is "HEAD versus the working tree": the index is not what a clone
 | 25 | untracked name with a space | stays a skipped token (indistinguishable from a command line) | Z31 |
 | 26 | non-ASCII names | PASS committed, BLIND edited | Z32, Z33 |
 | 27 | tab, newline, other control characters | BLIND (existing); a newline cannot occur inside a backtick token; paths are never NUL-delimited by the checker | existing M-2, R3-3 |
-| 28 | CRLF working copy of an LF blob | BLIND, also with `core.autocrlf=true` (git status reports it modified; fail-safe) | Z34, Z35 |
+| 28 | CRLF working copy of an LF blob | BLIND: raw bytes are compared to the blob (`hash-object --no-filters`); also with `core.autocrlf=true` | Z34, Z35 |
 | 29 | committed `..`, mid-path `./` and `..` in link targets | PASS, resolved like the kernel | Z36, Z37, Z39, Z40 |
 | 30 | uncommitted edit seen through those spellings | BLIND | Z38 |
 | 31 | HEAD membership with several specs (RV5-4) | BLIND | Z41 |
 | 32 | `--version X` without a `## [X]` section (silently used the topmost) | BLIND (section not found) | Z42-Z44 |
+| 33 | cited path resolving to the repository root (F1; was exempt from the walk) | the cited spelling is always walked; a retargeted alias is BLIND | Z50-Z52 |
+| 34 | hop target containing/ending in a newline (F2; `$(...)`/`read` lost it) | raw compare with a sentinel; newline or control character in a target is BLIND | Z53-Z55 |
+| 35 | status / flag check on a symlink hop entry (F2; only the final entry had it) | every hop gets `entry_clean` | Z56 |
+| 36 | local attribute / filter source (clean filter, info/attributes, autocrlf after `git add`) (F3) | raw bytes differ from the blob: BLIND | Z57-Z59 |
+| 37 | inherited `GIT_*` environment (F6) | unset at start | Z60 |
+| 38 | no `--version`, topmost section differs from versions.json (F6) | section derived from versions.json, else BLIND | Z61, Z62 |
 
-Equivalent mutants (not run): removing the 40-hop cap (a real loop is MISS before the walk starts, and a HEAD loop
+Equivalent mutants (not run): the unsupported-HEAD-mode branch in `chain_one` (`git ls-tree` canonicalises a regular-file mode such as 100664 to 100644; measured with a literal tree), removing the 40-hop cap (a real loop is MISS before the walk starts, and a HEAD loop
 cannot match a working tree that is not a loop because the link target is compared with HEAD's blob), and the
 `..`-above-the-root guard inside the walk (the outside-repo rule rejects such paths first).
 
@@ -70,5 +76,6 @@ cannot match a working tree that is not a loop because the link target is compar
 * A clone made with `core.symlinks=false` (Windows) turns symlinks into text files; sparse or shallow clones; LFS
   pointers (hash of the pointer vs content) - all UNCONFIRMED, untested.
 * The executable bit is not compared directly; `git status` reports a mode change on the final entry.
-* Third-party hooks or clean filters that make `hash-object` differ from what a clone checks out are not modelled.
+* Conversions on files under a manifest tree that are not cited themselves (only cited files are compared raw).
+* Untracked files inside a cited directory outside the evidence prefix; the executable bit when `core.fileMode=false`.
 * A name containing a double quote or a backslash is never extracted as a path, so it is never checked.

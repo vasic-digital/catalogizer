@@ -522,7 +522,7 @@ d=$(fresh); echo e5 > "$d/docs/qa/run2/e5.txt"; ( cd "$d/docs/qa/run2" && sha256
 RAW=1 expect "Z11b m-1 uncited manifest-covered file hides a HEAD mismatch behind assume-unchanged -> BLIND" 2 "manifest tree" "$d" --check changelog
 # Z49: git status trusts the stat cache; a same-size, same-mtime edit is invisible to it (core.checkStat=minimal), only the content hash sees it
 d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; cm "$d"; ( cd "$d" && git config core.checkStat minimal && git config core.trustctime false && git update-index --really-refresh >/dev/null ); touch -r "$d/docs/other/z.txt" "$d/ref.stamp"; printf 'Y\n' > "$d/docs/other/z.txt"; touch -r "$d/ref.stamp" "$d/docs/other/z.txt"
-RAW=1 expect "Z49 same-size same-mtime edit invisible to git status -> BLIND (content hash)" 2 "docs/other/z.txt differs from HEAD (content)" "$d" --check changelog
+RAW=1 expect "Z49 same-size same-mtime edit invisible to git status -> BLIND (content hash)" 2 "docs/other/z.txt raw bytes differ" "$d" --check changelog
 # directory symlink in the middle of the cited path
 d=$(fresh); lk "$d" docs/other/dl ../qa/run2; addrow "$d" docs/other/dl/c.txt; cm "$d"
 RAW=1 expect "Z12 committed directory symlink mid-path -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
@@ -610,6 +610,58 @@ RAW=1 expect "Z48 edit of a glob-named file -> BLIND" 2 "f[1].txt" "$d" --check 
 d=$(fresh); expect "Z42 --version with no matching changelog section -> BLIND" 2 "section not found: 2.9.9" "$d" --check changelog --version 2.9.9
 d=$(fresh); expect "Z43 --version selects its own section (negative control)" 0 "section=2.4.0" "$d" --check changelog --version 2.4.0
 d=$(fresh); expect "Z44 explicit --section wins over --version" 0 "section=2.4.0" "$d" --check changelog --version 2.9.9 --section 2.4.0
+
+echo "== CAT-REL-CHECK-2 round 2 (F1 root-resolving cited path, F2 raw hop bytes + hop entry state, F3 local filters, F6)"
+# F1: a cited path that resolves to the repository root was exempt from the HEAD walk
+d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS ); lk "$d" docs/r qa/run3; addrow "$d" docs/r; cm "$d"; lk "$d" docs/r ..
+RAW=1 expect "Z50 F1 committed docs/r -> qa/run3 retargeted to .. (root) in the working tree -> BLIND" 2 "docs/r link target differs from HEAD" "$d" --check changelog
+d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS ); lk "$d" docs/qa/al run3; addrow "$d" docs/qa/al; cm "$d"; lk "$d" docs/qa/al ../..
+RAW=1 expect "Z51 F1 committed docs/qa/al -> run3 retargeted to ../.. (root) -> BLIND" 2 "docs/qa/al link target differs from HEAD" "$d" --check changelog
+d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS ); lk "$d" docs/r qa/run3; addrow "$d" docs/r; cm "$d"
+RAW=1 expect "Z52 F1 negative control: the committed alias is untouched -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+# F2: hop target bytes are compared raw (newlines survive), and the forged target is a distinct string
+d=$(fresh); mkother "$d"; echo x > "$d/docs/other/x"; lk "$d" docs/other/ln x; addrow "$d" docs/other/ln; cm "$d"
+rm "$d/docs/other/ln"; ( cd "$d/docs/other" && ln -s $'x\n' ln && echo FORGED > $'x\n' )
+RAW=1 expect "Z53 F2 target x -> 'x<newline>' with an untracked forged file -> BLIND" 2 "docs/other/ln link target differs from HEAD" "$d" --check changelog
+d=$(fresh); mkother "$d"; echo x > "$d/docs/other/x"; ( cd "$d/docs/other" && ln -s $'x\nfoo' ln && echo y > $'x\nfoo' ); addrow "$d" docs/other/ln; cm "$d"
+RAW=1 expect "Z54 F2 committed target with a newline -> BLIND (unsupported)" 2 "contains a control character or newline" "$d" --check changelog
+d=$(fresh); mkother "$d"; echo x > "$d/docs/other/x"; ( cd "$d/docs/other" && ln -s $'x\n' ln ); addrow "$d" docs/other/ln; cm "$d"; ( cd "$d/docs/other" && rm ln && ln -s x ln )
+RAW=1 expect "Z55 F2 committed target 'x<newline>' vs working tree x -> BLIND" 2 "docs/other/ln link target differs from HEAD" "$d" --check changelog
+# F2: a hop is a tracked entry: a skip-worktree flag on an otherwise identical hop hides it from git status
+d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../qa/run2/c.txt; addrow "$d" docs/other/ln; cm "$d"; ( cd "$d" && git update-index --skip-worktree docs/other/ln2 )
+RAW=1 expect "Z56 F2 identical hop flagged skip-worktree -> BLIND" 2 "docs/other/ln2 holds a skip-worktree" "$d" --check changelog
+# F3: local clean filter / info attributes: git status clean, raw bytes differ from the blob a clone gets
+d=$(fresh); mkdir -p "$d/docs/other"; ( cd "$d" && git config filter.crx.clean "tr -d '\\r'" && printf '*.txt filter=crx\n' >> .git/info/attributes ); printf 'a\r\n' > "$d/docs/other/f.txt"; addrow "$d" docs/other/f.txt; cm "$d"
+RAW=1 expect "Z57 F3 local clean filter hides CR bytes (status clean) -> BLIND" 2 "raw bytes differ from the HEAD blob" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/other"; ( cd "$d" && git config core.autocrlf true ); printf 'a\r\n' > "$d/docs/other/f.txt"; addrow "$d" docs/other/f.txt; cm "$d"
+RAW=1 expect "Z58 F3 core.autocrlf=true after git add (status clean) -> BLIND" 2 "raw bytes differ from the HEAD blob" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/other"; printf 'a\r\n' > "$d/docs/other/f.txt"; addrow "$d" docs/other/f.txt; cm "$d"
+RAW=1 expect "Z59 F3 negative control: committed CRLF bytes, no filter -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+# F6: inherited GIT_* environment must not redirect the checker
+d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; cm "$d"
+out="$(GIT_INDEX_FILE="$ROOT/bogus-index" GIT_DIR="$ROOT/bogus-gitdir" "$CHECKER" --repo "$d" --check changelog 2>&1)"; got=$?
+if [ "$got" = 0 ] && printf '%s\n' "$out" | grep -q '^VERDICT: PASS'; then ok; else bad "Z60 F6 inherited GIT_DIR/GIT_INDEX_FILE changed the verdict (rc=$got)"; fi
+# F6: no --version/--section: the section comes from versions.json, never the topmost heading
+d=$(fresh); mut "$d" docs/CHANGELOG.md '0,/^## \[2\.4\.0\]/s//## [9.9.9] - next\n\n- nothing\n\n## [2.4.0]/'
+expect "Z61 F6 topmost section 9.9.9 is not used without --version (derived 2.4.0)" 0 "section=2.4.0" "$d" --check changelog
+d=$(fresh); ( cd "$d" && git rm -q versions.json && git commit -q -m novj )
+RAW=1 expect "Z62 F6 no --version and no versions.json -> BLIND, not the topmost section" 2 "refusing to use the topmost changelog section" "$d" --check changelog
+
+# Reviewer own-mutant follow-ups OWN1-OWN6 (each has a paired mutant CC2r2 OWNn)
+# gitstub <fail-word>: a git wrapper that fails when any argument equals <fail-word>, else runs the real git
+REALGIT="$(command -v git)"
+gitstub() { local sd; sd="$(mktemp -d "$ROOT/gstub.XXXXXX")"; printf '#!/bin/sh\nfor a in "$@"; do [ "$a" = "%s" ] && exit 1; done\nexec %s "$@"\n' "$1" "$REALGIT" > "$sd/git"; chmod +x "$sd/git"; echo "$sd"; }
+d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; cm "$d"
+sd=$(gitstub --name-only); PATH="$sd:$PATH" RAW=1 expect "Z63 OWN1 git failing in the case-collision listing -> BLIND" 2 "git ls-tree failed" "$d" --check changelog
+d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; cm "$d"
+sd=$(gitstub hash-object); PATH="$sd:$PATH" RAW=1 expect "Z64 OWN6 git hash-object failing -> BLIND" 2 "git hash-object failed" "$d" --check changelog
+d=$(fresh); mkother "$d"; echo q > "$d/docs/other/a"; cm "$d"; rm "$d/docs/other/a"; mkdir "$d/docs/other/a"; echo b > "$d/docs/other/a/b"; addrow "$d" docs/other/a/b
+RAW=1 expect "Z65 OWN2 HEAD file replaced by a directory that the cited path goes through -> BLIND" 2 "continues below the file docs/other/a" "$d" --check changelog
+d=$(fresh); mkother "$d"; e="$(printf '' | git -C "$d" hash-object -w --stdin)"; ( cd "$d" && git update-index --add --cacheinfo "120000,$e,docs/other/e" && git commit -q -m emptylink ); echo 1 > "$d/docs/other/x"; ln -s x "$d/docs/other/e"; addrow "$d" docs/other/e
+RAW=1 expect "Z66 OWN3 empty symlink in HEAD -> BLIND" 2 "docs/other/e is an empty symlink in HEAD" "$d" --check changelog
+# OWN4 (unsupported HEAD mode) is an equivalent mutant: git ls-tree canonicalises every regular-file mode to 100644/100755 (measured with a literal tree holding 100664), so the `*)` branch is defensive only.
+d=$(fresh); smk "$d"; addrow "$d" docs/subm; cm "$d"; rm -rf "${d:?}/docs/subm"; echo f > "$d/docs/subm"
+RAW=1 expect "Z68 OWN5 submodule replaced by a regular file -> BLIND" 2 "docs/subm is a submodule in HEAD but not a directory" "$d" --check changelog
 
 echo "== selftest (11.4.273 control needles built into the tool)"
 out="$("$CHECKER" --selftest 2>&1)"; got=$?

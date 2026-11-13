@@ -189,11 +189,11 @@ MUTANTS=(
 'CC2 symlink type not compared|||if [ ! -L "$REPO/$ent" ]; then chain_bad "$ent is a symlink in HEAD|||if false; then chain_bad "$ent is a symlink in HEAD'
 'CC2 directory type not compared|||if [ -L "$REPO/$ent" ] || [ ! -d "$REPO/$ent" ]; then chain_bad "$ent is a directory in HEAD|||if false; then chain_bad "$ent is a directory in HEAD'
 'CC2 file type not compared|||if [ -L "$REPO/$ent" ] || [ ! -f "$REPO/$ent" ]; then chain_bad "$ent is a file in HEAD|||if false; then chain_bad "$ent is a file in HEAD'
-'CC2 absolute hop accepted|||/*) chain_bad "$ent is an absolute symlink ($tgt); a clone elsewhere cannot prove it"; return 0 ;;|||/*) ;;'
+'CC2 absolute hop accepted|||/*) chain_bad "$ent is an absolute symlink ($want); a clone elsewhere cannot prove it"; return 0 ;;|||/*) ;;'
 'CC2 hop into submodule accepted|||if [ -n "$rest" ]; then chain_bad "$spec continues inside the submodule|||if false; then chain_bad "$spec continues inside the submodule'
 'CC2 case collision check disabled|||if [ "$r" -eq 0 ]; then chain_bad "$ent collides|||if false; then chain_bad "$ent collides'
 'CC2 case collision counts every entry|||[ "$n" -gt 1 ]|||[ "$n" -gt 0 ]'
-'CC2 content hash not compared|||[ "$out" = "$fsha" ] || chain_bad "$cur differs from HEAD (content)"|||:'
+'CC2 content hash not compared|||[ "$out" = "$fsha" ] || chain_bad "$cur raw bytes differ|||[ "$out" = "$fsha" ] || : "$cur raw bytes differ'
 'CC2 final flag check dropped|||[ -z "$flagged" ] || chain_bad "$cur holds|||[ -z "$flagged" ] || : "$cur holds'
 'CC2 flag pattern misses assume-unchanged|||grep -m1 '"'"'^[a-zS] '"'"' || true)"
   [ -z "$flagged" ] || chain_bad|||grep -m1 '"'"'^S '"'"' || true)"
@@ -212,7 +212,24 @@ MUTANTS=(
 'CC2 whitespace paths never skipped|||if re.search(r"\s", t) and t not in tfiles and t not in tdirs:|||if False:'
 'CC2 gitlink HEAD membership via cat-file (m-3)|||    head_entry "$ent" || {|||    git -C "$REPO" cat-file -e "HEAD:$ent" 2>/dev/null || { chain_bad "$ent is not in HEAD"; return 0; }
     head_entry "$ent" || {'
-# Equivalent mutants (not run): the 40-hop cap in chain_one (a loop is MISS before the walk starts, and a HEAD loop cannot match a
+'CC2r2 F1 root-resolving cited path exempt from the walk|||[ "$cited_ok" = 0 ] || head_check "cited path $p" "$q"|||{ [ "$cited_ok" = 0 ] || [ "$evrel" = "." ]; } || head_check "cited path $p" "$q"'
+'CC2r2 F2 hop target read without sentinel|||tgt="$(readlink -- "$REPO/$ent"; printf .)"; tgt="${tgt%.}"; tgt="${tgt%$'"'"'\n'"'"'}"|||tgt="$(readlink -- "$REPO/$ent")"'
+'CC2r2 F2 HEAD blob read without sentinel|||want="$(git -C "$REPO" cat-file blob "$E_SHA" 2>/dev/null; printf .)"|||want="$(git -C "$REPO" cat-file blob "$E_SHA" 2>/dev/null)"'
+'CC2r2 F2 control character in a target accepted|||if [[ "$tgt" == *[[:cntrl:]]* ]]; then chain_bad|||if false; then chain_bad'
+'CC2r2 F2 hop entry not checked for status or flags|||        entry_clean "$ent" || return 1
+|||        :
+'
+'CC2r2 F3 hash with local filters applied|||hash-object --no-filters -- "$cur"|||hash-object -- "$cur"'
+'CC2r2 F6 inherited GIT_ variables kept|||for _gv in $(compgen -e | grep '"'"'^GIT_'"'"' || true); do unset "$_gv"; done|||for _gv in; do :; done'
+'CC2r2 F6 section falls back to the topmost|||if not want:
+    # F6|||if False:
+    # F6'
+'CC2r2 OWN1 git failure in the case-collision listing not BLIND|||if [ "$r" -eq 2 ]; then note_blind|||if false; then note_blind'
+'CC2r2 OWN2 path continuing below a file accepted|||if [ -n "$rest" ]; then chain_bad "$spec continues below the file $ent"|||if false; then chain_bad "$spec continues below the file $ent"'
+'CC2r2 OWN3 empty symlink in HEAD accepted|||"") chain_bad "$ent is an empty symlink in HEAD"; return 0 ;;|||"") ;;'
+'CC2r2 OWN5 submodule type not compared|||if [ -L "$REPO/$ent" ] || [ ! -d "$REPO/$ent" ]; then chain_bad "$ent is a submodule in HEAD|||if false; then chain_bad "$ent is a submodule in HEAD'
+'CC2r2 OWN6 hash-object failure not BLIND||||| { note_blind "git hash-object failed for $(printf '"'"'%q'"'"' "$cur")"; return 1; }||||| { : "git hash-object failed"; return 1; }'
+# Equivalent mutants (not run): OWN4, the unsupported-HEAD-mode branch (git ls-tree canonicalises regular-file modes to 100644/100755; measured with a literal 100664 tree); the 40-hop cap in chain_one (a loop is MISS before the walk starts, and a HEAD loop cannot match a
 # working tree that is not a loop because every hop target is compared with HEAD's blob) and the '..'-above-the-root guard in
 # chain_one (the outside-repo rule rejects such paths first), and the exact-name filter in head_entry (git ls-tree does not
 # glob: measured, a pathspec like 'd/f[1].txt' or 'd/f*' returns only the literal entry or nothing).
@@ -241,8 +258,11 @@ PY
   if [ -n "${MUT_APPLY_ONLY:-}" ]; then echo "applies  [$n] $name" > "$d/result"; return; fi   # quick applicability pass, not a verdict
   if CHECKER="$d/check_release_consistency.sh" "$d/test_check_release_consistency.sh" >"$d/out.txt" 2>&1; then
     echo "SURVIVED [$n] $name" > "$d/result"
-  else
+  elif tail -1 "$d/out.txt" | grep -Eq '^== result: [0-9]+ passed, [1-9][0-9]* failed$'; then
     echo "killed   [$n] $name ($(tail -1 "$d/out.txt"))" > "$d/result"
+  else
+    # non-zero exit without a reported failing test and a final result line: Terminated / died mid-suite
+    echo "INVALID  [$n] $name: non-zero exit with no failed test line or result line ($(tail -1 "$d/out.txt"))" > "$d/result"
   fi
 }
 
