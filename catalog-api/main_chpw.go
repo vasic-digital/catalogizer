@@ -16,7 +16,7 @@ type sessionDeactivator interface {
 
 // registerChangePasswordRoute wires POST /change-password on the auth group
 // with the per-session failed-attempt limiter (CAT-CHPW-RL-1). main.go MUST
-// register this route only through here (TestMainGoRegistersChangePasswordOnlyViaHelper).
+// register this route only through here (TestMainPackageChangePasswordWiringSource).
 // When a session exhausts its failure budget the session is revoked, so the
 // RequireAuth session check rejects that token from then on.
 func registerChangePasswordRoute(authGroup gin.IRoutes, rate, requireAuth, handler gin.HandlerFunc, sessions sessionDeactivator, logger *zap.Logger) {

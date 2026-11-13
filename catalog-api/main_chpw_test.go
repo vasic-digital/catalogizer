@@ -152,6 +152,65 @@ func TestRegisterAuthRoutes_RouteTablePinnedAndProtectedRoutesNeedAuth(t *testin
 	require.Equal(t, 1, *rg.reached)
 }
 
+// Pins WHICH middleware runs, in order, on every route of registerAuthRoutes
+// (CAT-CHPW-RL-1-FU F1). Every dependency is a distinguishable marker that
+// appends its name to a per-request trace; the handlers append "h:<name>".
+// change-password's own failed-attempt limiter is internal to the helper (it
+// sits between "auth" and the handler and is pinned by the lock tests); the
+// trace here pins the externally supplied limiter (DefaultRate) and auth.
+func TestRegisterAuthRoutes_MiddlewareChainPerRoute(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	var trace []string
+	mark := func(name string) gin.HandlerFunc {
+		return func(c *gin.Context) { trace = append(trace, name); c.Next() }
+	}
+	h := func(name string) gin.HandlerFunc {
+		return func(c *gin.Context) { trace = append(trace, "h:"+name); c.Status(http.StatusOK) }
+	}
+	auth := func() gin.HandlerFunc {
+		return func(c *gin.Context) {
+			trace = append(trace, "auth")
+			c.Set("user_id", 7)
+			c.Set("session_id", "1")
+			c.Next()
+		}
+	}
+	r := gin.New()
+	registerAuthRoutes(r.Group("/api/v1/auth"), authRoutesDeps{
+		LoginRate: mark("LoginRate"), AuthRate: mark("AuthRate"), DefaultRate: mark("DefaultRate"), RequireAuth: auth,
+		Login: h("Login"), Register: h("Register"), Refresh: h("Refresh"), Logout: h("Logout"), Me: h("Me"),
+		Status: h("Status"), Permissions: h("Permissions"), InitStatus: h("InitStatus"), ChangePassword: h("ChangePassword"),
+		Sessions: nopSessions{}, Logger: zap.NewNop(),
+	})
+	want := []struct {
+		method, path string
+		chain        []string
+	}{
+		{"POST", "login", []string{"LoginRate", "h:Login"}},
+		{"POST", "register", []string{"LoginRate", "h:Register"}},
+		{"POST", "refresh", []string{"AuthRate", "h:Refresh"}},
+		{"POST", "logout", []string{"AuthRate", "h:Logout"}},
+		{"GET", "me", []string{"AuthRate", "auth", "h:Me"}},
+		{"GET", "status", []string{"AuthRate", "h:Status"}},
+		{"GET", "permissions", []string{"AuthRate", "auth", "h:Permissions"}},
+		{"GET", "profile", []string{"AuthRate", "auth", "h:Me"}},
+		{"GET", "init-status", []string{"DefaultRate", "h:InitStatus"}},
+		{"POST", "change-password", []string{"DefaultRate", "auth", "h:ChangePassword"}},
+	}
+	require.Len(t, r.Routes(), len(want), "route count changed: extend the chain table")
+	for _, w := range want {
+		trace = nil
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, httptest.NewRequest(w.method, "/api/v1/auth/"+w.path, nil))
+		require.Equal(t, http.StatusOK, rec.Code, w.path)
+		require.Equal(t, w.chain, trace, w.method+" "+w.path)
+	}
+}
+
+type nopSessions struct{}
+
+func (nopSessions) DeactivateSession(int) error { return nil }
+
 // foldString evaluates e to a string when it is a literal, a concatenation of
 // foldable parts, a parenthesised foldable, or an identifier bound to one.
 func foldString(e ast.Expr, binds map[string]string) (string, bool) {
@@ -282,6 +341,8 @@ func TestMainPackageChangePasswordWiringSource(t *testing.T) {
 	args := helperCalls[0].Args
 	require.Len(t, args, 6)
 	require.Equal(t, "g", args[0].(*ast.Ident).Name)
+	rl, ok := args[1].(*ast.SelectorExpr)
+	require.True(t, ok && rl.Sel.Name == "DefaultRate" && rl.X.(*ast.Ident).Name == "d", "2nd argument (rate limiter) must be d.DefaultRate")
 	rq, ok := args[2].(*ast.CallExpr)
 	require.True(t, ok, "3rd argument must be the d.RequireAuth() call")
 	rqs, ok := rq.Fun.(*ast.SelectorExpr)
@@ -303,4 +364,26 @@ func TestMainPackageChangePasswordWiringSource(t *testing.T) {
 	}
 	require.True(t, found)
 	require.Equal(t, "authGroup", authCalls[0].Args[0].(*ast.Ident).Name)
+	// authGroup must be a router.Group("/api/v1/auth") (CAT-CHPW-RL-1-FU F2).
+	groups := 0
+	for _, f := range pkg.Files {
+		ast.Inspect(f, func(n ast.Node) bool {
+			as, ok := n.(*ast.AssignStmt)
+			if !ok || len(as.Lhs) != 1 || len(as.Rhs) != 1 {
+				return true
+			}
+			if id, ok := as.Lhs[0].(*ast.Ident); !ok || id.Name != "authGroup" {
+				return true
+			}
+			call, ok := as.Rhs[0].(*ast.CallExpr)
+			require.True(t, ok, "authGroup must be assigned from a call")
+			sel, ok := call.Fun.(*ast.SelectorExpr)
+			require.True(t, ok && sel.Sel.Name == "Group" && len(call.Args) >= 1, "authGroup must come from <router>.Group(...)")
+			p, ok := foldString(call.Args[0], binds)
+			require.True(t, ok && p == "/api/v1/auth", "authGroup prefix must be /api/v1/auth, got %q", p)
+			groups++
+			return true
+		})
+	}
+	require.Equal(t, 1, groups, "authGroup assigned exactly once")
 }
