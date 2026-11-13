@@ -1081,10 +1081,13 @@ func TestLogManagementService_AnalyzeLogs_Integration(t *testing.T) {
 func TestConversionService_GetJob_NotFound(t *testing.T) {
 	db := setupTestDB(t)
 	conversionRepo := repository.NewConversionRepository(db)
-	service := NewConversionService(conversionRepo, nil, nil)
+	userRepo := repository.NewUserRepository(db)
+	service := NewConversionService(conversionRepo, userRepo, NewAuthService(userRepo, "getjob-notfound-secret"))
 
+	// the ownership gate looks the caller's permission up on every path (CAT-JOB-404-1), so the
+	// service needs its real auth service even for a missing id
 	_, err := service.GetJob(999, 1)
-	assert.Error(t, err)
+	assert.ErrorIs(t, err, models.ErrConversionJobNotFound)
 }
 
 func TestConversionService_GetUserJobs_Empty(t *testing.T) {
