@@ -1111,41 +1111,7 @@ func main() {
 	// Deep health check — pings the database with a 100ms timeout so
 	// a slow DB never blocks callers for an unreasonable duration.
 	deepHealthChecker := metrics.NewHealthChecker(databaseDB, Version)
-	router.GET("/health/deep", root_middleware.CacheHeaders(5), func(c *gin.Context) {
-	const deepTimeout = 100 * time.Millisecond
-
-	type result struct {
-			resp metrics.HealthCheckResponse
-	}
-
-	ch := make(chan result, 1)
-	go func() {
-			ch <- result{resp: deepHealthChecker.Check(c.Request.Context())}
-	}()
-
-	select {
-	case r := <-ch:
-			status := http.StatusOK
-			if r.resp.Status == metrics.HealthStatusUnhealthy {
-				status = http.StatusServiceUnavailable
-			}
-			c.JSON(status, r.resp)
-
-	case <-time.After(deepTimeout):
-			c.JSON(http.StatusOK, gin.H{
-				"status":  "degraded",
-				"time":    time.Now().UTC(),
-				"version": Version,
-				"message": "health check exceeded 100ms timeout",
-				"components": gin.H{
-					"timeout": gin.H{
-						"status":  "degraded",
-						"message": "deep health check took too long",
-					},
-				},
-			})
-	}
-	})
+	router.GET("/health/deep", root_middleware.CacheHeaders(5), deepHealthHandler(deepHealthChecker, Version, 100*time.Millisecond))
 
 	// WebSocket endpoint: authenticated (Bearer header or ?token=, session-checked) and Origin-checked; see registerWebSocketRoute
 	registerWebSocketRoute(router, jwtMiddleware, wsHandler)
@@ -1290,67 +1256,12 @@ func main() {
 	// runaway operator (or an attacker who bypassed auth) cannot
 	// stampede the provider chain.
 	// Admin-only (review R2 D1/P1): these were reachable by any authenticated user.
-	api.POST("/admin/image-quality/revalidate", jwtMiddleware.RequireAdmin(), root_middleware.RateLimiter(6), func(c *gin.Context) {
-			var req struct {
-				StaleAgeSeconds int `json:"stale_age_seconds"`
-				Limit           int `json:"limit"`
-			}
-			if bindErr := c.ShouldBindJSON(&req); bindErr != nil {
-				// Empty or malformed body → use defaults below
-			}
-			staleAge := 7 * 24 * 3600
-			if req.StaleAgeSeconds > 0 {
-				staleAge = req.StaleAgeSeconds
-			}
-			limit := 256
-			if req.Limit > 0 && req.Limit <= 4096 {
-				limit = req.Limit
-			}
-			ctx := c.Request.Context()
-			cutoff := time.Now().Add(-time.Duration(staleAge) * time.Second)
-			rows, err := imageQualityRepo.SampleForRevalidation(ctx, cutoff, limit)
-			if err != nil {
-				logger.Warn("image quality revalidation sample failed (not returned to client)", zap.Error(err))
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to sample images for revalidation"})
-				return
-			}
-			touched := 0
-			for _, row := range rows {
-				if err := imageQualityRepo.TouchLastChecked(ctx, row.ID); err != nil {
-					continue
-				}
-				touched++
-			}
-			c.JSON(http.StatusOK, gin.H{
-				"sampled":          len(rows),
-				"touched":          touched,
-				"stale_age_seconds": staleAge,
-				"limit":            limit,
-			})
-	})
+	api.POST("/admin/image-quality/revalidate", jwtMiddleware.RequireAdmin(), root_middleware.RateLimiter(6), imageQualityRevalidateHandler(imageQualityRepo, logger))
 
 	// Cover art batch generation — creates video-frame thumbnails for items
 	// that don't have cover art yet.  This is useful when external CDNs are
 	// unreachable and the backend must generate its own covers.
-	api.POST("/admin/covers/generate-thumbnails", jwtMiddleware.RequireAdmin(), func(c *gin.Context) {
-			var req struct {
-				Limit int `json:"limit" binding:"min=1,max=500"`
-			}
-			if err := c.ShouldBindJSON(&req); err != nil {
-				// default limit when body is empty
-				req.Limit = 50
-			}
-			generated, err := coverArtService.GenerateMissingVideoThumbnails(c.Request.Context(), req.Limit)
-			if err != nil {
-				logger.Warn("video thumbnail generation failed (not returned to client)", zap.Error(err))
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate video thumbnails"})
-				return
-			}
-			c.JSON(http.StatusOK, gin.H{
-				"generated": generated,
-				"message":   "thumbnail generation completed",
-			})
-	})
+	api.POST("/admin/covers/generate-thumbnails", jwtMiddleware.RequireAdmin(), generateThumbnailsHandler(coverArtService, logger))
 
 	// Recommendation endpoints (lazy — handler initialized on first request)
 	recGroup := api.Group("/recommendations")
