@@ -180,7 +180,7 @@ for rec in r.stdout.split(b"\0"):
     if (mode, typ) not in ((b"100644", b"blob"), (b"100755", b"blob"), (b"120000", b"blob"), (b"160000", b"commit")):
         die(4, "unsupported tree entry %r" % (mode,))
     parts = path.split(b"/")
-    if any(p in (b"", b".", b"..") or p.lower() == b".git" or b"\n" in p for p in parts):
+    if any(p in (b"", b".", b"..") or p.lower() == b".git" for p in parts):
         die(4, "unsafe path component in %r" % (path,))
     if path in seen:
         die(4, "duplicate tree entry %r" % (path,))
@@ -839,6 +839,9 @@ PY
       # CAT-REL-CHECK-3 (M1): existence is decided by HEAD's snapshot, as in a clean clone (a dangling HEAD symlink
       # is missing there too); the working tree is consulted only afterwards, by head_check, to say BLIND
       C_MISS=$((C_MISS+1)); echo "MISS  $p (not in HEAD)"
+      # BLIND guard only (never a verdict): HEAD holds an entry here that dangles in HEAD while the working tree resolves
+      # it, so the working tree is not HEAD; a plain clone fails this path, the local run must not look cleaner than that
+      if tracked "$q" && [ -e "$REPO/$q" ]; then head_check "cited path $p" "$q"; fi
     elif ! tracked "$q" && ! tracked "$evrel"; then
       C_MISS=$((C_MISS+1)); echo "MISS  $p (exists but not git-tracked)"
     else

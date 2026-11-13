@@ -120,7 +120,7 @@ Fix at the class level (`scripts/release/check_release_consistency.sh`, snapshot
 
 1. The whole listing is validated BEFORE anything is written. Refused (BLIND, reason printed): a duplicate path;
    a path that is both an entry and a directory prefix of another entry (file/symlink/gitlink versus subtree, in any
-   stored order); an empty, `.`, `..`, `.git` (any case) or newline-holding component (an absolute path has an empty
+   stored order); an empty, `.`, `..` or `.git` (any case) component (a newline inside a name is legal and written as is) (an absolute path has an empty
    first component); an unsupported mode; more than `RELCHK_MAX_FILES` entries (default 1,000,000) or more than
    `RELCHK_MAX_BYTES` (default 4 GiB) of content.
 2. Extraction walks directories through file descriptors (`openat` with `O_DIRECTORY|O_NOFOLLOW`, `mkdirat`); regular
@@ -153,8 +153,8 @@ cited-path collisions are still reported by `name_collides`).
 
 Tests: `scripts/release/test_check_release_consistency_rc4.sh` (also run by the main suite). Unit-class evidence only.
 
-Mutation evidence (CAT-REL-CHECK-3, unit-class): 16 mutants of the new code are in `mutation_check_release_consistency.sh`
-(duplicate entries, prefix clash, `.git` guard RM1, `.git` case, newline, `..`, byte cap, entry cap, ls-tree timeout, writer
+Mutation evidence (CAT-REL-CHECK-3, unit-class): 15 mutants of the new code are in `mutation_check_release_consistency.sh`
+(duplicate entries, prefix clash, `.git` guard RM1, `.git` case, `..`, byte cap, entry cap, ls-tree timeout, writer
 time limit, unsupported mode, XDG ignore file RM17, unbounded git, unbounded helper git, cited-path existence from the
 working tree M1, dropped refusal reason); each is killed by `test_check_release_consistency_rc4.sh`
 (`MUT_TEST=test_check_release_consistency_rc4.sh MUT_FILTER=CAT-REL-CHECK-3`). Defence in depth, stated honestly: three

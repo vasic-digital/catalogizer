@@ -106,7 +106,7 @@ want "B3 nested component docs/.git/x -> BLIND" 2 "cannot write the HEAD snapsho
 e=$(fresh); EX="$(blob "$e" x)"; printf '100644\tdocs/.GIT\t%s\n' "$EX" | evil_head "$e"; run "$e" --check changelog
 want "B3b nested file component .GIT -> BLIND" 2 "cannot write the HEAD snapshot"
 # B4: dot-dot and dot components, absolute and empty names, newline in a name; nothing may appear next to the snapshot
-for nm in '../pwn_dd' 'docs/../pwn_dd2' './pwn_dot' '/abs_pwn' 'a//b' 'a\nb'; do
+for nm in '../pwn_dd' 'docs/../pwn_dd2' './pwn_dot' '/abs_pwn' 'a//b'; do
   e=$(fresh); tb="$(mktemp -d "$ROOT/tb.XXXXXX")"; EX="$(blob "$e" x)"
   printf '100644\t%s\t%s\n' "$nm" "$EX" | evil_head "$e"; RELCHK_TMP="$tb" run "$e" --check changelog
   want "B4 hostile name '$nm' -> BLIND" 2 "cannot write the HEAD snapshot"
@@ -119,6 +119,10 @@ if [ -z "$(ls -A "$tb")" ]; then ok; else bad "B5: a file appeared next to the s
 # B6: names that differ only in case are two distinct files on this filesystem: no escape, no snapshot refusal
 e=$(fresh); P="$(blob "$e" one)"; Q="$(blob "$e" two)"; printf '100644\tCASE.txt\t%s\n100644\tcase.txt\t%s\n' "$P" "$Q" | evil_head "$e"; run "$e" --check version
 if printf '%s\n' "$OUT_" | grep -qF "cannot write the HEAD snapshot"; then bad "B6 case-variant siblings must not be refused as a snapshot error"; else ok; fi
+
+# B7: a newline inside a name is a legal tracked name (the changelog helper escapes it): the snapshot is written, nothing escapes
+e=$(fresh); tb="$(mktemp -d "$ROOT/tb.XXXXXX")"; EX="$(blob "$e" x)"; printf '100644\ta\\nb\t%s\n' "$EX" | evil_head "$e"; RELCHK_TMP="$tb" run "$e" --check version
+if printf '%s\n' "$OUT_" | grep -qF "cannot write the HEAD snapshot"; then bad "B7 newline in a name must not be refused"; else ok; fi
 
 echo "== M1: existence of a cited path comes from HEAD's snapshot, not from the working tree"
 mkother() { mkdir -p "$1/docs/other"; echo x > "$1/docs/other/z.txt"; }

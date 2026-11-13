@@ -126,7 +126,7 @@ path that names one is `SHAFAIL`/`MISS` (as in a clone), not BLIND; the snapshot
 run (run time on the real repository UNCONFIRMED); an empty symlink target in HEAD gives BLIND.
 
 CAT-REL-CHECK-3: the snapshot writer treats the HEAD tree as untrusted input. It refuses (BLIND) duplicate paths, a path that is
-both an entry and a directory, `.`/`..`/`.git`/empty/newline components and unsupported modes before writing anything, writes
+both an entry and a directory, `.`/`..`/`.git`/empty components and unsupported modes before writing anything, writes
 through directory descriptors with `O_NOFOLLOW`, creates symlinks last and verifies the result, so no write can resolve outside
 the snapshot. Bounds (BLIND on exceed): `RELCHK_MAX_FILES` (default 1000000 entries), `RELCHK_MAX_BYTES` (default 4 GiB),
 `RELCHK_SNAP_TIMEOUT` (900 s), `RELCHK_GIT_TIMEOUT` (120 s per git call). Residual: a file stored as a Git LFS pointer is read as

@@ -257,7 +257,6 @@ MUTANTS=(
 'CAT-REL-CHECK-3 snapshot: file/dir prefix clash accepted|||if clash:|||if False:'
 'CAT-REL-CHECK-3 snapshot: .git component allowed (RM1)|||p in (b"", b".", b"..") or p.lower() == b".git" or b"\n" in p|||p in (b"", b".", b"..") or b"\n" in p'
 'CAT-REL-CHECK-3 snapshot: .git guard is case-sensitive|||p.lower() == b".git"|||p == b".git"'
-'CAT-REL-CHECK-3 snapshot: newline component allowed|||p.lower() == b".git" or b"\n" in p|||p.lower() == b".git"'
 'CAT-REL-CHECK-3 snapshot: dot-dot component allowed|||p in (b"", b".", b"..")|||p in (b"", b".")'
 'CAT-REL-CHECK-3 snapshot: byte cap off|||if total > MAXBYTES:|||if False:'
 'CAT-REL-CHECK-3 snapshot: entry cap off|||if len(ents) > MAXFILES:|||if False:'
