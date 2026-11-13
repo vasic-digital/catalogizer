@@ -1,0 +1,206 @@
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/printer"
+	"go/token"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+)
+
+func src(fs *token.FileSet, n ast.Node) string {
+	var b bytes.Buffer
+	printer.Fprint(&b, fs, n)
+	s := strings.Join(strings.Fields(b.String()), " ")
+	if len(s) > 140 {
+		s = s[:140] + "..."
+	}
+	return s
+}
+
+func isErrName(n string) bool { return strings.Contains(strings.ToLower(n), "err") }
+
+// text-bearing expressions inside n: .Error() calls, fmt.Sprintf/Errorf/Sprint with err-named ident arg,
+// bare err-named idents, and tainted idents.
+func findings(fs *token.FileSet, n ast.Node, taint map[string]string) []string {
+	var out []string
+	ast.Inspect(n, func(x ast.Node) bool {
+		switch v := x.(type) {
+		case *ast.CallExpr:
+			if se, ok := v.Fun.(*ast.SelectorExpr); ok {
+				if se.Sel.Name == "Error" && len(v.Args) == 0 {
+					out = append(out, "E:"+src(fs, v))
+					return false
+				}
+				if id, ok := se.X.(*ast.Ident); ok && id.Name == "fmt" && strings.HasPrefix(se.Sel.Name, "Sprint") || ok && id.Name == "fmt" && se.Sel.Name == "Errorf" {
+					for _, a := range v.Args {
+						if i, ok := a.(*ast.Ident); ok && isErrName(i.Name) {
+							out = append(out, "F:"+src(fs, v))
+							return false
+						}
+					}
+				}
+			}
+		case *ast.Ident:
+			if t, ok := taint[v.Name]; ok {
+				out = append(out, "T:"+v.Name+"<-"+t)
+			}
+		}
+		return true
+	})
+	return out
+}
+
+func main() {
+	root := os.Args[1]
+	mode := ""
+	if len(os.Args) > 2 {
+		mode = os.Args[2]
+	}
+	_ = mode
+	fs := token.NewFileSet()
+	type row struct {
+		file         string
+		line         int
+		fn, sink, st string
+		kind, expr   string
+	}
+	var rows []row
+	var parseFails []string
+	filepath.Walk(root, func(p string, info os.FileInfo, e error) error {
+		if e != nil {
+			return nil
+		}
+		if info.IsDir() {
+			b := info.Name()
+			if b == "vendor" || b == "node_modules" || b == ".git" {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if !strings.HasSuffix(p, ".go") || strings.HasSuffix(p, "_test.go") {
+			return nil
+		}
+		f, err := parser.ParseFile(fs, p, nil, 0)
+		if err != nil {
+			parseFails = append(parseFails, p)
+			return nil
+		}
+		for _, d := range f.Decls {
+			fd, ok := d.(*ast.FuncDecl)
+			if !ok || fd.Body == nil {
+				continue
+			}
+			taint := map[string]string{}
+			ast.Inspect(fd.Body, func(n ast.Node) bool {
+				a, ok := n.(*ast.AssignStmt)
+				if !ok {
+					return true
+				}
+				for i, l := range a.Lhs {
+					id, ok := l.(*ast.Ident)
+					if !ok {
+						continue
+					}
+					var r ast.Expr
+					if len(a.Rhs) == len(a.Lhs) {
+						r = a.Rhs[i]
+					} else if len(a.Rhs) == 1 {
+						continue
+					}
+					if r == nil {
+						continue
+					}
+					if fz := findings(fs, r, nil); len(fz) > 0 && fz[0][0] != 'B' {
+						if _, isIdent := r.(*ast.Ident); !isIdent {
+							taint[id.Name] = src(fs, r)
+						}
+					}
+				}
+				return true
+			})
+			ast.Inspect(fd.Body, func(n ast.Node) bool {
+				c, ok := n.(*ast.CallExpr)
+				if !ok {
+					return true
+				}
+				var fname string
+				switch f := c.Fun.(type) {
+				case *ast.SelectorExpr:
+					fname = f.Sel.Name
+					fname = src(fs, f.X) + "." + fname
+				case *ast.Ident:
+					fname = f.Name
+				}
+				if fname == "" {
+					return true
+				}
+				short := fname[strings.LastIndex(fname, ".")+1:]
+				lower := strings.ToLower(fname)
+				if strings.HasPrefix(lower, "log.") || strings.HasPrefix(lower, "logger.") || strings.Contains(lower, "logging.") || strings.HasPrefix(lower, "fmt.") || strings.HasPrefix(lower, "errors.") || strings.Contains(lower, "zap.") || strings.HasPrefix(lower, "t.") || strings.Contains(lower, "slog") || strings.Contains(lower, "logrus") {
+					return true
+				}
+				switch short {
+				case "Debug", "Info", "Warn", "Warning", "Error", "Errorf", "Infof", "Warnf", "Debugf", "Fatal", "Fatalf", "Println", "Printf", "Print", "Panic":
+					// Error with args is a logger or gin c.Error? c.Error(err) handled below
+					if !(short == "Error" && strings.HasSuffix(fname, "c.Error")) {
+						// logger-style call: skip unless http.Error
+						if !(short == "Error" && strings.HasPrefix(fname, "http.")) {
+							return true
+						}
+					}
+				}
+				sinkNamed := false
+				for _, k := range []string{"json", "abortwith", "string", "write", "send", "respond", "errorresponse", "badrequest", "servererror", "encode", "http.error", "html", "data", "emit", "broadcast", "notify"} {
+					if strings.Contains(lower, k) {
+						sinkNamed = true
+					}
+				}
+				if short == "Error" && strings.HasPrefix(fname, "http.") {
+					sinkNamed = true
+				}
+				cErr := strings.HasSuffix(fname, "c.Error") || strings.HasSuffix(fname, "AbortWithError")
+				if !sinkNamed && !cErr {
+					return true
+				}
+				st := ""
+				for _, a := range c.Args {
+					s := src(fs, a)
+					if strings.HasPrefix(s, "http.Status") || (len(s) <= 3 && s != "" && s[0] >= '0' && s[0] <= '9') {
+						st = s
+					}
+				}
+				pos := fs.Position(c.Pos())
+				for _, a := range c.Args {
+					// direct findings inside arg subtree
+					for _, e := range findings(fs, a, taint) {
+						rows = append(rows, row{p, pos.Line, fd.Name.Name, fname, st, "TEXT", e})
+					}
+					// bare err arg
+					if i, ok := a.(*ast.Ident); ok && isErrName(i.Name) && i.Name != "errors" {
+						rows = append(rows, row{p, pos.Line, fd.Name.Name, fname, st, "BARE", i.Name})
+					}
+				}
+				return true
+			})
+		}
+		return nil
+	})
+	sort.Slice(rows, func(i, j int) bool {
+		if rows[i].file != rows[j].file {
+			return rows[i].file < rows[j].file
+		}
+		return rows[i].line < rows[j].line
+	})
+	for _, r := range rows {
+		fmt.Printf("%s\t%d\t%s\t%s\t%s\t%s\t%s\n", r.file, r.line, r.fn, r.sink, r.st, r.kind, r.expr)
+	}
+	for _, p := range parseFails {
+		fmt.Fprintln(os.Stderr, "PARSEFAIL", p)
+	}
+}
