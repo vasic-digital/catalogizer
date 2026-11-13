@@ -324,7 +324,8 @@ func (h *LogManagementHandler) GetLogShare(w http.ResponseWriter, r *http.Reques
 	}
 
 	if !canRead {
-		http.Error(w, "Access denied", http.StatusForbidden)
+		// CAT-LOGSHARE-TOK-1: a valid token without the read permission answers exactly like an unknown token (no oracle)
+		writeFixedLogError(w, r, errors.New("share carries no read permission"), http.StatusNotFound)
 		return
 	}
 

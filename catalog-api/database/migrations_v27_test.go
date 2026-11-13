@@ -133,7 +133,7 @@ func TestMigrationV27_UpgradesV26TablesKeepingRowsAndIsIdempotent(t *testing.T) 
 	assert.Equal(t, "nas", host, "existing data untouched")
 	var n, maxv int
 	require.NoError(t, raw.QueryRow(`SELECT COUNT(*), MAX(version) FROM migrations`).Scan(&n, &maxv))
-	assert.Equal(t, 27, maxv)
+	assert.Equal(t, 28, maxv)
 
 	// a stored approval survives the next run, which is a no-op (no new migration row, same data)
 	_, err = raw.Exec(`UPDATE storage_roots SET approved_class = 'public', approved_class_source = 'operator' WHERE id = ?`, rid)

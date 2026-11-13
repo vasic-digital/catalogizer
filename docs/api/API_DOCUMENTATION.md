@@ -3914,6 +3914,8 @@ Create a shareable link for a log collection.
 **Auth:** Required (`system.admin`)
 **Rate Limit:** Standard (2000/min)
 
+**Token (CAT-LOGSHARE-TOK-1):** the `share_token` in the response is `log_share_` followed by 43 base64url characters (256 bits from `crypto/rand`). It is a bearer secret and is shown **only in this response**: the server stores just its SHA-256, so it cannot be listed or recovered later; create a new share if it is lost. Tokens issued before this change (`log_share_<unix>_<nanos>`, derived from the clock) are deactivated by migration v28 and never validate again; re-share the collection.
+
 **Request Body:**
 
 ```json
@@ -3930,7 +3932,7 @@ Create a shareable link for a log collection.
 
 ### GET /api/v1/logs/share/:token
 
-Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 shared collection; 403 when the share lacks the `read` permission; 404 unknown, expired or revoked token; 401. No permission check beyond the JWT middleware.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 shared collection (the `share_token` field is empty: the token is never echoed); 404 for every other outcome - malformed, unknown, expired, revoked, legacy-format, or a share without the `read` permission all return the same `404 Not found` body, so the route is not an oracle; 401. No permission check beyond the JWT middleware.
 
 
 Access a shared log collection via share token.
