@@ -20,7 +20,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"catalogizer/internal/auth"
 	"catalogizer/internal/logging"
 	"catalogizer/models"
 	"catalogizer/repository"
@@ -978,20 +977,26 @@ func (s *ConversionService) GetJob(jobID int, userID int) (*models.ConversionJob
 }
 
 // authorizedJob is the ONE ownership gate for every job-by-id operation (get, download, cancel,
-// delete, retry; CAT-JOB-404-1). The owner and an administrator (manage:users) get the job;
-// anybody else gets models.ErrConversionJobNotFound, exactly what a nonexistent id yields, so
-// the API is no existence oracle for another user's job ids. A failed permission lookup also
-// reads as not found (conservative: never grant on an error).
+// delete, retry; CAT-JOB-404-1). The owner and an administrator get the job; anybody else gets
+// models.ErrConversionJobNotFound, exactly what a nonexistent id yields, so the API is no
+// existence oracle for another user's job ids. "Administrator" is the codebase definition
+// (models.PermissionSystemAdmin, honoured through Permissions.HasPermission, so the seeded Admin
+// role "*" and "system.*" qualify; same as user_handler callerIsAdmin and models.User.IsAdmin).
+// A failed permission lookup also reads as not found (never grant on an error). The permission
+// lookup runs BEFORE the job lookup and on every path, so a missing id and a foreign id do the
+// same work (no timing oracle on existence).
 func (s *ConversionService) authorizedJob(jobID int, userID int) (*models.ConversionJob, error) {
+	var isAdmin bool
+	permErr := errors.New("no auth service: administrator status unknown")
+	if s.authService != nil { // fail closed without one: only the owner gets a job
+		isAdmin, permErr = s.authService.CheckPermission(userID, models.PermissionSystemAdmin)
+	}
 	job, err := s.conversionRepo.GetJob(jobID)
 	if err != nil {
 		return nil, err
 	}
-	if job.UserID != userID {
-		isAdmin, err := s.authService.CheckPermission(userID, auth.PermissionManageUsers)
-		if err != nil || !isAdmin {
-			return nil, fmt.Errorf("%w", models.ErrConversionJobNotFound)
-		}
+	if job.UserID != userID && (permErr != nil || !isAdmin) {
+		return nil, fmt.Errorf("%w", models.ErrConversionJobNotFound)
 	}
 	return job, nil
 }

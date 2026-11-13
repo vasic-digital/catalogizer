@@ -2791,9 +2791,7 @@ Get a specific conversion job by ID.
 
 **Errors:** 400 (invalid ID), 404 (not found, or the job belongs to another user: see the ownership rule below)
 
----
-
-**Ownership rule (all five job-by-id routes: `GET /jobs/:id`, `POST /jobs/:id/cancel`, `DELETE /jobs/:id`, `POST /jobs/:id/retry`, `GET /jobs/:id/download`).** Only the job's owner and an administrator (a role holding `manage:users`, which includes the admin role) get the real answer. Any other authenticated user asking for a job id that exists receives exactly the response a nonexistent id gets: status `404`, body `{"error":"Job not found"}` and the same headers, so the API does not reveal whether another user's job id exists. A `403` is never returned for a job id. (A caller that lacks the route's own `conversion.manage` permission still gets `403 Insufficient permissions` on cancel, delete and retry; that check does not look at the job and is the same for existing and nonexistent ids.) Holding `view:media` no longer lets a user read another user's job or download its output (earlier versions allowed that on `GET /jobs/:id` and the download route).
+**Ownership rule (all five job-by-id routes: `GET /jobs/:id`, `POST /jobs/:id/cancel`, `DELETE /jobs/:id`, `POST /jobs/:id/retry`, `GET /jobs/:id/download`).** Only the job's owner and an administrator (a role holding `system.admin`, which includes the seeded Admin role `*`) get the real answer. Any other authenticated user asking for a job id that exists receives exactly the response a nonexistent id gets: status `404`, body `{"error":"Job not found"}` and the same headers, so the API does not reveal whether another user's job id exists. A `403` is never returned for a job id. (A caller that lacks the route's own `conversion.manage` permission still gets `403 Insufficient permissions` on cancel, delete and retry; that check does not look at the job and is the same for existing and nonexistent ids.) Holding `view:media` no longer lets a user read another user's job or download its output (earlier versions allowed that on `GET /jobs/:id` and the download route).
 
 ---
 
@@ -2819,7 +2817,7 @@ Cancel a running conversion job.
 
 Delete a conversion job record.
 
-**Description:** Same as cancel (the row is kept with status `cancelled`). Errors: 404 (not found or another user's job), 409 (job not pending or running). (The 409 wording for a running job is unchanged; this edit only corrects the ownership status.)
+**Description:** Removes the job row. For a completed job its output file is removed too, but only when it is a regular file inside the conversion write roots (never a symlink, never the job's own source). Pending, completed, failed and cancelled jobs can be deleted; a running job cannot (cancel it first). Errors: 404 (not found or another user's job), 409 (job is running, or its state changed while deleting).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 

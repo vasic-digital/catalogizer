@@ -3,10 +3,14 @@ package handlers
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -25,12 +29,41 @@ import (
 // and administrators get the real answer. Real gin routes, real services, real SQLite built by
 // the production migrations, real JWTs through the real Login. No mock in the path.
 
+// statement-counting wrapper around the real sqlite3 driver: every prepared statement bumps
+// job404Stmts. Exec and transactions pass straight through (migrations use multi-statement Exec).
+var (
+	job404Stmts atomic.Int64
+	job404Once  sync.Once
+)
+
+type job404Drv struct{ inner driver.Driver }
+type job404Conn struct{ driver.Conn }
+
+func (d job404Drv) Open(name string) (driver.Conn, error) {
+	c, err := d.inner.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	return &job404Conn{c}, nil
+}
+func (c *job404Conn) Prepare(q string) (driver.Stmt, error) {
+	job404Stmts.Add(1)
+	return c.Conn.Prepare(q)
+}
+func (c *job404Conn) Exec(q string, a []driver.Value) (driver.Result, error) {
+	return c.Conn.(driver.Execer).Exec(q, a) //nolint:staticcheck // the sqlite driver implements the legacy interface
+}
+
 type job404Stack struct {
 	router     *gin.Engine
 	repo       *repository.ConversionRepository
 	dataDir    string
 	ownerTok   string
 	ownerID    int
+	otherID    int
+	adminID    int
+	sqlDB      *sql.DB
+	svc        *services.ConversionService
 	otherTok   string
 	adminTok   string
 	viewerOnly string // token of a user whose role has NO conversion/manage permission but view:media
@@ -41,7 +74,14 @@ func newJob404Stack(t *testing.T) *job404Stack {
 	gin.SetMode(gin.TestMode)
 	dir := t.TempDir()
 	t.Setenv("CATALOGIZER_CONVERSION_ROOTS", dir)
-	sqlDB, err := sql.Open("sqlite3", ":memory:")
+	job404Once.Do(func() {
+		probe, perr := sql.Open("sqlite3", ":memory:")
+		require.NoError(t, perr)
+		inner := probe.Driver()
+		_ = probe.Close()
+		sql.Register("sqlite3_job404count", job404Drv{inner})
+	})
+	sqlDB, err := sql.Open("sqlite3_job404count", ":memory:")
 	require.NoError(t, err)
 	t.Cleanup(func() { _ = sqlDB.Close() })
 	sqlDB.SetMaxOpenConns(1)
@@ -69,11 +109,18 @@ func newJob404Stack(t *testing.T) *job404Stack {
 		require.NoError(t, err)
 		return res.SessionToken, id
 	}
-	s := &job404Stack{repo: repo, dataDir: dir}
+	s := &job404Stack{repo: repo, dataDir: dir, sqlDB: sqlDB, svc: svc}
+	// dummy users first so no user id coincides with the small job ids of the fixtures
+	for _, n := range []string{"dummy1", "dummy2", "dummy3", "dummy4", "dummy5"} {
+		_, derr := userRepo.Create(&models.User{Username: n, Email: n + "@example.com", PasswordHash: "x",
+			Salt: "x", RoleID: 4, IsActive: true, CreatedAt: time.Now(), UpdatedAt: time.Now()})
+		require.NoError(t, derr)
+	}
 	s.ownerTok, s.ownerID = mk("owner", 3)
-	s.otherTok, _ = mk("other", 3)
-	s.adminTok, _ = mk("admin", 1)
+	s.otherTok, s.otherID = mk("other", 3)
+	s.adminTok, s.adminID = mk("admin", 1)
 	s.viewerOnly, _ = mk("viewer", 4)
+	require.NotEqual(t, 1, s.ownerID)
 
 	h := NewConversionHandler(svc, auth)
 	r := gin.New()
@@ -95,8 +142,20 @@ func (s *job404Stack) call(method, path, tok string) *httptest.ResponseRecorder 
 	return w
 }
 
+// dummyJobs inserts n jobs owned by the dummy user 1, to move the next job id
+func (s *job404Stack) dummyJobs(t *testing.T, n int) {
+	t.Helper()
+	for i := 0; i < n; i++ {
+		_, err := s.repo.CreateJob(&models.ConversionJob{UserID: 1, SourcePath: "/x", TargetPath: "/y",
+			SourceFormat: "png", TargetFormat: "jpg", ConversionType: "image", Quality: "high",
+			Status: models.ConversionStatusPending, CreatedAt: time.Now()})
+		require.NoError(t, err)
+	}
+}
+
 func (s *job404Stack) newJob(t *testing.T, status string, withOutput bool) int {
 	t.Helper()
+	s.dummyJobs(t, 2)
 	dst := filepath.Join(s.dataDir, "out-"+status+".jpg")
 	if withOutput {
 		require.NoError(t, os.WriteFile(dst, []byte("\xff\xd8\xff\xd9"), 0o600))
@@ -136,8 +195,15 @@ func TestJob404_OwnerAndAdminGetRealAnswer(t *testing.T) {
 			t.Run(ep.name+"/"+who, func(t *testing.T) {
 				s := newJob404Stack(t)
 				id := s.newJob(t, ep.jobStatus, ep.withOutput)
+				require.NotEqual(t, id, s.ownerID, "fixture: job id must differ from the owner's user id")
 				w := s.call(ep.method, "/jobs/"+convItoa(id)+ep.suffix, tokf(s))
 				assert.Equal(t, http.StatusOK, w.Code, w.Body.String())
+				if ep.name == "GetJob" {
+					var got models.ConversionJob
+					require.NoError(t, json.Unmarshal(w.Body.Bytes(), &got), w.Body.String())
+					assert.Equal(t, id, got.ID)
+					assert.Equal(t, s.ownerID, got.UserID, "the body must be the owner's own job")
+				}
 			})
 		}
 	}
@@ -199,4 +265,97 @@ func TestJob404_WriteJobErrorMapsForbiddenTo404SameBodyAsNotFound(t *testing.T) 
 	assert.Equal(t, http.StatusNotFound, nf.Code)
 	assert.Equal(t, http.StatusNotFound, fb.Code)
 	assert.Equal(t, nf.Body.String(), fb.Body.String())
+}
+
+// F1: a user whose id equals a job id must not get that job when someone else owns it (kills
+// the `job.ID != userID` mix-up); and the owner, whose id differs from every job id, still does.
+func TestJob404_UserIdEqualToJobIdDoesNotGrantAccess(t *testing.T) {
+	s := newJob404Stack(t)
+	// make the next job id equal the other user's id; the job is owned by the owner
+	s.dummyJobs(t, s.otherID-1)
+	id := s.newJobExact(t)
+	require.Equal(t, s.otherID, id, "fixture: job id must equal the other user's id")
+	require.NotEqual(t, s.ownerID, id)
+	w := s.call("GET", "/jobs/"+convItoa(id), s.otherTok)
+	assert.Equal(t, http.StatusNotFound, w.Code, w.Body.String())
+	w = s.call("GET", "/jobs/"+convItoa(id), s.ownerTok)
+	require.Equal(t, http.StatusOK, w.Code, w.Body.String())
+	var got models.ConversionJob
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &got))
+	assert.Equal(t, id, got.ID)
+	assert.Equal(t, s.ownerID, got.UserID)
+}
+
+func (s *job404Stack) newJobExact(t *testing.T) int {
+	t.Helper()
+	id, err := s.repo.CreateJob(&models.ConversionJob{UserID: s.ownerID, SourcePath: "/x", TargetPath: "/y",
+		SourceFormat: "png", TargetFormat: "jpg", ConversionType: "image", Quality: "high",
+		Status: models.ConversionStatusPending, CreatedAt: time.Now()})
+	require.NoError(t, err)
+	return id
+}
+
+// F2: a failing permission lookup (dangling role id) for a non-owner reads exactly as not found,
+// for a foreign id and for a missing id alike; never a grant, never a different error.
+func TestJob404_FailedPermissionLookupIsIdenticalNotFound(t *testing.T) {
+	s := newJob404Stack(t)
+	id := s.newJob(t, models.ConversionStatusPending, false)
+	_, err := s.sqlDB.Exec(`UPDATE users SET role_id = 9999 WHERE id IN (?, ?)`, s.otherID, s.adminID)
+	require.NoError(t, err)
+	for name, uid := range map[string]int{"other": s.otherID, "admin": s.adminID} {
+		t.Run(name, func(t *testing.T) {
+			_, ferr := s.svc.GetJob(id, uid)
+			_, merr := s.svc.GetJob(999999, uid)
+			require.Error(t, ferr)
+			require.Error(t, merr)
+			assert.ErrorIs(t, ferr, models.ErrConversionJobNotFound)
+			assert.Equal(t, merr.Error(), ferr.Error())
+			assert.ErrorIs(t, s.svc.CancelJob(id, uid), models.ErrConversionJobNotFound)
+			assert.ErrorIs(t, s.svc.DeleteJob(id, uid), models.ErrConversionJobNotFound)
+			assert.ErrorIs(t, s.svc.RetryJob(id, uid), models.ErrConversionJobNotFound)
+		})
+	}
+	// the owner is unaffected by a failing permission lookup
+	_, err = s.sqlDB.Exec(`UPDATE users SET role_id = 9999 WHERE id = ?`, s.ownerID)
+	require.NoError(t, err)
+	got, gerr := s.svc.GetJob(id, s.ownerID)
+	require.NoError(t, gerr)
+	assert.Equal(t, id, got.ID)
+}
+
+// F4: a missing id and a foreign id do the same database work for a non-owner (no timing oracle).
+func TestJob404_MissingAndForeignIdDoEqualWork(t *testing.T) {
+	s := newJob404Stack(t)
+	id := s.newJob(t, models.ConversionStatusPending, false)
+	count := func(jobID int) int64 {
+		before := job404Stmts.Load()
+		_, err := s.svc.GetJob(jobID, s.otherID)
+		require.ErrorIs(t, err, models.ErrConversionJobNotFound)
+		return job404Stmts.Load() - before
+	}
+	foreign, missing := count(id), count(999999)
+	assert.Positive(t, foreign)
+	assert.Equal(t, foreign, missing, "statements executed: foreign id vs missing id")
+}
+
+// F5: the administrator definition is the codebase one (system.admin, honoured through
+// Permissions.HasPermission: "*" and "system.*" qualify); the legacy manage:users is not enough.
+func TestJob404_AdministratorDefinitionMatchesCodebase(t *testing.T) {
+	s := newJob404Stack(t)
+	id := s.newJob(t, models.ConversionStatusPending, false)
+	_, err := s.sqlDB.Exec(`INSERT INTO roles (id, name, description, permissions, is_system) VALUES
+		(10, 'SysAdmin', 'x', '["system.admin"]', 0),
+		(11, 'SysWild', 'x', '["system.*"]', 0),
+		(12, 'LegacyManageUsers', 'x', '["manage:users","conversion.view"]', 0)`)
+	require.NoError(t, err)
+	for role, want := range map[int]bool{1: true, 10: true, 11: true, 12: false, 3: false} {
+		_, err = s.sqlDB.Exec(`UPDATE users SET role_id = ? WHERE id = ?`, role, s.otherID)
+		require.NoError(t, err)
+		_, gerr := s.svc.GetJob(id, s.otherID)
+		if want {
+			assert.NoError(t, gerr, "role %d must be treated as administrator", role)
+		} else {
+			assert.ErrorIs(t, gerr, models.ErrConversionJobNotFound, "role %d must not be administrator", role)
+		}
+	}
 }
