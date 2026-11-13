@@ -2,53 +2,81 @@ package database
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// CAT-LOGIN-LOCK-1: migration v28 creates login_throttle through the real RunMigrations chain. The PostgreSQL branch uses the
-// same portable DDL (TEXT/INTEGER/BIGINT, IF NOT EXISTS); it is asserted in expectedPostgresSchema but not executed here (no
-// PostgreSQL instance was available to this run).
-func TestMigrationV28_LoginThrottleTable(t *testing.T) {
+// CAT-LOGSHARE-TOK-1 migration v28: legacy plaintext (time-derived) log-share tokens are retired, hashed ones are untouched,
+// and the run is idempotent.
+func TestMigrationV28_RetiresLegacyLogShareTokens(t *testing.T) {
 	db, raw := newMigratedDB(t)
 	ctx := context.Background()
 
-	var applied int
-	require.NoError(t, raw.QueryRow(`SELECT COUNT(*) FROM migrations WHERE version = 28`).Scan(&applied))
-	assert.Equal(t, 1, applied)
-
-	_, err := raw.Exec(`INSERT INTO login_throttle (subject, scope) VALUES ('u:1', 'account')`)
+	_, err := raw.Exec(`INSERT INTO log_collections (id, user_id, name) VALUES (1, 1, 'c')`)
 	require.NoError(t, err)
-	var failures int
-	var blocked, lastFail, lastOK, version int64
-	require.NoError(t, raw.QueryRow(`SELECT failures, blocked_until_ms, last_failure_ms, last_success_ms, version FROM login_throttle WHERE subject='u:1' AND scope='account'`).
-		Scan(&failures, &blocked, &lastFail, &lastOK, &version))
-	assert.Zero(t, failures+int(blocked+lastFail+lastOK+version), "every counter defaults to 0")
-	_, err = raw.Exec(`INSERT INTO login_throttle (subject, scope) VALUES ('u:1', 'account')`)
-	assert.Error(t, err, "(subject, scope) is the primary key")
-	_, err = raw.Exec(`INSERT INTO login_throttle (subject, scope) VALUES (NULL, 'account')`)
-	assert.Error(t, err, "subject is NOT NULL")
+	hash := strings.Repeat("ab", 32)
+	for _, tok := range []string{"log_share_1700000000_123456789", "log_share_1700000001_5", hash} {
+		_, err = raw.Exec(`INSERT INTO log_shares (collection_id, user_id, share_token, is_active, permissions, recipients) VALUES (1, 1, ?, 1, '["read"]', '[]')`, tok)
+		require.NoError(t, err)
+	}
 
-	// idempotent: re-running the migration body and the whole chain changes nothing and keeps the rows
-	require.NoError(t, db.createLoginThrottleTable(ctx))
-	require.NoError(t, db.RunMigrations(ctx))
-	var rows int
-	require.NoError(t, raw.QueryRow(`SELECT COUNT(*) FROM login_throttle`).Scan(&rows))
-	assert.Equal(t, 1, rows)
+	rerun := func() {
+		_, err := raw.Exec(`DELETE FROM migrations WHERE version = 28`)
+		require.NoError(t, err)
+		require.NoError(t, db.RunMigrations(ctx))
+	}
+	dump := func() map[int]struct {
+		tok    string
+		active int
+	} {
+		rows, err := raw.Query(`SELECT id, share_token, is_active FROM log_shares ORDER BY id`)
+		require.NoError(t, err)
+		defer rows.Close()
+		out := map[int]struct {
+			tok    string
+			active int
+		}{}
+		for rows.Next() {
+			var id, a int
+			var tk string
+			require.NoError(t, rows.Scan(&id, &tk, &a))
+			out[id] = struct {
+				tok    string
+				active int
+			}{tk, a}
+		}
+		return out
+	}
+
+	rerun()
+	d := dump()
+	require.Len(t, d, 3)
+	for id := 1; id <= 2; id++ {
+		assert.Equal(t, 0, d[id].active, "legacy row %d is deactivated", id)
+		assert.True(t, strings.HasPrefix(d[id].tok, "revoked-legacy-"), "legacy plaintext overwritten: %q", d[id].tok)
+		assert.NotContains(t, d[id].tok, "1700000000")
+	}
+	assert.Equal(t, hash, d[3].tok, "a hashed token is untouched")
+	assert.Equal(t, 1, d[3].active)
+
+	before := dump()
+	rerun() // idempotent
+	assert.Equal(t, before, dump())
 }
 
-// A database that stopped at v27 (the previous release) gains the table when the chain runs again.
-func TestMigrationV28_UpgradeFromV27(t *testing.T) {
-	db, raw := newMigratedDB(t)
-	ctx := context.Background()
-	_, err := raw.Exec(`DROP TABLE login_throttle`)
-	require.NoError(t, err)
-	_, err = raw.Exec(`DELETE FROM migrations WHERE version = 28`)
-	require.NoError(t, err)
-	require.NoError(t, db.RunMigrations(ctx))
-	var n int
-	require.NoError(t, raw.QueryRow(`SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='login_throttle'`).Scan(&n))
-	assert.Equal(t, 1, n)
+// The PostgreSQL statement differs only in the boolean literal, has no SQLite-only construct and no `?` marker.
+func TestMigrationV28_DialectStatements(t *testing.T) {
+	sqlite, pg := legacyLogShareTokenSQL(false), legacyLogShareTokenSQL(true)
+	assert.Contains(t, sqlite, "is_active = 0")
+	assert.Contains(t, pg, "is_active = FALSE")
+	assert.Equal(t, strings.Replace(sqlite, "is_active = 0", "is_active = FALSE", 1), pg)
+	for _, q := range []string{sqlite, pg} {
+		assert.Contains(t, q, `LIKE 'log\_share\_%' ESCAPE '\'`)
+		assert.NotContains(t, q, "?")
+		assert.NotContains(t, strings.ToUpper(q), "IFNULL")
+		assert.NotContains(t, strings.ToUpper(q), "GLOB")
+	}
 }

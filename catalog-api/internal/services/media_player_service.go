@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"crypto/rand"
 	"database/sql"
 	"fmt"
 	"path/filepath"
@@ -408,7 +409,8 @@ func (s *MediaPlayerService) GetMediaItem(ctx context.Context, id int64) (*Media
 
 // Helper functions
 func generateSessionID() string {
-	return fmt.Sprintf("session_%d", time.Now().UnixNano())
+	// CAT-LOGSHARE-TOK-1 class fix: hardening of a currently unwired service (not a live exposure): the id is looked up without an owner check, so it should be a capability: 128 random bits.
+	return "session_" + rand.Text()
 }
 
 func getFloatValue(values ...*float64) float64 {

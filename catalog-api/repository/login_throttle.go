@@ -34,7 +34,7 @@ import (
 //     buys the attacker only that one address's budget, never an unbounded one.
 //   - Unknown names are throttled exactly like known ones (subject "n:<hash>"), so the answer does not reveal whether a name
 //     exists. The cost is bounded rows: at most two per distinct name, purged after StaleAfter.
-//   - Times are unix milliseconds from an injectable clock; state lives in the login_throttle table (migration v28) so it
+//   - Times are unix milliseconds from an injectable clock; state lives in the login_throttle table (migration v29) so it
 //     survives a restart and is shared by every instance on one database.
 type LoginThrottle struct {
 	db    *database.DB

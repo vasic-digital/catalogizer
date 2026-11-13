@@ -416,7 +416,7 @@ written and the owner's sessions are not revoked. An unknown name is throttled e
 header), the username and the email of one account share one budget, and a correct password does not bypass the block, except
 that a client address which completed a login for the account in the last 30 days (at most 5 are remembered) is not stopped by the
 ACCOUNT block (it keeps its own per-address block). A successful login clears the charges. The state is in table `login_throttle`
-(migration v28), so it survives a restart and is shared by every instance on one database. An administrator ends a back-off with
+(migration v29), so it survives a restart and is shared by every instance on one database. An administrator ends a back-off with
 `POST /api/v1/users/{id}/unlock` or by setting a new password. If the store cannot be read, login answers 503 (fail closed).
 Client addresses come from `c.ClientIP()`, so `TRUSTED_PROXIES` must be set correctly behind a reverse proxy.
 
@@ -3928,6 +3928,8 @@ Create a shareable link for a log collection.
 **Auth:** Required (`system.admin`)
 **Rate Limit:** Standard (2000/min)
 
+**Token (CAT-LOGSHARE-TOK-1):** the `share_token` in the response is `log_share_` followed by 43 base64url characters (256 bits from `crypto/rand`). It is a bearer secret and is shown **only in this response**: the server stores just its SHA-256, so it cannot be listed or recovered later; create a new share if it is lost. Tokens issued before this change (`log_share_<unix>_<nanos>`, derived from the clock) are deactivated by migration v29 and never validate again; re-share the collection.
+
 **Request Body:**
 
 ```json
@@ -3944,7 +3946,7 @@ Create a shareable link for a log collection.
 
 ### GET /api/v1/logs/share/:token
 
-Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 shared collection; 403 when the share lacks the `read` permission; 404 unknown, expired or revoked token; 401. No permission check beyond the JWT middleware.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 shared collection (the `share_token` field is empty: the token is never echoed); 404 for every other outcome - malformed, unknown, expired, revoked, legacy-format, or a share without the `read` permission all return the same `404 Not found` body, so the route is not an oracle; 401. No permission check beyond the JWT middleware.
 
 
 Access a shared log collection via share token.

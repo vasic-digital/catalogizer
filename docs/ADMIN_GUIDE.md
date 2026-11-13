@@ -766,8 +766,11 @@ curl -X POST http://localhost:8080/api/v1/logs/share \
     "expires_in": "72h"
   }'
 
-# Access shared logs (no auth required, uses token)
-curl http://localhost:8080/api/v1/logs/share/{token}
+# The create response carries `share_token` (log_share_ + 43 characters). It is shown ONCE:
+# only its SHA-256 is stored, so keep it; a lost token cannot be recovered (create a new share).
+# Access shared logs (a valid login JWT is required, plus the token)
+curl http://localhost:8080/api/v1/logs/share/{token} \
+  -H "Authorization: Bearer $USER_TOKEN"
 
 # Revoke a shared log link
 curl -X DELETE http://localhost:8080/api/v1/logs/share/{id} \

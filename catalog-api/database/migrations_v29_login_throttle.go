@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// createLoginThrottleTable (migration v28, CAT-LOGIN-LOCK-1) creates login_throttle, the persisted state of the login
+// createLoginThrottleTable (migration v29, CAT-LOGIN-LOCK-1) creates login_throttle, the persisted state of the login
 // back-off (repository.LoginThrottle). One row per (subject, scope):
 //
 //	subject  "u:<user id>" for an existing account, "n:<sha256 of the lower-cased login name>" for a name that matches no
