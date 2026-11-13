@@ -2324,3 +2324,10 @@ Constitution bd0036bd (already on all mirrors and pinned). F1 closed for the 336
 - SVC-PREEXIST-1-FU1 (nit, test-instrumentation): integration tests do not check response headers (reviewer mutant MB survives there; covered by utils.TestSendErrorResponse_HeadersDoNotLeakErrorText). Optional header loop. Open.
 - SVC-PREEXIST-1-FU2 (nit): catalog-web EntityDetail test fixtures mock a removed `details: 'media item not found'` 404 shape (EntityDetail.notfound.test.tsx:7,20; EntityDetail.test.tsx:307,316); docs/API_CONTRACTS.md:119 shows a stale error envelope. Open.
 - SVC-PREEXIST-1-FU3 (info): the full ./services package needs >8 minutes under load ~37 (TestSyncService_StartSync_WithDB); full-package pass on current main UNCONFIRMED; run it in the §11.4.40 retest. Open.
+
+## Package A landed (merge of fix/pkg-a, 2026-11-13, PROVISIONAL, Opus round 2 GO-with-follow-ups) — follow-ups
+- PKGA-FU1 (minor, source-defect, API design): `SetApprovedClass` called with source `auto` or `default` overwrites an operator decision (`Set(public,operator)` then `Set(private,auto)` stores `private/auto`). No production caller yet; trap for W4. Fix: make auto/default writes conditional like AutoClassify or restrict Set to operator; add test.
+- PKGA-FU2 (important, source-defect, outside this diff): `internal/services/smb_hostvet.go` `blockedExact` lacks `fd20:ce::254` (`smbIPBlocked` returns false) while fd00:ec2::254, 100.100.100.200 and the NAT64 form are blocked; SMB vetting allows ULA. Fix: one shared metadata list (`netguard.metadataSingletons`) used by both; add test.
+- PKGA-FU3 (nit, test-instrumentation): `stripApprovedClassColumns` sets `PRAGMA foreign_keys=OFF` and never restores it (harmless with one connection).
+- PKGA-FU4 (process): PostgreSQL path of migration v27 and `RowsAffected` semantics UNCONFIRMED (no PG run); sync-class W4/W5 consumers of `approved_class` not wired yet. Pre-existing `database/migrations_v20_test.go` not gofmt-clean.
+- Operator decisions recorded 2026-11-13: metadata singletons always refused; approved-class schema confirmed as built.
