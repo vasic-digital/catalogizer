@@ -2409,3 +2409,11 @@ Constitution bd0036bd (already on all mirrors and pinned). F1 closed for the 336
 - OBF-FU-F2 (minor, process-doc): hardlinks (and bind mounts) are followed and not documented as residual limits next to the documented check-to-use race (comment :1259-1267).
 - OBF-FU-F3 (minor, test-instrumentation): reviewer mutant M1 (inside() dropping `r != ".."`) survives the author suite; adopt the "link to parent of configPath" shapes into TestOBF_FU_SymlinkShapesTable.
 - Residuals: check-to-use race (documented), absolute file_path unconfined by design, two tests skip as root; test.tmp symlink + unwritable-dir probes are unit-class.
+
+## CAT-CHPW-RL-1 landed (merge of fix/chpw-rl, 2026-11-13, PROVISIONAL, Opus round 5/R_max GO-with-follow-ups, unit-class) — status + follow-ups
+- Reviewer judgement note: F-R5-1 is a test gap adjacent to a security surface (auth-route rate-limit wiring); production code compared line-by-line against old inline routes and is correct; landed on the reviewer's GO-with-follow-ups; follow-up to be closed before v2.5.0.
+- CHPW-RL-1-F1 (minor, test-instrumentation): no test pins the rate-limit middleware chain of auth routes (change-password, /refresh, /status); reviewer mutants R3 (change-password given AuthRate) and R6 (/status given DefaultRate) survive; the AST guard checks args 0,2,3 of registerChangePasswordRoute, not arg 1.
+- CHPW-RL-1-F2 (minor, test-instrumentation): guard checks group variable name authGroup, not prefix /api/v1/auth; probe W-a (prefix moved) survives.
+- CHPW-RL-1-F3 (nit, process-doc): author's 36/42 mutant claim re-run not done by reviewer (UNCONFIRMED); Y6-Y9 log names a removed test.
+- CHPW-RL-1-F4 (nit, process-doc): stale comment main_chpw.go:19 cites TestMainGoRegistersChangePasswordOnlyViaHelper (no longer exists; now TestMainPackageChangePasswordWiringSource).
+- Residuals: counters in-memory per process (not shared across instances/restarts); routes outside registerAuthRoutes covered only by best-effort AST guards; shared session = one bucket; 25 failures/15 min per-user ceiling gives 429 to all that user's sessions; main.go was gofmt-unclean on base (not reformatted).
