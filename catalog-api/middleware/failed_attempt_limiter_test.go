@@ -146,6 +146,8 @@ func TestOtherStatusesNotCounted(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		require.Equal(t, 400, g.do("1", "a", "X-Status", "400").Code)
 		require.Equal(t, 404, g.do("1", "a", "X-Status", "404").Code)
+		require.Equal(t, 403, g.do("1", "a", "X-Status", "403").Code)
+		require.Equal(t, 500, g.do("1", "a", "X-Status", "500").Code)
 	}
 }
 
@@ -326,4 +328,72 @@ func TestIdleBucketsOfOtherUsersAreSwept(t *testing.T) {
 	g.adv(2 * time.Minute)
 	require.Equal(t, 401, g.do("999", "x").Code)
 	require.Len(t, g.lim.buckets, 2, "only the live user's session+user buckets remain")
+}
+
+// R4 boundary probe: the 5th recorded failure lands exactly when the 1st is window old.
+func TestReviewR4BoundaryNoRevokeWithFourInWindow(t *testing.T) {
+	g := newRig(5, 25, time.Minute)
+	g.fails("1", "A", 1)
+	g.adv(time.Second)
+	g.fails("1", "A", 3)
+	g.adv(time.Minute - time.Second) // first failure now exactly window old
+	require.Equal(t, 401, g.do("1", "A").Code)
+	require.Empty(t, g.limited, "only 4 failures inside the window")
+}
+
+// Sweep must never drop a lockout still inside its window.
+func TestReviewSweepKeepsActiveLockout(t *testing.T) {
+	g := newRig(5, 25, time.Minute)
+	g.lim.OnSessionLimit = nil
+	g.fails("2", "z", 1) // lastSweep = t0
+	g.adv(10 * time.Second)
+	g.fails("1", "A", 5)
+	g.adv(time.Minute - 5*time.Second)         // t0+65s: sweep due, A's failures 55s old
+	require.Equal(t, 401, g.do("3", "q").Code) // triggers sweep
+	require.Equal(t, 429, g.do("1", "A").Code, "lockout survives sweep")
+}
+
+// A failure that expires while its request is in flight must not count as the 5th.
+func TestReviewExpiryDuringRequestDoesNotRevoke(t *testing.T) {
+	g := newRig(5, 25, time.Minute)
+	g.fails("1", "A", 1)
+	g.adv(time.Second)
+	g.fails("1", "A", 3)
+	g.adv(time.Minute - time.Second - time.Nanosecond) // first failure 1ns short of expiry
+	g.block = make(chan struct{})
+	done := make(chan int)
+	go func() { done <- g.do("1", "A", "X-Block", "1").Code }()
+	for {
+		g.lim.mu.Lock()
+		b := g.lim.buckets["s:1:A"]
+		inflight := b != nil && b.inflight == 1
+		g.lim.mu.Unlock()
+		if inflight {
+			break
+		}
+		time.Sleep(time.Millisecond)
+	}
+	g.lim.mu.Lock()
+	g.adv(2 * time.Nanosecond)
+	g.lim.mu.Unlock()
+	close(g.block)
+	require.Equal(t, 401, <-done)
+	require.Empty(t, g.limited, "only 4 failures inside the window at release time")
+}
+
+// Sweep is throttled to once per window: a bucket that expires between two
+// sweeps stays until the next due one (performance-only behaviour, documented).
+func TestSweepRunsAtMostOncePerWindow(t *testing.T) {
+	g := newRig(5, 25, time.Minute)
+	require.Equal(t, 401, g.do("1", "p").Code) // first acquire: sweep, lastSweep = t0
+	g.adv(10 * time.Second)
+	g.fails("5", "D", 1) // D fails at t0+10s, expires t0+70s
+	g.adv(50 * time.Second)
+	require.Equal(t, 401, g.do("1", "p").Code) // t0+60s: sweep due, D (50s old) kept
+	g.adv(30 * time.Second)                    // t0+90s: D expired, next sweep due t0+120s
+	require.Equal(t, 401, g.do("1", "p").Code) // throttled: no sweep
+	require.Contains(t, g.lim.buckets, "s:5:D", "expired bucket stays until the next due sweep")
+	g.adv(31 * time.Second) // t0+121s: due
+	require.Equal(t, 401, g.do("1", "p").Code)
+	require.NotContains(t, g.lim.buckets, "s:5:D")
 }

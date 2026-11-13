@@ -62,12 +62,8 @@ func sessKey(uid int, sid string) string {
 	return "s:" + strconv.Itoa(uid) + ":" + sid
 }
 
-// bucket returns the pruned bucket for key (nil when empty). Caller holds mu.
-func (l *FailedAttemptLimiter) bucket(key string, now time.Time) *attemptBucket {
-	b := l.buckets[key]
-	if b == nil {
-		return nil
-	}
+// pruneFailures drops the failures that are a full window old or older.
+func (l *FailedAttemptLimiter) pruneFailures(b *attemptBucket, now time.Time) []time.Time {
 	kept := b.failures[:0]
 	for _, t := range b.failures {
 		if now.Sub(t) < l.window {
@@ -75,6 +71,16 @@ func (l *FailedAttemptLimiter) bucket(key string, now time.Time) *attemptBucket 
 		}
 	}
 	b.failures = kept
+	return kept
+}
+
+// bucket returns the pruned bucket for key (nil when empty). Caller holds mu.
+func (l *FailedAttemptLimiter) bucket(key string, now time.Time) *attemptBucket {
+	b := l.buckets[key]
+	if b == nil {
+		return nil
+	}
+	kept := l.pruneFailures(b, now)
 	if len(kept) == 0 && b.inflight == 0 {
 		delete(l.buckets, key)
 		return nil
@@ -151,6 +157,8 @@ func (l *FailedAttemptLimiter) release(uid int, sid string, failed, ok bool) {
 		if b.inflight--; b.inflight < 0 {
 			b.inflight = 0
 		}
+		// failures that expired while the request was in flight must not count
+		l.pruneFailures(b, now)
 		switch {
 		case failed:
 			b.failures = append(b.failures, now)
