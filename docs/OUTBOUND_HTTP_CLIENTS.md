@@ -97,3 +97,22 @@ IPv4-mapped, IPv4-compatible (`::/96`), SIIT (`::ffff:0:a.b.c.d`), the well-know
   tunnelled host, not a literal IPv4 destination of this server.
 
 Both are pinned by tests (`TestS1A3_2_*`, `TestS1A3_3_*` in `catalog-api/internal/netguard/s1a3_test.go`).
+
+## Stored approval per endpoint (CAT-SECQ1-B / W3)
+
+Migration v27 adds `approved_class` (`private` default, or `public`) and `approved_class_source` (`default`, `auto`,
+`operator`) to `storage_roots` and `sync_endpoints`. `private` is the behaviour from before SECQ-1 (private and public
+addresses reachable); `public` allows public addresses only. `never` is not storable. Every row that existed before the
+migration is `private/default`; the migration does not resolve names or read the machine's interfaces.
+
+- `netguard.ClassifyHost` / `ClassifyEndpoint` derive the class from a host (IP literal or DNS name, or the host of a URL):
+  all addresses public gives `public`, any private address gives `private`, any never-class address (loopback, link-local,
+  metadata, the server's own address unless allow-listed), an empty host, a non-ASCII or numeric-spelling host, or a name
+  that does not resolve is an error and nothing is stored.
+- `database.DB.GetApprovedClass` / `SetApprovedClass` / `AutoClassifyApprovedClass` read, write and classify the stored
+  value; an `operator` approval is never overwritten by automatic classification.
+- Not wired yet: the create/update handlers (W4, CAT-SECQ1-C) that call the classifier, ask for confirmation of `private`
+  and require step-up to widen, and the clients (`OperatorTransportFor`) that consume the stored class (W4/W5).
+  Until then the stored value is not enforced anywhere; the first-connection pin remains the only per-root protection.
+- The PostgreSQL branch of the migration is exercised by `TestRunMigrationsPostgresRealContainerZeroErrors`, which starts
+  its own throwaway container and honestly SKIPs without podman or the image.
