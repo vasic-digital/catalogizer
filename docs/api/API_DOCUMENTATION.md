@@ -3223,7 +3223,7 @@ Get a specific user by ID.
 
 Update a user's information.
 
-**Description:** Updates user fields. Users can update their own profile without a permission, but `role_id` and `is_active` are ignored on a self-update (also for an admin). Updating another user needs `user.update`; `is_active` is applied only when the caller also has `user.manage`. `role_id` is validated and permission-checked (`user.manage`, and `system.admin` to assign an admin role) saved and echoed in the response; changing `role_id` or `is_active` revokes the target user's sessions (the old token stops working). See the permission table above.
+**Description:** Updates user fields. Users can update their own profile without a permission, but `role_id` and `is_active` are ignored on a self-update (also for an admin). Updating another user needs `user.update`; `is_active` is applied only when the caller also has `user.manage`. `role_id` is validated and permission-checked (`user.manage`, and `system.admin` to assign an admin role) saved and echoed in the response; changing `role_id` or `is_active` revokes the target user's sessions (the old token stops working). See the permission table above. Note for clients and operators (CAT-OPA-5): the role check runs on every request that carries `role_id`, including a client re-sending the target's unchanged `role_id`; a manager whose own permissions do not cover that role (the standard user role included since CAT-OPDEC-A) therefore gets 403 for the whole update.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 

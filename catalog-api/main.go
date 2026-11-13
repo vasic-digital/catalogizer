@@ -623,6 +623,10 @@ func main() {
 	ReadTimeout:  3 * time.Second,
 	WriteTimeout: 3 * time.Second,
 	PoolTimeout:  4 * time.Second,
+	// N2: without this the 500 ms context in the rate limiter does not bound a
+	// black-holed call (ReadTimeout 3s governs); verified by
+	// TestN2_ContextTimeoutEnabledBoundsBlackHoleCall.
+	ContextTimeoutEnabled: true,
 	})
 
 	// Test Redis connection
@@ -977,12 +981,9 @@ func main() {
 	// Operator decision 2026-11-12: a Redis outage after startup falls back to
 	// the in-memory tiers (600/2000 per minute), not 503. /login and /register
 	// keep using the in-memory loginRateLimiter.
-	authRedisCfg := root_middleware.AuthRedisRateLimiterConfig(redisClient)
-	authRedisCfg.Fallback = authRateLimiter
-	defaultRedisCfg := root_middleware.DefaultRedisRateLimiterConfig(redisClient)
-	defaultRedisCfg.Fallback = defaultRateLimiter
-	authRateLimiter = root_middleware.RedisRateLimit(authRedisCfg)
-	defaultRateLimiter = root_middleware.RedisRateLimit(defaultRedisCfg)
+	// root_middleware.NewRedisTierLimiters wires each tier to ITS OWN in-memory
+	// fallback (tested in middleware, CAT-OPA-1).
+	authRateLimiter, defaultRateLimiter = root_middleware.NewRedisTierLimiters(redisClient, authRateLimiter, defaultRateLimiter)
 	} else if redisClient != nil {
 	logger.Info("Redis available but REDIS_RATE_LIMIT not set — using in-memory rate limiting")
 	}
