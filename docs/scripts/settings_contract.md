@@ -19,10 +19,10 @@ and the FTP and WebDAV `path` was never forwarded.
 
 | Protocol | Keys |
 |---|---|
-| local | `base_path` |
+| local | `base_path` `allow_symlink_escape`(bool) |
 | smb | `host` `port`(int) `share` `username` `password` `domain` |
 | ftp | `host` `port`(int) `username` `password` `path` |
-| nfs | `host` `path` `mount_point` `options` |
+| nfs | `host` `path` `mount_point` `options` `allow_symlink_escape`(bool) |
 | webdav | `url` `username` `password` `path` |
 | registered (sftp, ftps, nfs3, ...) | whatever its `ProtocolSpec.Keys` declares; the shared names are `host port path username credential_ref tls_mode host_key_fingerprint cert_sha256` |
 
@@ -68,3 +68,11 @@ each is a one-liner for whoever adds the dependency; no FTPS client exists yet (
 - **Options are never dropped silently.** For every non-NFS protocol `options` must be a JSON object whose keys are in the closed set the protocol consumes (`credential_ref`, `tls_mode`, `host_key_fingerprint`, `cert_sha256` as its schema lists them, plus `identity_index` for smb) with string values; unparsable text, a non-string pin, a misspelt key, or a pin the protocol cannot honour is an ERROR. `SettingsFromRoot` returns `(settings, error)`; a scan of such a root fails with the reason instead of connecting without the pin.
 - **One confinement rule** (`filesystem.ConfinePath`): every client's path resolver cleans a path as if rooted, so a `..` SEGMENT cannot leave the root (FTP `/../../etc` under `/srv/movies` is `/srv/movies/etc`), and a NAME that contains `..` ("Wait.. Live") is kept. `UniversalScanner.QueueScan` and `GenericScanner.ScanPath` confine the requested scan path too.
 - **Credential seams:** `models.StorageRoot.MarshalJSON` (no password, url userinfo masked); scan reasons AND log lines go through `scrubSecrets` (`errField`), whose secrets include the env-resolved SMB identity password and every URL spelling of a secret; the host-budget key is `net.JoinHostPort`.
+
+## Symlink confinement (local and nfs roots; CAT-FS-SYMLINK-1)
+
+`ConfinePath` is lexical: it keeps a `..` segment from leaving the root. On top of that every file operation of the `local` and `nfs` clients (read, open, stat, list, exists, write, create-directory, copy source and destination, delete file, delete directory; move on darwin) resolves symbolic links by real path (`confineReal`, `filesystem/confine_real.go`) and refuses a path whose real location is outside the real root with `ErrPathEscapesRoot`. Covered: links to files or directories outside, relative links that climb out (`../x`), a link in the middle of a path, a create-new path whose parent directory is a link out, and dangling links (judged by where they point: a dangling link into the root creates its target inside the root, one pointing outside is refused). A link loop (more than 40 links) is refused with `ErrSymlinkLoop`. Links that stay inside the root keep working. Deleting a link removes the link itself and never its target. Hard links are not inspected (operator decision: no `st_nlink > 1` refusal). `CopyFile` is one shared helper on every `local` and `nfs` client: source opened first and required to be a regular file (`ErrCopySourceNotRegular`), a destination that is a directory (`ErrCopyDestIsDirectory`) or the same file as the source (`ErrCopySameFile`, covering aliases, links and hard links) is refused, and the data is written to a temp file next to the destination and renamed in, with the source's permission bits (details: `docs/security/PATH_CONFINEMENT.md`, "Copy semantics").
+
+Per-root opt-out: the boolean setting `allow_symlink_escape` (default `false` = confinement ON; a non-boolean value is rejected by `ValidateSettings`) is read ONLY by `DefaultClientFactory.CreateClient` from the `Settings` map of a `StorageConfig` built in code. It is NOT reachable from a deployment today: the database `StorageRoot` row has no column for it, `SettingsFromRoot` never emits it (for a `local` root the allowed `options` key set is EMPTY (its schema consumes only `base_path` and `allow_symlink_escape`, so any option key is rejected), and `nfs` `options` are mount options), and the configuration file has no storage-roots parser. So in a running server every `local` and `nfs` root is confined. Making the opt-out reachable needs a schema or config-parser change (a separate item).
+
+Limits (honest): the check and the following open/create/remove are separate system calls, so a link swapped in between (check-to-use race) is not prevented; it needs a party that can write inside the root while it is used. A bind mount inside the root (a directory of another file system mounted below it) is not a symbolic link and is not detected: the real path stays below the root while the data lives elsewhere (residual, needs mount-table inspection). The `smb`, `ftp`, `webdav`, `s3` and `nfs3` clients address a remote server by path and are not affected.

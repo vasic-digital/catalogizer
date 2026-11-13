@@ -20,6 +20,9 @@ type NFSConfig struct {
 	Path       string `json:"path"`        // Export path on NFS server
 	MountPoint string `json:"mount_point"` // Local mount point
 	Options    string `json:"options"`     // Mount options
+	// AllowSymlinkEscape switches the symlink confinement OFF for this root (settings key allow_symlink_escape). Default false: a symbolic
+	// link on the mount that resolves outside the mount point is refused with ErrPathEscapesRoot (CAT-FS-SYMLINK-1).
+	AllowSymlinkEscape bool `json:"allow_symlink_escape"`
 }
 
 // NFSClient for macOS using mount command and basic file operations
@@ -33,6 +36,9 @@ type NFSClient struct {
 func NewNFSClient(config NFSConfig) (*NFSClient, error) {
 	if config.MountPoint == "" {
 		return nil, fmt.Errorf("mount point is required")
+	}
+	if abs, err := filepath.Abs(config.MountPoint); err == nil { // a relative mount point would fail every confined operation (round 1 F5)
+		config.MountPoint = abs
 	}
 
 	// Create mount point directory if it doesn't exist
@@ -152,7 +158,10 @@ func (c *NFSClient) ListDirectory(ctx context.Context, path string) ([]*FileInfo
 		return nil, fmt.Errorf("not connected")
 	}
 
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return nil, rerr
+	}
 
 	entries, err := os.ReadDir(fullPath)
 	if err != nil {
@@ -184,7 +193,10 @@ func (c *NFSClient) GetFileInfo(ctx context.Context, path string) (*FileInfo, er
 		return nil, fmt.Errorf("not connected")
 	}
 
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return nil, rerr
+	}
 
 	info, err := os.Stat(fullPath)
 	if err != nil {
@@ -205,7 +217,10 @@ func (c *NFSClient) CreateDirectory(ctx context.Context, path string) error {
 		return fmt.Errorf("not connected")
 	}
 
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return rerr
+	}
 	return os.MkdirAll(fullPath, 0755)
 }
 
@@ -214,7 +229,13 @@ func (c *NFSClient) DeleteDirectory(ctx context.Context, path string) error {
 		return fmt.Errorf("not connected")
 	}
 
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfinedNoFollow(path)
+	if rerr != nil {
+		return rerr
+	}
+	if refusesRootDelete(c.mountPoint, fullPath) {
+		return ErrRefuseDeleteRoot
+	}
 	return os.RemoveAll(fullPath)
 }
 
@@ -223,7 +244,10 @@ func (c *NFSClient) DeleteFile(ctx context.Context, path string) error {
 		return fmt.Errorf("not connected")
 	}
 
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfinedNoFollow(path)
+	if rerr != nil {
+		return rerr
+	}
 	return os.Remove(fullPath)
 }
 
@@ -232,17 +256,8 @@ func (c *NFSClient) CopyFile(ctx context.Context, src, dst string) error {
 		return fmt.Errorf("not connected")
 	}
 
-	srcPath := c.resolvePath(src)
-	dstPath := c.resolvePath(dst)
-
-	// Simple file copy using system commands for better performance
-	cmd := exec.CommandContext(ctx, "cp", srcPath, dstPath)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("copy failed: %w, output: %s", err, string(output))
-	}
-
-	return nil
+	// No external cp: "cp src dir" writes dir/<base(src)> through an entry the check never saw (round 2, R2-1).
+	return copyConfinedFile(ctx, c.mountPoint, c.resolvePath(src), c.resolvePath(dst), src, dst, c.config.AllowSymlinkEscape)
 }
 
 func (c *NFSClient) MoveFile(ctx context.Context, src, dst string) error {
@@ -250,8 +265,12 @@ func (c *NFSClient) MoveFile(ctx context.Context, src, dst string) error {
 		return fmt.Errorf("not connected")
 	}
 
-	srcPath := c.resolvePath(src)
-	dstPath := c.resolvePath(dst)
+	// src is not followed at its last component (a link is moved as a link); dst IS followed, because mv into an in-root link to a directory
+	// writes through it (round 1 F2). resolveMovePair is shared with the linux-runnable test.
+	srcPath, dstPath, rerr := resolveMovePair(c.mountPoint, c.resolvePath(src), c.resolvePath(dst), src, dst, c.config.AllowSymlinkEscape)
+	if rerr != nil {
+		return rerr
+	}
 
 	// Use system move command
 	cmd := exec.CommandContext(ctx, "mv", srcPath, dstPath)
@@ -268,7 +287,10 @@ func (c *NFSClient) ReadFile(ctx context.Context, path string) (io.ReadCloser, e
 		return nil, fmt.Errorf("not connected")
 	}
 
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return nil, rerr
+	}
 	return os.Open(fullPath)
 }
 
@@ -277,7 +299,10 @@ func (c *NFSClient) WriteFile(ctx context.Context, path string, data io.Reader) 
 		return fmt.Errorf("not connected")
 	}
 
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return rerr
+	}
 	file, err := os.Create(fullPath)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
@@ -293,7 +318,10 @@ func (c *NFSClient) FileExists(ctx context.Context, path string) (bool, error) {
 		return false, fmt.Errorf("not connected")
 	}
 
-	fullPath := c.resolvePath(path)
+	fullPath, rerr := c.resolveConfined(path)
+	if rerr != nil {
+		return false, rerr
+	}
 	_, err := os.Stat(fullPath)
 	if err == nil {
 		return true, nil
@@ -326,4 +354,14 @@ func (c *NFSClient) GetConfig() interface{} {
 // resolvePath resolves a path within the mount point; ConfinePath: a ".." segment cannot leave the mount (WF22 N7 class A).
 func (c *NFSClient) resolvePath(path string) string {
 	return filepath.Join(c.mountPoint, filepath.FromSlash(ConfinePath(path)))
+}
+
+// resolveConfined is resolvePath plus the real-path check (confineReal): a link on the mount that leaves the mount point is refused.
+func (c *NFSClient) resolveConfined(path string) (string, error) {
+	return confineReal(c.mountPoint, c.resolvePath(path), path, c.config.AllowSymlinkEscape, true)
+}
+
+// resolveConfinedNoFollow is resolveConfined for delete/rename sinks: the last component (a link) is acted on itself, not followed.
+func (c *NFSClient) resolveConfinedNoFollow(path string) (string, error) {
+	return confineReal(c.mountPoint, c.resolvePath(path), path, c.config.AllowSymlinkEscape, false)
 }

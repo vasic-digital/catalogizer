@@ -258,7 +258,7 @@ with the same grep finding the 3 real callers of `NewSyncService` (positive cont
 | conversion readers / writers | `source_path`, `target_path` | CLOSED: both `ConfineDataFile` (round 5) |
 | routed `POST /copy/local` (`internal/handlers/copy.go`) | `destination_path` | CLOSED round 5: `ContainedJoin` + `ConfineDataFile` under the temp dir |
 | `asset_resolvers` cover lookup | media-item hint | SCOPED OUT: `Confine(Dir(hint))` directory argument, fixed cover file names, `Lstat` regular-file check; no hard-link check (read only) |
-| filesystem `local_client` / `nfs_client` | admin-configured storage base | FOLLOW-UP: `resolvePath` is lexical (`ConfinePath`); symlinks inside the base are followed (operator decision needed) |
+| filesystem `local_client` / `nfs_client` | admin-configured storage base | CLOSED (CAT-FS-SYMLINK-1): every sink goes through `confineReal` (real-path check); residual: check-to-use race and bind mounts |
 | SMB `DownloadFile` | temp file, routed copy handler | Callers pass a temp path or the confined copy destination |
 | `WebDAVClient.SyncDirectory` / `UploadBatch` / `DownloadBatch`, `calculateChecksum`, `ConfigurationWizardService`, `NewEnhancedChangeWatcher`, `MediaPlayerHandlers`, `handlers/copy.go` (unrouted `CopyHandler`) | various | UNREACHABLE: no production caller (kept per §11.4.124, not deleted) |
 | config, firebase, encryption, provisioner, admin backup dir, `configPath`, `LogDirectory`, `statsPath`, cover-art `cacheDir`, temp files | server configuration | NOT request-supplied |
@@ -306,7 +306,7 @@ Rows are grouped by class; every hit belongs to exactly one row.
 | `internal/services/smb.go:213` `DownloadFile` `MkdirAll` | callers pass a temp file or the confined copy destination | CONFINED by caller |
 | `internal/services/cover_art_service.go:758,763,855,1151,1155` | `cacheDir` + generated ids | NOT request-supplied |
 | `internal/services/cover_art_service.go:441` `ProcessImage` | caller-supplied | UNREACHABLE: no production caller |
-| `filesystem/local_client.go` (7), `filesystem/nfs_client.go` (8), `filesystem/nfs_client_darwin.go` (5) | admin-configured storage base | FOLLOW-UP (unchanged): lexical `ConfinePath` |
+| `filesystem/local_client.go` (7), `filesystem/nfs_client.go` (8), `filesystem/nfs_client_darwin.go` (5) | admin-configured storage base | CLOSED (CAT-FS-SYMLINK-1): `confineReal` on every file sink; residual: check-to-use race, bind mounts |
 | `handlers/copy.go` (4) | unrouted `CopyHandler` | UNREACHABLE |
 | `services/configuration_wizard_service.go` (11) | wizard | UNREACHABLE |
 | `database/encryption.go` (33) | backup/restore/rekey paths | admin/operator-supplied (CLI and admin backup dir), NOT request-supplied |
@@ -330,7 +330,7 @@ over non-test `.go` files under `catalog-api` (counts and needles: scratchpad ev
 |---|---|---|
 | `services/conversion_service.go` 7 `exec.Command` (ffmpeg x2, ebook-convert, pandoc, libreoffice, convert x2) | conversion source / target | FIXED round 7 (S2), see above; the source is confined by `confineConversionPaths` |
 | `internal/services/cover_art_service.go:965,996,1389` (ffprobe, ffmpeg) | media item path / `cacheDir` output | read of a catalogued media path; output in `cacheDir` + generated id, NOT request-supplied |
-| `filesystem/nfs_client_darwin.go` (5: mount, umount x2, cp, mv) | admin-configured storage base | FOLLOW-UP (unchanged, same class as the write rows) |
+| `filesystem/nfs_client_darwin.go` (5: mount, umount x2, cp, mv) | admin-configured storage base | CLOSED for cp and mv (`confineReal`, mv destination followed); mount/umount take the configured mount point, not a request path |
 | `internal/infra/provisioner.go:168` `getent hosts` | configured host name | NOT a path |
 | sync walkers and readers (`services/sync_service.go`, 16 at commit `8e77e247`) | `local_path`, `sync_settings` dirs | CONFINED per file (rounds 4-6); symlinked ROOTS resolved since round 7 (S1) |
 | `services/conversion_service.go` reads (`Open(SourcePath)`, `ReadFile(tempTextFile)`, `Lstat` x2) | conversion source / derived temp | CONFINED (`confineConversionPaths`, `createConversionOutput`) |
@@ -405,3 +405,31 @@ copy+delete, `downloadFromWebDAV`, `uploadToWebDAV` (`scanLocalFiles`), S3/GCS `
 (the text writer; the external-tool outputs go through a private directory since round 7, but `Dir(target)` itself
 can still be swapped), `LocalScanResolver` open, admin restore. Consolidation of `pathguard` into `internal/pathsafe`
 is a separate later step.
+
+## External-command and implicit-destination inventory (CAT-FS-SYMLINK-1 review round 2)
+
+Class closure (11.4.276(C)). Every `exec.Command*` in `catalog-api/filesystem/` (non-test), measured with `grep -n "exec\." filesystem/*.go`, and its confinement:
+
+| Sink | File | Path source | Confinement |
+|---|---|---|---|
+| `mount` | `nfs_client_darwin.go` Connect | configured host, export and mount point (admin config), not request-fed | none needed: no request path; the mount point is the root itself |
+| `umount`, `umount -f` | `nfs_client_darwin.go` Disconnect | configured mount point | none needed: same |
+| `cp` (CopyFile) | `nfs_client_darwin.go` | request-fed src and dst | REMOVED in round 2. `cp src dir` writes `dir/<base(src)>` through an entry the check never saw (reproduced with GNU cp: an outside file changed through an in-root link named like the source). Replaced by `copyConfinedFile` (no external command): src and dst confined with `confineReal` (followed), an existing-directory dst refused (`ErrCopyDestIsDirectory`), the file written to a temp file and renamed into place (round 3, see "Copy semantics" below; round 2 used `os.Create`, which truncated the destination before the source was read) |
+| `mv` (MoveFile) | `nfs_client_darwin.go` | request-fed src and dst | `resolveMovePair` (src not followed, dst followed). Implicit destination `dir/<base(src)>` when dst is a directory: rename(2) replaces a link at that name and does not write through it, so it cannot leave the root; a non-empty directory of that name makes mv fail |
+
+No other file in `filesystem/` shells out (ftp, smb, webdav, s3, nfs3 and the linux and windows NFS clients address a server or use Go file APIs on the exact checked path), so there is no other implicit-destination sink. A new `exec.Command` with a request-fed path in this package must be added to this table with its confinement. Class tests: `TestCATFSSYMLINK1_R2_*` in `catalog-api/filesystem/confine_real_round2_test.go`. A plain-directory destination of a copy is refused on every platform with `ErrCopyDestIsDirectory` (round 3: the linux clients now share the helper; before, they failed with the OS error "is a directory" from `os.Create`). Not exercised: darwin and BSD `cp`/`mv` were never run (UNCONFIRMED); the Linux evidence is GNU cp.
+
+### Copy semantics (CAT-FS-SYMLINK-1 round 3, R3-1)
+
+`CopyFile` of the linux `LocalClient`, the linux `NFSClient` and the darwin `NFSClient` is ONE helper, `copyConfinedFile` (`filesystem/confine_copy.go`, no external command). Round 2 left the linux clients and the darwin helper truncating the destination (`os.Create`) before the source was read, so a copy onto the same file (same path, an alias through an in-root directory link, an in-root file link to the source, a hard link) returned success and left an EMPTY file; `NFSProtocolHandler.moveFile` (copy, then delete the old path) reaches this. Behaviour now:
+
+- the context is checked first (a cancelled context creates nothing) and between 1 MiB chunks;
+- the source is confined (followed), stat'ed and opened first; a source that is not a regular file (directory, FIFO, device, in-root link to a directory) is refused with `ErrCopySourceNotRegular`, nothing created or truncated;
+- an existing destination that is a directory is refused with `ErrCopyDestIsDirectory`; one that is the same file as the source (`os.SameFile`, which also catches links and hard links) with `ErrCopySameFile`;
+- the data goes to a temp file `.copy-*.tmp` (O_EXCL) created in the directory of the destination's REAL target, gets the source's permission bits (not 0666 minus umask), and is renamed into place; a failed, cancelled or partial copy removes the temp file and never touches an existing destination; the destination appears atomically;
+- a destination that is an in-root link is resolved and its real target replaced (write-through, as before; the link survives; the target is inside the root unless the per-root opt-out is on); `MkdirAll` (0755) of the destination's directory is kept, as the linux clients always did;
+- a source whose last component is an escaping or dangling-outside link is refused with `ErrPathEscapesRoot` and no content is copied in (tests `TestCATFSSYMLINK1_R3_*`).
+
+Controls pinned in tests (skipped when the tool is absent): GNU `cp` refuses the same file ("are the same file"); GNU `mv -T` replaces a link in the destination directory and leaves the outside file untouched (the premise for the darwin `mv` row above).
+
+Residuals (stated): the check-to-use race is unchanged; a `.copy-*.tmp` file is visible in the destination directory while a copy runs and after a crash; hard links are still not refused as such (only as the same file); BUILD: `GOOS=freebsd go build ./filesystem/` fails for a reason that predates this item (no freebsd NFS client file), a successor item, not changed here; darwin and BSD were never run (UNCONFIRMED).

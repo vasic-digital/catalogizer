@@ -7,12 +7,14 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 // LocalConfig contains local filesystem configuration
 type LocalConfig struct {
 	BasePath string `json:"base_path"` // Base directory path
+	// AllowSymlinkEscape switches the symlink confinement OFF for this root (settings key allow_symlink_escape). Default false: a symbolic
+	// link inside the root that resolves outside it is refused with ErrPathEscapesRoot. In-root links that stay inside always work.
+	AllowSymlinkEscape bool `json:"allow_symlink_escape"`
 }
 
 // LocalClient implements FileSystemClient for local filesystem
@@ -24,9 +26,15 @@ type LocalClient struct {
 
 // NewLocalClient creates a new local filesystem client
 func NewLocalClient(config *LocalConfig) *LocalClient {
+	base := config.BasePath
+	if base != "" {
+		if abs, err := filepath.Abs(base); err == nil { // a relative base would fail every confined operation (round 1 F5)
+			base = abs
+		}
+	}
 	return &LocalClient{
 		config:    config,
-		basePath:  config.BasePath,
+		basePath:  base,
 		connected: false,
 	}
 }
@@ -71,45 +79,18 @@ func (c *LocalClient) resolvePath(path string) string {
 	return filepath.Join(c.basePath, filepath.FromSlash(ConfinePath(filepath.ToSlash(path))))
 }
 
-// ErrPathEscapesRoot is returned when a path, after symbolic links are resolved, lies outside the storage root.
 // ErrRefuseDeleteRoot is returned when a delete would remove the storage root itself.
 var ErrRefuseDeleteRoot = errors.New("refusing to delete the storage root")
 
-var ErrPathEscapesRoot = errors.New("path resolves outside the storage root")
-
-// resolveConfined is resolvePath plus the symlink check: ConfinePath is lexical, so a link inside the root that points outside
-// would otherwise be followed. The deepest existing ancestor of the target is resolved with EvalSymlinks and must stay inside the
-// resolved base directory (a path that does not exist yet is judged by its existing parent, so WriteFile/CreateDirectory still work).
+// resolveConfined is resolvePath plus the real-path check (confineReal, CAT-FS-SYMLINK-1): ConfinePath is lexical, so a link inside the root
+// that points outside would otherwise be followed. Every sink uses it; the leaf of a delete is not followed (the link itself is removed).
 func (c *LocalClient) resolveConfined(path string) (string, error) {
-	full := c.resolvePath(path)
-	base, err := filepath.EvalSymlinks(c.basePath)
-	if err != nil {
-		return "", fmt.Errorf("resolve base path %s: %w", c.basePath, err)
-	}
-	probe := full
-	for {
-		real, err := filepath.EvalSymlinks(probe)
-		if err == nil {
-			if !withinDir(base, real) {
-				return "", fmt.Errorf("%w: %s", ErrPathEscapesRoot, path)
-			}
-			return full, nil
-		}
-		if !errors.Is(err, os.ErrNotExist) {
-			return "", err
-		}
-		parent := filepath.Dir(probe)
-		if parent == probe {
-			return full, nil
-		}
-		probe = parent
-	}
+	return confineReal(c.basePath, c.resolvePath(path), path, c.config.AllowSymlinkEscape, true)
 }
 
-// withinDir reports whether target is dir or lies below it (both already symlink-resolved).
-func withinDir(dir, target string) bool {
-	rel, err := filepath.Rel(dir, target)
-	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
+// resolveConfinedNoFollow is resolveConfined for a sink that acts on the directory entry itself (delete): the last component is not followed.
+func (c *LocalClient) resolveConfinedNoFollow(path string) (string, error) {
+	return confineReal(c.basePath, c.resolvePath(path), path, c.config.AllowSymlinkEscape, false)
 }
 
 // ReadFile reads a file from the local filesystem
@@ -277,7 +258,7 @@ func (c *LocalClient) DeleteDirectory(ctx context.Context, path string) error {
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	fullPath, rerr := c.resolveConfined(path)
+	fullPath, rerr := c.resolveConfinedNoFollow(path)
 	if rerr != nil {
 		return rerr
 	}
@@ -298,7 +279,7 @@ func (c *LocalClient) DeleteFile(ctx context.Context, path string) error {
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	fullPath, rerr := c.resolveConfined(path)
+	fullPath, rerr := c.resolveConfinedNoFollow(path)
 	if rerr != nil {
 		return rerr
 	}
@@ -314,42 +295,9 @@ func (c *LocalClient) CopyFile(ctx context.Context, srcPath, dstPath string) err
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	srcFullPath, rerr := c.resolveConfined(srcPath)
-	if rerr != nil {
-		return rerr
-	}
-	dstFullPath, rerr := c.resolveConfined(dstPath)
-	if rerr != nil {
-		return rerr
-	}
-
-	// Ensure destination directory exists
-	dstDir := filepath.Dir(dstFullPath)
-	if err := os.MkdirAll(dstDir, 0755); err != nil {
-		return fmt.Errorf("failed to create destination directory %s: %w", dstDir, err)
-	}
-
-	// Open source file
-	srcFile, err := os.Open(srcFullPath)
-	if err != nil {
-		return fmt.Errorf("failed to open source file %s: %w", srcFullPath, err)
-	}
-	defer srcFile.Close()
-
-	// Create destination file
-	dstFile, err := os.Create(dstFullPath)
-	if err != nil {
-		return fmt.Errorf("failed to create destination file %s: %w", dstFullPath, err)
-	}
-	defer dstFile.Close()
-
-	// Copy data
-	_, err = io.Copy(dstFile, srcFile)
-	if err != nil {
-		return fmt.Errorf("failed to copy file from %s to %s: %w", srcFullPath, dstFullPath, err)
-	}
-
-	return nil
+	// One shared helper for every client (confine_copy.go): source opened and checked first, same-file and non-regular sources refused,
+	// temp file + rename so the destination is never truncated before the source is read.
+	return copyConfinedFile(ctx, c.basePath, c.resolvePath(srcPath), c.resolvePath(dstPath), srcPath, dstPath, c.config.AllowSymlinkEscape)
 }
 
 // GetProtocol returns the protocol name

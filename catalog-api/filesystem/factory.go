@@ -46,6 +46,8 @@ func (f *DefaultClientFactory) CreateClient(config *StorageConfig) (FileSystemCl
 			Path:       getStringSetting(config.Settings, "path", ""),
 			MountPoint: getStringSetting(config.Settings, "mount_point", ""),
 			Options:    getStringSetting(config.Settings, "options", "vers=3"),
+
+			AllowSymlinkEscape: getBoolSetting(config.Settings, KeyAllowSymlinkEscape, false),
 		}
 		client, err := NewNFSClient(*nfsConfig)
 		if err != nil {
@@ -64,7 +66,8 @@ func (f *DefaultClientFactory) CreateClient(config *StorageConfig) (FileSystemCl
 
 	case "local":
 		localConfig := &LocalConfig{
-			BasePath: getStringSetting(config.Settings, "base_path", ""),
+			BasePath:           getStringSetting(config.Settings, "base_path", ""),
+			AllowSymlinkEscape: getBoolSetting(config.Settings, KeyAllowSymlinkEscape, false),
 		}
 		return NewLocalClient(localConfig), nil
 
@@ -90,6 +93,16 @@ func getStringSetting(settings map[string]interface{}, key, defaultValue string)
 	if val, ok := settings[key]; ok {
 		if str, ok := val.(string); ok {
 			return str
+		}
+	}
+	return defaultValue
+}
+
+// getBoolSetting reads a boolean setting; anything that is not a bool (ValidateSettings refuses it earlier) gives the default.
+func getBoolSetting(settings map[string]interface{}, key string, defaultValue bool) bool {
+	if val, ok := settings[key]; ok {
+		if b, ok := val.(bool); ok {
+			return b
 		}
 	}
 	return defaultValue

@@ -37,6 +37,8 @@ const (
 	KeyTLSMode            = "tls_mode"
 	KeyHostKeyFingerprint = "host_key_fingerprint"
 	KeyCertSHA256         = "cert_sha256"
+	// KeyAllowSymlinkEscape is the per-root opt-out of symlink confinement (local and nfs roots; boolean, default false = confinement ON).
+	KeyAllowSymlinkEscape = "allow_symlink_escape"
 )
 
 // KeyType is the value type of a settings key.
@@ -47,6 +49,8 @@ const (
 	KeyString KeyType = iota
 	// KeyInt is a whole number (int, int32, int64, or a whole float64 as decoded from JSON).
 	KeyInt
+	// KeyBool is a boolean.
+	KeyBool
 )
 
 // ProtocolSpec describes one protocol: the keys its factory consumes and, for a registered (non built-in) protocol, how to build the client.
@@ -73,10 +77,10 @@ var legacyKeyHints = map[string]string{
 }
 
 var builtinSpecs = map[string]ProtocolSpec{
-	"local":  {Name: "local", Keys: map[string]KeyType{KeyBasePath: KeyString}, Required: []string{KeyBasePath}},
+	"local":  {Name: "local", Keys: map[string]KeyType{KeyBasePath: KeyString, KeyAllowSymlinkEscape: KeyBool}, Required: []string{KeyBasePath}},
 	"smb":    {Name: "smb", Keys: map[string]KeyType{KeyHost: KeyString, KeyPort: KeyInt, KeyShare: KeyString, KeyUsername: KeyString, KeyPassword: KeyString, KeyDomain: KeyString}, Required: []string{KeyHost, KeyShare}},
 	"ftp":    {Name: "ftp", Keys: map[string]KeyType{KeyHost: KeyString, KeyPort: KeyInt, KeyUsername: KeyString, KeyPassword: KeyString, KeyPath: KeyString}, Required: []string{KeyHost}},
-	"nfs":    {Name: "nfs", Keys: map[string]KeyType{KeyHost: KeyString, KeyPath: KeyString, KeyMountPoint: KeyString, KeyOptions: KeyString}, Required: []string{KeyHost, KeyPath, KeyMountPoint}},
+	"nfs":    {Name: "nfs", Keys: map[string]KeyType{KeyHost: KeyString, KeyPath: KeyString, KeyMountPoint: KeyString, KeyOptions: KeyString, KeyAllowSymlinkEscape: KeyBool}, Required: []string{KeyHost, KeyPath, KeyMountPoint}},
 	"webdav": {Name: "webdav", Keys: map[string]KeyType{KeyURL: KeyString, KeyUsername: KeyString, KeyPassword: KeyString, KeyPath: KeyString}, Required: []string{KeyURL}},
 }
 
@@ -218,6 +222,9 @@ func kindName(k KeyType) string {
 	if k == KeyInt {
 		return "integer"
 	}
+	if k == KeyBool {
+		return "boolean"
+	}
 	return "string"
 }
 
@@ -228,6 +235,9 @@ func typeOK(k KeyType, v interface{}) bool {
 		return ok
 	case KeyInt:
 		_, ok := wholeNumber(v)
+		return ok
+	case KeyBool:
+		_, ok := v.(bool)
 		return ok
 	}
 	return false
