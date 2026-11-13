@@ -2271,3 +2271,10 @@ Class-wide enumeration with a control-needled go/ast instrument (`catalog-api/in
 ## CAT-OPB-FU2 (Opus round 1 follow-ups, wizard templates; PROVISIONAL)
 - CAT-OPB-FU2-S2 (minor): replace the EvalSymlinks-then-ReadFile check in `loadConfigTemplate` with `os.OpenRoot(templatesPath)` (Go 1.24+) to close the check-to-use race.
 - CAT-OPB-FU2-DANGLING (minor): a dangling symlink in the templates dir is treated as not-exist and falls back to the built-in template; decide whether to refuse instead.
+
+## CAT-OPB-FU2 review follow-ups (Opus round 1, GO-with-follow-ups, minor-class, PROVISIONAL)
+- OPB-FU2-F1 (process-doc, minor): ENV_VARIABLES.md `CATALOGIZER_OUTBOUND_ALLOW_CIDRS` Default cell says private/loopback/CGNAT are "refused by every netguard client"; wrong for the operator class (WebDAV/S3 roots: only loopback and own addresses refused; RFC 1918/ULA/CGNAT permitted unless DENY_PRIVATE).
+- OPB-FU2-F2 (test-instrumentation, minor): mutant M7 survives; add finalize-level test where rollback fails (assert "rollback also failed" composed error).
+- OPB-FU2-F3 (test-instrumentation, minor): mutants M9/M10 survive; add test where a failing Required action deletes config.json, assert mode 0600 after rollback.
+- OPB-FU2-F4 (source, nit): previousMode stays 0644 if Stat after ReadFile fails; take mode from the same handle or fail; restore is not atomic.
+- OPB-FU2-F5 (test-instrumentation, nit): mode-0200 unreadable test false-fails as root; add skip.
