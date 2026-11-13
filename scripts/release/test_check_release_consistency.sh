@@ -663,6 +663,28 @@ RAW=1 expect "Z66 OWN3 empty symlink in HEAD -> BLIND" 2 "docs/other/e is an emp
 d=$(fresh); smk "$d"; addrow "$d" docs/subm; cm "$d"; rm -rf "${d:?}/docs/subm"; echo f > "$d/docs/subm"
 RAW=1 expect "Z68 OWN5 submodule replaced by a regular file -> BLIND" 2 "docs/subm is a submodule in HEAD but not a directory" "$d" --check changelog
 
+echo "== CAT-REL-CHECK-2 round 3 (N1 manifest tree raw compare, N4 eol attribute)"
+# N1a: HEAD holds a tampered, uncited manifest-covered file; a local clean filter makes the restored good bytes look clean
+d=$(fresh); echo e5 > "$d/docs/qa/run2/e5.txt"; ( cd "$d/docs/qa/run2" && sha256sum c.txt e5.txt > SHA256SUMS ); ( cd "$d" && git add -A && git commit -q -m e5 )
+( cd "$d" && git config filter.x.clean 'sed s/evidence-b/tampered-b/' && git config filter.x.clean "sed s/e5/tampered/" && printf 'docs/qa/run2/e5.txt filter=x\n' > .git/info/attributes ); touch "$d/docs/qa/run2/e5.txt"; ( cd "$d" && git add docs/qa/run2/e5.txt && git commit -q -m tamper ); echo e5 > "$d/docs/qa/run2/e5.txt"
+RAW=1 expect "Z69 N1a tampered HEAD blob hidden by a local clean filter (status clean) -> BLIND" 2 "docs/qa/run2/e5.txt raw bytes differ from the HEAD blob" "$d" --check changelog
+# N1b: no filter; same-size in-place overwrite with the mtime restored, core.trustctime=false and checkStat=minimal
+d=$(fresh); echo e5 > "$d/docs/qa/run2/e5.txt"; ( cd "$d/docs/qa/run2" && sha256sum c.txt e5.txt > SHA256SUMS ); ( cd "$d" && git add -A && git commit -q -m e5 )
+( cd "$d" && git config core.checkStat minimal && git config core.trustctime false ); echo XX > "$d/docs/qa/run2/e5.txt"; sleep 2; ( cd "$d" && git commit -q -a -m tamper ); touch -r "$d/docs/qa/run2/e5.txt" "$d/ref.stamp"; ( cd "$d" && git update-index --really-refresh >/dev/null )
+printf 'e5\n' | dd of="$d/docs/qa/run2/e5.txt" conv=notrunc status=none; touch -r "$d/ref.stamp" "$d/docs/qa/run2/e5.txt"
+RAW=1 expect "Z70 N1b same-size overwrite with restored mtime (status clean) -> BLIND" 2 "docs/qa/run2/e5.txt raw bytes differ from the HEAD blob" "$d" --check changelog
+# negative control: untouched manifest tree
+d=$(fresh); echo e5 > "$d/docs/qa/run2/e5.txt"; ( cd "$d/docs/qa/run2" && sha256sum c.txt e5.txt > SHA256SUMS ); ( cd "$d" && git add -A && git commit -q -m e5 )
+RAW=1 expect "Z72 N1 negative control: committed manifest tree, untouched -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
+# N1: a manifest entry reached through a symlink to a file outside the tree is walked against HEAD
+d=$(fresh); mkother "$d"; echo y >> "$d/docs/other/z.txt"; ( cd "$d/docs/qa/run2" && ln -s ../../other/z.txt zl.txt && sha256sum zl.txt >> SHA256SUMS ); ( cd "$d" && git add docs/qa/run2 && git commit -q -m zl )
+RAW=1 expect "Z73 N1 manifest entry via symlink to a modified outside file -> BLIND" 2 "manifest entry docs/qa/run2/zl.txt" "$d" --check changelog
+# N4: a committed eol attribute makes the cited file BLIND (accepted limit); the message names the resolution
+d=$(fresh); mkdir -p "$d/docs/other"; printf '*.txt text eol=crlf\n' > "$d/.gitattributes"; printf 'a\r\n' > "$d/docs/other/f.txt"; addrow "$d" docs/other/f.txt; cm "$d"; printf 'a\r\n' > "$d/docs/other/f.txt"
+RAW=1 expect "Z71 N4 committed eol=crlf attribute -> BLIND with the resolution wording" 2 "to resolve, commit the bytes exactly as they are in the working tree or remove the eol/filter attribute" "$d" --check changelog
+# N2: --help states the derived default
+out="$("$CHECKER" --help 2>&1)"; if printf '%s\n' "$out" | grep -q 'versions.json global' && ! printf '%s\n' "$out" | grep -q 'default: topmost numbered section'; then ok; else bad "Z74 N2 --help still advertises the topmost-section default"; fi
+
 echo "== selftest (11.4.273 control needles built into the tool)"
 out="$("$CHECKER" --selftest 2>&1)"; got=$?
 if [ "$got" = 0 ] && printf '%s\n' "$out" | grep -q '^VERDICT: PASS selftest'; then ok; else bad "selftest rc=$got"; fi

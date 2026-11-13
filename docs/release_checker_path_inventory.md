@@ -18,10 +18,10 @@ link target or other content, or be hidden from `git status`.
 component and every hop** the tree entry of HEAD must exist (`git ls-tree HEAD -- <path>`), must have the same
 type as the working tree (file / directory / symlink / submodule), a symlink hop must carry the **same target
 text as HEAD's blob**, and no name may collide with a sibling ignoring case. The final file must hash to its HEAD
-blob (`git hash-object`, which applies the clean filters), the final file or directory must show no `git status`
+blob (`git hash-object --no-filters`: raw bytes, no clean filter, no stat cache), the final file or directory must show no `git status`
 difference, and no file under it may carry the skip-worktree or assume-unchanged flag (`git ls-files -v`). Anything
 that differs or cannot be proven makes the run BLIND (exit 2). The same status and flag checks cover every manifest
-tree. All of it is "HEAD versus the working tree": the index is not what a clone sees.
+tree, plus a raw per-file compare of every tracked file and symlink under it (N1), and a HEAD walk of every manifest entry reached through a symlink. All of it is "HEAD versus the working tree": the index is not what a clone sees.
 
 ## Inventory (each member has a RED-first test; mutants are in `mutation_check_release_consistency.sh`)
 
@@ -65,6 +65,8 @@ tree. All of it is "HEAD versus the working tree": the index is not what a clone
 | 36 | local attribute / filter source (clean filter, info/attributes, autocrlf after `git add`) (F3) | raw bytes differ from the blob: BLIND | Z57-Z59 |
 | 37 | inherited `GIT_*` environment (F6) | unset at start | Z60 |
 | 38 | no `--version`, topmost section differs from versions.json (F6) | section derived from versions.json, else BLIND | Z61, Z62 |
+| 39 | manifest tree: a tracked file tampered in HEAD, worktree restored behind a local clean filter (N1a) or a restored mtime with core.trustctime=false (N1b) | raw per-file compare of every tracked file and symlink under the tree: BLIND | Z69, Z70 |
+| 40 | committed `eol=crlf` attribute (N4) | accepted limit: BLIND, message says how to resolve; stricter than necessary, never a false pass | Z71 |
 
 Equivalent mutants (not run): the unsupported-HEAD-mode branch in `chain_one` (`git ls-tree` canonicalises a regular-file mode such as 100664 to 100644; measured with a literal tree), removing the 40-hop cap (a real loop is MISS before the walk starts, and a HEAD loop
 cannot match a working tree that is not a loop because the link target is compared with HEAD's blob), and the
@@ -76,6 +78,6 @@ cannot match a working tree that is not a loop because the link target is compar
 * A clone made with `core.symlinks=false` (Windows) turns symlinks into text files; sparse or shallow clones; LFS
   pointers (hash of the pointer vs content) - all UNCONFIRMED, untested.
 * The executable bit is not compared directly; `git status` reports a mode change on the final entry.
-* Conversions on files under a manifest tree that are not cited themselves (only cited files are compared raw).
+* (N1 closed: every tracked file under a manifest tree is compared raw.) Remaining: a committed `eol=` attribute makes the affected file BLIND (accepted limit, N4).
 * Untracked files inside a cited directory outside the evidence prefix; the executable bit when `core.fileMode=false`.
 * A name containing a double quote or a backslash is never extracted as a path, so it is never checked.

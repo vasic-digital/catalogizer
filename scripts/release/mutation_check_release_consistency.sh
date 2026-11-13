@@ -198,9 +198,6 @@ MUTANTS=(
 'CC2 flag pattern misses assume-unchanged|||grep -m1 '"'"'^[a-zS] '"'"' || true)"
   [ -z "$flagged" ] || chain_bad|||grep -m1 '"'"'^S '"'"' || true)"
   [ -z "$flagged" ] || chain_bad'
-'CC2 manifest flag check dropped|||  if [ -n "$flagged" ]; then
-    note_blind "manifest tree|||  if false; then
-    note_blind "manifest tree'
 'CC2 hop target appended after the rest of the path|||pend=("${parts[@]}" "${pend[@]}") ;;|||pend=("${pend[@]}" "${parts[@]}") ;;'
 'CC2 dot component not skipped|||      ""|.) continue ;;
       ..)|||      "") continue ;;
@@ -229,7 +226,13 @@ MUTANTS=(
 'CC2r2 OWN3 empty symlink in HEAD accepted|||"") chain_bad "$ent is an empty symlink in HEAD"; return 0 ;;|||"") ;;'
 'CC2r2 OWN5 submodule type not compared|||if [ -L "$REPO/$ent" ] || [ ! -d "$REPO/$ent" ]; then chain_bad "$ent is a submodule in HEAD|||if false; then chain_bad "$ent is a submodule in HEAD'
 'CC2r2 OWN6 hash-object failure not BLIND||||| { note_blind "git hash-object failed for $(printf '"'"'%q'"'"' "$cur")"; return 1; }||||| { : "git hash-object failed"; return 1; }'
-# Equivalent mutants (not run): OWN4, the unsupported-HEAD-mode branch (git ls-tree canonicalises regular-file modes to 100644/100755; measured with a literal 100664 tree); the 40-hop cap in chain_one (a loop is MISS before the walk starts, and a HEAD loop cannot match a
+'CC2r3 N1 manifest tree raw compare dropped|||  raw_tree_check "$d" || return
+|||  :
+'
+'CC2r3 N1 raw hash mismatch ignored|||if [ "${gots[$i]}" != "${shas[$i]}" ]; then|||if false; then'
+'CC2r3 N1 entry reached through a symlink not walked|||if [ -n "$rp" ] && [ "$rp" != "$(realpath|||if false && [ "$rp" != "$(realpath'
+'CC2r3 N1 tree hashed with local filters|||git -C "$REPO" hash-object --no-filters --stdin-paths|||git -C "$REPO" hash-object --stdin-paths'
+# Equivalent mutants (not run): the manifest-tree skip-worktree / assume-unchanged check (since N1 the raw per-file compare in raw_tree_check reports any hidden difference regardless of flags; a flagged file whose bytes match HEAD hides nothing);the symlink compare inside raw_tree_check (a retargeted tree symlink is also reported by git status; no stat-cache repro was found for symlinks, so it is defensive and not independently tested);OWN4, the unsupported-HEAD-mode branch (git ls-tree canonicalises regular-file modes to 100644/100755; measured with a literal 100664 tree); the 40-hop cap in chain_one (a loop is MISS before the walk starts, and a HEAD loop cannot match a
 # working tree that is not a loop because every hop target is compared with HEAD's blob) and the '..'-above-the-root guard in
 # chain_one (the outside-repo rule rejects such paths first), and the exact-name filter in head_entry (git ls-tree does not
 # glob: measured, a pathspec like 'd/f[1].txt' or 'd/f*' returns only the literal entry or nothing).

@@ -144,7 +144,7 @@ A hop that leaves the repository, a dangling hop and a symlink loop are `MISS`, 
 the walk are not part of this check (they are judged by the tracked/UNLISTED rules). Commit first, then run the check.
 Not handled (UNCONFIRMED / residual): Unicode case folding and normalisation, `core.symlinks=false` clones, sparse
 or shallow clones, LFS pointers, the executable bit under `core.fileMode=false`, untracked files inside a cited directory outside the
-evidence prefix, and conversions applied to files under a manifest tree (only cited files are compared raw).
+evidence prefix.
 
 ### Instrument verification (constitution 11.4.273, 11.4.224)
 

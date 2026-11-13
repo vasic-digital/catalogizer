@@ -34,7 +34,8 @@ usage: check_release_consistency.sh [--repo DIR] [--version X.Y.Z] [--prev-tag T
   --version   expected version (default: versions.json global major.minor.patch)
   --prev-tag  git tag; versionCode of each Android app must be an integer strictly
               greater than its value at that tag
-  --section   CHANGELOG section version (default: topmost numbered section)
+  --section   CHANGELOG section version (default: --version, else versions.json global;
+              BLIND when neither is available - the topmost section is never used silently)
   --waivers   file (repo-relative, git-tracked) declaring known evidence gaps; default
               docs/qa/EVIDENCE_WAIVERS.txt when present (see README)
   --evidence-prefix P
@@ -228,7 +229,7 @@ chain_one() {
     # F3: RAW bytes against the blob. A local clean filter, .git/info/attributes, core.attributesFile,
     # core.autocrlf / core.eol or an untracked .gitattributes can make `git status` clean while the bytes a
     # clone checks out differ; any raw difference is therefore unprovable here (BLIND), never a pass.
-    [ "$out" = "$fsha" ] || chain_bad "$cur raw bytes differ from the HEAD blob (content, or a local filter / eol / attribute conversion that a clone would not apply)"
+    [ "$out" = "$fsha" ] || chain_bad "$cur raw bytes differ from the HEAD blob (content, or a local filter / eol / attribute conversion that a clone would not apply; to resolve, commit the bytes exactly as they are in the working tree or remove the eol/filter attribute for this path)"
   fi
   entry_clean "$cur" || return 1
   return 0
@@ -785,6 +786,57 @@ report_unused_waivers() {
   done
 }
 
+# raw_tree_check <dir>: N1. Every tracked file under <dir> (the manifest tree) is compared as RAW bytes with its
+# HEAD blob (hash-object --no-filters, which never consults the stat cache or any local filter), and every
+# tracked symlink by its target bytes. `git status` alone cannot prove this: its stat cache can be fooled
+# (core.checkStat / core.trustctime plus a restored mtime) and local clean filters make a tampered HEAD blob
+# look like the restored working-tree bytes. Returns 1 after noting a BLIND.
+raw_tree_check() {
+  local d="$1" rec meta path mode sha tgt want n i got
+  local -a paths=() shas=() gots=()
+  # a failing ls-tree inside the process substitution below would look like an empty tree; probe it first
+  if ! git -C "$REPO" ls-tree HEAD -- "$d/" >/dev/null 2>&1; then
+    note_blind "git ls-tree failed for $(printf '%q' "$d"); cannot prove the manifest tree matches HEAD"; return 1
+  fi
+  # -z: names are NUL-delimited and never quoted, so tabs, quotes and newlines in names are handled
+  while IFS= read -r -d '' rec; do
+    meta="${rec%%$'\t'*}"; path="${rec#*$'\t'}"
+    read -r mode _ sha <<< "$meta"
+    case "$mode" in
+      100644|100755)
+        if [[ "$path" == *$'\n'* ]]; then
+          # --stdin-paths is newline-delimited: hash such a file on its own
+          got="$(git -C "$REPO" hash-object --no-filters -- "$path" 2>/dev/null)" || { note_blind "git hash-object failed under manifest tree $(printf '%q' "$d")"; return 1; }
+          if [ "$got" != "$sha" ]; then note_blind "manifest tree $(printf '%q' "$d"): $(printf '%q' "$path") raw bytes differ from the HEAD blob"; return 1; fi
+        else
+          paths+=("$path"); shas+=("$sha")
+        fi ;;
+      120000)
+        tgt="$(readlink -- "$REPO/$path"; printf .)"; tgt="${tgt%.}"; tgt="${tgt%$'\n'}"
+        want="$(git -C "$REPO" cat-file blob "$sha" 2>/dev/null; printf .)" || { note_blind "git cat-file failed for $(printf '%q' "$path")"; return 1; }
+        want="${want%.}"
+        if [ ! -L "$REPO/$path" ] || [ "$tgt" != "$want" ]; then
+          note_blind "manifest tree $(printf '%q' "$d"): symlink $(printf '%q' "$path") differs from HEAD"; return 1
+        fi ;;
+    esac
+  done < <(git -C "$REPO" ls-tree -r -z HEAD -- "$d/" 2>/dev/null)
+  n="${#paths[@]}"
+  [ "$n" -gt 0 ] || return 0
+  if ! got="$(printf '%s\n' "${paths[@]}" | git -C "$REPO" hash-object --no-filters --stdin-paths 2>/dev/null)"; then
+    note_blind "git hash-object failed under manifest tree $(printf '%q' "$d") (a tracked file is missing or unreadable)"; return 1
+  fi
+  mapfile -t gots <<< "$got"
+  if [ "${#gots[@]}" -ne "$n" ]; then
+    note_blind "git hash-object returned ${#gots[@]} hashes for $n files under $(printf '%q' "$d")"; return 1
+  fi
+  for ((i=0; i<n; i++)); do
+    if [ "${gots[$i]}" != "${shas[$i]}" ]; then
+      note_blind "manifest tree $(printf '%q' "$d"): $(printf '%q' "${paths[$i]}") raw bytes differ from the HEAD blob (edit hidden from git status, or a local filter / eol conversion)"; return 1
+    fi
+  done
+  return 0
+}
+
 # check_manifest_dir <dir>: verify every manifest in the directory (syntax, escapes, checksums) and
 # that the manifests list every regular file of the tree they cover (RC-3b). Nested manifests found
 # below are queued for the same checks.
@@ -811,6 +863,7 @@ check_manifest_dir() {
   if [ -n "$dirty" ]; then
     note_blind "manifest tree $(printf '%q' "$d") has changes that are not committed (index or working tree differ from HEAD): $(printf '%s\n' "$dirty" | head -3 | tr '\n' ';')"; return
   fi
+  raw_tree_check "$d" || return
   while IFS= read -r mf; do
     [ -n "$mf" ] || continue
     # F4: manifest entries must stay inside the manifest's directory.
@@ -832,6 +885,10 @@ check_manifest_dir() {
         else
           # F2: an in-directory symlink must not lead outside the repository.
           rp="$(readlink -m -- "$REPO/$d/$ent" 2>/dev/null || true)"   # -m: missing components are fine
+          # N1: an entry reached through a symlink reads a file the tree walk above did not compare; walk it
+          if [ -n "$rp" ] && [ "$rp" != "$(realpath -m -s -- "$REPO_REAL/$d/$ent" 2>/dev/null)" ]; then
+            head_check "manifest entry $d/$ent" "$d/$ent"
+          fi
           if [ -z "$rp" ] || { [ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"/* ]]; }; then
             S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/$mf entry resolves outside the repository: $ent"
           fi

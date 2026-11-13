@@ -1858,3 +1858,6 @@ Cause of rounds 1-5: HEAD-consistency was added as point checks (changelog, vers
 
 ### CAT-REL-CHECK-2 round 2 (Opus round 1 NO-GO: F1-F6, OWN1-OWN6)
 F1 root-resolving cited path walked; F2 raw-byte hop compare plus per-hop status/flag checks; F3 raw-byte (`--no-filters`) compare against the blob; F6 `GIT_*` unset, section derived from versions.json, no `-z` warning. Inventory rows 33-38, tests Z50-Z68 (suite 326 passed). OWN4 is an equivalent mutant (git canonicalises regular-file modes). Mutants: CC2 + CC2r2 = 33 run to completion, all killed; the runner now counts a kill only when the last line is `== result: N passed, M failed` with M > 0, otherwise INVALID.
+
+### CAT-REL-CHECK-2 round 3 (Opus round 2 NO-GO: N1-N4)
+N1: `raw_tree_check` compares every tracked file and symlink under a manifest tree as raw bytes with its HEAD blob (no stat cache, no filters) and walks manifest entries reached through symlinks; Z69/Z70/Z72/Z73. N2 `--help` fixed (Z74). N3 inventory fixed. N4 committed `eol=` attribute stays BLIND by design (accepted limit; message says how to resolve; Z71). Suite 332 passed. Mutants CC2r3 (4) killed; manifest-flag mutant is now equivalent (raw compare subsumes it).
