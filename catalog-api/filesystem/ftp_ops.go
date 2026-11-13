@@ -90,7 +90,7 @@ func (g *ftpConnGroup) dialFunc(ctx context.Context) func(network, address strin
 			conn, err = g.inner(network, address)
 		} else {
 			// SEC-DIAL-1: control and data connections alike go through the operator-class dialer (vetted, pinned address).
-			conn, err = storageDialContext(dctx, network, address)
+			conn, err = storageDial(dctx, network, address)
 		}
 		if err != nil {
 			return nil, err

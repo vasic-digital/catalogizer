@@ -561,7 +561,7 @@ type connTracker struct {
 
 func (t *connTracker) dialFunc(ctx context.Context) func(network, address string) (net.Conn, error) {
 	return func(network, address string) (net.Conn, error) {
-		conn, err := storageDialContext(ctx, network, address) // SEC-DIAL-1: vetted, pinned address
+		conn, err := storageDial(ctx, network, address) // SEC-DIAL-1: vetted, pinned address
 		if err != nil {
 			return nil, err
 		}

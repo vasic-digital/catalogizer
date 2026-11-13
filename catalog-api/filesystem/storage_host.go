@@ -5,8 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
+	"regexp"
 	"strings"
 	"time"
+	"unicode"
 
 	"catalogizer/internal/netguard"
 	"catalogizer/models"
@@ -45,18 +48,84 @@ func ValidateStorageHostSyntax(host string) error {
 	return nil
 }
 
-// ValidateNFSExport refuses an export path a mount source or option string could be injected through: whitespace, control characters, ','
-// and a leading '-'.
+// ValidateNFSExport refuses an export path with a control character (newline, NUL, tab, DEL ...) or a leading '-'. A space or a ',' is a legal
+// part of a share name ("/volume1/My Videos"): the export only ever forms the SOURCE of mount(2) (one string, never option-parsed; the server
+// address always comes first) or one argument of an exec without a shell on darwin, so it cannot inject an option or another argument.
 func ValidateNFSExport(export string) error {
 	if export == "" || strings.HasPrefix(export, "-") {
 		return fmt.Errorf("invalid nfs export path")
 	}
 	for _, r := range export {
-		if r <= ' ' || r == 0x7f || r == ',' {
+		if unicode.IsControl(r) {
 			return fmt.Errorf("invalid nfs export path")
 		}
 	}
 	return nil
+}
+
+// resolveNFSServer resolves the NFS server under the operator-class policy and returns the first vetted address, the address the kernel is
+// handed instead of the name. A policy refusal is ErrStorageHostRefused; a name that does not resolve is reported as such (not as a refusal).
+// Shared by the linux and darwin mount paths.
+func resolveNFSServer(ctx context.Context, host string) (net.IP, error) {
+	ips, err := storageOperatorResolve(ctx, host)
+	if errors.Is(err, netguard.ErrBlocked) {
+		return nil, fmt.Errorf("%w", ErrStorageHostRefused)
+	}
+	if err != nil || len(ips) == 0 {
+		return nil, fmt.Errorf("nfs host does not resolve")
+	}
+	return ips[0], nil
+}
+
+// addrCandidate matches a run of characters an IP literal is made of; scrubResolvedAddrs tests each run.
+var addrCandidate = regexp.MustCompile(`[0-9A-Fa-f:.]{2,}`)
+
+// scrubResolvedAddrs replaces every IP literal in msg other than the configured host with "<address>", so an error shown to a non-admin caller
+// (/storage-roots/:id/status) does not disclose the address a name resolved to. The configured host itself is operator input and stays.
+func scrubResolvedAddrs(msg, host string) string {
+	host = strings.Trim(host, "[]")
+	return addrCandidate.ReplaceAllStringFunc(msg, func(raw string) string {
+		// sentence punctuation around the literal ("...:445: connection refused", "10.0.0.1.") is not part of it
+		c := strings.TrimRight(raw, ":.")
+		tail := raw[len(c):]
+		ip, port := c, ""
+		if net.ParseIP(ip) == nil {
+			if i := strings.LastIndex(c, ":"); i > 0 && strings.Contains(c[:i], ".") {
+				ip, port = c[:i], c[i:]
+			}
+		}
+		parsed := net.ParseIP(ip)
+		if parsed == nil || ip == host || (net.ParseIP(host) != nil && parsed.Equal(net.ParseIP(host))) {
+			return raw
+		}
+		return "<address>" + port + tail
+	})
+}
+
+// addrScrubbedError carries a message with the resolved addresses removed and keeps the cause inspectable (errors.Is / As).
+type addrScrubbedError struct {
+	msg string
+	err error
+}
+
+func (e *addrScrubbedError) Error() string { return e.msg }
+func (e *addrScrubbedError) Unwrap() error { return e.err }
+
+// scrubDialErr returns err with the resolved addresses removed from its text; nil stays nil.
+func scrubDialErr(err error, host string) error {
+	if err == nil {
+		return nil
+	}
+	m := err.Error()
+	if s := scrubResolvedAddrs(m, host); s != m {
+		return &addrScrubbedError{msg: s, err: err}
+	}
+	return err
+}
+
+// storageDial is the one call every storage connector uses to dial through storageDialContext; the returned error never names a resolved address.
+func storageDial(ctx context.Context, network, addr string) (net.Conn, error) {
+	return scrubDialFunc(storageDialContext)(ctx, network, addr)
 }
 
 // NFSOption is one parsed "key" or "key=value" mount option.
@@ -165,5 +234,27 @@ func dialStorage(ctx context.Context, host, port string, timeout time.Duration) 
 		ctx, cancel = context.WithTimeout(ctx, timeout)
 		defer cancel()
 	}
-	return storageDialContext(ctx, "tcp", net.JoinHostPort(host, port))
+	return storageDial(ctx, "tcp", net.JoinHostPort(host, port))
+}
+
+// scrubDialFunc wraps a dial function so the error it returns never names a resolved address (the configured host stays).
+func scrubDialFunc(inner func(ctx context.Context, network, addr string) (net.Conn, error)) func(ctx context.Context, network, addr string) (net.Conn, error) {
+	return func(ctx context.Context, network, addr string) (net.Conn, error) {
+		c, err := inner(ctx, network, addr)
+		if err != nil {
+			h, _, serr := net.SplitHostPort(addr)
+			if serr != nil {
+				h = addr
+			}
+			return nil, scrubDialErr(err, h)
+		}
+		return c, nil
+	}
+}
+
+// operatorStorageTransport is netguard.OperatorTransport with a dial whose errors do not name the resolved address (WebDAV, S3).
+func operatorStorageTransport() *http.Transport {
+	tr := netguard.OperatorTransport()
+	tr.DialContext = scrubDialFunc(tr.DialContext)
+	return tr
 }

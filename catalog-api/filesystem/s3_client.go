@@ -148,7 +148,7 @@ func (c *S3Client) Connect(ctx context.Context) error {
 	if httpC == nil {
 		c.mu.Lock()
 		if c.opTransport == nil {
-			c.opTransport = netguard.OperatorTransport()
+			c.opTransport = operatorStorageTransport()
 		}
 		tr := c.opTransport
 		c.mu.Unlock()

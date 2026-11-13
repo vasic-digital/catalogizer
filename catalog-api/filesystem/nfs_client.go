@@ -5,7 +5,6 @@ package filesystem
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -15,8 +14,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
-	"catalogizer/internal/netguard"
 )
 
 // procMountsPath is the kernel mount table; a variable so a test can present a mount table without a privileged mount.
@@ -77,7 +74,8 @@ func (c *NFSClient) Connect(ctx context.Context) error {
 		return err
 	}
 	if err := nfsMount(source, c.mountPoint, "nfs", 0, options); err != nil {
-		return fmt.Errorf("failed to mount NFS share %s to %s: %w", source, c.mountPoint, err)
+		// the resolved address is not echoed: the status endpoint shows this text to callers that are not administrators
+		return fmt.Errorf("failed to mount NFS share %s:%s to %s: %w", c.config.Host, c.config.Path, c.mountPoint, err)
 	}
 
 	c.mounted = true
@@ -108,12 +106,9 @@ func planNFSMount(ctx context.Context, cfg NFSConfig) (source, data string, err 
 	}
 	vctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
-	ips, err := storageOperatorResolve(vctx, cfg.Host)
-	if errors.Is(err, netguard.ErrBlocked) {
-		return "", "", fmt.Errorf("%w", ErrStorageHostRefused)
-	}
-	if err != nil || len(ips) == 0 {
-		return "", "", fmt.Errorf("nfs host does not resolve")
+	srvIP, err := resolveNFSServer(vctx, cfg.Host)
+	if err != nil {
+		return "", "", err
 	}
 	hasAddr := false
 	for _, o := range opts {
@@ -131,7 +126,7 @@ func planNFSMount(ctx context.Context, cfg NFSConfig) (source, data string, err 
 			return "", "", fmt.Errorf("%w", ErrStorageHostRefused)
 		}
 	}
-	ip := ips[0].String()
+	ip := srvIP.String()
 	if !hasAddr {
 		options += ",addr=" + ip
 	}
