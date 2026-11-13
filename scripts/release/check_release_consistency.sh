@@ -83,6 +83,11 @@ if [ "$SELFTEST" = 1 ]; then
   sed -i 's/^  "version": "2.4.0"/  "version": "2.3.0"/' "$st/bad_ver/catalog-web/package.json"
   # shellcheck disable=SC2016
   sed -i 's#`scripts/tool.sh`#`scripts/planted_fake_path.sh`#' "$st/bad_path/docs/CHANGELOG.md"
+  # the planted edits are committed: the checker reads HEAD only, so an uncommitted edit would be BLIND, not FAIL
+  for pl in bad_ver bad_path; do
+    git -C "$st/$pl" -c user.name=selftest -c user.email=selftest@localhost -c commit.gpgsign=false commit -q -a -m planted >/dev/null 2>&1 \
+      || blind "cannot commit the planted $pl edit"
+  done
   fail=0
   rc=0; "$SELF" --repo "$st/good" >/dev/null 2>&1 || rc=$?
   [ "$rc" -eq 0 ] || { echo "selftest: known-good fixture did not PASS (rc=$rc)"; fail=1; }
@@ -101,6 +106,63 @@ fi
 [ -d "$REPO" ] || blind "repo directory '$REPO' not found"
 git -C "$REPO" rev-parse --git-dir >/dev/null 2>&1 || blind "'$REPO' is not a git repository"
 REPO="$(cd "$REPO" && pwd)"
+# CAT-REL-CHECK-2 round 5: HEAD is the single source for EVERY read. replace refs never apply (C8), and the
+# contents of HEAD are written once into a throw-away directory (SNAP) from the raw blobs; manifests, version
+# files, the changelog, the waiver file, gradle files, .gitignore decisions and the tracked-file sets are all
+# read from SNAP or from `git ls-tree HEAD`, never from the working tree, the index, .git/info/* or any
+# local/global configuration. The working tree is consulted only to say BLIND when it differs from HEAD.
+export GIT_NO_REPLACE_OBJECTS=1
+HEADC="$(git -C "$REPO" rev-parse --verify -q 'HEAD^{commit}' 2>/dev/null)" || blind "'$REPO' has no HEAD commit"
+SNAPBASE="${RELCHK_TMP:-${XDG_CACHE_HOME:-${HOME:?}/.cache}/relchk-tmp}"
+mkdir -p "$SNAPBASE" || blind "cannot create $SNAPBASE"
+SNAP="$(mktemp -d "$SNAPBASE/snap.XXXXXX")" || blind "cannot create a HEAD snapshot directory"
+case "$SNAP" in "$SNAPBASE"/snap.*) ;; *) blind "odd snapshot directory" ;; esac
+trap 'rm -rf -- "${SNAP:?}"' EXIT
+# the snapshot writer resolves its interpreter from fixed system locations first, so a python3 shadowed on PATH
+# (the helper-output tests do that on purpose) cannot fake the snapshot
+SNAP_PY=""; for _p in /usr/bin/python3 /usr/local/bin/python3 /bin/python3; do [ -x "$_p" ] && { SNAP_PY="$_p"; break; }; done
+[ -n "$SNAP_PY" ] || SNAP_PY="$(command -v python3 2>/dev/null)" || blind "python3 not found"
+"$SNAP_PY" -I - "$REPO" "$HEADC" "$SNAP" <<'PY' || blind "cannot write the HEAD snapshot of $REPO"
+import os, subprocess, sys
+repo, commit, snap = sys.argv[1:4]
+r = subprocess.run(["git", "-C", repo, "ls-tree", "-r", "-z", "--full-tree", commit], capture_output=True)
+if r.returncode != 0:
+    sys.exit(3)
+cat = subprocess.Popen(["git", "-C", repo, "cat-file", "--batch"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+base = os.fsencode(snap)
+for rec in r.stdout.split(b"\0"):
+    if not rec:
+        continue
+    meta, path = rec.split(b"\t", 1)
+    mode, typ, sha = meta.split(b" ")
+    parts = path.split(b"/")
+    if any(p in (b"", b".", b"..") or p.lower() == b".git" for p in parts):
+        sys.exit(4)
+    full = base + b"/" + path
+    os.makedirs(os.path.dirname(full), exist_ok=True)
+    if typ == b"commit":
+        os.makedirs(full, exist_ok=True)
+        continue
+    cat.stdin.write(sha + b"\n"); cat.stdin.flush()
+    hdr = cat.stdout.readline().split()
+    if len(hdr) != 3 or hdr[1] != b"blob":
+        sys.exit(5)
+    data = cat.stdout.read(int(hdr[2])); cat.stdout.read(1)
+    if len(data) != int(hdr[2]):
+        sys.exit(6)
+    if mode == b"120000":
+        os.symlink(data, full)
+    else:
+        with open(full, "wb") as fh:
+            fh.write(data)
+        if mode == b"100755":
+            os.chmod(full, 0o755)
+cat.stdin.close(); cat.wait()
+PY
+# the snapshot is a git repository only so that `check-ignore` can apply the COMMITTED .gitignore files;
+# no .git/info/exclude, no global/system config, no core.excludesFile
+GIT_SNAP=(env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 git -c core.excludesFile=/dev/null -C "$SNAP")
+"${GIT_SNAP[@]}" init -q --template= . >/dev/null 2>&1 || blind "cannot initialise the HEAD snapshot repository"
 V_OK=0; V_FAIL=0; C_PATHS=0; C_MISS=0; C_SKIP=0; S_OK=0; S_FAIL=0; S_UNV=0; BLINDS=""
 C_NOMAN=0; U_FILES=0; W_APPLIED=0; W_BAD=0; W_UNUSED=0
 declare -A WV=() WVUSED=()
@@ -246,10 +308,10 @@ head_check() {
 run_versions() {
   echo "== version consistency"
   local kind label detail vout vrc
-  vout="$(python3 -I - "$REPO" "$EXPECTED" "$PREV_TAG" <<'PY'
+  vout="$(python3 -I - "$REPO" "$EXPECTED" "$PREV_TAG" "$SNAP" <<'PY'
 import json, os, re, subprocess, sys, tomllib
 
-repo, expected, prevtag = sys.argv[1:4]
+repo, expected, prevtag, snap = sys.argv[1:5]   # repo: git queries only; snap: the HEAD snapshot every file read uses
 
 def emit(kind, label, detail=""):
     print(f"{kind}\t{label}\t{detail}")
@@ -257,7 +319,7 @@ def emit(kind, label, detail=""):
 READ = []
 def read(path):
     READ.append(path)
-    with open(os.path.join(repo, path), encoding="utf-8") as fh:
+    with open(os.path.join(snap, path), encoding="utf-8") as fh:
         return fh.read()
 
 # expected version
@@ -365,11 +427,11 @@ if prevtag:
 
 for app in APPS:
     path = f"{app}/app/build.gradle.kts"
-    both = (os.path.exists(os.path.join(repo, path))
-            and os.path.exists(os.path.join(repo, f"{app}/app/build.gradle")))
+    both = (os.path.exists(os.path.join(snap, path))
+            and os.path.exists(os.path.join(snap, f"{app}/app/build.gradle")))
     if both:
         emit("FAIL", f"{app}/app", "both build.gradle.kts and build.gradle exist; ambiguous")
-    if not os.path.exists(os.path.join(repo, path)):
+    if not os.path.exists(os.path.join(snap, path)):
         path = f"{app}/app/build.gradle"
     check(f"{path} versionName", lambda p=path: gradle_field(read(p), "versionName"))
     label = f"{path} versionCode"
@@ -474,13 +536,13 @@ PY
 }
 
 # ---------------------------------------------------------------- (2) changelog
-tracked() { # tracked <path>: true when git tracks the path (file or directory)
-  git -C "$REPO" ls-files -- ":(literal)$1" 2>/dev/null | grep -q .
+tracked() { # tracked <path>: true when HEAD holds the path (file, symlink, gitlink or directory); never the index
+  head_entry "$1" && [ -n "$E_MODE" ]
 }
 
 run_changelog() {
   echo "== changelog evidence paths"
-  local cl="$REPO/docs/CHANGELOG.md"
+  local cl="$SNAP/docs/CHANGELOG.md"
   [ -f "$cl" ] || { note_blind "docs/CHANGELOG.md not found"; return; }
 
   # 11.4.273 control needles: the existence instrument must see a known-present tracked
@@ -488,26 +550,26 @@ run_changelog() {
   local pos neg
   # tracked-instrument needle: first tracked path with a plain name (no quoting issues), judged
   # by git only; existence-instrument needle: the changelog itself, which was just found.
-  pos="$(git -C "$REPO" ls-files | grep -m1 -E '^[A-Za-z0-9._/-]+$')"
+  pos="$(git -C "$REPO" ls-tree -r --name-only HEAD | grep -m1 -E '^[A-Za-z0-9._/-]+$')"
   neg="__no_such_path_$$__/none"
   if [ -z "$pos" ] || ! tracked "$pos" || [ ! -e "$cl" ] || [ -e "$REPO/$neg" ] || tracked "$neg"; then
     note_blind "control needle failed: existence/tracked instrument cannot be trusted"; return
   fi
 
   local out kind a b
-  out="$(python3 -I - "$REPO" "$SECTION" <<'PY'
+  out="$(python3 -I - "$REPO" "$SECTION" "$SNAP" <<'PY'
 import json, os, re, subprocess, sys
-repo, want = sys.argv[1:3]
+repo, want, snap = sys.argv[1:4]
 if not want:
     # F6: no --version/--section: the section is derived from versions.json (global), never the topmost heading
     try:
-        with open(os.path.join(repo, "versions.json"), encoding="utf-8") as vf:
+        with open(os.path.join(snap, "versions.json"), encoding="utf-8") as vf:
             g = json.load(vf)["global"]
         want = f"{g['major']}.{g['minor']}.{g['patch']}"
     except Exception as exc:  # noqa: BLE001
         print(f"ERR\tno --version/--section given and versions.json global is unreadable ({type(exc).__name__}); refusing to use the topmost changelog section")
         sys.exit(0)
-with open(os.path.join(repo, "docs/CHANGELOG.md"), encoding="utf-8") as fh:
+with open(os.path.join(snap, "docs/CHANGELOG.md"), encoding="utf-8") as fh:
     lines = fh.read().splitlines()
 head = re.compile(r"^## \[(\d[^\]]*)\]")
 # lines inside fenced code blocks are never headings (fence lines included)
@@ -558,7 +620,7 @@ print(f"SECTION\t{name}")
 tops = set()
 tfiles = set()
 tdirs = set()
-r = subprocess.run(["git", "-C", repo, "ls-files", "-z"], capture_output=True, text=True)
+r = subprocess.run(["git", "-C", repo, "ls-tree", "-r", "-z", "--name-only", "--full-tree", "HEAD"], capture_output=True, text=True)
 for p in r.stdout.split("\0"):
     if p:
         tfiles.add(p)
@@ -628,8 +690,10 @@ PY
   echo "section $SECTION_USED: ${#paths[@]} path(s) in VERIFIED; skipped non-repo-looking: ${skips[*]:-none}"
 
   head_check "docs/CHANGELOG.md" "docs/CHANGELOG.md"
+  # C7: the derived section comes from versions.json, so the working-tree copy must read like HEAD's as well
+  [ -n "$SECTION" ] || head_check "versions.json" "versions.json"
   local p q d rp mf ev evrel cited_ok
-  local REPO_REAL; REPO_REAL="$(cd "$REPO" && pwd -P)"
+  local REPO_REAL; REPO_REAL="$(cd "$SNAP" && pwd -P)"   # the HEAD snapshot: every symlink below resolves inside HEAD
   declare -A seen_dir=()
   local -a queue=()
   load_waivers || return
@@ -640,13 +704,13 @@ PY
     fi
     q="${p%/}"
     # N3: a tracked symlink must not lead outside the repository.
-    rp="$(readlink -f -- "$REPO/$q" 2>/dev/null || true)"
-    if [ -e "$REPO/$q" ] && { [ -z "$rp" ] || { [ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"/* ]]; }; }; then
+    rp="$(readlink -f -- "$SNAP/$q" 2>/dev/null || true)"
+    if [ -e "$SNAP/$q" ] && { [ -z "$rp" ] || { [ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"/* ]]; }; }; then
       C_MISS=$((C_MISS+1)); echo "MISS  $p (resolves outside the repository)"; continue
     fi
     # RC-3: decide on the REAL in-repo location (// and /./ collapsed, symlinks resolved), so a
     # spelling trick or an alias cannot dodge the evidence prefix or the manifest search.
-    ev="$(readlink -m -- "$REPO/$q" 2>/dev/null || true)"
+    ev="$(readlink -m -- "$SNAP/$q" 2>/dev/null || true)"
     if [ -n "$ev" ] && { [ "$ev" = "$REPO_REAL" ] || [[ "$ev" == "$REPO_REAL"/* ]]; }; then
       evrel="${ev#"$REPO_REAL"}"; evrel="${evrel#/}"; [ -n "$evrel" ] || evrel="."
     else
@@ -665,7 +729,7 @@ PY
     [ "$cited_ok" = 0 ] || head_check "cited path $p" "$q"
     # nearest tracked manifest (SHA256SUMS, SHA256SUMS.txt, MANIFEST*.sha256) at or above the path
     # (never the repo root itself)
-    if [ -d "$REPO/$q" ]; then d="$evrel"; else d="$(dirname "$evrel")"; fi
+    if [ -d "$SNAP/$q" ]; then d="$evrel"; else d="$(dirname "$evrel")"; fi
     local found=0 guard=0
     while [ -n "$d" ] && [ "$d" != "." ] && [ "$d" != "/" ] && [ "$guard" -lt 500 ]; do
       guard=$((guard+1))
@@ -695,7 +759,7 @@ PY
 # A manifest that is untracked or gitignored does not exist for a clone, so it does not count.
 manifests_in() {
   local d="$1" f n
-  for f in "$REPO/$d"/SHA256SUMS "$REPO/$d"/SHA256SUMS.txt "$REPO/$d"/MANIFEST*.sha256; do
+  for f in "$SNAP/$d"/SHA256SUMS "$SNAP/$d"/SHA256SUMS.txt "$SNAP/$d"/MANIFEST*.sha256; do
     [ -f "$f" ] || continue
     n="${f##*/}"
     tracked "$d/$n" && printf '%s\n' "$n"
@@ -724,15 +788,15 @@ load_waivers() {
   local -a F
   if [ -n "$f" ]; then explicit=1; else f="docs/qa/EVIDENCE_WAIVERS.txt"; fi
   rel="$f"
-  if [ ! -f "$REPO/$rel" ]; then
+  if [ ! -f "$SNAP/$rel" ]; then
+    # not in HEAD: a clone has no such waiver file
+    if [ -e "$REPO/$rel" ] || [ -L "$REPO/$rel" ]; then note_blind "waiver file $rel exists but is not git-tracked (not in HEAD)"; return 1; fi
     [ "$explicit" = 0 ] || { note_blind "waiver file $rel not found"; return 1; }
     return 0
   fi
-  if ! tracked "$rel"; then note_blind "waiver file $rel exists but is not git-tracked"; return 1; fi
-  # a waiver that exists only in the working tree would PASS here and FAIL in a clone
-  if ! git -C "$REPO" diff --quiet --ignore-submodules=none HEAD -- ":(literal)$rel" 2>/dev/null; then
-    note_blind "waiver file $rel differs from HEAD (commit it first)"; return 1
-  fi
+  # the waivers are read from HEAD; a working-tree copy that reads differently (edit, deletion, assume-unchanged /
+  # skip-worktree flag, local clean filter, stat-cache trick) makes the run BLIND instead of passing on either copy
+  head_check "waiver file $rel" "$rel"
   today="${RELCHK_TODAY:-$(date +%F)}"
   while IFS= read -r line || [ -n "$line" ]; do
     n=$((n+1))
@@ -767,7 +831,7 @@ load_waivers() {
     fi
     if [ -n "${WV[$key]+x}" ]; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n duplicate waiver"; continue; fi
     WV["$key"]="$reason [item $item, expires $exp]"
-  done < "$REPO/$rel"
+  done < "$SNAP/$rel"
   return 0
 }
 
@@ -848,7 +912,7 @@ raw_tree_check() {
 check_manifest_dir() {
   local d="$1" mf line name status rc o esc ent rp sawfail sawunv sawwaived mfs
   mfs="$(manifests_in "$d")"
-  if [ ! -d "$REPO/$d" ] || [ -z "$mfs" ]; then
+  if [ ! -d "$SNAP/$d" ] || [ -z "$mfs" ]; then
     note_blind "manifest directory $(printf '%q' "$d") is missing or has no tracked manifest"; return
   fi
   # I-1: a clone sees HEAD, not the index or the working tree. Any tracked file under the covered tree
@@ -889,7 +953,7 @@ check_manifest_dir() {
           S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/$mf entry escapes its directory: $ent"
         else
           # F2: an in-directory symlink must not lead outside the repository.
-          rp="$(readlink -m -- "$REPO/$d/$ent" 2>/dev/null || true)"   # -m: missing components are fine
+          rp="$(readlink -m -- "$SNAP/$d/$ent" 2>/dev/null || true)"   # -m: missing components are fine
           # N1: an entry reached through a symlink reads a file the tree walk above did not compare; walk it
           if [ -n "$rp" ] && [ "$rp" != "$(realpath -m -s -- "$REPO_REAL/$d/$ent" 2>/dev/null)" ]; then
             head_check "manifest entry $d/$ent" "$d/$ent"
@@ -903,9 +967,9 @@ check_manifest_dir() {
         # (backslash-escaped GNU/BSD lines, comments, anything else the parser cannot judge).
         S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/$mf unsupported manifest line: $line"
       fi
-    done < "$REPO/$d/$mf"
+    done < "$SNAP/$d/$mf"
     [ "$esc" = 0 ] || continue
-    o="$(cd "$REPO/$d" && sha256sum --strict -c "$mf" 2>&1)"; rc=$?
+    o="$(cd "$SNAP/$d" && sha256sum --strict -c "$mf" 2>&1)"; rc=$?
     sawfail=0; sawunv=0; sawwaived=0
     while IFS= read -r line; do
       if [[ "$line" =~ ^(.*):\ (OK|FAILED\ open\ or\ read|FAILED)$ ]]; then
@@ -922,7 +986,7 @@ check_manifest_dir() {
               echo "BADWAIVER  bad-entry waiver for $d/$name refused: a checksum mismatch is tampering or corruption and is never waivable"
             fi ;;
           *)
-            if git -C "$REPO" check-ignore -q -- "$d/$name"; then
+            if "${GIT_SNAP[@]}" check-ignore -q -- "$d/$name"; then
               S_UNV=$((S_UNV+1)); sawunv=1; echo "UNVERIFIABLE-FROM-CLONE  $d/$name (gitignored, absent/unreadable)"
             elif waived "bad-entry|$d|$name" "$d/$name (missing/unreadable)"; then sawwaived=1
             else
@@ -938,9 +1002,9 @@ check_manifest_dir() {
 
   # RC-3b: every regular file of the covered tree must be listed by the nearest manifest above it.
   local cout kind a b nend=0 lastkind="" ne=-1 nu=-1 nn=-1
-  cout="$(python3 -I - "$REPO" "$d" <<'PY'
+  cout="$(python3 -I - "$REPO" "$d" "$SNAP" <<'PY'
 import fnmatch, os, re, subprocess, sys
-repo, d = sys.argv[1:3]
+repo, d, snap = sys.argv[1:4]
 def is_mf(n):
     return n in ("SHA256SUMS", "SHA256SUMS.txt") or fnmatch.fnmatchcase(n, "MANIFEST*.sha256")
 def esc(t):
@@ -954,13 +1018,14 @@ def entries(path):
             if m:
                 out.add(os.path.normpath(m.group(1)))
     return out
-def ls(*flags):
-    r = subprocess.run(["git", "-C", repo, "ls-files", "-z", *flags, "--", ":(literal)" + d], capture_output=True)
+def ls():
+    # HEAD's tree only: never the index, never untracked or ignored working-tree files
+    r = subprocess.run(["git", "-C", repo, "ls-tree", "-r", "-z", "--name-only", "--full-tree", "HEAD", "--", d + "/"], capture_output=True)
     if r.returncode != 0:
-        print("ERR\tgit ls-files failed"); sys.exit(0)
+        print("ERR\tgit ls-tree failed"); sys.exit(0)
     return {p.decode("utf-8", "surrogateescape") for p in r.stdout.split(b"\0") if p}
-tracked = ls("--cached")
-files = sorted(ls("--cached", "--others", "--exclude-standard"))
+tracked = ls()
+files = sorted(tracked)
 tmf = {f for f in tracked if is_mf(os.path.basename(f))}
 mdirs = {os.path.dirname(f) for f in tmf}
 listed = {}
@@ -968,15 +1033,15 @@ def listed_for(md):
     if md not in listed:
         s = set()
         for f in sorted(tmf):
-            if os.path.dirname(f) == md and os.path.isfile(os.path.join(repo, f)):
-                s |= entries(os.path.join(repo, f))
+            if os.path.dirname(f) == md and os.path.isfile(os.path.join(snap, f)):
+                s |= entries(os.path.join(snap, f))
         listed[md] = s
     return listed[md]
 nested = set()
 nfiles = 0
 nunl = 0
 for f in files:
-    full = os.path.join(repo, f)
+    full = os.path.join(snap, f)
     if f in tmf or os.path.islink(full) or not os.path.isfile(full):
         continue
     nfiles += 1

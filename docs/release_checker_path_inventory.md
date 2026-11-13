@@ -1,100 +1,95 @@
-# Release checker: ways a cited path can differ between the working tree and a clean clone
+# Release checker: read sources and the ways the working tree can differ from a clean clone
 
-Item CAT-REL-CHECK-2 (structural replacement of the point checks of CAT-REL-CHECK-1, review rounds 1-5).
+Item CAT-REL-CHECK-2 (structural replacement of the point checks of CAT-REL-CHECK-1), review round 5 version.
 Status: PROVISIONAL (see docs/FOLLOW_UPS_NEXT_PHASE.md). Tool: `scripts/release/check_release_consistency.sh`.
 
 ## Class
 
-The checker reads the working tree, a release clone sees only HEAD. A cited repo path (and the changelog,
-the version files and the manifest trees) can therefore pass locally and fail in a clone, or the reverse. The
-class is "the path as the kernel resolves it here is not the path the clone resolves": any component of the path,
-any symlink hop, any directory on the way, or the final entry may be missing from HEAD, have another type, another
-link target or other content, or be hidden from `git status`.
+A release clone sees HEAD only. Whatever the checker reads from the working tree, the index or local git
+configuration (`.git/info/*`, `core.excludesFile`, filters, replace refs, assume-unchanged / skip-worktree flags)
+can make a local run PASS where a plain clone fails. Round 4 showed that closing the members one by one leaves new
+ones open (C1-C8 below). The structure is therefore: **content is read from HEAD only; the working tree is
+consulted only to prove that it equals HEAD (BLIND guards).**
 
-## One mechanism (not point checks)
+## Mechanism (round 5)
 
-`head_check` / `chain_one` resolve each path **component by component the way the kernel does**, following the
-`readlink` chain hop by hop (cap 40 hops) and honouring `.` and `..` after a symlinked directory. For **every
-component and every hop** the tree entry of HEAD must exist (`git ls-tree HEAD -- <path>`), must have the same
-type as the working tree (file / directory / symlink / submodule), a symlink hop must carry the **same target
-text as HEAD's blob**, and no name may collide with a sibling ignoring case. The final file must hash to its HEAD
-blob (`git hash-object --no-filters`: raw bytes, no clean filter, no stat cache), the final file or directory must show no `git status`
-difference, and no file under it may carry the skip-worktree or assume-unchanged flag (`git ls-files -v`). Anything
-that differs or cannot be proven makes the run BLIND (exit 2). The same status and flag checks cover every manifest
-tree, plus a raw per-file compare of every tracked file and symlink under it (N1), and a HEAD walk of every manifest entry reached through a symlink. All of it is "HEAD versus the working tree": the index is not what a clone sees.
+1. `GIT_NO_REPLACE_OBJECTS=1` is exported for the whole run (also inherited by the python helpers and
+   `git show <prevtag>:path`), so replace refs cannot change what HEAD contains (C8).
+2. `HEAD^{commit}` is resolved once. A snapshot of exactly that tree (files, symlinks, executable bit; gitlinks as
+   empty directories) is written to a private temp directory `SNAP` (`mktemp`, removed on exit) with one
+   `ls-tree -r -z` and one `cat-file --batch`. Nothing in the snapshot comes from the working tree or the index.
+3. Every content read (version files, changelog, `versions.json`, gradle files, evidence files, manifests, waiver
+   file, sha256sum runs, symlink resolution of cited paths and manifest entries) happens inside `SNAP`.
+4. Every set of paths (tracked-token set, top-level names, manifest discovery, completeness listing) comes from
+   `git ls-tree HEAD`, never from `ls-files` (index) or from a directory listing of the working tree.
+5. `.gitignore` decisions use `git check-ignore` inside `SNAP` with `GIT_CONFIG_GLOBAL=/dev/null`,
+   `GIT_CONFIG_NOSYSTEM=1` and `core.excludesFile=/dev/null`: only the committed `.gitignore` files count (C4).
+6. The working tree is read only by the BLIND guards: `head_check` / `chain_one` (component-by-component, hop-by-hop
+   walk, raw hash against the HEAD blob, `git status`, skip-worktree / assume-unchanged flags), `raw_tree_check` and the
+   status/flag checks for every manifest tree, and the `[ -e "$REPO/$q" ]` presence check of a cited path.
+   A difference makes the run BLIND (exit 2); it never changes a verdict that came from `SNAP`.
+7. Semantic consequence: a file or entry that exists only in the working tree or only in the index is invisible. A
+   manifest entry or cited path that names such a file is FAIL/MISS (as in a clone), not BLIND.
 
-## Inventory (each member has a RED-first test; mutants are in `mutation_check_release_consistency.sh`)
+## Inventory of every read in the script
 
-| # | Member | Behaviour now | Test |
-|---|--------|---------------|------|
-| 1 | symlink chain of n hops, all committed | PASS | Z1, Z12, Z39, existing I4-1 control |
-| 2 | middle hop retargeted in the working tree only | BLIND | Z2 (R5-1a), Z5 |
-| 3 | middle hop only staged | BLIND | Z3 (R5-1b) |
-| 4 | middle hop untracked | BLIND | Z4 |
-| 5 | hop with skip-worktree / assume-unchanged and retargeted | BLIND | Z6, Z7 |
-| 6 | symlink loop | MISS (the kernel cannot open it), never PASS; the 40-hop cap is defence in depth (equivalent mutant, below) | Z19 |
-| 7 | dangling hop | MISS | Z18 |
-| 8 | absolute hop (even into the repo) | BLIND (a clone elsewhere cannot prove it) | Z16 |
-| 9 | hop leaving the repository | MISS (existing outside-repo rule); `..` above the root inside the walk is BLIND (unreachable defence, equivalent mutant) | Z17 |
-| 10 | hop into a submodule | BLIND | Z22 |
-| 11 | path below a gitlink | MISS (git does not track below a gitlink), never PASS | Z23 |
-| 12 | clean gitlink cited directly (m-3, fixed: `cat-file -e HEAD:gitlink` was the false BLIND) | PASS | Z20 |
-| 13 | submodule checked out at another commit | BLIND | Z21 |
-| 14 | final file modified / staged | BLIND | existing R3-1, Z8 |
-| 15 | final file modified and assume-unchanged or skip-worktree (m-1, fixed) | BLIND (content hash) | Z8, Z9 |
-| 16 | cited directory holding such a file | BLIND (flag check) | Z10 |
-| 17 | manifest tree: HEAD mismatch hidden by assume-unchanged (m-1) | BLIND | Z11 |
-| 18 | directory symlink mid-path, committed | PASS (previously a false MISS) | Z12, Z40 |
-| 19 | directory symlink retargeted / only staged | BLIND | Z13, Z14 |
-| 20 | real directory replaced by a symlink | BLIND (type differs) | Z15 |
-| 21 | case-insensitive collision of the cited name or of a parent directory | BLIND | Z24, Z25 |
-| 22 | gitignored untracked hop | BLIND (not in HEAD) | Z26 |
-| 23 | gitignored but force-added file, committed | PASS | Z27 |
-| 24 | spaces in file, directory and symlink names (m-2, fixed) | checked like any path when the token is exactly a tracked file or directory | Z28-Z30 |
-| 25 | untracked name with a space | stays a skipped token (indistinguishable from a command line) | Z31 |
-| 26 | non-ASCII names | PASS committed, BLIND edited | Z32, Z33 |
-| 27 | tab, newline, other control characters | BLIND (existing); a newline cannot occur inside a backtick token; paths are never NUL-delimited by the checker | existing M-2, R3-3 |
-| 28 | CRLF working copy of an LF blob | BLIND: raw bytes are compared to the blob (`hash-object --no-filters`); also with `core.autocrlf=true` | Z34, Z35 |
-| 29 | committed `..`, mid-path `./` and `..` in link targets | PASS, resolved like the kernel | Z36, Z37, Z39, Z40 |
-| 30 | uncommitted edit seen through those spellings | BLIND | Z38 |
-| 31 | HEAD membership with several specs (RV5-4) | BLIND | Z41 |
-| 32 | `--version X` without a `## [X]` section (silently used the topmost) | BLIND (section not found) | Z42-Z44 |
-| 33 | cited path resolving to the repository root (F1; was exempt from the walk) | the cited spelling is always walked; a retargeted alias is BLIND | Z50-Z52 |
-| 34 | hop target containing/ending in a newline (F2; `$(...)`/`read` lost it) | raw compare with a sentinel; newline or control character in a target is BLIND | Z53-Z55 |
-| 35 | status / flag check on a symlink hop entry (F2; only the final entry had it) | every hop gets `entry_clean` | Z56 |
-| 36 | local attribute / filter source (clean filter, info/attributes, autocrlf after `git add`) (F3) | raw bytes differ from the blob: BLIND | Z57-Z59 |
-| 37 | inherited `GIT_*` environment (F6) | unset at start | Z60 |
-| 38 | no `--version`, topmost section differs from versions.json (F6) | section derived from versions.json, else BLIND | Z61, Z62 |
-| 39 | manifest tree: a tracked file tampered in HEAD, worktree restored behind a local clean filter (N1a) or a restored mtime with core.trustctime=false (N1b) | raw per-file compare of every tracked file and symlink under the tree: BLIND | Z69, Z70 |
-| 40 | committed `eol=crlf` attribute (N4) | accepted limit: BLIND, message says how to resolve; stricter than necessary, never a false pass | Z71 |
-| 41 | manifest tree holding a submodule (gitlink, mode 160000), manifest lists a file below it (R3-1); `raw_tree_check` skipped every mode but 100644/100755/120000 silently | any 160000 entry under a manifest tree is BLIND; any other unexpected mode is BLIND (no silent skip) | Z75 |
-| 42 | `.gitmodules` `ignore=all` or local `diff.ignoreSubmodules=all` hiding a modified submodule file from `git status` (R3-1) | every `git status` (and the waiver `git diff`) runs with `--ignore-submodules=none` | Z76, Z77, Z78, Z79 |
-| 43 | cited path or manifest entry lying inside a gitlink, directly or through a symlink hop (R3-1) | BLIND ("continues inside the submodule"); the gitlink itself, cited directly, is PASS only when `git status --ignore-submodules=none` is clean | Z20, Z80, Z81 |
-| 44 | tracked symlink under a manifest tree retargeted with the same length, stat cache fooled (R3-2) | symlink target compared with the HEAD blob: BLIND | Z82 |
-| 45 | newline in a tracked file name, `--stdin-paths` hash count mismatch, failing ls-tree probe (R3-2) | newline names hashed on their own; count mismatch and probe failure are BLIND | Z83, Z84, Z85 |
+Census: `grep -n 'git -C\|\$REPO/\|\$SNAP/\|repo,\|snap'` over the script; control needles: the known token `git -C`
+was found 19 times, a fabricated token 0 times.
 
-Equivalent mutants (not run): the unsupported-HEAD-mode branch in `chain_one` (`git ls-tree` canonicalises a regular-file mode such as 100664 to 100644; measured with a literal tree), removing the 40-hop cap (a real loop is MISS before the walk starts, and a HEAD loop
-cannot match a working tree that is not a loop because the link target is compared with HEAD's blob), and the
-`..`-above-the-root guard inside the walk (the outside-repo rule rejects such paths first).
+| Read | Source now | Guard against the working tree |
+|------|-----------|--------------------------------|
+| repo is a git repository, HEAD commit | `rev-parse` | none needed |
+| version files, openapi, tauri, cargo, lock files | `SNAP` | `head_check` of every version file that was read |
+| gradle file choice (`build.gradle` vs `.kts`, both-exist check) | `SNAP` | `head_check` (C5) |
+| `versions.json` (also under `--check changelog`) | `SNAP` | `head_check "versions.json"` when the section is derived (C7) |
+| previous tag, `git show <prevtag>:path` | repo object store, no-replace | n/a (tags are not the working tree) |
+| `docs/CHANGELOG.md` and the section parse | `SNAP` | `head_check` |
+| tracked-token needle, token path set, top-level names, tdirs (C6) | `ls-tree -r HEAD` | none needed |
+| `tracked()` | `head_entry` (`ls-tree HEAD -- path`) | none needed |
+| cited path existence, symlink resolution, outside-repo test | `SNAP` | `[ -e "$REPO/$q" ]` + `head_check "cited path"` |
+| manifest discovery (`SHA256SUMS`, `.txt`, `MANIFEST*.sha256`) | `SNAP` glob (C1) | tree status + flags + `raw_tree_check` |
+| manifest entries and `sha256sum --strict -c` | `SNAP` (C2) | `head_check` of entries reached through a symlink |
+| completeness (UNLISTED) listing | `ls-tree -r HEAD -- dir/`, content in `SNAP` | tree status + flags |
+| `.gitignore` decisions | `check-ignore` in `SNAP`, committed files only (C4) | none |
+| waiver file | `SNAP` (C3) | `head_check "waiver file"`; a waiver file present only in the working tree is BLIND |
+| nested manifests | `ls-tree` + `SNAP` | tree status |
+| replace refs (C8) | ignored globally | n/a |
 
-## Residual, not handled (UNCONFIRMED where marked)
+Remaining reads of `$REPO/...` are exactly the guards of column 3 plus `[ -e "$REPO/$neg" ]` for a fabricated name in
+the needle self-check. Remaining limits (UNCONFIRMED where not measured): the snapshot writes every file of HEAD per
+run (23k files / 186 MB were counted on the real repository; the run time was not measured); a gitlink is represented by
+an empty directory, so evidence below a submodule is MISS/FAIL, which matches a clone without submodules; an empty
+symlink target in HEAD cannot be written to the snapshot and gives BLIND; the snapshot writer uses a fixed interpreter
+path, but git itself is taken from PATH.
 
-* Unicode case folding and normalisation (NFC vs NFD) of names; the collision check folds ASCII only.
-* A clone made with `core.symlinks=false` (Windows) turns symlinks into text files; sparse or shallow clones; LFS
-  pointers (hash of the pointer vs content) - all UNCONFIRMED, untested.
-* The executable bit is not compared directly; `git status` reports a mode change on the final entry.
-* Every tracked regular file and symlink under a manifest tree is compared raw (N1), and a gitlink or any other mode there is BLIND (R3-1); this does not extend to hidden state this checker cannot see. Remaining: a committed `eol=` attribute makes the affected file BLIND (accepted limit, N4).
-* Untracked files inside a cited directory outside the evidence prefix; the executable bit when `core.fileMode=false`.
-* A name containing a double quote or a backslash is never extracted as a path, so it is never checked.
+## Class C1-C8 (round 4 NO-GO) and their tests
 
-## Silent-skip enumeration (R3-1, class-exhaustive; unexpected mode or type)
+All are driven through the real script on a fixture and compared with a plain `git clone` of the same repository
+(`cc` helper in the test file: a local PASS where the clone is not a PASS fails the test). RED-run against the round 4
+checker (`4ced5ef1`): Z87-Z96 fail there (Z97 guards the round 2 OWN6 member, which still holds).
 
-Every place that branches on a tree mode or a file type, and what happens to a value it does not expect:
+| # | Member | Now | Test |
+|---|--------|-----|------|
+| C1 | manifest deleted from index/worktree, HEAD has a wrong checksum | BLIND (tree differs from HEAD), never PASS | Z86 |
+| C2 | manifest entry names an untracked working-tree file | SHAFAIL (as a clone) | Z87 |
+| C3 | waiver file edited behind assume-unchanged / skip-worktree / local clean filter | HEAD's waiver file rules (FAIL as a clone) | Z88, Z89, Z90 |
+| C4 | `.git/info/exclude` / `core.excludesFile` names the missing entry | SHAFAIL, not UNVERIFIABLE | Z91, Z92 |
+| C5 | build.gradle and build.gradle.kts both in HEAD, one deleted locally | FAIL (ambiguous) as a clone | Z93 |
+| C6 | index-only top-level directory turns a token into a path | same verdict as the clone | Z94, Z94b |
+| C7 | `versions.json` edited locally under `--check changelog` | HEAD's section, BLIND for the edit | Z95, Z95b |
+| C8 | replace ref hides a tampered HEAD | never PASS (BLIND) | Z96 |
+| OWN6 | `git hash-object` fails in the per-path chain walk | BLIND, never a pass | Z97 |
 
-| Place | Handles | Unexpected value |
-|---|---|---|
-| `chain_one` mode `case` | 120000, 040000, 160000, 100644/100755 | `*)` chain_bad (BLIND); 160000 below the cited path is BLIND |
-| `raw_tree_check` mode `case` | 100644/100755, 120000 | was silently skipped (the R3-1 defect); now 160000 and `*)` are BLIND |
-| completeness helper (`os.path.islink(...) or not os.path.isfile(...)`: continue) | regular files | symlinks are covered by `raw_tree_check`; a gitlink in the tree is BLIND before the helper runs; an untracked non-regular file is not a manifest-coverage subject by design |
-| `git status` calls (entry_clean, check_manifest_dir) and the waiver `git diff` | all | submodule state is never ignored (`--ignore-submodules=none`) |
-| changelog path extractor | backticked tokens with `/` | tokens it cannot treat as paths are counted as SKIP in the summary, never PASS evidence |
+## Earlier members (rounds 1-4) after round 5
+
+The earlier members (symlink chains, retargeted or staged hops, flags, loops, dangling and absolute hops, submodules,
+case collisions, CRLF, spaces and non-ASCII names, `..` spellings, several version specs) keep their tests Z1-Z85.
+Where a member used to be BLIND only because the file was staged or untracked, it is now MISS or FAIL (the snapshot
+has no such file, as a clone has none); the tests were updated accordingly (Z14, Z16, Z17, Z26, Z41, Z65, Z73, Z81
+and others). Cases that stay BLIND are those where HEAD holds the entry but the working tree differs from it.
+
+## Honest boundary
+
+This list is the set of read sources found by the census above, each closed by the single mechanism; it is not a proof
+that no other divergence exists. The mutation runner covers the mechanism (reads switched back to the working tree,
+the index, `info/exclude`, replace refs; dropped guards).

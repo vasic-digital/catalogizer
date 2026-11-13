@@ -38,6 +38,7 @@ expect() {
   if ! printf '%s\n' "$out" | grep -q '^VERDICT: '; then bad "$label: no VERDICT line"; return; fi
   ok
 }
+cm() { ( cd "$1" && git add -A && git commit -q -m case ) ; }
 # mutation helper: mut <dir> <file> <sed-expr>  (asserts the sed really changed the file)
 mut() { local before; before="$(cksum < "$1/$2")"; sed -i "$3" "$1/$2"; [ "$before" != "$(cksum < "$1/$2")" ] || { bad "mutation no-op: $2 $3"; return 1; }; }
 
@@ -143,7 +144,7 @@ d=$(fresh); mut "$d" docs/CHANGELOG.md 's@^### REOPENED@\n### VERIFIED (more)\n-
 # F5
 d=$(fresh); mut "$d" docs/api/openapi.yaml 's#^  version: 2.4.0#  version: 2.4.0\n  version: 2.4.0#' && expect "F5 duplicate openapi info.version FAIL" 1 "exactly one info.version" "$d" --check version
 expect "F5 empty --version is a usage error" 2 "VERDICT: BLIND" "$GOLD" --version ""
-d=$(fresh); : > "$d/catalogizer-android/app/build.gradle"; expect "F5 both build.gradle and .kts -> FAIL" 1 "ambiguous" "$d" --check version
+d=$(fresh); : > "$d/catalogizer-android/app/build.gradle"; cm "$d"; expect "F5 both build.gradle and .kts -> FAIL" 1 "ambiguous" "$d" --check version
 d=$(fresh); echo q > "$d/\"q\".txt"; (cd "$d" && git add -A); expect "F5 needle survives a quoted tracked name" 0 "VERDICT: PASS" "$d" --check changelog
 d=$(fresh); echo b > "$d/.0first.txt"; (cd "$d" && git add -A) ; rm "$d/.0first.txt"; expect "F5 needle survives first tracked file deleted from tree" 0 "VERDICT: PASS" "$d" --check changelog
 expect "F5 -h prints VERDICT: HELP" 0 "VERDICT: HELP" "$GOLD" -h
@@ -270,15 +271,15 @@ d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; ( cd 
 d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS.txt ); echo tamper > "$d/docs/qa/run3/d.txt"; addrow "$d" docs/qa/run3/d.txt && expect "RC-3 tampered file under SHA256SUMS.txt -> FAIL" 1 "checksum mismatch" "$d" --check changelog
 d=$(fresh); mkdir -p "$d/docs/qa/run3"; echo e3 > "$d/docs/qa/run3/d.txt"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS.txt ); printf '%s  ../../etc/passwd\n' "$z" >> "$d/docs/qa/run3/SHA256SUMS.txt"; addrow "$d" docs/qa/run3/d.txt && expect "RC-3 escape in SHA256SUMS.txt -> FAIL" 1 "escapes its directory" "$d" --check changelog
 # RC-3b: manifest must list every regular file of its tree
-d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; expect "RC-3b unlisted file -> FAIL" 1 "UNLISTED  docs/qa/run2/extra.txt" "$d" --check changelog
-d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; expect "RC-3b summary counts unlisted" 1 "unlisted=1" "$d" --check changelog
+d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; cm "$d"; expect "RC-3b unlisted file -> FAIL" 1 "UNLISTED  docs/qa/run2/extra.txt" "$d" --check changelog
+d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; cm "$d"; expect "RC-3b summary counts unlisted" 1 "unlisted=1" "$d" --check changelog
 d=$(fresh); sed -i '/ b.txt$/d' "$d/docs/qa/run1/SHA256SUMS"; echo tampered > "$d/docs/qa/run1/b.txt"; expect "RC-3b entry deleted + file tampered -> FAIL" 1 "UNLISTED  docs/qa/run1/b.txt" "$d" --check changelog
 d=$(fresh); echo ignored > "$d/docs/qa/run1/pic.png"; expect "RC-3b gitignored file need not be listed" 0 "VERDICT: PASS" "$d" --check changelog
 d=$(fresh); ln -s c.txt "$d/docs/qa/run2/lnk.txt"; expect "RC-3b unlisted symlink is not a regular file" 0 "VERDICT: PASS" "$d" --check changelog
-d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; expect "RC-3b file in subdir without nested manifest -> FAIL" 1 "UNLISTED  docs/qa/run2/sub/n.txt" "$d" --check changelog
-d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2" && sha256sum sub/n.txt >> SHA256SUMS ); expect "RC-3b subdir file listed with relative path accepted" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; cm "$d"; expect "RC-3b file in subdir without nested manifest -> FAIL" 1 "UNLISTED  docs/qa/run2/sub/n.txt" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2" && sha256sum sub/n.txt >> SHA256SUMS ); cm "$d"; expect "RC-3b subdir file listed with relative path accepted" 0 "VERDICT: PASS" "$d" --check changelog
 d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); (cd "$d" && git add -A) ; expect "RC-3b nested manifest covers its subtree" 0 "VERDICT: PASS" "$d" --check changelog
-d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); (cd "$d" && git add -A) ; echo m > "$d/docs/qa/run2/sub/m.txt"; expect "RC-3b nested manifest completeness checked -> FAIL" 1 "UNLISTED  docs/qa/run2/sub/m.txt" "$d" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); (cd "$d" && git add -A) ; echo m > "$d/docs/qa/run2/sub/m.txt"; cm "$d"; expect "RC-3b nested manifest completeness checked -> FAIL" 1 "UNLISTED  docs/qa/run2/sub/m.txt" "$d" --check changelog
 d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); (cd "$d" && git add -A) ; echo t > "$d/docs/qa/run2/sub/n.txt"; expect "RC-3b nested manifest checksum checked -> FAIL" 1 "docs/qa/run2/sub/n.txt (checksum mismatch)" "$d" --check changelog
 d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); (cd "$d" && git add -A) ; expect "RC-3b manifest files themselves are not required" 0 "unlisted=0" "$d" --check changelog
 # waivers: declared, printed, counted, never silent
@@ -313,9 +314,9 @@ d=$(fresh); echo "$z  ./gone.txt" >> "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-
 # completeness-helper integrity: a stub that forges only the RC-3b helper's output
 cmpstub() { local sd; sd="$(mktemp -d "$ROOT/cstub.XXXXXX")"
   printf '#!/bin/sh\nin=$(cat)\nout=$(printf "%%s" "$in" | %s -I "$@")\ncase "$in" in\n*UNLISTED*) printf "%%s\\n" "$out" | { %s; } ;;\n*) printf "%%s\\n" "$out" ;;\nesac\nexit 0\n' "$REALPY" "$1" > "$sd/python3"; chmod +x "$sd/python3"; echo "$sd"; }
-sd=$(cmpstub 'cat'); d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; PATH="$sd:$PATH" expect "RC-3b pass-through stub still FAILs on unlisted" 1 "UNLISTED  docs/qa/run2/extra.txt" "$d" --check changelog
+sd=$(cmpstub 'cat'); d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; cm "$d"; PATH="$sd:$PATH" expect "RC-3b pass-through stub still FAILs on unlisted" 1 "UNLISTED  docs/qa/run2/extra.txt" "$d" --check changelog
 sd=$(cmpstub 'grep -v "^END"'); d=$(fresh); PATH="$sd:$PATH" expect "RC-3b helper without END -> BLIND" 2 "completeness helper output incomplete" "$d" --check changelog
-sd=$(cmpstub 'grep -v "^UNLISTED"'); d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; PATH="$sd:$PATH" expect "RC-3b helper with UNLISTED row dropped -> BLIND" 2 "completeness helper output incomplete" "$d" --check changelog
+sd=$(cmpstub 'grep -v "^UNLISTED"'); d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; cm "$d"; PATH="$sd:$PATH" expect "RC-3b helper with UNLISTED row dropped -> BLIND" 2 "completeness helper output incomplete" "$d" --check changelog
 sd=$(cmpstub 'cat; printf "UNLISTED\tforged\n"'); d=$(fresh); PATH="$sd:$PATH" expect "RC-3b helper with forged row after END -> BLIND" 2 "completeness helper output incomplete" "$d" --check changelog
 sd=$(cmpstub 'sed "/^NESTED/d"'); d=$(fresh); mkdir -p "$d/docs/qa/run2/sub"; echo n > "$d/docs/qa/run2/sub/n.txt"; ( cd "$d/docs/qa/run2/sub" && sha256sum n.txt > SHA256SUMS ); (cd "$d" && git add -A) ; echo m > "$d/docs/qa/run2/sub/m.txt"
 PATH="$sd:$PATH" expect "RC-3b helper with NESTED row dropped -> BLIND (nested manifest never skipped silently)" 2 "completeness helper output incomplete" "$d" --check changelog
@@ -347,7 +348,7 @@ d=$(fresh); mkrun3 "$d"; ln -s qa/run3 "$d/docs/ev"; addrow "$d" docs/ev/d.txt; 
 d=$(fresh); mkrun3 "$d"; addrow "$d" docs/qa/run3/../run3/d.txt; expect "path with .. inside evidence -> NOMANIFEST" 1 "NOMANIFEST" "$d" --check changelog
 d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS ); ln -s qa/run3 "$d/docs/ev"; addrow "$d" docs/ev/d.txt; expect "CAT-REL-CHECK-2: committed directory-symlink alias into manifested evidence is resolved hop by hop -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
 d=$(fresh); mkrun3 "$d"; ( cd "$d/docs/qa/run3" && sha256sum d.txt > SHA256SUMS ); addrow "$d" docs/ev/d.txt; ( cd "$d" && git add -A && git commit -q -m x ); ln -s qa/run3 "$d/docs/ev"
-RAW=1 expect "directory-symlink alias that is not committed -> BLIND, never a silent pass" 2 "docs/ev is not in HEAD" "$d" --check changelog
+RAW=1 expect "directory-symlink alias that is not committed -> MISS (a clone lacks it), never a silent pass" 1 "MISS  docs/ev/d.txt" "$d" --check changelog
 # R6: the evidence prefix directory itself
 d=$(fresh); addrow "$d" docs/qa/; expect "R6 VERIFIED docs/qa/ (prefix itself) is evidence -> NOMANIFEST" 1 "NOMANIFEST" "$d" --check changelog
 # control characters fail closed
@@ -357,7 +358,7 @@ d=$(fresh); mkdir -p "$d/docs/qa/run2/su
 b"; echo n > "$d/docs/qa/run2/su
 b/n.txt"; ( cd "$d" && git add -A ); expect "nested dir name with LF: its file is reported UNLISTED with LF escaped" 1 'UNLISTED  docs/qa/run2/su\x0ab/n.txt' "$d" --check changelog
 # R5: control chars in UNLISTED names are escaped, never raw
-d=$(fresh); echo e > "$d/docs/qa/run2/a${T}b.txt"; expect "R5 TAB in unlisted name is escaped" 1 'UNLISTED  docs/qa/run2/a\x09b.txt' "$d" --check changelog
+d=$(fresh); echo e > "$d/docs/qa/run2/a${T}b.txt"; cm "$d"; expect "R5 TAB in unlisted name is escaped" 1 'UNLISTED  docs/qa/run2/a\x09b.txt' "$d" --check changelog
 # glob characters in directory names are literal
 d=$(fresh); mkdir -p "$d/docs/qa/run[x]" "$d/docs/qa/runx"; echo a > "$d/docs/qa/run[x]/a.txt"; echo b > "$d/docs/qa/runx/b.txt"; ( cd "$d/docs/qa/run[x]" && sha256sum a.txt > SHA256SUMS ); ( cd "$d/docs/qa/runx" && sha256sum b.txt > SHA256SUMS ); addrow "$d" 'docs/qa/run[x]/a.txt'; ( cd "$d" && git add -A ); expect "glob dir name run[x] is literal (sibling runx not mixed in)" 0 "VERDICT: PASS" "$d" --check changelog
 d=$(fresh); mkdir -p "$d/docs/qa/run[x]" "$d/docs/qa/runx"; echo a > "$d/docs/qa/run[x]/a.txt"; echo b > "$d/docs/qa/runx/b.txt"; ( cd "$d/docs/qa/run[x]" && sha256sum a.txt > SHA256SUMS ); ( cd "$d/docs/qa/runx" && sha256sum b.txt > SHA256SUMS ); echo extra > "$d/docs/qa/run[x]/extra.txt"; addrow "$d" 'docs/qa/run[x]/a.txt'; ( cd "$d" && git add -A ); expect "glob dir name: unlisted file inside is found" 1 'UNLISTED  docs/qa/run[x]/extra.txt' "$d" --check changelog
@@ -367,7 +368,7 @@ sd=$(cmpstub 'sed "s/^END\t\([0-9]*\)\t\([0-9]*\)\t0/NESTED\tdocs\/qa\/ghost\nEN
 sd=$(cmpstub 'sed "s/^END\t\([0-9]*\)\t\([0-9]*\)\t0/NESTED\tdocs\/qa\/run3\nEND\t\1\t\2\t1/"'); d=$(fresh); mkrun3 "$d"; ( cd "$d" && git add -A ); PATH="$sd:$PATH" expect "nested dir without a tracked manifest -> BLIND" 2 "is missing or has no tracked manifest" "$d" --check changelog
 # waiver file must equal HEAD
 d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|r'; echo '# edited' >> "$d/docs/qa/EVIDENCE_WAIVERS.txt"; RAW=1 expect "waiver file edited but uncommitted -> BLIND" 2 "differs from HEAD" "$d" --check changelog
-d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|r'; ( cd "$d" && git rm -q --cached docs/qa/EVIDENCE_WAIVERS.txt ); RAW=1 expect "waiver file removed from index -> BLIND" 2 "not git-tracked" "$d" --check changelog
+d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|r'; ( cd "$d" && git rm -q --cached docs/qa/EVIDENCE_WAIVERS.txt ); RAW=1 expect "waiver file removed from index -> BLIND" 2 "differs from HEAD" "$d" --check changelog
 # R1: whitespace-only reason
 d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|   '; expect "R1 whitespace-only reason (unlisted) -> BADWAIVER" 1 "missing reason" "$d" --check changelog
 d=$(fresh); wv "$d" "bad-entry|docs/qa/run2|c.txt|CAT-T-1|2099-12-31|${T} ${T}"; expect "R1 whitespace-only reason (bad-entry) -> BADWAIVER" 1 "missing reason" "$d" --check changelog
@@ -423,7 +424,7 @@ echo "== review round 3: HEAD-consistency for changelog, version files and cited
 mkother() { mkdir -p "$1/docs/other"; echo x > "$1/docs/other/z.txt"; ( cd "$1" && git add -A && git commit -q -m other ); }
 # R3-1a: a cited path outside any manifest tree that is only staged (a clone has no such file)
 d=$(fresh); mkdir -p "$d/docs/other"; echo x > "$d/docs/other/z.txt"; addrow "$d" docs/other/z.txt; ( cd "$d" && git commit -q -m cl docs/CHANGELOG.md )
-RAW=1 expect "R3-1a cited path only staged -> BLIND" 2 "docs/other/z.txt" "$d" --check changelog
+RAW=1 expect "R3-1a cited path only staged -> MISS (a clone lacks it)" 1 "MISS  docs/other/z.txt" "$d" --check changelog
 # R3-1b: cited path modified in the working tree only
 d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; ( cd "$d" && git commit -q -a -m cl ); echo y >> "$d/docs/other/z.txt"
 RAW=1 expect "R3-1b cited path edited only in the working tree -> BLIND" 2 "docs/other/z.txt" "$d" --check changelog
@@ -444,7 +445,7 @@ d=$(fresh); echo tampered > "$d/docs/qa/run2/c.txt"; ( cd "$d" && git add -A )
 RAW=1 expect "R3-3 covered file edit staged only -> BLIND (not committed)" 2 "not committed" "$d" --check changelog
 # R3-3 (survivor 137): the changelog is untracked (absent from HEAD) -> BLIND, not silently read
 d=$(fresh); ( cd "$d" && git rm -q --cached docs/CHANGELOG.md && git commit -q -m untrack )
-RAW=1 expect "R3-3 changelog not in HEAD -> BLIND" 2 "is not in HEAD" "$d" --check changelog
+RAW=1 expect "R3-3 changelog not in HEAD -> BLIND" 2 "docs/CHANGELOG.md not found" "$d" --check changelog
 # R3-3 (survivor 139): git status failing inside head_check must be BLIND, never silently clean
 gs=$(mktemp -d "$ROOT/gstub.XXXXXX"); realgit="$(command -v git)"
 printf '#!/bin/sh\ncase " $* " in *" status "*" docs/CHANGELOG.md"*|*" status "*"literal)docs/CHANGELOG.md"*) exit 1;; esac\nexec %s "$@"\n' "$realgit" > "$gs/git"; chmod +x "$gs/git"
@@ -458,7 +459,7 @@ d=$(fresh); mkdir -p "$d/docs/other"; ( cd "$d/docs/other" && ln -s ../nowhere l
 RAW=1 expect "I4-1 P1x symlink retargeted only in the working tree -> BLIND" 2 "docs/other/ln" "$d" --check changelog
 # I4-1 / P2x: a brand-new symlink that is only staged (a clone has no such path)
 d=$(fresh); mkdir -p "$d/docs/other"; ( cd "$d/docs/other" && ln -s ../qa/run2/c.txt ln ); addrow "$d" docs/other/ln; ( cd "$d" && git commit -q docs/CHANGELOG.md -m cl )
-RAW=1 expect "I4-1 P2x symlink only staged -> BLIND" 2 "docs/other/ln" "$d" --check changelog
+RAW=1 expect "I4-1 P2x symlink only staged -> MISS (a clone lacks it)" 1 "MISS  docs/other/ln" "$d" --check changelog
 # I4-1 negative control: the same symlink committed passes
 d=$(fresh); mkdir -p "$d/docs/other"; ( cd "$d/docs/other" && ln -s ../qa/run2/c.txt ln ); addrow "$d" docs/other/ln; ( cd "$d" && git commit -q -a -m cl )
 RAW=1 expect "I4-1 committed symlink to manifested evidence -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
@@ -473,7 +474,7 @@ done
 
 # R3-2 (R-m): a waiver file that is only staged must go BLIND
 d=$(fresh); mkdir -p "$d/docs/qa"; printf '%s\n' 'unlisted|docs/qa/run2|x.txt|CAT-T-1|2099-12-31|r' > "$d/docs/qa/EVIDENCE_WAIVERS.txt"; ( cd "$d" && git add docs/qa/EVIDENCE_WAIVERS.txt )
-RAW=1 expect "R3-2 staged-only waiver file -> BLIND" 2 "differs from HEAD" "$d" --check changelog
+RAW=1 expect "R3-2 staged-only waiver file -> BLIND" 2 "not git-tracked" "$d" --check changelog
 # R3-4: a waiver naming a mismatched entry is refused (BADWAIVER), not left as an unused waiver
 d=$(fresh); echo "$z  c.txt" > "$d/docs/qa/run2/SHA256SUMS"; wv "$d" 'bad-entry|docs/qa/run2|c.txt|CAT-T-1|2099-12-31|E-1 laundering attempt'
 expect "R3-4 mismatch waiver is reported as BADWAIVER" 1 "BADWAIVER" "$d" --check changelog
@@ -529,15 +530,15 @@ RAW=1 expect "Z12 committed directory symlink mid-path -> PASS" 0 "VERDICT: PASS
 d=$(fresh); lk "$d" docs/other/dl ../qa/run2; addrow "$d" docs/other/dl/c.txt; mkdir -p "$d/docs/other2"; echo c > "$d/docs/other2/c.txt"; cm "$d"; lk "$d" docs/other/dl ../other2
 RAW=1 expect "Z13 directory symlink retargeted only in the working tree -> BLIND" 2 "docs/other/dl" "$d" --check changelog
 d=$(fresh); addrow "$d" docs/other/dl/c.txt; ( cd "$d" && git commit -q docs/CHANGELOG.md -m cl ); lk "$d" docs/other/dl ../qa/run2; ( cd "$d" && git add docs/other/dl )
-RAW=1 expect "Z14 directory symlink only staged -> BLIND" 2 "docs/other/dl" "$d" --check changelog
+RAW=1 expect "Z14 directory symlink only staged -> MISS (a clone lacks it)" 1 "MISS  docs/other/dl" "$d" --check changelog
 # a committed real directory replaced by a symlink to a copy in the working tree
 d=$(fresh); mkdir -p "$d/docs/other/dd" "$d/docs/other/cp"; echo q > "$d/docs/other/dd/f.txt"; echo q > "$d/docs/other/cp/f.txt"; addrow "$d" docs/other/dd/f.txt; cm "$d"; rm -r "$d/docs/other/dd"; lk "$d" docs/other/dd cp
 RAW=1 expect "Z15 real directory replaced by a symlink -> BLIND" 2 "docs/other/dd is a directory in HEAD but not in the working tree" "$d" --check changelog
 # absolute hop, leaving-the-repo hop, dangling hop, loop
 d=$(fresh); lk "$d" docs/other/ln "$d/docs/qa/run2/c.txt"; addrow "$d" docs/other/ln; cm "$d"
-RAW=1 expect "Z16 absolute symlink hop (even into the repo) -> BLIND" 2 "absolute" "$d" --check changelog
+RAW=1 expect "Z16 absolute symlink hop (even into the repo) -> MISS, never PASS" 1 "MISS  docs/other/ln" "$d" --check changelog
 d=$(fresh); lk "$d" docs/other/ln ../../../outside_target; : > "$ROOT/outside_target"; addrow "$d" docs/other/ln; cm "$d"
-RAW=1 expect "Z17 hop leaving the repo is never PASS" 1 "MISS" "$d" --check changelog
+RAW=1 expect "Z17 hop leaving the repo is never PASS" 2 "leaves the repository" "$d" --check changelog
 d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../nowhere; addrow "$d" docs/other/ln; cm "$d"
 RAW=1 expect "Z18 dangling chain -> MISS" 1 "MISS  docs/other/ln" "$d" --check changelog
 d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ln; addrow "$d" docs/other/ln; cm "$d"
@@ -559,7 +560,7 @@ d=$(fresh); mkdir -p "$d/docs/OTHER/x" "$d/docs/other/x"; echo 1 > "$d/docs/OTHE
 RAW=1 expect "Z25 case-insensitive collision of a parent directory -> BLIND" 2 "collides" "$d" --check changelog
 # gitignored hop / path
 d=$(fresh); lk "$d" docs/other/ln.png ../qa/run2/c.txt; addrow "$d" docs/other/ln.png; cm "$d"
-RAW=1 expect "Z26 gitignored untracked symlink is never PASS" 2 "is not in HEAD" "$d" --check changelog
+RAW=1 expect "Z26 gitignored untracked symlink is never PASS" 1 "MISS  docs/other/ln.png" "$d" --check changelog
 d=$(fresh); mkdir -p "$d/docs/other"; echo 1 > "$d/docs/other/f.png"; ( cd "$d" && git add -f docs/other/f.png ); addrow "$d" docs/other/f.png; cm "$d"
 RAW=1 expect "Z27 force-added file under an ignore rule, committed -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
 # paths with spaces and unicode (m-2): extractor + the whole chain
@@ -594,7 +595,7 @@ d=$(fresh); mkdir -p "$d/docs/other/real/inner"; echo k > "$d/docs/other/real/k.
 RAW=1 expect "Z40 '..' after a directory symlink resolves through the link target -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
 # RV5-4: HEAD membership with several specs (version files), where git status cannot see it
 d=$(fresh); ( cd "$d" && git rm -q --cached catalog-web/package.json && git commit -q -m untrack )
-RAW=1 expect "Z41 RV5-4 one of several version files not in HEAD -> BLIND" 2 "catalog-web/package.json is not in HEAD" "$d" --check version
+RAW=1 expect "Z41 RV5-4 one of several version files not in HEAD -> FAIL (a clone lacks it)" 1 "catalog-web/package.json version: cannot read" "$d" --check version
 # a symlink hop of HEAD replaced by a regular file with the same content (type differs)
 d=$(fresh); lk "$d" docs/other/ln ln2; lk "$d" docs/other/ln2 ../qa/run2/c.txt; addrow "$d" docs/other/ln; cm "$d"; rm "$d/docs/other/ln2"; cp "$d/docs/qa/run2/c.txt" "$d/docs/other/ln2"
 RAW=1 expect "Z45 symlink hop replaced by a regular file -> BLIND" 2 "docs/other/ln2 is a symlink in HEAD but not in the working tree" "$d" --check changelog
@@ -651,14 +652,15 @@ RAW=1 expect "Z62 F6 no --version and no versions.json -> BLIND, not the topmost
 # gitstub <fail-word>: a git wrapper that fails when any argument equals <fail-word>, else runs the real git
 REALGIT="$(command -v git)"
 gitstub() { local sd; sd="$(mktemp -d "$ROOT/gstub.XXXXXX")"; printf '#!/bin/sh\nfor a in "$@"; do [ "$a" = "%s" ] && exit 1; done\nexec %s "$@"\n' "$1" "$REALGIT" > "$sd/git"; chmod +x "$sd/git"; echo "$sd"; }
+gitstub2() { local sd; sd="$(mktemp -d "$ROOT/gstub.XXXXXX")"; printf '#!/bin/sh\n%s\nexec %s "$@"\n' "$1" "$REALGIT" > "$sd/git"; chmod +x "$sd/git"; echo "$sd"; }
 d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; cm "$d"
-sd=$(gitstub --name-only); PATH="$sd:$PATH" RAW=1 expect "Z63 OWN1 git failing in the case-collision listing -> BLIND" 2 "git ls-tree failed" "$d" --check changelog
+sd=$(gitstub2 'case " $* " in *" --name-only HEAD -- "*) exit 1;; esac'); PATH="$sd:$PATH" RAW=1 expect "Z63 OWN1 git failing in the case-collision listing -> BLIND" 2 "git ls-tree failed" "$d" --check changelog
 d=$(fresh); mkother "$d"; addrow "$d" docs/other/z.txt; cm "$d"
-sd=$(gitstub hash-object); PATH="$sd:$PATH" RAW=1 expect "Z64 OWN6 git hash-object failing -> BLIND" 2 "git hash-object failed" "$d" --check changelog
-d=$(fresh); mkother "$d"; echo q > "$d/docs/other/a"; cm "$d"; rm "$d/docs/other/a"; mkdir "$d/docs/other/a"; echo b > "$d/docs/other/a/b"; addrow "$d" docs/other/a/b
-RAW=1 expect "Z65 OWN2 HEAD file replaced by a directory that the cited path goes through -> BLIND" 2 "continues below the file docs/other/a" "$d" --check changelog
+sd=$(gitstub hash-object); PATH="$sd:$PATH" RAW=1 expect "Z64 OWN6 git hash-object failing -> BLIND" 2 "git hash-object failed for docs/other/z.txt" "$d" --check changelog
+d=$(fresh); mkother "$d"; echo q > "$d/docs/other/a"; cm "$d"; rm "$d/docs/other/a"; mkdir "$d/docs/other/a"; echo b > "$d/docs/other/a/b"; addrow "$d" docs/other/a/b; ( cd "$d" && git commit -q docs/CHANGELOG.md -m cl )
+RAW=1 expect "Z65 OWN2 HEAD file replaced by a directory that the cited path goes through -> MISS (HEAD snapshot has a file there)" 1 "MISS  docs/other/a/b" "$d" --check changelog
 d=$(fresh); mkother "$d"; e="$(printf '' | git -C "$d" hash-object -w --stdin)"; ( cd "$d" && git update-index --add --cacheinfo "120000,$e,docs/other/e" && git commit -q -m emptylink ); echo 1 > "$d/docs/other/x"; ln -s x "$d/docs/other/e"; addrow "$d" docs/other/e
-RAW=1 expect "Z66 OWN3 empty symlink in HEAD -> BLIND" 2 "docs/other/e is an empty symlink in HEAD" "$d" --check changelog
+RAW=1 expect "Z66 OWN3 empty symlink in HEAD -> BLIND (the snapshot cannot hold it)" 2 "cannot write the HEAD snapshot" "$d" --check changelog
 # OWN4 (unsupported HEAD mode) is an equivalent mutant: git ls-tree canonicalises every regular-file mode to 100644/100755 (measured with a literal tree holding 100664), so the `*)` branch is defensive only.
 d=$(fresh); smk "$d"; addrow "$d" docs/subm; cm "$d"; rm -rf "${d:?}/docs/subm"; echo f > "$d/docs/subm"
 RAW=1 expect "Z68 OWN5 submodule replaced by a regular file -> BLIND" 2 "docs/subm is a submodule in HEAD but not a directory" "$d" --check changelog
@@ -678,7 +680,7 @@ d=$(fresh); echo e5 > "$d/docs/qa/run2/e5.txt"; ( cd "$d/docs/qa/run2" && sha256
 RAW=1 expect "Z72 N1 negative control: committed manifest tree, untouched -> PASS" 0 "VERDICT: PASS" "$d" --check changelog
 # N1: a manifest entry reached through a symlink to a file outside the tree is walked against HEAD
 d=$(fresh); mkother "$d"; echo y >> "$d/docs/other/z.txt"; ( cd "$d/docs/qa/run2" && ln -s ../../other/z.txt zl.txt && sha256sum zl.txt >> SHA256SUMS ); ( cd "$d" && git add docs/qa/run2 && git commit -q -m zl )
-RAW=1 expect "Z73 N1 manifest entry via symlink to a modified outside file -> BLIND" 2 "manifest entry docs/qa/run2/zl.txt" "$d" --check changelog
+RAW=1 expect "Z73 N1 manifest entry via symlink to a file modified only in the working tree -> SHAFAIL like a clone" 1 "SHAFAIL  docs/qa/run2/zl.txt" "$d" --check changelog
 # N4: a committed eol attribute makes the cited file BLIND (accepted limit); the message names the resolution
 d=$(fresh); mkdir -p "$d/docs/other"; printf '*.txt text eol=crlf\n' > "$d/.gitattributes"; printf 'a\r\n' > "$d/docs/other/f.txt"; addrow "$d" docs/other/f.txt; cm "$d"; printf 'a\r\n' > "$d/docs/other/f.txt"
 RAW=1 expect "Z71 N4 committed eol=crlf attribute -> BLIND with the resolution wording" 2 "to resolve, commit the bytes exactly as they are in the working tree or remove the eol/filter attribute" "$d" --check changelog
@@ -707,7 +709,7 @@ d=$(fresh); smk2 "$d" docs/subm; ( cd "$d" && git config -f .gitmodules submodul
 RAW=1 expect "Z80 R3-1 cited symlink into a submodule with ignore=all -> BLIND" 2 "continues inside the submodule docs/subm" "$d" --check changelog
 # R3-1 a manifest entry reached through a symlink into a submodule
 d=$(fresh); smk2 "$d" docs/subm; ( cd "$d/docs/qa/run2" && ln -s ../../subm/f sl.txt && sha256sum sl.txt >> SHA256SUMS ); cm "$d"
-RAW=1 expect "Z81 R3-1 manifest entry via symlink into a submodule -> BLIND" 2 "continues inside the submodule docs/subm" "$d" --check changelog
+RAW=1 expect "Z81 R3-1 manifest entry via symlink into a submodule -> SHAFAIL like a clone" 1 "SHAFAIL  docs/qa/run2/sl.txt" "$d" --check changelog
 
 # R3-2: a tracked symlink in the manifest tree retargeted with the same length, stat cache fooled
 d=$(fresh); ( cd "$d/docs/qa/run2" && ln -s aa lnk ); ( cd "$d" && git add -A && git commit -q -m lnk && git config core.checkStat minimal && git config core.trustctime false )
@@ -727,6 +729,55 @@ PATH="$sd:$PATH" RAW=1 expect "Z84 R3-2 hash-object returns fewer hashes than fi
 d=$(fresh); sd=$(gitstub2 'case "$*" in *" ls-tree HEAD -- docs/qa/run2/") exit 1 ;; esac')
 PATH="$sd:$PATH" RAW=1 expect "Z85 R3-2 failing ls-tree probe of the manifest tree -> BLIND" 2 "cannot prove the manifest tree matches HEAD" "$d" --check changelog
 
+echo "== CAT-REL-CHECK-2 round 5 (HEAD is the single source of every read; C1-C8 each compared with a plain clone)"
+# cc <label> <local-rc> <needle> <dir> [checker args]: the local verdict must be <local-rc> AND must never be a
+# PASS when a plain `git clone` of the same repository (HEAD only) is not one.
+cc() {
+  local label="$1" rc="$2" needle="$3" dir="$4" crc lrc cl; shift 4
+  RAW=1 expect "$label" "$rc" "$needle" "$dir" "$@"
+  cl="$dir.clone"; git clone -q "$dir" "$cl" >/dev/null 2>&1 || { bad "$label: clone failed"; return; }
+  "$CHECKER" --repo "$cl" "$@" >/dev/null 2>&1; crc=$?
+  "$CHECKER" --repo "$dir" "$@" >/dev/null 2>&1; lrc=$?
+  if [ "$crc" -ne 0 ] && [ "$lrc" -eq 0 ]; then bad "$label: local PASS but a plain clone gives rc=$crc"; else ok; fi
+}
+# C1: HEAD's manifest names a wrong checksum; the working tree and the index no longer have the manifest at all
+d=$(fresh); ( cd "$d/docs/qa/run2" && printf '%064d  c.txt\n' 0 > SHA256SUMS ); ( cd "$d" && git add -A && git commit -q -m badsum && git rm -q docs/qa/run2/SHA256SUMS )
+cc "Z86 C1 manifest deleted from index and worktree, HEAD's checksum is wrong -> never PASS (BLIND: worktree differs from HEAD)" 2 "has changes that are not committed" "$d" --check changelog
+# C2: a manifest entry names a file that exists only as an untracked file in the working tree
+d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; ( cd "$d/docs/qa/run2" && sha256sum extra.txt >> SHA256SUMS ); ( cd "$d" && git add docs/qa/run2/SHA256SUMS && git commit -q -m entry )
+cc "Z87 C2 manifest entry names an untracked working-tree file -> FAIL (a clone lacks it)" 1 "docs/qa/run2/extra.txt (missing/unreadable, not gitignored)" "$d" --check changelog
+# C3: the working-tree waiver file differs from HEAD's, hidden from `git diff HEAD`
+w3() { d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; wv "$d" 'unlisted|docs/qa/run2|nothing.txt|CAT-T-1|2099-12-31|r'; sed -i 's/nothing.txt/extra.txt/' "$d/docs/qa/EVIDENCE_WAIVERS.txt"; }
+w3; ( cd "$d" && git update-index --assume-unchanged docs/qa/EVIDENCE_WAIVERS.txt )
+cc "Z88 C3a waiver edited in the worktree behind assume-unchanged -> HEAD's waivers rule" 1 "UNLISTED  docs/qa/run2/extra.txt" "$d" --check changelog
+w3; ( cd "$d" && git update-index --skip-worktree docs/qa/EVIDENCE_WAIVERS.txt )
+cc "Z89 C3b waiver edited in the worktree behind skip-worktree -> HEAD's waivers rule" 1 "UNLISTED  docs/qa/run2/extra.txt" "$d" --check changelog
+w3; ( cd "$d" && git config filter.wv.clean 'sed s/extra.txt/nothing.txt/' && printf 'docs/qa/EVIDENCE_WAIVERS.txt filter=wv\n' > .git/info/attributes )
+cc "Z90 C3c waiver edited in the worktree behind a local clean filter -> HEAD's waivers rule" 1 "UNLISTED  docs/qa/run2/extra.txt" "$d" --check changelog
+# C4: .git/info/exclude or core.excludesFile must not turn a missing entry into UNVERIFIABLE
+d=$(fresh); echo 'gone.txt' >> "$d/.git/info/exclude"; ( cd "$d/docs/qa/run2" && printf '%s  gone.txt\n' "$(printf g | sha256sum | cut -d' ' -f1)" >> SHA256SUMS ); ( cd "$d" && git add -A && git commit -q -m gone )
+cc "Z91 C4 .git/info/exclude names the missing entry -> still SHAFAIL (only the committed .gitignore counts)" 1 "docs/qa/run2/gone.txt (missing/unreadable, not gitignored)" "$d" --check changelog
+d=$(fresh); echo 'gone.txt' > "$d/.git/myexcludes"; ( cd "$d" && git config core.excludesFile "$d/.git/myexcludes" ); ( cd "$d/docs/qa/run2" && printf '%s  gone.txt\n' "$(printf g | sha256sum | cut -d' ' -f1)" >> SHA256SUMS ); ( cd "$d" && git add -A && git commit -q -m gone )
+cc "Z92 C4 core.excludesFile names the missing entry -> still SHAFAIL" 1 "docs/qa/run2/gone.txt (missing/unreadable, not gitignored)" "$d" --check changelog
+# C5: both gradle files are in HEAD; the working tree lost one of them
+d=$(fresh); cp "$d/catalogizer-android/app/build.gradle.kts" "$d/catalogizer-android/app/build.gradle"; ( cd "$d" && git add -A && git commit -q -m both ); rm "$d/catalogizer-android/app/build.gradle"
+cc "Z93 C5 build.gradle and build.gradle.kts both in HEAD, one deleted locally -> FAIL as in a clone" 1 "both build.gradle.kts and build.gradle exist" "$d" --check version
+# C6: the tracked-path sets come from HEAD: an index-only top-level directory must not make a token a path
+d=$(fresh); mkdir -p "$d/zzz"; echo q > "$d/zzz/new.txt"; ( cd "$d" && git add zzz/new.txt ); addrow "$d" zzz/new.txt; ( cd "$d" && git add -A && git reset -q zzz/new.txt && git commit -q -m c6 ); ( cd "$d" && git add zzz/new.txt )
+cc "Z94 C6 index-only top-level directory does not turn a token into a path -> same verdict as a clone" 0 "skipped" "$d" --check changelog
+o1="$("$CHECKER" --repo "$d" --check changelog 2>&1 | grep '^VERDICT' | sed 's/reason:.*//')"; o2="$("$CHECKER" --repo "$d.clone" --check changelog 2>&1 | grep '^VERDICT' | sed 's/reason:.*//')"
+if [ "$o1" = "$o2" ] && [ -n "$o1" ]; then ok; else bad "Z94b C6 local verdict differs from the clone's ($o1 vs $o2)"; fi
+# C7: --check changelog derives the section from versions.json; a local edit must neither be used nor go unnoticed
+d=$(fresh); sed -i 's/"minor": 4/"minor": 3/' "$d/versions.json"
+cc "Z95 C7 versions.json edited locally, --check changelog without --version -> HEAD's section, BLIND for the edit" 2 "section 2.4.0:" "$d" --check changelog
+out="$(RAW=1 "$CHECKER" --repo "$d" --check changelog 2>&1)"; if printf '%s\n' "$out" | grep -qF 'versions.json'; then ok; else bad "Z95b C7 the edited versions.json is not reported"; fi
+# C8: a replace ref must not change what is read; the local repository "heals" HEAD, a plain clone does not get the ref
+d=$(fresh); A="$(git -C "$d" rev-parse HEAD)"; echo tampered > "$d/docs/qa/run2/c.txt"; ( cd "$d" && git commit -q -a -m tamper ); B="$(git -C "$d" rev-parse HEAD)"
+( cd "$d" && git replace "$B" "$A" && git checkout -q "$A" -- docs/qa/run2/c.txt )
+cc "Z96 C8 replace ref hides a tampered HEAD from the checker -> never PASS (replace refs ignored, worktree differs from the real HEAD)" 2 "VERDICT: BLIND" "$d" --check changelog
+# OWN6: a failing `git hash-object` in the per-path chain walk is BLIND, never a pass
+d=$(fresh); sd=$(gitstub2 'case "$*" in *"hash-object --no-filters -- "*) exit 1 ;; esac')
+PATH="$sd:$PATH" RAW=1 expect "Z97 OWN6 failing hash-object in the chain walk -> BLIND" 2 "git hash-object failed for" "$d" --check changelog
 echo "== selftest (11.4.273 control needles built into the tool)"
 out="$("$CHECKER" --selftest 2>&1)"; got=$?
 if [ "$got" = 0 ] && printf '%s\n' "$out" | grep -q '^VERDICT: PASS selftest'; then ok; else bad "selftest rc=$got"; fi

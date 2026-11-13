@@ -116,6 +116,14 @@ The only cure for a mismatch is to regenerate the evidence and its manifest. Exa
 the cover-art run `docs/qa/coverart/results/final/` has a `summary.txt` whose checksum no longer
 matches (finding E-1); it stays a `SHAFAIL` until that evidence is regenerated.
 
+Round 5 (CAT-REL-CHECK-2): HEAD is the single source of every read. The checker writes a snapshot of the HEAD tree
+to a private temp directory and reads versions, changelog, `versions.json`, gradle files, evidence files, manifests,
+waivers and `.gitignore` decisions (committed `.gitignore` files only) from it, with replace refs disabled
+(`GIT_NO_REPLACE_OBJECTS=1`). Path sets come from `git ls-tree HEAD`. The working tree is consulted only to prove it
+equals HEAD (BLIND otherwise). Consequences: an untracked or index-only file is invisible, so a manifest entry or cited
+path that names one is `SHAFAIL`/`MISS` (as in a clone), not BLIND; the snapshot costs one write of every HEAD file per
+run (run time on the real repository UNCONFIRMED); an empty symlink target in HEAD gives BLIND.
+
 Committed state only: a clone sees HEAD, not the index or the working tree, so the run goes BLIND (exit 2)
 for each of the divergences listed below (the list is the class inventory, not a proof that no other divergence exists). The same walk is applied to `docs/CHANGELOG.md`,
 every version file that was read and every existing cited path (full inventory and tests:
