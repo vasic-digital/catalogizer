@@ -2285,3 +2285,13 @@ Constitution bd0036bd (already on all mirrors and pinned). F1 closed for the 336
 - SONAR-R5-N2 (test-instrumentation, minor): DEL/control chars in password and decoded auth are documented as rejected but unpinned (mutant X5 survives); add cases.
 - SONAR-R5-N3 (test-instrumentation, minor): DOCKER_PASSWORD vs DOCKER_TOKEN precedence untested (mutant X4 survives).
 - SONAR-R5-N4 (process-doc, nit): state that DOCKER_REGISTRY is ignored for helper-only DOCKER_AUTH_CONFIG (SKIP 3).
+
+## WP10R4 review follow-ups (Opus round 1, GO-with-follow-ups, PROVISIONAL)
+- WP10R4-FU1 (minor): triage generator CLOSE_AFTER no longer accepts plain whitespace and its preposition list is case-sensitive; SMB-FU-9 ("FIXED and merged in 532c2ec8") and SMB-FU-15 ("RESOLVED BY REMOVAL") fall to unconfirmed. Add tests for both shapes. Open.
+- WP10R4-FU2 (minor): generic-id series pairing yields false evidence (D9SR3-F2 paired with unrelated ERRLEAK "F2 fixed"); drop "provisional" from series_words. Open.
+- WP10R4-FU3 (minor): expand_slash drops the last sibling before a full stop (CAT-PREEXIST-7/8/9.); git_evidence does not use expand_slash. Open.
+- WP10R4-FU4 (minor, process-doc): register row CAT-D9-SUSPEND stale (D9S-R3-1..4 merged 5f8d3fa8f; PG16 behaviour confirmed by D9SR3-F5; D9S-F7 appears resolved by COALESCE in user_repository.go, re-check and close). Open.
+- WP10R4-FU5 (minor, process-doc): CAT-PREEXIST-9b proposal should cite the node_modules-overlay lead (doc line ~1862) and state the command `vitest run --pool=threads --maxWorkers=2`. Open.
+- WP10R4-FU6 (nit): "not waived" in REMAIN_RE turns RC-3b DONE into partial; no test pins it (mutant M8 survives). Open.
+- WP10R4-FU7 (nit): document the test command as `python3 -I scripts/docs/test_gen_follow_ups_triage.py` (`-m unittest` fails under -I). Open.
+- WP10R4-FU8 (nit): lowercase/bracketed closing forms ("(resolved)", "(closed, PROVISIONAL)", "[LANDED ...]") not recognised; D9S-R3-LANDED parsed as open. Open.
