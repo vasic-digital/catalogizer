@@ -115,6 +115,11 @@ export GIT_NO_REPLACE_OBJECTS=1
 # CAT-REL-CHECK-3 (N2): every git call is bounded; a hung git is an ordinary git failure (BLIND), never a hang
 RELCHK_GIT_TIMEOUT="${RELCHK_GIT_TIMEOUT:-120}"; export RELCHK_GIT_TIMEOUT
 case "$RELCHK_GIT_TIMEOUT" in ''|*[!0-9]*|0) RELCHK_GIT_TIMEOUT=120 ;; esac
+# CAT-REL-CHECK-3 (F6): every other numeric knob is validated here; a bad value is a clear BLIND, never a silent default
+for _k in RELCHK_SNAP_TIMEOUT RELCHK_MAX_FILES RELCHK_MAX_BYTES RELCHK_MAX_READ; do
+  _v="${!_k:-}"
+  [ -z "$_v" ] || case "$_v" in *[!0-9]*|0*) blind "$_k must be a positive integer without leading zeros (got '$_v')" ;; esac
+done
 git() { command timeout --kill-after=5 "$RELCHK_GIT_TIMEOUT" git "$@"; }
 HEADC="$(git -C "$REPO" rev-parse --verify -q 'HEAD^{commit}' 2>/dev/null)" || blind "'$REPO' has no HEAD commit"
 SNAPBASE="${RELCHK_TMP:-${XDG_CACHE_HOME:-${HOME:?}/.cache}/relchk-tmp}"
@@ -148,6 +153,9 @@ def die(code, msg):
         except Exception:
             pass
     os._exit(code)
+def _unexpected(t, v, tb):
+    die(10, "internal error in the snapshot writer (%s)" % t.__name__)
+sys.excepthook = _unexpected
 def envint(name, dflt):
     try:
         v = int(os.environ.get(name, dflt))
@@ -234,15 +242,24 @@ for mode, typ, sha, path, parts in ents:
     total += n
     if total > MAXBYTES:
         die(8, "more than %d bytes of content" % MAXBYTES)
-    data = cat.stdout.read(n); cat.stdout.read(1)
-    if len(data) != n:
-        die(6, "short blob")
     if mode == b"120000":
+        if n > 65536 or n == 0:
+            die(4, "implausible symlink target size %d" % n)
+        data = cat.stdout.read(n); cat.stdout.read(1)
+        if len(data) != n or b"\0" in data:
+            die(6, "short or malformed symlink blob")
         links.append((path, parts, data)); continue
     pfd = dirfd(parts[:-1])
     fd = os.open(parts[-1], os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644, dir_fd=pfd)
     with os.fdopen(fd, "wb") as fh:
-        fh.write(data)
+        left = n   # streamed in 1 MiB pieces: a large blob is never held in memory whole
+        while left > 0:
+            piece = cat.stdout.read(min(left, 1 << 20))
+            if not piece:
+                die(6, "short blob")
+            fh.write(piece); left -= len(piece)
+        if cat.stdout.read(1) != b"\n":
+            die(6, "blob framing error")
         if mode == b"100755":
             os.fchmod(fh.fileno(), 0o755)
     expect[path] = "f"
@@ -279,6 +296,46 @@ PY
 # no .git/info/exclude, no global/system config, no core.excludesFile
 GIT_SNAP=(env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 timeout --kill-after=5 "$RELCHK_GIT_TIMEOUT" git -c core.excludesFile=/dev/null -C "$SNAP")
 "${GIT_SNAP[@]}" init -q --template= . >/dev/null 2>&1 || blind "cannot initialise the HEAD snapshot repository"
+# CAT-REL-CHECK-3 (F2): the single reader of snapshot content for every python block below (exec'd from this variable)
+IFS= read -r -d '' RELCHK_PYLIB <<'PYLIB' || true
+import io, os, stat
+MAXREAD = int(os.environ.get("RELCHK_MAX_READ", "") or str(64 << 20))
+def snap_bytes(base, rel):
+    # CAT-REL-CHECK-3 (F2): the only way this helper reads snapshot content. The target must resolve inside the snapshot,
+    # be a regular file (a FIFO or device is never opened blocking) and not exceed RELCHK_MAX_READ.
+    rb = os.path.realpath(base)
+    rp = os.path.realpath(os.path.join(base, rel))
+    if rp != rb and not rp.startswith(rb + os.sep):
+        raise OSError("%s resolves outside the snapshot" % rel)
+    fd = os.open(rp, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW)
+    try:
+        st = os.fstat(fd)
+        if not stat.S_ISREG(st.st_mode):
+            raise OSError("%s is not a regular file" % rel)
+        if st.st_size > MAXREAD:
+            raise OSError("%s is larger than RELCHK_MAX_READ (%d)" % (rel, MAXREAD))
+        with os.fdopen(fd, "rb", closefd=False) as fh:
+            data = fh.read(MAXREAD + 1)
+    finally:
+        os.close(fd)
+    if len(data) > MAXREAD:
+        raise OSError("%s is larger than RELCHK_MAX_READ (%d)" % (rel, MAXREAD))
+    return data
+def snap_text(base, rel, encoding="utf-8", errors="strict"):
+    return io.TextIOWrapper(io.BytesIO(snap_bytes(base, rel)), encoding=encoding, errors=errors).read()
+PYLIB
+export RELCHK_PYLIB
+# CAT-REL-CHECK-3 (F2): a shell `< file` / `cat` read of snapshot content goes through this check first: the target must
+# resolve inside SNAP, be a regular file (never a FIFO or a device) and not exceed RELCHK_MAX_READ bytes
+SNAP_REAL="$(cd "$SNAP" && pwd -P)"
+snap_readable() {
+  local rp sz
+  rp="$(readlink -f -- "$SNAP/$1" 2>/dev/null)" || return 1
+  case "$rp" in "$SNAP_REAL"/*) ;; *) return 1 ;; esac
+  [ -f "$rp" ] || return 1
+  sz="$(stat -c %s -- "$rp" 2>/dev/null)" || return 1
+  [ "$sz" -le "${RELCHK_MAX_READ:-67108864}" ]
+}
 V_OK=0; V_FAIL=0; C_PATHS=0; C_MISS=0; C_SKIP=0; S_OK=0; S_FAIL=0; S_UNV=0; BLINDS=""
 C_NOMAN=0; U_FILES=0; W_APPLIED=0; W_BAD=0; W_UNUSED=0
 declare -A WV=() WVUSED=()
@@ -433,11 +490,11 @@ GIT_TO = int(os.environ.get("RELCHK_GIT_TIMEOUT", "120") or "120")   # repo: git
 def emit(kind, label, detail=""):
     print(f"{kind}\t{label}\t{detail}")
 
+exec(os.environ["RELCHK_PYLIB"])   # snap_bytes / snap_text (defined once, near the top)
 READ = []
 def read(path):
     READ.append(path)
-    with open(os.path.join(snap, path), encoding="utf-8") as fh:
-        return fh.read()
+    return snap_text(snap, path)
 
 # expected version
 vj_ok = True
@@ -678,17 +735,20 @@ run_changelog() {
 import json, os, re, subprocess, sys
 repo, want, snap = sys.argv[1:4]
 GIT_TO = int(os.environ.get("RELCHK_GIT_TIMEOUT", "120") or "120")
+exec(os.environ["RELCHK_PYLIB"])   # snap_bytes / snap_text (defined once, near the top)
 if not want:
     # F6: no --version/--section: the section is derived from versions.json (global), never the topmost heading
     try:
-        with open(os.path.join(snap, "versions.json"), encoding="utf-8") as vf:
-            g = json.load(vf)["global"]
+        g = json.loads(snap_text(snap, "versions.json"))["global"]
         want = f"{g['major']}.{g['minor']}.{g['patch']}"
     except Exception as exc:  # noqa: BLE001
         print(f"ERR\tno --version/--section given and versions.json global is unreadable ({type(exc).__name__}); refusing to use the topmost changelog section")
         sys.exit(0)
-with open(os.path.join(snap, "docs/CHANGELOG.md"), encoding="utf-8") as fh:
-    lines = fh.read().splitlines()
+try:
+    lines = snap_text(snap, "docs/CHANGELOG.md").splitlines()
+except Exception as exc:  # noqa: BLE001
+    print(f"ERR\tdocs/CHANGELOG.md is unreadable in the snapshot ({type(exc).__name__}: {exc})")
+    sys.exit(0)
 head = re.compile(r"^## \[(\d[^\]]*)\]")
 # lines inside fenced code blocks are never headings (fence lines included)
 fenced = []
@@ -920,6 +980,7 @@ load_waivers() {
   # the waivers are read from HEAD; a working-tree copy that reads differently (edit, deletion, assume-unchanged /
   # skip-worktree flag, local clean filter, stat-cache trick) makes the run BLIND instead of passing on either copy
   head_check "waiver file $rel" "$rel"
+  snap_readable "$rel" || { note_blind "waiver file $rel is not a regular file inside the snapshot, or exceeds RELCHK_MAX_READ"; return 1; }
   today="${RELCHK_TODAY:-$(date +%F)}"
   while IFS= read -r line || [ -n "$line" ]; do
     n=$((n+1))
@@ -985,6 +1046,12 @@ raw_tree_check() {
   if ! git -C "$REPO" ls-tree HEAD -- "$d/" >/dev/null 2>&1; then
     note_blind "git ls-tree failed for $(printf '%q' "$d"); cannot prove the manifest tree matches HEAD"; return 1
   fi
+  # CAT-REL-CHECK-3 (F5): the listing is captured to a file first so that its exit status is checked; read through a process
+  # substitution a timed-out or failing ls-tree looked like an empty tree and the check returned 0
+  local lst; lst="$(mktemp "${SNAPBASE:?}/lst.XXXXXX" 2>/dev/null)" || { note_blind "cannot create a scratch file for the manifest tree listing"; return 1; }
+  if ! git -C "$REPO" ls-tree -r -z HEAD -- "$d/" > "$lst" 2>/dev/null; then
+    rm -f -- "${lst:?}"; note_blind "git ls-tree -r failed or timed out for $(printf '%q' "$d"); cannot prove the manifest tree matches HEAD"; return 1
+  fi
   # -z: names are NUL-delimited and never quoted, so tabs, quotes and newlines in names are handled
   while IFS= read -r -d '' rec; do
     meta="${rec%%$'\t'*}"; path="${rec#*$'\t'}"
@@ -1011,7 +1078,8 @@ raw_tree_check() {
       *)
         note_blind "manifest tree $(printf '%q' "$d"): $(printf '%q' "$path") has the unsupported HEAD mode $mode"; return 1 ;;
     esac
-  done < <(git -C "$REPO" ls-tree -r -z HEAD -- "$d/" 2>/dev/null)
+  done < "$lst"
+  rm -f -- "${lst:?}"
   n="${#paths[@]}"
   [ "$n" -gt 0 ] || return 0
   if ! got="$(printf '%s\n' "${paths[@]}" | git -C "$REPO" hash-object --no-filters --stdin-paths 2>/dev/null)"; then
@@ -1060,6 +1128,9 @@ check_manifest_dir() {
     [ -n "$mf" ] || continue
     # F4: manifest entries must stay inside the manifest's directory.
     esc=0
+    if ! snap_readable "$d/$mf"; then
+      S_FAIL=$((S_FAIL+1)); echo "SHAFAIL  $d/$mf (manifest is not a regular file inside the snapshot, or exceeds RELCHK_MAX_READ)"; continue
+    fi
     while IFS= read -r line || [ -n "$line" ]; do
       ent=""
       line="${line%$'\r'}"   # CRLF manifests: sha256sum implementations strip one trailing CR
@@ -1129,14 +1200,15 @@ check_manifest_dir() {
 import fnmatch, os, re, subprocess, sys
 repo, d, snap = sys.argv[1:4]
 GIT_TO = int(os.environ.get("RELCHK_GIT_TIMEOUT", "120") or "120")
+exec(os.environ["RELCHK_PYLIB"])   # snap_bytes / snap_text (defined once, near the top)
 def is_mf(n):
     return n in ("SHA256SUMS", "SHA256SUMS.txt") or fnmatch.fnmatchcase(n, "MANIFEST*.sha256")
 def esc(t):
     return re.sub(r"[\x00-\x1f\x7f]", lambda m: "\\x%02x" % ord(m.group()), t)
 def entries(path):
     out = set()
-    with open(path, encoding="utf-8", errors="surrogateescape") as fh:
-        for ln in fh.read().split("\n"):
+    if True:
+        for ln in snap_text(snap, os.path.relpath(path, snap), errors="surrogateescape").split("\n"):
             # (no CR strip: open() in text mode already folds \r\n and lone \r into \n)
             m = re.match(r"^[0-9a-fA-F]{64} [ *](.*)$", ln) or re.match(r"^[A-Za-z0-9-]+ \((.*)\) = [0-9a-fA-F]+$", ln)
             if m:
@@ -1158,7 +1230,10 @@ def listed_for(md):
         s = set()
         for f in sorted(tmf):
             if os.path.dirname(f) == md and os.path.isfile(os.path.join(snap, f)):
-                s |= entries(os.path.join(snap, f))
+                try:
+                    s |= entries(os.path.join(snap, f))
+                except Exception as exc:  # noqa: BLE001
+                    print("ERR\tmanifest %s is unreadable in the snapshot (%s)" % (esc(f), type(exc).__name__)); sys.exit(0)
         listed[md] = s
     return listed[md]
 nested = set()

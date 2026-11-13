@@ -181,6 +181,75 @@ PATH="$sd:$PATH" RELCHK_SNAP_TIMEOUT=2 run "$(fresh)" --check changelog
 want "N2g hung cat-file in the snapshot writer -> BLIND at the writer's own time limit" 2 "time limit"
 [ $((SECONDS - t0)) -lt 20 ] && ok || bad "N2g took $((SECONDS - t0))s"
 
+echo "== F2: every reader of snapshot content refuses non-regular targets, targets outside the snapshot and oversize files (memory-capped)"
+# runcap: the checker under a 1 GiB address-space cap and a wall-clock bound; an unbounded read fails by MemoryError or timeout, never by luck
+runcap() { local dir="$1"; shift; OUT_="$(prlimit --as=$((1 << 30)) -- timeout 60 "$CHECKER" --repo "$dir" "$@" 2>&1)"; RC=$?; }
+want_refused() { # <label> : not a PASS, not a hang (rc 124/137), a VERDICT line, no traceback, no MemoryError
+  if [ "$RC" = 0 ] || [ "$RC" = 124 ] || [ "$RC" = 137 ]; then bad "$1: rc=$RC"; return; fi
+  printf '%s\n' "$OUT_" | grep -q '^VERDICT: ' || { bad "$1: no VERDICT line (rc=$RC)"; return; }
+  if printf '%s\n' "$OUT_" | grep -qE 'Traceback|MemoryError'; then bad "$1: traceback or MemoryError in output"; return; fi
+  ok
+}
+SPARSE="$ROOT/huge_sparse"; truncate -s 100G "$SPARSE"; FIFO="$ROOT/fifo_outside"; mkfifo "$FIFO"
+lnk() { # <label> <repo-relative file> <symlink target> [check args...]
+  local label="$1" f="$2" tgt="$3"; shift 3
+  local d; d=$(fresh); ( cd "$d" && rm -f -- "$f" && ln -s "$tgt" "$f" && git add -A && git commit -q -m lnk )
+  runcap "$d" "$@"; want_refused "$label"
+}
+lnk "F2a versions.json -> /dev/zero" versions.json /dev/zero
+lnk "F2b versions.json -> FIFO outside" versions.json "$FIFO"
+lnk "F2c versions.json -> 100 GiB sparse file outside" versions.json "$SPARSE"
+lnk "F2d docs/CHANGELOG.md -> /dev/zero" docs/CHANGELOG.md /dev/zero --check changelog
+lnk "F2e docs/CHANGELOG.md -> sparse outside" docs/CHANGELOG.md "$SPARSE" --check changelog
+lnk "F2f docs/qa/run2/SHA256SUMS -> /dev/zero" docs/qa/run2/SHA256SUMS /dev/zero --check changelog
+lnk "F2g docs/qa/run2/SHA256SUMS -> sparse outside" docs/qa/run2/SHA256SUMS "$SPARSE" --check changelog
+lnk "F2h docs/qa/run2/SHA256SUMS -> FIFO outside" docs/qa/run2/SHA256SUMS "$FIFO" --check changelog
+OUTC="$ROOT/outside_changelog.md"; cp "$GOLD/docs/CHANGELOG.md" "$OUTC"
+lnk "F2o docs/CHANGELOG.md -> small regular file outside the snapshot (valid changelog bytes)" docs/CHANGELOG.md "$OUTC" --check changelog
+printf '%s\n' "$OUT_" | grep -qF "resolves outside the snapshot" && ok || bad "F2o: the reader did not refuse the target as outside the snapshot"
+d=$(fresh); mkdir -p "$d/docs/qa"; ( cd "$d" && ln -s /dev/zero docs/qa/EVIDENCE_WAIVERS.txt && git add -A && git commit -q -m w ); runcap "$d" --check changelog; want_refused "F2i waiver file -> /dev/zero"
+d=$(fresh); ( cd "$d" && ln -s "$SPARSE" docs/qa/EVIDENCE_WAIVERS.txt && git add -A && git commit -q -m w ); runcap "$d" --check changelog; want_refused "F2j waiver file -> sparse outside"
+# F2n: a small REGULAR file outside the snapshot, reached through an absolute HEAD symlink, is never read (it holds valid versions.json bytes)
+OUTV="$ROOT/outside_versions.json"; cp "$GOLD/versions.json" "$OUTV"
+lnk "F2n versions.json -> small regular file outside the snapshot" versions.json "$OUTV"
+printf '%s\n' "$OUT_" | grep -qF "resolves outside the snapshot" && ok || bad "F2n: the reader did not refuse the target as outside the snapshot"
+d=$(fresh); RELCHK_MAX_READ=10 runcap "$d"; want_refused "F2k a regular snapshot file above RELCHK_MAX_READ is refused"
+d=$(fresh); RELCHK_MAX_READ=10 runcap "$d" --check changelog; want_refused "F2l changelog above RELCHK_MAX_READ is refused"
+d=$(fresh); runcap "$d" --check changelog; want "F2m negative control: the same fixture under the same cap, unmodified -> PASS" 0 "VERDICT: PASS"
+d=$(fresh); RELCHK_MAX_READ=notanumber runcap "$d" --check changelog; want "F6a bad RELCHK_MAX_READ -> clear BLIND" 2 "RELCHK_MAX_READ must be a positive integer"
+d=$(fresh); RELCHK_SNAP_TIMEOUT=abc runcap "$d" --check changelog; want "F6b bad RELCHK_SNAP_TIMEOUT -> clear BLIND" 2 "RELCHK_SNAP_TIMEOUT must be a positive integer"
+d=$(fresh); RELCHK_MAX_FILES=-5 runcap "$d" --check changelog; want "F6c bad RELCHK_MAX_FILES -> clear BLIND" 2 "RELCHK_MAX_FILES must be a positive integer"
+# F6d: a NUL byte in a symlink target: a clean refusal, never a traceback
+d=$(fresh); NB="$(printf 'a\0b' | git -C "$d" hash-object -w --stdin)"; printf '120000\tnul_link\t%s\n' "$NB" | evil_head "$d"
+run "$d" --check changelog; want "F6d NUL byte in a symlink target -> BLIND" 2 "cannot write the HEAD snapshot"
+if printf '%s\n' "$OUT_" | grep -q Traceback; then bad "F6d: traceback in output"; else ok; fi
+
+# F6e: an unexpected exception in the writer (a 300-byte file name: ENAMETOOLONG) is a clean refusal, never a traceback
+d=$(fresh); LN="$(head -c 300 /dev/zero | tr '\0' 'x')"; EX="$(blob "$d" x)"; printf '100644\t%s\t%s\n' "$LN" "$EX" | evil_head "$d"
+run "$d" --check changelog; want "F6e unexpected writer exception -> BLIND with a reason" 2 "snapshot refused: internal error in the snapshot writer"
+if printf '%s\n' "$OUT_" | grep -q Traceback; then bad "F6e: traceback in output"; else ok; fi
+
+echo "== F4a/F3: the post-extraction verification layer is reachable (path beyond PATH_MAX) and hung children do not outlive the writer"
+d=$(fresh); prev="$(blob "$d" leaf)"; for i in $(seq 1 20); do
+  nm="$(printf 'n%02d' "$i")$(head -c 246 /dev/zero | tr '\0' 'a')"
+  if [ "$i" = 1 ]; then prev="$(printf '100644\t%s\t%s\n' "$nm" "$prev" | rawtree "$d")"; else prev="$(printf '40000\t%s\t%s\n' "$nm" "$prev" | rawtree "$d")"; fi
+done
+printf '40000\tdeep\t%s\n' "$prev" | evil_head "$d"; run "$d" --check changelog
+want "D1 20 levels of 249-char names (beyond PATH_MAX) -> BLIND from the extraction verification" 2 "snapshot refused: extracted entry"
+sd=$(gitstub 'case "$*" in *" cat-file --batch"*) exec sleep 27;; esac'); t0=$SECONDS
+PATH="$sd:$PATH" RELCHK_SNAP_TIMEOUT=2 run "$(fresh)" --check changelog
+sleep 1; n="$(pgrep -fc '^sleep 27$' || true)"
+[ "${n:-0}" = 0 ] && ok || { bad "D2 hung cat-file child outlived the writer ($n orphan sleep processes)"; pgrep -f '^sleep 27$' | xargs -r kill 2>/dev/null || true; }
+
+echo "== F5: a failing or hung ls-tree in raw_tree_check is BLIND, never an empty (clean) tree"
+sd=$(gitstub 'case "$*" in *"ls-tree -r -z HEAD -- "*) exec sleep 25;; esac'); t0=$SECONDS
+PATH="$sd:$PATH" RELCHK_GIT_TIMEOUT=2 run "$(fresh)"
+want "F5a hung ls-tree -r in raw_tree_check -> BLIND" 2 "ls-tree -r failed or timed out"
+[ $((SECONDS - t0)) -lt 60 ] && ok || bad "F5a took $((SECONDS - t0))s"
+sd=$(gitstub 'case "$*" in *"ls-tree -r -z HEAD -- "*) exit 3;; esac')
+PATH="$sd:$PATH" run "$(fresh)"
+want "F5b failing ls-tree -r in raw_tree_check -> BLIND" 2 "ls-tree -r failed or timed out"
+
 echo "== valid snapshot shapes still work (negative controls for the new refusals)"
 d=$(fresh); mkdir -p "$d/docs/other/sub"; echo x > "$d/docs/other/sub/f.txt"; ln -s sub/f.txt "$d/docs/other/lnk"; ln -s sub "$d/docs/other/dlnk"; chmod +x "$d/docs/other/sub/f.txt"
 addcite "$d" docs/other/dlnk/f.txt; ( cd "$d" && git add -A && git commit -q -m shapes )
