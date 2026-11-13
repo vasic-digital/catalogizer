@@ -6,14 +6,17 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"catalogizer/internal/logging"
 	"catalogizer/models"
 	"catalogizer/services"
 
 	"github.com/gorilla/mux"
+	"go.uber.org/zap"
 )
 
 // logServiceStatus maps a log-management service error to the HTTP status the API contract documents:
@@ -30,9 +33,41 @@ func logServiceStatus(err error) int {
 	return http.StatusInternalServerError
 }
 
+var (
+	logErrURLUserinfo = regexp.MustCompile(`(?i)(://)[^/\s:@]+:[^/\s@]+@`)
+	logErrSecretPair  = regexp.MustCompile(`(?i)\b(password|passwd|pwd|secret|token|api[_-]?key|authorization)(["']?\s*[:=]\s*)\S+`)
+)
+
+// redactLogErrorText removes credential-shaped substrings (URL userinfo, password=/token=/secret=/api_key=/authorization pairs)
+// from a service error text before it is written to the server log.
+func redactLogErrorText(s string) string {
+	s = logErrURLUserinfo.ReplaceAllString(s, "${1}REDACTED@")
+	return logErrSecretPair.ReplaceAllString(s, "${1}${2}REDACTED")
+}
+
+// logLogServiceError records the service error server-side (PX-F17) before the fixed body is written: the redacted error text,
+// the response status, the handler site and the request path (no query string, so ticket/token parameters never reach the log).
+func logLogServiceError(r *http.Request, err error, status int) {
+	if err == nil || logging.Logger == nil {
+		return
+	}
+	site, path := "", ""
+	if r != nil {
+		site = r.Method
+		if r.URL != nil {
+			path = r.URL.Path
+		}
+	}
+	logging.Logger.Error("log management request failed",
+		zap.String("error", redactLogErrorText(err.Error())),
+		zap.Int("status", status),
+		zap.String("site", site+" "+path),
+	)
+}
+
 // writeLogServiceError writes the mapped status with a fixed, generic body: the service error text (repository wrapping,
-// `sql: no rows in result set`, driver or path details) stays server-side and never reaches the client.
-func writeLogServiceError(w http.ResponseWriter, err error) {
+// `sql: no rows in result set`, driver or path details) stays server-side (logged redacted) and never reaches the client.
+func writeLogServiceError(w http.ResponseWriter, r *http.Request, err error) {
 	status := logServiceStatus(err)
 	var msg string
 	switch status {
@@ -45,16 +80,18 @@ func writeLogServiceError(w http.ResponseWriter, err error) {
 	default:
 		msg = "Internal server error"
 	}
+	logLogServiceError(r, err, status)
 	http.Error(w, msg, status)
 }
 
 // writeFixedLogError writes the given status with a fixed, generic body for handlers whose documented status does not
-// depend on the error class (the service error text stays server-side).
-func writeFixedLogError(w http.ResponseWriter, status int) {
+// depend on the error class (the service error text stays server-side, logged redacted).
+func writeFixedLogError(w http.ResponseWriter, r *http.Request, err error, status int) {
 	msg := "Internal server error"
 	if status == http.StatusNotFound {
 		msg = "Not found"
 	}
+	logLogServiceError(r, err, status)
 	http.Error(w, msg, status)
 }
 
@@ -114,7 +151,7 @@ func (h *LogManagementHandler) CreateLogCollection(w http.ResponseWriter, r *htt
 
 	collection, err := h.logManagementService.CollectLogs(userID, &request)
 	if err != nil {
-		writeFixedLogError(w, http.StatusInternalServerError)
+		writeFixedLogError(w, r, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -143,7 +180,7 @@ func (h *LogManagementHandler) GetLogCollection(w http.ResponseWriter, r *http.R
 
 	collection, err := h.logManagementService.GetLogCollection(collectionID, userID)
 	if err != nil {
-		writeFixedLogError(w, http.StatusNotFound)
+		writeFixedLogError(w, r, err, http.StatusNotFound)
 		return
 	}
 
@@ -185,7 +222,7 @@ func (h *LogManagementHandler) ListLogCollections(w http.ResponseWriter, r *http
 
 	collections, err := h.logManagementService.GetLogCollectionsByUser(userID, limit, offset)
 	if err != nil {
-		writeFixedLogError(w, http.StatusInternalServerError)
+		writeFixedLogError(w, r, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -219,7 +256,7 @@ func (h *LogManagementHandler) GetLogEntries(w http.ResponseWriter, r *http.Requ
 	filters := h.parseLogEntryFilters(r)
 	entries, err := h.logManagementService.GetLogEntries(collectionID, userID, filters)
 	if err != nil {
-		writeLogServiceError(w, err)
+		writeLogServiceError(w, r, err)
 		return
 	}
 
@@ -251,7 +288,7 @@ func (h *LogManagementHandler) CreateLogShare(w http.ResponseWriter, r *http.Req
 
 	share, err := h.logManagementService.CreateLogShare(userID, &request)
 	if err != nil {
-		writeLogServiceError(w, err)
+		writeLogServiceError(w, r, err)
 		return
 	}
 
@@ -265,14 +302,14 @@ func (h *LogManagementHandler) GetLogShare(w http.ResponseWriter, r *http.Reques
 
 	share, err := h.logManagementService.GetLogShare(token)
 	if err != nil {
-		writeFixedLogError(w, http.StatusNotFound)
+		writeFixedLogError(w, r, err, http.StatusNotFound)
 		return
 	}
 
 	// Get the collection
 	collection, err := h.logManagementService.GetLogCollection(share.CollectionID, share.UserID)
 	if err != nil {
-		writeFixedLogError(w, http.StatusNotFound)
+		writeFixedLogError(w, r, err, http.StatusNotFound)
 		return
 	}
 
@@ -319,7 +356,7 @@ func (h *LogManagementHandler) RevokeLogShare(w http.ResponseWriter, r *http.Req
 
 	err = h.logManagementService.RevokeLogShare(shareID, userID)
 	if err != nil {
-		writeLogServiceError(w, err)
+		writeLogServiceError(w, r, err)
 		return
 	}
 
@@ -352,7 +389,7 @@ func (h *LogManagementHandler) ExportLogs(w http.ResponseWriter, r *http.Request
 
 	data, err := h.logManagementService.ExportLogs(collectionID, userID, format)
 	if err != nil {
-		writeLogServiceError(w, err)
+		writeLogServiceError(w, r, err)
 		return
 	}
 
@@ -415,7 +452,7 @@ func (h *LogManagementHandler) StreamLogs(w http.ResponseWriter, r *http.Request
 	// Get log stream
 	logChannel, done, err := h.logManagementService.StreamLogs(userID, filters)
 	if err != nil {
-		writeFixedLogError(w, http.StatusInternalServerError)
+		writeFixedLogError(w, r, err, http.StatusInternalServerError)
 		return
 	}
 	// Ensure the streaming goroutine is stopped when the client disconnects.
@@ -472,7 +509,7 @@ func (h *LogManagementHandler) AnalyzeLogs(w http.ResponseWriter, r *http.Reques
 
 	analysis, err := h.logManagementService.AnalyzeLogs(collectionID, userID)
 	if err != nil {
-		writeLogServiceError(w, err)
+		writeLogServiceError(w, r, err)
 		return
 	}
 
@@ -495,7 +532,7 @@ func (h *LogManagementHandler) GetLogStatistics(w http.ResponseWriter, r *http.R
 
 	stats, err := h.logManagementService.GetLogStatistics(userID)
 	if err != nil {
-		writeFixedLogError(w, http.StatusInternalServerError)
+		writeFixedLogError(w, r, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -543,7 +580,7 @@ func (h *LogManagementHandler) UpdateConfiguration(w http.ResponseWriter, r *htt
 
 	err = h.logManagementService.UpdateConfiguration(&config)
 	if err != nil {
-		writeFixedLogError(w, http.StatusInternalServerError)
+		writeFixedLogError(w, r, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -568,7 +605,7 @@ func (h *LogManagementHandler) CleanupOldLogs(w http.ResponseWriter, r *http.Req
 
 	err = h.logManagementService.CleanupOldLogs()
 	if err != nil {
-		writeFixedLogError(w, http.StatusInternalServerError)
+		writeFixedLogError(w, r, err, http.StatusInternalServerError)
 		return
 	}
 
