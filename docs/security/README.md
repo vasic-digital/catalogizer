@@ -2,7 +2,7 @@
 
 Security guides, incident write-ups, and scan artefacts (gosec, govulncheck, nancy, npm audit, snyk).
 
-Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 68 entries.
+Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 69 entries.
 
 | File | Description |
 |---|---|
@@ -10,6 +10,7 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [COMPREHENSIVE_SECURITY_AUDIT.md](COMPREHENSIVE_SECURITY_AUDIT.md) | Comprehensive Security Audit Report - A comprehensive security audit has been performed using 5 different security tools across all project components. The audit identified 4 standard library vulnerabilities... |
 | [CORS_CONFIGURATION.md](CORS_CONFIGURATION.md) | CORS Configuration - Cross-Origin Resource Sharing is handled by the CORS() middleware defined in two locations: |
 | [INCIDENT_RESPONSE.md](INCIDENT_RESPONSE.md) | Security Incident Response Plan - This document defines the security incident response procedures for Catalogizer deployments. It covers detection, containment, eradication, recovery, and post-incident... |
+| [LEGACY_PASSWORD_HASH_SUNSET.md](LEGACY_PASSWORD_HASH_SUNSET.md) | Legacy SHA-256 password hash: sunset plan - The old POST /users stored hex(SHA-256(password + salt)) (64 lowercase hex |
 | [MEMORY_LEAK_ANALYSIS.md](MEMORY_LEAK_ANALYSIS.md) | Memory Leak Analysis Report - Comprehensive memory leak detection performed using: |
 | [PATH_CONFINEMENT.md](PATH_CONFINEMENT.md) | Filesystem path confinement (catalog-api) - Request-fed filesystem paths (sync endpoints, conversion jobs, cover-art lookup, asset cache, |
 | [PENTEST_REPORT.md](PENTEST_REPORT.md) | Security Audit Baseline — Master Plan Phase 12 - Purpose. Master Plan v2 Phase 12 "Security Hardening & Penetration |

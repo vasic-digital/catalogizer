@@ -2,7 +2,7 @@
 
 Documents in this directory.
 
-Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 26 entries.
+Back to the documentation index: [docs/README.md](../README.md). Descriptions are copied mechanically from each file (its first heading and first prose line) unless overridden in scripts/docs/index_description_overrides.tsv; non-Markdown artefacts are listed by name and type without being read. 27 entries.
 
 | File | Description |
 |---|---|
@@ -26,6 +26,7 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [QUICK_START_TOMORROW.md](QUICK_START_TOMORROW.md) | 🚀 Quick Start Guide - Resume Testing Tomorrow |
 | [RENAME_DETECTION_DEPLOYMENT_GUIDE.md](RENAME_DETECTION_DEPLOYMENT_GUIDE.md) | Catalogizer Deployment Guide - Rename Detection System - The rename detection system is now fully integrated into Catalogizer. Here's how to deploy and configure it: |
 | [RENAME_DETECTION_GUIDE.md](RENAME_DETECTION_GUIDE.md) | Universal Rename Detection System - The Universal Rename Detection System is a sophisticated file and directory rename tracking solution that works across all supported protocols (Local, SMB, FTP, NFS,... |
+| [SMART_COLLECTIONS_GUIDE.md](SMART_COLLECTIONS_GUIDE.md) | Smart collections and smart playlists - A smart collection (or smart playlist) stores rules instead of members. Its items are computed when you read it, so it always reflects the current catalogue. |
 | [STRUCTURED_LOGGING.md](STRUCTURED_LOGGING.md) | Structured Logging Guide - The Catalogizer API uses a centralized structured logging system built on top of Uber's zap library. This provides high-performance, structured logging with support for... |
 | [TESTING_GUIDE.md](TESTING_GUIDE.md) | Catalogizer Testing Guide - This guide covers all testing workflows for the Catalogizer project, from unit tests to full HelixQA autonomous testing. |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Catalogizer Troubleshooting Guide - This guide helps you diagnose and resolve common issues with the Catalogizer system, including multi-protocol storage resilience, database problems, and performance... |
