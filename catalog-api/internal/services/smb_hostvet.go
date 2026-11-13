@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 
+	"catalogizer/internal/netguard"
 	"catalogizer/smb"
 )
 
@@ -30,13 +31,6 @@ func ValidateSMBHostSyntax(host string) error {
 		}
 	}
 	return nil
-}
-
-var blockedExact = []net.IP{
-	net.ParseIP("169.254.169.254"), // cloud metadata
-	net.ParseIP("100.100.100.200"), // Alibaba metadata
-	net.ParseIP("168.63.129.16"),   // Azure wire server
-	net.ParseIP("fd00:ec2::254"),   // AWS IPv6 metadata
 }
 
 // embeddedV4 returns the IPv4 address carried by an IPv4-mapped (::ffff:a.b.c.d), IPv4-compatible (::a.b.c.d) or NAT64 (64:ff9b::/96)
@@ -79,10 +73,11 @@ func smbIPBlockedBase(ip net.IP) bool {
 	if ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified() {
 		return true
 	}
-	for _, b := range blockedExact {
-		if ip.Equal(b) {
-			return true
-		}
+	if netguard.IsMetadataSingleton(ip) { // the ONE shared metadata singleton list (AWS/GCE IPv6, Alibaba): cannot diverge from netguard
+		return true
+	}
+	if netguard.IsReservedRange(ip) { // benchmarking, IETF, site-local, Teredo, 0/8, 240/4, Azure WireServer: netguard's ONE list
+		return true
 	}
 	if ip.Equal(net.IPv4bcast) || nat64LocalNe.Contains(ip) {
 		return true // limited broadcast, local-use NAT64 64:ff9b:1::/48
@@ -94,7 +89,7 @@ func smbIPBlocked(ip net.IP) bool {
 	if ip == nil || smbIPBlockedBase(ip) {
 		return true
 	}
-	if v4 := embeddedV4(ip); v4 != nil {
+	if v4 := embeddedV4(ip); v4 != nil { // embeddedV4 always yields an IPv4 address, so one level is complete
 		return v4[0] == 0 || smbIPBlockedBase(v4) // 0.0.0.0/8 and the embedded address itself
 	}
 	return false

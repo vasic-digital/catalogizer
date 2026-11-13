@@ -1,10 +1,14 @@
 package middleware
 
 import (
+	"catalogizer/internal/logredact"
 	"context"
 	"errors"
+	"io"
+	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -26,36 +30,208 @@ type RedisRateLimiterConfig struct {
 	Message string
 	// Redis client
 	Client *redis.Client
+	// Tier names the key namespace of this limiter ("auth", "default", ...).
+	// Two limiters with different tiers never share a counter, even for the
+	// same client IP (PKGC-FU4). Empty means "untiered".
+	Tier string
 	// Fallback, when set, handles the request instead of answering 503 when
 	// Redis errors after startup (operator decision 2026-11-12, CAT-OPDEC-A).
 	// It is the in-memory limiter of the same tier. It is consulted per
 	// request, so Redis takes over again as soon as it answers.
 	Fallback gin.HandlerFunc
+	// OutageBackoff is how long a limiter that has fallen back stops asking
+	// Redis (circuit breaker, CAT-OPA-3). Zero means redisOutageBackoffDefault;
+	// negative disables the breaker (every request tries Redis).
+	OutageBackoff time.Duration
+	// Clock is the breaker/log-throttle clock; nil means time.Now (tests inject
+	// a fake clock instead of sleeping).
+	Clock func() time.Time
+}
+
+// tierKey builds "<prefix>:<tier>:<client key>". An empty tier is "untiered",
+// never a bare prefix, so it cannot collide with a named tier.
+func tierKey(prefix, tier, clientKey string) string {
+	if tier == "" {
+		tier = "untiered"
+	}
+	return prefix + ":" + tier + ":" + clientKey
 }
 
 // redisFallbackLogEvery bounds the outage log line to one per interval.
 const redisFallbackLogEvery = 30 * time.Second
 
-var (
-	redisFallbackLogMu   sync.Mutex
-	redisFallbackLogLast time.Time
+// redisOutageBackoffDefault is how long a limiter that has fallen back stops
+// asking Redis (circuit breaker, CAT-OPA-3). Without it every request during
+// an outage waits for the 500 ms Redis timeout before the fallback answers.
+const redisOutageBackoffDefault = 5 * time.Second
+
+// outageState is the per-limiter outage state: the log throttle (CAT-OPA-5:
+// one per limiter, so the auth tier does not silence the default tier) and the
+// circuit breaker. One instance is created per RedisRateLimit /
+// SlidingWindowRedisRateLimit call.
+//
+// Breaker states: closed (openUntil zero), open (now < openUntil: everything
+// goes to the fallback), half-open (backoff expired: exactly ONE request, the
+// holder of the probing slot, asks Redis; the rest keep using the fallback
+// until the probe settles, F2).
+type outageState struct {
+	mu        sync.Mutex
+	logLast   time.Time
+	openUntil time.Time
+	probing   bool
+	backoff   time.Duration
+	now       func() time.Time // injectable clock (F4); never nil
+}
+
+func newOutageState(config RedisRateLimiterConfig) *outageState {
+	b := config.OutageBackoff
+	if b == 0 {
+		b = redisOutageBackoffDefault
+	}
+	now := config.Clock
+	if now == nil {
+		now = time.Now
+	}
+	return &outageState{backoff: b, now: now}
+}
+
+// admit decides where the request goes. useFallbackNow is true when the
+// request must go straight to the fallback. probe is true when this request
+// holds the single half-open probe slot and MUST call settle.
+func (st *outageState) admit(config RedisRateLimiterConfig) (useFallbackNow, probe bool) {
+	if config.Fallback == nil || st.backoff < 0 {
+		return false, false
+	}
+	st.mu.Lock()
+	defer st.mu.Unlock()
+	if st.openUntil.IsZero() {
+		return false, false // closed
+	}
+	if st.now().Before(st.openUntil) {
+		return true, false // open
+	}
+	if st.probing {
+		return true, false // half-open, someone else is probing
+	}
+	st.probing = true
+	return false, true
+}
+
+type breakerOutcome int
+
+const (
+	outcomeNeutral breakerOutcome = iota // probe slot released, state unchanged (still half-open)
+	outcomeOK                            // Redis answered: close the breaker
 )
 
+// tripped reports whether the breaker is open or half-open (tests).
+func (st *outageState) tripped() bool {
+	st.mu.Lock()
+	defer st.mu.Unlock()
+	return !st.openUntil.IsZero()
+}
+
+// settle ends a half-open probe. A tripping failure is recorded by trip()
+// before settle is reached; settle only clears the slot (and closes the
+// breaker on outcomeOK).
+func (st *outageState) settle(probe bool, o breakerOutcome) {
+	if !probe {
+		return
+	}
+	st.mu.Lock()
+	st.probing = false
+	if o == outcomeOK {
+		st.openUntil = time.Time{}
+	}
+	st.mu.Unlock()
+}
+
+// Error classes for the breaker (F1, constitution 11.4.276(C): the class is
+// named, every member enumerated, the class closed). The breaker trips ONLY
+// for a genuine Redis outage, and only while the request itself is alive.
+//
+//	class                                              trips?  why
+//	-------------------------------------------------- ------- -------------------------------
+//	request context already done (client went away)    no      says nothing about Redis
+//	context.Canceled                                   no      client cancel
+//	context.DeadlineExceeded, request ctx still alive  YES     call deadline or pool wait (N2/N3)
+//	net.Error (dial, refused, reset, i/o timeout)      YES     transport outage
+//	io.EOF / io.ErrUnexpectedEOF                       YES     connection dropped
+//	redis.ErrClosed / redis.ErrPoolTimeout             YES     client closed / pool exhausted
+//	reply error LOADING / MASTERDOWN / CLUSTERDOWN     YES     server up but not serving
+//	any other reply error (WRONGTYPE, NOSCRIPT, ERR    no      Redis is answering; this key or
+//	  script errors, NOAUTH, ...)                              script is the problem
+//	"unexpected reply" shape error (no Go error)       no      Redis is answering
+//	anything unclassified                              no      do not switch the limiter off on
+//	                                                           a guess (11.4.6)
+//
+// N2: the 500 ms context in the handlers is NOT what bounds a black-holed
+// Redis call in production unless the client enables ContextTimeoutEnabled;
+// otherwise go-redis ReadTimeout (3 s) governs, so each in-flight request or
+// probe can take about 3 s before DeadlineExceeded/i-o timeout.
+// N3: DeadlineExceeded can also come from waiting for a pool connection under
+// heavy load; that trips the breaker too. Accepted, bounded risk: the breaker
+// only diverts to the in-memory fallback for the backoff and re-probes.
+//
+// A request that does not trip the breaker still gets the fallback for itself
+// (or 503 without a fallback), exactly as before the breaker existed.
+func isRedisOutage(reqCtx context.Context, err error) bool {
+	if err == nil || reqCtx.Err() != nil {
+		return false
+	}
+	if errors.Is(err, context.Canceled) {
+		return false
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+	if errors.Is(err, redis.ErrClosed) || errors.Is(err, redis.ErrPoolTimeout) {
+		return true
+	}
+	if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
+		return true
+	}
+	var re redis.Error
+	if errors.As(err, &re) {
+		msg := re.Error()
+		for _, p := range []string{"LOADING", "MASTERDOWN", "CLUSTERDOWN"} {
+			if strings.HasPrefix(msg, p) {
+				return true
+			}
+		}
+		return false // reply error: Redis is answering
+	}
+	var ne net.Error
+	return errors.As(err, &ne)
+}
+
 // useFallback hands the request to config.Fallback when one is configured and
-// returns true. The log line carries the error text only (no address, no
-// credentials) and is rate-limited.
-func useFallback(c *gin.Context, config RedisRateLimiterConfig, err error) bool {
+// returns true. It opens the breaker only when err is a genuine outage
+// (isRedisOutage) and writes the throttled log line. The log line carries the
+// Redis error text VERBATIM: that text can include the Redis host:port (never
+// credentials), so it is not address-free.
+func useFallback(c *gin.Context, config RedisRateLimiterConfig, st *outageState, err error, release func()) bool {
 	if config.Fallback == nil {
 		return false
 	}
-	redisFallbackLogMu.Lock()
-	log := time.Since(redisFallbackLogLast) >= redisFallbackLogEvery
-	if log {
-		redisFallbackLogLast = time.Now()
+	trip := isRedisOutage(c.Request.Context(), err)
+	st.mu.Lock()
+	if trip && st.backoff > 0 {
+		st.openUntil = st.now().Add(st.backoff)
 	}
-	redisFallbackLogMu.Unlock()
+	log := st.now().Sub(st.logLast) >= redisFallbackLogEvery
+	if log {
+		st.logLast = st.now()
+	}
+	st.mu.Unlock()
 	if log && logging.Logger != nil {
 		logging.With(logging.ErrorField(err)).Warn("Redis rate limiter unavailable; using in-memory limiter fallback")
+	}
+	// N1: the half-open probe slot is released BEFORE the downstream chain
+	// runs. Fallback may call c.Next(), so a slow or panicking downstream
+	// handler must neither hold the slot for its whole duration nor leak it.
+	if release != nil {
+		release()
 	}
 	config.Fallback(c)
 	return true
@@ -64,7 +240,8 @@ func useFallback(c *gin.Context, config RedisRateLimiterConfig, err error) bool 
 // DefaultRedisRateLimiterConfig returns a secure default configuration
 func DefaultRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig {
 	return RedisRateLimiterConfig{
-		Requests: 100, // 100 requests per window
+		Tier:     "default",
+		Requests: 2000, // matches the in-memory defaultRateLimiter (main.go: RateLimitByUser(2000, "1m"))
 		Window:   time.Minute,
 		Message:  "Rate limit exceeded. Please try again later.",
 		Client:   client,
@@ -77,6 +254,7 @@ func DefaultRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig 
 // StrictRedisRateLimiterConfig returns a stricter configuration for sensitive endpoints
 func StrictRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig {
 	return RedisRateLimiterConfig{
+		Tier:     "strict",
 		Requests: 10, // 10 requests per window
 		Window:   time.Minute,
 		Message:  "Too many requests. Please wait before trying again.",
@@ -90,9 +268,14 @@ func StrictRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig {
 // AuthRedisRateLimiterConfig returns a rate limiter specifically for auth endpoints
 func AuthRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig {
 	return RedisRateLimiterConfig{
-		Requests: 5, // 5 login attempts per minute
+		Tier: "auth",
+		// Matches the in-memory authRateLimiter (main.go: RateLimitByUser(600, "1m")).
+		// This tier guards token ops (/refresh, /logout, /me, /status,
+		// /permissions, /profile), NOT /login or /register: those use the
+		// in-memory loginRateLimiter (30/min) and never reach Redis.
+		Requests: 600,
 		Window:   time.Minute,
-		Message:  "Too many authentication attempts. Account temporarily locked.",
+		Message:  "Too many authentication requests. Please try again later.",
 		Client:   client,
 		KeyGenerator: func(c *gin.Context) string {
 			// Use both IP and username for auth endpoints if available
@@ -110,6 +293,7 @@ func AuthRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig {
 // UserRedisRateLimiterConfig returns user-based rate limiting
 func UserRedisRateLimiterConfig(client *redis.Client) RedisRateLimiterConfig {
 	return RedisRateLimiterConfig{
+		Tier:     "user",
 		Requests: 200, // 200 requests per minute for authenticated users
 		Window:   time.Minute,
 		Message:  "Rate limit exceeded. Please try again later.",
@@ -142,14 +326,40 @@ return {count, redis.call('PTTL', KEYS[1])}
 // Fixed window: the window starts at the first request for a key and ends
 // Window later; requests inside the window do not extend it. On any Redis
 // error the middleware fails closed (HTTP 503) unless config.Fallback is set,
-// in which case the in-memory fallback answers (CAT-OPDEC-A).
+// in which case the in-memory fallback answers (CAT-OPDEC-A). After a
+// fallback the limiter stops asking Redis for OutageBackoff (default 5 s) so
+// an outage does not add the Redis timeout to every request (CAT-OPA-3).
 //
 // Wiring (catalog-api/main.go): this limiter replaces the in-memory one only
 // when REDIS_RATE_LIMIT=true AND the startup Redis PING succeeds; otherwise
 // each process uses per-process in-memory limiting.
 func RedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc {
+	h, _ := redisRateLimitWithState(config)
+	return h
+}
+
+// redisRateLimitWithState is RedisRateLimit plus its breaker state (tests).
+func redisRateLimitWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *outageState) {
+	st := newOutageState(config)
 	return func(c *gin.Context) {
-		key := "rate_limit:" + config.KeyGenerator(c)
+		toFallback, probe := st.admit(config)
+		if toFallback {
+			config.Fallback(c)
+			return
+		}
+		// Idempotent release of the probe slot (N1/N4): runs at most once,
+		// from the fallback path (before downstream), the normal paths, or
+		// this defer (panic in KeyGenerator, script call or anywhere later).
+		released := false
+		release := func(o breakerOutcome) {
+			if released {
+				return
+			}
+			released = true
+			st.settle(probe, o)
+		}
+		defer release(outcomeNeutral)
+		key := tierKey("rate_limit", config.Tier, config.KeyGenerator(c))
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 500*time.Millisecond)
 		defer cancel()
 
@@ -165,9 +375,10 @@ func RedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc {
 			if err == nil {
 				err = errors.New("unexpected fixed-window script reply")
 			}
-			if useFallback(c, config, err) {
+			if useFallback(c, config, st, err, func() { release(outcomeNeutral) }) {
 				return
 			}
+			release(outcomeNeutral)
 			if logging.Logger != nil {
 				logging.With(logging.ErrorField(err)).Warn("Redis rate limiter error")
 			}
@@ -179,6 +390,7 @@ func RedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc {
 			return
 		}
 
+		release(outcomeOK)
 		currentCount := res[0]
 		ttl := time.Duration(res[1]) * time.Millisecond
 		if ttl <= 0 {
@@ -192,7 +404,7 @@ func RedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc {
 				logging.With(
 					logging.String("key", key),
 					logging.String("ip", c.ClientIP()),
-					logging.String("path", c.Request.URL.Path),
+					logging.String("path", logredact.SecretPath(c.Request.URL.Path)),
 				).Warn("Rate limit exceeded")
 			}
 
@@ -213,14 +425,39 @@ func RedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc {
 		c.Header("X-RateLimit-Window", config.Window.String())
 
 		c.Next()
-	}
+	}, st
 }
 
 // SlidingWindowRedisRateLimit implements sliding window rate limiting using Redis.
-// On any Redis error it fails closed (HTTP 503), like RedisRateLimit.
+// On any Redis error it hands the request to config.Fallback when one is set
+// (CAT-OPDEC-A), otherwise it fails closed (HTTP 503), like RedisRateLimit.
 func SlidingWindowRedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc {
+	h, _ := slidingWindowWithState(config)
+	return h
+}
+
+// slidingWindowWithState is SlidingWindowRedisRateLimit plus its breaker state (tests).
+func slidingWindowWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *outageState) {
+	st := newOutageState(config)
 	return func(c *gin.Context) {
-		key := "sliding_rate_limit:" + config.KeyGenerator(c)
+		toFallback, probe := st.admit(config)
+		if toFallback {
+			config.Fallback(c)
+			return
+		}
+		// Idempotent release of the probe slot (N1/N4): runs at most once,
+		// from the fallback path (before downstream), the normal paths, or
+		// this defer (panic in KeyGenerator, script call or anywhere later).
+		released := false
+		release := func(o breakerOutcome) {
+			if released {
+				return
+			}
+			released = true
+			st.settle(probe, o)
+		}
+		defer release(outcomeNeutral)
+		key := tierKey("sliding_rate_limit", config.Tier, config.KeyGenerator(c))
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 500*time.Millisecond)
 		defer cancel()
 		now := time.Now().UnixNano()
@@ -249,13 +486,14 @@ func SlidingWindowRedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc 
 
 		// Handle Redis errors gracefully
 		if err != nil {
-			if useFallback(c, config, err) {
+			if useFallback(c, config, st, err, func() { release(outcomeNeutral) }) {
 				return
 			}
+			release(outcomeNeutral)
 			if logging.Logger != nil {
 				logging.With(logging.ErrorField(err)).Warn("Redis sliding window rate limiter error")
 			}
-			// Fail closed, consistent with RedisRateLimit.
+			// No fallback configured: fail closed, consistent with RedisRateLimit.
 			c.JSON(http.StatusServiceUnavailable, gin.H{
 				"error":   "Rate limiting service temporarily unavailable",
 				"message": "Please try again later",
@@ -264,6 +502,7 @@ func SlidingWindowRedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc 
 			return
 		}
 
+		release(outcomeOK)
 		// Get current count
 		count, err := countCmd.Result()
 		if err != nil {
@@ -283,7 +522,7 @@ func SlidingWindowRedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc 
 				logging.With(
 					logging.String("key", key),
 					logging.String("ip", c.ClientIP()),
-					logging.String("path", c.Request.URL.Path),
+					logging.String("path", logredact.SecretPath(c.Request.URL.Path)),
 				).Warn("Sliding window rate limit exceeded")
 			}
 
@@ -305,7 +544,7 @@ func SlidingWindowRedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc 
 		c.Header("X-RateLimit-Algorithm", "sliding-window")
 
 		c.Next()
-	}
+	}, st
 }
 
 // TokenBucketRedisRateLimit implements token bucket algorithm using Redis
@@ -393,4 +632,16 @@ func TokenBucketRedisRateLimit(
 
 		c.Next()
 	}
+}
+
+// NewRedisTierLimiters builds the two Redis-backed tiers used by main.go: the
+// auth tier (AuthRedisRateLimiterConfig) and the default tier
+// (DefaultRedisRateLimiterConfig), each falling back to ITS OWN in-memory
+// limiter when Redis errors after startup (CAT-OPDEC-A, CAT-OPA-1).
+func NewRedisTierLimiters(client *redis.Client, authFallback, defaultFallback gin.HandlerFunc) (auth, def gin.HandlerFunc) {
+	authCfg := AuthRedisRateLimiterConfig(client)
+	authCfg.Fallback = authFallback
+	defCfg := DefaultRedisRateLimiterConfig(client)
+	defCfg.Fallback = defaultFallback
+	return RedisRateLimit(authCfg), RedisRateLimit(defCfg)
 }

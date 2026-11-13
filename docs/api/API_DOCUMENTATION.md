@@ -3223,7 +3223,7 @@ Get a specific user by ID.
 
 Update a user's information.
 
-**Description:** Updates user fields. Users can update their own profile without a permission, but `role_id` and `is_active` are ignored on a self-update (also for an admin). Updating another user needs `user.update`; `is_active` is applied only when the caller also has `user.manage`. `role_id` is validated and permission-checked (`user.manage`, and `system.admin` to assign an admin role) saved and echoed in the response; changing `role_id` or `is_active` revokes the target user's sessions (the old token stops working). See the permission table above.
+**Description:** Updates user fields. Users can update their own profile without a permission, but `role_id` and `is_active` are ignored on a self-update (also for an admin). Updating another user needs `user.update`; `is_active` is applied only when the caller also has `user.manage`. `role_id` is validated and permission-checked (`user.manage`, and `system.admin` to assign an admin role) saved and echoed in the response; changing `role_id` or `is_active` revokes the target user's sessions (the old token stops working). See the permission table above. Note for clients and operators (CAT-OPA-5): the role check runs on every request that carries `role_id`, including a client re-sending the target's unchanged `role_id`; a manager whose own permissions do not cover that role (the standard user role included since CAT-OPDEC-A) therefore gets 403 for the whole update.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -3914,6 +3914,8 @@ Create a shareable link for a log collection.
 **Auth:** Required (`system.admin`)
 **Rate Limit:** Standard (2000/min)
 
+**Token (CAT-LOGSHARE-TOK-1):** the `share_token` in the response is `log_share_` followed by 43 base64url characters (256 bits from `crypto/rand`). It is a bearer secret and is shown **only in this response**: the server stores just its SHA-256, so it cannot be listed or recovered later; create a new share if it is lost. Tokens issued before this change (`log_share_<unix>_<nanos>`, derived from the clock) are deactivated by migration v28 and never validate again; re-share the collection.
+
 **Request Body:**
 
 ```json
@@ -3930,7 +3932,7 @@ Create a shareable link for a log collection.
 
 ### GET /api/v1/logs/share/:token
 
-Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 shared collection; 403 when the share lacks the `read` permission; 404 unknown, expired or revoked token; 401. No permission check beyond the JWT middleware.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 shared collection (the `share_token` field is empty: the token is never echoed); 404 for every other outcome - malformed, unknown, expired, revoked, legacy-format, or a share without the `read` permission all return the same `404 Not found` body, so the route is not an oracle; 401. No permission check beyond the JWT middleware.
 
 
 Access a shared log collection via share token.
@@ -5513,4 +5515,4 @@ The limits are the values wired in `catalog-api/main.go`.
 
 When rate limited, the server returns `429 Too Many Requests`.
 
-Optional Redis-based distributed rate limiting replaces the in-memory limiters only when a Redis client exists AND `REDIS_RATE_LIMIT=true` (otherwise per-process in-memory limiting). With it on, the limits change: the group listed above as 600/min (other `/api/v1/auth/*` session endpoints) becomes 5/min and the 2000/min group becomes 100/min, both fixed-window and keyed per client IP (auth: username plus IP when a username is in the context); login/register stay on the in-memory 30/min limiter, keyed per IP when unauthenticated. If Redis errors, the middleware fails closed with 503.
+Optional Redis-based distributed rate limiting replaces the in-memory limiters for the two non-login tiers only when a Redis client exists AND `REDIS_RATE_LIMIT=true` (otherwise per-process in-memory limiting). The Redis tiers use the same budgets as the in-memory ones: 600 requests/minute for the other `/api/v1/auth/*` session endpoints and 2000 requests/minute for everything else, fixed window, keyed per client IP. Each tier has its own counter namespace (`rate_limit:auth:<ip>` and `rate_limit:default:<ip>`; sliding-window limiters use `sliding_rate_limit:<tier>:<key>`), so traffic on one tier never consumes the other tier's budget. Login and register always stay on the in-memory 30/min limiter and never use Redis. If Redis errors after startup, each tier falls back to its own in-memory limiter (circuit breaker, 5 s backoff). Key-schema change (PKGC-FU4): keys written by earlier builds (`rate_limit:<ip>`) are simply no longer read; they carry a window TTL (1 minute) and expire by themselves, so no migration is needed.

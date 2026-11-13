@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -57,8 +58,25 @@ func (c *NFSClient) Connect(ctx context.Context) error {
 		options = "resvport,soft,intr,tcp"
 	}
 
-	// Build mount source path
-	source := fmt.Sprintf("%s:%s", c.config.Host, c.config.Path)
+	// SEC-DIAL-1: syntax-check host / export / options and mount the VETTED address, never the name.
+	if err := ValidateStorageHostSyntax(c.config.Host); err != nil {
+		return fmt.Errorf("%w", ErrStorageHostRefused)
+	}
+	if err := ValidateNFSExport(c.config.Path); err != nil {
+		return err
+	}
+	if _, err := ParseNFSOptions(options); err != nil {
+		return err
+	}
+	srvIP, err := resolveNFSServer(ctx, c.config.Host)
+	if err != nil {
+		return err
+	}
+	srv := srvIP.String()
+	if strings.Contains(srv, ":") {
+		srv = "[" + srv + "]"
+	}
+	source := srv + ":" + c.config.Path
 
 	// Create mount command
 	args := []string{
@@ -71,7 +89,8 @@ func (c *NFSClient) Connect(ctx context.Context) error {
 	cmd := exec.CommandContext(ctx, "mount", args...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("NFS mount failed: %w, output: %s", err, string(output))
+		// the mount output names the vetted address; it is not shown to callers that are not administrators
+		return fmt.Errorf("NFS mount failed: %w, output: %s", err, scrubResolvedAddrs(string(output), c.config.Host))
 	}
 
 	// Verify mount is active

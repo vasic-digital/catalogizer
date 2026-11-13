@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"catalogizer/internal/logredact"
 	"fmt"
 	"net/http"
 	"strings"
@@ -266,7 +267,7 @@ func (m *AuthMiddleware) LogUserActivity() gin.HandlerFunc {
 			m.logger.Info("User activity",
 				zap.String("username", user.Username),
 				zap.String("method", c.Request.Method),
-				zap.String("path", c.Request.URL.Path),
+				zap.String("path", logredact.SecretPath(c.Request.URL.Path)),
 				zap.Int("status", c.Writer.Status()),
 				zap.String("ip", c.ClientIP()),
 				zap.String("user_agent", c.Request.UserAgent()),

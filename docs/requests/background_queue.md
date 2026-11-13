@@ -89,3 +89,6 @@ Open operator questions: Synology API shim from proprietary PDF (allow / clean-r
 
 ### Decision (delegated safest-choice, operator away/standing instruction) 2026-11-13 00:52 CET - CAT-REL-CHECK-1 at R_max
 Round-5 Opus review of fix/release-checker-rc3 @ 2a6139e4 = NO-GO (important R5-1: symlink CHAIN intermediate hops not head-checked; I4-1 class member). Per section 11.4.276(E)(3) no sixth round under the same approach. Chosen: option (b) structural replacement item CAT-REL-CHECK-2 (fresh author, class-exhaustive enumeration of all symlink/path shapes, walk readlink chain hop by hop), fresh budget; checker NOT landed until GO. Reason: tool gates release evidence, landing a known clone-divergence hole is not safe; fix is small. Reviewer follow-ups RV5-4, missing --version changelog section, committed ../ ./ negative control carried into the item.
+
+### BG-OPQ-2026-11-13 - operator decision sweep (received 2026-11-13 14:48 CET, status: IN PROGRESS)
+Operator order: gather every operator-blocked item, decision point, blocker and show-stopper and present them as interactive questions with options. Blocker: none (asked in-session via AskUserQuestion); answers are recorded in the project memory decisions file once given. Unanswered questions stay QUEUED and are re-surfaced every session.

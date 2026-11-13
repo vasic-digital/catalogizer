@@ -55,6 +55,36 @@ and the raw `net.Dial*` sites, which are not HTTP but are outbound connections.
 | `internal/httpclient/pool.go` | pooled client | SELF | used by `challenges/` against our own server |
 | `challenges/*.go` (23 files) | probes | SELF | QA harness, base URL is our server |
 
+### Storage connectors (smb, ftp, nfs): host restrictions (SEC-DIAL-1)
+
+An smb, ftp or nfs storage root names a HOST (not a URL). It gets the same operator-class policy as a WebDAV or S3 root
+(`netguard` operator class, see the WebDAV row above): the host is refused when it is or resolves to loopback, link-local
+(169.254.0.0/16, fe80::/10), unspecified, multicast, a cloud metadata address (169.254.169.254, 100.100.100.200,
+fd00:ec2::254, fd20:ce::254, 168.63.129.16), a reserved range (198.18.0.0/15, 192.0.0.0/24, ...), one of the server's own
+interface addresses, or an IPv4-mapped / compatible / NAT64 / 6to4 form of those. RFC 1918, ULA, CGNAT and public hosts
+are allowed, so a LAN NAS works without configuration. `CATALOGIZER_OPERATOR_DENY_PRIVATE=1` also refuses private hosts and
+`CATALOGIZER_OUTBOUND_ALLOW_CIDRS` re-admits loopback / private networks it names (never the metadata addresses).
+
+Where it is enforced:
+
+- **Root create** (`POST /api/v1/storage/roots`): `filesystem.VetStorageRoot` refuses with HTTP 400 and the generic message
+  `storage host is not allowed` (no address or resolver detail is returned) and nothing is stored. `filesystem.ValidateSettings`
+  (so `ValidateRoot` and the client factory) refuses a malformed host: only an IP literal or a plain DNS name
+  (`[A-Za-z0-9_.-]`, not starting with `-`); a port, userinfo, bracket, slash, comma, whitespace or control character is refused.
+- **Every dial**: the smb and ftp clients (ftp control AND data connections, including the CopyFile tracker) connect through
+  `netguard.OperatorDialContext`, which resolves, checks and dials the vetted IP itself (pinned, never the name; the Control hook
+  re-checks the address the kernel connects to), so DNS rebinding between create and dial cannot redirect a connection.
+  `SMBService.getConnection` (config-file hosts) uses `VetSMBHostIPs` + `dialVetted`, the same pinned path as SMB discovery.
+- **NFS mount**: the host is resolved and vetted at mount time and the kernel receives the vetted ADDRESS (`<ip>:<export>`,
+  `addr=<ip>`), never the name. Export path and mount options are checked for injection: the export may not contain whitespace,
+  control characters or `,` and may not start with `-`; options are a closed grammar of comma-separated `key` or `key=value`
+  elements (key `[A-Za-z0-9_]`, value `[A-Za-z0-9_.:-]`, no empty element). `addr=` and `mountaddr=` must be IP literals that pass
+  the same policy (a user-supplied `addr=127.0.0.1` is refused). The darwin client applies the same checks.
+
+Honest scope: the evidence for this change is unit-class (real handler, real clients, real netguard in-process; no real
+NAS or kernel mount). The create-time check resolves the name once for a clear early refusal; the dial-time check is the
+enforcement. Discovery routes keep their own pre-existing `VetSMBHost` check.
+
 ### Raw dial sites (non-HTTP outbound connections), all OPERATOR class
 
 The target is chosen by the operator (configured storage/NAS/FTP/SMB host, discovery of the
@@ -63,11 +93,13 @@ operator's own network). None takes an address from third-party data. They do no
 
 | File | What it dials |
 |---|---|
-| `services/configuration_wizard_service.go:1011` | TCP reachability probe of an operator-entered host |
-| `internal/services/smb_discovery.go` (lines 61, 143, 193), `smb_probe.go:79`, `smb.go:70` | SMB hosts (445) the operator configures or scans |
-| `filesystem/ftp_client.go:500`, `filesystem/ftp_client.go:88-103` (`ftp.Dial` via `dial`/`dialWith`) | operator-configured FTP server |
-| `database/connection.go` (`sql.Open("postgres", ...)`), `main.go:611` (`redis.NewClient`) | operator-configured Postgres and Redis servers (database/cache connections, not user data) |
-| `filesystem/smb_client.go:45`, `smb/client.go:53`, `internal/smb/resilience.go` (459, 571) | operator-configured SMB server |
+| `services/configuration_wizard_service.go` (`testNetworkDatabaseConnection`) | TCP reachability probe of an operator-entered database host (operator-trusted database target; loopback is legitimate; unvetted, tracked in the SEC-DIAL-1 report) |
+| `internal/services/smb_discovery.go`, `smb_probe.go` | SMB hosts (445) the operator scans: `VetSMBHostIPs` + `dialVetted` |
+| `internal/services/smb.go` (`getConnection`) | config-file SMB host: `VetSMBHostIPs` + `dialVetted` (SEC-DIAL-1) |
+| `filesystem/ftp_client.go`, `filesystem/ftp_ops.go` (`ftp.Dial` via `dial`/`dialWith`, `connTracker`, `ftpConnGroup`) | operator-configured FTP server: `netguard.OperatorDialContext` (SEC-DIAL-1) |
+| `filesystem/smb_client.go` | operator-configured SMB server: `netguard.OperatorDialContext` (SEC-DIAL-1) |
+| `filesystem/nfs_client.go`, `nfs_client_darwin.go` | operator-configured NFS server: vetted address mounted (SEC-DIAL-1) |
+| `database/connection.go` (`sql.Open("postgres", ...)`), `main.go` (`redis.NewClient`) | operator-configured Postgres and Redis servers (database/cache connections from operator configuration, not user data; trusted) |
 | `internal/infra/provisioner.go:259` | local infrastructure readiness probe |
 | `main.go:150` | UDP "connect" to 8.8.8.8 to learn the local address; sends no data |
 | `challenges/*`, `tests/infra_helper.go` | QA harness |
@@ -82,3 +114,45 @@ operator's own network). None takes an address from third-party data. They do no
   separate DNS lookup, so a name that answers differently to the proxy (rebinding) is not
   caught. Redirect hops are re-checked the same way. Treat the operator proxy as trusted to
   enforce its own egress policy.
+
+## Known residuals of the address classification (S1A3-2, S1A3-3)
+
+`netguard.ClassOf` unwraps the IPv6 forms that carry an IPv4 address and are recognisable from the address alone:
+IPv4-mapped, IPv4-compatible (`::/96`), SIIT (`::ffff:0:a.b.c.d`), the well-known NAT64 prefix `64:ff9b::/96` and 6to4
+(`2002::/16`). Two forms are NOT recognisable and are classified public (hence reachable by every client class):
+
+- NAT64 with an operator network-specific prefix (RFC 6052 section 2.2, for example your own `/96` inside global space
+  followed by the IPv4 address). The server does not know the prefix. There is no configurable prefix list today; if you
+  run such a gateway, stop it from forwarding to private, loopback and metadata destinations. Adding a configurable list
+  of network-specific prefixes is possible later work (S1A3-2).
+- ISATAP interface identifiers (`::5efe:a.b.c.d`, `::200:5efe:a.b.c.d`) under a global prefix (S1A3-3). They name a
+  tunnelled host, not a literal IPv4 destination of this server.
+
+Both are pinned by tests (`TestS1A3_2_*`, `TestS1A3_3_*` in `catalog-api/internal/netguard/s1a3_test.go`).
+
+## Stored approval per endpoint (CAT-SECQ1-B / W3)
+
+Migration v27 adds `approved_class` (`private` default, or `public`) and `approved_class_source` (`default`, `auto`,
+`operator`) to `storage_roots` and `sync_endpoints`. `private` is the behaviour from before SECQ-1 (private and public
+addresses reachable); `public` allows public addresses only. `never` is not storable. Every row that existed before the
+migration is `private/default`; the migration does not resolve names or read the machine's interfaces.
+
+- `netguard.ClassifyHost` / `ClassifyEndpoint` derive the class from a host (IP literal or DNS name, or the host of a URL):
+  all addresses public gives `public`, any private address gives `private`, any never-class address (loopback, link-local,
+  metadata, the server's own address unless allow-listed), an empty host, a non-ASCII or numeric-spelling host, or a name
+  that does not resolve is an error and nothing is stored. A name with several answers is refused as soon as ONE answer is
+  never-class, whatever the order. The three metadata singletons (`fd00:ec2::254`, `fd20:ce::254`, `100.100.100.200`) are
+  never-class for EVERY client class (one shared list in `netguard.go`, checked before the allow-list, so classification
+  and the dial agree; operator decision 2026-11-13); Teredo (`2001::/32`) is refused by the operator class only.
+- `database.DB.GetApprovedClass` / `SetApprovedClass` / `AutoClassifyApprovedClass` read, write and classify the stored
+  value; an `operator` approval is never overwritten by automatic classification (the automatic write is conditional on the stored
+  source not being `operator`, so a decision made while a slow DNS lookup runs survives).
+- Not wired yet: the create/update handlers (W4, CAT-SECQ1-C) that call the classifier, ask for confirmation of `private`
+  and require step-up to widen, and the clients (`OperatorTransportFor`) that consume the stored class (W4/W5).
+  Until then the stored value is not enforced anywhere; the first-connection pin remains the only per-root protection.
+- The PostgreSQL branch of the migration is exercised by `TestRunMigrationsPostgresRealContainerZeroErrors`, which starts
+  its own throwaway container and honestly SKIPs without podman or the image.
+
+## Dial cap trade-off (SEC-DIAL-1-FU F6)
+
+`netguard.OperatorDialContext` tries at most `maxVettedDials` (4) vetted addresses of one name, in resolver order, so a name with many answers cannot multiply the connect cost (the same bound discovery uses). Trade-off: a name whose first four vetted answers are all unreachable is reported as failed even if a fifth or later answer is live; that address is never tried. Operators with such a name should list fewer answers (or an IP literal) for the storage host. Unit-class tests: `internal/netguard/sec_dial_fu_test.go`.

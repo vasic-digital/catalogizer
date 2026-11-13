@@ -623,6 +623,10 @@ func main() {
 	ReadTimeout:  3 * time.Second,
 	WriteTimeout: 3 * time.Second,
 	PoolTimeout:  4 * time.Second,
+	// N2: without this the 500 ms context in the rate limiter does not bound a
+	// black-holed call (ReadTimeout 3s governs); verified by
+	// TestN2_ContextTimeoutEnabledBoundsBlackHoleCall.
+	ContextTimeoutEnabled: true,
 	})
 
 	// Test Redis connection
@@ -977,12 +981,9 @@ func main() {
 	// Operator decision 2026-11-12: a Redis outage after startup falls back to
 	// the in-memory tiers (600/2000 per minute), not 503. /login and /register
 	// keep using the in-memory loginRateLimiter.
-	authRedisCfg := root_middleware.AuthRedisRateLimiterConfig(redisClient)
-	authRedisCfg.Fallback = authRateLimiter
-	defaultRedisCfg := root_middleware.DefaultRedisRateLimiterConfig(redisClient)
-	defaultRedisCfg.Fallback = defaultRateLimiter
-	authRateLimiter = root_middleware.RedisRateLimit(authRedisCfg)
-	defaultRateLimiter = root_middleware.RedisRateLimit(defaultRedisCfg)
+	// root_middleware.NewRedisTierLimiters wires each tier to ITS OWN in-memory
+	// fallback (tested in middleware, CAT-OPA-1).
+	authRateLimiter, defaultRateLimiter = root_middleware.NewRedisTierLimiters(redisClient, authRateLimiter, defaultRateLimiter)
 	} else if redisClient != nil {
 	logger.Info("Redis available but REDIS_RATE_LIMIT not set — using in-memory rate limiting")
 	}
@@ -992,8 +993,8 @@ func main() {
 	router := gin.New()
 	router.Use(gin.LoggerWithFormatter(func(p gin.LogFormatterParams) string {
 		return fmt.Sprintf("[GIN] %s | %3d | %13v | %15s | %-7s %#v\n%s",
-			p.TimeStamp.Format("2006/01/02 - 15:04:05"), p.StatusCode, p.Latency, p.ClientIP, p.Method, logredact.Path(p.Request.URL.Path, p.Request.URL.RawQuery), p.ErrorMessage)
-	}), gin.Recovery())
+			p.TimeStamp.Format("2006/01/02 - 15:04:05"), p.StatusCode, p.Latency, p.ClientIP, p.Method, logredact.Path(p.Request.URL.Path, p.Request.URL.RawQuery), logredact.ErrorText(p.ErrorMessage))
+	}), middleware.Recovery(logger))
 
 	// RULE-GO-005 / Master Plan §4.2 — lock down X-Forwarded-For
 	// handling. Gin's default TrustedProxies is 0.0.0.0/0, which
@@ -1111,41 +1112,7 @@ func main() {
 	// Deep health check — pings the database with a 100ms timeout so
 	// a slow DB never blocks callers for an unreasonable duration.
 	deepHealthChecker := metrics.NewHealthChecker(databaseDB, Version)
-	router.GET("/health/deep", root_middleware.CacheHeaders(5), func(c *gin.Context) {
-	const deepTimeout = 100 * time.Millisecond
-
-	type result struct {
-			resp metrics.HealthCheckResponse
-	}
-
-	ch := make(chan result, 1)
-	go func() {
-			ch <- result{resp: deepHealthChecker.Check(c.Request.Context())}
-	}()
-
-	select {
-	case r := <-ch:
-			status := http.StatusOK
-			if r.resp.Status == metrics.HealthStatusUnhealthy {
-				status = http.StatusServiceUnavailable
-			}
-			c.JSON(status, r.resp)
-
-	case <-time.After(deepTimeout):
-			c.JSON(http.StatusOK, gin.H{
-				"status":  "degraded",
-				"time":    time.Now().UTC(),
-				"version": Version,
-				"message": "health check exceeded 100ms timeout",
-				"components": gin.H{
-					"timeout": gin.H{
-						"status":  "degraded",
-						"message": "deep health check took too long",
-					},
-				},
-			})
-	}
-	})
+	router.GET("/health/deep", root_middleware.CacheHeaders(5), deepHealthHandler(deepHealthChecker, Version, 100*time.Millisecond))
 
 	// WebSocket endpoint: authenticated (Bearer header or ?token=, session-checked) and Origin-checked; see registerWebSocketRoute
 	registerWebSocketRoute(router, jwtMiddleware, wsHandler)
@@ -1290,67 +1257,12 @@ func main() {
 	// runaway operator (or an attacker who bypassed auth) cannot
 	// stampede the provider chain.
 	// Admin-only (review R2 D1/P1): these were reachable by any authenticated user.
-	api.POST("/admin/image-quality/revalidate", jwtMiddleware.RequireAdmin(), root_middleware.RateLimiter(6), func(c *gin.Context) {
-			var req struct {
-				StaleAgeSeconds int `json:"stale_age_seconds"`
-				Limit           int `json:"limit"`
-			}
-			if bindErr := c.ShouldBindJSON(&req); bindErr != nil {
-				// Empty or malformed body → use defaults below
-			}
-			staleAge := 7 * 24 * 3600
-			if req.StaleAgeSeconds > 0 {
-				staleAge = req.StaleAgeSeconds
-			}
-			limit := 256
-			if req.Limit > 0 && req.Limit <= 4096 {
-				limit = req.Limit
-			}
-			ctx := c.Request.Context()
-			cutoff := time.Now().Add(-time.Duration(staleAge) * time.Second)
-			rows, err := imageQualityRepo.SampleForRevalidation(ctx, cutoff, limit)
-			if err != nil {
-				logger.Warn("image quality revalidation sample failed (not returned to client)", zap.Error(err))
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to sample images for revalidation"})
-				return
-			}
-			touched := 0
-			for _, row := range rows {
-				if err := imageQualityRepo.TouchLastChecked(ctx, row.ID); err != nil {
-					continue
-				}
-				touched++
-			}
-			c.JSON(http.StatusOK, gin.H{
-				"sampled":          len(rows),
-				"touched":          touched,
-				"stale_age_seconds": staleAge,
-				"limit":            limit,
-			})
-	})
+	api.POST("/admin/image-quality/revalidate", jwtMiddleware.RequireAdmin(), root_middleware.RateLimiter(6), imageQualityRevalidateHandler(imageQualityRepo, logger))
 
 	// Cover art batch generation — creates video-frame thumbnails for items
 	// that don't have cover art yet.  This is useful when external CDNs are
 	// unreachable and the backend must generate its own covers.
-	api.POST("/admin/covers/generate-thumbnails", jwtMiddleware.RequireAdmin(), func(c *gin.Context) {
-			var req struct {
-				Limit int `json:"limit" binding:"min=1,max=500"`
-			}
-			if err := c.ShouldBindJSON(&req); err != nil {
-				// default limit when body is empty
-				req.Limit = 50
-			}
-			generated, err := coverArtService.GenerateMissingVideoThumbnails(c.Request.Context(), req.Limit)
-			if err != nil {
-				logger.Warn("video thumbnail generation failed (not returned to client)", zap.Error(err))
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate video thumbnails"})
-				return
-			}
-			c.JSON(http.StatusOK, gin.H{
-				"generated": generated,
-				"message":   "thumbnail generation completed",
-			})
-	})
+	api.POST("/admin/covers/generate-thumbnails", jwtMiddleware.RequireAdmin(), generateThumbnailsHandler(coverArtService, logger))
 
 	// Recommendation endpoints (lazy — handler initialized on first request)
 	recGroup := api.Group("/recommendations")

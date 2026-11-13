@@ -5780,14 +5780,12 @@ paths:
           required: true
           schema:
             type: string
-      description: "Returns a shared log collection by its share token. No permission check beyond the JWT middleware; the share itself must carry the `read` permission. Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
+      description: "Returns a shared log collection by its share token. No permission check beyond the JWT middleware; the share itself must carry the `read` permission (otherwise the answer is the same 404 as for an unknown token). Path parameters reach the handler since the WrapHTTPHandler fix (gin path params are copied into mux.Vars, handlers/gin_adapter.go); verified on the real binary by catalog-api/openapi_contract_binary_test.go."
       responses:
         '200':
           description: "`{\"collection\": {...}, ...}` for the shared collection."
-        '403':
-          description: "The share does not carry the `read` permission (`Access denied`)."
         '404':
-          description: "Unknown, expired or revoked token, or the shared collection cannot be loaded (fixed body `Not found`; the service error text is not returned)."
+          description: "Every failure: malformed, unknown, expired, revoked or legacy-format token, a share without the `read` permission, or a shared collection that cannot be loaded (fixed body `Not found`; the service error text is not returned, so the route is not an oracle)."
         '401':
           description: "Unauthenticated (JWT middleware)."
     delete:

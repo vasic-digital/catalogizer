@@ -297,3 +297,65 @@ func TestCAT_OPB_FU2_T2_EmptyObjectTemplateLoads(t *testing.T) {
 	assert.NotNil(t, doc)
 	assert.Empty(t, doc)
 }
+
+// CAT-OPB-FU2 / OBF-4: a Required step that fails AFTER an earlier Required
+// step succeeded still rolls config.json back (multi-step rollback).
+func TestOBF4_MultiStepRequiredFailureRollsBackConfig(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		previous string
+	}{{"no previous file", ""}, {"previous file", `{"old":true}`}} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newTemplateTestService(t)
+			s.configTemplates["multi"] = ConfigTemplate{TemplateID: "multi", PostInstall: []PostInstallAction{
+				{ActionType: "file_create", Required: true, Parameters: map[string]interface{}{"file_path": "step1.json"}},
+				{ActionType: "file_create", Required: true, Parameters: map[string]interface{}{"file_path": "step2.json", "template": "missing_template.json"}},
+			}}
+			require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+			p := filepath.Join(s.configPath, "config.json")
+			if tc.previous != "" {
+				require.NoError(t, os.WriteFile(p, []byte(tc.previous), 0o644))
+			}
+			err := s.finalizeConfiguration(&models.WizardSession{ConfigType: "multi", Configuration: map[string]interface{}{"k": "v"}})
+			require.Error(t, err)
+			_, step1Err := os.Stat(filepath.Join(s.configPath, "step1.json"))
+			require.NoError(t, step1Err, "control: the first Required step really ran before the second failed")
+			got, readErr := os.ReadFile(p)
+			if tc.previous == "" {
+				assert.True(t, os.IsNotExist(readErr), "new config.json removed after the later step failed")
+			} else {
+				require.NoError(t, readErr)
+				assert.Equal(t, tc.previous, string(got))
+			}
+		})
+	}
+}
+
+// OBF-4: CONFIG_PATH that is a symlink to a real directory: finalize writes
+// through it and a failing Required step restores the previous file in the
+// real directory without replacing the link.
+func TestOBF4_SymlinkedConfigPathRollbackRestoresThroughLink(t *testing.T) {
+	s := newTemplateTestService(t)
+	real := t.TempDir()
+	link := filepath.Join(t.TempDir(), "cfglink")
+	require.NoError(t, os.Symlink(real, link))
+	s.configPath = link
+	s.configTemplates["failing"] = ConfigTemplate{TemplateID: "failing", PostInstall: []PostInstallAction{
+		{ActionType: "file_create", Required: true, Parameters: map[string]interface{}{"file_path": "x.json", "template": "missing_template.json"}},
+	}}
+	require.NoError(t, os.WriteFile(filepath.Join(real, "config.json"), []byte(`{"old":true}`), 0o600))
+	require.Error(t, s.finalizeConfiguration(&models.WizardSession{ConfigType: "failing", Configuration: map[string]interface{}{}}))
+	got, err := os.ReadFile(filepath.Join(real, "config.json"))
+	require.NoError(t, err)
+	assert.Equal(t, `{"old":true}`, string(got), "previous content restored in the real directory")
+	fi, err := os.Lstat(link)
+	require.NoError(t, err)
+	assert.NotZero(t, fi.Mode()&os.ModeSymlink, "the CONFIG_PATH link itself is still a symlink")
+
+	// success path writes through the link too
+	s.configTemplates["ok"] = ConfigTemplate{TemplateID: "ok"}
+	require.NoError(t, s.finalizeConfiguration(&models.WizardSession{ConfigType: "ok", UserID: 7, Configuration: map[string]interface{}{}}))
+	raw, err := os.ReadFile(filepath.Join(real, "config.json"))
+	require.NoError(t, err)
+	assert.Contains(t, string(raw), `"user_id": 7`)
+}

@@ -2,8 +2,12 @@ package firebase
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
@@ -208,5 +212,37 @@ func TestGinMiddlewareNotNil(t *testing.T) {
 	mw := GinMiddleware(app)
 	if mw == nil {
 		t.Fatal("GinMiddleware should not return nil")
+	}
+}
+
+type captureCrashlytics struct{ got []NonFatal }
+
+func (c *captureCrashlytics) ReportNonFatal(_ context.Context, nf NonFatal) error {
+	c.got = append(c.got, nf)
+	return nil
+}
+
+// R2-4: a 5xx report to Crashlytics carries neither the share token of the path nor a ?token= of the Referer.
+func TestGinMiddleware_CrashlyticsReportRedactsPathAndReferer(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	cc := &captureCrashlytics{}
+	app := &App{crashlytics: cc}
+	router := gin.New()
+	router.Use(GinMiddleware(app))
+	router.GET("/api/v1/logs/share/:token", func(c *gin.Context) { c.Status(http.StatusInternalServerError) })
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/logs/share/SHARESECRETTOK", nil)
+	req.Header.Set("Referer", "https://app/x?token=REFERERSECRET&a=1")
+	router.ServeHTTP(httptest.NewRecorder(), req)
+	if len(cc.got) != 1 {
+		t.Fatalf("expected 1 report (control needle), got %d", len(cc.got))
+	}
+	all := cc.got[0].Message + "\n" + cc.got[0].StackTrace
+	for _, s := range []string{"SHARESECRETTOK", "REFERERSECRET"} {
+		if strings.Contains(all, s) {
+			t.Errorf("crashlytics report leaks %q:\n%s", s, all)
+		}
+	}
+	if !strings.Contains(all, ":redacted") || !strings.Contains(all, "a=1") {
+		t.Errorf("report lost its non-secret content:\n%s", all)
 	}
 }

@@ -148,6 +148,72 @@ func IsBlockedIP(ip net.IP) bool { return isBlocked(ip, true) }
 // private, CGNAT, link-local, metadata and reserved addresses are always blocked.
 func IsBlockedIPStrict(ip net.IP) bool { return isBlocked(ip, false) }
 
+// metadataSingletons are the cloud metadata services that sit inside space that is otherwise allowed (ULA, CGNAT):
+// AWS IPv6 fd00:ec2::254, Compute Engine IPv6 fd20:ce::254 (single address, https://docs.cloud.google.com/compute/docs/metadata/querying-metadata)
+// and Alibaba 100.100.100.200. Every client class refuses them, before the allow-list is read (operator decision
+// 2026-11-13); the surrounding ranges stay ordinary ULA / CGNAT space. ClassOf (and so ClassifyHost) and the dial use this
+// one list, so classification and connection cannot disagree.
+var metadataSingletons = []*net.IPNet{mustCIDR("fd00:ec2::254/128"), mustCIDR("fd20:ce::254/128"), mustCIDR("100.100.100.200/32")}
+
+// MetadataSingletons returns a copy of the metadata singleton list, so other packages (SMB host vetting) consume the one
+// list instead of keeping their own and cannot diverge from the dial-time check.
+func MetadataSingletons() []*net.IPNet {
+	return copyNets(metadataSingletons)
+}
+
+// IsMetadataSingleton reports whether ip is one of the metadata singletons. IPv4-mapped forms match through
+// net.IPNet.Contains; NAT64, 6to4, IPv4-compatible and SIIT spellings are NOT matched here: callers unwrap them with
+// their own embedded-address handling and test the carried IPv4 address (isBlocked and ClassOf do; so does the SMB vet).
+func IsMetadataSingleton(ip net.IP) bool { return isMetadataSingleton(ip) }
+
+// copyNets returns a deep copy, so no caller can mutate the guard's lists.
+func copyNets(in []*net.IPNet) []*net.IPNet {
+	out := make([]*net.IPNet, len(in))
+	for i, n := range in {
+		out[i] = &net.IPNet{IP: append(net.IP(nil), n.IP...), Mask: append(net.IPMask(nil), n.Mask...)}
+	}
+	return out
+}
+
+// reservedRangeNets is the unexported master list behind ReservedNets / IsReservedRange.
+var reservedRangeNets = func() []*net.IPNet {
+	out := append([]*net.IPNet{}, reservedNets...)
+	out = append(out, operatorMetadataNets...) // Teredo 2001::/32
+	return append(out, mustCIDR("0.0.0.0/8"), mustCIDR("240.0.0.0/4"))
+}()
+
+// ReservedNets returns a deep copy of the ranges that no allow-list re-admits and that the operator class (ClassOf, SMB
+// vetting) always refuses: reservedNets (benchmarking, IETF assignments, site-local, local-use NAT64, Azure WireServer),
+// Teredo 2001::/32 (operator class only; the strict dial does not list it), 0.0.0.0/8 and 240.0.0.0/4. Consumers that vet hosts without netguard's dialer (SMB) use this one list, so they cannot
+// diverge from it.
+func ReservedNets() []*net.IPNet { return copyNets(reservedRangeNets) }
+
+// IsReservedRange reports whether ip lies in one of ReservedNets (IPv4-mapped forms included). It does not unwrap
+// NAT64 / 6to4 / IPv4-compatible / SIIT embeddings: callers test the carried IPv4 address as well.
+func IsReservedRange(ip net.IP) bool {
+	if ip == nil {
+		return true
+	}
+	if v4 := ip.To4(); v4 != nil {
+		ip = v4
+	}
+	for _, n := range reservedRangeNets {
+		if n.Contains(ip) {
+			return true
+		}
+	}
+	return false
+}
+
+func isMetadataSingleton(ip net.IP) bool {
+	for _, n := range metadataSingletons {
+		if n.Contains(ip) {
+			return true
+		}
+	}
+	return false
+}
+
 func isBlocked(ip net.IP, honorAllow bool) bool {
 	if ip == nil {
 		return true
@@ -162,6 +228,9 @@ func isBlocked(ip net.IP, honorAllow bool) bool {
 		if n.Contains(ip) {
 			return true
 		}
+	}
+	if isMetadataSingleton(ip) {
+		return true // before the allow-list, for every client class
 	}
 	if v4 := embeddedV4(ip); v4 != nil {
 		return isBlocked(v4, honorAllow)

@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 )
 
 // procMountsPath is the kernel mount table; a variable so a test can present a mount table without a privileged mount.
@@ -66,22 +67,15 @@ func (c *NFSClient) Connect(ctx context.Context) error {
 		return fmt.Errorf("failed to create mount point %s: %w", c.mountPoint, err)
 	}
 
-	// Mount the NFS share
-	source := fmt.Sprintf("%s:%s", c.config.Host, c.config.Path)
-	options := "vers=3"
-	if c.config.Options != "" {
-		options = c.config.Options
-	}
-	// mount(2) does not resolve names: the kernel NFS client needs the server address in addr=
-	if !strings.Contains(options, "addr=") {
-		if ip := resolveHostIP(c.config.Host); ip != "" {
-			options += ",addr=" + ip
-		}
-	}
-
-	err := syscall.Mount(source, c.mountPoint, "nfs", 0, options)
+	// SEC-DIAL-1: the host is vetted by the operator-class policy and the kernel is handed the vetted ADDRESS (source and addr=), never the name,
+	// so a name that resolves differently later cannot redirect the mount (anti DNS rebinding); host, export and options are checked for injection.
+	source, options, err := planNFSMount(ctx, c.config)
 	if err != nil {
-		return fmt.Errorf("failed to mount NFS share %s to %s: %w", source, c.mountPoint, err)
+		return err
+	}
+	if err := nfsMount(source, c.mountPoint, "nfs", 0, options); err != nil {
+		// the resolved address is not echoed: the status endpoint shows this text to callers that are not administrators
+		return fmt.Errorf("failed to mount NFS share %s:%s to %s: %w", c.config.Host, c.config.Path, c.mountPoint, err)
 	}
 
 	c.mounted = true
@@ -89,19 +83,58 @@ func (c *NFSClient) Connect(ctx context.Context) error {
 	return nil
 }
 
-// resolveHostIP returns the first address of host ("" when it cannot be resolved; a literal IP is returned as it is).
-func resolveHostIP(host string) string {
-	if host == "" {
-		return ""
+// nfsMount is mount(2); tests replace it to observe the mount call without privileges.
+var nfsMount = syscall.Mount
+
+// planNFSMount turns the configuration into the (source, data) of mount(2). It refuses a host the operator-class policy refuses, a malformed
+// host / export / option string, and an addr= / mountaddr= option naming a refused address. The server address in source and in addr= is the
+// first vetted address of the host (mount(2) does not resolve names, the kernel NFS client needs the address).
+func planNFSMount(ctx context.Context, cfg NFSConfig) (source, data string, err error) {
+	if err := ValidateStorageHostSyntax(cfg.Host); err != nil {
+		return "", "", fmt.Errorf("%w", ErrStorageHostRefused)
 	}
-	if ip := net.ParseIP(host); ip != nil {
-		return ip.String()
+	if err := ValidateNFSExport(cfg.Path); err != nil {
+		return "", "", err
 	}
-	addrs, err := net.LookupHost(host)
-	if err != nil || len(addrs) == 0 {
-		return ""
+	options := "vers=3"
+	if cfg.Options != "" {
+		options = cfg.Options
 	}
-	return addrs[0]
+	opts, err := ParseNFSOptions(options)
+	if err != nil {
+		return "", "", err
+	}
+	vctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	srvIP, err := resolveNFSServer(vctx, cfg.Host)
+	if err != nil {
+		return "", "", err
+	}
+	hasAddr := false
+	for _, o := range opts {
+		if !nfsAddrOptions[o.Key] {
+			continue
+		}
+		if o.Key == "addr" {
+			hasAddr = true
+		}
+		oip := net.ParseIP(o.Value)
+		if oip == nil {
+			return "", "", fmt.Errorf("%w", ErrStorageHostRefused)
+		}
+		if _, verr := storageOperatorResolve(vctx, oip.String()); verr != nil {
+			return "", "", fmt.Errorf("%w", ErrStorageHostRefused)
+		}
+	}
+	ip := srvIP.String()
+	if !hasAddr {
+		options += ",addr=" + ip
+	}
+	srv := ip
+	if strings.Contains(ip, ":") {
+		srv = "[" + ip + "]"
+	}
+	return srv + ":" + cfg.Path, options, nil
 }
 
 // Disconnect unmounts the NFS filesystem

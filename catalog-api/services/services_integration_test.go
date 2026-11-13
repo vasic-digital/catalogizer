@@ -2354,7 +2354,8 @@ func TestLogManagementService_GetLogShare_Integration(t *testing.T) {
 	// Get the share by token
 	retrievedShare, err := service.GetLogShare(share.ShareToken)
 	require.NoError(t, err)
-	assert.Equal(t, share.ShareToken, retrievedShare.ShareToken)
+	assert.Equal(t, share.ID, retrievedShare.ID)
+	assert.Empty(t, retrievedShare.ShareToken, "the stored hash is never echoed")
 	assert.True(t, retrievedShare.IsActive)
 }
 
