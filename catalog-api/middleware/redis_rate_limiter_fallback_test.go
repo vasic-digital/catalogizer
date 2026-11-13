@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -62,11 +63,13 @@ func TestRedisRateLimit_RecoversToRedisAfterOutage(t *testing.T) {
 	mr, client := setupMiniredis(t)
 	cfg := DefaultRedisRateLimiterConfig(client)
 	cfg.Requests = 1
+	cfg.OutageBackoff = 50 * time.Millisecond // short breaker (CAT-OPA-3) so recovery is observable
 	r := fbRouter(cfg, memLimit(1000))
 	assert.Equal(t, http.StatusOK, fbGet(r))
 	mr.Close() // outage
 	assert.Equal(t, http.StatusOK, fbGet(r), "falls back while Redis is down")
 	assert.NoError(t, mr.Restart())
+	time.Sleep(100 * time.Millisecond)
 	// miniredis keeps its data across Restart: the pre-outage request already used
 	// the budget of 1, and the in-memory fallback (budget 1000) would allow this.
 	assert.Equal(t, http.StatusTooManyRequests, fbGet(r), "Redis limiter is authoritative again after recovery")
