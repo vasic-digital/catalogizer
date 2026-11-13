@@ -295,42 +295,9 @@ func (c *LocalClient) CopyFile(ctx context.Context, srcPath, dstPath string) err
 	if !c.IsConnected() {
 		return fmt.Errorf("not connected")
 	}
-	srcFullPath, rerr := c.resolveConfined(srcPath)
-	if rerr != nil {
-		return rerr
-	}
-	dstFullPath, rerr := c.resolveConfined(dstPath)
-	if rerr != nil {
-		return rerr
-	}
-
-	// Ensure destination directory exists
-	dstDir := filepath.Dir(dstFullPath)
-	if err := os.MkdirAll(dstDir, 0755); err != nil {
-		return fmt.Errorf("failed to create destination directory %s: %w", dstDir, err)
-	}
-
-	// Open source file
-	srcFile, err := os.Open(srcFullPath)
-	if err != nil {
-		return fmt.Errorf("failed to open source file %s: %w", srcFullPath, err)
-	}
-	defer srcFile.Close()
-
-	// Create destination file
-	dstFile, err := os.Create(dstFullPath)
-	if err != nil {
-		return fmt.Errorf("failed to create destination file %s: %w", dstFullPath, err)
-	}
-	defer dstFile.Close()
-
-	// Copy data
-	_, err = io.Copy(dstFile, srcFile)
-	if err != nil {
-		return fmt.Errorf("failed to copy file from %s to %s: %w", srcFullPath, dstFullPath, err)
-	}
-
-	return nil
+	// One shared helper for every client (confine_copy.go): source opened and checked first, same-file and non-regular sources refused,
+	// temp file + rename so the destination is never truncated before the source is read.
+	return copyConfinedFile(ctx, c.basePath, c.resolvePath(srcPath), c.resolvePath(dstPath), srcPath, dstPath, c.config.AllowSymlinkEscape)
 }
 
 // GetProtocol returns the protocol name
