@@ -140,7 +140,7 @@ func (st *outageState) settle(probe bool, o breakerOutcome) {
 //	-------------------------------------------------- ------- -------------------------------
 //	request context already done (client went away)    no      says nothing about Redis
 //	context.Canceled                                   no      client cancel
-//	context.DeadlineExceeded, request ctx still alive  YES     our 500 ms Redis-call timeout
+//	context.DeadlineExceeded, request ctx still alive  YES     call deadline or pool wait (N2/N3)
 //	net.Error (dial, refused, reset, i/o timeout)      YES     transport outage
 //	io.EOF / io.ErrUnexpectedEOF                       YES     connection dropped
 //	redis.ErrClosed / redis.ErrPoolTimeout             YES     client closed / pool exhausted
@@ -150,6 +150,14 @@ func (st *outageState) settle(probe bool, o breakerOutcome) {
 //	"unexpected reply" shape error (no Go error)       no      Redis is answering
 //	anything unclassified                              no      do not switch the limiter off on
 //	                                                           a guess (11.4.6)
+//
+// N2: the 500 ms context in the handlers is NOT what bounds a black-holed
+// Redis call in production unless the client enables ContextTimeoutEnabled;
+// otherwise go-redis ReadTimeout (3 s) governs, so each in-flight request or
+// probe can take about 3 s before DeadlineExceeded/i-o timeout.
+// N3: DeadlineExceeded can also come from waiting for a pool connection under
+// heavy load; that trips the breaker too. Accepted, bounded risk: the breaker
+// only diverts to the in-memory fallback for the backoff and re-probes.
 //
 // A request that does not trip the breaker still gets the fallback for itself
 // (or 503 without a fallback), exactly as before the breaker existed.
@@ -188,7 +196,7 @@ func isRedisOutage(reqCtx context.Context, err error) bool {
 // (isRedisOutage) and writes the throttled log line. The log line carries the
 // Redis error text VERBATIM: that text can include the Redis host:port (never
 // credentials), so it is not address-free.
-func useFallback(c *gin.Context, config RedisRateLimiterConfig, st *outageState, err error) bool {
+func useFallback(c *gin.Context, config RedisRateLimiterConfig, st *outageState, err error, release func()) bool {
 	if config.Fallback == nil {
 		return false
 	}
@@ -204,6 +212,12 @@ func useFallback(c *gin.Context, config RedisRateLimiterConfig, st *outageState,
 	st.mu.Unlock()
 	if log && logging.Logger != nil {
 		logging.With(logging.ErrorField(err)).Warn("Redis rate limiter unavailable; using in-memory limiter fallback")
+	}
+	// N1: the half-open probe slot is released BEFORE the downstream chain
+	// runs. Fallback may call c.Next(), so a slow or panicking downstream
+	// handler must neither hold the slot for its whole duration nor leak it.
+	if release != nil {
+		release()
 	}
 	config.Fallback(c)
 	return true
@@ -311,12 +325,18 @@ func redisRateLimitWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *o
 			config.Fallback(c)
 			return
 		}
-		settled := false
-		defer func() {
-			if !settled {
-				st.settle(probe, outcomeNeutral) // panic / early return: release the slot
+		// Idempotent release of the probe slot (N1/N4): runs at most once,
+		// from the fallback path (before downstream), the normal paths, or
+		// this defer (panic in KeyGenerator, script call or anywhere later).
+		released := false
+		release := func(o breakerOutcome) {
+			if released {
+				return
 			}
-		}()
+			released = true
+			st.settle(probe, o)
+		}
+		defer release(outcomeNeutral)
 		key := "rate_limit:" + config.KeyGenerator(c)
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 500*time.Millisecond)
 		defer cancel()
@@ -333,12 +353,10 @@ func redisRateLimitWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *o
 			if err == nil {
 				err = errors.New("unexpected fixed-window script reply")
 			}
-			settled = true
-			if useFallback(c, config, st, err) {
-				st.settle(probe, outcomeNeutral)
+			if useFallback(c, config, st, err, func() { release(outcomeNeutral) }) {
 				return
 			}
-			st.settle(probe, outcomeNeutral)
+			release(outcomeNeutral)
 			if logging.Logger != nil {
 				logging.With(logging.ErrorField(err)).Warn("Redis rate limiter error")
 			}
@@ -350,8 +368,7 @@ func redisRateLimitWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *o
 			return
 		}
 
-		settled = true
-		st.settle(probe, outcomeOK)
+		release(outcomeOK)
 		currentCount := res[0]
 		ttl := time.Duration(res[1]) * time.Millisecond
 		if ttl <= 0 {
@@ -406,12 +423,18 @@ func slidingWindowWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *ou
 			config.Fallback(c)
 			return
 		}
-		settled := false
-		defer func() {
-			if !settled {
-				st.settle(probe, outcomeNeutral)
+		// Idempotent release of the probe slot (N1/N4): runs at most once,
+		// from the fallback path (before downstream), the normal paths, or
+		// this defer (panic in KeyGenerator, script call or anywhere later).
+		released := false
+		release := func(o breakerOutcome) {
+			if released {
+				return
 			}
-		}()
+			released = true
+			st.settle(probe, o)
+		}
+		defer release(outcomeNeutral)
 		key := "sliding_rate_limit:" + config.KeyGenerator(c)
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 500*time.Millisecond)
 		defer cancel()
@@ -441,12 +464,10 @@ func slidingWindowWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *ou
 
 		// Handle Redis errors gracefully
 		if err != nil {
-			settled = true
-			if useFallback(c, config, st, err) {
-				st.settle(probe, outcomeNeutral)
+			if useFallback(c, config, st, err, func() { release(outcomeNeutral) }) {
 				return
 			}
-			st.settle(probe, outcomeNeutral)
+			release(outcomeNeutral)
 			if logging.Logger != nil {
 				logging.With(logging.ErrorField(err)).Warn("Redis sliding window rate limiter error")
 			}
@@ -459,8 +480,7 @@ func slidingWindowWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *ou
 			return
 		}
 
-		settled = true
-		st.settle(probe, outcomeOK)
+		release(outcomeOK)
 		// Get current count
 		count, err := countCmd.Result()
 		if err != nil {

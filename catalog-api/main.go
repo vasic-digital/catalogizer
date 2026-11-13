@@ -623,6 +623,10 @@ func main() {
 	ReadTimeout:  3 * time.Second,
 	WriteTimeout: 3 * time.Second,
 	PoolTimeout:  4 * time.Second,
+	// N2: without this the 500 ms context in the rate limiter does not bound a
+	// black-holed call (ReadTimeout 3s governs); verified by
+	// TestN2_ContextTimeoutEnabledBoundsBlackHoleCall.
+	ContextTimeoutEnabled: true,
 	})
 
 	// Test Redis connection
