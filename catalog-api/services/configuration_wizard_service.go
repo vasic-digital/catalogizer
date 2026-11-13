@@ -1256,36 +1256,54 @@ func (s *ConfigurationWizardService) createConfigurationFile(params map[string]i
 	return s.writeConfigFile(filePath, doc)
 }
 
-// ensureResolvedInsideConfigDir refuses a target whose symlink-resolved location
-// is outside the symlink-resolved configPath. The deepest existing ancestor of
-// the target (the target itself when it exists) is resolved; the not-yet-existing
-// tail cannot contain a link.
+// ensureResolvedInsideConfigDir refuses a target that would reach outside the
+// symlink-resolved configPath. The (already lexically confined) target is walked
+// component by component from the resolved configPath: every existing component
+// is Lstat-ed; a symbolic link is fully resolved and must resolve (a dangling
+// or looping link is refused, never guessed at) and must stay inside the base;
+// the first component that does not exist ends the walk (the rest is created by
+// us and cannot be a link). Residual limit: the check and the later write are
+// not atomic, so a link planted by another local process in that window is not
+// caught; the configuration directory is expected to be operator-owned.
 func (s *ConfigurationWizardService) ensureResolvedInsideConfigDir(target string) error {
 	base, err := filepath.EvalSymlinks(s.configPath)
 	if err != nil {
 		return fmt.Errorf("cannot resolve configuration directory %s: %w", s.configPath, err)
 	}
-	cur, tail := target, ""
-	for {
-		resolved, rerr := filepath.EvalSymlinks(cur)
-		if rerr == nil {
-			full := filepath.Join(resolved, tail)
-			rel, relErr := filepath.Rel(base, full)
-			if relErr != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+	rel, err := filepath.Rel(filepath.Clean(s.configPath), target)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return fmt.Errorf("resolves outside the configuration directory")
+	}
+	inside := func(p string) bool {
+		r, e := filepath.Rel(base, p)
+		return e == nil && r != ".." && !strings.HasPrefix(r, ".."+string(filepath.Separator))
+	}
+	cur := base
+	for _, part := range strings.Split(rel, string(filepath.Separator)) {
+		if part == "" || part == "." {
+			continue
+		}
+		next := filepath.Join(cur, part)
+		fi, lerr := os.Lstat(next)
+		if lerr != nil {
+			if os.IsNotExist(lerr) {
+				return nil // this and everything below it is new
+			}
+			return fmt.Errorf("cannot inspect %s: %w", next, lerr)
+		}
+		if fi.Mode()&os.ModeSymlink != 0 {
+			resolved, rerr := filepath.EvalSymlinks(next)
+			if rerr != nil {
+				return fmt.Errorf("symbolic link %s cannot be resolved (dangling or looping): %w", next, rerr)
+			}
+			if !inside(resolved) {
 				return fmt.Errorf("resolves outside the configuration directory through a symbolic link")
 			}
-			return nil
+			next = resolved
 		}
-		if !os.IsNotExist(rerr) {
-			return fmt.Errorf("cannot resolve %s: %w", cur, rerr)
-		}
-		parent := filepath.Dir(cur)
-		if parent == cur {
-			return fmt.Errorf("cannot resolve %s: no existing ancestor", target)
-		}
-		tail = filepath.Join(filepath.Base(cur), tail)
-		cur = parent
+		cur = next
 	}
+	return nil
 }
 
 // probeWritable checks write access to dir with a uniquely named temporary file

@@ -586,7 +586,8 @@ func TestOBF_FU_ProbesDoNotTouchExistingTestTmp(t *testing.T) {
 	victim := filepath.Join(t.TempDir(), "victim")
 	require.NoError(t, os.WriteFile(victim, []byte("keep"), 0o644))
 	require.NoError(t, os.WriteFile(filepath.Join(dir, "test.tmp"), []byte("mine"), 0o644))
-	require.NoError(t, os.Symlink(victim, filepath.Join(dir, "test.tmp.link")))
+	symDir := t.TempDir()
+	require.NoError(t, os.Symlink(victim, filepath.Join(symDir, "test.tmp"))) // real symlink named test.tmp
 	require.NoError(t, s.testSQLiteConnection(filepath.Join(dir, "db.sqlite")))
 	require.NoError(t, s.testMediaStorage(map[string]interface{}{"storage_type": "local", "media_path": dir}))
 	got, err := os.ReadFile(filepath.Join(dir, "test.tmp"))
@@ -595,5 +596,152 @@ func TestOBF_FU_ProbesDoNotTouchExistingTestTmp(t *testing.T) {
 	v, _ := os.ReadFile(victim)
 	assert.Equal(t, "keep", string(v))
 	entries, _ := os.ReadDir(dir)
-	assert.Len(t, entries, 2, "no probe file left behind")
+	assert.Len(t, entries, 1, "no probe file left behind")
+	// the symlink named test.tmp, in its own directory, is untouched by both probes
+	require.NoError(t, s.testSQLiteConnection(filepath.Join(symDir, "db.sqlite")))
+	require.NoError(t, s.testMediaStorage(map[string]interface{}{"storage_type": "local", "media_path": symDir}))
+	fi, err := os.Lstat(filepath.Join(symDir, "test.tmp"))
+	require.NoError(t, err)
+	assert.NotZero(t, fi.Mode()&os.ModeSymlink, "test.tmp is still a symlink")
+	v, _ = os.ReadFile(victim)
+	assert.Equal(t, "keep", string(v), "victim behind the symlink untouched")
+	entries, _ = os.ReadDir(symDir)
+	assert.Len(t, entries, 1, "no probe file left behind (symlink dir)")
+}
+
+// Probe error paths: an unwritable directory is reported, not swallowed.
+func TestOBF_FU_ProbesReportUnwritableDirectory(t *testing.T) {
+	s := newTemplateTestService(t)
+	dir := t.TempDir()
+	require.NoError(t, os.Chmod(dir, 0o500))
+	t.Cleanup(func() { _ = os.Chmod(dir, 0o700) })
+	if f, err := os.CreateTemp(dir, "x"); err == nil {
+		f.Close()
+		t.Skip("directory writable despite mode 0500 (running as root?)")
+	}
+	assert.Error(t, s.testSQLiteConnection(filepath.Join(dir, "db.sqlite")))
+	assert.Error(t, s.testMediaStorage(map[string]interface{}{"storage_type": "local", "media_path": dir}))
+}
+
+// Symlink class table (F4 round 3): every shape of link under configPath.
+func TestOBF_FU_SymlinkShapesTable(t *testing.T) {
+	sess := func() *models.WizardSession {
+		return &models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}
+	}
+	type tc struct {
+		name    string
+		setup   func(t *testing.T, cfg, outside string) string // returns file_path
+		wantErr bool
+	}
+	cases := []tc{
+		{"leaf file symlink outside (existing target)", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.WriteFile(filepath.Join(out, "t.json"), []byte(`{}`), 0o644))
+			require.NoError(t, os.Symlink(filepath.Join(out, "t.json"), filepath.Join(cfg, "l.json")))
+			return "l.json"
+		}, true},
+		{"leaf DANGLING symlink outside", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.Symlink(filepath.Join(out, "planted.json"), filepath.Join(cfg, "d.json")))
+			return "d.json"
+		}, true},
+		{"leaf DANGLING symlink inside", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.Symlink(filepath.Join(cfg, "nowhere.json"), filepath.Join(cfg, "d.json")))
+			return "d.json"
+		}, true},
+		{"dangling intermediate dir link", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.Symlink(filepath.Join(out, "nodir"), filepath.Join(cfg, "dd")))
+			return "dd/x.json"
+		}, true},
+		{"intermediate dir symlink outside", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.Symlink(out, filepath.Join(cfg, "dl")))
+			return "dl/x.json"
+		}, true},
+		{"link loop", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.Symlink(filepath.Join(cfg, "b"), filepath.Join(cfg, "a")))
+			require.NoError(t, os.Symlink(filepath.Join(cfg, "a"), filepath.Join(cfg, "b")))
+			return "a/x.json"
+		}, true},
+		{"chain of 2 links ending outside", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.Symlink(out, filepath.Join(cfg, "c2")))
+			require.NoError(t, os.Symlink(filepath.Join(cfg, "c2"), filepath.Join(cfg, "c1")))
+			return "c1/x.json"
+		}, true},
+		{"relative-target link escaping", func(t *testing.T, cfg, out string) string {
+			rel, err := filepath.Rel(cfg, out)
+			require.NoError(t, err)
+			require.NoError(t, os.Symlink(rel, filepath.Join(cfg, "rl")))
+			return "rl/x.json"
+		}, true},
+		{"relative dangling leaf escaping", func(t *testing.T, cfg, out string) string {
+			rel, err := filepath.Rel(cfg, filepath.Join(out, "p.json"))
+			require.NoError(t, err)
+			require.NoError(t, os.Symlink(rel, filepath.Join(cfg, "rd.json")))
+			return "rd.json"
+		}, true},
+		{"link to config dir itself (inside)", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.Symlink(cfg, filepath.Join(cfg, "self")))
+			return "self/x.json"
+		}, false},
+		{"link inside pointing inside", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.MkdirAll(filepath.Join(cfg, "real"), 0o755))
+			require.NoError(t, os.Symlink(filepath.Join(cfg, "real"), filepath.Join(cfg, "in")))
+			return "in/x.json"
+		}, false},
+		{"leaf file symlink inside existing", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.WriteFile(filepath.Join(cfg, "real.json"), []byte(`{}`), 0o644))
+			require.NoError(t, os.Symlink(filepath.Join(cfg, "real.json"), filepath.Join(cfg, "li.json")))
+			return "li.json"
+		}, false},
+		{"no links at all", func(t *testing.T, cfg, out string) string { return "plain/x.json" }, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			s := newTemplateTestService(t)
+			outside := t.TempDir()
+			fp := c.setup(t, s.configPath, outside)
+			before, _ := os.ReadDir(outside)
+			err := s.createConfigurationFile(map[string]interface{}{"file_path": fp}, sess())
+			after, _ := os.ReadDir(outside)
+			if c.wantErr {
+				require.Error(t, err)
+				assert.Equal(t, len(before), len(after), "nothing created outside configPath")
+				for _, e := range after {
+					assert.NotEqual(t, "planted.json", e.Name())
+					assert.NotEqual(t, "x.json", e.Name())
+					assert.NotEqual(t, "p.json", e.Name())
+				}
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+// Reviewer probe (round 2), adopted: relative write through a symlinked CONFIG_PATH succeeds
+// and lands in the real directory.
+func TestOBF_FU_SymlinkedConfigPathRelativeWrite(t *testing.T) {
+	s := newTemplateTestService(t)
+	real := t.TempDir()
+	link := filepath.Join(t.TempDir(), "cfglink")
+	require.NoError(t, os.Symlink(real, link))
+	s.configPath = link
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "x.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}))
+	_, err := os.Stat(filepath.Join(real, "x.json"))
+	assert.NoError(t, err, "written into the real directory behind the link")
+}
+
+// Symlinked CONFIG_PATH plus an in-config link that points into the REAL
+// directory: allowed (resolved against the resolved base, not the link name).
+func TestOBF_FU_SymlinkedConfigPathWithInternalLink(t *testing.T) {
+	s := newTemplateTestService(t)
+	real := t.TempDir()
+	require.NoError(t, os.MkdirAll(filepath.Join(real, "sub"), 0o755))
+	link := filepath.Join(t.TempDir(), "cfglink")
+	require.NoError(t, os.Symlink(real, link))
+	require.NoError(t, os.Symlink(filepath.Join(real, "sub"), filepath.Join(real, "in")))
+	s.configPath = link
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "in/x.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}))
+	_, err := os.Stat(filepath.Join(real, "sub", "x.json"))
+	assert.NoError(t, err)
 }
