@@ -2267,3 +2267,7 @@ Class-wide enumeration with a control-needled go/ast instrument (`catalog-api/in
 - NASEMU-SEED-N4 (minor): symlink resolving to tree root (`s -> .`) falsely refused; allow or document.
 - NASEMU-SEED-N5 (nit): escapes() resolves through manifest target when live intermediate link differs.
 - NASEMU-SEED-F5-NFC: full NFC normalisation needs golang.org/x/text (not a dep); Windows-hostile names not rejected (UNCONFIRMED cross-platform).
+
+## CAT-OPB-FU2 (Opus round 1 follow-ups, wizard templates; PROVISIONAL)
+- CAT-OPB-FU2-S2 (minor): replace the EvalSymlinks-then-ReadFile check in `loadConfigTemplate` with `os.OpenRoot(templatesPath)` (Go 1.24+) to close the check-to-use race.
+- CAT-OPB-FU2-DANGLING (minor): a dangling symlink in the templates dir is treated as not-exist and falls back to the built-in template; decide whether to refuse instead.

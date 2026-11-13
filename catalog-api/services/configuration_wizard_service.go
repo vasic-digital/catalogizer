@@ -1122,6 +1122,16 @@ func (s *ConfigurationWizardService) finalizeConfiguration(session *models.Wizar
 	configFile := filepath.Join(s.configPath, "config.json")
 	previous, readErr := os.ReadFile(configFile)
 	hadPrevious := readErr == nil
+	if readErr != nil && !os.IsNotExist(readErr) {
+		// An existing but unreadable file cannot be restored: refuse before writing.
+		return fmt.Errorf("cannot read existing configuration file %s: %w", configFile, readErr)
+	}
+	previousMode := os.FileMode(0644)
+	if hadPrevious {
+		if fi, statErr := os.Stat(configFile); statErr == nil {
+			previousMode = fi.Mode().Perm()
+		}
+	}
 	if err := s.writeConfigFile(configFile, configData); err != nil {
 		return fmt.Errorf("failed to write configuration file: %w", err)
 	}
@@ -1131,10 +1141,8 @@ func (s *ConfigurationWizardService) finalizeConfiguration(session *models.Wizar
 	for _, action := range template.PostInstall {
 		if err := s.executePostInstallAction(action, session); err != nil {
 			if action.Required {
-				if hadPrevious {
-					_ = os.WriteFile(configFile, previous, 0644)
-				} else {
-					_ = os.Remove(configFile)
+				if rbErr := s.rollbackConfig(configFile, previous, previousMode, hadPrevious); rbErr != nil {
+					return fmt.Errorf("failed to execute required post-install action: %w (rollback also failed: %v)", err, rbErr)
 				}
 				return fmt.Errorf("failed to execute required post-install action: %w", err)
 			}
@@ -1144,6 +1152,24 @@ func (s *ConfigurationWizardService) finalizeConfiguration(session *models.Wizar
 		}
 	}
 
+	return nil
+}
+
+// rollbackConfig restores the configuration file written by finalizeConfiguration:
+// the previous content and mode when there was one, otherwise removes the new file.
+func (s *ConfigurationWizardService) rollbackConfig(file string, previous []byte, mode os.FileMode, had bool) error {
+	if had {
+		if err := os.WriteFile(file, previous, mode); err != nil {
+			return fmt.Errorf("restore %s: %w", file, err)
+		}
+		if err := os.Chmod(file, mode); err != nil {
+			return fmt.Errorf("restore mode of %s: %w", file, err)
+		}
+		return nil
+	}
+	if err := os.Remove(file); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("remove %s: %w", file, err)
+	}
 	return nil
 }
 
