@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.11" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>render_md_to_pdf.sh and check_pdf_coverage.py</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<h1 id="render_md_to_pdfsh-and-check_pdf_coveragepy">render_md_to_pdf.sh
+and check_pdf_coverage.py</h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scripts</td>
+<td><code>scripts/docs/render_md_to_pdf.sh</code>,
+<code>scripts/docs/check_pdf_coverage.py</code>,
+<code>scripts/docs/print.css</code>,
+<code>scripts/docs/print_landscape.css</code>,
+<code>scripts/docs/pdf_table_cols.py</code></td>
+</tr>
+<tr>
+<td>Purpose</td>
+<td>Render the <code>.pdf</code> twin of a Markdown doc without clipping
+wide tables or long tokens, and prove it by comparing the words of the
+Markdown with the text extracted from the PDF (constitution 11.4.65,
+11.4.201)</td>
+</tr>
+<tr>
+<td>Why</td>
+<td>PDFs rendered from the pandoc HTML with default print rules were cut
+off at the right page edge (up to 29% of a doc's words missing); the
+file opened fine, so nothing noticed</td>
+</tr>
+<tr>
+<td>Render</td>
+<td><code>render_md_to_pdf.sh FILE.md ...</code> writes
+<code>FILE.pdf</code> (pandoc gfm to HTML5 with
+<code>--metadata document-css=false</code>, because pandoc's own
+<code>&lt;style&gt;</code> (body <code>max-width: 36em</code>) outranks
+the print sheets in WeasyPrint; <code>pdf_table_cols.py</code> adds
+computed table column widths; then WeasyPrint with
+<code>print.css</code>). The PDF's Keywords field carries
+<code>src-sha256:&lt;hex&gt;</code> of the Markdown</td>
+</tr>
+<tr>
+<td>Orientation rule</td>
+<td>A doc whose Markdown has a table separator row with 5 or more
+columns is rendered A4 landscape (<code>print_landscape.css</code>), all
+others A4 portrait</td>
+</tr>
+<tr>
+<td>Print rules</td>
+<td>Body 9.5pt at full page width. Tables: fixed layout at 100% width,
+columns sized by <code>pdf_table_cols.py</code> from SEGMENTS, not
+characters. In every cell a zero-width space (U+200B; WeasyPrint ignores
+<code>&lt;wbr&gt;</code>, measured) is inserted after <code>/</code>,
+<code>_</code>, <code>-</code> and after <code>.</code> before a letter
+(never between digits), so a line may break only there;
+<code>file.go:118</code>, <code>2026-11-12</code>, <code>v7.67</code>
+and ids stay whole. A column's minimum is the estimated width of its
+longest segment (glyph classes, capped at 30 characters) plus padding;
+when the minimums do not fit the page the table font shrinks (7.5 to
+5.5pt); only a segment longer than its column can still break
+mid-segment. The rest of the line is shared by content weight. Rows
+never split across pages, <code>pre</code> and <code>code</code>
+wrap</td>
+</tr>
+<tr>
+<td><code>--check</code></td>
+<td><code>render_md_to_pdf.sh --check FILE.md</code> writes nothing and
+runs the coverage check on the existing PDF</td>
+</tr>
+<tr>
+<td>Coverage check</td>
+<td><code>check_pdf_coverage.py [--root DIR] [--allow FILE] [--min-len N] [--quiet] FILE.md ...</code></td>
+</tr>
+<tr>
+<td>Method</td>
+<td>Distinct tokens of 4 or more characters (a token containing a digit
+from 2 characters) of the Markdown, Unicode letters included (Cyrillic,
+CJK), link targets, HTML comments and fence markers removed, NFKC, must
+appear in <code>pdftotext</code> output on a word boundary. A line wrap
+inside a token is accepted only at a position the renderer may break
+(after <code>/ _ @ = &amp; ?</code>, after <code>-</code> not between
+digits, after <code>.</code> before a letter, or inside one
+separator-delimited segment of 30 or more characters), NEVER between two
+digits, whatever the length of the enclosing word, and only when the
+next piece starts on a later line and not right of the previous piece's
+end (so neighbouring cells cannot be glued). Two reading orders (line by
+line and cell by cell); the cell-by-cell one is load-bearing on wide
+tables</td>
+</tr>
+<tr>
+<td>Allow-list</td>
+<td><code>scripts/docs/pdf_coverage_allow.tsv</code> (<code>path</code>,
+<code>token</code>, <code>reason</code>; the reason is required).
+Default: no file, nothing allowed</td>
+</tr>
+<tr>
+<td>Control</td>
+<td>Per file, differential on both sides: a needle taken from the PDF
+(one that occurs once, inside one PDF word) must be found in the real
+word stream and NOT in a copy in which that needle is destroyed; the
+same on the Markdown text; a fabricated needle must not be found. A
+matcher that cannot tell real from destroyed text is BLIND (exit 2). A
+blank PDF whose Markdown has tokens is FAIL</td>
+</tr>
+<tr>
+<td>Exit</td>
+<td>0 no token missing; 1 tokens missing, PDF absent, empty or
+unreadable; 2 BLIND, usage or tool missing</td>
+</tr>
+<tr>
+<td>Tests</td>
+<td><code>scripts/docs/tests/run_tests.sh scripts/docs/tests/test_check_pdf_coverage.py</code>
+(stdlib runner, no pytest; <code>run_tests.sh</code> alone also runs the
+other docs tool tests). Renderer: short ids and <code>file:line</code>
+citations whole in portrait and landscape, capital-heavy ids, glyph
+widths not flat, zero-width-space opportunities, reproducible render
+across clock and working directory, orientation rule. Gate: vertical
+split of a digit run or segment rejected (also inside a long enclosing
+word), wrap geometry (same line, right of end), separator-only wraps,
+second reading order load-bearing, needle controls differential, blank
+second PDF, Unicode, forged hash, untracked docs. Independent oracle
+<code>scripts/docs/tests/oracle_citations.py</code> (shares no code with
+the gate): no digit run or citation split. Mutation runs killed: see the
+commit message</td>
+</tr>
+</tbody>
+</table>
+<p>Reproducible: the render sets <code>SOURCE_DATE_EPOCH</code> and a
+PDF identifier derived from the Markdown, so two renders are
+byte-identical (checked on the shipped PDFs). The twin gate also covers
+untracked new docs under <code>docs/</code>.</p>
+<p>Limits: a doc with no tokens of 4 or more characters (or digits)
+reports OK with nothing to compare. Glyph widths are class-based
+estimates, not measured font metrics. A segment longer than 30
+characters, or a table whose segment minimums do not fit even at 5.5pt,
+can still break mid-segment (the text stays present; the gate allows it
+only inside such a segment and never inside a digit run). Citations may
+wrap AT separators (<code>playlist_</code> /
+<code>handler.go:95</code>), never inside the line number. This proves
+the words are present and wraps sit at allowed places, not that the page
+looks right. The <code>src-sha256</code> Keywords value is metadata and
+can be forged; the twin gate's coverage run catches a forged old-content
+PDF only when the new Markdown adds tokens the old PDF lacks. Pasting
+text out of a PDF can carry zero-width spaces inside table cells.</p>
+<h1 id="check_twin_presencepy">check_twin_presence.py</h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Script</td>
+<td><code>scripts/docs/check_twin_presence.py</code></td>
+</tr>
+<tr>
+<td>Purpose</td>
+<td>Gate: every Markdown doc added or modified under <code>docs/</code>
+since a ref has current <code>.html</code> and <code>.pdf</code> twins
+(constitution 11.4.65)</td>
+</tr>
+<tr>
+<td>Usage</td>
+<td><code>check_twin_presence.py [--root DIR] [--since REF] [--no-html-drift] [--quiet]</code>;
+<code>--since</code> defaults to the newest tag</td>
+</tr>
+<tr>
+<td>Scope</td>
+<td><code>.md</code> files added or modified
+(<code>git diff --diff-filter=AM REF..HEAD</code>, plus working-tree
+changes) under <code>docs/</code>; a modified doc is in scope when it
+already has a twin of either kind, an added doc always is</td>
+</tr>
+<tr>
+<td>Checks</td>
+<td><code>.html</code> non-empty and equal to
+<code>render_md_to_html.sh --check</code> output; <code>.pdf</code>
+non-empty, <code>%PDF</code>, readable (<code>pdfinfo</code>), its
+Keywords <code>src-sha256</code> equals the sha256 of the current
+Markdown (stale PDF fails), and <code>check_pdf_coverage.py</code>
+reports 0 missing (<code>--no-pdf-coverage</code>,
+<code>--no-html-drift</code> skip those)</td>
+</tr>
+<tr>
+<td>Control</td>
+<td>A doc with both twins must read complete and one missing its pdf
+incomplete; an empty scope is BLIND</td>
+</tr>
+<tr>
+<td>Exit</td>
+<td>0 all present, 1 one or more <code>MISSING</code> rows, 2 BLIND or
+usage</td>
+</tr>
+<tr>
+<td>Fix</td>
+<td><code>render_md_to_html.sh FILE.md</code> and
+<code>render_md_to_pdf.sh FILE.md</code>, never hand-edit generated
+twins</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

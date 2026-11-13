@@ -164,6 +164,7 @@ Every Markdown file directly under `docs/` that is not linked in a section above
 | [BUILD_SYSTEM.md](BUILD_SYSTEM.md) | Build System - Catalogizer uses a modular, containerized build system with automatic versioning and change detection. The generic build framework lives in the `Build/` submodule and... |
 | [COMPREHENSIVE_IMPLEMENTATION_PLAN.md](COMPREHENSIVE_IMPLEMENTATION_PLAN.md) | CATALOGIZER PROJECT - COMPREHENSIVE IMPLEMENTATION PLAN - Transform Catalogizer from 65% complete to 100% production-ready with: |
 | [COMPREHENSIVE_PACKAGE_SUMMARY.md](COMPREHENSIVE_PACKAGE_SUMMARY.md) | CATALOGIZER PROJECT - COMPREHENSIVE IMPLEMENTATION PACKAGE - This comprehensive implementation package contains everything needed to transform Catalogizer from 65% to 100% complete: |
+| [CONTAINERS_SUBMODULE_PROPOSAL.md](CONTAINERS_SUBMODULE_PROPOSAL.md) | Proposal for the Containers submodule (upstream `digital.vasic.containers`) - Raised by CAT-QA-STACK-LIFECYCLE-1, 2026-11-11. Nothing here is implemented. |
 | [CONTINUATION.md](CONTINUATION.md) | CONTINUATION — Catalogizer - Live work-state document per Constitution **§12.10 (CONTINUATION)** and |
 | [CROSS_PLATFORM_AUDIT.md](CROSS_PLATFORM_AUDIT.md) | Cross-Platform Contract Audit — Master Plan Phase 11 - **Purpose.** Master Plan v2 Phase 11 "Cross-Platform Contract |
 | [CYCLE_CLOSURE_2026-04-22.md](CYCLE_CLOSURE_2026-04-22.md) | Cycle Closure — 2026-04-22 - **Session:** Article VII Master Cycle "Z-cycle v2" (2026-04-21) → |
@@ -178,6 +179,7 @@ Every Markdown file directly under `docs/` that is not linked in a section above
 | [EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md) | Catalogizer Project Transformation - Executive Summary - This document provides a comprehensive overview of the transformation work completed on the Catalogizer project, moving it from 65% to 85% completion with a focus on... |
 | [FINAL_AUDIT_ZERO_UNFINISHED_WORK.md](FINAL_AUDIT_ZERO_UNFINISHED_WORK.md) | Final Audit - Zero Unfinished Work Achieved - Status: ALL CRITICAL ISSUES RESOLVED |
 | [FOLLOW_UPS_NEXT_PHASE.md](FOLLOW_UPS_NEXT_PHASE.md) | Follow-ups for the next phase(s) - Small items left after independent review rounds, documented per the operator rule of |
+| [FOLLOW_UPS_SMB_FU1_FU2_INVESTIGATION.md](FOLLOW_UPS_SMB_FU1_FU2_INVESTIGATION.md) | SMB-FU-1 / SMB-FU-2 investigation (read-only) - No code was changed; items not proven by running code are marked UNCONFIRMED. |
 | [FRONTEND_AUDIT.md](FRONTEND_AUDIT.md) | Frontend Audit — Master Plan Phase 7 - **Purpose.** Master Plan v2 Phase 7 "Frontend Integration Hardening" |
 | [FTP_CLIENT.md](FTP_CLIENT.md) | FTP / explicit FTPS client (`pkg/ftp`) - The class of a connect-phase error comes from the PHASE, never from the server's wording: `fabric.Classify` reads credential-failure phrases ("access denied", "not... |
 | [HELIXQA_AUTONOMOUS_QUICKSTART.md](HELIXQA_AUTONOMOUS_QUICKSTART.md) | HelixQA Autonomous QA Session - User Guide - Located in `qa-results/`: |
@@ -187,9 +189,11 @@ Every Markdown file directly under `docs/` that is not linked in a section above
 | [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) | Catalogizer Migration Guide - This guide covers database migration procedures, environment variable changes, and version upgrade paths for Catalogizer deployments. |
 | [NFS3_CLIENT.md](NFS3_CLIENT.md) | NFSv3 user-space client (`pkg/nfs3`) - A minimal, pure-Go, **read-only** NFSv3 client. No kernel mount, no root, no cgo, no third-party NFS code. It replaces the |
 | [OPEN_POINTS_CLOSURE.md](OPEN_POINTS_CLOSURE.md) | Open Points — Closure Brief - autonomously — they need credentials, hardware, external accounts, or |
+| [OUTBOUND_HTTP_CLIENTS.md](OUTBOUND_HTTP_CLIENTS.md) | Outbound HTTP clients in catalog-api (SSRF census) - Date: 2026-11-04. Scope: non-test Go code under `catalog-api/`. |
 | [PHASE_15_STATUS.md](PHASE_15_STATUS.md) | Phase 15 — Final Integration & Deployment Status - **Purpose.** Master Plan v2 Phase 15 "Final Integration, Deployment |
 | [PRIORITIZED_EXECUTION_ORDER.md](PRIORITIZED_EXECUTION_ORDER.md) | PRIORITIZED EXECUTION ORDER |
 | [README_IMPLEMENTATION_PACKAGE.md](README_IMPLEMENTATION_PACKAGE.md) | CATALOGIZER COMPREHENSIVE IMPLEMENTATION PACKAGE - This package contains everything needed to transform Catalogizer from 65% to 100% complete, covering all unfinished work, comprehensive testing, security hardening,... |
+| [ROUTE_AUTHZ_TABLE.md](ROUTE_AUTHZ_TABLE.md) | Route authorization table (authz round 2) - Generated 2026-11-03 on branch `fix-authz-round2` from a static extraction of route registrations. |
 | [SECURITY_IMPROVEMENTS_SUMMARY.md](SECURITY_IMPROVEMENTS_SUMMARY.md) | Security Improvements Summary - This document summarizes all security improvements implemented in Phase 1-3 of the Catalogizer project transformation. |
 | [SECURITY_INCIDENT_RESPONSE.md](SECURITY_INCIDENT_RESPONSE.md) | Security Incident Response Plan - This Security Incident Response Plan (SIRP) establishes procedures for detecting, responding to, and recovering from security incidents affecting the Catalogizer... |
 | [SECURITY_SCAN_RESULTS.md](SECURITY_SCAN_RESULTS.md) | Security Scan Results - All critical security issues have been addressed. Remaining findings are either false positives or acceptable for the use case. |

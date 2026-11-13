@@ -1,0 +1,2 @@
+/* print_landscape.css - added after print.css for docs that carry a wide table (>= 5 columns). */
+@page { size: A4 landscape; margin: 12mm 10mm; }
