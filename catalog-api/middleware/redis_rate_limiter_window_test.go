@@ -50,7 +50,7 @@ func TestRedisRateLimit_Unit_WindowExpiresFromFirstRequest(t *testing.T) {
 	require.Equal(t, http.StatusOK, doGet(r), "request 2 at t=1.5s")
 
 	// TTL must still be measured from the first request: at most 0.5s left.
-	ttl := mr.TTL("rate_limit:window_test")
+	ttl := mr.TTL("rate_limit:default:window_test")
 	assert.LessOrEqual(t, ttl, 500*time.Millisecond,
 		"TTL was reset by the second request (got %v); the window must not slide", ttl)
 
@@ -72,10 +72,10 @@ func TestRedisRateLimit_Unit_CountComesFromIncr(t *testing.T) {
 	for i := 1; i <= 3; i++ {
 		require.Equal(t, http.StatusOK, doGet(r))
 	}
-	v, err := mr.Get("rate_limit:window_test")
+	v, err := mr.Get("rate_limit:default:window_test")
 	require.NoError(t, err)
 	assert.Equal(t, "3", v)
-	assert.Greater(t, mr.TTL("rate_limit:window_test"), time.Duration(0), "key must carry a TTL")
+	assert.Greater(t, mr.TTL("rate_limit:default:window_test"), time.Duration(0), "key must carry a TTL")
 }
 
 // TestSlidingWindowRedisRateLimit_Unit_FailsClosed asserts the sliding-window
@@ -105,13 +105,13 @@ func TestSlidingWindowRedisRateLimit_Unit_FailsClosed(t *testing.T) {
 // throttle a client forever.
 func TestRedisRateLimit_Unit_RepairsKeyWithoutTTL(t *testing.T) {
 	mr, client := setupMiniredis(t)
-	require.NoError(t, mr.Set("rate_limit:window_test", "7")) // no TTL
+	require.NoError(t, mr.Set("rate_limit:default:window_test", "7")) // no TTL
 	cfg := DefaultRedisRateLimiterConfig(client)
 	cfg.Requests = 100
 	cfg.Window = time.Minute
 	r := fixedWindowRouter(cfg)
 	require.Equal(t, http.StatusOK, doGet(r))
-	ttl := mr.TTL("rate_limit:window_test")
+	ttl := mr.TTL("rate_limit:default:window_test")
 	assert.Greater(t, ttl, time.Duration(0), "a TTL-less counter must be given the window expiry")
 	assert.LessOrEqual(t, ttl, time.Minute)
 }
@@ -148,7 +148,7 @@ func TestRedisRateLimit_Unit_HeadersAndRetryAfter(t *testing.T) {
 	reset, err := time.Parse(time.RFC3339, w.Header().Get("X-RateLimit-Reset"))
 	require.NoError(t, err)
 	now := time.Now()
-	ttl := mr.TTL("rate_limit:window_test")
+	ttl := mr.TTL("rate_limit:default:window_test")
 	require.Greater(t, ttl, time.Duration(0))
 	assert.False(t, reset.Before(now.Add(ttl-time.Second).Truncate(time.Second)),
 		"reset %v earlier than now+ttl-1s (ttl %v)", reset, ttl)

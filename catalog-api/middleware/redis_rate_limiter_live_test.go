@@ -46,7 +46,7 @@ func TestRedisRateLimit_LiveRedis_WindowExpiresFromFirstRequest(t *testing.T) {
 	cfg.Requests = 2
 	cfg.Window = 2 * time.Second
 	r := fixedWindowRouter(cfg)
-	const key = "rate_limit:window_test"
+	const key = "rate_limit:default:window_test"
 
 	start := time.Now()
 	require.Equal(t, http.StatusOK, doGet(r), "request 1")
