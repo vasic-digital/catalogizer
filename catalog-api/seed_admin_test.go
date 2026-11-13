@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"bytes"
 	root_config "catalogizer/config"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/DATA-DOG/go-sqlmock"
 	"testing"
 

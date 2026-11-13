@@ -227,9 +227,11 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 		}
 	}
 
-	// Reset failed login attempts on successful login, clear the back-off and remember this client address as known-good.
+	// Reset failed login attempts on successful login and clear the back-off. The client address is NOT yet remembered as
+	// known-good: that happens only once the login is accepted (after verifyUserUnchanged below), so a login refused because
+	// the account changed meanwhile never earns the address the account-block bypass.
 	s.userRepo.ResetFailedLoginAttempts(user.ID)
-	s.throttleSuccess(subject, ipAddress, true)
+	s.throttleSuccess(subject, ipAddress, false)
 
 	// Create session
 	session, err := s.createSession(user, req.DeviceInfo, ipAddress, userAgent, req.RememberMe)
@@ -250,6 +252,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 		}
 		return nil, err
 	}
+	s.throttleSuccess(subject, ipAddress, true)
 
 	// Update last login information
 	s.userRepo.UpdateLastLogin(user.ID, ipAddress)

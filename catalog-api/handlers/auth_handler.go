@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -379,7 +380,9 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ipAddress := getClientIP(r)
+	// The throttle is keyed on the TCP peer address only: this variant has no trusted-proxy configuration, so the
+	// X-Real-IP / X-Forwarded-For headers that getClientIP trusts are client-controlled and would let a guesser mint addresses.
+	ipAddress := peerHost(r)
 	userAgent := r.Header.Get("User-Agent")
 
 	result, err := h.authService.Login(req, ipAddress, userAgent)
@@ -650,6 +653,14 @@ func extractToken(r *http.Request) string {
 	}
 
 	return parts[1]
+}
+
+// peerHost returns the host part of the connection's remote address (IPv6 safe), ignoring forwarding headers.
+func peerHost(r *http.Request) string {
+	if host, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+		return host
+	}
+	return r.RemoteAddr
 }
 
 func getClientIP(r *http.Request) string {

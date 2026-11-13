@@ -8,8 +8,10 @@ import (
 // createLoginThrottleTable (migration v29, CAT-LOGIN-LOCK-1) creates login_throttle, the persisted state of the login
 // back-off (repository.LoginThrottle). One row per (subject, scope):
 //
-//	subject  "u:<user id>" for an existing account, "n:<sha256 of the lower-cased login name>" for a name that matches no
-//	         account (so an unknown name is throttled exactly like a known one and the answer does not reveal which exist)
+//	subject  "u:<user id>" for an existing account, "n:<sha256 of the exact submitted name>" for a name that matches no
+//	         account (so an unknown name is throttled exactly like a known one and the answer does not reveal which exist).
+//	         The hash covers the exact bytes, with no case folding or trimming, because the user lookup compares exactly:
+//	         any normalisation here would let a nonexistent "Name" share a budget with another string and tell the two apart.
 //	scope    "account" (all clients together) or "ip:<client address>" (one client address of that subject)
 //	failures consecutive charged attempts; blocked_until_ms back-off end; last_failure_ms / last_success_ms; version (CAS)
 //

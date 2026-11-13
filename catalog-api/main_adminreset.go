@@ -10,6 +10,7 @@ import (
 
 	root_config "catalogizer/config"
 	"catalogizer/database"
+	"catalogizer/repository"
 	root_services "catalogizer/services"
 
 )
@@ -126,7 +127,7 @@ func runAdminReset(db *database.DB, args []string, stdout, stderr io.Writer) int
 		}
 		// A new password ends any login back-off of the account (CAT-LOGIN-LOCK-1). The back-off is temporary, so a failure here
 		// is reported but does not undo the rotation.
-		if _, err := db.Exec("DELETE FROM login_throttle WHERE subject = ?", fmt.Sprintf("u:%d", a.id)); err != nil {
+		if _, err := db.Exec("DELETE FROM login_throttle WHERE subject = ?", repository.SubjectForUser(int(a.id))); err != nil {
 			fmt.Fprintf(stderr, "admin-reset-password: could not clear the login back-off of %s: %v\n", a.user, err)
 		}
 		fmt.Fprintf(stdout, "rotated admin account: %s\n", a.user)

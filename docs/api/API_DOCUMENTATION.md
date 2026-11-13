@@ -423,8 +423,11 @@ throttled with the same status, body and header as an existing one: the throttle
 submitted string, matching how the account lookup compares names (no case folding, no trimming). A username and the e-mail
 address of one account share one budget, so a client that submits both can tell they belong to the same account once the
 budget is spent. A successful login clears the charges. The state is in table `login_throttle` (migration v29), so it survives
-a restart and is shared by every instance on one database; rows are removed after 24 hours without activity, in batches of up to
-2000 per minute, and the table has no row cap (growth is limited by the per-address request limiter). An administrator ends a
+a restart and is shared by every instance on one database. Rows without a success marker are removed after 24 hours without
+activity; rows that carry a known-good marker live up to 30 days. Removal runs in batches of up to 2000 rows per minute per
+process, and the table has no row cap: a client that rotates addresses (an IPv6 /64, a botnet) can create rows faster than they
+are purged, and the per-address request limiter does not bound that. This growth is a recorded follow-up, not a solved problem.
+The unrouted net/http `Login` variant keys the throttle on the TCP peer address only and ignores forwarding headers. An administrator ends a
 back-off with `POST /api/v1/users/{id}/unlock`, by setting a new password, or with the offline `admin-reset-password` command
 (for the admin accounts it rotates). If the store cannot be read, login answers 503 (fail closed). Client addresses come from `c.ClientIP()`, so `TRUSTED_PROXIES` must be set correctly behind a reverse proxy.
 
@@ -3936,7 +3939,7 @@ Create a shareable link for a log collection.
 **Auth:** Required (`system.admin`)
 **Rate Limit:** Standard (2000/min)
 
-**Token (CAT-LOGSHARE-TOK-1):** the `share_token` in the response is `log_share_` followed by 43 base64url characters (256 bits from `crypto/rand`). It is a bearer secret and is shown **only in this response**: the server stores just its SHA-256, so it cannot be listed or recovered later; create a new share if it is lost. Tokens issued before this change (`log_share_<unix>_<nanos>`, derived from the clock) are deactivated by migration v29 and never validate again; re-share the collection.
+**Token (CAT-LOGSHARE-TOK-1):** the `share_token` in the response is `log_share_` followed by 43 base64url characters (256 bits from `crypto/rand`). It is a bearer secret and is shown **only in this response**: the server stores just its SHA-256, so it cannot be listed or recovered later; create a new share if it is lost. Tokens issued before this change (`log_share_<unix>_<nanos>`, derived from the clock) are deactivated by migration v28 and never validate again; re-share the collection.
 
 **Request Body:**
 

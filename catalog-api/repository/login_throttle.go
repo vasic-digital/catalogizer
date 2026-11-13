@@ -40,8 +40,9 @@ import (
 //     (UserRepository.GetByUsernameOrEmail matches username or email byte for byte), otherwise a normalisation difference
 //     (case folding, trimming) is an existence oracle: a nonexistent "Victim" would share a budget with "victim" while an
 //     existing "victim" would not. Rows are bounded only by time: at most two per distinct submitted string, purged after
-//     StaleAfter, and the number of distinct strings an address can submit is limited by the per-address login rate limiter,
-//     not by this table; there is no row cap.
+//     StaleAfter (rows that carry a known-good marker live up to KnownGoodTTL), purged in batches. There is no row cap, and the
+//     per-address request limiter does not bound the number of distinct strings under address rotation (IPv6 /64, botnet):
+//     table growth under such an attack is a recorded follow-up.
 //   - The back-off is charged per account, so a username and the e-mail address of the same account share one budget. A
 //     client that submits both names therefore learns that they belong to the same account once the budget is spent. That
 //     linkage is accepted and documented (it needs the attacker to already know both names).

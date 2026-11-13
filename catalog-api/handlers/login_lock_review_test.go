@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -191,8 +194,116 @@ func TestLoginLock_PurgeIsBatched(t *testing.T) {
 	var left int
 	require.NoError(t, e.raw.QueryRow(`SELECT COUNT(*) FROM login_throttle WHERE subject LIKE 'n:stale%'`).Scan(&left))
 	assert.Equal(t, total-2000, left, "exactly one batch of 2000 purged per run")
+	e.advance(10 * time.Second) // purge runs at most once a minute: nothing more is deleted yet
+	e.loginFrom(llIP, "victim", wrong(3))
+	require.NoError(t, e.raw.QueryRow(`SELECT COUNT(*) FROM login_throttle WHERE subject LIKE 'n:stale%'`).Scan(&left))
+	assert.Equal(t, total-2000, left, "second purge within a minute is skipped")
 	e.advance(2 * time.Minute)
 	e.loginFrom(llIP, "victim", wrong(2))
 	require.NoError(t, e.raw.QueryRow(`SELECT COUNT(*) FROM login_throttle WHERE subject LIKE 'n:stale%'`).Scan(&left))
 	assert.Equal(t, 0, left, "the next run finishes it")
+}
+
+// ---- Round 3: every policy constant of login_throttle.go has a test that fails when it changes. ----
+//   BucketFree 5            TestLoginLock_PerAddressBucketStopsOneClientButNotOthers, SubjectDerivation (6th refused)
+//   AccountFree 20          TestLoginLock_DistributedGuessingOfOneAccountIsBounded (exactly 20 evaluated)
+//   Base 30s, doubling      TestLoginLock_BackoffDoublesAndIsCappedNeverPermanent (30, 60, 120)
+//   Cap 15 min              the same test (<= 900 and == 900 at the end)
+//   BucketDecay 1h          TestLoginLock_DecayRestartsCountAfterQuietPeriod + TestLoginLock_DecayWindowsHold (not shorter)
+//   AccountDecay 24h        TestLoginLock_AccountDecayWindowAcrossAddresses
+//   KnownGoodTTL 30d        TestLoginLock_KnownGoodExpires (both sides)
+//   MaxKnownGood 5          TestLoginLock_RemembersAtMostFiveKnownGoodAddresses
+//   StaleAfter 24h          TestLoginLock_StaleRowsArePurgedAndBounded + TestLoginLock_DecayWindowsHold (kept before it)
+//   purgeBatch 2000, 1/min  TestLoginLock_PurgeIsBatched
+//   casRetries 400          not unit-testable without a pathological store; the exact-count concurrency tests exercise the loop
+//   delayFor exponent clamp 20: equivalent mutant (an overflowing shift yields d <= 0, which the Cap branch already catches)
+
+// N4: the ACCOUNT scope decays after 24 h, not after the 1 h of an address bucket. 20 charged attempts from distinct addresses
+// spread over 95 minutes still add up; after more than 24 hours of quiet the count restarts.
+func TestLoginLock_AccountDecayWindowAcrossAddresses(t *testing.T) {
+	e := newLLEnv(t)
+	for i := 0; i < 19; i++ {
+		require.Equal(t, http.StatusUnauthorized, e.loginFrom(distinctIP(i), "victim", wrong(i)).Code)
+		e.advance(5 * time.Minute)
+	}
+	// 19 charged over 90+ minutes (longer than an address decay): the 20th is evaluated and sets the block, the 21st is refused.
+	require.Equal(t, http.StatusUnauthorized, e.loginFrom(distinctIP(50), "victim", wrong(50)).Code)
+	assert.Equal(t, http.StatusTooManyRequests, e.loginFrom(distinctIP(51), "victim", wrong(51)).Code,
+		"attempts older than an hour still count against the account")
+	// 23 hours of quiet: still remembered (the next evaluated attempt escalates the block rather than starting from zero).
+	e.advance(23 * time.Hour)
+	require.Equal(t, http.StatusUnauthorized, e.loginFrom(distinctIP(52), "victim", wrong(52)).Code)
+	assert.Equal(t, http.StatusTooManyRequests, e.loginFrom(distinctIP(53), "victim", wrong(53)).Code,
+		"23 h later the count has not restarted")
+	// More than 24 hours after the last charged attempt: a fresh budget of 20.
+	e.advance(25 * time.Hour)
+	processed, refused := e.attackAccount(25, 200)
+	assert.Equal(t, 20, processed)
+	assert.Equal(t, 5, refused)
+}
+
+// The address and stale-row windows are not shorter than documented either.
+func TestLoginLock_DecayWindowsHold(t *testing.T) {
+	e := newLLEnv(t)
+	for i := 0; i < 4; i++ {
+		require.Equal(t, http.StatusUnauthorized, e.loginFrom(llIP, "victim", wrong(i)).Code)
+	}
+	e.advance(30 * time.Minute)                                                           // inside BucketDecay (1 h): the 4 charges still count
+	require.Equal(t, http.StatusUnauthorized, e.loginFrom(llIP, "victim", wrong(4)).Code) // 5th, sets the block
+	assert.Equal(t, http.StatusTooManyRequests, e.loginFrom(llIP, "victim", wrong(5)).Code)
+
+	// A row that is 23 h old is not yet purged (StaleAfter 24 h).
+	e2 := newLLEnv(t)
+	e2.loginFrom(llIP, "ghost", "x")
+	e2.advance(23 * time.Hour)
+	e2.loginFrom("192.0.2.1", "victim", llPass)
+	var n int
+	require.NoError(t, e2.db.QueryRow(`SELECT COUNT(*) FROM login_throttle WHERE subject LIKE 'n:%'`).Scan(&n))
+	assert.Equal(t, 2, n, "not purged before StaleAfter")
+}
+
+// N5: at most MaxKnownGood (5) addresses are remembered per account; the oldest are forgotten.
+func TestLoginLock_RemembersAtMostFiveKnownGoodAddresses(t *testing.T) {
+	e := newLLEnv(t)
+	for i := 0; i < 7; i++ {
+		require.Equal(t, http.StatusOK, e.loginFrom(distinctIP(300+i), "victim", llPass).Code)
+		e.advance(time.Minute)
+	}
+	processed, _ := e.attackAccount(25, 400)
+	require.Equal(t, 20, processed)
+	for i := 0; i < 2; i++ {
+		assert.Equal(t, http.StatusTooManyRequests, e.loginFrom(distinctIP(300+i), "victim", wrong(i)).Code, "oldest two are forgotten")
+	}
+	for i := 2; i < 7; i++ {
+		assert.Equal(t, http.StatusUnauthorized, e.loginFrom(distinctIP(300+i), "victim", wrong(i)).Code, "five newest still bypass the account block")
+	}
+}
+
+// N6: the net/http variant (not routed in main.go) throttles the same way, keys the throttle on the TCP peer address only
+// (forwarding headers are client-controlled there), and answers 429 with Retry-After and the fixed body.
+func TestLoginLock_NetHTTPVariantThrottlesAndIgnoresForwardingHeaders(t *testing.T) {
+	e := newLLEnv(t)
+	h := NewAuthHandler(e.svc)
+	post := func(remote, xff, pass string) *httptest.ResponseRecorder {
+		body, _ := json.Marshal(map[string]string{"username": "victim", "password": pass})
+		req := httptest.NewRequest("POST", "/login", bytes.NewReader(body))
+		req.RemoteAddr = remote
+		if xff != "" {
+			req.Header.Set("X-Forwarded-For", xff)
+			req.Header.Set("X-Real-IP", xff)
+		}
+		w := httptest.NewRecorder()
+		h.Login(w, req)
+		return w
+	}
+	for i := 0; i < 5; i++ {
+		// a different forged address every time must NOT mint a fresh per-address budget
+		require.Equal(t, http.StatusUnauthorized, post("198.51.100.7:5000", fmt.Sprintf("203.0.113.%d", i+1), wrong(i)).Code)
+	}
+	w := post("198.51.100.7:5001", "203.0.113.200", wrong(9))
+	require.Equal(t, http.StatusTooManyRequests, w.Code)
+	assert.NotEmpty(t, w.Header().Get("Retry-After"))
+	assert.Contains(t, w.Body.String(), loginThrottledMessage)
+	assert.Equal(t, http.StatusUnauthorized, post("198.51.100.8:5000", "", wrong(1)).Code, "another peer address is unaffected")
+	assert.Equal(t, "2001:db8::1", peerHost(&http.Request{RemoteAddr: "[2001:db8::1]:443"}), "IPv6 peers are not cut at the first colon")
 }
