@@ -355,7 +355,7 @@ Serve an asset by ID. Static cache headers (immutable, 1 year).
 
 ## Authentication
 
-Authentication endpoints are under `/api/v1/auth`. Login and register have strict rate limiting (30/min). The other session endpoints (refresh, logout, me, status, permissions, profile) allow 600/min; init-status and change-password use the standard limit (2000/min).
+Authentication endpoints are under `/api/v1/auth`. Login and register have strict rate limiting (30/min). The other session endpoints (refresh, logout, me, status, permissions, profile) allow 600/min; init-status uses the standard limit (2000/min). change-password uses the standard limit plus a failed-attempt lockout (5 wrong current passwords per user per 15 minutes, see Rate Limiting).
 
 ### POST /api/v1/auth/login
 
@@ -581,7 +581,7 @@ Change the password for the currently authenticated user.
 
 **Description:** Updates the user's password after verifying the current password. On success every session of the user ends, including the caller's own; the client must log in again.
 **Auth:** Required
-**Rate Limit:** Standard (2000/min)
+**Rate Limit:** Standard (2000/min) plus failed-attempt lockout: after 5 answers of `401 current password is incorrect` for the same authenticated user within 15 minutes the route answers `429` (with `Retry-After`) for that user, even for the correct password, until the oldest failure is 15 minutes old. A successful change resets the counter. The counter is per user id (never per guessed username), so one user's failures never affect another user.
 
 **Request Body:**
 
@@ -5507,6 +5507,7 @@ Rate limiting is applied per-user based on the JWT token. The tiers are:
 | Other `/api/v1/auth/*` session endpoints | 600 requests/minute | Authenticated session management |
 | All other authenticated `/api/v1/*` | 2000 requests/minute | Standard rate limit |
 | `POST /api/v1/admin/image-quality/revalidate` | 6 requests/minute | Per client IP, protects the provider chain |
+| `POST /api/v1/auth/change-password` failures | 5 wrong current passwords / 15 minutes per user | Credential-guessing protection for a stolen token; lockout answers 429 + `Retry-After`; in-memory, per process (not Redis) |
 | Public routes (`/health`, `/discovery`, covers, image-proxy, assets) | None | |
 
 The limits are the values wired in `catalog-api/main.go`.
