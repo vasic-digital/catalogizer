@@ -2331,3 +2331,10 @@ Constitution bd0036bd (already on all mirrors and pinned). F1 closed for the 336
 - PKGA-FU3 (nit, test-instrumentation): `stripApprovedClassColumns` sets `PRAGMA foreign_keys=OFF` and never restores it (harmless with one connection).
 - PKGA-FU4 (process): PostgreSQL path of migration v27 and `RowsAffected` semantics UNCONFIRMED (no PG run); sync-class W4/W5 consumers of `approved_class` not wired yet. Pre-existing `database/migrations_v20_test.go` not gofmt-clean.
 - Operator decisions recorded 2026-11-13: metadata singletons always refused; approved-class schema confirmed as built.
+
+## Package C landed (merge of fix/pkg-c, 2026-11-13, PROVISIONAL, Opus round 3 GO-with-follow-ups) — follow-ups
+- PKGC-FU1 (minor, test-instrumentation): idempotency of the `release` closure in `redis_rate_limiter.go` is untested (reviewer mutant M2, guard removed, survived). Harm prevented: probe A releases before downstream, probe B admitted, A's deferred settle clears B's `probing` flag, letting a second concurrent probe through. Test: gate A downstream, admit B (gated inside the Redis call via a hook), release A, assert `st.probing` still true and a third request goes to fallback.
+- PKGC-FU2 (nit, test-instrumentation): several asserts read `st.probing` without `st.mu` (TestRV1_ProbeSlotLeak, TestN4_*); use the lock or a helper.
+- PKGC-FU3 (UNCONFIRMED): API_DOCUMENTATION phrase "standard user role included since CAT-OPDEC-A" supported only by a code comment (user_handler.go:888); role seed data not verified.
+- PKGC-FU4 (item, operator decision 2026-11-13): in Redis mode both tiers share key `rate_limit:<ip>` (auth tier username never present at limiter time) and the auth tier is 5/min vs 600/min in memory; fix = match budgets to 600/2000 + per-tier key prefix. Separate item, now unblocked by this landing.
+- PKGC-FU5: N2 `ContextTimeoutEnabled:true` in main.go redis options verified against go-redis v9.17.3 (call fails ~501ms vs ~3.0s); evidence is unit-class (black-hole socket), no live Redis outage evidence.
