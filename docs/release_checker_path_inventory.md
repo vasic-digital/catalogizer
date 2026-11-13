@@ -88,7 +88,9 @@ Where a member used to be BLIND only because the file was staged or untracked, i
 has no such file, as a clone has none); the tests were updated accordingly (Z14, Z16, Z17, Z26, Z41, Z65, Z73, Z81
 and others). Cases that stay BLIND are those where HEAD holds the entry but the working tree differs from it.
 
-Equivalent mutant (documented, not run): reading a manifest's lines from the working tree instead of the snapshot. A
+Equivalent mutants (documented): (2) the completeness listing (RC-3b) testing the files in the working tree instead of the
+snapshot: it runs after `raw_tree_check`, which already returned BLIND for any file under the manifest tree that differs
+from HEAD (the mutant was run once and survived, as predicted by the code order, line 944 before line 1012). (1) Reading a manifest's lines from the working tree instead of the snapshot. A
 working-tree manifest that differs from HEAD makes `raw_tree_check` return BLIND before any line is parsed, so the
 switch cannot change a verdict (measured: both variants gave `VERDICT: BLIND` for an appended escape line).
 

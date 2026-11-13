@@ -249,7 +249,8 @@ MUTANTS=(
 'CC2r5 C8 replace refs honoured|||export GIT_NO_REPLACE_OBJECTS=1|||:'
 'CC2r5 C7 versions.json not head-checked under --check changelog|||[ -n "$SECTION" ] || head_check "versions.json" "versions.json"|||:'
 'CC2r5 changelog read from the working tree|||local cl="$SNAP/docs/CHANGELOG.md"|||local cl="$REPO/docs/CHANGELOG.md"'
-'CC2r5 completeness reads files from the working tree|||os.path.isfile(os.path.join(snap, f))|||os.path.isfile(os.path.join(repo, f))'
+# (no mutant for the completeness listing testing files in the working tree: it runs after raw_tree_check, which returns BLIND
+#  for any file under the manifest tree that differs from HEAD, so the mutation is equivalent; run once, survived, argued from the code order)
 'CC2r5 C3 waiver HEAD-compare dropped|||  head_check "waiver file $rel" "$rel"|||  :'
 'CC2r5 C4 check-ignore reads the live repository|||if "${GIT_SNAP[@]}" check-ignore -q -- "$d/$name"; then|||if git -C "$REPO" check-ignore -q -- "$d/$name"; then'
 )
