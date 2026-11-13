@@ -9,11 +9,12 @@ Usage    check_pdf_coverage.py [--root DIR] [--allow FILE] [--min-len N] [--quie
 Method   md text -> comments, link targets, fence markers, image syntax removed, backticks dropped, NFKC -> tokens split on whitespace and
          markdown punctuation (Unicode letters and digits count as token characters; Cyrillic, CJK etc. included).
          Each token must appear in the PDF word stream (two reading orders: line by line, and content stream = cell by cell) on a word boundary. It must be whole inside one PDF word, or continue over a line
-         wrap: a wrap (a space in the word stream) is accepted only (a) after a separator character (-/._:@=&?) or inside Markdown words of
-         >= 16 characters (the renderer's shortest cap, pdf_table_cols.FLOOR), AND (b) geometrically: the next piece starts on a LATER line and not to the right of the previous piece's end,
-         so two neighbouring cells ('Abcdefghijkl' | 'mnopqrstuvwxyz') cannot be glued into one long word.
+         wrap: a wrap (a space in the word stream) is accepted only (a) at a position the renderer may break: after '/', '_', '@', '=', '&', '?', after '-'
+         (not between digits), after '.' before a letter, or inside one separator-delimited SEGMENT of 30 or more characters, and NEVER between
+         two digits, whatever the length of the enclosing word, AND (b) geometrically: the next piece starts on a LATER line and not to the right of
+         the previous piece's end, so two neighbouring cells ('Abcdefghijkl' | 'mnopqrstuvwxyz') cannot be glued into one long word.
 Allow    scripts/docs/pdf_coverage_allow.tsv (path<TAB>token<TAB>reason): tokens legitimately absent from a rendering. Default empty.
-Control  Per file, before judging: PDF side (a word taken from this PDF must be found, a fabricated one not) and Markdown side (the matcher
+Control  Per file, before judging (differential: the needle must be found in the real stream and NOT in a copy of it in which the needle is destroyed; a fabricated needle must not be found either): PDF side (a word taken from this PDF must be found, a fabricated one not) and Markdown side (the matcher
          must find a cleaned-Markdown token in the cleaned Markdown, a fabricated one not); otherwise BLIND (exit 2). A PDF with no text at
          all while the Markdown has tokens is a FAIL (blank render), never OK.
 Exit     0 no token missing, 1 one or more missing (or a PDF absent/empty/blank), 2 BLIND / usage / tool missing.
@@ -27,7 +28,7 @@ BND = r'(?<!' + TC + r')%s(?!' + TC + r')'
 
 
 def norm(s):
-    return unicodedata.normalize('NFKC', s).replace('­', '')
+    return unicodedata.normalize('NFKC', s).replace('­', '').replace('\u200b', '')
 
 
 def clean_md(text):
@@ -58,16 +59,28 @@ class Words:
         for pg, body in enumerate(out.split('<page ')[1:], 1):
             for xa, ya, xb, yb, t in re.findall(r'<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">(.*?)</word>', body, flags=re.S):
                 self.w.append((pg, float(xa), float(ya), float(xb), float(yb), norm(html.unescape(t))))
+        self._index()
+
+    def _index(self):
         self.text = ' '.join(x[5] for x in self.w)
         self.idx = []
         for i, x in enumerate(self.w):
             self.idx.extend([i] * len(x[5])); self.idx.append(-1)
 
+    def altered(self, needle):
+        """A copy in which every occurrence of needle is destroyed (control: the matcher must stop finding it)."""
+        c = Words.__new__(Words)
+        c.w = [x[:5] + (x[5].replace(needle, 'q' + needle[::-1]),) for x in self.w]
+        c._index()
+        return c
+
     def wrap_ok(self, i, j):
         a, b = self.w[i], self.w[j]
         return a[0] == b[0] and b[2] > a[2] + 2 and b[1] < a[3] - 1       # same page, later line, not to the right of the previous piece's end
 
-    def gaps_ok(self, m):
+    def gaps_ok(self, m, t):
+        """Every wrap inside the match must be geometrically a wrap AND at a permitted position of the token t:
+        after a separator, or inside a separator-delimited segment of SEGMENT_CAP or more characters; never between two digits."""
         prev = None
         for k in range(m.start(), m.end()):
             if self.idx[k] == -1:
@@ -76,22 +89,38 @@ class Words:
         return True
 
 
-def present(tok, Ws, encl=0):
+SEGMENT_CAP = 30
+
+
+def gap_after(t, i):
+    """May the PDF break the token t between t[i] and t[i+1]?"""
+    a, b = t[i], t[i + 1]
+    if a.isdigit() and b.isdigit(): return False
+    if a in '/_@=&?': return True
+    if a == '-': return not (i >= 1 and t[i - 1].isdigit() and b.isdigit())
+    if a == '.': return b.isalpha()
+    j = i
+    while j >= 0 and t[j] not in SEP: j -= 1
+    k = i + 1
+    while k < len(t) and t[k] not in SEP: k += 1
+    return k - j - 1 >= SEGMENT_CAP                      # inside one over-long segment
+
+
+def present(tok, Ws):
     """Word-boundary match of tok in the word stream W (a Words, or a plain str for the Markdown-side control)."""
-    return any(_present(tok, W, encl) for W in (Ws if isinstance(Ws, (list, tuple)) else [Ws]))
+    return any(_present(tok, W) for W in (Ws if isinstance(Ws, (list, tuple)) else [Ws]))
 
 
-def _present(tok, W, encl):
+def _present(tok, W):
     t = norm(tok)
     hay = W.text if isinstance(W, Words) else W
     if re.search(BND % re.escape(t), hay): return True
-    long_tok = max(len(t), encl) >= 16
     parts = []
     for i, c in enumerate(t):
         parts.append(re.escape(c))
-        if i < len(t) - 1 and (long_tok or c in SEP): parts.append(' ?')
+        if i < len(t) - 1 and gap_after(t, i): parts.append(' ?')
     for m in re.finditer(BND % ''.join(parts), hay):
-        if not isinstance(W, Words) or W.gaps_ok(m): return True
+        if not isinstance(W, Words) or W.gaps_ok(m, t): return True
     return False
 
 
@@ -140,16 +169,18 @@ def main(argv):
         if toks and not W.w:
             print('FAIL %s: PDF has no text (blank render), Markdown has %d tokens' % (rel, len(toks))); rc = max(rc, 1); continue
         if W.w:                                  # PDF-side control, per file
-            cands = sorted(set(re.findall(r'(?<!%s)%s{3,}(?!%s)' % (TC, TC, TC), W.text)), key=len, reverse=True)
-            if not cands or not present(cands[0], Ws) or present(CTRL_FAKE, Ws):
+            cands = sorted({m for x in W.w for m in re.findall(r'(?<!%s)%s{3,}(?!%s)' % (TC, TC, TC), x[5])}, key=len, reverse=True)   # runs inside ONE pdf word
+            cands = [t for t in cands if W.text.count(t) == 1][:1]   # a needle that occurs exactly once, so destroying it removes it from the stream
+            alt = [w.altered(cands[0]) for w in Ws] if cands else []
+            if not cands or not present(cands[0], Ws) or present(cands[0], alt) or present(CTRL_FAKE, Ws):
                 print('BLIND %s: needle control failed (PDF side)' % rel); return 2
         if toks:                                 # Markdown-side control, per file, on the same cleaned text the tokens came from
             probe = max(toks, key=len)
-            if not present(probe, mdtext) or present(CTRL_FAKE, mdtext):
+            if not present(probe, mdtext) or present(probe, mdtext.replace(probe, 'q' + probe[::-1])) or present(CTRL_FAKE, mdtext):
                 print('BLIND %s: needle control failed (Markdown side)' % rel); return 2
         else:
             print('OK   %s: no tokens of >= %d chars, nothing to compare' % (rel, minlen)); continue
-        missing = sorted(t for t, el in toks.items() if not present(t, Ws, el) and (rel, norm(t)) not in allow)
+        missing = sorted(t for t, el in toks.items() if not present(t, Ws) and (rel, norm(t)) not in allow)
         if missing:
             rc = max(rc, 1)
             print('FAIL %s: %d/%d tokens missing' % (rel, len(missing), len(toks)))

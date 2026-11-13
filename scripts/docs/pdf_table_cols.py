@@ -1,28 +1,44 @@
 #!/usr/bin/env python3
-"""pdf_table_cols.py - give every table of a pandoc HTML page explicit column widths for PDF rendering (used by render_md_to_pdf.sh).
+"""pdf_table_cols.py - table layout for PDF rendering (used by render_md_to_pdf.sh): break opportunities, segment-based column minimums.
 
-Purpose  An auto-layout table whose cells hold long unbroken words (paths, identifiers) grows past the page edge (clipped text); a fixed
-         layout with equal or dash-count widths leaves 1-2 character columns. This computes widths from the cell text in POINTS:
-         the minimum width of a column is the estimated rendered width of its longest word (glyph widths per character class: capitals
-         and digits are wider than lowercase; the word is capped at 24 characters, shrinking to 16 when the minimums do not fit) plus the cell padding and border, so a short id such as
-         B100 or a file:line number never wraps; the rest of the line is shared by weight (0.5 * mean cell length + 0.5 * min(longest cell, 40)).
-         When the minimums alone exceed the line they are scaled down together (words may then break; the coverage gate reports it).
+Purpose  Line breaks inside table cells may only happen at SEPARATORS, never inside an id or a digit run.
+         1. Break opportunities: in every table cell a zero-width space (U+200B; WeasyPrint ignores <wbr>, measured) is inserted after '/', '_', '-' and after '.' when a letter follows (not between
+            digits, so 2026-11-12 and 7.67 stay whole). A cell word is thereby a chain of SEGMENTS (e.g. 'catalog-api/' 'handlers/' 'collection_'
+            'handler.' 'go:118'); ':' and digits never start a segment, so 'go:118' is one unbreakable segment.
+         2. Column minimums: the minimum width of a column is the estimated rendered width of its longest SEGMENT (glyph widths per character class,
+            segment capped at SEGMENT_CAP characters; only a longer segment may still break mid-segment) plus padding. The rest of the line is
+            shared by mean cell length.
+         3. If the segment minimums do not fit the line the table font shrinks in steps (7.5 .. 5.5pt); only when even that fails the minimums are
+            scaled down together and the table is reported on stderr (words may then break; the coverage gate reports it).
 Usage    pdf_table_cols.py PAGE.html [LINE_PT] [FONT_PT]   (rewrites in place; LINE_PT: usable width in points, default 780, portrait A4 is 527;
-         FONT_PT: table font size, default 7.5; adds <colgroup> to every <table>, replacing any existing one)
+         FONT_PT: largest table font size, default 7.5; adds <colgroup> to every <table>, replacing any existing one, and U+200B to cell text)
 Exit     0 ok, 2 usage / unreadable input.
 """
 import html, re, sys
 
+SEGMENT_CAP = 30     # a segment up to this many characters always fits its column; the coverage gate permits a mid-segment break only beyond it
+PAD_PT = 7.0         # horizontal cell padding (2 x 3pt) plus border and rounding slack
+FONT_STEPS = (7.5, 7.0, 6.5, 6.0, 5.5)
 
-def cells(row):
-    return [html.unescape(re.sub(r'<[^>]+>', '', c)).strip() for c in re.findall(r'<t[hd][^>]*>(.*?)</t[hd]>', row, flags=re.S)]
+
+def break_points(w):
+    """Indexes i such that a break is allowed between w[i-1] and w[i]."""
+    out = []
+    for i in range(1, len(w)):
+        a, b = w[i - 1], w[i]
+        if a in '/_': out.append(i)
+        elif a == '-' and not (i >= 2 and w[i - 2].isdigit() and b.isdigit()) and b not in '-': out.append(i)
+        elif a == '.' and b.isalpha(): out.append(i)
+    return out
 
 
-FLOOR = 16    # shortest word cap (characters); the coverage gate accepts a mid-word wrap only for words at least this long
-PAD_PT = 7.0   # horizontal cell padding (2 x 2.25pt) plus border and rounding slack
-# glyph width in em, deliberately on the wide side of Noto Serif / DejaVu Sans Mono at table size
+def segments(w):
+    bp = [0] + break_points(w) + [len(w)]
+    return [w[bp[k]:bp[k + 1]] for k in range(len(bp) - 1)]
+
+
 def glyph_em(c):
-    if c in 'il.,:;\'|!jt1 ': return 0.40
+    if c in 'il.,:;\'|!jt1 /': return 0.40
     if c.isupper() or c in 'mwMW@%&': return 0.82
     if c.isdigit(): return 0.66
     if ord(c) > 0x2E80: return 1.05          # CJK
@@ -33,7 +49,28 @@ def word_pt(w, font):
     return sum(glyph_em(c) for c in w) * font
 
 
-def colgroup(table, line, font):
+def cells(row):
+    return [html.unescape(re.sub(r'<[^>]+>', '', c)).strip() for c in re.findall(r'<t[hd][^>]*>(.*?)</t[hd]>', row, flags=re.S)]
+
+
+def add_wbr(cell_html):
+    """Insert U+200B at break_points inside the text nodes of one cell (tags and entities untouched)."""
+    def text(m):
+        s = m.group(0)
+        if not s.strip(): return s
+        un = html.unescape(s)
+        if '&' in s and len(un) != len(s):               # entities present: work on the unescaped text and re-escape
+            pass
+        out = []
+        for part in re.split(r'(\s+)', un):
+            if part.isspace() or not part: out.append(html.escape(part, quote=False)); continue
+            bp = set(break_points(part))
+            out.append(''.join(('\u200b' if i in bp else '') + html.escape(c, quote=False) for i, c in enumerate(part)))
+        return ''.join(out)
+    return re.sub(r'(?<=>)[^<]+|^[^<]+', text, cell_html)
+
+
+def layout(table, line, maxfont):
     rows = [cells(r) for r in re.findall(r'<tr[^>]*>(.*?)</tr>', table, flags=re.S)]
     n = max((len(r) for r in rows), default=0)
     if n == 0: return None
@@ -41,20 +78,22 @@ def colgroup(table, line, font):
     for i in range(n):
         col = [r[i] for r in rows if i < len(r)]
         lens = [len(c) for c in col] or [1]
-        cols.append([x for c in col for x in c.split()] or ['x'])
-        wts.append(max(0.5 * sum(lens) / len(lens) + 0.5 * min(max(lens), 40), 3.0))
-    # minimum = width of the widest word capped at CAP characters; when the minimums do not fit the cap shrinks (never below FLOOR),
-    # so that short ids stay whole and only words longer than the cap break
-    for cap in (24, 20, FLOOR):
-        mins = [max(word_pt(x[:cap], font) for x in ws) + PAD_PT for ws in cols]
-        if sum(mins) <= line: break
-    ms = sum(mins)
-    if ms > line: mins = [m * line / ms for m in mins]
+        segs = [s[:SEGMENT_CAP] for c in col for w in c.split() for s in segments(w)] or ['x']
+        cols.append(segs)
+        wts.append(max(sum(lens) / len(lens), 3.0))      # mean cell length: a column of long prose gets the room, a column of short ids keeps its segment minimum
+    font = FONT_STEPS[-1]; fit = False
+    for f in [s for s in FONT_STEPS if s <= maxfont] or [maxfont]:
+        mins = [max(word_pt(s, f) for s in segs) + PAD_PT for segs in cols]
+        font = f
+        if sum(mins) <= line: fit = True; break
+    if not fit:
+        ms = sum(mins); mins = [m * line / ms for m in mins]
     rest = line - sum(mins)
     ws = sum(wts)
     vals = [m + rest * w / ws for m, w in zip(mins, wts)]
     tot = sum(vals)
-    return '<colgroup>' + ''.join('<col style="width:%.2f%%">' % (100.0 * v / tot) for v in vals) + '</colgroup>'
+    cg = '<colgroup>' + ''.join('<col style="width:%.2f%%">' % (100.0 * v / tot) for v in vals) + '</colgroup>'
+    return cg, font, fit
 
 
 def main(argv):
@@ -65,8 +104,13 @@ def main(argv):
     except OSError as e: print('pdf_table_cols: %s' % e, file=sys.stderr); return 2
     def f(m):
         t = re.sub(r'<colgroup>.*?</colgroup>', '', m.group(0), flags=re.S)
-        cg = colgroup(t, line, font)
-        return t if cg is None else re.sub(r'(<table[^>]*>)', lambda x: x.group(1) + cg, t, count=1)
+        lo = layout(t, line, font)
+        if lo is None: return t
+        cg, fs, fit = lo
+        if not fit: print('pdf_table_cols: segment minimums exceed the line even at %.1fpt (words may break)' % fs, file=sys.stderr)
+        t = re.sub(r'(<t[hd][^>]*>)(.*?)(</t[hd]>)', lambda x: x.group(1) + add_wbr(x.group(2)) + x.group(3), t, flags=re.S)
+        t = re.sub(r'<table([^>]*)>', lambda x: '<table%s style="font-size:%.1fpt">%s' % (x.group(1), fs, cg), t, count=1)
+        return t
     out = re.sub(r'<table\b.*?</table>', f, src, flags=re.S)
     open(argv[0], 'w', encoding='utf-8').write(out)
     return 0

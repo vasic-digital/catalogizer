@@ -1,4 +1,4 @@
-"""Tests of check_pdf_coverage.py, render_md_to_pdf.sh, check_twin_presence.py. Run: python3 -m pytest -p no:cacheprovider scripts/docs/tests
+"""Tests of check_pdf_coverage.py, render_md_to_pdf.sh, check_twin_presence.py. Run: scripts/docs/tests/run_tests.sh scripts/docs/tests/test_check_pdf_coverage.py (stdlib runner, no pytest needed; pytest also works)
 
 Real files and real tools (pandoc, weasyprint, pdftotext, git); no mocks. Oracles are exit codes and the FAIL/MISSING rows.
 """
@@ -291,7 +291,7 @@ def test_short_ids_stay_on_one_line_landscape(tmp_path):
     assert page_size(pdf)[0] > page_size(pdf)[1]
     ws = _wordtexts(pdf)
     for i in ids: assert i in ws, "%s broken across lines" % i
-    assert "media_entity_handler.go:1100" in ws and "media_entity_handler.go:1119" in ws
+    assert any(w.endswith("go:1100") for w in ws) and any(w.endswith("go:1119") for w in ws), "file:line citation split"
     assert sh(sys.executable, COV, md).returncode == 0
 
 
@@ -367,7 +367,7 @@ def test_md_side_control_blind_independent_of_fake_value(tmp_path):
     m = _load_cov()
     md = make(tmp_path)
     real = m.present
-    m.present = lambda tok, W, encl=0: False if isinstance(W, str) and tok != m.CTRL_FAKE else real(tok, W, encl)   # Markdown side cannot find its own token
+    m.present = lambda tok, W: False if isinstance(W, str) and tok != m.CTRL_FAKE else real(tok, W)   # Markdown side cannot find its own token
     assert m.main([md]) == 2
 
 
@@ -375,7 +375,7 @@ def test_pdf_side_control_blind_independent_of_fake_value(tmp_path):
     m = _load_cov()
     md = make(tmp_path)
     real = m.present
-    m.present = lambda tok, W, encl=0: True if tok == m.CTRL_FAKE and not isinstance(W, str) else real(tok, W, encl)   # PDF side "finds" the fabricated token
+    m.present = lambda tok, W: True if tok == m.CTRL_FAKE and not isinstance(W, str) else real(tok, W)   # PDF side "finds" the fabricated token
     assert m.main([md]) == 2
 
 
@@ -425,3 +425,168 @@ def test_short_tokens_are_checked(tmp_path):
     shutil.copy(real[:-3] + ".pdf", claim[:-3] + ".pdf")
     r = sh(sys.executable, COV, claim)
     assert r.returncode == 1 and "Zqxw" in r.stdout and "B7" in r.stdout, r.stdout
+
+
+# ---- round 5: structural wrap rules -----------------------------------------------------------------------------------------------------
+
+CITES = "".join("| B%d | catalog-api/handlers/very_long_collection_handler_%d.go:%d | GetEntityDuplicatesAndMore | http.StatusInternalServerError | `err` | LEAK |\n" % (i, i, 100 + i * 7) for i in range(30))
+CITEDOC = "# Cites\n\n| id | file:line | fn | status | expr | class |\n|---|---|---|---|---|---|\n" + CITES
+
+
+def _bad_pdf(tmp, md_text, name, css):
+    """A PDF of md_text rendered WITHOUT the renderer's break rules (anywhere-breaking, narrow fixed columns): what a regression would produce."""
+    md = os.path.join(str(tmp), name + ".md"); open(md, "w").write(md_text)
+    html = os.path.join(str(tmp), name + ".html"); cssf = os.path.join(str(tmp), name + ".css"); open(cssf, "w").write(css)
+    assert sh("pandoc", "-f", "gfm", "-t", "html5", "-s", "--metadata", "pagetitle=x", "--metadata", "document-css=false", md, "-o", html).returncode == 0
+    assert sh("weasyprint", "-q", "-s", cssf, html, md[:-3] + ".pdf").returncode == 0
+    return md
+
+
+BADCSS = "@page{size:A4 landscape;margin:10mm} table{table-layout:fixed;width:100%;font-size:7.5pt} td,th{overflow-wrap:anywhere;word-break:break-all;padding:2px}"
+ORACLE = os.path.join(HERE, "oracle_citations.py")
+
+
+def test_real_render_never_splits_a_citation_or_digit_run(tmp_path):
+    md = make(tmp_path, CITEDOC, "cites")
+    ws = _wordtexts(md[:-3] + ".pdf")
+    for i in range(30):
+        assert any(w.endswith("go:%d" % (100 + i * 7)) for w in ws), "citation %d split" % i
+        assert "B%d" % i in ws
+    assert sh(sys.executable, COV, md).returncode == 0
+    assert sh(sys.executable, ORACLE, md).returncode == 0
+
+
+def test_gate_and_oracle_reject_vertical_split_digit_run(tmp_path):
+    md = _bad_pdf(tmp_path, CITEDOC, "bad", BADCSS)
+    ws = _wordtexts(md[:-3] + ".pdf")
+    assert not all(any(w.endswith("go:%d" % (100 + i * 7)) for w in ws) for i in range(30)), "fixture did not split anything"
+    r = sh(sys.executable, COV, md)
+    assert r.returncode == 1, r.stdout
+    assert sh(sys.executable, ORACLE, md).returncode == 1
+
+
+def test_short_token_does_not_inherit_wrap_permission_from_long_word(tmp_path):
+    # the enclosing Markdown word is long; its digit run must still not be allowed to split
+    doc = "# T\n\n| c |\n|---|\n" + "".join("| %d%d%d.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa |\n" % ((1000 + i * 111,) * 3) for i in range(40))
+    md = _bad_pdf(tmp_path, doc, "enc", "@page{size:A4;margin:10mm} table{table-layout:fixed;width:60pt;font-size:7.5pt} td{overflow-wrap:anywhere;padding:0}")
+    r = sh(sys.executable, COV, md)
+    assert r.returncode == 1, r.stdout
+
+
+def _fake_words(m, pieces):
+    W = m.Words.__new__(m.Words)
+    W.w = [(1, xa, ya, xb, yb, t) for (xa, ya, xb, yb, t) in pieces]
+    W._index()
+    return W
+
+
+def test_wrap_geometry_same_line_or_right_of_end_rejected():
+    m = _load_cov()
+    ok = _fake_words(m, [(10, 10, 50, 17, "alpha-"), (10, 20, 40, 27, "beta")])        # next piece on a later line, starting left
+    same = _fake_words(m, [(10, 10, 50, 17, "alpha-"), (60, 10, 90, 17, "beta")])       # same line, two cells
+    right = _fake_words(m, [(10, 10, 50, 17, "alpha-"), (70, 20, 100, 27, "beta")])     # later line but right of the previous end (next column)
+    assert m.present("alpha-beta", ok) and not m.present("alpha-beta", same) and not m.present("alpha-beta", right)
+
+
+def test_wrap_allowed_only_at_separators_and_never_in_digit_run():
+    m = _load_cov()
+    seg = lambda a, b: _fake_words(m, [(10, 10, 50, 17, a), (10, 20, 40, 27, b)])
+    assert m.present("collection-handler", seg("collection-", "handler"))              # after a separator
+    assert not m.present("collection-handler", seg("collect", "ion-handler"))          # inside a segment
+    assert not m.present("1234", seg("12", "34")) and not m.present("go:1234", seg("go:12", "34"))   # digit run
+    assert m.present("a" * 35, seg("a" * 20, "a" * 15))                                  # over-long segment (>= 30) may break
+    assert not m.present("a" * 25, seg("a" * 10, "a" * 15))                              # short segment of a long WORD may not (no enclosing-word permission)
+
+
+def test_second_reading_order_is_load_bearing():
+    # on a shipped wide-table doc the physical (line by line) order alone interleaves cells and misses wrapped tokens; the cell-by-cell order finds them
+    root = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
+    md = os.path.join(root, "docs/research/nasemu/report.md")
+    r = sh(sys.executable, COV, "--root", root, md)
+    assert r.returncode == 0, r.stdout
+    m = _load_cov()
+    phys = m.Words(md[:-3] + ".pdf", False)
+    toks = m.md_tokens(m.clean_md(open(md).read()), 4)
+    assert [t for t in toks if not m.present(t, [phys])], "physical order alone is enough here: the second reading order is not load-bearing"
+
+
+def test_glyph_widths_are_not_flat():
+    sys.path.insert(0, D)
+    import importlib; cols = importlib.import_module("pdf_table_cols")
+    assert cols.word_pt("WWWWWWWW", 7.5) > 1.6 * cols.word_pt("iiiiiiii", 7.5)
+    assert cols.word_pt("88888888", 7.5) > cols.word_pt("llllllll", 7.5)
+
+
+def test_capital_ids_in_narrow_column_stay_whole(tmp_path):
+    doc = "# T\n\n| id | a | b | c |\n|---|---|---|---|\n" + "".join("| WWMMWWMM%d | %s | %s | %s |\n" % (i, "prose " * 12, "prose " * 12, "prose " * 12) for i in range(6))
+    md = make(tmp_path, doc, "caps")
+    ws = _wordtexts(md[:-3] + ".pdf")
+    for i in range(6): assert "WWMMWWMM%d" % i in ws
+
+
+def test_zero_width_space_break_opportunities_inserted_and_stripped():
+    sys.path.insert(0, D)
+    import importlib; cols = importlib.import_module("pdf_table_cols")
+    out = cols.add_wbr("<code>a/b_c.go:118</code> 2026-11-12 v7.67")
+    assert "a/\u200bb_\u200bc.\u200bgo:118" in out                  # after '/', '_', '.' before a letter; ':' and digits stay together
+    assert "2026-11-12" in out and "v7.67" in out                # no break inside dates or decimals
+
+
+def test_needle_control_blind_if_matcher_ignores_the_stream(tmp_path):
+    # a matcher that finds everything (except the fabricated needle) cannot tell real from destroyed text: BLIND, on both sides
+    m = _load_cov()
+    md = make(tmp_path)
+    m.present = lambda tok, W: tok != m.CTRL_FAKE
+    assert m.main([md]) == 2
+
+
+def test_render_is_reproducible_across_clock_and_cwd(tmp_path):
+    md = make(tmp_path, "# R\n\nsome plain text for the reproducibility check\n", "rep")
+    a = open(md[:-3] + ".pdf", "rb").read()
+    env = dict(os.environ); env.pop("SOURCE_DATE_EPOCH", None)
+    import time; time.sleep(2)
+    r = subprocess.run([PDF, md], capture_output=True, text=True, cwd="/", env=env)
+    assert r.returncode == 0
+    assert a == open(md[:-3] + ".pdf", "rb").read()
+
+
+def test_digit_runs_never_split_even_inside_an_over_long_segment():
+    m = _load_cov()
+    seg = lambda a, b: _fake_words(m, [(10, 10, 50, 17, a), (10, 20, 40, 27, b)])
+    assert not m.present("a" * 35 + "12", seg("a" * 35 + "1", "2"))
+    assert m.present("a" * 35 + "12", seg("a" * 20, "a" * 15 + "12"))
+
+
+def test_word_boundary_match_not_substring():
+    m = _load_cov()
+    W = _fake_words(m, [(10, 10, 80, 17, "concatenate")])
+    assert not m.present("cat", W) and m.present("concatenate", W) and not m.present("catenat", W)
+
+
+def test_needle_control_pdf_side_needs_the_differential(tmp_path):
+    # the Markdown side behaves, the PDF-side matcher finds everything: only the PDF-side destroyed-copy control can notice
+    m = _load_cov(); md = make(tmp_path); real = m.present
+    m.present = lambda tok, W: (tok != m.CTRL_FAKE) if (isinstance(W, list) and W and isinstance(W[0], m.Words)) else real(tok, W)
+    assert m.main([md]) == 2
+
+
+def test_needle_control_markdown_side_needs_the_differential(tmp_path):
+    m = _load_cov(); md = make(tmp_path); real = m.present
+    m.present = lambda tok, W: (tok != m.CTRL_FAKE) if isinstance(W, str) else real(tok, W)
+    assert m.main([md]) == 2
+
+
+def test_table_font_shrinks_before_segments_break():
+    sys.path.insert(0, D)
+    import importlib; cols = importlib.import_module("pdf_table_cols")
+    row = "<tr>" + "".join("<td>WWWWWWWWWWWW</td>" for _ in range(7)) + "</tr>"
+    cg, font, fit = cols.layout("<table>" + row + row + "</table>", 527.0, 7.5)
+    assert fit and font < 7.5, (font, fit)
+
+
+def test_column_padding_covers_the_css_cell_padding():
+    sys.path.insert(0, D)
+    import importlib; cols = importlib.import_module("pdf_table_cols")
+    css = open(os.path.join(D, "print.css")).read()
+    px = float(re.search(r"th, td \{[^}]*padding:\s*[\d.]+px\s+([\d.]+)px", css).group(1))
+    assert cols.PAD_PT >= 2 * px * 0.75 + 1.0, "column minimum does not leave room for the cell padding"
