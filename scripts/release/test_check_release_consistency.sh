@@ -111,6 +111,7 @@ d=$(fresh); rm "$d/docs/qa/run1/b.txt"; expect "SHA256SUMS missing non-ignored f
 echo "== negative controls: changelog"
 d=$(fresh); expect "PROVISIONAL / Unreleased / dev-heading / older-section fakes not checked" 0 "miss=0" "$d" --check changelog
 d=$(fresh); expect "default is topmost version section, not Unreleased" 0 "section=2.4.0" "$d" --check changelog
+d=$(fresh); expect "an [Unreleased] heading is not a section: --section Unreleased -> BLIND" 2 "VERDICT: BLIND" "$d" --check changelog --section Unreleased
 d=$(fresh); mut "$d" docs/CHANGELOG.md 's#`docs/qa/run2/c.txt:12`#`docs/qa/run2/c.txt:12-20`#' && expect "line suffix stripped" 0 "miss=0" "$d" --check changelog
 d=$(fresh); mut "$d" docs/CHANGELOG.md 's#`scripts/tool.sh`#`nonexistent-top/x.sh`#' && expect "unknown top-level dir is skipped not MISS" 0 "skipped=3" "$d" --check changelog
 
@@ -146,7 +147,7 @@ d=$(fresh); mut "$d" docs/api/openapi.yaml 's#^  version: 2.4.0#  version: 2.4.0
 expect "F5 empty --version is a usage error" 2 "VERDICT: BLIND" "$GOLD" --version ""
 d=$(fresh); : > "$d/catalogizer-android/app/build.gradle"; cm "$d"; expect "F5 both build.gradle and .kts -> FAIL" 1 "ambiguous" "$d" --check version
 d=$(fresh); echo q > "$d/\"q\".txt"; (cd "$d" && git add -A); expect "F5 needle survives a quoted tracked name" 0 "VERDICT: PASS" "$d" --check changelog
-d=$(fresh); echo b > "$d/.0first.txt"; (cd "$d" && git add -A) ; rm "$d/.0first.txt"; expect "F5 needle survives first tracked file deleted from tree" 0 "VERDICT: PASS" "$d" --check changelog
+d=$(fresh); echo b > "$d/.0first.txt"; (cd "$d" && git add -A && git commit -q -m first) ; rm "$d/.0first.txt"; RAW=1 expect "F5 needle survives first tracked file deleted from tree" 0 "VERDICT: PASS" "$d" --check changelog
 expect "F5 -h prints VERDICT: HELP" 0 "VERDICT: HELP" "$GOLD" -h
 
 echo "== round-2 review follow-ups (N1-N5)"
@@ -209,9 +210,10 @@ expect "F2 manifest entry symlink outside repo FAIL" 1 "resolves outside" "$d" -
 d=$(fresh); ln -s a.txt "$d/docs/qa/run1/lnk2.txt"; echo "$(sha256sum < "$d/docs/qa/run1/a.txt" | cut -d' ' -f1)  lnk2.txt" >> "$d/docs/qa/run1/SHA256SUMS"; (cd "$d" && git add -A)
 expect "F2 manifest entry symlink inside repo accepted" 0 "VERDICT: PASS" "$d" --check changelog
 # F3: reviewer mutants (sibling-prefix, repo-root symlink, uppercase BSD hex, '/' vs '//' comment)
-d=$(fresh); rr="$(cd "$d" && pwd -P)"; mkdir -p "$rr-evil"; echo e > "$rr-evil/f.txt"; ln -s "$rr-evil" "$d/docs/qa/sibling"; (cd "$d" && git add -A)
-mut "$d" docs/CHANGELOG.md 's#^- Tool `scripts/tool.sh`#- Link `docs/qa/sibling/`; Tool `scripts/tool.sh`#' && expect "F3 symlink to sibling dir sharing repo-path prefix -> MISS" 1 "resolves outside the repository" "$d" --check changelog
-rm -rf "${rr:?}-evil"
+# round 5: the checker reads a snapshot of HEAD, so the sibling shares the SNAPSHOT's path prefix (RELCHK_SNAP_DIR fixes it)
+d=$(fresh); sn="$ROOT/snapf3"; mkdir -p "$sn-evil"; echo e > "$sn-evil/f.txt"; ln -s ../../../snapf3-evil "$d/docs/qa/sibling"; (cd "$d" && git add -A)
+mut "$d" docs/CHANGELOG.md 's#^- Tool `scripts/tool.sh`#- Link `docs/qa/sibling/`; Tool `scripts/tool.sh`#' && RELCHK_SNAP_DIR="$sn" expect "F3 symlink to sibling dir sharing the snapshot-path prefix -> MISS" 1 "resolves outside the repository" "$d" --check changelog
+rm -rf "${sn:?}-evil"
 d=$(fresh); ln -s ../.. "$d/docs/qa/toroot"; (cd "$d" && git add -A)
 mut "$d" docs/CHANGELOG.md 's#^- Tool `scripts/tool.sh`#- Link `docs/qa/toroot`; Tool `scripts/tool.sh`#' && expect "F3 symlink resolving to the repo root itself accepted" 0 "VERDICT: PASS" "$d" --check changelog --evidence-prefix docs/none/
 d=$(fresh); H="$(sha256sum < "$d/docs/qa/run1/a.txt" | cut -d' ' -f1 | tr a-f A-F)"; echo "SHA256 (../../etc/passwd) = $H" >> "$d/docs/qa/run1/SHA256SUMS"; expect "F3 BSD uppercase-hex escape FAIL" 1 "escapes its directory" "$d" --check changelog
@@ -228,10 +230,10 @@ d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionCode = 7
 d=$(fresh); mut "$d" catalogizer-android/app/build.gradle.kts 's/versionCode = 7$/versionCode = 7 \/* c *\/ - 2/' && expect "F5 expression after block comment still FAIL" 1 "FAIL" "$d" --check version
 
 # F2/F5 residual mutants: manifest sibling-prefix symlink; fenced "## " / "### " inside a VERIFIED subsection
-d=$(fresh); rr="$(cd "$d" && pwd -P)"; mkdir -p "$rr-evil2"; echo e > "$rr-evil2/f.txt"; ln -s "$rr-evil2" "$d/docs/qa/run1/evil"
-echo "$(sha256sum < "$rr-evil2/f.txt" | cut -d' ' -f1)  evil/f.txt" >> "$d/docs/qa/run1/SHA256SUMS"; (cd "$d" && git add -A)
-expect "F2 manifest entry via symlink to sibling dir sharing repo-path prefix FAIL" 1 "resolves outside" "$d" --check changelog
-rm -rf "${rr:?}-evil2"
+d=$(fresh); sn="$ROOT/snapf2"; mkdir -p "$sn-evil2"; echo e > "$sn-evil2/f.txt"; ln -s ../../../../snapf2-evil2 "$d/docs/qa/run1/evil"
+echo "$(sha256sum < "$sn-evil2/f.txt" | cut -d' ' -f1)  evil/f.txt" >> "$d/docs/qa/run1/SHA256SUMS"; (cd "$d" && git add -A)
+RELCHK_SNAP_DIR="$sn" expect "F2 manifest entry via symlink to sibling dir sharing the snapshot-path prefix FAIL" 1 "resolves outside" "$d" --check changelog
+rm -rf "${sn:?}-evil2"
 d=$(fresh); mut "$d" docs/CHANGELOG.md 's@^### PROVISIONAL (not verified)@```\n## fenced not a section end\n```\n- `docs/nope_after_fence2.txt`\n\n### PROVISIONAL (not verified)@' && expect "F5 fenced '## ' does not end the section" 1 "docs/nope_after_fence2.txt" "$d" --check changelog
 d=$(fresh); mut "$d" docs/CHANGELOG.md 's@^### PROVISIONAL (not verified)@```\n### Notes fenced not a subsection end\n```\n- `docs/nope_after_fence3.txt`\n\n### PROVISIONAL (not verified)@' && expect "F5 fenced '### ' does not end the VERIFIED subsection" 1 "docs/nope_after_fence3.txt" "$d" --check changelog
 

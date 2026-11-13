@@ -115,8 +115,17 @@ export GIT_NO_REPLACE_OBJECTS=1
 HEADC="$(git -C "$REPO" rev-parse --verify -q 'HEAD^{commit}' 2>/dev/null)" || blind "'$REPO' has no HEAD commit"
 SNAPBASE="${RELCHK_TMP:-${XDG_CACHE_HOME:-${HOME:?}/.cache}/relchk-tmp}"
 mkdir -p "$SNAPBASE" || blind "cannot create $SNAPBASE"
-SNAP="$(mktemp -d "$SNAPBASE/snap.XXXXXX")" || blind "cannot create a HEAD snapshot directory"
-case "$SNAP" in "$SNAPBASE"/snap.*) ;; *) blind "odd snapshot directory" ;; esac
+if [ -n "${RELCHK_SNAP_DIR:-}" ]; then
+  # test hook: a fixed, absolute, not yet existing snapshot path (lets a test place a sibling directory whose name
+  # starts with the snapshot's name); never used by a normal run
+  case "$RELCHK_SNAP_DIR" in /*) ;; *) blind "RELCHK_SNAP_DIR must be absolute" ;; esac
+  [ ! -e "$RELCHK_SNAP_DIR" ] || blind "RELCHK_SNAP_DIR exists already"
+  mkdir -p -- "$RELCHK_SNAP_DIR" || blind "cannot create RELCHK_SNAP_DIR"
+  SNAP="$RELCHK_SNAP_DIR"
+else
+  SNAP="$(mktemp -d "$SNAPBASE/snap.XXXXXX")" || blind "cannot create a HEAD snapshot directory"
+  case "$SNAP" in "$SNAPBASE"/snap.*) ;; *) blind "odd snapshot directory" ;; esac
+fi
 trap 'rm -rf -- "${SNAP:?}"' EXIT
 # the snapshot writer resolves its interpreter from fixed system locations first, so a python3 shadowed on PATH
 # (the helper-output tests do that on purpose) cannot fake the snapshot
