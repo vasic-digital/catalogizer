@@ -53,10 +53,10 @@ func logLogServiceError(r *http.Request, err error, status int) {
 	if r != nil {
 		site = r.Method
 		if r.URL != nil {
-			path = logredact.SecretPath(r.URL.Path) // a share token in the path never reaches the log
+			path = requestLogPath(r) // a share token in the path never reaches the log
 			// the failed request knows its own credentials (share token, ticket, Authorization ...): they vanish from the
 			// error text whatever shape they appear in ("lookup share S")
-			text = logredact.ReplaceKnown(text, logredact.KnownSecrets(r.URL.Path, r.URL.RawQuery, r.Header, mux.Vars(r)))
+			text = logredact.ReplaceKnown(text, requestKnownSecrets(r))
 		}
 	}
 	logging.Logger.Error("log management request failed",
