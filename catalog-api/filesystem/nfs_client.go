@@ -43,6 +43,9 @@ func NewNFSClient(config NFSConfig) (*NFSClient, error) {
 	if config.MountPoint == "" {
 		return nil, fmt.Errorf("mount point is required")
 	}
+	if abs, err := filepath.Abs(config.MountPoint); err == nil { // a relative mount point would fail every confined operation (round 1 F5)
+		config.MountPoint = abs
+	}
 	return &NFSClient{
 		config:     config,
 		mounted:    false,
@@ -389,6 +392,9 @@ func (c *NFSClient) DeleteDirectory(ctx context.Context, path string) error {
 	fullPath, rerr := c.resolveConfinedNoFollow(path)
 	if rerr != nil {
 		return rerr
+	}
+	if refusesRootDelete(c.mountPoint, fullPath) {
+		return ErrRefuseDeleteRoot
 	}
 	err := os.RemoveAll(fullPath)
 	if err != nil {

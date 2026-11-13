@@ -179,7 +179,7 @@ The server loads configuration from `config.json` in the working directory. If t
 }
 ```
 
-> Symlink confinement (local and nfs roots): a symbolic link inside the root that resolves outside it is refused; links that stay inside keep working. To allow escaping links for one root, add `"allow_symlink_escape": true` to its `settings` (default `false`). See `docs/scripts/settings_contract.md`.
+> Symlink confinement (local and nfs roots): a symbolic link inside the root that resolves outside it is refused; links that stay inside keep working. There is currently no deployment setting that switches this off: the opt-out `allow_symlink_escape` exists only in the in-code factory settings (the database root row and the configuration file do not carry it). See `docs/scripts/settings_contract.md`.
 
 ### Environment Variable Overrides
 

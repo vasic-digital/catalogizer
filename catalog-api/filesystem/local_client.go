@@ -26,9 +26,15 @@ type LocalClient struct {
 
 // NewLocalClient creates a new local filesystem client
 func NewLocalClient(config *LocalConfig) *LocalClient {
+	base := config.BasePath
+	if base != "" {
+		if abs, err := filepath.Abs(base); err == nil { // a relative base would fail every confined operation (round 1 F5)
+			base = abs
+		}
+	}
 	return &LocalClient{
 		config:    config,
-		basePath:  config.BasePath,
+		basePath:  base,
 		connected: false,
 	}
 }

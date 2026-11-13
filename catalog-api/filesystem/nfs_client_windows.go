@@ -15,6 +15,9 @@ type NFSConfig struct {
 	Path       string `json:"path"`        // Export path on NFS server
 	MountPoint string `json:"mount_point"` // Local mount point
 	Options    string `json:"options"`     // Mount options
+	// AllowSymlinkEscape mirrors the linux/darwin field so the shared factory compiles on every platform (CAT-FS-SYMLINK-1 round 1 F1);
+	// this client performs no file operation, so it has no effect here.
+	AllowSymlinkEscape bool `json:"allow_symlink_escape"`
 }
 
 // NFSClient for Windows (NFS is not natively supported)

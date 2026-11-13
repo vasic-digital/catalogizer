@@ -121,3 +121,31 @@ func withinDir(dir, target string) bool {
 	rel, err := filepath.Rel(dir, target)
 	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
 }
+
+// resolveMovePair confines a move: the SOURCE is not followed at its last component (a link is moved as a link), the DESTINATION is followed
+// (mv into an in-root link to a directory outside the root writes there). Shared by the darwin NFSClient and its linux-runnable test.
+func resolveMovePair(root, srcFull, dstFull, srcShown, dstShown string, allowEscape bool) (string, string, error) {
+	src, err := confineReal(root, srcFull, srcShown, allowEscape, false)
+	if err != nil {
+		return "", "", err
+	}
+	dst, err := confineReal(root, dstFull, dstShown, allowEscape, true)
+	if err != nil {
+		return "", "", err
+	}
+	return src, dst, nil
+}
+
+// refusesRootDelete reports whether removing full would remove the storage root itself: full is the root, or a path (an in-root link, a
+// "x/.." form) whose real location is the real root. Same rule as LocalClient.DeleteDirectory.
+func refusesRootDelete(root, full string) bool {
+	if filepath.Clean(full) == filepath.Clean(root) {
+		return true
+	}
+	realRoot, err := realpathLax(root)
+	if err != nil {
+		return false
+	}
+	real, err := realpathLax(full)
+	return err == nil && filepath.Clean(real) == filepath.Clean(realRoot)
+}

@@ -37,6 +37,9 @@ func NewNFSClient(config NFSConfig) (*NFSClient, error) {
 	if config.MountPoint == "" {
 		return nil, fmt.Errorf("mount point is required")
 	}
+	if abs, err := filepath.Abs(config.MountPoint); err == nil { // a relative mount point would fail every confined operation (round 1 F5)
+		config.MountPoint = abs
+	}
 
 	// Create mount point directory if it doesn't exist
 	if err := os.MkdirAll(config.MountPoint, 0755); err != nil {
@@ -230,6 +233,9 @@ func (c *NFSClient) DeleteDirectory(ctx context.Context, path string) error {
 	if rerr != nil {
 		return rerr
 	}
+	if refusesRootDelete(c.mountPoint, fullPath) {
+		return ErrRefuseDeleteRoot
+	}
 	return os.RemoveAll(fullPath)
 }
 
@@ -274,11 +280,9 @@ func (c *NFSClient) MoveFile(ctx context.Context, src, dst string) error {
 		return fmt.Errorf("not connected")
 	}
 
-	srcPath, rerr := c.resolveConfinedNoFollow(src)
-	if rerr != nil {
-		return rerr
-	}
-	dstPath, rerr := c.resolveConfinedNoFollow(dst)
+	// src is not followed at its last component (a link is moved as a link); dst IS followed, because mv into an in-root link to a directory
+	// writes through it (round 1 F2). resolveMovePair is shared with the linux-runnable test.
+	srcPath, dstPath, rerr := resolveMovePair(c.mountPoint, c.resolvePath(src), c.resolvePath(dst), src, dst, c.config.AllowSymlinkEscape)
 	if rerr != nil {
 		return rerr
 	}

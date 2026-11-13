@@ -258,7 +258,7 @@ with the same grep finding the 3 real callers of `NewSyncService` (positive cont
 | conversion readers / writers | `source_path`, `target_path` | CLOSED: both `ConfineDataFile` (round 5) |
 | routed `POST /copy/local` (`internal/handlers/copy.go`) | `destination_path` | CLOSED round 5: `ContainedJoin` + `ConfineDataFile` under the temp dir |
 | `asset_resolvers` cover lookup | media-item hint | SCOPED OUT: `Confine(Dir(hint))` directory argument, fixed cover file names, `Lstat` regular-file check; no hard-link check (read only) |
-| filesystem `local_client` / `nfs_client` | admin-configured storage base | FOLLOW-UP: `resolvePath` is lexical (`ConfinePath`); symlinks inside the base are followed (operator decision needed) |
+| filesystem `local_client` / `nfs_client` | admin-configured storage base | CLOSED (CAT-FS-SYMLINK-1): every sink goes through `confineReal` (real-path check); residual: check-to-use race and bind mounts |
 | SMB `DownloadFile` | temp file, routed copy handler | Callers pass a temp path or the confined copy destination |
 | `WebDAVClient.SyncDirectory` / `UploadBatch` / `DownloadBatch`, `calculateChecksum`, `ConfigurationWizardService`, `NewEnhancedChangeWatcher`, `MediaPlayerHandlers`, `handlers/copy.go` (unrouted `CopyHandler`) | various | UNREACHABLE: no production caller (kept per §11.4.124, not deleted) |
 | config, firebase, encryption, provisioner, admin backup dir, `configPath`, `LogDirectory`, `statsPath`, cover-art `cacheDir`, temp files | server configuration | NOT request-supplied |
@@ -306,7 +306,7 @@ Rows are grouped by class; every hit belongs to exactly one row.
 | `internal/services/smb.go:213` `DownloadFile` `MkdirAll` | callers pass a temp file or the confined copy destination | CONFINED by caller |
 | `internal/services/cover_art_service.go:758,763,855,1151,1155` | `cacheDir` + generated ids | NOT request-supplied |
 | `internal/services/cover_art_service.go:441` `ProcessImage` | caller-supplied | UNREACHABLE: no production caller |
-| `filesystem/local_client.go` (7), `filesystem/nfs_client.go` (8), `filesystem/nfs_client_darwin.go` (5) | admin-configured storage base | FOLLOW-UP (unchanged): lexical `ConfinePath` |
+| `filesystem/local_client.go` (7), `filesystem/nfs_client.go` (8), `filesystem/nfs_client_darwin.go` (5) | admin-configured storage base | CLOSED (CAT-FS-SYMLINK-1): `confineReal` on every file sink; residual: check-to-use race, bind mounts |
 | `handlers/copy.go` (4) | unrouted `CopyHandler` | UNREACHABLE |
 | `services/configuration_wizard_service.go` (11) | wizard | UNREACHABLE |
 | `database/encryption.go` (33) | backup/restore/rekey paths | admin/operator-supplied (CLI and admin backup dir), NOT request-supplied |
@@ -330,7 +330,7 @@ over non-test `.go` files under `catalog-api` (counts and needles: scratchpad ev
 |---|---|---|
 | `services/conversion_service.go` 7 `exec.Command` (ffmpeg x2, ebook-convert, pandoc, libreoffice, convert x2) | conversion source / target | FIXED round 7 (S2), see above; the source is confined by `confineConversionPaths` |
 | `internal/services/cover_art_service.go:965,996,1389` (ffprobe, ffmpeg) | media item path / `cacheDir` output | read of a catalogued media path; output in `cacheDir` + generated id, NOT request-supplied |
-| `filesystem/nfs_client_darwin.go` (5: mount, umount x2, cp, mv) | admin-configured storage base | FOLLOW-UP (unchanged, same class as the write rows) |
+| `filesystem/nfs_client_darwin.go` (5: mount, umount x2, cp, mv) | admin-configured storage base | CLOSED for cp and mv (`confineReal`, mv destination followed); mount/umount take the configured mount point, not a request path |
 | `internal/infra/provisioner.go:168` `getent hosts` | configured host name | NOT a path |
 | sync walkers and readers (`services/sync_service.go`, 16 at commit `8e77e247`) | `local_path`, `sync_settings` dirs | CONFINED per file (rounds 4-6); symlinked ROOTS resolved since round 7 (S1) |
 | `services/conversion_service.go` reads (`Open(SourcePath)`, `ReadFile(tempTextFile)`, `Lstat` x2) | conversion source / derived temp | CONFINED (`confineConversionPaths`, `createConversionOutput`) |
