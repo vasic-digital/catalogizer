@@ -82,3 +82,18 @@ operator's own network). None takes an address from third-party data. They do no
   separate DNS lookup, so a name that answers differently to the proxy (rebinding) is not
   caught. Redirect hops are re-checked the same way. Treat the operator proxy as trusted to
   enforce its own egress policy.
+
+## Known residuals of the address classification (S1A3-2, S1A3-3)
+
+`netguard.ClassOf` unwraps the IPv6 forms that carry an IPv4 address and are recognisable from the address alone:
+IPv4-mapped, IPv4-compatible (`::/96`), SIIT (`::ffff:0:a.b.c.d`), the well-known NAT64 prefix `64:ff9b::/96` and 6to4
+(`2002::/16`). Two forms are NOT recognisable and are classified public (hence reachable by every client class):
+
+- NAT64 with an operator network-specific prefix (RFC 6052 section 2.2, for example your own `/96` inside global space
+  followed by the IPv4 address). The server does not know the prefix. There is no configurable prefix list today; if you
+  run such a gateway, stop it from forwarding to private, loopback and metadata destinations. Adding a configurable list
+  of network-specific prefixes is possible later work (S1A3-2).
+- ISATAP interface identifiers (`::5efe:a.b.c.d`, `::200:5efe:a.b.c.d`) under a global prefix (S1A3-3). They name a
+  tunnelled host, not a literal IPv4 destination of this server.
+
+Both are pinned by tests (`TestS1A3_2_*`, `TestS1A3_3_*` in `catalog-api/internal/netguard/s1a3_test.go`).
