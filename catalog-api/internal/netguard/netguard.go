@@ -155,6 +155,19 @@ func IsBlockedIPStrict(ip net.IP) bool { return isBlocked(ip, false) }
 // one list, so classification and connection cannot disagree.
 var metadataSingletons = []*net.IPNet{mustCIDR("fd00:ec2::254/128"), mustCIDR("fd20:ce::254/128"), mustCIDR("100.100.100.200/32")}
 
+// MetadataSingletons returns a copy of the metadata singleton list, so other packages (SMB host vetting) consume the one
+// list instead of keeping their own and cannot diverge from the dial-time check.
+func MetadataSingletons() []*net.IPNet {
+	out := make([]*net.IPNet, len(metadataSingletons))
+	for i, n := range metadataSingletons {
+		out[i] = &net.IPNet{IP: append(net.IP(nil), n.IP...), Mask: append(net.IPMask(nil), n.Mask...)}
+	}
+	return out
+}
+
+// IsMetadataSingleton reports whether ip is one of the metadata singletons (IPv4-mapped forms included).
+func IsMetadataSingleton(ip net.IP) bool { return isMetadataSingleton(ip) }
+
 func isMetadataSingleton(ip net.IP) bool {
 	for _, n := range metadataSingletons {
 		if n.Contains(ip) {
