@@ -242,7 +242,8 @@ MUTANTS=(
 'CC2r5 C5 gradle both-check reads the working tree|||os.path.exists(os.path.join(snap, f"{app}/app/build.gradle")))|||os.path.exists(os.path.join(repo, f"{app}/app/build.gradle")))'
 'CC2r5 C6 token path set from the index|||"ls-tree", "-r", "-z", "--name-only", "--full-tree", "HEAD"], capture_output=True, text=True)|||"ls-files", "-z"], capture_output=True, text=True)'
 'CC2r5 C1 manifests discovered in the working tree|||for f in "$SNAP/$d"/SHA256SUMS "$SNAP/$d"/SHA256SUMS.txt|||for f in "$REPO/$d"/SHA256SUMS "$REPO/$d"/SHA256SUMS.txt'
-'CC2r5 C2 manifest entries read from the working tree|||done < "$SNAP/$d/$mf"|||done < "$REPO/$d/$mf"'
+# (no mutant for reading the manifest lines from the working tree: raw_tree_check returns BLIND before the lines are parsed
+#  whenever that copy differs from HEAD, so the mutation is equivalent; measured 2026-11-13, see the inventory)
 'CC2r5 C2 sha256sum run in the working tree|||o="$(cd "$SNAP/$d" && sha256sum|||o="$(cd "$REPO/$d" && sha256sum'
 'CC2r5 C3 waivers read from the working tree|||done < "$SNAP/$rel"|||done < "$REPO/$rel"'
 'CC2r5 C8 replace refs honoured|||export GIT_NO_REPLACE_OBJECTS=1|||:'

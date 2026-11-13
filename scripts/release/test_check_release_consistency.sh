@@ -111,7 +111,7 @@ d=$(fresh); rm "$d/docs/qa/run1/b.txt"; expect "SHA256SUMS missing non-ignored f
 echo "== negative controls: changelog"
 d=$(fresh); expect "PROVISIONAL / Unreleased / dev-heading / older-section fakes not checked" 0 "miss=0" "$d" --check changelog
 d=$(fresh); expect "default is topmost version section, not Unreleased" 0 "section=2.4.0" "$d" --check changelog
-d=$(fresh); expect "an [Unreleased] heading is not a section: --section Unreleased -> BLIND" 2 "VERDICT: BLIND" "$d" --check changelog --section Unreleased
+d=$(fresh); mut "$d" docs/CHANGELOG.md 's@^- nothing, `docs/unreleased/never_checked.txt`@### VERIFIED\n- `docs/qa/zzz/unreleased_missing.txt`@' && expect "an [Unreleased] heading is not a section: --section Unreleased (even with a VERIFIED part) -> BLIND, not a path check" 2 "VERDICT: BLIND" "$d" --check changelog --section Unreleased
 d=$(fresh); mut "$d" docs/CHANGELOG.md 's#`docs/qa/run2/c.txt:12`#`docs/qa/run2/c.txt:12-20`#' && expect "line suffix stripped" 0 "miss=0" "$d" --check changelog
 d=$(fresh); mut "$d" docs/CHANGELOG.md 's#`scripts/tool.sh`#`nonexistent-top/x.sh`#' && expect "unknown top-level dir is skipped not MISS" 0 "skipped=3" "$d" --check changelog
 
