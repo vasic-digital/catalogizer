@@ -150,7 +150,10 @@ func TestHTTPErrorResponse_BadRequest(t *testing.T) {
 	require.NoError(t, err)
 	assert.False(t, body.Success)
 	assert.Equal(t, "Invalid request format", body.Error)
-	assert.Contains(t, body.Details, "missing required field: name")
+	// PX-F23 (CAT-PXF23): the underlying error text is internal and must never
+	// reach the client; it is logged server-side only.
+	assert.Empty(t, body.Details)
+	assert.NotContains(t, w.Body.String(), "missing required field: name")
 }
 
 func TestHTTPErrorResponse_InternalServerError(t *testing.T) {
@@ -563,7 +566,8 @@ func TestConcurrentErrorHandling_ErrorResponseConsistency(t *testing.T) {
 			assert.NoError(t, err)
 			assert.False(t, body.Success)
 			assert.Equal(t, "Service unavailable", body.Error)
-			assert.Equal(t, "backend down", body.Details)
+			assert.Empty(t, body.Details)
+			assert.NotContains(t, w.Body.String(), "backend down")
 		}(i)
 	}
 
