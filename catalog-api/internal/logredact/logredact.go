@@ -6,13 +6,56 @@ import (
 	"strings"
 )
 
-// sensitive lists the query parameter names whose values never reach an access log. credential-shaped names are covered
-// too: the retired GET /smb/discover and /smb/test forms (now 410) used to take username and password in the query
-// string, and a stale client may still send them.
-var sensitive = map[string]bool{
+// Sensitive-name policy: ONE list for the access-log query filter (Query) and the free-text scanner (Text), so a name added
+// here is covered everywhere. Names are compared lower-cased.
+//
+//   - strongKeys are credential names matched exactly;
+//   - keyWords are substrings: any name CONTAINING one is credential-bearing (access_token, db_password, x-amz-signature ...);
+//   - weakKeys are short, ambiguous names matched exactly ("code", "key", "pass" ...). In free text they count only with an
+//     explicit '=' or as a quoted JSON key, so prose such as "exit code: 1" stays readable; Query treats them as sensitive.
+var strongKeys = map[string]bool{
 	"ticket": true, "access_token": true, "token": true, "api_key": true, "apikey": true,
-	"password": true, "passwd": true, "pass": true, "pwd": true,
-	"secret": true, "client_secret": true, "refresh_token": true, "authorization": true,
+	"password": true, "passwd": true, "pwd": true, "secret": true, "client_secret": true, "refresh_token": true,
+	"authorization": true, "auth": true, "bearer": true, "jwt": true, "otp": true, "verifier": true, "code_verifier": true,
+	"signature": true, "credential": true, "credentials": true, "cookie": true, "sessionid": true, "session": true,
+}
+
+var weakKeys = map[string]bool{"pass": true, "pw": true, "code": true, "key": true, "sig": true, "refresh": true}
+
+var keyWords = []string{
+	"password", "passwd", "pwd", "secret", "token", "apikey", "api_key", "api-key", "credential", "cookie",
+	"private_key", "private-key", "privatekey", "signature", "session", "authorization", "verifier", "passphrase",
+}
+
+var nameSeparators = strings.NewReplacer("-", "", "_", "", ".", "")
+
+// strongKey also compares the name with '-', '_' and '.' removed, so "pass-word", "pass_word" and "pass.word" are "password".
+func strongKey(l string) bool {
+	if strongKeyExact(l) {
+		return true
+	}
+	if norm := nameSeparators.Replace(l); norm != l {
+		return strongKeyExact(norm)
+	}
+	return false
+}
+
+func strongKeyExact(l string) bool {
+	if strongKeys[l] {
+		return true
+	}
+	for _, w := range keyWords {
+		if strings.Contains(l, w) {
+			return true
+		}
+	}
+	return false
+}
+
+// SensitiveKey reports whether a query-parameter / field / header name carries a credential (case-insensitive).
+func SensitiveKey(name string) bool {
+	l := strings.ToLower(name)
+	return strongKey(l) || weakKeys[l] || weakKeys[nameSeparators.Replace(l)]
 }
 
 // Query returns rawQuery with the value of every sensitive parameter replaced by "REDACTED"; everything else (order, escaping)
@@ -45,14 +88,48 @@ func redactPair(p string) string {
 	if err != nil {
 		return "REDACTED"
 	}
-	if sensitive[strings.ToLower(un)] && hasVal {
+	if SensitiveKey(un) && hasVal {
 		return name + "=REDACTED"
 	}
 	return p
 }
 
-// Path returns path + "?" + redacted query (or just path when there is no query).
+// secretSegmentKeys lists the path segments whose NEXT segment is a bearer secret (a share token, invite code, reset token ...).
+// Route registrations carrying such a parameter (grep for ":token"): GET /api/v1/logs/share/:token. The list is a class rule
+// so a later route of the same shape is covered without touching the loggers.
+var secretSegmentKeys = map[string]bool{
+	"share": true, "shares": true, "token": true, "tokens": true, "invite": true, "invites": true, "invitation": true,
+	"reset": true, "ticket": true, "tickets": true, "secret": true, "secrets": true, "key": true, "keys": true,
+	"apikey": true, "api-key": true, "api_key": true, "verify": true, "confirm": true, "activate": true, "magic": true,
+}
+
+// SecretPath returns path with every segment that follows a secret-introducing segment (see secretSegmentKeys) replaced by
+// ":redacted". Everything else is preserved. Use it for ANY log field that carries a raw request path.
+func SecretPath(path string) string {
+	if path == "" {
+		return path
+	}
+	segs := strings.Split(path, "/")
+	for i := 0; i+1 < len(segs); i++ {
+		if !secretSegmentKeys[strings.ToLower(segs[i])] {
+			continue
+		}
+		// "/share//S" and "/share///S": empty segments between the key and the secret are skipped; the first non-empty
+		// segment is the secret (a trailing "/share//" with nothing after it stays unchanged).
+		j := i + 1
+		for j < len(segs) && segs[j] == "" {
+			j++
+		}
+		if j < len(segs) {
+			segs[j] = ":redacted"
+		}
+	}
+	return strings.Join(segs, "/")
+}
+
+// Path returns path (secret segments redacted) + "?" + redacted query (or just path when there is no query).
 func Path(path, rawQuery string) string {
+	path = SecretPath(path)
 	if q := Query(rawQuery); q != "" {
 		return path + "?" + q
 	}

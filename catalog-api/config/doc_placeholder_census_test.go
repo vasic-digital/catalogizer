@@ -118,6 +118,10 @@ func TestCensusTreatsEllipsisAsElision(t *testing.T) {
 	for _, v := range []string{"\u2026hunter2", "pa\u2026ss", ".", "...."} {
 		assert.False(t, exampleValueIsExempt(v), v)
 	}
+	// PX-F22: a SUFFIX ellipsis (`secret…`, `secret\u2026`) and a "<" inside the value (`pa<ss`, only a LEADING "<" is a template) are not exempt
+	for _, v := range []string{"secret\u2026", "pa<ss", "hunter2<tmpl>"} {
+		assert.False(t, exampleValueIsExempt(v), v)
+	}
 	// the extractor sees the idiom, so the exemption is what spares it
 	tmp := filepath.Join(t.TempDir(), "x.md")
 	require.NoError(t, os.WriteFile(tmp, []byte("ADMIN_PASSWORD=... ./run.sh\n"), 0o600))
