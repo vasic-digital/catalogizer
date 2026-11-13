@@ -2382,3 +2382,10 @@ Constitution bd0036bd (already on all mirrors and pinned). F1 closed for the 336
 - SEC-DIAL-1-FU-M3 (minor): host names starting with an IP literal are cut (`10.0.0.5.nip.io` -> `<address>.nip.io`); count `.`+word byte as glue or match configured host first. Diagnostic only, no leak.
 - SEC-DIAL-1-FU-M4 (minor, performance): linear but large constant (1 MB of `.:` = 7.7 s); cap scanned length (e.g. 4 KiB) or skip windows without digit/hex group. darwin `mount` CombinedOutput (nfs_client_darwin.go:93) is uncapped.
 - SEC-DIAL-1-FU-N1/N2 (nits): over-scrubs `version 1.2.3.4` and `err :: here`; configured host loses spelling when port glued unbracketed. Pre-existing nit: `GOOS=darwin go vet ./filesystem` fails (comprehensive_test.go:1253 withProcMounts undefined).
+
+## CAT-LOGSHARE-TOK-1 landed (merge of fix/logshare-tok, 2026-11-13, PROVISIONAL, Opus round 2 GO-with-follow-ups, unit-class) — follow-ups
+- LOGSHARE-TOK-1-F1 (important, landing order): this item owns migration v28 (log_share_token_hash). CAT-LOGIN-LOCK-1 (login_throttle) ALSO uses v28 on its branch and MUST renumber to v29 (migration entry, migrations_v28_test.go name, "migration v28" wording in API_DOCUMENTATION.md) before it lands; runMigration skips by version alone.
+- LOGSHARE-TOK-1-F2 (minor, test-instrumentation): PG statement only checked as a string; seed a legacy row in migrations_postgres_integration_test.go (BOOLEAN literal, ESCAPE, CAST(id AS TEXT)) and run against real PG.
+- LOGSHARE-TOK-1-F3 (nit, process-doc): constant-time compare after `WHERE share_token = hash` is redundant (equivalent mutant N8); reword comment in services/log_share_token.go:14-17.
+- LOGSHARE-TOK-1-F4 (nit, test-instrumentation): handlers/log_share_token_cat_logshare_tok_1_test.go:87 comment lists a revoked-token case the handler test does not exercise.
+- Carried non-fixes: websocket connection id, global wizard session id, csrf.go ignoring rand.Read error.
