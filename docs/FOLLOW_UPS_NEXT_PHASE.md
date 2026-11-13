@@ -2278,3 +2278,10 @@ Class-wide enumeration with a control-needled go/ast instrument (`catalog-api/in
 - OPB-FU2-F3 (test-instrumentation, minor): mutants M9/M10 survive; add test where a failing Required action deletes config.json, assert mode 0600 after rollback.
 - OPB-FU2-F4 (source, nit): previousMode stays 0644 if Stat after ReadFile fails; take mode from the same handle or fail; restore is not atomic.
 - OPB-FU2-F5 (test-instrumentation, nit): mode-0200 unreadable test false-fails as root; add skip.
+
+## Sonar registry-auth round 5 (Opus, GO-with-follow-ups, minor-class, PROVISIONAL, unit-class only)
+Constitution bd0036bd (already on all mirrors and pinned). F1 closed for the 336-combination input class; 267/0 logic, 40/0 wiring, 57/57 mutants, anchors suite PASS.
+- SONAR-R5-N1 (source, minor): credential material ignored without notice: plain user+password+registry set makes DOCKER_AUTH_CONFIG ignored silently; mixed `auth`/identitytoken entries skip non-auth hosts silently. Log ignored variables/hosts by name.
+- SONAR-R5-N2 (test-instrumentation, minor): DEL/control chars in password and decoded auth are documented as rejected but unpinned (mutant X5 survives); add cases.
+- SONAR-R5-N3 (test-instrumentation, minor): DOCKER_PASSWORD vs DOCKER_TOKEN precedence untested (mutant X4 survives).
+- SONAR-R5-N4 (process-doc, nit): state that DOCKER_REGISTRY is ignored for helper-only DOCKER_AUTH_CONFIG (SKIP 3).
