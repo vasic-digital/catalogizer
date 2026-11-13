@@ -112,6 +112,11 @@ func (p LoginThrottlePolicy) withDefaults() LoginThrottlePolicy {
 	if p.StaleAfter <= 0 {
 		p.StaleAfter = d.StaleAfter
 	}
+	// A row older than StaleAfter is purged, so an account failure count can never outlive it: the effective account window is
+	// min(AccountDecay, StaleAfter). Make that the configured value instead of a silent coupling.
+	if p.AccountDecay > p.StaleAfter {
+		p.AccountDecay = p.StaleAfter
+	}
 	return p
 }
 
@@ -268,7 +273,9 @@ func (t *LoginThrottle) Begin(ctx context.Context, subject, ip string) (Decision
 	if a.blockedUntilMs > nowMs && !known {
 		return refuse(time.UnixMilli(a.blockedUntilMs), now), nil
 	}
-	if !(a.blockedUntilMs > nowMs && known) {
+	// A known-good address is never charged to the account scope (and so a legitimate owner's login has no effect on it, which
+	// would otherwise tell a real account from a nonexistent name); it is still limited by its own address bucket below.
+	if !known {
 		ok, until, err := t.reserve(ctx, subject, scopeAccount, pol.AccountFree, pol.AccountDecay, now, pol)
 		if errors.Is(err, ErrLoginThrottleBusy) {
 			return refuse(now.Add(pol.Base), now), nil
@@ -276,7 +283,7 @@ func (t *LoginThrottle) Begin(ctx context.Context, subject, ip string) (Decision
 		if err != nil {
 			return Decision{}, err
 		}
-		if !ok && !known {
+		if !ok {
 			return refuse(until, now), nil
 		}
 	}
@@ -303,15 +310,12 @@ func refuse(until, now time.Time) Decision {
 	return Decision{Allowed: false, RetryAfter: d}
 }
 
-// Success clears the charges of a completed login and (rememberClient) records the address as known-good.
+// Success clears this address's charges (never the account scope) of a completed login and (rememberClient) records the address as known-good.
 func (t *LoginThrottle) Success(ctx context.Context, subject, ip string, rememberClient bool) error {
 	now, pol := t.clock()
 	nowMs := now.UnixMilli()
-	if _, err := t.db.ExecContext(ctx,
-		`UPDATE login_throttle SET failures = 0, blocked_until_ms = 0, version = version + 1 WHERE subject = ? AND scope = ?`,
-		subject, scopeAccount); err != nil {
-		return err
-	}
+	// The account scope is deliberately NOT touched: a nonexistent name can never log in, so an account block that ended early on
+	// the owner's success would reveal that the account exists. Only the owner's own address bucket is cleared.
 	bucket := ipScope(ip)
 	if !rememberClient {
 		_, err := t.db.ExecContext(ctx,

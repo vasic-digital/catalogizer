@@ -183,8 +183,8 @@ func TestLoginLock_KnownGoodAddressBypassesAccountThrottle(t *testing.T) {
 	assert.Equal(t, http.StatusTooManyRequests, e.loginFrom("203.0.113.9", "victim", llPass).Code, "new address is held")
 	w := e.loginFrom("198.51.100.5", "victim", llPass)
 	assert.Equal(t, http.StatusOK, w.Code, "the owner's known address still logs in during an attack: "+w.Body.String())
-	// success also ended the account block (the owner proved control)
-	assert.Equal(t, http.StatusOK, e.loginFrom("203.0.113.9", "victim", llPass).Code)
+	// the owner's success must NOT end the account block: that would tell a real account from a nonexistent name (S1)
+	assert.Equal(t, http.StatusTooManyRequests, e.loginFrom("203.0.113.9", "victim", llPass).Code)
 }
 
 func TestLoginLock_SpoofedKnownAddressBuysOnlyItsOwnBudget(t *testing.T) {

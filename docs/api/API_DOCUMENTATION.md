@@ -422,12 +422,19 @@ A correct password from any other address is also refused while the account is b
 throttled with the same status, body and header as an existing one: the throttle key for such a name is derived from the exact
 submitted string, matching how the account lookup compares names (no case folding, no trimming). A username and the e-mail
 address of one account share one budget, so a client that submits both can tell they belong to the same account once the
-budget is spent. A successful login clears the charges. The state is in table `login_throttle` (migration v29), so it survives
+budget is spent. A successful login clears only that client address's own charges and never the account's: an account block, like
+the block of a nonexistent name, only ends by expiry, so the owner's login cannot be used to tell a real account from an unused
+name. A login from a known-good address is not charged to the account at all (it keeps its own per-address limit), so it leaves
+the account's count unchanged; a first login from a NEW address is an attempt like any other and adds one charge to the account
+count. That one charge, and the fact that a known-good address keeps working while others are refused, is what is still
+observable to someone who controls a known-good address of the account. Both account and address windows are bounded by the
+24-hour stale-row purge, so the effective account window is min(AccountDecay, StaleAfter); a row can in a narrow window be
+read just before its purge, which is accepted. The state is in table `login_throttle` (migration v29), so it survives
 a restart and is shared by every instance on one database. Rows without a success marker are removed after 24 hours without
 activity; rows that carry a known-good marker live up to 30 days. Removal runs in batches of up to 2000 rows per minute per
 process, and the table has no row cap: a client that rotates addresses (an IPv6 /64, a botnet) can create rows faster than they
 are purged, and the per-address request limiter does not bound that. This growth is a recorded follow-up, not a solved problem.
-The unrouted net/http `Login` variant keys the throttle on the TCP peer address only and ignores forwarding headers. An administrator ends a
+The routed (gin) login keys the address on `c.ClientIP()` after `applyTrustedProxies`. The unrouted net/http `Login` variant keys the throttle on the TCP peer address only and ignores forwarding headers, so behind a reverse proxy all its clients would share the proxy's address (and a unix-socket peer maps to "unknown"); that variant is not wired in `main.go`. An administrator ends a
 back-off with `POST /api/v1/users/{id}/unlock`, by setting a new password, or with the offline `admin-reset-password` command
 (for the admin accounts it rotates). If the store cannot be read, login answers 503 (fail closed). Client addresses come from `c.ClientIP()`, so `TRUSTED_PROXIES` must be set correctly behind a reverse proxy.
 

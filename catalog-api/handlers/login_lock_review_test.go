@@ -149,7 +149,7 @@ func TestLoginLock_InactiveCorrectPasswordDoesNotRememberClient(t *testing.T) {
 	require.NoError(t, err)
 	e.loginFrom(llIP, "victim", llPass)
 	processed, _ := e.attackAccount(25, 100)
-	require.Equal(t, 20, processed)
+	require.Equal(t, 19, processed, "the inactive-account attempt from the (not known-good) address was charged to the account scope: 1 + 19")
 	assert.Equal(t, http.StatusTooManyRequests, e.loginFrom(llIP, "victim", wrong(1)).Code,
 		"an address that only proved the password of an inactive account is not known-good")
 }
@@ -173,7 +173,7 @@ func TestLoginLock_KnownGoodExpires(t *testing.T) {
 			require.Equal(t, http.StatusUnauthorized, e.loginFrom(llIP, "victim", wrong(0)).Code)
 			e.advance(3 * time.Minute)
 			processed, _ := e.attackAccount(25, 100)
-			require.Equal(t, 19, processed, "20 account charges in all, one already spent by the address above")
+			require.Equal(t, 20, processed, "a known-good address is not charged to the account scope, so the attack still gets all 20")
 			assert.Equal(t, tc.want, e.loginFrom(llIP, "victim", wrong(1)).Code)
 		})
 	}
@@ -215,7 +215,8 @@ func TestLoginLock_PurgeIsBatched(t *testing.T) {
 //   MaxKnownGood 5          TestLoginLock_RemembersAtMostFiveKnownGoodAddresses
 //   StaleAfter 24h          TestLoginLock_StaleRowsArePurgedAndBounded + TestLoginLock_DecayWindowsHold (kept before it)
 //   purgeBatch 2000, 1/min  TestLoginLock_PurgeIsBatched
-//   casRetries 400          not unit-testable without a pathological store; the exact-count concurrency tests exercise the loop
+//   AccountDecay is clamped to StaleAfter (effective window = min of the two): TestLoginThrottlePolicy_AccountDecayIsClampedToStaleAfter
+//   casRetries 400          UNCONFIRMED/accepted gap: mutating it to 1 survives; needs a PostgreSQL or contention test (follow-up). Not unit-testable without a pathological store; the exact-count concurrency tests exercise the loop
 //   delayFor exponent clamp 20: equivalent mutant (an overflowing shift yields d <= 0, which the Cap branch already catches)
 
 // N4: the ACCOUNT scope decays after 24 h, not after the 1 h of an address bucket. 20 charged attempts from distinct addresses
@@ -270,7 +271,7 @@ func TestLoginLock_RemembersAtMostFiveKnownGoodAddresses(t *testing.T) {
 		e.advance(time.Minute)
 	}
 	processed, _ := e.attackAccount(25, 400)
-	require.Equal(t, 20, processed)
+	require.Equal(t, 13, processed, "each of the 7 first logins came from an address not yet known-good and was charged to the account scope (7 + 13)")
 	for i := 0; i < 2; i++ {
 		assert.Equal(t, http.StatusTooManyRequests, e.loginFrom(distinctIP(300+i), "victim", wrong(i)).Code, "oldest two are forgotten")
 	}
@@ -306,4 +307,112 @@ func TestLoginLock_NetHTTPVariantThrottlesAndIgnoresForwardingHeaders(t *testing
 	assert.Contains(t, w.Body.String(), loginThrottledMessage)
 	assert.Equal(t, http.StatusUnauthorized, post("198.51.100.8:5000", "", wrong(1)).Code, "another peer address is unaffected")
 	assert.Equal(t, "2001:db8::1", peerHost(&http.Request{RemoteAddr: "[2001:db8::1]:443"}), "IPv6 peers are not cut at the first colon")
+}
+
+// ---- Round 4 (S1): an owner's successful login must not be visible through the account throttle. ----
+
+// scenario1 is the reviewer's reproduction: 25 wrong guesses at `name` from distinct addresses, then two seconds pass, the
+// owner (if ownerLogsIn and the account exists) logs in from a known-good address, then ONE more guess from a fresh address.
+// It returns the answers of the 25 guesses (as "401"/"429" counts) and of the final guess.
+func scenario1(t *testing.T, name string, ownerLogsIn bool) (processed int, final int, retryAfter string) {
+	e := newLLEnv(t)
+	if name == "victim" {
+		require.Equal(t, http.StatusOK, e.loginFrom(llIP, "victim", llPass).Code) // makes llIP known-good
+		e.advance(25 * time.Hour)                                                 // the setup login leaves no trace in the account window
+	}
+	for i := 0; i < 25; i++ {
+		if e.loginFrom(distinctIP(i), name, wrong(i)).Code == http.StatusUnauthorized {
+			processed++
+		}
+	}
+	e.advance(2 * time.Second)
+	if ownerLogsIn && name == "victim" {
+		require.Equal(t, http.StatusOK, e.loginFrom(llIP, "victim", llPass).Code)
+	}
+	w := e.loginFrom(distinctIP(500), name, wrong(500))
+	return processed, w.Code, w.Header().Get("Retry-After")
+}
+
+func TestLoginLock_OwnerLoginDoesNotRevealAccountThroughAccountBlock(t *testing.T) {
+	gp, gf, gr := scenario1(t, "ghost", false)
+	qp, qf, qr := scenario1(t, "victim", false)
+	lp, lf, lr := scenario1(t, "victim", true)
+	t.Logf("ghost: processed=%d final=%d retry=%s | victim quiet: %d %d %s | victim owner-logged-in: %d %d %s", gp, gf, gr, qp, qf, qr, lp, lf, lr)
+	assert.Equal(t, gf, qf)
+	assert.Equal(t, gf, lf, "the owner's login must not early-release the account block (that would tell a ghost from a real account)")
+	assert.Equal(t, gr, lr, "same Retry-After for the logged-in owner case")
+	assert.Equal(t, gp, qp)
+	assert.Equal(t, gp, lp)
+}
+
+// Below-threshold variant: an owner's login in the middle of an attack must not reset the account's failure count.
+func TestLoginLock_OwnerLoginDoesNotResetAccountCountBelowThreshold(t *testing.T) {
+	run := func(name string, ownerLogsIn bool) int {
+		e := newLLEnv(t)
+		if name == "victim" {
+			require.Equal(t, http.StatusOK, e.loginFrom(llIP, "victim", llPass).Code)
+			e.advance(25 * time.Hour)
+		}
+		processed := 0
+		for i := 0; i < 30; i++ {
+			if i == 10 && ownerLogsIn && name == "victim" {
+				require.Equal(t, http.StatusOK, e.loginFrom(llIP, "victim", llPass).Code)
+			}
+			if e.loginFrom(distinctIP(i), name, wrong(i)).Code == http.StatusUnauthorized {
+				processed++
+			}
+		}
+		return processed
+	}
+	ghost, quiet, active := run("ghost", false), run("victim", false), run("victim", true)
+	t.Logf("evaluated guesses: ghost=%d victim quiet=%d victim with owner login=%d", ghost, quiet, active)
+	assert.Equal(t, ghost, quiet)
+	assert.Equal(t, ghost, active, "an owner login below the threshold must not refill the attacker's budget")
+}
+
+// An owner's success clears only the owner's own address bucket; it never touches the account scope or other addresses' charges (S2).
+func TestLoginLock_OwnerSuccessLeavesOtherChargesIntact(t *testing.T) {
+	e := newLLEnv(t)
+	require.Equal(t, http.StatusOK, e.loginFrom(llIP, "victim", llPass).Code)
+	e.advance(25 * time.Hour)
+	for i := 0; i < 3; i++ { // another address piles up 3 failures
+		e.loginFrom("203.0.113.50", "victim", wrong(i))
+	}
+	var before, after int
+	q := func(scope string) int {
+		var n int
+		require.NoError(t, e.raw.QueryRow(`SELECT failures FROM login_throttle WHERE subject = ? AND scope = ?`, fmt.Sprintf("u:%d", e.uid), scope).Scan(&n))
+		return n
+	}
+	before, accountBefore := q("ip:203.0.113.50"), q("account")
+	require.Equal(t, http.StatusOK, e.loginFrom(llIP, "victim", llPass).Code)
+	after = q("ip:203.0.113.50")
+	assert.Equal(t, before, after, "another address's failure-only charges survive the owner's success")
+	assert.Equal(t, accountBefore, q("account"), "the account scope is untouched by a success")
+	assert.Equal(t, 0, q("ip:"+llIP), "the owner's own address bucket is cleared")
+}
+
+// S6: IPv6 addresses that share their first 16 characters are separate buckets (the key keeps up to 64 characters).
+func TestLoginLock_IPv6AddressesDifferingAfterCharacter16AreSeparateBuckets(t *testing.T) {
+	e := newLLEnv(t)
+	// "2001:db8:1234:56" is common to all three; they differ only afterwards.
+	addrs := []string{"[2001:db8:1234:5678::1]", "[2001:db8:1234:5678::2]", "[2001:db8:1234:5678::3]"}
+	for _, a := range addrs {
+		for i := 0; i < 5; i++ { // BucketFree is 5: five evaluated guesses per bucket (3x5=15 < AccountFree 20)
+			require.Equal(t, http.StatusUnauthorized, e.loginFrom(a, "victim", wrong(i)).Code, "%s guess %d", a, i)
+		}
+	}
+}
+
+// S2: the MaxKnownGood trim removes only older success markers; failure-only rows of other addresses are kept.
+func TestLoginLock_TrimKeepsFailureOnlyRows(t *testing.T) {
+	e := newLLEnv(t)
+	e.loginFrom("203.0.113.50", "victim", wrong(0)) // failure-only row, never a success
+	for i := 0; i < 7; i++ {
+		require.Equal(t, http.StatusOK, e.loginFrom(distinctIP(300+i), "victim", llPass).Code)
+		e.advance(time.Minute)
+	}
+	var n int
+	require.NoError(t, e.raw.QueryRow(`SELECT COUNT(*) FROM login_throttle WHERE scope = 'ip:203.0.113.50'`).Scan(&n))
+	assert.Equal(t, 1, n, "the failure-only row survives the known-good trim")
 }
