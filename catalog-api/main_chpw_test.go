@@ -563,7 +563,7 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 	}
 
 	// --- group shape.
-	require.Equal(t, 1, groupAssigns, "authGroup assigned exactly once")
+	require.Equal(t, 1, groupAssigns, "authGroup must be defined exactly once with `:=` (a `var authGroup = ...` form is not accepted)")
 	require.NotNil(t, groupCall)
 	require.True(t, func() bool { _, ok := isCallSel(groupCall, "router", "Group"); return ok }(),
 		"authGroup must come directly from router.Group(...)")
