@@ -2308,3 +2308,13 @@ Constitution bd0036bd (already on all mirrors and pinned). F1 closed for the 336
 - PXF18-FU9 (minor): list checked-SAFE surfaces (gin.Recovery, assetEventBus, /logs entries, writer-less scan_history.error_message) and name linked own-org submodule code as out of scope. Open.
 - PXF18-FU10 (nit): instrument numbering 0,1,3,2; S6 "three validators" is two; round-2 table maps N4 to S6-S10 while Class 4 has S1..S12. Open.
 - PXF18-FU11 (info): reviewer fixtures R1-R3 (multi-value-call helper, non-err-named error var, error-typed struct field) are missed by all three scanners (documented blind spots); typed go/types scan found no live instance at HEAD. Open.
+
+## Package D review follow-ups (Opus rounds 1-2, GO-with-follow-ups, PROVISIONAL)
+- D9SR3-F3-FU1 (minor, source-defect): services.CheckPassword still returns fast (0.10-0.17 ms vs 82 ms) for stored hashes that are malformed `$cz1$...`, empty or wrong-prefix; internal/auth burns on these. Burn in the v2 and default arms when the bcrypt error is not ErrMismatchedHashAndPassword. Low production reach (password_hash NOT NULL, app writers always store a hash). Open.
+- D9SR3-F3-FU2 (minor, test-instrumentation): timing tests bound only from below (slow >= 0.75x fast); a doubled burn (reviewer mutant M-C) survives. Add a symmetric upper bound. Open.
+- D9SR3-F3-FU3 (minor, test-instrumentation): route-test fixtures share one $T dir with real files, so sibling-loading makes fixtures resolve each other's helpers; give each fixture its own subdirectory. Open.
+- D9SR3-F3-FU4 (nit, process-doc): commit subject over-claims malformed-hash coverage for services; each importing binary pays ~75 ms bcrypt at init. Open.
+- D9SR3-F3-FU5 (operator decision, R1-7): internal/auth Login returns "account is disabled" before the password check (latent, not routed); POST /auth/register answers 409 "Username/Email already exists" (existence oracle, rate-limited). Open.
+- D9SR3-F3-FU6 (minor, tooling): sibling-file route loader ignores //go:build constraints (documented limit); honour via go/build/constraint. Open.
+- D9SR3-F3-FU7 (info): services tests TestHTTPErrorResponse_BadRequest and TestConcurrentErrorHandling_ErrorResponseConsistency fail identically on base 713a4f380 (pre-existing); TestCAT002_Start_RealBinary_HostileFallbackBounded is load-sensitive (22.2-22.6 s vs 25 s limit). Investigate the two pre-existing failures as own items. Open.
+- SEC-WS-1-F4 live sweep: /ws expects 401 in api_contract_live_test.go; the author's live run passed (245 s); reviewer ran only the unauthenticated-probe through real middleware. Full live contract run remains owed (UNCONFIRMED by review).
