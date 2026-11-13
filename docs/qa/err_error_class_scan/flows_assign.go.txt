@@ -1,0 +1,235 @@
+package main
+
+import (
+	"bytes"
+	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/printer"
+	"go/token"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+func src(fs *token.FileSet, n ast.Node) string {
+	var b bytes.Buffer
+	printer.Fprint(&b, fs, n)
+	s := strings.Join(strings.Fields(b.String()), " ")
+	if len(s) > 140 {
+		s = s[:140] + "..."
+	}
+	return s
+}
+
+func isErrName(n string) bool { return strings.Contains(strings.ToLower(n), "err") }
+
+var errLike map[string]bool
+
+func isErrLike(n string) bool { return isErrName(n) || errLike[n] }
+
+// errLikeIdents: idents declared of type error, or compared with nil.
+func collectErrLike(fd *ast.FuncDecl) map[string]bool {
+	m := map[string]bool{}
+	isErrType := func(e ast.Expr) bool { i, ok := e.(*ast.Ident); return ok && i.Name == "error" }
+	addFields := func(fl *ast.FieldList) {
+		if fl == nil {
+			return
+		}
+		for _, f := range fl.List {
+			if isErrType(f.Type) {
+				for _, n := range f.Names {
+					m[n.Name] = true
+				}
+			}
+		}
+	}
+	addFields(fd.Type.Params)
+	addFields(fd.Type.Results)
+	ast.Inspect(fd.Body, func(n ast.Node) bool {
+		switch v := n.(type) {
+		case *ast.ValueSpec:
+			if isErrType(v.Type) {
+				for _, id := range v.Names {
+					m[id.Name] = true
+				}
+			}
+		case *ast.FuncLit:
+			addFields(v.Type.Params)
+		case *ast.BinaryExpr:
+			if v.Op == token.NEQ || v.Op == token.EQL {
+				if y, ok := v.Y.(*ast.Ident); ok && y.Name == "nil" {
+					if x, ok := v.X.(*ast.Ident); ok {
+						m[x.Name] = true
+					}
+				}
+			}
+		}
+		return true
+	})
+	return m
+}
+
+
+var logPre = []string{"log.", "logger.", "logging.", "zap.", "slog", "logrus", "t.", "fmt.Errorf", "errors.", "strings.", "fmt.Fprint", "fmt.Print", "assert.", "require."}
+
+func isLog(f string) bool {
+	l := strings.ToLower(f)
+	for _, p := range logPre {
+		if strings.HasPrefix(l, p) || strings.Contains(l, ".logger.") || strings.Contains(l, "logger.") || strings.HasSuffix(l, ".debug") || strings.HasSuffix(l, ".warn") || strings.HasSuffix(l, ".info") {
+			return true
+		}
+	}
+	return false
+}
+
+func derived(fs *token.FileSet, e ast.Expr, taint map[string]bool) string {
+	res := ""
+	ast.Inspect(e, func(x ast.Node) bool {
+		if res != "" {
+			return false
+		}
+		switch v := x.(type) {
+		case *ast.CallExpr:
+			fn := src(fs, v.Fun)
+			if se, ok := v.Fun.(*ast.SelectorExpr); ok && se.Sel.Name == "Error" && len(v.Args) == 0 {
+				res = "E:" + src(fs, v)
+				return false
+			}
+			if strings.HasPrefix(fn, "fmt.Sprint") {
+				for _, a := range v.Args {
+					if i, ok := a.(*ast.Ident); ok && isErrLike(i.Name) {
+						res = "F:" + src(fs, v)
+						return false
+					}
+				}
+			}
+			if !strings.HasPrefix(fn, "fmt.") && !strings.HasPrefix(fn, "errors.") {
+				for _, a := range v.Args {
+					if i, ok := a.(*ast.Ident); ok && isErrLike(i.Name) {
+						res = "H:" + src(fs, v)
+						return false
+					}
+				}
+			}
+		case *ast.Ident:
+			if taint[v.Name] {
+				res = "T:" + v.Name
+				return false
+			}
+		}
+		return true
+	})
+	return res
+}
+
+func main() {
+	root := os.Args[1]
+	fs := token.NewFileSet()
+	filepath.Walk(root, func(p string, info os.FileInfo, e error) error {
+		if e != nil {
+			return nil
+		}
+		if info.IsDir() {
+			b := info.Name()
+			if b == "vendor" || b == "node_modules" || b == ".git" || b == "challenges" {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if !strings.HasSuffix(p, ".go") || strings.HasSuffix(p, "_test.go") {
+			return nil
+		}
+		f, err := parser.ParseFile(fs, p, nil, 0)
+		if err != nil {
+			return nil
+		}
+		for _, d := range f.Decls {
+			fd, ok := d.(*ast.FuncDecl)
+			if !ok || fd.Body == nil {
+				continue
+			}
+			errLike = collectErrLike(fd)
+			taint := map[string]bool{}
+			// 2 passes for taint
+			for pass := 0; pass < 2; pass++ {
+				ast.Inspect(fd.Body, func(n ast.Node) bool {
+					a, ok := n.(*ast.AssignStmt)
+					if !ok || len(a.Lhs) != len(a.Rhs) {
+						return true
+					}
+					for i, l := range a.Lhs {
+						if id, ok := l.(*ast.Ident); ok {
+							if _, isI := a.Rhs[i].(*ast.Ident); isI {
+								continue
+							}
+							if derived(fs, a.Rhs[i], taint) != "" {
+								taint[id.Name] = true
+							}
+						}
+					}
+					return true
+				})
+			}
+			var stack []ast.Node
+			ast.Inspect(fd.Body, func(n ast.Node) bool {
+				if n == nil {
+					stack = stack[:len(stack)-1]
+					return true
+				}
+				stack = append(stack, n)
+				pos := fs.Position(n.Pos()).Line
+				emit := func(dest string, e ast.Expr) {
+					if d := derived(fs, e, taint); d != "" {
+						fmt.Printf("%s\t%d\t%s\t%s\t%s\n", p, pos, fd.Name.Name, dest, d)
+					}
+				}
+				switch v := n.(type) {
+				case *ast.AssignStmt:
+					if len(v.Lhs) == len(v.Rhs) {
+						for i, l := range v.Lhs {
+							switch lv := l.(type) {
+							case *ast.SelectorExpr:
+								emit("field:"+lv.Sel.Name, v.Rhs[i])
+							case *ast.IndexExpr:
+								emit("index:"+src(fs, lv.X), v.Rhs[i])
+							}
+						}
+					}
+				case *ast.KeyValueExpr:
+					if k, ok := v.Key.(*ast.Ident); ok {
+						emit("kv:"+k.Name, v.Value)
+					} else if k, ok := v.Key.(*ast.BasicLit); ok {
+						emit("kv:"+k.Value, v.Value)
+					}
+				case *ast.SendStmt:
+					emit("chan:"+src(fs, v.Chan), v.Value)
+				case *ast.CallExpr:
+					fn := src(fs, v.Fun)
+					if isLog(fn) {
+						return false
+					}
+					if se, ok := v.Fun.(*ast.SelectorExpr); ok && se.Sel.Name == "Error" {
+						return true
+					}
+					for _, a := range v.Args {
+						switch a.(type) {
+						case *ast.CallExpr, *ast.Ident, *ast.BinaryExpr, *ast.CompositeLit:
+							if _, isC := a.(*ast.CompositeLit); isC {
+								continue
+							}
+							if _, isC := a.(*ast.CallExpr); isC {
+								// nested call handled by its own visit unless it is the err.Error() text
+							}
+							if d := derived(fs, a, taint); d != "" && (strings.HasPrefix(d, "E:") || strings.HasPrefix(d, "F:") || strings.HasPrefix(d, "T:")) {
+								fmt.Printf("%s\t%d\t%s\tcallarg:%s\t%s\n", p, pos, fd.Name.Name, fn, d)
+							}
+						}
+					}
+				}
+				return true
+			})
+		}
+		return nil
+	})
+}

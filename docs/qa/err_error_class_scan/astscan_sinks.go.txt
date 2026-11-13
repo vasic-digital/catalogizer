@@ -25,6 +25,52 @@ func src(fs *token.FileSet, n ast.Node) string {
 
 func isErrName(n string) bool { return strings.Contains(strings.ToLower(n), "err") }
 
+var errLike map[string]bool
+
+func isErrLike(n string) bool { return isErrName(n) || errLike[n] }
+
+// errLikeIdents: idents declared of type error, or compared with nil.
+func collectErrLike(fd *ast.FuncDecl) map[string]bool {
+	m := map[string]bool{}
+	isErrType := func(e ast.Expr) bool { i, ok := e.(*ast.Ident); return ok && i.Name == "error" }
+	addFields := func(fl *ast.FieldList) {
+		if fl == nil {
+			return
+		}
+		for _, f := range fl.List {
+			if isErrType(f.Type) {
+				for _, n := range f.Names {
+					m[n.Name] = true
+				}
+			}
+		}
+	}
+	addFields(fd.Type.Params)
+	addFields(fd.Type.Results)
+	ast.Inspect(fd.Body, func(n ast.Node) bool {
+		switch v := n.(type) {
+		case *ast.ValueSpec:
+			if isErrType(v.Type) {
+				for _, id := range v.Names {
+					m[id.Name] = true
+				}
+			}
+		case *ast.FuncLit:
+			addFields(v.Type.Params)
+		case *ast.BinaryExpr:
+			if v.Op == token.NEQ || v.Op == token.EQL {
+				if y, ok := v.Y.(*ast.Ident); ok && y.Name == "nil" {
+					if x, ok := v.X.(*ast.Ident); ok {
+						m[x.Name] = true
+					}
+				}
+			}
+		}
+		return true
+	})
+	return m
+}
+
 // text-bearing expressions inside n: .Error() calls, fmt.Sprintf/Errorf/Sprint with err-named ident arg,
 // bare err-named idents, and tainted idents.
 func findings(fs *token.FileSet, n ast.Node, taint map[string]string) []string {
@@ -32,6 +78,15 @@ func findings(fs *token.FileSet, n ast.Node, taint map[string]string) []string {
 	ast.Inspect(n, func(x ast.Node) bool {
 		switch v := x.(type) {
 		case *ast.CallExpr:
+			for _, a := range v.Args {
+				if i, ok := a.(*ast.Ident); ok && isErrLike(i.Name) {
+					if se, ok := v.Fun.(*ast.SelectorExpr); ok && (se.Sel.Name == "Error" || (func() bool { x, ok := se.X.(*ast.Ident); return ok && x.Name == "fmt" })()) {
+						continue
+					}
+					out = append(out, "H:"+src(fs, v))
+					break
+				}
+			}
 			if se, ok := v.Fun.(*ast.SelectorExpr); ok {
 				if se.Sel.Name == "Error" && len(v.Args) == 0 {
 					out = append(out, "E:"+src(fs, v))
@@ -39,7 +94,7 @@ func findings(fs *token.FileSet, n ast.Node, taint map[string]string) []string {
 				}
 				if id, ok := se.X.(*ast.Ident); ok && id.Name == "fmt" && strings.HasPrefix(se.Sel.Name, "Sprint") || ok && id.Name == "fmt" && se.Sel.Name == "Errorf" {
 					for _, a := range v.Args {
-						if i, ok := a.(*ast.Ident); ok && isErrName(i.Name) {
+						if i, ok := a.(*ast.Ident); ok && isErrLike(i.Name) {
 							out = append(out, "F:"+src(fs, v))
 							return false
 						}
@@ -96,6 +151,7 @@ func main() {
 			if !ok || fd.Body == nil {
 				continue
 			}
+			errLike = collectErrLike(fd)
 			taint := map[string]string{}
 			ast.Inspect(fd.Body, func(n ast.Node) bool {
 				a, ok := n.(*ast.AssignStmt)
@@ -182,7 +238,7 @@ func main() {
 						rows = append(rows, row{p, pos.Line, fd.Name.Name, fname, st, "TEXT", e})
 					}
 					// bare err arg
-					if i, ok := a.(*ast.Ident); ok && isErrName(i.Name) && i.Name != "errors" {
+					if i, ok := a.(*ast.Ident); ok && isErrLike(i.Name) && i.Name != "errors" {
 						rows = append(rows, row{p, pos.Line, fd.Name.Name, fname, st, "BARE", i.Name})
 					}
 				}
