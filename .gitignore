@@ -489,3 +489,6 @@ monitoring/secrets/
 /.qwen/
 /prompts/
 /skills/
+
+# Wizard test artifact (written by TestConfigurationWizardService_FinalizeConfiguration-class tests; CAT OBF-2)
+catalog-api/services/config/
