@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"strings"
-	"sync"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -66,9 +65,13 @@ func CheckPassword(password, salt, hash string) (ok bool, needsUpgrade bool) {
 		if subtle.ConstantTimeCompare([]byte(want), []byte(hash)) == 1 {
 			return true, true
 		}
+		// A wrong password against a legacy hash would return in microseconds while
+		// every other failing path costs a bcrypt; burn one so these users are not
+		// the fast outliers of the login timing oracle (D9SR3-F3).
+		BurnDummyPasswordCheck(password)
 		return false, false
 	default:
-		// v1: bcrypt(password+salt). Errors (input over 72 bytes) mean "no match".
+		// v1: bcrypt(password+salt). A malformed hash or a mismatch means "no match".
 		return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password+salt)) == nil, false
 	}
 }
@@ -92,29 +95,29 @@ func isLegacySHA256Hex(s string) bool {
 	return true
 }
 
-var (
-	dummyHashOnce sync.Once
-	dummyHashVal  string
-)
+// dummyHash is a fixed, well-formed v2 hash (DefaultCost, random unrelated
+// secret) computed once at package init. It exists only so a login for a
+// username that does not exist, or a wrong password against a legacy hash, can
+// burn the same bcrypt work as a real user. Failure to build it is a programming
+// or environment fault and panics at startup instead of silently degrading the
+// timing defence.
+var dummyHash = mustDummyHash()
 
-// dummyPasswordHash returns a fixed, well-formed v2 hash (DefaultCost, random
-// unrelated secret) computed once per process. It exists only so a login for a
-// username that does not exist can burn the same bcrypt work as a real user.
-func dummyPasswordHash() string {
-	dummyHashOnce.Do(func() {
-		h, err := HashPasswordWithSalt("dummy-password-never-matches", "dummy-salt-for-timing-equalisation")
-		if err != nil {
-			h = ""
-		}
-		dummyHashVal = h
-	})
-	return dummyHashVal
+const dummySalt = "dummy-salt-for-timing-equalisation"
+
+func mustDummyHash() string {
+	h, err := HashPasswordWithSalt("dummy-password-never-matches", dummySalt)
+	if err != nil {
+		panic("services: cannot build dummy password hash: " + err.Error())
+	}
+	return h
 }
 
-// BurnDummyPasswordCheck performs one constant-cost password comparison against
-// a fixed hash and discards the result (D9SR3-F3). Call it on every credential
-// path that would otherwise return early because the user does not exist, so
-// response time does not reveal which usernames exist.
+func dummyPasswordHash() string { return dummyHash }
+
+// BurnDummyPasswordCheck performs one constant-cost bcrypt comparison against
+// a fixed hash and discards the result (D9SR3-F3). It never recurses into the
+// legacy arm because the dummy is a v2 hash.
 func BurnDummyPasswordCheck(password string) {
-	_, _ = CheckPassword(password, "dummy-salt-for-timing-equalisation", dummyPasswordHash())
+	_ = bcrypt.CompareHashAndPassword([]byte(strings.TrimPrefix(dummyHash, v2Prefix)), v2Input(password, dummySalt))
 }

@@ -33,7 +33,7 @@ and are documented as a note in `info.description`). `--list` prints every extra
 
 `scripts/lib/gin_routes_ast.go` (Go stdlib `go/ast` only; the gate builds it with `go build`, offline, `GOTOOLCHAIN=local`, so the Go toolchain is required, exit 2 without it) interprets `main()` of
 the router file: `gin.Default/New` roots, `X.Group("lit")` prefixes, chained `.Use(...)`, `GET/POST/PUT/DELETE/PATCH/HEAD/OPTIONS`, `Any` (expanded to those 7 methods),
-`Handle("METHOD", path, ...)`, `Match([]string{...}, path, ...)`, calls split over several lines, and same-file helper functions with a `*gin.RouterGroup`/`*gin.Engine`/`gin.IRouter`/`gin.IRoutes`
+`Handle("METHOD", path, ...)`, `Match([]string{...}, path, ...)`, calls split over several lines, and helper functions declared in the same file or in a sibling `*.go` file of the same package directory (for example `registerWebSocketRoute` in `main_wsroute.go`) with a `*gin.RouterGroup`/`*gin.Engine`/`gin.IRouter`/`gin.IRoutes`
 parameter (interpreted at each call site with the caller's prefix). Parameter names are ignored (`:x`, `*x`, `{x}` all become `{}`). The YAML is loaded with a duplicate-key-detecting
 loader (the original spec was invalid because of 13 duplicate keys).
 
@@ -47,7 +47,8 @@ templates, blind refusal, duplicate keys, missing file, the real tree, control n
 
 ## Honest limits
 
-- Only `main()` of the Gin router file is interpreted, plus same-file helpers reached from it. Registrations in other files (a helper in another package taking a group) are not seen; none exist in `main.go` today.
+- Only `main()` of the Gin router file is interpreted, plus helpers reached from it that are declared in the same file or in sibling files of the same package directory. Registrations in another package (a helper taking a group) are not seen; none exist today.
+- Sibling files are loaded by file name only: `//go:build` constraints and `_GOOS`/`_test` suffixes are NOT evaluated, so a helper declared in a file excluded by a build tag is still followed (and a same-named helper in two tagged files is ambiguous). No such file exists today.
 - Groups held in struct fields, slices or maps, or returned from functions, are not tracked; a route verb on such a receiver with a literal `/path` is reported as unresolved (exit 3), not skipped.
 - `Any` is expanded to GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS (Gin also registers CONNECT and TRACE; those are not compared). `Static*`/`StaticFS`/`StaticFile` are not compared.
 - The gorilla/mux `RegisterRoutes` in `internal/handlers/localization_handlers.go` and `media_player_handlers.go` are called from tests only, not wired into the server.
