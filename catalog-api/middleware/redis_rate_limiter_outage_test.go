@@ -145,13 +145,15 @@ func TestRedisRateLimit_BreakerClosesAfterBackoff(t *testing.T) {
 	mr, client := setupMiniredis(t)
 	cfg := DefaultRedisRateLimiterConfig(client)
 	cfg.Requests = 1
-	cfg.OutageBackoff = 60 * time.Millisecond
+	clk := newFakeClock()
+	cfg.Clock = clk.Now
+	cfg.OutageBackoff = 5 * time.Second
 	r := fbRouter(cfg, memLimit(1000))
 	require.Equal(t, http.StatusOK, fbGet(r))
 	mr.Close()
 	require.Equal(t, http.StatusOK, fbGet(r), "falls back")
 	require.NoError(t, mr.Restart())
-	time.Sleep(120 * time.Millisecond)
+	clk.Advance(6 * time.Second)
 	assert.Equal(t, http.StatusTooManyRequests, fbGet(r), "Redis (budget used) is authoritative again after the backoff")
 }
 
