@@ -341,9 +341,21 @@ func TestDetectorAssignmentEvidenceShapes(t *testing.T) {
 		{"not-equal-nil-check-is-not-normalisation", "package x\nfunc A() []int {\n\tvar l []int\n\tif l != nil {\n\t\t_ = l\n\t}\n\treturn l\n}\n", 1, "var l returned"},
 		{"equal-nil-check-is-normalisation-clean", "package x\nfunc A() []int {\n\tvar l []int\n\tif l == nil {\n\t\tl = []int{}\n\t}\n\treturn l\n}\n", 0, ""},
 		// PX-F20: a named result that is only nil-checked (== nil) counts as normalised, EVEN WITH AN EMPTY BODY. That is a KNOWN
-		// FALSE NEGATIVE of the current detector (the check evidence is not tied to an assignment in the body); this case pins
-		// today's behaviour, it does not endorse it. Tracked as PX-F20: when the detector requires an assignment, flip want to 1.
+		// FALSE NEGATIVE of the current detector. Real cause (review F4): ANY `==` comparison involving the variable deletes it from
+		// the declaration map and marks it assigned (the comparison is taken as evidence of a guarded normalisation without looking at
+		// the guarded body). These cases pin today's behaviour, they do not endorse it. When the detector requires a real assignment
+		// in the guarded body, flip each want to 1. Extra misses found by the round-1 reviewer (all pinned, none fixed here):
+		//   - `var l []int` local whose nil-check body does not assign it;
+		//   - a map named result compared `nil == m`;
+		//   - `for _, out = range c` over a possibly empty c (the assignment never runs);
+		//   - `out = nil` (an assignment that keeps the nil slice);
+		//   - an assignment inside a closure that is never called.
 		{"KNOWN-FALSE-NEGATIVE-checked-only-empty-body-currently-clean", "package x\nfunc A() (out []int) {\n\tif out == nil {\n\t}\n\treturn\n}\n", 0, ""},
+		{"KNOWN-FALSE-NEGATIVE-local-var-nilcheck-body-does-not-assign", "package x\nfunc A() []int {\n\tvar l []int\n\tif l == nil {\n\t\t_ = 1\n\t}\n\treturn l\n}\n", 0, ""},
+		{"KNOWN-FALSE-NEGATIVE-map-named-result-nil-equals-m", "package x\nfunc A() (m map[string]int) {\n\tif nil == m {\n\t}\n\treturn\n}\n", 0, ""},
+		{"KNOWN-FALSE-NEGATIVE-range-value-over-possibly-empty", "package x\nfunc A(c [][]int) (out []int) {\n\tfor _, out = range c {\n\t}\n\treturn\n}\n", 0, ""},
+		{"KNOWN-FALSE-NEGATIVE-assign-nil-keeps-nil", "package x\nfunc A() (out []int) {\n\tout = nil\n\treturn\n}\n", 0, ""},
+		{"KNOWN-FALSE-NEGATIVE-assignment-in-never-called-closure", "package x\nfunc A() (out []int) {\n\t_ = func() { out = []int{} }\n\treturn\n}\n", 0, ""},
 		// PX-F21: reversed comparison `nil == out` is the same evidence as `out == nil`; `nil != out` is not a normalisation
 		{"reversed-nil-equals-named-result-clean", "package x\nfunc A() (out []int) {\n\tif nil == out {\n\t}\n\treturn\n}\n", 0, ""}, // no assignment: only the comparison evidence makes it clean (same pinned false negative as PX-F20)
 		{"reversed-nil-not-equal-named-result-flagged", "package x\nfunc A() (out []int) {\n\tif nil != out {\n\t}\n\treturn\n}\n", 1, "named result out"},

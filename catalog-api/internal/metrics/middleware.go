@@ -1,6 +1,7 @@
 package metrics
 
 import (
+	"catalogizer/internal/logredact"
 	"strconv"
 	"time"
 
@@ -42,5 +43,5 @@ func normalizePath(c *gin.Context) string {
 	if fp := c.FullPath(); fp != "" {
 		return fp
 	}
-	return c.Request.URL.Path
+	return logredact.SecretPath(c.Request.URL.Path)
 }

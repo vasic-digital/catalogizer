@@ -51,8 +51,33 @@ func redactPair(p string) string {
 	return p
 }
 
-// Path returns path + "?" + redacted query (or just path when there is no query).
+// secretSegmentKeys lists the path segments whose NEXT segment is a bearer secret (a share token, invite code, reset token ...).
+// Route registrations carrying such a parameter (grep for ":token"): GET /api/v1/logs/share/:token. The list is a class rule
+// so a later route of the same shape is covered without touching the loggers.
+var secretSegmentKeys = map[string]bool{
+	"share": true, "shares": true, "token": true, "tokens": true, "invite": true, "invites": true, "invitation": true,
+	"reset": true, "ticket": true, "tickets": true, "secret": true, "secrets": true, "key": true, "keys": true,
+	"apikey": true, "api-key": true, "api_key": true, "verify": true, "confirm": true, "activate": true, "magic": true,
+}
+
+// SecretPath returns path with every segment that follows a secret-introducing segment (see secretSegmentKeys) replaced by
+// ":redacted". Everything else is preserved. Use it for ANY log field that carries a raw request path.
+func SecretPath(path string) string {
+	if path == "" {
+		return path
+	}
+	segs := strings.Split(path, "/")
+	for i := 0; i+1 < len(segs); i++ {
+		if secretSegmentKeys[strings.ToLower(segs[i])] && segs[i+1] != "" {
+			segs[i+1] = ":redacted"
+		}
+	}
+	return strings.Join(segs, "/")
+}
+
+// Path returns path (secret segments redacted) + "?" + redacted query (or just path when there is no query).
 func Path(path, rawQuery string) string {
+	path = SecretPath(path)
 	if q := Query(rawQuery); q != "" {
 		return path + "?" + q
 	}

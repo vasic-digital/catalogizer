@@ -87,7 +87,7 @@ func ErrorHandler() gin.HandlerFunc {
 				reqID, _ = c.Get("RequestID")
 			}
 			log.Printf("middleware: request %q %s %q failed (type %d, detail not returned to client): %v",
-				fmt.Sprint(reqID), c.Request.Method, c.Request.URL.Path, err.Type, err.Err)
+				fmt.Sprint(reqID), c.Request.Method, logredact.SecretPath(c.Request.URL.Path), err.Type, err.Err)
 			switch err.Type {
 			case gin.ErrorTypeBind:
 				c.JSON(http.StatusBadRequest, gin.H{

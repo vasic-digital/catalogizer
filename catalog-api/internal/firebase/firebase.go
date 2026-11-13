@@ -12,6 +12,7 @@ package firebase
 
 import (
 	"bytes"
+	"catalogizer/internal/logredact"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -434,7 +435,7 @@ func GinMiddleware(fbApp *App) gin.HandlerFunc {
 		status := c.Writer.Status()
 		if status >= 500 {
 			fbApp.ReportNonFatal(c.Request.Context(),
-				fmt.Sprintf("HTTP %d: %s %s", status, c.Request.Method, c.Request.URL.Path),
+				fmt.Sprintf("HTTP %d: %s %s", status, c.Request.Method, logredact.SecretPath(c.Request.URL.Path)),
 				fmt.Sprintf("Referer: %s\nUser-Agent: %s\nRemoteAddr: %s",
 					c.Request.Referer(), c.Request.UserAgent(), c.Request.RemoteAddr),
 			)

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"catalogizer/internal/logredact"
 	"context"
 	"errors"
 	"net/http"
@@ -192,7 +193,7 @@ func RedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc {
 				logging.With(
 					logging.String("key", key),
 					logging.String("ip", c.ClientIP()),
-					logging.String("path", c.Request.URL.Path),
+					logging.String("path", logredact.SecretPath(c.Request.URL.Path)),
 				).Warn("Rate limit exceeded")
 			}
 
@@ -283,7 +284,7 @@ func SlidingWindowRedisRateLimit(config RedisRateLimiterConfig) gin.HandlerFunc 
 				logging.With(
 					logging.String("key", key),
 					logging.String("ip", c.ClientIP()),
-					logging.String("path", c.Request.URL.Path),
+					logging.String("path", logredact.SecretPath(c.Request.URL.Path)),
 				).Warn("Sliding window rate limit exceeded")
 			}
 

@@ -244,3 +244,16 @@ func TestMainGoMountsAdminAndDeepHealthRoutesThroughHandlers(t *testing.T) {
 	assert.NotContains(t, s, "SampleForRevalidation(", "the revalidation logic lives in the tested handler")
 	assert.NotContains(t, s, "GenerateMissingVideoThumbnails(", "the thumbnail logic lives in the tested handler")
 }
+
+// F5 (review round 1): the timeout message reports the configured deepTimeout, not a hard-coded 100ms.
+func TestDeepHealth_TimeoutMessageUsesConfiguredTimeout(t *testing.T) {
+	hc := metrics.NewHealthChecker(nil, "1.0.0")
+	hc.RegisterCheck("database", func(ctx context.Context) metrics.ComponentHealth {
+		time.Sleep(300 * time.Millisecond)
+		return metrics.ComponentHealth{Status: metrics.HealthStatusHealthy}
+	})
+	rr := getDeep(t, deepHealthHandler(hc, "1.0.0", 40*time.Millisecond))
+	var got map[string]any
+	require.NoError(t, json.Unmarshal(rr.Body.Bytes(), &got))
+	assert.Equal(t, "health check exceeded 40ms timeout", got["message"])
+}

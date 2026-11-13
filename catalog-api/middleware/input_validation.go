@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"catalogizer/internal/logredact"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -387,7 +388,7 @@ func InputValidation(config InputValidationConfig) gin.HandlerFunc {
 			// This replaces the former fmt.Printf with JSON-formatted, field-rich output.
 			obslogging.NewLogrusAdapter(obslogging.DefaultConfig()).
 				WithField("ip", c.ClientIP()).
-				WithField("path", c.Request.URL.Path).
+				WithField("path", logredact.SecretPath(c.Request.URL.Path)).
 				WithError(err).
 				Warn("Security validation failed")
 

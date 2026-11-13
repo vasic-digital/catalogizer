@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -123,7 +124,7 @@ func deepHealthHandler(checker deepHealthChecker, version string, deepTimeout ti
 				"status":  "degraded",
 				"time":    time.Now().UTC(),
 				"version": version,
-				"message": "health check exceeded 100ms timeout",
+				"message": fmt.Sprintf("health check exceeded %s timeout", deepTimeout),
 				"components": gin.H{
 					"timeout": gin.H{
 						"status":  "degraded",
